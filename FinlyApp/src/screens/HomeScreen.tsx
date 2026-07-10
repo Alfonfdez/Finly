@@ -121,7 +121,7 @@ export default function HomeScreen() {
           {chartType === 'donut' ? (
             <DonutChart datos={categoriasActivas} total={totalActivo} />
           ) : (
-            <BarChart datos={categoriasActivas} />
+            <BarChart datos={categoriasActivas} total={totalActivo} />
           )}
         </TouchableOpacity>
 

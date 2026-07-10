@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { colores } from '../constants/colors';
+import { formatearMoneda } from '../utils/formatters';
 
 interface Dato {
   nombre: string;
@@ -10,9 +11,13 @@ interface Dato {
 
 interface Props {
   datos: Dato[];
+  total?: number;
+  divisa?: string;
 }
 
-export default function BarChart({ datos }: Props) {
+export default function BarChart({ datos, total = 0, divisa = '€' }: Props) {
+  const vacio = datos.length === 0;
+
   return (
     <View style={styles.container}>
       <View style={styles.barraFondo}>
@@ -26,6 +31,10 @@ export default function BarChart({ datos }: Props) {
           />
         ))}
       </View>
+
+      {vacio && (
+        <Text style={styles.vacioTexto}>{formatearMoneda(total, divisa)}</Text>
+      )}
 
       <View style={styles.leyenda}>
         {datos.map((dato) => (
@@ -42,6 +51,7 @@ export default function BarChart({ datos }: Props) {
 
 const styles = StyleSheet.create({
   container: {
+    width: '100%',
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
@@ -78,5 +88,11 @@ const styles = StyleSheet.create({
   leyendaPorcentaje: {
     color: colores.textoSuave,
     fontSize: 11,
+  },
+  vacioTexto: {
+    color: colores.textoSuave,
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 12,
   },
 });
