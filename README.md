@@ -1,4 +1,4 @@
-# ControlGastos
+# Finly
 
 App para gestionar ingresos y gastos personales con múltiples cuentas, categorías personalizables, filtros por período y gráficos visuales.
 
