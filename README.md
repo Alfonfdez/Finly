@@ -2,6 +2,8 @@
 
 App para gestionar ingresos y gastos personales con múltiples cuentas, categorías personalizables, filtros por período y gráficos visuales.
 
+![Vista previa de la app](images/excalidraw/Finly.png)
+
 ## Metodología
 
 **Specification-Driven Development (SDD).** Las especificaciones están en `spec/` y son la única fuente de verdad. Primero se define qué construir, luego se implementa.
@@ -14,7 +16,7 @@ App para gestionar ingresos y gastos personales con múltiples cuentas, categor�
 | Lenguaje | TypeScript |
 | Navegación | React Navigation (Stack + Drawer) |
 | Gráficos | react-native-svg |
-| Persistencia | AsyncStorage |
+| Persistencia | SQLite (expo-sqlite) |
 | Web | react-native-web |
 | Estado | Context API |
 
@@ -70,10 +72,23 @@ ProyectoFinal/
 │   │   │   └── AppNavigator.tsx
 │   │   ├── context/             ← Estado global
 │   │   │   └── AppContext.tsx
+│   │   ├── database/            ← Base de datos SQLite
+│   │   │   ├── database.ts      ← Inicialización y migraciones
+│   │   │   ├── types.ts         ← Interfaces de las tablas
+│   │   │   ├── migrations/
+│   │   │   │   └── 001_initial.ts
+│   │   │   └── repositories/
+│   │   │       ├── usuarioRepo.ts
+│   │   │       ├── cuentaRepo.ts
+│   │   │       ├── categoriaRepo.ts
+│   │   │       ├── transaccionRepo.ts
+│   │   │       ├── presupuestoRepo.ts
+│   │   │       └── ahorroRepo.ts
 │   │   ├── data/                ← Datos mock
 │   │   │   └── mockData.ts
-│   │   ├── storage/             ← Persistencia
-│   │   │   └── storage.ts
+│   │   ├── storage/             ← Persistencia (legacy)
+│   │   │   ├── storage.ts
+│   │   │   └── migration.ts     ← Migración AsyncStorage → SQLite
 │   │   ├── constants/           ← Constantes
 │   │   │   └── colors.ts
 │   │   └── utils/               ← Utilidades
@@ -84,7 +99,8 @@ ProyectoFinal/
 │
 ├── spec/                        ← Especificaciones SDD
 │   └── features/
-│       └── 001-pagina-inicial/
+│       ├── 001-pagina-inicial/
+│       └── 002-diseño-DB/
 │
 ├── .agents/skills/              ← Skills para asistentes IA
 ├── docs/                        ← Documentación de conceptos
@@ -102,5 +118,7 @@ ProyectoFinal/
 - Gráfico de anillos (donut) y barra horizontal apilada
 - Desglose por categorías con porcentajes
 - Tema oscuro
-- Persistencia local (AsyncStorage)
+- Base de datos local SQLite con integridad referencial
+- Presupuestos por categoría y período
+- Planes de ahorro con objetivo y progreso
 - Navegación con menú lateral (Drawer)
