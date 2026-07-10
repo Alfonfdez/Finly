@@ -12,11 +12,11 @@ App para gestionar ingresos y gastos personales con múltiples cuentas, categor�
 
 | Capa | Tecnología |
 |---|---|
-| Framework | React Native con Expo |
+| Framework | React Native con Expo (SDK 54) |
 | Lenguaje | TypeScript |
 | Navegación | React Navigation (Stack + Drawer) |
 | Gráficos | react-native-svg |
-| Persistencia | SQLite (expo-sqlite) |
+| Persistencia | AsyncStorage |
 | Web | react-native-web |
 | Estado | Context API |
 
@@ -26,18 +26,33 @@ App para gestionar ingresos y gastos personales con múltiples cuentas, categor�
 
 - Node.js 18+
 - npm
+- Expo Go (app móvil gratuita) para verlo en el móvil
 
-### Pasos
+### Primera vez al clonar
 
 ```bash
-cd ControlGastos
+cd FinlyApp
 npm install
-npm run web
+npx expo start
 ```
 
-Esto abrirá la app en [http://localhost:8081](http://localhost:8081).
+Esto arranca Metro Bundler. A partir de ahí:
 
-También puedes escanear el QR con **Expo Go** (app móvil gratuita) para verlo en el móvil.
+| Para ver en… | Haz esto |
+|---|---|
+| **Navegador** | Abre [http://localhost:8081](http://localhost:8081) o ejecuta `npx expo start --web` |
+| **Móvil (Expo Go)** | Pulsa la tecla **`s`** en la terminal y escanéa el QR con Expo Go |
+
+> Si `expo` no se reconoce como comando, usa `npx expo ...` o `npm run web`.
+
+### Notas importantes
+
+- Este proyecto usa **Expo SDK 54** por compatibilidad con Expo Go. No actualices el SDK ni ejecutes `npm audit fix --force` (rompe las versiones).
+- Si al escanear el QR en Expo Go no pasa nada, asegúrate de haber pulsado **`s`** para cambiar a modo Expo Go (el mensaje debe poner "Scan the QR code to open in Expo Go").
+- Si da error `TurboModule method "installTurboModule"`, ejecuta:
+  ```bash
+  npx expo install react-native-worklets@0.5.1
+  ```
 
 ### Otros comandos
 
@@ -61,34 +76,29 @@ Finly/
 │   │   │   ├── BarChart.tsx
 │   │   │   ├── CategoryList.tsx
 │   │   │   ├── CalendarPicker.tsx
+│   │   │   ├── CalendarModal.tsx
 │   │   │   ├── AccountModal.tsx
 │   │   │   ├── PeriodTabs.tsx
-│   │   │   └── TypeTabs.tsx
+│   │   │   ├── TypeTabs.tsx
+│   │   │   └── calendars/       ← Selectores de fecha
+│   │   │       ├── DayPicker.tsx
+│   │   │       ├── WeekPicker.tsx
+│   │   │       ├── MonthGrid.tsx
+│   │   │       ├── MonthNav.tsx
+│   │   │       ├── YearGrid.tsx
+│   │   │       └── PeriodPicker.tsx
 │   │   ├── screens/             ← Pantallas
 │   │   │   ├── HomeScreen.tsx
-│   │   │   ├── AddTransaction.tsx
+│   │   │   ├── AddTransactionScreen.tsx
 │   │   │   └── TransactionsScreen.tsx
 │   │   ├── navigation/          ← Navegación
 │   │   │   └── AppNavigator.tsx
 │   │   ├── context/             ← Estado global
 │   │   │   └── AppContext.tsx
-│   │   ├── database/            ← Base de datos SQLite
-│   │   │   ├── database.ts      ← Inicialización y migraciones
-│   │   │   ├── types.ts         ← Interfaces de las tablas
-│   │   │   ├── migrations/
-│   │   │   │   └── 001_initial.ts
-│   │   │   └── repositories/
-│   │   │       ├── usuarioRepo.ts
-│   │   │       ├── cuentaRepo.ts
-│   │   │       ├── categoriaRepo.ts
-│   │   │       ├── transaccionRepo.ts
-│   │   │       ├── presupuestoRepo.ts
-│   │   │       └── ahorroRepo.ts
 │   │   ├── data/                ← Datos mock
 │   │   │   └── mockData.ts
-│   │   ├── storage/             ← Persistencia (legacy)
-│   │   │   ├── storage.ts
-│   │   │   └── migration.ts     ← Migración AsyncStorage → SQLite
+│   │   ├── storage/             ← Persistencia (AsyncStorage)
+│   │   │   └── storage.ts
 │   │   ├── constants/           ← Constantes
 │   │   │   └── colors.ts
 │   │   └── utils/               ← Utilidades
@@ -118,7 +128,4 @@ Finly/
 - Gráfico de anillos (donut) y barra horizontal apilada
 - Desglose por categorías con porcentajes
 - Tema oscuro
-- Base de datos local SQLite con integridad referencial
-- Presupuestos por categoría y período
-- Planes de ahorro con objetivo y progreso
 - Navegación con menú lateral (Drawer)
