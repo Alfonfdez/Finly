@@ -51,26 +51,30 @@ export default function DayPicker({ fecha, onSelect, rangoInicio, rangoFin, vist
           return (
             <TouchableOpacity
               key={dia}
-              style={[
-                styles.dia,
-                esHoy && styles.diaHoy,
-                esSeleccionado && styles.diaSeleccionado,
-                futuro && styles.diaFuturo,
-                dentroRango && !esSeleccionado && styles.diaRango,
-                esInicio && styles.diaRangoBorde,
-                esFin && styles.diaRangoBorde,
-              ]}
+              style={[styles.dia, futuro && styles.diaFuturo]}
               onPress={() => !futuro && onSelect(fechaDia)}
               disabled={futuro}
             >
-              <Text style={[
-                styles.diaTexto,
-                esSeleccionado && styles.diaTextoSeleccionado,
-                futuro && styles.diaTextoFuturo,
-                dentroRango && !esSeleccionado && styles.diaTextoRango,
-              ]}>
-                {dia}
-              </Text>
+              <View style={styles.diaWrap}>
+                <View style={[
+                  styles.diaBg,
+                  esHoy && styles.diaHoy,
+                  esSeleccionado && styles.diaSeleccionado,
+                  dentroRango && !esSeleccionado && styles.diaRango,
+                  esInicio && !esSeleccionado && styles.diaRangoBorde,
+                  esFin && !esSeleccionado && styles.diaRangoBorde,
+                ]} />
+                <View style={styles.diaCenter}>
+                  <Text style={[
+                    styles.diaTexto,
+                    esSeleccionado && styles.diaTextoSeleccionado,
+                    futuro && styles.diaTextoFuturo,
+                    dentroRango && !esSeleccionado && styles.diaTextoRango,
+                  ]}>
+                    {String(dia)}
+                  </Text>
+                </View>
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -84,14 +88,17 @@ const styles = StyleSheet.create({
   diasSemana: { flexDirection: 'row', marginBottom: 8 },
   diaSemanaTexto: { flex: 1, textAlign: 'center', color: colores.textoSuave, fontSize: 12, fontWeight: '600' },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
-  dia: { width: '14.28%', aspectRatio: 1, alignItems: 'center', justifyContent: 'center', borderRadius: 20 },
+  dia: { width: '14.28%', aspectRatio: 1 },
   diaVacio: { width: '14.28%', aspectRatio: 1 },
+  diaWrap: { flex: 1 },
+  diaBg: { ...StyleSheet.absoluteFillObject, borderRadius: 20, overflow: 'hidden' },
+  diaCenter: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   diaHoy: { borderWidth: 1, borderColor: colores.primario },
   diaSeleccionado: { backgroundColor: colores.primario },
-  diaRango: { backgroundColor: colores.primario + '25', borderRadius: 0 },
+  diaRango: { backgroundColor: colores.primario + '25', borderRadius: 4 },
   diaRangoBorde: { backgroundColor: colores.primario + '40' },
   diaFuturo: { opacity: 0.3 },
-  diaTexto: { color: colores.texto, fontSize: 14 },
+  diaTexto: { color: colores.texto, fontSize: 14, textAlign: 'center' },
   diaTextoSeleccionado: { color: colores.fondo, fontWeight: '700' },
   diaTextoRango: { color: colores.texto, fontWeight: '600' },
   diaTextoFuturo: { color: colores.textoSuave },

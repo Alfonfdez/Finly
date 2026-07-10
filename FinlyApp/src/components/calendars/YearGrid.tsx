@@ -31,13 +31,15 @@ export default function YearGrid({ fecha, onSelect }: CalendarBaseProps) {
           return (
             <TouchableOpacity
               key={a}
-              style={[styles.item, activo && styles.itemActivo, futuro && styles.itemFuturo]}
+              style={[styles.item, futuro && styles.itemFuturo]}
               onPress={() => !futuro && onSelect(new Date(a, 0, 1))}
               disabled={futuro}
             >
-              <Text style={[styles.itemTexto, activo && styles.itemTextoActivo, futuro && styles.itemTextoFuturo]}>
-                {a}
-              </Text>
+              <View style={[styles.itemInner, activo && styles.itemActivo]}>
+                <Text style={[styles.itemTexto, activo && styles.itemTextoActivo, futuro && styles.itemTextoFuturo]}>
+                  {a}
+                </Text>
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -51,10 +53,11 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
   titulo: { color: colores.texto, fontSize: 18, fontWeight: '700' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  item: { width: '23%', aspectRatio: 1.2, alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: colores.fondoAlto },
+  item: { width: '23%', aspectRatio: 1.2 },
+  itemInner: { flex: 1, alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: colores.fondoAlto },
   itemActivo: { backgroundColor: colores.primario },
   itemFuturo: { opacity: 0.3 },
-  itemTexto: { color: colores.texto, fontSize: 14, fontWeight: '500' },
+  itemTexto: { color: colores.texto, fontSize: 14, fontWeight: '500', includeFontPadding: false, textAlignVertical: 'center' },
   itemTextoActivo: { color: colores.fondo, fontWeight: '700' },
   itemTextoFuturo: { color: colores.textoSuave },
 });
