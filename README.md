@@ -2,7 +2,7 @@
 
 App para gestionar ingresos y gastos personales con múltiples cuentas, categorías personalizables, filtros por período y gráficos visuales.
 
-![Vista previa de la app](images/excalidraw/Finly.png)
+![Vista previa de la app](images/excalidraw/Finly_v2.png)
 
 ## Metodología
 
