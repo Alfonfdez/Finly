@@ -51,8 +51,8 @@ También puedes escanear el QR con **Expo Go** (app móvil gratuita) para verlo 
 ## Estructura del proyecto
 
 ```
-ProyectoFinal/
-├── ControlGastos/               ← App React Native / Expo
+Finly/
+├── FinlyApp/               ← App React Native / Expo
 │   ├── App.tsx                  ← Punto de entrada
 │   ├── app.json                 ← Configuración Expo
 │   ├── src/
