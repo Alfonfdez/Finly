@@ -86,3 +86,13 @@
 
 [2026-07-10] ~ | README.md
 - Actualizado README para reflejar el estado real del proyecto: nombre del directorio (FinlyApp), persistencia actual (AsyncStorage), componentes existentes (CalendarModal, calendars/), y eliminadas referencias a funcionalidades no implementadas (SQLite, presupuestos, planes de ahorro).
+
+[2026-07-10] ~ | src/components/calendars/DayPicker.tsx, MonthGrid.tsx, YearGrid.tsx
+- Reestructurados selectores de calendario para corregir centrado vertical en Android: separada capa de tamaño (TouchableOpacity con aspectRatio) de capa visual (View interno con flex:1 + centrado + fondo/borde).
+
+[2026-07-10] ~ | src/components/calendars/DayPicker.tsx
+- Dividido diaInner en dos capas: diaBg (absoluteFill + borderRadius + overflow hidden para recorte visual) y diaCenter (flex:1 + centrado, sin overflow) — corrige desaparición del número 10 en Android por recorte de texto.
+
+[2026-07-10] ~ | src/components/calendars/DayPicker.tsx
+- Mejorada visualización de rango en PeriodPicker: diaRango cambia de borderRadius:0 a borderRadius:4 para esquemas más uniformes.
+- Añadido !esSeleccionado a condiciones esInicio/esFin para evitar que diaRangoBorde opaque el color de selección del día inicio/fin.
