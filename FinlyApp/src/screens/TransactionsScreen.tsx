@@ -1,4 +1,5 @@
-import { View, Text, FlatList, StyleSheet, SafeAreaView, Platform } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute } from '@react-navigation/native';
 import { colores } from '../constants/colors';
 import { useApp } from '../context/AppContext';
