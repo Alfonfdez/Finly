@@ -4,6 +4,8 @@ import { colores } from '../../constants/colors';
 import { obtenerNombreMesAbrev } from '../../utils/formatters';
 import DayPicker from './DayPicker';
 
+const ANIO_MINIMO = new Date().getFullYear();
+
 interface Props {
   inicioTemp: Date;
   finTemp: Date;
@@ -14,7 +16,7 @@ export default function PeriodPicker({ inicioTemp, finTemp, onTempRangoChange }:
   const [todos, setTodos] = useState(false);
   const [seleccionando, setSeleccionando] = useState<'inicio' | 'fin'>('inicio');
 
-  const fechaMinima = new Date(2026, 0, 1);
+  const fechaMinima = new Date(ANIO_MINIMO, 0, 1);
   const hoy = new Date();
 
   const handleTodos = useCallback(() => {

@@ -1,3 +1,5 @@
+import { colores } from '../constants/colors';
+
 export interface Cuenta {
   id: number;
   nombre: string;
@@ -25,20 +27,20 @@ export interface Transaccion {
 }
 
 export const cuentasMock: Cuenta[] = [
-  { id: 1, nombre: 'Efectivo', icono: 'wallet-outline', color: '#22D3EE', saldo: 450.00 },
-  { id: 2, nombre: 'Banco', icono: 'business-outline', color: '#A78BFA', saldo: 2340.50 },
-  { id: 3, nombre: 'Ahorros', icono: 'cash-outline', color: '#34D399', saldo: 5000.00 },
+  { id: 1, nombre: 'Efectivo', icono: 'wallet-outline', color: colores.primario, saldo: 0 },
+  { id: 2, nombre: 'Banco', icono: 'business-outline', color: colores.acento, saldo: 0 },
+  { id: 3, nombre: 'Ahorros', icono: 'cash-outline', color: colores.verde, saldo: 0 },
 ];
 
 export const categoriasMock: Categoria[] = [
-  { id: 1, nombre: 'Nómina', icono: 'briefcase-outline', color: '#22D3EE', tipo: 'ingreso' },
-  { id: 2, nombre: 'Freelance', icono: 'code-slash-outline', color: '#A78BFA', tipo: 'ingreso' },
-  { id: 3, nombre: 'Alimentación', icono: 'cart-outline', color: '#F87171', tipo: 'gasto' },
+  { id: 1, nombre: 'Nómina', icono: 'briefcase-outline', color: colores.primario, tipo: 'ingreso' },
+  { id: 2, nombre: 'Freelance', icono: 'code-slash-outline', color: colores.acento, tipo: 'ingreso' },
+  { id: 3, nombre: 'Alimentación', icono: 'cart-outline', color: colores.rojo, tipo: 'gasto' },
   { id: 4, nombre: 'Transporte', icono: 'bus-outline', color: '#FBBF24', tipo: 'gasto' },
   { id: 5, nombre: 'Ocio', icono: 'game-controller-outline', color: '#F472B6', tipo: 'gasto' },
   { id: 6, nombre: 'Vivienda', icono: 'home-outline', color: '#60A5FA', tipo: 'gasto' },
-  { id: 7, nombre: 'Salud', icono: 'heart-outline', color: '#34D399', tipo: 'gasto' },
-  { id: 8, nombre: 'Inversiones', icono: 'trending-up-outline', color: '#A78BFA', tipo: 'ingreso' },
+  { id: 7, nombre: 'Salud', icono: 'heart-outline', color: colores.verde, tipo: 'gasto' },
+  { id: 8, nombre: 'Inversiones', icono: 'trending-up-outline', color: colores.acento, tipo: 'ingreso' },
 ];
 
 export const transaccionesMock: Transaccion[] = [

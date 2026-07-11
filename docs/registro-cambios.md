@@ -138,3 +138,50 @@
 
 [2026-07-11] ~ | src/screens/TransactionsScreen.tsx
 - Eliminado cast as { categoriaId?: number } | undefined. Ahora usa RouteProp<RootStackParamList, 'Transactions'> con tipado seguro.
+
+[2026-07-11] ~ | src/context/AppContext.tsx
+- Envuelto el objeto value del Provider en useMemo para evitar re-renders innecesarios en consumidores del contexto.
+
+[2026-07-11] ~ | src/data/mockData.ts
+- Reemplazados colores hardcoded (#22D3EE, #A78BFA, #34D399, #F87171) por tokens de colores (colores.primario, colores.acento, colores.verde, colores.rojo) donde coinciden con la paleta del proyecto.
+
+[2026-07-11] ~ | src/components/calendars/PeriodPicker.tsx
+- Eliminado año hardcoded 2026. Ahora usa constante ANIO_MINIMO calculada dinámicamente con new Date().getFullYear().
+
+[2026-07-11] ~ | src/components/calendars/MonthGrid.tsx
+- Corregido bug: las flechas de navegación de año llamaban a onSelect() propagando una selección de fecha no deseada.
+- Añadido estado local año con useState para que la navegación por año sea interna del componente.
+- Añadida función cambiarAño con useCallback para encapsular la lógica de incremento/decremento con clamping al año actual.
+
+[2026-07-11] - | src/utils/formatters.ts
+- Eliminada función formatearPorcentaje (dead code: nunca era importada por ningún componente).
+
+[2026-07-11] ~ | src/utils/formatters.ts
+- Simplificada función formatoSemana: eliminada rama if/else redundante donde ambas ramas devolvían el mismo string.
+
+[2026-07-11] + | src/components/calendars/YearNav.tsx
+- Creado componente compartido de navegación por año con flechas prev/next y clamping al año actual.
+- Extraído de la lógica duplicada en WeekPicker y MonthGrid.
+
+[2026-07-11] ~ | src/components/calendars/WeekPicker.tsx
+- Reemplazada navegación de año manual por componente YearNav compartido.
+- Eliminados estilos no usados (añoNav, añoTexto).
+
+[2026-07-11] ~ | src/components/calendars/MonthGrid.tsx
+- Reemplazada navegación de año manual por componente YearNav compartido.
+- Eliminados estilos no usados (header, titulo).
+
+[2026-07-11] ~ | src/data/mockData.ts
+- Eliminados saldos hardcodeados (450.00, 2340.50, 5000.00) de cuentasMock. Ahora todos valen 0 ya que el saldo real se computa dinámicamente en AppContext (cuentasConSaldo).
+
+[2026-07-11] + | src/constants/platformStyles.ts
+- Creado archivo de estilos compartidos para plataformas. Contiene scrollbarFlatList con estilos de scrollbar web centralizados.
+
+[2026-07-11] ~ | src/screens/TransactionsScreen.tsx
+- Reemplazado Platform.select inline de scrollbar por import compartido scrollbarFlatList.
+
+[2026-07-11] ~ | src/components/CategoryList.tsx
+- Reemplazado Platform.select inline de scrollbar por import compartido scrollbarFlatList.
+
+[2026-07-11] ~ | src/screens/HomeScreen.tsx
+- Extraído handler handleCuentaSelect con useCallback para el callback onSelect del AccountModal, evitando recreación de función en cada render.

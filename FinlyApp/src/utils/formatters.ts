@@ -3,10 +3,6 @@ export function formatearMoneda(cantidad: number, divisa = '€'): string {
   return `${signo}${Math.abs(cantidad).toFixed(2)} ${divisa}`;
 }
 
-export function formatearPorcentaje(valor: number): string {
-  return `${Math.round(valor * 100) / 100}%`;
-}
-
 export function formatearFecha(fecha: Date): string {
   const dia = fecha.getDate().toString().padStart(2, '0');
   const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
@@ -48,9 +44,6 @@ export function formatoSemana(fecha: Date, primerDia: 0 | 1 = 1): string {
   const mesInicio = obtenerNombreMesAbrev(inicio.getMonth() + 1);
   const diaFin = fin.getDate();
   const mesFin = obtenerNombreMesAbrev(fin.getMonth() + 1);
-  if (inicio.getMonth() === fin.getMonth()) {
-    return `${diaInicio} ${mesInicio} - ${diaFin} ${mesFin}`;
-  }
   return `${diaInicio} ${mesInicio} - ${diaFin} ${mesFin}`;
 }
 

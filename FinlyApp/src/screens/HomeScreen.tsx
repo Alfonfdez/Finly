@@ -6,6 +6,7 @@ import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colores } from '../constants/colors';
 import { useApp } from '../context/AppContext';
+import { Cuenta } from '../data/mockData';
 import { formatearMoneda } from '../utils/formatters';
 import { RootStackParamList, Periodo } from '../constants/types';
 import AccountModal from '../components/AccountModal';
@@ -50,6 +51,11 @@ export default function HomeScreen() {
     setFechaSeleccionada(d);
     setCalendarVisible(false);
   }, [setFechaSeleccionada]);
+
+  const handleCuentaSelect = useCallback((c: Cuenta) => {
+    seleccionarCuenta(c);
+    setModalVisible(false);
+  }, [seleccionarCuenta]);
 
   const handleRangoChange = useCallback((inicio: Date, fin: Date) => {
     const finDia = new Date(fin);
@@ -145,7 +151,7 @@ export default function HomeScreen() {
         <AccountModal
           visible={modalVisible}
           cuentas={cuentasConSaldo}
-          onSelect={(c) => { seleccionarCuenta(c); setModalVisible(false); }}
+          onSelect={handleCuentaSelect}
           onClose={() => setModalVisible(false)}
         />
       </View>

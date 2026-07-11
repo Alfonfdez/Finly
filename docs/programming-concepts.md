@@ -294,3 +294,16 @@ type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo'; // en PeriodTabs
 type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo'; // en calendars/types
 ```
 
+## Named Constants (Evitar Magic Numbers)
+**Definición:** Sustituir valores literales hardcodeados por constantes con nombre descriptivo.
+**Explicación:** Los "magic numbers" o "magic strings" son valores aparecidos de la nada en el código que dificultan la comprensión y el mantenimiento. Si el valor cambia, hay que buscarlo en todo el código. Al extraerlo a una constante con nombre, se entiende su propósito y se puede modificar en un solo lugar. En Finly, `new Date(2026, 0, 1)` se reemplazó por `new Date(ANIO_MINIMO, 0, 1)` donde `ANIO_MINIMO` es una constante calculada dinámicamente.
+**Ejemplo:**
+```tsx
+// ❌ Magic number: ¿por qué 2026?
+const fechaMinima = new Date(2026, 0, 1);
+
+// ✅ Named constant: el propósito es claro
+const ANIO_MINIMO = new Date().getFullYear();
+const fechaMinima = new Date(ANIO_MINIMO, 0, 1);
+```
+

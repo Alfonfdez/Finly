@@ -159,7 +159,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }).filter(cat => cat.total > 0);
   }, [categorias, tipoActivo, transaccionesFiltradas]);
 
-  const value: AppContextType = {
+  const value: AppContextType = useMemo(() => ({
     cuentaActiva,
     tipoActivo,
     periodoActivo,
@@ -180,7 +180,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     totalGastos,
     totalIngresosGlobal,
     totalGastosGlobal,
-  };
+  }), [
+    cuentaActiva, tipoActivo, periodoActivo, fechaSeleccionada, fechaPersonalizada,
+    cuentas, categorias, transacciones,
+    transaccionesFiltradas, categoriasActivas, cuentasConSaldo,
+    totalIngresos, totalGastos, totalIngresosGlobal, totalGastosGlobal,
+  ]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

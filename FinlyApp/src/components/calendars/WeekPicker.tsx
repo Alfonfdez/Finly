@@ -1,10 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { colores } from '../../constants/colors';
 import { obtenerNombreMes, inicioDeSemana } from '../../utils/formatters';
 import { CalendarBaseProps } from './types';
 import MonthNav from './MonthNav';
+import YearNav from './YearNav';
 
 interface Props extends CalendarBaseProps {
   primerDia?: 0 | 1;
@@ -44,34 +44,17 @@ export default function WeekPicker({ fecha, onSelect, primerDia = 1 }: Props) {
     return ia.getTime() === ib.getTime();
   }
 
+  const cambiarAño = useCallback((nuevoAño: number) => {
+    if (nuevoAño > hoy.getFullYear()) return;
+    setAño(nuevoAño);
+    if (nuevoAño === hoy.getFullYear() && mesActivo > hoy.getMonth() + 1) {
+      setMesActivo(hoy.getMonth() + 1);
+    }
+  }, [hoy, mesActivo]);
+
   return (
     <View style={styles.container}>
-      <View style={styles.añoNav}>
-        <TouchableOpacity onPress={() => {
-          const nuevoAño = año - 1;
-          setAño(nuevoAño);
-          if (nuevoAño === hoy.getFullYear() && mesActivo > hoy.getMonth() + 1) {
-            setMesActivo(hoy.getMonth() + 1);
-          }
-        }}>
-          <Ionicons name="chevron-back-outline" size={22} color={colores.texto} />
-        </TouchableOpacity>
-        <Text style={styles.añoTexto}>{año}</Text>
-        <TouchableOpacity
-          onPress={() => {
-            if (año < hoy.getFullYear()) {
-              setAño(año + 1);
-              if (año + 1 === hoy.getFullYear() && mesActivo > hoy.getMonth() + 1) {
-                setMesActivo(hoy.getMonth() + 1);
-              }
-            }
-          }}
-          style={{ opacity: año < hoy.getFullYear() ? 1 : 0.3 }}
-          disabled={año >= hoy.getFullYear()}
-        >
-          <Ionicons name="chevron-forward-outline" size={22} color={colores.texto} />
-        </TouchableOpacity>
-      </View>
+      <YearNav año={año} onChange={cambiarAño} />
 
       <MonthNav año={año} mes={mesActivo} onChange={(a, m) => { setAño(a); setMesActivo(m); }} />
 
@@ -99,8 +82,6 @@ export default function WeekPicker({ fecha, onSelect, primerDia = 1 }: Props) {
 
 const styles = StyleSheet.create({
   container: { padding: 8 },
-  añoNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-  añoTexto: { color: colores.texto, fontSize: 18, fontWeight: '700' },
   semanaRow: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8, marginBottom: 4, backgroundColor: colores.fondoAlto },
   semanaActiva: { backgroundColor: colores.primario },
   semanaFutura: { opacity: 0.3 },

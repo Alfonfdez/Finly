@@ -1,7 +1,8 @@
-import { View, Text, FlatList, StyleSheet, Platform } from 'react-native';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { colores } from '../constants/colors';
+import { scrollbarFlatList } from '../constants/platformStyles';
 import { useApp } from '../context/AppContext';
 import { formatearMoneda, formatearFecha } from '../utils/formatters';
 import { useMemo } from 'react';
@@ -27,10 +28,7 @@ export default function TransactionsScreen() {
       <View style={styles.container}>
         <Text style={styles.titulo}>Transacciones</Text>
         <FlatList
-          style={Platform.select({
-            web: { scrollbarWidth: 'thin', scrollbarColor: `${colores.primario}40 ${colores.fondoAlto}` } as any,
-            default: {},
-          })}
+          style={scrollbarFlatList}
           data={filtradas}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => {

@@ -1,6 +1,7 @@
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colores } from '../constants/colors';
+import { scrollbarFlatList } from '../constants/platformStyles';
 import { CategoriaConTotal } from '../constants/types';
 import { formatearMoneda } from '../utils/formatters';
 
@@ -14,10 +15,7 @@ interface Props {
 export default function CategoryList({ categorias, total, divisa = '€', onPress }: Props) {
   return (
     <FlatList
-      style={Platform.select({
-        web: { scrollbarWidth: 'thin', scrollbarColor: `${colores.primario}40 ${colores.fondoAlto}` } as any,
-        default: {},
-      })}
+      style={scrollbarFlatList}
       data={categorias}
       keyExtractor={(item) => item.id.toString()}
       renderItem={({ item }) => (
