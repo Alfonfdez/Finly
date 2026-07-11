@@ -1,4 +1,5 @@
 import { colores } from '../constants/colors';
+import { TipoTransaccion } from '../constants/types';
 
 export interface Cuenta {
   id: number;
@@ -13,14 +14,14 @@ export interface Categoria {
   nombre: string;
   icono: string;
   color: string;
-  tipo: 'gasto' | 'ingreso';
+  tipo: TipoTransaccion;
 }
 
 export interface Transaccion {
   id: number;
   cuentaId: number;
   categoriaId: number;
-  tipo: 'gasto' | 'ingreso';
+  tipo: TipoTransaccion;
   cantidad: number;
   descripcion: string;
   fecha: string;

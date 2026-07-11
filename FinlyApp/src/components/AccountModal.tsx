@@ -1,3 +1,4 @@
+import { ComponentProps } from 'react';
 import { Modal, View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colores } from '../constants/colors';
@@ -28,7 +29,7 @@ export default function AccountModal({ visible, cuentas, onSelect, onClose }: Pr
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <View style={[styles.icono, { backgroundColor: item.color + '30' }]}>
-                  <Ionicons name={item.icono as any} size={22} color={item.color} />
+                  <Ionicons name={item.icono as ComponentProps<typeof Ionicons>['name']} size={22} color={item.color} />
                 </View>
                 <View style={styles.info}>
                   <Text style={styles.nombre}>{item.nombre}</Text>

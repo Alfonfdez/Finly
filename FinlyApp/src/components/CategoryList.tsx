@@ -1,3 +1,4 @@
+import { ComponentProps } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colores } from '../constants/colors';
@@ -26,7 +27,7 @@ export default function CategoryList({ categorias, total, divisa = '€', onPres
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <View style={[styles.icono, { backgroundColor: item.color + '30' }]}>
-            <Ionicons name={item.icono as any} size={20} color={item.color} />
+            <Ionicons name={item.icono as ComponentProps<typeof Ionicons>['name']} size={20} color={item.color} />
           </View>
           <View style={styles.info}>
             <Text style={styles.nombre}>{item.nombre}</Text>

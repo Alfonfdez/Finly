@@ -1,4 +1,3 @@
-import { Categoria } from '../data/mockData';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 export type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo';
@@ -12,7 +11,15 @@ export interface DatoGrafico {
   porcentaje: number;
 }
 
-export type CategoriaConTotal = Categoria & { total: number; porcentaje: number };
+export type CategoriaConTotal = {
+  id: number;
+  nombre: string;
+  icono: string;
+  color: string;
+  tipo: TipoTransaccion;
+  total: number;
+  porcentaje: number;
+};
 
 export type RootStackParamList = {
   Home: undefined;

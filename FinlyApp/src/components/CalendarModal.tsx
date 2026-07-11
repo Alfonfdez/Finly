@@ -37,9 +37,6 @@ function textoSubtitulo(periodo: Periodo, fecha: Date): string {
       const mI = obtenerNombreMes(inicio.getMonth() + 1);
       const dF = fin.getDate();
       const mF = obtenerNombreMes(fin.getMonth() + 1);
-      if (inicio.getMonth() === fin.getMonth()) {
-        return `${dI} ${mI.slice(0, 3).toLowerCase()} - ${dF} ${mF.slice(0, 3).toLowerCase()} de ${fecha.getFullYear()}`;
-      }
       return `${dI} ${mI.slice(0, 3).toLowerCase()} - ${dF} ${mF.slice(0, 3).toLowerCase()} de ${fecha.getFullYear()}`;
     }
     case 'mes': return `${obtenerNombreMes(fecha.getMonth() + 1)} de ${fecha.getFullYear()}`;

@@ -10,6 +10,19 @@ interface Props extends CalendarBaseProps {
   primerDia?: 0 | 1;
 }
 
+function formatoSemanaCorto(inicio: Date, fin: Date): string {
+  const dInicio = inicio.getDate();
+  const mAbrev = (m: number) => obtenerNombreMes(m + 1).slice(0, 3).toLowerCase();
+  const dFin = fin.getDate();
+  return `${dInicio} ${mAbrev(inicio.getMonth())} - ${dFin} ${mAbrev(fin.getMonth())}`;
+}
+
+function mismaSemana(a: Date, b: Date, primerDia: 0 | 1): boolean {
+  const ia = inicioDeSemana(a, primerDia);
+  const ib = inicioDeSemana(b, primerDia);
+  return ia.getTime() === ib.getTime();
+}
+
 export default function WeekPicker({ fecha, onSelect, primerDia = 1 }: Props) {
   const hoy = new Date();
   const [año, setAño] = useState(fecha.getFullYear());
@@ -28,22 +41,6 @@ export default function WeekPicker({ fecha, onSelect, primerDia = 1 }: Props) {
     return result;
   }, [año, mesActivo, primerDia]);
 
-  function formatoSemanaCorto(inicio: Date, fin: Date): string {
-    const dInicio = inicio.getDate();
-    const mAbrev = (m: number) => obtenerNombreMes(m + 1).slice(0, 3).toLowerCase();
-    const dFin = fin.getDate();
-    if (inicio.getMonth() === fin.getMonth()) {
-      return `${dInicio} ${mAbrev(inicio.getMonth())} - ${dFin} ${mAbrev(fin.getMonth())}`;
-    }
-    return `${dInicio} ${mAbrev(inicio.getMonth())} - ${dFin} ${mAbrev(fin.getMonth())}`;
-  }
-
-  function mismaSemana(a: Date, b: Date): boolean {
-    const ia = inicioDeSemana(a, primerDia);
-    const ib = inicioDeSemana(b, primerDia);
-    return ia.getTime() === ib.getTime();
-  }
-
   const cambiarAño = useCallback((nuevoAño: number) => {
     if (nuevoAño > hoy.getFullYear()) return;
     setAño(nuevoAño);
@@ -61,7 +58,7 @@ export default function WeekPicker({ fecha, onSelect, primerDia = 1 }: Props) {
       <View>
         {semanas.map((sem, i) => {
           const futuro = sem.inicio > hoy;
-          const seleccionada = mismaSemana(sem.inicio, fecha);
+          const seleccionada = mismaSemana(sem.inicio, fecha, primerDia);
           return (
             <TouchableOpacity
               key={i}

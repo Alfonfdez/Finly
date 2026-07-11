@@ -307,3 +307,130 @@ const ANIO_MINIMO = new Date().getFullYear();
 const fechaMinima = new Date(ANIO_MINIMO, 0, 1);
 ```
 
+## useMemo
+**Definición:** Hook de React que memoriza el resultado de un cálculo y solo lo recalcula cuando cambian sus dependencias.
+**Explicación:** Cuando un valor derivado depende de varios estados, sin `useMemo` se recalcula en cada render. `useMemo` guarda el resultado y lo reutiliza si las dependencias no cambian. Es útil para objetos y arrays derivados que se pasan como props o se usan en comparaciones.
+**Ejemplo:**
+```tsx
+// ❌ Cada render crea un nuevo objeto → todos los useEffect dependientes se re-ejecutan
+const fechas = periodoActivo === 'periodo'
+  ? fechaPersonalizada
+  : calcularInicioFin(periodoActivo, fechaSeleccionada);
+
+// ✅ Solo se recalcula cuando cambian periodoActivo, fechaPersonalizada o fechaSeleccionada
+const fechas = useMemo(
+  () => periodoActivo === 'periodo'
+    ? fechaPersonalizada
+    : calcularInicioFin(periodoActivo, fechaSeleccionada),
+  [periodoActivo, fechaPersonalizada, fechaSeleccionada],
+);
+```
+
+## Spread Antes de .sort() (Evitar Mutación)
+**Definición:** Usar el spread operator `[...array]` antes de `.sort()` para no mutar el array original.
+**Explicación:** El método `.sort()` de JavaScript **ordena el array in-place**, es decir, lo modifica directamente. Si ese array es estado de React, mutar su referencia interna causa bugs (el componente no se re-renderiza o se comporta de forma impredecible). Al hacer `[...lista].sort(...)`, se crea una copia y se ordena esa copia, dejando el original intacto.
+**Ejemplo:**
+```tsx
+// ❌ Mutación in-place: modifica el array de estado directamente
+return lista.sort((a, b) => b.fecha - a.fecha);
+
+// ✅ Copia segura: no toca el array original
+return [...lista].sort((a, b) => b.fecha - a.fecha);
+```
+
+## Evitar Dependencias Circulares en Tipos
+**Definición:** Cuando dos archivos se importan mutuamente (A importa de B, B importa de A), se produce una dependencia circular que puede causar errores de runtime.
+**Explicación:** En TypeScript, si `types.ts` importa un tipo de `mockData.ts` y `mockData.ts` importa otro tipo de `types.ts`, se crea un bucle. La solución es romper la cadena definiendo los campos necesarios directamente en el archivo que los necesita, en lugar de importarlos. Esto es especialmente común con tipos derivados (`type A = B & { extra }`) donde se puede reescribir inline.
+**Ejemplo:**
+```tsx
+// ❌ types.ts importa de mockData.ts, y mockData.ts importa de types.ts → circular
+import { Categoria } from '../data/mockData';
+export type CategoriaConTotal = Categoria & { total: number; porcentaje: number };
+
+// ✅ Definir los campos inline rompe la dependencia circular
+export type CategoriaConTotal = {
+  id: number;
+  nombre: string;
+  icono: string;
+  color: string;
+  tipo: TipoTransaccion;
+  total: number;
+  porcentaje: number;
+};
+```
+
+## Código Muerto: Ramas Idénticas
+**Definición:** Bloques de código cuyas ramas alternativas producen exactamente el mismo resultado, haciendo la condición redundante.
+**Explicación:** Cuando un `if/else` retorna lo mismo en ambas ramas, la condición es inútil y el código completo puede simplificarse eliminando el `if/else` y dejando solo el retorno. Esto mejora la legibilidad y reduce la complejidad mantenido.
+**Ejemplo:**
+```tsx
+// ❌ Ambas ramas retornan lo mismo → el if es inútil
+if (inicio.getMonth() === fin.getMonth()) {
+  return `${dInicio} ${mAbrev(inicio.getMonth())} - ${dFin} ${mAbrev(fin.getMonth())}`;
+}
+return `${dInicio} ${mAbrev(inicio.getMonth())} - ${dFin} ${mAbrev(fin.getMonth())}`;
+
+// ✅ Simplificado: una sola línea
+return `${dInicio} ${mAbrev(inicio.getMonth())} - ${dFin} ${mAbrev(fin.getMonth())}`;
+```
+
+## ComponentProps (Tipado Seguro de Librerías)
+**Definición:** Tipo utility de React que extrae los props de un componente, permitiendo tipar valores dinámicos de librerías externas sin usar `as any`.
+**Explicación:** Cuando una librería como `@expo/vector-icons` define un tipo union para un prop (ej: los nombres de iconos), usar `as any` anula la verificación de tipos y oculta errores. `ComponentProps<typeof Component>['prop']` extrae el tipo exacto del prop desde la definición del componente, manteniendo la seguridad de tipos. Es la forma correcta de tipar valores que vienen de datos externos (mock data, base de datos) pero que se usan como props de componentes tipados.
+**Ejemplo:**
+```tsx
+// ❌ as any: pierde toda verificación de tipos
+<Ionicons name={item.icono as any} size={22} color={item.color} />
+
+// ✅ ComponentProps: tipado seguro contra la definición del componente
+import { ComponentProps } from 'react';
+<Ionicons name={item.icono as ComponentProps<typeof Ionicons>['name']} size={22} color={item.color} />
+```
+
+## Extracción de Funciones Puras Fuera del Componente
+**Definición:** Mover funciones que no dependen de hooks o estado del cuerpo del componente al scope del archivo, para que no se recreen en cada render.
+**Explicación:** Cuando una función se define dentro de un componente React, se crea una nueva referencia en cada render. Si esa función se pasa como prop o se usa en un `useMemo`, provoca re-renderizaciones innecesarias. Las funciones puras (que solo dependen de sus parámetros) pueden definirse fuera del componente y recibir los valores necesarios como argumentos. Esto las hace singleton: una sola referencia para toda la vida del componente.
+**Ejemplo:**
+```tsx
+// ❌ Se recrea en cada render
+function WeekPicker({ fecha, primerDia }) {
+  function mismaSemana(a, b) {
+    return inicioDeSemana(a, primerDia).getTime() === inicioDeSemana(b, primerDia).getTime();
+  }
+}
+
+// ✅ Definida fuera, referencia estable
+function mismaSemana(a: Date, b: Date, primerDia: 0 | 1): boolean {
+  return inicioDeSemana(a, primerDia).getTime() === inicioDeSemana(b, primerDia).getTime();
+}
+
+function WeekPicker({ fecha, primerDia }) {
+  // mismaSemana se llama con primerDia como argumento
+  const seleccionada = mismaSemana(sem.inicio, fecha, primerDia);
+}
+```
+
+## Single-Pass Reduce (Evitar Filter + Reduce)
+**Definición:** Reemplazar múltiples iteraciones (filter followed by reduce) por un único `reduce` que acumula directamente el resultado deseado.
+**Explicación:** El patrón `.filter(...).reduce(...)` itera el array dos veces: una para filtrar y otra para acumular. Con `.reduce()` se puede hacer ambas cosas en una sola pasada, reduciendo la complejidad de O(2n) a O(n). Esto es especialmente valioso cuando se procesan arrays grandes o cuando se necesita calcular múltiples métricas del mismo array. En lugar de N filtros × M cuentas, se hace un solo `reduce` que acumula un mapa de resultados.
+**Ejemplo:**
+```tsx
+// ❌ O(accounts × transactions): itera transacciones por cada cuenta
+cuentas.map(cuenta => {
+  const ingresos = transacciones
+    .filter(t => t.cuentaId === cuenta.id && t.tipo === 'ingreso')
+    .reduce((sum, t) => sum + t.cantidad, 0);
+  const gastos = transacciones
+    .filter(t => t.cuentaId === cuenta.id && t.tipo === 'gasto')
+    .reduce((sum, t) => sum + t.cantidad, 0);
+  return { ...cuenta, saldo: ingresos - gastos };
+});
+
+// ✅ O(transactions): un solo reduce acumula saldos por cuentaId
+const saldos = transacciones.reduce((acc, t) => {
+  acc[t.cuentaId] = (acc[t.cuentaId] ?? 0) + (t.tipo === 'ingreso' ? t.cantidad : -t.cantidad);
+  return acc;
+}, {});
+cuentas.map(cuenta => ({ ...cuenta, saldo: saldos[cuenta.id] ?? 0 }));
+```
+

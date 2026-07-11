@@ -1,8 +1,6 @@
 import { Text, View, StyleSheet } from 'react-native';
 import {
   createStaticNavigation,
-  useNavigation,
-  NavigationProp,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {

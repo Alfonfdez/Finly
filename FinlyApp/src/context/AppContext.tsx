@@ -81,9 +81,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [categorias] = useState<Categoria[]>(categoriasMock);
   const [transacciones] = useState<Transaccion[]>(transaccionesMock);
 
-  const fechas = periodoActivo === 'periodo'
-    ? fechaPersonalizada
-    : calcularInicioFin(periodoActivo, fechaSeleccionada);
+  const fechas = useMemo(
+    () => periodoActivo === 'periodo'
+      ? fechaPersonalizada
+      : calcularInicioFin(periodoActivo, fechaSeleccionada),
+    [periodoActivo, fechaPersonalizada, fechaSeleccionada],
+  );
 
   const filtrar = (
     lista: Transaccion[],
@@ -130,18 +133,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [transacciones, cuentaActiva.id],
   );
 
-  const cuentasConSaldo = useMemo(() =>
-    cuentas.map(cuenta => {
-      const ingresos = transacciones
-        .filter(t => t.cuentaId === cuenta.id && t.tipo === 'ingreso')
-        .reduce((sum, t) => sum + t.cantidad, 0);
-      const gastos = transacciones
-        .filter(t => t.cuentaId === cuenta.id && t.tipo === 'gasto')
-        .reduce((sum, t) => sum + t.cantidad, 0);
-      return { ...cuenta, saldo: ingresos - gastos };
-    }),
-    [cuentas, transacciones]
-  );
+  const cuentasConSaldo = useMemo(() => {
+    const saldos = transacciones.reduce<Record<number, number>>((acc, t) => {
+      acc[t.cuentaId] = (acc[t.cuentaId] ?? 0) + (t.tipo === 'ingreso' ? t.cantidad : -t.cantidad);
+      return acc;
+    }, {});
+    return cuentas.map(cuenta => ({ ...cuenta, saldo: saldos[cuenta.id] ?? 0 }));
+  }, [cuentas, transacciones]);
 
   const categoriasActivas = useMemo(() => {
     const categoriasDelTipo = categorias.filter(c => c.tipo === tipoActivo);

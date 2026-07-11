@@ -23,7 +23,7 @@ type Navigation = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 export default function HomeScreen() {
   const navigation = useNavigation<Navigation>();
   const {
-    cuentaActiva, tipoActivo, periodoActivo, fechaSeleccionada, cuentasConSaldo, categoriasActivas,
+    cuentaActiva, tipoActivo, periodoActivo, fechaSeleccionada, fechaPersonalizada, cuentasConSaldo, categoriasActivas,
     totalIngresos, totalGastos, totalIngresosGlobal, totalGastosGlobal, seleccionarCuenta, cambiarTipo,
     cambiarPeriodo, setFechaSeleccionada, setFechaPersonalizada,
   } = useApp();
@@ -31,8 +31,6 @@ export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [chartType, setChartType] = useState<ChartType>('donut');
   const [calendarVisible, setCalendarVisible] = useState(false);
-  const [inicioRango, setInicioRango] = useState(() => new Date(new Date().getFullYear(), 0, 1));
-  const [finRango, setFinRango] = useState(new Date());
 
   const total = totalIngresosGlobal - totalGastosGlobal;
   const totalActivo = tipoActivo === 'gasto' ? totalGastos : totalIngresos;
@@ -62,8 +60,6 @@ export default function HomeScreen() {
     finDia.setHours(23, 59, 59, 999);
     const inicioDia = new Date(inicio);
     inicioDia.setHours(0, 0, 0, 0);
-    setInicioRango(inicioDia);
-    setFinRango(finDia);
     setFechaPersonalizada({ inicio: inicioDia, fin: finDia });
   }, [setFechaPersonalizada]);
 
@@ -115,8 +111,8 @@ export default function HomeScreen() {
           fecha={fechaSeleccionada}
           onFechaChange={handleFechaChange}
           onRangoChange={handleRangoChange}
-          inicioRango={inicioRango}
-          finRango={finRango}
+          inicioRango={fechaPersonalizada.inicio}
+          finRango={fechaPersonalizada.fin}
           visible={calendarVisible}
           onAbrir={() => setCalendarVisible(true)}
           onClose={() => setCalendarVisible(false)}

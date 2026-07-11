@@ -20,7 +20,7 @@ export default function TransactionsScreen() {
     if (categoriaId) {
       lista = lista.filter(t => t.categoriaId === categoriaId);
     }
-    return lista.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+    return [...lista].sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
   }, [transacciones, categoriaId]);
 
   return (

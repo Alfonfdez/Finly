@@ -185,3 +185,39 @@
 
 [2026-07-11] ~ | src/screens/HomeScreen.tsx
 - Extraído handler handleCuentaSelect con useCallback para el callback onSelect del AccountModal, evitando recreación de función en cada render.
+
+[2026-07-11] ~ | src/screens/TransactionsScreen.tsx
+- Fix: Corregido bug de mutación in-place en .sort() usando [...lista].sort() para evitar mutar el array de estado.
+
+[2026-07-11] ~ | src/context/AppContext.tsx
+- Memoizado objeto fechas con useMemo para evitar recomputaciones innecesarias de transaccionesFiltradas, totalIngresos y totalGastos en cada render.
+
+[2026-07-11] ~ | src/constants/types.ts
+- Eliminado import circular de Categoria desde mockData.ts. CategoriaConTotal ahora define sus campos inline usando TipoTransaccion, evitando dependencia circular.
+
+[2026-07-11] ~ | src/data/mockData.ts
+- Importado y utilizado TipoTransaccion (SSOT) en interfaces Categoria y Transaccion, eliminando strings inline duplicados 'gasto' | 'ingreso'.
+
+[2026-07-11] ~ | src/components/CalendarModal.tsx
+- Eliminado código muerto: rama idéntica en textoSubtitulo('semana') que retornaba lo mismo con y sin condición.
+
+[2026-07-11] ~ | src/components/calendars/WeekPicker.tsx
+- Eliminado código muerto: rama idéntica en formatoSemanaCorto() que retornaba lo mismo con y sin condición.
+
+[2026-07-11] ~ | src/screens/HomeScreen.tsx
+- Eliminado estado local duplicado inicioRango/finRango que replicaba fechaPersonalizada del contexto. Ahora CalendarPicker recibe directamente fechaPersonalizada.inicio y fechaPersonalizada.fin.
+
+[2026-07-11] - | src/navigation/AppNavigator.tsx
+- Eliminados imports no utilizados: useNavigation y NavigationProp.
+
+[2026-07-11] ~ | src/components/AccountModal.tsx
+- Eliminado cast `as any` en Ionicons name. Ahora usa ComponentProps<typeof Ionicons>['name'] para tipado seguro.
+
+[2026-07-11] ~ | src/components/CategoryList.tsx
+- Eliminado cast `as any` en Ionicons name. Ahora usa ComponentProps<typeof Ionicons>['name'] para tipado seguro.
+
+[2026-07-11] ~ | src/components/calendars/WeekPicker.tsx
+- Extraído formatoSemanaCorto y mismaSemana fuera del cuerpo del componente para evitar recreación en cada render. mismaSemana ahora recibe primerDia como parámetro explícito.
+
+[2026-07-11] ~ | src/context/AppContext.tsx
+- Optimizado cuentasConSaldo de O(accounts × transactions) con filter+reduce a O(transactions) con un único reduce que acumula saldos por cuentaId.
