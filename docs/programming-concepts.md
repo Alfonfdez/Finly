@@ -57,6 +57,19 @@ interface Cuenta {
 }
 ```
 
+## Type Re-export (Re-exportación de tipos)
+**Definición:** Patrón de TypeScript para re-exportar tipos desde un archivo centralizado, manteniendo una única fuente de verdad.
+**Explicación:** Cuando varios archivos necesitan el mismo tipo, se define en un solo lugar y se re-exporta con `export type { X }`. Esto evita definiciones duplicadas y facilita el mantenimiento. En Finly, `calendars/types.ts` re-exporta `Periodo` desde `constants/types.ts`.
+**Ejemplo:**
+```tsx
+// constants/types.ts — definición original
+export type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo';
+
+// calendars/types.ts — re-exportación
+import { Periodo } from '../../constants/types';
+export type { Periodo };
+```
+
 # React
 
 ## Context API
@@ -122,6 +135,63 @@ const Drawer = createDrawerNavigator({
   screens: { Main: { screen: HomeStack } },
   screenOptions: { drawerStyle: { backgroundColor: '#1E293B' } },
 });
+```
+
+## DrawerActions
+**Definición:** Acciones reutilizables para controlar el Drawer Navigator desde cualquier pantalla, incluso si está anidada en otro navigator.
+**Explicación:** Cuando un Screen está dentro de un Stack que a su vez está dentro de un Drawer, `navigation.openDrawer()` no existe en el tipo del Stack. La solución es despachar la acción con `navigation.dispatch(DrawerActions.openDrawer())`. Es el patrón recomendado por React Navigation.
+**Ejemplo:**
+```tsx
+import { useNavigation, DrawerActions } from '@react-navigation/native';
+
+function MiPantalla() {
+  const navigation = useNavigation();
+  return (
+    <TouchableOpacity onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
+      <Text>Abrir menú</Text>
+    </TouchableOpacity>
+  );
+}
+```
+
+## NativeStackNavigationProp
+**Definición:** Tipo de TypeScript que define las operaciones de navegación disponibles en un NativeStackNavigator.
+**Explicación:** Se usa para tipar `useNavigation()` y obtener autocompletado de `navigation.navigate('ScreenName', params)`. Evita errores en tiempo de compilación al pasar nombres de pantalla o parámetros incorrectos.
+**Ejemplo:**
+```tsx
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+type RootStackParamList = {
+  Home: undefined;
+  AddTransaction: undefined;
+  Transactions: { categoriaId?: number } | undefined;
+};
+
+type Navigation = NativeStackNavigationProp<RootStackParamList, 'Home'>;
+
+function HomeScreen() {
+  const navigation = useNavigation<Navigation>();
+  navigation.navigate('Transactions', { categoriaId: 1 });
+}
+```
+
+## RouteProp
+**Definición:** Tipo de TypeScript que define la forma de los parámetros de ruta recibidos por un screen.
+**Explicación:** Se usa con `useRoute()` para acceder a los parámetros de navegación con tipado seguro. Elimina la necesidad de hacer casts con `as`. En Finly se usa en TransactionsScreen para recibir `categoriaId` y `tipo`.
+**Ejemplo:**
+```tsx
+import { useRoute, RouteProp } from '@react-navigation/native';
+
+type RootStackParamList = {
+  Transactions: { categoriaId?: number; tipo?: string } | undefined;
+};
+
+type TransactionsRouteProp = RouteProp<RootStackParamList, 'Transactions'>;
+
+function TransactionsScreen() {
+  const route = useRoute<TransactionsRouteProp>();
+  const categoriaId = route.params?.categoriaId;
+}
 ```
 
 # SVG y Gráficos
@@ -202,5 +272,25 @@ const data = JSON.parse(await AsyncStorage.getItem('@Finly/cuentas') ?? '[]');
 <SafeAreaView style={{ flex: 1 }}>
   <Text>Contenido seguro</Text>
 </SafeAreaView>
+```
+
+# Principios de diseño
+
+## Single Source of Truth (SSOT)
+**Definición:** Principio de diseño que establece que cada pieza de información debe tener una única fuente authoritative en el sistema.
+**Explicación:** Evita inconsistencias causadas por datos duplicados en múltiples ubicaciones. Cuando un valor cambia, solo se modifica en un sitio. En Finly, los tipos como `Periodo` se definen una sola vez en `constants/types.ts` y se importan desde allí en todos los archivos que los necesitan, en lugar de redefinirlos en cada componente.
+**Ejemplo:**
+```tsx
+// ✅ SSOT: un solo archivo define el tipo
+// constants/types.ts
+export type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo';
+
+// componentes importan desde la fuente única
+import { Periodo } from '../constants/types';
+
+// ❌ Sin SSOT: el mismo tipo definido en 3 archivos diferentes
+type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo'; // en AppContext
+type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo'; // en PeriodTabs
+type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo'; // en calendars/types
 ```
 

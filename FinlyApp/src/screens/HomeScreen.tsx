@@ -2,10 +2,12 @@ import { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, DrawerActions } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colores } from '../constants/colors';
 import { useApp } from '../context/AppContext';
 import { formatearMoneda } from '../utils/formatters';
+import { RootStackParamList, Periodo } from '../constants/types';
 import AccountModal from '../components/AccountModal';
 import TypeTabs from '../components/TypeTabs';
 import PeriodTabs from '../components/PeriodTabs';
@@ -15,9 +17,10 @@ import BarChart from '../components/BarChart';
 import CategoryList from '../components/CategoryList';
 
 type ChartType = 'donut' | 'bar';
+type Navigation = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 export default function HomeScreen() {
-  const navigation: any = useNavigation();
+  const navigation = useNavigation<Navigation>();
   const {
     cuentaActiva, tipoActivo, periodoActivo, fechaSeleccionada, cuentasConSaldo, categoriasActivas,
     totalIngresos, totalGastos, totalIngresosGlobal, totalGastosGlobal, seleccionarCuenta, cambiarTipo,
@@ -34,11 +37,11 @@ export default function HomeScreen() {
   const totalActivo = tipoActivo === 'gasto' ? totalGastos : totalIngresos;
   const colorTotal = total >= 0 ? colores.verde : colores.rojo;
 
-  const handleCategoriaPress = useCallback((categoria: any) => {
+  const handleCategoriaPress = useCallback((categoria: { id: number }) => {
     navigation.navigate('Transactions', { categoriaId: categoria.id, tipo: tipoActivo });
   }, [navigation, tipoActivo]);
 
-  const handlePeriodChange = useCallback((periodo: any) => {
+  const handlePeriodChange = useCallback((periodo: Periodo) => {
     cambiarPeriodo(periodo);
     if (periodo === 'periodo') setCalendarVisible(true);
   }, [cambiarPeriodo]);
@@ -63,7 +66,7 @@ export default function HomeScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity
-            onPress={() => navigation.openDrawer()}
+            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
             accessibilityLabel="Abrir menú"
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >

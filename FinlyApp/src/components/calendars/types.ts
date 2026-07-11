@@ -1,4 +1,6 @@
-export type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo';
+import { Periodo } from '../../constants/types';
+
+export type { Periodo };
 
 export interface CalendarBaseProps {
   fecha: Date;

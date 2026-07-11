@@ -1,7 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colores } from '../constants/colors';
-
-type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo';
+import { Periodo } from '../constants/types';
 
 interface Props {
   activo: Periodo;

@@ -1,9 +1,10 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colores } from '../constants/colors';
+import { TipoTransaccion } from '../constants/types';
 
 interface Props {
-  activo: 'gasto' | 'ingreso';
-  onChange: (tipo: 'gasto' | 'ingreso') => void;
+  activo: TipoTransaccion;
+  onChange: (tipo: TipoTransaccion) => void;
 }
 
 export default function TypeTabs({ activo, onChange }: Props) {

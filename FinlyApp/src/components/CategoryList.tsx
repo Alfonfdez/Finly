@@ -1,22 +1,14 @@
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colores } from '../constants/colors';
+import { CategoriaConTotal } from '../constants/types';
 import { formatearMoneda } from '../utils/formatters';
 
-interface CategoriaItem {
-  id: number;
-  nombre: string;
-  icono: string;
-  color: string;
-  total: number;
-  porcentaje: number;
-}
-
 interface Props {
-  categorias: CategoriaItem[];
+  categorias: CategoriaConTotal[];
   total: number;
   divisa?: string;
-  onPress?: (categoria: CategoriaItem) => void;
+  onPress?: (categoria: CategoriaConTotal) => void;
 }
 
 export default function CategoryList({ categorias, total, divisa = '€', onPress }: Props) {

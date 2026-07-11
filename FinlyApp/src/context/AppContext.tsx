@@ -1,8 +1,6 @@
 import { createContext, useContext, useState, useMemo, ReactNode } from 'react';
 import { Cuenta, Categoria, Transaccion, cuentasMock, categoriasMock, transaccionesMock } from '../data/mockData';
-
-type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo';
-type TipoTransaccion = 'gasto' | 'ingreso';
+import { Periodo, TipoTransaccion, CategoriaConTotal } from '../constants/types';
 
 interface AppState {
   cuentaActiva: Cuenta;
@@ -22,7 +20,7 @@ interface AppContextType extends AppState {
   setFechaSeleccionada: (fecha: Date) => void;
   setFechaPersonalizada: (fechas: { inicio: Date; fin: Date }) => void;
   transaccionesFiltradas: Transaccion[];
-  categoriasActivas: (Categoria & { total: number; porcentaje: number })[];
+  categoriasActivas: CategoriaConTotal[];
   cuentasConSaldo: Cuenta[];
   totalIngresos: number;
   totalGastos: number;
@@ -87,45 +85,49 @@ export function AppProvider({ children }: { children: ReactNode }) {
     ? fechaPersonalizada
     : calcularInicioFin(periodoActivo, fechaSeleccionada);
 
-  const transaccionesFiltradas = useMemo(() =>
-    transacciones.filter(t => {
-      const fechaT = new Date(t.fecha);
-      return t.cuentaId === cuentaActiva.id
-        && t.tipo === tipoActivo
-        && fechaT >= fechas.inicio
-        && fechaT <= fechas.fin;
-    }),
-    [transacciones, cuentaActiva.id, tipoActivo, fechas]
+  const filtrar = (
+    lista: Transaccion[],
+    cuentaId: number,
+    tipo?: TipoTransaccion,
+    rango?: { inicio: Date; fin: Date },
+  ) =>
+    lista.filter(t => {
+      if (t.cuentaId !== cuentaId) return false;
+      if (tipo && t.tipo !== tipo) return false;
+      if (rango) {
+        const f = new Date(t.fecha);
+        if (f < rango.inicio || f > rango.fin) return false;
+      }
+      return true;
+    });
+
+  const transaccionesFiltradas = useMemo(
+    () => filtrar(transacciones, cuentaActiva.id, tipoActivo, fechas),
+    [transacciones, cuentaActiva.id, tipoActivo, fechas],
   );
 
-  const totalIngresos = useMemo(() =>
-    transacciones
-      .filter(t => t.cuentaId === cuentaActiva.id && t.tipo === 'ingreso'
-        && new Date(t.fecha) >= fechas.inicio && new Date(t.fecha) <= fechas.fin)
+  const totalIngresos = useMemo(
+    () => filtrar(transacciones, cuentaActiva.id, 'ingreso', fechas)
       .reduce((sum, t) => sum + t.cantidad, 0),
-    [transacciones, cuentaActiva.id, fechas]
+    [transacciones, cuentaActiva.id, fechas],
   );
 
-  const totalGastos = useMemo(() =>
-    transacciones
-      .filter(t => t.cuentaId === cuentaActiva.id && t.tipo === 'gasto'
-        && new Date(t.fecha) >= fechas.inicio && new Date(t.fecha) <= fechas.fin)
+  const totalGastos = useMemo(
+    () => filtrar(transacciones, cuentaActiva.id, 'gasto', fechas)
       .reduce((sum, t) => sum + t.cantidad, 0),
-    [transacciones, cuentaActiva.id, fechas]
+    [transacciones, cuentaActiva.id, fechas],
   );
 
-  const totalIngresosGlobal = useMemo(() =>
-    transacciones
-      .filter(t => t.cuentaId === cuentaActiva.id && t.tipo === 'ingreso')
+  const totalIngresosGlobal = useMemo(
+    () => filtrar(transacciones, cuentaActiva.id, 'ingreso')
       .reduce((sum, t) => sum + t.cantidad, 0),
-    [transacciones, cuentaActiva.id]
+    [transacciones, cuentaActiva.id],
   );
 
-  const totalGastosGlobal = useMemo(() =>
-    transacciones
-      .filter(t => t.cuentaId === cuentaActiva.id && t.tipo === 'gasto')
+  const totalGastosGlobal = useMemo(
+    () => filtrar(transacciones, cuentaActiva.id, 'gasto')
       .reduce((sum, t) => sum + t.cantidad, 0),
-    [transacciones, cuentaActiva.id]
+    [transacciones, cuentaActiva.id],
   );
 
   const cuentasConSaldo = useMemo(() =>

@@ -2,6 +2,7 @@ import { Text, View, StyleSheet } from 'react-native';
 import {
   createStaticNavigation,
   useNavigation,
+  NavigationProp,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
@@ -9,11 +10,13 @@ import {
   DrawerContentScrollView,
   DrawerItemList,
   DrawerItem,
+  DrawerContentComponentProps,
 } from '@react-navigation/drawer';
 import HomeScreen from '../screens/HomeScreen';
 import AddTransactionScreen from '../screens/AddTransactionScreen';
 import TransactionsScreen from '../screens/TransactionsScreen';
 import { colores } from '../constants/colors';
+import { RootStackParamList } from '../constants/types';
 
 const HomeStack = createNativeStackNavigator({
   screens: {
@@ -23,7 +26,7 @@ const HomeStack = createNativeStackNavigator({
   },
 });
 
-function CustomDrawerContent(props: any) {
+function CustomDrawerContent(props: DrawerContentComponentProps) {
   return (
     <DrawerContentScrollView {...props} style={styles.drawerScroll}>
       <View style={styles.drawerHeader}>

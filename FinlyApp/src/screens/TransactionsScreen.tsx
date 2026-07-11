@@ -1,16 +1,18 @@
 import { View, Text, FlatList, StyleSheet, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, RouteProp } from '@react-navigation/native';
 import { colores } from '../constants/colors';
 import { useApp } from '../context/AppContext';
 import { formatearMoneda, formatearFecha } from '../utils/formatters';
 import { useMemo } from 'react';
+import { RootStackParamList } from '../constants/types';
+
+type TransactionsRouteProp = RouteProp<RootStackParamList, 'Transactions'>;
 
 export default function TransactionsScreen() {
-  const route = useRoute();
+  const route = useRoute<TransactionsRouteProp>();
   const { transacciones, categorias } = useApp();
-  const params = route.params as { categoriaId?: number } | undefined;
-  const categoriaId = params?.categoriaId;
+  const categoriaId = route.params?.categoriaId;
 
   const filtradas = useMemo(() => {
     let lista = transacciones;

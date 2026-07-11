@@ -1,16 +1,10 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { colores } from '../constants/colors';
+import { DatoGrafico } from '../constants/types';
 import { formatearMoneda } from '../utils/formatters';
 
-interface Dato {
-  nombre: string;
-  color: string;
-  total: number;
-  porcentaje: number;
-}
-
 interface Props {
-  datos: Dato[];
+  datos: DatoGrafico[];
   total?: number;
   divisa?: string;
 }

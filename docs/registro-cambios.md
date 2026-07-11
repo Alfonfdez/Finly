@@ -96,3 +96,45 @@
 [2026-07-10] ~ | src/components/calendars/DayPicker.tsx
 - Mejorada visualización de rango en PeriodPicker: diaRango cambia de borderRadius:0 a borderRadius:4 para esquemas más uniformes.
 - Añadido !esSeleccionado a condiciones esInicio/esFin para evitar que diaRangoBorde opaque el color de selección del día inicio/fin.
+
+[2026-07-11] + | src/constants/types.ts
+- Creado archivo centralizado de tipos compartidos: Periodo, TipoTransaccion, DatoGrafico, CategoriaConTotal, RootStackParamList, HomeScreenProps, TransactionsScreenProps.
+- Single Source of Truth para todos los tipos reutilizados en el proyecto.
+
+[2026-07-11] ~ | src/constants/types.ts
+- Añadidos tipos de navegación: RootStackParamList, HomeScreenProps, TransactionsScreenProps usando NativeStackScreenProps de React Navigation v7.
+
+[2026-07-11] ~ | src/components/calendars/types.ts
+- Eliminada definición local de Periodo. Ahora re-exporta desde src/constants/types.ts.
+
+[2026-07-11] ~ | src/components/PeriodTabs.tsx
+- Eliminada definición local de Periodo. Importa desde src/constants/types.ts.
+
+[2026-07-11] ~ | src/components/TypeTabs.tsx
+- Eliminada definición inline 'gasto' | 'ingreso'. Importa TipoTransaccion desde src/constants/types.ts.
+
+[2026-07-11] ~ | src/components/BarChart.tsx
+- Eliminada interfaz local Dato. Importa DatoGrafico desde src/constants/types.ts.
+
+[2026-07-11] ~ | src/components/DonutChart.tsx
+- Eliminada interfaz local Dato. Importa DatoGrafico desde src/constants/types.ts.
+
+[2026-07-11] ~ | src/components/CategoryList.tsx
+- Eliminada interfaz local CategoriaItem. Importa CategoriaConTotal desde src/constants/types.ts.
+
+[2026-07-11] ~ | src/context/AppContext.tsx
+- Importa Periodo, TipoTransaccion y CategoriaConTotal desde src/constants/types.ts (eliminadas definiciones locales duplicadas).
+- Extraída función filtrar() para centralizar la lógica de filtrado de transacciones por cuentaId, tipo y rango de fechas.
+- Reemplazados 5 bloques useMemo duplicados de filtrado por llamadas a filtrar().
+
+[2026-07-11] ~ | src/navigation/AppNavigator.tsx
+- Eliminado tipo any de props en CustomDrawerContent. Ahora usa DrawerContentComponentProps de @react-navigation/drawer.
+- Importado RootStackParamList para consistencia de tipos de navegación.
+
+[2026-07-11] ~ | src/screens/HomeScreen.tsx
+- Eliminado tipo any de useNavigation. Ahora usa NativeStackNavigationProp<RootStackParamList, 'Home'>.
+- Eliminado tipo any de parámetros en handleCategoriaPress y handlePeriodChange.
+- Reemplazado navigation.openDrawer() por navigation.dispatch(DrawerActions.openDrawer()) (patrón recomendado para acceder al Drawer desde un Stack anidado).
+
+[2026-07-11] ~ | src/screens/TransactionsScreen.tsx
+- Eliminado cast as { categoriaId?: number } | undefined. Ahora usa RouteProp<RootStackParamList, 'Transactions'> con tipado seguro.
