@@ -320,3 +320,7 @@
 
 [2026-07-12] ~ | spec/features/004-pagina-transaccion/3-tasks.md
 - Marcadas tareas T1-T21, T24-T26 como completadas. Pendientes T22-T23 (persistencia) y T27 (verificación).
+
+[2026-07-12] + | spec/features/005-pagina-anadir-categoria/
+- Creada spec completa para la página de añadir categoría: 1-spec.md (requisitos funcionales), 2-plan.md (arquitectura y componentes), 3-tasks.md (14 tareas en 5 fases).
+- Incluye: barra de búsqueda con filtrado por caracteres contenidos, grid 4×N de categorías, selección de categoría y navegación de vuelta, botón "Crear" (TODO).
