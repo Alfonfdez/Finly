@@ -16,9 +16,10 @@ interface Props {
   categoriaSeleccionada: number | null;
   onSelect: (id: number) => void;
   onAddMore: () => void;
+  showAddMore?: boolean;
 }
 
-export default function CategoryGrid({ categorias, categoriaSeleccionada, onSelect, onAddMore }: Props) {
+export default function CategoryGrid({ categorias, categoriaSeleccionada, onSelect, onAddMore, showAddMore = true }: Props) {
   const { coloresActivos: c } = useConfig();
   const fs = useFontSize();
   const texto = t();
@@ -76,7 +77,7 @@ export default function CategoryGrid({ categorias, categoriaSeleccionada, onSele
       </Text>
       <View style={styles.grid}>
         {categorias.map((cat, index) => renderCategoria(cat, index))}
-        {renderAddMore()}
+        {showAddMore && renderAddMore()}
       </View>
     </View>
   );

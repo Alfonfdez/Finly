@@ -23,7 +23,7 @@ export type CategoriaConTotal = {
 
 export type RootStackParamList = {
   Home: undefined;
-  AddTransaction: { categoriaId?: number } | undefined;
+  AddTransaction: { categoriaId?: number; tipo?: TipoTransaccion } | undefined;
   AddCategory: { tipo: TipoTransaccion };
   Transactions: { categoriaId?: number; tipo?: TipoTransaccion } | undefined;
   Settings: undefined;

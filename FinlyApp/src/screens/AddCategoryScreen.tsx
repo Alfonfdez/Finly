@@ -58,7 +58,7 @@ export default function AddCategoryScreen() {
   }, [categoriasPorTipo, textoBusqueda]);
 
   const handleSelectCategoria = (categoriaId: number) => {
-    navigation.navigate('AddTransaction', { categoriaId });
+    navigation.navigate('AddTransaction', { categoriaId, tipo });
   };
 
   const renderCategoria = (cat: typeof categorias[0]) => {

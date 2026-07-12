@@ -353,3 +353,35 @@
 
 [2026-07-12] ~ | spec/features/004-pagina-transaccion/1-spec.md
 - Actualizada sección "Campo de cantidad" para incluir el símbolo de divisa a la derecha del input.
+
+[2026-07-12] ~ | src/i18n/en.ts, es.ts, ca.ts
+- Añadidas claves i18n para 15 nuevas categorías: cat_travel, cat_videogame, cat_game, cat_restaurant, cat_education, cat_family, cat_shopping, cat_clothing, cat_exercise, cat_others, cat_entertainment, cat_gifts, cat_gift, cat_other, cat_interests.
+
+[2026-07-12] ~ | src/data/mockData.ts
+- Añadidas 15 nuevas categorías (12 gastos + 3 ingresos) con iconos y colores únicos.
+
+[2026-07-12] ~ | src/i18n/index.ts
+- Actualizado mapping CATEGORIA_I18N_KEYS con los 23 IDs de categorías.
+
+[2026-07-12] ~ | src/database/migrations/002_seed.ts
+- Añadidas 15 nuevas categorías al seed data de SQLite.
+
+[2026-07-12] ~ | src/database/webStorage.ts
+- Añadidas 15 nuevas categorías al seed data de localStorage (web).
+
+[2026-07-12] ~ | src/screens/AddTransactionScreen.tsx
+- Limitado grid de categorías a 7 ítems + botón "Más" (cumple spec: 4×2 = 8 posiciones).
+
+[2026-07-12] + | src/database/migrations/004_nuevas_categorias.ts
+- Creada migración 004 para añadir 15 nuevas categorías (12 gastos + 3 ingresos) con INSERT OR IGNORE.
+
+[2026-07-12] ~ | src/database/database.ts
+- Actualizada DATABASE_VERSION a 4 y añadida llamada a seed004.
+
+[2026-07-12] ~ | src/database/webStorage.ts
+- Añadida función migrateWebCategories para añadir las 15 nuevas categorías a usuarios existentes en web.
+
+[2026-07-12] ~ | src/data/mockData.ts, src/database/migrations/002_seed.ts, src/database/migrations/004_nuevas_categorias.ts, src/database/webStorage.ts
+- Cambiado icono de "Ocio" de game-controller-outline a musical-notes-outline.
+- Cambiado icono de "Videojuego" de gamepad-outline a game-controller-outline.
+- Cambiado icono de "Intereses" de percent-outline a wallet-outline.

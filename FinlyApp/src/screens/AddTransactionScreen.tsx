@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -27,6 +27,10 @@ interface Etiqueta {
   nombre: string;
 }
 
+const GRID_ROWS = 2;
+const GRID_COLS = 4;
+const MAX_VISIBLE_CATEGORIES = GRID_ROWS * GRID_COLS - 1;
+
 export default function AddTransactionScreen() {
   const { coloresActivos: c, config } = useConfig();
   const { tipoActivo, periodoActivo, fechaPersonalizada, fechaSeleccionada, cuentas, categorias, cuentasConSaldo, cuentaActiva } = useApp();
@@ -39,6 +43,7 @@ export default function AddTransactionScreen() {
   const [cantidad, setCantidad] = useState('');
   const [cuentaId, setCuentaId] = useState(cuentaActiva?.id ?? 1);
   const [categoriaId, setCategoriaId] = useState<number | null>(null);
+  const [reorderedCategory, setReorderedCategory] = useState<number | null>(null);
   const diaInicial = (() => {
     if (periodoActivo === 'periodo') {
       const esUnDia = esMismoDia(fechaPersonalizada.inicio, fechaPersonalizada.fin);
@@ -48,11 +53,33 @@ export default function AddTransactionScreen() {
   })();
   const [dia, setDia] = useState(diaInicial);
 
+  const prevTipo = useRef(tipo);
+
   useEffect(() => {
+    if (route.params?.tipo) {
+      setTipo(route.params.tipo);
+    }
     if (route.params?.categoriaId) {
       setCategoriaId(route.params.categoriaId);
+      const targetTipo = route.params?.tipo ?? tipo;
+      const allByType = categorias.filter(c => c.tipo === targetTipo);
+      const isVisible = allByType.slice(0, MAX_VISIBLE_CATEGORIES).some(c => c.id === route.params!.categoriaId);
+      if (!isVisible) {
+        setReorderedCategory(route.params.categoriaId);
+      } else {
+        setReorderedCategory(null);
+      }
     }
-  }, [route.params?.categoriaId]);
+  }, [route.params?.categoriaId, route.params?.tipo]);
+
+  useEffect(() => {
+    if (prevTipo.current !== tipo) {
+      prevTipo.current = tipo;
+      setCategoriaId(null);
+      setReorderedCategory(null);
+    }
+  }, [tipo]);
+
   const [etiquetasSeleccionadas, setEtiquetasSeleccionadas] = useState<number[]>([]);
   const [comentario, setComentario] = useState('');
   const [fotoUri, setFotoUri] = useState<string | null>(null);
@@ -119,8 +146,21 @@ export default function AddTransactionScreen() {
     });
   };
 
-  const categoriasFiltradas = categorias.filter(c => c.tipo === tipo);
-  const cuentaSeleccionada = cuentas.find(c => c.id === cuentaId);
+  const categoriesByType = categorias.filter(c => c.tipo === tipo);
+  const totalByType = categoriesByType.length;
+  const hasMore = totalByType > MAX_VISIBLE_CATEGORIES;
+
+  const visibleCategories = useMemo(() => {
+    if (reorderedCategory) {
+      const selected = categoriesByType.find(c => c.id === reorderedCategory);
+      if (selected) {
+        return [selected, ...categoriesByType.filter(c => c.id !== reorderedCategory)].slice(0, MAX_VISIBLE_CATEGORIES);
+      }
+    }
+    return categoriesByType.slice(0, MAX_VISIBLE_CATEGORIES);
+  }, [categoriesByType, reorderedCategory]);
+
+  const selectedAccount = cuentas.find(c => c.id === cuentaId);
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: c.fondo }]}>
@@ -161,15 +201,16 @@ export default function AddTransactionScreen() {
             {texto.add_account}
           </Text>
           <Text style={[styles.cuentaNombre, { color: c.texto, fontSize: fs(15) }]}>
-            {cuentaSeleccionada?.nombre ?? ''}
+            {selectedAccount?.nombre ?? ''}
           </Text>
         </TouchableOpacity>
 
         <CategoryGrid
-          categorias={categoriasFiltradas}
+          categorias={visibleCategories}
           categoriaSeleccionada={categoriaId}
           onSelect={setCategoriaId}
           onAddMore={() => navigation.navigate('AddCategory', { tipo })}
+          showAddMore={hasMore}
         />
 
         <DaySelector

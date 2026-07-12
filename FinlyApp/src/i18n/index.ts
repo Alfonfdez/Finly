@@ -24,6 +24,21 @@ const CATEGORIA_I18N_KEYS: Record<number, keyof Idioma> = {
   6: 'cat_housing',
   7: 'cat_health',
   8: 'cat_investments',
+  9: 'cat_travel',
+  10: 'cat_videogame',
+  11: 'cat_game',
+  12: 'cat_restaurant',
+  13: 'cat_education',
+  14: 'cat_family',
+  15: 'cat_shopping',
+  16: 'cat_clothing',
+  17: 'cat_exercise',
+  18: 'cat_others',
+  19: 'cat_entertainment',
+  20: 'cat_gifts',
+  21: 'cat_gift',
+  22: 'cat_other',
+  23: 'cat_interests',
 };
 
 export function obtenerNombreCategoria(categoriaId: number): string {

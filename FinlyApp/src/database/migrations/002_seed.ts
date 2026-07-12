@@ -38,7 +38,7 @@ export async function seed002(db: SQLiteDatabase) {
     );
     await db.runAsync(
       `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
-      5, 1, 'Ocio', 'game-controller-outline', '#F472B6', 'gasto'
+      5, 1, 'Ocio', 'musical-notes-outline', '#F472B6', 'gasto'
     );
     await db.runAsync(
       `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
@@ -51,6 +51,66 @@ export async function seed002(db: SQLiteDatabase) {
     await db.runAsync(
       `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
       8, 1, 'Inversiones', 'trending-up-outline', '#A78BFA', 'ingreso'
+    );
+    await db.runAsync(
+      `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
+      9, 1, 'Viaje', 'airplane-outline', '#38BDF8', 'gasto'
+    );
+    await db.runAsync(
+      `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
+      10, 1, 'Videojuego', 'game-controller-outline', '#A78BFA', 'gasto'
+    );
+    await db.runAsync(
+      `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
+      11, 1, 'Juego', 'dice-outline', '#FB923C', 'gasto'
+    );
+    await db.runAsync(
+      `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
+      12, 1, 'Restaurante', 'restaurant-outline', '#F87171', 'gasto'
+    );
+    await db.runAsync(
+      `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
+      13, 1, 'Educación', 'school-outline', '#34D399', 'gasto'
+    );
+    await db.runAsync(
+      `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
+      14, 1, 'Familia', 'people-outline', '#F472B6', 'gasto'
+    );
+    await db.runAsync(
+      `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
+      15, 1, 'Compras', 'bag-outline', '#FBBF24', 'gasto'
+    );
+    await db.runAsync(
+      `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
+      16, 1, 'Ropa', 'shirt-outline', '#C084FC', 'gasto'
+    );
+    await db.runAsync(
+      `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
+      17, 1, 'Ejercicio', 'fitness-outline', '#22D3EE', 'gasto'
+    );
+    await db.runAsync(
+      `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
+      18, 1, 'Otros', 'ellipsis-horizontal-outline', '#94A3B8', 'gasto'
+    );
+    await db.runAsync(
+      `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
+      19, 1, 'Entretenimiento', 'film-outline', '#E879F9', 'gasto'
+    );
+    await db.runAsync(
+      `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
+      20, 1, 'Regalos', 'gift-outline', '#FB7185', 'gasto'
+    );
+    await db.runAsync(
+      `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
+      21, 1, 'Regalo', 'gift-outline', '#FB7185', 'ingreso'
+    );
+    await db.runAsync(
+      `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
+      22, 1, 'Otro', 'ellipsis-horizontal-outline', '#94A3B8', 'ingreso'
+    );
+    await db.runAsync(
+      `INSERT INTO categorias (id, usuario_id, nombre, icono, color, tipo) VALUES (?, ?, ?, ?, ?, ?)`,
+      23, 1, 'Intereses', 'wallet-outline', '#4ADE80', 'ingreso'
     );
 
     await db.runAsync(

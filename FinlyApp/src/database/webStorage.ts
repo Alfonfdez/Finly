@@ -29,6 +29,60 @@ export async function initWebStorage(): Promise<void> {
   const usuarios = getStore<Usuario>('usuarios');
   if (usuarios.length === 0) {
     seedWebData();
+  } else {
+    migrateWebCategories();
+  }
+}
+
+function migrateWebCategories(): void {
+  const categorias = getStore<Categoria>('categorias');
+  const existingIds = new Set(categorias.map(c => c.id));
+
+  const invalidIcons: Record<string, string> = {
+    'gamepad-outline': 'game-controller-outline',
+  };
+
+  const iconById: Record<number, string> = {
+    5: 'musical-notes-outline',
+    10: 'game-controller-outline',
+    23: 'wallet-outline',
+  };
+
+  let changed = false;
+  const updated = categorias.map(c => {
+    let icono = c.icono;
+    if (iconById[c.id]) icono = iconById[c.id];
+    if (invalidIcons[icono]) icono = invalidIcons[icono];
+    if (icono !== c.icono) changed = true;
+    return { ...c, icono };
+  });
+
+  if (changed) {
+    setStore('categorias', updated);
+  }
+
+  const newCategories: Categoria[] = [
+    { id: 9, usuario_id: 1, nombre: 'Viaje', icono: 'airplane-outline', color: '#38BDF8', tipo: 'gasto', created_at: now() },
+    { id: 10, usuario_id: 1, nombre: 'Videojuego', icono: 'game-controller-outline', color: '#A78BFA', tipo: 'gasto', created_at: now() },
+    { id: 11, usuario_id: 1, nombre: 'Juego', icono: 'dice-outline', color: '#FB923C', tipo: 'gasto', created_at: now() },
+    { id: 12, usuario_id: 1, nombre: 'Restaurante', icono: 'restaurant-outline', color: '#F87171', tipo: 'gasto', created_at: now() },
+    { id: 13, usuario_id: 1, nombre: 'Educación', icono: 'school-outline', color: '#34D399', tipo: 'gasto', created_at: now() },
+    { id: 14, usuario_id: 1, nombre: 'Familia', icono: 'people-outline', color: '#F472B6', tipo: 'gasto', created_at: now() },
+    { id: 15, usuario_id: 1, nombre: 'Compras', icono: 'bag-outline', color: '#FBBF24', tipo: 'gasto', created_at: now() },
+    { id: 16, usuario_id: 1, nombre: 'Ropa', icono: 'shirt-outline', color: '#C084FC', tipo: 'gasto', created_at: now() },
+    { id: 17, usuario_id: 1, nombre: 'Ejercicio', icono: 'fitness-outline', color: '#22D3EE', tipo: 'gasto', created_at: now() },
+    { id: 18, usuario_id: 1, nombre: 'Otros', icono: 'ellipsis-horizontal-outline', color: '#94A3B8', tipo: 'gasto', created_at: now() },
+    { id: 19, usuario_id: 1, nombre: 'Entretenimiento', icono: 'film-outline', color: '#E879F9', tipo: 'gasto', created_at: now() },
+    { id: 20, usuario_id: 1, nombre: 'Regalos', icono: 'gift-outline', color: '#FB7185', tipo: 'gasto', created_at: now() },
+    { id: 21, usuario_id: 1, nombre: 'Regalo', icono: 'gift-outline', color: '#FB7185', tipo: 'ingreso', created_at: now() },
+    { id: 22, usuario_id: 1, nombre: 'Otro', icono: 'ellipsis-horizontal-outline', color: '#94A3B8', tipo: 'ingreso', created_at: now() },
+    { id: 23, usuario_id: 1, nombre: 'Intereses', icono: 'wallet-outline', color: '#4ADE80', tipo: 'ingreso', created_at: now() },
+  ];
+
+  const toAdd = newCategories.filter(c => !existingIds.has(c.id));
+  if (toAdd.length > 0) {
+    const current = getStore<Categoria>('categorias');
+    setStore('categorias', [...current, ...toAdd]);
   }
 }
 
@@ -44,10 +98,25 @@ function seedWebData(): void {
     { id: 2, usuario_id: 1, nombre: 'Freelance', icono: 'code-slash-outline', color: '#A78BFA', tipo: 'ingreso', created_at: now() },
     { id: 3, usuario_id: 1, nombre: 'Alimentación', icono: 'cart-outline', color: '#F87171', tipo: 'gasto', created_at: now() },
     { id: 4, usuario_id: 1, nombre: 'Transporte', icono: 'bus-outline', color: '#FBBF24', tipo: 'gasto', created_at: now() },
-    { id: 5, usuario_id: 1, nombre: 'Ocio', icono: 'game-controller-outline', color: '#F472B6', tipo: 'gasto', created_at: now() },
+    { id: 5, usuario_id: 1, nombre: 'Ocio', icono: 'musical-notes-outline', color: '#F472B6', tipo: 'gasto', created_at: now() },
     { id: 6, usuario_id: 1, nombre: 'Vivienda', icono: 'home-outline', color: '#60A5FA', tipo: 'gasto', created_at: now() },
     { id: 7, usuario_id: 1, nombre: 'Salud', icono: 'heart-outline', color: '#34D399', tipo: 'gasto', created_at: now() },
     { id: 8, usuario_id: 1, nombre: 'Inversiones', icono: 'trending-up-outline', color: '#A78BFA', tipo: 'ingreso', created_at: now() },
+    { id: 9, usuario_id: 1, nombre: 'Viaje', icono: 'airplane-outline', color: '#38BDF8', tipo: 'gasto', created_at: now() },
+    { id: 10, usuario_id: 1, nombre: 'Videojuego', icono: 'game-controller-outline', color: '#A78BFA', tipo: 'gasto', created_at: now() },
+    { id: 11, usuario_id: 1, nombre: 'Juego', icono: 'dice-outline', color: '#FB923C', tipo: 'gasto', created_at: now() },
+    { id: 12, usuario_id: 1, nombre: 'Restaurante', icono: 'restaurant-outline', color: '#F87171', tipo: 'gasto', created_at: now() },
+    { id: 13, usuario_id: 1, nombre: 'Educación', icono: 'school-outline', color: '#34D399', tipo: 'gasto', created_at: now() },
+    { id: 14, usuario_id: 1, nombre: 'Familia', icono: 'people-outline', color: '#F472B6', tipo: 'gasto', created_at: now() },
+    { id: 15, usuario_id: 1, nombre: 'Compras', icono: 'bag-outline', color: '#FBBF24', tipo: 'gasto', created_at: now() },
+    { id: 16, usuario_id: 1, nombre: 'Ropa', icono: 'shirt-outline', color: '#C084FC', tipo: 'gasto', created_at: now() },
+    { id: 17, usuario_id: 1, nombre: 'Ejercicio', icono: 'fitness-outline', color: '#22D3EE', tipo: 'gasto', created_at: now() },
+    { id: 18, usuario_id: 1, nombre: 'Otros', icono: 'ellipsis-horizontal-outline', color: '#94A3B8', tipo: 'gasto', created_at: now() },
+    { id: 19, usuario_id: 1, nombre: 'Entretenimiento', icono: 'film-outline', color: '#E879F9', tipo: 'gasto', created_at: now() },
+    { id: 20, usuario_id: 1, nombre: 'Regalos', icono: 'gift-outline', color: '#FB7185', tipo: 'gasto', created_at: now() },
+    { id: 21, usuario_id: 1, nombre: 'Regalo', icono: 'gift-outline', color: '#FB7185', tipo: 'ingreso', created_at: now() },
+    { id: 22, usuario_id: 1, nombre: 'Otro', icono: 'ellipsis-horizontal-outline', color: '#94A3B8', tipo: 'ingreso', created_at: now() },
+    { id: 23, usuario_id: 1, nombre: 'Intereses', icono: 'wallet-outline', color: '#4ADE80', tipo: 'ingreso', created_at: now() },
   ];
   const transacciones: Transaccion[] = [
     { id: 1, cuenta_id: 1, categoria_id: 1, tipo: 'ingreso', cantidad: 2100.00, descripcion: 'Nómina Julio', fecha: '2026-07-01 00:00:00', created_at: now() },

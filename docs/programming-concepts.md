@@ -463,3 +463,79 @@ const saldos = transacciones.reduce((acc, t) => {
 cuentas.map(cuenta => ({ ...cuenta, saldo: saldos[cuenta.id] ?? 0 }));
 ```
 
+# SQL y Base de Datos
+
+## PRAGMA user_version
+**Definición:** Metadato entero que SQLite almacena en el encabezado de la base de datos para controlar qué migraciones se han ejecutado.
+**Explicación:** Se usa como contador de versión del esquema. Cada migración comprueba si `user_version` es menor que su número, ejecuta los cambios SQL necesarios y luego incrementa el valor con `PRAGMA user_version = N`. Así, la app sabe en cada arranque qué migraciones faltan sin necesidad de tablas de control adicionales. En Finly, el esquema pasa de versión 0 → 1 (tablas), 1→2 (seed), 2→3 (configuración), 3→4 (nuevas categorías).
+**Ejemplo:**
+```tsx
+let { user_version: v } = await db.getFirstAsync('PRAGMA user_version');
+if (v < 1) { await migrate001(db); v = 1; }
+if (v < 2) { await seed002(db); v = 2; }
+await db.execAsync(`PRAGMA user_version = ${v}`);
+```
+
+## INSERT OR IGNORE
+**Definición:** Variante de INSERT que silenciosamente omite la inserción si la fila viola una restricción de clave duplicada (PRIMARY KEY o UNIQUE).
+**Explicación:** Muy útil en semillas (seeds) y migraciones para que la app pueda ejecutar el mismo script de inicialización sin fallos si los datos ya existen. El problema es que no actualiza registros existentes: si cambiaste un valor entre versiones (ej: un icono), INSERT OR IGNORE no sobreescribirá el viejo. En ese caso hay que usar un UPDATE por separado.
+**Ejemplo:**
+```tsx
+// Inserta la categoría solo si id=10 no existe aún
+await db.runAsync(
+  'INSERT OR IGNORE INTO categorias (id, nombre, icono) VALUES (?, ?, ?)',
+  10, 'Videojuego', 'game-controller-outline'
+);
+// Si ya existe id=10, no hace nada — el icono viejo se queda
+```
+
+## Datos obsoletos en almacenamiento persistente
+**Definición:** Situación en la que los datos guardados en la base de datos o en localStorage contienen valores de versiones anteriores del código que ya no son válidos.
+**Explicación:** Cuando se corrige un valor en el código fuente (ej: renombrar un icono de `gamepad-outline` a `game-controller-outline`), los usuarios que ya tienen datos guardados no reciben el cambio automáticamente, porque la persistencia conserva los valores viejos. Esto produce errores de runtime como `"'gamepad-outline' is not a valid icon name"`. La solución es añadir lógica de actualización que se ejecute en cada arranque, corrigiendo los valores obsoletos conocidos.
+**Ejemplo:**
+```tsx
+// webStorage.ts — migra iconos obsoletos en localStorage
+function migrateWebCategories(): void {
+  const categorias = getStore<Categoria>('categorias');
+  const invalidIcons: Record<string, string> = {
+    'gamepad-outline': 'game-controller-outline',
+  };
+  const updated = categorias.map(c => ({
+    ...c,
+    icono: invalidIcons[c.icono] ?? c.icono,
+  }));
+  setStore('categorias', updated);
+}
+
+// database.ts — migra iconos obsoletos en SQLite (cada arranque)
+await db.runAsync(`UPDATE categorias SET icono = 'game-controller-outline' WHERE id = 10`);
+```
+
+## Migración de datos vs. Migración de esquema
+**Definición:** Distinción entre cambios en la estructura de tablas (esquema) y cambios en el contenido de los registros existentes (datos).
+**Explicación:** La migración de esquema crea tablas, añade columnas o índices y se ejecuta una sola vez controlada por `PRAGMA user_version`. La migración de datos corrige o actualiza registros existentes y debe ejecutarse en cada arranque (o con su propio control de versión), porque los datos obsoletos pueden estar presentes en cualquier versión del esquema. En Finly, `seed004` es migración de esquema (INSERT OR IGNORE), mientras que las líneas de UPDATE en `initDatabase()` son migración de datos que corren siempre.
+**Ejemplo:**
+```tsx
+// Migración de esquema — una sola vez (controlada por PRAGMA)
+if (v < 4) { await seed004(db); }
+
+// Migración de datos — cada arranque (corregir valores obsoletos)
+await db.runAsync(`UPDATE categorias SET icono = ? WHERE id = ?`, nuevoIcono, id);
+```
+
+## Diferencia entre nativo (SQLite) y web (localStorage) en migraciones
+**Definición:** En entornos nativos, la migración corre una sola vez gracias a `PRAGMA user_version`; en web, los datos viven en `localStorage` y no hay control de versión automático.
+**Explicación:** En nativo, SQLite conserva el `PRAGMA user_version` entre sesiones, así que cada migración se ejecuta exactamente una vez. En web, `localStorage` es un diccionario simple sin concepto de versión, por lo que la lógica de migración de datos debe ejecutarse siempre que la app arranca (similar a un "check de integridad"). Esto implica que las migraciones web deben ser idempotentes: ejecutarlas varias veces produce el mismo resultado que ejecutarlas una sola vez.
+**Ejemplo:**
+```tsx
+// webStorage.ts — se ejecuta cada vez que la app arranca en web
+export async function initWebStorage(): Promise<void> {
+  const usuarios = getStore<Usuario>('usuarios');
+  if (usuarios.length === 0) {
+    seedWebData();
+  } else {
+    migrateWebCategories(); // idempotente: corrige datos obsoletos
+  }
+}
+```
+
