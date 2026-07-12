@@ -19,14 +19,14 @@ export default function TypeTabs({ activo, onChange }: Props) {
       <TouchableOpacity
         style={[styles.tab, activo === 'gasto' && { backgroundColor: c.fondo }]}
         onPress={() => onChange('gasto')}
-        accessibilityLabel="Mostrar gastos"
+        accessibilityLabel={texto.a11y_show_expenses}
       >
         <Text style={[styles.texto, { color: activo === 'gasto' ? c.texto : c.textoSuave, fontSize: fs(15) }]}>{texto.tab_expenses}</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.tab, activo === 'ingreso' && { backgroundColor: c.fondo }]}
         onPress={() => onChange('ingreso')}
-        accessibilityLabel="Mostrar ingresos"
+        accessibilityLabel={texto.a11y_show_income}
       >
         <Text style={[styles.texto, { color: activo === 'ingreso' ? c.texto : c.textoSuave, fontSize: fs(15) }]}>{texto.tab_income}</Text>
       </TouchableOpacity>

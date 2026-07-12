@@ -90,4 +90,26 @@ export const ca: Idioma = {
   nav_accounts: 'Comptes',
   nav_categories: 'Categories',
   nav_coming_soon: 'Properes funcions',
+
+  // Day letters (for circle icons)
+  day_mon_letter: 'Dl',
+  day_sun_letter: 'Dg',
+
+  // Currencies
+  currency_euro: 'Euro',
+  currency_dollar: 'Dòlar',
+  currency_pound: 'Lliura',
+  currency_yen: 'Ien',
+
+  // Languages
+  lang_en: 'English',
+  lang_es: 'Español',
+  lang_ca: 'Català',
+
+  // Accessibility
+  a11y_show_expenses: 'Mostrar despeses',
+  a11y_show_income: 'Mostrar ingressos',
+  a11y_select_account: 'Seleccionar compte',
+  a11y_category: 'Categoria',
+  a11y_period: 'Període',
 };

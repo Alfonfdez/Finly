@@ -84,7 +84,7 @@ export default function HomeScreen() {
         <View style={[styles.header, { backgroundColor: c.fondoAlto }]}>
           <TouchableOpacity
             onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-            accessibilityLabel="Abrir menú"
+            accessibilityLabel={texto.home_open_menu}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons name="menu-outline" size={26} color={c.texto} />
@@ -112,7 +112,7 @@ export default function HomeScreen() {
 
           <TouchableOpacity
             onPress={() => navigation.navigate('Transactions')}
-            accessibilityLabel="Ver transacciones"
+            accessibilityLabel={texto.home_view_transactions}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons name="stats-chart-outline" size={24} color={c.texto} />
@@ -155,7 +155,10 @@ export default function HomeScreen() {
         />
 
         <TouchableOpacity
-          style={[styles.fab, { backgroundColor: c.primario }]}
+          style={[styles.fab, { backgroundColor: c.primario }, Platform.select({
+            web: { boxShadow: `0 4px 12px ${c.primario}4D` },
+            default: { elevation: 6, shadowColor: c.primario, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
+          })]}
           onPress={() => navigation.navigate('AddTransaction')}
           accessibilityLabel={texto.home_add}
         >
@@ -185,11 +188,11 @@ const styles = StyleSheet.create({
   },
   totalBoton: { alignItems: 'center', flex: 1 },
   cuentaRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  labelCuenta: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 },
+  labelCuenta: { textTransform: 'uppercase', letterSpacing: 1 },
   resumenRow: { flexDirection: 'row', gap: 12 },
-  resumenItem: { fontSize: 12 },
-  resumenLabel: { fontSize: 11 },
-  totalTexto: { fontSize: 28, fontWeight: '800', marginVertical: 2 },
+  resumenItem: {},
+  resumenLabel: {},
+  totalTexto: { fontWeight: '800', marginVertical: 2 },
   chartContainer: { alignItems: 'center', marginVertical: 8 },
   fab: {
     position: 'absolute',
@@ -200,10 +203,6 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    ...Platform.select({
-      web: { boxShadow: '0 4px 12px rgba(34, 211, 238, 0.3)' },
-      default: { elevation: 6, shadowColor: '#22D3EE', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
-    }),
   },
-  fabTexto: { fontSize: 28, fontWeight: '600', lineHeight: 30 },
+  fabTexto: { fontWeight: '600', lineHeight: 30 },
 });

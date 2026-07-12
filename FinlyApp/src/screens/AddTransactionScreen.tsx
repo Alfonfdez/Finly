@@ -22,6 +22,6 @@ export default function AddTransactionScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16 },
-  titulo: { fontSize: 20, fontWeight: '700', marginBottom: 8 },
-  placeholder: { fontSize: 14 },
+  titulo: { fontWeight: '700', marginBottom: 8 },
+  placeholder: {},
 });

@@ -57,7 +57,7 @@ export default function PeriodPicker({ inicioTemp, finTemp, onTempRangoChange, p
       <Text style={[styles.titulo, { color: c.textoSuave, fontSize: fs(13) }]}>{textoRango}</Text>
 
       <TouchableOpacity style={styles.todosRow} onPress={handleTodos}>
-        <View style={[styles.checkbox, todos && { backgroundColor: c.primario, borderColor: c.primario }]} />
+        <View style={[styles.checkbox, { borderColor: c.textoSuave }, todos && { backgroundColor: c.primario, borderColor: c.primario }]} />
         <Text style={[styles.todosTexto, { color: c.texto, fontSize: fs(14) }]}>{texto.cal_all}</Text>
       </TouchableOpacity>
 
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   container: { padding: 8 },
   titulo: { marginBottom: 12 },
   todosRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: '#64748B', marginRight: 8 },
+  checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, marginRight: 8 },
   todosTexto: {},
   indicador: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, marginBottom: 8, alignItems: 'center' },
   indicadorTexto: { fontWeight: '600' },

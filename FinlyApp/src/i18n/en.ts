@@ -88,6 +88,28 @@ export const en = {
   nav_accounts: 'Accounts',
   nav_categories: 'Categories',
   nav_coming_soon: 'Coming soon',
+
+  // Day letters (for circle icons)
+  day_mon_letter: 'M',
+  day_sun_letter: 'S',
+
+  // Currencies
+  currency_euro: 'Euro',
+  currency_dollar: 'Dollar',
+  currency_pound: 'Pound',
+  currency_yen: 'Yen',
+
+  // Languages
+  lang_en: 'English',
+  lang_es: 'Español',
+  lang_ca: 'Català',
+
+  // Accessibility
+  a11y_show_expenses: 'Show expenses',
+  a11y_show_income: 'Show income',
+  a11y_select_account: 'Select account',
+  a11y_category: 'Category',
+  a11y_period: 'Period',
 };
 
 export type Idioma = typeof en;

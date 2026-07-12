@@ -6,6 +6,7 @@ import { CategoriaConTotal } from '../constants/types';
 import { formatearMoneda } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { t } from '../i18n';
 
 interface Props {
   categorias: CategoriaConTotal[];
@@ -18,6 +19,7 @@ interface Props {
 export default function CategoryList({ categorias, total, divisa = '€', separador = ',', onPress }: Props) {
   const { coloresActivos: c } = useConfig();
   const fs = useFontSize();
+  const texto = t();
 
   return (
     <FlatList
@@ -28,7 +30,7 @@ export default function CategoryList({ categorias, total, divisa = '€', separa
         <TouchableOpacity
           style={[styles.item, { borderBottomColor: c.borde }]}
           onPress={() => onPress?.(item)}
-          accessibilityLabel={`Categoría ${item.nombre}, ${item.porcentaje.toFixed(1)}%`}
+          accessibilityLabel={`${texto.a11y_category} ${item.nombre}, ${item.porcentaje.toFixed(1)}%`}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <View style={[styles.icono, { backgroundColor: item.color + '30' }]}>

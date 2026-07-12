@@ -74,12 +74,12 @@ function FlagIcon({ code, size = 16 }: { code: string; size?: number }) {
   return <Text style={{ fontSize: size }}>{FLAG_EMOJI[code] ?? ''}</Text>;
 }
 
-function DayCircleIcon({ letter, size = 16 }: { letter: string; size?: number }) {
+function DayCircleIcon({ letter, size = 16, colores }: { letter: string; size?: number; colores: ReturnType<typeof useConfig>['coloresActivos'] }) {
   const isWide = letter.length > 1;
   const w = isWide ? size * 1.3 : size;
   return (
-    <View style={{ width: w, height: size, borderRadius: size / 2, backgroundColor: '#8B5CF6', justifyContent: 'center', alignItems: 'center' }}>
-      <Text style={{ fontSize: size * (isWide ? 0.4 : 0.55), color: '#fff', fontWeight: '700' }}>{letter}</Text>
+    <View style={{ width: w, height: size, borderRadius: size / 2, backgroundColor: colores.primario, justifyContent: 'center', alignItems: 'center' }}>
+      <Text style={{ fontSize: size * (isWide ? 0.4 : 0.55), color: colores.fondo, fontWeight: '700' }}>{letter}</Text>
     </View>
   );
 }
@@ -134,26 +134,26 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
   ];
 
   const PRIMER_DIA: Opcion[] = [
-    { label: texto.day_monday, value: '1', icon: <DayCircleIcon letter={config.idioma === 'ca' ? 'Dl' : config.idioma === 'es' ? 'L' : 'M'} size={16} /> },
-    { label: texto.day_sunday, value: '0', icon: <DayCircleIcon letter={config.idioma === 'ca' ? 'Dg' : config.idioma === 'es' ? 'D' : 'S'} size={16} /> },
+    { label: texto.day_monday, value: '1', icon: <DayCircleIcon letter={texto.day_mon_letter} size={16} colores={c} /> },
+    { label: texto.day_sunday, value: '0', icon: <DayCircleIcon letter={texto.day_sun_letter} size={16} colores={c} /> },
   ];
 
   const DIVISAS: Opcion[] = [
-    { label: 'Euro', value: '€', icon: <Text style={[styles.currencyIcon, { color: c.texto }]}>€</Text> },
-    { label: 'Dollar', value: '$', icon: <Text style={[styles.currencyIcon, { color: c.texto }]}>$</Text> },
-    { label: 'Pound', value: '£', icon: <Text style={[styles.currencyIcon, { color: c.texto }]}>£</Text> },
-    { label: 'Yen', value: '¥', icon: <Text style={[styles.currencyIcon, { color: c.texto }]}>¥</Text> },
+    { label: texto.currency_euro, value: '€', icon: <Text style={[styles.currencyIcon, { color: c.texto, fontSize: fs(16) }]}>€</Text> },
+    { label: texto.currency_dollar, value: '$', icon: <Text style={[styles.currencyIcon, { color: c.texto, fontSize: fs(16) }]}>$</Text> },
+    { label: texto.currency_pound, value: '£', icon: <Text style={[styles.currencyIcon, { color: c.texto, fontSize: fs(16) }]}>£</Text> },
+    { label: texto.currency_yen, value: '¥', icon: <Text style={[styles.currencyIcon, { color: c.texto, fontSize: fs(16) }]}>¥</Text> },
   ];
 
   const SEPARADORES: Opcion<Configuracion['separadorDecimal']>[] = [
-    { label: texto.sep_comma, value: ',', icon: <Text style={[styles.currencyIcon, { color: c.texto }]}>,</Text> },
-    { label: texto.sep_dot, value: '.', icon: <Text style={[styles.currencyIcon, { color: c.texto }]}>.</Text> },
+    { label: texto.sep_comma, value: ',', icon: <Text style={[styles.currencyIcon, { color: c.texto, fontSize: fs(16) }]}>,</Text> },
+    { label: texto.sep_dot, value: '.', icon: <Text style={[styles.currencyIcon, { color: c.texto, fontSize: fs(16) }]}>.</Text> },
   ];
 
   const IDIOMAS: Opcion<Configuracion['idioma']>[] = [
-    { label: 'English', value: 'en', icon: <FlagIcon code="en" size={16} /> },
-    { label: 'Español', value: 'es', icon: <FlagIcon code="es" size={16} /> },
-    { label: 'Català', value: 'ca', icon: <FlagIcon code="ca" size={16} /> },
+    { label: texto.lang_en, value: 'en', icon: <FlagIcon code="en" size={16} /> },
+    { label: texto.lang_es, value: 'es', icon: <FlagIcon code="es" size={16} /> },
+    { label: texto.lang_ca, value: 'ca', icon: <FlagIcon code="ca" size={16} /> },
   ];
 
   const TAMANOS: Opcion<Configuracion['tamanoTexto']>[] = [
@@ -206,7 +206,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 16 },
   seccion: {
-    fontSize: 12,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -215,12 +214,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   card: { borderRadius: 12, padding: 16, marginBottom: 8 },
-  label: { fontSize: 15, fontWeight: '600', marginBottom: 10 },
+  label: { fontWeight: '600', marginBottom: 10 },
   opciones: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   opcion: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, gap: 6 },
-  opcionTexto: { fontSize: 14, fontWeight: '500' },
-  check: { fontSize: 14, fontWeight: '700' },
+  opcionTexto: { fontWeight: '500' },
+  check: { fontWeight: '700' },
   iconWrap: { justifyContent: 'center', alignItems: 'center' },
-  currencyIcon: { fontSize: 16, fontWeight: '700' },
+  currencyIcon: { fontWeight: '700' },
   sizeIcon: { fontWeight: '700' },
 });

@@ -148,7 +148,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   drawerTitulo: {
-    fontSize: 24,
     fontWeight: '800',
   },
   separador: {
@@ -157,14 +156,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   drawerSeccion: {
-    fontSize: 12,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 1,
     paddingHorizontal: 16,
     marginBottom: 4,
   },
-  drawerItemLabel: {
-    fontSize: 14,
-  },
+  drawerItemLabel: {},
 });

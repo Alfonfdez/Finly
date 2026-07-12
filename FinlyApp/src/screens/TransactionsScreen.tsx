@@ -63,7 +63,7 @@ export default function TransactionsScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   container: { flex: 1, padding: 16 },
-  titulo: { fontSize: 20, fontWeight: '700', marginBottom: 16 },
+  titulo: { fontWeight: '700', marginBottom: 16 },
   item: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -72,9 +72,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   info: { flex: 1 },
-  descripcion: { fontSize: 15, fontWeight: '500' },
-  categoria: { fontSize: 12, marginTop: 2 },
-  fecha: { fontSize: 11, marginTop: 1 },
-  cantidad: { fontSize: 16, fontWeight: '700' },
-  vacio: { textAlign: 'center', marginTop: 40, fontSize: 14 },
+  descripcion: { fontWeight: '500' },
+  categoria: { marginTop: 2 },
+  fecha: { marginTop: 1 },
+  cantidad: { fontWeight: '700' },
+  vacio: { textAlign: 'center', marginTop: 40 },
 });

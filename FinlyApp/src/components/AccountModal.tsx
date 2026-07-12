@@ -35,7 +35,7 @@ export default function AccountModal({ visible, cuentas, onSelect, onClose }: Pr
               <TouchableOpacity
                 style={[styles.item, { borderBottomColor: c.borde }]}
                 onPress={() => onSelect(item)}
-                accessibilityLabel={`Seleccionar cuenta ${item.nombre}`}
+                accessibilityLabel={`${texto.a11y_select_account} ${item.nombre}`}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <View style={[styles.icono, { backgroundColor: item.color + '30' }]}>

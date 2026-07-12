@@ -24,23 +24,11 @@ export function formatearFecha(fecha: Date): string {
   return `${dia}/${mes}/${año}`;
 }
 
-export function obtenerNombreMes(mes: number, idioma?: 'es' | 'en'): string {
-  if (idioma) {
-    const arr = idioma === 'en'
-      ? ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-      : ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-    return arr[mes - 1] ?? '';
-  }
+export function obtenerNombreMes(mes: number): string {
   return t().months[mes - 1] ?? '';
 }
 
-export function obtenerNombreMesAbrev(mes: number, idioma?: 'es' | 'en'): string {
-  if (idioma) {
-    const arr = idioma === 'en'
-      ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-      : ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    return arr[mes - 1] ?? '';
-  }
+export function obtenerNombreMesAbrev(mes: number): string {
   return t().months_short[mes - 1] ?? '';
 }
 
