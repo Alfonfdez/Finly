@@ -1,6 +1,20 @@
-export function formatearMoneda(cantidad: number, divisa = '€'): string {
+import { Configuracion } from '../context/ConfigContext';
+import { t } from '../i18n';
+
+export function formatearMoneda(cantidad: number, divisa = '€', separador: ',' | '.' = ','): string {
   const signo = cantidad < 0 ? '-' : '';
-  return `${signo}${Math.abs(cantidad).toFixed(2)} ${divisa}`;
+  const abs = Math.abs(cantidad);
+  const entero = Math.floor(abs);
+  const dec = Math.round((abs - entero) * 100);
+
+  const milesSep = separador === ',' ? '.' : ',';
+  const decSep = separador;
+
+  const enteroStr = entero.toString();
+  const enteroFmt = enteroStr.replace(/\B(?=(\d{3})+(?!\d))/g, milesSep);
+  const decStr = String(dec).padStart(2, '0');
+
+  return `${signo}${enteroFmt}${decSep}${decStr} ${divisa}`;
 }
 
 export function formatearFecha(fecha: Date): string {
@@ -10,14 +24,24 @@ export function formatearFecha(fecha: Date): string {
   return `${dia}/${mes}/${año}`;
 }
 
-export function obtenerNombreMes(mes: number): string {
-  const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-  return meses[mes - 1] ?? '';
+export function obtenerNombreMes(mes: number, idioma?: 'es' | 'en'): string {
+  if (idioma) {
+    const arr = idioma === 'en'
+      ? ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+      : ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    return arr[mes - 1] ?? '';
+  }
+  return t().months[mes - 1] ?? '';
 }
 
-export function obtenerNombreMesAbrev(mes: number): string {
-  const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-  return meses[mes - 1] ?? '';
+export function obtenerNombreMesAbrev(mes: number, idioma?: 'es' | 'en'): string {
+  if (idioma) {
+    const arr = idioma === 'en'
+      ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+      : ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    return arr[mes - 1] ?? '';
+  }
+  return t().months_short[mes - 1] ?? '';
 }
 
 export function inicioDeSemana(fecha: Date, primerDia: 0 | 1 = 1): Date {
@@ -61,4 +85,14 @@ export function esFechaFutura(fecha: Date): boolean {
   const hoy = new Date();
   hoy.setHours(23, 59, 59, 999);
   return fecha.getTime() > hoy.getTime();
+}
+
+const FACTORES: Record<Configuracion['tamanoTexto'], number> = {
+  'pequeño': 0.85,
+  'mediano': 1.0,
+  'grande': 1.15,
+};
+
+export function escalarFontSize(size: number, tamano: Configuracion['tamanoTexto']): number {
+  return Math.round(size * FACTORES[tamano]);
 }

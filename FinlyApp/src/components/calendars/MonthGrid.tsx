@@ -1,13 +1,16 @@
 import { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colores } from '../../constants/colors';
 import { obtenerNombreMes } from '../../utils/formatters';
 import { CalendarBaseProps } from './types';
 import YearNav from './YearNav';
+import { useConfig } from '../../context/ConfigContext';
+import { useFontSize } from '../../hooks/useFontSize';
 
 export default function MonthGrid({ fecha, onSelect }: CalendarBaseProps) {
   const hoy = new Date();
   const [año, setAño] = useState(fecha.getFullYear());
+  const { coloresActivos: c } = useConfig();
+  const fs = useFontSize();
   const meses = Array.from({ length: 12 }, (_, i) => i + 1);
 
   const cambiarAño = useCallback((nuevoAño: number) => {
@@ -26,12 +29,12 @@ export default function MonthGrid({ fecha, onSelect }: CalendarBaseProps) {
           return (
             <TouchableOpacity
               key={m}
-              style={[styles.item, futuro && styles.itemFuturo]}
+              style={[styles.item, futuro && { opacity: 0.3 }]}
               onPress={() => !futuro && onSelect(new Date(año, m - 1, 1))}
               disabled={futuro}
             >
-              <View style={[styles.itemInner, activo && styles.itemActivo]}>
-                <Text style={[styles.itemTexto, activo && styles.itemTextoActivo, futuro && styles.itemTextoFuturo]}>
+              <View style={[styles.itemInner, { backgroundColor: c.fondoAlto }, activo && { backgroundColor: c.primario }]}>
+                <Text style={[styles.itemTexto, { color: c.texto, fontSize: fs(14) }, activo && { color: c.fondo, fontWeight: '700' }, futuro && { color: c.textoSuave }]}>
                   {obtenerNombreMes(m).slice(0, 3)}
                 </Text>
               </View>
@@ -47,10 +50,6 @@ const styles = StyleSheet.create({
   container: { padding: 8 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   item: { width: '23%', aspectRatio: 1.2 },
-  itemInner: { flex: 1, alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: colores.fondoAlto },
-  itemActivo: { backgroundColor: colores.primario },
-  itemFuturo: { opacity: 0.3 },
-  itemTexto: { color: colores.texto, fontSize: 14, fontWeight: '500', includeFontPadding: false, textAlignVertical: 'center' },
-  itemTextoActivo: { color: colores.fondo, fontWeight: '700' },
-  itemTextoFuturo: { color: colores.textoSuave },
+  itemInner: { flex: 1, alignItems: 'center', justifyContent: 'center', borderRadius: 10 },
+  itemTexto: { fontWeight: '500', includeFontPadding: false, textAlignVertical: 'center' },
 });

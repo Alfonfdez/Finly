@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import { Usuario, Cuenta, Categoria, Transaccion } from './types';
 import { TipoTransaccion } from '../constants/types';
+import { Configuracion } from '../context/ConfigContext';
 
 const STORAGE_PREFIX = '@Finly/';
 
@@ -197,5 +198,29 @@ export const webTransaccionRepo = {
         return { categoria_id: catId, nombre: cat?.nombre ?? '', icono: cat?.icono ?? '', color: cat?.color ?? '', total };
       })
       .sort((a, b) => b.total - a.total);
+  },
+};
+
+const CONFIG_DEFAULTS: Configuracion = {
+  tema: 'oscuro',
+  primerDiaSemana: 1,
+  divisa: '€',
+  separadorDecimal: ',',
+  idioma: 'es',
+  tamanoTexto: 'mediano',
+};
+
+const CONFIG_KEY = '@Finly/configuracion';
+
+export const webConfigRepo = {
+  async obtener(): Promise<Configuracion> {
+    if (typeof localStorage === 'undefined') return CONFIG_DEFAULTS;
+    const raw = localStorage.getItem(CONFIG_KEY);
+    return raw ? { ...CONFIG_DEFAULTS, ...JSON.parse(raw) } : CONFIG_DEFAULTS;
+  },
+  async guardar(parcial: Partial<Configuracion>): Promise<void> {
+    if (typeof localStorage === 'undefined') return;
+    const actual = await this.obtener();
+    localStorage.setItem(CONFIG_KEY, JSON.stringify({ ...actual, ...parcial }));
   },
 };

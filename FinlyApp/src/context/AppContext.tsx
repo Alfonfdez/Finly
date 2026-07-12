@@ -25,7 +25,7 @@ interface AppContextType extends AppState {
   setFechaPersonalizada: (fechas: { inicio: Date; fin: Date }) => void;
   transaccionesFiltradas: Transaccion[];
   categoriasActivas: CategoriaConTotal[];
-  cuentasConSaldo: Cuenta[];
+  cuentasConSaldo: (Cuenta & { saldo: number })[];
   totalIngresos: number;
   totalGastos: number;
   totalIngresosGlobal: number;

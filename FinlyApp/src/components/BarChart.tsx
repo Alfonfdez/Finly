@@ -1,20 +1,24 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { colores } from '../constants/colors';
 import { DatoGrafico } from '../constants/types';
 import { formatearMoneda } from '../utils/formatters';
+import { useConfig } from '../context/ConfigContext';
+import { useFontSize } from '../hooks/useFontSize';
 
 interface Props {
   datos: DatoGrafico[];
   total?: number;
   divisa?: string;
+  separador?: ',' | '.';
 }
 
-export default function BarChart({ datos, total = 0, divisa = '€' }: Props) {
+export default function BarChart({ datos, total = 0, divisa = '€', separador = ',' }: Props) {
+  const { coloresActivos: c } = useConfig();
+  const fs = useFontSize();
   const vacio = datos.length === 0;
 
   return (
     <View style={styles.container}>
-      <View style={styles.barraFondo}>
+      <View style={[styles.barraFondo, { backgroundColor: c.fondoAlto }]}>
         {datos.map((dato) => (
           <View
             key={dato.nombre}
@@ -27,15 +31,15 @@ export default function BarChart({ datos, total = 0, divisa = '€' }: Props) {
       </View>
 
       {vacio && (
-        <Text style={styles.vacioTexto}>{formatearMoneda(total, divisa)}</Text>
+        <Text style={[styles.vacioTexto, { color: c.textoSuave, fontSize: fs(14) }]}>{formatearMoneda(total, divisa, separador)}</Text>
       )}
 
       <View style={styles.leyenda}>
         {datos.map((dato) => (
           <View key={dato.nombre} style={styles.leyendaItem}>
             <View style={[styles.leyendaColor, { backgroundColor: dato.color }]} />
-            <Text style={styles.leyendaTexto}>{dato.nombre}</Text>
-            <Text style={styles.leyendaPorcentaje}>{dato.porcentaje.toFixed(1)}%</Text>
+            <Text style={{ color: c.texto, fontSize: fs(12) }}>{dato.nombre}</Text>
+            <Text style={{ color: c.textoSuave, fontSize: fs(11) }}>{dato.porcentaje.toFixed(1)}%</Text>
           </View>
         ))}
       </View>
@@ -51,42 +55,14 @@ const styles = StyleSheet.create({
   },
   barraFondo: {
     height: 24,
-    backgroundColor: colores.fondoAlto,
     borderRadius: 12,
     overflow: 'hidden',
     flexDirection: 'row',
     marginBottom: 12,
   },
-  segmento: {
-    height: '100%',
-  },
-  leyenda: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  leyendaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  leyendaColor: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  leyendaTexto: {
-    color: colores.texto,
-    fontSize: 12,
-  },
-  leyendaPorcentaje: {
-    color: colores.textoSuave,
-    fontSize: 11,
-  },
-  vacioTexto: {
-    color: colores.textoSuave,
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 12,
-  },
+  segmento: { height: '100%' },
+  leyenda: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  leyendaItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  leyendaColor: { width: 10, height: 10, borderRadius: 5 },
+  vacioTexto: { textAlign: 'center', marginBottom: 12 },
 });

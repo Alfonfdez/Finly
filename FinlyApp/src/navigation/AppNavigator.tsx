@@ -1,106 +1,162 @@
 import { Text, View, StyleSheet } from 'react-native';
-import {
-  createStaticNavigation,
-} from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
+import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
   createDrawerNavigator,
   DrawerContentScrollView,
-  DrawerItemList,
   DrawerItem,
   DrawerContentComponentProps,
 } from '@react-navigation/drawer';
 import HomeScreen from '../screens/HomeScreen';
 import AddTransactionScreen from '../screens/AddTransactionScreen';
 import TransactionsScreen from '../screens/TransactionsScreen';
-import { colores } from '../constants/colors';
+import SettingsScreen from '../screens/SettingsScreen';
+import { useConfig } from '../context/ConfigContext';
+import { useFontSize } from '../hooks/useFontSize';
+import { t } from '../i18n';
 import { RootStackParamList } from '../constants/types';
 
-const HomeStack = createNativeStackNavigator({
-  screens: {
-    Home: { screen: HomeScreen, options: { headerShown: false } },
-    AddTransaction: { screen: AddTransactionScreen, options: { title: 'Añadir', headerStyle: { backgroundColor: colores.fondoAlto }, headerTintColor: colores.texto } },
-    Transactions: { screen: TransactionsScreen, options: { title: 'Transacciones', headerStyle: { backgroundColor: colores.fondoAlto }, headerTintColor: colores.texto } },
-  },
-});
+const Stack = createNativeStackNavigator<RootStackParamList>();
+const Drawer = createDrawerNavigator();
 
 function CustomDrawerContent(props: DrawerContentComponentProps) {
+  const { coloresActivos: c } = useConfig();
+  const fs = useFontSize();
+  const texto = t();
+
   return (
-    <DrawerContentScrollView {...props} style={styles.drawerScroll}>
-      <View style={styles.drawerHeader}>
-        <Text style={styles.drawerTitulo}>Finly</Text>
+    <DrawerContentScrollView {...props} style={{ backgroundColor: c.fondoAlto }}>
+      <View style={[styles.drawerHeader, { borderBottomColor: c.borde }]}>
+        <Text style={[styles.drawerTitulo, { color: c.primario, fontSize: fs(24) }]}>Finly</Text>
       </View>
-      <DrawerItemList {...props} />
-      <View style={styles.separador} />
-      <Text style={styles.drawerSeccion}>Futuras funciones</Text>
       <DrawerItem
-        label="Cuentas"
-        onPress={() => {}}
-        labelStyle={styles.drawerItemLabel}
-        inactiveTintColor={colores.textoSuave}
+        label={texto.nav_home}
+        onPress={() => props.navigation.navigate('Main')}
+        icon={({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />}
+        labelStyle={[styles.drawerItemLabel, { color: c.texto }]}
+        activeTintColor={c.primario}
+        inactiveTintColor={c.primario}
       />
       <DrawerItem
-        label="Categorías"
-        onPress={() => {}}
-        labelStyle={styles.drawerItemLabel}
-        inactiveTintColor={colores.textoSuave}
+        label={texto.nav_settings}
+        onPress={() => props.navigation.navigate('Main', { screen: 'Settings' })}
+        icon={({ color, size }) => <Ionicons name="settings-outline" size={size} color={color} />}
+        labelStyle={[styles.drawerItemLabel, { color: c.texto, fontSize: fs(14) }]}
+        inactiveTintColor={c.primario}
       />
       <DrawerItem
-        label="Ajustes"
+        label={texto.nav_transactions}
+        onPress={() => props.navigation.navigate('Main', { screen: 'Transactions' })}
+        icon={({ color, size }) => <Ionicons name="stats-chart-outline" size={size} color={color} />}
+        labelStyle={[styles.drawerItemLabel, { color: c.texto, fontSize: fs(14) }]}
+        inactiveTintColor={c.primario}
+      />
+      <View style={[styles.separador, { backgroundColor: c.borde }]} />
+      <Text style={[styles.drawerSeccion, { color: c.textoSuave, fontSize: fs(12) }]}>{texto.nav_coming_soon}</Text>
+      <DrawerItem
+        label={texto.nav_accounts}
         onPress={() => {}}
-        labelStyle={styles.drawerItemLabel}
-        inactiveTintColor={colores.textoSuave}
+        icon={({ color, size }) => <Ionicons name="wallet-outline" size={size} color={color} />}
+        labelStyle={[styles.drawerItemLabel, { color: c.textoSuave, fontSize: fs(14) }]}
+        inactiveTintColor={c.textoSuave}
+      />
+      <DrawerItem
+        label={texto.nav_categories}
+        onPress={() => {}}
+        icon={({ color, size }) => <Ionicons name="pricetag-outline" size={size} color={color} />}
+        labelStyle={[styles.drawerItemLabel, { color: c.textoSuave, fontSize: fs(14) }]}
+        inactiveTintColor={c.textoSuave}
       />
     </DrawerContentScrollView>
   );
 }
 
-const AppDrawer = createDrawerNavigator({
-  drawerContent: (props) => <CustomDrawerContent {...props} />,
-  screens: {
-    Main: {
-      screen: HomeStack,
-      options: {
-        headerShown: false,
-        drawerLabel: 'Inicio',
-      },
-    },
-  },
-  screenOptions: {
-    drawerStyle: { backgroundColor: colores.fondoAlto, width: 260 },
-    drawerLabelStyle: { color: colores.texto, fontSize: 16 },
-    drawerActiveTintColor: colores.primario,
-    drawerInactiveTintColor: colores.textoSuave,
-  },
-});
+function HomeStack() {
+  const { coloresActivos: c } = useConfig();
+  const fs = useFontSize();
+  const texto = t();
 
-const Navigation = createStaticNavigation(AppDrawer);
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: c.fondoAlto },
+        headerTintColor: c.texto,
+      }}
+    >
+      <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="AddTransaction" component={AddTransactionScreen} options={{ title: texto.nav_add }} />
+      <Stack.Screen name="Transactions" component={TransactionsScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="stats-chart-outline" size={20} color={c.texto} />
+            <Text style={{ color: c.texto, fontSize: fs(17), fontWeight: '600' }}>{texto.nav_transactions}</Text>
+          </View>
+        ),
+      }} />
+      <Stack.Screen name="Settings" component={SettingsScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="settings-outline" size={20} color={c.texto} />
+            <Text style={{ color: c.texto, fontSize: fs(17), fontWeight: '600' }}>{texto.nav_settings}</Text>
+          </View>
+        ),
+      }} />
+    </Stack.Navigator>
+  );
+}
 
-export default Navigation;
+function AppDrawer() {
+  const { coloresActivos: c } = useConfig();
+  const fs = useFontSize();
+  const texto = t();
+
+  return (
+    <Drawer.Navigator
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
+      screenOptions={{
+        drawerStyle: { backgroundColor: c.fondoAlto, width: 260 },
+        drawerLabelStyle: { color: c.texto, fontSize: fs(16) },
+        drawerActiveTintColor: c.primario,
+        drawerInactiveTintColor: c.textoSuave,
+      }}
+    >
+      <Drawer.Screen
+        name="Main"
+        component={HomeStack}
+        options={{
+          headerShown: false,
+          drawerLabel: texto.nav_home,
+        }}
+      />
+    </Drawer.Navigator>
+  );
+}
+
+export default function AppNavigator() {
+  return (
+    <NavigationContainer>
+      <AppDrawer />
+    </NavigationContainer>
+  );
+}
 
 const styles = StyleSheet.create({
-  drawerScroll: {
-    backgroundColor: colores.fondoAlto,
-  },
   drawerHeader: {
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: colores.borde,
     marginBottom: 8,
   },
   drawerTitulo: {
-    color: colores.primario,
     fontSize: 24,
     fontWeight: '800',
   },
   separador: {
     height: 1,
-    backgroundColor: colores.borde,
     marginVertical: 12,
     marginHorizontal: 16,
   },
   drawerSeccion: {
-    color: colores.textoSuave,
     fontSize: 12,
     fontWeight: '600',
     textTransform: 'uppercase',
@@ -109,7 +165,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   drawerItemLabel: {
-    color: colores.textoSuave,
     fontSize: 14,
   },
 });

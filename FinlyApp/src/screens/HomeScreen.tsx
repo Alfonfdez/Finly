@@ -4,11 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { colores } from '../constants/colors';
 import { useApp } from '../context/AppContext';
+import { useConfig } from '../context/ConfigContext';
+import { useFontSize } from '../hooks/useFontSize';
 import { Cuenta } from '../database/types';
 import { formatearMoneda } from '../utils/formatters';
 import { RootStackParamList, Periodo } from '../constants/types';
+import { t } from '../i18n';
 import AccountModal from '../components/AccountModal';
 import TypeTabs from '../components/TypeTabs';
 import PeriodTabs from '../components/PeriodTabs';
@@ -27,6 +29,9 @@ export default function HomeScreen() {
     totalIngresos, totalGastos, totalIngresosGlobal, totalGastosGlobal, seleccionarCuenta, cambiarTipo,
     cambiarPeriodo, setFechaSeleccionada, setFechaPersonalizada, cargando,
   } = useApp();
+  const { config, coloresActivos: c } = useConfig();
+  const fs = useFontSize();
+  const texto = t();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [chartType, setChartType] = useState<ChartType>('donut');
@@ -34,7 +39,7 @@ export default function HomeScreen() {
 
   const total = totalIngresosGlobal - totalGastosGlobal;
   const totalActivo = tipoActivo === 'gasto' ? totalGastos : totalIngresos;
-  const colorTotal = total >= 0 ? colores.verde : colores.rojo;
+  const colorTotal = total >= 0 ? c.verde : c.rojo;
 
   const handleCategoriaPress = useCallback((categoria: { id: number }) => {
     navigation.navigate('Transactions', { categoriaId: categoria.id, tipo: tipoActivo });
@@ -50,8 +55,8 @@ export default function HomeScreen() {
     setCalendarVisible(false);
   }, [setFechaSeleccionada]);
 
-  const handleCuentaSelect = useCallback((c: Cuenta) => {
-    seleccionarCuenta(c);
+  const handleCuentaSelect = useCallback((cu: Cuenta) => {
+    seleccionarCuenta(cu);
     setModalVisible(false);
   }, [seleccionarCuenta]);
 
@@ -65,42 +70,42 @@ export default function HomeScreen() {
 
   if (cargando || !cuentaActiva) {
     return (
-      <SafeAreaView style={styles.safe}>
-        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-          <ActivityIndicator size="large" color={colores.primario} />
+      <SafeAreaView style={[styles.safe, { backgroundColor: c.fondo }]}>
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', backgroundColor: c.fondo }]}>
+          <ActivityIndicator size="large" color={c.primario} />
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        <View style={styles.header}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: c.fondo }]}>
+      <View style={[styles.container, { backgroundColor: c.fondo }]}>
+        <View style={[styles.header, { backgroundColor: c.fondoAlto }]}>
           <TouchableOpacity
             onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
             accessibilityLabel="Abrir menú"
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="menu-outline" size={26} color={colores.texto} />
+            <Ionicons name="menu-outline" size={26} color={c.texto} />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.totalBoton} onPress={() => setModalVisible(true)}>
             <View style={styles.cuentaRow}>
-              <Text style={styles.labelCuenta}>{cuentaActiva.nombre}</Text>
-              <Ionicons name="chevron-down-outline" size={14} color={colores.textoSuave} />
+              <Text style={[styles.labelCuenta, { color: c.textoSuave, fontSize: fs(12) }]}>{cuentaActiva.nombre}</Text>
+              <Ionicons name="chevron-down-outline" size={14} color={c.textoSuave} />
             </View>
-            <Text style={[styles.totalTexto, { color: colorTotal }]}>
-              {formatearMoneda(total)}
+            <Text style={[styles.totalTexto, { color: colorTotal, fontSize: fs(28) }]}>
+              {formatearMoneda(total, config.divisa, config.separadorDecimal)}
             </Text>
             <View style={styles.resumenRow}>
-              <Text style={styles.resumenItem}>
-                <Text style={{ color: colores.verde }}>+{formatearMoneda(totalIngresosGlobal)}</Text>
-                <Text style={styles.resumenLabel}> Ingresos</Text>
+              <Text style={[styles.resumenItem, { fontSize: fs(12) }]}>
+                <Text style={{ color: c.verde }}>+{formatearMoneda(totalIngresosGlobal, config.divisa, config.separadorDecimal)}</Text>
+                <Text style={[styles.resumenLabel, { color: c.textoSuave, fontSize: fs(11) }]}> {texto.home_income}</Text>
               </Text>
-              <Text style={styles.resumenItem}>
-                <Text style={{ color: colores.rojo }}>-{formatearMoneda(totalGastosGlobal)}</Text>
-                <Text style={styles.resumenLabel}> Gastos</Text>
+              <Text style={[styles.resumenItem, { fontSize: fs(12) }]}>
+                <Text style={{ color: c.rojo }}>-{formatearMoneda(totalGastosGlobal, config.divisa, config.separadorDecimal)}</Text>
+                <Text style={[styles.resumenLabel, { color: c.textoSuave, fontSize: fs(11) }]}> {texto.home_expenses}</Text>
               </Text>
             </View>
           </TouchableOpacity>
@@ -110,7 +115,7 @@ export default function HomeScreen() {
             accessibilityLabel="Ver transacciones"
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="stats-chart-outline" size={24} color={colores.texto} />
+            <Ionicons name="stats-chart-outline" size={24} color={c.texto} />
           </TouchableOpacity>
         </View>
 
@@ -126,6 +131,7 @@ export default function HomeScreen() {
           visible={calendarVisible}
           onAbrir={() => setCalendarVisible(true)}
           onClose={() => setCalendarVisible(false)}
+          primerDia={config.primerDiaSemana}
         />
 
         <TouchableOpacity
@@ -134,24 +140,26 @@ export default function HomeScreen() {
           activeOpacity={0.7}
         >
           {chartType === 'donut' ? (
-            <DonutChart datos={categoriasActivas} total={totalActivo} />
+            <DonutChart datos={categoriasActivas} total={totalActivo} divisa={config.divisa} separador={config.separadorDecimal} />
           ) : (
-            <BarChart datos={categoriasActivas} total={totalActivo} />
+            <BarChart datos={categoriasActivas} total={totalActivo} divisa={config.divisa} separador={config.separadorDecimal} />
           )}
         </TouchableOpacity>
 
         <CategoryList
           categorias={categoriasActivas}
           total={totalActivo}
+          divisa={config.divisa}
+          separador={config.separadorDecimal}
           onPress={handleCategoriaPress}
         />
 
         <TouchableOpacity
-          style={styles.fab}
+          style={[styles.fab, { backgroundColor: c.primario }]}
           onPress={() => navigation.navigate('AddTransaction')}
-          accessibilityLabel="Añadir gasto o ingreso"
+          accessibilityLabel={texto.home_add}
         >
-          <Text style={styles.fabTexto}>+</Text>
+          <Text style={[styles.fabTexto, { color: c.fondo, fontSize: fs(28) }]}>+</Text>
         </TouchableOpacity>
 
         <AccountModal
@@ -166,58 +174,23 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colores.fondo,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: colores.fondo,
-  },
+  safe: { flex: 1 },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: colores.fondoAlto,
   },
-  totalBoton: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  cuentaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  labelCuenta: {
-    color: colores.textoSuave,
-    fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  resumenRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  resumenItem: {
-    fontSize: 12,
-  },
-  resumenLabel: {
-    color: colores.textoSuave,
-    fontSize: 11,
-  },
-  totalTexto: {
-    fontSize: 28,
-    fontWeight: '800',
-    marginVertical: 2,
-  },
-
-  chartContainer: {
-    alignItems: 'center',
-    marginVertical: 8,
-  },
+  totalBoton: { alignItems: 'center', flex: 1 },
+  cuentaRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  labelCuenta: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 },
+  resumenRow: { flexDirection: 'row', gap: 12 },
+  resumenItem: { fontSize: 12 },
+  resumenLabel: { fontSize: 11 },
+  totalTexto: { fontSize: 28, fontWeight: '800', marginVertical: 2 },
+  chartContainer: { alignItems: 'center', marginVertical: 8 },
   fab: {
     position: 'absolute',
     bottom: 24,
@@ -225,24 +198,12 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colores.primario,
     alignItems: 'center',
     justifyContent: 'center',
     ...Platform.select({
       web: { boxShadow: '0 4px 12px rgba(34, 211, 238, 0.3)' },
-      default: {
-        elevation: 6,
-        shadowColor: colores.primario,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-      },
+      default: { elevation: 6, shadowColor: '#22D3EE', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
     }),
   },
-  fabTexto: {
-    color: colores.fondo,
-    fontSize: 28,
-    fontWeight: '600',
-    lineHeight: 30,
-  },
+  fabTexto: { fontSize: 28, fontWeight: '600', lineHeight: 30 },
 });

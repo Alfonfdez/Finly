@@ -1,25 +1,38 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colores } from '../../constants/colors';
 import { obtenerDiasDelMes, esMismoDia, esFechaFutura } from '../../utils/formatters';
 import { CalendarBaseProps } from './types';
 import MonthNav from './MonthNav';
+import { useConfig } from '../../context/ConfigContext';
+import { t } from '../../i18n';
+import { useFontSize } from '../../hooks/useFontSize';
 
 interface Props extends CalendarBaseProps {
   rangoInicio?: Date | null;
   rangoFin?: Date | null;
   vistaInicial?: Date;
+  primerDia?: 0 | 1;
 }
 
-export default function DayPicker({ fecha, onSelect, rangoInicio, rangoFin, vistaInicial }: Props) {
+function offsetPrimerDia(fechaDia: Date, primerDia: 0 | 1): number {
+  const diaSemana = fechaDia.getDay();
+  if (primerDia === 1) {
+    return diaSemana === 0 ? 6 : diaSemana - 1;
+  }
+  return diaSemana;
+}
+
+export default function DayPicker({ fecha, onSelect, rangoInicio, rangoFin, vistaInicial, primerDia = 1 }: Props) {
   const hoy = new Date();
   const [año, setAño] = useState((vistaInicial ?? fecha).getFullYear());
   const [mes, setMes] = useState((vistaInicial ?? fecha).getMonth() + 1);
+  const { config, coloresActivos: c } = useConfig();
+  const fs = useFontSize();
 
   const diasEnMes = obtenerDiasDelMes(año, mes);
-  const primerDiaSemana = new Date(año, mes - 1, 1).getDay();
-  const diasSemana = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'];
-  const diasPrevios = (primerDiaSemana + 6) % 7;
+  const primerDiaMes = new Date(año, mes - 1, 1);
+  const diasPrevios = offsetPrimerDia(primerDiaMes, primerDia);
+  const headers = primerDia === 1 ? t().days_short_mon : t().days_short_sun;
 
   const enRango = (d: Date) => rangoInicio && rangoFin && d >= rangoInicio && d <= rangoFin;
   const esBordeInicio = (d: Date) => rangoInicio && esMismoDia(d, rangoInicio);
@@ -30,8 +43,8 @@ export default function DayPicker({ fecha, onSelect, rangoInicio, rangoFin, vist
       <MonthNav año={año} mes={mes} onChange={(a, m) => { setAño(a); setMes(m); }} />
 
       <View style={styles.diasSemana}>
-        {diasSemana.map(d => (
-          <Text key={d} style={styles.diaSemanaTexto}>{d}</Text>
+        {headers.map(d => (
+          <Text key={d} style={[styles.diaSemanaTexto, { color: c.textoSuave, fontSize: fs(12) }]}>{d}</Text>
         ))}
       </View>
 
@@ -58,18 +71,19 @@ export default function DayPicker({ fecha, onSelect, rangoInicio, rangoFin, vist
               <View style={styles.diaWrap}>
                 <View style={[
                   styles.diaBg,
-                  esHoy && styles.diaHoy,
-                  esSeleccionado && styles.diaSeleccionado,
-                  dentroRango && !esSeleccionado && styles.diaRango,
-                  esInicio && !esSeleccionado && styles.diaRangoBorde,
-                  esFin && !esSeleccionado && styles.diaRangoBorde,
+                  esHoy && [styles.diaHoy, { borderColor: c.primario }],
+                  esSeleccionado && [styles.diaSeleccionado, { backgroundColor: c.primario }],
+                  dentroRango && !esSeleccionado && { backgroundColor: c.primario + '25', borderRadius: 4 },
+                  esInicio && !esSeleccionado && { backgroundColor: c.primario + '40' },
+                  esFin && !esSeleccionado && { backgroundColor: c.primario + '40' },
                 ]} />
                 <View style={styles.diaCenter}>
                   <Text style={[
                     styles.diaTexto,
-                    esSeleccionado && styles.diaTextoSeleccionado,
-                    futuro && styles.diaTextoFuturo,
-                    dentroRango && !esSeleccionado && styles.diaTextoRango,
+                    { color: c.texto, fontSize: fs(14) },
+                    esSeleccionado && { color: c.fondo, fontWeight: '700' },
+                    futuro && { color: c.textoSuave },
+                    dentroRango && !esSeleccionado && { fontWeight: '600' },
                   ]}>
                     {String(dia)}
                   </Text>
@@ -86,20 +100,15 @@ export default function DayPicker({ fecha, onSelect, rangoInicio, rangoFin, vist
 const styles = StyleSheet.create({
   container: { padding: 8 },
   diasSemana: { flexDirection: 'row', marginBottom: 8 },
-  diaSemanaTexto: { flex: 1, textAlign: 'center', color: colores.textoSuave, fontSize: 12, fontWeight: '600' },
+  diaSemanaTexto: { flex: 1, textAlign: 'center', fontWeight: '600' },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
   dia: { width: '14.28%', aspectRatio: 1 },
   diaVacio: { width: '14.28%', aspectRatio: 1 },
   diaWrap: { flex: 1 },
   diaBg: { ...StyleSheet.absoluteFillObject, borderRadius: 20, overflow: 'hidden' },
   diaCenter: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  diaHoy: { borderWidth: 1, borderColor: colores.primario },
-  diaSeleccionado: { backgroundColor: colores.primario },
-  diaRango: { backgroundColor: colores.primario + '25', borderRadius: 4 },
-  diaRangoBorde: { backgroundColor: colores.primario + '40' },
+  diaHoy: { borderWidth: 1 },
+  diaSeleccionado: {},
   diaFuturo: { opacity: 0.3 },
-  diaTexto: { color: colores.texto, fontSize: 14, textAlign: 'center' },
-  diaTextoSeleccionado: { color: colores.fondo, fontWeight: '700' },
-  diaTextoRango: { color: colores.texto, fontWeight: '600' },
-  diaTextoFuturo: { color: colores.textoSuave },
+  diaTexto: { textAlign: 'center' },
 });

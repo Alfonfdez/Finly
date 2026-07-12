@@ -1,27 +1,30 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colores } from '../../constants/colors';
 import { CalendarBaseProps } from './types';
+import { useConfig } from '../../context/ConfigContext';
+import { useFontSize } from '../../hooks/useFontSize';
 
 export default function YearGrid({ fecha, onSelect }: CalendarBaseProps) {
   const hoy = new Date();
   const [añoInicio, setAñoInicio] = useState(fecha.getFullYear() - 5);
+  const { coloresActivos: c } = useConfig();
+  const fs = useFontSize();
   const años = Array.from({ length: 12 }, (_, i) => añoInicio + i);
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => setAñoInicio(a => a - 12)}>
-          <Ionicons name="chevron-back-outline" size={22} color={colores.texto} />
+          <Ionicons name="chevron-back-outline" size={22} color={c.texto} />
         </TouchableOpacity>
-        <Text style={styles.titulo}>{añoInicio} - {añoInicio + 11}</Text>
+        <Text style={{ color: c.texto, fontSize: fs(18), fontWeight: '700' }}>{añoInicio} - {añoInicio + 11}</Text>
         <TouchableOpacity
           onPress={() => añoInicio + 11 < hoy.getFullYear() && setAñoInicio(a => a + 12)}
           style={{ opacity: añoInicio + 11 < hoy.getFullYear() ? 1 : 0.3 }}
           disabled={añoInicio + 11 >= hoy.getFullYear()}
         >
-          <Ionicons name="chevron-forward-outline" size={22} color={colores.texto} />
+          <Ionicons name="chevron-forward-outline" size={22} color={c.texto} />
         </TouchableOpacity>
       </View>
       <View style={styles.grid}>
@@ -31,12 +34,12 @@ export default function YearGrid({ fecha, onSelect }: CalendarBaseProps) {
           return (
             <TouchableOpacity
               key={a}
-              style={[styles.item, futuro && styles.itemFuturo]}
+              style={[styles.item, futuro && { opacity: 0.3 }]}
               onPress={() => !futuro && onSelect(new Date(a, 0, 1))}
               disabled={futuro}
             >
-              <View style={[styles.itemInner, activo && styles.itemActivo]}>
-                <Text style={[styles.itemTexto, activo && styles.itemTextoActivo, futuro && styles.itemTextoFuturo]}>
+              <View style={[styles.itemInner, { backgroundColor: c.fondoAlto }, activo && { backgroundColor: c.primario }]}>
+                <Text style={[styles.itemTexto, { color: c.texto, fontSize: fs(14) }, activo && { color: c.fondo, fontWeight: '700' }, futuro && { color: c.textoSuave }]}>
                   {a}
                 </Text>
               </View>
@@ -51,13 +54,8 @@ export default function YearGrid({ fecha, onSelect }: CalendarBaseProps) {
 const styles = StyleSheet.create({
   container: { padding: 8 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
-  titulo: { color: colores.texto, fontSize: 18, fontWeight: '700' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   item: { width: '23%', aspectRatio: 1.2 },
-  itemInner: { flex: 1, alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: colores.fondoAlto },
-  itemActivo: { backgroundColor: colores.primario },
-  itemFuturo: { opacity: 0.3 },
-  itemTexto: { color: colores.texto, fontSize: 14, fontWeight: '500', includeFontPadding: false, textAlignVertical: 'center' },
-  itemTextoActivo: { color: colores.fondo, fontWeight: '700' },
-  itemTextoFuturo: { color: colores.textoSuave },
+  itemInner: { flex: 1, alignItems: 'center', justifyContent: 'center', borderRadius: 10 },
+  itemTexto: { fontWeight: '500', includeFontPadding: false, textAlignVertical: 'center' },
 });

@@ -1,7 +1,8 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colores } from '../../constants/colors';
 import { obtenerNombreMes } from '../../utils/formatters';
+import { useConfig } from '../../context/ConfigContext';
+import { useFontSize } from '../../hooks/useFontSize';
 
 interface Props {
   año: number;
@@ -11,6 +12,8 @@ interface Props {
 
 export default function MonthNav({ año, mes, onChange }: Props) {
   const hoy = new Date();
+  const { coloresActivos: c } = useConfig();
+  const fs = useFontSize();
   const esUltimo = año === hoy.getFullYear() && mes >= hoy.getMonth() + 1;
 
   const irAlMes = (delta: number) => {
@@ -25,15 +28,15 @@ export default function MonthNav({ año, mes, onChange }: Props) {
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => irAlMes(-1)}>
-        <Ionicons name="chevron-back-outline" size={22} color={colores.texto} />
+        <Ionicons name="chevron-back-outline" size={22} color={c.texto} />
       </TouchableOpacity>
-      <Text style={styles.titulo}>{obtenerNombreMes(mes)} {año}</Text>
+      <Text style={{ color: c.texto, fontSize: fs(16), fontWeight: '700' }}>{obtenerNombreMes(mes)} {año}</Text>
       <TouchableOpacity
         onPress={() => irAlMes(1)}
         style={{ opacity: esUltimo ? 0.3 : 1 }}
         disabled={esUltimo}
       >
-        <Ionicons name="chevron-forward-outline" size={22} color={colores.texto} />
+        <Ionicons name="chevron-forward-outline" size={22} color={c.texto} />
       </TouchableOpacity>
     </View>
   );
@@ -46,5 +49,4 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 12,
   },
-  titulo: { color: colores.texto, fontSize: 16, fontWeight: '700' },
 });

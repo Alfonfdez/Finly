@@ -1,8 +1,10 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colores } from '../constants/colors';
-import { formatearFecha, obtenerNombreMes, formatoSemana } from '../utils/formatters';
+import { formatearFecha } from '../utils/formatters';
 import CalendarModal from './CalendarModal';
 import { Periodo } from './calendars/types';
+import { useConfig } from '../context/ConfigContext';
+import { useFontSize } from '../hooks/useFontSize';
+import { t } from '../i18n';
 
 interface Props {
   periodo: Periodo;
@@ -14,24 +16,37 @@ interface Props {
   visible?: boolean;
   onAbrir?: () => void;
   onClose?: () => void;
+  primerDia?: 0 | 1;
 }
 
 export default function CalendarPicker({
   periodo, fecha, onFechaChange, onRangoChange,
-  inicioRango, finRango, visible = false, onAbrir, onClose,
+  inicioRango, finRango, visible = false, onAbrir, onClose, primerDia = 1,
 }: Props) {
   const hoy = new Date();
+  const { config, coloresActivos: c } = useConfig();
+  const fs = useFontSize();
+  const texto = t();
+  const meses = texto.months;
+  const mesesCortos = texto.months_short;
 
   const textoFecha = () => {
     switch (periodo) {
       case 'dia': return formatearFecha(fecha);
-      case 'semana': return formatoSemana(fecha);
-      case 'mes': return `${obtenerNombreMes(fecha.getMonth() + 1)} de ${fecha.getFullYear()}`;
+      case 'semana': {
+        const inicio = new Date(fecha);
+        const diaSem = inicio.getDay();
+        inicio.setDate(inicio.getDate() - (diaSem === 0 ? 6 : diaSem - 1));
+        const fin = new Date(inicio);
+        fin.setDate(fin.getDate() + 6);
+        return `${inicio.getDate()} ${mesesCortos[inicio.getMonth()]} – ${fin.getDate()} ${mesesCortos[fin.getMonth()]}`;
+      }
+      case 'mes': return `${meses[fecha.getMonth()]} ${fecha.getFullYear()}`;
       case 'año': return fecha.getFullYear().toString();
       case 'periodo': {
         const i = inicioRango ?? new Date(hoy.getFullYear(), 0, 1);
         const f = finRango ?? hoy;
-        return `desde ${i.getDate()} ${obtenerNombreMes(i.getMonth() + 1).slice(0, 3).toLowerCase()} hasta ${f.getDate()} ${obtenerNombreMes(f.getMonth() + 1).slice(0, 3).toLowerCase()}, ${f.getFullYear()}`;
+        return `${texto.cal_from} ${i.getDate()} ${mesesCortos[i.getMonth()]} ${texto.cal_to} ${f.getDate()} ${mesesCortos[f.getMonth()]} ${f.getFullYear()}`;
       }
     }
   };
@@ -39,11 +54,11 @@ export default function CalendarPicker({
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        style={styles.boton}
+        style={[styles.boton, { backgroundColor: c.fondoAlto }]}
         onPress={onAbrir}
-        accessibilityLabel={`Cambiar fecha: ${textoFecha()}`}
+        accessibilityLabel={`${textoFecha()}`}
       >
-        <Text style={styles.texto}>{textoFecha()}</Text>
+        <Text style={[styles.texto, { color: c.primario, fontSize: fs(14) }]}>{textoFecha()}</Text>
       </TouchableOpacity>
       <CalendarModal
         visible={visible}
@@ -54,25 +69,14 @@ export default function CalendarPicker({
         onSelectFecha={onFechaChange}
         onSelectRango={onRangoChange}
         onClose={() => onClose?.()}
+        primerDia={primerDia}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    marginVertical: 4,
-  },
-  boton: {
-    backgroundColor: colores.fondoAlto,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 10,
-  },
-  texto: {
-    color: colores.primario,
-    fontSize: 14,
-    fontWeight: '600',
-  },
+  container: { alignItems: 'center', marginVertical: 4 },
+  boton: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 },
+  texto: { fontWeight: '600' },
 });

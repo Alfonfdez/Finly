@@ -1,10 +1,11 @@
 import { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colores } from '../../constants/colors';
 import { obtenerNombreMes, inicioDeSemana } from '../../utils/formatters';
 import { CalendarBaseProps } from './types';
 import MonthNav from './MonthNav';
 import YearNav from './YearNav';
+import { useConfig } from '../../context/ConfigContext';
+import { useFontSize } from '../../hooks/useFontSize';
 
 interface Props extends CalendarBaseProps {
   primerDia?: 0 | 1;
@@ -27,6 +28,8 @@ export default function WeekPicker({ fecha, onSelect, primerDia = 1 }: Props) {
   const hoy = new Date();
   const [año, setAño] = useState(fecha.getFullYear());
   const [mesActivo, setMesActivo] = useState(fecha.getMonth() + 1);
+  const { coloresActivos: c } = useConfig();
+  const fs = useFontSize();
 
   const semanas = useMemo(() => {
     const result: { inicio: Date; fin: Date }[] = [];
@@ -62,11 +65,11 @@ export default function WeekPicker({ fecha, onSelect, primerDia = 1 }: Props) {
           return (
             <TouchableOpacity
               key={i}
-              style={[styles.semanaRow, seleccionada && styles.semanaActiva, futuro && styles.semanaFutura]}
+              style={[styles.semanaRow, { backgroundColor: c.fondoAlto }, seleccionada && { backgroundColor: c.primario }, futuro && styles.semanaFutura]}
               onPress={() => !futuro && onSelect(sem.inicio)}
               disabled={futuro}
             >
-              <Text style={[styles.semanaTexto, seleccionada && styles.semanaTextoActivo]}>
+              <Text style={{ color: seleccionada ? c.fondo : c.texto, fontWeight: seleccionada ? '700' : '400', fontSize: fs(14) }}>
                 {formatoSemanaCorto(sem.inicio, sem.fin)}
               </Text>
             </TouchableOpacity>
@@ -79,9 +82,6 @@ export default function WeekPicker({ fecha, onSelect, primerDia = 1 }: Props) {
 
 const styles = StyleSheet.create({
   container: { padding: 8 },
-  semanaRow: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8, marginBottom: 4, backgroundColor: colores.fondoAlto },
-  semanaActiva: { backgroundColor: colores.primario },
+  semanaRow: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8, marginBottom: 4 },
   semanaFutura: { opacity: 0.3 },
-  semanaTexto: { color: colores.texto, fontSize: 14 },
-  semanaTextoActivo: { color: colores.fondo, fontWeight: '700' },
 });

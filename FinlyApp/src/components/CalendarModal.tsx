@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { colores } from '../constants/colors';
-import { obtenerNombreMes } from '../utils/formatters';
-import { Periodo, TITULOS } from './calendars/types';
+import { Periodo } from './calendars/types';
+import { useConfig } from '../context/ConfigContext';
+import { useFontSize } from '../hooks/useFontSize';
+import { t } from '../i18n';
 import DayPicker from './calendars/DayPicker';
 import WeekPicker from './calendars/WeekPicker';
 import MonthGrid from './calendars/MonthGrid';
@@ -18,14 +19,27 @@ interface Props {
   onSelectFecha: (fecha: Date) => void;
   onSelectRango?: (inicio: Date, fin: Date) => void;
   onClose: () => void;
+  primerDia?: 0 | 1;
 }
 
+const TITULOS_KEY: Record<Periodo, keyof ReturnType<typeof t>> = {
+  dia: 'cal_select_day',
+  semana: 'cal_select_week',
+  mes: 'cal_select_month',
+  año: 'cal_select_year',
+  periodo: 'cal_select_period',
+};
+
 function textoSubtitulo(periodo: Periodo, fecha: Date): string {
+  const texto = t();
+  const meses = texto.months;
+  const mesesCortos = texto.months_short;
+  const m = meses[fecha.getMonth()];
+  const mc = mesesCortos[fecha.getMonth()];
+
   switch (periodo) {
     case 'dia': {
-      const d = fecha.getDate();
-      const m = obtenerNombreMes(fecha.getMonth() + 1);
-      return `${d} de ${m} de ${fecha.getFullYear()}`;
+      return `${fecha.getDate()} ${m} ${fecha.getFullYear()}`;
     }
     case 'semana': {
       const inicio = new Date(fecha);
@@ -34,12 +48,12 @@ function textoSubtitulo(periodo: Periodo, fecha: Date): string {
       const fin = new Date(inicio);
       fin.setDate(fin.getDate() + 6);
       const dI = inicio.getDate();
-      const mI = obtenerNombreMes(inicio.getMonth() + 1);
+      const mI = mesesCortos[inicio.getMonth()];
       const dF = fin.getDate();
-      const mF = obtenerNombreMes(fin.getMonth() + 1);
-      return `${dI} ${mI.slice(0, 3).toLowerCase()} - ${dF} ${mF.slice(0, 3).toLowerCase()} de ${fecha.getFullYear()}`;
+      const mF = mesesCortos[fin.getMonth()];
+      return `${dI} ${mI} – ${dF} ${mF} ${fecha.getFullYear()}`;
     }
-    case 'mes': return `${obtenerNombreMes(fecha.getMonth() + 1)} de ${fecha.getFullYear()}`;
+    case 'mes': return `${m} ${fecha.getFullYear()}`;
     case 'año': return fecha.getFullYear().toString();
     default: return '';
   }
@@ -47,11 +61,14 @@ function textoSubtitulo(periodo: Periodo, fecha: Date): string {
 
 export default function CalendarModal({
   visible, periodo, fecha, inicioRango, finRango,
-  onSelectFecha, onSelectRango, onClose,
+  onSelectFecha, onSelectRango, onClose, primerDia = 1,
 }: Props) {
   const [fechaTemp, setFechaTemp] = useState(fecha);
   const [rangoInicioTemp, setRangoInicioTemp] = useState(inicioRango ?? new Date(new Date().getFullYear(), 0, 1));
   const [rangoFinTemp, setRangoFinTemp] = useState(finRango ?? new Date());
+  const { config, coloresActivos: c } = useConfig();
+  const fs = useFontSize();
+  const texto = t();
 
   const handleSelect = useCallback((d: Date) => {
     setFechaTemp(d);
@@ -81,15 +98,15 @@ export default function CalendarModal({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={handleCancel}>
       <View style={styles.overlay}>
-        <View style={styles.modal}>
-          <Text style={styles.titulo}>{TITULOS[periodo]}</Text>
-          {periodo !== 'periodo' && <Text style={styles.subtitulo}>{textoSubtitulo(periodo, fechaTemp)}</Text>}
+        <View style={[styles.modal, { backgroundColor: c.fondo }]}>
+          <Text style={[styles.titulo, { color: c.texto, fontSize: fs(18) }]}>{texto[TITULOS_KEY[periodo]] as string}</Text>
+          {periodo !== 'periodo' && <Text style={[styles.subtitulo, { color: c.textoSuave, fontSize: fs(13) }]}>{textoSubtitulo(periodo, fechaTemp)}</Text>}
 
           {periodo === 'dia' && (
-            <DayPicker fecha={fechaTemp} onSelect={handleSelect} />
+            <DayPicker fecha={fechaTemp} onSelect={handleSelect} primerDia={primerDia} />
           )}
           {periodo === 'semana' && (
-            <WeekPicker fecha={fechaTemp} onSelect={handleSelect} />
+            <WeekPicker fecha={fechaTemp} onSelect={handleSelect} primerDia={primerDia} />
           )}
           {periodo === 'mes' && (
             <MonthGrid fecha={fechaTemp} onSelect={handleSelect} />
@@ -102,15 +119,16 @@ export default function CalendarModal({
               inicioTemp={rangoInicioTemp}
               finTemp={rangoFinTemp}
               onTempRangoChange={handleRangoChange}
+              primerDia={primerDia}
             />
           )}
 
-          <View style={styles.botones}>
-            <TouchableOpacity style={styles.botonCancelar} onPress={handleCancel}>
-              <Text style={styles.botonCancelarTexto}>Cancelar</Text>
+          <View style={[styles.botones, { borderTopColor: c.borde }]}>
+            <TouchableOpacity style={[styles.botonCancelar, { backgroundColor: c.fondoAlto }]} onPress={handleCancel}>
+              <Text style={[styles.botonCancelarTexto, { color: c.textoSuave, fontSize: fs(14) }]}>{texto.cal_cancel}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.botonOk} onPress={handleOk}>
-              <Text style={styles.botonOkTexto}>Ok</Text>
+            <TouchableOpacity style={[styles.botonOk, { backgroundColor: c.primario }]} onPress={handleOk}>
+              <Text style={[styles.botonOkTexto, { color: c.fondo, fontSize: fs(14) }]}>{texto.cal_ok}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -128,7 +146,6 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modal: {
-    backgroundColor: colores.fondo,
     borderRadius: 16,
     width: '100%',
     maxWidth: 380,
@@ -138,17 +155,8 @@ const styles = StyleSheet.create({
       default: { elevation: 10 },
     }),
   },
-  titulo: {
-    color: colores.texto,
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  subtitulo: {
-    color: colores.textoSuave,
-    fontSize: 13,
-    marginBottom: 12,
-  },
+  titulo: { fontWeight: '700', marginBottom: 2 },
+  subtitulo: { marginBottom: 12 },
   botones: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
@@ -156,28 +164,9 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: colores.borde,
   },
-  botonCancelar: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: colores.fondoAlto,
-  },
-  botonCancelarTexto: {
-    color: colores.textoSuave,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  botonOk: {
-    paddingHorizontal: 28,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: colores.primario,
-  },
-  botonOkTexto: {
-    color: colores.fondo,
-    fontSize: 14,
-    fontWeight: '700',
-  },
+  botonCancelar: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 },
+  botonCancelarTexto: { fontWeight: '600' },
+  botonOk: { paddingHorizontal: 28, paddingVertical: 10, borderRadius: 8 },
+  botonOkTexto: { fontWeight: '700' },
 });

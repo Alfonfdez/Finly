@@ -1,6 +1,8 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colores } from '../constants/colors';
 import { TipoTransaccion } from '../constants/types';
+import { useConfig } from '../context/ConfigContext';
+import { useFontSize } from '../hooks/useFontSize';
+import { t } from '../i18n';
 
 interface Props {
   activo: TipoTransaccion;
@@ -8,21 +10,25 @@ interface Props {
 }
 
 export default function TypeTabs({ activo, onChange }: Props) {
+  const { coloresActivos: c } = useConfig();
+  const fs = useFontSize();
+  const texto = t();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: c.fondoAlto }]}>
       <TouchableOpacity
-        style={[styles.tab, activo === 'gasto' && styles.activo]}
+        style={[styles.tab, activo === 'gasto' && { backgroundColor: c.fondo }]}
         onPress={() => onChange('gasto')}
         accessibilityLabel="Mostrar gastos"
       >
-        <Text style={[styles.texto, activo === 'gasto' && styles.textoActivo]}>Gastos</Text>
+        <Text style={[styles.texto, { color: activo === 'gasto' ? c.texto : c.textoSuave, fontSize: fs(15) }]}>{texto.tab_expenses}</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={[styles.tab, activo === 'ingreso' && styles.activo]}
+        style={[styles.tab, activo === 'ingreso' && { backgroundColor: c.fondo }]}
         onPress={() => onChange('ingreso')}
         accessibilityLabel="Mostrar ingresos"
       >
-        <Text style={[styles.texto, activo === 'ingreso' && styles.textoActivo]}>Ingresos</Text>
+        <Text style={[styles.texto, { color: activo === 'ingreso' ? c.texto : c.textoSuave, fontSize: fs(15) }]}>{texto.tab_income}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -31,7 +37,6 @@ export default function TypeTabs({ activo, onChange }: Props) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: colores.fondoAlto,
     borderRadius: 12,
     padding: 4,
     marginHorizontal: 16,
@@ -43,15 +48,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
   },
-  activo: {
-    backgroundColor: colores.fondo,
-  },
   texto: {
-    color: colores.textoSuave,
-    fontSize: 15,
     fontWeight: '600',
-  },
-  textoActivo: {
-    color: colores.texto,
   },
 });

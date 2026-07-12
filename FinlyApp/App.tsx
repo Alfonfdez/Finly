@@ -5,7 +5,8 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet, ActivityIndicator, View } from 'react-native';
 import { AppProvider } from './src/context/AppContext';
-import Navigation from './src/navigation/AppNavigator';
+import { ConfigProvider } from './src/context/ConfigContext';
+import AppNavigator from './src/navigation/AppNavigator';
 import { initDatabase } from './src/database/database';
 import { initWebStorage } from './src/database/webStorage';
 
@@ -49,10 +50,12 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={styles.root}>
-      <AppProvider>
-        <Navigation />
-        <StatusBar style="light" />
-      </AppProvider>
+      <ConfigProvider>
+        <AppProvider>
+          <AppNavigator />
+          <StatusBar style="light" />
+        </AppProvider>
+      </ConfigProvider>
     </GestureHandlerRootView>
   );
 }
