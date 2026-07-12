@@ -324,3 +324,26 @@
 [2026-07-12] + | spec/features/005-pagina-anadir-categoria/
 - Creada spec completa para la página de añadir categoría: 1-spec.md (requisitos funcionales), 2-plan.md (arquitectura y componentes), 3-tasks.md (14 tareas en 5 fases).
 - Incluye: barra de búsqueda con filtrado por caracteres contenidos, grid 4×N de categorías, selección de categoría y navegación de vuelta, botón "Crear" (TODO).
+
+[2026-07-12] + | src/i18n/en.ts, es.ts, ca.ts
+- Añadidas claves i18n para AddCategoryScreen: add_cat_title, add_cat_search, add_cat_no_results, add_cat_create.
+
+[2026-07-12] ~ | src/constants/types.ts
+- Añadido AddCategory al RootStackParamList y AddCategoryScreenProps.
+
+[2026-07-12] ~ | src/navigation/AppNavigator.tsx
+- Añadido AddCategoryScreen al HomeStack con título multilingual.
+
+[2026-07-12] + | src/components/SearchBar.tsx
+- Creado componente reutilizable de barra de búsqueda con input, botón "x" y callback de cambio de texto.
+
+[2026-07-12] ~ | src/screens/AddCategoryScreen.tsx
+- Creada pantalla de añadir categoría con header, SearchBar, grid 4×N de categorías filtradas por tipo (gasto/ingreso), lógica de filtrado por caracteres contenidos (case-insensitive), estado vacío con icono de búsqueda no encontrada, y botón "Crear" en la última posición del grid (TODO).
+- Añadido botón de búsqueda en el header (headerRight) usando useLayoutEffect.
+
+[2026-07-12] ~ | src/screens/AddTransactionScreen.tsx
+- Añadido useRoute para recibir categoriaId desde AddCategoryScreen.
+- Conectado onAddMore de CategoryGrid para navegar a AddCategoryScreen pasando el tipo activo.
+
+[2026-07-12] ~ | src/constants/types.ts
+- Añadido parámetro tipo al AddCategory en RootStackParamList.
