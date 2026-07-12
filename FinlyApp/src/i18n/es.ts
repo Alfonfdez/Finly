@@ -98,6 +98,12 @@ export const es: Idioma = {
   add_photo_gallery: 'Añadir desde galería',
   add_submit: 'Añadir',
 
+  // Add category
+  add_cat_title: 'Añadir categoría',
+  add_cat_search: 'Buscar categoría',
+  add_cat_no_results: 'No se ha encontrado nada',
+  add_cat_create: 'Crear',
+
   // Categories (mock data - multilingual)
   cat_salary: 'Nómina',
   cat_freelance: 'Freelance',

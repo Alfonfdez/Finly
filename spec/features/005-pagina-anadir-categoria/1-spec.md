@@ -1,7 +1,7 @@
 # 005 — Página de añadir categoría
 
 - **Objetivo**
-Pantalla accesible desde el botón "Más" de la sección de categorías en `AddTransactionScreen` que permita al usuario ver todas las categorías existentes y seleccionar una para añadirla a la transacción. Todos los textos son multilingües (es/en/ca).
+Pantalla accesible desde el botón "Más" de la sección de categorías en `AddTransactionScreen` que permita al usuario ver las categorías del tipo activo (gasto o ingreso) y seleccionar una para añadirla a la transacción. Todos los textos son multilingües (es/en/ca).
 
 ---
 
@@ -13,7 +13,13 @@ Pantalla accesible desde el botón "Más" de la sección de categorías en `AddT
 - La pantalla tiene un botón de retroceso (flecha izquierda) en el header para volver a `AddTransactionScreen`.
 - El título del header es "Añadir categoría" (multilingual).
 
-### 2. Búsqueda
+### 2. Tipo de categorías a mostrar
+
+- La pantalla recibe el tipo activo de la pantalla anterior (`AddTransactionScreen`): "gasto" o "ingreso".
+- Solo se muestran las categorías que coincidan con el tipo activo.
+- Si el usuario cambia de pestaña en `AddTransactionScreen` y vuelve a abrir "Añadir categoría", se muestran las categorías del nuevo tipo.
+
+### 3. Búsqueda
 
 - A la derecha del título, un botón de búsqueda (icono de lupa).
 - Al pulsar el botón de búsqueda, debajo del título aparece un input de texto.
@@ -27,16 +33,16 @@ Pantalla accesible desde el botón "Más" de la sección de categorías en `AddT
 - Ejemplo: escribir "du" muestra solo las categorías que contengan ambas letras "d" y "u" (en cualquier orden).
 - Si no hay coincidencias, se muestra un icono de búsqueda no encontrada y el texto "No se ha encontrado nada" (multilingual).
 
-### 3. Grid de categorías
+### 4. Grid de categorías
 
-- Debajo de la barra de título (y del buscador si está abierto), se muestran todas las categorías existentes en un grid de 4 columnas × N filas.
+- Debajo de la barra de título (y del buscador si está abierto), se muestran las categorías del tipo activo en un grid de 4 columnas × N filas.
 - Cada categoría se muestra como: icono con fondo de color de la categoría + nombre debajo.
 - El grid es scrollable verticalmente si hay muchas categorías.
 - Al pulsar sobre una categoría, se navega de vuelta a `AddTransactionScreen` con la categoría seleccionada como primera categoría en el grid de categorías.
 
-### 4. Botón "Crear"
+### 5. Botón "Crear"
 
-- En la parte inferior de la pantalla, un botón fijo "Crear" (multilingual).
+- En la última posición del grid, se muestra un botón "Crear" (multilingual) con icono "+".
 - Al pulsar el botón "Crear", se navega a una nueva pantalla "Crear categoría" (TODO: implementación futura).
 
 ---
@@ -53,15 +59,16 @@ Pantalla accesible desde el botón "Más" de la sección de categorías en `AddT
 
 ## Criterios de aceptación
 
-- [ ] El botón "Más" del `AddTransactionScreen` navega a la pantalla de añadir categoría.
-- [ ] El header muestra flecha de retroceso y título "Añadir categoría" en el idioma activo.
-- [ ] El botón de búsqueda abre/cierra el input de búsqueda debajo del título.
-- [ ] La búsqueda filtra categorías por caracteres contenidos en el nombre (case-insensitive).
-- [ ] Si no hay coincidencias, se muestra icono de búsqueda no encontrada + "No se ha encontrado nada".
-- [ ] El botón "x" del input cierra la búsqueda sin seleccionar categoría.
-- [ ] Se muestran todas las categorías en un grid 4×N con icono y nombre.
-- [ ] Al pulsar una categoría, se navega de vuelta a `AddTransactionScreen` con esa categoría seleccionada.
-- [ ] El botón "Crear" está visible pero no funcional (TODO).
-- [ ] Todos los textos cambian al cambiar el idioma en configuración.
-- [ ] La pantalla respeta el tema activo (oscuro/claro).
-- [ ] La pantalla respeta el tamaño de texto configurado.
+- [x] El botón "Más" del `AddTransactionScreen` navega a la pantalla de añadir categoría.
+- [x] El header muestra flecha de retroceso y título "Añadir categoría" en el idioma activo.
+- [x] Se muestran solo las categorías del tipo activo (gasto o ingreso).
+- [x] El botón de búsqueda abre/cierra el input de búsqueda debajo del título.
+- [x] La búsqueda filtra categorías por caracteres contenidos en el nombre (case-insensitive).
+- [x] Si no hay coincidencias, se muestra icono de búsqueda no encontrada + "No se ha encontrado nada".
+- [x] El botón "x" del input cierra la búsqueda sin seleccionar categoría.
+- [x] Se muestran las categorías en un grid 4×N con icono y nombre.
+- [x] El botón "Crear" está en la última posición del grid.
+- [x] Al pulsar una categoría, se navega de vuelta a `AddTransactionScreen` con esa categoría seleccionada.
+- [x] Todos los textos cambian al cambiar el idioma en configuración.
+- [x] La pantalla respeta el tema activo (oscuro/claro).
+- [x] La pantalla respeta el tamaño de texto configurado.

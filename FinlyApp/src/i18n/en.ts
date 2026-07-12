@@ -96,6 +96,12 @@ export const en = {
   add_photo_gallery: 'Add from gallery',
   add_submit: 'Add',
 
+  // Add category
+  add_cat_title: 'Add category',
+  add_cat_search: 'Search category',
+  add_cat_no_results: 'No results found',
+  add_cat_create: 'Create',
+
   // Categories (mock data - multilingual)
   cat_salary: 'Salary',
   cat_freelance: 'Freelance',

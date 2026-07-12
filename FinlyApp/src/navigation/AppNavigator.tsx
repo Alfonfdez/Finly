@@ -10,6 +10,7 @@ import {
 } from '@react-navigation/drawer';
 import HomeScreen from '../screens/HomeScreen';
 import AddTransactionScreen from '../screens/AddTransactionScreen';
+import AddCategoryScreen from '../screens/AddCategoryScreen';
 import TransactionsScreen from '../screens/TransactionsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import { useConfig } from '../context/ConfigContext';
@@ -90,6 +91,14 @@ function HomeStack() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Ionicons name="add-circle-outline" size={20} color={c.texto} />
             <Text style={{ color: c.texto, fontSize: fs(17), fontWeight: '600' }}>{texto.add_title}</Text>
+          </View>
+        ),
+      }} />
+      <Stack.Screen name="AddCategory" component={AddCategoryScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="pricetag-outline" size={20} color={c.texto} />
+            <Text style={{ color: c.texto, fontSize: fs(17), fontWeight: '600' }}>{texto.add_cat_title}</Text>
           </View>
         ),
       }} />

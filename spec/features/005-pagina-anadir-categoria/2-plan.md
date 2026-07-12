@@ -4,7 +4,7 @@
 
 ### Componentes nuevos
 
-- **AddCategoryScreen.tsx**: Pantalla principal con header, grid de categorías y botón "Crear".
+- **AddCategoryScreen.tsx**: Pantalla principal con header, grid de categorías filtradas por tipo y botón "Crear" en la última posición del grid.
 - **SearchBar.tsx**: Componente reutilizable de barra de búsqueda con input y botón "x".
 
 ### Archivos modificados
@@ -20,12 +20,24 @@
 AddTransactionScreen → CategoryGrid ("Más") → AddCategoryScreen → AddTransactionScreen (con categoría seleccionada)
 ```
 
+### Filtrado por tipo
+
+1. `AddTransactionScreen` pasa el tipo activo (`tipo`) como parámetro de navegación.
+2. `AddCategoryScreen` recibe el tipo y filtra las categorías accordingly.
+3. Solo se muestran las categorías del tipo activo (gasto o ingreso).
+
 ### Lógica de búsqueda
 
 1. El usuario pulsa el botón de búsqueda → se muestra el input.
 2. Al escribir en el input, se filtran las categorías cuyo nombre contenga los caracteres escritos (en cualquier orden, case-insensitive).
 3. Si no hay coincidencias, se muestra el estado vacío.
-4. Al pulsar "x", se cierra el input y se restablecen todas las categorías.
+4. Al pulsar "x", se cierra el input y se restablecen todas las categorías del tipo activo.
+
+### Botón "Crear"
+
+1. El botón "Crear" se muestra en la última posición del grid de categorías.
+2. Tiene icono "+" y texto "Crear" (multilingual).
+3. Al pulsar, se navega a una nueva pantalla "Crear categoría" (TODO: implementación futura).
 
 ### Selección de categoría
 

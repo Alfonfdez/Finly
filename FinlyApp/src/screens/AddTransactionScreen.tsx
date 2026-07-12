@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -14,8 +16,11 @@ import TagSection from '../components/TagSection';
 import CommentInput from '../components/CommentInput';
 import PhotoSection from '../components/PhotoSection';
 import CalendarModal from '../components/CalendarModal';
-import { TipoTransaccion } from '../constants/types';
+import { TipoTransaccion, RootStackParamList } from '../constants/types';
 import { esMismoDia } from '../utils/formatters';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'AddTransaction'>;
+type AddTransactionRouteProp = RouteProp<RootStackParamList, 'AddTransaction'>;
 
 interface Etiqueta {
   id: number;
@@ -27,6 +32,8 @@ export default function AddTransactionScreen() {
   const { tipoActivo, periodoActivo, fechaPersonalizada, fechaSeleccionada, cuentas, categorias, cuentasConSaldo, cuentaActiva } = useApp();
   const fs = useFontSize();
   const texto = t();
+  const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<AddTransactionRouteProp>();
 
   const [tipo, setTipo] = useState<TipoTransaccion>(tipoActivo);
   const [cantidad, setCantidad] = useState('');
@@ -40,6 +47,12 @@ export default function AddTransactionScreen() {
     return fechaSeleccionada;
   })();
   const [dia, setDia] = useState(diaInicial);
+
+  useEffect(() => {
+    if (route.params?.categoriaId) {
+      setCategoriaId(route.params.categoriaId);
+    }
+  }, [route.params?.categoriaId]);
   const [etiquetasSeleccionadas, setEtiquetasSeleccionadas] = useState<number[]>([]);
   const [comentario, setComentario] = useState('');
   const [fotoUri, setFotoUri] = useState<string | null>(null);
@@ -153,7 +166,7 @@ export default function AddTransactionScreen() {
           categorias={categoriasFiltradas}
           categoriaSeleccionada={categoriaId}
           onSelect={setCategoriaId}
-          onAddMore={() => {}}
+          onAddMore={() => navigation.navigate('AddCategory', { tipo })}
         />
 
         <DaySelector
