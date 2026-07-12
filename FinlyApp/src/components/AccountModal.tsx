@@ -2,13 +2,17 @@ import { ComponentProps } from 'react';
 import { Modal, View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colores } from '../constants/colors';
-import { Cuenta } from '../data/mockData';
+import { Cuenta } from '../database/types';
 import { formatearMoneda } from '../utils/formatters';
+
+interface CuentaConSaldo extends Cuenta {
+  saldo: number;
+}
 
 interface Props {
   visible: boolean;
-  cuentas: Cuenta[];
-  onSelect: (cuenta: Cuenta) => void;
+  cuentas: CuentaConSaldo[];
+  onSelect: (cuenta: CuentaConSaldo) => void;
   onClose: () => void;
 }
 

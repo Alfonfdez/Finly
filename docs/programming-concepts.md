@@ -220,14 +220,43 @@ import Svg, { Circle } from 'react-native-svg';
 
 # Persistencia
 
-## AsyncStorage
-**Definición:** Sistema de almacenamiento local clave-valor, asíncrono y persistente para React Native.
-**Explicación:** Similar a localStorage en web. Guarda datos como strings JSON. En Finly se usa para persistir cuentas, categorías y transacciones. Es simple pero no soporta consultas complejas ni relaciones.
+## SQLite (expo-sqlite)
+**Definición:** Base de datos relacional embebida para React Native con soporte nativo en Expo.
+**Explicación:** Almacena datos en un archivo local con esquema de tablas, relaciones y consultas SQL. Soporta integridad referencial, borrado en cascada, índices para optimizar consultas y migraciones versionadas. En Finly se usa en dispositivos móviles (Android/iOS) para persistir usuarios, cuentas, categorías y transacciones. No funciona en web porque depende de módulos nativos y WebAssembly que Expo bundler no resuelve correctamente.
 **Ejemplo:**
 ```tsx
-import AsyncStorage from '@react-native-async-storage/async-storage';
-await AsyncStorage.setItem('@Finly/cuentas', JSON.stringify(datos));
-const data = JSON.parse(await AsyncStorage.getItem('@Finly/cuentas') ?? '[]');
+import { openDatabaseSync } from 'expo-sqlite';
+const db = openDatabaseSync('Finly.db');
+await db.runAsync('INSERT INTO cuentas (nombre, icono, color) VALUES (?, ?, ?)', 'Efectivo', 'wallet', '#22D3EE');
+const cuentas = await db.getAllAsync('SELECT * FROM cuentas');
+```
+
+## localStorage
+**Definición:** API del navegador para almacenar pares clave-valor de forma persistente en el navegador.
+**Explicación:** Similar a AsyncStorage pero nativo del navegador. Los datos se guardan como strings JSON y persisten entre sesiones. Tiene un límite de ~5-10 MB según el navegador. En Finly se usa como alternativa a SQLite cuando la app se ejecuta en web, ya que expo-sqlite no está disponible en ese entorno.
+**Ejemplo:**
+```tsx
+localStorage.setItem('@Finly/cuentas', JSON.stringify(cuentas));
+const raw = localStorage.getItem('@Finly/cuentas');
+const cuentas = raw ? JSON.parse(raw) : [];
+```
+
+## Plataforma switching (SQLite / localStorage)
+**Definición:** Patrón que usa `Platform.OS` de React Native para seleccionar automáticamente la implementación de persistencia según el entorno de ejecución.
+**Explicación:** Dado que `expo-sqlite` solo funciona en nativo (Android/iOS) y `localStorage` solo existe en web, se crea una capa de abstracción con la misma interfaz para ambas implementaciones. Un archivo `index.ts` exporta los repositorios correctos usando un condicional `Platform.OS === 'web'`. El resto de la app (AppContext, componentes) importa desde `index.ts` sin conocer la implementación subyacente. Esto permite que la app funcione en cualquier plataforma sin cambios en la lógica de negocio.
+**Ejemplo:**
+```tsx
+// src/database/index.ts
+import { Platform } from 'react-native';
+import { cuentaRepo } from './repositories/cuentaRepo';       // SQLite
+import { webCuentaRepo } from './webStorage';                  // localStorage
+
+const isWeb = Platform.OS === 'web';
+export const cuentaRepository = isWeb ? webCuentaRepo : cuentaRepo;
+
+// AppContext.tsx — consume la implementación correcta automáticamente
+import { cuentaRepository } from '../database';
+const cuentas = await cuentaRepository.listar(usuarioId);
 ```
 
 # Componentes UI

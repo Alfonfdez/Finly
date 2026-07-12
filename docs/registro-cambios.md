@@ -221,3 +221,90 @@
 
 [2026-07-11] ~ | src/context/AppContext.tsx
 - Optimizado cuentasConSaldo de O(accounts × transactions) con filter+reduce a O(transactions) con un único reduce que acumula saldos por cuentaId.
+
+[2026-07-12] + | src/database/database.ts
+- Implementada inicialización de SQLite con openDatabaseSync, migraciones versionadas usando PRAGMA user_version, y función initDatabase() para arranque de la app.
+
+[2026-07-12] + | src/database/types.ts
+- Definidas interfaces TypeScript: Usuario, Cuenta, Categoria, Transaccion alineadas con el esquema SQLite.
+
+[2026-07-12] + | src/database/migrations/001_initial.ts
+- Creada migración inicial con CREATE TABLE para usuarios, cuentas, categorías, transacciones e índices (idx_cuentas_usuario, idx_categorias_tipo, idx_transacciones_cuenta, idx_transacciones_categoria, idx_transacciones_tipo).
+
+[2026-07-12] + | src/database/migrations/002_seed.ts
+- Implementada carga de datos de prueba: usuario por defecto, 3 cuentas, 8 categorías y 10 transacciones del mockData actual.
+
+[2026-07-12] + | src/database/repositories/usuarioRepo.ts
+- Implementado CRUD usuarios: insertar, obtenerPorId, actualizar.
+
+[2026-07-12] + | src/database/repositories/cuentaRepo.ts
+- Implementado CRUD cuentas: listar, insertar, actualizar, eliminar, obtenerSaldoActual.
+
+[2026-07-12] + | src/database/repositories/categoriaRepo.ts
+- Implementado CRUD categorías: listar (con filtro por tipo), insertar, actualizar, eliminar.
+
+[2026-07-12] + | src/database/repositories/transaccionRepo.ts
+- Implementado CRUD transacciones: listar con filtros (cuenta, categoría, tipo, rango de fechas), insertar, actualizar, eliminar. Agregaciones: totalPorPeriodo, desglosePorCategorias.
+
+[2026-07-12] ~ | App.tsx
+- Añadida inicialización de SQLite antes de renderizar AppProvider con estado de carga.
+
+[2026-07-12] ~ | src/context/AppContext.tsx
+- Reemplazado mockData por repositorios SQLite. Carga de datos con useEffect y estado de cargando. Adaptado a campos snake_case (cuenta_id, categoria_id).
+
+[2026-07-12] ~ | src/screens/HomeScreen.tsx
+- Añadido estado de carga con ActivityIndicator cuando cargando es true o cuentaActiva es null.
+
+[2026-07-12] ~ | src/screens/TransactionsScreen.tsx
+- Adaptado a campos snake_case: categoria_id en vez de categoriaId.
+
+[2026-07-12] ~ | src/components/AccountModal.tsx
+- Añadida interfaz CuentaConSaldo que extiende Cuenta con campo saldo para el modal.
+
+[2026-07-12] - | src/storage/storage.ts
+- Eliminado archivo de persistencia con AsyncStorage (reemplazado por SQLite).
+
+[2026-07-12] - | src/storage/
+- Eliminada carpeta storage/ completa.
+
+[2026-07-12] ~ | FinlyApp/package.json
+- Eliminada dependencia @react-native-async-storage/async-storage.
+- Añadida dependencia expo-sqlite.
+
+[2026-07-12] ~ | README.md
+- Actualizada tabla de stack: AsyncStorage → SQLite (expo-sqlite).
+- Actualizada estructura de proyecto: storage/ → database/ con subcarpetas migrations/ y repositories/.
+
+[2026-07-12] ~ | docs/programming-concepts.md
+- Reemplazada sección AsyncStorage por SQLite (expo-sqlite) con nueva definición y ejemplo.
+
+[2026-07-12] ~ | src/screens/HomeScreen.tsx
+- Fix: Movido check de loading después de todos los hooks (useState, useCallback) para respetar Rules of Hooks.
+
+[2026-07-12] ~ | src/context/AppContext.tsx
+- Fix: cuentasConSaldo ahora calcula saldo real de cada cuenta usando obtenerSaldoActual() en lugar de usar saldo_inicial (siempre 0).
+
+[2026-07-12] ~ | FinlyApp/app.json
+- Añadido developmentClient.silentLaunch para reducir el banner de "Checking for updates" en Expo Go.
+
+[2026-07-12] ~ | README.md
+- Añadida sección "Desarrollo por USB" con instrucciones para conexión por cable (adb reverse).
+- Añadida sección "Desarrollo por Tunnel" con instrucciones para conexión por ngrok.
+- Eliminada referencia a data/mockData.ts de la estructura del proyecto.
+
+[2026-07-12] + | src/database/webStorage.ts
+- Implementado almacén de datos con localStorage para compatibilidad web. Mismas interfaces que SQLite: seedWebData con datos de prueba, webUsuarioRepo, webCuentaRepo, webCategoriaRepo, webTransaccionRepo.
+
+[2026-07-12] + | src/database/index.ts
+- Creado index de repositorios con switching por Platform.OS: SQLite en nativo, localStorage en web.
+
+[2026-07-12] ~ | App.tsx
+- Añadido Platform.OS para inicializar webStorage en web y database SQLite en nativo.
+
+[2026-07-12] ~ | src/context/AppContext.tsx
+- Importa repositorios desde src/database/index.ts en lugar de archivos directos de repositories/.
+
+[2026-07-12] ~ | docs/programming-concepts.md
+- Ampliada sección SQLite con detalles de por qué no funciona en web.
+- Añadida sección localStorage con definición y ejemplo.
+- Añadida sección "Plataforma switching" explicando el patrón Platform.OS para alternar entre SQLite y localStorage.

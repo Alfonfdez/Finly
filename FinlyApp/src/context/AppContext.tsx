@@ -1,9 +1,12 @@
-import { createContext, useContext, useState, useMemo, ReactNode } from 'react';
-import { Cuenta, Categoria, Transaccion, cuentasMock, categoriasMock, transaccionesMock } from '../data/mockData';
+import { createContext, useContext, useState, useMemo, useEffect, ReactNode } from 'react';
+import { Cuenta, Categoria, Transaccion } from '../database/types';
 import { Periodo, TipoTransaccion, CategoriaConTotal } from '../constants/types';
+import { cuentaRepository as cuentaRepo } from '../database';
+import { categoriaRepository as categoriaRepo } from '../database';
+import { transaccionRepository as transaccionRepo } from '../database';
 
 interface AppState {
-  cuentaActiva: Cuenta;
+  cuentaActiva: Cuenta | null;
   tipoActivo: TipoTransaccion;
   periodoActivo: Periodo;
   fechaSeleccionada: Date;
@@ -11,6 +14,7 @@ interface AppState {
   cuentas: Cuenta[];
   categorias: Categoria[];
   transacciones: Transaccion[];
+  cargando: boolean;
 }
 
 interface AppContextType extends AppState {
@@ -29,6 +33,8 @@ interface AppContextType extends AppState {
 }
 
 const AppContext = createContext<AppContextType | null>(null);
+
+const USUARIO_ID = 1;
 
 function calcularInicioFin(periodo: Periodo, fecha: Date): { inicio: Date; fin: Date } {
   switch (periodo) {
@@ -68,8 +74,18 @@ function calcularInicioFin(periodo: Periodo, fecha: Date): { inicio: Date; fin: 
   }
 }
 
+function formatearFechaParaDB(fecha: Date): string {
+  const y = fecha.getFullYear();
+  const m = String(fecha.getMonth() + 1).padStart(2, '0');
+  const d = String(fecha.getDate()).padStart(2, '0');
+  const h = String(fecha.getHours()).padStart(2, '0');
+  const min = String(fecha.getMinutes()).padStart(2, '0');
+  const s = String(fecha.getSeconds()).padStart(2, '0');
+  return `${y}-${m}-${d} ${h}:${min}:${s}`;
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [cuentaActiva, setCuentaActiva] = useState<Cuenta>(cuentasMock[0]);
+  const [cuentaActiva, setCuentaActiva] = useState<Cuenta | null>(null);
   const [tipoActivo, setTipoActivo] = useState<TipoTransaccion>('gasto');
   const [periodoActivo, setPeriodoActivo] = useState<Periodo>('dia');
   const [fechaSeleccionada, setFechaSeleccionada] = useState<Date>(new Date());
@@ -77,9 +93,43 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const ahora = new Date();
     return { inicio: new Date(ahora.getFullYear(), 0, 1), fin: ahora };
   });
-  const [cuentas] = useState<Cuenta[]>(cuentasMock);
-  const [categorias] = useState<Categoria[]>(categoriasMock);
-  const [transacciones] = useState<Transaccion[]>(transaccionesMock);
+  const [cuentas, setCuentas] = useState<Cuenta[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [transacciones, setTransacciones] = useState<Transaccion[]>([]);
+  const [cargando, setCargando] = useState(true);
+
+  useEffect(() => {
+    async function cargarDatos() {
+      const [cuentasData, categoriasData] = await Promise.all([
+        cuentaRepo.listar(USUARIO_ID),
+        categoriaRepo.listar(USUARIO_ID),
+      ]);
+      setCuentas(cuentasData);
+      setCategorias(categoriasData);
+      if (cuentasData.length > 0) {
+        setCuentaActiva(cuentasData[0]);
+      }
+      setCargando(false);
+    }
+    cargarDatos();
+  }, []);
+
+  useEffect(() => {
+    if (!cuentaActiva) return;
+    async function cargarTransacciones() {
+      const fechas = periodoActivo === 'periodo'
+        ? fechaPersonalizada
+        : calcularInicioFin(periodoActivo, fechaSeleccionada);
+
+      const datos = await transaccionRepo.listar({
+        cuenta_id: cuentaActiva!.id,
+        fecha_inicio: formatearFechaParaDB(fechas.inicio),
+        fecha_fin: formatearFechaParaDB(fechas.fin),
+      });
+      setTransacciones(datos);
+    }
+    cargarTransacciones();
+  }, [cuentaActiva, periodoActivo, fechaSeleccionada, fechaPersonalizada]);
 
   const fechas = useMemo(
     () => periodoActivo === 'periodo'
@@ -88,57 +138,59 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [periodoActivo, fechaPersonalizada, fechaSeleccionada],
   );
 
-  const filtrar = (
-    lista: Transaccion[],
-    cuentaId: number,
-    tipo?: TipoTransaccion,
-    rango?: { inicio: Date; fin: Date },
-  ) =>
-    lista.filter(t => {
-      if (t.cuentaId !== cuentaId) return false;
-      if (tipo && t.tipo !== tipo) return false;
-      if (rango) {
-        const f = new Date(t.fecha);
-        if (f < rango.inicio || f > rango.fin) return false;
-      }
-      return true;
-    });
-
   const transaccionesFiltradas = useMemo(
-    () => filtrar(transacciones, cuentaActiva.id, tipoActivo, fechas),
-    [transacciones, cuentaActiva.id, tipoActivo, fechas],
+    () => transacciones.filter(t => {
+      if (tipoActivo && t.tipo !== tipoActivo) return false;
+      return true;
+    }),
+    [transacciones, tipoActivo],
   );
 
   const totalIngresos = useMemo(
-    () => filtrar(transacciones, cuentaActiva.id, 'ingreso', fechas)
+    () => transaccionesFiltradas
+      .filter(t => t.tipo === 'ingreso')
       .reduce((sum, t) => sum + t.cantidad, 0),
-    [transacciones, cuentaActiva.id, fechas],
+    [transaccionesFiltradas],
   );
 
   const totalGastos = useMemo(
-    () => filtrar(transacciones, cuentaActiva.id, 'gasto', fechas)
+    () => transaccionesFiltradas
+      .filter(t => t.tipo === 'gasto')
       .reduce((sum, t) => sum + t.cantidad, 0),
-    [transacciones, cuentaActiva.id, fechas],
+    [transaccionesFiltradas],
   );
 
-  const totalIngresosGlobal = useMemo(
-    () => filtrar(transacciones, cuentaActiva.id, 'ingreso')
-      .reduce((sum, t) => sum + t.cantidad, 0),
-    [transacciones, cuentaActiva.id],
-  );
+  const [totalIngresosGlobal, setTotalIngresosGlobal] = useState(0);
+  const [totalGastosGlobal, setTotalGastosGlobal] = useState(0);
 
-  const totalGastosGlobal = useMemo(
-    () => filtrar(transacciones, cuentaActiva.id, 'gasto')
-      .reduce((sum, t) => sum + t.cantidad, 0),
-    [transacciones, cuentaActiva.id],
-  );
+  useEffect(() => {
+    if (!cuentaActiva) return;
+    async function cargarTotales() {
+      const [ingresos, gastos] = await Promise.all([
+        transaccionRepo.totalPorPeriodo(cuentaActiva!.id, 'ingreso', '1900-01-01', '2100-12-31'),
+        transaccionRepo.totalPorPeriodo(cuentaActiva!.id, 'gasto', '1900-01-01', '2100-12-31'),
+      ]);
+      setTotalIngresosGlobal(ingresos);
+      setTotalGastosGlobal(gastos);
+    }
+    cargarTotales();
+  }, [cuentaActiva, transacciones]);
 
-  const cuentasConSaldo = useMemo(() => {
-    const saldos = transacciones.reduce<Record<number, number>>((acc, t) => {
-      acc[t.cuentaId] = (acc[t.cuentaId] ?? 0) + (t.tipo === 'ingreso' ? t.cantidad : -t.cantidad);
-      return acc;
-    }, {});
-    return cuentas.map(cuenta => ({ ...cuenta, saldo: saldos[cuenta.id] ?? 0 }));
+  const [cuentasConSaldo, setCuentasConSaldo] = useState<(Cuenta & { saldo: number })[]>([]);
+
+  useEffect(() => {
+    async function calcularSaldos() {
+      const resultados = await Promise.all(
+        cuentas.map(async (cuenta) => {
+          const saldo = await cuentaRepo.obtenerSaldoActual(cuenta.id);
+          return { ...cuenta, saldo };
+        })
+      );
+      setCuentasConSaldo(resultados);
+    }
+    if (cuentas.length > 0) {
+      calcularSaldos();
+    }
   }, [cuentas, transacciones]);
 
   const categoriasActivas = useMemo(() => {
@@ -147,10 +199,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     return categoriasDelTipo.map(cat => {
       const total = transaccionesFiltradas
-        .filter(t => t.categoriaId === cat.id)
+        .filter(t => t.categoria_id === cat.id)
         .reduce((sum, t) => sum + t.cantidad, 0);
       return {
-        ...cat,
+        id: cat.id,
+        nombre: cat.nombre,
+        icono: cat.icono,
+        color: cat.color,
+        tipo: cat.tipo,
         total,
         porcentaje: totalTipo > 0 ? (total / totalTipo) * 100 : 0,
       };
@@ -166,6 +222,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     cuentas,
     categorias,
     transacciones,
+    cargando,
     seleccionarCuenta: setCuentaActiva,
     cambiarTipo: setTipoActivo,
     cambiarPeriodo: setPeriodoActivo,
@@ -180,7 +237,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     totalGastosGlobal,
   }), [
     cuentaActiva, tipoActivo, periodoActivo, fechaSeleccionada, fechaPersonalizada,
-    cuentas, categorias, transacciones,
+    cuentas, categorias, transacciones, cargando,
     transaccionesFiltradas, categoriasActivas, cuentasConSaldo,
     totalIngresos, totalGastos, totalIngresosGlobal, totalGastosGlobal,
   ]);

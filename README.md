@@ -16,7 +16,7 @@ App para gestionar ingresos y gastos personales con múltiples cuentas, categor�
 | Lenguaje | TypeScript |
 | Navegación | React Navigation (Stack + Drawer) |
 | Gráficos | react-native-svg |
-| Persistencia | AsyncStorage |
+| Persistencia | SQLite (expo-sqlite) |
 | Web | react-native-web |
 | Estado | Context API |
 
@@ -63,6 +63,41 @@ Esto arranca Metro Bundler. A partir de ahí:
 | `npm run android` | Arranca en emulador Android |
 | `npm run ios` | Arranca en simulador iOS (solo macOS) |
 
+### Desarrollo por USB (sin red compartida)
+
+Útil cuando el PC y el móvil no están en la misma red (ej. en clase).
+
+**Requisitos previos:**
+- Habilitar depuración USB en el móvil: Ajustes → Acerca del teléfono → tocar "Número de compilación" 7 veces → Ajustes → Opciones del desarrollador → activar "Depuración USB"
+- Descargar `adb` (Android Debug Bridge):
+  ```bash
+  Invoke-WebRequest -Uri "https://dl.google.com/android/repository/platform-tools-latest-windows.zip" -OutFile "$env:TEMP\platform-tools.zip"
+  Expand-Archive -Path "$env:TEMP\platform-tools.zip" -DestinationPath "C:\platform-tools" -Force
+  ```
+- Para que `adb` esté disponible globalmente, reiniciar la terminal después de la instalación.
+
+**Pasos:**
+1. Conectar el móvil al PC con cable USB
+2. Reenviar el puerto con adb:
+   ```bash
+   C:\platform-tools\adb.exe reverse tcp:8081 tcp:8081
+   ```
+3. Arrancar Expo:
+   ```bash
+   npx expo start
+   ```
+4. En Expo Go: agitar el móvil → "Introducir URL manualmente" → escribir:
+   ```
+   exp://localhost:8081
+   ```
+
+### Desarrollo por Tunnel (sin red compartida, sin cable)
+
+```bash
+npx expo start --tunnel
+```
+Requiere `@expo/ngrok` instalado globalmente (`npm install -g @expo/ngrok`). Funciona desde cualquier red pero es más lento.
+
 ## Estructura del proyecto
 
 ```
@@ -95,10 +130,17 @@ Finly/
 │   │   │   └── AppNavigator.tsx
 │   │   ├── context/             ← Estado global
 │   │   │   └── AppContext.tsx
-│   │   ├── data/                ← Datos mock
-│   │   │   └── mockData.ts
-│   │   ├── storage/             ← Persistencia (AsyncStorage)
-│   │   │   └── storage.ts
+│   │   ├── database/            ← SQLite (base de datos local)
+│   │   │   ├── database.ts
+│   │   │   ├── types.ts
+│   │   │   ├── migrations/
+│   │   │   │   ├── 001_initial.ts
+│   │   │   │   └── 002_seed.ts
+│   │   │   └── repositories/
+│   │   │       ├── usuarioRepo.ts
+│   │   │       ├── cuentaRepo.ts
+│   │   │       ├── categoriaRepo.ts
+│   │   │       └── transaccionRepo.ts
 │   │   ├── constants/           ← Constantes
 │   │   │   └── colors.ts
 │   │   └── utils/               ← Utilidades

@@ -1,12 +1,12 @@
 import { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colores } from '../constants/colors';
 import { useApp } from '../context/AppContext';
-import { Cuenta } from '../data/mockData';
+import { Cuenta } from '../database/types';
 import { formatearMoneda } from '../utils/formatters';
 import { RootStackParamList, Periodo } from '../constants/types';
 import AccountModal from '../components/AccountModal';
@@ -25,7 +25,7 @@ export default function HomeScreen() {
   const {
     cuentaActiva, tipoActivo, periodoActivo, fechaSeleccionada, fechaPersonalizada, cuentasConSaldo, categoriasActivas,
     totalIngresos, totalGastos, totalIngresosGlobal, totalGastosGlobal, seleccionarCuenta, cambiarTipo,
-    cambiarPeriodo, setFechaSeleccionada, setFechaPersonalizada,
+    cambiarPeriodo, setFechaSeleccionada, setFechaPersonalizada, cargando,
   } = useApp();
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -62,6 +62,16 @@ export default function HomeScreen() {
     inicioDia.setHours(0, 0, 0, 0);
     setFechaPersonalizada({ inicio: inicioDia, fin: finDia });
   }, [setFechaPersonalizada]);
+
+  if (cargando || !cuentaActiva) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+          <ActivityIndicator size="large" color={colores.primario} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>

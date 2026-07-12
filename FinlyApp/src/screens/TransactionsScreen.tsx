@@ -18,7 +18,7 @@ export default function TransactionsScreen() {
   const filtradas = useMemo(() => {
     let lista = transacciones;
     if (categoriaId) {
-      lista = lista.filter(t => t.categoriaId === categoriaId);
+      lista = lista.filter(t => t.categoria_id === categoriaId);
     }
     return [...lista].sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
   }, [transacciones, categoriaId]);
@@ -32,7 +32,7 @@ export default function TransactionsScreen() {
           data={filtradas}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => {
-            const cat = categorias.find(c => c.id === item.categoriaId);
+            const cat = categorias.find(c => c.id === item.categoria_id);
             return (
               <View style={styles.item}>
                 <View style={styles.info}>
