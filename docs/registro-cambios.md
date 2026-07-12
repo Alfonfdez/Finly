@@ -347,3 +347,9 @@
 
 [2026-07-12] ~ | src/constants/types.ts
 - Añadido parámetro tipo al AddCategory en RootStackParamList.
+
+[2026-07-12] ~ | src/screens/AddTransactionScreen.tsx
+- Añadido símbolo de divisa (config.divisa) a la derecha del input de cantidad.
+
+[2026-07-12] ~ | spec/features/004-pagina-transaccion/1-spec.md
+- Actualizada sección "Campo de cantidad" para incluir el símbolo de divisa a la derecha del input.

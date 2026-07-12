@@ -28,7 +28,7 @@ interface Etiqueta {
 }
 
 export default function AddTransactionScreen() {
-  const { coloresActivos: c } = useConfig();
+  const { coloresActivos: c, config } = useConfig();
   const { tipoActivo, periodoActivo, fechaPersonalizada, fechaSeleccionada, cuentas, categorias, cuentasConSaldo, cuentaActiva } = useApp();
   const fs = useFontSize();
   const texto = t();
@@ -140,6 +140,9 @@ export default function AddTransactionScreen() {
             onChangeText={handleCantidadChange}
             keyboardType="numeric"
           />
+          <Text style={[styles.currencySymbol, { color: c.textoSuave, fontSize: fs(18) }]}>
+            {config.divisa}
+          </Text>
           <TouchableOpacity style={styles.calculadoraButton}>
             <Ionicons name="calculator-outline" size={24} color={c.primario} />
           </TouchableOpacity>
@@ -236,6 +239,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 16,
     fontWeight: '700',
+  },
+  currencySymbol: {
+    marginRight: 8,
+    fontWeight: '600',
   },
   calculadoraButton: {
     padding: 8,

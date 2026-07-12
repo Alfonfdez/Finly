@@ -26,7 +26,8 @@ Pantalla accesible desde el botón "+" del Home que permita al usuario registrar
 - Si el usuario introduce más de 2 decimales:
   - El borde del input se muestra en rojo.
   - Se muestra el texto de error: "La cantidad que se ha introducido no es válida" (multilingual).
-- En el lado derecho del input, un icono de calculadora que abre una pantalla "Calculadora" (TODO: implementación futura).
+- A la derecha del input, se muestra el símbolo de la divisa seleccionada en configuración (ej: €, $, £, ¥).
+- A la derecha del símbolo de divisa, un icono de calculadora que abre una pantalla "Calculadora" (TODO: implementación futura).
 
 ### 4. Selección de cuenta
 
