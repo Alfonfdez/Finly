@@ -50,16 +50,37 @@ Pantalla accesible desde el botón "+" del Home que permita al usuario registrar
 
 | Pos. | Contenido | Texto debajo | Selección |
 |------|-----------|--------------|-----------|
-| 1 | Fecha de hoy (dd MM) | "Hoy" | Seleccionado si el día activo es hoy |
-| 2 | Fecha de ayer (dd MM) | "Ayer" | Seleccionado si el día activo es ayer |
+| 1 | Fecha de hoy (dd MMM) | "Hoy" | Seleccionado si el día activo es hoy |
+| 2 | Fecha de ayer (dd MMM) | "Ayer" | Seleccionado si el día activo es ayer |
 | 3 | Fecha dinámica o "Anteayer" | "Anteayer" / "Seleccionado" | Ver regla abajo |
 
-**Regla de la tercera posición:**
-- Si el día activo (seleccionado desde el Home o desde el botón calendario) es **hoy** o **ayer**: la tercera posición muestra "Anteayer" (fecha de hace 2 días) y **no** está seleccionada.
-- Si el día activo es **otro día** (ni hoy ni ayer): la tercera posición muestra la fecha activa y el texto "Seleccionado" (multilingual), y **sí** está seleccionada.
+**Formato de fechas:**
+- Espacios 1 y 2: "dd MMM" (ej: "12 Jul", "11 Jul").
+- Espacio 3: "dd MMM" si el año es el actual (ej: "10 Jul"), "dd MMM yyyy" si es otro año (ej: "10 Jul 2025").
+
+**Lógica de selección según el estado de la pantalla principal:**
+
+| Pestaña principal | Fecha seleccionada | Espacio 1 (Hoy) | Espacio 2 (Ayer) | Espacio 3 (Dinámico) |
+|---|---|---|---|---|
+| Día | Hoy | Seleccionado | - | "Anteayer", no seleccionado |
+| Día | Ayer | - | Seleccionado | "Anteayer", no seleccionado |
+| Día | Otro día | - | - | Esa fecha, **seleccionado** |
+| Semana / Mes / Año | Cualquiera | Seleccionado | - | "Anteayer", no seleccionado |
+| Período | Rango > 1 día | Seleccionado | - | "Anteayer", no seleccionado |
+| Período | Rango = 1 día = hoy | Seleccionado | - | "Anteayer", no seleccionado |
+| Período | Rango = 1 día = ayer | - | Seleccionado | "Anteayer", no seleccionado |
+| Período | Rango = 1 día = otro | - | - | Esa fecha, **seleccionado** |
+
+**Inicialización al abrir "Añadir transacción":**
+- Si la pestaña activa es Período y el rango es de 1 día: el día heredado es `fechaPersonalizada.inicio`.
+- En cualquier otro caso: el día heredado es `fechaSeleccionada` de la pantalla principal.
+
+**Al interactuar con el selector de día:**
+- El componente DaySelector es un componente controlado: recibe `diaSeleccionado` como prop y llama a `onSelect(fecha)` al pulsar.
+- Al seleccionar un día, se actualiza el estado local y la lógica se recalcula inmediatamente.
+- El botón de calendario abre un modal `CalendarModal` (reutilizar componente existente) para seleccionar una fecha libre.
 
 - A la derecha del grid, un icono de calendario que abre un modal similar al `DayPicker` del calendario para seleccionar una fecha.
-- El día seleccionado por defecto coincide con el día seleccionado en la pantalla principal.
 
 ### 7. Etiquetas
 
@@ -111,22 +132,22 @@ Pantalla accesible desde el botón "+" del Home que permita al usuario registrar
 
 ## Criterios de aceptación
 
-- [ ] El botón "+" del Home navega a la pantalla de añadir transacción.
-- [ ] El header muestra flecha de retroceso y título "Añadir transacción" en el idioma activo.
-- [ ] Los tabs "Gastos"/"Ingresos" muestran el tipo heredado del Home.
-- [ ] El input de cantidad valida máximo 2 decimales y muestra error en rojo si no es válido.
-- [ ] El icono de calculadora está visible pero no funcional (TODO).
-- [ ] La cuenta mostrada coincide con la seleccionada en el Home.
-- [ ] El modal de cuentas permite cambiar la cuenta seleccionada.
-- [ ] Se muestran 7 categorías más usadas en un grid 4×2 + botón "Más".
-- [ ] El botón "Más" está visible pero no funcional (TODO).
-- [ ] Los 3 días muestran las fechas correctas según la regla descrita.
-- [ ] El botón de calendario abre el modal de selección de día.
-- [ ] La sección de etiquetas permite buscar, crear y seleccionar etiquetas.
-- [ ] El modal de "Añadir etiqueta" valida 20 caracteres máximo.
-- [ ] El campo de comentario permite hasta 4096 caracteres con contador.
-- [ ] El botón de foto abre el modal con las dos opciones (TODO).
+- [x] El botón "+" del Home navega a la pantalla de añadir transacción.
+- [x] El header muestra flecha de retroceso y título "Añadir transacción" en el idioma activo.
+- [x] Los tabs "Gastos"/"Ingresos" muestran el tipo heredado del Home.
+- [x] El input de cantidad valida máximo 2 decimales y muestra error en rojo si no es válido.
+- [x] El icono de calculadora está visible pero no funcional (TODO).
+- [x] La cuenta mostrada coincide con la seleccionada en el Home.
+- [x] El modal de cuentas permite cambiar la cuenta seleccionada.
+- [x] Se muestran 7 categorías más usadas en un grid 4×2 + botón "Más".
+- [x] El botón "Más" está visible pero no funcional (TODO).
+- [x] Los 3 días muestran las fechas correctas según la regla descrita.
+- [x] El botón de calendario abre el modal de selección de día.
+- [x] La sección de etiquetas permite buscar, crear y seleccionar etiquetas.
+- [x] El modal de "Añadir etiqueta" valida 20 caracteres máximo.
+- [x] El campo de comentario permite hasta 4096 caracteres con contador.
+- [x] El botón de foto abre el modal con las dos opciones (TODO).
 - [ ] El botón "Añadir" crea la transacción y vuelve al Home.
-- [ ] Todos los textos cambian al cambiar el idioma en configuración.
-- [ ] La pantalla respeta el tema activo (oscuro/claro).
-- [ ] La pantalla respeta el tamaño de texto configurado.
+- [x] Todos los textos cambian al cambiar el idioma en configuración.
+- [x] La pantalla respeta el tema activo (oscuro/claro).
+- [x] La pantalla respeta el tamaño de texto configurado.

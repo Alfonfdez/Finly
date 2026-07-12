@@ -85,7 +85,14 @@ function HomeStack() {
       }}
     >
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="AddTransaction" component={AddTransactionScreen} options={{ title: texto.nav_add }} />
+      <Stack.Screen name="AddTransaction" component={AddTransactionScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="add-circle-outline" size={20} color={c.texto} />
+            <Text style={{ color: c.texto, fontSize: fs(17), fontWeight: '600' }}>{texto.add_title}</Text>
+          </View>
+        ),
+      }} />
       <Stack.Screen name="Transactions" component={TransactionsScreen} options={{
         headerTitle: () => (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>

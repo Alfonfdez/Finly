@@ -308,3 +308,15 @@
 - Ampliada sección SQLite con detalles de por qué no funciona en web.
 - Añadida sección localStorage con definición y ejemplo.
 - Añadida sección "Plataforma switching" explicando el patrón Platform.OS para alternar entre SQLite y localStorage.
+
+[2026-07-12] ~ | src/components/DaySelector.tsx
+- Simplificado DaySelector: eliminada lógica de Period mode (periodoActivo, fechaPersonalizada props). Ahora siempre usa diaSeleccionado para toda la lógica de selección.
+
+[2026-07-12] ~ | src/screens/AddTransactionScreen.tsx
+- Añadida inicialización de dia basada en Period mode: si periodoActivo es 'periodo' y el rango es 1 día, hereda fechaPersonalizada.inicio; en otro caso hereda fechaSeleccionada.
+
+[2026-07-12] ~ | spec/features/004-pagina-transaccion/1-spec.md
+- Actualizada sección "Selección de día" con lógica detallada: tabla de estados por pestaña principal, formato de fechas, inicialización y comportamiento interactivo.
+
+[2026-07-12] ~ | spec/features/004-pagina-transaccion/3-tasks.md
+- Marcadas tareas T1-T21, T24-T26 como completadas. Pendientes T22-T23 (persistencia) y T27 (verificación).
