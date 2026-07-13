@@ -440,3 +440,16 @@
 - Añadidas funcionalidades: ajustes, tema oscuro/claro, multilingüe, escalado de texto.
 - Actualizada lista de features SDD: 001-006.
 - Corregido excalidraw/ → images/ en la ruta de la estructura.
+
+[2026-07-13] ~ | src/screens/AddTransactionScreen.tsx
+- Movido panel de sugerencias de comentarios por encima del input de comentario.
+- Eliminado KeyboardAvoidingView y onFocus. Implementado listener Keyboard.addListener('keyboardDidShow') con scrollToEnd tras 300ms.
+- Añadido scrollViewRef para controlar el scroll programáticamente.
+- Añadido keyboardShouldPersistTaps="handled" al ScrollView.
+- Añadido spacer de 200px al final del contenido para permitir scroll hasta el input de comentario.
+
+[2026-07-13] ~ | src/components/CommentInput.tsx
+- Revertido prop onFocus (ya no se usa, el scroll lo gestiona el padre con Keyboard listener).
+
+[2026-07-13] ~ | FinlyApp/app.json
+- Eliminado softwareKeyboardLayoutMode "resize" (causaba conflicto, no requerido).

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Pressable } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Pressable, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -160,6 +160,7 @@ export default function AddTransactionScreen() {
   const [comment, setComment] = useState('');
   const [commentSuggestions, setCommentSuggestions] = useState<string[]>([]);
   const inputRef = useRef<TextInput>(null);
+  const scrollRef = useRef<ScrollView>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipNextSearch = useRef(false);
 
@@ -251,6 +252,16 @@ export default function AddTransactionScreen() {
     setCommentSuggestions([]);
   };
 
+  // Auto-scroll to bottom when keyboard opens (so comment input is visible)
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () => {
+      setTimeout(() => {
+        scrollRef.current?.scrollToEnd({ animated: true });
+      }, 300);
+    });
+    return () => { showSub.remove(); };
+  }, []);
+
   const handleSelectAccount = (account: typeof accountsWithBalance[0]) => {
     setAccountId(account.id);
     setModalAccountVisible(false);
@@ -318,8 +329,8 @@ export default function AddTransactionScreen() {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]}>
-      <ScrollView style={[styles.container, { backgroundColor: c.background }]}>
-        <TypeTabs active={type} onChange={setType} />
+        <ScrollView ref={scrollRef} style={[styles.container, { backgroundColor: c.background }]} keyboardShouldPersistTaps="handled">
+          <TypeTabs active={type} onChange={setType} />
 
         <View style={[styles.amountContainer, { backgroundColor: c.surface }]}>
           <TextInput
@@ -380,12 +391,6 @@ export default function AddTransactionScreen() {
           onCreate={handleCreateTag}
         />
 
-        <CommentInput
-          ref={inputRef}
-          comment={comment}
-          onChange={setComment}
-        />
-
         {commentSuggestions.length > 0 && (
           <View style={[styles.suggestionsPanel, { backgroundColor: c.surface, borderColor: c.border }]}>
             {commentSuggestions.map((item, i) => (
@@ -401,6 +406,12 @@ export default function AddTransactionScreen() {
             ))}
           </View>
         )}
+
+        <CommentInput
+          ref={inputRef}
+          comment={comment}
+          onChange={setComment}
+        />
 
         <PhotoSection
           photoUri={fotoUri}
@@ -431,7 +442,8 @@ export default function AddTransactionScreen() {
             {submitting ? '...' : labels.add_submit}
           </Text>
         </TouchableOpacity>
-      </ScrollView>
+        <View style={{ height: 200 }} />
+        </ScrollView>
 
       <AccountModal
         visible={modalAccountVisible}
