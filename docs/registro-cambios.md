@@ -433,3 +433,10 @@
 - Marcado feature 001 como "completado".
 - Añadidos features 002-006 con descripciones y estados actualizados.
 - Corregida referencia AsyncStorage → SQLite en feature 001.
+
+[2026-07-13] ~ | README.md
+- Actualizada tabla de stack: añadido i18n, ConfigContext, localStorage como fallback web.
+- Reescrita estructura del proyecto completa: 5 screens, 15+ components, database con 5 migraciones, i18n, hooks, constants, context.
+- Añadidas funcionalidades: ajustes, tema oscuro/claro, multilingüe, escalado de texto.
+- Actualizada lista de features SDD: 001-006.
+- Corregido excalidraw/ → images/ en la ruta de la estructura.

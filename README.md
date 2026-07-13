@@ -16,9 +16,10 @@ App para gestionar ingresos y gastos personales con múltiples cuentas, categor�
 | Lenguaje | TypeScript |
 | Navegación | React Navigation (Stack + Drawer) |
 | Gráficos | react-native-svg |
-| Persistencia | SQLite (expo-sqlite) |
+| Persistencia | SQLite (expo-sqlite) en nativo, localStorage en web |
 | Web | react-native-web |
-| Estado | Context API |
+| Estado | Context API (AppContext + ConfigContext) |
+| i18n | Sistema propio (español, inglés, catalán) |
 
 ## Cómo empezar
 
@@ -102,63 +103,97 @@ Requiere `@expo/ngrok` instalado globalmente (`npm install -g @expo/ngrok`). Fun
 
 ```
 Finly/
-├── FinlyApp/               ← App React Native / Expo
-│   ├── App.tsx                  ← Punto de entrada
-│   ├── app.json                 ← Configuración Expo
+├── FinlyApp/                    ← App React Native / Expo
+│   ├── App.tsx                      ← Punto de entrada
+│   ├── app.json                     ← Configuración Expo
 │   ├── src/
-│   │   ├── components/          ← Componentes UI
-│   │   │   ├── DonutChart.tsx
-│   │   │   ├── BarChart.tsx
-│   │   │   ├── CategoryList.tsx
-│   │   │   ├── CalendarPicker.tsx
-│   │   │   ├── CalendarModal.tsx
-│   │   │   ├── AccountModal.tsx
-│   │   │   ├── PeriodTabs.tsx
-│   │   │   ├── TypeTabs.tsx
-│   │   │   └── calendars/       ← Selectores de fecha
+│   │   ├── navigation/
+│   │   │   └── AppNavigator.tsx     ← Stack + Drawer navigator
+│   │   ├── screens/
+│   │   │   ├── HomeScreen.tsx       ← Pantalla principal
+│   │   │   ├── AddTransactionScreen.tsx ← Añadir gasto/ingreso
+│   │   │   ├── AddCategoryScreen.tsx← Seleccionar categoría
+│   │   │   ├── TransactionsScreen.tsx ← Listado de transacciones
+│   │   │   └── SettingsScreen.tsx   ← Configuración de la app
+│   │   ├── components/
+│   │   │   ├── AccountModal.tsx     ← Modal de selección de cuentas
+│   │   │   ├── DonutChart.tsx       ← Gráfico de anillos SVG
+│   │   │   ├── BarChart.tsx         ← Barra horizontal apilada
+│   │   │   ├── CategoryList.tsx     ← Lista de desglose por categorías
+│   │   │   ├── CategoryGrid.tsx     ← Grid 4×N de categorías
+│   │   │   ├── CalendarPicker.tsx   ← Selector de fecha textual
+│   │   │   ├── CalendarModal.tsx    ← Modal contenedor de calendarios
+│   │   │   ├── DaySelector.tsx      ← Selector de día (Hoy/Ayer/Dinámico)
+│   │   │   ├── PeriodTabs.tsx       ← Tabs Día/Semana/Mes/Año/Período
+│   │   │   ├── TypeTabs.tsx         ← Tabs Gastos/Ingresos
+│   │   │   ├── SearchBar.tsx        ← Barra de búsqueda reutilizable
+│   │   │   ├── TagSection.tsx       ← Sección de etiquetas
+│   │   │   ├── CommentInput.tsx     ← Input de comentario con contador
+│   │   │   ├── PhotoSection.tsx     ← Sección de foto (cámara/galería)
+│   │   │   └── calendars/           ← Selectores de fecha
 │   │   │       ├── DayPicker.tsx
 │   │   │       ├── WeekPicker.tsx
 │   │   │       ├── MonthGrid.tsx
 │   │   │       ├── MonthNav.tsx
 │   │   │       ├── YearGrid.tsx
-│   │   │       └── PeriodPicker.tsx
-│   │   ├── screens/             ← Pantallas
-│   │   │   ├── HomeScreen.tsx
-│   │   │   ├── AddTransactionScreen.tsx
-│   │   │   └── TransactionsScreen.tsx
-│   │   ├── navigation/          ← Navegación
-│   │   │   └── AppNavigator.tsx
-│   │   ├── context/             ← Estado global
-│   │   │   └── AppContext.tsx
-│   │   ├── database/            ← SQLite (base de datos local)
-│   │   │   ├── database.ts
-│   │   │   ├── types.ts
+│   │   │       ├── YearNav.tsx
+│   │   │       ├── PeriodPicker.tsx
+│   │   │       └── types.ts
+│   │   ├── context/
+│   │   │   ├── AppContext.tsx        ← Estado de negocio
+│   │   │   └── ConfigContext.tsx     ← Preferencias del usuario
+│   │   ├── database/
+│   │   │   ├── database.ts          ← Inicialización SQLite + migraciones
+│   │   │   ├── types.ts             ← Interfaces TypeScript
+│   │   │   ├── index.ts             ← Switching por plataforma
+│   │   │   ├── webStorage.ts        ← Fallback localStorage para web
 │   │   │   ├── migrations/
 │   │   │   │   ├── 001_initial.ts
-│   │   │   │   └── 002_seed.ts
+│   │   │   │   ├── 002_seed.ts
+│   │   │   │   ├── 003_config.ts
+│   │   │   │   ├── 004_new_categories.ts
+│   │   │   │   └── 005_english_schema.ts
 │   │   │   └── repositories/
-│   │   │       ├── usuarioRepo.ts
-│   │   │       ├── cuentaRepo.ts
-│   │   │       ├── categoriaRepo.ts
-│   │   │       └── transaccionRepo.ts
-│   │   ├── constants/           ← Constantes
-│   │   │   └── colors.ts
-│   │   └── utils/               ← Utilidades
-│   │       └── formatters.ts
+│   │   │       ├── userRepo.ts
+│   │   │       ├── accountRepo.ts
+│   │   │       ├── categoryRepo.ts
+│   │   │       ├── transactionRepo.ts
+│   │   │       └── configRepo.ts
+│   │   ├── i18n/
+│   │   │   ├── index.ts             ← Selector de idioma + helpers
+│   │   │   ├── en.ts
+│   │   │   ├── es.ts
+│   │   │   └── ca.ts
+│   │   ├── hooks/
+│   │   │   └── useFontSize.ts       ← Hook de escalado de texto
+│   │   ├── constants/
+│   │   │   ├── themes.ts            ← Paletas dark + light
+│   │   │   ├── colors.ts            ← Paleta legacy
+│   │   │   ├── types.ts             ← Tipos compartidos
+│   │   │   └── platformStyles.ts    ← Estilos por plataforma
+│   │   ├── data/
+│   │   │   └── mockData.ts          ← Datos mock (legacy)
+│   │   └── utils/
+│   │       └── formatters.ts        ← Formatear moneda, fechas, etc.
 │   ├── assets/
 │   ├── package.json
 │   └── tsconfig.json
 │
-├── spec/                        ← Especificaciones SDD
+├── spec/                         ← Especificaciones SDD
+│   ├── constitution/
 │   └── features/
 │       ├── 001-pagina-inicial/
-│       └── 002-diseño-DB/
+│       ├── 002-diseño-DB/
+│       ├── 003-pagina-configuracion/
+│       ├── 004-pagina-transaccion/
+│       ├── 005-pagina-anadir-categoria/
+│       └── 006-pagina-crear-categoria/
 │
-├── .agents/skills/              ← Skills para asistentes IA
-├── docs/                        ← Documentación de conceptos
-├── excalidraw/                  ← Diagramas y wireframes
-├── AGENTS.md                    ← Reglas SDD globales
-└── README.md                    ← Este archivo
+├── .agents/skills/               ← Skills para asistentes IA
+├── docs/                         ← Documentación de conceptos
+├── images/                       ← Diagramas y wireframes
+├── AGENTS.md                     ← Reglas SDD globales
+└── README.md                     ← Este archivo
 ```
 
 ## Funcionalidades
@@ -169,5 +204,9 @@ Finly/
 - Selector de fecha interactivo (DateTimePicker)
 - Gráfico de anillos (donut) y barra horizontal apilada
 - Desglose por categorías con porcentajes
-- Tema oscuro
+- Pantalla de ajustes: tema, divisa, idioma, calendario, tamaño de texto
+- Tema oscuro y claro con cambio en tiempo real
+- Soporte multilingüe: español, inglés, catalán
+- Escalado de texto según preferencias del usuario
 - Navegación con menú lateral (Drawer)
+- Creación de categorías personalizadas (próximamente)
