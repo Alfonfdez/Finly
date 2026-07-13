@@ -5,7 +5,7 @@ Orden de ejecución. Marca cada tarea al completarlo.
 
 ### Fase 1 — Infraestructura y navegación
 
-[ ] T1 — Añadir claves i18n en `src/i18n/en.ts`, `src/i18n/es.ts` y `src/i18n/ca.ts` para todos los textos de la pantalla (nombre, tipo, símbolos, color, botones, textos de error, TODO placeholders).
+[ ] T1 — Añadir claves i18n en `src/i18n/en.ts`, `src/i18n/es.ts` y `src/i18n/ca.ts` para todos los textos de la pantalla (nombre, tipo, símbolos, color, botones, textos de error, modal de colores).
 
 [ ] T2 — Actualizar `src/constants/types.ts`: añadir `CreateCategory` al `RootStackParamList` (con `type?: TransactionType` como parámetro opcional) y crear `CreateCategoryScreenProps`.
 
@@ -17,7 +17,7 @@ Orden de ejecución. Marca cada tarea al completarlo.
 
 ### Fase 2 — Validación de nombre y duplicados
 
-[ ] T5 — Añadir función `existsByName(name: string, type: TransactionType): Promise<boolean>` al `categoryRepo` (SQL: `SELECT COUNT(*) ... WHERE LOWER(name)=LOWER(?) AND type=? AND user_id=1`) y al `webCategoryRepo` (filtrado case-insensitive en localStorage).
+[ ] T5 — Añadir función `existsByName(name: string): Promise<boolean>` al `categoryRepo` (SQL: `SELECT COUNT(*) ... WHERE LOWER(name)=LOWER(?) AND user_id=1`) y al `webCategoryRepo` (filtrado case-insensitive en localStorage).
 
 [ ] T6 — Crear el input de nombre en `CreateCategoryScreen` con placeholder multilingual, contador "0/30" y validación de duplicados con debounce de 300ms. Mostrar texto de error en rojo si el nombre está vacío o es duplicado.
 
@@ -25,15 +25,17 @@ Orden de ejecución. Marca cada tarea al completarlo.
 
 ### Fase 3 — Componentes de selección
 
-[ ] T7 — Crear `IconGrid.tsx`: grid 4×4 con 15 iconos Ionicons predefinidos (fondo gris `#334155`) + posición 16 "..." (color acento). Selección única con resaltado visual (borde primario). Al pulsar "...", navegar a "Catálogo de iconos" (TODO: alert o placeholder).
+[ ] T7 — Crear `IconGrid.tsx`: grid de 4 columnas con ~40 iconos Ionicons predefinidos (fondo gris `#334155`). Scroll vertical si no caben. Selección única con resaltado visual (borde primario).
 
-[ ] T8 — Crear `ColorGrid.tsx`: grid 1×8 con 7 colores predefinidos (círculos) + "+" gris. Selección única con anillo de selección + checkmark superpuesto. Al pulsar "+", navegar a "Seleccionar color" (TODO: alert o placeholder).
+[ ] T8 — Crear `ColorGrid.tsx`: grid 1×8 con 7 colores predefinidos (círculos) + "+" gris. Selección única con anillo de selección + checkmark superpuesto. Al pulsar "+", abrir `ColorPickerModal`.
+
+[ ] T8b — Crear `ColorPickerModal.tsx`: modal con paleta ampliada de ~20 colores en grid 4×5. Al seleccionar un color, cerrar automáticamente y actualizar la selección en ColorGrid. Botón "Cancelar" para cerrar sin seleccionar.
 
 ---
 
 ### Fase 4 — Pantalla principal
 
-[ ] T9 — Crear `CreateCategoryScreen.tsx` con header (retroceso + título), input de nombre con validación, radios de tipo (Gastos/Ingresos), `IconGrid`, `ColorGrid`, texto de ayuda dinámico y botón "Añadir".
+[ ] T9 — Crear `CreateCategoryScreen.tsx` con header (retroceso + título), input de nombre con validación, radios de tipo (Gastos/Ingresos), `IconGrid`, `ColorGrid` con `ColorPickerModal`, texto de ayuda dinámico y botón "Añadir".
 
 [ ] T10 — Implementar la validación del botón "Añadir": deshabilitado si nombre vacío, nombre duplicado, falta icono o falta color. Mostrar texto de ayuda en rojo con prioridad (nombre → duplicado → icono/color).
 

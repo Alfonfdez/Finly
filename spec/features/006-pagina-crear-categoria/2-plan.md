@@ -5,8 +5,10 @@
 ### Componentes nuevos
 
 - **CreateCategoryScreen.tsx**: Pantalla principal con input de nombre, selector de tipo (radio), grid de iconos, grid de colores y botón "Añadir".
-- **IconGrid.tsx**: Grid 4×4 de iconos Ionicons seleccionables con fondo gris y posición "..." para catálogo.
-- **ColorGrid.tsx**: Grid 1×8 de colores preseleccionados circulares + "+" para selector de color.
+- **IconGrid.tsx**: Grid de 4 columnas con ~40 iconos Ionicons seleccionables con fondo gris. Scroll vertical si no caben.
+- **ColorGrid.tsx**: Grid 1×8 de colores preseleccionados circulares + "+" que abre un modal de colores expandido.
+- **ColorPickerModal.tsx**: Modal con paleta ampliada de ~20 colores en grid 4×5.
+- **ColorPickerModal.tsx**: Modal con paleta ampliada de ~20 colores en grid 4×5.
 
 ### Archivos modificados
 
@@ -51,17 +53,36 @@ AddCategoryScreen → grid ("Crear") → CreateCategoryScreen → AddCategoryScr
 ├─────────────────────────────────┤
 │ Símbolos                       │  ← Título sección
 │ ┌──┐ ┌──┐ ┌──┐ ┌──┐           │
-│ │  │ │  │ │  │ │  │           │  ← Grid 4×4 iconos
+│ │  │ │  │ │  │ │  │           │  ← Grid 4 cols, ~40 iconos
+│ └──┘ └──┘ └──┘ └──┘           │     (scroll vertical)
+│ ┌──┐ ┌──┐ ┌──┐ ┌──┐           │
+│ │  │ │  │ │  │ │  │           │
 │ └──┘ └──┘ └──┘ └──┘           │
-│ ... (15 iconos + "...")        │
+│ ...                            │
 ├─────────────────────────────────┤
 │ Color                          │  ← Título sección
-│ ( ) ( ) ( ) ( ) ( ) ( ) ( ) (+)
+│ ( ) ( ) ( ) ( ) ( ) ( ) (+)    │  ← "+" abre modal
 ├─────────────────────────────────┤
 │ [Texto ayuda en rojo]          │  ← Solo si falta requisito
 │ ┌─────────────────────────┐     │
 │ │         Añadir          │     │  ← Botón (deshabilitado si falta)
 │ └─────────────────────────┘     │
+└─────────────────────────────────┘
+```
+
+### ColorPickerModal
+
+```
+┌─────────────────────────────────┐
+│ Seleccionar color        Cancelar│  ← Header modal
+├─────────────────────────────────┤
+│ ┌──┐ ┌──┐ ┌──┐ ┌──┐           │
+│ │  │ │  │ │  │ │  │           │  ← Grid 4×5, ~20 colores
+│ └──┘ └──┘ └──┘ └──┘           │
+│ ┌──┐ ┌──┐ ┌──┐ ┌──┐           │
+│ │  │ │  │ │  │ │  │           │
+│ └──┘ └──┘ └──┘ └──┘           │
+│ ...                            │
 └─────────────────────────────────┘
 ```
 
@@ -90,26 +111,38 @@ interface CreateCategoryState {
 
 ### Verificación de duplicados
 
-- Se añade `existsByName(name, type)` a `categoryRepo` y `webCategoryRepo`.
-- SQL: `SELECT COUNT(*) FROM categories WHERE user_id = 1 AND LOWER(name) = LOWER(?) AND type = ?`.
+- Se añade `existsByName(name: string): Promise<boolean>` a `categoryRepo` y `webCategoryRepo`.
+- SQL: `SELECT COUNT(*) FROM categories WHERE user_id = 1 AND LOWER(name) = LOWER(?)`.
 - Web: filtrado case-insensitive en localStorage.
-- Se ejecuta con debounce de 300ms al cambiar el nombre o el tipo.
+- Se ejecuta con debounce de 300ms al cambiar el nombre.
 - Mientras se verifica (checkingName = true), el botón permanece deshabilitado.
 
 ---
 
-## Iconos predefinidos (grid 4×4)
+## Iconos predefinidos (grid 4 columnas, ~40 iconos)
 
 | # | Ionicons name | # | Ionicons name |
 |---|---|---|---|
-| 1 | `wallet-outline` | 9 | `restaurant-outline` |
-| 2 | `cart-outline` | 10 | `heart-outline` |
-| 3 | `bus-outline` | 11 | `fitness-outline` |
-| 4 | `home-outline` | 12 | `school-outline` |
-| 5 | `musical-notes-outline` | 13 | `airplane-outline` |
-| 6 | `game-controller-outline` | 14 | `shirt-outline` |
-| 7 | `bag-outline` | 15 | `gift-outline` |
-| 8 | `film-outline` | 16 | `...` (catálogo) |
+| 1 | `wallet-outline` | 21 | `cash-outline` |
+| 2 | `cart-outline` | 22 | `card-outline` |
+| 3 | `bus-outline` | 23 | `pricetag-outline` |
+| 4 | `home-outline` | 24 | `storefront-outline` |
+| 5 | `musical-notes-outline` | 25 | `coffee-outline` |
+| 6 | `game-controller-outline` | 26 | `car-outline` |
+| 7 | `bag-outline` | 27 | `bicycle-outline` |
+| 8 | `film-outline` | 28 | `train-outline` |
+| 9 | `restaurant-outline` | 29 | `key-outline` |
+| 10 | `heart-outline` | 30 | `book-outline` |
+| 11 | `fitness-outline` | 31 | `barbell-outline` |
+| 12 | `school-outline` | 32 | `globe-outline` |
+| 13 | `airplane-outline` | 33 | `compass-outline` |
+| 14 | `shirt-outline` | 34 | `map-outline` |
+| 15 | `gift-outline` | 35 | `star-outline` |
+| 16 | `briefcase-outline` | 36 | `notifications-outline` |
+| 17 | `code-slash-outline` | 37 | `football-outline` |
+| 18 | `trending-up-outline` | 38 | `wine-outline` |
+| 19 | `dice-outline` | 39 | `ellipsis-horizontal-outline` |
+| 20 | `people-outline` | 40 | `phone-portrait-outline` |
 
 ## Colores predefinidos (grid 1×8)
 
@@ -118,7 +151,22 @@ interface CreateCategoryState {
 | 1 | `#22D3EE` | 5 | `#F472B6` |
 | 2 | `#F87171` | 6 | `#60A5FA` |
 | 3 | `#34D399` | 7 | `#A78BFA` |
-| 4 | `#FBBF24` | 8 | `+` (selector) |
+| 4 | `#FBBF24` | 8 | `+` (abre modal) |
+
+## Colores expandidos (ColorPickerModal, grid 4×5)
+
+| # | Hex | # | Hex |
+|---|---|---|---|
+| 1 | `#22D3EE` | 11 | `#FB923C` |
+| 2 | `#F87171` | 12 | `#E879F9` |
+| 3 | `#34D399` | 13 | `#C084FC` |
+| 4 | `#FBBF24` | 14 | `#38BDF8` |
+| 5 | `#F472B6` | 15 | `#4ADE80` |
+| 6 | `#60A5FA` | 16 | `#FB7185` |
+| 7 | `#A78BFA` | 17 | `#FCA5A5` |
+| 8 | `#94A3B8` | 18 | `#86EFAC` |
+| 9 | `#FCD34D` | 19 | `#FDE68A` |
+| 10 | `#6EE7B7` | 20 | `#A5B4FC` |
 
 ---
 
@@ -160,8 +208,8 @@ Nuevas claves necesarias:
 | `create_cat_hint_icon` | Select an icon | Selecciona un icono | Selecciona una icona |
 | `create_cat_hint_color` | Select a color | Selecciona un color | Selecciona un color |
 | `create_cat_hint_icon_color` | Select an icon and a color | Selecciona un icono y un color | Selecciona una icona i un color |
-| `create_cat_icon_catalog` | Icon catalog | Catálogo de iconos | Catàleg d'icones |
-| `create_cat_color_picker` | Color picker | Selector de color | Selector de color |
+| `create_cat_color_picker_title` | Select color | Seleccionar color | Seleccionar color |
+| `create_cat_color_picker_cancel` | Cancel | Cancelar | Cancel·lar |
 
 ---
 

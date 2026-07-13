@@ -453,3 +453,25 @@
 
 [2026-07-13] ~ | FinlyApp/app.json
 - Eliminado softwareKeyboardLayoutMode "resize" (causaba conflicto, no requerido).
+
+[2026-07-13] ~ | spec/features/006-pagina-crear-categoria/1-spec.md
+- Simplificada sección 4 (Símbolos): grid de 4 columnas con ~40 iconos en scroll vertical, eliminado botón "..." y referencia a catálogo de iconos.
+- Simplificada sección 5 (Color): "+" abre un modal con ~20 colores en grid 4×5 en lugar de navegar a una pantalla separada.
+
+[2026-07-13] ~ | spec/features/006-pagina-crear-categoria/2-plan.md
+- Añadido componente ColorPickerModal.tsx al plan.
+- Actualizado wireframe con grid de iconos dinámica y modal de colores.
+- Actualizada tabla de iconos: 40 iconos en lugar de 15 + "...".
+- Añadida tabla de colores expandidos (20 colores) para el modal.
+- Reemplazadas claves i18n de catálogo/selector por claves de modal.
+
+[2026-07-13] ~ | spec/features/006-pagina-crear-categoria/3-tasks.md
+- Actualizada T7: IconGrid con 40 iconos, scroll vertical, sin "...".
+- Actualizada T8: ColorGrid con "+" que abre modal.
+- Añadida T8b: ColorPickerModal con 20 colores en grid 4×5.
+- Actualizada T9: referencia a ColorPickerModal.
+
+[2026-07-13] ~ | spec/features/006-pagina-crear-categoria/1-spec.md, 2-plan.md, 3-tasks.md
+- Simplificada validación de duplicados: nombre único global (independientemente del tipo gasto/ingreso).
+- Eliminada re-ejecución de validación al cambiar tipo.
+- Actualizada función existsByName: eliminado parámetro type, SQL sin filtro AND type=?.

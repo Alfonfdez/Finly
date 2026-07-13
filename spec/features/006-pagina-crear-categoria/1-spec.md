@@ -18,9 +18,8 @@ Pantalla accesible desde el botón "Crear" en la última posición del grid de `
 - Lo primero debajo del header es un input de texto con placeholder "Nombre de la categoría" (multilingual).
 - El nombre es obligatorio: si está vacío, el botón "Añadir" está deshabilitado.
 - Si el nombre está vacío y el usuario intenta pulsar "Añadir" (o mientras el input está vacío), se muestra un texto de ayuda en rojo: "Introduzca un nombre para la categoría" (multilingual).
-- **Validación de duplicados**: al escribir, se verifica que no exista ya una categoría con el mismo nombre (case-insensitive).
-  - "Food", "food" y "FOOD" se consideran duplicados.
-  - La verificación se hace contra todas las categorías existentes del mismo tipo (gasto/ingreso) en la base de datos.
+- **Validación de duplicados**: al escribir, se verifica que no exista ya una categoría con el mismo nombre (case-insensitive) en la base de datos, independientemente del tipo (gasto/ingreso).
+  - "Food", "food" y "FOOD" se consideran duplicados, tanto si son gastos como ingresos.
   - Si hay duplicado, se muestra un texto de error en rojo debajo del input: "Ya existe una categoría con este nombre" (multilingual) y el botón "Añadir" permanece deshabilitado.
   - La verificación se ejecuta con un debounce de 300ms para no consultar en cada pulsación de tecla.
 - Máximo 30 caracteres para el nombre con contador dinámico "0/30".
@@ -29,36 +28,46 @@ Pantalla accesible desde el botón "Crear" en la última posición del grid de `
 
 - Dos botones radio: "Gastos" y "Ingresos" (multilingual).
 - "Gastos" seleccionado por defecto.
-- Al cambiar el tipo, se re-ejecuta la validación de duplicado de nombre (ya que los duplicados se verifican dentro del mismo tipo).
 - El icono del botón radio seleccionado debe mostrar un círculo relleno con el color primario; el no seleccionado un círculo vacío.
 
 ### 4. Símbolos (iconos)
 
 - Título: "Símbolos" (multilingual).
-- Grid de 4 columnas × 4 filas (16 posiciones).
-- Las 15 primeras posiciones muestran iconos predefinidos (Ionicons) con un fondo gris plano (`#334155`).
-- La 16.ª posición (última) muestra "..." con un color distintivo (acento `#A78BFA`) para indicar que al pulsarlo navega a una nueva pantalla "Catálogo de iconos" (TODO: implementación futura).
+- Grid de 4 columnas × filas dinámicas (ScrollView vertical si no caben todos).
+- Se muestran ~40 iconos Ionicons predefinidos con fondo gris plano (`#334155` en tema oscuro).
 - Al pulsar un icono, se resalta con un borde de color primario y el fondo cambia ligeramente.
 - Solo un icono puede estar seleccionado a la vez (radios, no checkboxes).
-- Iconos predefinidos para el grid 4×4:
+- Iconos predefinidos (40):
 
 | # | Icono (Ionicons) | # | Icono (Ionicons) |
 |---|---|---|---|
-| 1 | `wallet-outline` | 9 | `restaurant-outline` |
-| 2 | `cart-outline` | 10 | `heart-outline` |
-| 3 | `bus-outline` | 11 | `fitness-outline` |
-| 4 | `home-outline` | 12 | `school-outline` |
-| 5 | `musical-notes-outline` | 13 | `airplane-outline` |
-| 6 | `game-controller-outline` | 14 | `shirt-outline` |
-| 7 | `bag-outline` | 15 | `gift-outline` |
-| 8 | `film-outline` | 16 | `...` (navegar a catálogo) |
+| 1 | `wallet-outline` | 21 | `cash-outline` |
+| 2 | `cart-outline` | 22 | `card-outline` |
+| 3 | `bus-outline` | 23 | `pricetag-outline` |
+| 4 | `home-outline` | 24 | `storefront-outline` |
+| 5 | `musical-notes-outline` | 25 | `coffee-outline` |
+| 6 | `game-controller-outline` | 26 | `car-outline` |
+| 7 | `bag-outline` | 27 | `bicycle-outline` |
+| 8 | `film-outline` | 28 | `train-outline` |
+| 9 | `restaurant-outline` | 29 | `key-outline` |
+| 10 | `heart-outline` | 30 | `book-outline` |
+| 11 | `fitness-outline` | 31 | `barbell-outline` |
+| 12 | `school-outline` | 32 | `globe-outline` |
+| 13 | `airplane-outline` | 33 | `compass-outline` |
+| 14 | `shirt-outline` | 34 | `map-outline` |
+| 15 | `gift-outline` | 35 | `star-outline` |
+| 16 | `briefcase-outline` | 36 | `notifications-outline` |
+| 17 | `code-slash-outline` | 37 | `football-outline` |
+| 18 | `trending-up-outline` | 38 | `wine-outline` |
+| 19 | `dice-outline` | 39 | `ellipsis-horizontal-outline` |
+| 20 | `people-outline` | 40 | `phone-portrait-outline` |
 
 ### 5. Color
 
 - Título: "Color" (multilingual).
 - Grid de 1 fila × 8 columnas.
 - Las 7 primeras posiciones son colores predefinidos con forma circular.
-- La 8.ª posición es un "+" con color gris que abre una nueva pantalla "Seleccionar color" con un selector de color (TODO: implementación futura).
+- La 8.ª posición es un "+" con color gris que abre un **modal** con un selector de colores expandido.
 - Al pulsar un color, se resalta con un anillo/borde más oscuro y un checkmark superpuesto.
 - Solo un color puede estar seleccionado a la vez.
 - Colores predefinidos:
@@ -72,7 +81,29 @@ Pantalla accesible desde el botón "Crear" en la última posición del grid de `
 | 5 | Rosa | `#F472B6` |
 | 6 | Azul | `#60A5FA` |
 | 7 | Púrpura (acento) | `#A78BFA` |
-| 8 | + (selector) | gris `#94A3B8` |
+| 8 | + (abre modal) | gris `#94A3B8` |
+
+#### Modal de colores
+
+- Se abre al pulsar "+" en la grid de colores.
+- Muestra una paleta ampliada de ~20 colores en un grid de 4 columnas × 5 filas.
+- Colores del modal:
+
+| # | Hex | # | Hex |
+|---|---|---|---|
+| 1 | `#22D3EE` | 11 | `#FB923C` |
+| 2 | `#F87171` | 12 | `#E879F9` |
+| 3 | `#34D399` | 13 | `#C084FC` |
+| 4 | `#FBBF24` | 14 | `#38BDF8` |
+| 5 | `#F472B6` | 15 | `#4ADE80` |
+| 6 | `#60A5FA` | 16 | `#FB7185` |
+| 7 | `#A78BFA` | 17 | `#FCA5A5` |
+| 8 | `#94A3B8` | 18 | `#86EFAC` |
+| 9 | `#FCD34D` | 19 | `#FDE68A` |
+| 10 | `#6EE7B7` | 20 | `#A5B4FC` |
+
+- Al seleccionar un color en el modal, se cierra automáticamente y el color queda seleccionado en la grid principal.
+- Botón "Cancelar" para cerrar sin seleccionar.
 
 ### 6. Botón "Añadir"
 
@@ -122,17 +153,17 @@ Pantalla accesible desde el botón "Crear" en la última posición del grid de `
 - [ ] El input tiene un máximo de 30 caracteres con contador "0/30".
 - [ ] El botón "Añadir" está deshabilitado si el nombre está vacío.
 - [ ] Si el nombre está vacío, se muestra "Introduzca un nombre para la categoría" en rojo.
-- [ ] La validación de duplicados verifica case-insensitive contra categorías del mismo tipo.
+- [ ] La validación de duplicados verifica case-insensitive contra categorías existentes (independientemente del tipo).
 - [ ] Si hay duplicado, se muestra "Ya existe una categoría con este nombre" en rojo y el botón se deshabilita.
 - [ ] Al cambiar el tipo, se re-ejecuta la validación de duplicado de nombre.
 - [ ] Los radios "Gastos"/"Ingresos" funcionan correctamente, "Gastos" seleccionado por defecto.
-- [ ] Se muestran 15 iconos en un grid 4×4 con fondo gris + "..." en la 16.ª posición.
+- [ ] Se muestran ~40 iconos en un grid de 4 columnas con scroll vertical.
 - [ ] Al pulsar un icono, se selecciona y se resalta visualmente.
 - [ ] Solo un icono puede estar seleccionado a la vez.
-- [ ] El "..." navega a "Catálogo de iconos" (TODO, muestra placeholder o alert).
 - [ ] Se muestran 7 colores en un grid 1×8 + "+" en la 8.ª posición.
 - [ ] Al pulsar un color, se selecciona y se resalta con anillo + checkmark.
-- [ ] El "+" navega a "Seleccionar color" (TODO, muestra placeholder o alert).
+- [ ] El "+" abre un modal con ~20 colores expandidos en grid 4×5.
+- [ ] Al seleccionar un color en el modal, se cierra y el color queda seleccionado.
 - [ ] El botón "Añadir" está deshabilitado si falta nombre, icono o color (o nombre duplicado).
 - [ ] El texto de ayuda en rojo aparece con el mensaje adecuado según lo que falte (solo el primer incumplimiento).
 - [ ] Al pulsar "Añadir", se crea la categoría y se navega de vuelta con la categoría seleccionada.
