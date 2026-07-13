@@ -580,3 +580,7 @@
 
 [2026-07-13] ~ | src/screens/AddTransactionScreen.tsx
 - Fix: Al volver de CreateCategoryScreen con nueva categoría, scroll automático al inicio para ver la categoría seleccionada.
+
+[2026-07-13] ~ | src/screens/AddTransactionScreen.tsx, src/components/CommentInput.tsx
+- Fix: Eliminado listener keyboardDidShow que causaba scroll automático al abrir la pantalla en móvil.
+- Añadido onFocus a CommentInput para hacer scrollToEnd solo cuando el usuario pulsa en el input de comentario.

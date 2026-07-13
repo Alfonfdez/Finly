@@ -256,16 +256,6 @@ export default function AddTransactionScreen() {
     setCommentSuggestions([]);
   };
 
-  // Auto-scroll to bottom when keyboard opens (so comment input is visible)
-  useEffect(() => {
-    const showSub = Keyboard.addListener('keyboardDidShow', () => {
-      setTimeout(() => {
-        scrollRef.current?.scrollToEnd({ animated: true });
-      }, 300);
-    });
-    return () => { showSub.remove(); };
-  }, []);
-
   const handleSelectAccount = (account: typeof accountsWithBalance[0]) => {
     setAccountId(account.id);
     setModalAccountVisible(false);
@@ -419,6 +409,11 @@ export default function AddTransactionScreen() {
           ref={inputRef}
           comment={comment}
           onChange={setComment}
+          onFocus={() => {
+            setTimeout(() => {
+              scrollRef.current?.scrollToEnd({ animated: true });
+            }, 300);
+          }}
         />
 
         <PhotoSection

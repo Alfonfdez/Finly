@@ -7,9 +7,10 @@ import { t } from '../i18n';
 interface Props {
   comment: string;
   onChange: (text: string) => void;
+  onFocus?: () => void;
 }
 
-const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange }, ref) => {
+const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus }, ref) => {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -26,6 +27,7 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange }, ref) =
         placeholderTextColor={c.textSecondary}
         value={comment}
         onChangeText={onChange}
+        onFocus={onFocus}
         multiline
         maxLength={4096}
         textAlignVertical="top"
