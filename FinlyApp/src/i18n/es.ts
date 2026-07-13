@@ -190,4 +190,10 @@ export const es: Language = {
   a11y_select_account: 'Seleccionar cuenta',
   a11y_category: 'Categoría',
   a11y_period: 'Período',
+
+  // Calculator
+  calc_title: 'Calculadora',
+  calc_accept: 'Aceptar',
+  calc_cancel: 'Cancelar',
+  calc_error: 'Error',
 };

@@ -592,3 +592,31 @@
 [2026-07-13] ~ | spec/features/004-pagina-transaccion/1-spec.md, spec/constitution/3-roadmap.md
 - Actualizada sección "Campo de cantidad" con UX de placeholder "0" y limpieza al enfocar.
 - Actualizado roadmap: selector de color dinámico en vez de rejilla estática.
+
+[2026-07-13] + | src/i18n/en.ts, es.ts, ca.ts
+- Añadidas claves i18n para CalculatorModal: calc_title, calc_accept, calc_cancel, calc_error.
+
+[2026-07-13] + | src/utils/calculator.ts
+- Creada función evaluate() con parser manual que respeta precedencia de operadores (+, -, *, /), maneja decimales y valida expresiones.
+
+[2026-07-13] + | src/components/CalculatorModal.tsx
+- Creado modal de calculadora: teclado 5×4 con botones 0-9, `.`, operadores, `=`, `C`, `⌫`. Display con expresión y resultado. Botones Aceptar/Cancelar. Tema oscuro/claro con useConfig.
+
+[2026-07-13] ~ | src/screens/AddTransactionScreen.tsx
+- Integrado CalculatorModal: botón calculator-outline abre modal, onAccept actualiza amountRaw con el resultado.
+
+[2026-07-13] ~ | src/components/CalculatorModal.tsx
+- Fix: Reemplazado SafeAreaView de react-native por react-native-safe-area-context (elimina deprecation warning).
+- Fix: Web ahora muestra la calculadora como popup centrado (overlay + modal con maxWidth 360) en vez de pantalla completa. Botones con tamaño fijo (70×50) en web.
+
+[2026-07-13] ~ | src/components/CalculatorModal.tsx
+- Fix: Corregido layout de botones en web: eliminado aspectRatio en web, añadido padding al modal web, justify-content center en filas. Empty cells también con tamaño fijo en web.
+
+[2026-07-13] ~ | src/components/CalculatorModal.tsx
+- Refactor: Separados estilos completamente en mobileStyles y webStyles para evitar conflictos de flex. Web usa botones fijos 72×52, modal fijo 360px.
+
+[2026-07-13] ~ | src/screens/AddTransactionScreen.tsx
+- Fix: Resultado de la calculadora ahora se valida con parseAmountInput antes de pegar en el campo de cantidad (máx 9 dígitos enteros, 2 decimales).
+
+[2026-07-13] ~ | src/utils/calculator.ts
+- Fix: Añadido límite MAX_VALUE (999,999,999.99). Valores que exceden el máximo muestran error en vez de producir notación científica.

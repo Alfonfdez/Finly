@@ -16,6 +16,7 @@ import TagSection from '../components/TagSection';
 import CommentInput from '../components/CommentInput';
 import PhotoSection from '../components/PhotoSection';
 import CalendarModal from '../components/CalendarModal';
+import CalculatorModal from '../components/CalculatorModal';
 import { TransactionType, RootStackParamList } from '../constants/types';
 import { isSameDay } from '../utils/formatters';
 import { transactionRepository } from '../database';
@@ -194,6 +195,7 @@ export default function AddTransactionScreen() {
 
   const [modalAccountVisible, setModalAccountVisible] = useState(false);
   const [modalCalendarVisible, setModalCalendarVisible] = useState(false);
+  const [calculatorVisible, setCalculatorVisible] = useState(false);
 
   const [availableTags, setAvailableTags] = useState<Tag[]>([
     { id: 1, name: labels.add_tag_urgent },
@@ -345,7 +347,10 @@ export default function AddTransactionScreen() {
           <Text style={[styles.currencySymbol, { color: c.textSecondary, fontSize: fs(18) }]}>
             {config.currency}
           </Text>
-          <TouchableOpacity style={styles.calculatorButton}>
+          <TouchableOpacity
+            style={styles.calculatorButton}
+            onPress={() => setCalculatorVisible(true)}
+          >
             <Ionicons name="calculator-outline" size={24} color={c.primary} />
           </TouchableOpacity>
         </View>
@@ -465,6 +470,18 @@ export default function AddTransactionScreen() {
         onSelectDate={handleSelectDate}
         onClose={() => setModalCalendarVisible(false)}
         firstDay={config.firstDayOfWeek}
+      />
+
+      <CalculatorModal
+        visible={calculatorVisible}
+        onAccept={(result) => {
+          const clean = parseAmountInput(result);
+          if (clean !== null && clean !== '') {
+            setAmountRaw(clean);
+          }
+          setCalculatorVisible(false);
+        }}
+        onCancel={() => setCalculatorVisible(false)}
       />
     </SafeAreaView>
   );

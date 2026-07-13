@@ -188,6 +188,12 @@ export const en = {
   a11y_select_account: 'Select account',
   a11y_category: 'Category',
   a11y_period: 'Period',
+
+  // Calculator
+  calc_title: 'Calculator',
+  calc_accept: 'Accept',
+  calc_cancel: 'Cancel',
+  calc_error: 'Error',
 };
 
 export type Language = typeof en;
