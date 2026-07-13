@@ -145,6 +145,10 @@ export default function AddTransactionScreen() {
       const allByType = categories.filter(c => c.type === pending.type);
       const isVisible = allByType.slice(0, MAX_VISIBLE_CATEGORIES).some(c => c.id === pending.categoryId);
       setReorderedCategory(isVisible ? null : pending.categoryId);
+      // Scroll to top so user can see the newly created category
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({ y: 0, animated: false });
+      }, 100);
     }
   }, [categories, type]));
 

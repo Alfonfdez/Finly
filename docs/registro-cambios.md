@@ -577,3 +577,6 @@
 
 [2026-07-13] ~ | README.md, spec/constitution/2-tech-stack.md
 - Añadido reanimated-color-picker a la tabla de stack en README.md y constitution/2-tech-stack.md.
+
+[2026-07-13] ~ | src/screens/AddTransactionScreen.tsx
+- Fix: Al volver de CreateCategoryScreen con nueva categoría, scroll automático al inicio para ver la categoría seleccionada.
