@@ -110,6 +110,24 @@ export const en = {
   add_cat_no_results: 'No results found',
   add_cat_create: 'Create',
 
+  // Create category
+  create_cat_title: 'Create category',
+  create_cat_name: 'Category name',
+  create_cat_name_placeholder: 'Category name',
+  create_cat_type: 'Type',
+  create_cat_expense: 'Expense',
+  create_cat_income: 'Income',
+  create_cat_symbols: 'Symbols',
+  create_cat_color: 'Color',
+  create_cat_add: 'Add',
+  create_cat_error_name_empty: 'Enter a category name',
+  create_cat_error_name_duplicate: 'A category with this name already exists',
+  create_cat_hint_icon: 'Select an icon',
+  create_cat_hint_color: 'Select a color',
+  create_cat_hint_icon_color: 'Select an icon and a color',
+  create_cat_color_picker_title: 'Select color',
+  create_cat_color_picker_cancel: 'Cancel',
+
   // Categories (mock data - multilingual)
   cat_salary: 'Salary',
   cat_freelance: 'Freelance',

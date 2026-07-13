@@ -112,6 +112,24 @@ export const ca: Language = {
   add_cat_no_results: 'No s\'ha trobat res',
   add_cat_create: 'Crear',
 
+  // Create category
+  create_cat_title: 'Crear categoria',
+  create_cat_name: 'Nom de la categoria',
+  create_cat_name_placeholder: 'Nom de la categoria',
+  create_cat_type: 'Tipus',
+  create_cat_expense: 'Despesa',
+  create_cat_income: 'Ingrés',
+  create_cat_symbols: 'Símbols',
+  create_cat_color: 'Color',
+  create_cat_add: 'Afegir',
+  create_cat_error_name_empty: 'Introdueix un nom per a la categoria',
+  create_cat_error_name_duplicate: 'Ja existeix una categoria amb aquest nom',
+  create_cat_hint_icon: 'Selecciona una icona',
+  create_cat_hint_color: 'Selecciona un color',
+  create_cat_hint_icon_color: 'Selecciona una icona i un color',
+  create_cat_color_picker_title: 'Seleccionar color',
+  create_cat_color_picker_cancel: 'Cancel·lar',
+
   // Categories (mock data - multilingual)
   cat_salary: 'Nómina',
   cat_freelance: 'Freelance',

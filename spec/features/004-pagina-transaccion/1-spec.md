@@ -41,8 +41,10 @@ Pantalla accesible desde el botón "+" del Home que permita al usuario registrar
 - Título: "Categorías" (multilingual).
 - Grid de 4 columnas × 2 filas (8 posiciones):
   - Las 7 primeras posiciones muestran las categorías más usadas (icono + nombre debajo).
-  - La octava posición muestra un icono "+" con el texto "Más" (multilingual).
-- Al pulsar "Más", se abre una nueva pantalla "Añadir categoría" (TODO: implementación futura).
+  - La octava posición muestra siempre un icono "+" con el texto "Más" (multilingual).
+- Al pulsar "Más":
+  - Si el tipo activo tiene **más de 7 categorías**: se abre la pantalla "Añadir categoría" para seleccionar entre las existentes.
+  - Si el tipo activo tiene **7 o menos categorías**: se abre directamente la pantalla "Crear categoría" para crear una nueva.
 
 ### 6. Selección de día
 
@@ -141,7 +143,7 @@ Pantalla accesible desde el botón "+" del Home que permita al usuario registrar
 - [x] La cuenta mostrada coincide con la seleccionada en el Home.
 - [x] El modal de cuentas permite cambiar la cuenta seleccionada.
 - [x] Se muestran 7 categorías más usadas en un grid 4×2 + botón "Más".
-- [x] El botón "Más" está visible pero no funcional (TODO).
+- [x] El botón "Más" siempre está visible: con >7 categorías navega a Añadir categoría, con ≤7 navega directamente a Crear categoría.
 - [x] Los 3 días muestran las fechas correctas según la regla descrita.
 - [x] El botón de calendario abre el modal de selección de día.
 - [x] La sección de etiquetas permite buscar, crear y seleccionar etiquetas.

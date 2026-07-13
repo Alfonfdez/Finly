@@ -374,8 +374,12 @@ export default function AddTransactionScreen() {
           categories={visibleCategories}
           selectedCategory={categoryId}
           onSelect={setCategoryId}
-          onAddMore={() => navigation.navigate('AddCategory', { type })}
-          showAddMore={hasMore}
+          onAddMore={() => hasMore
+            ? navigation.navigate('AddCategory', { type })
+            : navigation.navigate('CreateCategory', { type })
+          }
+          showAddMore
+          addMoreLabel={hasMore ? labels.add_more : labels.add_cat_create}
         />
 
         <DaySelector

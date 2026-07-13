@@ -475,3 +475,70 @@
 - Simplificada validación de duplicados: nombre único global (independientemente del tipo gasto/ingreso).
 - Eliminada re-ejecución de validación al cambiar tipo.
 - Actualizada función existsByName: eliminado parámetro type, SQL sin filtro AND type=?.
+
+[2026-07-13] + | src/i18n/en.ts, es.ts, ca.ts
+- Añadidas 17 claves i18n para CreateCategoryScreen: create_cat_title, create_cat_name, create_cat_name_placeholder, create_cat_type, create_cat_expense, create_cat_income, create_cat_symbols, create_cat_color, create_cat_add, create_cat_error_name_empty, create_cat_error_name_duplicate, create_cat_hint_icon, create_cat_hint_color, create_cat_hint_icon_color, create_cat_color_picker_title, create_cat_color_picker_cancel.
+
+[2026-07-13] ~ | src/constants/types.ts
+- Añadido CreateCategory al RootStackParamList y CreateCategoryScreenProps.
+
+[2026-07-13] ~ | src/navigation/AppNavigator.tsx
+- Importado y registrado CreateCategoryScreen en HomeStack con título multilingual.
+
+[2026-07-13] ~ | src/screens/AddCategoryScreen.tsx
+- Conectado botón "Crear" para navegar a CreateCategoryScreen pasando el tipo activo.
+
+[2026-07-13] + | src/database/repositories/categoryRepo.ts
+- Añadida función existsByName(name: string): Promise<boolean> para validación de duplicados globales.
+
+[2026-07-13] + | src/database/webStorage.ts
+- Añadida función existsByName(name: string): Promise<boolean> a webCategoryRepo para validación de duplicados en localStorage.
+
+[2026-07-13] + | src/components/IconGrid.tsx
+- Creado componente de grid de iconos: 40 iconos Ionicons en grid 4 columnas, scroll vertical, selección con borde de color primario.
+
+[2026-07-13] + | src/components/ColorGrid.tsx
+- Creado componente de grid de colores: 7 colores predefinidos en fila circular + botón "+" que abre modal.
+
+[2026-07-13] + | src/components/ColorPickerModal.tsx
+- Creado modal de colores expandidos: 20 colores en grid 4×5, selección con checkmark, cierra automáticamente al seleccionar.
+
+[2026-07-13] + | src/screens/CreateCategoryScreen.tsx
+- Creada pantalla de crear categoría: input de nombre (max 30 chars, validación de duplicados con debounce 300ms), radio tipo gasto/ingreso, grid de iconos, grid de colores, botón "Añadir" deshabilitado según validación, texto de ayuda dinámico.
+
+[2026-07-13] ~ | src/context/AppContext.tsx
+- Añadido refreshCategories() al AppContextType y al Provider para recargar categorías después de crear una nueva.
+
+[2026-07-13] ~ | src/components/IconGrid.tsx
+- Corregido grid de 3 a 4 columnas en web: reemplazado cálculo pixel-based con Dimensions.get('window').width por width:'22%' + aspectRatio:1 (mismo patrón que AddCategoryScreen). Eliminados imports innecesarios (ScrollView, Dimensions, useFontSize).
+
+[2026-07-13] ~ | src/screens/AddTransactionScreen.tsx
+- Corregido botón "+" de categorías: siempre visible. Con >7 categorías navega a AddCategoryScreen, con ≤7 navega directamente a CreateCategoryScreen.
+
+[2026-07-13] ~ | spec/features/004-pagina-transaccion/1-spec.md
+- Actualizada sección 5 (Selección de categoría): botón "+" siempre visible con comportamiento condicional según número de categorías. Actualizados criterios de aceptación.
+
+[2026-07-13] ~ | src/components/CategoryGrid.tsx
+- Añadido prop `addMoreLabel` para personalizar el texto del botón "+" (default: "Más").
+
+[2026-07-13] ~ | src/screens/AddTransactionScreen.tsx
+- Botón "+" muestra "Crear" cuando ≤7 categorías (navega a CreateCategoryScreen) y "Más" cuando >7 (navega a AddCategoryScreen).
+
+[2026-07-13] ~ | src/components/IconGrid.tsx
+- Corregido icono inválido: coffee-outline → cafe-outline (Ionicons 7 usa "cafe").
+- Corregido centrado de iconos en celdas: añadido padding:6 y reducido gap de 10 a 8.
+
+[2026-07-13] ~ | src/screens/CreateCategoryScreen.tsx
+- Reducido espacio entre secciones: marginTop de 16 a 12, marginBottom de 8 a 6 en sectionTitle.
+
+[2026-07-13] ~ | src/screens/CreateCategoryScreen.tsx
+- Inlined icon grid directamente en la pantalla (mismos estilos que AddCategoryScreen que funciona en móvil). Eliminada dependencia de IconGrid para el render. Se conserva import de CATEGORY_ICONS para la lista de iconos.
+
+[2026-07-13] ~ | src/screens/CreateCategoryScreen.tsx
+- Reestructurado layout para coincidir con AddCategoryScreen: SafeAreaView > View (flex:1) > ScrollView (flex:1) en vez de padding en contentContainerStyle. Esto corrige el cálculo de porcentajes en los items del grid en móvil.
+
+[2026-07-13] ~ | src/screens/CreateCategoryScreen.tsx
+- Corregido centrado de iconos en grid: reemplazado aspectRatio:1 + width:'22%' por cálculo dinámico con Dimensions.get('window').width. Las celdas ahora usan width y height fijos calculados, eliminando el bug de aspectRatio en móvil.
+
+[2026-07-13] ~ | src/screens/CreateCategoryScreen.tsx
+- Corregido grid responsive en web: reemplazado Dimensions.get('window').width (estático) por onLayout en el grid container. cellSize se calcula dinámicamente del ancho real del grid, funciona en móvil y redimensionamiento web.

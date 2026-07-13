@@ -17,9 +17,10 @@ interface Props {
   onSelect: (id: number) => void;
   onAddMore: () => void;
   showAddMore?: boolean;
+  addMoreLabel?: string;
 }
 
-export default function CategoryGrid({ categories, selectedCategory, onSelect, onAddMore, showAddMore = true }: Props) {
+export default function CategoryGrid({ categories, selectedCategory, onSelect, onAddMore, showAddMore = true, addMoreLabel }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -52,11 +53,13 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
     );
   };
 
+  const label = addMoreLabel ?? labels.add_more;
+
   const renderAddMore = () => (
     <TouchableOpacity
       style={[styles.item, { backgroundColor: c.surface }]}
       onPress={onAddMore}
-      accessibilityLabel={labels.add_more}
+      accessibilityLabel={label}
     >
       <View style={[styles.iconContainer, { backgroundColor: c.textSecondary + '22' }]}>
         <Ionicons name="add" size={24} color={c.textSecondary} />
@@ -65,7 +68,7 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
         style={[styles.name, { color: c.textSecondary, fontSize: fs(11) }]}
         numberOfLines={1}
       >
-        {labels.add_more}
+        {label}
       </Text>
     </TouchableOpacity>
   );

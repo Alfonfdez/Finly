@@ -89,7 +89,7 @@ export default function AddCategoryScreen() {
   const renderCreateButton = () => (
     <TouchableOpacity
       style={[styles.item, { backgroundColor: c.surface }]}
-      onPress={() => {}}
+      onPress={() => navigation.navigate('CreateCategory', { type })}
       accessibilityLabel={labels.add_cat_create}
     >
       <View style={[styles.iconContainer, { backgroundColor: c.textSecondary + '22' }]}>

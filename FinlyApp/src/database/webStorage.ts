@@ -291,6 +291,10 @@ export const webCategoryRepo = {
     const transactions = getStore<Transaction>('transactions');
     setStore('transactions', transactions.filter(t => t.category_id !== id));
   },
+  async existsByName(name: string): Promise<boolean> {
+    const items = getStore<Category>('categories');
+    return items.some(c => c.name === name);
+  },
 };
 
 export const webTransactionRepo = {

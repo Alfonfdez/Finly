@@ -25,6 +25,7 @@ export type RootStackParamList = {
   Home: undefined;
   AddTransaction: { categoryId?: number; type?: TransactionType } | undefined;
   AddCategory: { type: TransactionType };
+  CreateCategory: { type?: TransactionType };
   Transactions: { categoryId?: number; type?: TransactionType } | undefined;
   Settings: undefined;
 };
@@ -32,5 +33,6 @@ export type RootStackParamList = {
 export type HomeScreenProps = NativeStackScreenProps<RootStackParamList, 'Home'>;
 export type AddTransactionScreenProps = NativeStackScreenProps<RootStackParamList, 'AddTransaction'>;
 export type AddCategoryScreenProps = NativeStackScreenProps<RootStackParamList, 'AddCategory'>;
+export type CreateCategoryScreenProps = NativeStackScreenProps<RootStackParamList, 'CreateCategory'>;
 export type TransactionsScreenProps = NativeStackScreenProps<RootStackParamList, 'Transactions'>;
 export type SettingsScreenProps = NativeStackScreenProps<RootStackParamList, 'Settings'>;

@@ -49,4 +49,13 @@ export const categoryRepo = {
     const db = getDatabase();
     await db.runAsync(`DELETE FROM categories WHERE id = ?`, id);
   },
+
+  async existsByName(name: string): Promise<boolean> {
+    const db = getDatabase();
+    const result = await db.getFirstAsync<{ count: number }>(
+      `SELECT COUNT(*) as count FROM categories WHERE name = ?`,
+      name
+    );
+    return (result?.count ?? 0) > 0;
+  },
 };

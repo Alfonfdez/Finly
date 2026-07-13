@@ -112,6 +112,24 @@ export const es: Language = {
   add_cat_no_results: 'No se ha encontrado nada',
   add_cat_create: 'Crear',
 
+  // Create category
+  create_cat_title: 'Crear categoría',
+  create_cat_name: 'Nombre de la categoría',
+  create_cat_name_placeholder: 'Nombre de la categoría',
+  create_cat_type: 'Tipo',
+  create_cat_expense: 'Gasto',
+  create_cat_income: 'Ingreso',
+  create_cat_symbols: 'Símbolos',
+  create_cat_color: 'Color',
+  create_cat_add: 'Añadir',
+  create_cat_error_name_empty: 'Introduzca un nombre para la categoría',
+  create_cat_error_name_duplicate: 'Ya existe una categoría con este nombre',
+  create_cat_hint_icon: 'Selecciona un icono',
+  create_cat_hint_color: 'Selecciona un color',
+  create_cat_hint_icon_color: 'Selecciona un icono y un color',
+  create_cat_color_picker_title: 'Seleccionar color',
+  create_cat_color_picker_cancel: 'Cancelar',
+
   // Categories (mock data - multilingual)
   cat_salary: 'Nómina',
   cat_freelance: 'Freelance',
