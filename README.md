@@ -114,14 +114,19 @@ Finly/
 │   │   │   ├── HomeScreen.tsx       ← Pantalla principal
 │   │   │   ├── AddTransactionScreen.tsx ← Añadir gasto/ingreso
 │   │   │   ├── AddCategoryScreen.tsx← Seleccionar categoría
+│   │   │   ├── CreateCategoryScreen.tsx ← Crear categoría
 │   │   │   ├── TransactionsScreen.tsx ← Listado de transacciones
 │   │   │   └── SettingsScreen.tsx   ← Configuración de la app
 │   │   ├── components/
 │   │   │   ├── AccountModal.tsx     ← Modal de selección de cuentas
+│   │   │   ├── CalculatorModal.tsx  ← Calculadora básica
 │   │   │   ├── DonutChart.tsx       ← Gráfico de anillos SVG
 │   │   │   ├── BarChart.tsx         ← Barra horizontal apilada
 │   │   │   ├── CategoryList.tsx     ← Lista de desglose por categorías
 │   │   │   ├── CategoryGrid.tsx     ← Grid 4×N de categorías
+│   │   │   ├── ColorGrid.tsx        ← Selector de colores rápido
+│   │   │   ├── ColorPickerModal.tsx ← Selector de color dinámico
+│   │   │   ├── IconGrid.tsx         ← Grid de iconos
 │   │   │   ├── CalendarPicker.tsx   ← Selector de fecha textual
 │   │   │   ├── CalendarModal.tsx    ← Modal contenedor de calendarios
 │   │   │   ├── DaySelector.tsx      ← Selector de día (Hoy/Ayer/Dinámico)
@@ -175,6 +180,7 @@ Finly/
 │   │   ├── data/
 │   │   │   └── mockData.ts          ← Datos mock (legacy)
 │   │   └── utils/
+│   │       ├── calculator.ts        ← Evaluador de expresiones
 │   │       └── formatters.ts        ← Formatear moneda, fechas, etc.
 │   ├── assets/
 │   ├── package.json
@@ -211,5 +217,5 @@ Finly/
 - Soporte multilingüe: español, inglés, catalán
 - Escalado de texto según preferencias del usuario
 - Navegación con menú lateral (Drawer)
-- Creación de categorías personalizadas
-- Calculadora básica integrada (próximamente)
+- Creación de categorías personalizadas con icono y color
+- Calculadora básica integrada
