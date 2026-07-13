@@ -97,6 +97,14 @@ export const ca: Language = {
   add_photo_camera: 'Fer foto',
   add_photo_gallery: 'Afegir des de la galeria',
   add_submit: 'Afegir',
+  add_hint_category: 'Selecciona una categoria',
+  add_hint_amount: 'Introdueix un import vàlid major que 0',
+  add_hint_category_amount: 'Selecciona una categoria i introdueix un import',
+  add_tag_urgent: 'Urgent',
+  add_tag_recurring: 'Recurrent',
+  add_tag_personal: 'Personal',
+  add_error_title: 'Error',
+  add_error_message: 'No s\'ha pogut guardar la transacció',
 
   // Add category
   add_cat_title: 'Afegir categoria',

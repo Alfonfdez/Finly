@@ -97,6 +97,14 @@ export const es: Language = {
   add_photo_camera: 'Sacar foto',
   add_photo_gallery: 'Añadir desde galería',
   add_submit: 'Añadir',
+  add_hint_category: 'Selecciona una categoría',
+  add_hint_amount: 'Introduce una cantidad válida mayor que 0',
+  add_hint_category_amount: 'Selecciona una categoría e introduce una cantidad',
+  add_tag_urgent: 'Urgente',
+  add_tag_recurring: 'Recurrente',
+  add_tag_personal: 'Personal',
+  add_error_title: 'Error',
+  add_error_message: 'No se ha podido guardar la transacción',
 
   // Add category
   add_cat_title: 'Añadir categoría',

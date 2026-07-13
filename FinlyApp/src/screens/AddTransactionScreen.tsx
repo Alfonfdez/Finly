@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -18,6 +18,7 @@ import PhotoSection from '../components/PhotoSection';
 import CalendarModal from '../components/CalendarModal';
 import { TransactionType, RootStackParamList } from '../constants/types';
 import { isSameDay } from '../utils/formatters';
+import { transactionRepository } from '../database';
 
 // Module-level pending category data (passed back from AddCategoryScreen)
 let pendingCategoryId: number | null = null;
@@ -48,6 +49,67 @@ interface Tag {
 const GRID_ROWS = 2;
 const GRID_COLS = 4;
 const MAX_VISIBLE_CATEGORIES = GRID_ROWS * GRID_COLS - 1;
+const MAX_AMOUNT_INTEGER_DIGITS = 9; // up to 999,999,999.99
+
+/**
+ * Parse user input into a clean raw amount string (digits + optional '.' separator).
+ * Returns null if input is invalid (both separators present).
+ */
+function parseAmountInput(text: string): string | null {
+  let raw = text.replace(/\s/g, '');
+
+  const hasComma = raw.includes(',');
+  const hasDot = raw.includes('.');
+
+  // Both separators at same time is invalid
+  if (hasComma && hasDot) return null;
+
+  // Normalize comma to dot
+  if (hasComma) {
+    raw = raw.replace(',', '.');
+  }
+
+  // Remove all non-digit, non-dot characters
+  raw = raw.replace(/[^0-9.]/g, '');
+
+  // Only allow one dot
+  const dotIndex = raw.indexOf('.');
+  if (dotIndex !== -1) {
+    let before = raw.slice(0, dotIndex);
+    let after = raw.slice(dotIndex + 1).replace(/\./g, '');
+    // Remove leading zeros from integer part (keep single "0")
+    before = before.replace(/^0+(?=\d)/, '') || '0';
+    // Limit integer digits
+    before = before.slice(0, MAX_AMOUNT_INTEGER_DIGITS);
+    // Max 2 decimal digits
+    after = after.slice(0, 2);
+    raw = before + '.' + after;
+  } else {
+    // No dot - remove leading zeros
+    raw = raw.replace(/^0+(?=\d)/, '') || '0';
+    // Limit integer digits
+    raw = raw.slice(0, MAX_AMOUNT_INTEGER_DIGITS);
+  }
+
+  return raw;
+}
+
+/**
+ * Format a raw amount string for display: add thousand separators (spaces)
+ * and use the configured decimal separator.
+ */
+function formatAmountDisplay(raw: string, decimalSeparator: ',' | '.'): string {
+  if (!raw) return '';
+  const parts = raw.split('.');
+  const integerPart = parts[0];
+  const decimalPart = parts[1] || '';
+  const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  // Show decimal separator even if no decimal digits yet (user is still typing)
+  if (decimalPart || raw.endsWith('.')) {
+    return `${formattedInteger}${decimalSeparator}${decimalPart}`;
+  }
+  return formattedInteger;
+}
 
 export default function AddTransactionScreen() {
   const { activeColors: c, config } = useConfig();
@@ -57,7 +119,7 @@ export default function AddTransactionScreen() {
   const navigation = useNavigation<NavigationProp>();
 
   const [type, setType] = useState<TransactionType>(activeType);
-  const [amount, setAmount] = useState('');
+  const [amountRaw, setAmountRaw] = useState('0');
   const [accountId, setAccountId] = useState(activeAccount?.id ?? 1);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [reorderedCategory, setReorderedCategory] = useState<number | null>(null);
@@ -97,25 +159,56 @@ export default function AddTransactionScreen() {
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const [comment, setComment] = useState('');
   const [fotoUri, setFotoUri] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const [modalAccountVisible, setModalAccountVisible] = useState(false);
   const [modalCalendarVisible, setModalCalendarVisible] = useState(false);
 
-  const [availableTags] = useState<Tag[]>([
-    { id: 1, name: 'Urgente' },
-    { id: 2, name: 'Recurrente' },
-    { id: 3, name: 'Personal' },
+  const [availableTags, setAvailableTags] = useState<Tag[]>([
+    { id: 1, name: labels.add_tag_urgent },
+    { id: 2, name: labels.add_tag_recurring },
+    { id: 3, name: labels.add_tag_personal },
   ]);
+  // Update tag names when language changes
+  useEffect(() => {
+    setAvailableTags(prev => prev.map((tag, i) => ({
+      ...tag,
+      name: [labels.add_tag_urgent, labels.add_tag_recurring, labels.add_tag_personal][i] ?? tag.name,
+    })));
+  }, [labels]);
 
-  const isInvalidAmount = amount.length > 0 && !/^\d*\.?\d{0,2}$/.test(amount);
+  // Display-formatted amount
+  const displayAmount = useMemo(
+    () => formatAmountDisplay(amountRaw, config.decimalSeparator),
+    [amountRaw, config.decimalSeparator],
+  );
 
-  const handleAmountChange = (value: string) => {
-    const clean = value.replace(/[^0-9.]/g, '');
-    const parts = clean.split('.');
-    if (parts.length > 2) return;
-    if (parts[1] && parts[1].length > 2) return;
-    setAmount(clean);
-  };
+  // Parsed numeric value (null if invalid)
+  const numericAmount = useMemo(() => {
+    if (!amountRaw) return null;
+    const num = parseFloat(amountRaw);
+    return isNaN(num) ? null : num;
+  }, [amountRaw]);
+
+  // Validation (only true for truly invalid input, not for "0" as starting value)
+  const isAmountInvalid = useMemo(() => {
+    if (!amountRaw || amountRaw === '0') return false;
+    return numericAmount === null;
+  }, [amountRaw, numericAmount]);
+
+  const canSubmit = useMemo(() => {
+    if (categoryId === null) return false;
+    if (numericAmount === null || numericAmount <= 0) return false;
+    if (day === null) return false;
+    if (accountId === undefined) return false;
+    return true;
+  }, [categoryId, numericAmount, day, accountId]);
+
+  const handleAmountChange = useCallback((text: string) => {
+    const clean = parseAmountInput(text);
+    if (clean === null) return; // invalid - both separators
+    setAmountRaw(clean);
+  }, []);
 
   const handleToggleTag = (id: number) => {
     setSelectedTags(prev =>
@@ -124,8 +217,7 @@ export default function AddTransactionScreen() {
   };
 
   const handleCreateTag = (name: string) => {
-    const newId = availableTags.length + 1;
-    availableTags.push({ id: newId, name });
+    setAvailableTags(prev => [...prev, { id: prev.length + 1, name }]);
   };
 
   const handleSelectAccount = (account: typeof accountsWithBalance[0]) => {
@@ -146,18 +238,34 @@ export default function AddTransactionScreen() {
     // TODO: implement gallery
   };
 
-  const handleSubmit = () => {
-    // TODO: save transaction
-    console.log({
-      type,
-      amount: parseFloat(amount) || 0,
-      accountId,
-      categoryId,
-      day,
-      selectedTags,
-      comment,
-      fotoUri,
-    });
+  const handleSubmit = async () => {
+    if (!canSubmit || submitting) return;
+    setSubmitting(true);
+
+    try {
+      const y = day.getFullYear();
+      const m = String(day.getMonth() + 1).padStart(2, '0');
+      const d = String(day.getDate()).padStart(2, '0');
+      const h = String(day.getHours()).padStart(2, '0');
+      const min = String(day.getMinutes()).padStart(2, '0');
+      const s = String(day.getSeconds()).padStart(2, '0');
+      const dateStr = `${y}-${m}-${d} ${h}:${min}:${s}`;
+
+      await transactionRepository.create({
+        account_id: accountId,
+        category_id: categoryId!,
+        type,
+        amount: numericAmount!,
+        description: comment || null,
+        date: dateStr,
+      });
+
+      navigation.goBack();
+    } catch (err) {
+      Alert.alert(labels.add_error_title, labels.add_error_message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const categoriesByType = categories.filter(c => c.type === type);
@@ -186,13 +294,13 @@ export default function AddTransactionScreen() {
             style={[
               styles.amountInput,
               { color: c.text, fontSize: fs(24) },
-              isInvalidAmount && { color: '#F87171' },
+              isAmountInvalid && { color: c.red },
             ]}
             placeholder={labels.add_amount_placeholder}
             placeholderTextColor={c.textSecondary}
-            value={amount}
+            value={displayAmount}
             onChangeText={handleAmountChange}
-            keyboardType="numeric"
+            keyboardType="decimal-pad"
           />
           <Text style={[styles.currencySymbol, { color: c.textSecondary, fontSize: fs(18) }]}>
             {config.currency}
@@ -201,8 +309,8 @@ export default function AddTransactionScreen() {
             <Ionicons name="calculator-outline" size={24} color={c.primary} />
           </TouchableOpacity>
         </View>
-        {isInvalidAmount && (
-          <Text style={[styles.errorText, { color: '#F87171', fontSize: fs(12) }]}>
+        {isAmountInvalid && (
+          <Text style={[styles.errorText, { color: c.red, fontSize: fs(12) }]}>
             {labels.add_amount_error}
           </Text>
         )}
@@ -251,12 +359,27 @@ export default function AddTransactionScreen() {
           onPickFromGallery={handlePickFromGallery}
         />
 
+        {!canSubmit && !submitting && (
+          <Text style={[styles.hintText, { color: c.red, fontSize: fs(12) }]}>
+            {categoryId === null && (numericAmount === null || numericAmount <= 0)
+              ? labels.add_hint_category_amount
+              : categoryId === null
+              ? labels.add_hint_category
+              : numericAmount === null || numericAmount <= 0
+              ? labels.add_hint_amount
+              : ''}
+          </Text>
+        )}
         <TouchableOpacity
-          style={[styles.submitButton, { backgroundColor: c.primary }]}
+          style={[
+            styles.submitButton,
+            { backgroundColor: canSubmit ? c.primary : c.textSecondary + '60' },
+          ]}
           onPress={handleSubmit}
+          disabled={!canSubmit || submitting}
         >
-          <Text style={[styles.submitButtonText, { color: c.background, fontSize: fs(16) }]}>
-            {labels.add_submit}
+          <Text style={[styles.submitButtonText, { color: canSubmit ? c.background : c.text, fontSize: fs(16) }]}>
+            {submitting ? '...' : labels.add_submit}
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -328,5 +451,10 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     fontWeight: '700',
+  },
+  hintText: {
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 8,
   },
 });

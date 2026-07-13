@@ -95,6 +95,14 @@ export const en = {
   add_photo_camera: 'Take photo',
   add_photo_gallery: 'Add from gallery',
   add_submit: 'Add',
+  add_hint_category: 'Select a category',
+  add_hint_amount: 'Enter a valid amount greater than 0',
+  add_hint_category_amount: 'Select a category and enter an amount',
+  add_tag_urgent: 'Urgent',
+  add_tag_recurring: 'Recurring',
+  add_tag_personal: 'Personal',
+  add_error_title: 'Error',
+  add_error_message: 'Failed to save transaction',
 
   // Add category
   add_cat_title: 'Add category',
