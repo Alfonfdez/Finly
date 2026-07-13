@@ -1,41 +1,41 @@
-import { TipoTransaccion } from '../constants/types';
+import { TransactionType } from '../constants/types';
 
-export interface Usuario {
+export interface User {
   id: number;
-  nombre: string;
+  name: string;
   email: string | null;
   avatar: string | null;
-  moneda: string;
+  currency: string;
   created_at: string;
 }
 
-export interface Cuenta {
+export interface Account {
   id: number;
-  usuario_id: number;
-  nombre: string;
-  saldo_inicial: number;
-  icono: string;
+  user_id: number;
+  name: string;
+  initial_balance: number;
+  icon: string;
   color: string;
   created_at: string;
 }
 
-export interface Categoria {
+export interface Category {
   id: number;
-  usuario_id: number;
-  nombre: string;
-  icono: string;
+  user_id: number;
+  name: string;
+  icon: string;
   color: string;
-  tipo: TipoTransaccion;
+  type: TransactionType;
   created_at: string;
 }
 
-export interface Transaccion {
+export interface Transaction {
   id: number;
-  cuenta_id: number;
-  categoria_id: number;
-  tipo: TipoTransaccion;
-  cantidad: number;
-  descripcion: string | null;
-  fecha: string;
+  account_id: number;
+  category_id: number;
+  type: TransactionType;
+  amount: number;
+  description: string | null;
+  date: string;
   created_at: string;
 }

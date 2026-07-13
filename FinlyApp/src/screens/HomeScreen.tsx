@@ -7,9 +7,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { Cuenta } from '../database/types';
-import { formatearMoneda } from '../utils/formatters';
-import { RootStackParamList, Periodo } from '../constants/types';
+import { Account } from '../database/types';
+import { formatCurrency } from '../utils/formatters';
+import { RootStackParamList, Period } from '../constants/types';
 import { t } from '../i18n';
 import AccountModal from '../components/AccountModal';
 import TypeTabs from '../components/TypeTabs';
@@ -25,113 +25,113 @@ type Navigation = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 export default function HomeScreen() {
   const navigation = useNavigation<Navigation>();
   const {
-    cuentaActiva, tipoActivo, periodoActivo, fechaSeleccionada, fechaPersonalizada, cuentasConSaldo, categoriasActivas,
-    totalIngresos, totalGastos, totalIngresosGlobal, totalGastosGlobal, seleccionarCuenta, cambiarTipo,
-    cambiarPeriodo, setFechaSeleccionada, setFechaPersonalizada, cargando,
+    activeAccount, activeType, activePeriod, selectedDate, customDate, accountsWithBalance, activeCategories,
+    totalIncome, totalExpenses, totalIncomeAll, totalExpensesAll, selectAccount, changeType,
+    changePeriod, setSelectedDate, setCustomDate, loading,
   } = useApp();
-  const { config, coloresActivos: c } = useConfig();
+  const { config, activeColors: c } = useConfig();
   const fs = useFontSize();
-  const texto = t();
+  const labels = t();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [chartType, setChartType] = useState<ChartType>('donut');
   const [calendarVisible, setCalendarVisible] = useState(false);
 
-  const total = totalIngresosGlobal - totalGastosGlobal;
-  const totalActivo = tipoActivo === 'gasto' ? totalGastos : totalIngresos;
-  const colorTotal = total >= 0 ? c.verde : c.rojo;
+  const total = totalIncomeAll - totalExpensesAll;
+  const activeTotal = activeType === 'expense' ? totalExpenses : totalIncome;
+  const totalColor = total >= 0 ? c.green : c.red;
 
-  const handleCategoriaPress = useCallback((categoria: { id: number }) => {
-    navigation.navigate('Transactions', { categoriaId: categoria.id, tipo: tipoActivo });
-  }, [navigation, tipoActivo]);
+  const handleCategoryPress = useCallback((category: { id: number }) => {
+    navigation.navigate('Transactions', { categoryId: category.id, type: activeType });
+  }, [navigation, activeType]);
 
-  const handlePeriodChange = useCallback((periodo: Periodo) => {
-    cambiarPeriodo(periodo);
-    if (periodo === 'periodo') setCalendarVisible(true);
-  }, [cambiarPeriodo]);
+  const handlePeriodChange = useCallback((period: Period) => {
+    changePeriod(period);
+    if (period === 'custom') setCalendarVisible(true);
+  }, [changePeriod]);
 
-  const handleFechaChange = useCallback((d: Date) => {
-    setFechaSeleccionada(d);
+  const handleDateChange = useCallback((date: Date) => {
+    setSelectedDate(date);
     setCalendarVisible(false);
-  }, [setFechaSeleccionada]);
+  }, [setSelectedDate]);
 
-  const handleCuentaSelect = useCallback((cu: Cuenta) => {
-    seleccionarCuenta(cu);
+  const handleAccountSelect = useCallback((account: Account) => {
+    selectAccount(account);
     setModalVisible(false);
-  }, [seleccionarCuenta]);
+  }, [selectAccount]);
 
-  const handleRangoChange = useCallback((inicio: Date, fin: Date) => {
-    const finDia = new Date(fin);
-    finDia.setHours(23, 59, 59, 999);
-    const inicioDia = new Date(inicio);
-    inicioDia.setHours(0, 0, 0, 0);
-    setFechaPersonalizada({ inicio: inicioDia, fin: finDia });
-  }, [setFechaPersonalizada]);
+  const handleRangeChange = useCallback((start: Date, end: Date) => {
+    const endDay = new Date(end);
+    endDay.setHours(23, 59, 59, 999);
+    const startDay = new Date(start);
+    startDay.setHours(0, 0, 0, 0);
+    setCustomDate({ start: startDay, end: endDay });
+  }, [setCustomDate]);
 
-  if (cargando || !cuentaActiva) {
+  if (loading || !activeAccount) {
     return (
-      <SafeAreaView style={[styles.safe, { backgroundColor: c.fondo }]}>
-        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', backgroundColor: c.fondo }]}>
-          <ActivityIndicator size="large" color={c.primario} />
+      <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]}>
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', backgroundColor: c.background }]}>
+          <ActivityIndicator size="large" color={c.primary} />
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: c.fondo }]}>
-      <View style={[styles.container, { backgroundColor: c.fondo }]}>
-        <View style={[styles.header, { backgroundColor: c.fondoAlto }]}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]}>
+      <View style={[styles.container, { backgroundColor: c.background }]}>
+        <View style={[styles.header, { backgroundColor: c.surface }]}>
           <TouchableOpacity
             onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-            accessibilityLabel={texto.home_open_menu}
+            accessibilityLabel={labels.home_open_menu}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="menu-outline" size={26} color={c.texto} />
+            <Ionicons name="menu-outline" size={26} color={c.text} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.totalBoton} onPress={() => setModalVisible(true)}>
-            <View style={styles.cuentaRow}>
-              <Text style={[styles.labelCuenta, { color: c.textoSuave, fontSize: fs(12) }]}>{cuentaActiva.nombre}</Text>
-              <Ionicons name="chevron-down-outline" size={14} color={c.textoSuave} />
+          <TouchableOpacity style={styles.totalButton} onPress={() => setModalVisible(true)}>
+            <View style={styles.accountRow}>
+              <Text style={[styles.accountLabel, { color: c.textSecondary, fontSize: fs(12) }]}>{activeAccount.name}</Text>
+              <Ionicons name="chevron-down-outline" size={14} color={c.textSecondary} />
             </View>
-            <Text style={[styles.totalTexto, { color: colorTotal, fontSize: fs(28) }]}>
-              {formatearMoneda(total, config.divisa, config.separadorDecimal)}
+            <Text style={[styles.totalText, { color: totalColor, fontSize: fs(28) }]}>
+              {formatCurrency(total, config.currency, config.decimalSeparator)}
             </Text>
-            <View style={styles.resumenRow}>
-              <Text style={[styles.resumenItem, { fontSize: fs(12) }]}>
-                <Text style={{ color: c.verde }}>+{formatearMoneda(totalIngresosGlobal, config.divisa, config.separadorDecimal)}</Text>
-                <Text style={[styles.resumenLabel, { color: c.textoSuave, fontSize: fs(11) }]}> {texto.home_income}</Text>
+            <View style={styles.summaryRow}>
+              <Text style={[styles.summaryItem, { fontSize: fs(12) }]}>
+                <Text style={{ color: c.green }}>+{formatCurrency(totalIncomeAll, config.currency, config.decimalSeparator)}</Text>
+                <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(11) }]}> {labels.home_income}</Text>
               </Text>
-              <Text style={[styles.resumenItem, { fontSize: fs(12) }]}>
-                <Text style={{ color: c.rojo }}>-{formatearMoneda(totalGastosGlobal, config.divisa, config.separadorDecimal)}</Text>
-                <Text style={[styles.resumenLabel, { color: c.textoSuave, fontSize: fs(11) }]}> {texto.home_expenses}</Text>
+              <Text style={[styles.summaryItem, { fontSize: fs(12) }]}>
+                <Text style={{ color: c.red }}>-{formatCurrency(totalExpensesAll, config.currency, config.decimalSeparator)}</Text>
+                <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(11) }]}> {labels.home_expenses}</Text>
               </Text>
             </View>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => navigation.navigate('Transactions')}
-            accessibilityLabel={texto.home_view_transactions}
+            accessibilityLabel={labels.home_view_transactions}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="stats-chart-outline" size={24} color={c.texto} />
+            <Ionicons name="stats-chart-outline" size={24} color={c.text} />
           </TouchableOpacity>
         </View>
 
-        <TypeTabs activo={tipoActivo} onChange={cambiarTipo} />
-        <PeriodTabs activo={periodoActivo} onChange={handlePeriodChange} />
+        <TypeTabs active={activeType} onChange={changeType} />
+        <PeriodTabs active={activePeriod} onChange={handlePeriodChange} />
         <CalendarPicker
-          periodo={periodoActivo}
-          fecha={fechaSeleccionada}
-          onFechaChange={handleFechaChange}
-          onRangoChange={handleRangoChange}
-          inicioRango={fechaPersonalizada.inicio}
-          finRango={fechaPersonalizada.fin}
+          period={activePeriod}
+          date={selectedDate}
+          onDateChange={handleDateChange}
+          onRangeChange={handleRangeChange}
+          rangeStart={customDate.start}
+          rangeEnd={customDate.end}
           visible={calendarVisible}
-          onAbrir={() => setCalendarVisible(true)}
+          onOpen={() => setCalendarVisible(true)}
           onClose={() => setCalendarVisible(false)}
-          primerDia={config.primerDiaSemana}
+          firstDay={config.firstDayOfWeek}
         />
 
         <TouchableOpacity
@@ -140,35 +140,35 @@ export default function HomeScreen() {
           activeOpacity={0.7}
         >
           {chartType === 'donut' ? (
-            <DonutChart datos={categoriasActivas} total={totalActivo} divisa={config.divisa} separador={config.separadorDecimal} />
+            <DonutChart data={activeCategories} total={activeTotal} currency={config.currency} separator={config.decimalSeparator} />
           ) : (
-            <BarChart datos={categoriasActivas} total={totalActivo} divisa={config.divisa} separador={config.separadorDecimal} />
+            <BarChart data={activeCategories} total={activeTotal} currency={config.currency} separator={config.decimalSeparator} />
           )}
         </TouchableOpacity>
 
         <CategoryList
-          categorias={categoriasActivas}
-          total={totalActivo}
-          divisa={config.divisa}
-          separador={config.separadorDecimal}
-          onPress={handleCategoriaPress}
+          categories={activeCategories}
+          total={activeTotal}
+          currency={config.currency}
+          separator={config.decimalSeparator}
+          onPress={handleCategoryPress}
         />
 
         <TouchableOpacity
-          style={[styles.fab, { backgroundColor: c.primario }, Platform.select({
-            web: { boxShadow: `0 4px 12px ${c.primario}4D` },
-            default: { elevation: 6, shadowColor: c.primario, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
+          style={[styles.fab, { backgroundColor: c.primary }, Platform.select({
+            web: { boxShadow: `0 4px 12px ${c.primary}4D` },
+            default: { elevation: 6, shadowColor: c.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
           })]}
           onPress={() => navigation.navigate('AddTransaction')}
-          accessibilityLabel={texto.home_add}
+          accessibilityLabel={labels.home_add}
         >
-          <Text style={[styles.fabTexto, { color: c.fondo, fontSize: fs(28) }]}>+</Text>
+          <Text style={[styles.fabText, { color: c.background, fontSize: fs(28) }]}>+</Text>
         </TouchableOpacity>
 
         <AccountModal
           visible={modalVisible}
-          cuentas={cuentasConSaldo}
-          onSelect={handleCuentaSelect}
+          accounts={accountsWithBalance}
+          onSelect={handleAccountSelect}
           onClose={() => setModalVisible(false)}
         />
       </View>
@@ -186,13 +186,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
-  totalBoton: { alignItems: 'center', flex: 1 },
-  cuentaRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  labelCuenta: { textTransform: 'uppercase', letterSpacing: 1 },
-  resumenRow: { flexDirection: 'row', gap: 12 },
-  resumenItem: {},
-  resumenLabel: {},
-  totalTexto: { fontWeight: '800', marginVertical: 2 },
+  totalButton: { alignItems: 'center', flex: 1 },
+  accountRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  accountLabel: { textTransform: 'uppercase', letterSpacing: 1 },
+  summaryRow: { flexDirection: 'row', gap: 12 },
+  summaryItem: {},
+  summaryLabel: {},
+  totalText: { fontWeight: '800', marginVertical: 2 },
   chartContainer: { alignItems: 'center', marginVertical: 8 },
   fab: {
     position: 'absolute',
@@ -204,5 +204,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  fabTexto: { fontWeight: '600', lineHeight: 30 },
+  fabText: { fontWeight: '600', lineHeight: 30 },
 });

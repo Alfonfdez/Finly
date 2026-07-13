@@ -7,7 +7,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t, obtenerNombreCategoria } from '../i18n';
+import { t, getCategoryName } from '../i18n';
 import SearchBar from '../components/SearchBar';
 import { RootStackParamList } from '../constants/types';
 
@@ -15,70 +15,70 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'AddCategory
 type AddCategoryRouteProp = RouteProp<RootStackParamList, 'AddCategory'>;
 
 export default function AddCategoryScreen() {
-  const { coloresActivos: c } = useConfig();
-  const { categorias } = useApp();
+  const { activeColors: c } = useConfig();
+  const { categories } = useApp();
   const fs = useFontSize();
-  const texto = t();
+  const labels = t();
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<AddCategoryRouteProp>();
 
-  const tipo = route.params.tipo;
+  const type = route.params.type;
 
-  const [busquedaActiva, setBusquedaActiva] = useState(false);
-  const [textoBusqueda, setTextoBusqueda] = useState('');
+  const [searchActive, setSearchActive] = useState(false);
+  const [searchText, setSearchText] = useState('');
 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <TouchableOpacity
           onPress={() => {
-            setBusquedaActiva(!busquedaActiva);
-            setTextoBusqueda('');
+            setSearchActive(!searchActive);
+            setSearchText('');
           }}
           style={styles.searchButton}
         >
-          <Ionicons name="search-outline" size={22} color={c.texto} />
+          <Ionicons name="search-outline" size={22} color={c.text} />
         </TouchableOpacity>
       ),
     });
-  }, [navigation, busquedaActiva, c.texto]);
+  }, [navigation, searchActive, c.text]);
 
-  const categoriasPorTipo = useMemo(() => {
-    return categorias.filter((cat) => cat.tipo === tipo);
-  }, [categorias, tipo]);
+  const categoriesByType = useMemo(() => {
+    return categories.filter((cat) => cat.type === type);
+  }, [categories, type]);
 
-  const categoriasFiltradas = useMemo(() => {
-    if (!textoBusqueda.trim()) return categoriasPorTipo;
+  const filteredCategories = useMemo(() => {
+    if (!searchText.trim()) return categoriesByType;
 
-    const terminos = textoBusqueda.toLowerCase().split(/\s+/).filter(Boolean);
-    return categoriasPorTipo.filter((cat) => {
-      const nombre = (obtenerNombreCategoria(cat.id) || cat.nombre).toLowerCase();
-      return terminos.every((termino) => nombre.includes(termino));
+    const searchTerms = searchText.toLowerCase().split(/\s+/).filter(Boolean);
+    return categoriesByType.filter((cat) => {
+      const name = (getCategoryName(cat.id) || cat.name).toLowerCase();
+      return searchTerms.every((term) => name.includes(term));
     });
-  }, [categoriasPorTipo, textoBusqueda]);
+  }, [categoriesByType, searchText]);
 
-  const handleSelectCategoria = (categoriaId: number) => {
-    navigation.navigate('AddTransaction', { categoriaId, tipo });
+  const handleSelectCategory = (categoryId: number) => {
+    navigation.navigate('AddTransaction', { categoryId, type });
   };
 
-  const renderCategoria = (cat: typeof categorias[0]) => {
-    const nombre = obtenerNombreCategoria(cat.id) || cat.nombre;
+  const renderCategory = (cat: typeof categories[0]) => {
+    const name = getCategoryName(cat.id) || cat.name;
 
     return (
       <TouchableOpacity
         key={cat.id}
-        style={[styles.item, { backgroundColor: c.fondoAlto }]}
-        onPress={() => handleSelectCategoria(cat.id)}
-        accessibilityLabel={`${texto.a11y_category} ${nombre}`}
+        style={[styles.item, { backgroundColor: c.surface }]}
+        onPress={() => handleSelectCategory(cat.id)}
+        accessibilityLabel={`${labels.a11y_category} ${name}`}
       >
         <View style={[styles.iconContainer, { backgroundColor: cat.color + '22' }]}>
-          <Ionicons name={cat.icono as any} size={24} color={cat.color} />
+          <Ionicons name={cat.icon as any} size={24} color={cat.color} />
         </View>
         <Text
-          style={[styles.nombre, { color: c.texto, fontSize: fs(11) }]}
+          style={[styles.name, { color: c.text, fontSize: fs(11) }]}
           numberOfLines={1}
         >
-          {nombre}
+          {name}
         </Text>
       </TouchableOpacity>
     );
@@ -86,48 +86,48 @@ export default function AddCategoryScreen() {
 
   const renderCreateButton = () => (
     <TouchableOpacity
-      style={[styles.item, { backgroundColor: c.fondoAlto }]}
+      style={[styles.item, { backgroundColor: c.surface }]}
       onPress={() => {}}
-      accessibilityLabel={texto.add_cat_create}
+      accessibilityLabel={labels.add_cat_create}
     >
-      <View style={[styles.iconContainer, { backgroundColor: c.textoSuave + '22' }]}>
-        <Ionicons name="add" size={24} color={c.textoSuave} />
+      <View style={[styles.iconContainer, { backgroundColor: c.textSecondary + '22' }]}>
+        <Ionicons name="add" size={24} color={c.textSecondary} />
       </View>
       <Text
-        style={[styles.nombre, { color: c.textoSuave, fontSize: fs(11) }]}
+        style={[styles.name, { color: c.textSecondary, fontSize: fs(11) }]}
         numberOfLines={1}
       >
-        {texto.add_cat_create}
+        {labels.add_cat_create}
       </Text>
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.fondo }]} edges={['bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
       <View style={styles.content}>
-        {busquedaActiva && (
+        {searchActive && (
           <SearchBar
-            placeholder={texto.add_cat_search}
-            value={textoBusqueda}
-            onChangeText={setTextoBusqueda}
+            placeholder={labels.add_cat_search}
+            value={searchText}
+            onChangeText={setSearchText}
             onClose={() => {
-              setBusquedaActiva(false);
-              setTextoBusqueda('');
+              setSearchActive(false);
+              setSearchText('');
             }}
           />
         )}
 
-        {categoriasFiltradas.length === 0 ? (
+        {filteredCategories.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Ionicons name="search-outline" size={64} color={c.textoSuave} />
-            <Text style={[styles.emptyText, { color: c.textoSuave, fontSize: fs(16) }]}>
-              {texto.add_cat_no_results}
+            <Ionicons name="search-outline" size={64} color={c.textSecondary} />
+            <Text style={[styles.emptyText, { color: c.textSecondary, fontSize: fs(16) }]}>
+              {labels.add_cat_no_results}
             </Text>
           </View>
         ) : (
           <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
             <View style={styles.grid}>
-              {categoriasFiltradas.map(renderCategoria)}
+              {filteredCategories.map(renderCategory)}
               {renderCreateButton()}
             </View>
           </ScrollView>
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 4,
   },
-  nombre: {
+  name: {
     fontWeight: '500',
     textAlign: 'center',
   },

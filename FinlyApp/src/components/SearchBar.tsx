@@ -11,22 +11,22 @@ interface Props {
 }
 
 export default function SearchBar({ placeholder, value, onChangeText, onClose }: Props) {
-  const { coloresActivos: c } = useConfig();
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
 
   return (
-    <View style={[styles.container, { backgroundColor: c.fondoAlto, borderColor: c.borde }]}>
-      <Ionicons name="search-outline" size={20} color={c.textoSuave} style={styles.icon} />
+    <View style={[styles.container, { backgroundColor: c.surface, borderColor: c.border }]}>
+      <Ionicons name="search-outline" size={20} color={c.textSecondary} style={styles.icon} />
       <TextInput
-        style={[styles.input, { color: c.texto, fontSize: fs(15) }]}
+        style={[styles.input, { color: c.text, fontSize: fs(15) }]}
         placeholder={placeholder}
-        placeholderTextColor={c.textoSuave}
+        placeholderTextColor={c.textSecondary}
         value={value}
         onChangeText={onChangeText}
         autoFocus
       />
       <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-        <Ionicons name="close-circle" size={20} color={c.textoSuave} />
+        <Ionicons name="close-circle" size={20} color={c.textSecondary} />
       </TouchableOpacity>
     </View>
   );

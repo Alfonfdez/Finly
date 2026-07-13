@@ -5,7 +5,7 @@ import { scrollbarFlatList } from '../constants/platformStyles';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { formatearMoneda, formatearFecha } from '../utils/formatters';
+import { formatCurrency, formatDate } from '../utils/formatters';
 import { useMemo } from 'react';
 import { RootStackParamList } from '../constants/types';
 import { t } from '../i18n';
@@ -14,45 +14,45 @@ type TransactionsRouteProp = RouteProp<RootStackParamList, 'Transactions'>;
 
 export default function TransactionsScreen() {
   const route = useRoute<TransactionsRouteProp>();
-  const { transacciones, categorias } = useApp();
-  const { config, coloresActivos: c } = useConfig();
+  const { transactions, categories } = useApp();
+  const { config, activeColors: c } = useConfig();
   const fs = useFontSize();
-  const texto = t();
-  const categoriaId = route.params?.categoriaId;
+  const labels = t();
+  const categoryId = route.params?.categoryId;
 
-  const filtradas = useMemo(() => {
-    let lista = transacciones;
-    if (categoriaId) {
-      lista = lista.filter(t => t.categoria_id === categoriaId);
+  const filtered = useMemo(() => {
+    let list = transactions;
+    if (categoryId) {
+      list = list.filter(t => t.category_id === categoryId);
     }
-    return [...lista].sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
-  }, [transacciones, categoriaId]);
+    return [...list].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [transactions, categoryId]);
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: c.fondo }]}>
-      <View style={[styles.container, { backgroundColor: c.fondo }]}>
-        <Text style={[styles.titulo, { color: c.texto, fontSize: fs(20) }]}>{texto.transactions_title}</Text>
+    <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]}>
+      <View style={[styles.container, { backgroundColor: c.background }]}>
+        <Text style={[styles.title, { color: c.text, fontSize: fs(20) }]}>{labels.transactions_title}</Text>
         <FlatList
           style={scrollbarFlatList}
-          data={filtradas}
+          data={filtered}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => {
-            const cat = categorias.find(ct => ct.id === item.categoria_id);
+            const cat = categories.find(ct => ct.id === item.category_id);
             return (
-              <View style={[styles.item, { borderBottomColor: c.borde }]}>
+              <View style={[styles.item, { borderBottomColor: c.border }]}>
                 <View style={styles.info}>
-                  <Text style={[styles.descripcion, { color: c.texto, fontSize: fs(15) }]}>{item.descripcion}</Text>
-                  <Text style={[styles.categoria, { color: c.textoSuave, fontSize: fs(12) }]}>{cat?.nombre ?? ''}</Text>
-                  <Text style={[styles.fecha, { color: c.textoSuave, fontSize: fs(11) }]}>{formatearFecha(new Date(item.fecha))}</Text>
+                  <Text style={[styles.description, { color: c.text, fontSize: fs(15) }]}>{item.description}</Text>
+                  <Text style={[styles.category, { color: c.textSecondary, fontSize: fs(12) }]}>{cat?.name ?? ''}</Text>
+                  <Text style={[styles.date, { color: c.textSecondary, fontSize: fs(11) }]}>{formatDate(new Date(item.date))}</Text>
                 </View>
-                <Text style={[styles.cantidad, { color: item.tipo === 'ingreso' ? c.verde : c.rojo, fontSize: fs(16) }]}>
-                  {item.tipo === 'ingreso' ? '+' : '-'}{formatearMoneda(item.cantidad, config.divisa, config.separadorDecimal)}
+                <Text style={[styles.amount, { color: item.type === 'income' ? c.green : c.red, fontSize: fs(16) }]}>
+                  {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount, config.currency, config.decimalSeparator)}
                 </Text>
               </View>
             );
           }}
           ListEmptyComponent={
-            <Text style={[styles.vacio, { color: c.textoSuave, fontSize: fs(14) }]}>{texto.transactions_empty}</Text>
+            <Text style={[styles.empty, { color: c.textSecondary, fontSize: fs(14) }]}>{labels.transactions_empty}</Text>
           }
         />
       </View>
@@ -63,7 +63,7 @@ export default function TransactionsScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   container: { flex: 1, padding: 16 },
-  titulo: { fontWeight: '700', marginBottom: 16 },
+  title: { fontWeight: '700', marginBottom: 16 },
   item: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -72,9 +72,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   info: { flex: 1 },
-  descripcion: { fontWeight: '500' },
-  categoria: { marginTop: 2 },
-  fecha: { marginTop: 1 },
-  cantidad: { fontWeight: '700' },
-  vacio: { textAlign: 'center', marginTop: 40 },
+  description: { fontWeight: '500' },
+  category: { marginTop: 2 },
+  date: { marginTop: 1 },
+  amount: { fontWeight: '700' },
+  empty: { textAlign: 'center', marginTop: 40 },
 });

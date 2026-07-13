@@ -4,28 +4,28 @@ import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 
 interface Props {
-  año: number;
-  maxAño?: number;
-  onChange: (nuevoAño: number) => void;
+  year: number;
+  maxYear?: number;
+  onChange: (newYear: number) => void;
 }
 
-export default function YearNav({ año, maxAño = new Date().getFullYear(), onChange }: Props) {
-  const { coloresActivos: c } = useConfig();
+export default function YearNav({ year, maxYear = new Date().getFullYear(), onChange }: Props) {
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const puedeAvanzar = año < maxAño;
+  const canAdvance = year < maxYear;
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => onChange(año - 1)}>
-        <Ionicons name="chevron-back-outline" size={22} color={c.texto} />
+      <TouchableOpacity onPress={() => onChange(year - 1)}>
+        <Ionicons name="chevron-back-outline" size={22} color={c.text} />
       </TouchableOpacity>
-      <Text style={{ color: c.texto, fontSize: fs(18), fontWeight: '700' }}>{año}</Text>
+      <Text style={{ color: c.text, fontSize: fs(18), fontWeight: '700' }}>{year}</Text>
       <TouchableOpacity
-        onPress={() => puedeAvanzar && onChange(año + 1)}
-        style={{ opacity: puedeAvanzar ? 1 : 0.3 }}
-        disabled={!puedeAvanzar}
+        onPress={() => canAdvance && onChange(year + 1)}
+        style={{ opacity: canAdvance ? 1 : 0.3 }}
+        disabled={!canAdvance}
       >
-        <Ionicons name="chevron-forward-outline" size={22} color={c.texto} />
+        <Ionicons name="chevron-forward-outline" size={22} color={c.text} />
       </TouchableOpacity>
     </View>
   );

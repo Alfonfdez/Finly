@@ -1,35 +1,35 @@
-export interface PaletaColores {
-  fondo: string;
-  fondoAlto: string;
-  texto: string;
-  textoSuave: string;
-  primario: string;
-  acento: string;
-  verde: string;
-  rojo: string;
-  borde: string;
+export interface ColorPalette {
+  background: string;
+  surface: string;
+  text: string;
+  textSecondary: string;
+  primary: string;
+  accent: string;
+  green: string;
+  red: string;
+  border: string;
 }
 
-export const coloresDark: PaletaColores = {
-  fondo: '#0F172A',
-  fondoAlto: '#1E293B',
-  texto: '#E2E8F0',
-  textoSuave: '#94A3B8',
-  primario: '#22D3EE',
-  acento: '#A78BFA',
-  verde: '#34D399',
-  rojo: '#F87171',
-  borde: '#334155',
+export const darkColors: ColorPalette = {
+  background: '#0F172A',
+  surface: '#1E293B',
+  text: '#E2E8F0',
+  textSecondary: '#94A3B8',
+  primary: '#22D3EE',
+  accent: '#A78BFA',
+  green: '#34D399',
+  red: '#F87171',
+  border: '#334155',
 };
 
-export const coloresLight: PaletaColores = {
-  fondo: '#FFFFFF',
-  fondoAlto: '#F1F5F9',
-  texto: '#1E293B',
-  textoSuave: '#64748B',
-  primario: '#0891B2',
-  acento: '#7C3AED',
-  verde: '#059669',
-  rojo: '#DC2626',
-  borde: '#E2E8F0',
+export const lightColors: ColorPalette = {
+  background: '#FFFFFF',
+  surface: '#F1F5F9',
+  text: '#1E293B',
+  textSecondary: '#64748B',
+  primary: '#0891B2',
+  accent: '#7C3AED',
+  green: '#059669',
+  red: '#DC2626',
+  border: '#E2E8F0',
 };

@@ -6,16 +6,16 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 
 interface Props {
-  fotoUri: string | null;
+  photoUri: string | null;
   onTakePhoto: () => void;
   onPickFromGallery: () => void;
 }
 
-export default function PhotoSection({ fotoUri, onTakePhoto, onPickFromGallery }: Props) {
+export default function PhotoSection({ photoUri, onTakePhoto, onPickFromGallery }: Props) {
   const [modalVisible, setModalVisible] = useState(false);
-  const { coloresActivos: c } = useConfig();
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const texto = t();
+  const labels = t();
 
   const handleOption = (action: () => void) => {
     setModalVisible(false);
@@ -24,53 +24,53 @@ export default function PhotoSection({ fotoUri, onTakePhoto, onPickFromGallery }
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.titulo, { color: c.texto, fontSize: fs(15) }]}>
-        {texto.add_photo}
+      <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>
+        {labels.add_photo}
       </Text>
       <TouchableOpacity
-        style={[styles.photoButton, { backgroundColor: c.fondoAlto, borderColor: c.borde }]}
+        style={[styles.photoButton, { backgroundColor: c.surface, borderColor: c.border }]}
         onPress={() => setModalVisible(true)}
-        accessibilityLabel={texto.add_photo}
+        accessibilityLabel={labels.add_photo}
       >
-        {fotoUri ? (
-          <Text style={[styles.photoText, { color: c.texto, fontSize: fs(14) }]}>
-            Foto seleccionada
+        {photoUri ? (
+          <Text style={[styles.photoText, { color: c.text, fontSize: fs(14) }]}>
+            Selected photo
           </Text>
         ) : (
-          <Ionicons name="add" size={32} color={c.textoSuave} />
+          <Ionicons name="add" size={32} color={c.textSecondary} />
         )}
       </TouchableOpacity>
 
       <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modal, { backgroundColor: c.fondo }]}>
-            <Text style={[styles.modalTitle, { color: c.texto, fontSize: fs(18) }]}>
-              {texto.add_photo_title}
+          <View style={[styles.modal, { backgroundColor: c.background }]}>
+            <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(18) }]}>
+              {labels.add_photo_title}
             </Text>
             <TouchableOpacity
-              style={[styles.modalOption, { backgroundColor: c.fondoAlto }]}
+              style={[styles.modalOption, { backgroundColor: c.surface }]}
               onPress={() => handleOption(onTakePhoto)}
             >
-              <Ionicons name="camera-outline" size={24} color={c.primario} />
-              <Text style={[styles.modalOptionText, { color: c.texto, fontSize: fs(15) }]}>
-                {texto.add_photo_camera}
+              <Ionicons name="camera-outline" size={24} color={c.primary} />
+              <Text style={[styles.modalOptionText, { color: c.text, fontSize: fs(15) }]}>
+                {labels.add_photo_camera}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.modalOption, { backgroundColor: c.fondoAlto }]}
+              style={[styles.modalOption, { backgroundColor: c.surface }]}
               onPress={() => handleOption(onPickFromGallery)}
             >
-              <Ionicons name="images-outline" size={24} color={c.primario} />
-              <Text style={[styles.modalOptionText, { color: c.texto, fontSize: fs(15) }]}>
-                {texto.add_photo_gallery}
+              <Ionicons name="images-outline" size={24} color={c.primary} />
+              <Text style={[styles.modalOptionText, { color: c.text, fontSize: fs(15) }]}>
+                {labels.add_photo_gallery}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.modalCancelButton, { backgroundColor: c.fondoAlto }]}
+              style={[styles.modalCancelButton, { backgroundColor: c.surface }]}
               onPress={() => setModalVisible(false)}
             >
-              <Text style={[styles.modalCancelText, { color: c.textoSuave, fontSize: fs(14) }]}>
-                {texto.cal_cancel}
+              <Text style={[styles.modalCancelText, { color: c.textSecondary, fontSize: fs(14) }]}>
+                {labels.cal_cancel}
               </Text>
             </TouchableOpacity>
           </View>
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 16,
   },
-  titulo: {
+  title: {
     fontWeight: '600',
     marginBottom: 10,
   },

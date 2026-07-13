@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { obtenerNombreMes, inicioDeSemana } from '../../utils/formatters';
+import { getMonthName, weekStart } from '../../utils/formatters';
 import { CalendarBaseProps } from './types';
 import MonthNav from './MonthNav';
 import YearNav from './YearNav';
@@ -8,69 +8,69 @@ import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 
 interface Props extends CalendarBaseProps {
-  primerDia?: 0 | 1;
+  firstDay?: 0 | 1;
 }
 
-function formatoSemanaCorto(inicio: Date, fin: Date): string {
-  const dInicio = inicio.getDate();
-  const mAbrev = (m: number) => obtenerNombreMes(m + 1).slice(0, 3).toLowerCase();
-  const dFin = fin.getDate();
-  return `${dInicio} ${mAbrev(inicio.getMonth())} - ${dFin} ${mAbrev(fin.getMonth())}`;
+function formatShortWeek(start: Date, end: Date): string {
+  const startDay = start.getDate();
+  const monthAbrev = (m: number) => getMonthName(m + 1).slice(0, 3).toLowerCase();
+  const endDay = end.getDate();
+  return `${startDay} ${monthAbrev(start.getMonth())} - ${endDay} ${monthAbrev(end.getMonth())}`;
 }
 
-function mismaSemana(a: Date, b: Date, primerDia: 0 | 1): boolean {
-  const ia = inicioDeSemana(a, primerDia);
-  const ib = inicioDeSemana(b, primerDia);
+function sameWeek(a: Date, b: Date, firstDay: 0 | 1): boolean {
+  const ia = weekStart(a, firstDay);
+  const ib = weekStart(b, firstDay);
   return ia.getTime() === ib.getTime();
 }
 
-export default function WeekPicker({ fecha, onSelect, primerDia = 1 }: Props) {
-  const hoy = new Date();
-  const [año, setAño] = useState(fecha.getFullYear());
-  const [mesActivo, setMesActivo] = useState(fecha.getMonth() + 1);
-  const { coloresActivos: c } = useConfig();
+export default function WeekPicker({ date, onSelect, firstDay = 1 }: Props) {
+  const today = new Date();
+  const [year, setYear] = useState(date.getFullYear());
+  const [activeMonth, setActiveMonth] = useState(date.getMonth() + 1);
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
 
-  const semanas = useMemo(() => {
-    const result: { inicio: Date; fin: Date }[] = [];
-    const primerDiaMes = new Date(año, mesActivo - 1, 1);
-    let cursor = inicioDeSemana(primerDiaMes, primerDia);
+  const weeks = useMemo(() => {
+    const result: { start: Date; end: Date }[] = [];
+    const firstMonthDay = new Date(year, activeMonth - 1, 1);
+    let cursor = weekStart(firstMonthDay, firstDay);
     for (let i = 0; i < 6; i++) {
-      const fin = new Date(cursor);
-      fin.setDate(fin.getDate() + 6);
-      result.push({ inicio: new Date(cursor), fin });
+      const end = new Date(cursor);
+      end.setDate(end.getDate() + 6);
+      result.push({ start: new Date(cursor), end });
       cursor.setDate(cursor.getDate() + 7);
     }
     return result;
-  }, [año, mesActivo, primerDia]);
+  }, [year, activeMonth, firstDay]);
 
-  const cambiarAño = useCallback((nuevoAño: number) => {
-    if (nuevoAño > hoy.getFullYear()) return;
-    setAño(nuevoAño);
-    if (nuevoAño === hoy.getFullYear() && mesActivo > hoy.getMonth() + 1) {
-      setMesActivo(hoy.getMonth() + 1);
+  const changeYear = useCallback((newYear: number) => {
+    if (newYear > today.getFullYear()) return;
+    setYear(newYear);
+    if (newYear === today.getFullYear() && activeMonth > today.getMonth() + 1) {
+      setActiveMonth(today.getMonth() + 1);
     }
-  }, [hoy, mesActivo]);
+  }, [today, activeMonth]);
 
   return (
     <View style={styles.container}>
-      <YearNav año={año} onChange={cambiarAño} />
+      <YearNav year={year} onChange={changeYear} />
 
-      <MonthNav año={año} mes={mesActivo} onChange={(a, m) => { setAño(a); setMesActivo(m); }} />
+      <MonthNav year={year} month={activeMonth} onChange={(a, m) => { setYear(a); setActiveMonth(m); }} />
 
       <View>
-        {semanas.map((sem, i) => {
-          const futuro = sem.inicio > hoy;
-          const seleccionada = mismaSemana(sem.inicio, fecha, primerDia);
+        {weeks.map((week, i) => {
+          const isFuture = week.start > today;
+          const isSelected = sameWeek(week.start, date, firstDay);
           return (
             <TouchableOpacity
               key={i}
-              style={[styles.semanaRow, { backgroundColor: c.fondoAlto }, seleccionada && { backgroundColor: c.primario }, futuro && styles.semanaFutura]}
-              onPress={() => !futuro && onSelect(sem.inicio)}
-              disabled={futuro}
+              style={[styles.weekRow, { backgroundColor: c.surface }, isSelected && { backgroundColor: c.primary }, isFuture && styles.futureWeek]}
+              onPress={() => !isFuture && onSelect(week.start)}
+              disabled={isFuture}
             >
-              <Text style={{ color: seleccionada ? c.fondo : c.texto, fontWeight: seleccionada ? '700' : '400', fontSize: fs(14) }}>
-                {formatoSemanaCorto(sem.inicio, sem.fin)}
+              <Text style={{ color: isSelected ? c.background : c.text, fontWeight: isSelected ? '700' : '400', fontSize: fs(14) }}>
+                {formatShortWeek(week.start, week.end)}
               </Text>
             </TouchableOpacity>
           );
@@ -82,6 +82,6 @@ export default function WeekPicker({ fecha, onSelect, primerDia = 1 }: Props) {
 
 const styles = StyleSheet.create({
   container: { padding: 8 },
-  semanaRow: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8, marginBottom: 4 },
-  semanaFutura: { opacity: 0.3 },
+  weekRow: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8, marginBottom: 4 },
+  futureWeek: { opacity: 0.3 },
 });

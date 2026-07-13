@@ -1,10 +1,10 @@
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Platform } from 'react-native';
+﻿import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Platform } from 'react-native';
 import type { ReactNode } from 'react';
 import Svg, { Rect, Line } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
-import { useConfig, Configuracion } from '../context/ConfigContext';
+import { useConfig, Config } from '../context/ConfigContext';
 import { SettingsScreenProps } from '../constants/types';
-import { escalarFontSize } from '../utils/formatters';
+import { scaleFontSize } from '../utils/formatters';
 import { t } from '../i18n';
 
 function SenyeraIcon({ size = 16 }: { size?: number }) {
@@ -27,7 +27,7 @@ function UKFlagWeb({ size = 16 }: { size?: number }) {
   const sw = h * 0.15;
   const dw = h * 0.075;
   return (
-    <Svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+    <Svg width={w} height={h} viewBox={'0 0 ' + w + ' ' + h}>
       <Rect width={w} height={h} fill="#012169" />
       <Line x1={0} y1={0} x2={w} y2={h} stroke="#fff" strokeWidth={dw * 2.5} />
       <Line x1={w} y1={0} x2={0} y2={h} stroke="#fff" strokeWidth={dw * 2.5} />
@@ -74,46 +74,46 @@ function FlagIcon({ code, size = 16 }: { code: string; size?: number }) {
   return <Text style={{ fontSize: size }}>{FLAG_EMOJI[code] ?? ''}</Text>;
 }
 
-function DayCircleIcon({ letter, size = 16, colores }: { letter: string; size?: number; colores: ReturnType<typeof useConfig>['coloresActivos'] }) {
+function DayCircleIcon({ letter, size = 16, colors }: { letter: string; size?: number; colors: ReturnType<typeof useConfig>['activeColors'] }) {
   const isWide = letter.length > 1;
   const w = isWide ? size * 1.3 : size;
   return (
-    <View style={{ width: w, height: size, borderRadius: size / 2, backgroundColor: colores.primario, justifyContent: 'center', alignItems: 'center' }}>
-      <Text style={{ fontSize: size * (isWide ? 0.4 : 0.55), color: colores.fondo, fontWeight: '700' }}>{letter}</Text>
+    <View style={{ width: w, height: size, borderRadius: size / 2, backgroundColor: colors.primary, justifyContent: 'center', alignItems: 'center' }}>
+      <Text style={{ fontSize: size * (isWide ? 0.4 : 0.55), color: colors.background, fontWeight: '700' }}>{letter}</Text>
     </View>
   );
 }
 
-type Opcion<T = string> = { label: string; value: T; icon?: ReactNode };
+type Option<T = string> = { label: string; value: T; icon?: ReactNode };
 
 function SelectorInline<T extends string>({
-  opciones,
-  seleccionado,
+  options,
+  selected,
   onSelect,
-  colores,
-  tamanoTexto,
+  colors,
+  textSize,
 }: {
-  opciones: Opcion<T>[];
-  seleccionado: T;
+  options: Option<T>[];
+  selected: T;
   onSelect: (v: T) => void;
-  colores: ReturnType<typeof useConfig>['coloresActivos'];
-  tamanoTexto: Configuracion['tamanoTexto'];
+  colors: ReturnType<typeof useConfig>['activeColors'];
+  textSize: Config['textSize'];
 }) {
-  const fs = (s: number) => escalarFontSize(s, tamanoTexto);
+  const fs = (s: number) => scaleFontSize(s, textSize);
   return (
-    <View style={styles.opciones}>
-      {opciones.map(op => (
+    <View style={styles.options}>
+      {options.map(op => (
         <TouchableOpacity
           key={String(op.value)}
-          style={[styles.opcion, { backgroundColor: seleccionado === op.value ? colores.primario + '20' : colores.fondoAlto }]}
+          style={[styles.option, { backgroundColor: selected === op.value ? colors.primary + '20' : colors.surface }]}
           onPress={() => onSelect(op.value)}
         >
           {op.icon && <View style={styles.iconWrap}>{op.icon}</View>}
-          <Text style={[styles.opcionTexto, { color: seleccionado === op.value ? colores.primario : colores.texto, fontSize: fs(14) }]}>
+          <Text style={[styles.optionText, { color: selected === op.value ? colors.primary : colors.text, fontSize: fs(14) }]}>
             {op.label}
           </Text>
-          {seleccionado === op.value && (
-            <Text style={[styles.check, { color: colores.primario, fontSize: fs(14) }]}>✓</Text>
+          {selected === op.value && (
+            <Text style={[styles.check, { color: colors.primary, fontSize: fs(14) }]}>✓</Text>
           )}
         </TouchableOpacity>
       ))}
@@ -122,79 +122,79 @@ function SelectorInline<T extends string>({
 }
 
 export default function SettingsScreen({ navigation }: SettingsScreenProps) {
-  const { config, coloresActivos, actualizarConfig } = useConfig();
-  const c = coloresActivos;
-  const texto = t();
-  const fs = (size: number) => escalarFontSize(size, config.tamanoTexto);
+  const { config, activeColors, updateConfig } = useConfig();
+  const c = activeColors;
+  const labels = t();
+  const fs = (size: number) => scaleFontSize(size, config.textSize);
 
-  const TEMAS: Opcion<Configuracion['tema']>[] = [
-    { label: texto.theme_dark, value: 'oscuro', icon: <Ionicons name="moon" size={16} color={c.texto} /> },
-    { label: texto.theme_light, value: 'claro', icon: <Ionicons name="sunny" size={16} color={c.texto} /> },
-    { label: texto.theme_system, value: 'sistema', icon: <Ionicons name="phone-portrait-outline" size={16} color={c.texto} /> },
+  const THEMES: Option<Config['theme']>[] = [
+    { label: labels.theme_dark, value: 'dark', icon: <Ionicons name="moon" size={16} color={c.text} /> },
+    { label: labels.theme_light, value: 'light', icon: <Ionicons name="sunny" size={16} color={c.text} /> },
+    { label: labels.theme_system, value: 'system', icon: <Ionicons name="phone-portrait-outline" size={16} color={c.text} /> },
   ];
 
-  const PRIMER_DIA: Opcion[] = [
-    { label: texto.day_monday, value: '1', icon: <DayCircleIcon letter={texto.day_mon_letter} size={16} colores={c} /> },
-    { label: texto.day_sunday, value: '0', icon: <DayCircleIcon letter={texto.day_sun_letter} size={16} colores={c} /> },
+  const PRIMER_DIA: Option[] = [
+    { label: labels.day_monday, value: '1', icon: <DayCircleIcon letter={labels.day_mon_letter} size={16} colors={c} /> },
+    { label: labels.day_sunday, value: '0', icon: <DayCircleIcon letter={labels.day_sun_letter} size={16} colors={c} /> },
   ];
 
-  const DIVISAS: Opcion[] = [
-    { label: texto.currency_euro, value: '€', icon: <Text style={[styles.currencyIcon, { color: c.texto, fontSize: fs(16) }]}>€</Text> },
-    { label: texto.currency_dollar, value: '$', icon: <Text style={[styles.currencyIcon, { color: c.texto, fontSize: fs(16) }]}>$</Text> },
-    { label: texto.currency_pound, value: '£', icon: <Text style={[styles.currencyIcon, { color: c.texto, fontSize: fs(16) }]}>£</Text> },
-    { label: texto.currency_yen, value: '¥', icon: <Text style={[styles.currencyIcon, { color: c.texto, fontSize: fs(16) }]}>¥</Text> },
+  const DIVISAS: Option[] = [
+    { label: labels.currency_euro, value: '\u20AC', icon: <Text style={[styles.currencyIcon, { color: c.text, fontSize: fs(16) }]}>{'\u20AC'}</Text> },
+    { label: labels.currency_dollar, value: '$', icon: <Text style={[styles.currencyIcon, { color: c.text, fontSize: fs(16) }]}>$</Text> },
+    { label: labels.currency_pound, value: '\u00A3', icon: <Text style={[styles.currencyIcon, { color: c.text, fontSize: fs(16) }]}>{'\u00A3'}</Text> },
+    { label: labels.currency_yen, value: '\u00A5', icon: <Text style={[styles.currencyIcon, { color: c.text, fontSize: fs(16) }]}>{'\u00A5'}</Text> },
   ];
 
-  const SEPARADORES: Opcion<Configuracion['separadorDecimal']>[] = [
-    { label: texto.sep_comma, value: ',', icon: <Text style={[styles.currencyIcon, { color: c.texto, fontSize: fs(16) }]}>,</Text> },
-    { label: texto.sep_dot, value: '.', icon: <Text style={[styles.currencyIcon, { color: c.texto, fontSize: fs(16) }]}>.</Text> },
+  const SEPARATORS: Option<Config['decimalSeparator']>[] = [
+    { label: labels.sep_comma, value: ',', icon: <Text style={[styles.currencyIcon, { color: c.text, fontSize: fs(16) }]}>,</Text> },
+    { label: labels.sep_dot, value: '.', icon: <Text style={[styles.currencyIcon, { color: c.text, fontSize: fs(16) }]}>.</Text> },
   ];
 
-  const IDIOMAS: Opcion<Configuracion['idioma']>[] = [
-    { label: texto.lang_en, value: 'en', icon: <FlagIcon code="en" size={16} /> },
-    { label: texto.lang_es, value: 'es', icon: <FlagIcon code="es" size={16} /> },
-    { label: texto.lang_ca, value: 'ca', icon: <FlagIcon code="ca" size={16} /> },
+  const LANGUAGES: Option<Config['language']>[] = [
+    { label: labels.lang_en, value: 'en', icon: <FlagIcon code="en" size={16} /> },
+    { label: labels.lang_es, value: 'es', icon: <FlagIcon code="es" size={16} /> },
+    { label: labels.lang_ca, value: 'ca', icon: <FlagIcon code="ca" size={16} /> },
   ];
 
-  const TAMANOS: Opcion<Configuracion['tamanoTexto']>[] = [
-    { label: texto.size_small, value: 'pequeño', icon: <Text style={[styles.sizeIcon, { color: c.texto, fontSize: 11 }]}>A</Text> },
-    { label: texto.size_medium, value: 'mediano', icon: <Text style={[styles.sizeIcon, { color: c.texto, fontSize: 15 }]}>A</Text> },
-    { label: texto.size_large, value: 'grande', icon: <Text style={[styles.sizeIcon, { color: c.texto, fontSize: 19 }]}>A</Text> },
+  const SIZES: Option<Config['textSize']>[] = [
+    { label: labels.size_small, value: 'small', icon: <Text style={[styles.sizeIcon, { color: c.text, fontSize: 11 }]}>A</Text> },
+    { label: labels.size_medium, value: 'medium', icon: <Text style={[styles.sizeIcon, { color: c.text, fontSize: 15 }]}>A</Text> },
+    { label: labels.size_large, value: 'large', icon: <Text style={[styles.sizeIcon, { color: c.text, fontSize: 19 }]}>A</Text> },
   ];
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: c.fondo }]} contentContainerStyle={styles.content}>
-      <Text style={[styles.seccion, { color: c.textoSuave, fontSize: fs(12) }]}>{texto.settings_appearance}</Text>
-      <View style={[styles.card, { backgroundColor: c.fondoAlto }]}>
-        <Text style={[styles.label, { color: c.texto, fontSize: fs(15) }]}>{texto.settings_theme}</Text>
-        <SelectorInline opciones={TEMAS} seleccionado={config.tema} onSelect={(v) => actualizarConfig({ tema: v })} colores={c} tamanoTexto={config.tamanoTexto} />
+    <ScrollView style={[styles.container, { backgroundColor: c.background }]} contentContainerStyle={styles.content}>
+      <Text style={[  styles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_appearance}</Text>
+      <View style={[styles.card, { backgroundColor: c.surface }]}>
+        <Text style={[styles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_theme}</Text>
+        <SelectorInline options={THEMES} selected={config.theme} onSelect={(v) => updateConfig({ theme: v })} colors={c} textSize={config.textSize} />
       </View>
 
-      <Text style={[styles.seccion, { color: c.textoSuave, fontSize: fs(12) }]}>{texto.settings_calendar}</Text>
-      <View style={[styles.card, { backgroundColor: c.fondoAlto }]}>
-        <Text style={[styles.label, { color: c.texto, fontSize: fs(15) }]}>{texto.settings_first_day}</Text>
-        <SelectorInline opciones={PRIMER_DIA} seleccionado={String(config.primerDiaSemana)} onSelect={(v) => actualizarConfig({ primerDiaSemana: Number(v) as 0 | 1 })} colores={c} tamanoTexto={config.tamanoTexto} />
+      <Text style={[  styles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_calendar}</Text>
+      <View style={[styles.card, { backgroundColor: c.surface }]}>
+        <Text style={[styles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_first_day}</Text>
+        <SelectorInline options={PRIMER_DIA} selected={String(config.firstDayOfWeek)} onSelect={(v) => updateConfig({ firstDayOfWeek: Number(v) as 0 | 1 })} colors={c} textSize={config.textSize} />
       </View>
 
-      <Text style={[styles.seccion, { color: c.textoSuave, fontSize: fs(12) }]}>{texto.settings_money}</Text>
-      <View style={[styles.card, { backgroundColor: c.fondoAlto }]}>
-        <Text style={[styles.label, { color: c.texto, fontSize: fs(15) }]}>{texto.settings_currency}</Text>
-        <SelectorInline opciones={DIVISAS} seleccionado={config.divisa} onSelect={(v) => actualizarConfig({ divisa: v })} colores={c} tamanoTexto={config.tamanoTexto} />
+      <Text style={[  styles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_money}</Text>
+      <View style={[styles.card, { backgroundColor: c.surface }]}>
+        <Text style={[styles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_currency}</Text>
+        <SelectorInline options={DIVISAS} selected={config.currency} onSelect={(v) => updateConfig({ currency: v })} colors={c} textSize={config.textSize} />
       </View>
-      <View style={[styles.card, { backgroundColor: c.fondoAlto }]}>
-        <Text style={[styles.label, { color: c.texto, fontSize: fs(15) }]}>{texto.settings_decimal_sep}</Text>
-        <SelectorInline opciones={SEPARADORES} seleccionado={config.separadorDecimal} onSelect={(v) => actualizarConfig({ separadorDecimal: v })} colores={c} tamanoTexto={config.tamanoTexto} />
-      </View>
-
-      <Text style={[styles.seccion, { color: c.textoSuave, fontSize: fs(12) }]}>{texto.settings_language}</Text>
-      <View style={[styles.card, { backgroundColor: c.fondoAlto }]}>
-        <SelectorInline opciones={IDIOMAS} seleccionado={config.idioma} onSelect={(v) => actualizarConfig({ idioma: v })} colores={c} tamanoTexto={config.tamanoTexto} />
+      <View style={[styles.card, { backgroundColor: c.surface }]}>
+        <Text style={[styles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_decimal_sep}</Text>
+        <SelectorInline options={SEPARATORS} selected={config.decimalSeparator} onSelect={(v) => updateConfig({ decimalSeparator: v })} colors={c} textSize={config.textSize} />
       </View>
 
-      <Text style={[styles.seccion, { color: c.textoSuave, fontSize: fs(12) }]}>{texto.settings_text}</Text>
-      <View style={[styles.card, { backgroundColor: c.fondoAlto }]}>
-        <Text style={[styles.label, { color: c.texto, fontSize: fs(15) }]}>{texto.settings_text_size}</Text>
-        <SelectorInline opciones={TAMANOS} seleccionado={config.tamanoTexto} onSelect={(v) => actualizarConfig({ tamanoTexto: v })} colores={c} tamanoTexto={config.tamanoTexto} />
+      <Text style={[  styles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_language}</Text>
+      <View style={[styles.card, { backgroundColor: c.surface }]}>
+        <SelectorInline options={LANGUAGES} selected={config.language} onSelect={(v) => updateConfig({ language: v })} colors={c} textSize={config.textSize} />
+      </View>
+
+      <Text style={[  styles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_text}</Text>
+      <View style={[styles.card, { backgroundColor: c.surface }]}>
+        <Text style={[styles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_text_size}</Text>
+        <SelectorInline options={SIZES} selected={config.textSize} onSelect={(v) => updateConfig({ textSize: v })} colors={c} textSize={config.textSize} />
       </View>
 
       <View style={{ height: 40 }} />
@@ -205,7 +205,7 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 16 },
-  seccion: {
+  section: {
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -215,9 +215,9 @@ const styles = StyleSheet.create({
   },
   card: { borderRadius: 12, padding: 16, marginBottom: 8 },
   label: { fontWeight: '600', marginBottom: 10 },
-  opciones: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  opcion: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, gap: 6 },
-  opcionTexto: { fontWeight: '500' },
+  options: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  option: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, gap: 6 },
+  optionText: { fontWeight: '500' },
   check: { fontWeight: '700' },
   iconWrap: { justifyContent: 'center', alignItems: 'center' },
   currencyIcon: { fontWeight: '700' },

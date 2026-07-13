@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { obtenerNombreMesAbrev } from '../../utils/formatters';
+import { getShortMonthName } from '../../utils/formatters';
 import DayPicker from './DayPicker';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
@@ -9,74 +9,74 @@ import { t } from '../../i18n';
 const ANIO_MINIMO = new Date().getFullYear();
 
 interface Props {
-  inicioTemp: Date;
-  finTemp: Date;
-  onTempRangoChange: (inicio: Date, fin: Date) => void;
-  primerDia?: 0 | 1;
+  tempStart: Date;
+  tempEnd: Date;
+  onTempRangeChange: (start: Date, end: Date) => void;
+  firstDay?: 0 | 1;
 }
 
-export default function PeriodPicker({ inicioTemp, finTemp, onTempRangoChange, primerDia = 1 }: Props) {
-  const [todos, setTodos] = useState(false);
-  const [seleccionando, setSeleccionando] = useState<'inicio' | 'fin'>('inicio');
-  const { coloresActivos: c } = useConfig();
+export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange, firstDay = 1 }: Props) {
+  const [allTime, setAllTime] = useState(false);
+  const [selecting, setSelecting] = useState<'start' | 'end'>('start');
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const texto = t();
-  const mesesCortos = texto.months_short;
+  const labels = t();
+  const shortMonths = labels.months_short;
 
-  const fechaMinima = new Date(ANIO_MINIMO, 0, 1);
-  const hoy = new Date();
+  const minDate = new Date(ANIO_MINIMO, 0, 1);
+  const today = new Date();
 
-  const handleTodos = useCallback(() => {
-    const nuevoEstado = !todos;
-    setTodos(nuevoEstado);
+  const handleAllTime = useCallback(() => {
+    const nuevoEstado = !allTime;
+    setAllTime(nuevoEstado);
     if (nuevoEstado) {
-      onTempRangoChange(fechaMinima, hoy);
+      onTempRangeChange(minDate, today);
     }
-  }, [todos, onTempRangoChange]);
+  }, [allTime, onTempRangeChange]);
 
   const handleDayPress = useCallback((d: Date) => {
-    if (todos) return;
-    if (seleccionando === 'inicio') {
-      onTempRangoChange(d, d);
-      setSeleccionando('fin');
+    if (allTime) return;
+    if (selecting === 'start') {
+      onTempRangeChange(d, d);
+      setSelecting('end');
     } else {
-      const i = inicioTemp < d ? inicioTemp : d;
-      const f = inicioTemp < d ? d : inicioTemp;
-      onTempRangoChange(i, f);
+      const i = tempStart < d ? tempStart : d;
+      const f = tempStart < d ? d : tempStart;
+      onTempRangeChange(i, f);
     }
-  }, [seleccionando, inicioTemp, todos, onTempRangoChange]);
+  }, [selecting, tempStart, allTime, onTempRangeChange]);
 
-  const textoRango = todos
-    ? texto.cal_all
-    : seleccionando === 'fin' && inicioTemp.getTime() === finTemp.getTime()
-      ? `${texto.cal_from} ${inicioTemp.getDate()} ${mesesCortos[inicioTemp.getMonth()]} — ${texto.cal_period_to_hint}`
-      : `${texto.cal_from} ${inicioTemp.getDate()} ${mesesCortos[inicioTemp.getMonth()]} ${texto.cal_to} ${finTemp.getDate()} ${mesesCortos[finTemp.getMonth()]} ${finTemp.getFullYear()}`;
+  const rangeText = allTime
+    ? labels.cal_all
+    : selecting === 'end' && tempStart.getTime() === tempEnd.getTime()
+      ? `${labels.cal_from} ${tempStart.getDate()} ${shortMonths[tempStart.getMonth()]} — ${labels.cal_period_to_hint}`
+      : `${labels.cal_from} ${tempStart.getDate()} ${shortMonths[tempStart.getMonth()]} ${labels.cal_to} ${tempEnd.getDate()} ${shortMonths[tempEnd.getMonth()]} ${tempEnd.getFullYear()}`;
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.titulo, { color: c.textoSuave, fontSize: fs(13) }]}>{textoRango}</Text>
+      <Text style={[styles.title, { color: c.textSecondary, fontSize: fs(13) }]}>{rangeText}</Text>
 
-      <TouchableOpacity style={styles.todosRow} onPress={handleTodos}>
-        <View style={[styles.checkbox, { borderColor: c.textoSuave }, todos && { backgroundColor: c.primario, borderColor: c.primario }]} />
-        <Text style={[styles.todosTexto, { color: c.texto, fontSize: fs(14) }]}>{texto.cal_all}</Text>
+      <TouchableOpacity style={styles.allTimeRow} onPress={handleAllTime}>
+        <View style={[styles.checkbox, { borderColor: c.textSecondary }, allTime && { backgroundColor: c.primary, borderColor: c.primary }]} />
+        <Text style={[styles.allTimeText, { color: c.text, fontSize: fs(14) }]}>{labels.cal_all}</Text>
       </TouchableOpacity>
 
-      {!todos && (
-        <View style={[styles.indicador, { backgroundColor: c.fondoAlto }]}>
-          <Text style={[styles.indicadorTexto, { color: c.primario, fontSize: fs(13) }]}>
-            {seleccionando === 'inicio' ? texto.cal_select_start : texto.cal_select_end}
+      {!allTime && (
+        <View style={[styles.indicator, { backgroundColor: c.surface }]}>
+          <Text style={[styles.indicatorText, { color: c.primary, fontSize: fs(13) }]}>
+            {selecting === 'start' ? labels.cal_select_start : labels.cal_select_end}
           </Text>
         </View>
       )}
 
-      {!todos && (
+      {!allTime && (
         <DayPicker
-          fecha={seleccionando === 'inicio' ? inicioTemp : finTemp}
+          date={selecting === 'start' ? tempStart : tempEnd}
           onSelect={handleDayPress}
-          rangoInicio={inicioTemp}
-          rangoFin={finTemp}
-          vistaInicial={new Date()}
-          primerDia={primerDia}
+          rangeStart={tempStart}
+          rangeEnd={tempEnd}
+          initialView={new Date()}
+          firstDay={firstDay}
         />
       )}
     </View>
@@ -85,10 +85,10 @@ export default function PeriodPicker({ inicioTemp, finTemp, onTempRangoChange, p
 
 const styles = StyleSheet.create({
   container: { padding: 8 },
-  titulo: { marginBottom: 12 },
-  todosRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  title: { marginBottom: 12 },
+  allTimeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, marginRight: 8 },
-  todosTexto: {},
-  indicador: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, marginBottom: 8, alignItems: 'center' },
-  indicadorTexto: { fontWeight: '600' },
+  allTimeText: {},
+  indicator: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, marginBottom: 8, alignItems: 'center' },
+  indicatorText: { fontWeight: '600' },
 });

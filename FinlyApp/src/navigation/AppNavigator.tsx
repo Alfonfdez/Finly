@@ -22,99 +22,99 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator();
 
 function CustomDrawerContent(props: DrawerContentComponentProps) {
-  const { coloresActivos: c } = useConfig();
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const texto = t();
+  const labels = t();
 
   return (
-    <DrawerContentScrollView {...props} style={{ backgroundColor: c.fondoAlto }}>
-      <View style={[styles.drawerHeader, { borderBottomColor: c.borde }]}>
-        <Text style={[styles.drawerTitulo, { color: c.primario, fontSize: fs(24) }]}>Finly</Text>
+    <DrawerContentScrollView {...props} style={{ backgroundColor: c.surface }}>
+      <View style={[styles.drawerHeader, { borderBottomColor: c.border }]}>
+        <Text style={[styles.drawerTitle, { color: c.primary, fontSize: fs(24) }]}>Finly</Text>
       </View>
       <DrawerItem
-        label={texto.nav_home}
+        label={labels.nav_home}
         onPress={() => props.navigation.navigate('Main')}
         icon={({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />}
-        labelStyle={[styles.drawerItemLabel, { color: c.texto }]}
-        activeTintColor={c.primario}
-        inactiveTintColor={c.primario}
+        labelStyle={[styles.drawerItemLabel, { color: c.text }]}
+        activeTintColor={c.primary}
+        inactiveTintColor={c.primary}
       />
       <DrawerItem
-        label={texto.nav_settings}
+        label={labels.nav_settings}
         onPress={() => props.navigation.navigate('Main', { screen: 'Settings' })}
         icon={({ color, size }) => <Ionicons name="settings-outline" size={size} color={color} />}
-        labelStyle={[styles.drawerItemLabel, { color: c.texto, fontSize: fs(14) }]}
-        inactiveTintColor={c.primario}
+        labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
+        inactiveTintColor={c.primary}
       />
       <DrawerItem
-        label={texto.nav_transactions}
+        label={labels.nav_transactions}
         onPress={() => props.navigation.navigate('Main', { screen: 'Transactions' })}
         icon={({ color, size }) => <Ionicons name="stats-chart-outline" size={size} color={color} />}
-        labelStyle={[styles.drawerItemLabel, { color: c.texto, fontSize: fs(14) }]}
-        inactiveTintColor={c.primario}
+        labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
+        inactiveTintColor={c.primary}
       />
-      <View style={[styles.separador, { backgroundColor: c.borde }]} />
-      <Text style={[styles.drawerSeccion, { color: c.textoSuave, fontSize: fs(12) }]}>{texto.nav_coming_soon}</Text>
+      <View style={[styles.separator, { backgroundColor: c.border }]} />
+      <Text style={[styles.drawerSection, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.nav_coming_soon}</Text>
       <DrawerItem
-        label={texto.nav_accounts}
+        label={labels.nav_accounts}
         onPress={() => {}}
         icon={({ color, size }) => <Ionicons name="wallet-outline" size={size} color={color} />}
-        labelStyle={[styles.drawerItemLabel, { color: c.textoSuave, fontSize: fs(14) }]}
-        inactiveTintColor={c.textoSuave}
+        labelStyle={[styles.drawerItemLabel, { color: c.textSecondary, fontSize: fs(14) }]}
+        inactiveTintColor={c.textSecondary}
       />
       <DrawerItem
-        label={texto.nav_categories}
+        label={labels.nav_categories}
         onPress={() => {}}
         icon={({ color, size }) => <Ionicons name="pricetag-outline" size={size} color={color} />}
-        labelStyle={[styles.drawerItemLabel, { color: c.textoSuave, fontSize: fs(14) }]}
-        inactiveTintColor={c.textoSuave}
+        labelStyle={[styles.drawerItemLabel, { color: c.textSecondary, fontSize: fs(14) }]}
+        inactiveTintColor={c.textSecondary}
       />
     </DrawerContentScrollView>
   );
 }
 
 function HomeStack() {
-  const { coloresActivos: c } = useConfig();
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const texto = t();
+  const labels = t();
 
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: c.fondoAlto },
-        headerTintColor: c.texto,
+        headerStyle: { backgroundColor: c.surface },
+        headerTintColor: c.text,
       }}
     >
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
       <Stack.Screen name="AddTransaction" component={AddTransactionScreen} options={{
         headerTitle: () => (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="add-circle-outline" size={20} color={c.texto} />
-            <Text style={{ color: c.texto, fontSize: fs(17), fontWeight: '600' }}>{texto.add_title}</Text>
+            <Ionicons name="add-circle-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.add_title}</Text>
           </View>
         ),
       }} />
       <Stack.Screen name="AddCategory" component={AddCategoryScreen} options={{
         headerTitle: () => (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="pricetag-outline" size={20} color={c.texto} />
-            <Text style={{ color: c.texto, fontSize: fs(17), fontWeight: '600' }}>{texto.add_cat_title}</Text>
+            <Ionicons name="pricetag-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.add_cat_title}</Text>
           </View>
         ),
       }} />
       <Stack.Screen name="Transactions" component={TransactionsScreen} options={{
         headerTitle: () => (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="stats-chart-outline" size={20} color={c.texto} />
-            <Text style={{ color: c.texto, fontSize: fs(17), fontWeight: '600' }}>{texto.nav_transactions}</Text>
+            <Ionicons name="stats-chart-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_transactions}</Text>
           </View>
         ),
       }} />
       <Stack.Screen name="Settings" component={SettingsScreen} options={{
         headerTitle: () => (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="settings-outline" size={20} color={c.texto} />
-            <Text style={{ color: c.texto, fontSize: fs(17), fontWeight: '600' }}>{texto.nav_settings}</Text>
+            <Ionicons name="settings-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_settings}</Text>
           </View>
         ),
       }} />
@@ -123,18 +123,18 @@ function HomeStack() {
 }
 
 function AppDrawer() {
-  const { coloresActivos: c } = useConfig();
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const texto = t();
+  const labels = t();
 
   return (
     <Drawer.Navigator
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
-        drawerStyle: { backgroundColor: c.fondoAlto, width: 260 },
-        drawerLabelStyle: { color: c.texto, fontSize: fs(16) },
-        drawerActiveTintColor: c.primario,
-        drawerInactiveTintColor: c.textoSuave,
+        drawerStyle: { backgroundColor: c.surface, width: 260 },
+        drawerLabelStyle: { color: c.text, fontSize: fs(16) },
+        drawerActiveTintColor: c.primary,
+        drawerInactiveTintColor: c.textSecondary,
       }}
     >
       <Drawer.Screen
@@ -142,7 +142,7 @@ function AppDrawer() {
         component={HomeStack}
         options={{
           headerShown: false,
-          drawerLabel: texto.nav_home,
+          drawerLabel: labels.nav_home,
         }}
       />
     </Drawer.Navigator>
@@ -163,15 +163,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     marginBottom: 8,
   },
-  drawerTitulo: {
+  drawerTitle: {
     fontWeight: '800',
   },
-  separador: {
+  separator: {
     height: 1,
     marginVertical: 12,
     marginHorizontal: 16,
   },
-  drawerSeccion: {
+  drawerSection: {
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 1,

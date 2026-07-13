@@ -1,96 +1,96 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Appearance } from 'react-native';
-import { PaletaColores, coloresDark, coloresLight } from '../constants/themes';
+import { ColorPalette, darkColors, lightColors } from '../constants/themes';
 import { configRepository } from '../database';
-import { setIdioma } from '../i18n';
+import { setLanguage } from '../i18n';
 
-export interface Configuracion {
-  tema: 'oscuro' | 'claro' | 'sistema';
-  primerDiaSemana: 0 | 1;
-  divisa: string;
-  separadorDecimal: ',' | '.';
-  idioma: 'es' | 'en' | 'ca';
-  tamanoTexto: 'pequeño' | 'mediano' | 'grande';
+export interface Config {
+  theme: 'dark' | 'light' | 'system';
+  firstDayOfWeek: 0 | 1;
+  currency: string;
+  decimalSeparator: ',' | '.';
+  language: 'es' | 'en' | 'ca';
+  textSize: 'small' | 'medium' | 'large';
 }
 
-const CONFIG_DEFAULT: Configuracion = {
-  tema: 'oscuro',
-  primerDiaSemana: 1,
-  divisa: '€',
-  separadorDecimal: ',',
-  idioma: 'es',
-  tamanoTexto: 'mediano',
+const CONFIG_DEFAULT: Config = {
+  theme: 'dark',
+  firstDayOfWeek: 1,
+  currency: '€',
+  decimalSeparator: ',',
+  language: 'es',
+  textSize: 'medium',
 };
 
 interface ConfigContextType {
-  config: Configuracion;
-  coloresActivos: PaletaColores;
-  actualizarConfig: (parcial: Partial<Configuracion>) => void;
-  cargando: boolean;
+  config: Config;
+  activeColors: ColorPalette;
+  updateConfig: (partial: Partial<Config>) => void;
+  loading: boolean;
 }
 
 const ConfigContext = createContext<ConfigContextType | null>(null);
 
 export function useConfig() {
   const ctx = useContext(ConfigContext);
-  if (!ctx) throw new Error('useConfig debe usarse dentro de ConfigProvider');
+  if (!ctx) throw new Error('useConfig must be used within ConfigProvider');
   return ctx;
 }
 
-function resolverTema(tema: Configuracion['tema']): 'oscuro' | 'claro' {
-  if (tema === 'sistema') {
-    return Appearance.getColorScheme() === 'dark' ? 'oscuro' : 'claro';
+function resolveTheme(theme: Config['theme']): 'dark' | 'light' {
+  if (theme === 'system') {
+    return Appearance.getColorScheme() === 'dark' ? 'dark' : 'light';
   }
-  return tema;
+  return theme;
 }
 
-function resolverColores(tema: Configuracion['tema']): PaletaColores {
-  return resolverTema(tema) === 'oscuro' ? coloresDark : coloresLight;
+function resolveColors(theme: Config['theme']): ColorPalette {
+  return resolveTheme(theme) === 'dark' ? darkColors : lightColors;
 }
 
 export function ConfigProvider({ children }: { children: ReactNode }) {
-  const [config, setConfig] = useState<Configuracion>(CONFIG_DEFAULT);
-  const [cargando, setCargando] = useState(true);
-  const [coloresActivos, setColoresActivos] = useState<PaletaColores>(coloresDark);
+  const [config, setConfig] = useState<Config>(CONFIG_DEFAULT);
+  const [loading, setLoading] = useState(true);
+  const [activeColors, setActiveColors] = useState<ColorPalette>(darkColors);
 
   useEffect(() => {
     (async () => {
       try {
-      const cargado = await configRepository.obtener();
-      setConfig(cargado);
-      setColoresActivos(resolverColores(cargado.tema));
-      setIdioma(cargado.idioma);
+      const loaded = await configRepository.get();
+      setConfig(loaded);
+      setActiveColors(resolveColors(loaded.theme));
+      setLanguage(loaded.language);
       } catch {
-        setColoresActivos(resolverColores(CONFIG_DEFAULT.tema));
+        setActiveColors(resolveColors(CONFIG_DEFAULT.theme));
       }
-      setCargando(false);
+      setLoading(false);
     })();
   }, []);
 
   useEffect(() => {
-    setColoresActivos(resolverColores(config.tema));
-  }, [config.tema]);
+    setActiveColors(resolveColors(config.theme));
+  }, [config.theme]);
 
   useEffect(() => {
-    if (config.tema !== 'sistema') return;
+    if (config.theme !== 'system') return;
     const sub = Appearance.addChangeListener(() => {
-      setColoresActivos(resolverColores('sistema'));
+      setActiveColors(resolveColors('system'));
     });
     return () => sub?.remove();
-  }, [config.tema]);
+  }, [config.theme]);
 
-  const actualizarConfig = async (parcial: Partial<Configuracion>) => {
+  const updateConfig = async (partial: Partial<Config>) => {
     setConfig(prev => {
-      const nuevo = { ...prev, ...parcial };
-      setColoresActivos(resolverColores(nuevo.tema));
-      if (parcial.idioma) setIdioma(parcial.idioma);
-      configRepository.guardar(parcial).catch(() => {});
-      return nuevo;
+      const updated = { ...prev, ...partial };
+      setActiveColors(resolveColors(updated.theme));
+      if (partial.language) setLanguage(partial.language);
+      configRepository.save(partial).catch(() => {});
+      return updated;
     });
   };
 
   return (
-    <ConfigContext.Provider value={{ config, coloresActivos, actualizarConfig, cargando }}>
+    <ConfigContext.Provider value={{ config, activeColors, updateConfig, loading }}>
       {children}
     </ConfigContext.Provider>
   );

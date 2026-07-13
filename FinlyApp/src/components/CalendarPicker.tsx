@@ -1,52 +1,52 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { formatearFecha } from '../utils/formatters';
+import { formatDate } from '../utils/formatters';
 import CalendarModal from './CalendarModal';
-import { Periodo } from './calendars/types';
+import { Period } from './calendars/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 
 interface Props {
-  periodo: Periodo;
-  fecha: Date;
-  onFechaChange: (fecha: Date) => void;
-  onRangoChange?: (inicio: Date, fin: Date) => void;
-  inicioRango?: Date;
-  finRango?: Date;
+  period: Period;
+  date: Date;
+  onDateChange: (date: Date) => void;
+  onRangeChange?: (start: Date, end: Date) => void;
+  rangeStart?: Date;
+  rangeEnd?: Date;
   visible?: boolean;
-  onAbrir?: () => void;
+  onOpen?: () => void;
   onClose?: () => void;
-  primerDia?: 0 | 1;
+  firstDay?: 0 | 1;
 }
 
 export default function CalendarPicker({
-  periodo, fecha, onFechaChange, onRangoChange,
-  inicioRango, finRango, visible = false, onAbrir, onClose, primerDia = 1,
+  period, date, onDateChange, onRangeChange,
+  rangeStart, rangeEnd, visible = false, onOpen, onClose, firstDay = 1,
 }: Props) {
-  const hoy = new Date();
-  const { config, coloresActivos: c } = useConfig();
+  const today = new Date();
+  const { config, activeColors: c } = useConfig();
   const fs = useFontSize();
-  const texto = t();
-  const meses = texto.months;
-  const mesesCortos = texto.months_short;
+  const labels = t();
+  const months = labels.months;
+  const shortMonths = labels.months_short;
 
-  const textoFecha = () => {
-    switch (periodo) {
-      case 'dia': return formatearFecha(fecha);
-      case 'semana': {
-        const inicio = new Date(fecha);
-        const diaSem = inicio.getDay();
-        inicio.setDate(inicio.getDate() - (diaSem === 0 ? 6 : diaSem - 1));
-        const fin = new Date(inicio);
-        fin.setDate(fin.getDate() + 6);
-        return `${inicio.getDate()} ${mesesCortos[inicio.getMonth()]} – ${fin.getDate()} ${mesesCortos[fin.getMonth()]}`;
+  const dateText = () => {
+    switch (period) {
+      case 'day': return formatDate(date);
+      case 'week': {
+        const start = new Date(date);
+        const dayOfWeek = start.getDay();
+        start.setDate(start.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+        const end = new Date(start);
+        end.setDate(end.getDate() + 6);
+        return `${start.getDate()} ${shortMonths[start.getMonth()]} – ${end.getDate()} ${shortMonths[end.getMonth()]}`;
       }
-      case 'mes': return `${meses[fecha.getMonth()]} ${fecha.getFullYear()}`;
-      case 'año': return fecha.getFullYear().toString();
-      case 'periodo': {
-        const i = inicioRango ?? new Date(hoy.getFullYear(), 0, 1);
-        const f = finRango ?? hoy;
-        return `${texto.cal_from} ${i.getDate()} ${mesesCortos[i.getMonth()]} ${texto.cal_to} ${f.getDate()} ${mesesCortos[f.getMonth()]} ${f.getFullYear()}`;
+      case 'month': return `${months[date.getMonth()]} ${date.getFullYear()}`;
+      case 'year': return date.getFullYear().toString();
+      case 'custom': {
+        const startDate = rangeStart ?? new Date(today.getFullYear(), 0, 1);
+        const endDate = rangeEnd ?? today;
+        return `${labels.cal_from} ${startDate.getDate()} ${shortMonths[startDate.getMonth()]} ${labels.cal_to} ${endDate.getDate()} ${shortMonths[endDate.getMonth()]} ${endDate.getFullYear()}`;
       }
     }
   };
@@ -54,22 +54,22 @@ export default function CalendarPicker({
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        style={[styles.boton, { backgroundColor: c.fondoAlto }]}
-        onPress={onAbrir}
-        accessibilityLabel={`${textoFecha()}`}
+        style={[styles.button, { backgroundColor: c.surface }]}
+        onPress={onOpen}
+        accessibilityLabel={`${dateText()}`}
       >
-        <Text style={[styles.texto, { color: c.primario, fontSize: fs(14) }]}>{textoFecha()}</Text>
+        <Text style={[styles.text, { color: c.primary, fontSize: fs(14) }]}>{dateText()}</Text>
       </TouchableOpacity>
       <CalendarModal
         visible={visible}
-        periodo={periodo}
-        fecha={fecha}
-        inicioRango={inicioRango}
-        finRango={finRango}
-        onSelectFecha={onFechaChange}
-        onSelectRango={onRangoChange}
+        period={period}
+        date={date}
+        rangeStart={rangeStart}
+        rangeEnd={rangeEnd}
+        onSelectDate={onDateChange}
+        onSelectRange={onRangeChange}
         onClose={() => onClose?.()}
-        primerDia={primerDia}
+        firstDay={firstDay}
       />
     </View>
   );
@@ -77,6 +77,6 @@ export default function CalendarPicker({
 
 const styles = StyleSheet.create({
   container: { alignItems: 'center', marginVertical: 4 },
-  boton: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 },
-  texto: { fontWeight: '600' },
+  button: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 },
+  text: { fontWeight: '600' },
 });

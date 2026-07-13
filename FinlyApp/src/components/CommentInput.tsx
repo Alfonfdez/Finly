@@ -4,32 +4,32 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 
 interface Props {
-  comentario: string;
-  onChange: (texto: string) => void;
+  comment: string;
+  onChange: (text: string) => void;
 }
 
-export default function CommentInput({ comentario, onChange }: Props) {
-  const { coloresActivos: c } = useConfig();
+export default function CommentInput({ comment, onChange }: Props) {
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const texto = t();
+  const labels = t();
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.titulo, { color: c.texto, fontSize: fs(15) }]}>
-        {texto.add_comment}
+      <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>
+        {labels.add_comment}
       </Text>
       <TextInput
-        style={[styles.input, { backgroundColor: c.fondoAlto, color: c.texto, fontSize: fs(14) }]}
-        placeholder={texto.add_comment}
-        placeholderTextColor={c.textoSuave}
-        value={comentario}
+        style={[styles.input, { backgroundColor: c.surface, color: c.text, fontSize: fs(14) }]}
+        placeholder={labels.add_comment}
+        placeholderTextColor={c.textSecondary}
+        value={comment}
         onChangeText={onChange}
         multiline
         maxLength={4096}
         textAlignVertical="top"
       />
-      <Text style={[styles.counter, { color: c.textoSuave, fontSize: fs(12) }]}>
-        {comentario.length}/4096
+      <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(12) }]}>
+        {comment.length}/4096
       </Text>
     </View>
   );
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 16,
   },
-  titulo: {
+  title: {
     fontWeight: '600',
     marginBottom: 10,
   },

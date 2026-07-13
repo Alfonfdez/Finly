@@ -163,4 +163,4 @@ export const en = {
   a11y_period: 'Period',
 };
 
-export type Idioma = typeof en;
+export type Language = typeof en;

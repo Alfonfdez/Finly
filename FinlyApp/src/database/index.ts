@@ -1,23 +1,23 @@
 import { Platform } from 'react-native';
 
-import { usuarioRepo } from './repositories/usuarioRepo';
-import { cuentaRepo } from './repositories/cuentaRepo';
-import { categoriaRepo } from './repositories/categoriaRepo';
-import { transaccionRepo } from './repositories/transaccionRepo';
+import { userRepo } from './repositories/userRepo';
+import { accountRepo } from './repositories/accountRepo';
+import { categoryRepo } from './repositories/categoryRepo';
+import { transactionRepo } from './repositories/transactionRepo';
 import { configRepo } from './repositories/configRepo';
 
 import {
-  webUsuarioRepo,
-  webCuentaRepo,
-  webCategoriaRepo,
-  webTransaccionRepo,
+  webUserRepo,
+  webAccountRepo,
+  webCategoryRepo,
+  webTransactionRepo,
   webConfigRepo,
 } from './webStorage';
 
 const isWeb = Platform.OS === 'web';
 
-export const usuarioRepository = isWeb ? webUsuarioRepo : usuarioRepo;
-export const cuentaRepository = isWeb ? webCuentaRepo : cuentaRepo;
-export const categoriaRepository = isWeb ? webCategoriaRepo : categoriaRepo;
-export const transaccionRepository = isWeb ? webTransaccionRepo : transaccionRepo;
+export const userRepository = isWeb ? webUserRepo : userRepo;
+export const accountRepository = isWeb ? webAccountRepo : accountRepo;
+export const categoryRepository = isWeb ? webCategoryRepo : categoryRepo;
+export const transactionRepository = isWeb ? webTransactionRepo : transactionRepo;
 export const configRepository = isWeb ? webConfigRepo : configRepo;

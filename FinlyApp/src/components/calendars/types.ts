@@ -1,8 +1,8 @@
-import { Periodo } from '../../constants/types';
+import { Period } from '../../constants/types';
 
-export type { Periodo };
+export type { Period };
 
 export interface CalendarBaseProps {
-  fecha: Date;
-  onSelect: (fecha: Date) => void;
+  date: Date;
+  onSelect: (date: Date) => void;
 }

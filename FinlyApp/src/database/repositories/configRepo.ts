@@ -1,42 +1,56 @@
 import { getDatabase } from '../database';
-import { Configuracion } from '../../context/ConfigContext';
+import { Config } from '../../context/ConfigContext';
 
-const CONFIG_DEFAULTS: Configuracion = {
-  tema: 'oscuro',
-  primerDiaSemana: 1,
-  divisa: '€',
-  separadorDecimal: ',',
-  idioma: 'es',
-  tamanoTexto: 'mediano',
+const CONFIG_DEFAULTS: Config = {
+  theme: 'dark',
+  firstDayOfWeek: 1,
+  currency: '€',
+  decimalSeparator: ',',
+  language: 'es',
+  textSize: 'medium',
 };
 
-function parseConfig(rows: { clave: string; valor: string }[]): Configuracion {
-  const map = Object.fromEntries(rows.map(r => [r.clave, r.valor]));
+const DB_KEY_MAP: Record<string, keyof Config> = {
+  theme: 'theme',
+  first_day_of_week: 'firstDayOfWeek',
+  currency: 'currency',
+  decimal_separator: 'decimalSeparator',
+  language: 'language',
+  text_size: 'textSize',
+};
+
+function parseConfig(rows: { key: string; value: string }[]): Config {
+  const map = Object.fromEntries(rows.map(r => [r.key, r.value]));
   return {
-    tema: (map.tema as Configuracion['tema']) ?? CONFIG_DEFAULTS.tema,
-    primerDiaSemana: map.primerDiaSemana === '0' ? 0 : 1,
-    divisa: map.divisa ?? CONFIG_DEFAULTS.divisa,
-    separadorDecimal: (map.separadorDecimal as Configuracion['separadorDecimal']) ?? CONFIG_DEFAULTS.separadorDecimal,
-    idioma: (map.idioma as Configuracion['idioma']) ?? CONFIG_DEFAULTS.idioma,
-    tamanoTexto: (map.tamanoTexto as Configuracion['tamanoTexto']) ?? CONFIG_DEFAULTS.tamanoTexto,
+    theme: (map.theme as Config['theme']) ?? CONFIG_DEFAULTS.theme,
+    firstDayOfWeek: map.first_day_of_week === '0' ? 0 : 1,
+    currency: map.currency ?? CONFIG_DEFAULTS.currency,
+    decimalSeparator: (map.decimal_separator as Config['decimalSeparator']) ?? CONFIG_DEFAULTS.decimalSeparator,
+    language: (map.language as Config['language']) ?? CONFIG_DEFAULTS.language,
+    textSize: (map.text_size as Config['textSize']) ?? CONFIG_DEFAULTS.textSize,
   };
 }
 
 export const configRepo = {
-  async obtener(): Promise<Configuracion> {
+  async get(): Promise<Config> {
     const db = getDatabase();
-    const rows = await db.getAllAsync<{ clave: string; valor: string }>('SELECT clave, valor FROM configuracion');
+    const rows = await db.getAllAsync<{ key: string; value: string }>('SELECT key, value FROM config');
     return rows.length > 0 ? parseConfig(rows) : CONFIG_DEFAULTS;
   },
 
-  async guardar(parcial: Partial<Configuracion>): Promise<void> {
+  async save(partial: Partial<Config>): Promise<void> {
     const db = getDatabase();
-    for (const [clave, valor] of Object.entries(parcial)) {
-      if (valor === undefined) continue;
-      const val = String(valor);
+    const reverseMap: Record<string, string> = {};
+    for (const [dbKey, configKey] of Object.entries(DB_KEY_MAP)) {
+      reverseMap[configKey] = dbKey;
+    }
+    for (const [key, value] of Object.entries(partial)) {
+      if (value === undefined) continue;
+      const dbKey = reverseMap[key] ?? key;
+      const val = String(value);
       await db.runAsync(
-        'INSERT INTO configuracion (clave, valor) VALUES (?, ?) ON CONFLICT(clave) DO UPDATE SET valor = excluded.valor',
-        clave,
+        'INSERT INTO config (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
+        dbKey,
         val
       );
     }

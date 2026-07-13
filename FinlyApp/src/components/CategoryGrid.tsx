@@ -2,48 +2,48 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t, obtenerNombreCategoria } from '../i18n';
+import { t, getCategoryName } from '../i18n';
 
-interface Categoria {
+interface Category {
   id: number;
-  nombre: string;
-  icono: string;
+  name: string;
+  icon: string;
   color: string;
 }
 
 interface Props {
-  categorias: Categoria[];
-  categoriaSeleccionada: number | null;
+  categories: Category[];
+  selectedCategory: number | null;
   onSelect: (id: number) => void;
   onAddMore: () => void;
   showAddMore?: boolean;
 }
 
-export default function CategoryGrid({ categorias, categoriaSeleccionada, onSelect, onAddMore, showAddMore = true }: Props) {
-  const { coloresActivos: c } = useConfig();
+export default function CategoryGrid({ categories, selectedCategory, onSelect, onAddMore, showAddMore = true }: Props) {
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const texto = t();
+  const labels = t();
 
-  const renderCategoria = (cat: Categoria, index: number) => {
-    const isSelected = cat.id === categoriaSeleccionada;
-    const nombre = obtenerNombreCategoria(cat.id) || cat.nombre;
+  const renderCategory = (cat: Category, index: number) => {
+    const isSelected = cat.id === selectedCategory;
+    const nombre = getCategoryName(cat.id) || cat.name;
 
     return (
       <TouchableOpacity
         key={cat.id}
         style={[
           styles.item,
-          { backgroundColor: isSelected ? cat.color + '33' : c.fondoAlto },
+          { backgroundColor: isSelected ? cat.color + '33' : c.surface },
           isSelected && { borderWidth: 2, borderColor: cat.color },
         ]}
         onPress={() => onSelect(cat.id)}
-        accessibilityLabel={`${texto.a11y_category} ${nombre}`}
+        accessibilityLabel={`${labels.a11y_category} ${nombre}`}
       >
         <View style={[styles.iconContainer, { backgroundColor: cat.color + '22' }]}>
-          <Ionicons name={cat.icono as any} size={24} color={cat.color} />
+          <Ionicons name={cat.icon as any} size={24} color={cat.color} />
         </View>
         <Text
-          style={[styles.nombre, { color: c.texto, fontSize: fs(11) }]}
+          style={[styles.name, { color: c.text, fontSize: fs(11) }]}
           numberOfLines={1}
         >
           {nombre}
@@ -54,29 +54,29 @@ export default function CategoryGrid({ categorias, categoriaSeleccionada, onSele
 
   const renderAddMore = () => (
     <TouchableOpacity
-      style={[styles.item, { backgroundColor: c.fondoAlto }]}
+      style={[styles.item, { backgroundColor: c.surface }]}
       onPress={onAddMore}
-      accessibilityLabel={texto.add_more}
+      accessibilityLabel={labels.add_more}
     >
-      <View style={[styles.iconContainer, { backgroundColor: c.textoSuave + '22' }]}>
-        <Ionicons name="add" size={24} color={c.textoSuave} />
+      <View style={[styles.iconContainer, { backgroundColor: c.textSecondary + '22' }]}>
+        <Ionicons name="add" size={24} color={c.textSecondary} />
       </View>
       <Text
-        style={[styles.nombre, { color: c.textoSuave, fontSize: fs(11) }]}
+        style={[styles.name, { color: c.textSecondary, fontSize: fs(11) }]}
         numberOfLines={1}
       >
-        {texto.add_more}
+        {labels.add_more}
       </Text>
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.titulo, { color: c.texto, fontSize: fs(15) }]}>
-        {texto.add_categories}
+      <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>
+        {labels.add_categories}
       </Text>
       <View style={styles.grid}>
-        {categorias.map((cat, index) => renderCategoria(cat, index))}
+        {categories.map((cat, index) => renderCategory(cat, index))}
         {showAddMore && renderAddMore()}
       </View>
     </View>
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 16,
   },
-  titulo: {
+  title: {
     fontWeight: '600',
     marginBottom: 10,
   },
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 4,
   },
-  nombre: {
+  name: {
     fontWeight: '500',
     textAlign: 'center',
   },

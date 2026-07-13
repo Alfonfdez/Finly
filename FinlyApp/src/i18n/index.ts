@@ -1,21 +1,21 @@
-import { en, Idioma } from './en';
+import { en, Language } from './en';
 import { es } from './es';
 import { ca } from './ca';
 
-const idiomas: Record<string, Idioma> = { en, es, ca };
+const languages: Record<string, Language> = { en, es, ca };
 
-let idiomaActual: Idioma = en;
+let currentLanguage: Language = en;
 
-export function setIdioma(id: 'es' | 'en' | 'ca') {
-  idiomaActual = idiomas[id] ?? en;
+export function setLanguage(id: 'es' | 'en' | 'ca') {
+  currentLanguage = languages[id] ?? en;
 }
 
-export function t(): Idioma {
-  return idiomaActual;
+export function t(): Language {
+  return currentLanguage;
 }
 
 // Map category IDs to i18n keys for mock categories
-const CATEGORIA_I18N_KEYS: Record<number, keyof Idioma> = {
+const CATEGORY_I18N_KEYS: Record<number, keyof Language> = {
   1: 'cat_salary',
   2: 'cat_freelance',
   3: 'cat_food',
@@ -41,10 +41,10 @@ const CATEGORIA_I18N_KEYS: Record<number, keyof Idioma> = {
   23: 'cat_interests',
 };
 
-export function obtenerNombreCategoria(categoriaId: number): string {
-  const key = CATEGORIA_I18N_KEYS[categoriaId];
+export function getCategoryName(categoryId: number): string {
+  const key = CATEGORY_I18N_KEYS[categoryId];
   if (key) {
-    return idiomaActual[key] as string;
+    return currentLanguage[key] as string;
   }
   return '';
 }

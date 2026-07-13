@@ -5,42 +5,42 @@ import { CalendarBaseProps } from './types';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 
-export default function YearGrid({ fecha, onSelect }: CalendarBaseProps) {
-  const hoy = new Date();
-  const [añoInicio, setAñoInicio] = useState(fecha.getFullYear() - 5);
-  const { coloresActivos: c } = useConfig();
+export default function YearGrid({ date, onSelect }: CalendarBaseProps) {
+  const today = new Date();
+  const [startYear, setStartYear] = useState(date.getFullYear() - 5);
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const años = Array.from({ length: 12 }, (_, i) => añoInicio + i);
+  const years = Array.from({ length: 12 }, (_, i) => startYear + i);
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => setAñoInicio(a => a - 12)}>
-          <Ionicons name="chevron-back-outline" size={22} color={c.texto} />
+        <TouchableOpacity onPress={() => setStartYear(a => a - 12)}>
+          <Ionicons name="chevron-back-outline" size={22} color={c.text} />
         </TouchableOpacity>
-        <Text style={{ color: c.texto, fontSize: fs(18), fontWeight: '700' }}>{añoInicio} - {añoInicio + 11}</Text>
+        <Text style={{ color: c.text, fontSize: fs(18), fontWeight: '700' }}>{startYear} - {startYear + 11}</Text>
         <TouchableOpacity
-          onPress={() => añoInicio + 11 < hoy.getFullYear() && setAñoInicio(a => a + 12)}
-          style={{ opacity: añoInicio + 11 < hoy.getFullYear() ? 1 : 0.3 }}
-          disabled={añoInicio + 11 >= hoy.getFullYear()}
+          onPress={() => startYear + 11 < today.getFullYear() && setStartYear(a => a + 12)}
+          style={{ opacity: startYear + 11 < today.getFullYear() ? 1 : 0.3 }}
+          disabled={startYear + 11 >= today.getFullYear()}
         >
-          <Ionicons name="chevron-forward-outline" size={22} color={c.texto} />
+          <Ionicons name="chevron-forward-outline" size={22} color={c.text} />
         </TouchableOpacity>
       </View>
       <View style={styles.grid}>
-        {años.map(a => {
-          const futuro = a > hoy.getFullYear();
-          const activo = a === fecha.getFullYear();
+        {years.map(y => {
+          const isFuture = y > today.getFullYear();
+          const isActive = y === date.getFullYear();
           return (
             <TouchableOpacity
-              key={a}
-              style={[styles.item, futuro && { opacity: 0.3 }]}
-              onPress={() => !futuro && onSelect(new Date(a, 0, 1))}
-              disabled={futuro}
+              key={y}
+              style={[styles.item, isFuture && { opacity: 0.3 }]}
+              onPress={() => !isFuture && onSelect(new Date(y, 0, 1))}
+              disabled={isFuture}
             >
-              <View style={[styles.itemInner, { backgroundColor: c.fondoAlto }, activo && { backgroundColor: c.primario }]}>
-                <Text style={[styles.itemTexto, { color: c.texto, fontSize: fs(14) }, activo && { color: c.fondo, fontWeight: '700' }, futuro && { color: c.textoSuave }]}>
-                  {a}
+              <View style={[styles.itemInner, { backgroundColor: c.surface }, isActive && { backgroundColor: c.primary }]}>
+                <Text style={[styles.itemText, { color: c.text, fontSize: fs(14) }, isActive && { color: c.background, fontWeight: '700' }, isFuture && { color: c.textSecondary }]}>
+                  {y}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -57,5 +57,5 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   item: { width: '23%', aspectRatio: 1.2 },
   itemInner: { flex: 1, alignItems: 'center', justifyContent: 'center', borderRadius: 10 },
-  itemTexto: { fontWeight: '500', includeFontPadding: false, textAlignVertical: 'center' },
+  itemText: { fontWeight: '500', includeFontPadding: false, textAlignVertical: 'center' },
 });

@@ -16,15 +16,15 @@ import TagSection from '../components/TagSection';
 import CommentInput from '../components/CommentInput';
 import PhotoSection from '../components/PhotoSection';
 import CalendarModal from '../components/CalendarModal';
-import { TipoTransaccion, RootStackParamList } from '../constants/types';
-import { esMismoDia } from '../utils/formatters';
+import { TransactionType, RootStackParamList } from '../constants/types';
+import { isSameDay } from '../utils/formatters';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'AddTransaction'>;
 type AddTransactionRouteProp = RouteProp<RootStackParamList, 'AddTransaction'>;
 
-interface Etiqueta {
+interface Tag {
   id: number;
-  nombre: string;
+  name: string;
 }
 
 const GRID_ROWS = 2;
@@ -32,96 +32,96 @@ const GRID_COLS = 4;
 const MAX_VISIBLE_CATEGORIES = GRID_ROWS * GRID_COLS - 1;
 
 export default function AddTransactionScreen() {
-  const { coloresActivos: c, config } = useConfig();
-  const { tipoActivo, periodoActivo, fechaPersonalizada, fechaSeleccionada, cuentas, categorias, cuentasConSaldo, cuentaActiva } = useApp();
+  const { activeColors: c, config } = useConfig();
+  const { activeType, activePeriod, customDate, selectedDate, accounts, categories, accountsWithBalance, activeAccount } = useApp();
   const fs = useFontSize();
-  const texto = t();
+  const labels = t();
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<AddTransactionRouteProp>();
 
-  const [tipo, setTipo] = useState<TipoTransaccion>(tipoActivo);
-  const [cantidad, setCantidad] = useState('');
-  const [cuentaId, setCuentaId] = useState(cuentaActiva?.id ?? 1);
-  const [categoriaId, setCategoriaId] = useState<number | null>(null);
+  const [type, setType] = useState<TransactionType>(activeType);
+  const [amount, setAmount] = useState('');
+  const [accountId, setAccountId] = useState(activeAccount?.id ?? 1);
+  const [categoryId, setCategoryId] = useState<number | null>(null);
   const [reorderedCategory, setReorderedCategory] = useState<number | null>(null);
-  const diaInicial = (() => {
-    if (periodoActivo === 'periodo') {
-      const esUnDia = esMismoDia(fechaPersonalizada.inicio, fechaPersonalizada.fin);
-      if (esUnDia) return fechaPersonalizada.inicio;
+  const initialDay = (() => {
+    if (activePeriod === 'custom') {
+      const isSingleDay = isSameDay(customDate.start, customDate.end);
+      if (isSingleDay) return customDate.start;
     }
-    return fechaSeleccionada;
+    return selectedDate;
   })();
-  const [dia, setDia] = useState(diaInicial);
+  const [day, setDay] = useState(initialDay);
 
-  const prevTipo = useRef(tipo);
+  const prevType = useRef(type);
 
   useEffect(() => {
-    if (route.params?.tipo) {
-      setTipo(route.params.tipo);
+    if (route.params?.type) {
+      setType(route.params.type);
     }
-    if (route.params?.categoriaId) {
-      setCategoriaId(route.params.categoriaId);
-      const targetTipo = route.params?.tipo ?? tipo;
-      const allByType = categorias.filter(c => c.tipo === targetTipo);
-      const isVisible = allByType.slice(0, MAX_VISIBLE_CATEGORIES).some(c => c.id === route.params!.categoriaId);
+    if (route.params?.categoryId) {
+      setCategoryId(route.params.categoryId);
+      const targetType = route.params?.type ?? type;
+      const allByType = categories.filter(c => c.type === targetType);
+      const isVisible = allByType.slice(0, MAX_VISIBLE_CATEGORIES).some(c => c.id === route.params!.categoryId);
       if (!isVisible) {
-        setReorderedCategory(route.params.categoriaId);
+        setReorderedCategory(route.params.categoryId);
       } else {
         setReorderedCategory(null);
       }
     }
-  }, [route.params?.categoriaId, route.params?.tipo]);
+  }, [route.params?.categoryId, route.params?.type]);
 
   useEffect(() => {
-    if (prevTipo.current !== tipo) {
-      prevTipo.current = tipo;
-      setCategoriaId(null);
+    if (prevType.current !== type) {
+      prevType.current = type;
+      setCategoryId(null);
       setReorderedCategory(null);
     }
-  }, [tipo]);
+  }, [type]);
 
-  const [etiquetasSeleccionadas, setEtiquetasSeleccionadas] = useState<number[]>([]);
-  const [comentario, setComentario] = useState('');
+  const [selectedTags, setSelectedTags] = useState<number[]>([]);
+  const [comment, setComment] = useState('');
   const [fotoUri, setFotoUri] = useState<string | null>(null);
 
-  const [modalCuentaVisible, setModalCuentaVisible] = useState(false);
-  const [modalCalendarioVisible, setModalCalendarioVisible] = useState(false);
+  const [modalAccountVisible, setModalAccountVisible] = useState(false);
+  const [modalCalendarVisible, setModalCalendarVisible] = useState(false);
 
-  const [etiquetasDisponibles] = useState<Etiqueta[]>([
-    { id: 1, nombre: 'Urgente' },
-    { id: 2, nombre: 'Recurrente' },
-    { id: 3, nombre: 'Personal' },
+  const [availableTags] = useState<Tag[]>([
+    { id: 1, name: 'Urgente' },
+    { id: 2, name: 'Recurrente' },
+    { id: 3, name: 'Personal' },
   ]);
 
-  const cantidadInvalida = cantidad.length > 0 && !/^\d*\.?\d{0,2}$/.test(cantidad);
+  const isInvalidAmount = amount.length > 0 && !/^\d*\.?\d{0,2}$/.test(amount);
 
-  const handleCantidadChange = (texto: string) => {
-    const limpio = texto.replace(/[^0-9.]/g, '');
-    const partes = limpio.split('.');
-    if (partes.length > 2) return;
-    if (partes[1] && partes[1].length > 2) return;
-    setCantidad(limpio);
+  const handleAmountChange = (value: string) => {
+    const clean = value.replace(/[^0-9.]/g, '');
+    const parts = clean.split('.');
+    if (parts.length > 2) return;
+    if (parts[1] && parts[1].length > 2) return;
+    setAmount(clean);
   };
 
-  const handleToggleEtiqueta = (id: number) => {
-    setEtiquetasSeleccionadas(prev =>
+  const handleToggleTag = (id: number) => {
+    setSelectedTags(prev =>
       prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id]
     );
   };
 
-  const handleCrearEtiqueta = (nombre: string) => {
-    const nuevaId = etiquetasDisponibles.length + 1;
-    etiquetasDisponibles.push({ id: nuevaId, nombre });
+  const handleCreateTag = (name: string) => {
+    const newId = availableTags.length + 1;
+    availableTags.push({ id: newId, name });
   };
 
-  const handleSelectCuenta = (cuenta: typeof cuentasConSaldo[0]) => {
-    setCuentaId(cuenta.id);
-    setModalCuentaVisible(false);
+  const handleSelectAccount = (account: typeof accountsWithBalance[0]) => {
+    setAccountId(account.id);
+    setModalAccountVisible(false);
   };
 
-  const handleSelectFecha = (fecha: Date) => {
-    setDia(fecha);
-    setModalCalendarioVisible(false);
+  const handleSelectDate = (date: Date) => {
+    setDay(date);
+    setModalCalendarVisible(false);
   };
 
   const handleTakePhoto = () => {
@@ -135,18 +135,18 @@ export default function AddTransactionScreen() {
   const handleSubmit = () => {
     // TODO: save transaction
     console.log({
-      tipo,
-      cantidad: parseFloat(cantidad) || 0,
-      cuentaId,
-      categoriaId,
-      dia,
-      etiquetasSeleccionadas,
-      comentario,
+      type,
+      amount: parseFloat(amount) || 0,
+      accountId,
+      categoryId,
+      day,
+      selectedTags,
+      comment,
       fotoUri,
     });
   };
 
-  const categoriesByType = categorias.filter(c => c.tipo === tipo);
+  const categoriesByType = categories.filter(c => c.type === type);
   const totalByType = categoriesByType.length;
   const hasMore = totalByType > MAX_VISIBLE_CATEGORIES;
 
@@ -160,106 +160,107 @@ export default function AddTransactionScreen() {
     return categoriesByType.slice(0, MAX_VISIBLE_CATEGORIES);
   }, [categoriesByType, reorderedCategory]);
 
-  const selectedAccount = cuentas.find(c => c.id === cuentaId);
+  const selectedAccount = accounts.find(c => c.id === accountId);
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: c.fondo }]}>
-      <ScrollView style={[styles.container, { backgroundColor: c.fondo }]}>
-        <TypeTabs activo={tipo} onChange={setTipo} />
+    <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]}>
+      <ScrollView style={[styles.container, { backgroundColor: c.background }]}>
+        <TypeTabs active={type} onChange={setType} />
 
-        <View style={[styles.cantidadContainer, { backgroundColor: c.fondoAlto }]}>
+        <View style={[styles.amountContainer, { backgroundColor: c.surface }]}>
           <TextInput
             style={[
-              styles.cantidadInput,
-              { color: c.texto, fontSize: fs(24) },
-              cantidadInvalida && { color: '#F87171' },
+              styles.amountInput,
+              { color: c.text, fontSize: fs(24) },
+              isInvalidAmount && { color: '#F87171' },
             ]}
-            placeholder={texto.add_amount_placeholder}
-            placeholderTextColor={c.textoSuave}
-            value={cantidad}
-            onChangeText={handleCantidadChange}
+            placeholder={labels.add_amount_placeholder}
+            placeholderTextColor={c.textSecondary}
+            value={amount}
+            onChangeText={handleAmountChange}
             keyboardType="numeric"
           />
-          <Text style={[styles.currencySymbol, { color: c.textoSuave, fontSize: fs(18) }]}>
-            {config.divisa}
+          <Text style={[styles.currencySymbol, { color: c.textSecondary, fontSize: fs(18) }]}>
+            {config.currency}
           </Text>
-          <TouchableOpacity style={styles.calculadoraButton}>
-            <Ionicons name="calculator-outline" size={24} color={c.primario} />
+          <TouchableOpacity style={styles.calculatorButton}>
+            <Ionicons name="calculator-outline" size={24} color={c.primary} />
           </TouchableOpacity>
         </View>
-        {cantidadInvalida && (
+        {isInvalidAmount && (
           <Text style={[styles.errorText, { color: '#F87171', fontSize: fs(12) }]}>
-            {texto.add_amount_error}
+            {labels.add_amount_error}
           </Text>
         )}
 
         <TouchableOpacity
-          style={[styles.cuentaContainer, { backgroundColor: c.fondoAlto }]}
-          onPress={() => setModalCuentaVisible(true)}
+          style={[styles.accountContainer, { backgroundColor: c.surface }]}
+          onPress={() => setModalAccountVisible(true)}
         >
-          <Text style={[styles.cuentaLabel, { color: c.textoSuave, fontSize: fs(12) }]}>
-            {texto.add_account}
+          <Text style={[styles.accountLabel, { color: c.textSecondary, fontSize: fs(12) }]}>
+            {labels.add_account}
           </Text>
-          <Text style={[styles.cuentaNombre, { color: c.texto, fontSize: fs(15) }]}>
-            {selectedAccount?.nombre ?? ''}
+          <Text style={[styles.accountName, { color: c.text, fontSize: fs(15) }]}>
+            {selectedAccount?.name ?? ''}
           </Text>
         </TouchableOpacity>
 
         <CategoryGrid
-          categorias={visibleCategories}
-          categoriaSeleccionada={categoriaId}
-          onSelect={setCategoriaId}
-          onAddMore={() => navigation.navigate('AddCategory', { tipo })}
+          categories={visibleCategories}
+          selectedCategory={categoryId}
+          onSelect={setCategoryId}
+          onAddMore={() => navigation.navigate('AddCategory', { type })}
           showAddMore={hasMore}
         />
 
         <DaySelector
-          diaSeleccionado={dia}
-          onSelect={setDia}
-          onOpenCalendar={() => setModalCalendarioVisible(true)}
+          selectedDate={day}
+          onSelect={setDay}
+          onOpenCalendar={() => setModalCalendarVisible(true)}
         />
 
         <TagSection
-          etiquetas={etiquetasDisponibles}
-          etiquetasSeleccionadas={etiquetasSeleccionadas}
-          onToggle={handleToggleEtiqueta}
-          onCrear={handleCrearEtiqueta}
+          tags={availableTags}
+          selectedTags={selectedTags}
+          onToggle={handleToggleTag}
+          onCreate={handleCreateTag}
         />
 
         <CommentInput
-          comentario={comentario}
-          onChange={setComentario}
+          comment={comment}
+          onChange={setComment}
         />
 
         <PhotoSection
-          fotoUri={fotoUri}
+          photoUri={fotoUri}
           onTakePhoto={handleTakePhoto}
           onPickFromGallery={handlePickFromGallery}
         />
 
         <TouchableOpacity
-          style={[styles.submitButton, { backgroundColor: c.primario }]}
+          style={[styles.submitButton, { backgroundColor: c.primary }]}
           onPress={handleSubmit}
         >
-          <Text style={[styles.submitButtonText, { color: c.fondo, fontSize: fs(16) }]}>
-            {texto.add_submit}
+          <Text style={[styles.submitButtonText, { color: c.background, fontSize: fs(16) }]}>
+            {labels.add_submit}
           </Text>
         </TouchableOpacity>
       </ScrollView>
 
       <AccountModal
-        visible={modalCuentaVisible}
-        cuentas={cuentasConSaldo}
-        onSelect={handleSelectCuenta}
-        onClose={() => setModalCuentaVisible(false)}
+        visible={modalAccountVisible}
+        accounts={accountsWithBalance}
+        onSelect={handleSelectAccount}
+        onClose={() => setModalAccountVisible(false)}
       />
 
       <CalendarModal
-        visible={modalCalendarioVisible}
-        periodo="dia"
-        fecha={dia}
-        onSelectFecha={handleSelectFecha}
-        onClose={() => setModalCalendarioVisible(false)}
+        visible={modalCalendarVisible}
+        period="day"
+        date={day}
+        onSelectDate={handleSelectDate}
+        onClose={() => setModalCalendarVisible(false)}
+        firstDay={config.firstDayOfWeek}
       />
     </SafeAreaView>
   );
@@ -268,7 +269,7 @@ export default function AddTransactionScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   container: { flex: 1, padding: 16 },
-  cantidadContainer: {
+  amountContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 12,
@@ -276,7 +277,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 4,
   },
-  cantidadInput: {
+  amountInput: {
     flex: 1,
     paddingVertical: 16,
     fontWeight: '700',
@@ -285,23 +286,23 @@ const styles = StyleSheet.create({
     marginRight: 8,
     fontWeight: '600',
   },
-  calculadoraButton: {
+  calculatorButton: {
     padding: 8,
   },
   errorText: {
     marginBottom: 8,
   },
-  cuentaContainer: {
+  accountContainer: {
     borderRadius: 12,
     padding: 16,
     marginTop: 16,
     marginBottom: 16,
   },
-  cuentaLabel: {
+  accountLabel: {
     fontWeight: '500',
     marginBottom: 4,
   },
-  cuentaNombre: {
+  accountName: {
     fontWeight: '600',
   },
   submitButton: {

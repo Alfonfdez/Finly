@@ -2,49 +2,49 @@ import { ComponentProps } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { scrollbarFlatList } from '../constants/platformStyles';
-import { CategoriaConTotal } from '../constants/types';
-import { formatearMoneda } from '../utils/formatters';
+import { CategoryWithTotal } from '../constants/types';
+import { formatCurrency } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 
 interface Props {
-  categorias: CategoriaConTotal[];
+  categories: CategoryWithTotal[];
   total: number;
-  divisa?: string;
-  separador?: ',' | '.';
-  onPress?: (categoria: CategoriaConTotal) => void;
+  currency?: string;
+  separator?: ',' | '.';
+  onPress?: (category: CategoryWithTotal) => void;
 }
 
-export default function CategoryList({ categorias, total, divisa = '€', separador = ',', onPress }: Props) {
-  const { coloresActivos: c } = useConfig();
+export default function CategoryList({ categories, total, currency = '€', separator = ',', onPress }: Props) {
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const texto = t();
+  const labels = t();
 
   return (
     <FlatList
       style={scrollbarFlatList}
-      data={categorias}
+      data={categories}
       keyExtractor={(item) => item.id.toString()}
       renderItem={({ item }) => (
         <TouchableOpacity
-          style={[styles.item, { borderBottomColor: c.borde }]}
+          style={[styles.item, { borderBottomColor: c.border }]}
           onPress={() => onPress?.(item)}
-          accessibilityLabel={`${texto.a11y_category} ${item.nombre}, ${item.porcentaje.toFixed(1)}%`}
+          accessibilityLabel={`${labels.a11y_category} ${item.name}, ${item.percentage.toFixed(1)}%`}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <View style={[styles.icono, { backgroundColor: item.color + '30' }]}>
-            <Ionicons name={item.icono as ComponentProps<typeof Ionicons>['name']} size={20} color={item.color} />
+          <View style={[styles.icon, { backgroundColor: item.color + '30' }]}>
+            <Ionicons name={item.icon as ComponentProps<typeof Ionicons>['name']} size={20} color={item.color} />
           </View>
           <View style={styles.info}>
-            <Text style={[styles.nombre, { color: c.texto, fontSize: fs(14) }]}>{item.nombre}</Text>
-            <View style={[styles.barraFondo, { backgroundColor: c.fondoAlto }]}>
-              <View style={[styles.barraRelleno, { width: `${Math.min(item.porcentaje, 100)}%`, backgroundColor: item.color }]} />
+            <Text style={[styles.name, { color: c.text, fontSize: fs(14) }]}>{item.name}</Text>
+            <View style={[styles.barBackground, { backgroundColor: c.surface }]}>
+              <View style={[styles.barFill, { width: `${Math.min(item.percentage, 100)}%`, backgroundColor: item.color }]} />
             </View>
           </View>
-          <View style={styles.montos}>
-            <Text style={[styles.total, { color: c.texto, fontSize: fs(14) }]}>{formatearMoneda(item.total, divisa, separador)}</Text>
-            <Text style={[styles.porcentaje, { color: c.textoSuave, fontSize: fs(12) }]}>{item.porcentaje.toFixed(1)}%</Text>
+          <View style={styles.amounts}>
+            <Text style={[styles.total, { color: c.text, fontSize: fs(14) }]}>{formatCurrency(item.total, currency, separator)}</Text>
+            <Text style={[styles.percentage, { color: c.textSecondary, fontSize: fs(12) }]}>{item.percentage.toFixed(1)}%</Text>
           </View>
         </TouchableOpacity>
       )}
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomWidth: 1,
   },
-  icono: {
+  icon: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -69,10 +69,10 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   info: { flex: 1, marginRight: 12 },
-  nombre: { fontWeight: '500', marginBottom: 6 },
-  barraFondo: { height: 4, borderRadius: 2, overflow: 'hidden' },
-  barraRelleno: { height: '100%', borderRadius: 2 },
-  montos: { alignItems: 'flex-end' },
+  name: { fontWeight: '500', marginBottom: 6 },
+  barBackground: { height: 4, borderRadius: 2, overflow: 'hidden' },
+  barFill: { height: '100%', borderRadius: 2 },
+  amounts: { alignItems: 'flex-end' },
   total: { fontWeight: '600' },
-  porcentaje: { marginTop: 2 },
+  percentage: { marginTop: 2 },
 });

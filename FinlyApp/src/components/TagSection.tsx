@@ -5,141 +5,141 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 
-interface Etiqueta {
+interface Tag {
   id: number;
-  nombre: string;
+  name: string;
 }
 
 interface Props {
-  etiquetas: Etiqueta[];
-  etiquetasSeleccionadas: number[];
+  tags: Tag[];
+  selectedTags: number[];
   onToggle: (id: number) => void;
-  onCrear: (nombre: string) => void;
+  onCreate: (nombre: string) => void;
 }
 
-export default function TagSection({ etiquetas, etiquetasSeleccionadas, onToggle, onCrear }: Props) {
-  const [busqueda, setBusqueda] = useState('');
-  const [mostrarBusqueda, setMostrarBusqueda] = useState(false);
+export default function TagSection({ tags, selectedTags, onToggle, onCreate }: Props) {
+  const [search, setSearch] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [nuevaEtiqueta, setNuevaEtiqueta] = useState('');
-  const { coloresActivos: c } = useConfig();
+  const [newTag, setNewTag] = useState('');
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const texto = t();
+  const labels = t();
 
-  const etiquetasFiltradas = etiquetas.filter(e =>
-    e.nombre.toLowerCase().includes(busqueda.toLowerCase())
+  const filteredTags = tags.filter(tag =>
+    tag.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleCrear = () => {
-    if (nuevaEtiqueta.trim().length > 0) {
-      onCrear(nuevaEtiqueta.trim());
-      setNuevaEtiqueta('');
+  const handleCreate = () => {
+    if (newTag.trim().length > 0) {
+      onCreate(newTag.trim());
+      setNewTag('');
       setModalVisible(false);
     }
   };
 
-  const handleCancelar = () => {
-    setNuevaEtiqueta('');
+  const handleCancel = () => {
+    setNewTag('');
     setModalVisible(false);
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={[styles.titulo, { color: c.texto, fontSize: fs(15) }]}>
-          {texto.add_tags}
+        <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>
+          {labels.add_tags}
         </Text>
         <TouchableOpacity
-          onPress={() => setMostrarBusqueda(!mostrarBusqueda)}
-          accessibilityLabel={texto.add_tag_search}
+          onPress={() => setShowSearch(!showSearch)}
+          accessibilityLabel={labels.add_tag_search}
         >
-          <Ionicons name="search-outline" size={20} color={c.primario} />
+          <Ionicons name="search-outline" size={20} color={c.primary} />
         </TouchableOpacity>
       </View>
 
-      {mostrarBusqueda && (
-        <View style={styles.busquedaContainer}>
+      {showSearch && (
+        <View style={styles.searchContainer}>
           <TextInput
-            style={[styles.busquedaInput, { backgroundColor: c.fondoAlto, color: c.texto, fontSize: fs(14) }]}
-            placeholder={texto.add_tag_search}
-            placeholderTextColor={c.textoSuave}
-            value={busqueda}
-            onChangeText={setBusqueda}
+            style={[styles.searchInput, { backgroundColor: c.surface, color: c.text, fontSize: fs(14) }]}
+            placeholder={labels.add_tag_search}
+            placeholderTextColor={c.textSecondary}
+            value={search}
+            onChangeText={setSearch}
           />
           <TouchableOpacity
-            style={styles.busquedaClose}
+            style={styles.searchClose}
             onPress={() => {
-              setBusqueda('');
-              setMostrarBusqueda(false);
+              setSearch('');
+              setShowSearch(false);
             }}
           >
-            <Ionicons name="close" size={16} color={c.textoSuave} />
+            <Ionicons name="close" size={16} color={c.textSecondary} />
           </TouchableOpacity>
         </View>
       )}
 
-      <View style={styles.etiquetasContainer}>
-        {etiquetasFiltradas.map(etiqueta => (
+      <View style={styles.tagsContainer}>
+        {filteredTags.map(tag => (
           <TouchableOpacity
-            key={etiqueta.id}
+            key={tag.id}
             style={[
-              styles.etiqueta,
-              { backgroundColor: etiquetasSeleccionadas.includes(etiqueta.id) ? c.primario : c.fondoAlto },
+              styles.tag,
+              { backgroundColor: selectedTags.includes(tag.id) ? c.primary : c.surface },
             ]}
-            onPress={() => onToggle(etiqueta.id)}
+            onPress={() => onToggle(tag.id)}
           >
             <Text
               style={[
-                styles.etiquetaTexto,
-                { color: etiquetasSeleccionadas.includes(etiqueta.id) ? c.fondo : c.texto, fontSize: fs(13) },
+                styles.tagText,
+                { color: selectedTags.includes(tag.id) ? c.background : c.text, fontSize: fs(13) },
               ]}
             >
-              {etiqueta.nombre}
+              {tag.name}
             </Text>
           </TouchableOpacity>
         ))}
         <TouchableOpacity
-          style={[styles.etiqueta, { backgroundColor: c.fondoAlto }]}
+          style={[styles.tag, { backgroundColor: c.surface }]}
           onPress={() => setModalVisible(true)}
         >
-          <Text style={[styles.etiquetaTexto, { color: c.primario, fontSize: fs(13) }]}>
-            + {texto.add_tag_new}
+          <Text style={[styles.tagText, { color: c.primary, fontSize: fs(13) }]}>
+            + {labels.add_tag_new}
           </Text>
         </TouchableOpacity>
       </View>
 
-      <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={handleCancelar}>
+      <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={handleCancel}>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modal, { backgroundColor: c.fondo }]}>
-            <Text style={[styles.modalTitle, { color: c.texto, fontSize: fs(18) }]}>
-              {texto.add_tag_modal_title}
+          <View style={[styles.modal, { backgroundColor: c.background }]}>
+            <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(18) }]}>
+              {labels.add_tag_modal_title}
             </Text>
             <TextInput
-              style={[styles.modalInput, { backgroundColor: c.fondoAlto, color: c.texto, fontSize: fs(14) }]}
-              placeholder={texto.add_tag_name_placeholder}
-              placeholderTextColor={c.textoSuave}
-              value={nuevaEtiqueta}
-              onChangeText={setNuevaEtiqueta}
+              style={[styles.modalInput, { backgroundColor: c.surface, color: c.text, fontSize: fs(14) }]}
+              placeholder={labels.add_tag_name_placeholder}
+              placeholderTextColor={c.textSecondary}
+              value={newTag}
+              onChangeText={setNewTag}
               maxLength={20}
             />
-            <Text style={[styles.modalCounter, { color: c.textoSuave, fontSize: fs(12) }]}>
-              {nuevaEtiqueta.length}/20
+            <Text style={[styles.modalCounter, { color: c.textSecondary, fontSize: fs(12) }]}>
+              {newTag.length}/20
             </Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: c.fondoAlto }]}
-                onPress={handleCancelar}
+                style={[styles.modalButton, { backgroundColor: c.surface }]}
+                onPress={handleCancel}
               >
-                <Text style={[styles.modalButtonText, { color: c.textoSuave, fontSize: fs(14) }]}>
-                  {texto.cal_cancel}
+                <Text style={[styles.modalButtonText, { color: c.textSecondary, fontSize: fs(14) }]}>
+                  {labels.cal_cancel}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: c.primario }]}
-                onPress={handleCrear}
+                style={[styles.modalButton, { backgroundColor: c.primary }]}
+                onPress={handleCreate}
               >
-                <Text style={[styles.modalButtonText, { color: c.fondo, fontSize: fs(14) }]}>
-                  {texto.add_submit}
+                <Text style={[styles.modalButtonText, { color: c.background, fontSize: fs(14) }]}>
+                  {labels.add_submit}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -160,34 +160,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  titulo: {
+  title: {
     fontWeight: '600',
   },
-  busquedaContainer: {
+  searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
   },
-  busquedaInput: {
+  searchInput: {
     flex: 1,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
   },
-  busquedaClose: {
+  searchClose: {
     padding: 8,
   },
-  etiquetasContainer: {
+  tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
-  etiqueta: {
+  tag: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
   },
-  etiquetaTexto: {
+  tagText: {
     fontWeight: '500',
   },
   modalOverlay: {

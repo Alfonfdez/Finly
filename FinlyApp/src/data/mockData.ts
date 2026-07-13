@@ -1,73 +1,73 @@
-import { colores } from '../constants/colors';
-import { TipoTransaccion } from '../constants/types';
+import { colors } from '../constants/colors';
+import { TransactionType } from '../constants/types';
 
-export interface Cuenta {
+export interface Account {
   id: number;
-  nombre: string;
-  icono: string;
+  name: string;
+  icon: string;
   color: string;
-  saldo: number;
+  balance: number;
 }
 
-export interface Categoria {
+export interface Category {
   id: number;
-  nombre: string;
-  icono: string;
+  name: string;
+  icon: string;
   color: string;
-  tipo: TipoTransaccion;
+  type: TransactionType;
 }
 
-export interface Transaccion {
+export interface Transaction {
   id: number;
-  cuentaId: number;
-  categoriaId: number;
-  tipo: TipoTransaccion;
-  cantidad: number;
-  descripcion: string;
-  fecha: string;
+  accountId: number;
+  categoryId: number;
+  type: TransactionType;
+  amount: number;
+  description: string;
+  date: string;
 }
 
-export const cuentasMock: Cuenta[] = [
-  { id: 1, nombre: 'Efectivo', icono: 'wallet-outline', color: colores.primario, saldo: 0 },
-  { id: 2, nombre: 'Banco', icono: 'business-outline', color: colores.acento, saldo: 0 },
-  { id: 3, nombre: 'Ahorros', icono: 'cash-outline', color: colores.verde, saldo: 0 },
+export const mockAccounts: Account[] = [
+  { id: 1, name: 'Cash', icon: 'wallet-outline', color: colors.primary, balance: 0 },
+  { id: 2, name: 'Bank', icon: 'business-outline', color: colors.accent, balance: 0 },
+  { id: 3, name: 'Savings', icon: 'cash-outline', color: colors.green, balance: 0 },
 ];
 
-export const categoriasMock: Categoria[] = [
-  { id: 1, nombre: 'Nómina', icono: 'briefcase-outline', color: colores.primario, tipo: 'ingreso' },
-  { id: 2, nombre: 'Freelance', icono: 'code-slash-outline', color: colores.acento, tipo: 'ingreso' },
-  { id: 3, nombre: 'Alimentación', icono: 'cart-outline', color: colores.rojo, tipo: 'gasto' },
-  { id: 4, nombre: 'Transporte', icono: 'bus-outline', color: '#FBBF24', tipo: 'gasto' },
-  { id: 5, nombre: 'Ocio', icono: 'musical-notes-outline', color: '#F472B6', tipo: 'gasto' },
-  { id: 6, nombre: 'Vivienda', icono: 'home-outline', color: '#60A5FA', tipo: 'gasto' },
-  { id: 7, nombre: 'Salud', icono: 'heart-outline', color: colores.verde, tipo: 'gasto' },
-  { id: 8, nombre: 'Inversiones', icono: 'trending-up-outline', color: colores.acento, tipo: 'ingreso' },
-  { id: 9, nombre: 'Viaje', icono: 'airplane-outline', color: '#38BDF8', tipo: 'gasto' },
-  { id: 10, nombre: 'Videojuego', icono: 'game-controller-outline', color: '#A78BFA', tipo: 'gasto' },
-  { id: 11, nombre: 'Juego', icono: 'dice-outline', color: '#FB923C', tipo: 'gasto' },
-  { id: 12, nombre: 'Restaurante', icono: 'restaurant-outline', color: '#F87171', tipo: 'gasto' },
-  { id: 13, nombre: 'Educación', icono: 'school-outline', color: '#34D399', tipo: 'gasto' },
-  { id: 14, nombre: 'Familia', icono: 'people-outline', color: '#F472B6', tipo: 'gasto' },
-  { id: 15, nombre: 'Compras', icono: 'bag-outline', color: '#FBBF24', tipo: 'gasto' },
-  { id: 16, nombre: 'Ropa', icono: 'shirt-outline', color: '#C084FC', tipo: 'gasto' },
-  { id: 17, nombre: 'Ejercicio', icono: 'fitness-outline', color: '#22D3EE', tipo: 'gasto' },
-  { id: 18, nombre: 'Otros', icono: 'ellipsis-horizontal-outline', color: '#94A3B8', tipo: 'gasto' },
-  { id: 19, nombre: 'Entretenimiento', icono: 'film-outline', color: '#E879F9', tipo: 'gasto' },
-  { id: 20, nombre: 'Regalos', icono: 'gift-outline', color: '#FB7185', tipo: 'gasto' },
-  { id: 21, nombre: 'Regalo', icono: 'gift-outline', color: '#FB7185', tipo: 'ingreso' },
-  { id: 22, nombre: 'Otro', icono: 'ellipsis-horizontal-outline', color: '#94A3B8', tipo: 'ingreso' },
-  { id: 23, nombre: 'Intereses', icono: 'wallet-outline', color: '#4ADE80', tipo: 'ingreso' },
+export const mockCategories: Category[] = [
+  { id: 1, name: 'Salary', icon: 'briefcase-outline', color: colors.primary, type: 'income' },
+  { id: 2, name: 'Freelance', icon: 'code-slash-outline', color: colors.accent, type: 'income' },
+  { id: 3, name: 'Food', icon: 'cart-outline', color: colors.red, type: 'expense' },
+  { id: 4, name: 'Transport', icon: 'bus-outline', color: '#FBBF24', type: 'expense' },
+  { id: 5, name: 'Leisure', icon: 'musical-notes-outline', color: '#F472B6', type: 'expense' },
+  { id: 6, name: 'Housing', icon: 'home-outline', color: '#60A5FA', type: 'expense' },
+  { id: 7, name: 'Health', icon: 'heart-outline', color: colors.green, type: 'expense' },
+  { id: 8, name: 'Investments', icon: 'trending-up-outline', color: colors.accent, type: 'income' },
+  { id: 9, name: 'Travel', icon: 'airplane-outline', color: '#38BDF8', type: 'expense' },
+  { id: 10, name: 'Videogame', icon: 'game-controller-outline', color: '#A78BFA', type: 'expense' },
+  { id: 11, name: 'Game', icon: 'dice-outline', color: '#FB923C', type: 'expense' },
+  { id: 12, name: 'Restaurant', icon: 'restaurant-outline', color: '#F87171', type: 'expense' },
+  { id: 13, name: 'Education', icon: 'school-outline', color: colors.green, type: 'expense' },
+  { id: 14, name: 'Family', icon: 'people-outline', color: '#F472B6', type: 'expense' },
+  { id: 15, name: 'Shopping', icon: 'bag-outline', color: '#FBBF24', type: 'expense' },
+  { id: 16, name: 'Clothing', icon: 'shirt-outline', color: '#C084FC', type: 'expense' },
+  { id: 17, name: 'Exercise', icon: 'fitness-outline', color: '#22D3EE', type: 'expense' },
+  { id: 18, name: 'Others', icon: 'ellipsis-horizontal-outline', color: '#94A3B8', type: 'expense' },
+  { id: 19, name: 'Entertainment', icon: 'film-outline', color: '#E879F9', type: 'expense' },
+  { id: 20, name: 'Gifts', icon: 'gift-outline', color: '#FB7185', type: 'expense' },
+  { id: 21, name: 'Gift', icon: 'gift-outline', color: '#FB7185', type: 'income' },
+  { id: 22, name: 'Other', icon: 'ellipsis-horizontal-outline', color: '#94A3B8', type: 'income' },
+  { id: 23, name: 'Interests', icon: 'wallet-outline', color: '#4ADE80', type: 'income' },
 ];
 
-export const transaccionesMock: Transaccion[] = [
-  { id: 1, cuentaId: 1, categoriaId: 1, tipo: 'ingreso', cantidad: 2100.00, descripcion: 'Nómina Julio', fecha: '2026-07-01' },
-  { id: 2, cuentaId: 1, categoriaId: 2, tipo: 'ingreso', cantidad: 500.00, descripcion: 'Proyecto web', fecha: '2026-07-05' },
-  { id: 3, cuentaId: 2, categoriaId: 3, tipo: 'gasto', cantidad: 85.50, descripcion: 'Compra semanal', fecha: '2026-07-03' },
-  { id: 4, cuentaId: 2, categoriaId: 4, tipo: 'gasto', cantidad: 30.00, descripcion: 'Gasolina', fecha: '2026-07-04' },
-  { id: 5, cuentaId: 1, categoriaId: 5, tipo: 'gasto', cantidad: 45.00, descripcion: 'Cine', fecha: '2026-07-06' },
-  { id: 6, cuentaId: 2, categoriaId: 6, tipo: 'gasto', cantidad: 650.00, descripcion: 'Alquiler Julio', fecha: '2026-07-01' },
-  { id: 7, cuentaId: 1, categoriaId: 3, tipo: 'gasto', cantidad: 42.30, descripcion: 'Restaurante', fecha: '2026-07-07' },
-  { id: 8, cuentaId: 2, categoriaId: 7, tipo: 'gasto', cantidad: 25.00, descripcion: 'Farmacia', fecha: '2026-07-08' },
-  { id: 9, cuentaId: 3, categoriaId: 8, tipo: 'ingreso', cantidad: 200.00, descripcion: 'Dividendos', fecha: '2026-07-10' },
-  { id: 10, cuentaId: 1, categoriaId: 5, tipo: 'gasto', cantidad: 12.50, descripcion: 'Cafetería', fecha: '2026-07-10' },
+export const mockTransactions: Transaction[] = [
+  { id: 1, accountId: 1, categoryId: 1, type: 'income', amount: 2100.00, description: 'July Salary', date: '2026-07-01' },
+  { id: 2, accountId: 1, categoryId: 2, type: 'income', amount: 500.00, description: 'Web project', date: '2026-07-05' },
+  { id: 3, accountId: 2, categoryId: 3, type: 'expense', amount: 85.50, description: 'Weekly groceries', date: '2026-07-03' },
+  { id: 4, accountId: 2, categoryId: 4, type: 'expense', amount: 30.00, description: 'Gasoline', date: '2026-07-04' },
+  { id: 5, accountId: 1, categoryId: 5, type: 'expense', amount: 45.00, description: 'Cinema', date: '2026-07-06' },
+  { id: 6, accountId: 2, categoryId: 6, type: 'expense', amount: 650.00, description: 'July Rent', date: '2026-07-01' },
+  { id: 7, accountId: 1, categoryId: 3, type: 'expense', amount: 42.30, description: 'Restaurant', date: '2026-07-07' },
+  { id: 8, accountId: 2, categoryId: 7, type: 'expense', amount: 25.00, description: 'Pharmacy', date: '2026-07-08' },
+  { id: 9, accountId: 3, categoryId: 8, type: 'income', amount: 200.00, description: 'Dividends', date: '2026-07-10' },
+  { id: 10, accountId: 1, categoryId: 5, type: 'expense', amount: 12.50, description: 'Coffee shop', date: '2026-07-10' },
 ];

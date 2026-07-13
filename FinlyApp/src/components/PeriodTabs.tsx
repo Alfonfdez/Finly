@@ -1,37 +1,37 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Periodo } from '../constants/types';
+import { Period } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 
 interface Props {
-  activo: Periodo;
-  onChange: (periodo: Periodo) => void;
+  active: Period;
+  onChange: (period: Period) => void;
 }
 
-export default function PeriodTabs({ activo, onChange }: Props) {
-  const { coloresActivos: c } = useConfig();
+export default function PeriodTabs({ active, onChange }: Props) {
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const texto = t();
+  const labels = t();
 
-  const periodos: { key: Periodo; label: string }[] = [
-    { key: 'dia', label: texto.period_day },
-    { key: 'semana', label: texto.period_week },
-    { key: 'mes', label: texto.period_month },
-    { key: 'año', label: texto.period_year },
-    { key: 'periodo', label: texto.period_period },
+  const periods: { key: Period; label: string }[] = [
+    { key: 'day', label: labels.period_day },
+    { key: 'week', label: labels.period_week },
+    { key: 'month', label: labels.period_month },
+    { key: 'year', label: labels.period_year },
+    { key: 'custom', label: labels.period_period },
   ];
 
   return (
     <View style={styles.container}>
-      {periodos.map((p) => (
+      {periods.map((p) => (
         <TouchableOpacity
           key={p.key}
-          style={[styles.tab, { backgroundColor: activo === p.key ? c.primario : c.fondoAlto }]}
+          style={[styles.tab, { backgroundColor: active === p.key ? c.primary : c.surface }]}
           onPress={() => onChange(p.key)}
-          accessibilityLabel={`${texto.a11y_period} ${p.label}`}
+          accessibilityLabel={`${labels.a11y_period} ${p.label}`}
         >
-          <Text style={{ color: activo === p.key ? c.fondo : c.textoSuave, fontWeight: activo === p.key ? '700' : '600', fontSize: fs(13) }}>{p.label}</Text>
+          <Text style={{ color: active === p.key ? c.background : c.textSecondary, fontWeight: active === p.key ? '700' : '600', fontSize: fs(13) }}>{p.label}</Text>
         </TouchableOpacity>
       ))}
     </View>

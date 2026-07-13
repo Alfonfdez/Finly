@@ -1,41 +1,41 @@
 import { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { obtenerNombreMes } from '../../utils/formatters';
+import { getMonthName } from '../../utils/formatters';
 import { CalendarBaseProps } from './types';
 import YearNav from './YearNav';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 
-export default function MonthGrid({ fecha, onSelect }: CalendarBaseProps) {
-  const hoy = new Date();
-  const [año, setAño] = useState(fecha.getFullYear());
-  const { coloresActivos: c } = useConfig();
+export default function MonthGrid({ date, onSelect }: CalendarBaseProps) {
+  const today = new Date();
+  const [year, setYear] = useState(date.getFullYear());
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const meses = Array.from({ length: 12 }, (_, i) => i + 1);
+  const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
-  const cambiarAño = useCallback((nuevoAño: number) => {
-    if (nuevoAño > hoy.getFullYear()) return;
-    setAño(nuevoAño);
-  }, [hoy]);
+  const changeYear = useCallback((newYear: number) => {
+    if (newYear > today.getFullYear()) return;
+    setYear(newYear);
+  }, [today]);
 
   return (
     <View style={styles.container}>
-      <YearNav año={año} onChange={cambiarAño} />
+      <YearNav year={year} onChange={changeYear} />
       <View style={styles.grid}>
-        {meses.map(m => {
-          const fechaMes = new Date(año, m - 1, 1);
-          const futuro = fechaMes > new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-          const activo = m === fecha.getMonth() + 1;
+        {months.map(m => {
+          const monthDate = new Date(year, m - 1, 1);
+          const isFuture = monthDate > new Date(today.getFullYear(), today.getMonth(), 1);
+          const isActive = m === date.getMonth() + 1;
           return (
             <TouchableOpacity
               key={m}
-              style={[styles.item, futuro && { opacity: 0.3 }]}
-              onPress={() => !futuro && onSelect(new Date(año, m - 1, 1))}
-              disabled={futuro}
+              style={[styles.item, isFuture && { opacity: 0.3 }]}
+              onPress={() => !isFuture && onSelect(new Date(year, m - 1, 1))}
+              disabled={isFuture}
             >
-              <View style={[styles.itemInner, { backgroundColor: c.fondoAlto }, activo && { backgroundColor: c.primario }]}>
-                <Text style={[styles.itemTexto, { color: c.texto, fontSize: fs(14) }, activo && { color: c.fondo, fontWeight: '700' }, futuro && { color: c.textoSuave }]}>
-                  {obtenerNombreMes(m).slice(0, 3)}
+              <View style={[styles.itemInner, { backgroundColor: c.surface }, isActive && { backgroundColor: c.primary }]}>
+                <Text style={[styles.itemText, { color: c.text, fontSize: fs(14) }, isActive && { color: c.background, fontWeight: '700' }, isFuture && { color: c.textSecondary }]}>
+                  {getMonthName(m).slice(0, 3)}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -51,5 +51,5 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   item: { width: '23%', aspectRatio: 1.2 },
   itemInner: { flex: 1, alignItems: 'center', justifyContent: 'center', borderRadius: 10 },
-  itemTexto: { fontWeight: '500', includeFontPadding: false, textAlignVertical: 'center' },
+  itemText: { fontWeight: '500', includeFontPadding: false, textAlignVertical: 'center' },
 });

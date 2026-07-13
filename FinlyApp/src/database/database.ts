@@ -1,11 +1,12 @@
 import { type SQLiteDatabase, openDatabaseSync } from 'expo-sqlite';
 import { migrate001 } from './migrations/001_initial';
 import { seed002 } from './migrations/002_seed';
-import { migrate003 } from './migrations/003_configuracion';
-import { seed004 } from './migrations/004_nuevas_categorias';
+import { migrate003 } from './migrations/003_config';
+import { seed004 } from './migrations/004_new_categories';
+import { migrate005 } from './migrations/005_english_schema';
 
 const DATABASE_NAME = 'Finly.db';
-const DATABASE_VERSION = 4;
+const DATABASE_VERSION = 5;
 
 let db: SQLiteDatabase | null = null;
 
@@ -43,11 +44,17 @@ export async function initDatabase(): Promise<SQLiteDatabase> {
     currentVersion = 4;
   }
 
+  if (currentVersion < 5) {
+    await migrate005(database);
+    currentVersion = 5;
+  }
+
   await database.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
 
-  await database.runAsync(`UPDATE categorias SET icono = 'musical-notes-outline' WHERE id = 5`);
-  await database.runAsync(`UPDATE categorias SET icono = 'game-controller-outline' WHERE id = 10`);
-  await database.runAsync(`UPDATE categorias SET icono = 'wallet-outline' WHERE id = 23`);
+  // Data fixups for icon renames (run every startup)
+  await database.runAsync(`UPDATE categories SET icon = 'musical-notes-outline' WHERE id = 5`);
+  await database.runAsync(`UPDATE categories SET icon = 'game-controller-outline' WHERE id = 10`);
+  await database.runAsync(`UPDATE categories SET icon = 'wallet-outline' WHERE id = 23`);
 
   return database;
 }

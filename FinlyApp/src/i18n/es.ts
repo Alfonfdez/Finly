@@ -1,6 +1,6 @@
-import { Idioma } from './en';
+import { Language } from './en';
 
-export const es: Idioma = {
+export const es: Language = {
   // Settings
   settings_appearance: 'APARIENCIA',
   settings_calendar: 'CALENDARIO',

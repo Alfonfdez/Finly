@@ -385,3 +385,35 @@
 - Cambiado icono de "Ocio" de game-controller-outline a musical-notes-outline.
 - Cambiado icono de "Videojuego" de gamepad-outline a game-controller-outline.
 - Cambiado icono de "Intereses" de percent-outline a wallet-outline.
+
+[2026-07-13] ~ | src/components/ (todos los archivos .tsx)
+- Renombrados identificadores TypeScript de español a inglés en todos los componentes:
+  - AccountModal: CuentaConSaldo → AccountWithBalance, saldo → balance, cuentas → accounts, estilos
+  - BarChart/DonutChart: datos → data, divisa → currency, separador → separator, dato → item
+  - CategoryList/CategoryGrid: categorias → categories, categoria → category, estilos
+  - TypeTabs: activo → active, styles.texto → styles.text
+  - PeriodTabs: activo → active, periodos → periods
+  - CalendarModal: periodo → period, fecha → date, onSelectFecha → onSelectDate, onSelectRango → onSelectRange, inicioRango → rangeStart, finRango → rangeEnd, fechaTemp → tempDate, textoSubtitulo → subtitleText
+  - CalendarPicker: periodo → period, fecha → date, onFechaChange → onDateChange, onRangoChange → onRangeChange
+  - DaySelector: hoy → today, ayer → yesterday, anteayer → dayBeforeYesterday, diaSeleccionado → selectedDate, esHoy → isToday, etc.
+  - TagSection: Etiqueta → Tag, etiquetas → tags, onCrear → onCreate, busqueda → search, estilos
+  - CommentInput: comentario → comment
+  - PhotoSection: fotoUri → photoUri
+  - SearchBar: coloresActivos → activeColors, colores (fondoAlto, borde, texto, textoSuave) → (surface, border, text, textSecondary)
+  - calendars/DayPicker: rangoInicio → rangeStart, rangoFin → rangeEnd, enRango → inRange, esBordeInicio → isStartEdge, esBordeFin → isEndEdge, dia → day, esHoy → isToday, hoy → today, año → year, mes → month, estilos
+  - calendars/MonthGrid: año → year, activo → isActive, hoy → today
+  - calendars/MonthNav: año → year, mes → month, esUltimo → isLast, hoy → today
+  - calendars/YearNav: año → year, maxAño → maxYear, puedeAvanzar → canAdvance
+  - calendars/YearGrid: activo → isActive, añoInicio → startYear, hoy → today
+  - calendars/WeekPicker: formatoSemanaCorto → formatShortWeek, año → year, semanas → weeks, seleccionada → isSelected, hoy → today, estilos
+  - calendars/PeriodPicker: onTempRangoChange → onTempRangeChange, seleccionando → selecting, inicioTemp/finTemp → tempStart/tempEnd, hoy → today
+
+[2026-07-13] ~ | Múltiples archivos
+- Corregidos errores TypeScript en 8 archivos:
+  - AccountModal: importa Account en vez de Cuenta, usa saldo/nombre/icono (SQL column names)
+  - AddCategoryScreen: usa getCategoryName en vez de obtenerNombreCategoria
+  - HomeScreen: usa formatCurrency en vez de formatearMoneda, usa config.firstDayOfWeek
+  - TransactionsScreen: usa formatCurrency y formatDate en vez de formatearMoneda/formatearFecha
+  - SettingsScreen: usa config.firstDayOfWeek y updateConfig({ firstDayOfWeek })
+  - AddTransactionScreen: corrige props (selectedDate, period, date, onSelectDate, photoUri, selectedTags, onCreate) y Tag interface (name/nombre)
+  - CategoryGrid: Category interface usa nombre/icono (SQL column names) para alinearse con database/types

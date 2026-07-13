@@ -1,8 +1,8 @@
 import { useConfig } from '../context/ConfigContext';
-import { escalarFontSize } from '../utils/formatters';
+import { scaleFontSize } from '../utils/formatters';
 
 export function useFontSize() {
   const { config } = useConfig();
-  const fs = (size: number) => escalarFontSize(size, config.tamanoTexto);
+  const fs = (size: number) => scaleFontSize(size, config.textSize);
   return fs;
 }

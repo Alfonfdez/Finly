@@ -1,31 +1,31 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-export type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo';
+export type Period = 'day' | 'week' | 'month' | 'year' | 'custom';
 
-export type TipoTransaccion = 'gasto' | 'ingreso';
+export type TransactionType = 'expense' | 'income';
 
-export interface DatoGrafico {
-  nombre: string;
+export interface ChartData {
+  name: string;
   color: string;
   total: number;
-  porcentaje: number;
+  percentage: number;
 }
 
-export type CategoriaConTotal = {
+export type CategoryWithTotal = {
   id: number;
-  nombre: string;
-  icono: string;
+  name: string;
+  icon: string;
   color: string;
-  tipo: TipoTransaccion;
+  type: TransactionType;
   total: number;
-  porcentaje: number;
+  percentage: number;
 };
 
 export type RootStackParamList = {
   Home: undefined;
-  AddTransaction: { categoriaId?: number; tipo?: TipoTransaccion } | undefined;
-  AddCategory: { tipo: TipoTransaccion };
-  Transactions: { categoriaId?: number; tipo?: TipoTransaccion } | undefined;
+  AddTransaction: { categoryId?: number; type?: TransactionType } | undefined;
+  AddCategory: { type: TransactionType };
+  Transactions: { categoryId?: number; type?: TransactionType } | undefined;
   Settings: undefined;
 };
 
