@@ -91,7 +91,7 @@ Pantalla para seleccionar categoría existente:
 Especificación: spec/features/005-pagina-anadir-categoria/.
 
 ## 006-pagina-crear-categoria
-Estado: pendiente.
+Estado: completado.
 
 Pantalla para crear categorías personalizadas:
 - Selección de icono de una rejilla de iconos disponibles.
@@ -101,3 +101,15 @@ Pantalla para crear categorías personalizadas:
 - Botón "Crear" que guarda en la base de datos y navega de vuelta.
 
 Especificación: spec/features/006-pagina-crear-categoria/.
+
+## 007-calculadora
+Estado: pendiente.
+
+Modal con calculadora básica para la pantalla de añadir transacción:
+- Teclado numérico con operaciones básicas (+, -, *, /).
+- Botón "=" para evaluar la expresión y mostrar el resultado.
+- Botones "Aceptar" y "Cancelar".
+- Al aceptar, pega el resultado en el campo de cantidad.
+- Componente reutilizable que puede usarse en otras pantallas.
+
+Especificación: spec/features/007-calculadora/.

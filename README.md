@@ -188,7 +188,8 @@ Finly/
 │       ├── 003-pagina-configuracion/
 │       ├── 004-pagina-transaccion/
 │       ├── 005-pagina-anadir-categoria/
-│       └── 006-pagina-crear-categoria/
+│       ├── 006-pagina-crear-categoria/
+│       └── 007-calculadora/
 │
 ├── .agents/skills/               ← Skills para asistentes IA
 ├── docs/                         ← Documentación de conceptos
@@ -210,4 +211,5 @@ Finly/
 - Soporte multilingüe: español, inglés, catalán
 - Escalado de texto según preferencias del usuario
 - Navegación con menú lateral (Drawer)
-- Creación de categorías personalizadas (próximamente)
+- Creación de categorías personalizadas
+- Calculadora básica integrada (próximamente)

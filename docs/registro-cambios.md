@@ -429,17 +429,18 @@
 - Actualizada sección de diseño visual: themes.ts con paletas dark+light y tokens en inglés.
 - Añadidas convenciones: i18n, persistencia con switching por plataforma.
 
+[2026-07-13] + | spec/features/007-calculadora/
+- Creada spec completa para la calculadora: 1-spec.md (requisitos funcionales), 2-plan.md (arquitectura y componentes), 3-tasks.md (13 tareas en 4 fases + verificación).
+- Incluye: modal con teclado numérico, operaciones básicas, botones Aceptar/Cancelar, integración con AddTransactionScreen.
+- Componente reutilizable para otras pantallas.
+
 [2026-07-13] ~ | spec/constitution/3-roadmap.md
-- Marcado feature 001 como "completado".
-- Añadidos features 002-006 con descripciones y estados actualizados.
-- Corregida referencia AsyncStorage → SQLite en feature 001.
+- Añadido feature 007-calculadora con estado pendiente.
 
 [2026-07-13] ~ | README.md
-- Actualizada tabla de stack: añadido i18n, ConfigContext, localStorage como fallback web.
-- Reescrita estructura del proyecto completa: 5 screens, 15+ components, database con 5 migraciones, i18n, hooks, constants, context.
-- Añadidas funcionalidades: ajustes, tema oscuro/claro, multilingüe, escalado de texto.
-- Actualizada lista de features SDD: 001-006.
-- Corregido excalidraw/ → images/ en la ruta de la estructura.
+- Añadido spec/007-calculadora a la estructura del proyecto.
+- Añadida funcionalidad "Calculadora básica integrada (próximamente)" a la lista de features.
+- Actualizada lista de features SDD: 001-007.
 
 [2026-07-13] ~ | src/screens/AddTransactionScreen.tsx
 - Movido panel de sugerencias de comentarios por encima del input de comentario.
