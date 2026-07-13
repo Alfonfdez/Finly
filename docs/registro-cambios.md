@@ -542,3 +542,38 @@
 
 [2026-07-13] ~ | src/screens/CreateCategoryScreen.tsx
 - Corregido grid responsive en web: reemplazado Dimensions.get('window').width (estático) por onLayout en el grid container. cellSize se calcula dinámicamente del ancho real del grid, funciona en móvil y redimensionamiento web.
+
+[2026-07-13] ~ | FinlyApp/package.json
+- Añadida dependencia reanimated-color-picker para selector de colores dinámico.
+
+[2026-07-13] ~ | src/components/ColorPickerModal.tsx
+- Reemplazado modal de 20 colores estáticos por reanimated-color-picker completo: Panel1 (saturación/brillo), HueSlider, OpacitySlider, Preview con formato hex.
+- Añadidos botones OK/Cancel para confirmar selección.
+- Sincronización de color temporal con useEffect al abrir modal.
+
+[2026-07-13] ~ | src/i18n/en.ts, es.ts, ca.ts
+- Añadida clave create_cat_color_picker_ok para botón de confirmación del selector de colores.
+
+[2026-07-13] ~ | src/components/ColorPickerModal.tsx
+- Fix: Eliminado onPress={onClose} del overlay (cerraba modal al soltar clic fuera del picker en web).
+- Fix: Cambiado onChange a onChangeJS y eliminado directorio 'worklet' (causaba crash en móvil).
+
+[2026-07-13] ~ | src/components/ColorGrid.tsx
+- Reducidos quick colors de 7 a 6.
+- Añadido círculo7 para color personalizado del picker (solo visible si selectedColor no está en QUICK_COLORS).
+- Botón "+" siempre en posición8.
+
+[2026-07-13] ~ | src/screens/CreateCategoryScreen.tsx
+- Icono seleccionado ahora muestra el color elegido (background + icon tint + border) para previsualización en tiempo real.
+
+[2026-07-13] ~ | src/components/ColorGrid.tsx, src/screens/CreateCategoryScreen.tsx
+- Añadido prop customColor para persistir el color personalizado del picker.
+- Círculo de color personalizado siempre visible una vez elegido (no desaparece al seleccionar otro quick color).
+
+[2026-07-13] ~ | spec/features/006-pagina-crear-categoria/1-spec.md, 2-plan.md, 3-tasks.md
+- Actualizada sección Color: 6 quick colors + círculo personalizado + "+" button.
+- Actualizado ColorPickerModal: reanimated-color-picker con Panel1 + HueSlider + OpacitySlider + Preview + OK/Cancel.
+- Añadida clave i18n create_cat_color_picker_ok en tabla de claves.
+
+[2026-07-13] ~ | README.md, spec/constitution/2-tech-stack.md
+- Añadido reanimated-color-picker a la tabla de stack en README.md y constitution/2-tech-stack.md.

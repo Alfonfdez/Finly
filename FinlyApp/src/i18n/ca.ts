@@ -128,6 +128,7 @@ export const ca: Language = {
   create_cat_hint_color: 'Selecciona un color',
   create_cat_hint_icon_color: 'Selecciona una icona i un color',
   create_cat_color_picker_title: 'Seleccionar color',
+  create_cat_color_picker_ok: 'D\'acord',
   create_cat_color_picker_cancel: 'Cancel·lar',
 
   // Categories (mock data - multilingual)

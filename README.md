@@ -16,6 +16,7 @@ App para gestionar ingresos y gastos personales con múltiples cuentas, categor�
 | Lenguaje | TypeScript |
 | Navegación | React Navigation (Stack + Drawer) |
 | Gráficos | react-native-svg |
+| Color picker | reanimated-color-picker |
 | Persistencia | SQLite (expo-sqlite) en nativo, localStorage en web |
 | Web | react-native-web |
 | Estado | Context API (AppContext + ConfigContext) |

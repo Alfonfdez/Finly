@@ -15,7 +15,7 @@ import { categoryRepository } from '../database';
 import { RootStackParamList, TransactionType } from '../constants/types';
 import { setPendingCategory } from './AddTransactionScreen';
 import { CATEGORY_ICONS } from '../components/IconGrid';
-import ColorGrid from '../components/ColorGrid';
+import ColorGrid, { QUICK_COLORS } from '../components/ColorGrid';
 import ColorPickerModal from '../components/ColorPickerModal';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateCategory'>;
@@ -47,6 +47,7 @@ export default function CreateCategoryScreen() {
   const [type, setType] = useState<TransactionType>(initialType);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [customColor, setCustomColor] = useState<string | null>(null);
   const [checkingName, setCheckingName] = useState(false);
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
 
@@ -184,20 +185,23 @@ export default function CreateCategoryScreen() {
           <View style={styles.grid} onLayout={onGridLayout}>
             {cellSize > 0 && CATEGORY_ICONS.map((icon) => {
               const isSelected = selectedIcon === icon;
+              const iconColor = isSelected && selectedColor ? selectedColor : (isSelected ? c.primary : '#94A3B8');
+              const bgColor = isSelected && selectedColor ? selectedColor + '33' : (isSelected ? c.primary + '33' : c.surface);
+              const borderColor = isSelected ? (selectedColor || c.primary) : 'transparent';
               return (
                 <TouchableOpacity
                   key={icon}
                   style={[
                     styles.gridItem,
                     { width: cellSize, height: cellSize },
-                    { backgroundColor: isSelected ? c.primary + '33' : c.surface },
-                    isSelected && { borderWidth: 2, borderColor: c.primary },
+                    { backgroundColor: bgColor },
+                    isSelected && { borderWidth: 2, borderColor },
                   ]}
                   onPress={() => setSelectedIcon(icon)}
                   accessibilityLabel={icon}
                   accessibilityState={{ selected: isSelected }}
                 >
-                  <Ionicons name={icon as any} size={24} color={isSelected ? c.primary : '#94A3B8'} />
+                  <Ionicons name={icon as any} size={24} color={iconColor} />
                 </TouchableOpacity>
               );
             })}
@@ -208,6 +212,7 @@ export default function CreateCategoryScreen() {
           </Text>
           <ColorGrid
             selectedColor={selectedColor}
+            customColor={customColor}
             onSelect={setSelectedColor}
             onOpenPicker={() => setColorPickerVisible(true)}
           />
@@ -215,7 +220,12 @@ export default function CreateCategoryScreen() {
           <ColorPickerModal
             visible={colorPickerVisible}
             selectedColor={selectedColor}
-            onSelect={setSelectedColor}
+            onSelect={(color) => {
+              setSelectedColor(color);
+              if (!QUICK_COLORS.includes(color)) {
+                setCustomColor(color);
+              }
+            }}
             onClose={() => setColorPickerVisible(false)}
           />
 

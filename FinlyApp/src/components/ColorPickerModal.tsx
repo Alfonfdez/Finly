@@ -1,17 +1,9 @@
+import { useState, useEffect } from 'react';
 import { View, TouchableOpacity, Modal, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import ColorPicker, { Panel1, HueSlider, OpacitySlider, Preview } from 'reanimated-color-picker';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-
-export const EXTENDED_COLORS = [
-  '#22D3EE', '#F87171', '#34D399', '#FBBF24', '#F472B6',
-  '#60A5FA', '#A78BFA', '#94A3B8', '#FCD34D', '#6EE7B7',
-  '#FB923C', '#E879F9', '#C084FC', '#38BDF8', '#4ADE80',
-  '#FB7185', '#FCA5A5', '#86EFAC', '#FDE68A', '#A5B4FC',
-];
-
-const COLS = 5;
 
 interface Props {
   visible: boolean;
@@ -24,50 +16,67 @@ export default function ColorPickerModal({ visible, selectedColor, onSelect, onC
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
+  const [tempColor, setTempColor] = useState(selectedColor ?? '#22D3EE');
 
-  const handleSelect = (color: string) => {
-    onSelect(color);
+  useEffect(() => {
+    if (visible) {
+      setTempColor(selectedColor ?? '#22D3EE');
+    }
+  }, [visible, selectedColor]);
+
+  const handleConfirm = () => {
+    onSelect(tempColor);
     onClose();
+  };
+
+  const handleChange = ({ hex }: { hex: string }) => {
+    setTempColor(hex);
   };
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
+      <View style={styles.overlay}>
         <View style={[styles.modal, { backgroundColor: c.surface }]}>
           <View style={[styles.header, { borderBottomColor: c.border }]}>
             <Text style={[styles.title, { color: c.text, fontSize: fs(16) }]}>
               {labels.create_cat_color_picker_title}
             </Text>
-            <TouchableOpacity onPress={onClose}>
-              <Text style={[styles.cancel, { color: c.primary, fontSize: fs(14) }]}>
+          </View>
+
+          <View style={styles.pickerContainer}>
+            <ColorPicker
+              value={tempColor}
+              onChangeJS={handleChange}
+              style={styles.picker}
+              boundedThumb
+            >
+              <Panel1 style={styles.panel} />
+              <HueSlider style={styles.slider} />
+              <OpacitySlider style={styles.slider} />
+              <Preview hideInitialColor />
+            </ColorPicker>
+          </View>
+
+          <View style={[styles.footer, { borderTopColor: c.border }]}>
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: c.surface, borderColor: c.border }]}
+              onPress={onClose}
+            >
+              <Text style={[styles.buttonText, { color: c.text, fontSize: fs(14) }]}>
                 {labels.create_cat_color_picker_cancel}
               </Text>
             </TouchableOpacity>
-          </View>
-          <View style={styles.grid}>
-            {EXTENDED_COLORS.map((color) => {
-              const isSelected = selectedColor === color;
-              return (
-                <TouchableOpacity
-                  key={color}
-                  style={[
-                    styles.circle,
-                    { backgroundColor: color },
-                    isSelected && { borderWidth: 3, borderColor: c.text },
-                  ]}
-                  onPress={() => handleSelect(color)}
-                  accessibilityLabel={color}
-                  accessibilityState={{ selected: isSelected }}
-                >
-                  {isSelected && (
-                    <Ionicons name="checkmark" size={16} color="#FFFFFF" />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: c.primary }]}
+              onPress={handleConfirm}
+            >
+              <Text style={[styles.buttonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
+                {labels.create_cat_color_picker_ok}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </TouchableOpacity>
+      </View>
     </Modal>
   );
 }
@@ -80,37 +89,55 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modal: {
-    width: '85%',
+    width: '90%',
+    maxWidth: 360,
     borderRadius: 16,
     padding: 20,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     borderBottomWidth: 1,
     paddingBottom: 12,
     marginBottom: 16,
   },
   title: {
     fontWeight: '600',
+    textAlign: 'center',
   },
-  cancel: {
-    fontWeight: '500',
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    justifyContent: 'center',
-  },
-  circle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  pickerContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
+    marginBottom: 16,
+  },
+  picker: {
+    width: '100%',
+    padding: 0,
+  },
+  panel: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  slider: {
+    width: '100%',
+    height: 30,
+    borderRadius: 15,
+    marginBottom: 12,
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    paddingTop: 16,
+    gap: 12,
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  buttonText: {
+    fontWeight: '600',
   },
 });

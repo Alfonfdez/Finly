@@ -27,9 +27,9 @@ Orden de ejecución. Marca cada tarea al completarlo.
 
 [ ] T7 — Crear `IconGrid.tsx`: grid de 4 columnas con ~40 iconos Ionicons predefinidos (fondo gris `#334155`). Scroll vertical si no caben. Selección única con resaltado visual (borde primario).
 
-[ ] T8 — Crear `ColorGrid.tsx`: grid 1×8 con 7 colores predefinidos (círculos) + "+" gris. Selección única con anillo de selección + checkmark superpuesto. Al pulsar "+", abrir `ColorPickerModal`.
+[ ] T8 — Crear `ColorGrid.tsx`: grid 1×8 con 6 colores predefinidos (círculos) + círculo de color personalizado (si existe) + "+" gris. Selección única con anillo de selección + checkmark superpuesto. Al pulsar "+", abrir `ColorPickerModal`.
 
-[ ] T8b — Crear `ColorPickerModal.tsx`: modal con paleta ampliada de ~20 colores en grid 4×5. Al seleccionar un color, cerrar automáticamente y actualizar la selección en ColorGrid. Botón "Cancelar" para cerrar sin seleccionar.
+[ ] T8b — Crear `ColorPickerModal.tsx`: modal con `reanimated-color-picker` (Panel1 + HueSlider + OpacitySlider + Preview). Botones OK/Cancel para confirmar o cancelar. El color personalizado persiste en la grid una vez elegido.
 
 ---
 

@@ -6,9 +6,8 @@
 
 - **CreateCategoryScreen.tsx**: Pantalla principal con input de nombre, selector de tipo (radio), grid de iconos, grid de colores y botón "Añadir".
 - **IconGrid.tsx**: Grid de 4 columnas con ~40 iconos Ionicons seleccionables con fondo gris. Scroll vertical si no caben.
-- **ColorGrid.tsx**: Grid 1×8 de colores preseleccionados circulares + "+" que abre un modal de colores expandido.
-- **ColorPickerModal.tsx**: Modal con paleta ampliada de ~20 colores en grid 4×5.
-- **ColorPickerModal.tsx**: Modal con paleta ampliada de ~20 colores en grid 4×5.
+- **ColorGrid.tsx**: Grid 1×8 de colores: 6 preseleccionados circulares + círculo de color personalizado (si existe) + "+" que abre un picker de colores dinámico.
+- **ColorPickerModal.tsx**: Modal con `reanimated-color-picker` (Panel1 + HueSlider + OpacitySlider + Preview) y botones OK/Cancel.
 
 ### Archivos modificados
 
@@ -74,15 +73,22 @@ AddCategoryScreen → grid ("Crear") → CreateCategoryScreen → AddCategoryScr
 
 ```
 ┌─────────────────────────────────┐
-│ Seleccionar color        Cancelar│  ← Header modal
+│ Seleccionar color               │  ← Header modal
 ├─────────────────────────────────┤
-│ ┌──┐ ┌──┐ ┌──┐ ┌──┐           │
-│ │  │ │  │ │  │ │  │           │  ← Grid 4×5, ~20 colores
-│ └──┘ └──┘ └──┘ └──┘           │
-│ ┌──┐ ┌──┐ ┌──┐ ┌──┐           │
-│ │  │ │  │ │  │ │  │           │
-│ └──┘ └──┘ └──┘ └──┘           │
-│ ...                            │
+│ ┌───────────────────────────┐   │
+│ │ Panel1 (saturación/brillo)│   │  ← Selector de color
+│ └───────────────────────────┘   │
+│ ┌───────────────────────────┐   │
+│ │ HueSlider (tono)          │   │  ← Slider horizontal
+│ └───────────────────────────┘   │
+│ ┌───────────────────────────┐   │
+│ │ OpacitySlider (opacidad)  │   │  ← Slider horizontal
+│ └───────────────────────────┘   │
+│ ┌───────────────────────────┐   │
+│ │ Preview (#hex)            │   │  ← Vista previa del color
+│ └───────────────────────────┘   │
+├─────────────────────────────────┤
+│ [Cancelar]              [Ok]    │  ← Botones acción
 └─────────────────────────────────┘
 ```
 
@@ -94,7 +100,8 @@ interface CreateCategoryState {
   nameError: string | null;        // error de nombre (vacío | duplicado)
   type: TransactionType;           // 'expense' | 'income'
   selectedIcon: string | null;     // nombre del icono Ionicons
-  selectedColor: string | null;    // hex del color
+  selectedColor: string | null;    // hex del color seleccionado
+  customColor: string | null;      // hex del color personalizado del picker
   checkingName: boolean;           // true mientras se verifica duplicado
 }
 ```
@@ -150,23 +157,16 @@ interface CreateCategoryState {
 |---|---|---|---|
 | 1 | `#22D3EE` | 5 | `#F472B6` |
 | 2 | `#F87171` | 6 | `#60A5FA` |
-| 3 | `#34D399` | 7 | `#A78BFA` |
-| 4 | `#FBBF24` | 8 | `+` (abre modal) |
+| 3 | `#34D399` | 7 | Color personalizado (picker) |
+| 4 | `#FBBF24` | 8 | + (abre picker) |
 
-## Colores expandidos (ColorPickerModal, grid 4×5)
+## ColorPickerModal (reanimated-color-picker)
 
-| # | Hex | # | Hex |
-|---|---|---|---|
-| 1 | `#22D3EE` | 11 | `#FB923C` |
-| 2 | `#F87171` | 12 | `#E879F9` |
-| 3 | `#34D399` | 13 | `#C084FC` |
-| 4 | `#FBBF24` | 14 | `#38BDF8` |
-| 5 | `#F472B6` | 15 | `#4ADE80` |
-| 6 | `#60A5FA` | 16 | `#FB7185` |
-| 7 | `#A78BFA` | 17 | `#FCA5A5` |
-| 8 | `#94A3B8` | 18 | `#86EFAC` |
-| 9 | `#FCD34D` | 19 | `#FDE68A` |
-| 10 | `#6EE7B7` | 20 | `#A5B4FC` |
+- Panel1: selector de saturación/brillo (200px de alto)
+- HueSlider: selector de tono (30px de alto)
+- OpacitySlider: selector de opacidad (30px de alto)
+- Preview: muestra el color seleccionado en formato hex
+- Botones OK/Cancel para confirmar o cancelar
 
 ---
 
@@ -209,6 +209,7 @@ Nuevas claves necesarias:
 | `create_cat_hint_color` | Select a color | Selecciona un color | Selecciona un color |
 | `create_cat_hint_icon_color` | Select an icon and a color | Selecciona un icono y un color | Selecciona una icona i un color |
 | `create_cat_color_picker_title` | Select color | Seleccionar color | Seleccionar color |
+| `create_cat_color_picker_ok` | Ok | Ok | D'acord |
 | `create_cat_color_picker_cancel` | Cancel | Cancelar | Cancel·lar |
 
 ---

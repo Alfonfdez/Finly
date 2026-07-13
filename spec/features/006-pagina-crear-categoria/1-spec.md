@@ -66,10 +66,12 @@ Pantalla accesible desde el botón "Crear" en la última posición del grid de `
 
 - Título: "Color" (multilingual).
 - Grid de 1 fila × 8 columnas.
-- Las 7 primeras posiciones son colores predefinidos con forma circular.
-- La 8.ª posición es un "+" con color gris que abre un **modal** con un selector de colores expandido.
+- Las 6 primeras posiciones son colores predefinidos con forma circular.
+- La 7.ª posición muestra el color personalizado elegido del picker (si existe) con checkmark.
+- La 8.ª posición es un "+" con color gris que abre un **modal** con un selector de colores dinámico.
 - Al pulsar un color, se resalta con un anillo/borde más oscuro y un checkmark superpuesto.
 - Solo un color puede estar seleccionado a la vez.
+- El color personalizado persiste una vez elegido (no desaparece al seleccionar otro quick color).
 - Colores predefinidos:
 
 | # | Color | Hex |
@@ -80,30 +82,19 @@ Pantalla accesible desde el botón "Crear" en la última posición del grid de `
 | 4 | Amarillo | `#FBBF24` |
 | 5 | Rosa | `#F472B6` |
 | 6 | Azul | `#60A5FA` |
-| 7 | Púrpura (acento) | `#A78BFA` |
-| 8 | + (abre modal) | gris `#94A3B8` |
+| 7 | Color personalizado | (elegido del picker) |
+| 8 | + (abre picker) | gris `#94A3B8` |
 
-#### Modal de colores
+#### Modal de colores (reanimated-color-picker)
 
 - Se abre al pulsar "+" en la grid de colores.
-- Muestra una paleta ampliada de ~20 colores en un grid de 4 columnas × 5 filas.
-- Colores del modal:
-
-| # | Hex | # | Hex |
-|---|---|---|---|
-| 1 | `#22D3EE` | 11 | `#FB923C` |
-| 2 | `#F87171` | 12 | `#E879F9` |
-| 3 | `#34D399` | 13 | `#C084FC` |
-| 4 | `#FBBF24` | 14 | `#38BDF8` |
-| 5 | `#F472B6` | 15 | `#4ADE80` |
-| 6 | `#60A5FA` | 16 | `#FB7185` |
-| 7 | `#A78BFA` | 17 | `#FCA5A5` |
-| 8 | `#94A3B8` | 18 | `#86EFAC` |
-| 9 | `#FCD34D` | 19 | `#FDE68A` |
-| 10 | `#6EE7B7` | 20 | `#A5B4FC` |
-
-- Al seleccionar un color en el modal, se cierra automáticamente y el color queda seleccionado en la grid principal.
-- Botón "Cancelar" para cerrar sin seleccionar.
+- Usa la librería `reanimated-color-picker` con:
+  - Panel1 (selector de saturación/brillo)
+  - HueSlider (selector de tono)
+  - OpacitySlider (selector de opacidad)
+  - Preview (muestra el color seleccionado en formato hex)
+- Botones OK/Cancel para confirmar o cancelar la selección.
+- Al pulsar OK, el color queda seleccionado en la grid principal y el círculo personalizado se actualiza.
 
 ### 6. Botón "Añadir"
 

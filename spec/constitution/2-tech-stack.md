@@ -7,6 +7,7 @@
 - **SQLite** (expo-sqlite) — persistencia local en nativo.
 - **localStorage** — persistencia local en web (mismas interfaces que SQLite).
 - **react-native-svg** — gráfico de anillos (donut) y barras personalizado.
+- **reanimated-color-picker** — selector de colores dinámico (CreateCategoryScreen).
 - **@react-native-community/datetimepicker** — selector de fecha nativo.
 - **React Context** — estado global de la app (AppContext + ConfigContext).
 

@@ -126,6 +126,7 @@ export const en = {
   create_cat_hint_color: 'Select a color',
   create_cat_hint_icon_color: 'Select an icon and a color',
   create_cat_color_picker_title: 'Select color',
+  create_cat_color_picker_ok: 'Ok',
   create_cat_color_picker_cancel: 'Cancel',
 
   // Categories (mock data - multilingual)
