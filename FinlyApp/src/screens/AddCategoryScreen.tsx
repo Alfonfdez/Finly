@@ -10,6 +10,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t, getCategoryName } from '../i18n';
 import SearchBar from '../components/SearchBar';
 import { RootStackParamList } from '../constants/types';
+import { setPendingCategory } from './AddTransactionScreen';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'AddCategory'>;
 type AddCategoryRouteProp = RouteProp<RootStackParamList, 'AddCategory'>;
@@ -58,7 +59,8 @@ export default function AddCategoryScreen() {
   }, [categoriesByType, searchText]);
 
   const handleSelectCategory = (categoryId: number) => {
-    navigation.navigate('AddTransaction', { categoryId, type });
+    setPendingCategory(categoryId, type);
+    navigation.goBack();
   };
 
   const renderCategory = (cat: typeof categories[0]) => {

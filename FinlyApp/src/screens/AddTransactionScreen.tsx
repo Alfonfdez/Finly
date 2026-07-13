@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
@@ -19,8 +19,26 @@ import CalendarModal from '../components/CalendarModal';
 import { TransactionType, RootStackParamList } from '../constants/types';
 import { isSameDay } from '../utils/formatters';
 
+// Module-level pending category data (passed back from AddCategoryScreen)
+let pendingCategoryId: number | null = null;
+let pendingCategoryType: TransactionType | null = null;
+
+export function setPendingCategory(categoryId: number, type: TransactionType) {
+  pendingCategoryId = categoryId;
+  pendingCategoryType = type;
+}
+
+function consumePendingCategory(): { categoryId: number; type: TransactionType } | null {
+  if (pendingCategoryId !== null && pendingCategoryType !== null) {
+    const result = { categoryId: pendingCategoryId, type: pendingCategoryType };
+    pendingCategoryId = null;
+    pendingCategoryType = null;
+    return result;
+  }
+  return null;
+}
+
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'AddTransaction'>;
-type AddTransactionRouteProp = RouteProp<RootStackParamList, 'AddTransaction'>;
 
 interface Tag {
   id: number;
@@ -37,7 +55,6 @@ export default function AddTransactionScreen() {
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<AddTransactionRouteProp>();
 
   const [type, setType] = useState<TransactionType>(activeType);
   const [amount, setAmount] = useState('');
@@ -55,22 +72,19 @@ export default function AddTransactionScreen() {
 
   const prevType = useRef(type);
 
-  useEffect(() => {
-    if (route.params?.type) {
-      setType(route.params.type);
-    }
-    if (route.params?.categoryId) {
-      setCategoryId(route.params.categoryId);
-      const targetType = route.params?.type ?? type;
-      const allByType = categories.filter(c => c.type === targetType);
-      const isVisible = allByType.slice(0, MAX_VISIBLE_CATEGORIES).some(c => c.id === route.params!.categoryId);
-      if (!isVisible) {
-        setReorderedCategory(route.params.categoryId);
-      } else {
-        setReorderedCategory(null);
+  // Handle category selected from AddCategoryScreen
+  useFocusEffect(useCallback(() => {
+    const pending = consumePendingCategory();
+    if (pending) {
+      if (pending.type !== type) {
+        setType(pending.type);
       }
+      setCategoryId(pending.categoryId);
+      const allByType = categories.filter(c => c.type === pending.type);
+      const isVisible = allByType.slice(0, MAX_VISIBLE_CATEGORIES).some(c => c.id === pending.categoryId);
+      setReorderedCategory(isVisible ? null : pending.categoryId);
     }
-  }, [route.params?.categoryId, route.params?.type]);
+  }, [categories, type]));
 
   useEffect(() => {
     if (prevType.current !== type) {
