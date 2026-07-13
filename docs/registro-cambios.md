@@ -417,3 +417,19 @@
   - SettingsScreen: usa config.firstDayOfWeek y updateConfig({ firstDayOfWeek })
   - AddTransactionScreen: corrige props (selectedDate, period, date, onSelectDate, photoUri, selectedTags, onCreate) y Tag interface (name/nombre)
   - CategoryGrid: Category interface usa nombre/icono (SQL column names) para alinearse con database/types
+
+[2026-07-13] ~ | spec/constitution/1-mission.md
+- Corregido "archivo o base de datos local" → "base de datos local (SQLite)".
+- Movido "plan de ahorros" a sección de alcance futuro (no implementado).
+- Añadidos principios: soporte multilingüe, tema oscuro/claro, accesibilidad con escalado de texto.
+
+[2026-07-13] ~ | spec/constitution/2-tech-stack.md
+- Reemplazado AsyncStorage por SQLite (expo-sqlite) + localStorage para web.
+- Actualizada estructura de archivos completa: screens, components, database, i18n, hooks, constants, context.
+- Actualizada sección de diseño visual: themes.ts con paletas dark+light y tokens en inglés.
+- Añadidas convenciones: i18n, persistencia con switching por plataforma.
+
+[2026-07-13] ~ | spec/constitution/3-roadmap.md
+- Marcado feature 001 como "completado".
+- Añadidos features 002-006 con descripciones y estados actualizados.
+- Corregida referencia AsyncStorage → SQLite en feature 001.
