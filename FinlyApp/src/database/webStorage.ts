@@ -340,6 +340,15 @@ export const webTransactionRepo = {
       })
       .sort((a, b) => b.total - a.total);
   },
+  async searchComments(search: string): Promise<string[]> {
+    const items = getStore<Transaction>('transactions');
+    const lower = search.toLowerCase();
+    return [...new Set(
+      items
+        .filter(t => t.description && t.description.toLowerCase().includes(lower))
+        .map(t => t.description!)
+    )].slice(0, 5);
+  },
 };
 
 const CONFIG_DEFAULTS: Config = {

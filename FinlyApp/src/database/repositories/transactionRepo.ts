@@ -105,6 +105,17 @@ export const transactionRepo = {
     return result?.total ?? 0;
   },
 
+  async searchComments(search: string): Promise<string[]> {
+    const db = getDatabase();
+    const results = await db.getAllAsync<{ description: string }>(
+      `SELECT DISTINCT description FROM transactions
+       WHERE description IS NOT NULL AND description LIKE ?
+       ORDER BY description LIMIT 5`,
+      `%${search}%`
+    );
+    return results.map(r => r.description);
+  },
+
   async breakdownByCategories(
     accountId: number,
     type: TransactionType,

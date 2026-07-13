@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -158,6 +158,31 @@ export default function AddTransactionScreen() {
 
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const [comment, setComment] = useState('');
+  const [commentSuggestions, setCommentSuggestions] = useState<string[]>([]);
+  const inputRef = useRef<TextInput>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const skipNextSearch = useRef(false);
+
+  // Debounced search of existing comments for autocomplete
+  useEffect(() => {
+    if (skipNextSearch.current) {
+      skipNextSearch.current = false;
+      return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (comment.length < 1) {
+      setCommentSuggestions([]);
+      return;
+    }
+    debounceRef.current = setTimeout(async () => {
+      const results = await transactionRepository.searchComments(comment);
+      setCommentSuggestions(results);
+    }, 300);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [comment]);
+
   const [fotoUri, setFotoUri] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -218,6 +243,12 @@ export default function AddTransactionScreen() {
 
   const handleCreateTag = (name: string) => {
     setAvailableTags(prev => [...prev, { id: prev.length + 1, name }]);
+  };
+
+  const handleSelectSuggestion = (text: string) => {
+    skipNextSearch.current = true;
+    setComment(text);
+    setCommentSuggestions([]);
   };
 
   const handleSelectAccount = (account: typeof accountsWithBalance[0]) => {
@@ -350,9 +381,26 @@ export default function AddTransactionScreen() {
         />
 
         <CommentInput
+          ref={inputRef}
           comment={comment}
           onChange={setComment}
         />
+
+        {commentSuggestions.length > 0 && (
+          <View style={[styles.suggestionsPanel, { backgroundColor: c.surface, borderColor: c.border }]}>
+            {commentSuggestions.map((item, i) => (
+              <Pressable
+                key={i}
+                style={[styles.suggestionItem, { borderBottomColor: c.border }]}
+                onPress={() => handleSelectSuggestion(item)}
+              >
+                <Text style={[styles.suggestionText, { color: c.text, fontSize: fs(13) }]} numberOfLines={1}>
+                  {item}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
 
         <PhotoSection
           photoUri={fotoUri}
@@ -457,5 +505,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 8,
+  },
+  suggestionsPanel: {
+    borderWidth: 1,
+    borderRadius: 8,
+    maxHeight: 180,
+    marginBottom: 16,
+  },
+  suggestionItem: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+  },
+  suggestionText: {
+    fontWeight: '500',
   },
 });

@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -8,7 +9,7 @@ interface Props {
   onChange: (text: string) => void;
 }
 
-export default function CommentInput({ comment, onChange }: Props) {
+const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange }, ref) => {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -19,6 +20,7 @@ export default function CommentInput({ comment, onChange }: Props) {
         {labels.add_comment}
       </Text>
       <TextInput
+        ref={ref}
         style={[styles.input, { backgroundColor: c.surface, color: c.text, fontSize: fs(14) }]}
         placeholder={labels.add_comment}
         placeholderTextColor={c.textSecondary}
@@ -33,7 +35,9 @@ export default function CommentInput({ comment, onChange }: Props) {
       </Text>
     </View>
   );
-}
+});
+
+export default CommentInput;
 
 const styles = StyleSheet.create({
   container: {
