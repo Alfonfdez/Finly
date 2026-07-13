@@ -119,7 +119,8 @@ export default function AddTransactionScreen() {
   const navigation = useNavigation<NavigationProp>();
 
   const [type, setType] = useState<TransactionType>(activeType);
-  const [amountRaw, setAmountRaw] = useState('0');
+  const [amountRaw, setAmountRaw] = useState('');
+  const [amountFocused, setAmountFocused] = useState(false);
   const [accountId, setAccountId] = useState(activeAccount?.id ?? 1);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [reorderedCategory, setReorderedCategory] = useState<number | null>(null);
@@ -207,22 +208,22 @@ export default function AddTransactionScreen() {
     })));
   }, [labels]);
 
-  // Display-formatted amount
-  const displayAmount = useMemo(
-    () => formatAmountDisplay(amountRaw, config.decimalSeparator),
-    [amountRaw, config.decimalSeparator],
-  );
+  // Display-formatted amount (empty when focused and empty, so placeholder shows)
+  const displayAmount = useMemo(() => {
+    if (!amountRaw) return '';
+    return formatAmountDisplay(amountRaw, config.decimalSeparator);
+  }, [amountRaw, config.decimalSeparator]);
 
-  // Parsed numeric value (null if invalid)
+  // Parsed numeric value (null if invalid or empty)
   const numericAmount = useMemo(() => {
     if (!amountRaw) return null;
     const num = parseFloat(amountRaw);
     return isNaN(num) ? null : num;
   }, [amountRaw]);
 
-  // Validation (only true for truly invalid input, not for "0" as starting value)
+  // Validation (only truly invalid input)
   const isAmountInvalid = useMemo(() => {
-    if (!amountRaw || amountRaw === '0') return false;
+    if (!amountRaw) return false;
     return numericAmount === null;
   }, [amountRaw, numericAmount]);
 
@@ -330,13 +331,15 @@ export default function AddTransactionScreen() {
           <TextInput
             style={[
               styles.amountInput,
-              { color: c.text, fontSize: fs(24) },
+              { color: amountRaw ? c.text : c.textSecondary, fontSize: fs(24) },
               isAmountInvalid && { color: c.red },
             ]}
-            placeholder={labels.add_amount_placeholder}
+            placeholder="0"
             placeholderTextColor={c.textSecondary}
             value={displayAmount}
             onChangeText={handleAmountChange}
+            onFocus={() => setAmountFocused(true)}
+            onBlur={() => setAmountFocused(false)}
             keyboardType="decimal-pad"
           />
           <Text style={[styles.currencySymbol, { color: c.textSecondary, fontSize: fs(18) }]}>

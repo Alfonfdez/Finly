@@ -22,6 +22,9 @@ Pantalla accesible desde el botón "+" del Home que permita al usuario registrar
 ### 3. Campo de cantidad
 
 - Input numérico con teclado de números.
+- Muestra "0" como placeholder en gris cuando está vacío.
+- Al enfocar el input, se limpia para permitir escribir directamente.
+- El valor formateado con separadores de miles solo se muestra cuando hay un valor introducido.
 - Validación: máximo 2 decimales.
 - Si el usuario introduce más de 2 decimales:
   - El borde del input se muestra en rojo.

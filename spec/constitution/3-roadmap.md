@@ -95,7 +95,7 @@ Estado: pendiente.
 
 Pantalla para crear categorías personalizadas:
 - Selección de icono de una rejilla de iconos disponibles.
-- Selección de color de una rejilla de colores.
+- Selección de color con 6 colores predefinidos + selector dinámico (reanimated-color-picker).
 - Campo de nombre con validación (no vacío, no duplicado).
 - Tipo de categoría (gasto/ingreso) heredado de la pantalla anterior.
 - Botón "Crear" que guarda en la base de datos y navega de vuelta.

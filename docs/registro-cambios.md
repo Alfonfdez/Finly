@@ -584,3 +584,10 @@
 [2026-07-13] ~ | src/screens/AddTransactionScreen.tsx, src/components/CommentInput.tsx
 - Fix: Eliminado listener keyboardDidShow que causaba scroll automático al abrir la pantalla en móvil.
 - Añadido onFocus a CommentInput para hacer scrollToEnd solo cuando el usuario pulsa en el input de comentario.
+
+[2026-07-13] ~ | src/screens/AddTransactionScreen.tsx
+- Mejorada UX del input de cantidad: ahora muestra "0" como placeholder, se limpia al enfocar y muestra el importe formateado solo cuando hay un valor.
+
+[2026-07-13] ~ | spec/features/004-pagina-transaccion/1-spec.md, spec/constitution/3-roadmap.md
+- Actualizada sección "Campo de cantidad" con UX de placeholder "0" y limpieza al enfocar.
+- Actualizado roadmap: selector de color dinámico en vez de rejilla estática.
