@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useMemo, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useMemo, useEffect, useCallback, ReactNode } from 'react';
 import { Account, Category, Transaction } from '../database/types';
 import { Period, TransactionType, CategoryWithTotal } from '../constants/types';
 import { accountRepository as accountRepo } from '../database';
@@ -32,6 +32,7 @@ interface AppContextType extends AppState {
   totalExpenses: number;
   totalIncomeAll: number;
   totalExpensesAll: number;
+  refresh: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -216,6 +217,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }).filter(cat => cat.total > 0);
   }, [categories, activeType, filteredTransactions, config.language]);
 
+  const refresh = useCallback(async () => {
+    if (!activeAccount) return;
+    const dates = activePeriod === 'custom'
+      ? customDate
+      : calculateStartEnd(activePeriod, selectedDate);
+    const data = await transactionRepo.list({
+      account_id: activeAccount.id,
+      start_date: formatDateForDB(dates.start),
+      end_date: formatDateForDB(dates.end),
+    });
+    setTransactions(data);
+  }, [activeAccount, activePeriod, selectedDate, customDate]);
+
   const value: AppContextType = useMemo(() => ({
     activeAccount,
     activeType,
@@ -238,11 +252,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     totalExpenses,
     totalIncomeAll,
     totalExpensesAll,
+    refresh,
   }), [
     activeAccount, activeType, activePeriod, selectedDate, customDate,
     accounts, categories, transactions, loading,
     filteredTransactions, activeCategories, accountsWithBalance,
     totalIncome, totalExpenses, totalIncomeAll, totalExpensesAll,
+    refresh,
   ]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

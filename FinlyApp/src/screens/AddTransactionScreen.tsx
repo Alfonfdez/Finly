@@ -113,7 +113,7 @@ function formatAmountDisplay(raw: string, decimalSeparator: ',' | '.'): string {
 
 export default function AddTransactionScreen() {
   const { activeColors: c, config } = useConfig();
-  const { activeType, activePeriod, customDate, selectedDate, accounts, categories, accountsWithBalance, activeAccount } = useApp();
+  const { activeType, activePeriod, customDate, selectedDate, accounts, categories, accountsWithBalance, activeAccount, refresh } = useApp();
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp>();
@@ -260,6 +260,7 @@ export default function AddTransactionScreen() {
         date: dateStr,
       });
 
+      await refresh();
       navigation.goBack();
     } catch (err) {
       Alert.alert(labels.add_error_title, labels.add_error_message);
