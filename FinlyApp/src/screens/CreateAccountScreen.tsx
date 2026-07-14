@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
+import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { accountRepository } from '../database';
@@ -25,6 +26,7 @@ const GRID_GAP = 12;
 
 export default function CreateAccountScreen() {
   const { activeColors: c } = useConfig();
+  const { refreshAccounts } = useApp();
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp>();
@@ -99,6 +101,7 @@ export default function CreateAccountScreen() {
         initial_balance: 0,
         description: description.trim(),
       });
+      await refreshAccounts();
       navigation.goBack();
     } catch (err) {
       console.error('Failed to create account:', err);

@@ -33,6 +33,7 @@ interface AppContextType extends AppState {
   totalIncomeAll: number;
   totalExpensesAll: number;
   refresh: () => Promise<void>;
+  refreshAccounts: () => Promise<void>;
   refreshCategories: () => Promise<void>;
 }
 
@@ -236,6 +237,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCategories(categoriesData);
   }, []);
 
+  const refreshAccounts = useCallback(async () => {
+    const accountsData = await accountRepo.list(USER_ID);
+    setAccounts(accountsData);
+  }, []);
+
   const value: AppContextType = useMemo(() => ({
     activeAccount,
     activeType,
@@ -259,13 +265,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     totalIncomeAll,
     totalExpensesAll,
     refresh,
+    refreshAccounts,
     refreshCategories,
   }), [
     activeAccount, activeType, activePeriod, selectedDate, customDate,
     accounts, categories, transactions, loading,
     filteredTransactions, activeCategories, accountsWithBalance,
     totalIncome, totalExpenses, totalIncomeAll, totalExpensesAll,
-    refresh, refreshCategories,
+    refresh, refreshAccounts, refreshCategories,
   ]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

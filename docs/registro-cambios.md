@@ -768,3 +768,13 @@
 - Registrado `CreateAccountScreen` en `AppNavigator.tsx` (HomeStack).
 - Botón Crear deshabilitado si falta nombre, icono o color (o nombre duplicado). Texto de ayuda dinámico por prioridad.
 - Actualizado spec013: iconos corregidos para coincidir con `constants/accountIcons.ts` (6 reemplazos: bank→home, savings→shield, account-balance→layers, credit-card→scan, money→swap-horizontal, cash-dup→storefront).
+
+[2026-07-14] ~ | AppContext.tsx, CreateAccountScreen.tsx, ModifyAccountScreen.tsx, 011 spec
+- Añadido método `refreshAccounts()` a `AppContext` (re-fetch de accounts desde repository). Se expone en la interfaz `AppContextType` y en el value del provider.
+- CreateAccountScreen y ModifyAccountScreen llaman `await refreshAccounts()` después de crear/modificar cuenta para que la lista en HomeScreen (AccountModal) se actualice inmediatamente.
+- Actualizada sección "Persistencia" en `spec/features/011-pagina-cuentas/1-spec.md` con nota sobre refresco obligatorio tras mutaciones.
+
+[2026-07-14] ~ | formatters.ts, 011 spec
+- Corregido `formatCurrency()` en `src/utils/formatters.ts`: añadido `Math.round(abs * 100) / 100` antes de extraer parte entera y decimal, para evitar que errores de punto flotante produzcan 3 decimales (ej. "999,100" en lugar de "999,10").
+- Añadido requisito no funcional en `011 spec`: "Formato monetario: todos los importes se muestran con máximo 2 decimales".
+- Añadido criterio de aceptación en `011 spec`: total balance con máximo 2 decimales.

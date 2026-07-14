@@ -39,6 +39,7 @@
 
 - Las cuentas se cargan desde `accountRepository.list()` con el usuario activo.
 - Los saldos se obtienen con `accountRepository.getCurrentBalance()`.
+- **Refresco después de mutaciones**: tras crear o modificar una cuenta (013 y 012), se debe invocar `refreshAccounts()` del `AppContext` para que la lista de cuentas en el HomeScreen (AccountModal) se actualice inmediatamente.
 
 ---
 
@@ -49,6 +50,7 @@
 - **Texto**: usar `useFontSize()` para escalado.
 - **Navegación**: se añade al `HomeStack` en `AppNavigator.tsx` y el `DrawerItem` "Cuentas" se conecta para navegar a ella.
 - **Persistencia**: datos desde `accountRepository` (SQLite nativo / localStorage web).
+- **Formato monetario**: todos los importes se muestran con máximo 2 decimales usando `formatCurrency()`.
 
 ---
 
@@ -56,7 +58,7 @@
 
 - [ ] El Drawer muestra "Cuentas" y al pulsarlo navega a la pantalla de cuentas.
 - [ ] El header muestra botón de menú hamburguesa y título "Cuentas" en el idioma activo.
-- [ ] Se muestra "Total:" con el saldo total de todas las cuentas, en verde si >= 0, rojo si < 0.
+- [ ] Se muestra "Total:" con el saldo total de todas las cuentas, en verde si >= 0, rojo si < 0, con máximo 2 decimales.
 - [ ] Cada cuenta muestra icono con color de fondo + nombre + saldo formateado.
 - [ ] Si la cuenta tiene nota (descripción), se muestra debajo del nombre en color suave y tamaño reducido.
 - [ ] Al pulsar una cuenta, se navega a "Modificar cuenta" (012) con el `accountId`.

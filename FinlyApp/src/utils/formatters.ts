@@ -3,7 +3,7 @@ import { t } from '../i18n';
 
 export function formatCurrency(amount: number, currency = '€', separator: ',' | '.' = ','): string {
   const sign = amount < 0 ? '-' : '';
-  const abs = Math.abs(amount);
+  const abs = Math.round(Math.abs(amount) * 100) / 100;
   const integer = Math.floor(abs);
   const dec = Math.round((abs - integer) * 100);
 
