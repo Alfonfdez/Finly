@@ -12,6 +12,7 @@ import HomeScreen from '../screens/HomeScreen';
 import AddTransactionScreen from '../screens/AddTransactionScreen';
 import AddCategoryScreen from '../screens/AddCategoryScreen';
 import CreateCategoryScreen from '../screens/CreateCategoryScreen';
+import CategoriesScreen from '../screens/CategoriesScreen';
 import TransactionsScreen from '../screens/TransactionsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import { useConfig } from '../context/ConfigContext';
@@ -54,19 +55,19 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
         labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
         inactiveTintColor={c.primary}
       />
+      <DrawerItem
+        label={labels.nav_categories}
+        onPress={() => props.navigation.navigate('Main', { screen: 'Categories' })}
+        icon={({ color, size }) => <Ionicons name="pricetag-outline" size={size} color={color} />}
+        labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
+        inactiveTintColor={c.primary}
+      />
       <View style={[styles.separator, { backgroundColor: c.border }]} />
       <Text style={[styles.drawerSection, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.nav_coming_soon}</Text>
       <DrawerItem
         label={labels.nav_accounts}
         onPress={() => {}}
         icon={({ color, size }) => <Ionicons name="wallet-outline" size={size} color={color} />}
-        labelStyle={[styles.drawerItemLabel, { color: c.textSecondary, fontSize: fs(14) }]}
-        inactiveTintColor={c.textSecondary}
-      />
-      <DrawerItem
-        label={labels.nav_categories}
-        onPress={() => {}}
-        icon={({ color, size }) => <Ionicons name="pricetag-outline" size={size} color={color} />}
         labelStyle={[styles.drawerItemLabel, { color: c.textSecondary, fontSize: fs(14) }]}
         inactiveTintColor={c.textSecondary}
       />
@@ -108,6 +109,14 @@ function HomeStack() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Ionicons name="pricetag-outline" size={20} color={c.text} />
             <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.create_cat_title}</Text>
+          </View>
+        ),
+      }} />
+      <Stack.Screen name="Categories" component={CategoriesScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="pricetag-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_categories}</Text>
           </View>
         ),
       }} />

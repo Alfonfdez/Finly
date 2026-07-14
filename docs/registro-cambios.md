@@ -631,3 +631,11 @@
 
 [2026-07-14] ~ | spec/constitution/3-roadmap.md
 - Actualizado roadmap: 007-calculadora marcado como completado. Añadidos 008-pagina-categorias y 009-pagina-modificar-categoria con estado pendiente.
+
+[2026-07-14] ~ | src/constants/types.ts, src/navigation/AppNavigator.tsx, src/screens/CategoriesScreen.tsx (+)
+- Implementada feature 008-pagina-categorias:
+  - Añadido `Categories` y `ModifyCategory` al RootStackParamList en types.ts.
+  - Creado CategoriesScreen.tsx con header (hamburguesa + título), TypeTabs, grid 4×N, botón "Crear".
+  - Añadido CategoriesScreen al HomeStack en AppNavigator.tsx.
+  - Movido DrawerItem "Categorías" fuera de "Coming soon" y conectado a navegación real.
+  - DrawerItem navega a CategoriesScreen; grid navega a CreateCategoryScreen (existente) o a ModifyCategoryScreen (próximamente).
