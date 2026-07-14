@@ -671,6 +671,8 @@
 - Añadido logo (icon.png) en el header del Drawer junto al texto "Finly": Image 36×36 con borderRadius 10, flexDirection row, gap 12.
 [2026-07-14] - | FinlyApp/dist/
 - Eliminada caché de web (dist/) para forzar regeneración de favicon con el nuevo logo.
+[2026-07-14] ~ | src/context/ConfigContext.tsx
+- Añadido scrollbar web dinámico: sincroniza colores del scrollbar (thumb + track) con el tema activo (oscuro/claro) mediante CSS injectado en el head.
 [2026-07-14] ~ | App.tsx
 - Añadido componente SplashScreen con logo (80×80), texto "Finly" (color primario) y ActivityIndicator.
 - Reemplazado loading state simple por splash completo. Funciona en web y nativo.

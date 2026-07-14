@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Appearance } from 'react-native';
+import { Appearance, Platform } from 'react-native';
 import { ColorPalette, darkColors, lightColors } from '../constants/themes';
 import { configRepository } from '../database';
 import { setLanguage } from '../i18n';
@@ -78,6 +78,24 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     });
     return () => sub?.remove();
   }, [config.theme]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const styleId = 'finly-scrollbar-style';
+    let style = document.getElementById(styleId) as HTMLStyleElement | null;
+    if (!style) {
+      style = document.createElement('style');
+      style.id = styleId;
+      document.head.appendChild(style);
+    }
+    style.textContent = `
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: ${activeColors.background}; }
+      ::-webkit-scrollbar-thumb { background: ${activeColors.primary}40; border-radius: 3px; }
+      ::-webkit-scrollbar-thumb:hover { background: ${activeColors.primary}80; }
+      * { scrollbar-width: thin; scrollbar-color: ${activeColors.primary}40 ${activeColors.background}; }
+    `;
+  }, [activeColors]);
 
   const updateConfig = async (partial: Partial<Config>) => {
     setConfig(prev => {
