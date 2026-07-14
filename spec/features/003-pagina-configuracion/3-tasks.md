@@ -69,6 +69,16 @@ Orden de ejecución. Marca cada tarea al completarlo.
 
 ---
 
+### Fase 7 — Aspecto de categorías
+
+[ ] T22 — Añadir campo `categoryIconShape: 'square' | 'circle'` con valor por defecto `'square'` al tipo `Config` en `ConfigContext.tsx`. Añadir clave i18n `settings_category_icon_shape`, `shape_square`, `shape_circle` en los 3 idiomas.
+
+[ ] T23 — Añadir sección "Aspecto de categorías" en `SettingsScreen.tsx` con selector de forma (Cuadrado/Círculo). Usar `updateConfig({ categoryIconShape })` al cambiar.
+
+[ ] T24 — Actualizar componentes que renderizan iconos de categoría (`CategoryGrid`, `CategoryList`, grid de `CategoriesScreen`, grid de `AddCategoryScreen`, grid inline de `CreateCategoryScreen`, preview de `ModifyCategoryScreen`, icono de categoría en detalle de transacciones) para leer `config.categoryIconShape` y aplicar `borderRadius` cuadrado (12) o circular (mitad del tamaño).
+
+---
+
 ### Verificación
 
 [ ] T22 — Verificación manual: `npx expo start --web` y `npx expo start` (Expo Go). Probar todos los criterios de aceptación de `1-spec.md`. Verificar persistencia entre reinicios.

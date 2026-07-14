@@ -69,6 +69,17 @@ Al cambiar el tema, toda la app se re-renderiza en tiempo real (no requiere rein
 - Valores del factor: Pequeño = 0.85, Mediano = 1.0, Grande = 1.15.
 - Se implementa como un `multiplier` en el contexto de configuración que los componentes consultan al renderizar.
 
+#### 2.6 — Aspecto de categorías
+
+| Opción | Tipo | Valores por defecto | Valores posibles |
+|--------|------|---------------------|------------------|
+| Forma del icono de categoría | Selector (radio) | Cuadrado | Cuadrado, Círculo |
+
+- **Cuadrado**: los iconos de categoría se muestran con fondo cuadrado y esquinas redondeadas (borderRadius 12), que es el diseño actual de la app.
+- **Círculo**: los iconos de categoría se muestran con fondo circular (borderRadius igual a la mitad del tamaño), con el icono centrado dentro del círculo.
+- Afecta a todos los componentes que muestran iconos de categoría: `CategoryGrid`, `CategoryList`, grid de `CategoriesScreen`, grid de `AddCategoryScreen`, grid de `CreateCategoryScreen`, icono de categoría en el detalle de transacciones, y la vista previa de `ModifyCategoryScreen`.
+- La selección de forma no requiere reinicio de la app; se aplica en tiempo real.
+
 ---
 
 ## Requisitos no funcionales
@@ -83,7 +94,7 @@ Al cambiar el tema, toda la app se re-renderiza en tiempo real (no requiere rein
 ## Criterios de aceptación
 
 - [ ] El Drawer muestra "Ajustes" y al pulsarlo navega a la pantalla de configuración.
-- [ ] Se muestran 5 secciones: Apariencia, Calendario, Formato de dinero, Idioma, Texto.
+- [ ] Se muestran 6 secciones: Apariencia, Calendario, Formato de dinero, Idioma, Texto, Aspecto de categorías.
 - [ ] Cada opción muestra el valor actual y permite cambiarlo.
 - [ ] El tema Oscuro/Claro se aplica inmediatamente a toda la app.
 - [ ] El tema Sistema respeta la preferencia del SO del dispositivo.

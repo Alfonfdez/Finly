@@ -54,6 +54,7 @@ interface Configuracion {
   separadorDecimal: ',' | '.';
   idioma: 'es' | 'en';
   tamanoTexto: 'pequeño' | 'mediano' | 'grande';
+  formaIconoCategoria: 'cuadrado' | 'circulo';
 }
 ```
 
@@ -117,6 +118,16 @@ export const es = {
 - **ConfigContext separado de AppContext** — la configuración tiene ciclo de vida propio (persiste, se carga al inicio) y no debe mezclarse con el estado de negocio.
 - **Tema como paleta exportada** — en vez de CSS variables (que no existen en RN nativo), se usa un objeto de colores que se inyecta por contexto.
 - **Migración incremental de `colores`** — los componentes existentes seguirán importando `colores` de `colors.ts` durante esta feature. La migración completa a `useTema()` se hará en una feature futura para evitar un refactor masivo. Durante esta feature, el tema solo afectará a los componentes nuevos (SettingsScreen) y al DayPicker.
+
+### i18n — Nuevas claves
+
+| Clave | EN | ES | CA |
+|---|---|---|---|
+| `settings_category_icon_shape` | CATEGORY ICON SHAPE | ASPECTO DE CATEGORÍAS | ASPECTE DE CATEGORIES |
+| `shape_square` | Square | Cuadrado | Quadrat |
+| `shape_circle` | Circle | Círculo | Cercle |
+
+---
 
 ## Verificación
 
