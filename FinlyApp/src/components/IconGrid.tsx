@@ -21,7 +21,8 @@ interface Props {
 }
 
 export default function IconGrid({ selectedIcon, onSelect }: Props) {
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config } = useConfig();
+  const round = config.categoryIconShape === 'circle';
 
   return (
     <View style={styles.grid}>
@@ -34,6 +35,7 @@ export default function IconGrid({ selectedIcon, onSelect }: Props) {
               styles.item,
               {
                 backgroundColor: isSelected ? c.primary + '33' : '#334155',
+                borderRadius: round ? 999 : 12,
               },
               isSelected && { borderWidth: 2, borderColor: c.primary },
             ]}
@@ -60,7 +62,6 @@ const styles = StyleSheet.create({
   item: {
     width: '22%',
     aspectRatio: 1,
-    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,

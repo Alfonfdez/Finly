@@ -680,3 +680,14 @@
 - Mejorada animación del splash: logo fade-in + scale-up con spring, texto fade-in con delay, pulse suave continuo en el logo, y fade-out + scale-up al salir.
 - Aumentado MIN_SPLASH_MS a 3000ms. Logo fade-in 800ms con más bounce. Texto fade-in 600ms con 500ms delay.
 - Reemplazado pulse circular por barra de progreso lineal que se llena de izquierda a derecha (120px, 2px height, cyan sobre track gris).
+
+[2026-07-14] ~ | src/context/ConfigContext.tsx, src/database/repositories/configRepo.ts, src/database/webStorage.ts
+- Añadido campo categoryIconShape ('square' | 'circle', default 'square') al tipo Config y a ambos repositorios (SQLite + web).
+[2026-07-14] ~ | src/i18n/en.ts, es.ts, ca.ts
+- Añadidas claves i18n: settings_category_icon_shape, shape_square, shape_circle.
+[2026-07-14] ~ | src/screens/SettingsScreen.tsx
+- Añadida sección "Aspecto de categorías" con selector Cuadrado/Círculo.
+[2026-07-14] ~ | src/components/CategoryGrid.tsx, src/components/CategoryList.tsx, src/components/IconGrid.tsx
+- Actualizados para leer config.categoryIconShape y aplicar borderRadius dinámico (12 cuadrado / 999 círculo).
+[2026-07-14] ~ | src/screens/CategoriesScreen.tsx, src/screens/AddCategoryScreen.tsx, src/screens/CreateCategoryScreen.tsx, src/screens/ModifyCategoryScreen.tsx
+- Actualizados grids de categorías y previsualizaciones para usar la forma configurada (cuadrado/círculo).

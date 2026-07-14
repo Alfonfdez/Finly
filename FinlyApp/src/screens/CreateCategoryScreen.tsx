@@ -26,7 +26,7 @@ const GRID_COLS = 4;
 const GRID_GAP = 12;
 
 export default function CreateCategoryScreen() {
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config } = useConfig();
   const { refreshCategories } = useApp();
   const fs = useFontSize();
   const labels = t();
@@ -84,6 +84,7 @@ export default function CreateCategoryScreen() {
   }, []);
 
   const canCreate = name.trim().length > 0 && !nameError && !checkingName && selectedIcon !== null && selectedColor !== null;
+  const round = config.categoryIconShape === 'circle';
 
   const getHintText = (): string | null => {
     if (name.trim().length === 0) return labels.create_cat_error_name_empty;
@@ -193,7 +194,7 @@ export default function CreateCategoryScreen() {
                   key={icon}
                   style={[
                     styles.gridItem,
-                    { width: cellSize, height: cellSize },
+                    { width: cellSize, height: cellSize, borderRadius: round ? 999 : 12 },
                     { backgroundColor: bgColor },
                     isSelected && { borderWidth: 2, borderColor },
                   ]}
@@ -312,7 +313,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   gridItem: {
-    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 8,

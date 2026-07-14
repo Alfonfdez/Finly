@@ -17,9 +17,10 @@ interface Props {
 }
 
 export default function CategoryList({ categories, total, currency = '€', separator = ',', onPress }: Props) {
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
+  const round = config.categoryIconShape === 'circle';
 
   return (
     <FlatList
@@ -33,7 +34,7 @@ export default function CategoryList({ categories, total, currency = '€', sepa
           accessibilityLabel={`${labels.a11y_category} ${item.name}, ${item.percentage.toFixed(1)}%`}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <View style={[styles.icon, { backgroundColor: item.color + '30' }]}>
+          <View style={[styles.icon, { backgroundColor: item.color + '30', borderRadius: round ? 20 : 12 }]}>
             <Ionicons name={item.icon as ComponentProps<typeof Ionicons>['name']} size={20} color={item.color} />
           </View>
           <View style={styles.info}>
@@ -63,7 +64,6 @@ const styles = StyleSheet.create({
   icon: {
     width: 40,
     height: 40,
-    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,

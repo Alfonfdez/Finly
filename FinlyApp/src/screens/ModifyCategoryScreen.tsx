@@ -25,7 +25,7 @@ const GRID_COLS = 4;
 const GRID_GAP = 12;
 
 export default function ModifyCategoryScreen() {
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config } = useConfig();
   const { categories, refreshCategories } = useApp();
   const fs = useFontSize();
   const labels = t();
@@ -101,6 +101,7 @@ export default function ModifyCategoryScreen() {
 
   const validationError = name.trim().length === 0 ? labels.create_cat_error_name_empty : nameError;
   const canSave = name.trim().length > 0 && !nameError && !checkingName;
+  const round = config.categoryIconShape === 'circle';
 
   const sameTypeCategories = useMemo(() => {
     if (!category) return [];
@@ -174,7 +175,7 @@ export default function ModifyCategoryScreen() {
           onScrollBeginDrag={() => Keyboard.dismiss()}
         >
           <View style={styles.nameRow}>
-            <View style={[styles.previewIcon, { backgroundColor: (selectedColor || category.color) + '22' }]}>
+            <View style={[styles.previewIcon, { backgroundColor: (selectedColor || category.color) + '22', borderRadius: round ? 24 : 12 }]}>
               <Ionicons
                 name={(selectedIcon || category.icon) as any}
                 size={28}
@@ -232,7 +233,7 @@ export default function ModifyCategoryScreen() {
                   key={icon}
                   style={[
                     styles.gridItem,
-                    { width: cellSize, height: cellSize },
+                    { width: cellSize, height: cellSize, borderRadius: round ? 999 : 12 },
                     { backgroundColor: bgColor },
                     isSelected && { borderWidth: 2, borderColor },
                   ]}
@@ -346,7 +347,7 @@ export default function ModifyCategoryScreen() {
                       <View style={[styles.radio, { borderColor: isSelected ? c.primary : c.border }]}>
                         {isSelected && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
                       </View>
-                      <View style={[styles.selectIcon, { backgroundColor: cat.color + '33' }]}>
+                      <View style={[styles.selectIcon, { backgroundColor: cat.color + '33', borderRadius: round ? 18 : 8 }]}>
                         <Ionicons name={cat.icon as any} size={20} color={cat.color} />
                       </View>
                       <Text style={[styles.selectName, { color: c.text, fontSize: fs(14) }]}>
@@ -409,7 +410,6 @@ const styles = StyleSheet.create({
   previewIcon: {
     width: 48,
     height: 48,
-    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 4,
@@ -444,7 +444,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   gridItem: {
-    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 8,
@@ -541,7 +540,6 @@ const styles = StyleSheet.create({
   selectIcon: {
     width: 36,
     height: 36,
-    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },

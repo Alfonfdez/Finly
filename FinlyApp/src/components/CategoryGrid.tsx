@@ -21,9 +21,10 @@ interface Props {
 }
 
 export default function CategoryGrid({ categories, selectedCategory, onSelect, onAddMore, showAddMore = true, addMoreLabel }: Props) {
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
+  const round = config.categoryIconShape === 'circle';
 
   const renderCategory = (cat: Category, index: number) => {
     const isSelected = cat.id === selectedCategory;
@@ -34,13 +35,13 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
         key={cat.id}
         style={[
           styles.item,
-          { backgroundColor: isSelected ? cat.color + '33' : c.surface },
+          { backgroundColor: isSelected ? cat.color + '33' : c.surface, borderRadius: round ? 999 : 12 },
           isSelected && { borderWidth: 2, borderColor: cat.color },
         ]}
         onPress={() => onSelect(cat.id)}
         accessibilityLabel={`${labels.a11y_category} ${nombre}`}
       >
-        <View style={[styles.iconContainer, { backgroundColor: cat.color + '22' }]}>
+        <View style={[styles.iconContainer, { backgroundColor: cat.color + '22', borderRadius: round ? 999 : 20 }]}>
           <Ionicons name={cat.icon as any} size={24} color={cat.color} />
         </View>
         <Text
@@ -57,11 +58,11 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
 
   const renderAddMore = () => (
     <TouchableOpacity
-      style={[styles.item, { backgroundColor: c.surface }]}
+      style={[styles.item, { backgroundColor: c.surface, borderRadius: round ? 999 : 12 }]}
       onPress={onAddMore}
       accessibilityLabel={label}
     >
-      <View style={[styles.iconContainer, { backgroundColor: c.textSecondary + '22' }]}>
+      <View style={[styles.iconContainer, { backgroundColor: c.textSecondary + '22', borderRadius: round ? 999 : 20 }]}>
         <Ionicons name="add" size={24} color={c.textSecondary} />
       </View>
       <Text

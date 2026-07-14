@@ -374,6 +374,7 @@ const CONFIG_DEFAULTS: Config = {
   decimalSeparator: ',',
   language: 'es',
   textSize: 'medium',
+  categoryIconShape: 'square',
 };
 
 const CONFIG_KEY = '@Finly/config';

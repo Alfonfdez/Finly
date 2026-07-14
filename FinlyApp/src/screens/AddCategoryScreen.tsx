@@ -16,7 +16,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'AddCategory
 type AddCategoryRouteProp = RouteProp<RootStackParamList, 'AddCategory'>;
 
 export default function AddCategoryScreen() {
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config } = useConfig();
   const { categories } = useApp();
   const fs = useFontSize();
   const labels = t();
@@ -63,17 +63,19 @@ export default function AddCategoryScreen() {
     navigation.goBack();
   };
 
+  const round = config.categoryIconShape === 'circle';
+
   const renderCategory = (cat: typeof categories[0]) => {
     const name = getCategoryName(cat.id) || cat.name;
 
     return (
       <TouchableOpacity
         key={cat.id}
-        style={[styles.item, { backgroundColor: c.surface }]}
+        style={[styles.item, { backgroundColor: c.surface, borderRadius: round ? 999 : 12 }]}
         onPress={() => handleSelectCategory(cat.id)}
         accessibilityLabel={`${labels.a11y_category} ${name}`}
       >
-        <View style={[styles.iconContainer, { backgroundColor: cat.color + '22' }]}>
+        <View style={[styles.iconContainer, { backgroundColor: cat.color + '22', borderRadius: round ? 999 : 20 }]}>
           <Ionicons name={cat.icon as any} size={24} color={cat.color} />
         </View>
         <Text
@@ -88,11 +90,12 @@ export default function AddCategoryScreen() {
 
   const renderCreateButton = () => (
     <TouchableOpacity
-      style={[styles.item, { backgroundColor: c.surface }]}
+      key="create"
+      style={[styles.item, { backgroundColor: c.surface, borderRadius: round ? 999 : 12 }]}
       onPress={() => navigation.navigate('CreateCategory', { type })}
       accessibilityLabel={labels.add_cat_create}
     >
-      <View style={[styles.iconContainer, { backgroundColor: c.textSecondary + '22' }]}>
+      <View style={[styles.iconContainer, { backgroundColor: c.textSecondary + '22', borderRadius: round ? 999 : 20 }]}>
         <Ionicons name="add" size={24} color={c.textSecondary} />
       </View>
       <Text
@@ -162,7 +165,6 @@ const styles = StyleSheet.create({
   item: {
     width: '22%',
     aspectRatio: 1,
-    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 8,
@@ -170,7 +172,6 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 40,
     height: 40,
-    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,

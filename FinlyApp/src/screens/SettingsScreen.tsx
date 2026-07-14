@@ -162,6 +162,11 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
     { label: labels.size_large, value: 'large', icon: <Text style={[styles.sizeIcon, { color: c.text, fontSize: 19 }]}>A</Text> },
   ];
 
+  const SHAPES: Option<Config['categoryIconShape']>[] = [
+    { label: labels.shape_square, value: 'square', icon: <Ionicons name="square-outline" size={16} color={c.text} /> },
+    { label: labels.shape_circle, value: 'circle', icon: <Ionicons name="ellipse-outline" size={16} color={c.text} /> },
+  ];
+
   return (
     <ScrollView style={[styles.container, { backgroundColor: c.background }]} contentContainerStyle={styles.content}>
       <Text style={[  styles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_appearance}</Text>
@@ -195,6 +200,11 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
       <View style={[styles.card, { backgroundColor: c.surface }]}>
         <Text style={[styles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_text_size}</Text>
         <SelectorInline options={SIZES} selected={config.textSize} onSelect={(v) => updateConfig({ textSize: v })} colors={c} textSize={config.textSize} />
+      </View>
+
+      <Text style={[  styles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_category_icon_shape}</Text>
+      <View style={[styles.card, { backgroundColor: c.surface }]}>
+        <SelectorInline options={SHAPES} selected={config.categoryIconShape} onSelect={(v) => updateConfig({ categoryIconShape: v })} colors={c} textSize={config.textSize} />
       </View>
 
       <View style={{ height: 40 }} />
