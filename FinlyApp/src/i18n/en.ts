@@ -110,6 +110,19 @@ export const en = {
   add_cat_no_results: 'No results found',
   add_cat_create: 'Create',
 
+  // Modify category
+  modify_cat_title: 'Modify category',
+  modify_cat_type: 'Type',
+  modify_cat_delete: 'Delete',
+  modify_cat_save: 'Save',
+  modify_cat_delete_confirm_title: (name: string) => `Delete category "${name}"`,
+  modify_cat_delete_confirm_message: 'All transactions linked to this category will be moved to a category of your choice',
+  modify_cat_delete_confirm_cancel: 'Cancel',
+  modify_cat_delete_confirm_delete: 'Delete',
+  modify_cat_select_title: 'Select category',
+  modify_cat_select_cancel: 'Cancel',
+  modify_cat_select_confirm: 'Select',
+
   // Create category
   create_cat_title: 'Create category',
   create_cat_name: 'Category name',

@@ -105,6 +105,14 @@ export const transactionRepo = {
     return result?.total ?? 0;
   },
 
+  async reassignCategory(oldCategoryId: number, newCategoryId: number): Promise<void> {
+    const db = getDatabase();
+    await db.runAsync(
+      `UPDATE transactions SET category_id = ? WHERE category_id = ?`,
+      newCategoryId, oldCategoryId
+    );
+  },
+
   async searchComments(search: string): Promise<string[]> {
     const db = getDatabase();
     const results = await db.getAllAsync<{ description: string }>(

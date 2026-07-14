@@ -12,6 +12,7 @@ import HomeScreen from '../screens/HomeScreen';
 import AddTransactionScreen from '../screens/AddTransactionScreen';
 import AddCategoryScreen from '../screens/AddCategoryScreen';
 import CreateCategoryScreen from '../screens/CreateCategoryScreen';
+import ModifyCategoryScreen from '../screens/ModifyCategoryScreen';
 import CategoriesScreen from '../screens/CategoriesScreen';
 import TransactionsScreen from '../screens/TransactionsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
@@ -109,6 +110,14 @@ function HomeStack() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Ionicons name="pricetag-outline" size={20} color={c.text} />
             <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.create_cat_title}</Text>
+          </View>
+        ),
+      }} />
+      <Stack.Screen name="ModifyCategory" component={ModifyCategoryScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="pricetag-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.modify_cat_title}</Text>
           </View>
         ),
       }} />

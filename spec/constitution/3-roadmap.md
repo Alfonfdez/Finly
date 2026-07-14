@@ -115,7 +115,7 @@ Modal con calculadora básica para la pantalla de añadir transacción:
 Especificación: spec/features/007-calculadora/.
 
 ## 008-pagina-categorias
-Estado: pendiente.
+Estado: completado.
 
 Pantalla accesible desde el Drawer que muestra todas las categorías existentes organizadas por tipo (gasto/ingreso) en un grid 4×N:
 - Tabs Gastos/Ingresos para filtrar por tipo.
@@ -126,7 +126,7 @@ Pantalla accesible desde el Drawer que muestra todas las categorías existentes 
 Especificación: spec/features/008-pagina-categorias/.
 
 ## 009-pagina-modificar-categoria
-Estado: pendiente.
+Estado: completado.
 
 Pantalla para modificar o eliminar una categoría existente:
 - Icono actual con color + input editable de nombre (validación de duplicados excluyendo la actual).

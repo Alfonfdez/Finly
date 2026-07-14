@@ -112,6 +112,19 @@ export const es: Language = {
   add_cat_no_results: 'No se ha encontrado nada',
   add_cat_create: 'Crear',
 
+  // Modify category
+  modify_cat_title: 'Modificar categoría',
+  modify_cat_type: 'Tipo',
+  modify_cat_delete: 'Eliminar',
+  modify_cat_save: 'Guardar',
+  modify_cat_delete_confirm_title: (name: string) => `Eliminar la categoría "${name}"`,
+  modify_cat_delete_confirm_message: 'Todas las transacciones vinculadas a esta categoría se moverán a una categoría que usted elija',
+  modify_cat_delete_confirm_cancel: 'Cancelar',
+  modify_cat_delete_confirm_delete: 'Borrar',
+  modify_cat_select_title: 'Seleccione la categoría',
+  modify_cat_select_cancel: 'Cancelar',
+  modify_cat_select_confirm: 'Seleccionar',
+
   // Create category
   create_cat_title: 'Crear categoría',
   create_cat_name: 'Nombre de la categoría',

@@ -642,3 +642,19 @@
 
 [2026-07-14] ~ | src/navigation/AppNavigator.tsx
 - Fix: Home DrawerItem ahora navega a 'Main' con { screen: 'Home' } para resetear el stack al pulsar "Inicio" desde pantallas anidadas (ej. Categories).
+
+[2026-07-14] + | src/screens/ModifyCategoryScreen.tsx
+- Implementada feature 009-pagina-modificar-categoria:
+  - Pantalla completa con icono actual + nombre editable, validación de duplicados excluyendo categoría actual, tipo informativo, grid de iconos, grid de colores y botón "Guardar".
+  - Flujo de eliminación con doble modal: confirmación de borrado + selección de categoría destino (radio + icono + nombre).
+  - Reasignación de transacciones vía transactionRepository.reassignCategory.
+[2026-07-14] ~ | src/i18n/en.ts, es.ts, ca.ts
+- Añadidas 10 claves i18n para ModifyCategoryScreen: modify_cat_title, modify_cat_type, modify_cat_delete, modify_cat_save, modify_cat_delete_confirm_title, modify_cat_delete_confirm_message, modify_cat_delete_confirm_cancel, modify_cat_delete_confirm_delete, modify_cat_select_title, modify_cat_select_cancel, modify_cat_select_confirm.
+[2026-07-14] ~ | src/database/repositories/categoryRepo.ts, src/database/webStorage.ts
+- Modificado existsByName para aceptar parámetro opcional excludeId que excluye la categoría actual de la comprobación de duplicados.
+[2026-07-14] ~ | src/database/repositories/transactionRepo.ts, src/database/webStorage.ts
+- Añadida función reassignCategory(oldCategoryId, newCategoryId) para reasignar transacciones de una categoría a otra.
+[2026-07-14] ~ | src/navigation/AppNavigator.tsx
+- Añadido ModifyCategoryScreen al HomeStack con título multilingual.
+[2026-07-14] ~ | src/screens/ModifyCategoryScreen.tsx
+- Añadida validación visual de nombre vacío: muestra mensaje de error en rojo "Introduzca un nombre para la categoría" debajo del input cuando el nombre está vacío, además de deshabilitar el botón Guardar.

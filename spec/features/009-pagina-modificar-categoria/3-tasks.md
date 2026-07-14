@@ -5,37 +5,37 @@ Orden de ejecución. Marca cada tarea al completarlo.
 
 ### Fase 1 — Infraestructura y navegación
 
-[ ] T1 — Añadir claves i18n en `src/i18n/en.ts`, `src/i18n/es.ts` y `src/i18n/ca.ts` para todos los textos de la pantalla (título, tipo, eliminar, guardar, modales de confirmación y selección).
+[x] T1 — Añadir claves i18n en `src/i18n/en.ts`, `src/i18n/es.ts` y `src/i18n/ca.ts` para todos los textos de la pantalla (título, tipo, eliminar, guardar, modales de confirmación y selección).
 
-[ ] T2 — Actualizar `src/constants/types.ts`: añadir `ModifyCategory` al `RootStackParamList` con parámetro `categoryId: number` y crear `ModifyCategoryScreenProps`.
+[x] T2 — Actualizar `src/constants/types.ts`: añadir `ModifyCategory` al `RootStackParamList` con parámetro `categoryId: number` y crear `ModifyCategoryScreenProps`. *(Ya estaba añadido por 008)*
 
-[ ] T3 — Actualizar `src/navigation/AppNavigator.tsx`: añadir `ModifyCategoryScreen` al `HomeStack` con título multilingual y estilo de header.
+[x] T3 — Actualizar `src/navigation/AppNavigator.tsx`: añadir `ModifyCategoryScreen` al `HomeStack` con título multilingual y estilo de header.
 
 ---
 
 ### Fase 2 — Repositorios
 
-[ ] T4 — Modificar `existsByName` en `categoryRepo.ts` y `webCategoryRepo.ts` para aceptar parámetro opcional `excludeId?: number` que excluya la categoría actual de la comprobación.
+[x] T4 — Modificar `existsByName` en `categoryRepo.ts` y `webCategoryRepo.ts` para aceptar parámetro opcional `excludeId?: number` que excluya la categoría actual de la comprobación.
 
-[ ] T5 — Añadir función `update(id, data)` a `categoryRepo.ts` y `webCategoryRepo.ts` para actualizar nombre, icono y/o color de una categoría existente.
+[x] T5 — Añadir función `update(id, data)` a `categoryRepo.ts` y `webCategoryRepo.ts` para actualizar nombre, icono y/o color de una categoría existente. *(Ya existía)*
 
-[ ] T6 — Añadir función `remove(id)` a `categoryRepo.ts` y `webCategoryRepo.ts` para eliminar una categoría.
+[x] T6 — Añadir función `remove(id)` a `categoryRepo.ts` y `webCategoryRepo.ts` para eliminar una categoría. *(Ya existía como `delete`)*
 
-[ ] T7 — Añadir función `reassignCategory(oldCategoryId, newCategoryId)` a `transactionRepo.ts` y `webTransactionRepo.ts` para reasignar transacciones de una categoría a otra.
+[x] T7 — Añadir función `reassignCategory(oldCategoryId, newCategoryId)` a `transactionRepo.ts` y `webTransactionRepo.ts` para reasignar transacciones de una categoría a otra.
 
 ---
 
 ### Fase 3 — Componentes de modales de eliminación
 
-[ ] T8 — Crear modal de confirmación de borrado (inline en ModifyCategoryScreen o componente separado): título dinámico con nombre de la categoría, mensaje explicativo, botones "Cancelar" y "Borrar" (rojo).
+[x] T8 — Crear modal de confirmación de borrado (inline en ModifyCategoryScreen o componente separado): título dinámico con nombre de la categoría, mensaje explicativo, botones "Cancelar" y "Borrar" (rojo).
 
-[ ] T9 — Crear modal de selección de categoría de destino (inline o componente separado): título "Seleccione la categoría", lista de categorías del mismo tipo (excluyendo la actual) con radio button + icono + nombre, botones "Cancelar" y "Seleccionar".
+[x] T9 — Crear modal de selección de categoría de destino (inline o componente separado): título "Seleccione la categoría", lista de categorías del mismo tipo (excluyendo la actual) con radio button + icono + nombre, botones "Cancelar" y "Seleccionar".
 
 ---
 
 ### Fase 4 — Pantalla principal
 
-[ ] T10 — Crear `ModifyCategoryScreen.tsx` con:
+[x] T10 — Crear `ModifyCategoryScreen.tsx` con:
   - Header con retroceso + título "Modificar categoría" (multilingual).
   - Fila con icono actual de la categoría (color de fondo) + input editable con nombre actual.
   - Validación de duplicados con debounce 300ms, excluyendo la categoría actual.
@@ -46,28 +46,27 @@ Orden de ejecución. Marca cada tarea al completarlo.
   - `ColorPickerModal` para el "+".
   - Botón "Eliminar" (rojo) con doble modal de confirmación.
 
-[ ] T11 — Implementar el flujo de eliminación completo:
+[x] T11 — Implementar el flujo de eliminación completo:
   - Modal 1: confirmación → al pulsar "Borrar" → Modal 2.
   - Modal 2: seleccionar categoría destino → al pulsar "Seleccionar":
     - Llamar a `transactionRepo.reassignCategory(oldId, newId)`.
     - Llamar a `categoryRepo.remove(id)`.
     - Refrescar categorías y navegar de vuelta.
 
-[ ] T12 — Implementar el botón "Guardar":
+[x] T12 — Implementar el botón "Guardar":
   - Validación: deshabilitado si nombre vacío o duplicado.
   - Al pulsar: actualizar nombre, icono y color en `categoryRepository.update()`.
-  - Solo enviar los campos que han cambiado (o simplemente enviar todos los valores actuales del formulario).
   - Refrescar categorías y navegar de vuelta.
 
 ---
 
 ### Fase 5 — Tema y accesibilidad
 
-[ ] T13 — Aplicar `useConfig().activeColors` a todos los componentes nuevos para soporte de tema oscuro/claro.
+[x] T13 — Aplicar `useConfig().activeColors` a todos los componentes nuevos para soporte de tema oscuro/claro.
 
-[ ] T14 — Aplicar `useFontSize()` a todos los textos de la pantalla para escalado.
+[x] T14 — Aplicar `useFontSize()` a todos los textos de la pantalla para escalado.
 
-[ ] T15 — Añadir `accessibilityLabel` y `accessibilityRole` a todos los elementos interactivos.
+[x] T15 — Añadir `accessibilityLabel` y `accessibilityRole` a todos los elementos interactivos.
 
 ---
 

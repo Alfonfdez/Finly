@@ -50,12 +50,15 @@ export const categoryRepo = {
     await db.runAsync(`DELETE FROM categories WHERE id = ?`, id);
   },
 
-  async existsByName(name: string): Promise<boolean> {
+  async existsByName(name: string, excludeId?: number): Promise<boolean> {
     const db = getDatabase();
-    const result = await db.getFirstAsync<{ count: number }>(
-      `SELECT COUNT(*) as count FROM categories WHERE name = ?`,
-      name
-    );
+    let sql = `SELECT COUNT(*) as count FROM categories WHERE name = ?`;
+    const params: (string | number)[] = [name];
+    if (excludeId !== undefined) {
+      sql += ` AND id != ?`;
+      params.push(excludeId);
+    }
+    const result = await db.getFirstAsync<{ count: number }>(sql, ...params);
     return (result?.count ?? 0) > 0;
   },
 };

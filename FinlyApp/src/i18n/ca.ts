@@ -112,6 +112,19 @@ export const ca: Language = {
   add_cat_no_results: 'No s\'ha trobat res',
   add_cat_create: 'Crear',
 
+  // Modify category
+  modify_cat_title: 'Modificar categoria',
+  modify_cat_type: 'Tipus',
+  modify_cat_delete: 'Eliminar',
+  modify_cat_save: 'Guardar',
+  modify_cat_delete_confirm_title: (name: string) => `Eliminar la categoria "${name}"`,
+  modify_cat_delete_confirm_message: 'Totes les transaccions vinculades a aquesta categoria es mouran a una categoria que vostè triï',
+  modify_cat_delete_confirm_cancel: 'Cancel·lar',
+  modify_cat_delete_confirm_delete: 'Esborrar',
+  modify_cat_select_title: 'Seleccioneu la categoria',
+  modify_cat_select_cancel: 'Cancel·lar',
+  modify_cat_select_confirm: 'Seleccionar',
+
   // Create category
   create_cat_title: 'Crear categoria',
   create_cat_name: 'Nom de la categoria',

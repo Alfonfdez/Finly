@@ -291,9 +291,13 @@ export const webCategoryRepo = {
     const transactions = getStore<Transaction>('transactions');
     setStore('transactions', transactions.filter(t => t.category_id !== id));
   },
-  async existsByName(name: string): Promise<boolean> {
+  async existsByName(name: string, excludeId?: number): Promise<boolean> {
     const items = getStore<Category>('categories');
-    return items.some(c => c.name === name);
+    return items.some(c => {
+      if (c.name !== name) return false;
+      if (excludeId !== undefined && c.id === excludeId) return false;
+      return true;
+    });
   },
 };
 
@@ -344,6 +348,14 @@ export const webTransactionRepo = {
       })
       .sort((a, b) => b.total - a.total);
   },
+  async reassignCategory(oldCategoryId: number, newCategoryId: number): Promise<void> {
+    const items = getStore<Transaction>('transactions');
+    const updated = items.map(t =>
+      t.category_id === oldCategoryId ? { ...t, category_id: newCategoryId } : t
+    );
+    setStore('transactions', updated);
+  },
+
   async searchComments(search: string): Promise<string[]> {
     const items = getStore<Transaction>('transactions');
     const lower = search.toLowerCase();
