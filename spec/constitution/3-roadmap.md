@@ -103,7 +103,7 @@ Pantalla para crear categorías personalizadas:
 Especificación: spec/features/006-pagina-crear-categoria/.
 
 ## 007-calculadora
-Estado: pendiente.
+Estado: completado.
 
 Modal con calculadora básica para la pantalla de añadir transacción:
 - Teclado numérico con operaciones básicas (+, -, *, /).
@@ -113,3 +113,26 @@ Modal con calculadora básica para la pantalla de añadir transacción:
 - Componente reutilizable que puede usarse en otras pantallas.
 
 Especificación: spec/features/007-calculadora/.
+
+## 008-pagina-categorias
+Estado: pendiente.
+
+Pantalla accesible desde el Drawer que muestra todas las categorías existentes organizadas por tipo (gasto/ingreso) en un grid 4×N:
+- Tabs Gastos/Ingresos para filtrar por tipo.
+- Grid 4×N con icono + color + nombre por categoría.
+- Botón "Crear" en la última posición del grid (navega a 006).
+- Al pulsar una categoría, navega a modificar categoría (009).
+
+Especificación: spec/features/008-pagina-categorias/.
+
+## 009-pagina-modificar-categoria
+Estado: pendiente.
+
+Pantalla para modificar o eliminar una categoría existente:
+- Icono actual con color + input editable de nombre (validación de duplicados excluyendo la actual).
+- Grid de iconos con el actual preseleccionado.
+- Grid de colores con el actual preseleccionado + selector dinámico.
+- Botón "Eliminar" con doble modal: confirmación + selección de categoría de destino para reasignar transacciones.
+- Botón "Guardar" que persiste los cambios.
+
+Especificación: spec/features/009-pagina-modificar-categoria/.

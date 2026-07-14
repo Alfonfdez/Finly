@@ -620,3 +620,14 @@
 
 [2026-07-13] ~ | src/utils/calculator.ts
 - Fix: Añadido límite MAX_VALUE (999,999,999.99). Valores que exceden el máximo muestran error en vez de producir notación científica.
+
+[2026-07-14] + | spec/features/008-pagina-categorias/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Creada spec completa para la página de categorías: 1-spec.md (requisitos funcionales), 2-plan.md (arquitectura y componentes), 3-tasks.md (9 tareas en 3 fases).
+- Incluye: tabs Gastos/Ingresos, grid 4×N de categorías, botón "Crear" que navega a CreateCategoryScreen, pulsar categoría que navega a ModifyCategoryScreen.
+
+[2026-07-14] + | spec/features/009-pagina-modificar-categoria/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Creada spec completa para la página de modificar categoría: 1-spec.md (requisitos funcionales), 2-plan.md (arquitectura y componentes), 3-tasks.md (16 tareas en 5 fases).
+- Incluye: icono actual + nombre editable con validación de duplicados (excluyendo la actual), tipo informativo, grid de iconos y colores preseleccionados, botón "Eliminar" con doble modal (confirmación + selección de categoría de destino para reasignación de transacciones), botón "Guardar".
+
+[2026-07-14] ~ | spec/constitution/3-roadmap.md
+- Actualizado roadmap: 007-calculadora marcado como completado. Añadidos 008-pagina-categorias y 009-pagina-modificar-categoria con estado pendiente.
