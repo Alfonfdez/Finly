@@ -730,3 +730,24 @@
 
 [2026-07-14] ~ | spec/features/013-pagina-crear-cuenta/ (1-spec.md, 2-plan.md, 3-tasks.md)
 - Actualizada función `existsByName` para aceptar parámetro opcional `excludeId` (usado en 012 para excluir la cuenta actual).
+
+[2026-07-14] + | spec/features/011-pagina-cuentas/ (implementación)
+- Implementada pantalla AccountsScreen.tsx (011): header con menú hamburguesa, sección "Total" con saldo total (verde/rojo), FlatList de cuentas con icono + nombre + nota + saldo, FAB "+" que navega a CreateAccountScreen, estado vacío.
+- Añadidas claves i18n `accounts_total` y `accounts_empty` en en.ts, es.ts, ca.ts.
+- Añadido `Accounts` a `RootStackParamList` + `AccountsScreenProps` en types.ts.
+- Añadidos `CreateAccount` y `ModifyAccount` a `RootStackParamList` como rutas placeholder para navegación forward.
+- Añadido campo `description?: string` a la interfaz `Account` en database/types.ts (compatible con migration 006 de 012).
+- Actualizado AppNavigator.tsx: AccountsScreen añadido al HomeStack, DrawerItem "Cuentas" conectado para navegar a AccountsScreen.
+- Todos los textos son multilingües (es/en/ca).
+- TypeScript y ESLint pasan limpio.
+
+[2026-07-14] + | docs/programming-concepts.md
+- Añadida sección "Herramientas de desarrollo" con concepto ESLint (análisis estático, ejecución, relación con TypeScript).
+
+[2026-07-14] ~ | FinlyApp/src/screens/AccountsScreen.tsx
+- Total balance centrado en la sección de Total.
+
+[2026-07-14] ~ | FinlyApp/src/navigation/AppNavigator.tsx
+- Movido DrawerItem "Cuentas" junto al resto de elementos implementados (antes del separador).
+- Eliminada sección "FUTURAS FUNCIONES" y su separador.
+- Cambiado color de label de "Cuentas" de `textSecondary` a `text` (consistencia con el resto).

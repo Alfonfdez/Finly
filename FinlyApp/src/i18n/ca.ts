@@ -185,6 +185,10 @@ export const ca: Language = {
   nav_categories: 'Categories',
   nav_coming_soon: 'Properes funcions',
 
+  // Accounts
+  accounts_total: 'Total',
+  accounts_empty: 'No hi ha comptes',
+
   // Day letters (for circle icons)
   day_mon_letter: 'Dl',
   day_sun_letter: 'Dg',

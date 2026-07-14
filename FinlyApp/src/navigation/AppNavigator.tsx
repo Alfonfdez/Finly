@@ -13,6 +13,7 @@ import AddTransactionScreen from '../screens/AddTransactionScreen';
 import AddCategoryScreen from '../screens/AddCategoryScreen';
 import CreateCategoryScreen from '../screens/CreateCategoryScreen';
 import ModifyCategoryScreen from '../screens/ModifyCategoryScreen';
+import AccountsScreen from '../screens/AccountsScreen';
 import CategoriesScreen from '../screens/CategoriesScreen';
 import TransactionsScreen from '../screens/TransactionsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
@@ -64,14 +65,12 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
         labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
         inactiveTintColor={c.primary}
       />
-      <View style={[styles.separator, { backgroundColor: c.border }]} />
-      <Text style={[styles.drawerSection, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.nav_coming_soon}</Text>
       <DrawerItem
         label={labels.nav_accounts}
-        onPress={() => {}}
+        onPress={() => props.navigation.navigate('Main', { screen: 'Accounts' })}
         icon={({ color, size }) => <Ionicons name="wallet-outline" size={size} color={color} />}
-        labelStyle={[styles.drawerItemLabel, { color: c.textSecondary, fontSize: fs(14) }]}
-        inactiveTintColor={c.textSecondary}
+        labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
+        inactiveTintColor={c.primary}
       />
     </DrawerContentScrollView>
   );
@@ -127,6 +126,14 @@ function HomeStack() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Ionicons name="pricetag-outline" size={20} color={c.text} />
             <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_categories}</Text>
+          </View>
+        ),
+      }} />
+      <Stack.Screen name="Accounts" component={AccountsScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="wallet-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_accounts}</Text>
           </View>
         ),
       }} />

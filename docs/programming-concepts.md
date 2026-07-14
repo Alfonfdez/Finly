@@ -638,3 +638,13 @@ export async function initWebStorage(): Promise<void> {
 }
 ```
 
+# Herramientas de desarrollo
+
+## ESLint
+**Definición:** Herramienta de análisis estático que detecta errores de código y mejora la calidad sin ejecutar la app.
+**Explicación:** ESLint revisa el código fuente en busca de patrones problemáticos, errores comunes y inconsistencias de estilo. En Finly se ejecuta con `npx eslint <archivo>` y se configura mediante `eslint.config.js` (flat config). No reemplaza TypeScript — se complementa: TypeScript comprueba tipos, ESLint comprueba patrones de código.
+**Ejemplo:**
+```bash
+npx eslint src/screens/AccountsScreen.tsx
+```
+

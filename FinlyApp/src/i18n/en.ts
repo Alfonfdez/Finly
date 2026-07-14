@@ -183,6 +183,10 @@ export const en = {
   nav_categories: 'Categories',
   nav_coming_soon: 'Coming soon',
 
+  // Accounts
+  accounts_total: 'Total',
+  accounts_empty: 'No accounts',
+
   // Day letters (for circle icons)
   day_mon_letter: 'M',
   day_sun_letter: 'S',
