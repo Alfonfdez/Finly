@@ -537,5 +537,67 @@ export async function initWebStorage(): Promise<void> {
     migrateWebCategories(); // idempotente: corrige datos obsoletos
   }
 }
+
+# App icons (Expo)
+
+## App icon
+**Definición:** Imagen PNG que representa la app en la pantalla de inicio del dispositivo, el menú de aplicaciones y las configuraciones del sistema.
+**Explicación:** Expo usa `icon.png` (1024×1024) como icono principal. Durante el build, Expo la redimensiona automáticamente a todos los tamaños que cada plataforma necesita. En `app.json` se referencia en `expo.icon`.
+**Ejemplo:**
+```json
+{
+  "expo": {
+    "icon": "./assets/icon.png"
+  }
+}
+```
+
+## Android adaptive icon
+**Definición:** Sistema de iconos adaptativos de Android 8+ (API 26+) que permite diferentes formas (círculo, cuadrado, squirucle) según el fabricante.
+**Explicación:** Se compone de dos capas PNG de 1024×1024: foreground (la imagen del logo, con fondo transparente) y background (un color sólido). Android las recorta según la máscara del dispositivo. También hay una capa monochrome opcional (API 33+) para themed icons. En Expo se configuran en `expo.android.adaptiveIcon`.
+**Ejemplo:**
+```json
+{
+  "expo": {
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundColor": "#E6F4FE",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    }
+  }
+}
+```
+
+## Splash screen
+**Definición:** Pantalla de carga que se muestra brevemente mientras la app se inicia.
+**Explicación:** Expo muestra una splash screen nativa mientras carga el bundle de JavaScript. Se configura con una imagen PNG centrada y un color de fondo. En Expo SDK 54+ se recomienda configurarlo en `expo.splash` de `app.json` (no mediante el plugin legacy `expo-splash-screen`).
+**Ejemplo:**
+```json
+{
+  "expo": {
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0F172A"
+    }
+  }
+}
+```
+
+## Favicon
+**Definición:** Icono que aparece en la pestaña del navegador al abrir la app en web.
+**Explicación:** Expo usa `favicon.png` (48×48) para web. Se referencia en `expo.web.favicon`. Solo aplica a la plataforma web.
+**Ejemplo:**
+```json
+{
+  "expo": {
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
 ```
 
