@@ -1,4 +1,4 @@
-# Tareas — 009 Página de modificar categoría
+# Tareas — 009 Página de modificar/eliminar categoría
 Orden de ejecución. Marca cada tarea al completarlo.
 
 ---

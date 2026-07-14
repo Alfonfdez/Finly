@@ -1,4 +1,4 @@
-# 012 — Página de modificar cuenta
+# 012 — Página de modificar/eliminar cuenta
 
 - **Objetivo**
   Pantalla accesible desde la pantalla de cuentas (011) que permita al usuario modificar una cuenta existente (nombre, icono, color, nota), así como eliminarla con borrado en cascada de sus transacciones. Todos los textos son multilingües (es/en/ca).

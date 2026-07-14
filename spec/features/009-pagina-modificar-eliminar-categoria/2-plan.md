@@ -1,4 +1,4 @@
-# Plan de implementación — 009 Página de modificar categoría
+# Plan de implementación — 009 Página de modificar/eliminar categoría
 
 ## Arquitectura
 

@@ -1,4 +1,4 @@
-# Tareas — 012 Página de modificar cuenta
+# Tareas — 012 Página de modificar/eliminar cuenta
 Orden de ejecución. Marca cada tarea al completarlo.
 
 ---

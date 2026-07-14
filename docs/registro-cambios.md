@@ -625,12 +625,12 @@
 - Creada spec completa para la página de categorías: 1-spec.md (requisitos funcionales), 2-plan.md (arquitectura y componentes), 3-tasks.md (9 tareas en 3 fases).
 - Incluye: tabs Gastos/Ingresos, grid 4×N de categorías, botón "Crear" que navega a CreateCategoryScreen, pulsar categoría que navega a ModifyCategoryScreen.
 
-[2026-07-14] + | spec/features/009-pagina-modificar-categoria/ (1-spec.md, 2-plan.md, 3-tasks.md)
+[2026-07-14] + | spec/features/009-pagina-modificar-eliminar-categoria/ (1-spec.md, 2-plan.md, 3-tasks.md)
 - Creada spec completa para la página de modificar categoría: 1-spec.md (requisitos funcionales), 2-plan.md (arquitectura y componentes), 3-tasks.md (16 tareas en 5 fases).
 - Incluye: icono actual + nombre editable con validación de duplicados (excluyendo la actual), tipo informativo, grid de iconos y colores preseleccionados, botón "Eliminar" con doble modal (confirmación + selección de categoría de destino para reasignación de transacciones), botón "Guardar".
 
 [2026-07-14] ~ | spec/constitution/3-roadmap.md
-- Actualizado roadmap: 007-calculadora marcado como completado. Añadidos 008-pagina-categorias y 009-pagina-modificar-categoria con estado pendiente.
+- Actualizado roadmap: 007-calculadora marcado como completado. Añadidos 008-pagina-categorias y 009-pagina-modificar-eliminar-categoria con estado pendiente.
 
 [2026-07-14] ~ | src/constants/types.ts, src/navigation/AppNavigator.tsx, src/screens/CategoriesScreen.tsx (+)
 - Implementada feature 008-pagina-categorias:
@@ -644,7 +644,7 @@
 - Fix: Home DrawerItem ahora navega a 'Main' con { screen: 'Home' } para resetear el stack al pulsar "Inicio" desde pantallas anidadas (ej. Categories).
 
 [2026-07-14] + | src/screens/ModifyCategoryScreen.tsx
-- Implementada feature 009-pagina-modificar-categoria:
+- Implementada feature 009-pagina-modificar-eliminar-categoria:
   - Pantalla completa con icono actual + nombre editable, validación de duplicados excluyendo categoría actual, tipo informativo, grid de iconos, grid de colores y botón "Guardar".
   - Flujo de eliminación con doble modal: confirmación de borrado + selección de categoría destino (radio + icono + nombre).
   - Reasignación de transacciones vía transactionRepository.reassignCategory.
@@ -697,17 +697,17 @@
 - Añadida segunda fila opcional para nota (descripción) debajo del nombre en cada cuenta. Fila principal siempre con 3 columnas (icono, nombre, saldo); segunda fila solo visible si la cuenta tiene nota, texto en color suave y tamaño reducido.
 - Actualizado flujo de navegación, wireframe y criterios de aceptación.
 
-[2026-07-14] ~ | spec/features/012-modificar-cuenta/ → spec/features/012-pagina-modificar-cuenta/
-- Renombrada carpeta para ser consistente con la convención de nombres (012-pagina-modificar-cuenta).
+[2026-07-14] ~ | spec/features/012-modificar-cuenta/ → spec/features/012-pagina-modificar-eliminar-cuenta/
+- Renombrada carpeta para ser consistente con la convención de nombres (012-pagina-modificar-eliminar-cuenta).
 
 [2026-07-14] + | spec/features/013-pagina-crear-cuenta/ (1-spec.md, 2-plan.md, 3-tasks.md)
 - Creada spec completa para la página de crear cuenta: 1-spec.md (requisitos funcionales), 2-plan.md (arquitectura y componentes), 3-tasks.md (10 tareas en 4 fases).
 - Incluye: nombre con validación (vacío + duplicado), grid de iconos (~20 financieros) con color dinámico, grid de colores (6 predefinidos + picker), nota opcional (200 chars), botón "Crear" con validación.
 
 [2026-07-14] ~ | spec/constitution/3-roadmap.md
-- Renombrado 012-modificar-cuenta → 012-pagina-modificar-cuenta. Añadido 013-pagina-crear-cuenta con estado pendiente.
+- Renombrado 012-modificar-cuenta → 012-pagina-modificar-eliminar-cuenta. Añadido 013-pagina-crear-cuenta con estado pendiente.
 
-[2026-07-14] ~ | spec/features/012-pagina-modificar-cuenta/ (1-spec.md, 2-plan.md, 3-tasks.md)
+[2026-07-14] ~ | spec/features/012-pagina-modificar-eliminar-cuenta/ (1-spec.md, 2-plan.md, 3-tasks.md)
 - Uniformización con 013-pagina-crear-cuenta:
   - Añadida tabla completa de ~20 iconos (antes solo referenciada).
   - Añadido comportamiento de color de fondo del icono al cambiar color seleccionado.
@@ -716,14 +716,14 @@
   - Actualizado T8 para indicar que la lista de iconos se comparte con 013.
   - Actualizado T9 para mencionar el cambio de color de fondo del icono.
 
-[2026-07-14] ~ | spec/features/012-pagina-modificar-cuenta/ (1-spec.md, 2-plan.md, 3-tasks.md)
+[2026-07-14] ~ | spec/features/012-pagina-modificar-eliminar-cuenta/ (1-spec.md, 2-plan.md, 3-tasks.md)
 - Añadida validación de duplicados de nombre (excluyendo cuenta actual, debounce 300ms).
 - Cambio en sección Color: grid 8 columnas (6 predefinidos + círculo personalizado condicional + "+"). El círculo personalizado solo se muestra si el color actual no coincide con ninguno de los 6 predefinidos.
 - Botón "Guardar" deshabilitado si nombre vacío o duplicado, con texto de ayuda dinámico.
 - Añadidas claves i18n `modify_account_error_empty` y `modify_account_error_duplicate`.
 - Reutiliza función `existsByName(name, excludeId)` de `accountRepo` (creada en 013).
 
-[2026-07-14] ~ | spec/features/009-pagina-modificar-categoria/1-spec.md
+[2026-07-14] ~ | spec/features/009-pagina-modificar-eliminar-categoria/1-spec.md
 - Corregida referencia "misma estructura que en 006" → explicación explícita de 8 columnas.
 - Añadido: si el color actual coincide con uno de los 6 predefinidos, ese círculo se marca como seleccionado.
 - Añadido: al seleccionar un icono, el color de fondo del icono cambia al color seleccionado (consistencia con 012).
@@ -752,7 +752,7 @@
 - Eliminada sección "FUTURAS FUNCIONES" y su separador.
 - Cambiado color de label de "Cuentas" de `textSecondary` a `text` (consistencia con el resto).
 
-[2026-07-14] + | spec/features/012-pagina-modificar-cuenta/ (implementación)
+[2026-07-14] + | spec/features/012-pagina-modificar-eliminar-cuenta/ (implementación)
 - Implementada pantalla ModifyAccountScreen.tsx (012): nombre editable (0/30, validación vacío + duplicados con debounce 300ms), grid iconos 4 columnas (~20 iconos financieros, preseleccionado), grid colores 8 columnas via ColorGrid (6 predefinidos + personalizado condicional + "+"), ColorPickerModal, nota multilínea (0/200), botón Guardar.
 - Añadidas claves i18n: `modify_account_title`, `modify_account_name`, `modify_account_note`, `modify_account_save`, `modify_account_error_empty`, `modify_account_error_duplicate`, `create_account_symbols`, `create_account_color` (en/es/ca).
 - Creada migración 006 (`006_account_description.ts`): `ALTER TABLE accounts ADD COLUMN description TEXT DEFAULT ''`.
@@ -779,7 +779,7 @@
 - Añadido requisito no funcional en `011 spec`: "Formato monetario: todos los importes se muestran con máximo 2 decimales".
 - Añadido criterio de aceptación en `011 spec`: total balance con máximo 2 decimales.
 
-[2026-07-14] + | spec/features/012-pagina-modificar-cuenta/ (spec delete account)
+[2026-07-14] + | spec/features/012-pagina-modificar-eliminar-cuenta/ (spec delete account)
 - Añadida sección "6. Botón Eliminar" en `1-spec.md`: borrado en cascada con un solo modal de confirmación (nombre de cuenta interpolado, mensaje de advertencia, Cancelar/Eliminar).
 - Actualizado objetivo en `1-spec.md` para mencionar eliminación con borrado en cascada.
 - Añadido requisito no funcional sobre borrado en cascada en `1-spec.md`.
@@ -793,3 +793,10 @@
 - Implementado botón "Eliminar" en ModifyAccountScreen (012): botón rojo con icono trash antes del botón Guardar, modal de confirmación con nombre de cuenta interpolado, mensaje de borrado de transacciones, Cancelar/Eliminar.
 - Añadido `deleteByAccountId(id)` a `transactionRepo.ts` (SQL: `DELETE FROM transactions WHERE account_id = ?`) y `webStorage.ts` (filter out transactions).
 - Añadidas 5 keys i18n en en.ts, es.ts, ca.ts: `modify_account_delete`, `modify_account_delete_confirm_title`, `modify_account_delete_confirm_message`, `modify_account_delete_confirm_cancel`, `modify_account_delete_confirm_delete`.
+
+[2026-07-14] ~ | spec/features/009 y 012 (rename folders)
+- Renombrada carpeta `009-pagina-modificar-categoria` → `009-pagina-modificar-eliminar-categoria`.
+- Renombrada carpeta `012-pagina-modificar-cuenta` → `012-pagina-modificar-eliminar-cuenta`.
+- Actualizados títulos en `1-spec.md`, `2-plan.md`, `3-tasks.md` de ambas features (añadido "/eliminar").
+- Actualizadas referencias en `spec/constitution/3-roadmap.md` (4 ocurrencias).
+- Actualizadas referencias en `docs/registro-cambios.md` (11 ocurrencias históricas).

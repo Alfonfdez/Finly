@@ -1,4 +1,4 @@
-# Plan de implementación — 012 Página de modificar cuenta
+# Plan de implementación — 012 Página de modificar/eliminar cuenta
 
 ## Arquitectura
 

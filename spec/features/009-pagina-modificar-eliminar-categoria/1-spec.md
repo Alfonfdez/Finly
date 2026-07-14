@@ -1,4 +1,4 @@
-# 009 — Página de modificar categoría
+# 009 — Página de modificar/eliminar categoría
 
 - **Objetivo**
 Pantalla accesible desde la pantalla de categorías (008) que permita al usuario modificar una categoría existente (nombre, icono, color), así como eliminarla con reasignación de transacciones a otra categoría del mismo tipo. Todos los textos son multilingües (es/en/ca).

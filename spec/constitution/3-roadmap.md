@@ -125,7 +125,7 @@ Pantalla accesible desde el Drawer que muestra todas las categorías existentes 
 
 Especificación: spec/features/008-pagina-categorias/.
 
-## 009-pagina-modificar-categoria
+## 009-pagina-modificar-eliminar-categoria
 Estado: completado.
 
 Pantalla para modificar o eliminar una categoría existente:
@@ -135,7 +135,7 @@ Pantalla para modificar o eliminar una categoría existente:
 - Botón "Eliminar" con doble modal: confirmación + selección de categoría de destino para reasignar transacciones.
 - Botón "Guardar" que persiste los cambios.
 
-Especificación: spec/features/009-pagina-modificar-categoria/.
+Especificación: spec/features/009-pagina-modificar-eliminar-categoria/.
 
 ## 010-app-logo
 Estado: completado.
@@ -159,17 +159,18 @@ Pantalla accesible desde el Drawer que muestra todas las cuentas con su saldo:
 
 Especificación: spec/features/011-pagina-cuentas/.
 
-## 012-pagina-modificar-cuenta
+## 012-pagina-modificar-eliminar-cuenta
 Estado: pendiente.
 
-Pantalla para modificar una cuenta existente:
+Pantalla para modificar o eliminar una cuenta existente:
 - Nombre editable con contador 0/30 y validación de vacío.
 - Grid de iconos (~20 iconos financieros) con el actual preseleccionado.
 - Grid de colores con el actual preseleccionado + selector dinámico.
 - Campo "Nota" multilínea con límite 200 caracteres.
+- Botón "Eliminar" con borrado en cascada de transacciones.
 - Botón "Guardar" que persiste los cambios.
 
-Especificación: spec/features/012-pagina-modificar-cuenta/.
+Especificación: spec/features/012-pagina-modificar-eliminar-cuenta/.
 
 ## 013-pagina-crear-cuenta
 Estado: pendiente.
