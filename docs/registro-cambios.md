@@ -788,3 +788,8 @@
 - Añadido `transactionRepo.deleteByAccountId` a lista de cambios de repo en `2-plan.md`.
 - Actualizado diagrama de navegación en `2-plan.md` con ruta de eliminación.
 - Añadidas tareas T8 (repo deleteByAccountId), T12 (botón eliminar + modal) en `3-tasks.md`. Total: 14 tareas.
+
+[2026-07-14] + | ModifyAccountScreen.tsx, transactionRepo.ts, webStorage.ts, i18n/
+- Implementado botón "Eliminar" en ModifyAccountScreen (012): botón rojo con icono trash antes del botón Guardar, modal de confirmación con nombre de cuenta interpolado, mensaje de borrado de transacciones, Cancelar/Eliminar.
+- Añadido `deleteByAccountId(id)` a `transactionRepo.ts` (SQL: `DELETE FROM transactions WHERE account_id = ?`) y `webStorage.ts` (filter out transactions).
+- Añadidas 5 keys i18n en en.ts, es.ts, ca.ts: `modify_account_delete`, `modify_account_delete_confirm_title`, `modify_account_delete_confirm_message`, `modify_account_delete_confirm_cancel`, `modify_account_delete_confirm_delete`.

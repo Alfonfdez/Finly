@@ -89,6 +89,11 @@ export const transactionRepo = {
     await db.runAsync(`DELETE FROM transactions WHERE id = ?`, id);
   },
 
+  async deleteByAccountId(accountId: number): Promise<void> {
+    const db = getDatabase();
+    await db.runAsync(`DELETE FROM transactions WHERE account_id = ?`, accountId);
+  },
+
   async totalByPeriod(
     accountId: number,
     type: TransactionType,

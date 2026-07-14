@@ -337,6 +337,10 @@ export const webTransactionRepo = {
     const items = getStore<Transaction>('transactions');
     setStore('transactions', items.filter(t => t.id !== id));
   },
+  async deleteByAccountId(accountId: number): Promise<void> {
+    const items = getStore<Transaction>('transactions');
+    setStore('transactions', items.filter(t => t.account_id !== accountId));
+  },
   async totalByPeriod(accountId: number, type: TransactionType, startDate: string, endDate: string): Promise<number> {
     return getStore<Transaction>('transactions')
       .filter(t => t.account_id === accountId && t.type === type && t.date >= startDate && t.date <= endDate)

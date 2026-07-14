@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  StyleSheet, Keyboard, Platform, LayoutChangeEvent,
+  StyleSheet, Keyboard, Platform, LayoutChangeEvent, Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,7 +11,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import { accountRepository } from '../database';
+import { accountRepository, transactionRepository } from '../database';
 import { Account } from '../database/types';
 import { RootStackParamList } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
@@ -52,6 +52,7 @@ export default function ModifyAccountScreen() {
   const [description, setDescription] = useState('');
   const [checkingName, setCheckingName] = useState(false);
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -133,6 +134,17 @@ export default function ModifyAccountScreen() {
     }
   };
 
+  const handleDeleteConfirm = async () => {
+    try {
+      await transactionRepository.deleteByAccountId(accountId);
+      await accountRepository.delete(accountId);
+      await refreshAccounts();
+      navigation.goBack();
+    } catch (err) {
+      console.error('Failed to delete account:', err);
+    }
+  };
+
   if (!account) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
@@ -148,6 +160,7 @@ export default function ModifyAccountScreen() {
   const hintText = getHintText();
 
   return (
+    <>
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
       <View style={styles.content}>
         <ScrollView
@@ -259,6 +272,16 @@ export default function ModifyAccountScreen() {
           )}
 
           <TouchableOpacity
+            style={[styles.deleteButton, { borderColor: '#F87171' }]}
+            onPress={() => setDeleteModalVisible(true)}
+          >
+            <Ionicons name="trash-outline" size={18} color="#F87171" />
+            <Text style={[styles.deleteButtonText, { color: '#F87171', fontSize: fs(15) }]}>
+              {labels.modify_account_delete}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={[
               styles.button,
               { backgroundColor: canSave ? c.primary : '#475569' },
@@ -275,6 +298,38 @@ export default function ModifyAccountScreen() {
         </ScrollView>
       </View>
     </SafeAreaView>
+
+      <Modal visible={deleteModalVisible} transparent animationType="fade" onRequestClose={() => setDeleteModalVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: c.surface }]}>
+            <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(16) }]}>
+              {account && labels.modify_account_delete_confirm_title(account.name)}
+            </Text>
+            <Text style={[styles.modalMessage, { color: c.textSecondary, fontSize: fs(14) }]}>
+              {labels.modify_account_delete_confirm_message}
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: c.surface, borderColor: c.border }]}
+                onPress={() => setDeleteModalVisible(false)}
+              >
+                <Text style={[styles.modalButtonText, { color: c.text, fontSize: fs(14) }]}>
+                  {labels.modify_account_delete_confirm_cancel}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: '#F87171' }]}
+                onPress={handleDeleteConfirm}
+              >
+                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
+                  {labels.modify_account_delete_confirm_delete}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
 
@@ -325,8 +380,21 @@ const styles = StyleSheet.create({
     marginTop: 16,
     textAlign: 'center',
   },
+  deleteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 24,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  deleteButtonText: {
+    fontWeight: '600',
+  },
   button: {
-    marginTop: 16,
+    marginTop: 12,
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: 'center',
@@ -336,5 +404,43 @@ const styles = StyleSheet.create({
   },
   keyboardSpacer: {
     height: 200,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 360,
+    borderRadius: 16,
+    padding: 24,
+  },
+  modalTitle: {
+    fontWeight: '700',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  modalMessage: {
+    marginBottom: 20,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  modalButtonText: {
+    fontWeight: '600',
   },
 });
