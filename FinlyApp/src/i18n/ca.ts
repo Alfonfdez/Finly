@@ -196,6 +196,15 @@ export const ca: Language = {
   modify_account_error_duplicate: 'Ja existeix un compte amb aquest nom',
   create_account_symbols: 'Símbols',
   create_account_color: 'Color',
+  create_account_title: 'Crear compte',
+  create_account_name: 'Nom del compte',
+  create_account_note: 'Nota',
+  create_account_button: 'Crear',
+  create_account_error_empty: 'Introduïu un nom per al compte',
+  create_account_error_duplicate: 'Ja existeix un compte amb aquest nom',
+  create_account_error_icon: 'Selecciona una icona',
+  create_account_error_color: 'Selecciona un color',
+  create_account_error_icon_color: 'Selecciona una icona i un color',
 
   // Day letters (for circle icons)
   day_mon_letter: 'Dl',

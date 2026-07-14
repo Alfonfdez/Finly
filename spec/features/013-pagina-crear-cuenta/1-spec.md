@@ -39,11 +39,11 @@
 | 2 | `cash-outline` | 12 | `trending-down-outline` |
 | 3 | `card-outline` | 13 | `pie-chart-outline` |
 | 4 | `business-outline` | 14 | `bar-chart-outline` |
-| 5 | `bank-outline` | 15 | `analytics-outline` |
-| 6 | `savings-outline` | 16 | `stats-chart-outline` |
-| 7 | `account-balance-outline` | 17 | `briefcase-outline` |
-| 8 | `credit-card-outline` | 18 | `cash-outline` |
-| 9 | `money-outline` | 19 | `pricetag-outline` |
+| 5 | `home-outline` | 15 | `analytics-outline` |
+| 6 | `shield-outline` | 16 | `stats-chart-outline` |
+| 7 | `layers-outline` | 17 | `briefcase-outline` |
+| 8 | `scan-outline` | 18 | `storefront-outline` |
+| 9 | `swap-horizontal-outline` | 19 | `pricetag-outline` |
 | 10 | `receipt-outline` | 20 | `ellipsis-horizontal-outline` |
 
 - Al seleccionar un icono, el color de fondo del icono cambia al color seleccionado en la sección de color para mostrar al usuario cómo queda el icono.

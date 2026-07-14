@@ -15,9 +15,9 @@ Orden de ejecución. Marca cada tarea al completarlo.
 
 ### Fase 2 — Base de datos
 
-[ ] T4 — Añadir función `existsByName(name: string, excludeId?: number): Promise<boolean>` a `accountRepo` y `webAccountRepo` para validación de duplicados (case-insensitive). El parámetro `excludeId` se usa en 012 para excluir la cuenta actual.
+[x] T4 — Función `existsByName(name: string, excludeId?: number): Promise<boolean>` ya existe en `accountRepo` y `webAccountRepo` (añadida en 012, case-insensitive).
 
-[ ] T5 — Verificar que `accountRepository.create()` acepta los campos necesarios (`name`, `icon`, `color`, `initial_balance`, `description`). Si no, actualizar.
+[x] T5 — `accountRepository.create()` ya acepta los campos necesarios (`name`, `icon`, `color`, `initial_balance`, `description`). Añadida en 012.
 
 ---
 

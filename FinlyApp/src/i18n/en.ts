@@ -194,6 +194,15 @@ export const en = {
   modify_account_error_duplicate: 'An account with this name already exists',
   create_account_symbols: 'Symbols',
   create_account_color: 'Color',
+  create_account_title: 'Create account',
+  create_account_name: 'Account name',
+  create_account_note: 'Note',
+  create_account_button: 'Create',
+  create_account_error_empty: 'Enter an account name',
+  create_account_error_duplicate: 'An account with this name already exists',
+  create_account_error_icon: 'Select an icon',
+  create_account_error_color: 'Select a color',
+  create_account_error_icon_color: 'Select an icon and a color',
 
   // Day letters (for circle icons)
   day_mon_letter: 'M',

@@ -761,3 +761,10 @@
 - Añadida función `existsByName(name, excludeId?)` a `accountRepo` (nativo) y `webAccountRepo` (web).
 - Creado `constants/accountIcons.ts` con 19 iconos financieros únicos (compartido con 013).
 - Registrado `ModifyAccountScreen` en `AppNavigator.tsx` (HomeStack).
+
+[2026-07-14] + | spec/features/013-pagina-crear-cuenta/ (implementación)
+- Implementada pantalla CreateAccountScreen.tsx (013): nombre editable (0/30, placeholder, validación vacío + duplicados con debounce 300ms), grid iconos 4 columnas (ACCOUNT_ICONS compartido), grid colores 8 columnas via ColorGrid + ColorPickerModal, nota multilínea (0/200), botón Crear.
+- Añadidas claves i18n: `create_account_title`, `create_account_name`, `create_account_note`, `create_account_button`, `create_account_error_empty`, `create_account_error_duplicate`, `create_account_error_icon`, `create_account_error_color`, `create_account_error_icon_color` (en/es/ca).
+- Registrado `CreateAccountScreen` en `AppNavigator.tsx` (HomeStack).
+- Botón Crear deshabilitado si falta nombre, icono o color (o nombre duplicado). Texto de ayuda dinámico por prioridad.
+- Actualizado spec013: iconos corregidos para coincidir con `constants/accountIcons.ts` (6 reemplazos: bank→home, savings→shield, account-balance→layers, credit-card→scan, money→swap-horizontal, cash-dup→storefront).

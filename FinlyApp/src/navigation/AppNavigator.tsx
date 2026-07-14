@@ -15,6 +15,7 @@ import CreateCategoryScreen from '../screens/CreateCategoryScreen';
 import ModifyCategoryScreen from '../screens/ModifyCategoryScreen';
 import AccountsScreen from '../screens/AccountsScreen';
 import ModifyAccountScreen from '../screens/ModifyAccountScreen';
+import CreateAccountScreen from '../screens/CreateAccountScreen';
 import CategoriesScreen from '../screens/CategoriesScreen';
 import TransactionsScreen from '../screens/TransactionsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
@@ -143,6 +144,14 @@ function HomeStack() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Ionicons name="wallet-outline" size={20} color={c.text} />
             <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.modify_account_title}</Text>
+          </View>
+        ),
+      }} />
+      <Stack.Screen name="CreateAccount" component={CreateAccountScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="wallet-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.create_account_title}</Text>
           </View>
         ),
       }} />
