@@ -13,8 +13,8 @@ export const accountRepo = {
   async create(data: Omit<Account, 'id' | 'created_at'>): Promise<Account> {
     const db = getDatabase();
     const result = await db.runAsync(
-      `INSERT INTO accounts (user_id, name, initial_balance, icon, color) VALUES (?, ?, ?, ?, ?)`,
-      data.user_id, data.name, data.initial_balance, data.icon, data.color
+      `INSERT INTO accounts (user_id, name, initial_balance, icon, color, description) VALUES (?, ?, ?, ?, ?, ?)`,
+      data.user_id, data.name, data.initial_balance, data.icon, data.color, data.description ?? ''
     );
     return { ...data, id: result.lastInsertRowId, created_at: new Date().toISOString() };
   },
@@ -28,6 +28,7 @@ export const accountRepo = {
     if (data.initial_balance !== undefined) { fields.push('initial_balance = ?'); values.push(data.initial_balance); }
     if (data.icon !== undefined) { fields.push('icon = ?'); values.push(data.icon); }
     if (data.color !== undefined) { fields.push('color = ?'); values.push(data.color); }
+    if (data.description !== undefined) { fields.push('description = ?'); values.push(data.description); }
 
     if (fields.length === 0) return;
 
@@ -55,5 +56,17 @@ export const accountRepo = {
       id
     );
     return result?.balance ?? 0;
+  },
+
+  async existsByName(name: string, excludeId?: number): Promise<boolean> {
+    const db = getDatabase();
+    let sql = `SELECT COUNT(*) as count FROM accounts WHERE LOWER(name) = LOWER(?)`;
+    const params: (string | number)[] = [name];
+    if (excludeId !== undefined) {
+      sql += ` AND id != ?`;
+      params.push(excludeId);
+    }
+    const result = await db.getFirstAsync<{ count: number }>(sql, ...params);
+    return (result?.count ?? 0) > 0;
   },
 };

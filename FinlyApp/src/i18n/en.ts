@@ -186,6 +186,14 @@ export const en = {
   // Accounts
   accounts_total: 'Total',
   accounts_empty: 'No accounts',
+  modify_account_title: 'Modify account',
+  modify_account_name: 'Account name',
+  modify_account_note: 'Note',
+  modify_account_save: 'Save',
+  modify_account_error_empty: 'Enter an account name',
+  modify_account_error_duplicate: 'An account with this name already exists',
+  create_account_symbols: 'Symbols',
+  create_account_color: 'Color',
 
   // Day letters (for circle icons)
   day_mon_letter: 'M',

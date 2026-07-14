@@ -188,6 +188,14 @@ export const ca: Language = {
   // Accounts
   accounts_total: 'Total',
   accounts_empty: 'No hi ha comptes',
+  modify_account_title: 'Modificar compte',
+  modify_account_name: 'Nom del compte',
+  modify_account_note: 'Nota',
+  modify_account_save: 'Desar',
+  modify_account_error_empty: 'Introduïu un nom per al compte',
+  modify_account_error_duplicate: 'Ja existeix un compte amb aquest nom',
+  create_account_symbols: 'Símbols',
+  create_account_color: 'Color',
 
   // Day letters (for circle icons)
   day_mon_letter: 'Dl',

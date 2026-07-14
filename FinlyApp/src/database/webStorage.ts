@@ -264,6 +264,15 @@ export const webAccountRepo = {
       .reduce((sum, t) => sum + (t.type === 'income' ? t.amount : -t.amount), 0);
     return account.initial_balance + transactionBalance;
   },
+  async existsByName(name: string, excludeId?: number): Promise<boolean> {
+    const items = getStore<Account>('accounts');
+    const lower = name.toLowerCase();
+    return items.some(a => {
+      if (a.name.toLowerCase() !== lower) return false;
+      if (excludeId !== undefined && a.id === excludeId) return false;
+      return true;
+    });
+  },
 };
 
 export const webCategoryRepo = {

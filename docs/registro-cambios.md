@@ -751,3 +751,13 @@
 - Movido DrawerItem "Cuentas" junto al resto de elementos implementados (antes del separador).
 - Eliminada sección "FUTURAS FUNCIONES" y su separador.
 - Cambiado color de label de "Cuentas" de `textSecondary` a `text` (consistencia con el resto).
+
+[2026-07-14] + | spec/features/012-pagina-modificar-cuenta/ (implementación)
+- Implementada pantalla ModifyAccountScreen.tsx (012): nombre editable (0/30, validación vacío + duplicados con debounce 300ms), grid iconos 4 columnas (~20 iconos financieros, preseleccionado), grid colores 8 columnas via ColorGrid (6 predefinidos + personalizado condicional + "+"), ColorPickerModal, nota multilínea (0/200), botón Guardar.
+- Añadidas claves i18n: `modify_account_title`, `modify_account_name`, `modify_account_note`, `modify_account_save`, `modify_account_error_empty`, `modify_account_error_duplicate`, `create_account_symbols`, `create_account_color` (en/es/ca).
+- Creada migración 006 (`006_account_description.ts`): `ALTER TABLE accounts ADD COLUMN description TEXT DEFAULT ''`.
+- Actualizado `database.ts`: `DATABASE_VERSION` de 5 a 6, import + ejecución de `migrate006`.
+- Añadido campo `description` a `accountRepo.update()` y `accountRepo.create()` (nativo).
+- Añadida función `existsByName(name, excludeId?)` a `accountRepo` (nativo) y `webAccountRepo` (web).
+- Creado `constants/accountIcons.ts` con 19 iconos financieros únicos (compartido con 013).
+- Registrado `ModifyAccountScreen` en `AppNavigator.tsx` (HomeStack).

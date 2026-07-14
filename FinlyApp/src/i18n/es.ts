@@ -188,6 +188,14 @@ export const es: Language = {
   // Accounts
   accounts_total: 'Total',
   accounts_empty: 'No hay cuentas',
+  modify_account_title: 'Modificar cuenta',
+  modify_account_name: 'Nombre de la cuenta',
+  modify_account_note: 'Nota',
+  modify_account_save: 'Guardar',
+  modify_account_error_empty: 'Introduzca un nombre para la cuenta',
+  modify_account_error_duplicate: 'Ya existe una cuenta con este nombre',
+  create_account_symbols: 'Símbolos',
+  create_account_color: 'Color',
 
   // Day letters (for circle icons)
   day_mon_letter: 'L',
