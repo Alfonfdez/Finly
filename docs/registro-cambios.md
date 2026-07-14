@@ -778,3 +778,13 @@
 - Corregido `formatCurrency()` en `src/utils/formatters.ts`: añadido `Math.round(abs * 100) / 100` antes de extraer parte entera y decimal, para evitar que errores de punto flotante produzcan 3 decimales (ej. "999,100" en lugar de "999,10").
 - Añadido requisito no funcional en `011 spec`: "Formato monetario: todos los importes se muestran con máximo 2 decimales".
 - Añadido criterio de aceptación en `011 spec`: total balance con máximo 2 decimales.
+
+[2026-07-14] + | spec/features/012-pagina-modificar-cuenta/ (spec delete account)
+- Añadida sección "6. Botón Eliminar" en `1-spec.md`: borrado en cascada con un solo modal de confirmación (nombre de cuenta interpolado, mensaje de advertencia, Cancelar/Eliminar).
+- Actualizado objetivo en `1-spec.md` para mencionar eliminación con borrado en cascada.
+- Añadido requisito no funcional sobre borrado en cascada en `1-spec.md`.
+- Añadidos 3 criterios de aceptación para el flujo de eliminación en `1-spec.md`.
+- Añadidos 5 keys i18n (`modify_account_delete*`) en `2-plan.md`.
+- Añadido `transactionRepo.deleteByAccountId` a lista de cambios de repo en `2-plan.md`.
+- Actualizado diagrama de navegación en `2-plan.md` con ruta de eliminación.
+- Añadidas tareas T8 (repo deleteByAccountId), T12 (botón eliminar + modal) en `3-tasks.md`. Total: 14 tareas.

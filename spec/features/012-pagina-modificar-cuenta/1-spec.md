@@ -1,7 +1,7 @@
 # 012 — Página de modificar cuenta
 
 - **Objetivo**
-  Pantalla accesible desde la pantalla de cuentas (011) que permita al usuario modificar una cuenta existente (nombre, icono, color, nota). Todos los textos son multilingües (es/en/ca).
+  Pantalla accesible desde la pantalla de cuentas (011) que permita al usuario modificar una cuenta existente (nombre, icono, color, nota), así como eliminarla con borrado en cascada de sus transacciones. Todos los textos son multilingües (es/en/ca).
 
 ---
 
@@ -91,7 +91,23 @@
 
 > Nota: el campo `description` actualmente no existe en la tabla `accounts`. Se añadirá como columna opcional mediante una migración.
 
-### 6. Botón "Guardar"
+### 6. Botón "Eliminar"
+
+- Botón "Eliminar" (multilingual) con estilo rojo (`c.red`), ubicado antes del botón "Guardar".
+- Al pulsarlo, se abre un modal de confirmación:
+
+**Modal de confirmación — "¿Eliminar cuenta?"**
+- Título: "Eliminar la cuenta "{accountName}"" (multilingual, interpola el nombre de la cuenta).
+- Mensaje: "Se eliminarán también todas las transacciones asociadas a esta cuenta" (multilingual).
+- Botones: "Cancelar" (multilingual) y "Eliminar" (multilingual, color rojo).
+- Al pulsar "Cancelar", se cierra el modal.
+- Al pulsar "Eliminar":
+  1. Se eliminan todas las transacciones asociadas a la cuenta mediante `transactionRepository.deleteByAccountId(id)`.
+  2. Se elimina la cuenta de la tabla `accounts` mediante `accountRepository.delete(id)`.
+  3. Se refresca la lista de cuentas (`refreshAccounts()` del `AppContext`).
+  4. Se navega de vuelta a `AccountsScreen`.
+
+### 7. Botón "Guardar"
 
 - Botón "Guardar" (multilingual) en la parte inferior.
 - Deshabilitado si se cumple ALGUNA de estas condiciones:
@@ -112,7 +128,8 @@
 - **Configuración**: usar `useConfig().activeColors`.
 - **Texto**: usar `useFontSize()`.
 - **Navegación**: se añade al `HomeStack` en `AppNavigator.tsx`.
-- **Persistencia**: `accountRepository.update()` (SQLite / localStorage).
+- **Persistencia**: `accountRepository.update()` y `accountRepository.delete()` (SQLite / localStorage).
+- **Borrado en cascada**: al eliminar una cuenta, se eliminan primero todas sus transacciones (`transactionRepository.deleteByAccountId`) y luego la cuenta itself. Refrescar la lista de cuentas tras el borrado.
 - **Iconos**: `@expo/vector-icons` (Ionicons).
 - **DB**: se añade columna `description TEXT` a la tabla `accounts` mediante migración.
 - **Validación de duplicados**: usar función `existsByName(name: string, excludeId?: number)` de `accountRepo` y `webAccountRepo` (creada en 013). El parámetro `excludeId` excluye la cuenta actual de la comprobación.
@@ -134,5 +151,7 @@
 - [ ] Se muestra "Nota" con input multilínea, máximo 200 caracteres, contador 0/200.
 - [ ] El botón "Guardar" está deshabilitado si el nombre está vacío o es duplicado.
 - [ ] Al pulsar "Guardar", se actualiza la cuenta y se navega de vuelta.
+- [ ] El botón "Eliminar" en rojo abre un modal de confirmación con "Cancelar" y "Eliminar".
+- [ ] Al pulsar "Eliminar" en el modal, se borran las transacciones de la cuenta, se elimina la cuenta, se refresca la lista y se navega de vuelta.
 - [ ] Todos los textos cambian al cambiar el idioma.
 - [ ] La pantalla respeta el tema activo y el tamaño de texto.

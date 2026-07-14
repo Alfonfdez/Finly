@@ -5,7 +5,7 @@ Orden de ejecución. Marca cada tarea al completarlo.
 
 ### Fase 1 — Infraestructura y navegación
 
-[ ] T1 — Añadir claves i18n en `src/i18n/en.ts`, `src/i18n/es.ts` y `src/i18n/ca.ts`: `modify_account_title`, `modify_account_name`, `modify_account_note`, `modify_account_save`, `modify_account_error_empty`, `modify_account_error_duplicate`.
+[ ] T1 — Añadir claves i18n en `src/i18n/en.ts`, `src/i18n/es.ts` y `src/i18n/ca.ts`: `modify_account_title`, `modify_account_name`, `modify_account_note`, `modify_account_save`, `modify_account_error_empty`, `modify_account_error_duplicate`, `modify_account_delete`, `modify_account_delete_confirm_title`, `modify_account_delete_confirm_message`, `modify_account_delete_confirm_cancel`, `modify_account_delete_confirm_delete`.
 
 [ ] T2 — Actualizar `src/constants/types.ts`: añadir `ModifyAccount` al `RootStackParamList` con parámetro `accountId: number` y crear `ModifyAccountScreenProps`.
 
@@ -23,13 +23,15 @@ Orden de ejecución. Marca cada tarea al completarlo.
 
 [ ] T7 — Actualizar `accountRepo.update()` y `webAccountRepo.update()` para incluir el campo `description`.
 
+[ ] T8 — Añadir función `deleteByAccountId(id: number)` a `transactionRepo.ts` y `webTransactionRepo.ts` para eliminar todas las transacciones asociadas a una cuenta.
+
 ---
 
 ### Fase 3 — Pantalla principal
 
-[ ] T8 — Crear archivo `src/constants/accountIcons.ts` con la lista `ACCOUNT_ICONS` (~20 iconos financieros). Esta lista se comparte con 013-pagina-crear-cuenta.
+[ ] T9 — Crear archivo `src/constants/accountIcons.ts` con la lista `ACCOUNT_ICONS` (~20 iconos financieros). Esta lista se comparte con 013-pagina-crear-cuenta.
 
-[ ] T9 — Crear `ModifyAccountScreen.tsx` con:
+[ ] T10 — Crear `ModifyAccountScreen.tsx` con:
   - Header con retroceso + título "Modificar cuenta" (multilingual).
   - Input de nombre con contador 0/30, validación de vacío y validación de duplicados (debounce 300ms, excluir cuenta actual).
   - Grid de iconos (reutilizar patrón de CreateCategoryScreen) con icono actual preseleccionado. Al seleccionar icono, el color de fondo cambia al color seleccionado.
@@ -38,20 +40,25 @@ Orden de ejecución. Marca cada tarea al completarlo.
   - Input multilínea "Nota" con contador 0/200.
   - Botón "Guardar" deshabilitado si nombre vacío o duplicado.
 
-[ ] T10 — Implementar el botón "Guardar":
+[ ] T11 — Implementar el botón "Guardar":
   - Validación: deshabilitado si nombre vacío o duplicado (excluyendo cuenta actual).
   - Texto de ayuda dinámico en rojo: "Introduzca un nombre para la cuenta" o "Ya existe una cuenta con este nombre".
   - Al pulsar: actualizar nombre, icono, color y descripción en `accountRepository.update()`.
   - Navegar de vuelta a AccountsScreen.
 
+[ ] T12 — Implementar botón "Eliminar" + modal de confirmación:
+  - Botón "Eliminar" (rojo) ubicado antes del botón "Guardar".
+  - Modal de confirmación: título con nombre de la cuenta, mensaje sobre borrado de transacciones, botones "Cancelar" y "Eliminar" (rojo).
+  - Al pulsar "Eliminar": llamar a `transactionRepo.deleteByAccountId(id)`, `accountRepo.delete(id)`, `refreshAccounts()`, navegar de vuelta.
+
 ---
 
 ### Fase 4 — Tema y accesibilidad
 
-[ ] T11 — Aplicar `useConfig().activeColors`, `useFontSize()` y `accessibilityLabel` a todos los elementos.
+[ ] T13 — Aplicar `useConfig().activeColors`, `useFontSize()` y `accessibilityLabel` a todos los elementos.
 
 ---
 
 ### Verificación
 
-[ ] T12 — Verificación manual: `npx expo start --web` y `npx expo start` (Expo Go). Probar carga de datos, edición de nombre, cambio de icono/color, nota y guardado.
+[ ] T14 — Verificación manual: `npx expo start --web` y `npx expo start` (Expo Go). Probar carga de datos, edición de nombre, cambio de icono/color, nota, guardado y eliminación de cuenta con transacciones.
