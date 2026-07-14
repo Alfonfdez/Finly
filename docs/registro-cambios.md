@@ -315,10 +315,10 @@
 [2026-07-12] ~ | src/screens/AddTransactionScreen.tsx
 - Añadida inicialización de dia basada en Period mode: si periodoActivo es 'periodo' y el rango es 1 día, hereda fechaPersonalizada.inicio; en otro caso hereda fechaSeleccionada.
 
-[2026-07-12] ~ | spec/features/004-pagina-transaccion/1-spec.md
+[2026-07-12] ~ | spec/features/004-pagina-anadir-transaccion/1-spec.md
 - Actualizada sección "Selección de día" con lógica detallada: tabla de estados por pestaña principal, formato de fechas, inicialización y comportamiento interactivo.
 
-[2026-07-12] ~ | spec/features/004-pagina-transaccion/3-tasks.md
+[2026-07-12] ~ | spec/features/004-pagina-anadir-transaccion/3-tasks.md
 - Marcadas tareas T1-T21, T24-T26 como completadas. Pendientes T22-T23 (persistencia) y T27 (verificación).
 
 [2026-07-12] + | spec/features/005-pagina-anadir-categoria/
@@ -351,7 +351,7 @@
 [2026-07-12] ~ | src/screens/AddTransactionScreen.tsx
 - Añadido símbolo de divisa (config.divisa) a la derecha del input de cantidad.
 
-[2026-07-12] ~ | spec/features/004-pagina-transaccion/1-spec.md
+[2026-07-12] ~ | spec/features/004-pagina-anadir-transaccion/1-spec.md
 - Actualizada sección "Campo de cantidad" para incluir el símbolo de divisa a la derecha del input.
 
 [2026-07-12] ~ | src/i18n/en.ts, es.ts, ca.ts
@@ -516,7 +516,7 @@
 [2026-07-13] ~ | src/screens/AddTransactionScreen.tsx
 - Corregido botón "+" de categorías: siempre visible. Con >7 categorías navega a AddCategoryScreen, con ≤7 navega directamente a CreateCategoryScreen.
 
-[2026-07-13] ~ | spec/features/004-pagina-transaccion/1-spec.md
+[2026-07-13] ~ | spec/features/004-pagina-anadir-transaccion/1-spec.md
 - Actualizada sección 5 (Selección de categoría): botón "+" siempre visible con comportamiento condicional según número de categorías. Actualizados criterios de aceptación.
 
 [2026-07-13] ~ | src/components/CategoryGrid.tsx
@@ -589,7 +589,7 @@
 [2026-07-13] ~ | src/screens/AddTransactionScreen.tsx
 - Mejorada UX del input de cantidad: ahora muestra "0" como placeholder, se limpia al enfocar y muestra el importe formateado solo cuando hay un valor.
 
-[2026-07-13] ~ | spec/features/004-pagina-transaccion/1-spec.md, spec/constitution/3-roadmap.md
+[2026-07-13] ~ | spec/features/004-pagina-anadir-transaccion/1-spec.md, spec/constitution/3-roadmap.md
 - Actualizada sección "Campo de cantidad" con UX de placeholder "0" y limpieza al enfocar.
 - Actualizado roadmap: selector de color dinámico en vez de rejilla estática.
 
@@ -800,3 +800,14 @@
 - Actualizados títulos en `1-spec.md`, `2-plan.md`, `3-tasks.md` de ambas features (añadido "/eliminar").
 - Actualizadas referencias en `spec/constitution/3-roadmap.md` (4 ocurrencias).
 - Actualizadas referencias en `docs/registro-cambios.md` (11 ocurrencias históricas).
+
+[2026-07-14] ~ | spec/features/004 (rename folder)
+- Renombrada carpeta `004-pagina-transaccion` → `004-pagina-anadir-transaccion`.
+- Actualizadas referencias en `spec/constitution/3-roadmap.md` (2 ocurrencias) y `docs/registro-cambios.md` (5 ocurrencias históricas).
+
+[2026-07-14] + | spec/features/014-pagina-transacciones/ (nueva spec)
+- Creada spec `014-pagina-transacciones` para la pantalla de lista de transacciones filtrada.
+- `1-spec.md`: selector de cuenta con modal, ordenación por fecha/cantidad con toggle ASC/DESC, lista agrupada por día, FAB "+", 16 criterios de aceptación.
+- `2-plan.md`: plan con componentes AccountSelector, SortToggle, TransactionGroup. Reescritura de TransactionsScreen existente.
+- `3-tasks.md`: 11 tareas en 4 fases.
+- Añadida entrada en `spec/constitution/3-roadmap.md`.

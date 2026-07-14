@@ -62,7 +62,7 @@ Config persistente en SQLite (nativo) o localStorage (web).
 
 Especificación: spec/features/003-pagina-configuracion/.
 
-## 004-pagina-transaccion
+## 004-pagina-anadir-transaccion
 Estado: completado.
 
 Pantalla para añadir gasto/ingreso con:
@@ -76,7 +76,7 @@ Pantalla para añadir gasto/ingreso con:
 - Sección de foto (cámara/galería) — UI preparada, funcionalidad pendiente.
 - Botón "Añadir" con validación y texto de ayuda.
 
-Especificación: spec/features/004-pagina-transaccion/.
+Especificación: spec/features/004-pagina-anadir-transaccion/.
 
 ## 005-pagina-anadir-categoria
 Estado: completado.
@@ -184,3 +184,15 @@ Pantalla para crear una nueva cuenta:
 - Al crear, `initial_balance` se establece a 0.
 
 Especificación: spec/features/013-pagina-crear-cuenta/.
+
+## 014-pagina-transacciones
+Estado: pendiente.
+
+Pantalla de lista de transacciones filtrada por categoría, cuenta y período:
+- Selector de cuenta con modal de selección (radio + icono + nombre + saldo).
+- Ordenación por fecha o cantidad con toggle ASC/DESC.
+- Lista agrupada por día con encabezado de fecha.
+- Cada transacción: icono categoría + nombre + descripción + cantidad con color.
+- FAB "+" para navegar a añadir transacción.
+
+Especificación: spec/features/014-pagina-transacciones/.
