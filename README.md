@@ -93,6 +93,23 @@ Esto arranca Metro Bundler. A partir de ahí:
    exp://localhost:8081
    ```
 
+### Desarrollo por USB Tethering (sin ADB, sin red compartida)
+
+Alternativa cuando ADB no detecta el móvil (ej. drivers no instalados, cable sin datos).
+
+**Requisito:** Datos móviles activos en el teléfono.
+
+**Pasos:**
+1. Conectar el móvil al PC con cable USB
+2. En el móvil: **Ajustes → Conexiones → Zona WiFi compartida / USB tethering → activar "USB tethering"**
+3. En el PC, arrancar Expo:
+   ```bash
+   npx expo start
+   ```
+4. Pulsar **`s`** para cambiar a modo Expo Go y escanear el QR
+
+El PC navega a través de los datos del móvil, por lo que ambos dispositivos están en la misma red virtual. No requiere ADB ni `adb reverse`.
+
 ### Desarrollo por Tunnel (sin red compartida, sin cable)
 
 ```bash
