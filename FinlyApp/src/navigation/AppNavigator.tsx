@@ -35,7 +35,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
       </View>
       <DrawerItem
         label={labels.nav_home}
-        onPress={() => props.navigation.navigate('Main')}
+        onPress={() => props.navigation.navigate('Main', { screen: 'Home' })}
         icon={({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />}
         labelStyle={[styles.drawerItemLabel, { color: c.text }]}
         activeTintColor={c.primary}

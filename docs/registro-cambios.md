@@ -639,3 +639,6 @@
   - Añadido CategoriesScreen al HomeStack en AppNavigator.tsx.
   - Movido DrawerItem "Categorías" fuera de "Coming soon" y conectado a navegación real.
   - DrawerItem navega a CategoriesScreen; grid navega a CreateCategoryScreen (existente) o a ModifyCategoryScreen (próximamente).
+
+[2026-07-14] ~ | src/navigation/AppNavigator.tsx
+- Fix: Home DrawerItem ahora navega a 'Main' con { screen: 'Home' } para resetear el stack al pulsar "Inicio" desde pantallas anidadas (ej. Categories).
