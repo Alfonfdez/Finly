@@ -658,3 +658,23 @@
 - Añadido ModifyCategoryScreen al HomeStack con título multilingual.
 [2026-07-14] ~ | src/screens/ModifyCategoryScreen.tsx
 - Añadida validación visual de nombre vacío: muestra mensaje de error en rojo "Introduzca un nombre para la categoría" debajo del input cuando el nombre está vacío, además de deshabilitar el botón Guardar.
+
+[2026-07-14] + | spec/features/010-app-logo/
+- Creada spec completa para el logotipo personalizado de Finly con 6 assets PNG.
+[2026-07-14] ~ | FinlyApp/assets/ (6 archivos)
+- Reemplazados iconos genéricos de Expo por el logotipo personalizado de Finly.
+[2026-07-14] ~ | FinlyApp/app.json
+- Añadida sección splash con image, resizeMode: contain y backgroundColor: #0F172A.
+[2026-07-14] ~ | docs/programming-concepts.md
+- Añadidas secciones: App icon, Android adaptive icon, Splash screen, Favicon.
+[2026-07-14] ~ | src/navigation/AppNavigator.tsx
+- Añadido logo (icon.png) en el header del Drawer junto al texto "Finly": Image 36×36 con borderRadius 10, flexDirection row, gap 12.
+[2026-07-14] - | FinlyApp/dist/
+- Eliminada caché de web (dist/) para forzar regeneración de favicon con el nuevo logo.
+[2026-07-14] ~ | App.tsx
+- Añadido componente SplashScreen con logo (80×80), texto "Finly" (color primario) y ActivityIndicator.
+- Reemplazado loading state simple por splash completo. Funciona en web y nativo.
+- Añadido tiempo mínimo de splash de 2 segundos (MIN_SPLASH_MS = 2000) para que sea visible aunque la DB cargue rápido.
+- Mejorada animación del splash: logo fade-in + scale-up con spring, texto fade-in con delay, pulse suave continuo en el logo, y fade-out + scale-up al salir.
+- Aumentado MIN_SPLASH_MS a 3000ms. Logo fade-in 800ms con más bounce. Texto fade-in 600ms con 500ms delay.
+- Reemplazado pulse circular por barra de progreso lineal que se llena de izquierda a derecha (120px, 2px height, cyan sobre track gris).

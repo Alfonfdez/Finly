@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, Image, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -32,6 +32,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
   return (
     <DrawerContentScrollView {...props} style={{ backgroundColor: c.surface }}>
       <View style={[styles.drawerHeader, { borderBottomColor: c.border }]}>
+        <Image source={require('../../assets/icon.png')} style={styles.drawerLogo} />
         <Text style={[styles.drawerTitle, { color: c.primary, fontSize: fs(24) }]}>Finly</Text>
       </View>
       <DrawerItem
@@ -186,9 +187,17 @@ export default function AppNavigator() {
 
 const styles = StyleSheet.create({
   drawerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
     padding: 20,
     borderBottomWidth: 1,
     marginBottom: 8,
+  },
+  drawerLogo: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
   },
   drawerTitle: {
     fontWeight: '800',

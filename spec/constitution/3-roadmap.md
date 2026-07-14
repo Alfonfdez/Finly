@@ -138,11 +138,11 @@ Pantalla para modificar o eliminar una categoría existente:
 Especificación: spec/features/009-pagina-modificar-categoria/.
 
 ## 010-app-logo
-Estado: pendiente.
+Estado: completado.
 
 Sustituir los iconos genéricos de Expo por el logotipo personalizado de Finly:
 - 6 archivos PNG en `assets/` para app icon, Android adaptive icon, favicon y splash screen.
-- Configuración en `app.json` con sección `expo.splash`.
-- Sin cambios en código fuente.
+- Configuración en `app.json` con sección `expo.splash` (nativo) y referencias a assets.
+- Logo visible en el header del Drawer junto al texto "Finly".
 
 Especificación: spec/features/010-app-logo/.

@@ -37,15 +37,31 @@
 - `expo.android.adaptiveIcon.backgroundImage` → `"./assets/android-icon-background.png"`
 - `expo.android.adaptiveIcon.monochromeImage` → `"./assets/android-icon-monochrome.png"`
 - `expo.web.favicon` → `"./assets/favicon.png"`
-- `expo.splash` (añadir si no existe):
+- `expo.splash`:
   - `image` → `"./assets/splash-icon.png"`
   - `resizeMode` → `"contain"`
   - `backgroundColor` → color de fondo que combine con el diseño del logo.
+  - Nota: la splash de `app.json` solo funciona en nativo (Expo Go / builds). En web se usa un componente personalizado (`SplashScreen` en `App.tsx`).
+
+### 3b. Splash screen web
+
+- En web, el splash nativo de Expo no funciona. Se implementa un componente `SplashScreen` en `App.tsx` que se muestra mientras se inicializa la base de datos.
+- El componente muestra:
+  - Logo (`icon.png`) centrado, 80×80 px, borderRadius 20.
+  - Texto "Finly" en color primario (#22D3EE), fontWeight 800, fontSize 28.
+  - Barra de progreso lineal debajo del texto (120px ancho × 2px alto, track gris #1E293B, fill cyan #22D3EE) que se llena de izquierda a derecha durante la splash.
+- **Animaciones**:
+  - **Entrada del logo**: fade-in (800ms) + scale-up con spring (0.8 → 1.0, friction 5, tension 60).
+  - **Entrada del texto**: fade-in (600ms) con delay de 500ms respecto al logo.
+  - **Barra de progreso**: se llena al 100% en el 80% del tiempo mínimo de splash, con delay inicial de 400ms.
+  - **Salida**: fade-out + scale-up (1.0 → 1.1) en 400ms cuando la app está lista.
+- Fondo: #0F172A (mismo que el tema oscuro).
+- La splash permanece visible un mínimo de 3 segundos (`MIN_SPLASH_MS = 3000`) aunque la base de datos cargue antes, para que sea apreciable visualmente.
 
 ### 4. Drawer header
 
-- El header del Drawer (en `AppNavigator.tsx`) muestra el texto "Finly" en grande.
-- Opcionalmente, puede reemplazarse por el logo como imagen (para un futuro refinamiento visual).
+- El header del Drawer (en `AppNavigator.tsx`) muestra el logo (`icon.png`) a la izquierda y el texto "Finly" a la derecha, en una fila horizontal centrada.
+- El logo se muestra con tamaño 36×36 px y esquinas redondeadas (borderRadius 10).
 
 ---
 
@@ -65,5 +81,8 @@
 - [ ] `assets/android-icon-monochrome.png` se muestra correctamente en dispositivos Android con themed icons (API 33+).
 - [ ] `assets/favicon.png` se muestra en la pestaña del navegador al abrir la app en web.
 - [ ] `assets/splash-icon.png` aparece centrado en la pantalla de carga al iniciar la app.
-- [ ] La splash screen usa el color de fondo configurado en `app.json`.
+- [ ] La splash screen nativa (app.json) se muestra al iniciar la app en nativo (Expo Go).
+- [ ] En web, se muestra el componente SplashScreen con logo + "Finly" + loader mientras carga la app.
 - [ ] Todos los archivos están referenciados correctamente en `app.json`.
+- [ ] El drawer header muestra el logo (icon.png) junto al texto "Finly".
+- [ ] El favicon se muestra en la pestaña del navegador (puede requerir borrar `dist/` y reiniciar el servidor).

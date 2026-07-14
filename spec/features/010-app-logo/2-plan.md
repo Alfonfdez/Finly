@@ -20,11 +20,8 @@ FinlyApp/assets/
 
 - **`app.json`**: Añadir sección `expo.splash` con `image`, `resizeMode` y `backgroundColor`.
 - **`FinlyApp/assets/*`**: Reemplazar los 6 archivos PNG.
-
-### Archivos sin cambios
-
-- No se modifica código fuente (TypeScript, componentes, navegación).
-- No se añaden ni modifican repositorios, contextos, ni pantallas.
+- **`src/navigation/AppNavigator.tsx`**: Añadir logo (Image) en el header del Drawer junto al texto "Finly".
+- **`App.tsx`**: Añadir componente `SplashScreen` con logo + texto + loader, y reemplazar el loading state anterior.
 
 ---
 
