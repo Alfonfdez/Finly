@@ -5,7 +5,7 @@ Orden de ejecución. Marca cada tarea al completarlo.
 
 ### Fase 1 — Infraestructura y navegación
 
-[ ] T1 — Añadir claves i18n en `src/i18n/en.ts`, `src/i18n/es.ts` y `src/i18n/ca.ts`: `modify_account_title`, `modify_account_name`, `modify_account_note`, `modify_account_save`.
+[ ] T1 — Añadir claves i18n en `src/i18n/en.ts`, `src/i18n/es.ts` y `src/i18n/ca.ts`: `modify_account_title`, `modify_account_name`, `modify_account_note`, `modify_account_save`, `modify_account_error_empty`, `modify_account_error_duplicate`.
 
 [ ] T2 — Actualizar `src/constants/types.ts`: añadir `ModifyAccount` al `RootStackParamList` con parámetro `accountId: number` y crear `ModifyAccountScreenProps`.
 
@@ -27,19 +27,20 @@ Orden de ejecución. Marca cada tarea al completarlo.
 
 ### Fase 3 — Pantalla principal
 
-[ ] T8 — Crear archivo `src/constants/accountIcons.ts` con la lista `ACCOUNT_ICONS` (~20 iconos financieros).
+[ ] T8 — Crear archivo `src/constants/accountIcons.ts` con la lista `ACCOUNT_ICONS` (~20 iconos financieros). Esta lista se comparte con 013-pagina-crear-cuenta.
 
 [ ] T9 — Crear `ModifyAccountScreen.tsx` con:
   - Header con retroceso + título "Modificar cuenta" (multilingual).
-  - Input de nombre con contador 0/30 y validación de vacío.
-  - Grid de iconos (reutilizar patrón de CreateCategoryScreen) con icono actual preseleccionado.
-  - Grid de colores (reutilizar `ColorGrid`) con color actual preseleccionado.
+  - Input de nombre con contador 0/30, validación de vacío y validación de duplicados (debounce 300ms, excluir cuenta actual).
+  - Grid de iconos (reutilizar patrón de CreateCategoryScreen) con icono actual preseleccionado. Al seleccionar icono, el color de fondo cambia al color seleccionado.
+  - Grid de colores 8 columnas (reutilizar `ColorGrid` con modo "modify"): 6 predefinidos + círculo personalizado (solo si color actual no es predefinido) + "+". Color actual preseleccionado.
   - `ColorPickerModal` para el "+".
   - Input multilínea "Nota" con contador 0/200.
-  - Botón "Guardar" deshabilitado si nombre vacío.
+  - Botón "Guardar" deshabilitado si nombre vacío o duplicado.
 
 [ ] T10 — Implementar el botón "Guardar":
-  - Validación: deshabilitado si nombre vacío.
+  - Validación: deshabilitado si nombre vacío o duplicado (excluyendo cuenta actual).
+  - Texto de ayuda dinámico en rojo: "Introduzca un nombre para la cuenta" o "Ya existe una cuenta con este nombre".
   - Al pulsar: actualizar nombre, icono, color y descripción en `accountRepository.update()`.
   - Navegar de vuelta a AccountsScreen.
 

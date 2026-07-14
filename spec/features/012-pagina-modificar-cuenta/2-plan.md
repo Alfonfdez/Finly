@@ -29,12 +29,14 @@
 ```
 wallet-outline, cash-outline, card-outline, business-outline,
 bank-outline, savings-outline, account-balance-outline,
-credit-card-outline, money-outline, currency-euro-outline,
-currency-dollar-outline, currency-pound-outline, currency-yen-outline,
-receipt-outline, trending-up-outline, trending-down-outline,
-pie-chart-outline, bar-chart-outline, analytics-outline,
-stats-chart-outline
+credit-card-outline, money-outline, receipt-outline,
+trending-up-outline, trending-down-outline, pie-chart-outline,
+bar-chart-outline, analytics-outline, stats-chart-outline,
+briefcase-outline, cash-outline (dup), pricetag-outline,
+ellipsis-horizontal-outline
 ```
+
+*(Misma lista que en 013-pagina-crear-cuenta. Definir en `constants/accountIcons.ts` y reutilizar en ambas pantallas.)*
 
 ### i18n
 
@@ -44,8 +46,10 @@ stats-chart-outline
 | `modify_account_name` | Account name | Nombre de la cuenta | Nom del compte |
 | `modify_account_note` | Note | Nota | Nota |
 | `modify_account_save` | Save | Guardar | Guardar |
+| `modify_account_error_empty` | Enter an account name | Introduzca un nombre para la cuenta | Introduïu un nom per al compte |
+| `modify_account_error_duplicate` | An account with this name already exists | Ya existe una cuenta con este nombre | Ja existeix un compte amb aquest nom |
 
-*(create_cat_symbols, create_cat_color, create_cat_error_name_empty se reutilizan)*
+*(create_account_symbols, create_account_color se reutilizan de 013)*
 
 ### DB — Nueva columna
 

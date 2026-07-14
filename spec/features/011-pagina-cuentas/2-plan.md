@@ -16,12 +16,14 @@
 
 ```
 Drawer → "Cuentas" → AccountsScreen
+  ├── pulsar "+" (FAB) → CreateAccountScreen (013)
   └── pulsar cuenta → ModifyAccountScreen (012) { accountId }
 ```
 
 ### Lista de cuentas
 
-- FlatList con filas que muestran icono (con color de fondo), nombre y saldo.
+- FlatList con filas que muestran icono (con color de fondo), nombre, nota (si existe) y saldo.
+- La nota se muestra debajo del nombre en color `textoSuave` y tamaño reducido. Si está vacía, no se renderiza.
 - Cada fila es un `TouchableOpacity` que navega a `ModifyAccountScreen`.
 - Estado vacío con icono `wallet-outline` + mensaje.
 
@@ -51,9 +53,10 @@ Drawer → "Cuentas" → AccountsScreen
 │ 3.450,00 €                     │  ← Saldo total (verde/rojo)
 ├─────────────────────────────────┤
 │ ┌─────────────────────────────┐ │
-│ │ icon  Cuenta 1    1.200 €  │ │  ← Filas TouchableOpacity
+│ │ icon  Cuenta 1    1.200 €  │ │  ← Fila principal (siempre)
+│ │       Nota de ejemplo       │ │  ← Segunda fila (solo si nota)
 │ ├─────────────────────────────┤ │
-│ │ icon  Cuenta 2    2.250 €  │ │
+│ │ icon  Cuenta 2    2.250 €  │ │  ← Sin nota, solo una fila
 │ └─────────────────────────────┘ │
 └─────────────────────────────────┘
 ```

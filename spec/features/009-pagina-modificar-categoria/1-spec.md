@@ -38,15 +38,16 @@ Pantalla accesible desde la pantalla de categorías (008) que permita al usuario
 - Al pulsar un icono, se resalta con un borde de color primario y el fondo cambia ligeramente.
 - Solo un icono puede estar seleccionado a la vez.
 - La selección de icono **no es obligatoria** para guardar; si el usuario solo quiere cambiar el nombre, puede dejar el icono actual.
+- Al seleccionar un icono, el color de fondo del icono cambia al color seleccionado en la sección de color para mostrar al usuario cómo queda el icono.
 
 ### 5. Color
 
 - Título: "Color" (multilingual).
-- Grid de 1 fila × 8 columnas (misma estructura que en 006).
+- Grid de 1 fila × 8 columnas.
 - Las 6 primeras posiciones son colores predefinidos con forma circular.
 - La 7.ª posición muestra el color personalizado elegido del picker (si el color actual de la categoría no está entre los 6 predefinidos) **o** el color actual de la categoría si es un color personalizado.
 - La 8.ª posición es un "+" con color gris que abre el modal de selector de colores dinámico (`ColorPickerModal` existente).
-- El color actual de la categoría debe aparecer preseleccionado al abrir la pantalla.
+- El color actual de la categoría debe aparecer preseleccionado al abrir la pantalla. Si el color coincide con uno de los 6 predefinidos, ese círculo se marca como seleccionado.
 - Al pulsar un color, se resalta con un anillo/borde más oscuro y un checkmark superpuesto.
 - Solo un color puede estar seleccionado a la vez.
 - La selección de color **no es obligatoria** para guardar.
@@ -125,6 +126,7 @@ Pantalla accesible desde la pantalla de categorías (008) que permita al usuario
 - [ ] Si el nombre está vacío, el botón "Guardar" está deshabilitado.
 - [ ] Se muestra el tipo de la categoría (solo informativo, no editable).
 - [ ] Se muestran ~40 iconos en un grid de 4 columnas con el icono actual preseleccionado.
+- [ ] Al seleccionar un icono, el color de fondo del icono cambia al color seleccionado.
 - [ ] Se muestran los colores con el color actual preseleccionado.
 - [ ] El 7.º círculo de color muestra el color personalizado si el actual no está entre los 6 predefinidos.
 - [ ] El "+" abre el modal `ColorPickerModal` existente.

@@ -21,8 +21,9 @@ Orden de ejecución. Marca cada tarea al completarlo.
   - Header con botón de menú hamburguesa (abre Drawer) + título "Cuentas" (multilingual).
   - Sección "Total:" con saldo total de todas las cuentas (verde/rojo según signo).
   - FlatList de cuentas cargadas desde `accountRepository.list()` con saldo de `getCurrentBalance()`.
-  - Cada fila: icono con color de fondo + nombre + saldo formateado.
+  - Cada fila: primera fila con icono (color de fondo) + nombre + saldo formateado; segunda fila (solo si nota existe) con texto en color suave y tamaño reducido.
   - Estado vacío si no hay cuentas.
+  - Botón flotante "+" (FAB) que navega a `CreateAccountScreen` (013).
   - Al pulsar una cuenta: navegar a `ModifyAccountScreen` con `{ accountId }`.
 
 [ ] T5 — Aplicar `useConfig().activeColors`, `useFontSize()` y `accessibilityLabel` a todos los elementos.

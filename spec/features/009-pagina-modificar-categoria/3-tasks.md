@@ -40,7 +40,7 @@ Orden de ejecución. Marca cada tarea al completarlo.
   - Fila con icono actual de la categoría (color de fondo) + input editable con nombre actual.
   - Validación de duplicados con debounce 300ms, excluyendo la categoría actual.
   - Tipo de categoría (informativo, no editable).
-  - Grid de iconos (reutilizar patrón de CreateCategoryScreen) con icono actual preseleccionado.
+  - Grid de iconos (reutilizar patrón de CreateCategoryScreen) con icono actual preseleccionado. Al seleccionar icono, el color de fondo cambia al color seleccionado.
   - Grid de colores (reutilizar `ColorGrid`) con color actual preseleccionado.
   - 7.º círculo: color personalizado si el actual no está entre los 6 predefinidos.
   - `ColorPickerModal` para el "+".

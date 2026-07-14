@@ -154,11 +154,12 @@ Pantalla accesible desde el Drawer que muestra todas las cuentas con su saldo:
 - Header con menú hamburguesa + título "Cuentas" (multilingual).
 - Sección "Total:" con saldo total de todas las cuentas (verde/rojo).
 - Lista de cuentas con icono + nombre + saldo.
+- Botón flotante "+" (FAB) que navega a crear cuenta (013).
 - Al pulsar una cuenta, navega a modificar cuenta (012).
 
 Especificación: spec/features/011-pagina-cuentas/.
 
-## 012-modificar-cuenta
+## 012-pagina-modificar-cuenta
 Estado: pendiente.
 
 Pantalla para modificar una cuenta existente:
@@ -168,4 +169,17 @@ Pantalla para modificar una cuenta existente:
 - Campo "Nota" multilínea con límite 200 caracteres.
 - Botón "Guardar" que persiste los cambios.
 
-Especificación: spec/features/012-modificar-cuenta/.
+Especificación: spec/features/012-pagina-modificar-cuenta/.
+
+## 013-pagina-crear-cuenta
+Estado: pendiente.
+
+Pantalla para crear una nueva cuenta:
+- Nombre con validación (no vacío, no duplicado) y contador 0/30.
+- Grid de iconos (~20 iconos financieros) con fondo gris que cambia al color seleccionado.
+- Grid de colores con 6 predefinidos + selector dinámico.
+- Campo "Nota" multilínea opcional con límite 200 caracteres.
+- Botón "Crear" con validación (nombre + icono + color).
+- Al crear, `initial_balance` se establece a 0.
+
+Especificación: spec/features/013-pagina-crear-cuenta/.

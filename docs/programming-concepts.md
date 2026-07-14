@@ -303,6 +303,25 @@ const cuentas = await cuentaRepository.listar(usuarioId);
 </SafeAreaView>
 ```
 
+## Filas condicionales (Conditional rows)
+**Definición:** Patrón de UI donde una segunda fila solo se renderiza si existe datos opcionales, manteniendo la primera fila siempre con el mismo layout.
+**Explicación:** Cuando un elemento de lista tiene un campo opcional (como una nota), en lugar de añadirlo como columna extra que desplaza el layout, se renderiza como una segunda fila debajo de la principal. Si el campo está vacío, la segunda fila no se renderiza y la primera fila ocupa todo el espacio. Esto mantiene el layout consistente cuando no hay datos opcionales.
+**Ejemplo:**
+```tsx
+<View>
+  {/* Fila principal: siempre visible, 3 columnas */}
+  <View style={styles.row}>
+    <Ionicons name={icon} />
+    <Text>{name}</Text>
+    <Text>{balance}</Text>
+  </View>
+  {/* Segunda fila: solo si nota existe */}
+  {note ? (
+    <Text style={styles.note}>{note}</Text>
+  ) : null}
+</View>
+```
+
 # Principios de diseño
 
 ## Single Source of Truth (SSOT)
@@ -321,6 +340,24 @@ import { Periodo } from '../constants/types';
 type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo'; // en AppContext
 type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo'; // en PeriodTabs
 type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo'; // en calendars/types
+```
+
+## Constantes compartidas entre pantallas
+**Definición:** Listas de datos (iconos, colores, etc.) que se definen una sola vez en un archivo `constants/` y se importan desde múltiples pantallas.
+**Explicación:** Cuando dos pantallas usan la misma lista de opciones (ej: iconos de cuentas en crear y modificar), la lista debe definirse en un solo archivo compartido. Si se duplica, cambiar un icono requiere modificar dos archivos. En Finly, `constants/accountIcons.ts` contiene la lista `ACCOUNT_ICONS` usada tanto en `CreateAccountScreen` como en `ModifyAccountScreen`.
+**Ejemplo:**
+```tsx
+// constants/accountIcons.ts — SSOT para iconos de cuentas
+export const ACCOUNT_ICONS = [
+  'wallet-outline', 'cash-outline', 'card-outline',
+  'business-outline', 'bank-outline', ...
+] as const;
+
+// CreateAccountScreen.tsx — importa desde SSOT
+import { ACCOUNT_ICONS } from '../constants/accountIcons';
+
+// ModifyAccountScreen.tsx — misma fuente
+import { ACCOUNT_ICONS } from '../constants/accountIcons';
 ```
 
 ## Named Constants (Evitar Magic Numbers)

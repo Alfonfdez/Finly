@@ -691,3 +691,42 @@
 - Actualizados para leer config.categoryIconShape y aplicar borderRadius dinámico (12 cuadrado / 999 círculo).
 [2026-07-14] ~ | src/screens/CategoriesScreen.tsx, src/screens/AddCategoryScreen.tsx, src/screens/CreateCategoryScreen.tsx, src/screens/ModifyCategoryScreen.tsx
 - Actualizados grids de categorías y previsualizaciones para usar la forma configurada (cuadrado/círculo).
+
+[2026-07-14] ~ | spec/features/011-pagina-cuentas/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Añadido botón flotante "+" (FAB) en la esquina inferior derecha que navega a CreateAccountScreen (013).
+- Añadida segunda fila opcional para nota (descripción) debajo del nombre en cada cuenta. Fila principal siempre con 3 columnas (icono, nombre, saldo); segunda fila solo visible si la cuenta tiene nota, texto en color suave y tamaño reducido.
+- Actualizado flujo de navegación, wireframe y criterios de aceptación.
+
+[2026-07-14] ~ | spec/features/012-modificar-cuenta/ → spec/features/012-pagina-modificar-cuenta/
+- Renombrada carpeta para ser consistente con la convención de nombres (012-pagina-modificar-cuenta).
+
+[2026-07-14] + | spec/features/013-pagina-crear-cuenta/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Creada spec completa para la página de crear cuenta: 1-spec.md (requisitos funcionales), 2-plan.md (arquitectura y componentes), 3-tasks.md (10 tareas en 4 fases).
+- Incluye: nombre con validación (vacío + duplicado), grid de iconos (~20 financieros) con color dinámico, grid de colores (6 predefinidos + picker), nota opcional (200 chars), botón "Crear" con validación.
+
+[2026-07-14] ~ | spec/constitution/3-roadmap.md
+- Renombrado 012-modificar-cuenta → 012-pagina-modificar-cuenta. Añadido 013-pagina-crear-cuenta con estado pendiente.
+
+[2026-07-14] ~ | spec/features/012-pagina-modificar-cuenta/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Uniformización con 013-pagina-crear-cuenta:
+  - Añadida tabla completa de ~20 iconos (antes solo referenciada).
+  - Añadido comportamiento de color de fondo del icono al cambiar color seleccionado.
+  - Sección Color explícita con tabla de 6 colores + "+" y detalle del modal (antes solo referenciaba "misma estructura que 006 y 009").
+  - Añadida clave i18n `modify_account_error_empty` en plan.
+  - Actualizado T8 para indicar que la lista de iconos se comparte con 013.
+  - Actualizado T9 para mencionar el cambio de color de fondo del icono.
+
+[2026-07-14] ~ | spec/features/012-pagina-modificar-cuenta/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Añadida validación de duplicados de nombre (excluyendo cuenta actual, debounce 300ms).
+- Cambio en sección Color: grid 8 columnas (6 predefinidos + círculo personalizado condicional + "+"). El círculo personalizado solo se muestra si el color actual no coincide con ninguno de los 6 predefinidos.
+- Botón "Guardar" deshabilitado si nombre vacío o duplicado, con texto de ayuda dinámico.
+- Añadidas claves i18n `modify_account_error_empty` y `modify_account_error_duplicate`.
+- Reutiliza función `existsByName(name, excludeId)` de `accountRepo` (creada en 013).
+
+[2026-07-14] ~ | spec/features/009-pagina-modificar-categoria/1-spec.md
+- Corregida referencia "misma estructura que en 006" → explicación explícita de 8 columnas.
+- Añadido: si el color actual coincide con uno de los 6 predefinidos, ese círculo se marca como seleccionado.
+- Añadido: al seleccionar un icono, el color de fondo del icono cambia al color seleccionado (consistencia con 012).
+
+[2026-07-14] ~ | spec/features/013-pagina-crear-cuenta/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Actualizada función `existsByName` para aceptar parámetro opcional `excludeId` (usado en 012 para excluir la cuenta actual).
