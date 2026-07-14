@@ -146,3 +146,26 @@ Sustituir los iconos genéricos de Expo por el logotipo personalizado de Finly:
 - Logo visible en el header del Drawer junto al texto "Finly".
 
 Especificación: spec/features/010-app-logo/.
+
+## 011-pagina-cuentas
+Estado: pendiente.
+
+Pantalla accesible desde el Drawer que muestra todas las cuentas con su saldo:
+- Header con menú hamburguesa + título "Cuentas" (multilingual).
+- Sección "Total:" con saldo total de todas las cuentas (verde/rojo).
+- Lista de cuentas con icono + nombre + saldo.
+- Al pulsar una cuenta, navega a modificar cuenta (012).
+
+Especificación: spec/features/011-pagina-cuentas/.
+
+## 012-modificar-cuenta
+Estado: pendiente.
+
+Pantalla para modificar una cuenta existente:
+- Nombre editable con contador 0/30 y validación de vacío.
+- Grid de iconos (~20 iconos financieros) con el actual preseleccionado.
+- Grid de colores con el actual preseleccionado + selector dinámico.
+- Campo "Nota" multilínea con límite 200 caracteres.
+- Botón "Guardar" que persiste los cambios.
+
+Especificación: spec/features/012-modificar-cuenta/.
