@@ -5,7 +5,7 @@ Orden de ejecución. Marca cada tarea al completarlo.
 
 ### Fase 1 — Implementación
 
-[x] T1 — Crear `src/screens/AllTransactionsScreen.tsx`: SafeAreaView > View.container(flex:1) con AccountSelector, saldo total del período, SortToggle, SectionList con TransactionGroup, FAB "+", estado vacío. Sin `keyboardSpacer`.
+[x] T1 — Crear `src/screens/AllTransactionsScreen.tsx`: SafeAreaView > [AccountSelector, saldo total del período, SortToggle, SectionList con TransactionGroup, FAB "+", estado vacío]. FAB es hijo directo del SafeAreaView. Sin `keyboardSpacer`.
 
 [x] T2 — Añadir `AllTransactions: undefined` a `RootStackParamList` en `src/constants/types.ts`.
 

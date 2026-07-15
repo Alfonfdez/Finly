@@ -167,7 +167,7 @@ function HomeStack() {
       <Stack.Screen name="AllTransactions" component={AllTransactionsScreen} options={{
         headerTitle: () => (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="list-outline" size={20} color={c.text} />
+            <Ionicons name="stats-chart-outline" size={20} color={c.text} />
             <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_all_transactions}</Text>
           </View>
         ),

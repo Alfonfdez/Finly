@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { View, Text, SectionList, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, DrawerActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { scrollbarFlatList } from '../constants/platformStyles';
@@ -29,6 +29,22 @@ export default function AllTransactionsScreen() {
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
+  useFocusEffect(
+    useCallback(() => {
+      navigation.setOptions({
+        headerLeft: () => (
+          <TouchableOpacity
+            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+            style={{ marginLeft: 8, padding: 4 }}
+            accessibilityLabel={labels.home_open_menu}
+          >
+            <Ionicons name="menu-outline" size={24} color={c.text} />
+          </TouchableOpacity>
+        ),
+      });
+    }, [navigation, c.text, labels.home_open_menu])
+  );
+
   const { allTransactions, sections } = useTransactionFilters({
     selectedAccountId,
     sortBy,
@@ -53,58 +69,55 @@ export default function AllTransactionsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]} edges={['bottom']}>
-      <View style={styles.container}>
-        <View style={[styles.controls, { borderBottomColor: c.border }]}>
-          <AccountSelector
-            accounts={accountsWithBalance}
-            selectedId={selectedAccountId}
-            onSelect={setSelectedAccountId}
-          />
-          <Text style={[styles.accountBalance, { color: accountBalance >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
-            {accountBalance >= 0 ? '+' : ''}{formatCurrency(accountBalance, config.currency, config.decimalSeparator)}
-          </Text>
-          <SortToggle
-            sortBy={sortBy}
-            direction={sortDirection}
-            onToggleSort={handleToggleSort}
-            onToggleDirection={() => setSortDirection(d => d === 'desc' ? 'asc' : 'desc')}
-          />
-        </View>
-
-        <SectionList
-          style={scrollbarFlatList}
-          contentContainerStyle={styles.listContent}
-          sections={sections}
-          keyExtractor={(item) => item.id.toString()}
-          renderSectionHeader={({ section }) => (
-            <TransactionGroup
-              date={section.date}
-              transactions={section.data}
-              categories={categories}
-            />
-          )}
-          renderItem={({ item }) => null}
-          ListEmptyComponent={
-            <Text style={[styles.empty, { color: c.textSecondary, fontSize: fs(14) }]}>{labels.transactions_empty}</Text>
-          }
-          stickySectionHeadersEnabled={false}
+    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+      <View style={[styles.controls, { borderBottomColor: c.border }]}>
+        <AccountSelector
+          accounts={accountsWithBalance}
+          selectedId={selectedAccountId}
+          onSelect={setSelectedAccountId}
         />
-
-        <TouchableOpacity
-          style={[styles.fab, { backgroundColor: c.primary }]}
-          onPress={() => navigation.navigate('AddTransaction')}
-          accessibilityLabel="+"
-        >
-          <Ionicons name="add" size={28} color="#FFFFFF" />
-        </TouchableOpacity>
+        <Text style={[styles.accountBalance, { color: accountBalance >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
+          {accountBalance >= 0 ? '+' : ''}{formatCurrency(accountBalance, config.currency, config.decimalSeparator)}
+        </Text>
+        <SortToggle
+          sortBy={sortBy}
+          direction={sortDirection}
+          onToggleSort={handleToggleSort}
+          onToggleDirection={() => setSortDirection(d => d === 'desc' ? 'asc' : 'desc')}
+        />
       </View>
+
+      <SectionList
+        style={scrollbarFlatList}
+        contentContainerStyle={styles.listContent}
+        sections={sections}
+        keyExtractor={(item) => item.id.toString()}
+        renderSectionHeader={({ section }) => (
+          <TransactionGroup
+            date={section.date}
+            transactions={section.data}
+            categories={categories}
+          />
+        )}
+        renderItem={({ item }) => null}
+        ListEmptyComponent={
+          <Text style={[styles.empty, { color: c.textSecondary, fontSize: fs(14) }]}>{labels.transactions_empty}</Text>
+        }
+        stickySectionHeadersEnabled={false}
+      />
+
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: c.primary }]}
+        onPress={() => navigation.navigate('AddTransaction')}
+        accessibilityLabel="+"
+      >
+        <Ionicons name="add" size={28} color={c.background} />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
   container: { flex: 1 },
   controls: {
     alignItems: 'center',
@@ -118,7 +131,7 @@ const styles = StyleSheet.create({
   empty: { textAlign: 'center', marginTop: 40 },
   fab: {
     position: 'absolute',
-    bottom: 24,
+    bottom: 56,
     alignSelf: 'center',
     width: 56,
     height: 56,

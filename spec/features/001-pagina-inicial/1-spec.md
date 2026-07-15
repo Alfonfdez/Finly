@@ -25,7 +25,7 @@ Una pantalla principal en la app donde se muestra la Cuenta actual, el Total (di
 
 6. Gráfico de anillos (SVG) que muestra gastos/ingresos del período seleccionado, desglosado por categorías con su color. Al pulsar el gráfico, alterna a gráfico de barras horizontal.
 
-7. Botón "+" (Floating Action Button) que navega a la pantalla "Añadir Gasto/Ingreso".
+7. Botón "+" (Floating Action Button) centrado en la parte inferior. Fondo: color primario (`c.primary`). Icono: `Ionicons "add"` con color `c.background` (adaptable al tema). Posición: `position: absolute`, `bottom: 56`, `alignSelf: 'center'`. Navega a la pantalla "Añadir Gasto/Ingreso".
 
 8. Lista de desglose por categorías: icono SVG, nombre, porcentaje, total numérico con 2 decimales y símbolo de divisa (€ por defecto). Al pulsar una categoría, navega a "Transacciones" filtrada por esa categoría.
 

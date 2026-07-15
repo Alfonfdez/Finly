@@ -673,3 +673,67 @@ export async function initWebStorage(): Promise<void> {
 npx eslint src/screens/AccountsScreen.tsx
 ```
 
+# Tipografía y tamaños de fuente
+
+## Sistema de escalado de fuentes (`fs()`)
+**Definición:** Hook `useFontSize()` que escala todos los tamaños de fuente de la app según la preferencia del usuario (Pequeño / Mediano / Grande).
+**Explicación:** `fs()` toma un tamaño base (en px a escala "Mediano") y devuelve el valor escalado según el factor configurado: Pequeño = ×0.85, Mediano = ×1.0, Grande = ×1.15. Todos los tamaños de fuente en la app deben usar `fs()` en lugar de valores hardcoded para respetar la accesibilidad. La función redondea al entero más cercano para evitar sub-píxeles.
+**Ejemplo:**
+```tsx
+const fs = useFontSize();
+<Text style={{ fontSize: fs(14) }}>  // 12px / 14px / 16px según config
+<Text style={{ fontSize: fs(22) }}>  // 19px / 22px / 25px según config
+```
+
+## Tabla de tamaños de fuente por elemento
+**Definición:** Guía de referencia de qué tamaño `fs(N)` usar para cada tipo de elemento de UI.
+**Explicación:** Basada en el auditoría del codebase completo. Los valores son argumentos de `fs()`, no px finales. El tamaño real depende de la configuración del usuario.
+
+| fs(N) | Uso | Ejemplos |
+|-------|-----|----------|
+| `fs(11)` | Textos auxiliares, labels de gráfico, categorías en grid pequeño | CategoryGrid names, BarChart labels, DayPicker year/month |
+| `fs(12)` | Badges, metadata, secondary labels, income/expenses breakdown | AccountSelector balance, TransactionGroup date, HomeScreen breakdown |
+| `fs(13)` | Period tabs, sort labels, tag chips | PeriodTabs, SortToggle, TagSection |
+| `fs(14)` | **Tamaño estándar** — cuerpo de texto, nombres de cuenta/categoría, botones | AccountSelector trigger, CategoryList names, modal titles, settings labels |
+| `fs(15)` | Nombres de items en listas, search input | AccountScreen names, SearchBar, TypeTabs, CommentInput |
+| `fs(16)` | Títulos de pantalla, títulos de modal, headers de sección | Modal titles, TransactionsScreen header, CategoriesScreen |
+| `fs(17)` | Títulos de header del Stack navigator | Todos los `headerTitle` en AppNavigator.tsx |
+| `fs(18)` | Totales grandes en modales, chart center text | DonutChart total, CalculatorModal display, PhotoSection |
+| `fs(20)` | Display de calculadora (resultado) | CalculatorModal result |
+| `fs(22)` | Totales de pantalla (saldo de cuenta, total de categoría) | AccountsScreen total, TransactionsScreen categoryTotal, AllTransactionsScreen balance |
+| `fs(24)` | Títulos grandes de pantalla | AddTransactionScreen title |
+| `fs(28)` | Total principal del HomeScreen | HomeScreen total balance |
+
+## Pesos de fuente (fontWeight)
+**Definición:** Los pesos de fuente usados en la app, todos como strings numéricas.
+**Explicación:** La app no usa `fontFamily` personalizado — depende de la fuente del sistema. Los pesos se aplican como strings (`'500'`, `'600'`, etc.), no como palabras clave (`'bold'`).
+
+| fontWeight | Uso | Ejemplos |
+|------------|-----|----------|
+| `'500'` | Texto de cuerpo normal, nombres de items, labels | AccountSelector modal names, CategoryList, DaySelector |
+| `'600'` | **Más usado** — nombres de cuenta/categoría, botones, trigger text, headers ligeros | AccountSelector trigger, AccountScreen names, SortToggle, TypeTabs, AppNavigator headerTitle |
+| `'700'` | Totales monetarios, títulos de modal, labels activos, items seleccionados | AccountSelector modal balance, TransactionsScreen categoryTotal, modal titles, DayPicker selected |
+| `'800'` | Total principal del HomeScreen (único uso) | HomeScreen totalText |
+
+## Convenciones de estilo de texto
+
+### Nombres de cuenta
+- **HomeScreen header:** `fs(14)`, `fontWeight: '600'`, color `textSecondary`, sin `textTransform: 'uppercase'`
+- **AccountSelector trigger:** `fs(14)`, `fontWeight: '600'`, color `text`
+- **AccountScreen list:** `fs(15)`, `fontWeight: '600'`, color `text`
+
+### Totales monetarios
+- **Total principal (HomeScreen):** `fs(28)`, `fontWeight: '800'`, color dinámico (green/red), con prefijo `+`/`-`
+- **Total de pantalla (Accounts, Transactions):** `fs(22)`, `fontWeight: '700'`, color dinámico, con prefijo `+`/`-`
+- **Balance en modal:** `fs(12)`, `fontWeight: '700'`, color `textSecondary`
+- **Importe de transacción:** `fs(14)`, `fontWeight: '600'`, color green (ingreso) / red (gasto)
+
+### Headers de pantalla
+- **Stack navigator headerTitle:** `fs(17)`, `fontWeight: '600'`, con icono + texto
+- **Secciones dentro de pantalla:** `fs(16)`, `fontWeight: '700'`
+
+### Botones
+- **FAB (botón flotante):** `fs(28)` para el símbolo "+", `fontWeight: '600'`
+- **Botones de modal:** `fs(14)`, `fontWeight: '600'`
+- **Tab activo:** `fs(13)` o `fs(14)`, `fontWeight: '600'`, color `primary`
+

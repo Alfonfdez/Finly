@@ -932,3 +932,53 @@
 [2026-07-15] ~ | spec/constitution/3-roadmap.md
 - Actualizados estados de 011, 012, 013, 014 y 015 de "pendiente" a "completado".
 - Actualizadas descripciones de 014 y 015 para reflejar implementación final (layout container, título "Todas las transacciones", AllTransactionsScreen independiente).
+
+[2026-07-15] ~ | src/screens/HomeScreen.tsx
+- Añadido icono de cuenta (24×24 circular con color de fondo) en el header del HomeScreen.
+- Eliminado `textTransform: 'uppercase'` y `letterSpacing: 1` del nombre de cuenta.
+- Añadido prefijo "+" al total balance cuando es positivo (consistencia con otras pantallas).
+- Tamaño de fuente del nombre de cuenta cambiado de fs(12) a fs(14) (consistencia con AccountSelector).
+
+[2026-07-15] + | docs/programming-concepts.md
+- Añadida sección "Tipografía y tamaños de fuente": sistema de escalado `fs()`, tabla de tamaños por elemento, pesos de fuente, convenciones de estilo por tipo de UI (nombres, totales, headers, botones).
+
+[2026-07-15] ~ | src/screens/AccountsScreen.tsx
+- Fix: añadido prefijo "+" al saldo de cada cuenta y al total cuando el valor es positivo (consistencia con HomeScreen, TransactionsScreen y AllTransactionsScreen).
+
+[2026-07-15] ~ | spec/constitution/2-tech-stack.md
+- Ampliada sección "Diseño visual" con subsección "Tipografía" completa: sistema de escalado `fs()`, tabla de tamaños por elemento (12 niveles), pesos de fuente, convenciones de formato monetario y convenciones de nombre de cuenta.
+
+[2026-07-15] ~ | spec/constitution/2-tech-stack.md
+- Actualización completa del árbol de archivos: añadidas 7 pantallas, 7 componentes, 1 hook, 1 util, 1 constante y 1 migración que faltaban.
+- Corregida dependencia: añadido `@expo/vector-icons` (Ionicons) y corregido "sin librería de UI externa".
+- Añadidas dependencias de navegación y animación: `@react-navigation/*`, `react-native-reanimated`, `react-native-gesture-handler`, `react-native-screens`, `react-native-safe-area-context`.
+- Documentado `DATABASE_VERSION = 6` en la descripción de `database.ts`.
+
+[2026-07-15] ~ | README.md
+- Añadido `@expo/vector-icons` (Ionicons) a la tabla de stack.
+- Actualizado árbol de archivos: +6 pantallas, +3 componentes, +1 hook, +1 constante, +1 migración, +8 specs.
+- Ampliada lista de funcionalidades: gestión de cuentas, listado/edición de categorías, selector de cuenta reutilizable, ordenación de transacciones, pantalla de todas las transacciones.
+
+[2026-07-15] ~ | src/screens/AccountsScreen.tsx, TransactionsScreen.tsx, AllTransactionsScreen.tsx
+- AccountsScreen: FAB centrado (`alignSelf: 'center'` en lugar de `right: 24`).
+- TransactionsScreen y AllTransactionsScreen: color del icono "+" cambiado de `#FFFFFF` a `c.background` (consistencia con AccountsScreen y HomeScreen, adaptable al tema dark/light).
+
+[2026-07-15] ~ | src/screens/AllTransactionsScreen.tsx
+- Añadido `headerLeft` con icono hamburguesa (`menu-outline`) usando `DrawerActions.openDrawer()` (consistencia con AccountsScreen y CategoriesScreen).
+
+[2026-07-15] ~ | src/navigation/AppNavigator.tsx
+- Icono del header de AllTransactions cambiado de `list-outline` a `stats-chart-outline` (consistencia con TransactionsScreen).
+
+[2026-07-15] ~ | src/screens/HomeScreen.tsx, AccountsScreen.tsx, TransactionsScreen.tsx, AllTransactionsScreen.tsx
+- FAB "+" unificado en las 4 pantallas: centrado (`alignSelf: 'center'`), `bottom: 56`, icono `Ionicons "add"` con color `c.background`, sombra consistente.
+- HomeScreen: cambiado de `<Text>+</Text>` a `<Ionicons>`, centrado, eliminado `Platform.select` y `fabText`.
+- TransactionsScreen y AllTransactionsScreen: eliminado wrapper `View.container`, FAB es hijo directo de SafeAreaView.
+
+[2026-07-15] ~ | spec/features/011-pagina-cuentas/1-spec.md
+- Actualizado FAB: de "esquina inferior derecha" a "centrado", añadidos detalles de posición (`bottom: 56`) y color del icono (`c.background`).
+
+[2026-07-15] ~ | spec/features/001-pagina-inicial/1-spec.md
+- Ampliada descripción del FAB: posición centrada, `bottom: 56`, icono `Ionicons "add"`, color `c.background`.
+
+[2026-07-15] ~ | spec/features/014-pagina-transacciones-por-pagina-inicial/ y 015-pagina-transacciones-por-menu-hamburguesa/
+- Actualizada estructura de layout: eliminado `View.container(flex:1)`, FAB es hijo directo de SafeAreaView.

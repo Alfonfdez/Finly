@@ -30,10 +30,11 @@
 
 ### 4. Botón flotante "+"
 
-- Botón flotante (FAB) en la esquina inferior derecha con icono "+".
+- Botón flotante (FAB) centrado en la parte inferior con icono `Ionicons "add"`.
 - Al pulsar, navega a `CreateAccountScreen` (013) para crear una nueva cuenta.
-- El botón usa el color primario como fondo.
-- El botón se superpone sobre la lista de cuentas (position absolute).
+- Fondo: color primario (`c.primary`). Icono: `c.background` (adaptable al tema dark/light).
+- Posición: `position: absolute`, `bottom: 56`, `alignSelf: 'center'`.
+- Se superpone sobre la lista de cuentas.
 
 ### 5. Persistencia
 

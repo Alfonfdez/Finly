@@ -89,7 +89,7 @@ export default function AccountsScreen() {
           },
         ]}
       >
-        {formatCurrency(item.saldo, config.currency, config.decimalSeparator)}
+        {item.saldo >= 0 ? '+' : ''}{formatCurrency(item.saldo, config.currency, config.decimalSeparator)}
       </Text>
     </TouchableOpacity>
   );
@@ -118,7 +118,7 @@ export default function AccountsScreen() {
             },
           ]}
         >
-          {formatCurrency(total, config.currency, config.decimalSeparator)}
+          {total >= 0 ? '+' : ''}{formatCurrency(total, config.currency, config.decimalSeparator)}
         </Text>
       </View>
 
@@ -204,8 +204,8 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 24,
-    right: 24,
+    bottom: 56,
+    alignSelf: 'center',
     width: 56,
     height: 56,
     borderRadius: 28,

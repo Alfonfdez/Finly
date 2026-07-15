@@ -18,7 +18,7 @@ HomeScreen icon → navigation.navigate('AllTransactions')  [sin params]
 
 | Archivo | Acción |
 |---------|--------|
-| `src/screens/AllTransactionsScreen.tsx` | **Crear** — pantalla SafeAreaView > View.container(flex:1) con AccountSelector + saldo total + SortToggle + SectionList + FAB(absolute) |
+| `src/screens/AllTransactionsScreen.tsx` | **Crear** — pantalla SafeAreaView > [AccountSelector + saldo total + SortToggle + SectionList + FAB(absolute)] |
 | `src/navigation/AppNavigator.tsx` | **Modificar** — registrar `AllTransactions` en Stack con título "Todas las transacciones" (i18n `nav_all_transactions`), actualizar DrawerItem |
 | `src/constants/types.ts` | **Modificar** — añadir `AllTransactions` a `RootStackParamList` |
 

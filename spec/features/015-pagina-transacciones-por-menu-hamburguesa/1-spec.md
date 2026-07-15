@@ -39,14 +39,16 @@
 
 ### 5. Botón flotante "+"
 
-- Botón flotante "+" centrado en la parte inferior (mismo estilo que en 014).
+- Botón flotante "+" centrado en la parte inferior (mismo estilo que en 014 y 011).
+- Fondo: `c.primary`. Icono: `Ionicons "add"` con color `c.background`.
+- Posición: `position: absolute`, `bottom: 56`, `alignSelf: 'center'`.
 
 ---
 
 ## Requisitos no funcionales
 
 - **Pantalla:** `AllTransactionsScreen.tsx` (pantalla independiente, no comparte componente con 014).
-- **Estructura de layout:** `SafeAreaView > View.container(flex:1) > [controls, SectionList, FAB(absolute)]`. El FAB se posiciona con `position: absolute` dentro del container. No se usa `keyboardSpacer`.
+- **Estructura de layout:** `SafeAreaView > [controls, SectionList, FAB(absolute)]`. El FAB es hijo directo del SafeAreaView con `position: absolute`. No se usa `keyboardSpacer`.
 - **Componentes compartidos:** reutiliza `AccountSelector`, `SortToggle` y `TransactionGroup` de 014.
 - **Hook compartido:** reutiliza `useTransactionFilters` para filtrado, ordenación y agrupación.
 - Igual que en 014 para el resto de requisitos no funcionales (multilingual, config, texto, iconos).

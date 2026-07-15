@@ -26,7 +26,7 @@ Orden de ejecución. Marca cada tarea al completarlo.
 ### Fase 3 — Pantalla principal
 
 [ ] T7 — Reescribir `TransactionsScreen.tsx` con:
-  - Estructura: `SafeAreaView > View.container(flex:1) > [categoryInfo, controls, SectionList, FAB(absolute)]`.
+  - Estructura: `SafeAreaView > [categoryInfo, controls, SectionList, FAB(absolute)]`.
   - Header del Stack navigator (icono + "Transacciones").
   - Sección de categoría: icono + nombre + total con color (verde/rojo) y prefijo (+/-).
   - `AccountSelector` con cuenta por defecto del AppContext.

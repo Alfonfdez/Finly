@@ -78,7 +78,7 @@
 - **Configuración**: usar `useConfig().activeColors` para colores.
 - **Texto**: usar `useFontSize()` para escalado.
 - **Navegación**: se añade al `HomeStack` en `AppNavigator.tsx`.
-- **Estructura de layout:** `SafeAreaView > View.container(flex:1) > [categoryInfo, controls, SectionList, FAB(absolute)]`. El FAB se posiciona con `position: absolute` dentro del container. No se usa `keyboardSpacer`.
+- **Estructura de layout:** `SafeAreaView > [categoryInfo, controls, SectionList, FAB(absolute)]`. El FAB es hijo directo del SafeAreaView con `position: absolute`. No se usa `keyboardSpacer`.
 - **Persistencia**: las transacciones se cargan desde `transactionRepository` (SQLite nativo / localStorage web).
 - **Formato monetario**: usar `formatCurrency()` existente (máximo 2 decimales).
 - **Iconos**: `@expo/vector-icons` (Ionicons).

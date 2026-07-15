@@ -62,71 +62,68 @@ export default function TransactionsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]} edges={['bottom']}>
-      <View style={styles.container}>
-        {category && (
-          <View style={[styles.categoryInfo, { borderBottomColor: c.border }]}>
-            <View style={styles.categoryRow}>
-              <View style={[styles.categoryIcon, { backgroundColor: category.color + '30' }]}>
-                <Ionicons name={category.icon as ComponentProps<typeof Ionicons>['name']} size={22} color={category.color} />
-              </View>
-              <Text style={[styles.categoryName, { color: c.text, fontSize: fs(16) }]} numberOfLines={1}>
-                {getCategoryName(category.id) || category.name}
-              </Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+      {category && (
+        <View style={[styles.categoryInfo, { borderBottomColor: c.border }]}>
+          <View style={styles.categoryRow}>
+            <View style={[styles.categoryIcon, { backgroundColor: category.color + '30' }]}>
+              <Ionicons name={category.icon as ComponentProps<typeof Ionicons>['name']} size={22} color={category.color} />
             </View>
-            <Text style={[styles.categoryTotal, { color: categoryTotal >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
-              {categoryTotal >= 0 ? '+' : ''}{formatCurrency(categoryTotal, config.currency, config.decimalSeparator)}
+            <Text style={[styles.categoryName, { color: c.text, fontSize: fs(16) }]} numberOfLines={1}>
+              {getCategoryName(category.id) || category.name}
             </Text>
           </View>
-        )}
-
-        <View style={[styles.controls, { borderBottomColor: c.border }]}>
-          <AccountSelector
-            accounts={accountsWithBalance}
-            selectedId={selectedAccountId}
-            onSelect={setSelectedAccountId}
-          />
-          <SortToggle
-            sortBy={sortBy}
-            direction={sortDirection}
-            onToggleSort={handleToggleSort}
-            onToggleDirection={() => setSortDirection(d => d === 'desc' ? 'asc' : 'desc')}
-          />
+          <Text style={[styles.categoryTotal, { color: categoryTotal >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
+            {categoryTotal >= 0 ? '+' : ''}{formatCurrency(categoryTotal, config.currency, config.decimalSeparator)}
+          </Text>
         </View>
+      )}
 
-        <SectionList
-          style={scrollbarFlatList}
-          contentContainerStyle={styles.listContent}
-          sections={sections}
-          keyExtractor={(item) => item.id.toString()}
-          renderSectionHeader={({ section }) => (
-            <TransactionGroup
-              date={section.date}
-              transactions={section.data}
-              categories={categories}
-            />
-          )}
-          renderItem={({ item }) => null}
-          ListEmptyComponent={
-            <Text style={[styles.empty, { color: c.textSecondary, fontSize: fs(14) }]}>{labels.transactions_empty}</Text>
-          }
-          stickySectionHeadersEnabled={false}
+      <View style={[styles.controls, { borderBottomColor: c.border }]}>
+        <AccountSelector
+          accounts={accountsWithBalance}
+          selectedId={selectedAccountId}
+          onSelect={setSelectedAccountId}
         />
-
-        <TouchableOpacity
-          style={[styles.fab, { backgroundColor: c.primary }]}
-          onPress={() => navigation.navigate('AddTransaction')}
-          accessibilityLabel="+"
-        >
-          <Ionicons name="add" size={28} color="#FFFFFF" />
-        </TouchableOpacity>
+        <SortToggle
+          sortBy={sortBy}
+          direction={sortDirection}
+          onToggleSort={handleToggleSort}
+          onToggleDirection={() => setSortDirection(d => d === 'desc' ? 'asc' : 'desc')}
+        />
       </View>
+
+      <SectionList
+        style={scrollbarFlatList}
+        contentContainerStyle={styles.listContent}
+        sections={sections}
+        keyExtractor={(item) => item.id.toString()}
+        renderSectionHeader={({ section }) => (
+          <TransactionGroup
+            date={section.date}
+            transactions={section.data}
+            categories={categories}
+          />
+        )}
+        renderItem={({ item }) => null}
+        ListEmptyComponent={
+          <Text style={[styles.empty, { color: c.textSecondary, fontSize: fs(14) }]}>{labels.transactions_empty}</Text>
+        }
+        stickySectionHeadersEnabled={false}
+      />
+
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: c.primary }]}
+        onPress={() => navigation.navigate('AddTransaction')}
+        accessibilityLabel="+"
+      >
+        <Ionicons name="add" size={28} color={c.background} />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
   container: { flex: 1 },
   categoryInfo: {
     alignItems: 'center',
@@ -160,7 +157,7 @@ const styles = StyleSheet.create({
   empty: { textAlign: 'center', marginTop: 40 },
   fab: {
     position: 'absolute',
-    bottom: 24,
+    bottom: 56,
     alignSelf: 'center',
     width: 56,
     height: 56,

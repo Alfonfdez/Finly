@@ -15,6 +15,7 @@ App para gestionar ingresos y gastos personales con múltiples cuentas, categor�
 | Framework | React Native con Expo (SDK 54) |
 | Lenguaje | TypeScript |
 | Navegación | React Navigation (Stack + Drawer) |
+| Iconos | @expo/vector-icons (Ionicons) |
 | Gráficos | react-native-svg |
 | Color picker | reanimated-color-picker |
 | Persistencia | SQLite (expo-sqlite) en nativo, localStorage en web |
@@ -130,13 +131,20 @@ Finly/
 │   │   ├── screens/
 │   │   │   ├── HomeScreen.tsx       ← Pantalla principal
 │   │   │   ├── AddTransactionScreen.tsx ← Añadir gasto/ingreso
-│   │   │   ├── AddCategoryScreen.tsx← Seleccionar categoría
+│   │   │   ├── AddCategoryScreen.tsx ← Seleccionar categoría
+│   │   │   ├── TransactionsScreen.tsx ← Transacciones por categoría (014)
+│   │   │   ├── AllTransactionsScreen.tsx ← Todas las transacciones (015)
+│   │   │   ├── AccountsScreen.tsx   ← Lista de cuentas
+│   │   │   ├── CreateAccountScreen.tsx ← Crear cuenta
+│   │   │   ├── ModifyAccountScreen.tsx ← Editar cuenta
+│   │   │   ├── CategoriesScreen.tsx ← Lista de categorías
 │   │   │   ├── CreateCategoryScreen.tsx ← Crear categoría
-│   │   │   ├── TransactionsScreen.tsx ← Listado de transacciones
+│   │   │   ├── ModifyCategoryScreen.tsx ← Editar categoría
 │   │   │   └── SettingsScreen.tsx   ← Configuración de la app
 │   │   ├── components/
 │   │   │   ├── AccountModal.tsx     ← Modal de selección de cuentas
-│   │   │   ├── CalculatorModal.tsx  ← Calculadora básica
+│   │   │   ├── AccountSelector.tsx  ← Trigger de selección de cuenta
+│   │   │   ├── CalculatorModal.tsx  ← Calculadora emergente
 │   │   │   ├── DonutChart.tsx       ← Gráfico de anillos SVG
 │   │   │   ├── BarChart.tsx         ← Barra horizontal apilada
 │   │   │   ├── CategoryList.tsx     ← Lista de desglose por categorías
@@ -144,6 +152,8 @@ Finly/
 │   │   │   ├── ColorGrid.tsx        ← Selector de colores rápido
 │   │   │   ├── ColorPickerModal.tsx ← Selector de color dinámico
 │   │   │   ├── IconGrid.tsx         ← Grid de iconos
+│   │   │   ├── SortToggle.tsx       ← Toggle de ordenación fecha/cantidad
+│   │   │   ├── TransactionGroup.tsx ← Grupo de transacciones por fecha
 │   │   │   ├── CalendarPicker.tsx   ← Selector de fecha textual
 │   │   │   ├── CalendarModal.tsx    ← Modal contenedor de calendarios
 │   │   │   ├── DaySelector.tsx      ← Selector de día (Hoy/Ayer/Dinámico)
@@ -175,7 +185,8 @@ Finly/
 │   │   │   │   ├── 002_seed.ts
 │   │   │   │   ├── 003_config.ts
 │   │   │   │   ├── 004_new_categories.ts
-│   │   │   │   └── 005_english_schema.ts
+│   │   │   │   ├── 005_english_schema.ts
+│   │   │   │   └── 006_account_description.ts
 │   │   │   └── repositories/
 │   │   │       ├── userRepo.ts
 │   │   │       ├── accountRepo.ts
@@ -188,12 +199,14 @@ Finly/
 │   │   │   ├── es.ts
 │   │   │   └── ca.ts
 │   │   ├── hooks/
-│   │   │   └── useFontSize.ts       ← Hook de escalado de texto
+│   │   │   ├── useFontSize.ts       ← Hook de escalado de texto
+│   │   │   └── useTransactionFilters.ts ← Filtrado y agrupación de transacciones
 │   │   ├── constants/
 │   │   │   ├── themes.ts            ← Paletas dark + light
 │   │   │   ├── colors.ts            ← Paleta legacy
 │   │   │   ├── types.ts             ← Tipos compartidos
-│   │   │   └── platformStyles.ts    ← Estilos por plataforma
+│   │   │   ├── platformStyles.ts    ← Estilos por plataforma
+│   │   │   └── accountIcons.ts      ← Iconos disponibles para cuentas
 │   │   ├── data/
 │   │   │   └── mockData.ts          ← Datos mock (legacy)
 │   │   └── utils/
@@ -209,10 +222,18 @@ Finly/
 │       ├── 001-pagina-inicial/
 │       ├── 002-diseño-DB/
 │       ├── 003-pagina-configuracion/
-│       ├── 004-pagina-transaccion/
+│       ├── 004-pagina-anadir-transaccion/
 │       ├── 005-pagina-anadir-categoria/
 │       ├── 006-pagina-crear-categoria/
-│       └── 007-calculadora/
+│       ├── 007-calculadora/
+│       ├── 008-pagina-categorias/
+│       ├── 009-pagina-modificar-eliminar-categoria/
+│       ├── 010-app-logo/
+│       ├── 011-pagina-cuentas/
+│       ├── 012-pagina-modificar-eliminar-cuenta/
+│       ├── 013-pagina-crear-cuenta/
+│       ├── 014-pagina-transacciones-por-pagina-inicial/
+│       └── 015-pagina-transacciones-por-menu-hamburguesa/
 │
 ├── .agents/skills/               ← Skills para asistentes IA
 ├── docs/                         ← Documentación de conceptos
@@ -223,16 +244,19 @@ Finly/
 
 ## Funcionalidades
 
-- Gestión de múltiples cuentas
+- Gestión de múltiples cuentas (crear, editar, eliminar)
 - Registro de ingresos y gastos por categorías
+- Listado y edición de categorías personalizadas con icono y color
 - Filtros por período: Día, Semana, Mes, Año, Período personalizado
 - Selector de fecha interactivo (DateTimePicker)
 - Gráfico de anillos (donut) y barra horizontal apilada
 - Desglose por categorías con porcentajes
+- Selector de cuenta reutilizable con cálculo de saldos
+- Ordenación de transacciones por fecha o cantidad
+- Pantalla de todas las transacciones con filtros combinados
 - Pantalla de ajustes: tema, divisa, idioma, calendario, tamaño de texto
 - Tema oscuro y claro con cambio en tiempo real
 - Soporte multilingüe: español, inglés, catalán
 - Escalado de texto según preferencias del usuario
 - Navegación con menú lateral (Drawer)
-- Creación de categorías personalizadas con icono y color
 - Calculadora básica integrada

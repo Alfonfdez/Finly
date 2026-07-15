@@ -38,7 +38,7 @@ src/
 
 ### TransactionsScreen (reescribir)
 
-Pantalla que muestra transacciones filtradas y ordenadas. Estructura de layout: `SafeAreaView > View.container(flex:1) > [categoryInfo, controls, SectionList, FAB(absolute)]`. No se usa `keyboardSpacer`. Estado local:
+Pantalla que muestra transacciones filtradas y ordenadas. Estructura de layout: `SafeAreaView > [categoryInfo, controls, SectionList, FAB(absolute)]`. No se usa `keyboardSpacer`. Estado local:
 
 ```ts
 interface TransactionsState {

@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, ActivityIndicator } from 'react-native';
+import { useState, useCallback, ComponentProps } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
@@ -127,11 +127,14 @@ export default function HomeScreen() {
 
           <TouchableOpacity style={styles.totalButton} onPress={() => setModalVisible(true)}>
             <View style={styles.accountRow}>
-              <Text style={[styles.accountLabel, { color: c.textSecondary, fontSize: fs(12) }]}>{activeAccount.name}</Text>
+              <View style={[styles.accountIcon, { backgroundColor: activeAccount.color + '30' }]}>
+                <Ionicons name={activeAccount.icon as ComponentProps<typeof Ionicons>['name']} size={18} color={activeAccount.color} />
+              </View>
+              <Text style={[styles.accountLabel, { color: c.textSecondary, fontSize: fs(14) }]}>{activeAccount.name}</Text>
               <Ionicons name="chevron-down-outline" size={14} color={c.textSecondary} />
             </View>
             <Text style={[styles.totalText, { color: totalColor, fontSize: fs(28) }]}>
-              {formatCurrency(total, config.currency, config.decimalSeparator)}
+              {total >= 0 ? '+' : ''}{formatCurrency(total, config.currency, config.decimalSeparator)}
             </Text>
             <View style={styles.summaryRow}>
               <Text style={[styles.summaryItem, { fontSize: fs(12) }]}>
@@ -190,14 +193,11 @@ export default function HomeScreen() {
         />
 
         <TouchableOpacity
-          style={[styles.fab, { backgroundColor: c.primary }, Platform.select({
-            web: { boxShadow: `0 4px 12px ${c.primary}4D` },
-            default: { elevation: 6, shadowColor: c.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
-          })]}
+          style={[styles.fab, { backgroundColor: c.primary }]}
           onPress={() => navigation.navigate('AddTransaction')}
           accessibilityLabel={labels.home_add}
         >
-          <Text style={[styles.fabText, { color: c.background, fontSize: fs(28) }]}>+</Text>
+          <Ionicons name="add" size={28} color={c.background} />
         </TouchableOpacity>
 
         <AccountModal
@@ -222,8 +222,15 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   totalButton: { alignItems: 'center', flex: 1 },
-  accountRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  accountLabel: { textTransform: 'uppercase', letterSpacing: 1 },
+  accountRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  accountIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  accountLabel: {},
   summaryRow: { flexDirection: 'row', gap: 12 },
   summaryItem: {},
   summaryLabel: {},
@@ -231,13 +238,17 @@ const styles = StyleSheet.create({
   chartContainer: { alignItems: 'center', marginVertical: 8 },
   fab: {
     position: 'absolute',
-    bottom: 24,
-    right: 24,
+    bottom: 56,
+    alignSelf: 'center',
     width: 56,
     height: 56,
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
-  fabText: { fontWeight: '600', lineHeight: 30 },
 });
