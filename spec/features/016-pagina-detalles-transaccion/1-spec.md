@@ -75,7 +75,7 @@ Cada campo se muestra en una fila con un label a la izquierda (gris, `textSecond
 - **Texto**: la pantalla debe usar `useFontSize()` para escalado de texto.
 - **Formato monetario**: usar `formatCurrency()` con divisa y separador de `ConfigContext`.
 - **Navegación**: la pantalla se añade al Stack navigator con `transactionId` como parámetro de ruta.
-- **Refresco automático**: las pantallas de listado (`TransactionsScreen`, `AllTransactionsScreen`) usan `useFocusEffect` para incrementar un `refreshTrigger` que fuerza a `useTransactionFilters` a recargar los datos al volver (ej: tras eliminar una transacción).
+- **Refresco automático**: las pantallas de listado (`TransactionsScreen`, `AllTransactionsScreen`) cargan los datos directamente dentro de `useFocusEffect` con patrón de cleanup (`active` flag), por lo que se recargan desde la BD cada vez que la pantalla recupera el foco (tras crear, eliminar o editar una transacción).
 
 ---
 

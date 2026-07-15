@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { View, Text, SectionList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, SectionList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect, DrawerActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -9,7 +9,8 @@ import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { RootStackParamList } from '../constants/types';
-import { useTransactionFilters } from '../hooks/useTransactionFilters';
+import { Transaction } from '../database/types';
+import { transactionRepository } from '../database';
 import { formatCurrency } from '../utils/formatters';
 import { t } from '../i18n';
 import AccountSelector from '../components/AccountSelector';
@@ -28,11 +29,21 @@ export default function AllTransactionsScreen() {
   const [selectedAccountId, setSelectedAccountId] = useState(activeAccount?.id ?? accounts[0]?.id ?? 1);
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
-      setRefreshKey(k => k + 1);
+      let active = true;
+      (async () => {
+        setLoading(true);
+        const data = await transactionRepository.list({});
+        if (active) {
+          setAllTransactions(data);
+          setLoading(false);
+        }
+      })();
+      return () => { active = false; };
     }, [])
   );
 
@@ -52,12 +63,32 @@ export default function AllTransactionsScreen() {
     }, [navigation, c.text, labels.home_open_menu])
   );
 
-  const { allTransactions, sections } = useTransactionFilters({
-    selectedAccountId,
-    sortBy,
-    sortDirection,
-    refreshTrigger: refreshKey,
-  });
+  const filtered = useMemo(() => {
+    let list = allTransactions.filter(t => t.account_id === selectedAccountId);
+    const sorted = [...list].sort((a, b) => {
+      if (sortBy === 'date') {
+        const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
+        return sortDirection === 'desc' ? -diff : diff;
+      }
+      const diff = a.amount - b.amount;
+      return sortDirection === 'desc' ? -diff : diff;
+    });
+    return sorted;
+  }, [allTransactions, selectedAccountId, sortBy, sortDirection]);
+
+  const sections = useMemo(() => {
+    const grouped = new Map<string, Transaction[]>();
+    for (const tx of filtered) {
+      const dateKey = tx.date.split(' ')[0];
+      const existing = grouped.get(dateKey);
+      if (existing) {
+        existing.push(tx);
+      } else {
+        grouped.set(dateKey, [tx]);
+      }
+    }
+    return Array.from(grouped.entries()).map(([date, data]) => ({ date, data }));
+  }, [filtered]);
 
   const accountBalance = useMemo(() => {
     return allTransactions
@@ -95,6 +126,11 @@ export default function AllTransactionsScreen() {
         />
       </View>
 
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={c.primary} />
+        </View>
+      ) : (
       <SectionList
         style={scrollbarFlatList}
         contentContainerStyle={styles.listContent}
@@ -114,6 +150,7 @@ export default function AllTransactionsScreen() {
         }
         stickySectionHeadersEnabled={false}
       />
+      )}
 
       <TouchableOpacity
         style={[styles.fab, { backgroundColor: c.primary }]}
@@ -137,6 +174,7 @@ const styles = StyleSheet.create({
   },
   accountBalance: { fontWeight: '700' },
   listContent: { paddingBottom: 80 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   empty: { textAlign: 'center', marginTop: 40 },
   fab: {
     position: 'absolute',
