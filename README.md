@@ -270,13 +270,13 @@ Finly/
 
 ## Screenshots
 
-![Splash animation](images/screenshots/000-Splash_animation.png) *Animación de carga con el logotipo de Finly y barra de progreso.*
-![Home screen](images/screenshots/001-Home_screen.png) *Pantalla principal con selector de cuenta, saldo total, gráfico de anillos y desglose por categorías.*
-![Hamburger menu](images/screenshots/002-Hamburguer-menu.png) *Menú lateral (Drawer) con acceso a Inicio, Ajustes, Transacciones, Categorías y Cuentas.*
-![Account selector modal](images/screenshots/003-Choose_accounts.png) *Modal de selección de cuenta con icono, nombre y saldo disponible.*
-![Add transaction](images/screenshots/004-Add_transaction.png) *Formulario para añadir un gasto o ingreso con cantidad, cuenta, categorías, día, etiquetas y comentario.*
-![Create category](images/screenshots/005-Create_category.png) *Pantalla para crear una categoría personalizada con icono, color y nombre.*
-![Categories list](images/screenshots/006-Categories.png) *Listado de categorías organizadas por tipo (gastos/ingresos) en un grid 4×N.*
-![All transactions](images/screenshots/007-All_transactions.png) *Listado completo de todas las transacciones con selector de cuenta, ordenación y agrupación por día.*
-![Settings](images/screenshots/008-Settings.png) *Pantalla de ajustes con configuración de tema, divisa, idioma, tamaño de texto y forma de iconos.*
-![Calendar period selection](images/screenshots/009-calendar_period_selection.png) *Selector de período personalizado con calendario para elegir un rango de fechas.*
+![Splash animation](images/screenshots/000-Splash_animation.png)<br>*Animación de carga con el logotipo de Finly y barra de progreso.*<br><br>
+![Home screen](images/screenshots/001-Home_screen.png)<br>*Pantalla principal con selector de cuenta, saldo total, gráfico de anillos y desglose por categorías.*<br><br>
+![Hamburger menu](images/screenshots/002-Hamburguer-menu.png)<br>*Menú lateral (Drawer) con acceso a Inicio, Ajustes, Transacciones, Categorías y Cuentas.*<br><br>
+![Account selector modal](images/screenshots/003-Choose_accounts.png)<br>*Modal de selección de cuenta con icono, nombre y saldo disponible.*<br><br>
+![Add transaction](images/screenshots/004-Add_transaction.png)<br>*Formulario para añadir un gasto o ingreso con cantidad, cuenta, categorías, día, etiquetas y comentario.*<br><br>
+![Create category](images/screenshots/005-Create_category.png)<br>*Pantalla para crear una categoría personalizada con icono, color y nombre.*<br><br>
+![Categories list](images/screenshots/006-Categories.png)<br>*Listado de categorías organizadas por tipo (gastos/ingresos) en un grid 4×N.*<br><br>
+![All transactions](images/screenshots/007-All_transactions.png)<br>*Listado completo de todas las transacciones con selector de cuenta, ordenación y agrupación por día.*<br><br>
+![Settings](images/screenshots/008-Settings.png)<br>*Pantalla de ajustes con configuración de tema, divisa, idioma, tamaño de texto y forma de iconos.*<br><br>
+![Calendar period selection](images/screenshots/009-calendar_period_selection.png)<br>*Selector de período personalizado con calendario para elegir un rango de fechas.*
