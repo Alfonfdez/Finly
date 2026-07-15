@@ -1012,3 +1012,12 @@
 
 [2026-07-16] ~ | FinlyApp/app.json
 - Eliminada configuración `developmentClient: { silentLaunch: true }` que forzaba EAS a usar `expo run:android` (build nativo completo desde cero) en lugar del workflow gestionado estándar. Esta configuración causaba errores de compilación C++ con `react-native-worklets` durante el build Gradle.
+
+[2026-07-16] ~ | FinlyApp/package.json
+- Eliminado `expo-dev-client` (no necesario para builds preview, modificaba configuración nativa).
+- Eliminado `react-native-worklets` (causaba errores de compilación C++ en Gradle).
+- Añadido `hermes-compiler@0.15.1` (requerido por build.gradle generado por expo prebuild; no viene incluido en react-native@0.81.5).
+- Añadido `expo-font@~14.0.12` para deduplicar expo-font (evita conflicto con expo-font@57 de @expo/vector-icons).
+- Corregido `@types/react` de `~19.2.2` a `~19.1.10` (versión esperada por SDK 54).
+- Corregido `typescript` de `~6.0.3` a `~5.9.2` (versión esperada por SDK 54).
+- Regenerado `package-lock.json` con npm 10.x para compatibilidad con EAS Build.
