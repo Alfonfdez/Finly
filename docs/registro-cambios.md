@@ -989,3 +989,23 @@
 - Añadidas claves i18n `settings_account_icon_shape` en es/en/ca.
 - Actualizados 7 componentes para usar `config.accountIconShape`: AccountsScreen, HomeScreen, AccountSelector (trigger + modal), AccountModal, CreateAccountScreen, ModifyAccountScreen.
 - Actualizado spec 003: añadida sección 2.7, criterio de aceptación, tareas T25-T27.
+
+[2026-07-15] + | spec/features/017-pagina-modificar-transaccion/
+- Creada spec completa para la página de modificar transacción: 1-spec.md (requisitos funcionales), 2-plan.md (arquitectura y componentes), 3-tasks.md (17 tareas en 6 fases).
+- Incluye: precarga de datos de la transacción actual, grid de categorías con la categoría actual en primera posición, reutilización de todos los componentes de AddTransaction, botón "Guardar" que llama a update().
+
+[2026-07-15] + | src/i18n/en.ts, es.ts, ca.ts
+- Añadidas claves i18n: modify_title, modify_save, modify_error_title, modify_error_message.
+
+[2026-07-15] ~ | src/screens/ModifyTransactionScreen.tsx
+- Reemplazado placeholder TODO por implementación completa: formulario de modificación precargado con datos de la transacción.
+- Mismos componentes que AddTransactionScreen (TypeTabs, CalculatorModal, AccountModal, CategoryGrid, DaySelector, TagSection, CommentInput, PhotoSection).
+- Categoría actual mostrada en primera posición del grid.
+- Botón "Guardar" con validación (categoría + cantidad > 0 + día + cuenta).
+- Al guardar: transactionRepository.update() + refresh() + goBack().
+
+[2026-07-15] ~ | src/screens/AddTransactionScreen.tsx
+- Exportada función consumePendingCategory() para ser usada por ModifyTransactionScreen.
+
+[2026-07-15] ~ | src/navigation/AppNavigator.tsx
+- Título de ModifyTransactionScreen cambiado de details_edit a modify_title.

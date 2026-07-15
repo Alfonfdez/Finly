@@ -226,3 +226,20 @@ Pantalla de detalles de una transacción individual, accesible al pulsar cualqui
 - Refresco automático del listado al volver (useFocusEffect + refreshTrigger).
 
 Especificación: spec/features/016-pagina-detalles-transaccion/.
+
+## 017-pagina-modificar-transaccion
+Estado: completado.
+
+Pantalla para modificar una transacción existente, accesible desde el botón "Editar" de TransactionDetailsScreen:
+- Tabs Gastos/Ingresos precargados con el tipo actual.
+- Input de cantidad precargado con el valor actual, con validación y calculadora.
+- Selector de cuenta precargado.
+- Grid de categorías con la categoría actual en la primera posición + botón "Más".
+- Selector de día precargado con la fecha de la transacción.
+- Sección de etiquetas (TODO persistencia).
+- Input de comentario precargado con el texto actual y autocompletado.
+- Sección de foto (UI únicamente, TODO).
+- Botón "Guardar" con validación que actualiza la transacción.
+- Refresco automático del listado al volver.
+
+Especificación: spec/features/017-pagina-modificar-transaccion/.

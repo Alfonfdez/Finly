@@ -263,4 +263,10 @@ export const es: Language = {
   details_created: 'Creado',
   type_expense: 'Gasto',
   type_income: 'Ingreso',
+
+  // Modify transaction
+  modify_title: 'Modificar transacción',
+  modify_save: 'Guardar',
+  modify_error_title: 'Error',
+  modify_error_message: 'No se ha podido guardar la transacción',
 };

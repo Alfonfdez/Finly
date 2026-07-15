@@ -30,7 +30,7 @@ export function setPendingCategory(categoryId: number, type: TransactionType) {
   pendingCategoryType = type;
 }
 
-function consumePendingCategory(): { categoryId: number; type: TransactionType } | null {
+export function consumePendingCategory(): { categoryId: number; type: TransactionType } | null {
   if (pendingCategoryId !== null && pendingCategoryType !== null) {
     const result = { categoryId: pendingCategoryId, type: pendingCategoryType };
     pendingCategoryId = null;

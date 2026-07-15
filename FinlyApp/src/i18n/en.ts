@@ -261,6 +261,12 @@ export const en = {
   details_created: 'Created',
   type_expense: 'Expense',
   type_income: 'Income',
+
+  // Modify transaction
+  modify_title: 'Modify transaction',
+  modify_save: 'Save',
+  modify_error_title: 'Error',
+  modify_error_message: 'Failed to save transaction',
 };
 
 export type Language = typeof en;

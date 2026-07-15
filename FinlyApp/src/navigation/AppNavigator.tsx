@@ -194,7 +194,7 @@ function HomeStack() {
         headerTitle: () => (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Ionicons name="create-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.details_edit}</Text>
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.modify_title}</Text>
           </View>
         ),
       }} />

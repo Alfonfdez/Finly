@@ -263,4 +263,10 @@ export const ca: Language = {
   details_created: 'Creat',
   type_expense: 'Despesa',
   type_income: 'Ingrés',
+
+  // Modify transaction
+  modify_title: 'Modificar transacció',
+  modify_save: 'Guardar',
+  modify_error_title: 'Error',
+  modify_error_message: 'No s\'ha pogut guardar la transacció',
 };
