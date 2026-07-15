@@ -27,11 +27,12 @@ const GRID_COLS = 4;
 const GRID_GAP = 12;
 
 export default function ModifyAccountScreen() {
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config } = useConfig();
   const { refreshAccounts } = useApp();
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp>();
+  const round = config.accountIconShape === 'circle';
   const route = useRoute<ModifyAccountRouteProp>();
   const { accountId } = route.params;
 
@@ -206,7 +207,7 @@ export default function ModifyAccountScreen() {
                   key={icon}
                   style={[
                     styles.gridItem,
-                    { width: cellSize, height: cellSize, borderRadius: 12 },
+                    { width: cellSize, height: cellSize, borderRadius: round ? 999 : 12 },
                     { backgroundColor: bgColor },
                     isSelected && { borderWidth: 2, borderColor },
                   ]}

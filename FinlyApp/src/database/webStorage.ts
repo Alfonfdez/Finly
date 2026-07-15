@@ -388,6 +388,7 @@ const CONFIG_DEFAULTS: Config = {
   language: 'es',
   textSize: 'medium',
   categoryIconShape: 'square',
+  accountIconShape: 'square',
 };
 
 const CONFIG_KEY = '@Finly/config';

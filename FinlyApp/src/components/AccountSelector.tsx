@@ -23,6 +23,7 @@ export default function AccountSelector({ accounts, selectedId, onSelect }: Prop
   const labels = t();
   const [visible, setVisible] = useState(false);
   const [tempId, setTempId] = useState(selectedId);
+  const round = config.accountIconShape === 'circle';
 
   const selected = accounts.find(a => a.id === selectedId);
 
@@ -40,7 +41,7 @@ export default function AccountSelector({ accounts, selectedId, onSelect }: Prop
     <>
       <TouchableOpacity style={styles.trigger} onPress={handleOpen} accessibilityLabel={selected?.name}>
         {selected && (
-          <View style={[styles.triggerIcon, { backgroundColor: selected.color + '30' }]}>
+          <View style={[styles.triggerIcon, { backgroundColor: selected.color + '30', borderRadius: round ? 14 : 6 }]}>
             <Ionicons name={selected.icon as ComponentProps<typeof Ionicons>['name']} size={18} color={selected.color} />
           </View>
         )}
@@ -69,7 +70,7 @@ export default function AccountSelector({ accounts, selectedId, onSelect }: Prop
                     <View style={[styles.radio, { borderColor: isSelected ? c.primary : c.textSecondary }]}>
                       {isSelected && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
                     </View>
-                    <View style={[styles.icon, { backgroundColor: item.color + '30' }]}>
+                    <View style={[styles.icon, { backgroundColor: item.color + '30', borderRadius: round ? 18 : 8 }]}>
                       <Ionicons name={item.icon as ComponentProps<typeof Ionicons>['name']} size={20} color={item.color} />
                     </View>
                     <View style={styles.info}>

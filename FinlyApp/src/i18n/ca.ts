@@ -13,6 +13,7 @@ export const ca: Language = {
   settings_decimal_sep: 'Separador decimal',
   settings_text_size: 'Mida del text',
   settings_category_icon_shape: 'ASPECTE DE CATEGORIES',
+  settings_account_icon_shape: 'ASPECTE DE COMPTES',
   shape_square: 'Quadrat',
   shape_circle: 'Cercle',
   theme_dark: 'Fosc',

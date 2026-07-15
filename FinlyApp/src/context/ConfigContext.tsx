@@ -12,6 +12,7 @@ export interface Config {
   language: 'es' | 'en' | 'ca';
   textSize: 'small' | 'medium' | 'large';
   categoryIconShape: 'square' | 'circle';
+  accountIconShape: 'square' | 'circle';
 }
 
 const CONFIG_DEFAULT: Config = {
@@ -22,6 +23,7 @@ const CONFIG_DEFAULT: Config = {
   language: 'es',
   textSize: 'medium',
   categoryIconShape: 'square',
+  accountIconShape: 'square',
 };
 
 interface ConfigContextType {

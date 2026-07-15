@@ -11,6 +11,7 @@ export const en = {
   settings_decimal_sep: 'Decimal separator',
   settings_text_size: 'Text size',
   settings_category_icon_shape: 'CATEGORY ICON SHAPE',
+  settings_account_icon_shape: 'ACCOUNT ICON SHAPE',
   shape_square: 'Square',
   shape_circle: 'Circle',
   theme_dark: 'Dark',

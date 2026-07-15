@@ -22,6 +22,7 @@ export default function AccountModal({ visible, accounts, onSelect, onClose }: P
   const { config, activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
+  const round = config.accountIconShape === 'circle';
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -38,7 +39,7 @@ export default function AccountModal({ visible, accounts, onSelect, onClose }: P
                 accessibilityLabel={`${labels.a11y_select_account} ${item.name}`}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <View style={[styles.icon, { backgroundColor: item.color + '30' }]}>
+                <View style={[styles.icon, { backgroundColor: item.color + '30', borderRadius: round ? 22 : 10 }]}>
                   <Ionicons name={item.icon as ComponentProps<typeof Ionicons>['name']} size={22} color={item.color} />
                 </View>
                 <View style={styles.info}>

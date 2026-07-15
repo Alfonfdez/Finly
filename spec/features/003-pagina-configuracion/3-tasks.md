@@ -79,6 +79,16 @@ Orden de ejecución. Marca cada tarea al completarlo.
 
 ---
 
+### Fase 8 — Aspecto de cuentas
+
+[ ] T25 — Añadir campo `accountIconShape: 'square' | 'circle'` con valor por defecto `'square'` al tipo `Config` en `ConfigContext.tsx`. Añadir clave i18n `settings_account_icon_shape` en los 3 idiomas.
+
+[ ] T26 — Añadir sección "Aspecto de cuentas" en `SettingsScreen.tsx` con selector de forma (Cuadrado/Círculo). Usar `updateConfig({ accountIconShape })` al cambiar.
+
+[ ] T27 — Actualizar componentes que renderizan iconos de cuenta (`AccountsScreen`, `HomeScreen`, `AccountSelector`, `AccountModal`, grid de `CreateAccountScreen`, grid de `ModifyAccountScreen`) para leer `config.accountIconShape` y aplicar `borderRadius` cuadrado (12) o circular (mitad del tamaño).
+
+---
+
 ### Verificación
 
-[ ] T22 — Verificación manual: `npx expo start --web` y `npx expo start` (Expo Go). Probar todos los criterios de aceptación de `1-spec.md`. Verificar persistencia entre reinicios.
+[ ] T28 — Verificación manual: `npx expo start --web` y `npx expo start` (Expo Go). Probar todos los criterios de aceptación de `1-spec.md`. Verificar persistencia entre reinicios.

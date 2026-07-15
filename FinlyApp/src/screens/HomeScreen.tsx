@@ -127,7 +127,7 @@ export default function HomeScreen() {
 
           <TouchableOpacity style={styles.totalButton} onPress={() => setModalVisible(true)}>
             <View style={styles.accountRow}>
-              <View style={[styles.accountIcon, { backgroundColor: activeAccount.color + '30' }]}>
+               <View style={[styles.accountIcon, { backgroundColor: activeAccount.color + '30', borderRadius: config.accountIconShape === 'circle' ? 12 : 4 }]}>
                 <Ionicons name={activeAccount.icon as ComponentProps<typeof Ionicons>['name']} size={18} color={activeAccount.color} />
               </View>
               <Text style={[styles.accountLabel, { color: c.textSecondary, fontSize: fs(14) }]}>{activeAccount.name}</Text>

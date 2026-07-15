@@ -982,3 +982,10 @@
 
 [2026-07-15] ~ | spec/features/014-pagina-transacciones-por-pagina-inicial/ y 015-pagina-transacciones-por-menu-hamburguesa/
 - Actualizada estructura de layout: eliminado `View.container(flex:1)`, FAB es hijo directo de SafeAreaView.
+
+[2026-07-15] + | Feature: Aspecto de cuentas (square/circle)
+- Añadido `accountIconShape: 'square' | 'circle'` a Config interface y defaults en ConfigContext, configRepo, webStorage.
+- Añadida sección "Aspecto de cuentas" en SettingsScreen con selector inline (Cuadrado/Círculo).
+- Añadidas claves i18n `settings_account_icon_shape` en es/en/ca.
+- Actualizados 7 componentes para usar `config.accountIconShape`: AccountsScreen, HomeScreen, AccountSelector (trigger + modal), AccountModal, CreateAccountScreen, ModifyAccountScreen.
+- Actualizado spec 003: añadida sección 2.7, criterio de aceptación, tareas T25-T27.

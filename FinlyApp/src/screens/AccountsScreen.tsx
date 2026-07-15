@@ -25,6 +25,7 @@ export default function AccountsScreen() {
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp>();
+  const round = config.accountIconShape === 'circle';
 
   const [accounts, setAccounts] = useState<AccountWithBalance[]>([]);
   const [total, setTotal] = useState(0);
@@ -64,7 +65,7 @@ export default function AccountsScreen() {
       onPress={() => navigation.navigate('ModifyAccount', { accountId: item.id })}
       accessibilityLabel={`${item.name} ${formatCurrency(item.saldo, config.currency, config.decimalSeparator)}`}
     >
-      <View style={[styles.iconBubble, { backgroundColor: item.color + '22' }]}>
+      <View style={[styles.iconBubble, { backgroundColor: item.color + '22', borderRadius: round ? 22 : 12 }]}>
         <Ionicons name={item.icon as any} size={24} color={item.color} />
       </View>
       <View style={styles.accountInfo}>

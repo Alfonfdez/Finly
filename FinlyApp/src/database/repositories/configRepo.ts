@@ -9,6 +9,7 @@ const CONFIG_DEFAULTS: Config = {
   language: 'es',
   textSize: 'medium',
   categoryIconShape: 'square',
+  accountIconShape: 'square',
 };
 
 const DB_KEY_MAP: Record<string, keyof Config> = {
@@ -19,6 +20,7 @@ const DB_KEY_MAP: Record<string, keyof Config> = {
   language: 'language',
   text_size: 'textSize',
   category_icon_shape: 'categoryIconShape',
+  account_icon_shape: 'accountIconShape',
 };
 
 function parseConfig(rows: { key: string; value: string }[]): Config {
@@ -31,6 +33,7 @@ function parseConfig(rows: { key: string; value: string }[]): Config {
     language: (map.language as Config['language']) ?? CONFIG_DEFAULTS.language,
     textSize: (map.text_size as Config['textSize']) ?? CONFIG_DEFAULTS.textSize,
     categoryIconShape: (map.category_icon_shape as Config['categoryIconShape']) ?? CONFIG_DEFAULTS.categoryIconShape,
+    accountIconShape: (map.account_icon_shape as Config['accountIconShape']) ?? CONFIG_DEFAULTS.accountIconShape,
   };
 }
 

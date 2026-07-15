@@ -80,6 +80,17 @@ Al cambiar el tema, toda la app se re-renderiza en tiempo real (no requiere rein
 - Afecta a todos los componentes que muestran iconos de categoría: `CategoryGrid`, `CategoryList`, grid de `CategoriesScreen`, grid de `AddCategoryScreen`, grid de `CreateCategoryScreen`, icono de categoría en el detalle de transacciones, y la vista previa de `ModifyCategoryScreen`.
 - La selección de forma no requiere reinicio de la app; se aplica en tiempo real.
 
+#### 2.7 — Aspecto de cuentas
+
+| Opción | Tipo | Valores por defecto | Valores posibles |
+|--------|------|---------------------|------------------|
+| Forma del icono de cuenta | Selector (radio) | Cuadrado | Cuadrado, Círculo |
+
+- **Cuadrado**: los iconos de cuenta se muestran con fondo cuadrado y esquinas redondeadas (borderRadius 12).
+- **Círculo**: los iconos de cuenta se muestran con fondo circular (borderRadius igual a la mitad del tamaño), con el icono centrado dentro del círculo.
+- Afecta a todos los componentes que muestran iconos de cuenta: `AccountsScreen` (lista), `HomeScreen` (header), `AccountSelector` (trigger y modal), `AccountModal` (bottom sheet), grid de `CreateAccountScreen`, grid de `ModifyAccountScreen`.
+- La selección de forma no requiere reinicio de la app; se aplica en tiempo real.
+
 ---
 
 ## Requisitos no funcionales
@@ -94,7 +105,7 @@ Al cambiar el tema, toda la app se re-renderiza en tiempo real (no requiere rein
 ## Criterios de aceptación
 
 - [ ] El Drawer muestra "Ajustes" y al pulsarlo navega a la pantalla de configuración.
-- [ ] Se muestran 6 secciones: Apariencia, Calendario, Formato de dinero, Idioma, Texto, Aspecto de categorías.
+- [ ] Se muestran 7 secciones: Apariencia, Calendario, Formato de dinero, Idioma, Texto, Aspecto de categorías, Aspecto de cuentas.
 - [ ] Cada opción muestra el valor actual y permite cambiarlo.
 - [ ] El tema Oscuro/Claro se aplica inmediatamente a toda la app.
 - [ ] El tema Sistema respeta la preferencia del SO del dispositivo.

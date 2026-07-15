@@ -126,6 +126,7 @@ export const es = {
 | `settings_category_icon_shape` | CATEGORY ICON SHAPE | ASPECTO DE CATEGORÍAS | ASPECTE DE CATEGORIES |
 | `shape_square` | Square | Cuadrado | Quadrat |
 | `shape_circle` | Circle | Círculo | Cercle |
+| `settings_account_icon_shape` | ACCOUNT ICON SHAPE | ASPECTO DE CUENTAS | ASPECTE DE COMPTES |
 
 ---
 

@@ -13,6 +13,7 @@ export const es: Language = {
   settings_decimal_sep: 'Separador decimal',
   settings_text_size: 'Tamaño del texto',
   settings_category_icon_shape: 'ASPECTO DE CATEGORÍAS',
+  settings_account_icon_shape: 'ASPECTO DE CUENTAS',
   shape_square: 'Cuadrado',
   shape_circle: 'Círculo',
   theme_dark: 'Oscuro',
