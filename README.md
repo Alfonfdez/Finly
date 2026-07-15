@@ -141,7 +141,7 @@ Finly/
 │   │   │   ├── CreateCategoryScreen.tsx ← Crear categoría
 │   │   │   ├── ModifyCategoryScreen.tsx ← Editar categoría
 │   │   │   ├── TransactionDetailsScreen.tsx ← Detalles de transacción (016)
-│   │   │   ├── ModifyTransactionScreen.tsx ← Editar transacción (TODO)
+│   │   │   ├── ModifyTransactionScreen.tsx ← Modificar transacción (017)
 │   │   │   └── SettingsScreen.tsx   ← Configuración de la app
 │   │   ├── components/
 │   │   │   ├── AccountModal.tsx     ← Modal de selección de cuentas
@@ -156,8 +156,8 @@ Finly/
 │   │   │   ├── IconGrid.tsx         ← Grid de iconos
 │   │   │   ├── SortToggle.tsx       ← Toggle de ordenación fecha/cantidad
 │   │   │   ├── TransactionGroup.tsx ← Grupo de transacciones por fecha
-│   │   │   ├── CalendarPicker.tsx   ← Selector de fecha textual
 │   │   │   ├── CalendarModal.tsx    ← Modal contenedor de calendarios
+│   │   │   ├── CalendarPicker.tsx   ← Selector de fecha textual
 │   │   │   ├── DaySelector.tsx      ← Selector de día (Hoy/Ayer/Dinámico)
 │   │   │   ├── PeriodTabs.tsx       ← Tabs Día/Semana/Mes/Año/Período
 │   │   │   ├── TypeTabs.tsx         ← Tabs Gastos/Ingresos
@@ -165,6 +165,7 @@ Finly/
 │   │   │   ├── TagSection.tsx       ← Sección de etiquetas
 │   │   │   ├── CommentInput.tsx     ← Input de comentario con contador
 │   │   │   ├── PhotoSection.tsx     ← Sección de foto (cámara/galería)
+│   │   │   ├── SearchBar.tsx        ← Barra de búsqueda reutilizable
 │   │   │   └── calendars/           ← Selectores de fecha
 │   │   │       ├── DayPicker.tsx
 │   │   │       ├── WeekPicker.tsx
@@ -236,7 +237,8 @@ Finly/
 │       ├── 013-pagina-crear-cuenta/
 │       ├── 014-pagina-transacciones-por-pagina-inicial/
 │       ├── 015-pagina-transacciones-por-menu-hamburguesa/
-│       └── 016-pagina-detalles-transaccion/
+│       ├── 016-pagina-detalles-transaccion/
+│       └── 017-pagina-modificar-transaccion/
 │
 ├── .agents/skills/               ← Skills para asistentes IA
 ├── docs/                         ← Documentación de conceptos
@@ -258,6 +260,7 @@ Finly/
 - Ordenación de transacciones por fecha o cantidad
 - Pantalla de todas las transacciones con filtros combinados
 - Pantalla de detalles de transacción con eliminar y editar
+- Pantalla de modificar transacción con datos precargados
 - Pantalla de ajustes: tema, divisa, idioma, calendario, tamaño de texto
 - Tema oscuro y claro con cambio en tiempo real
 - Soporte multilingüe: español, inglés, catalán

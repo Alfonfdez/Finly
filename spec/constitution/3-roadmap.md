@@ -221,7 +221,7 @@ Pantalla de detalles de una transacción individual, accesible al pulsar cualqui
 - Header con título "Detalles de la transacción" y botón de retroceso.
 - Ficha de datos con 5 filas: Cantidad (con color del tipo), Cuenta (icono + nombre), Categoría (icono + nombre), Fecha (formato largo multilingüe), Comentario (o "Sin comentario").
 - Botón "Eliminar" con modal de confirmación ("No" / "Sí") que borra y refresca el listado.
-- Botón "Editar" que navega a ModifyTransaction (TODO).
+- Botón "Editar" que navega a ModifyTransaction (017) para modificar la transacción.
 - Pie "Creado HH:mm dd MMM aaaa" con formato 24h y año siempre visible.
 - Refresco automático del listado al volver (useFocusEffect + refreshTrigger).
 
