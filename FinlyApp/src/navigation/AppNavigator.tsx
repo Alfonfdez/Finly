@@ -18,6 +18,7 @@ import ModifyAccountScreen from '../screens/ModifyAccountScreen';
 import CreateAccountScreen from '../screens/CreateAccountScreen';
 import CategoriesScreen from '../screens/CategoriesScreen';
 import TransactionsScreen from '../screens/TransactionsScreen';
+import AllTransactionsScreen from '../screens/AllTransactionsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -55,7 +56,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
       />
       <DrawerItem
         label={labels.nav_transactions}
-        onPress={() => props.navigation.navigate('Main', { screen: 'Transactions' })}
+        onPress={() => props.navigation.navigate('Main', { screen: 'AllTransactions' })}
         icon={({ color, size }) => <Ionicons name="stats-chart-outline" size={size} color={color} />}
         labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
         inactiveTintColor={c.primary}
@@ -160,6 +161,14 @@ function HomeStack() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Ionicons name="stats-chart-outline" size={20} color={c.text} />
             <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_transactions}</Text>
+          </View>
+        ),
+      }} />
+      <Stack.Screen name="AllTransactions" component={AllTransactionsScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="list-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_all_transactions}</Text>
           </View>
         ),
       }} />

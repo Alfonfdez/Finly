@@ -1,7 +1,7 @@
-import { useState, useMemo, ComponentProps } from 'react';
+import { useState, useMemo } from 'react';
 import { View, Text, SectionList, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { scrollbarFlatList } from '../constants/platformStyles';
@@ -11,45 +11,36 @@ import { useFontSize } from '../hooks/useFontSize';
 import { RootStackParamList } from '../constants/types';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
 import { formatCurrency } from '../utils/formatters';
-import { getCategoryName, t } from '../i18n';
+import { t } from '../i18n';
 import AccountSelector from '../components/AccountSelector';
 import SortToggle, { SortBy, SortDirection } from '../components/SortToggle';
 import TransactionGroup from '../components/TransactionGroup';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Transactions'>;
-type TransactionsRouteProp = RouteProp<RootStackParamList, 'Transactions'>;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'AllTransactions'>;
 
-export default function TransactionsScreen() {
+export default function AllTransactionsScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<TransactionsRouteProp>();
   const { categories, accounts, activeAccount, accountsWithBalance } = useApp();
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
-
-  const categoryId = route.params?.categoryId;
-  const startDate = route.params?.startDate;
-  const endDate = route.params?.endDate;
 
   const [selectedAccountId, setSelectedAccountId] = useState(activeAccount?.id ?? accounts[0]?.id ?? 1);
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const { allTransactions, sections } = useTransactionFilters({
-    categoryId,
-    startDate,
-    endDate,
     selectedAccountId,
     sortBy,
     sortDirection,
   });
 
-  const category = categories.find(ct => ct.id === categoryId);
-
-  const categoryTotal = useMemo(() => {
+  const accountBalance = useMemo(() => {
     return allTransactions
       .filter(t => t.account_id === selectedAccountId)
-      .reduce((sum, t) => sum + (t.type === 'expense' ? -t.amount : t.amount), 0);
+      .reduce(
+        (sum, t) => sum + (t.type === 'expense' ? -t.amount : t.amount), 0
+      );
   }, [allTransactions, selectedAccountId]);
 
   const handleToggleSort = (field: SortBy) => {
@@ -64,28 +55,15 @@ export default function TransactionsScreen() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]} edges={['bottom']}>
       <View style={styles.container}>
-        {category && (
-          <View style={[styles.categoryInfo, { borderBottomColor: c.border }]}>
-            <View style={styles.categoryRow}>
-              <View style={[styles.categoryIcon, { backgroundColor: category.color + '30' }]}>
-                <Ionicons name={category.icon as ComponentProps<typeof Ionicons>['name']} size={22} color={category.color} />
-              </View>
-              <Text style={[styles.categoryName, { color: c.text, fontSize: fs(16) }]} numberOfLines={1}>
-                {getCategoryName(category.id) || category.name}
-              </Text>
-            </View>
-            <Text style={[styles.categoryTotal, { color: categoryTotal >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
-              {categoryTotal >= 0 ? '+' : ''}{formatCurrency(categoryTotal, config.currency, config.decimalSeparator)}
-            </Text>
-          </View>
-        )}
-
         <View style={[styles.controls, { borderBottomColor: c.border }]}>
           <AccountSelector
             accounts={accountsWithBalance}
             selectedId={selectedAccountId}
             onSelect={setSelectedAccountId}
           />
+          <Text style={[styles.accountBalance, { color: accountBalance >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
+            {accountBalance >= 0 ? '+' : ''}{formatCurrency(accountBalance, config.currency, config.decimalSeparator)}
+          </Text>
           <SortToggle
             sortBy={sortBy}
             direction={sortDirection}
@@ -128,27 +106,6 @@ export default function TransactionsScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   container: { flex: 1 },
-  categoryInfo: {
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-  },
-  categoryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  categoryIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8,
-  },
-  categoryName: { fontWeight: '600' },
-  categoryTotal: { fontWeight: '700' },
   controls: {
     alignItems: 'center',
     paddingHorizontal: 16,
@@ -156,6 +113,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     gap: 8,
   },
+  accountBalance: { fontWeight: '700' },
   listContent: { paddingBottom: 80 },
   empty: { textAlign: 'center', marginTop: 40 },
   fab: {

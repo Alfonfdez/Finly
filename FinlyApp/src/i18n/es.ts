@@ -35,6 +35,7 @@ export const es: Language = {
   period_week: 'Semana',
   period_month: 'Mes',
   period_year: 'Año',
+  period_custom: 'Personalizado',
   period_period: 'Período',
 
   // Calendar modal
@@ -175,10 +176,16 @@ export const es: Language = {
   // Transactions
   transactions_title: 'Transacciones',
   transactions_empty: 'No hay transacciones',
+  transactions_select_account: 'Seleccionar cuenta',
+  transactions_cancel: 'Cancelar',
+  transactions_confirm: 'Seleccionar',
+  transactions_sort_date: 'Por fecha',
+  transactions_sort_amount: 'Por cantidad',
 
   // Navigation
   nav_add: 'Añadir',
   nav_transactions: 'Transacciones',
+  nav_all_transactions: 'Todas las transacciones',
   nav_settings: 'Ajustes',
   nav_home: 'Inicio',
   nav_accounts: 'Cuentas',

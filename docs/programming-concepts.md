@@ -502,6 +502,31 @@ cuentas.map(cuenta => ({ ...cuenta, saldo: saldos[cuenta.id] ?? 0 }));
 
 # SQL y Base de Datos
 
+## Date Formats and SQLite String Comparison
+**Definición:** SQLite almacena y compara fechas como strings, por lo que el formato del string afecta directamente el resultado de las comparaciones `>=` / `<=`.
+**Explicación:** En Finly, las fechas se almacenan en formato `"YYYY-MM-DD HH:MM:SS"` (espacio como separador, hora local). Cuando se pasan fechas como parámetros SQL, el formato debe coincidir exactamente. `Date.toISOString()` produce formato ISO 8601 (`"2026-07-15T00:00:00.000Z"`) con `T` como separador y zona horaria UTC. Dado que SQLite hace comparación lexicográfica de strings, el carácter `T` (ASCII 84) es mayor que el espacio (ASCII 32), haciendo que `"2026-07-15 10:30:00" >= "2026-07-15T00:00:00.000Z"` sea siempre `false`, excluyendo incorrectamente todas las transacciones. La solución es usar un formato consistente (`YYYY-MM-DD HH:MM:SS`) tanto para almacenar como para consultar.
+**Ejemplo:**
+```tsx
+// ❌ Formato ISO rompe la comparación string en SQLite
+const startDate = start.toISOString(); // "2026-07-15T00:00:00.000Z"
+await db.getAllAsync('SELECT * FROM transactions WHERE date >= ?', startDate);
+// "2026-07-15 10:30:00" >= "2026-07-15T00:00:00.000Z" → false (T > space)
+
+// ✅ Formato local consistente con el almacenamiento
+function formatDateForDB(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  const h = String(date.getHours()).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
+  const s = String(date.getSeconds()).padStart(2, '0');
+  return `${y}-${m}-${d} ${h}:${min}:${s}`;
+}
+const startDate = formatDateForDB(start); // "2026-07-15 00:00:00"
+await db.getAllAsync('SELECT * FROM transactions WHERE date >= ?', startDate);
+// "2026-07-15 10:30:00" >= "2026-07-15 00:00:00" → true ✓
+```
+
 ## PRAGMA user_version
 **Definición:** Metadato entero que SQLite almacena en el encabezado de la base de datos para controlar qué migraciones se han ejecutado.
 **Explicación:** Se usa como contador de versión del esquema. Cada migración comprueba si `user_version` es menor que su número, ejecuta los cambios SQL necesarios y luego incrementa el valor con `PRAGMA user_version = N`. Así, la app sabe en cada arranque qué migraciones faltan sin necesidad de tablas de control adicionales. En Finly, el esquema pasa de versión 0 → 1 (tablas), 1→2 (seed), 2→3 (configuración), 3→4 (nuevas categorías).

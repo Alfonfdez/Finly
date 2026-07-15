@@ -805,9 +805,130 @@
 - Renombrada carpeta `004-pagina-transaccion` → `004-pagina-anadir-transaccion`.
 - Actualizadas referencias en `spec/constitution/3-roadmap.md` (2 ocurrencias) y `docs/registro-cambios.md` (5 ocurrencias históricas).
 
-[2026-07-14] + | spec/features/014-pagina-transacciones/ (nueva spec)
-- Creada spec `014-pagina-transacciones` para la pantalla de lista de transacciones filtrada.
+[2026-07-14] + | spec/features/014-pagina-transacciones-por-pagina-inicial/ (nueva spec)
+- Creada spec `014-pagina-transacciones-por-pagina-inicial` para la pantalla de lista de transacciones filtrada.
 - `1-spec.md`: selector de cuenta con modal, ordenación por fecha/cantidad con toggle ASC/DESC, lista agrupada por día, FAB "+", 16 criterios de aceptación.
 - `2-plan.md`: plan con componentes AccountSelector, SortToggle, TransactionGroup. Reescritura de TransactionsScreen existente.
 - `3-tasks.md`: 11 tareas en 4 fases.
 - Añadida entrada en `spec/constitution/3-roadmap.md`.
+
+[2026-07-14] + | spec/features/014-pagina-transacciones-por-pagina-inicial/ (implementación)
+- Implementada pantalla TransactionsScreen.tsx (014): reescritura completa con AccountSelector, SortToggle, SectionList agrupada por día, FAB "+".
+- Creado componente AccountSelector.tsx: trigger row con nombre de cuenta activa + modal con lista de cuentas (radio buttons + nombre + saldo), Cancelar/Seleccionar.
+- Creado componente SortToggle.tsx: toggle 2 opciones (Por fecha / Por cantidad) con botón de dirección (↓/↑) para ASC/DESC.
+- Creado componente TransactionGroup.tsx: sección con header de fecha y lista de transacciones (icono categoría, nombre, descripción, importe con color).
+- Añadidas claves i18n: `select_account`, `cancel`, `confirm`, `sort_date`, `sort_amount` en en/es/ca.
+- Actualizado types.ts: Transactions params ahora incluye `period`, `startDate`, `endDate` además de `categoryId` y `type`.
+- Actualizado HomeScreen: `handleCategoryPress` calcula rango de fechas del período activo y lo pasa como parámetros ISO a Transactions.
+
+[2026-07-14] ~ | spec/features/014-pagina-transacciones → 014-pagina-transacciones-por-pagina-inicial (rename)
+- Renombrada carpeta `014-pagina-transacciones` → `014-pagina-transacciones-por-pagina-inicial`.
+- Actualizados títulos en `1-spec.md`, `2-plan.md`, `3-tasks.md` (añadido "(desde página inicial)").
+- Actualizadas referencias en `spec/constitution/3-roadmap.md` y `docs/registro-cambios.md`.
+
+[2026-07-14] + | spec/features/015-pagina-transacciones-por-menu-hamburguesa/ (nueva spec)
+- Creada spec `015-pagina-transacciones-por-menu-hamburguesa` para la pantalla de lista de transacciones accesible desde el menú hamburguesa.
+- `1-spec.md`: sin filtros de categoría ni período, muestra todas las transacciones, selector de cuenta, ordenación, FAB "+", 17 criterios de aceptación.
+- `2-plan.md`: reutiliza TransactionsScreen de 104 (sin cambios en código).
+- `3-tasks.md`: 7 tareas de verificación (sin implementación nueva).
+- Añadida entrada en `spec/constitution/3-roadmap.md`.
+
+[2026-07-14] ~ | src/screens/TransactionsScreen.tsx (bug fix)
+- Corregido bug: `transactions` de `useApp()` estaba filtrado por `activeAccount`, por lo que cambiar cuenta en el selector no mostraba transacciones de otras cuentas.
+- TransactionsScreen ahora carga todas las transacciones directamente desde `transactionRepository.list()` (sin filtro de `account_id`) y filtra localmente por `selectedAccountId`.
+
+[2026-07-15] + | src/hooks/useTransactionFilters.ts (nuevo hook)
+- Creado hook `useTransactionFilters` para encapsular lógica compartida de filtrado, ordenación y agrupación de transacciones.
+- Parámetros: `categoryId`, `startDate`, `endDate`, `selectedAccountId`, `sortBy`, `sortDirection`.
+- Resultado: `allTransactions`, `filtered`, `sections`.
+
+[2026-07-15] ~ | src/screens/TransactionsScreen.tsx (014 — nuevo header)
+- Reescritura del header: eliminada duplicación con header del Stack navigator (`headerShown: false`).
+- Nuevo header: flecha retroceso + icono categoría + nombre categoría (fila 1) + total formateado + período + cuenta seleccionada (fila 2).
+- Usa hook `useTransactionFilters` en lugar de lógica inline.
+
+[2026-07-15] + | src/screens/AllTransactionsScreen.tsx (015 — nueva pantalla)
+- Creada pantalla `AllTransactionsScreen` para el acceso desde el menú hamburguesa.
+- Header simple: flecha retroceso + "Transacciones".
+- Reutiliza `AccountSelector`, `SortToggle`, `TransactionGroup` y `useTransactionFilters`.
+- Carga todas las transacciones sin filtro de categoría ni período.
+
+[2026-07-15] ~ | src/constants/types.ts
+- Añadido `AllTransactions: undefined` a `RootStackParamList`.
+- Añadido `AllTransactionsScreenProps` type.
+
+[2026-07-15] ~ | src/navigation/AppNavigator.tsx
+- Importado y registrado `AllTransactionsScreen` en HomeStack con `headerShown: false`.
+- Actualizado DrawerItem "Transacciones" para navegar a `'Main', { screen: 'AllTransactions' }`.
+
+[2026-07-15] ~ | src/i18n/en.ts, es.ts, ca.ts
+- Añadida clave `period_custom` (Custom / Personalizado / Personalitzat).
+
+[2026-07-15] ~ | spec/features/014-pagina-transacciones-por-pagina-inicial/1-spec.md
+- Actualizada sección 1 (Acceso y navegación): header personalizado con icono categoría + nombre + total + período + cuenta.
+- Actualizados criterios de aceptación para reflejar el nuevo header.
+
+[2026-07-15] ~ | spec/features/015-pagina-transacciones-por-menu-hamburguesa/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Actualizada spec para referenciar `AllTransactionsScreen` en lugar de reutilizar `TransactionsScreen`.
+- Añadidos componentes compartidos y hook compartido en requisitos no funcionales.
+- Actualizado plan con archivos a crear/modificar.
+- Actualizadas tareas (T1-T5 como completadas, T6-T10 pendientes).
+
+[2026-07-15] ~ | src/utils/formatters.ts, src/context/AppContext.tsx, src/screens/HomeScreen.tsx
+- Extraída función `formatDateForDB` de AppContext a `src/utils/formatters.ts` (util compartida).
+- Eliminada definición local de `formatDateForDB` de AppContext, ahora importada desde formatters.
+- Corregido bug: `HomeScreen.handleCategoryPress` usaba `toISOString()` para pasar fechas a Transactions, pero la DB almacena fechas como `YYYY-MM-DD HH:MM:SS`. La diferencia de formato (T vs espacio, zona horaria UTC) causaba que SQLite string comparison fallara, resultando en 0 transacciones mostradas para período "Day".
+
+[2026-07-15] + | docs/programming-concepts.md
+- Añadido concepto "Date Formats and SQLite String Comparison" documentando el bug de formato de fechas y su solución.
+
+[2026-07-15] ~ | src/screens/HomeScreen.tsx
+- Corregido bug: `handleCategoryPress` usaba `new Date()` (siempre fecha actual) en lugar de `selectedDate` del usuario. Al navegar a Transactions con una fecha pasada, la pantalla consultaba la fecha actual en vez de la seleccionada, resultando en lista vacía.
+
+[2026-07-15] ~ | src/screens/TransactionsScreen.tsx
+- Total de categoría en header: color dinámico (verde si ≥ 0, rojo si < 0) y prefijo "+" para positivos.
+- Corregido signo del total: expenses se restan (`-t.amount`) para alinearse con el patrón de HomeScreen.
+
+[2026-07-15] ~ | src/components/SortToggle.tsx
+- Añadido `flexShrink: 1` al contenedor del SortToggle para evitar que se desborde cuando ambas opciones ("Por fecha" + "Por cantidad") no caben en el espacio disponible.
+
+[2026-07-15] ~ | src/screens/TransactionsScreen.tsx, src/screens/AllTransactionsScreen.tsx
+- Añadido `flexWrap: 'wrap'` y `gap: 8` al contenedor de controles para que SortToggle pase a segunda línea cuando no cabe junto a AccountSelector.
+
+[2026-07-15] ~ | src/screens/TransactionsScreen.tsx, src/screens/AllTransactionsScreen.tsx
+- Cambiado layout de controles de fila (`flexDirection: row`) a columna: AccountSelector y SortToggle ahora van en filas separadas con `gap: 8`, evitando que las etiquetas de sort se desborden horizontalmente.
+
+[2026-07-15] ~ | src/screens/AllTransactionsScreen.tsx
+- Revertido a usar AccountSelector + SortToggle en misma fila (mismo patrón que TransactionsScreen).
+- Añadido total del período debajo del AccountSelector (verde/`+` si ≥ 0, rojo/`-` si < 0).
+
+[2026-07-15] ~ | spec/features/014-pagina-transacciones-por-pagina-inicial/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Actualizado spec para reflejar implementación final: header del Stack navigator (no custom), sección de categoría con icono + nombre + total con color, FAB centrado.
+
+[2026-07-15] ~ | spec/features/015-pagina-transacciones-por-menu-hamburguesa/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Actualizado spec para reflejar implementación final: saldo total debajo del AccountSelector, FAB centrado, header del Stack navigator.
+
+[2026-07-15] ~ | src/screens/HomeScreen.tsx, spec/features/015-pagina-transacciones-por-menu-hamburguesa/
+- Icono de estadísticas en HomeScreen ahora navega a AllTransactions en lugar de Transactions.
+- Actualizado spec 015 para documentar ambos puntos de acceso (drawer + icono HomeScreen).
+
+[2026-07-15] ~ | src/screens/TransactionsScreen.tsx, src/screens/AllTransactionsScreen.tsx, src/navigation/AppNavigator.tsx, src/i18n/en.ts, es.ts, ca.ts
+- Título de AllTransactionsScreen cambiado de "Transacciones" a "Todas las transacciones" (multilingual: es: "Todas las transacciones", en: "All transactions", ca: "Totes les transaccions").
+- Añadida clave i18n `nav_all_transactions` en en.ts, es.ts, ca.ts.
+- Icono del header de AllTransactions cambiado de `stats-chart-outline` a `list-outline`.
+- Reestructurado layout de ambas pantallas de transacciones: añadido `View.container(flex:1)` entre SafeAreaView y todo el contenido (mismo patrón que HomeScreen, AccountsScreen, CategoriesScreen).
+- Eliminado `keyboardSpacer` (200px siempre visible en Android que comía espacio flex del SectionList).
+- SectionList ahora es hijo directo del container View (sin wrapper View innecesario).
+- Eliminado import de `Platform` de ambas pantallas.
+
+[2026-07-15] ~ | spec/features/014-pagina-transacciones-por-pagina-inicial/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Añadida estructura de layout `SafeAreaView > View.container(flex:1) > [categoryInfo, controls, SectionList, FAB(absolute)]` en requisitos no funcionales, plan y tareas.
+
+[2026-07-15] ~ | spec/features/015-pagina-transacciones-por-menu-hamburguesa/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Actualizado título de "Transacciones" a "Todas las transacciones" en spec, plan y tareas.
+- Añadida estructura de layout `SafeAreaView > View.container(flex:1) > [controls, SectionList, FAB(absolute)]` en requisitos no funcionales y plan.
+- Actualizado icono del header de `stats-chart-outline` a `list-outline`.
+
+[2026-07-15] ~ | spec/constitution/3-roadmap.md
+- Actualizados estados de 011, 012, 013, 014 y 015 de "pendiente" a "completado".
+- Actualizadas descripciones de 014 y 015 para reflejar implementación final (layout container, título "Todas las transacciones", AllTransactionsScreen independiente).

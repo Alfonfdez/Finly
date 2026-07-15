@@ -33,6 +33,7 @@ export const en = {
   period_week: 'Week',
   period_month: 'Month',
   period_year: 'Year',
+  period_custom: 'Custom',
   period_period: 'Period',
 
   // Calendar modal
@@ -173,10 +174,16 @@ export const en = {
   // Transactions
   transactions_title: 'Transactions',
   transactions_empty: 'No transactions',
+  transactions_select_account: 'Select account',
+  transactions_cancel: 'Cancel',
+  transactions_confirm: 'Select',
+  transactions_sort_date: 'By date',
+  transactions_sort_amount: 'By amount',
 
   // Navigation (static — won't update live, but correct per language)
   nav_add: 'Add',
   nav_transactions: 'Transactions',
+  nav_all_transactions: 'All transactions',
   nav_settings: 'Settings',
   nav_home: 'Home',
   nav_accounts: 'Accounts',

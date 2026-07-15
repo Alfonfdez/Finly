@@ -8,7 +8,7 @@ import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { Account } from '../database/types';
-import { formatCurrency } from '../utils/formatters';
+import { formatCurrency, formatDateForDB } from '../utils/formatters';
 import { RootStackParamList, Period } from '../constants/types';
 import { t } from '../i18n';
 import AccountModal from '../components/AccountModal';
@@ -42,8 +42,43 @@ export default function HomeScreen() {
   const totalColor = total >= 0 ? c.green : c.red;
 
   const handleCategoryPress = useCallback((category: { id: number }) => {
-    navigation.navigate('Transactions', { categoryId: category.id, type: activeType });
-  }, [navigation, activeType]);
+    const { start, end } = activePeriod === 'custom'
+      ? customDate
+      : (() => {
+          const now = selectedDate;
+          switch (activePeriod) {
+            case 'day': {
+              const s = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+              const e = new Date(s); e.setHours(23, 59, 59, 999);
+              return { start: s, end: e };
+            }
+            case 'week': {
+              const wd = now.getDay();
+              const diff = wd === 0 ? 6 : wd - 1;
+              const s = new Date(now); s.setDate(now.getDate() - diff); s.setHours(0, 0, 0, 0);
+              const e = new Date(s); e.setDate(e.getDate() + 6); e.setHours(23, 59, 59, 999);
+              return { start: s, end: e };
+            }
+            case 'month': {
+              const s = new Date(now.getFullYear(), now.getMonth(), 1);
+              const e = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+              return { start: s, end: e };
+            }
+            case 'year': {
+              const s = new Date(now.getFullYear(), 0, 1);
+              const e = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+              return { start: s, end: e };
+            }
+          }
+        })();
+    navigation.navigate('Transactions', {
+      categoryId: category.id,
+      type: activeType,
+      period: activePeriod,
+      startDate: formatDateForDB(start),
+      endDate: formatDateForDB(end),
+    });
+  }, [navigation, activeType, activePeriod, customDate, selectedDate]);
 
   const handlePeriodChange = useCallback((period: Period) => {
     changePeriod(period);
@@ -111,7 +146,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => navigation.navigate('Transactions')}
+            onPress={() => navigation.navigate('AllTransactions')}
             accessibilityLabel={labels.home_view_transactions}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >

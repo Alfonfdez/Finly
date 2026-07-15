@@ -1,4 +1,4 @@
-# 014 — Página de transacciones
+# 014 — Página de transacciones (desde página inicial)
 
 - **Objetivo**
   Pantalla accesible desde la pantalla principal (HomeScreen) que muestre la lista de transacciones filtrada por categoría, cuenta y período. Permite cambiar la cuenta, ordenar las transacciones y navegar a añadir una nueva transacción. Todos los textos son multilingües (es/en/ca).
@@ -10,8 +10,10 @@
 ### 1. Acceso y navegación
 
 - La pantalla se accede desde `HomeScreen` al pulsar una categoría del desglose (CategoryList).
-- La pantalla tiene un botón de retroceso (flecha izquierda) en el header para volver a `HomeScreen`.
-- El título del header es "Transacciones" (multilingual).
+- **Header del Stack navigator** con botón de retroceso y título "Transacciones" (multilingual).
+- Sección de categoría debajo del header:
+  - **Fila 1:** icono de la categoría (con color de fondo) + nombre de la categoría.
+  - **Fila 2:** total formateado de la categoría (`formatCurrency`), con color verde y prefijo "+" si es positivo, rojo y prefijo "-" si es negativo.
 - Se pasa como parámetro de navegación: `categoryId` (opcional), `type` (expense/income), `period`, `startDate`, `endDate`.
 
 ### 2. Selector de cuenta
@@ -64,7 +66,7 @@
 
 ### 5. Botón flotante "+"
 
-- Botón flotante "+" en la esquina inferior derecha (mismo estilo que en AccountsScreen).
+- Botón flotante "+" centrado en la parte inferior (mismo estilo que en AccountsScreen).
 - Al pulsar, navega a `AddTransactionScreen` (004).
 - El botón se superpone sobre la lista de transacciones (position absolute).
 
@@ -76,6 +78,7 @@
 - **Configuración**: usar `useConfig().activeColors` para colores.
 - **Texto**: usar `useFontSize()` para escalado.
 - **Navegación**: se añade al `HomeStack` en `AppNavigator.tsx`.
+- **Estructura de layout:** `SafeAreaView > View.container(flex:1) > [categoryInfo, controls, SectionList, FAB(absolute)]`. El FAB se posiciona con `position: absolute` dentro del container. No se usa `keyboardSpacer`.
 - **Persistencia**: las transacciones se cargan desde `transactionRepository` (SQLite nativo / localStorage web).
 - **Formato monetario**: usar `formatCurrency()` existente (máximo 2 decimales).
 - **Iconos**: `@expo/vector-icons` (Ionicons).
@@ -84,7 +87,9 @@
 
 ## Criterios de aceptación
 
-- [ ] El header muestra flecha de retroceso y título "Transacciones" en el idioma activo.
+- [ ] El header del Stack muestra botón de retroceso y título "Transacciones".
+- [ ] Debajo del header se muestra icono de categoría + nombre de categoría.
+- [ ] Debajo del nombre de categoría se muestra el total formateado con color (verde/rojo) y prefijo (+/-).
 - [ ] Se muestra la cuenta seleccionada con icono + nombre + chevron-down.
 - [ ] Al pulsar la cuenta, se abre el modal con lista de cuentas (radio + icono + nombre + saldo).
 - [ ] El modal permite cancelar o seleccionar una cuenta diferente.
@@ -97,6 +102,6 @@
 - [ ] Cada transacción muestra icono de categoría + nombre + descripción + cantidad con color.
 - [ ] La lista se filtra por cuenta, categoría y período.
 - [ ] Si no hay transacciones, se muestra estado vacío.
-- [ ] El botón flotante "+" navega a "Añadir transacción" (004).
+- [ ] El botón flotante "+" centrado navega a "Añadir transacción" (004).
 - [ ] Todos los textos cambian al cambiar el idioma.
 - [ ] La pantalla respeta el tema activo y el tamaño de texto.

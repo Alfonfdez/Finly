@@ -1,4 +1,4 @@
-# Tareas — 014 Página de transacciones
+# Tareas — 014 Página de transacciones (desde página inicial)
 Orden de ejecución. Marca cada tarea al completarlo.
 
 ---
@@ -26,12 +26,15 @@ Orden de ejecución. Marca cada tarea al completarlo.
 ### Fase 3 — Pantalla principal
 
 [ ] T7 — Reescribir `TransactionsScreen.tsx` con:
-  - Header con retroceso + título "Transacciones" (multilingual).
+  - Estructura: `SafeAreaView > View.container(flex:1) > [categoryInfo, controls, SectionList, FAB(absolute)]`.
+  - Header del Stack navigator (icono + "Transacciones").
+  - Sección de categoría: icono + nombre + total con color (verde/rojo) y prefijo (+/-).
   - `AccountSelector` con cuenta por defecto del AppContext.
   - `SortToggle` con valores por defecto (fecha, descendente).
-  - FlatList con `TransactionGroup` por cada día.
-  - FAB "+" que navega a `AddTransactionScreen`.
+  - SectionList con `TransactionGroup` por cada día.
+  - FAB "+" centrado con `position: absolute` que navega a `AddTransactionScreen`.
   - Estado vacío cuando no hay transacciones.
+  - Sin `keyboardSpacer`.
 
 [ ] T8 — Implementar filtrado de transacciones: por cuenta seleccionada, categoría (route params), y período (route params startDate/endDate).
 

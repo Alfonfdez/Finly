@@ -148,7 +148,7 @@ Sustituir los iconos genéricos de Expo por el logotipo personalizado de Finly:
 Especificación: spec/features/010-app-logo/.
 
 ## 011-pagina-cuentas
-Estado: pendiente.
+Estado: completado.
 
 Pantalla accesible desde el Drawer que muestra todas las cuentas con su saldo:
 - Header con menú hamburguesa + título "Cuentas" (multilingual).
@@ -160,10 +160,10 @@ Pantalla accesible desde el Drawer que muestra todas las cuentas con su saldo:
 Especificación: spec/features/011-pagina-cuentas/.
 
 ## 012-pagina-modificar-eliminar-cuenta
-Estado: pendiente.
+Estado: completado.
 
 Pantalla para modificar o eliminar una cuenta existente:
-- Nombre editable con contador 0/30 y validación de vacío.
+- Nombre editable con contador 0/30 y validación de vacío + duplicados.
 - Grid de iconos (~20 iconos financieros) con el actual preseleccionado.
 - Grid de colores con el actual preseleccionado + selector dinámico.
 - Campo "Nota" multilínea con límite 200 caracteres.
@@ -173,7 +173,7 @@ Pantalla para modificar o eliminar una cuenta existente:
 Especificación: spec/features/012-pagina-modificar-eliminar-cuenta/.
 
 ## 013-pagina-crear-cuenta
-Estado: pendiente.
+Estado: completado.
 
 Pantalla para crear una nueva cuenta:
 - Nombre con validación (no vacío, no duplicado) y contador 0/30.
@@ -185,14 +185,31 @@ Pantalla para crear una nueva cuenta:
 
 Especificación: spec/features/013-pagina-crear-cuenta/.
 
-## 014-pagina-transacciones
-Estado: pendiente.
+## 014-pagina-transacciones-por-pagina-inicial
+Estado: completado.
 
-Pantalla de lista de transacciones filtrada por categoría, cuenta y período:
+Pantalla de lista de transacciones filtrada por categoría, cuenta y período, accesible desde la pantalla principal (HomeScreen) al pulsar una categoría del desglose:
+- Header del Stack navigator con título "Transacciones" (multilingual).
+- Sección de categoría: icono + nombre + total con color (verde/rojo) y prefijo (+/-).
 - Selector de cuenta con modal de selección (radio + icono + nombre + saldo).
 - Ordenación por fecha o cantidad con toggle ASC/DESC.
 - Lista agrupada por día con encabezado de fecha.
-- Cada transacción: icono categoría + nombre + descripción + cantidad con color.
-- FAB "+" para navegar a añadir transacción.
+- FAB "+" centrado para navegar a añadir transacción.
+- Se pasa categoryId, type, period, startDate, endDate como parámetros de navegación.
+- Layout: SafeAreaView > View.container(flex:1) > [categoryInfo, controls, SectionList, FAB].
 
-Especificación: spec/features/014-pagina-transacciones/.
+Especificación: spec/features/014-pagina-transacciones-por-pagina-inicial/.
+
+## 015-pagina-transacciones-por-menu-hamburguesa
+Estado: completado.
+
+Pantalla independiente `AllTransactionsScreen` accesible desde el menú hamburguesa (drawer) o el icono de estadísticas del HomeScreen, sin filtros de categoría ni período:
+- Header del Stack navigator con título "Todas las transacciones" (multilingual) e icono `list-outline`.
+- Selector de cuenta con saldo total del período (verde/rojo).
+- Ordenación por fecha o cantidad con toggle ASC/DESC.
+- Lista agrupada por día con encabezado de fecha.
+- FAB "+" centrado para navegar a añadir transacción.
+- Carga todas las transacciones desde `transactionRepository.list()` sin filtro de `account_id`.
+- Layout: SafeAreaView > View.container(flex:1) > [controls, SectionList, FAB].
+
+Especificación: spec/features/015-pagina-transacciones-por-menu-hamburguesa/.

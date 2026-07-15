@@ -35,6 +35,7 @@ export const ca: Language = {
   period_week: 'Setmana',
   period_month: 'Mes',
   period_year: 'Any',
+  period_custom: 'Personalitzat',
   period_period: 'Període',
 
   // Calendar modal
@@ -175,10 +176,16 @@ export const ca: Language = {
   // Transactions
   transactions_title: 'Transaccions',
   transactions_empty: 'No hi ha transaccions',
+  transactions_select_account: 'Seleccionar compte',
+  transactions_cancel: 'Cancel·lar',
+  transactions_confirm: 'Seleccionar',
+  transactions_sort_date: 'Per data',
+  transactions_sort_amount: 'Per quantitat',
 
   // Navigation
   nav_add: 'Afegir',
   nav_transactions: 'Transaccions',
+  nav_all_transactions: 'Totes les transaccions',
   nav_settings: 'Configuració',
   nav_home: 'Inici',
   nav_accounts: 'Comptes',

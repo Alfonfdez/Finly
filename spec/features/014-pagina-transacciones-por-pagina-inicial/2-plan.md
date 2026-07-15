@@ -1,4 +1,4 @@
-# Plan de implementación — 014 Página de transacciones
+# Plan de implementación — 014 Página de transacciones (desde página inicial)
 
 ## Archivos a crear
 
@@ -38,7 +38,7 @@ src/
 
 ### TransactionsScreen (reescribir)
 
-Pantalla que muestra transacciones filtradas y ordenadas. Estado local:
+Pantalla que muestra transacciones filtradas y ordenadas. Estructura de layout: `SafeAreaView > View.container(flex:1) > [categoryInfo, controls, SectionList, FAB(absolute)]`. No se usa `keyboardSpacer`. Estado local:
 
 ```ts
 interface TransactionsState {
@@ -59,6 +59,9 @@ Transactions: {
   endDate?: string;
 } | undefined;
 ```
+
+Header: usa el header del Stack navigator (icono + "Transacciones").
+Sección de categoría: icono + nombre + total con color (verde/rojo) y prefijo (+/-).
 
 ### AccountSelector
 

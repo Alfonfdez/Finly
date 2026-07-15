@@ -6,6 +6,7 @@ import { categoryRepository as categoryRepo } from '../database';
 import { transactionRepository as transactionRepo } from '../database';
 import { useConfig } from './ConfigContext';
 import { getCategoryName } from '../i18n';
+import { formatDateForDB } from '../utils/formatters';
 
 interface AppState {
   activeAccount: Account | null;
@@ -77,16 +78,6 @@ function calculateStartEnd(period: Period, date: Date): { start: Date; end: Date
       return { start, end };
     }
   }
-}
-
-function formatDateForDB(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  const h = String(date.getHours()).padStart(2, '0');
-  const min = String(date.getMinutes()).padStart(2, '0');
-  const s = String(date.getSeconds()).padStart(2, '0');
-  return `${y}-${m}-${d} ${h}:${min}:${s}`;
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
