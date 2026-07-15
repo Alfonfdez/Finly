@@ -270,6 +270,8 @@ Finly/
 
 ## Screenshots
 
+![App flow](images/screenshots/app-flow.gif)<br>*Recorrido completo por la aplicación: pantalla principal, menú lateral, transacciones, ajustes y más.*<br><br>
+
 ![Splash animation](images/screenshots/000-Splash_animation.png)<br>*Animación de carga con el logotipo de Finly y barra de progreso.*<br><br>
 ![Home screen](images/screenshots/001-Home_screen.png)<br>*Pantalla principal con selector de cuenta, saldo total, gráfico de anillos y desglose por categorías.*<br><br>
 ![Hamburger menu](images/screenshots/002-Hamburguer-menu.png)<br>*Menú lateral (Drawer) con acceso a Inicio, Ajustes, Transacciones, Categorías y Cuentas.*<br><br>
