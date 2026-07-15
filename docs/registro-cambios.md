@@ -1009,3 +1009,6 @@
 
 [2026-07-15] ~ | src/navigation/AppNavigator.tsx
 - Título de ModifyTransactionScreen cambiado de details_edit a modify_title.
+
+[2026-07-16] ~ | FinlyApp/app.json
+- Eliminada configuración `developmentClient: { silentLaunch: true }` que forzaba EAS a usar `expo run:android` (build nativo completo desde cero) en lugar del workflow gestionado estándar. Esta configuración causaba errores de compilación C++ con `react-native-worklets` durante el build Gradle.

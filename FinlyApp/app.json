@@ -35,9 +35,6 @@
       "eas": {
         "projectId": "ea0f8d17-3c0e-4218-be3c-e3af951f8a0b"
       }
-    },
-    "developmentClient": {
-      "silentLaunch": true
     }
   }
 }
