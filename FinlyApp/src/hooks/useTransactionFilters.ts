@@ -10,6 +10,7 @@ interface UseTransactionFiltersOptions {
   selectedAccountId: number;
   sortBy: SortBy;
   sortDirection: SortDirection;
+  refreshTrigger?: number;
 }
 
 interface UseTransactionFiltersResult {
@@ -25,6 +26,7 @@ export function useTransactionFilters({
   selectedAccountId,
   sortBy,
   sortDirection,
+  refreshTrigger,
 }: UseTransactionFiltersOptions): UseTransactionFiltersResult {
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
 
@@ -40,7 +42,7 @@ export function useTransactionFilters({
     }
     load();
     return () => { cancelled = true; };
-  }, [categoryId, startDate, endDate]);
+  }, [categoryId, startDate, endDate, refreshTrigger]);
 
   const filtered = useMemo(() => {
     let list = allTransactions.filter(t => t.account_id === selectedAccountId);

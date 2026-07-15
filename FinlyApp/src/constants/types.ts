@@ -33,6 +33,8 @@ export type RootStackParamList = {
   Categories: undefined;
   Transactions: { categoryId?: number; type?: TransactionType; period?: Period; startDate?: string; endDate?: string } | undefined;
   AllTransactions: undefined;
+  TransactionDetails: { transactionId: number };
+  ModifyTransaction: { transactionId: number };
   Settings: undefined;
 };
 
@@ -47,4 +49,5 @@ export type CreateAccountScreenProps = NativeStackScreenProps<RootStackParamList
 export type ModifyAccountScreenProps = NativeStackScreenProps<RootStackParamList, 'ModifyAccount'>;
 export type TransactionsScreenProps = NativeStackScreenProps<RootStackParamList, 'Transactions'>;
 export type AllTransactionsScreenProps = NativeStackScreenProps<RootStackParamList, 'AllTransactions'>;
+export type TransactionDetailsScreenProps = NativeStackScreenProps<RootStackParamList, 'TransactionDetails'>;
 export type SettingsScreenProps = NativeStackScreenProps<RootStackParamList, 'Settings'>;

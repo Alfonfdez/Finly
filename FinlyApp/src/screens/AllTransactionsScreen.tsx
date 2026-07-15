@@ -28,6 +28,13 @@ export default function AllTransactionsScreen() {
   const [selectedAccountId, setSelectedAccountId] = useState(activeAccount?.id ?? accounts[0]?.id ?? 1);
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      setRefreshKey(k => k + 1);
+    }, [])
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -49,6 +56,7 @@ export default function AllTransactionsScreen() {
     selectedAccountId,
     sortBy,
     sortDirection,
+    refreshTrigger: refreshKey,
   });
 
   const accountBalance = useMemo(() => {
@@ -97,6 +105,7 @@ export default function AllTransactionsScreen() {
             date={section.date}
             transactions={section.data}
             categories={categories}
+            onTransactionPress={(id) => navigation.navigate('TransactionDetails', { transactionId: id })}
           />
         )}
         renderItem={({ item }) => null}

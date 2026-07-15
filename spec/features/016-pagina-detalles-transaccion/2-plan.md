@@ -5,10 +5,8 @@
 ```
 src/
 ├── screens/
-│   └── TransactionDetailsScreen.tsx   ← nueva pantalla de detalles
-│
-├── components/
-│   └── TransactionDetailsModal.tsx    ← modal de confirmación de eliminar (inline en la screen)
+│   ├── TransactionDetailsScreen.tsx   ← nueva pantalla de detalles
+│   └── ModifyTransactionScreen.tsx    ← placeholder (TODO) para editar transacción
 │
 └── i18n/
     ├── en.ts                          ← añadir claves details_*
@@ -21,17 +19,20 @@ src/
 ```
 src/
 ├── navigation/
-│   └── AppNavigator.tsx               ← añadir TransactionDetails al Stack
+│   └── AppNavigator.tsx               ← añadir TransactionDetails + ModifyTransaction al Stack
 │
 ├── constants/
-│   └── types.ts                       ← añadir TransactionDetails a RootStackParamList
+│   └── types.ts                       ← añadir TransactionDetails + ModifyTransaction a RootStackParamList
 │
 ├── components/
 │   └── TransactionGroup.tsx           ← hacer cada transacción pulsable (onPress)
 │
 ├── screens/
-│   └── TransactionsScreen.tsx         ← pasar onPress a TransactionGroup si no existe
-│   └── AllTransactionsScreen.tsx      ← pasar onPress a TransactionGroup si no existe
+│   └── TransactionsScreen.tsx         ← pasar onPress + refreshTrigger a TransactionGroup
+│   └── AllTransactionsScreen.tsx      ← pasar onPress + refreshTrigger a TransactionGroup
+│
+├── hooks/
+│   └── useTransactionFilters.ts       ← añadir parámetro refreshTrigger para recargar al enfocar
 │
 └── utils/
     └── formatters.ts                  ← añadir formatDateLong(date, language)
@@ -62,16 +63,15 @@ src/
 ```
 AppNavigator (Stack)
   └── TransactionDetailsScreen
-        ├── Header (tipo + importe)
         ├── DataCard (label/value rows)
-        │   ├── Cantidad
-        │   ├── Cuenta (icono + nombre)
-        │   ├── Categoría (icono + nombre)
-        │   ├── Fecha (formato largo)
-        │   └── Comentario (o "Sin comentario")
+        │   ├── Cantidad (con color del tipo: verde/rojo)
+        │   ├── Cuenta (icono 28×28 + nombre, alineado a la derecha)
+        │   ├── Categoría (icono 28×28 + nombre, alineado a la derecha)
+        │   ├── Fecha (formato largo: "14 de julio de 2026")
+        │   └── Comentario (o "Sin comentario" en gris)
         ├── DeleteButton → DeleteConfirmationModal
         ├── EditButton → navega a ModifyTransaction (TODO)
-        └── CreatedFooter ("Creado HH:mm dd MMM")
+        └── CreatedFooter ("Creado HH:mm dd MMM aaaa")
 ```
 
 ## Navegación
@@ -102,6 +102,7 @@ function formatDateLong(date: Date, language: string): string {
 4. Se llama a `transactionRepository.delete(transactionId)`
 5. Se llama a `refresh()` del AppContext
 6. Se navega de vuelta (`navigation.goBack()`)
+7. Al regresar al listado, `useFocusEffect` incrementa `refreshTrigger`, lo que fuerza a `useTransactionFilters` a recargar desde la BD.
 
 ## Verificación
 

@@ -244,6 +244,23 @@ export const en = {
   calc_accept: 'Accept',
   calc_cancel: 'Cancel',
   calc_error: 'Error',
+
+  // Transaction details
+  details_title: 'Transaction details',
+  details_amount: 'Amount',
+  details_account: 'Account',
+  details_category: 'Category',
+  details_date: 'Date',
+  details_comment: 'Comment',
+  details_no_comment: 'No comment',
+  details_delete: 'Delete',
+  details_delete_title: 'Delete this transaction?',
+  details_delete_yes: 'Yes',
+  details_delete_no: 'No',
+  details_edit: 'Edit',
+  details_created: 'Created',
+  type_expense: 'Expense',
+  type_income: 'Income',
 };
 
 export type Language = typeof en;

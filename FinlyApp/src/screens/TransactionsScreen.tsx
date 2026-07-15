@@ -1,7 +1,7 @@
-import { useState, useMemo, ComponentProps } from 'react';
+import { useState, useMemo, useCallback, ComponentProps } from 'react';
 import { View, Text, SectionList, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { scrollbarFlatList } from '../constants/platformStyles';
@@ -34,6 +34,13 @@ export default function TransactionsScreen() {
   const [selectedAccountId, setSelectedAccountId] = useState(activeAccount?.id ?? accounts[0]?.id ?? 1);
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      setRefreshKey(k => k + 1);
+    }, [])
+  );
 
   const { allTransactions, sections } = useTransactionFilters({
     categoryId,
@@ -42,6 +49,7 @@ export default function TransactionsScreen() {
     selectedAccountId,
     sortBy,
     sortDirection,
+    refreshTrigger: refreshKey,
   });
 
   const category = categories.find(ct => ct.id === categoryId);
@@ -103,6 +111,7 @@ export default function TransactionsScreen() {
             date={section.date}
             transactions={section.data}
             categories={categories}
+            onTransactionPress={(id) => navigation.navigate('TransactionDetails', { transactionId: id })}
           />
         )}
         renderItem={({ item }) => null}

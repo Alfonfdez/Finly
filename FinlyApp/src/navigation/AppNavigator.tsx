@@ -19,6 +19,8 @@ import CreateAccountScreen from '../screens/CreateAccountScreen';
 import CategoriesScreen from '../screens/CategoriesScreen';
 import TransactionsScreen from '../screens/TransactionsScreen';
 import AllTransactionsScreen from '../screens/AllTransactionsScreen';
+import TransactionDetailsScreen from '../screens/TransactionDetailsScreen';
+import ModifyTransactionScreen from '../screens/ModifyTransactionScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -177,6 +179,22 @@ function HomeStack() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Ionicons name="settings-outline" size={20} color={c.text} />
             <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_settings}</Text>
+          </View>
+        ),
+      }} />
+      <Stack.Screen name="TransactionDetails" component={TransactionDetailsScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="information-circle-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.details_title}</Text>
+          </View>
+        ),
+      }} />
+      <Stack.Screen name="ModifyTransaction" component={ModifyTransactionScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="create-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.details_edit}</Text>
           </View>
         ),
       }} />

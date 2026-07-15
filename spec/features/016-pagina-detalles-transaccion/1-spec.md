@@ -13,12 +13,7 @@ Pantalla `TransactionDetailsScreen` accesible al pulsar una transacción desde `
 - La pantalla tiene un botón de retroceso (flecha izquierda) en el header para volver a la pantalla anterior.
 - El título del header es "Detalles de la transacción" — clave i18n `details_title` (multilingual).
 
-### 2. Cabecera de tipo e importe
-
-- Se muestra el tipo de transacción como label: "Gasto" (rojo, `c.red`) o "Ingreso" (verde, `c.green`) según `transaction.type`, con un icono asociado (`arrow-down-outline` para gasto, `arrow-up-outline` para ingreso).
-- Debajo se muestra el importe total formateado con divisa y separador configurados: color rojo si es gasto, verde si es ingreso. Con prefijo `-` (gasto) o `+` (ingreso).
-
-### 3. Ficha de datos
+### 2. Ficha de datos
 
 Cada campo se muestra en una fila con un label a la izquierda (gris, `textSecondary`) y el valor a la derecha:
 
@@ -30,7 +25,7 @@ Cada campo se muestra en una fila con un label a la izquierda (gris, `textSecond
 | `details_date` | Fecha en formato largo según idioma | `14 de julio de 2026` / `July 14, 2026` / `14 de juliol de 2026` |
 | `details_comment` | Comentario de la transacción, o texto "Sin comentario" en gris si está vacío | `Cena con amigos` / _Sin comentario_ |
 
-### 4. Fecha
+### 3. Fecha
 
 - El formato largo de fecha depende del idioma activo:
   - **es:** `14 de julio de 2026`
@@ -38,13 +33,13 @@ Cada campo se muestra en una fila con un label a la izquierda (gris, `textSecond
   - **ca:** `14 de juliol de 2026`
 - Se implementa como una función `formatDateLong(date, language)` en `formatters.ts`.
 
-### 5. Comentario
+### 4. Comentario
 
 - La sección "Comentario" se muestra siempre (consistencia visual con el resto de campos).
 - Si `transaction.description` es `null` o cadena vacía, se muestra el texto "Sin comentario" / "No comment" / "Sense comentari" en color `textSecondary` sin fondo.
 - Si hay comentario, se muestra el texto completo en color `text`.
 
-### 6. Botón "Eliminar"
+### 5. Botón "Eliminar"
 
 - Botón con icono `trash-outline` y texto "Eliminar" (clave `details_delete`, multilingual).
 - Color: rojo (`#F87171`), fondo transparente con borde rojo.
@@ -55,21 +50,21 @@ Cada campo se muestra en una fila con un label a la izquierda (gris, `textSecond
 - Botón izquierdo: "No" (clave `details_delete_no`, multilingual) — cierra el modal.
 - Botón derecho: "Sí" (clave `details_delete_yes`, multilingual) — elimina la transacción, refresca los datos y navega de vuelta a la pantalla anterior.
 
-### 7. Botón "Editar" (TODO)
+### 6. Botón "Editar" (TODO)
 
 - Botón con icono `create-outline` y texto "Editar" (clave `details_edit`, multilingual).
 - Color: color primario (`c.primary`).
 - Al pulsarlo, navega a una nueva pantalla `ModifyTransaction` (TODO) con `transactionId` como parámetro.
 - La implementación de `ModifyTransactionScreen` queda fuera del alcance de esta feature (se marcará como TODO).
 
-### 8. Pie de creación
+### 7. Pie de creación
 
 - En la parte inferior de la pantalla, alineado a la izquierda, se muestra el texto:
   `"Creado HH:mm dd MMM"` (clave `details_created`, multilingual).
 - Ejemplo: `"Creado 11:50 14 jul"` / `"Created 11:50 14 Jul"` / `"Creat 11:50 14 jul"`.
 - Se usa formato **24h** (`HH:mm`) para la hora.
 - `transaction.date` se almacena como `YYYY-MM-DD HH:mm:ss`; se extrae la hora y el día para formatear.
-- Si el año de creación difiere del año actual, se muestra también el año: `"Creado 11:50 14 jul 2025"`.
+- El año se muestra siempre: `"Creado 11:50 14 jul 2026"`.
 
 ---
 
@@ -80,6 +75,7 @@ Cada campo se muestra en una fila con un label a la izquierda (gris, `textSecond
 - **Texto**: la pantalla debe usar `useFontSize()` para escalado de texto.
 - **Formato monetario**: usar `formatCurrency()` con divisa y separador de `ConfigContext`.
 - **Navegación**: la pantalla se añade al Stack navigator con `transactionId` como parámetro de ruta.
+- **Refresco automático**: las pantallas de listado (`TransactionsScreen`, `AllTransactionsScreen`) usan `useFocusEffect` para incrementar un `refreshTrigger` que fuerza a `useTransactionFilters` a recargar los datos al volver (ej: tras eliminar una transacción).
 
 ---
 
@@ -87,8 +83,7 @@ Cada campo se muestra en una fila con un label a la izquierda (gris, `textSecond
 
 - [ ] Al pulsar una transacción en cualquier listado, navega a la pantalla de detalles.
 - [ ] El header muestra flecha de retroceso y título "Detalles de la transacción" en el idioma activo.
-- [ ] Se muestra el tipo (Gasto/Ingreso) con color e icono correctos.
-- [ ] Se muestra el importe formateado con divisa y signo (+/-).
+- [ ] La fila "Cantidad" muestra el importe formateado con el color del tipo (verde ingreso / rojo gasto) y signo (+/-).
 - [ ] La sección "Cuenta" muestra icono + nombre de la cuenta.
 - [ ] La sección "Categoría" muestra icono + nombre de la categoría.
 - [ ] La sección "Fecha" muestra la fecha en formato largo según el idioma.
@@ -96,7 +91,7 @@ Cada campo se muestra en una fila con un label a la izquierda (gris, `textSecond
 - [ ] El botón "Eliminar" muestra un modal de confirmación con "No" y "Sí".
 - [ ] Al confirmar "Sí", la transacción se elimina y se vuelve a la pantalla anterior.
 - [ ] El botón "Editar" navega a `ModifyTransaction` con `transactionId` (TODO).
-- [ ] El pie muestra "Creado HH:mm dd MMM" en 24h con el idioma activo.
+- [ ] El pie muestra "Creado HH:mm dd MMM aaaa" en 24h con el idioma activo (el año siempre visible).
 - [ ] Todos los textos cambian al cambiar el idioma en configuración.
 - [ ] La pantalla respeta el tema activo (oscuro/claro).
 - [ ] La pantalla respeta el tamaño de texto configurado.

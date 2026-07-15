@@ -69,6 +69,21 @@ export function isSameDay(a: Date, b: Date): boolean {
     && a.getDate() === b.getDate();
 }
 
+export function formatDateLong(date: Date, language: 'es' | 'en' | 'ca'): string {
+  const day = date.getDate();
+  const month = (date.getMonth() + 1);
+  const year = date.getFullYear();
+  const monthName = getMonthName(month);
+
+  if (language === 'en') {
+    return `${monthName} ${day}, ${year}`;
+  } else if (language === 'ca') {
+    return `${day} de ${monthName.toLowerCase()} de ${year}`;
+  }
+  // es
+  return `${day} de ${monthName.toLowerCase()} de ${year}`;
+}
+
 export function formatDateForDB(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');

@@ -246,4 +246,21 @@ export const ca: Language = {
   calc_accept: 'Acceptar',
   calc_cancel: 'Cancel·lar',
   calc_error: 'Error',
+
+  // Transaction details
+  details_title: 'Detalls de la transacció',
+  details_amount: 'Quantitat',
+  details_account: 'Compte',
+  details_category: 'Categoria',
+  details_date: 'Data',
+  details_comment: 'Comentari',
+  details_no_comment: 'Sense comentari',
+  details_delete: 'Eliminar',
+  details_delete_title: 'Voleu eliminar la transacció?',
+  details_delete_yes: 'Sí',
+  details_delete_no: 'No',
+  details_edit: 'Editar',
+  details_created: 'Creat',
+  type_expense: 'Despesa',
+  type_income: 'Ingrés',
 };

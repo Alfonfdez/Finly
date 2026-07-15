@@ -1,58 +1,63 @@
 # Tareas — 016 Detalles de transacción
-Orden de ejecución. Marca cada tarea al completarlo.
 
 ---
 
 ### Fase 1 — Infraestructura
 
-[ ] T1 — Añadir nuevas claves i18n `details_*` y `type_expense`/`type_income` a `en.ts`, `es.ts` y `ca.ts`.
+[x] T1 — Añadir nuevas claves i18n `details_*` y `type_expense`/`type_income` a `en.ts`, `es.ts` y `ca.ts`.
 
-[ ] T2 — Añadir `formatDateLong(date, language)` a `src/utils/formatters.ts`.
+[x] T2 — Añadir `formatDateLong(date, language)` a `src/utils/formatters.ts`.
 
-[ ] T3 — Añadir `TransactionDetails: { transactionId: number }` y `ModifyTransaction: { transactionId: number }` a `RootStackParamList` en `src/constants/types.ts`.
+[x] T3 — Añadir `TransactionDetails: { transactionId: number }` y `ModifyTransaction: { transactionId: number }` a `RootStackParamList` en `src/constants/types.ts`.
 
-[ ] T4 — Crear `TransactionDetailsScreenProps` en `src/constants/types.ts`.
+[x] T4 — Crear `TransactionDetailsScreenProps` en `src/constants/types.ts`.
 
-[ ] T5 — Añadir `TransactionDetails` al Stack en `AppNavigator.tsx` con título i18n `details_title`.
+[x] T5 — Añadir `TransactionDetails` y `ModifyTransaction` al Stack en `AppNavigator.tsx`.
 
 ---
 
 ### Fase 2 — Pantalla de detalles
 
-[ ] T6 — Crear `TransactionDetailsScreen.tsx` con:
-  - Header con tipo (Gasto/Ingreso) + importe formateado con color.
+[x] T6 — Crear `TransactionDetailsScreen.tsx` con:
   - Ficha de datos con 5 filas (Cantidad, Cuenta, Categoría, Fecha, Comentario).
   - Cada fila: label a la izquierda (textSecondary), valor a la derecha.
-  - Cuenta y Categoría muestran icono + nombre.
+  - Cantidad con color del tipo (verde ingreso / rojo gasto) y signo (+/-).
+  - Cuenta y Categoría: icono 28×28 + nombre, alineados a la derecha.
   - Comentario muestra "Sin comentario" en textSecondary si está vacío.
 
-[ ] T7 — Implementar la carga de datos: recibir `transactionId` de la ruta, cargar transacción con `transactionRepository`, cargar cuenta y categoría desde los repositorios o context.
+[x] T7 — Cargar datos desde context (transactions, categories, accounts).
 
-[ ] T8 — Añadir el pie "Creado HH:mm dd MMM" en la parte inferior izquierda.
+[x] T8 — Añadir el pie "Creado HH:mm dd MMM aaaa" con año siempre visible.
 
 ---
 
 ### Fase 3 — Botones de acción
 
-[ ] T9 — Implementar botón "Eliminar" con modal de confirmación:
+[x] T9 — Implementar botón "Eliminar" con modal de confirmación:
   - Modal con título "¿Quiere eliminar la transacción?"
   - Botones "No" (cierra modal) y "Sí" (elimina + goBack).
   - Al eliminar, llamar a `refresh()` del AppContext.
 
-[ ] T10 — Implementar botón "Editar" que navega a `ModifyTransaction` con `transactionId` (TODO).
+[x] T10 — Implementar botón "Editar" que navega a `ModifyTransaction` con `transactionId` (TODO — pantalla placeholder).
 
 ---
 
 ### Fase 4 — Conexión con listados
 
-[ ] T11 — Modificar `TransactionGroup.tsx` para que cada transacción sea pulsable. Aceptar prop `onTransactionPress?: (transactionId: number) => void`.
+[x] T11 — Modificar `TransactionGroup.tsx` para que cada transacción sea pulsable con `onTransactionPress`.
 
-[ ] T12 — Modificar `TransactionsScreen.tsx` y `AllTransactionsScreen.tsx` para pasar `onTransactionPress` a `TransactionGroup` que navegue a `TransactionDetails`.
+[x] T12 — Modificar `TransactionsScreen.tsx` y `AllTransactionsScreen.tsx` para pasar `onTransactionPress` y usar `useFocusEffect` + `refreshTrigger` para recargar datos al volver.
 
 ---
 
-### Fase 5 — Verificación
+### Fase 5 — Refresco automático
 
-[ ] T13 — Verificación: probar en web y nativo que al pulsar una transacción se vean los detalles correctos, eliminar funciona, y el botón editar navega al placeholder TODO.
+[x] T13 — Añadir parámetro `refreshTrigger` a `useTransactionFilters.ts` para que las pantallas de listado recarguen datos al recibir foco (tras eliminar/editar).
 
-[ ] T14 — Validar todos los criterios de aceptación de `1-spec.md`.
+---
+
+### Fase 6 — Verificación
+
+[x] T14 — Verificación: probar en web y nativo que al pulsar una transacción se vean los detalles correctos, eliminar funciona y el listado se refresca, y el botón editar navega al placeholder.
+
+[x] T15 — Validar que `npx tsc --noEmit` compila sin errores.

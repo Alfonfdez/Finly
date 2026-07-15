@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Transaction, Category } from '../database/types';
 import { formatCurrency, getMonthName } from '../utils/formatters';
@@ -10,6 +10,7 @@ interface Props {
   date: string;
   transactions: Transaction[];
   categories: Category[];
+  onTransactionPress?: (transactionId: number) => void;
 }
 
 function formatDateHeader(dateStr: string, lang: string): string {
@@ -24,7 +25,7 @@ function formatDateHeader(dateStr: string, lang: string): string {
   return `${day} ${month.toLowerCase()} ${year}`;
 }
 
-export default function TransactionGroup({ date, transactions, categories }: Props) {
+export default function TransactionGroup({ date, transactions, categories, onTransactionPress }: Props) {
   const { config, activeColors: c } = useConfig();
   const fs = useFontSize();
   const lang = config.language;
@@ -37,7 +38,12 @@ export default function TransactionGroup({ date, transactions, categories }: Pro
       {transactions.map((tx) => {
         const cat = categories.find(ct => ct.id === tx.category_id);
         return (
-          <View key={tx.id} style={[styles.row, { borderBottomColor: c.border }]}>
+          <TouchableOpacity
+            key={tx.id}
+            style={[styles.row, { borderBottomColor: c.border }]}
+            onPress={() => onTransactionPress?.(tx.id)}
+            activeOpacity={0.6}
+          >
             {cat && (
               <View style={[styles.catIcon, { backgroundColor: cat.color + '30' }]}>
                 <Ionicons name={cat.icon as ComponentProps<typeof Ionicons>['name']} size={18} color={cat.color} />
@@ -56,7 +62,7 @@ export default function TransactionGroup({ date, transactions, categories }: Pro
             <Text style={[styles.amount, { color: tx.type === 'income' ? c.green : c.red, fontSize: fs(15) }]}>
               {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount, config.currency, config.decimalSeparator)}
             </Text>
-          </View>
+          </TouchableOpacity>
         );
       })}
     </View>

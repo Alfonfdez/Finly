@@ -246,4 +246,21 @@ export const es: Language = {
   calc_accept: 'Aceptar',
   calc_cancel: 'Cancelar',
   calc_error: 'Error',
+
+  // Transaction details
+  details_title: 'Detalles de la transacción',
+  details_amount: 'Cantidad',
+  details_account: 'Cuenta',
+  details_category: 'Categoría',
+  details_date: 'Fecha',
+  details_comment: 'Comentario',
+  details_no_comment: 'Sin comentario',
+  details_delete: 'Eliminar',
+  details_delete_title: '¿Quiere eliminar la transacción?',
+  details_delete_yes: 'Sí',
+  details_delete_no: 'No',
+  details_edit: 'Editar',
+  details_created: 'Creado',
+  type_expense: 'Gasto',
+  type_income: 'Ingreso',
 };

@@ -213,3 +213,16 @@ Pantalla independiente `AllTransactionsScreen` accesible desde el menú hamburgu
 - Layout: SafeAreaView > View.container(flex:1) > [controls, SectionList, FAB].
 
 Especificación: spec/features/015-pagina-transacciones-por-menu-hamburguesa/.
+
+## 016-pagina-detalles-transaccion
+Estado: completado.
+
+Pantalla de detalles de una transacción individual, accesible al pulsar cualquier transacción en los listados (TransactionsScreen, AllTransactionsScreen):
+- Header con título "Detalles de la transacción" y botón de retroceso.
+- Ficha de datos con 5 filas: Cantidad (con color del tipo), Cuenta (icono + nombre), Categoría (icono + nombre), Fecha (formato largo multilingüe), Comentario (o "Sin comentario").
+- Botón "Eliminar" con modal de confirmación ("No" / "Sí") que borra y refresca el listado.
+- Botón "Editar" que navega a ModifyTransaction (TODO).
+- Pie "Creado HH:mm dd MMM aaaa" con formato 24h y año siempre visible.
+- Refresco automático del listado al volver (useFocusEffect + refreshTrigger).
+
+Especificación: spec/features/016-pagina-detalles-transaccion/.

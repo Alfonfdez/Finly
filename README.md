@@ -140,6 +140,8 @@ Finly/
 │   │   │   ├── CategoriesScreen.tsx ← Lista de categorías
 │   │   │   ├── CreateCategoryScreen.tsx ← Crear categoría
 │   │   │   ├── ModifyCategoryScreen.tsx ← Editar categoría
+│   │   │   ├── TransactionDetailsScreen.tsx ← Detalles de transacción (016)
+│   │   │   ├── ModifyTransactionScreen.tsx ← Editar transacción (TODO)
 │   │   │   └── SettingsScreen.tsx   ← Configuración de la app
 │   │   ├── components/
 │   │   │   ├── AccountModal.tsx     ← Modal de selección de cuentas
@@ -233,7 +235,8 @@ Finly/
 │       ├── 012-pagina-modificar-eliminar-cuenta/
 │       ├── 013-pagina-crear-cuenta/
 │       ├── 014-pagina-transacciones-por-pagina-inicial/
-│       └── 015-pagina-transacciones-por-menu-hamburguesa/
+│       ├── 015-pagina-transacciones-por-menu-hamburguesa/
+│       └── 016-pagina-detalles-transaccion/
 │
 ├── .agents/skills/               ← Skills para asistentes IA
 ├── docs/                         ← Documentación de conceptos
@@ -254,6 +257,7 @@ Finly/
 - Selector de cuenta reutilizable con cálculo de saldos
 - Ordenación de transacciones por fecha o cantidad
 - Pantalla de todas las transacciones con filtros combinados
+- Pantalla de detalles de transacción con eliminar y editar
 - Pantalla de ajustes: tema, divisa, idioma, calendario, tamaño de texto
 - Tema oscuro y claro con cambio en tiempo real
 - Soporte multilingüe: español, inglés, catalán
