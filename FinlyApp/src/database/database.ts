@@ -3,11 +3,9 @@ import { migrate001 } from './migrations/001_initial';
 import { seed002 } from './migrations/002_seed';
 import { migrate003 } from './migrations/003_config';
 import { seed004 } from './migrations/004_new_categories';
-import { migrate005 } from './migrations/005_english_schema';
-import { migrate006 } from './migrations/006_account_description';
 
 const DATABASE_NAME = 'Finly.db';
-const DATABASE_VERSION = 6;
+const DATABASE_VERSION = 4;
 
 let db: SQLiteDatabase | null = null;
 
@@ -45,22 +43,7 @@ export async function initDatabase(): Promise<SQLiteDatabase> {
     currentVersion = 4;
   }
 
-  if (currentVersion < 5) {
-    await migrate005(database);
-    currentVersion = 5;
-  }
-
-  if (currentVersion < 6) {
-    await migrate006(database);
-    currentVersion = 6;
-  }
-
   await database.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
-
-  // Data fixups for icon renames (run every startup)
-  await database.runAsync(`UPDATE categories SET icon = 'musical-notes-outline' WHERE id = 5`);
-  await database.runAsync(`UPDATE categories SET icon = 'game-controller-outline' WHERE id = 10`);
-  await database.runAsync(`UPDATE categories SET icon = 'wallet-outline' WHERE id = 23`);
 
   return database;
 }

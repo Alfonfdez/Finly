@@ -18,6 +18,7 @@ export async function migrate001(db: SQLiteDatabase) {
       initial_balance REAL NOT NULL DEFAULT 0,
       icon TEXT NOT NULL DEFAULT 'wallet',
       color TEXT NOT NULL DEFAULT '#22D3EE',
+      description TEXT DEFAULT '',
       created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
