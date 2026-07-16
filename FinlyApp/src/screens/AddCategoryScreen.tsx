@@ -7,7 +7,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t, getCategoryName } from '../i18n';
+import { t, getDisplayCategoryName } from '../i18n';
 import SearchBar from '../components/SearchBar';
 import { RootStackParamList } from '../constants/types';
 import { setPendingCategory } from './AddTransactionScreen';
@@ -53,7 +53,7 @@ export default function AddCategoryScreen() {
 
     const searchTerms = searchText.toLowerCase().split(/\s+/).filter(Boolean);
     return categoriesByType.filter((cat) => {
-      const name = (getCategoryName(cat.id) || cat.name).toLowerCase();
+      const name = getDisplayCategoryName(cat).toLowerCase();
       return searchTerms.every((term) => name.includes(term));
     });
   }, [categoriesByType, searchText]);
@@ -66,7 +66,7 @@ export default function AddCategoryScreen() {
   const round = config.categoryIconShape === 'circle';
 
   const renderCategory = (cat: typeof categories[0]) => {
-    const name = getCategoryName(cat.id) || cat.name;
+    const name = getDisplayCategoryName(cat);
 
     return (
       <TouchableOpacity

@@ -48,3 +48,19 @@ export function getCategoryName(categoryId: number): string {
   }
   return '';
 }
+
+export function getDefaultEnglishName(categoryId: number): string | null {
+  const key = CATEGORY_I18N_KEYS[categoryId];
+  if (key && en[key]) {
+    return en[key] as string;
+  }
+  return null;
+}
+
+export function getDisplayCategoryName(category: { id: number; name: string }): string {
+  const defaultName = getDefaultEnglishName(category.id);
+  if (defaultName && category.name === defaultName) {
+    return getCategoryName(category.id);
+  }
+  return category.name;
+}

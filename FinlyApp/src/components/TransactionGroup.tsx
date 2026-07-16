@@ -5,7 +5,7 @@ import { Transaction, Category } from '../database/types';
 import { formatCurrency, getMonthName } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { getCategoryName } from '../i18n';
+import { getDisplayCategoryName } from '../i18n';
 
 interface Props {
   date: string;
@@ -52,7 +52,7 @@ export default function TransactionGroup({ date, transactions, categories, onTra
             )}
             <View style={styles.info}>
               <Text style={[styles.catName, { color: c.text, fontSize: fs(14) }]} numberOfLines={1}>
-                {cat ? (getCategoryName(cat.id) || cat.name) : ''}
+                {cat ? getDisplayCategoryName(cat) : ''}
               </Text>
               {tx.description ? (
                 <Text style={[styles.desc, { color: c.textSecondary, fontSize: fs(12) }]} numberOfLines={1}>

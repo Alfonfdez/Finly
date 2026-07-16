@@ -7,7 +7,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t, getCategoryName } from '../i18n';
+import { t, getDisplayCategoryName } from '../i18n';
 import TypeTabs from '../components/TypeTabs';
 import { TransactionType, RootStackParamList } from '../constants/types';
 
@@ -43,7 +43,7 @@ export default function CategoriesScreen() {
   const round = config.categoryIconShape === 'circle';
 
   const renderCategory = (cat: typeof categories[0]) => {
-    const name = getCategoryName(cat.id) || cat.name;
+    const name = getDisplayCategoryName(cat);
 
     return (
       <TouchableOpacity

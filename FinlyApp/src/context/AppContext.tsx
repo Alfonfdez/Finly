@@ -5,7 +5,7 @@ import { accountRepository as accountRepo } from '../database';
 import { categoryRepository as categoryRepo } from '../database';
 import { transactionRepository as transactionRepo } from '../database';
 import { useConfig } from './ConfigContext';
-import { getCategoryName } from '../i18n';
+import { getDisplayCategoryName } from '../i18n';
 import { formatDateForDB } from '../utils/formatters';
 
 interface AppState {
@@ -200,7 +200,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         .reduce((sum, t) => sum + t.amount, 0);
       return {
         id: cat.id,
-        name: getCategoryName(cat.id) || cat.name,
+        name: getDisplayCategoryName(cat),
         icon: cat.icon,
         color: cat.color,
         type: cat.type,

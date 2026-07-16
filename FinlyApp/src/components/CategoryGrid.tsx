@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t, getCategoryName } from '../i18n';
+import { t, getDisplayCategoryName } from '../i18n';
 
 interface Category {
   id: number;
@@ -28,7 +28,7 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
 
   const renderCategory = (cat: Category, index: number) => {
     const isSelected = cat.id === selectedCategory;
-    const nombre = getCategoryName(cat.id) || cat.name;
+    const nombre = getDisplayCategoryName(cat);
 
     return (
       <TouchableOpacity

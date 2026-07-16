@@ -12,7 +12,7 @@ import { RootStackParamList } from '../constants/types';
 import { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatCurrency } from '../utils/formatters';
-import { getCategoryName, t } from '../i18n';
+import { getDisplayCategoryName, t } from '../i18n';
 import AccountSelector from '../components/AccountSelector';
 import SortToggle, { SortBy, SortDirection } from '../components/SortToggle';
 import TransactionGroup from '../components/TransactionGroup';
@@ -110,7 +110,7 @@ export default function TransactionsScreen() {
               <Ionicons name={category.icon as ComponentProps<typeof Ionicons>['name']} size={22} color={category.color} />
             </View>
             <Text style={[styles.categoryName, { color: c.text, fontSize: fs(16) }]} numberOfLines={1}>
-              {getCategoryName(category.id) || category.name}
+              {getDisplayCategoryName(category)}
             </Text>
           </View>
           <Text style={[styles.categoryTotal, { color: categoryTotal >= 0 ? c.green : c.red, fontSize: fs(22) }]}>

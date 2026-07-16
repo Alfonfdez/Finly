@@ -8,7 +8,7 @@ import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { formatCurrency, formatDateLong } from '../utils/formatters';
-import { t, getCategoryName } from '../i18n';
+import { t, getDisplayCategoryName } from '../i18n';
 import { transactionRepository } from '../database';
 import { RootStackParamList } from '../constants/types';
 
@@ -85,7 +85,7 @@ export default function TransactionDetailsScreen() {
 
   const isExpense = transaction.type === 'expense';
   const typeColor = isExpense ? c.red : c.green;
-  const catName = getCategoryName(category?.id ?? 0) || category?.name || '';
+  const catName = category ? getDisplayCategoryName(category) : '';
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>

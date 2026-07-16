@@ -10,7 +10,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t, getCategoryName } from '../i18n';
+import { t, getDisplayCategoryName } from '../i18n';
 import { categoryRepository, transactionRepository } from '../database';
 import { RootStackParamList } from '../constants/types';
 import { CATEGORY_ICONS } from '../components/IconGrid';
@@ -60,7 +60,7 @@ export default function ModifyCategoryScreen() {
 
   useEffect(() => {
     if (category) {
-      setName(category.name);
+      setName(getDisplayCategoryName(category));
       setSelectedIcon(category.icon);
       setSelectedColor(category.color);
       if (!QUICK_COLORS.includes(category.color)) {
@@ -295,7 +295,7 @@ export default function ModifyCategoryScreen() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: c.surface }]}>
             <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(16) }]}>
-              {labels.modify_cat_delete_confirm_title(getCategoryName(category.id) || category.name)}
+              {labels.modify_cat_delete_confirm_title(getDisplayCategoryName(category))}
             </Text>
             <Text style={[styles.modalMessage, { color: c.textSecondary, fontSize: fs(14) }]}>
               {labels.modify_cat_delete_confirm_message}
@@ -341,7 +341,7 @@ export default function ModifyCategoryScreen() {
                       key={cat.id}
                       style={[styles.selectItem, { backgroundColor: isSelected ? c.background : 'transparent' }]}
                       onPress={() => setTargetCategoryId(cat.id)}
-                      accessibilityLabel={getCategoryName(cat.id) || cat.name}
+                      accessibilityLabel={getDisplayCategoryName(cat)}
                       accessibilityState={{ selected: isSelected }}
                     >
                       <View style={[styles.radio, { borderColor: isSelected ? c.primary : c.border }]}>
@@ -351,7 +351,7 @@ export default function ModifyCategoryScreen() {
                         <Ionicons name={cat.icon as any} size={20} color={cat.color} />
                       </View>
                       <Text style={[styles.selectName, { color: c.text, fontSize: fs(14) }]}>
-                        {getCategoryName(cat.id) || cat.name}
+                        {getDisplayCategoryName(cat)}
                       </Text>
                     </TouchableOpacity>
                   );

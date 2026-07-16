@@ -1034,3 +1034,9 @@
 
 [2026-07-16] ~ | README.md
 - Añadida sección "Generar APK Android" con instrucciones completas: requisitos (EAS CLI, cuenta expo.dev), comando `eas build --platform android --profile preview`, instalación de la APK en el teléfono, y notas sobre diferencias entre APK preview/production y base de datos independiente.
+
+[2026-07-16] ~ | src/i18n/index.ts, src/screens/ModifyCategoryScreen.tsx
+- Fix: category name in ModifyCategoryScreen now uses the translated i18n name for default categories instead of the raw English DB name. Added `getDefaultEnglishName()` and `getDisplayCategoryName()` helpers to i18n/index.ts. `getDisplayCategoryName()` checks if the stored name matches the default English name: if so, it returns the i18n translation; otherwise (user has customized the name), it returns the stored name.
+
+[2026-07-16] ~ | 10 files: src/context/AppContext.tsx, src/components/CategoryGrid.tsx, src/components/TransactionGroup.tsx, src/screens/AddCategoryScreen.tsx, src/screens/CategoriesScreen.tsx, src/screens/TransactionDetailsScreen.tsx, src/screens/TransactionsScreen.tsx, src/screens/ModifyCategoryScreen.tsx
+- Replaced all `getCategoryName(cat.id) || cat.name` fallback pattern with `getDisplayCategoryName(cat)` across the entire codebase. Fixes the bug where custom-renamed default categories still showed the translated i18n name in category grids, transaction lists, and detail screens.
