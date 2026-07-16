@@ -1089,3 +1089,12 @@
 
 [2026-07-16] ~ | src/database/migrations/003_config.ts, src/database/repositories/configRepo.ts, src/database/webStorage.ts
 - Changed default language from 'es' (Spanish) to 'en' (English) in config defaults.
+
+[2026-07-16] ~ | src/database/migrations/002_seed.ts, src/database/webStorage.ts
+- Fix: renumbered category IDs to match CATEGORY_I18N_KEYS in i18n/index.ts. Old IDs caused getDefaultEnglishName() to return wrong names when saving categories (e.g., Food saved as "Housing").
+
+[2026-07-16] ~ | src/i18n/index.ts
+- Fix: removed 5 stale CATEGORY_I18N_KEYS entries (Videogame, Game, Restaurant, Gifts, Interests) and renumbered remaining to match seed data.
+
+[2026-07-16] ~ | src/i18n/en.ts, src/i18n/es.ts, src/i18n/ca.ts
+- Removed stale category translations: cat_videogame, cat_game, cat_restaurant, cat_gifts, cat_interests.

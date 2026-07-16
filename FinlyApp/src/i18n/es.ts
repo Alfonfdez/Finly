@@ -159,9 +159,6 @@ export const es: Language = {
   cat_health: 'Salud',
   cat_investments: 'Inversiones',
   cat_travel: 'Viaje',
-  cat_videogame: 'Videojuego',
-  cat_game: 'Juego',
-  cat_restaurant: 'Restaurante',
   cat_education: 'Educación',
   cat_family: 'Familia',
   cat_shopping: 'Compras',
@@ -169,10 +166,8 @@ export const es: Language = {
   cat_exercise: 'Ejercicio',
   cat_others: 'Otros',
   cat_entertainment: 'Entretenimiento',
-  cat_gifts: 'Regalos',
   cat_gift: 'Regalo',
   cat_other: 'Otro',
-  cat_interests: 'Intereses',
 
   // Transactions
   transactions_title: 'Transacciones',
