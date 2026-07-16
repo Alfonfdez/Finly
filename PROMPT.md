@@ -1,10 +1,9 @@
-Empezamos el proyecto de una app de gastos e ingresos. El nombre de la app es Finly.
-Deberás crear una carpeta FinlyApp dónde irá todo el código de nuestra aplicación.
+# Prompt — Copy & Paste for New Sessions
 
-Deberás leer los archivos en este contexto (carpeta "Finly") y seguir sus pautas.
-El archivo "AGENTS.md" marcará cómo deberás actuar.
-Los archivos en la carpeta "spec" te dirán cómo inicializar exactamente el proyecto. 
-También deberás seguir las pautas de las distintas skills (carpeta "skills"). 
-Aparte tendrás un MCP, Model Context Protocol, a seguir especificado en el archivo "opencode.jsonc" (context7).
+This is the Finly project. Follow these steps to get context:
 
-Siempre tendrás que consultarme antes de añadir, modificar o eliminar código, y esperar a mi verificación.
+1. Read `AGENTS.md` for rules, tech stack, and conventions.
+2. Read all `.md` files in `spec/` for feature specifications and roadmap.
+3. Read project code in `C:\Users\alfon\Documents\VSGit\Finly-app\Finly\FinlyApp`.
+4. Check skills in `.agents/skills/` and apply them when relevant.
+5. Always consult the developer before adding, modifying, or deleting code. Wait for verification.

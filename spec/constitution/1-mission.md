@@ -1,16 +1,16 @@
-# Misión
+# Mission
 
-## Producto
-Nombre del producto: Finly. Una app móvil sobre ingresos y gastos de un usuario donde podrán añadirse ingresos y gastos en una fecha concreta y estos datos se irán sumando a una base de datos local (SQLite). El usuario puede crear categorías personalizadas y gestionar múltiples cuentas.
+## Product
+Product name: Finly. A mobile app for tracking personal income and expenses, where users can add income and expenses on specific dates. All data is stored in a local database (SQLite). Users can create custom categories and manage multiple accounts.
 
-> **Alcance futuro:** plan de ahorros (no incluido en la versión actual).
+> **Future scope:** savings plans (not included in the current version).
 
-## Objetivo
-Gestionar de forma sencilla los ingresos y gastos personales, permitiendo al usuario registrar, visualizar y analizar sus finanzas a través de una interfaz clara con gráficos, filtros por tipo y período, y organización por cuentas y categorías personalizables.
+## Goal
+Manage personal income and expenses in a simple way, allowing the user to record, view, and analyze their finances through a clear interface with charts, filters by type and period, and organization by customizable accounts and categories.
 
-## Principios
-- Tono sobrio y directo.
-- Se ve igual de bien en iOS que en Android.
-- Soporte multilingüe (español, inglés, catalán).
-- Tema oscuro y claro con cambio en tiempo real.
-- Accesibilidad: escalado de texto según preferencias del usuario.
+## Principles
+- Clean and direct tone.
+- Looks the same on iOS and Android.
+- Multilingual support (English, Spanish, Catalan).
+- Dark and light theme with real-time switching.
+- Accessibility: text scaling based on user preferences.

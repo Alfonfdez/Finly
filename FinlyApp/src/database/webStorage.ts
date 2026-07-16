@@ -401,7 +401,7 @@ export const webConfigRepo = {
   },
   async save(partial: Partial<Config>): Promise<void> {
     if (typeof localStorage === 'undefined') return;
-    const actual = await this.get();
-    localStorage.setItem(CONFIG_KEY, JSON.stringify({ ...actual, ...partial }));
+    const current = await this.get();
+    localStorage.setItem(CONFIG_KEY, JSON.stringify({ ...current, ...partial }));
   },
 };

@@ -8,7 +8,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 
 interface AccountWithBalance extends Account {
-  saldo: number;
+  balance: number;
 }
 
 interface Props {
@@ -44,7 +44,7 @@ export default function AccountModal({ visible, accounts, onSelect, onClose }: P
                 </View>
                 <View style={styles.info}>
                   <Text style={[styles.name, { color: c.text, fontSize: fs(16) }]}>{item.name}</Text>
-                  <Text style={[styles.balance, { color: c.textSecondary, fontSize: fs(14) }]}>{formatCurrency(item.saldo, config.currency, config.decimalSeparator)}</Text>
+                  <Text style={[styles.balance, { color: c.textSecondary, fontSize: fs(14) }]}>{formatCurrency(item.balance, config.currency, config.decimalSeparator)}</Text>
                 </View>
               </TouchableOpacity>
             )}

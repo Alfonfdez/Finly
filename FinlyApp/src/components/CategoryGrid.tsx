@@ -28,7 +28,7 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
 
   const renderCategory = (cat: Category, index: number) => {
     const isSelected = cat.id === selectedCategory;
-    const nombre = getDisplayCategoryName(cat);
+    const categoryName = getDisplayCategoryName(cat);
 
     return (
       <TouchableOpacity
@@ -39,7 +39,7 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
           isSelected && { borderWidth: 2, borderColor: cat.color },
         ]}
         onPress={() => onSelect(cat.id)}
-        accessibilityLabel={`${labels.a11y_category} ${nombre}`}
+        accessibilityLabel={`${labels.a11y_category} ${categoryName}`}
       >
         <View style={[styles.iconContainer, { backgroundColor: cat.color + '22', borderRadius: round ? 999 : 20 }]}>
           <Ionicons name={cat.icon as any} size={24} color={cat.color} />
@@ -48,7 +48,7 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
           style={[styles.name, { color: c.text, fontSize: fs(11) }]}
           numberOfLines={1}
         >
-          {nombre}
+          {categoryName}
         </Text>
       </TouchableOpacity>
     );

@@ -1,42 +1,42 @@
-# Plan de implementación — 010 App logo
+# Implementation plan — 010 App logo
 
-## Arquitectura
+## Architecture
 
-### Assets (sin cambios estructurales)
+### Assets (no structural changes)
 
-Solo se reemplazan los archivos existentes en `FinlyApp/assets/`:
+Only the existing files in `FinlyApp/assets/` are replaced:
 
 ```
 FinlyApp/assets/
-├── icon.png                  ← Reemplazar (1024×1024)
-├── android-icon-foreground.png ← Reemplazar (1024×1024)
-├── android-icon-background.png ← Reemplazar (1024×1024, color sólido)
-├── android-icon-monochrome.png ← Reemplazar (1024×1024, monocromo)
-├── favicon.png               ← Reemplazar (48×48)
-└── splash-icon.png           ← Reemplazar (1284×2778)
+├── icon.png                  ← Replace (1024×1024)
+├── android-icon-foreground.png ← Replace (1024×1024)
+├── android-icon-background.png ← Replace (1024×1024, solid color)
+├── android-icon-monochrome.png ← Replace (1024×1024, monochrome)
+├── favicon.png               ← Replace (48×48)
+└── splash-icon.png           ← Replace (1284×2778)
 ```
 
-### Archivos modificados
+### Modified files
 
-- **`app.json`**: Añadir sección `expo.splash` con `image`, `resizeMode` y `backgroundColor`.
-- **`FinlyApp/assets/*`**: Reemplazar los 6 archivos PNG.
-- **`src/navigation/AppNavigator.tsx`**: Añadir logo (Image) en el header del Drawer junto al texto "Finly".
-- **`App.tsx`**: Añadir componente `SplashScreen` con logo + texto + loader, y reemplazar el loading state anterior.
-
----
-
-## Flujo de trabajo
-
-1. Diseñar/exportar el logo desde la herramienta de diseño (Figma, Illustrator, etc.).
-2. Generar los 6 PNG con las dimensiones exactas.
-3. Copiar los archivos a `FinlyApp/assets/` sobrescribiendo los existentes.
-4. Actualizar `app.json` con la configuración de splash.
-5. Verificar en web (`npx expo start --web`) que favicon y splash se ven correctamente.
-6. Verificar en móvil (Expo Go) que el icono de la app y la splash se ven correctamente.
+- **`app.json`**: Add `expo.splash` section with `image`, `resizeMode` and `backgroundColor`.
+- **`FinlyApp/assets/*`**: Replace the 6 PNG files.
+- **`src/navigation/AppNavigator.tsx`**: Add logo (Image) in the Drawer header alongside the text "Finly".
+- **`App.tsx`**: Add `SplashScreen` component with logo + text + loader, and replace the previous loading state.
 
 ---
 
-## Estimación
+## Workflow
 
-- **Tareas**: 4 tareas en 2 fases
-- **Tiempo estimado**: 30-60 min (dependiendo de la herramienta de diseño)
+1. Design/export the logo from the design tool (Figma, Illustrator, etc.).
+2. Generate the 6 PNGs with the exact dimensions.
+3. Copy the files to `FinlyApp/assets/` overwriting the existing ones.
+4. Update `app.json` with the splash configuration.
+5. Verify on web (`npx expo start --web`) that favicon and splash look correct.
+6. Verify on mobile (Expo Go) that the app icon and splash look correct.
+
+---
+
+## Estimate
+
+- **Tasks**: 4 tasks in 2 phases
+- **Estimated time**: 30-60 min (depending on the design tool)
