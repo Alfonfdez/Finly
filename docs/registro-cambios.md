@@ -1031,3 +1031,6 @@
 
 [2026-07-16] ~ | App.tsx
 - Añadido texto de error visible en la pantalla de error de base de datos (`dbError`) para facilitar el debug en APK.
+
+[2026-07-16] ~ | README.md
+- Añadida sección "Generar APK Android" con instrucciones completas: requisitos (EAS CLI, cuenta expo.dev), comando `eas build --platform android --profile preview`, instalación de la APK en el teléfono, y notas sobre diferencias entre APK preview/production y base de datos independiente.

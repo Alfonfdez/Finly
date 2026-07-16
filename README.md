@@ -118,6 +118,47 @@ npx expo start --tunnel
 ```
 Requiere `@expo/ngrok` instalado globalmente (`npm install -g @expo/ngrok`). Funciona desde cualquier red pero es más lento.
 
+## Generar APK Android
+
+Para compilar una APK instalable en un teléfono sin Expo Go, se usa **EAS Build** (Expo Application Services).
+
+### Requisitos
+
+- Cuenta gratuita en [expo.dev](https://expo.dev)
+- Instalar EAS CLI:
+  ```bash
+  npm install -g eas-cli
+  ```
+- Iniciar sesión:
+  ```bash
+  eas login
+  ```
+
+### Generar la APK
+
+```bash
+cd FinlyApp
+eas build --platform android --profile preview
+```
+
+El perfil `preview` en `eas.json` está configurado con `"distribution": "internal"`, lo que genera una **APK** (en lugar de AAB). El proceso tarda unos minutos en la nube.
+
+Cuando termine, EAS devolverá un **enlace de descarga**. Ábrelo desde el teléfono para descargar la APK.
+
+### Instalar la APK en el teléfono
+
+1. Descargar el archivo `.apk` desde el enlace de EAS
+2. Abrirlo desde el gestor de archivos del teléfono
+3. Si el sistema lo solicita, activar **"Instalar de fuentes desconocidas"** en Ajustes → Seguridad
+4. Abrir la app desde el cajón de aplicaciones
+
+### Notas
+
+- La APK de `preview` es para **testing interno**, no para publicar en Google Play.
+- Para publicar en Google Play se necesita un perfil `production` con AAB: `eas build --platform android --profile production`.
+- La app usa **SQLite nativo** en Android. Los datos no se comparten entre la APK y Expo Go (cada una tiene su propia base de datos).
+- Si la APK muestra pantalla negra al abrir, revisa que las migraciones de la base de datos no fallen. Los errores se muestran en pantalla durante el desarrollo.
+
 ## Estructura del proyecto
 
 ```
