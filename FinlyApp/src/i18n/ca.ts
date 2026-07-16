@@ -159,9 +159,6 @@ export const ca: Language = {
   cat_health: 'Salut',
   cat_investments: 'Inversions',
   cat_travel: 'Viatge',
-  cat_videogame: 'Videojoc',
-  cat_game: 'Joc',
-  cat_restaurant: 'Restaurant',
   cat_education: 'Educació',
   cat_family: 'Família',
   cat_shopping: 'Compres',
@@ -169,10 +166,8 @@ export const ca: Language = {
   cat_exercise: 'Exercici',
   cat_others: 'Altres',
   cat_entertainment: 'Entreteniment',
-  cat_gifts: 'Regals',
   cat_gift: 'Regal',
   cat_other: 'Altres',
-  cat_interests: 'Interessos',
 
   // Transactions
   transactions_title: 'Transaccions',

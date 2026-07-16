@@ -157,9 +157,6 @@ export const en = {
   cat_health: 'Health',
   cat_investments: 'Investments',
   cat_travel: 'Travel',
-  cat_videogame: 'Videogame',
-  cat_game: 'Game',
-  cat_restaurant: 'Restaurant',
   cat_education: 'Education',
   cat_family: 'Family',
   cat_shopping: 'Shopping',
@@ -167,10 +164,8 @@ export const en = {
   cat_exercise: 'Exercise',
   cat_others: 'Others',
   cat_entertainment: 'Entertainment',
-  cat_gifts: 'Gifts',
   cat_gift: 'Gift',
   cat_other: 'Other',
-  cat_interests: 'Interests',
 
   // Transactions
   transactions_title: 'Transactions',
