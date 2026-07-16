@@ -18,7 +18,7 @@ const USER_ID = 1;
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Accounts'>;
 
-type AccountWithBalance = Account & { saldo: number };
+type AccountWithBalance = Account & { balance: number };
 
 export default function AccountsScreen() {
   const { activeColors: c, config } = useConfig();
@@ -34,12 +34,12 @@ export default function AccountsScreen() {
     const list = await accountRepository.list(USER_ID);
     const withBalance = await Promise.all(
       list.map(async (account) => {
-        const saldo = await accountRepository.getCurrentBalance(account.id);
-        return { ...account, saldo };
+        const balance = await accountRepository.getCurrentBalance(account.id);
+        return { ...account, balance };
       })
     );
     setAccounts(withBalance);
-    setTotal(withBalance.reduce((sum, a) => sum + a.saldo, 0));
+    setTotal(withBalance.reduce((sum, a) => sum + a.balance, 0));
   }, []);
 
   useFocusEffect(
@@ -63,7 +63,7 @@ export default function AccountsScreen() {
     <TouchableOpacity
       style={[styles.accountRow, { backgroundColor: c.surface }]}
       onPress={() => navigation.navigate('ModifyAccount', { accountId: item.id })}
-      accessibilityLabel={`${item.name} ${formatCurrency(item.saldo, config.currency, config.decimalSeparator)}`}
+      accessibilityLabel={`${item.name} ${formatCurrency(item.balance, config.currency, config.decimalSeparator)}`}
     >
       <View style={[styles.iconBubble, { backgroundColor: item.color + '22', borderRadius: round ? 22 : 12 }]}>
         <Ionicons name={item.icon as any} size={24} color={item.color} />
@@ -85,12 +85,12 @@ export default function AccountsScreen() {
         style={[
           styles.accountBalance,
           {
-            color: item.saldo >= 0 ? c.green : c.red,
+            color: item.balance >= 0 ? c.green : c.red,
             fontSize: fs(15),
           },
         ]}
       >
-        {item.saldo >= 0 ? '+' : ''}{formatCurrency(item.saldo, config.currency, config.decimalSeparator)}
+        {item.balance >= 0 ? '+' : ''}{formatCurrency(item.balance, config.currency, config.decimalSeparator)}
       </Text>
     </TouchableOpacity>
   );

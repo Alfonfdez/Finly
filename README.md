@@ -1,37 +1,39 @@
 # Finly
 
-App para gestionar ingresos y gastos personales con múltiples cuentas, categorías personalizables, filtros por período y gráficos visuales.
+[🇪🇸 Español](README.es.md)
 
-![Vista previa de la app](images/excalidraw/Finly_v2.png)
+A personal finance app for tracking income and expenses with multiple accounts, customizable categories, period filters, and visual charts.
 
-## Metodología
+![App preview](images/excalidraw/Finly_v2.png)
 
-**Specification-Driven Development (SDD).** Las especificaciones están en `spec/` y son la única fuente de verdad. Primero se define qué construir, luego se implementa.
+## Methodology
+
+**Specification-Driven Development (SDD).** Specs live in `spec/` and are the single source of truth. What to build is defined first, then implemented.
 
 ## Stack
 
-| Capa | Tecnología |
+| Layer | Technology |
 |---|---|
-| Framework | React Native con Expo (SDK 54) |
-| Lenguaje | TypeScript |
-| Navegación | React Navigation (Stack + Drawer) |
-| Iconos | @expo/vector-icons (Ionicons) |
-| Gráficos | react-native-svg |
+| Framework | React Native with Expo (SDK 54) |
+| Language | TypeScript |
+| Navigation | React Navigation (Stack + Drawer) |
+| Icons | @expo/vector-icons (Ionicons) |
+| Charts | react-native-svg |
 | Color picker | reanimated-color-picker |
-| Persistencia | SQLite (expo-sqlite) en nativo, localStorage en web |
+| Persistence | SQLite (expo-sqlite) on native, localStorage on web |
 | Web | react-native-web |
-| Estado | Context API (AppContext + ConfigContext) |
-| i18n | Sistema propio (español, inglés, catalán) |
+| State | Context API (AppContext + ConfigContext) |
+| i18n | Custom system (English, Spanish, Catalan) |
 
-## Cómo empezar
+## Getting Started
 
-### Requisitos
+### Requirements
 
 - Node.js 18+
 - npm
-- Expo Go (app móvil gratuita) para verlo en el móvil
+- Expo Go (free mobile app) to preview on your phone
 
-### Primera vez al clonar
+### First time after cloning
 
 ```bash
 cd FinlyApp
@@ -39,287 +41,158 @@ npm install
 npx expo start
 ```
 
-Esto arranca Metro Bundler. A partir de ahí:
+This starts Metro Bundler. Then:
 
-| Para ver en… | Haz esto |
+| To view on… | Do this |
 |---|---|
-| **Navegador** | Abre [http://localhost:8081](http://localhost:8081) o ejecuta `npx expo start --web` |
-| **Móvil (Expo Go)** | Pulsa la tecla **`s`** en la terminal y escanéa el QR con Expo Go |
+| **Browser** | Open [http://localhost:8081](http://localhost:8081) or run `npx expo start --web` |
+| **Mobile (Expo Go)** | Press **`s`** in the terminal and scan the QR code with Expo Go |
 
-> Si `expo` no se reconoce como comando, usa `npx expo ...` o `npm run web`.
+> If `expo` is not recognized as a command, use `npx expo ...` or `npm run web`.
 
-### Notas importantes
+### Important notes
 
-- Este proyecto usa **Expo SDK 54** por compatibilidad con Expo Go. No actualices el SDK ni ejecutes `npm audit fix --force` (rompe las versiones).
-- Si al escanear el QR en Expo Go no pasa nada, asegúrate de haber pulsado **`s`** para cambiar a modo Expo Go (el mensaje debe poner "Scan the QR code to open in Expo Go").
-- Si da error `TurboModule method "installTurboModule"`, ejecuta:
+- This project uses **Expo SDK 54** for Expo Go compatibility. Do not update the SDK or run `npm audit fix --force` (it breaks versions).
+- If scanning the QR code in Expo Go does nothing, make sure you pressed **`s`** to switch to Expo Go mode (the message should say "Scan the QR code to open in Expo Go").
+- If you get a `TurboModule method "installTurboModule"` error, run:
   ```bash
   npx expo install react-native-worklets@0.5.1
   ```
 
-### Otros comandos
+### Other commands
 
-| Comando | Descripción |
+| Command | Description |
 |---|---|
-| `npm start` | Arranca Expo en modo desarrollo |
-| `npm run web` | Arranca y abre en navegador |
-| `npm run android` | Arranca en emulador Android |
-| `npm run ios` | Arranca en simulador iOS (solo macOS) |
+| `npm start` | Start Expo in dev mode |
+| `npm run web` | Start and open in browser |
+| `npm run android` | Start on Android emulator |
+| `npm run ios` | Start on iOS simulator (macOS only) |
 
-### Desarrollo por USB (sin red compartida)
+### USB Development (no shared network)
 
-Útil cuando el PC y el móvil no están en la misma red (ej. en clase).
+Useful when PC and phone are not on the same network (e.g., in class).
 
-**Requisitos previos:**
-- Habilitar depuración USB en el móvil: Ajustes → Acerca del teléfono → tocar "Número de compilación" 7 veces → Ajustes → Opciones del desarrollador → activar "Depuración USB"
-- Descargar `adb` (Android Debug Bridge):
+**Prerequisites:**
+- Enable USB debugging on the phone: Settings → About phone → tap "Build number" 7 times → Settings → Developer options → enable "USB debugging"
+- Download `adb` (Android Debug Bridge):
   ```bash
   Invoke-WebRequest -Uri "https://dl.google.com/android/repository/platform-tools-latest-windows.zip" -OutFile "$env:TEMP\platform-tools.zip"
   Expand-Archive -Path "$env:TEMP\platform-tools.zip" -DestinationPath "C:\platform-tools" -Force
   ```
-- Para que `adb` esté disponible globalmente, reiniciar la terminal después de la instalación.
+- Restart the terminal after installation for `adb` to be available globally.
 
-**Pasos:**
-1. Conectar el móvil al PC con cable USB
-2. Reenviar el puerto con adb:
+**Steps:**
+1. Connect the phone to the PC via USB
+2. Forward the port with adb:
    ```bash
    C:\platform-tools\adb.exe reverse tcp:8081 tcp:8081
    ```
-3. Arrancar Expo:
+3. Start Expo:
    ```bash
    npx expo start
    ```
-4. En Expo Go: agitar el móvil → "Introducir URL manualmente" → escribir:
+4. In Expo Go: shake the phone → "Enter URL manually" → type:
    ```
    exp://localhost:8081
    ```
 
-### Desarrollo por USB Tethering (sin ADB, sin red compartida)
+### USB Tethering Development (no ADB, no shared network)
 
-Alternativa cuando ADB no detecta el móvil (ej. drivers no instalados, cable sin datos).
+Alternative when ADB does not detect the phone (e.g., drivers not installed, cable without data).
 
-**Requisito:** Datos móviles activos en el teléfono.
+**Requirement:** Mobile data active on the phone.
 
-**Pasos:**
-1. Conectar el móvil al PC con cable USB
-2. En el móvil: **Ajustes → Conexiones → Zona WiFi compartida / USB tethering → activar "USB tethering"**
-3. En el PC, arrancar Expo:
+**Steps:**
+1. Connect the phone to the PC via USB
+2. On the phone: **Settings → Connections → Mobile Hotspot and Tethering → enable "USB tethering"**
+3. On the PC, start Expo:
    ```bash
    npx expo start
    ```
-4. Pulsar **`s`** para cambiar a modo Expo Go y escanear el QR
+4. Press **`s`** to switch to Expo Go mode and scan the QR code
 
-El PC navega a través de los datos del móvil, por lo que ambos dispositivos están en la misma red virtual. No requiere ADB ni `adb reverse`.
+The PC browses through the phone's data, so both devices are on the same virtual network. No ADB or `adb reverse` required.
 
-### Desarrollo por Tunnel (sin red compartida, sin cable)
+### Tunnel Development (no shared network, no cable)
 
 ```bash
 npx expo start --tunnel
 ```
-Requiere `@expo/ngrok` instalado globalmente (`npm install -g @expo/ngrok`). Funciona desde cualquier red pero es más lento.
+Requires `@expo/ngrok` installed globally (`npm install -g @expo/ngrok`). Works from any network but is slower.
 
-## Generar APK Android
+## Generating an Android APK
 
-Para compilar una APK instalable en un teléfono sin Expo Go, se usa **EAS Build** (Expo Application Services).
+To build an installable APK for phones without Expo Go, use **EAS Build** (Expo Application Services).
 
-### Requisitos
+### Requirements
 
-- Cuenta gratuita en [expo.dev](https://expo.dev)
-- Instalar EAS CLI:
+- Free account at [expo.dev](https://expo.dev)
+- Install EAS CLI:
   ```bash
   npm install -g eas-cli
   ```
-- Iniciar sesión:
+- Log in:
   ```bash
   eas login
   ```
 
-### Generar la APK
+### Build the APK
 
 ```bash
 cd FinlyApp
 eas build --platform android --profile preview
 ```
 
-El perfil `preview` en `eas.json` está configurado con `"distribution": "internal"`, lo que genera una **APK** (en lugar de AAB). El proceso tarda unos minutos en la nube.
+The `preview` profile in `eas.json` is configured with `"distribution": "internal"`, which generates an **APK** (instead of AAB). The process takes a few minutes in the cloud.
 
-Cuando termine, EAS devolverá un **enlace de descarga**. Ábrelo desde el teléfono para descargar la APK.
+When done, EAS returns a **download link**. Open it from the phone to download the APK.
 
-### Instalar la APK en el teléfono
+### Install the APK on the phone
 
-1. Descargar el archivo `.apk` desde el enlace de EAS
-2. Abrirlo desde el gestor de archivos del teléfono
-3. Si el sistema lo solicita, activar **"Instalar de fuentes desconocidas"** en Ajustes → Seguridad
-4. Abrir la app desde el cajón de aplicaciones
+1. Download the `.apk` file from the EAS link
+2. Open it from the phone's file manager
+3. If prompted, enable **"Install from unknown sources"** in Settings → Security
+4. Open the app from the app drawer
 
-### Notas
+### Notes
 
-- La APK de `preview` es para **testing interno**, no para publicar en Google Play.
-- Para publicar en Google Play se necesita un perfil `production` con AAB: `eas build --platform android --profile production`.
-- La app usa **SQLite nativo** en Android. Los datos no se comparten entre la APK y Expo Go (cada una tiene su propia base de datos).
-- Si la APK muestra pantalla negra al abrir, revisa que las migraciones de la base de datos no fallen. Los errores se muestran en pantalla durante el desarrollo.
+- The `preview` APK is for **internal testing**, not for publishing on Google Play.
+- To publish on Google Play, you need a `production` profile with AAB: `eas build --platform android --profile production`.
+- The app uses **native SQLite** on Android. Data is not shared between the APK and Expo Go (each has its own database).
+- If the APK shows a black screen on launch, check that database migrations do not fail. Errors are displayed on screen during development.
 
-## Estructura del proyecto
+## Features
 
-```
-Finly/
-├── FinlyApp/                    ← App React Native / Expo
-│   ├── App.tsx                      ← Punto de entrada
-│   ├── app.json                     ← Configuración Expo
-│   ├── src/
-│   │   ├── navigation/
-│   │   │   └── AppNavigator.tsx     ← Stack + Drawer navigator
-│   │   ├── screens/
-│   │   │   ├── HomeScreen.tsx       ← Pantalla principal
-│   │   │   ├── AddTransactionScreen.tsx ← Añadir gasto/ingreso
-│   │   │   ├── AddCategoryScreen.tsx ← Seleccionar categoría
-│   │   │   ├── TransactionsScreen.tsx ← Transacciones por categoría (014)
-│   │   │   ├── AllTransactionsScreen.tsx ← Todas las transacciones (015)
-│   │   │   ├── AccountsScreen.tsx   ← Lista de cuentas
-│   │   │   ├── CreateAccountScreen.tsx ← Crear cuenta
-│   │   │   ├── ModifyAccountScreen.tsx ← Editar cuenta
-│   │   │   ├── CategoriesScreen.tsx ← Lista de categorías
-│   │   │   ├── CreateCategoryScreen.tsx ← Crear categoría
-│   │   │   ├── ModifyCategoryScreen.tsx ← Editar categoría
-│   │   │   ├── TransactionDetailsScreen.tsx ← Detalles de transacción (016)
-│   │   │   ├── ModifyTransactionScreen.tsx ← Modificar transacción (017)
-│   │   │   └── SettingsScreen.tsx   ← Configuración de la app
-│   │   ├── components/
-│   │   │   ├── AccountModal.tsx     ← Modal de selección de cuentas
-│   │   │   ├── AccountSelector.tsx  ← Trigger de selección de cuenta
-│   │   │   ├── CalculatorModal.tsx  ← Calculadora emergente
-│   │   │   ├── DonutChart.tsx       ← Gráfico de anillos SVG
-│   │   │   ├── BarChart.tsx         ← Barra horizontal apilada
-│   │   │   ├── CategoryList.tsx     ← Lista de desglose por categorías
-│   │   │   ├── CategoryGrid.tsx     ← Grid 4×N de categorías
-│   │   │   ├── ColorGrid.tsx        ← Selector de colores rápido
-│   │   │   ├── ColorPickerModal.tsx ← Selector de color dinámico
-│   │   │   ├── IconGrid.tsx         ← Grid de iconos
-│   │   │   ├── SortToggle.tsx       ← Toggle de ordenación fecha/cantidad
-│   │   │   ├── TransactionGroup.tsx ← Grupo de transacciones por fecha
-│   │   │   ├── CalendarModal.tsx    ← Modal contenedor de calendarios
-│   │   │   ├── CalendarPicker.tsx   ← Selector de fecha textual
-│   │   │   ├── DaySelector.tsx      ← Selector de día (Hoy/Ayer/Dinámico)
-│   │   │   ├── PeriodTabs.tsx       ← Tabs Día/Semana/Mes/Año/Período
-│   │   │   ├── TypeTabs.tsx         ← Tabs Gastos/Ingresos
-│   │   │   ├── SearchBar.tsx        ← Barra de búsqueda reutilizable
-│   │   │   ├── TagSection.tsx       ← Sección de etiquetas
-│   │   │   ├── CommentInput.tsx     ← Input de comentario con contador
-│   │   │   ├── PhotoSection.tsx     ← Sección de foto (cámara/galería)
-│   │   │   ├── SearchBar.tsx        ← Barra de búsqueda reutilizable
-│   │   │   └── calendars/           ← Selectores de fecha
-│   │   │       ├── DayPicker.tsx
-│   │   │       ├── WeekPicker.tsx
-│   │   │       ├── MonthGrid.tsx
-│   │   │       ├── MonthNav.tsx
-│   │   │       ├── YearGrid.tsx
-│   │   │       ├── YearNav.tsx
-│   │   │       ├── PeriodPicker.tsx
-│   │   │       └── types.ts
-│   │   ├── context/
-│   │   │   ├── AppContext.tsx        ← Estado de negocio
-│   │   │   └── ConfigContext.tsx     ← Preferencias del usuario
-│   │   ├── database/
-│   │   │   ├── database.ts          ← Inicialización SQLite + migraciones
-│   │   │   ├── types.ts             ← Interfaces TypeScript
-│   │   │   ├── index.ts             ← Switching por plataforma
-│   │   │   ├── webStorage.ts        ← Fallback localStorage para web
-│   │   │   ├── migrations/
-│   │   │   │   ├── 001_initial.ts
-│   │   │   │   ├── 002_seed.ts
-│   │   │   │   ├── 003_config.ts
-│   │   │   │   ├── 004_new_categories.ts
-│   │   │   │   ├── 005_english_schema.ts
-│   │   │   │   └── 006_account_description.ts
-│   │   │   └── repositories/
-│   │   │       ├── userRepo.ts
-│   │   │       ├── accountRepo.ts
-│   │   │       ├── categoryRepo.ts
-│   │   │       ├── transactionRepo.ts
-│   │   │       └── configRepo.ts
-│   │   ├── i18n/
-│   │   │   ├── index.ts             ← Selector de idioma + helpers
-│   │   │   ├── en.ts
-│   │   │   ├── es.ts
-│   │   │   └── ca.ts
-│   │   ├── hooks/
-│   │   │   ├── useFontSize.ts       ← Hook de escalado de texto
-│   │   │   └── useTransactionFilters.ts ← Filtrado y agrupación de transacciones
-│   │   ├── constants/
-│   │   │   ├── themes.ts            ← Paletas dark + light
-│   │   │   ├── colors.ts            ← Paleta legacy
-│   │   │   ├── types.ts             ← Tipos compartidos
-│   │   │   ├── platformStyles.ts    ← Estilos por plataforma
-│   │   │   └── accountIcons.ts      ← Iconos disponibles para cuentas
-│   │   ├── data/
-│   │   │   └── mockData.ts          ← Datos mock (legacy)
-│   │   └── utils/
-│   │       ├── calculator.ts        ← Evaluador de expresiones
-│   │       └── formatters.ts        ← Formatear moneda, fechas, etc.
-│   ├── assets/
-│   ├── package.json
-│   └── tsconfig.json
-│
-├── spec/                         ← Especificaciones SDD
-│   ├── constitution/
-│   └── features/
-│       ├── 001-pagina-inicial/
-│       ├── 002-diseño-DB/
-│       ├── 003-pagina-configuracion/
-│       ├── 004-pagina-anadir-transaccion/
-│       ├── 005-pagina-anadir-categoria/
-│       ├── 006-pagina-crear-categoria/
-│       ├── 007-calculadora/
-│       ├── 008-pagina-categorias/
-│       ├── 009-pagina-modificar-eliminar-categoria/
-│       ├── 010-app-logo/
-│       ├── 011-pagina-cuentas/
-│       ├── 012-pagina-modificar-eliminar-cuenta/
-│       ├── 013-pagina-crear-cuenta/
-│       ├── 014-pagina-transacciones-por-pagina-inicial/
-│       ├── 015-pagina-transacciones-por-menu-hamburguesa/
-│       ├── 016-pagina-detalles-transaccion/
-│       └── 017-pagina-modificar-transaccion/
-│
-├── .agents/skills/               ← Skills para asistentes IA
-├── docs/                         ← Documentación de conceptos
-├── images/                       ← Diagramas y wireframes
-├── AGENTS.md                     ← Reglas SDD globales
-└── README.md                     ← Este archivo
-```
-
-## Funcionalidades
-
-- Gestión de múltiples cuentas (crear, editar, eliminar)
-- Registro de ingresos y gastos por categorías
-- Listado y edición de categorías personalizadas con icono y color
-- Filtros por período: Día, Semana, Mes, Año, Período personalizado
-- Selector de fecha interactivo (DateTimePicker)
-- Gráfico de anillos (donut) y barra horizontal apilada
-- Desglose por categorías con porcentajes
-- Selector de cuenta reutilizable con cálculo de saldos
-- Ordenación de transacciones por fecha o cantidad
-- Pantalla de todas las transacciones con filtros combinados
-- Pantalla de detalles de transacción con eliminar y editar
-- Pantalla de modificar transacción con datos precargados
-- Pantalla de ajustes: tema, divisa, idioma, calendario, tamaño de texto
-- Tema oscuro y claro con cambio en tiempo real
-- Soporte multilingüe: español, inglés, catalán
-- Escalado de texto según preferencias del usuario
-- Navegación con menú lateral (Drawer)
-- Calculadora básica integrada
+- Multiple account management (create, edit, delete)
+- Income and expense tracking by category
+- Custom category listing and editing with icon and color
+- Period filters: Day, Week, Month, Year, Custom period
+- Interactive date selector (DateTimePicker)
+- Donut chart and horizontal stacked bar chart
+- Category breakdown with percentages
+- Reusable account selector with balance calculation
+- Transaction sorting by date or amount
+- All transactions screen with combined filters
+- Transaction details screen with delete and edit
+- Modify transaction screen with preloaded data
+- Settings screen: theme, currency, language, calendar, text size
+- Dark and light theme with real-time switching
+- Multilingual support: Spanish, English, Catalan
+- Text scaling based on user preferences
+- Drawer navigation
+- Built-in basic calculator
 
 ## Screenshots
 
-![App flow](images/screenshots/app-flow.gif)<br>*Recorrido completo por la aplicación: pantalla principal, menú lateral, transacciones, ajustes y más.*<br><br>
+![App flow](images/screenshots/app-flow.gif)<br>*Full app walkthrough: home screen, drawer menu, transactions, settings, and more.*<br><br>
 
-![Splash animation](images/screenshots/000-Splash_animation.png)<br>*Animación de carga con el logotipo de Finly y barra de progreso.*<br><br>
-![Home screen](images/screenshots/001-Home_screen.png)<br>*Pantalla principal con selector de cuenta, saldo total, gráfico de anillos y desglose por categorías.*<br><br>
-![Hamburger menu](images/screenshots/002-Hamburguer-menu.png)<br>*Menú lateral (Drawer) con acceso a Inicio, Ajustes, Transacciones, Categorías y Cuentas.*<br><br>
-![Account selector modal](images/screenshots/003-Choose_accounts.png)<br>*Modal de selección de cuenta con icono, nombre y saldo disponible.*<br><br>
-![Add transaction](images/screenshots/004-Add_transaction.png)<br>*Formulario para añadir un gasto o ingreso con cantidad, cuenta, categorías, día, etiquetas y comentario.*<br><br>
-![Create category](images/screenshots/005-Create_category.png)<br>*Pantalla para crear una categoría personalizada con icono, color y nombre.*<br><br>
-![Categories list](images/screenshots/006-Categories.png)<br>*Listado de categorías organizadas por tipo (gastos/ingresos) en un grid 4×N.*<br><br>
-![All transactions](images/screenshots/007-All_transactions.png)<br>*Listado completo de todas las transacciones con selector de cuenta, ordenación y agrupación por día.*<br><br>
-![Settings](images/screenshots/008-Settings.png)<br>*Pantalla de ajustes con configuración de tema, divisa, idioma, tamaño de texto y forma de iconos.*<br><br>
-![Calendar period selection](images/screenshots/009-calendar_period_selection.png)<br>*Selector de período personalizado con calendario para elegir un rango de fechas.*
+![Splash animation](images/screenshots/000-Splash_animation.png)<br>*Loading animation with the Finly logo and progress bar.*<br><br>
+![Home screen](images/screenshots/001-Home_screen.png)<br>*Home screen with account selector, total balance, donut chart, and category breakdown.*<br><br>
+![Hamburger menu](images/screenshots/002-Hamburguer-menu.png)<br>*Drawer menu with access to Home, Settings, Transactions, Categories, and Accounts.*<br><br>
+![Account selector modal](images/screenshots/003-Choose_accounts.png)<br>*Account selection modal with icon, name, and available balance.*<br><br>
+![Add transaction](images/screenshots/004-Add_transaction.png)<br>*Form to add an expense or income with amount, account, categories, day, tags, and comment.*<br><br>
+![Create category](images/screenshots/005-Create_category.png)<br>*Screen to create a custom category with icon, color, and name.*<br><br>
+![Categories list](images/screenshots/006-Categories.png)<br>*Category listing organized by type (expenses/income) in a 4×N grid.*<br><br>
+![All transactions](images/screenshots/007-All_transactions.png)<br>*Full transaction list with account selector, sorting, and day grouping.*<br><br>
+![Settings](images/screenshots/008-Settings.png)<br>*Settings screen with theme, currency, language, text size, and icon shape configuration.*<br><br>
+![Calendar period selection](images/screenshots/009-calendar_period_selection.png)<br>*Custom period selector with calendar for choosing a date range.*

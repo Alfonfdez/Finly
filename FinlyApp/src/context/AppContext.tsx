@@ -28,7 +28,7 @@ interface AppContextType extends AppState {
   setCustomDate: (dates: { start: Date; end: Date }) => void;
   filteredTransactions: Transaction[];
   activeCategories: CategoryWithTotal[];
-  accountsWithBalance: (Account & { saldo: number })[];
+  accountsWithBalance: (Account & { balance: number })[];
   totalIncome: number;
   totalExpenses: number;
   totalIncomeAll: number;
@@ -87,8 +87,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [activePeriod, setActivePeriod] = useState<Period>('day');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [customDate, setCustomDateState] = useState<{ start: Date; end: Date }>(() => {
-    const ahora = new Date();
-    return { start: new Date(ahora.getFullYear(), 0, 1), end: ahora };
+    const now = new Date();
+    return { start: new Date(now.getFullYear(), 0, 1), end: now };
   });
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -173,14 +173,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     loadAllTotals();
   }, [activeAccount, transactions]);
 
-  const [accountsWithBalance, setAccountsWithBalance] = useState<(Account & { saldo: number })[]>([]);
+  const [accountsWithBalance, setAccountsWithBalance] = useState<(Account & { balance: number })[]>([]);
 
   useEffect(() => {
     async function calculateBalances() {
       const results = await Promise.all(
         accounts.map(async (account) => {
-          const saldo = await accountRepo.getCurrentBalance(account.id);
-          return { ...account, saldo };
+          const balance = await accountRepo.getCurrentBalance(account.id);
+          return { ...account, balance };
         })
       );
       setAccountsWithBalance(results);

@@ -3,9 +3,9 @@
 # React Native
 
 ## React Native
-**Definición:** Framework para construir aplicaciones móviles nativas usando JavaScript/TypeScript y React.
-**Explicación:** Permite escribir una app que funciona en iOS y Android con el mismo código base. Usa componentes nativos reales (no WebView). Finly usa React Native con Expo para facilitar el desarrollo.
-**Ejemplo:**
+**Definition:** Framework for building native mobile applications using JavaScript/TypeScript and React.
+**Explanation:** Allows writing an app that runs on iOS and Android with the same codebase. Uses real native components (not WebView). Finly uses React Native with Expo to simplify development.
+**Example:**
 ```tsx
 import { View, Text } from 'react-native';
 export default function Saludo() {
@@ -14,18 +14,18 @@ export default function Saludo() {
 ```
 
 ## Expo
-**Definición:** Plataforma y conjunto de herramientas que simplifica el desarrollo con React Native.
-**Explicación:** Proporciona una SDK preconfigurada, manejo de builds, OTA updates, y acceso a APIs del dispositivo sin configuraciones nativas. Finly usa Expo managed workflow.
-**Ejemplo:**
+**Definition:** Platform and set of tools that simplifies development with React Native.
+**Explanation:** Provides a preconfigured SDK, build management, OTA updates, and access to device APIs without native configurations. Finly uses Expo managed workflow.
+**Example:**
 ```bash
 npx create-expo-app@latest FinlyApp --template blank-typescript
 npx expo start
 ```
 
 ## StyleSheet.create
-**Definición:** Método de React Native para crear estilos de forma eficiente.
-**Explicación:** Los estilos se definen como objetos JavaScript. `create()` optimiza el rendimiento al crear los estilos una sola vez y reutilizarlos. Es la alternativa al CSS tradicional.
-**Ejemplo:**
+**Definition:** React Native method for creating styles efficiently.
+**Explanation:** Styles are defined as JavaScript objects. `create()` optimizes performance by creating styles once and reusing them. It is the alternative to traditional CSS.
+**Example:**
 ```tsx
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F172A' },
@@ -34,20 +34,20 @@ const styles = StyleSheet.create({
 ```
 
 ## react-native-worklets
-**Definición:** Librería que ejecuta funciones de JavaScript en un hilo separado para no bloquear la UI.
-**Explicación:** react-native-reanimated la usa internamente para animaciones fluidas en el hilo de la UI. Cada versión de Expo SDK requiere una versión específica. Si hay mismatch, da error `TurboModule method "installTurboModule" called with 1 arguments`.
-**Ejemplo:**
+**Definition:** Library that runs JavaScript functions on a separate thread to avoid blocking the UI.
+**Explanation:** react-native-reanimated uses it internally for smooth animations on the UI thread. Each Expo SDK version requires a specific version. If there is a mismatch, it throws the error `TurboModule method "installTurboModule" called with 1 arguments`.
+**Example:**
 ```bash
-# SDK 54 requiere worklets 0.5.1
+# SDK 54 requires worklets 0.5.1
 npx expo install react-native-worklets@0.5.1
 ```
 
 # TypeScript
 
 ## Interfaces vs Types
-**Definición:** Mecanismos de TypeScript para definir la forma de los objetos.
-**Explicación:** Las interfaces (`interface`) se usan para definir contratos de objetos y son extendibles. Los tipos (`type`) son más flexibles (uniones, tuplas). En Finly se usan interfaces para los modelos de datos.
-**Ejemplo:**
+**Definition:** TypeScript mechanisms for defining the shape of objects.
+**Explanation:** Interfaces (`interface`) are used to define object contracts and are extensible. Types (`type`) are more flexible (unions, tuples). In Finly, interfaces are used for data models.
+**Example:**
 ```tsx
 interface Cuenta {
   id: number;
@@ -57,15 +57,15 @@ interface Cuenta {
 }
 ```
 
-## Type Re-export (Re-exportación de tipos)
-**Definición:** Patrón de TypeScript para re-exportar tipos desde un archivo centralizado, manteniendo una única fuente de verdad.
-**Explicación:** Cuando varios archivos necesitan el mismo tipo, se define en un solo lugar y se re-exporta con `export type { X }`. Esto evita definiciones duplicadas y facilita el mantenimiento. En Finly, `calendars/types.ts` re-exporta `Periodo` desde `constants/types.ts`.
-**Ejemplo:**
+## Type Re-export
+**Definition:** TypeScript pattern for re-exporting types from a centralized file, maintaining a Single Source of Truth.
+**Explanation:** When multiple files need the same type, it is defined in a single location and re-exported with `export type { X }`. This avoids duplicate definitions and facilitates maintenance. In Finly, `calendars/types.ts` re-exports `Periodo` from `constants/types.ts`.
+**Example:**
 ```tsx
-// constants/types.ts — definición original
+// constants/types.ts — original definition
 export type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo';
 
-// calendars/types.ts — re-exportación
+// calendars/types.ts — re-export
 import { Periodo } from '../../constants/types';
 export type { Periodo };
 ```
@@ -73,27 +73,27 @@ export type { Periodo };
 # React
 
 ## Context API
-**Definición:** Sistema de React para compartir estado entre componentes sin pasar props manualmente.
-**Explicación:** `createContext` crea un contenedor de estado. `Provider` inyecta el estado en el árbol. `useContext` (o un hook personalizado como `useApp`) lo consume. Evita el "prop drilling".
-**Ejemplo:**
+**Definition:** React system for sharing state between components without passing props manually.
+**Explanation:** `createContext` creates a state container. `Provider` injects the state into the tree. `useContext` (or a custom hook like `useApp`) consumes it. Avoids "prop drilling".
+**Example:**
 ```tsx
 const AppContext = createContext<AppContextType | null>(null);
-// Provider envuelve toda la app
-// useApp() consume el contexto desde cualquier componente hijo
+// Provider wraps the entire app
+// useApp() consumes the context from any child component
 ```
 
 ## useState
-**Definición:** Hook de React para añadir estado local a componentes funcionales.
-**Explicación:** Devuelve un par [valor, setter]. Cuando el estado cambia, el componente se re-renderiza. Se usa en Finly para controlar modales, pestañas activas, etc.
-**Ejemplo:**
+**Definition:** React hook for adding local state to functional components.
+**Explanation:** Returns a [value, setter] pair. When the state changes, the component re-renders. In Finly, it is used to control modals, active tabs, etc.
+**Example:**
 ```tsx
 const [modalVisible, setModalVisible] = useState(false);
 ```
 
 ## useMemo
-**Definición:** Hook de React que memoriza el resultado de un cálculo costoso.
-**Explicación:** Solo recalcula cuando cambian las dependencias. En Finly se usa para filtrar transacciones, calcular totales y generar categorías activas sin recalcular en cada render.
-**Ejemplo:**
+**Definition:** React hook that memoizes the result of an expensive calculation.
+**Explanation:** Only recalculates when dependencies change. In Finly, it is used to filter transactions, calculate totals, and generate active categories without recalculating on every render.
+**Example:**
 ```tsx
 const totalGastos = useMemo(() =>
   transacciones.filter(t => t.tipo === 'gasto').reduce((s, t) => s + t.cantidad, 0),
@@ -102,21 +102,21 @@ const totalGastos = useMemo(() =>
 ```
 
 ## useCallback
-**Definición:** Hook de React que memoriza funciones para evitar recrearlas en cada render.
-**Explicación:** Similar a useMemo pero para funciones. Útil para pasarlas como props a componentes hijos y evitar renders innecesarios.
-**Ejemplo:**
+**Definition:** React hook that memoizes functions to avoid recreating them on every render.
+**Explanation:** Similar to useMemo but for functions. Useful for passing them as props to child components and avoiding unnecessary re-renders.
+**Example:**
 ```tsx
 const handleCategoriaPress = useCallback((cat) => {
   navigation.navigate('Transactions', { categoriaId: cat.id });
 }, [navigation]);
 ```
 
-# Navegación
+# Navigation
 
 ## React Navigation (Stack Navigator)
-**Definición:** Sistema de navegación que apila pantallas una encima de otra.
-**Explicación:** Cada pantalla nueva se coloca sobre la anterior. El usuario puede volver atrás con el botón nativo. En Finly se usa para navegar de Home a AddTransaction o Transactions.
-**Ejemplo:**
+**Definition:** Navigation system that stacks screens on top of each other.
+**Explanation:** Each new screen is placed on top of the previous one. The user can go back with the native button. In Finly, it is used to navigate from Home to AddTransaction or Transactions.
+**Example:**
 ```tsx
 const Stack = createNativeStackNavigator({
   screens: {
@@ -127,9 +127,9 @@ const Stack = createNativeStackNavigator({
 ```
 
 ## React Navigation (Drawer Navigator)
-**Definición:** Menú lateral que se despliza desde el borde izquierdo de la pantalla.
-**Explicación:** Muestra opciones de navegación en un panel oculto. En Finly contiene Inicio, y placeholders para Cuentas, Categorías y Ajustes.
-**Ejemplo:**
+**Definition:** Side menu that slides from the left edge of the screen.
+**Explanation:** Shows navigation options in a hidden panel. In Finly, it contains Home, and placeholders for Accounts, Categories, and Settings.
+**Example:**
 ```tsx
 const Drawer = createDrawerNavigator({
   screens: { Main: { screen: HomeStack } },
@@ -138,9 +138,9 @@ const Drawer = createDrawerNavigator({
 ```
 
 ## DrawerActions
-**Definición:** Acciones reutilizables para controlar el Drawer Navigator desde cualquier pantalla, incluso si está anidada en otro navigator.
-**Explicación:** Cuando un Screen está dentro de un Stack que a su vez está dentro de un Drawer, `navigation.openDrawer()` no existe en el tipo del Stack. La solución es despachar la acción con `navigation.dispatch(DrawerActions.openDrawer())`. Es el patrón recomendado por React Navigation.
-**Ejemplo:**
+**Definition:** Reusable actions for controlling the Drawer Navigator from any screen, even if nested inside another navigator.
+**Explanation:** When a Screen is inside a Stack that is itself inside a Drawer, `navigation.openDrawer()` does not exist on the Stack's type. The solution is to dispatch the action with `navigation.dispatch(DrawerActions.openDrawer())`. This is the pattern recommended by React Navigation.
+**Example:**
 ```tsx
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 
@@ -155,9 +155,9 @@ function MiPantalla() {
 ```
 
 ## NativeStackNavigationProp
-**Definición:** Tipo de TypeScript que define las operaciones de navegación disponibles en un NativeStackNavigator.
-**Explicación:** Se usa para tipar `useNavigation()` y obtener autocompletado de `navigation.navigate('ScreenName', params)`. Evita errores en tiempo de compilación al pasar nombres de pantalla o parámetros incorrectos.
-**Ejemplo:**
+**Definition:** TypeScript type that defines the navigation operations available in a NativeStackNavigator.
+**Explanation:** Used to type `useNavigation()` and get autocompletion for `navigation.navigate('ScreenName', params)`. Prevents compile-time errors when passing incorrect screen names or parameters.
+**Example:**
 ```tsx
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -176,9 +176,9 @@ function HomeScreen() {
 ```
 
 ## RouteProp
-**Definición:** Tipo de TypeScript que define la forma de los parámetros de ruta recibidos por un screen.
-**Explicación:** Se usa con `useRoute()` para acceder a los parámetros de navegación con tipado seguro. Elimina la necesidad de hacer casts con `as`. En Finly se usa en TransactionsScreen para recibir `categoriaId` y `tipo`.
-**Ejemplo:**
+**Definition:** TypeScript type that defines the shape of route parameters received by a screen.
+**Explanation:** Used with `useRoute()` to access navigation parameters with type safety. Eliminates the need for casts with `as`. In Finly, it is used in TransactionsScreen to receive `categoriaId` and `tipo`.
+**Example:**
 ```tsx
 import { useRoute, RouteProp } from '@react-navigation/native';
 
@@ -194,12 +194,12 @@ function TransactionsScreen() {
 }
 ```
 
-# SVG y Gráficos
+# SVG and Charts
 
 ## react-native-svg
-**Definición:** Librería para renderizar gráficos SVG en React Native.
-**Explicación:** Permite dibujar formas vectoriales (círculos, rectángulos, rutas) directamente en la app. Finly la usa para el gráfico de anillos (DonutChart) con elementos `<Circle>` y `strokeDasharray`.
-**Ejemplo:**
+**Definition:** Library for rendering SVG graphics in React Native.
+**Explanation:** Allows drawing vector shapes (circles, rectangles, paths) directly in the app. Finly uses it for the donut chart (DonutChart) with `<Circle>` elements and `strokeDasharray`.
+**Example:**
 ```tsx
 import Svg, { Circle } from 'react-native-svg';
 <Svg width={160} height={160}>
@@ -208,9 +208,9 @@ import Svg, { Circle } from 'react-native-svg';
 ```
 
 ## strokeDasharray
-**Definición:** Propiedad SVG que controla el patrón de trazos y espacios en una línea.
-**Explicación:** Se usa en el DonutChart para crear segmentos de anillo. Cada categoría ocupa una porción de la circunferencia total calculada como `(porcentaje / 100) * 2 * PI * radio`.
-**Ejemplo:**
+**Definition:** SVG property that controls the dash and gap pattern on a line.
+**Explanation:** Used in the DonutChart to create ring segments. Each category occupies a portion of the total circumference calculated as `(percentage / 100) * 2 * PI * radius`.
+**Example:**
 ```tsx
 <Circle
   strokeDasharray={`${longitud} ${circunferencia - longitud}`}
@@ -218,12 +218,12 @@ import Svg, { Circle } from 'react-native-svg';
 />
 ```
 
-# Persistencia
+# Persistence
 
 ## SQLite (expo-sqlite)
-**Definición:** Base de datos relacional embebida para React Native con soporte nativo en Expo.
-**Explicación:** Almacena datos en un archivo local con esquema de tablas, relaciones y consultas SQL. Soporta integridad referencial, borrado en cascada, índices para optimizar consultas y migraciones versionadas. En Finly se usa en dispositivos móviles (Android/iOS) para persistir usuarios, cuentas, categorías y transacciones. No funciona en web porque depende de módulos nativos y WebAssembly que Expo bundler no resuelve correctamente.
-**Ejemplo:**
+**Definition:** Embedded relational database for React Native with native support in Expo.
+**Explanation:** Stores data in a local file with a schema of tables, relationships, and SQL queries. Supports referential integrity, cascade deletes, indexes for query optimization, and versioned migrations. In Finly, it is used on mobile devices (Android/iOS) to persist users, accounts, categories, and transactions. It does not work on web because it depends on native modules and WebAssembly that the Expo bundler cannot resolve correctly.
+**Example:**
 ```tsx
 import { openDatabaseSync } from 'expo-sqlite';
 const db = openDatabaseSync('Finly.db');
@@ -232,19 +232,19 @@ const cuentas = await db.getAllAsync('SELECT * FROM cuentas');
 ```
 
 ## localStorage
-**Definición:** API del navegador para almacenar pares clave-valor de forma persistente en el navegador.
-**Explicación:** Similar a AsyncStorage pero nativo del navegador. Los datos se guardan como strings JSON y persisten entre sesiones. Tiene un límite de ~5-10 MB según el navegador. En Finly se usa como alternativa a SQLite cuando la app se ejecuta en web, ya que expo-sqlite no está disponible en ese entorno.
-**Ejemplo:**
+**Definition:** Browser API for storing key-value pairs persistently in the browser.
+**Explanation:** Similar to AsyncStorage but native to the browser. Data is stored as JSON strings and persists between sessions. Has a limit of ~5-10 MB depending on the browser. In Finly, it is used as an alternative to SQLite when the app runs on web, since expo-sqlite is not available in that environment.
+**Example:**
 ```tsx
 localStorage.setItem('@Finly/cuentas', JSON.stringify(cuentas));
 const raw = localStorage.getItem('@Finly/cuentas');
 const cuentas = raw ? JSON.parse(raw) : [];
 ```
 
-## Plataforma switching (SQLite / localStorage)
-**Definición:** Patrón que usa `Platform.OS` de React Native para seleccionar automáticamente la implementación de persistencia según el entorno de ejecución.
-**Explicación:** Dado que `expo-sqlite` solo funciona en nativo (Android/iOS) y `localStorage` solo existe en web, se crea una capa de abstracción con la misma interfaz para ambas implementaciones. Un archivo `index.ts` exporta los repositorios correctos usando un condicional `Platform.OS === 'web'`. El resto de la app (AppContext, componentes) importa desde `index.ts` sin conocer la implementación subyacente. Esto permite que la app funcione en cualquier plataforma sin cambios en la lógica de negocio.
-**Ejemplo:**
+## Platform switching (SQLite / localStorage)
+**Definition:** Pattern that uses React Native's `Platform.OS` to automatically select the persistence implementation based on the execution environment.
+**Explanation:** Since `expo-sqlite` only works on native (Android/iOS) and `localStorage` only exists on web, an abstraction layer is created with the same interface for both implementations. An `index.ts` file exports the correct repositories using a `Platform.OS === 'web'` conditional. The rest of the app (AppContext, components) imports from `index.ts` without knowing the underlying implementation. This allows the app to work on any platform without changes to the business logic.
+**Example:**
 ```tsx
 // src/database/index.ts
 import { Platform } from 'react-native';
@@ -254,17 +254,17 @@ import { webCuentaRepo } from './webStorage';                  // localStorage
 const isWeb = Platform.OS === 'web';
 export const cuentaRepository = isWeb ? webCuentaRepo : cuentaRepo;
 
-// AppContext.tsx — consume la implementación correcta automáticamente
+// AppContext.tsx — consumes the correct implementation automatically
 import { cuentaRepository } from '../database';
 const cuentas = await cuentaRepository.listar(usuarioId);
 ```
 
-# Componentes UI
+# UI Components
 
 ## FlatList
-**Definición:** Componente de React Native para renderizar listas largas de forma eficiente.
-**Explicación:** Solo renderiza los elementos visibles en pantalla (virtualización), lo que ahorra memoria. Acepta `data`, `renderItem` y `keyExtractor`. Se usa en CategoryList, AccountModal y TransactionsScreen.
-**Ejemplo:**
+**Definition:** React Native component for efficiently rendering long lists.
+**Explanation:** Only renders elements visible on screen (virtualization), which saves memory. Accepts `data`, `renderItem`, and `keyExtractor`. Used in CategoryList, AccountModal, and TransactionsScreen.
+**Example:**
 ```tsx
 <FlatList
   data={items}
@@ -274,9 +274,9 @@ const cuentas = await cuentaRepository.listar(usuarioId);
 ```
 
 ## Modal
-**Definición:** Componente de React Native que muestra contenido superpuesto sobre la pantalla actual.
-**Explicación:** Útil para diálogos, selectores o formularios sin cambiar de pantalla. En Finly se usa para el selector de cuentas (AccountModal) y el selector de fechas (CalendarModal).
-**Ejemplo:**
+**Definition:** React Native component that displays content overlaid on the current screen.
+**Explanation:** Useful for dialogs, selectors, or forms without changing screens. In Finly, it is used for the account selector (AccountModal) and the date selector (CalendarModal).
+**Example:**
 ```tsx
 <Modal visible={visible} transparent animationType="slide">
   <View style={overlay}><Text>Contenido del modal</Text></View>
@@ -284,9 +284,9 @@ const cuentas = await cuentaRepository.listar(usuarioId);
 ```
 
 ## TouchableOpacity
-**Definición:** Componente de React Native que reacciona al toque con un efecto de opacidad.
-**Explicación:** Envuelve cualquier elemento para hacerlo pulsable. Al presionarlo reduce su opacidad. `hitSlop` amplía el área táctil para mejorar accesibilidad.
-**Ejemplo:**
+**Definition:** React Native component that reacts to touch with an opacity effect.
+**Explanation:** Wraps any element to make it pressable. When pressed, it reduces its opacity. `hitSlop` expands the touch area to improve accessibility.
+**Example:**
 ```tsx
 <TouchableOpacity onPress={handlePress} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
   <Text>Pulsar</Text>
@@ -294,96 +294,96 @@ const cuentas = await cuentaRepository.listar(usuarioId);
 ```
 
 ## SafeAreaView
-**Definición:** Componente de React Native que respeta las áreas seguras de la pantalla (notch, barra de estado, etc.).
-**Explicación:** Evita que el contenido quede oculto detrás de elementos del sistema operativo. Se usa en todas las pantallas de Finly.
-**Ejemplo:**
+**Definition:** React Native component that respects the safe areas of the screen (notch, status bar, etc.).
+**Explanation:** Prevents content from being hidden behind operating system elements. Used in all Finly screens.
+**Example:**
 ```tsx
 <SafeAreaView style={{ flex: 1 }}>
   <Text>Contenido seguro</Text>
 </SafeAreaView>
 ```
 
-## Filas condicionales (Conditional rows)
-**Definición:** Patrón de UI donde una segunda fila solo se renderiza si existe datos opcionales, manteniendo la primera fila siempre con el mismo layout.
-**Explicación:** Cuando un elemento de lista tiene un campo opcional (como una nota), en lugar de añadirlo como columna extra que desplaza el layout, se renderiza como una segunda fila debajo de la principal. Si el campo está vacío, la segunda fila no se renderiza y la primera fila ocupa todo el espacio. Esto mantiene el layout consistente cuando no hay datos opcionales.
-**Ejemplo:**
+## Conditional rows
+**Definition:** UI pattern where a second row is only rendered if optional data exists, keeping the first row always with the same layout.
+**Explanation:** When a list item has an optional field (like a note), instead of adding it as an extra column that shifts the layout, it is rendered as a second row below the main one. If the field is empty, the second row is not rendered and the first row takes up the full space. This keeps the layout consistent when there is no optional data.
+**Example:**
 ```tsx
 <View>
-  {/* Fila principal: siempre visible, 3 columnas */}
+  {/* Main row: always visible, 3 columns */}
   <View style={styles.row}>
     <Ionicons name={icon} />
     <Text>{name}</Text>
     <Text>{balance}</Text>
   </View>
-  {/* Segunda fila: solo si nota existe */}
+  {/* Second row: only if note exists */}
   {note ? (
     <Text style={styles.note}>{note}</Text>
   ) : null}
 </View>
 ```
 
-# Principios de diseño
+# Design Principles
 
 ## Single Source of Truth (SSOT)
-**Definición:** Principio de diseño que establece que cada pieza de información debe tener una única fuente authoritative en el sistema.
-**Explicación:** Evita inconsistencias causadas por datos duplicados en múltiples ubicaciones. Cuando un valor cambia, solo se modifica en un sitio. En Finly, los tipos como `Periodo` se definen una sola vez en `constants/types.ts` y se importan desde allí en todos los archivos que los necesitan, en lugar de redefinirlos en cada componente.
-**Ejemplo:**
+**Definition:** Design principle that states that each piece of information should have a single authoritative source in the system.
+**Explanation:** Prevents inconsistencies caused by duplicated data in multiple locations. When a value changes, it is only modified in one place. In Finly, types like `Periodo` are defined once in `constants/types.ts` and imported from there in all files that need them, rather than being redefined in each component.
+**Example:**
 ```tsx
-// ✅ SSOT: un solo archivo define el tipo
+// ✅ SSOT: a single file defines the type
 // constants/types.ts
 export type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo';
 
-// componentes importan desde la fuente única
+// components import from the single source
 import { Periodo } from '../constants/types';
 
-// ❌ Sin SSOT: el mismo tipo definido en 3 archivos diferentes
-type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo'; // en AppContext
-type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo'; // en PeriodTabs
-type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo'; // en calendars/types
+// ❌ Without SSOT: the same type defined in 3 different files
+type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo'; // in AppContext
+type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo'; // in PeriodTabs
+type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo'; // in calendars/types
 ```
 
-## Constantes compartidas entre pantallas
-**Definición:** Listas de datos (iconos, colores, etc.) que se definen una sola vez en un archivo `constants/` y se importan desde múltiples pantallas.
-**Explicación:** Cuando dos pantallas usan la misma lista de opciones (ej: iconos de cuentas en crear y modificar), la lista debe definirse en un solo archivo compartido. Si se duplica, cambiar un icono requiere modificar dos archivos. En Finly, `constants/accountIcons.ts` contiene la lista `ACCOUNT_ICONS` usada tanto en `CreateAccountScreen` como en `ModifyAccountScreen`.
-**Ejemplo:**
+## Shared constants across screens
+**Definition:** Lists of data (icons, colors, etc.) that are defined once in a `constants/` file and imported from multiple screens.
+**Explanation:** When two screens use the same list of options (e.g., account icons in create and modify), the list must be defined in a single shared file. If it is duplicated, changing an icon requires modifying two files. In Finly, `constants/accountIcons.ts` contains the `ACCOUNT_ICONS` list used in both `CreateAccountScreen` and `ModifyAccountScreen`.
+**Example:**
 ```tsx
-// constants/accountIcons.ts — SSOT para iconos de cuentas
+// constants/accountIcons.ts — SSOT for account icons
 export const ACCOUNT_ICONS = [
   'wallet-outline', 'cash-outline', 'card-outline',
   'business-outline', 'bank-outline', ...
 ] as const;
 
-// CreateAccountScreen.tsx — importa desde SSOT
+// CreateAccountScreen.tsx — imports from SSOT
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
 
-// ModifyAccountScreen.tsx — misma fuente
+// ModifyAccountScreen.tsx — same source
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
 ```
 
-## Named Constants (Evitar Magic Numbers)
-**Definición:** Sustituir valores literales hardcodeados por constantes con nombre descriptivo.
-**Explicación:** Los "magic numbers" o "magic strings" son valores aparecidos de la nada en el código que dificultan la comprensión y el mantenimiento. Si el valor cambia, hay que buscarlo en todo el código. Al extraerlo a una constante con nombre, se entiende su propósito y se puede modificar en un solo lugar. En Finly, `new Date(2026, 0, 1)` se reemplazó por `new Date(ANIO_MINIMO, 0, 1)` donde `ANIO_MINIMO` es una constante calculada dinámicamente.
-**Ejemplo:**
+## Named Constants (Avoiding Magic Numbers)
+**Definition:** Replacing hardcoded literal values with constants that have descriptive names.
+**Explanation:** "Magic numbers" or "magic strings" are values that appear out of nowhere in the code, making comprehension and maintenance difficult. If the value changes, you have to search for it throughout the entire codebase. By extracting it to a named constant, its purpose becomes clear and it can be modified in a single place. In Finly, `new Date(2026, 0, 1)` was replaced with `new Date(ANIO_MINIMO, 0, 1)` where `ANIO_MINIMO` is a dynamically calculated constant.
+**Example:**
 ```tsx
-// ❌ Magic number: ¿por qué 2026?
+// ❌ Magic number: why 2026?
 const fechaMinima = new Date(2026, 0, 1);
 
-// ✅ Named constant: el propósito es claro
+// ✅ Named constant: the purpose is clear
 const ANIO_MINIMO = new Date().getFullYear();
 const fechaMinima = new Date(ANIO_MINIMO, 0, 1);
 ```
 
 ## useMemo
-**Definición:** Hook de React que memoriza el resultado de un cálculo y solo lo recalcula cuando cambian sus dependencias.
-**Explicación:** Cuando un valor derivado depende de varios estados, sin `useMemo` se recalcula en cada render. `useMemo` guarda el resultado y lo reutiliza si las dependencias no cambian. Es útil para objetos y arrays derivados que se pasan como props o se usan en comparaciones.
-**Ejemplo:**
+**Definition:** React hook that memoizes the result of a calculation and only recalculates when its dependencies change.
+**Explanation:** When a derived value depends on multiple states, without `useMemo` it recalculates on every render. `useMemo` stores the result and reuses it if the dependencies have not changed. It is useful for derived objects and arrays that are passed as props or used in comparisons.
+**Example:**
 ```tsx
-// ❌ Cada render crea un nuevo objeto → todos los useEffect dependientes se re-ejecutan
+// ❌ Every render creates a new object → all dependent useEffects re-execute
 const fechas = periodoActivo === 'periodo'
   ? fechaPersonalizada
   : calcularInicioFin(periodoActivo, fechaSeleccionada);
 
-// ✅ Solo se recalcula cuando cambian periodoActivo, fechaPersonalizada o fechaSeleccionada
+// ✅ Only recalculates when periodoActivo, fechaPersonalizada, or fechaSeleccionada change
 const fechas = useMemo(
   () => periodoActivo === 'periodo'
     ? fechaPersonalizada
@@ -392,28 +392,28 @@ const fechas = useMemo(
 );
 ```
 
-## Spread Antes de .sort() (Evitar Mutación)
-**Definición:** Usar el spread operator `[...array]` antes de `.sort()` para no mutar el array original.
-**Explicación:** El método `.sort()` de JavaScript **ordena el array in-place**, es decir, lo modifica directamente. Si ese array es estado de React, mutar su referencia interna causa bugs (el componente no se re-renderiza o se comporta de forma impredecible). Al hacer `[...lista].sort(...)`, se crea una copia y se ordena esa copia, dejando el original intacto.
-**Ejemplo:**
+## Spread Before .sort() (Avoiding Mutation)
+**Definition:** Using the spread operator `[...array]` before `.sort()` to avoid mutating the original array.
+**Explanation:** JavaScript's `.sort()` method **sorts the array in-place**, meaning it modifies it directly. If that array is React state, mutating its internal reference causes bugs (the component does not re-render or behaves unpredictably). By doing `[...lista].sort(...)`, a copy is created and that copy is sorted, leaving the original intact.
+**Example:**
 ```tsx
-// ❌ Mutación in-place: modifica el array de estado directamente
+// ❌ In-place mutation: modifies the state array directly
 return lista.sort((a, b) => b.fecha - a.fecha);
 
-// ✅ Copia segura: no toca el array original
+// ✅ Safe copy: does not touch the original array
 return [...lista].sort((a, b) => b.fecha - a.fecha);
 ```
 
-## Evitar Dependencias Circulares en Tipos
-**Definición:** Cuando dos archivos se importan mutuamente (A importa de B, B importa de A), se produce una dependencia circular que puede causar errores de runtime.
-**Explicación:** En TypeScript, si `types.ts` importa un tipo de `mockData.ts` y `mockData.ts` importa otro tipo de `types.ts`, se crea un bucle. La solución es romper la cadena definiendo los campos necesarios directamente en el archivo que los necesita, en lugar de importarlos. Esto es especialmente común con tipos derivados (`type A = B & { extra }`) donde se puede reescribir inline.
-**Ejemplo:**
+## Avoiding Circular Dependencies in Types
+**Definition:** When two files import each other (A imports from B, B imports from A), a circular dependency is produced that can cause runtime errors.
+**Explanation:** In TypeScript, if `types.ts` imports a type from `mockData.ts` and `mockData.ts` imports another type from `types.ts`, a loop is created. The solution is to break the chain by defining the needed fields directly in the file that needs them, rather than importing them. This is especially common with derived types (`type A = B & { extra }`) where they can be rewritten inline.
+**Example:**
 ```tsx
-// ❌ types.ts importa de mockData.ts, y mockData.ts importa de types.ts → circular
+// ❌ types.ts imports from mockData.ts, and mockData.ts imports from types.ts → circular
 import { Categoria } from '../data/mockData';
 export type CategoriaConTotal = Categoria & { total: number; porcentaje: number };
 
-// ✅ Definir los campos inline rompe la dependencia circular
+// ✅ Defining the fields inline breaks the circular dependency
 export type CategoriaConTotal = {
   id: number;
   nombre: string;
@@ -425,63 +425,63 @@ export type CategoriaConTotal = {
 };
 ```
 
-## Código Muerto: Ramas Idénticas
-**Definición:** Bloques de código cuyas ramas alternativas producen exactamente el mismo resultado, haciendo la condición redundante.
-**Explicación:** Cuando un `if/else` retorna lo mismo en ambas ramas, la condición es inútil y el código completo puede simplificarse eliminando el `if/else` y dejando solo el retorno. Esto mejora la legibilidad y reduce la complejidad mantenido.
-**Ejemplo:**
+## Dead Code: Identical Branches
+**Definition:** Code blocks whose alternative branches produce exactly the same result, making the condition redundant.
+**Explanation:** When an `if/else` returns the same thing in both branches, the condition is useless and the entire code can be simplified by removing the `if/else` and keeping only the return. This improves readability and reduces complexity.
+**Example:**
 ```tsx
-// ❌ Ambas ramas retornan lo mismo → el if es inútil
+// ❌ Both branches return the same thing → the if is useless
 if (inicio.getMonth() === fin.getMonth()) {
   return `${dInicio} ${mAbrev(inicio.getMonth())} - ${dFin} ${mAbrev(fin.getMonth())}`;
 }
 return `${dInicio} ${mAbrev(inicio.getMonth())} - ${dFin} ${mAbrev(fin.getMonth())}`;
 
-// ✅ Simplificado: una sola línea
+// ✅ Simplified: a single line
 return `${dInicio} ${mAbrev(inicio.getMonth())} - ${dFin} ${mAbrev(fin.getMonth())}`;
 ```
 
-## ComponentProps (Tipado Seguro de Librerías)
-**Definición:** Tipo utility de React que extrae los props de un componente, permitiendo tipar valores dinámicos de librerías externas sin usar `as any`.
-**Explicación:** Cuando una librería como `@expo/vector-icons` define un tipo union para un prop (ej: los nombres de iconos), usar `as any` anula la verificación de tipos y oculta errores. `ComponentProps<typeof Component>['prop']` extrae el tipo exacto del prop desde la definición del componente, manteniendo la seguridad de tipos. Es la forma correcta de tipar valores que vienen de datos externos (mock data, base de datos) pero que se usan como props de componentes tipados.
-**Ejemplo:**
+## ComponentProps (Type-Safe Library Props)
+**Definition:** React utility type that extracts the props of a component, allowing dynamic values from external libraries to be typed without using `as any`.
+**Explanation:** When a library like `@expo/vector-icons` defines a union type for a prop (e.g., icon names), using `as any` bypasses type checking and hides errors. `ComponentProps<typeof Component>['prop']` extracts the exact type of the prop from the component definition, maintaining type safety. This is the correct way to type values that come from external data (mock data, database) but are used as props of typed components.
+**Example:**
 ```tsx
-// ❌ as any: pierde toda verificación de tipos
+// ❌ as any: loses all type checking
 <Ionicons name={item.icono as any} size={22} color={item.color} />
 
-// ✅ ComponentProps: tipado seguro contra la definición del componente
+// ✅ ComponentProps: type-safe against the component definition
 import { ComponentProps } from 'react';
 <Ionicons name={item.icono as ComponentProps<typeof Ionicons>['name']} size={22} color={item.color} />
 ```
 
-## Extracción de Funciones Puras Fuera del Componente
-**Definición:** Mover funciones que no dependen de hooks o estado del cuerpo del componente al scope del archivo, para que no se recreen en cada render.
-**Explicación:** Cuando una función se define dentro de un componente React, se crea una nueva referencia en cada render. Si esa función se pasa como prop o se usa en un `useMemo`, provoca re-renderizaciones innecesarias. Las funciones puras (que solo dependen de sus parámetros) pueden definirse fuera del componente y recibir los valores necesarios como argumentos. Esto las hace singleton: una sola referencia para toda la vida del componente.
-**Ejemplo:**
+## Extracting Pure Functions Outside the Component
+**Definition:** Moving functions that do not depend on hooks or state out of the component body and into the file scope, so they are not recreated on every render.
+**Explanation:** When a function is defined inside a React component, a new reference is created on every render. If that function is passed as a prop or used in a `useMemo`, it causes unnecessary re-renders. Pure functions (that only depend on their parameters) can be defined outside the component and receive the needed values as arguments. This makes them singletons: a single reference for the entire lifetime of the component.
+**Example:**
 ```tsx
-// ❌ Se recrea en cada render
+// ❌ Recreated on every render
 function WeekPicker({ fecha, primerDia }) {
   function mismaSemana(a, b) {
     return inicioDeSemana(a, primerDia).getTime() === inicioDeSemana(b, primerDia).getTime();
   }
 }
 
-// ✅ Definida fuera, referencia estable
+// ✅ Defined outside, stable reference
 function mismaSemana(a: Date, b: Date, primerDia: 0 | 1): boolean {
   return inicioDeSemana(a, primerDia).getTime() === inicioDeSemana(b, primerDia).getTime();
 }
 
 function WeekPicker({ fecha, primerDia }) {
-  // mismaSemana se llama con primerDia como argumento
+  // mismaSemana is called with primerDia as an argument
   const seleccionada = mismaSemana(sem.inicio, fecha, primerDia);
 }
 ```
 
-## Single-Pass Reduce (Evitar Filter + Reduce)
-**Definición:** Reemplazar múltiples iteraciones (filter followed by reduce) por un único `reduce` que acumula directamente el resultado deseado.
-**Explicación:** El patrón `.filter(...).reduce(...)` itera el array dos veces: una para filtrar y otra para acumular. Con `.reduce()` se puede hacer ambas cosas en una sola pasada, reduciendo la complejidad de O(2n) a O(n). Esto es especialmente valioso cuando se procesan arrays grandes o cuando se necesita calcular múltiples métricas del mismo array. En lugar de N filtros × M cuentas, se hace un solo `reduce` que acumula un mapa de resultados.
-**Ejemplo:**
+## Single-Pass Reduce (Avoiding Filter + Reduce)
+**Definition:** Replacing multiple iterations (filter followed by reduce) with a single `reduce` that accumulates the desired result directly.
+**Explanation:** The `.filter(...).reduce(...)` pattern iterates the array twice: once to filter and once to accumulate. With `.reduce()` both can be done in a single pass, reducing complexity from O(2n) to O(n). This is especially valuable when processing large arrays or when multiple metrics need to be calculated from the same array. Instead of N filters × M accounts, a single `reduce` accumulates a result map.
+**Example:**
 ```tsx
-// ❌ O(accounts × transactions): itera transacciones por cada cuenta
+// ❌ O(accounts × transactions): iterates transactions for each account
 cuentas.map(cuenta => {
   const ingresos = transacciones
     .filter(t => t.cuentaId === cuenta.id && t.tipo === 'ingreso')
@@ -492,7 +492,7 @@ cuentas.map(cuenta => {
   return { ...cuenta, saldo: ingresos - gastos };
 });
 
-// ✅ O(transactions): un solo reduce acumula saldos por cuentaId
+// ✅ O(transactions): a single reduce accumulates balances by accountId
 const saldos = transacciones.reduce((acc, t) => {
   acc[t.cuentaId] = (acc[t.cuentaId] ?? 0) + (t.tipo === 'ingreso' ? t.cantidad : -t.cantidad);
   return acc;
@@ -500,19 +500,19 @@ const saldos = transacciones.reduce((acc, t) => {
 cuentas.map(cuenta => ({ ...cuenta, saldo: saldos[cuenta.id] ?? 0 }));
 ```
 
-# SQL y Base de Datos
+# SQL and Database
 
 ## Date Formats and SQLite String Comparison
-**Definición:** SQLite almacena y compara fechas como strings, por lo que el formato del string afecta directamente el resultado de las comparaciones `>=` / `<=`.
-**Explicación:** En Finly, las fechas se almacenan en formato `"YYYY-MM-DD HH:MM:SS"` (espacio como separador, hora local). Cuando se pasan fechas como parámetros SQL, el formato debe coincidir exactamente. `Date.toISOString()` produce formato ISO 8601 (`"2026-07-15T00:00:00.000Z"`) con `T` como separador y zona horaria UTC. Dado que SQLite hace comparación lexicográfica de strings, el carácter `T` (ASCII 84) es mayor que el espacio (ASCII 32), haciendo que `"2026-07-15 10:30:00" >= "2026-07-15T00:00:00.000Z"` sea siempre `false`, excluyendo incorrectamente todas las transacciones. La solución es usar un formato consistente (`YYYY-MM-DD HH:MM:SS`) tanto para almacenar como para consultar.
-**Ejemplo:**
+**Definition:** SQLite stores and compares dates as strings, so the string format directly affects the result of `>=` / `<=` comparisons.
+**Explanation:** In Finly, dates are stored in the format `"YYYY-MM-DD HH:MM:SS"` (space as separator, local time). When dates are passed as SQL parameters, the format must match exactly. `Date.toISOString()` produces ISO 8601 format (`"2026-07-15T00:00:00.000Z"`) with `T` as the separator and UTC timezone. Since SQLite performs lexicographic string comparison, the `T` character (ASCII 84) is greater than the space (ASCII 32), making `"2026-07-15 10:30:00" >= "2026-07-15T00:00:00.000Z"` always `false`, incorrectly excluding all transactions. The solution is to use a consistent format (`YYYY-MM-DD HH:MM:SS`) for both storage and queries.
+**Example:**
 ```tsx
-// ❌ Formato ISO rompe la comparación string en SQLite
+// ❌ ISO format breaks string comparison in SQLite
 const startDate = start.toISOString(); // "2026-07-15T00:00:00.000Z"
 await db.getAllAsync('SELECT * FROM transactions WHERE date >= ?', startDate);
 // "2026-07-15 10:30:00" >= "2026-07-15T00:00:00.000Z" → false (T > space)
 
-// ✅ Formato local consistente con el almacenamiento
+// ✅ Local format consistent with storage
 function formatDateForDB(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -528,9 +528,9 @@ await db.getAllAsync('SELECT * FROM transactions WHERE date >= ?', startDate);
 ```
 
 ## PRAGMA user_version
-**Definición:** Metadato entero que SQLite almacena en el encabezado de la base de datos para controlar qué migraciones se han ejecutado.
-**Explicación:** Se usa como contador de versión del esquema. Cada migración comprueba si `user_version` es menor que su número, ejecuta los cambios SQL necesarios y luego incrementa el valor con `PRAGMA user_version = N`. Así, la app sabe en cada arranque qué migraciones faltan sin necesidad de tablas de control adicionales. En Finly, el esquema pasa de versión 0 → 1 (tablas), 1→2 (seed), 2→3 (configuración), 3→4 (nuevas categorías).
-**Ejemplo:**
+**Definition:** Integer metadata that SQLite stores in the database header to control which migrations have been executed.
+**Explanation:** Used as a schema version counter. Each migration checks if `user_version` is less than its number, runs the necessary SQL changes, and then increments the value with `PRAGMA user_version = N`. This way, the app knows at each startup which migrations are missing without needing additional control tables. In Finly, the schema goes from version 0 → 1 (tables), 1→2 (seed), 2→3 (configuration), 3→4 (new categories).
+**Example:**
 ```tsx
 let { user_version: v } = await db.getFirstAsync('PRAGMA user_version');
 if (v < 1) { await migrate001(db); v = 1; }
@@ -539,24 +539,24 @@ await db.execAsync(`PRAGMA user_version = ${v}`);
 ```
 
 ## INSERT OR IGNORE
-**Definición:** Variante de INSERT que silenciosamente omite la inserción si la fila viola una restricción de clave duplicada (PRIMARY KEY o UNIQUE).
-**Explicación:** Muy útil en semillas (seeds) y migraciones para que la app pueda ejecutar el mismo script de inicialización sin fallos si los datos ya existen. El problema es que no actualiza registros existentes: si cambiaste un valor entre versiones (ej: un icono), INSERT OR IGNORE no sobreescribirá el viejo. En ese caso hay que usar un UPDATE por separado.
-**Ejemplo:**
+**Definition:** INSERT variant that silently skips insertion if the row violates a duplicate key constraint (PRIMARY KEY or UNIQUE).
+**Explanation:** Very useful in seeds and migrations so the app can run the same initialization script without failures if the data already exists. The problem is that it does not update existing records: if you changed a value between versions (e.g., an icon), INSERT OR IGNORE will not overwrite the old one. In that case, a separate UPDATE is needed.
+**Example:**
 ```tsx
-// Inserta la categoría solo si id=10 no existe aún
+// Inserts the category only if id=10 does not exist yet
 await db.runAsync(
   'INSERT OR IGNORE INTO categorias (id, nombre, icono) VALUES (?, ?, ?)',
   10, 'Videojuego', 'game-controller-outline'
 );
-// Si ya existe id=10, no hace nada — el icono viejo se queda
+// If id=10 already exists, it does nothing — the old icon stays
 ```
 
-## Datos obsoletos en almacenamiento persistente
-**Definición:** Situación en la que los datos guardados en la base de datos o en localStorage contienen valores de versiones anteriores del código que ya no son válidos.
-**Explicación:** Cuando se corrige un valor en el código fuente (ej: renombrar un icono de `gamepad-outline` a `game-controller-outline`), los usuarios que ya tienen datos guardados no reciben el cambio automáticamente, porque la persistencia conserva los valores viejos. Esto produce errores de runtime como `"'gamepad-outline' is not a valid icon name"`. La solución es añadir lógica de actualización que se ejecute en cada arranque, corrigiendo los valores obsoletos conocidos.
-**Ejemplo:**
+## Stale data in persistent storage
+**Definition:** Situation where data saved in the database or localStorage contains values from previous code versions that are no longer valid.
+**Explanation:** When a value is corrected in the source code (e.g., renaming an icon from `gamepad-outline` to `game-controller-outline`), users who already have saved data do not receive the change automatically, because persistence retains the old values. This causes runtime errors like `"'gamepad-outline' is not a valid icon name"`. The solution is to add update logic that runs at each startup, correcting the known stale values.
+**Example:**
 ```tsx
-// webStorage.ts — migra iconos obsoletos en localStorage
+// webStorage.ts — migrates stale icons in localStorage
 function migrateWebCategories(): void {
   const categorias = getStore<Categoria>('categorias');
   const invalidIcons: Record<string, string> = {
@@ -569,43 +569,44 @@ function migrateWebCategories(): void {
   setStore('categorias', updated);
 }
 
-// database.ts — migra iconos obsoletos en SQLite (cada arranque)
+// database.ts — migrates stale icons in SQLite (at each startup)
 await db.runAsync(`UPDATE categorias SET icono = 'game-controller-outline' WHERE id = 10`);
 ```
 
-## Migración de datos vs. Migración de esquema
-**Definición:** Distinción entre cambios en la estructura de tablas (esquema) y cambios en el contenido de los registros existentes (datos).
-**Explicación:** La migración de esquema crea tablas, añade columnas o índices y se ejecuta una sola vez controlada por `PRAGMA user_version`. La migración de datos corrige o actualiza registros existentes y debe ejecutarse en cada arranque (o con su propio control de versión), porque los datos obsoletos pueden estar presentes en cualquier versión del esquema. En Finly, `seed004` es migración de esquema (INSERT OR IGNORE), mientras que las líneas de UPDATE en `initDatabase()` son migración de datos que corren siempre.
-**Ejemplo:**
+## Data migration vs. Schema migration
+**Definition:** Distinction between changes to table structure (schema) and changes to the content of existing records (data).
+**Explanation:** Schema migration creates tables, adds columns or indexes, and runs once controlled by `PRAGMA user_version`. Data migration corrects or updates existing records and must run at every startup (or with its own version control), because stale data can be present in any schema version. In Finly, `seed004` is schema migration (INSERT OR IGNORE), while the UPDATE statements in `initDatabase()` are data migration that always run.
+**Example:**
 ```tsx
-// Migración de esquema — una sola vez (controlada por PRAGMA)
+// Schema migration — once (controlled by PRAGMA)
 if (v < 4) { await seed004(db); }
 
-// Migración de datos — cada arranque (corregir valores obsoletos)
+// Data migration — every startup (correct stale values)
 await db.runAsync(`UPDATE categorias SET icono = ? WHERE id = ?`, nuevoIcono, id);
 ```
 
-## Diferencia entre nativo (SQLite) y web (localStorage) en migraciones
-**Definición:** En entornos nativos, la migración corre una sola vez gracias a `PRAGMA user_version`; en web, los datos viven en `localStorage` y no hay control de versión automático.
-**Explicación:** En nativo, SQLite conserva el `PRAGMA user_version` entre sesiones, así que cada migración se ejecuta exactamente una vez. En web, `localStorage` es un diccionario simple sin concepto de versión, por lo que la lógica de migración de datos debe ejecutarse siempre que la app arranca (similar a un "check de integridad"). Esto implica que las migraciones web deben ser idempotentes: ejecutarlas varias veces produce el mismo resultado que ejecutarlas una sola vez.
-**Ejemplo:**
+## Difference between native (SQLite) and web (localStorage) in migrations
+**Definition:** In native environments, migration runs once thanks to `PRAGMA user_version`; on web, data lives in `localStorage` and there is no automatic version control.
+**Explanation:** In native, SQLite preserves `PRAGMA user_version` between sessions, so each migration runs exactly once. On web, `localStorage` is a simple dictionary with no concept of version, so the data migration logic must run every time the app starts (similar to an "integrity check"). This means web migrations must be idempotent: running them multiple times produces the same result as running them once.
+**Example:**
 ```tsx
-// webStorage.ts — se ejecuta cada vez que la app arranca en web
+// webStorage.ts — runs every time the app starts on web
 export async function initWebStorage(): Promise<void> {
   const usuarios = getStore<Usuario>('usuarios');
   if (usuarios.length === 0) {
     seedWebData();
   } else {
-    migrateWebCategories(); // idempotente: corrige datos obsoletos
+    migrateWebCategories(); // idempotent: corrects stale data
   }
 }
+```
 
-# App icons (Expo)
+# App Icons (Expo)
 
 ## App icon
-**Definición:** Imagen PNG que representa la app en la pantalla de inicio del dispositivo, el menú de aplicaciones y las configuraciones del sistema.
-**Explicación:** Expo usa `icon.png` (1024×1024) como icono principal. Durante el build, Expo la redimensiona automáticamente a todos los tamaños que cada plataforma necesita. En `app.json` se referencia en `expo.icon`.
-**Ejemplo:**
+**Definition:** PNG image that represents the app on the device's home screen, app menu, and system settings.
+**Explanation:** Expo uses `icon.png` (1024×1024) as the main icon. During the build, Expo automatically resizes it to all the sizes each platform needs. In `app.json`, it is referenced in `expo.icon`.
+**Example:**
 ```json
 {
   "expo": {
@@ -615,9 +616,9 @@ export async function initWebStorage(): Promise<void> {
 ```
 
 ## Android adaptive icon
-**Definición:** Sistema de iconos adaptativos de Android 8+ (API 26+) que permite diferentes formas (círculo, cuadrado, squirucle) según el fabricante.
-**Explicación:** Se compone de dos capas PNG de 1024×1024: foreground (la imagen del logo, con fondo transparente) y background (un color sólido). Android las recorta según la máscara del dispositivo. También hay una capa monochrome opcional (API 33+) para themed icons. En Expo se configuran en `expo.android.adaptiveIcon`.
-**Ejemplo:**
+**Definition:** Android 8+ (API 26+) adaptive icon system that allows different shapes (circle, square, squircle) depending on the manufacturer.
+**Explanation:** Composed of two 1024×1024 PNG layers: foreground (the logo image, with transparent background) and background (a solid color). Android crops them according to the device mask. There is also an optional monochrome layer (API 33+) for themed icons. In Expo, they are configured in `expo.android.adaptiveIcon`.
+**Example:**
 ```json
 {
   "expo": {
@@ -634,9 +635,9 @@ export async function initWebStorage(): Promise<void> {
 ```
 
 ## Splash screen
-**Definición:** Pantalla de carga que se muestra brevemente mientras la app se inicia.
-**Explicación:** Expo muestra una splash screen nativa mientras carga el bundle de JavaScript. Se configura con una imagen PNG centrada y un color de fondo. En Expo SDK 54+ se recomienda configurarlo en `expo.splash` de `app.json` (no mediante el plugin legacy `expo-splash-screen`).
-**Ejemplo:**
+**Definition:** Loading screen that briefly appears while the app starts.
+**Explanation:** Expo shows a native splash screen while loading the JavaScript bundle. It is configured with a centered PNG image and a background color. In Expo SDK 54+, it is recommended to configure it in `expo.splash` in `app.json` (not via the legacy `expo-splash-screen` plugin).
+**Example:**
 ```json
 {
   "expo": {
@@ -650,9 +651,9 @@ export async function initWebStorage(): Promise<void> {
 ```
 
 ## Favicon
-**Definición:** Icono que aparece en la pestaña del navegador al abrir la app en web.
-**Explicación:** Expo usa `favicon.png` (48×48) para web. Se referencia en `expo.web.favicon`. Solo aplica a la plataforma web.
-**Ejemplo:**
+**Definition:** Icon that appears in the browser tab when opening the app on web.
+**Explanation:** Expo uses `favicon.png` (48×48) for web. It is referenced in `expo.web.favicon`. Only applies to the web platform.
+**Example:**
 ```json
 {
   "expo": {
@@ -663,77 +664,76 @@ export async function initWebStorage(): Promise<void> {
 }
 ```
 
-# Herramientas de desarrollo
+# Development Tools
 
 ## ESLint
-**Definición:** Herramienta de análisis estático que detecta errores de código y mejora la calidad sin ejecutar la app.
-**Explicación:** ESLint revisa el código fuente en busca de patrones problemáticos, errores comunes y inconsistencias de estilo. En Finly se ejecuta con `npx eslint <archivo>` y se configura mediante `eslint.config.js` (flat config). No reemplaza TypeScript — se complementa: TypeScript comprueba tipos, ESLint comprueba patrones de código.
-**Ejemplo:**
+**Definition:** Static analysis tool that detects code errors and improves quality without running the app.
+**Explanation:** ESLint reviews source code for problematic patterns, common errors, and style inconsistencies. In Finly, it is run with `npx eslint <file>` and configured via `eslint.config.js` (flat config). It does not replace TypeScript — they complement each other: TypeScript checks types, ESLint checks code patterns.
+**Example:**
 ```bash
 npx eslint src/screens/AccountsScreen.tsx
 ```
 
-# Tipografía y tamaños de fuente
+# Typography and Font Sizes
 
-## Sistema de escalado de fuentes (`fs()`)
-**Definición:** Hook `useFontSize()` que escala todos los tamaños de fuente de la app según la preferencia del usuario (Pequeño / Mediano / Grande).
-**Explicación:** `fs()` toma un tamaño base (en px a escala "Mediano") y devuelve el valor escalado según el factor configurado: Pequeño = ×0.85, Mediano = ×1.0, Grande = ×1.15. Todos los tamaños de fuente en la app deben usar `fs()` en lugar de valores hardcoded para respetar la accesibilidad. La función redondea al entero más cercano para evitar sub-píxeles.
-**Ejemplo:**
+## Font scaling system (`fs()`)
+**Definition:** `useFontSize()` hook that scales all app font sizes according to the user's preference (Small / Medium / Large).
+**Explanation:** `fs()` takes a base size (in px at "Medium" scale) and returns the scaled value according to the configured factor: Small = ×0.85, Medium = ×1.0, Large = ×1.15. All font sizes in the app should use `fs()` instead of hardcoded values to respect accessibility. The function rounds to the nearest integer to avoid sub-pixels.
+**Example:**
 ```tsx
 const fs = useFontSize();
-<Text style={{ fontSize: fs(14) }}>  // 12px / 14px / 16px según config
-<Text style={{ fontSize: fs(22) }}>  // 19px / 22px / 25px según config
+<Text style={{ fontSize: fs(14) }}>  // 12px / 14px / 16px depending on config
+<Text style={{ fontSize: fs(22) }}>  // 19px / 22px / 25px depending on config
 ```
 
-## Tabla de tamaños de fuente por elemento
-**Definición:** Guía de referencia de qué tamaño `fs(N)` usar para cada tipo de elemento de UI.
-**Explicación:** Basada en el auditoría del codebase completo. Los valores son argumentos de `fs()`, no px finales. El tamaño real depende de la configuración del usuario.
+## Font size table by element
+**Definition:** Reference guide for which `fs(N)` size to use for each type of UI element.
+**Explanation:** Based on an audit of the complete codebase. The values are arguments to `fs()`, not final px. The actual size depends on the user's configuration.
 
-| fs(N) | Uso | Ejemplos |
-|-------|-----|----------|
-| `fs(11)` | Textos auxiliares, labels de gráfico, categorías en grid pequeño | CategoryGrid names, BarChart labels, DayPicker year/month |
+| fs(N) | Usage | Examples |
+|-------|-------|----------|
+| `fs(11)` | Auxiliary text, chart labels, small grid categories | CategoryGrid names, BarChart labels, DayPicker year/month |
 | `fs(12)` | Badges, metadata, secondary labels, income/expenses breakdown | AccountSelector balance, TransactionGroup date, HomeScreen breakdown |
 | `fs(13)` | Period tabs, sort labels, tag chips | PeriodTabs, SortToggle, TagSection |
-| `fs(14)` | **Tamaño estándar** — cuerpo de texto, nombres de cuenta/categoría, botones | AccountSelector trigger, CategoryList names, modal titles, settings labels |
-| `fs(15)` | Nombres de items en listas, search input | AccountScreen names, SearchBar, TypeTabs, CommentInput |
-| `fs(16)` | Títulos de pantalla, títulos de modal, headers de sección | Modal titles, TransactionsScreen header, CategoriesScreen |
-| `fs(17)` | Títulos de header del Stack navigator | Todos los `headerTitle` en AppNavigator.tsx |
-| `fs(18)` | Totales grandes en modales, chart center text | DonutChart total, CalculatorModal display, PhotoSection |
-| `fs(20)` | Display de calculadora (resultado) | CalculatorModal result |
-| `fs(22)` | Totales de pantalla (saldo de cuenta, total de categoría) | AccountsScreen total, TransactionsScreen categoryTotal, AllTransactionsScreen balance |
-| `fs(24)` | Títulos grandes de pantalla | AddTransactionScreen title |
-| `fs(28)` | Total principal del HomeScreen | HomeScreen total balance |
+| `fs(14)` | **Standard size** — body text, account/category names, buttons | AccountSelector trigger, CategoryList names, modal titles, settings labels |
+| `fs(15)` | Item names in lists, search input | AccountScreen names, SearchBar, TypeTabs, CommentInput |
+| `fs(16)` | Screen titles, modal titles, section headers | Modal titles, TransactionsScreen header, CategoriesScreen |
+| `fs(17)` | Stack navigator header titles | All `headerTitle` in AppNavigator.tsx |
+| `fs(18)` | Large totals in modals, chart center text | DonutChart total, CalculatorModal display, PhotoSection |
+| `fs(20)` | Calculator display (result) | CalculatorModal result |
+| `fs(22)` | Screen totals (account balance, category total) | AccountsScreen total, TransactionsScreen categoryTotal, AllTransactionsScreen balance |
+| `fs(24)` | Large screen titles | AddTransactionScreen title |
+| `fs(28)` | Main HomeScreen total | HomeScreen total balance |
 
-## Pesos de fuente (fontWeight)
-**Definición:** Los pesos de fuente usados en la app, todos como strings numéricas.
-**Explicación:** La app no usa `fontFamily` personalizado — depende de la fuente del sistema. Los pesos se aplican como strings (`'500'`, `'600'`, etc.), no como palabras clave (`'bold'`).
+## Font weights (fontWeight)
+**Definition:** Font weights used in the app, all as numeric strings.
+**Explanation:** The app does not use a custom `fontFamily` — it relies on the system font. Weights are applied as strings (`'500'`, `'600'`, etc.), not as keywords (`'bold'`).
 
-| fontWeight | Uso | Ejemplos |
-|------------|-----|----------|
-| `'500'` | Texto de cuerpo normal, nombres de items, labels | AccountSelector modal names, CategoryList, DaySelector |
-| `'600'` | **Más usado** — nombres de cuenta/categoría, botones, trigger text, headers ligeros | AccountSelector trigger, AccountScreen names, SortToggle, TypeTabs, AppNavigator headerTitle |
-| `'700'` | Totales monetarios, títulos de modal, labels activos, items seleccionados | AccountSelector modal balance, TransactionsScreen categoryTotal, modal titles, DayPicker selected |
-| `'800'` | Total principal del HomeScreen (único uso) | HomeScreen totalText |
+| fontWeight | Usage | Examples |
+|------------|-------|----------|
+| `'500'` | Normal body text, item names, labels | AccountSelector modal names, CategoryList, DaySelector |
+| `'600'` | **Most used** — account/category names, buttons, trigger text, light headers | AccountSelector trigger, AccountScreen names, SortToggle, TypeTabs, AppNavigator headerTitle |
+| `'700'` | Monetary totals, modal titles, active labels, selected items | AccountSelector modal balance, TransactionsScreen categoryTotal, modal titles, DayPicker selected |
+| `'800'` | Main HomeScreen total (only usage) | HomeScreen totalText |
 
-## Convenciones de estilo de texto
+## Text style conventions
 
-### Nombres de cuenta
-- **HomeScreen header:** `fs(14)`, `fontWeight: '600'`, color `textSecondary`, sin `textTransform: 'uppercase'`
+### Account names
+- **HomeScreen header:** `fs(14)`, `fontWeight: '600'`, color `textSecondary`, no `textTransform: 'uppercase'`
 - **AccountSelector trigger:** `fs(14)`, `fontWeight: '600'`, color `text`
 - **AccountScreen list:** `fs(15)`, `fontWeight: '600'`, color `text`
 
-### Totales monetarios
-- **Total principal (HomeScreen):** `fs(28)`, `fontWeight: '800'`, color dinámico (green/red), con prefijo `+`/`-`
-- **Total de pantalla (Accounts, Transactions):** `fs(22)`, `fontWeight: '700'`, color dinámico, con prefijo `+`/`-`
-- **Balance en modal:** `fs(12)`, `fontWeight: '700'`, color `textSecondary`
-- **Importe de transacción:** `fs(14)`, `fontWeight: '600'`, color green (ingreso) / red (gasto)
+### Monetary totals
+- **Main total (HomeScreen):** `fs(28)`, `fontWeight: '800'`, dynamic color (green/red), with `+`/`-` prefix
+- **Screen total (Accounts, Transactions):** `fs(22)`, `fontWeight: '700'`, dynamic color, with `+`/`-` prefix
+- **Balance in modal:** `fs(12)`, `fontWeight: '700'`, color `textSecondary`
+- **Transaction amount:** `fs(14)`, `fontWeight: '600'`, color green (income) / red (expense)
 
-### Headers de pantalla
-- **Stack navigator headerTitle:** `fs(17)`, `fontWeight: '600'`, con icono + texto
-- **Secciones dentro de pantalla:** `fs(16)`, `fontWeight: '700'`
+### Screen headers
+- **Stack navigator headerTitle:** `fs(17)`, `fontWeight: '600'`, with icon + text
+- **Sections within screen:** `fs(16)`, `fontWeight: '700'`
 
-### Botones
-- **FAB (botón flotante):** `fs(28)` para el símbolo "+", `fontWeight: '600'`
-- **Botones de modal:** `fs(14)`, `fontWeight: '600'`
-- **Tab activo:** `fs(13)` o `fs(14)`, `fontWeight: '600'`, color `primary`
-
+### Buttons
+- **FAB (floating button):** `fs(28)` for the "+" symbol, `fontWeight: '600'`
+- **Modal buttons:** `fs(14)`, `fontWeight: '600'`
+- **Active tab:** `fs(13)` or `fs(14)`, `fontWeight: '600'`, color `primary`

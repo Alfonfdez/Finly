@@ -1,245 +1,245 @@
 # Roadmap
 
-App móvil (React Native / Expo) con múltiples pantallas.
+Mobile app (React Native / Expo) with multiple screens.
 
-## 001-pagina-inicial
-Estado: completado.
+## 001-home-screen
+Status: completed.
 
-Pantalla principal con:
-a) Cabecera con:
-  - Menú hamburguesa (Drawer Navigator) a la izquierda con: Inicio, Ajustes, Transacciones, y placeholder para Cuentas/Categorías (próximamente).
-  - En el centro, selector de "Cuenta" que abre un modal con la lista de cuentas.
-  - Debajo de la cuenta, el "Total" (diferencia entre gastos e ingresos).
-  - A la derecha, botón para abrir pantalla "Transacciones".
+Home screen with:
+a) Header with:
+  - Hamburger menu (Drawer Navigator) on the left with: Home, Settings, Transactions, and placeholder for Accounts/Categories (coming soon).
+  - In the center, an "Account" selector that opens a modal with the account list.
+  - Below the account, the "Total" (difference between expenses and income).
+  - On the right, a button to open the "Transactions" screen.
 
-b) Bloque inferior:
-  - Tabs "Gastos" / "Ingresos".
-  - Tabs de período: "Día", "Semana", "Mes", "Año", "Período".
-  - Cada período muestra un selector de fecha nativo (DateTimePicker).
-    - Día: selector de día (sin fecha futura).
-    - Semana: selector de semana.
-    - Mes: selector de mes.
-    - Año: selector de año.
-    - Período: selector de rango de fechas.
+b) Bottom section:
+  - "Expenses" / "Income" tabs.
+  - Period tabs: "Day", "Week", "Month", "Year", "Period".
+  - Each period shows a native date picker (DateTimePicker).
+    - Day: day picker (no future dates).
+    - Week: week picker.
+    - Month: month picker.
+    - Year: year picker.
+    - Period: date range picker.
 
-c) Bloque gráfico:
-  - Gráfico de anillos (SVG) con gastos/ingresos por categoría.
-  - Se puede cambiar a gráfico de barras horizontal al pulsar sobre él.
+c) Chart section:
+  - Donut chart (SVG) with expenses/income by category.
+  - Can switch to horizontal bar chart by tapping on it.
 
-d) Botón "+" flotante (FAB) que navega a la pantalla "Añadir Gasto/Ingreso".
+d) Floating "+" button (FAB) that navigates to the "Add Expense/Income" screen.
 
-e) Lista de desglose por categorías (icono, nombre, porcentaje, total).
+e) Category breakdown list (icon, name, percentage, total).
 
-f) Las transacciones se almacenan en SQLite (nativo) o localStorage (web) y se cargan al iniciar la app.
+f) Transactions are stored in SQLite (native) or localStorage (web) and loaded on app startup.
 
-Especificación: spec/features/001-pagina-inicial/.
+Spec: spec/features/001-home-screen/.
 
-## 002-diseño-DB
-Estado: completado.
+## 002-db-design
+Status: completed.
 
-Diseño de la base de datos local con 4 tablas principales:
-- `users`: usuario con nombre, email, avatar, divisa.
-- `accounts`: cuentas con saldo inicial, icono, color.
-- `categories`: categorías con nombre, icono, color, tipo (expense/income).
-- `transactions`: transacciones con cuenta, categoría, tipo, cantidad, descripción, fecha.
-- `config`: tabla de configuración clave-valor.
+Local database design with 4 main tables:
+- `users`: user with name, email, avatar, currency.
+- `accounts`: accounts with initial balance, icon, color.
+- `categories`: categories with name, icon, color, type (expense/income).
+- `transactions`: transactions with account, category, type, amount, description, date.
+- `config`: key-value configuration table.
 
-Incluye: 5 migraciones versionadas, índices en columnas frecuentemente consultadas, foreign keys con ON DELETE CASCADE, y datos seed de prueba.
+Includes: 5 versioned migrations, indexes on frequently queried columns, foreign keys with ON DELETE CASCADE, and seed test data.
 
-Especificación: spec/features/002-diseño-DB/.
+Spec: spec/features/002-db-design/.
 
-## 003-pagina-configuracion
-Estado: completado.
+## 003-settings-screen
+Status: completed.
 
-Pantalla de ajustes con 5 secciones:
-- Apariencia: tema Oscuro / Claro / Sistema con cambio en tiempo real.
-- Calendario: primer día de la semana (Lunes / Domingo).
-- Formato monetario: divisa (Euro / Dólar / Libra / Yen) y separador decimal (coma / punto).
-- Idioma: English / Español / Català con iconos de bandera.
-- Tamaño de texto: Pequeño / Mediano / Grande.
+Settings screen with 5 sections:
+- Appearance: Dark / Light / System theme with real-time switching.
+- Calendar: first day of the week (Monday / Sunday).
+- Currency format: currency (Euro / Dollar / Pound / Yen) and decimal separator (comma / dot).
+- Language: English / Español / Català with flag icons.
+- Text size: Small / Medium / Large.
 
-Config persistente en SQLite (nativo) o localStorage (web).
+Persistent config in SQLite (native) or localStorage (web).
 
-Especificación: spec/features/003-pagina-configuracion/.
+Spec: spec/features/003-settings-screen/.
 
-## 004-pagina-anadir-transaccion
-Estado: completado.
+## 004-add-transaction-screen
+Status: completed.
 
-Pantalla para añadir gasto/ingreso con:
-- Tabs Gastos/Ingresos.
-- Input de cantidad con validación y símbolo de divisa.
-- Selector de cuenta.
-- Grid de categorías (7 ítems + botón "Más").
-- Selector de día con 3 modos (Hoy / Ayer / Dinámico) + calendario.
-- Sección de etiquetas con búsqueda y creación.
-- Input de comentario con contador de caracteres (4096 máx.) y autocompletado.
-- Sección de foto (cámara/galería) — UI preparada, funcionalidad pendiente.
-- Botón "Añadir" con validación y texto de ayuda.
+Screen for adding expense/income with:
+- Expense/Income tabs.
+- Amount input with validation and currency symbol.
+- Account selector.
+- Category grid (7 items + "More" button).
+- Day selector with 3 modes (Today / Yesterday / Dynamic) + calendar.
+- Tags section with search and creation.
+- Comment input with character counter (4096 max) and autocomplete.
+- Photo section (camera/gallery) — UI ready, functionality pending.
+- "Add" button with validation and help text.
 
-Especificación: spec/features/004-pagina-anadir-transaccion/.
+Spec: spec/features/004-add-transaction-screen/.
 
-## 005-pagina-anadir-categoria
-Estado: completado.
+## 005-add-category-screen
+Status: completed.
 
-Pantalla para seleccionar categoría existente:
-- Grid 4×N de categorías filtradas por tipo (gasto/ingreso).
-- Barra de búsqueda con filtrado por caracteres contenidos (case-insensitive).
-- Estado vacío cuando no hay resultados.
-- Botón "Crear" al final del grid (navega a 006).
-- Selección de categoría y navegación de vuelta a Añadir Transacción.
+Screen for selecting an existing category:
+- 4×N grid of categories filtered by type (expense/income).
+- Search bar with substring filtering (case-insensitive).
+- Empty state when no results.
+- "Create" button at the end of the grid (navigates to 006).
+- Category selection and navigation back to Add Transaction.
 
-Especificación: spec/features/005-pagina-anadir-categoria/.
+Spec: spec/features/005-add-category-screen/.
 
-## 006-pagina-crear-categoria
-Estado: completado.
+## 006-create-category-screen
+Status: completed.
 
-Pantalla para crear categorías personalizadas:
-- Selección de icono de una rejilla de iconos disponibles.
-- Selección de color con 6 colores predefinidos + selector dinámico (reanimated-color-picker).
-- Campo de nombre con validación (no vacío, no duplicado).
-- Tipo de categoría (gasto/ingreso) heredado de la pantalla anterior.
-- Botón "Crear" que guarda en la base de datos y navega de vuelta.
+Screen for creating custom categories:
+- Icon selection from a grid of available icons.
+- Color selection with 6 predefined colors + dynamic picker (reanimated-color-picker).
+- Name field with validation (not empty, not duplicate).
+- Category type (expense/income) inherited from the previous screen.
+- "Create" button that saves to the database and navigates back.
 
-Especificación: spec/features/006-pagina-crear-categoria/.
+Spec: spec/features/006-create-category-screen/.
 
-## 007-calculadora
-Estado: completado.
+## 007-calculator
+Status: completed.
 
-Modal con calculadora básica para la pantalla de añadir transacción:
-- Teclado numérico con operaciones básicas (+, -, *, /).
-- Botón "=" para evaluar la expresión y mostrar el resultado.
-- Botones "Aceptar" y "Cancelar".
-- Al aceptar, pega el resultado en el campo de cantidad.
-- Componente reutilizable que puede usarse en otras pantallas.
+Basic calculator modal for the add transaction screen:
+- Numeric keypad with basic operations (+, -, *, /).
+- "=" button to evaluate the expression and show the result.
+- "Accept" and "Cancel" buttons.
+- On accept, pastes the result into the amount field.
+- Reusable component that can be used on other screens.
 
-Especificación: spec/features/007-calculadora/.
+Spec: spec/features/007-calculator/.
 
-## 008-pagina-categorias
-Estado: completado.
+## 008-categories-screen
+Status: completed.
 
-Pantalla accesible desde el Drawer que muestra todas las categorías existentes organizadas por tipo (gasto/ingreso) en un grid 4×N:
-- Tabs Gastos/Ingresos para filtrar por tipo.
-- Grid 4×N con icono + color + nombre por categoría.
-- Botón "Crear" en la última posición del grid (navega a 006).
-- Al pulsar una categoría, navega a modificar categoría (009).
+Screen accessible from the Drawer that shows all existing categories organized by type (expense/income) in a 4×N grid:
+- Expense/Income tabs to filter by type.
+- 4×N grid with icon + color + name per category.
+- "Create" button in the last grid position (navigates to 006).
+- Tapping a category navigates to modify category (009).
 
-Especificación: spec/features/008-pagina-categorias/.
+Spec: spec/features/008-categories-screen/.
 
-## 009-pagina-modificar-eliminar-categoria
-Estado: completado.
+## 009-modify-delete-category-screen
+Status: completed.
 
-Pantalla para modificar o eliminar una categoría existente:
-- Icono actual con color + input editable de nombre (validación de duplicados excluyendo la actual).
-- Grid de iconos con el actual preseleccionado.
-- Grid de colores con el actual preseleccionado + selector dinámico.
-- Botón "Eliminar" con doble modal: confirmación + selección de categoría de destino para reasignar transacciones.
-- Botón "Guardar" que persiste los cambios.
+Screen for modifying or deleting an existing category:
+- Current icon with color + editable name input (duplicate validation excluding the current one).
+- Icon grid with the current one preselected.
+- Color grid with the current one preselected + dynamic picker.
+- "Delete" button with double modal: confirmation + destination category selection to reassign transactions.
+- "Save" button that persists the changes.
 
-Especificación: spec/features/009-pagina-modificar-eliminar-categoria/.
+Spec: spec/features/009-modify-delete-category-screen/.
 
 ## 010-app-logo
-Estado: completado.
+Status: completed.
 
-Sustituir los iconos genéricos de Expo por el logotipo personalizado de Finly:
-- 6 archivos PNG en `assets/` para app icon, Android adaptive icon, favicon y splash screen.
-- Configuración en `app.json` con sección `expo.splash` (nativo) y referencias a assets.
-- Logo visible en el header del Drawer junto al texto "Finly".
+Replace generic Expo icons with the custom Finly logo:
+- 6 PNG files in `assets/` for app icon, Android adaptive icon, favicon, and splash screen.
+- Configuration in `app.json` with `expo.splash` section (native) and asset references.
+- Logo visible in the Drawer header next to the "Finly" text.
 
-Especificación: spec/features/010-app-logo/.
+Spec: spec/features/010-app-logo/.
 
-## 011-pagina-cuentas
-Estado: completado.
+## 011-accounts-screen
+Status: completed.
 
-Pantalla accesible desde el Drawer que muestra todas las cuentas con su saldo:
-- Header con menú hamburguesa + título "Cuentas" (multilingual).
-- Sección "Total:" con saldo total de todas las cuentas (verde/rojo).
-- Lista de cuentas con icono + nombre + saldo.
-- Botón flotante "+" (FAB) que navega a crear cuenta (013).
-- Al pulsar una cuenta, navega a modificar cuenta (012).
+Screen accessible from the Drawer that shows all accounts with their balance:
+- Header with hamburger menu + "Accounts" title (multilingual).
+- "Total:" section with total balance across all accounts (green/red).
+- Account list with icon + name + balance.
+- Floating "+" button (FAB) that navigates to create account (013).
+- Tapping an account navigates to modify account (012).
 
-Especificación: spec/features/011-pagina-cuentas/.
+Spec: spec/features/011-accounts-screen/.
 
-## 012-pagina-modificar-eliminar-cuenta
-Estado: completado.
+## 012-modify-delete-account-screen
+Status: completed.
 
-Pantalla para modificar o eliminar una cuenta existente:
-- Nombre editable con contador 0/30 y validación de vacío + duplicados.
-- Grid de iconos (~20 iconos financieros) con el actual preseleccionado.
-- Grid de colores con el actual preseleccionado + selector dinámico.
-- Campo "Nota" multilínea con límite 200 caracteres.
-- Botón "Eliminar" con borrado en cascada de transacciones.
-- Botón "Guardar" que persiste los cambios.
+Screen for modifying or deleting an existing account:
+- Editable name with 0/30 counter and empty + duplicate validation.
+- Icon grid (~20 financial icons) with the current one preselected.
+- Color grid with the current one preselected + dynamic picker.
+- "Note" multiline field with 200 character limit.
+- "Delete" button with cascading transaction deletion.
+- "Save" button that persists the changes.
 
-Especificación: spec/features/012-pagina-modificar-eliminar-cuenta/.
+Spec: spec/features/012-modify-delete-account-screen/.
 
-## 013-pagina-crear-cuenta
-Estado: completado.
+## 013-create-account-screen
+Status: completed.
 
-Pantalla para crear una nueva cuenta:
-- Nombre con validación (no vacío, no duplicado) y contador 0/30.
-- Grid de iconos (~20 iconos financieros) con fondo gris que cambia al color seleccionado.
-- Grid de colores con 6 predefinidos + selector dinámico.
-- Campo "Nota" multilínea opcional con límite 200 caracteres.
-- Botón "Crear" con validación (nombre + icono + color).
-- Al crear, `initial_balance` se establece a 0.
+Screen for creating a new account:
+- Name with validation (not empty, not duplicate) and 0/30 counter.
+- Icon grid (~20 financial icons) with gray background that changes to the selected color.
+- Color grid with 6 predefined colors + dynamic picker.
+- Optional "Note" multiline field with 200 character limit.
+- "Create" button with validation (name + icon + color).
+- On creation, `initial_balance` is set to 0.
 
-Especificación: spec/features/013-pagina-crear-cuenta/.
+Spec: spec/features/013-create-account-screen/.
 
-## 014-pagina-transacciones-por-pagina-inicial
-Estado: completado.
+## 014-transactions-screen-from-home
+Status: completed.
 
-Pantalla de lista de transacciones filtrada por categoría, cuenta y período, accesible desde la pantalla principal (HomeScreen) al pulsar una categoría del desglose:
-- Header del Stack navigator con título "Transacciones" (multilingual).
-- Sección de categoría: icono + nombre + total con color (verde/rojo) y prefijo (+/-).
-- Selector de cuenta con modal de selección (radio + icono + nombre + saldo).
-- Ordenación por fecha o cantidad con toggle ASC/DESC.
-- Lista agrupada por día con encabezado de fecha.
-- FAB "+" centrado para navegar a añadir transacción.
-- Se pasa categoryId, type, period, startDate, endDate como parámetros de navegación.
+Filtered transaction list screen by category, account, and period, accessible from the home screen (HomeScreen) by tapping a category in the breakdown:
+- Stack navigator header with "Transactions" title (multilingual).
+- Category section: icon + name + total with color (green/red) and prefix (+/-).
+- Account selector with selection modal (radio + icon + name + balance).
+- Sorting by date or amount with ASC/DESC toggle.
+- List grouped by day with date header.
+- Centered "+" FAB to navigate to add transaction.
+- Passes categoryId, type, period, startDate, endDate as navigation parameters.
 - Layout: SafeAreaView > View.container(flex:1) > [categoryInfo, controls, SectionList, FAB].
 
-Especificación: spec/features/014-pagina-transacciones-por-pagina-inicial/.
+Spec: spec/features/014-transactions-screen-from-home/.
 
-## 015-pagina-transacciones-por-menu-hamburguesa
-Estado: completado.
+## 015-all-transactions-screen
+Status: completed.
 
-Pantalla independiente `AllTransactionsScreen` accesible desde el menú hamburguesa (drawer) o el icono de estadísticas del HomeScreen, sin filtros de categoría ni período:
-- Header del Stack navigator con título "Todas las transacciones" (multilingual) e icono `list-outline`.
-- Selector de cuenta con saldo total del período (verde/rojo).
-- Ordenación por fecha o cantidad con toggle ASC/DESC.
-- Lista agrupada por día con encabezado de fecha.
-- FAB "+" centrado para navegar a añadir transacción.
-- Carga todas las transacciones desde `transactionRepository.list()` sin filtro de `account_id`.
+Independent `AllTransactionsScreen` accessible from the hamburger menu (drawer) or the stats icon on HomeScreen, without category or period filters:
+- Stack navigator header with "All transactions" title (multilingual) and `list-outline` icon.
+- Account selector with period total balance (green/red).
+- Sorting by date or amount with ASC/DESC toggle.
+- List grouped by day with date header.
+- Centered "+" FAB to navigate to add transaction.
+- Loads all transactions from `transactionRepository.list()` without `account_id` filter.
 - Layout: SafeAreaView > View.container(flex:1) > [controls, SectionList, FAB].
 
-Especificación: spec/features/015-pagina-transacciones-por-menu-hamburguesa/.
+Spec: spec/features/015-all-transactions-screen/.
 
-## 016-pagina-detalles-transaccion
-Estado: completado.
+## 016-transaction-details-screen
+Status: completed.
 
-Pantalla de detalles de una transacción individual, accesible al pulsar cualquier transacción en los listados (TransactionsScreen, AllTransactionsScreen):
-- Header con título "Detalles de la transacción" y botón de retroceso.
-- Ficha de datos con 5 filas: Cantidad (con color del tipo), Cuenta (icono + nombre), Categoría (icono + nombre), Fecha (formato largo multilingüe), Comentario (o "Sin comentario").
-- Botón "Eliminar" con modal de confirmación ("No" / "Sí") que borra y refresca el listado.
-- Botón "Editar" que navega a ModifyTransaction (017) para modificar la transacción.
-- Pie "Creado HH:mm dd MMM aaaa" con formato 24h y año siempre visible.
-- Refresco automático del listado al volver (useFocusEffect + refreshTrigger).
+Transaction details screen for an individual transaction, accessible by tapping any transaction in the lists (TransactionsScreen, AllTransactionsScreen):
+- Header with "Transaction details" title and back button.
+- Data card with 5 rows: Amount (with type color), Account (icon + name), Category (icon + name), Date (multilingual long format), Comment (or "No comment").
+- "Delete" button with confirmation modal ("No" / "Yes") that deletes and refreshes the list.
+- "Edit" button that navigates to ModifyTransaction (017) to edit the transaction.
+- Footer "Created HH:mm dd MMM yyyy" with 24h format and year always visible.
+- Automatic list refresh on return (useFocusEffect + refreshTrigger).
 
-Especificación: spec/features/016-pagina-detalles-transaccion/.
+Spec: spec/features/016-transaction-details-screen/.
 
-## 017-pagina-modificar-transaccion
-Estado: completado.
+## 017-modify-transaction-screen
+Status: completed.
 
-Pantalla para modificar una transacción existente, accesible desde el botón "Editar" de TransactionDetailsScreen:
-- Tabs Gastos/Ingresos precargados con el tipo actual.
-- Input de cantidad precargado con el valor actual, con validación y calculadora.
-- Selector de cuenta precargado.
-- Grid de categorías con la categoría actual en la primera posición + botón "Más".
-- Selector de día precargado con la fecha de la transacción.
-- Sección de etiquetas (TODO persistencia).
-- Input de comentario precargado con el texto actual y autocompletado.
-- Sección de foto (UI únicamente, TODO).
-- Botón "Guardar" con validación que actualiza la transacción.
-- Refresco automático del listado al volver.
+Screen for modifying an existing transaction, accessible from the "Edit" button on TransactionDetailsScreen:
+- Expense/Income tabs preloaded with the current type.
+- Amount input preloaded with the current value, with validation and calculator.
+- Account selector preloaded.
+- Category grid with the current category in the first position + "More" button.
+- Day selector preloaded with the transaction date.
+- Tags section (TODO persistence).
+- Comment input preloaded with the current text and autocomplete.
+- Photo section (UI only, TODO).
+- "Save" button with validation that updates the transaction.
+- Automatic list refresh on return.
 
-Especificación: spec/features/017-pagina-modificar-transaccion/.
+Spec: spec/features/017-modify-transaction-screen/.

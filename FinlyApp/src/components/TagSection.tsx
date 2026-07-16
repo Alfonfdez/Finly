@@ -14,7 +14,7 @@ interface Props {
   tags: Tag[];
   selectedTags: number[];
   onToggle: (id: number) => void;
-  onCreate: (nombre: string) => void;
+  onCreate: (name: string) => void;
 }
 
 export default function TagSection({ tags, selectedTags, onToggle, onCreate }: Props) {
