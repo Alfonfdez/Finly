@@ -149,7 +149,7 @@ export const ca: Language = {
   create_cat_color_picker_ok: 'D\'acord',
   create_cat_color_picker_cancel: 'Cancel·lar',
 
-  // Categories (mock data - multilingual)
+  // Categories (default - multilingual)
   cat_salary: 'Nómina',
   cat_freelance: 'Freelance',
   cat_food: 'Alimentació',

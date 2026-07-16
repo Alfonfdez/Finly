@@ -15,11 +15,6 @@ function setStore<T>(key: string, data: T[]): void {
   localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(data));
 }
 
-function removeStore(key: string): void {
-  if (typeof localStorage === 'undefined') return;
-  localStorage.removeItem(STORAGE_PREFIX + key);
-}
-
 function nextId<T extends { id: number }>(items: T[]): number {
   return items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
 }
@@ -37,53 +32,34 @@ export async function initWebStorage(): Promise<void> {
 }
 
 function seedWebData(): void {
-  const users: User[] = [{ id: 1, name: 'Demo User', email: null, avatar: null, currency: '€', created_at: now() }];
+  const users: User[] = [{ id: 1, name: 'User', email: null, avatar: null, currency: '€', created_at: now() }];
   const accounts: Account[] = [
-    { id: 1, user_id: 1, name: 'Cash', initial_balance: 0, icon: 'wallet-outline', color: '#22D3EE', created_at: now() },
-    { id: 2, user_id: 1, name: 'Bank', initial_balance: 0, icon: 'business-outline', color: '#A78BFA', created_at: now() },
-    { id: 3, user_id: 1, name: 'Savings', initial_balance: 0, icon: 'cash-outline', color: '#34D399', created_at: now() },
+    { id: 1, user_id: 1, name: 'My Wallet', initial_balance: 0, icon: 'wallet-outline', color: '#22D3EE', created_at: now() },
   ];
   const categories: Category[] = [
     { id: 1, user_id: 1, name: 'Salary', icon: 'briefcase-outline', color: '#22D3EE', type: 'income', created_at: now() },
     { id: 2, user_id: 1, name: 'Freelance', icon: 'code-slash-outline', color: '#A78BFA', type: 'income', created_at: now() },
-    { id: 3, user_id: 1, name: 'Food', icon: 'cart-outline', color: '#F87171', type: 'expense', created_at: now() },
-    { id: 4, user_id: 1, name: 'Transport', icon: 'bus-outline', color: '#FBBF24', type: 'expense', created_at: now() },
-    { id: 5, user_id: 1, name: 'Leisure', icon: 'musical-notes-outline', color: '#F472B6', type: 'expense', created_at: now() },
-    { id: 6, user_id: 1, name: 'Housing', icon: 'home-outline', color: '#60A5FA', type: 'expense', created_at: now() },
-    { id: 7, user_id: 1, name: 'Health', icon: 'heart-outline', color: '#34D399', type: 'expense', created_at: now() },
-    { id: 8, user_id: 1, name: 'Investments', icon: 'trending-up-outline', color: '#A78BFA', type: 'income', created_at: now() },
-    { id: 9, user_id: 1, name: 'Travel', icon: 'airplane-outline', color: '#38BDF8', type: 'expense', created_at: now() },
-    { id: 10, user_id: 1, name: 'Videogame', icon: 'game-controller-outline', color: '#A78BFA', type: 'expense', created_at: now() },
-    { id: 11, user_id: 1, name: 'Game', icon: 'dice-outline', color: '#FB923C', type: 'expense', created_at: now() },
-    { id: 12, user_id: 1, name: 'Restaurant', icon: 'restaurant-outline', color: '#F87171', type: 'expense', created_at: now() },
-    { id: 13, user_id: 1, name: 'Education', icon: 'school-outline', color: '#34D399', type: 'expense', created_at: now() },
-    { id: 14, user_id: 1, name: 'Family', icon: 'people-outline', color: '#F472B6', type: 'expense', created_at: now() },
-    { id: 15, user_id: 1, name: 'Shopping', icon: 'bag-outline', color: '#FBBF24', type: 'expense', created_at: now() },
-    { id: 16, user_id: 1, name: 'Clothing', icon: 'shirt-outline', color: '#C084FC', type: 'expense', created_at: now() },
-    { id: 17, user_id: 1, name: 'Exercise', icon: 'fitness-outline', color: '#22D3EE', type: 'expense', created_at: now() },
+    { id: 3, user_id: 1, name: 'Investments', icon: 'trending-up-outline', color: '#34D399', type: 'income', created_at: now() },
+    { id: 4, user_id: 1, name: 'Gift', icon: 'gift-outline', color: '#FB7185', type: 'income', created_at: now() },
+    { id: 5, user_id: 1, name: 'Other', icon: 'ellipsis-horizontal-outline', color: '#94A3B8', type: 'income', created_at: now() },
+    { id: 6, user_id: 1, name: 'Food', icon: 'cart-outline', color: '#F87171', type: 'expense', created_at: now() },
+    { id: 7, user_id: 1, name: 'Transport', icon: 'bus-outline', color: '#FBBF24', type: 'expense', created_at: now() },
+    { id: 8, user_id: 1, name: 'Leisure', icon: 'musical-notes-outline', color: '#F472B6', type: 'expense', created_at: now() },
+    { id: 9, user_id: 1, name: 'Housing', icon: 'home-outline', color: '#60A5FA', type: 'expense', created_at: now() },
+    { id: 10, user_id: 1, name: 'Health', icon: 'heart-outline', color: '#34D399', type: 'expense', created_at: now() },
+    { id: 11, user_id: 1, name: 'Travel', icon: 'airplane-outline', color: '#38BDF8', type: 'expense', created_at: now() },
+    { id: 12, user_id: 1, name: 'Education', icon: 'school-outline', color: '#34D399', type: 'expense', created_at: now() },
+    { id: 13, user_id: 1, name: 'Family', icon: 'people-outline', color: '#F472B6', type: 'expense', created_at: now() },
+    { id: 14, user_id: 1, name: 'Shopping', icon: 'bag-outline', color: '#FBBF24', type: 'expense', created_at: now() },
+    { id: 15, user_id: 1, name: 'Clothing', icon: 'shirt-outline', color: '#C084FC', type: 'expense', created_at: now() },
+    { id: 16, user_id: 1, name: 'Exercise', icon: 'fitness-outline', color: '#22D3EE', type: 'expense', created_at: now() },
+    { id: 17, user_id: 1, name: 'Entertainment', icon: 'film-outline', color: '#E879F9', type: 'expense', created_at: now() },
     { id: 18, user_id: 1, name: 'Others', icon: 'ellipsis-horizontal-outline', color: '#94A3B8', type: 'expense', created_at: now() },
-    { id: 19, user_id: 1, name: 'Entertainment', icon: 'film-outline', color: '#E879F9', type: 'expense', created_at: now() },
-    { id: 20, user_id: 1, name: 'Gifts', icon: 'gift-outline', color: '#FB7185', type: 'expense', created_at: now() },
-    { id: 21, user_id: 1, name: 'Gift', icon: 'gift-outline', color: '#FB7185', type: 'income', created_at: now() },
-    { id: 22, user_id: 1, name: 'Other', icon: 'ellipsis-horizontal-outline', color: '#94A3B8', type: 'income', created_at: now() },
-    { id: 23, user_id: 1, name: 'Interests', icon: 'wallet-outline', color: '#4ADE80', type: 'income', created_at: now() },
-  ];
-  const transactions: Transaction[] = [
-    { id: 1, account_id: 1, category_id: 1, type: 'income', amount: 2100.00, description: 'July Salary', date: '2026-07-01 00:00:00', created_at: now() },
-    { id: 2, account_id: 1, category_id: 2, type: 'income', amount: 500.00, description: 'Web project', date: '2026-07-05 00:00:00', created_at: now() },
-    { id: 3, account_id: 2, category_id: 3, type: 'expense', amount: 85.50, description: 'Weekly groceries', date: '2026-07-03 00:00:00', created_at: now() },
-    { id: 4, account_id: 2, category_id: 4, type: 'expense', amount: 30.00, description: 'Gasoline', date: '2026-07-04 00:00:00', created_at: now() },
-    { id: 5, account_id: 1, category_id: 5, type: 'expense', amount: 45.00, description: 'Cinema', date: '2026-07-06 00:00:00', created_at: now() },
-    { id: 6, account_id: 2, category_id: 6, type: 'expense', amount: 650.00, description: 'July Rent', date: '2026-07-01 00:00:00', created_at: now() },
-    { id: 7, account_id: 1, category_id: 3, type: 'expense', amount: 42.30, description: 'Restaurant', date: '2026-07-07 00:00:00', created_at: now() },
-    { id: 8, account_id: 2, category_id: 7, type: 'expense', amount: 25.00, description: 'Pharmacy', date: '2026-07-08 00:00:00', created_at: now() },
-    { id: 9, account_id: 3, category_id: 8, type: 'income', amount: 200.00, description: 'Dividends', date: '2026-07-10 00:00:00', created_at: now() },
-    { id: 10, account_id: 1, category_id: 5, type: 'expense', amount: 12.50, description: 'Coffee shop', date: '2026-07-10 00:00:00', created_at: now() },
   ];
   setStore('users', users);
   setStore('accounts', accounts);
   setStore('categories', categories);
-  setStore('transactions', transactions);
+  setStore('transactions', []);
 }
 
 // --- Repositories (web) ---
@@ -263,7 +239,7 @@ const CONFIG_DEFAULTS: Config = {
   firstDayOfWeek: 1,
   currency: '€',
   decimalSeparator: ',',
-  language: 'es',
+  language: 'en',
   textSize: 'medium',
   categoryIconShape: 'square',
   accountIconShape: 'square',

@@ -13,7 +13,7 @@ export async function migrate003(db: SQLiteDatabase): Promise<void> {
     ['first_day_of_week', '1'],
     ['currency', '€'],
     ['decimal_separator', ','],
-    ['language', 'es'],
+    ['language', 'en'],
     ['text_size', 'medium'],
   ];
 

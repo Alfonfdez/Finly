@@ -4,8 +4,7 @@
 - **React Native** (Expo managed workflow, SDK 54) — main framework for iOS and Android.
 - **TypeScript** — static typing for the codebase.
 - **React Navigation** (native-stack + drawer) — screen navigation.
-- **SQLite** (expo-sqlite) — local persistence on native. `DATABASE_VERSION = 6`.
-- **localStorage** — local persistence on web (same interfaces as SQLite).
+- **SQLite** (expo-sqlite) — local persistence on native. `DATABASE_VERSION = 3`.
 - **@expo/vector-icons** (Ionicons) — icon library used throughout the app.
 - **react-native-svg** — custom donut chart and bar chart.
 - **reanimated-color-picker** — dynamic color picker (CreateCategoryScreen).
@@ -84,17 +83,14 @@ FinlyApp/
 |   |   +-- ConfigContext.tsx        <- user preferences (theme, currency, language)
 |   |
 |   +-- database/
-|   |   +-- database.ts             <- SQLite initialization + migrations (DATABASE_VERSION = 6)
+|   |   +-- database.ts             <- SQLite initialization + migrations (DATABASE_VERSION = 3)
 |   |   +-- types.ts                <- TypeScript entity interfaces
 |   |   +-- index.ts                <- platform switching (SQLite vs localStorage)
 |   |   +-- webStorage.ts           <- localStorage fallback for web
 |   |   +-- migrations/
 |   |   |   +-- 001_initial.ts      <- CREATE TABLE + indexes
-|   |   |   +-- 002_seed.ts         <- initial test data
+|   |   |   +-- 002_seed.ts         <- default user, 1 account, categories
 |   |   |   +-- 003_config.ts       <- config table + default values
-|   |   |   +-- 004_new_categories.ts <- additional categories
-|   |   |   +-- 005_english_schema.ts <- migration to English column names
-|   |   |   +-- 006_account_description.ts <- description field in accounts
 |   |   +-- repositories/
 |   |       +-- userRepo.ts         <- user CRUD
 |   |       +-- accountRepo.ts      <- account CRUD + balance calculation
@@ -118,9 +114,6 @@ FinlyApp/
 |   |   +-- types.ts                <- shared types (Period, TransactionType, RootStackParamList)
 |   |   +-- platformStyles.ts       <- platform-specific styles
 |   |   +-- accountIcons.ts         <- available account icons list
-|   |
-|   +-- data/
-|   |   +-- mockData.ts             <- mock data (legacy, not used at runtime)
 |   |
 |   +-- utils/
 |       +-- formatters.ts           <- format currency, dates, etc.
