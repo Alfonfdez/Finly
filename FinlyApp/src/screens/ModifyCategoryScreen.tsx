@@ -10,7 +10,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t, getDisplayCategoryName } from '../i18n';
+import { t, getDisplayCategoryName, getDefaultEnglishName } from '../i18n';
 import { categoryRepository, transactionRepository } from '../database';
 import { RootStackParamList } from '../constants/types';
 import { CATEGORY_ICONS } from '../components/IconGrid';
@@ -52,6 +52,7 @@ export default function ModifyCategoryScreen() {
   const [customColor, setCustomColor] = useState<string | null>(null);
   const [checkingName, setCheckingName] = useState(false);
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
+  const userEditedRef = useRef(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectModalVisible, setSelectModalVisible] = useState(false);
   const [targetCategoryId, setTargetCategoryId] = useState<number | null>(null);
@@ -66,6 +67,7 @@ export default function ModifyCategoryScreen() {
       if (!QUICK_COLORS.includes(category.color)) {
         setCustomColor(category.color);
       }
+      userEditedRef.current = false;
     }
   }, [category]);
 
@@ -87,6 +89,7 @@ export default function ModifyCategoryScreen() {
   }, [categoryId, labels.create_cat_error_name_duplicate]);
 
   const handleNameChange = (value: string) => {
+    userEditedRef.current = true;
     setName(value);
     setNameError(null);
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -117,9 +120,11 @@ export default function ModifyCategoryScreen() {
 
   const handleSave = async () => {
     if (!canSave || !category) return;
+    const defaultName = getDefaultEnglishName(category.id);
+    const finalName = !userEditedRef.current && defaultName ? defaultName : name.trim();
     try {
       await categoryRepository.update(categoryId, {
-        name: name.trim(),
+        name: finalName,
         icon: selectedIcon!,
         color: selectedColor!,
       });
