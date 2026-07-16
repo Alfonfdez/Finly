@@ -14,7 +14,7 @@ export function t(): Language {
   return currentLanguage;
 }
 
-// Map category IDs to i18n keys for mock categories
+// Map category IDs to i18n keys for default categories
 const CATEGORY_I18N_KEYS: Record<number, keyof Language> = {
   1: 'cat_salary',
   2: 'cat_freelance',

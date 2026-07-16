@@ -1056,3 +1056,36 @@
 
 [2026-07-16] ~ | 10 files: src/context/AppContext.tsx, src/components/CategoryGrid.tsx, src/components/TransactionGroup.tsx, src/screens/AddCategoryScreen.tsx, src/screens/CategoriesScreen.tsx, src/screens/TransactionDetailsScreen.tsx, src/screens/TransactionsScreen.tsx, src/screens/ModifyCategoryScreen.tsx
 - Replaced all `getCategoryName(cat.id) || cat.name` fallback pattern with `getDisplayCategoryName(cat)` across the entire codebase. Fixes the bug where custom-renamed default categories still showed the translated i18n name in category grids, transaction lists, and detail screens.
+
+[2026-07-16] ~ | 7 files: src/components/AccountSelector.tsx, src/components/AccountModal.tsx, src/components/CategoryGrid.tsx, src/components/TagSection.tsx, src/screens/AccountsScreen.tsx, src/context/AppContext.tsx, src/database/webStorage.ts
+- Translated remaining Spanish variable names to English: `saldo` → `balance`, `nombre` → `categoryName`/`name`, `ahora` → `now`, `actual` → `current`.
+
+[2026-07-16] ~ | src/database/migrations/001_initial.ts
+- Added `description TEXT DEFAULT ''` column to accounts table (absorbed from deleted migration 006).
+
+[2026-07-16] - | src/database/migrations/005_english_schema.ts
+- Deleted. Contained redundant table creation (duplicated 001) and Spanish-to-English data migration logic no longer needed.
+
+[2026-07-16] - | src/database/migrations/006_account_description.ts
+- Deleted. Description column merged into 001_initial.ts.
+
+[2026-07-16] ~ | src/database/database.ts
+- Removed imports and calls for migrations 005 and 006. Removed startup icon fixups. Set `DATABASE_VERSION = 4`.
+
+[2026-07-16] ~ | src/database/webStorage.ts
+- Removed `migrateWebStorage()` (Spanish localStorage key migration) and `migrateWebCategories()` (icon fixups). Simplified `initWebStorage()` to only seed data on first load.
+
+[2026-07-16] ~ | src/database/migrations/002_seed.ts
+- Cleaned seed data for production: 1 user ("User"), 1 account ("My Wallet", €0), 18 universal categories (5 income + 13 expense). Removed all 10 mock transactions and 2 test accounts (Bank, Savings).
+
+[2026-07-16] ~ | src/database/webStorage.ts
+- Cleaned seed data to match 002_seed.ts: 1 account ("My Wallet"), 18 categories, 0 transactions. Removed mock transactions and duplicate accounts.
+
+[2026-07-16] - | src/database/migrations/004_new_categories.ts
+- Deleted. Categories now consolidated in 002_seed.ts.
+
+[2026-07-16] - | src/data/mockData.ts
+- Deleted. Legacy mock data file (mockAccounts, mockCategories, mockTransactions) never imported anywhere.
+
+[2026-07-16] ~ | src/database/migrations/003_config.ts, src/database/repositories/configRepo.ts, src/database/webStorage.ts
+- Changed default language from 'es' (Spanish) to 'en' (English) in config defaults.

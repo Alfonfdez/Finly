@@ -149,7 +149,7 @@ export const es: Language = {
   create_cat_color_picker_ok: 'Ok',
   create_cat_color_picker_cancel: 'Cancelar',
 
-  // Categories (mock data - multilingual)
+  // Categories (default - multilingual)
   cat_salary: 'Nómina',
   cat_freelance: 'Freelance',
   cat_food: 'Alimentación',
