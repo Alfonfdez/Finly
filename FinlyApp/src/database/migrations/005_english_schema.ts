@@ -4,7 +4,7 @@ export async function migrate005(db: SQLiteDatabase) {
   await db.withTransactionAsync(async () => {
     // Create new tables with English names and column names
     await db.execAsync(`
-      CREATE TABLE users (
+      CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         email TEXT,
@@ -13,7 +13,7 @@ export async function migrate005(db: SQLiteDatabase) {
         created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
       );
 
-      CREATE TABLE accounts (
+      CREATE TABLE IF NOT EXISTS accounts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         name TEXT NOT NULL,
@@ -24,7 +24,7 @@ export async function migrate005(db: SQLiteDatabase) {
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       );
 
-      CREATE TABLE categories (
+      CREATE TABLE IF NOT EXISTS categories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         name TEXT NOT NULL,
@@ -35,7 +35,7 @@ export async function migrate005(db: SQLiteDatabase) {
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       );
 
-      CREATE TABLE transactions (
+      CREATE TABLE IF NOT EXISTS transactions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         account_id INTEGER NOT NULL,
         category_id INTEGER NOT NULL,
@@ -48,77 +48,81 @@ export async function migrate005(db: SQLiteDatabase) {
         FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
       );
 
-      CREATE TABLE config (
+      CREATE TABLE IF NOT EXISTS config (
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL
       );
     `);
 
-    // Migrate data from old tables to new tables
-    await db.runAsync(
-      `INSERT INTO users (id, name, email, avatar, currency, created_at)
-       SELECT id, nombre, email, avatar, moneda, created_at FROM usuarios`
+    // Migrate data from old Spanish tables only if they exist (upgrade path)
+    const oldTable = await db.getFirstAsync<{ name: string }>(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='usuarios'"
     );
 
-    await db.runAsync(
-      `INSERT INTO accounts (id, user_id, name, initial_balance, icon, color, created_at)
-       SELECT id, usuario_id, nombre, saldo_inicial, icono, color, created_at FROM cuentas`
-    );
+    if (oldTable) {
+      await db.runAsync(
+        `INSERT INTO users (id, name, email, avatar, currency, created_at)
+         SELECT id, nombre, email, avatar, moneda, created_at FROM usuarios`
+      );
 
-    await db.runAsync(
-      `INSERT INTO categories (id, user_id, name, icon, color, type, created_at)
-       SELECT id, usuario_id, nombre, icono, color,
-         CASE tipo WHEN 'gasto' THEN 'expense' WHEN 'ingreso' THEN 'income' ELSE tipo END,
-         created_at
-       FROM categorias`
-    );
+      await db.runAsync(
+        `INSERT INTO accounts (id, user_id, name, initial_balance, icon, color, created_at)
+         SELECT id, usuario_id, nombre, saldo_inicial, icono, color, created_at FROM cuentas`
+      );
 
-    await db.runAsync(
-      `INSERT INTO transactions (id, account_id, category_id, type, amount, description, date, created_at)
-       SELECT id, cuenta_id, categoria_id,
-         CASE tipo WHEN 'gasto' THEN 'expense' WHEN 'ingreso' THEN 'income' ELSE tipo END,
-         cantidad, descripcion, fecha, created_at
-       FROM transacciones`
-    );
+      await db.runAsync(
+        `INSERT INTO categories (id, user_id, name, icon, color, type, created_at)
+         SELECT id, usuario_id, nombre, icono, color,
+           CASE tipo WHEN 'gasto' THEN 'expense' WHEN 'ingreso' THEN 'income' ELSE tipo END,
+           created_at
+         FROM categorias`
+      );
 
-    // Migrate config with key and value transformations
-    await db.runAsync(
-      `INSERT INTO config (key, value)
-       SELECT
-         CASE clave
-           WHEN 'tema' THEN 'theme'
-           WHEN 'divisa' THEN 'currency'
-           WHEN 'separadorDecimal' THEN 'decimal_separator'
-           WHEN 'idioma' THEN 'language'
-           WHEN 'tamanoTexto' THEN 'text_size'
-           ELSE clave
-         END,
-         CASE
-           WHEN clave = 'tema' AND valor IN ('oscuro', 'claro', 'sistema') THEN
-             CASE valor
-               WHEN 'oscuro' THEN 'dark'
-               WHEN 'claro' THEN 'light'
-               WHEN 'sistema' THEN 'system'
-             END
-           WHEN clave = 'tamanoTexto' AND valor IN ('pequeño', 'mediano', 'grande') THEN
-             CASE valor
-               WHEN 'pequeño' THEN 'small'
-               WHEN 'mediano' THEN 'medium'
-               WHEN 'grande' THEN 'large'
-             END
-           ELSE valor
-         END
-       FROM configuracion`
-    );
+      await db.runAsync(
+        `INSERT INTO transactions (id, account_id, category_id, type, amount, description, date, created_at)
+         SELECT id, cuenta_id, categoria_id,
+           CASE tipo WHEN 'gasto' THEN 'expense' WHEN 'ingreso' THEN 'income' ELSE tipo END,
+           cantidad, descripcion, fecha, created_at
+         FROM transacciones`
+      );
 
-    // Drop old tables
-    await db.execAsync(`
-      DROP TABLE IF EXISTS transacciones;
-      DROP TABLE IF EXISTS categorias;
-      DROP TABLE IF EXISTS cuentas;
-      DROP TABLE IF EXISTS usuarios;
-      DROP TABLE IF EXISTS configuracion;
-    `);
+      await db.runAsync(
+        `INSERT INTO config (key, value)
+         SELECT
+           CASE clave
+             WHEN 'tema' THEN 'theme'
+             WHEN 'divisa' THEN 'currency'
+             WHEN 'separadorDecimal' THEN 'decimal_separator'
+             WHEN 'idioma' THEN 'language'
+             WHEN 'tamanoTexto' THEN 'text_size'
+             ELSE clave
+           END,
+           CASE
+             WHEN clave = 'tema' AND valor IN ('oscuro', 'claro', 'sistema') THEN
+               CASE valor
+                 WHEN 'oscuro' THEN 'dark'
+                 WHEN 'claro' THEN 'light'
+                 WHEN 'sistema' THEN 'system'
+               END
+             WHEN clave = 'tamanoTexto' AND valor IN ('pequeño', 'mediano', 'grande') THEN
+               CASE valor
+                 WHEN 'pequeño' THEN 'small'
+                 WHEN 'mediano' THEN 'medium'
+                 WHEN 'grande' THEN 'large'
+               END
+             ELSE valor
+           END
+         FROM configuracion`
+      );
+
+      await db.execAsync(`
+        DROP TABLE IF EXISTS transacciones;
+        DROP TABLE IF EXISTS categorias;
+        DROP TABLE IF EXISTS cuentas;
+        DROP TABLE IF EXISTS usuarios;
+        DROP TABLE IF EXISTS configuracion;
+      `);
+    }
 
     // Create indexes on new tables
     await db.execAsync(`

@@ -103,6 +103,7 @@ export default function App() {
     return (
       <View style={styles.error}>
         <StatusBar style="light" />
+        <Text style={{ color: 'white', padding: 20 }}>{dbError}</Text>
       </View>
     );
   }

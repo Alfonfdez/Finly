@@ -1021,3 +1021,13 @@
 - Corregido `@types/react` de `~19.2.2` a `~19.1.10` (versión esperada por SDK 54).
 - Corregido `typescript` de `~6.0.3` a `~5.9.2` (versión esperada por SDK 54).
 - Regenerado `package-lock.json` con npm 10.x para compatibilidad con EAS Build.
+
+[2026-07-16] ~ | src/database/migrations/002_seed.ts
+- Cambiado `INSERT` a `INSERT OR IGNORE` en todas las sentencias de seed (users, accounts, categories, transactions) para evitar errores de UNIQUE constraint al reinstalar la APK sin limpiar la base de datos.
+
+[2026-07-16] ~ | src/database/migrations/005_english_schema.ts
+- Añadido `IF NOT EXISTS` a todas las sentencias `CREATE TABLE` para evitar "table already exists" en instalaciones frescas (las tablas ya se crean en migration 001).
+- Añadido guardia que comprueba si la tabla `usuarios` (española) existe antes de ejecutar la migración de datos. En instalaciones frescas, las tablas antiguas no existen y la migración de datos se omite correctamente.
+
+[2026-07-16] ~ | App.tsx
+- Añadido texto de error visible en la pantalla de error de base de datos (`dbError`) para facilitar el debug en APK.
