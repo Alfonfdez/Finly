@@ -243,3 +243,39 @@ Screen for modifying an existing transaction, accessible from the "Edit" button 
 - Automatic list refresh on return.
 
 Spec: spec/features/017-modify-transaction-screen/.
+
+## 018-tag-management
+Status: pending.
+
+Tag management with database persistence:
+- `tags` table and `transaction_tags` junction table (migration 004).
+- Tag repository CRUD (native SQLite / web localStorage).
+- Tags screen accessible from the Drawer with tag list + FAB.
+- Create tag screen with name validation (empty, duplicate, max 20 chars).
+- Modify/delete tag screen with name edit and delete confirmation.
+
+Spec: spec/features/018-tag-management/.
+
+## 019-tag-transactions
+Status: pending.
+
+Persistent tags in Add/ModifyTransaction screens:
+- Replace hardcoded tag UI with tags from the database.
+- TagSection loads tags from AppContext, supports inline creation.
+- Selected tags saved to `transaction_tags` junction table.
+- ModifyTransaction pre-loads existing tags for the transaction.
+- createWithTags, updateWithTags, getTagsByTransactionId repository methods.
+
+Spec: spec/features/019-tag-transactions/.
+
+## 020-tag-home-filter
+Status: pending.
+
+Tag filter on HomeScreen:
+- Horizontal tag filter bar below PeriodTabs (All + tag chips).
+- Per-category expandable tag breakdown (3 visible + "View all (N)").
+- Tag filtering updates chart and category totals.
+- Tag breakdown queries (breakdownByCategoryAndTag).
+- Works across all periods and both expense/income types.
+
+Spec: spec/features/020-tag-home-filter/.

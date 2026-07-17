@@ -1113,3 +1113,18 @@
 
 [2026-07-17] ~ | AGENTS.md
 - Added rule: agent always suggests a branch name for each implementation.
+
+[2026-07-17] + | spec/features/018-tag-management/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Created complete spec for tag management: database schema (tags + transaction_tags tables), tag repository CRUD, Tags screen (Drawer), CreateTag screen, ModifyTag/delete screen with confirmation.
+- 14 tasks in 4 phases.
+
+[2026-07-17] + | spec/features/019-tag-transactions/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Created complete spec for persistent tag selection in Add/ModifyTransaction: replace hardcoded TagSection with DB tags, inline creation, createWithTags/updateWithTags/getTagsByTransactionId repository methods.
+- 7 tasks in 2 phases.
+
+[2026-07-17] + | spec/features/020-tag-home-filter/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Created complete spec for HomeScreen tag filter: horizontal tag filter bar, per-category expandable tag breakdown (3 visible + "View all (N)"), tag filtering on chart and category totals, breakdownByCategoryAndTag queries.
+- 9 tasks in 3 phases.
+
+[2026-07-17] ~ | spec/constitution/3-roadmap.md
+- Added 018-tag-management, 019-tag-transactions, 020-tag-home-filter with pending status.
