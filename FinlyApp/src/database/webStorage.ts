@@ -156,8 +156,9 @@ export const webCategoryRepo = {
   },
   async existsByName(name: string, excludeId?: number): Promise<boolean> {
     const items = getStore<Category>('categories');
+    const lower = name.toLowerCase();
     return items.some(c => {
-      if (c.name !== name) return false;
+      if (c.name.toLowerCase() !== lower) return false;
       if (excludeId !== undefined && c.id === excludeId) return false;
       return true;
     });

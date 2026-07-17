@@ -20,7 +20,7 @@ const CONFIG_DEFAULT: Config = {
   firstDayOfWeek: 1,
   currency: '€',
   decimalSeparator: ',',
-  language: 'es',
+  language: 'en',
   textSize: 'medium',
   categoryIconShape: 'square',
   accountIconShape: 'square',

@@ -14,27 +14,26 @@ interface Props {
   onTransactionPress?: (transactionId: number) => void;
 }
 
-function formatDateHeader(dateStr: string, lang: string): string {
+function formatDateHeader(dateStr: string): string {
   const d = new Date(dateStr);
   const day = d.getDate();
-  const month = getMonthName(d.getMonth() + 1);
+  const month = getMonthName(d.getMonth() + 1).toLowerCase();
   const year = d.getFullYear();
   const currentYear = new Date().getFullYear();
   if (year === currentYear) {
-    return `${day} ${month.toLowerCase()} ${year}`;
+    return `${day} ${month}`;
   }
-  return `${day} ${month.toLowerCase()} ${year}`;
+  return `${day} ${month} ${year}`;
 }
 
 export default function TransactionGroup({ date, transactions, categories, onTransactionPress }: Props) {
   const { config, activeColors: c } = useConfig();
   const fs = useFontSize();
-  const lang = config.language;
 
   return (
     <View style={styles.group}>
       <Text style={[styles.dateHeader, { color: c.textSecondary, fontSize: fs(13) }]}>
-        {formatDateHeader(date, lang)}
+        {formatDateHeader(date)}
       </Text>
       {transactions.map((tx) => {
         const cat = categories.find(ct => ct.id === tx.category_id);
