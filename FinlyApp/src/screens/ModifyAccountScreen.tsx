@@ -11,7 +11,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import { accountRepository, transactionRepository } from '../database';
+import { accountRepository } from '../database';
 import { Account } from '../database/types';
 import { RootStackParamList } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
@@ -137,7 +137,6 @@ export default function ModifyAccountScreen() {
 
   const handleDeleteConfirm = async () => {
     try {
-      await transactionRepository.deleteByAccountId(accountId);
       await accountRepository.delete(accountId);
       await refreshAccounts();
       navigation.goBack();

@@ -24,6 +24,7 @@
 - `develop` — active development branch
 - Feature branches: `feature/NNN-description` off `develop`, merge back via PR
 - Never commit directly to `main`
+- The agent always suggests a branch name for each implementation (e.g., `fix/db-cleanup-bugs`, `feature/018-transactions-filter`)
 
 ## COMMIT CONVENTION
 Conventional Commits format:

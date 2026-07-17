@@ -52,7 +52,7 @@ export const categoryRepo = {
 
   async existsByName(name: string, excludeId?: number): Promise<boolean> {
     const db = getDatabase();
-    let sql = `SELECT COUNT(*) as count FROM categories WHERE name = ?`;
+    let sql = `SELECT COUNT(*) as count FROM categories WHERE LOWER(name) = LOWER(?)`;
     const params: (string | number)[] = [name];
     if (excludeId !== undefined) {
       sql += ` AND id != ?`;

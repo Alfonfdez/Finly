@@ -1098,3 +1098,18 @@
 
 [2026-07-16] ~ | src/i18n/en.ts, src/i18n/es.ts, src/i18n/ca.ts
 - Removed stale category translations: cat_videogame, cat_game, cat_restaurant, cat_gifts, cat_interests.
+
+[2026-07-17] ~ | src/context/ConfigContext.tsx
+- Fix: changed default language from 'es' to 'en' to match configRepo, 003_config and webStorage defaults.
+
+[2026-07-17] ~ | src/database/repositories/categoryRepo.ts, src/database/webStorage.ts
+- Fix: made existsByName case-insensitive (LOWER(name) = LOWER(?)) to match accountRepo behavior. Prevents duplicate category names with different casing (e.g., "Food" vs "food").
+
+[2026-07-17] ~ | src/components/TransactionGroup.tsx
+- Fix: formatDateHeader now omits the year for current-year dates ("17 july") and includes it for previous years ("17 july 2024"). Removed unused lang parameter.
+
+[2026-07-17] ~ | src/screens/ModifyAccountScreen.tsx
+- Removed redundant deleteByAccountId call before account delete. Native cascades via ON DELETE CASCADE, web handles it inside webAccountRepo.delete(). Removed unused transactionRepository import.
+
+[2026-07-17] ~ | AGENTS.md
+- Added rule: agent always suggests a branch name for each implementation.
