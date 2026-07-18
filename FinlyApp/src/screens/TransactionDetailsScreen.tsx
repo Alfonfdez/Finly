@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo, ComponentProps } from 'react';
+import { useState, useMemo, useCallback, ComponentProps } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
@@ -26,6 +26,7 @@ export default function TransactionDetailsScreen() {
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [tagNames, setTagNames] = useState<{ tag_id: number; name: string }[]>([]);
 
   const transaction = useMemo(
     () => transactions.find(tx => tx.id === transactionId),
@@ -57,6 +58,21 @@ export default function TransactionDetailsScreen() {
     const year = d.getFullYear();
     return `${labels.details_created} ${h}:${min} ${day} ${month.toLowerCase()} ${year}`;
   }, [transaction, labels]);
+
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    (async () => {
+      const tagIds = await transactionRepository.getTagsByTransactionId(transactionId);
+      if (!active) return;
+      if (tagIds.length === 0) {
+        setTagNames([]);
+        return;
+      }
+      const tagLinks = await transactionRepository.getTagsByTransactionIds([transactionId]);
+      if (active) setTagNames(tagLinks);
+    })();
+    return () => { active = false; };
+  }, [transactionId]));
 
   const handleDelete = async () => {
     if (deleting) return;
@@ -125,10 +141,28 @@ export default function TransactionDetailsScreen() {
             </Text>
           </DataRow>
 
-          <DataRow label={labels.details_comment} c={c} fs={fs} noBorder>
+          <DataRow label={labels.details_comment} c={c} fs={fs}>
             <Text style={[styles.dataValue, { color: transaction.description ? c.text : c.textSecondary, fontSize: fs(15) }]}>
               {transaction.description || labels.details_no_comment}
             </Text>
+          </DataRow>
+
+          <DataRow label={labels.details_tags} c={c} fs={fs} noBorder>
+            {tagNames.length > 0 ? (
+              <View style={styles.tagsContainer}>
+                {tagNames.map(tag => (
+                  <View key={tag.tag_id} style={[styles.tagChip, { backgroundColor: c.primary + '20' }]}>
+                    <Text style={[styles.tagChipText, { color: c.primary, fontSize: fs(13) }]} numberOfLines={1}>
+                      {tag.name}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={[styles.dataValue, { color: c.textSecondary, fontSize: fs(15) }]}>
+                {labels.details_no_tags}
+              </Text>
+            )}
           </DataRow>
         </View>
 
@@ -251,6 +285,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   actionButtonText: { fontWeight: '600' },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    justifyContent: 'flex-end',
+  },
+  tagChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  tagChipText: {
+    fontWeight: '500',
+  },
   createdText: {
     marginHorizontal: 16,
     marginTop: 24,

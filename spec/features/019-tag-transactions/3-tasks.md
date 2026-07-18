@@ -33,8 +33,10 @@ Execution order. Check off each task as you complete it.
 
 [ ] T10 — Update `src/screens/AllTransactionsScreen.tsx`: on mount, load tags for visible transactions via `getTagsByTransactionIds()`. Pass `tagsByTransaction` to TransactionGroup.
 
+[ ] T11 — Update `src/screens/TransactionDetailsScreen.tsx`: load tags via `getTagsByTransactionId(transactionId)` on mount. Add a `DataRow` for Tags after Comment. Render tag chips (`primary` + 20% background, `primary` text, fs(13), rounded). If no tags, show `—` placeholder.
+
 ---
 
 ### Verification
 
-[ ] T11 — Manual verification: `npx expo start --web` and `npx expo start`. Test adding a transaction with tags, modifying a transaction (tags pre-selected), creating a tag inline from AddTransaction, verifying tags persist in the database, duplicate rejection in inline create modal, tag chips visible on transaction rows in TransactionsScreen and AllTransactionsScreen, tag filter inheritance from HomeScreen (select tag on Home, tap category, verify TransactionsScreen filters by that tag).
+[ ] T12 — Manual verification: `npx expo start --web` and `npx expo start`. Test adding a transaction with tags, modifying a transaction (tags pre-selected), creating a tag inline from AddTransaction, verifying tags persist in the database, duplicate rejection in inline create modal, tag chips visible on transaction rows in TransactionsScreen and AllTransactionsScreen, tag filter inheritance from HomeScreen (select tag on Home, tap category, verify TransactionsScreen filters by that tag), tags visible on TransactionDetailsScreen (with tags and without tags).

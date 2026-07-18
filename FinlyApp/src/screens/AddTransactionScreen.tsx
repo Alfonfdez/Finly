@@ -19,7 +19,7 @@ import CalendarModal from '../components/CalendarModal';
 import CalculatorModal from '../components/CalculatorModal';
 import { TransactionType, RootStackParamList } from '../constants/types';
 import { isSameDay } from '../utils/formatters';
-import { transactionRepository } from '../database';
+import { transactionRepository, tagRepository } from '../database';
 
 // Module-level pending category data (passed back from AddCategoryScreen)
 let pendingCategoryId: number | null = null;
@@ -41,11 +41,6 @@ export function consumePendingCategory(): { categoryId: number; type: Transactio
 }
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'AddTransaction'>;
-
-interface Tag {
-  id: number;
-  name: string;
-}
 
 const GRID_ROWS = 2;
 const GRID_COLS = 4;
@@ -114,7 +109,7 @@ function formatAmountDisplay(raw: string, decimalSeparator: ',' | '.'): string {
 
 export default function AddTransactionScreen() {
   const { activeColors: c, config } = useConfig();
-  const { activeType, activePeriod, customDate, selectedDate, accounts, categories, accountsWithBalance, activeAccount, refresh } = useApp();
+  const { activeType, activePeriod, customDate, selectedDate, accounts, categories, accountsWithBalance, activeAccount, tags, refresh, refreshTags } = useApp();
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp>();
@@ -197,19 +192,6 @@ export default function AddTransactionScreen() {
   const [modalCalendarVisible, setModalCalendarVisible] = useState(false);
   const [calculatorVisible, setCalculatorVisible] = useState(false);
 
-  const [availableTags, setAvailableTags] = useState<Tag[]>([
-    { id: 1, name: labels.add_tag_urgent },
-    { id: 2, name: labels.add_tag_recurring },
-    { id: 3, name: labels.add_tag_personal },
-  ]);
-  // Update tag names when language changes
-  useEffect(() => {
-    setAvailableTags(prev => prev.map((tag, i) => ({
-      ...tag,
-      name: [labels.add_tag_urgent, labels.add_tag_recurring, labels.add_tag_personal][i] ?? tag.name,
-    })));
-  }, [labels]);
-
   // Display-formatted amount (empty when focused and empty, so placeholder shows)
   const displayAmount = useMemo(() => {
     if (!amountRaw) return '';
@@ -249,8 +231,12 @@ export default function AddTransactionScreen() {
     );
   };
 
-  const handleCreateTag = (name: string) => {
-    setAvailableTags(prev => [...prev, { id: prev.length + 1, name }]);
+  const handleCreateTag = async (name: string) => {
+    const existing = tags.some(t => t.name.toLowerCase() === name.toLowerCase());
+    if (existing) return false;
+    await tagRepository.create({ user_id: 1, name });
+    await refreshTags();
+    return true;
   };
 
   const handleSelectSuggestion = (text: string) => {
@@ -290,16 +276,17 @@ export default function AddTransactionScreen() {
       const s = String(day.getSeconds()).padStart(2, '0');
       const dateStr = `${y}-${m}-${d} ${h}:${min}:${s}`;
 
-      await transactionRepository.create({
+      await transactionRepository.createWithTags({
         account_id: accountId,
         category_id: categoryId!,
         type,
         amount: numericAmount!,
         description: comment || null,
         date: dateStr,
-      });
+      }, selectedTags);
 
       await refresh();
+      setSelectedTags([]);
       navigation.goBack();
     } catch (err) {
       Alert.alert(labels.add_error_title, labels.add_error_message);
@@ -391,7 +378,7 @@ export default function AddTransactionScreen() {
         />
 
         <TagSection
-          tags={availableTags}
+          tags={tags}
           selectedTags={selectedTags}
           onToggle={handleToggleTag}
           onCreate={handleCreateTag}

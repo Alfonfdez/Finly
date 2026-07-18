@@ -146,4 +146,61 @@ export const transactionRepo = {
       accountId, type, startDate, endDate
     );
   },
+
+  async createWithTags(
+    data: Omit<Transaction, 'id' | 'created_at'>,
+    tagIds: number[]
+  ): Promise<Transaction> {
+    const db = getDatabase();
+    const tx = await transactionRepo.create(data);
+    if (tagIds.length > 0) {
+      for (const tagId of tagIds) {
+        await db.runAsync(
+          `INSERT INTO transaction_tags (transaction_id, tag_id) VALUES (?, ?)`,
+          tx.id, tagId
+        );
+      }
+    }
+    return tx;
+  },
+
+  async updateWithTags(
+    id: number,
+    data: Partial<Omit<Transaction, 'id' | 'created_at'>>,
+    tagIds: number[]
+  ): Promise<void> {
+    const db = getDatabase();
+    await transactionRepo.update(id, data);
+    await db.runAsync(`DELETE FROM transaction_tags WHERE transaction_id = ?`, id);
+    if (tagIds.length > 0) {
+      for (const tagId of tagIds) {
+        await db.runAsync(
+          `INSERT INTO transaction_tags (transaction_id, tag_id) VALUES (?, ?)`,
+          id, tagId
+        );
+      }
+    }
+  },
+
+  async getTagsByTransactionId(transactionId: number): Promise<number[]> {
+    const db = getDatabase();
+    const rows = await db.getAllAsync<{ tag_id: number }>(
+      `SELECT tag_id FROM transaction_tags WHERE transaction_id = ?`,
+      transactionId
+    );
+    return rows.map(r => r.tag_id);
+  },
+
+  async getTagsByTransactionIds(transactionIds: number[]): Promise<{ transaction_id: number; tag_id: number; name: string }[]> {
+    if (transactionIds.length === 0) return [];
+    const db = getDatabase();
+    const placeholders = transactionIds.map(() => '?').join(',');
+    return await db.getAllAsync<{ transaction_id: number; tag_id: number; name: string }>(
+      `SELECT tt.transaction_id, tt.tag_id, t.name
+       FROM transaction_tags tt
+       INNER JOIN tags t ON tt.tag_id = t.id
+       WHERE tt.transaction_id IN (${placeholders})`,
+      ...transactionIds
+    );
+  },
 };

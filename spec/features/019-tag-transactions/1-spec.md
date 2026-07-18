@@ -14,6 +14,7 @@
 - Search icon toggles search input (same behavior as current).
 - "+" chip opens the inline create modal (same as current).
 - Selected tags passed as `tagIds: number[]` instead of local state.
+- Tags are displayed in creation order (oldest first, newest last), so newly created tags appear at the end just before the "+ Add tag" pill.
 
 ### 2. Inline tag creation (modal)
 
@@ -57,6 +58,21 @@
 - If a transaction has no tags, no tag chips are shown (no empty state).
 - Tag chips use `surface` background + `textSecondary` text (visually distinct from selected state in TagSection).
 - Tags are displayed in both TransactionsScreen (014) and AllTransactionsScreen (015).
+
+### 6b. Tag display in TransactionDetailsScreen
+
+- Load tags for the current transaction via `getTagsByTransactionId(transactionId)`.
+- Render tags as chips in the data section, after the Comment row.
+- Layout:
+
+```
+Comment    | Some description
+Tags       | [Urgent] [Recurring]
+```
+
+- If no tags, show the Tags row with `textSecondary` placeholder (e.g., `—`), same pattern as "No comment".
+- Tag chips use `primary` + `20` opacity background + `primary` text color (visually distinct from the compact `surface`/`textSecondary` chips on transaction rows — detail view chips are slightly more prominent).
+- Tags row uses the same `DataRow` component as other rows.
 
 ### 7. Tag filter in navigation
 
@@ -102,5 +118,9 @@
 - [ ] TransactionsScreen accepts optional `tagIds` navigation parameter.
 - [ ] When `tagIds` is provided, transactions are filtered by those tags (OR logic).
 - [ ] When `tagIds` contains -1, untagged transactions are included.
+- [ ] Tags are displayed in both TransactionsScreen and AllTransactionsScreen.
+- [ ] TransactionDetailsScreen shows tags after Comment.
+- [ ] Tags on details load via `getTagsByTransactionId()`.
+- [ ] Transactions with no tags show a `—` placeholder on the details screen.
 - [ ] All texts change when switching language.
 - [ ] The screen respects the active theme and text size.

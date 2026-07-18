@@ -10,6 +10,7 @@
 - **`screens/ModifyTransactionScreen.tsx`**: Load existing tags for transaction on mount via `getTagsByTransactionId()`. Pre-select. On submit: call `transactionRepository.updateWithTags()`.
 - **`screens/TransactionsScreen.tsx`**: Read `tagIds` from route params. Filter transactions by `tagIds` (OR logic, with untagged support). Load tags for visible transactions via `getTagsByTransactionIds()`. Pass `tagsByTransaction` to TransactionGroup.
 - **`screens/AllTransactionsScreen.tsx`**: Load tags for visible transactions via `getTagsByTransactionIds()`. Pass `tagsByTransaction` to TransactionGroup.
+- **`screens/TransactionDetailsScreen.tsx`**: Load tags for the transaction on mount via `getTagsByTransactionId()`. Render as chips in a new `DataRow` after Comment, using `primary` + 20% background + `primary` text.
 - **`database/repositories/transactionRepo.ts`**: Add `createWithTags()`, `updateWithTags()`, `getTagsByTransactionId()`, `getTagsByTransactionIds()`.
 - **`database/webStorage.ts`**: Add same 4 methods to `webTransactionRepo`.
 - **`constants/types.ts`**: Add `tagIds?: number[]` to `Transactions` in `RootStackParamList`.
@@ -35,6 +36,10 @@ TransactionsScreen (from HomeScreen):
 AllTransactionsScreen:
   On mount → transactionRepo.getTagsByTransactionIds(visibleTxIds) → tagsByTransaction
   TransactionGroup ← tagsByTransaction → renders tag chips per row
+
+TransactionDetailsScreen:
+  On mount → transactionRepo.getTagsByTransactionId(txId) → tagNames[]
+  Render tags as chips after Comment row (primary + 20% bg, primary text, fs(13))
 ```
 
 ### New repository methods
@@ -120,5 +125,5 @@ New key if needed:
 
 ## Estimate
 
-- **Tasks**: 9 tasks in 3 phases
+- **Tasks**: 12 tasks in 3 phases
 - **Estimated time**: 3-4 hours

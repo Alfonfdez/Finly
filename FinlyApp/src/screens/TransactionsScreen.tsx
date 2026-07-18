@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, ComponentProps } from 'react';
+import { useState, useMemo, useCallback, useEffect, ComponentProps } from 'react';
 import { View, Text, SectionList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
@@ -31,12 +31,14 @@ export default function TransactionsScreen() {
   const categoryId = route.params?.categoryId;
   const startDate = route.params?.startDate;
   const endDate = route.params?.endDate;
+  const tagIds = route.params?.tagIds;
 
   const [selectedAccountId, setSelectedAccountId] = useState(activeAccount?.id ?? accounts[0]?.id ?? 1);
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tagsByTransaction, setTagsByTransaction] = useState<Map<number, { tag_id: number; name: string }[]>>(new Map());
 
   useFocusEffect(
     useCallback(() => {
@@ -47,15 +49,53 @@ export default function TransactionsScreen() {
         if (categoryId) filters.category_id = categoryId;
         if (startDate) filters.start_date = startDate;
         if (endDate) filters.end_date = endDate;
-        const data = await transactionRepository.list(filters);
+        let data = await transactionRepository.list(filters);
+
+        // Filter by tagIds (OR logic): keep transactions that have at least one of the selected tags
+        if (tagIds && tagIds.length > 0) {
+          const txIds = data.map(t => t.id);
+          const tagLinks = await transactionRepository.getTagsByTransactionIds(txIds);
+          const txTagMap = new Map<number, Set<number>>();
+          for (const link of tagLinks) {
+            if (!txTagMap.has(link.transaction_id)) txTagMap.set(link.transaction_id, new Set());
+            txTagMap.get(link.transaction_id)!.add(link.tag_id);
+          }
+          data = data.filter(tx => {
+            const txTags = txTagMap.get(tx.id);
+            if (!txTags) return false;
+            return tagIds.some(id => txTags.has(id));
+          });
+        }
+
         if (active) {
           setAllTransactions(data);
           setLoading(false);
         }
       })();
       return () => { active = false; };
-    }, [categoryId, startDate, endDate])
+    }, [categoryId, startDate, endDate, tagIds])
   );
+
+  // Load tags for visible transactions
+  useEffect(() => {
+    if (allTransactions.length === 0) {
+      setTagsByTransaction(new Map());
+      return;
+    }
+    let active = true;
+    (async () => {
+      const txIds = allTransactions.map(t => t.id);
+      const tagLinks = await transactionRepository.getTagsByTransactionIds(txIds);
+      if (!active) return;
+      const map = new Map<number, { tag_id: number; name: string }[]>();
+      for (const link of tagLinks) {
+        if (!map.has(link.transaction_id)) map.set(link.transaction_id, []);
+        map.get(link.transaction_id)!.push(link);
+      }
+      setTagsByTransaction(map);
+    })();
+    return () => { active = false; };
+  }, [allTransactions]);
 
   const filtered = useMemo(() => {
     let list = allTransactions.filter(t => t.account_id === selectedAccountId);
@@ -148,6 +188,7 @@ export default function TransactionsScreen() {
             date={section.date}
             transactions={section.data}
             categories={categories}
+            tagsByTransaction={tagsByTransaction}
             onTransactionPress={(id) => navigation.navigate('TransactionDetails', { transactionId: id })}
           />
         )}
