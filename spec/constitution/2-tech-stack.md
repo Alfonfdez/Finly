@@ -123,58 +123,8 @@ FinlyApp/
     +-- (icons, fonts, etc.)
 ```
 
-## Visual design
-- Dark and light palettes defined in `constants/themes.ts` with the `ColorPalette` interface.
-- Tokens: `background`, `surface`, `text`, `textSecondary`, `primary`, `accent`, `green`, `red`, `border`.
-- Theme selectable from Settings (Dark / Light / System) with real-time switching.
-- No external UI library; styles using React Native's `StyleSheet.create()`.
-- Icons: `@expo/vector-icons` (Ionicons) — `Ionicons` used throughout the app.
-- Typography: native system font (SF Pro on iOS, Roboto on Android) with configurable scaling.
-
-## Typography
-
-### Scaling system
-- `useFontSize()` hook returns `fs(size)` that scales based on user preference.
-- Factors: Small = x0.85, Medium = x1.0, Large = x1.15.
-- All font sizes in the app must use `fs()` — never hardcoded values.
-- The function rounds to the nearest integer to avoid sub-pixels.
-
-### Font sizes by element
-
-| fs(N) | Usage | Examples |
-|-------|-------|----------|
-| `fs(11)` | Auxiliary text, chart labels | CategoryGrid names, BarChart labels |
-| `fs(12)` | Badges, metadata, secondary labels, breakdown | AccountSelector balance, TransactionGroup date |
-| `fs(13)` | Period tabs, sort labels, tag chips | PeriodTabs, SortToggle, TagSection |
-| `fs(14)` | **Standard** — body text, names, buttons | AccountSelector trigger, CategoryList, modals |
-| `fs(15)` | List item names, search input | AccountScreen names, SearchBar, TypeTabs |
-| `fs(16)` | Screen titles, modal titles | Modal titles, TransactionsScreen header |
-| `fs(17)` | Stack navigator header titles | All `headerTitle` in AppNavigator.tsx |
-| `fs(18)` | Modal totals, chart center text | DonutChart total, CalculatorModal display |
-| `fs(20)` | Calculator display (result) | CalculatorModal result |
-| `fs(22)` | Screen totals (balance, category total) | AccountsScreen total, TransactionsScreen categoryTotal |
-| `fs(24)` | Large screen titles | AddTransactionScreen title |
-| `fs(28)` | HomeScreen main total | HomeScreen total balance |
-
-### Font weights
-
-| fontWeight | Usage | Examples |
-|------------|-------|----------|
-| `'500'` | Normal body text, item names | AccountSelector modal names, CategoryList |
-| `'600'` | **Most used** — names, buttons, trigger text, headers | AccountSelector trigger, SortToggle, TypeTabs, headerTitle |
-| `'700'` | Monetary totals, modal titles, active labels | Modal titles, categoryTotal, DayPicker selected |
-| `'800'` | HomeScreen main total (only usage) | HomeScreen totalText |
-
-### Currency format conventions
-- All totals and balances show a `+` (positive) or `-` (negative) prefix.
-- Color: green (`c.green`) for positive, red (`c.red`) for negative.
-- Format: `formatCurrency()` with max 2 decimals.
-- Exception: individual transaction amounts use type (`income` -> `+`, `expense` -> `-`) instead of the value sign.
-
-### Account name conventions
-- **HomeScreen header:** `fs(14)`, `'600'`, color `textSecondary`, circular icon 24x24 + chevron-down.
-- **AccountSelector trigger:** `fs(14)`, `'600'`, color `text`, circular icon 28x28 + chevron-down.
-- **AccountScreen list:** `fs(15)`, `'600'`, color `text`, circular icon 44x44.
+## Design
+See **`4-design-system.md`** for colors, typography, icons, and layout conventions.
 
 ## Code conventions
 - English content, English code.
