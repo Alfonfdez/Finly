@@ -235,13 +235,59 @@ export const webTransactionRepo = {
         .map(t => t.description!)
     )].slice(0, 5);
   },
+
+  async createWithTags(
+    data: Omit<Transaction, 'id' | 'created_at'>,
+    tagIds: number[]
+  ): Promise<Transaction> {
+    const tx = await webTransactionRepo.create(data);
+    const links = getStore<TransactionTag>('transaction_tags');
+    for (const tagId of tagIds) {
+      links.push({ transaction_id: tx.id, tag_id: tagId });
+    }
+    setStore('transaction_tags', links);
+    return tx;
+  },
+
+  async updateWithTags(
+    id: number,
+    data: Partial<Omit<Transaction, 'id' | 'created_at'>>,
+    tagIds: number[]
+  ): Promise<void> {
+    await webTransactionRepo.update(id, data);
+    let links = getStore<TransactionTag>('transaction_tags');
+    links = links.filter(l => l.transaction_id !== id);
+    for (const tagId of tagIds) {
+      links.push({ transaction_id: id, tag_id: tagId });
+    }
+    setStore('transaction_tags', links);
+  },
+
+  async getTagsByTransactionId(transactionId: number): Promise<number[]> {
+    return getStore<TransactionTag>('transaction_tags')
+      .filter(l => l.transaction_id === transactionId)
+      .map(l => l.tag_id);
+  },
+
+  async getTagsByTransactionIds(
+    transactionIds: number[]
+  ): Promise<{ transaction_id: number; tag_id: number; name: string }[]> {
+    if (transactionIds.length === 0) return [];
+    const tags = getStore<Tag>('tags');
+    return getStore<TransactionTag>('transaction_tags')
+      .filter(l => transactionIds.includes(l.transaction_id))
+      .map(l => {
+        const tag = tags.find(t => t.id === l.tag_id);
+        return { transaction_id: l.transaction_id, tag_id: l.tag_id, name: tag?.name ?? '' };
+      });
+  },
 };
 
 export const webTagRepo = {
   async list(userId: number): Promise<Tag[]> {
     return getStore<Tag>('tags')
       .filter(t => t.user_id === userId)
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .sort((a, b) => a.id - b.id);
   },
   async create(data: Omit<Tag, 'id' | 'created_at'>): Promise<Tag> {
     const items = getStore<Tag>('tags');

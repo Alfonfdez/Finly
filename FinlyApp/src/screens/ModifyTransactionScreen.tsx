@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useMemo, useCallback, ComponentProps } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Pressable, Keyboard } from 'react-native';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
@@ -18,17 +18,11 @@ import PhotoSection from '../components/PhotoSection';
 import CalendarModal from '../components/CalendarModal';
 import CalculatorModal from '../components/CalculatorModal';
 import { TransactionType, RootStackParamList } from '../constants/types';
-import { isSameDay } from '../utils/formatters';
-import { transactionRepository } from '../database';
+import { transactionRepository, tagRepository } from '../database';
 import { consumePendingCategory } from './AddTransactionScreen';
 
 type ModifyRouteProp = RouteProp<RootStackParamList, 'ModifyTransaction'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ModifyTransaction'>;
-
-interface Tag {
-  id: number;
-  name: string;
-}
 
 const GRID_ROWS = 2;
 const GRID_COLS = 4;
@@ -74,7 +68,7 @@ export default function ModifyTransactionScreen() {
   const route = useRoute<ModifyRouteProp>();
   const { transactionId } = route.params;
   const { activeColors: c, config } = useConfig();
-  const { transactions, accounts, categories, accountsWithBalance, refresh } = useApp();
+  const { transactions, accounts, categories, accountsWithBalance, tags, refresh, refreshTags } = useApp();
   const fs = useFontSize();
   const labels = t();
 
@@ -115,6 +109,15 @@ export default function ModifyTransactionScreen() {
     }
   }, [transaction]);
 
+  // Load existing tags for this transaction
+  useEffect(() => {
+    if (transaction) {
+      transactionRepository.getTagsByTransactionId(transactionId).then(ids => {
+        setSelectedTags(ids);
+      });
+    }
+  }, [transactionId]);
+
   // Handle category selected from AddCategoryScreen
   useFocusEffect(useCallback(() => {
     const pending = consumePendingCategory();
@@ -154,19 +157,6 @@ export default function ModifyTransactionScreen() {
     };
   }, [comment]);
 
-  const [availableTags, setAvailableTags] = useState<Tag[]>([
-    { id: 1, name: labels.add_tag_urgent },
-    { id: 2, name: labels.add_tag_recurring },
-    { id: 3, name: labels.add_tag_personal },
-  ]);
-
-  useEffect(() => {
-    setAvailableTags(prev => prev.map((tag, i) => ({
-      ...tag,
-      name: [labels.add_tag_urgent, labels.add_tag_recurring, labels.add_tag_personal][i] ?? tag.name,
-    })));
-  }, [labels]);
-
   const displayAmount = useMemo(() => {
     if (!amountRaw) return '';
     return formatAmountDisplay(amountRaw, config.decimalSeparator);
@@ -203,8 +193,12 @@ export default function ModifyTransactionScreen() {
     );
   };
 
-  const handleCreateTag = (name: string) => {
-    setAvailableTags(prev => [...prev, { id: prev.length + 1, name }]);
+  const handleCreateTag = async (name: string) => {
+    const existing = tags.some(t => t.name.toLowerCase() === name.toLowerCase());
+    if (existing) return false;
+    await tagRepository.create({ user_id: 1, name });
+    await refreshTags();
+    return true;
   };
 
   const handleSelectSuggestion = (text: string) => {
@@ -238,14 +232,14 @@ export default function ModifyTransactionScreen() {
       const s = String(day.getSeconds()).padStart(2, '0');
       const dateStr = `${y}-${m}-${d} ${h}:${min}:${s}`;
 
-      await transactionRepository.update(transactionId, {
+      await transactionRepository.updateWithTags(transactionId, {
         account_id: accountId,
         category_id: categoryId!,
         type,
         amount: numericAmount!,
         description: comment || null,
         date: dateStr,
-      });
+      }, selectedTags);
 
       await refresh();
       navigation.goBack();
@@ -351,7 +345,7 @@ export default function ModifyTransactionScreen() {
         />
 
         <TagSection
-          tags={availableTags}
+          tags={tags}
           selectedTags={selectedTags}
           onToggle={handleToggleTag}
           onCreate={handleCreateTag}

@@ -1,20 +1,16 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-
-interface Tag {
-  id: number;
-  name: string;
-}
+import { Tag } from '../database/types';
 
 interface Props {
   tags: Tag[];
   selectedTags: number[];
   onToggle: (id: number) => void;
-  onCreate: (name: string) => void;
+  onCreate: (name: string) => Promise<boolean>;
 }
 
 export default function TagSection({ tags, selectedTags, onToggle, onCreate }: Props) {
@@ -22,6 +18,8 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
   const [showSearch, setShowSearch] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [newTag, setNewTag] = useState('');
+  const [error, setError] = useState('');
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -30,18 +28,43 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
     tag.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleCreate = () => {
-    if (newTag.trim().length > 0) {
-      onCreate(newTag.trim());
+  const checkDuplicate = useCallback((value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      setError('');
+      return;
+    }
+    const exists = tags.some(t => t.name.toLowerCase() === trimmed.toLowerCase());
+    setError(exists ? labels.add_tag_error_duplicate : '');
+  }, [tags, labels.add_tag_error_duplicate]);
+
+  const handleNameChange = (text: string) => {
+    setNewTag(text);
+    setError(text.trim() ? '' : '');
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      checkDuplicate(text);
+    }, 300);
+  };
+
+  const handleCreate = async () => {
+    const name = newTag.trim();
+    if (!name || error) return;
+    const success = await onCreate(name);
+    if (success) {
       setNewTag('');
+      setError('');
       setModalVisible(false);
     }
   };
 
   const handleCancel = () => {
     setNewTag('');
+    setError('');
     setModalVisible(false);
   };
+
+  const isDisabled = !newTag.trim() || !!error;
 
   return (
     <View style={styles.container}>
@@ -115,16 +138,21 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
               {labels.add_tag_modal_title}
             </Text>
             <TextInput
-              style={[styles.modalInput, { backgroundColor: c.surface, color: c.text, fontSize: fs(14) }]}
+              style={[styles.modalInput, { backgroundColor: c.surface, color: c.text, fontSize: fs(14), borderColor: error ? c.red : c.border }]}
               placeholder={labels.add_tag_name_placeholder}
               placeholderTextColor={c.textSecondary}
               value={newTag}
-              onChangeText={setNewTag}
+              onChangeText={handleNameChange}
               maxLength={20}
             />
             <Text style={[styles.modalCounter, { color: c.textSecondary, fontSize: fs(12) }]}>
               {newTag.length}/20
             </Text>
+            {error ? (
+              <Text style={[styles.modalError, { color: c.red, fontSize: fs(13) }]}>
+                {error}
+              </Text>
+            ) : null}
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: c.surface }]}
@@ -135,10 +163,11 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: c.primary }]}
+                style={[styles.modalButton, { backgroundColor: isDisabled ? c.surface : c.primary }]}
                 onPress={handleCreate}
+                disabled={isDisabled}
               >
-                <Text style={[styles.modalButtonText, { color: c.background, fontSize: fs(14) }]}>
+                <Text style={[styles.modalButtonText, { color: isDisabled ? c.textSecondary : c.background, fontSize: fs(14) }]}>
                   {labels.add_submit}
                 </Text>
               </TouchableOpacity>
@@ -208,13 +237,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   modalInput: {
+    borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 8,
     marginBottom: 4,
   },
   modalCounter: {
+    marginBottom: 4,
+  },
+  modalError: {
     marginBottom: 12,
+    fontWeight: '500',
   },
   modalButtons: {
     flexDirection: 'row',

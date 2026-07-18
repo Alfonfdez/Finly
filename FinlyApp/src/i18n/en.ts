@@ -106,6 +106,8 @@ export const en = {
   add_tag_urgent: 'Urgent',
   add_tag_recurring: 'Recurring',
   add_tag_personal: 'Personal',
+  add_tag_error_duplicate: 'Tag already exists',
+  add_tag_error_empty: 'Tag name cannot be empty',
   add_error_title: 'Error',
   add_error_message: 'Failed to save transaction',
 
@@ -248,6 +250,8 @@ export const en = {
   details_date: 'Date',
   details_comment: 'Comment',
   details_no_comment: 'No comment',
+  details_tags: 'Tags',
+  details_no_tags: '—',
   details_delete: 'Delete',
   details_delete_title: 'Delete this transaction?',
   details_delete_yes: 'Yes',

@@ -11,6 +11,7 @@ interface Props {
   date: string;
   transactions: Transaction[];
   categories: Category[];
+  tagsByTransaction?: Map<number, { tag_id: number; name: string }[]>;
   onTransactionPress?: (transactionId: number) => void;
 }
 
@@ -26,7 +27,7 @@ function formatDateHeader(dateStr: string): string {
   return `${day} ${month} ${year}`;
 }
 
-export default function TransactionGroup({ date, transactions, categories, onTransactionPress }: Props) {
+export default function TransactionGroup({ date, transactions, categories, tagsByTransaction, onTransactionPress }: Props) {
   const { config, activeColors: c } = useConfig();
   const fs = useFontSize();
 
@@ -37,6 +38,7 @@ export default function TransactionGroup({ date, transactions, categories, onTra
       </Text>
       {transactions.map((tx) => {
         const cat = categories.find(ct => ct.id === tx.category_id);
+        const txTags = tagsByTransaction?.get(tx.id);
         return (
           <TouchableOpacity
             key={tx.id}
@@ -58,6 +60,17 @@ export default function TransactionGroup({ date, transactions, categories, onTra
                   {tx.description}
                 </Text>
               ) : null}
+              {txTags && txTags.length > 0 && (
+                <View style={styles.tagsContainer}>
+                  {txTags.map((tag) => (
+                    <View key={tag.tag_id} style={[styles.tagChip, { backgroundColor: c.primary + '20' }]}>
+                      <Text style={[styles.tagChipText, { color: c.primary, fontSize: fs(11) }]} numberOfLines={1}>
+                        {tag.name}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
             </View>
             <Text style={[styles.amount, { color: tx.type === 'income' ? c.green : c.red, fontSize: fs(15) }]}>
               {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount, config.currency, config.decimalSeparator)}
@@ -94,5 +107,19 @@ const styles = StyleSheet.create({
   info: { flex: 1 },
   catName: { fontWeight: '500' },
   desc: { marginTop: 2 },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+    marginTop: 4,
+  },
+  tagChip: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  tagChipText: {
+    fontWeight: '500',
+  },
   amount: { fontWeight: '700' },
 });

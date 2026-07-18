@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { View, Text, SectionList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect, DrawerActions } from '@react-navigation/native';
@@ -31,6 +31,7 @@ export default function AllTransactionsScreen() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tagsByTransaction, setTagsByTransaction] = useState<Map<number, { tag_id: number; name: string }[]>>(new Map());
 
   useFocusEffect(
     useCallback(() => {
@@ -46,6 +47,27 @@ export default function AllTransactionsScreen() {
       return () => { active = false; };
     }, [])
   );
+
+  // Load tags for visible transactions
+  useEffect(() => {
+    if (allTransactions.length === 0) {
+      setTagsByTransaction(new Map());
+      return;
+    }
+    let active = true;
+    (async () => {
+      const txIds = allTransactions.map(t => t.id);
+      const tagLinks = await transactionRepository.getTagsByTransactionIds(txIds);
+      if (!active) return;
+      const map = new Map<number, { tag_id: number; name: string }[]>();
+      for (const link of tagLinks) {
+        if (!map.has(link.transaction_id)) map.set(link.transaction_id, []);
+        map.get(link.transaction_id)!.push(link);
+      }
+      setTagsByTransaction(map);
+    })();
+    return () => { active = false; };
+  }, [allTransactions]);
 
   useFocusEffect(
     useCallback(() => {
@@ -141,6 +163,7 @@ export default function AllTransactionsScreen() {
             date={section.date}
             transactions={section.data}
             categories={categories}
+            tagsByTransaction={tagsByTransaction}
             onTransactionPress={(id) => navigation.navigate('TransactionDetails', { transactionId: id })}
           />
         )}

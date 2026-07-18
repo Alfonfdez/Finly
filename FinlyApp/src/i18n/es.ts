@@ -108,6 +108,8 @@ export const es: Language = {
   add_tag_urgent: 'Urgente',
   add_tag_recurring: 'Recurrente',
   add_tag_personal: 'Personal',
+  add_tag_error_duplicate: 'La etiqueta ya existe',
+  add_tag_error_empty: 'El nombre de la etiqueta no puede estar vacío',
   add_error_title: 'Error',
   add_error_message: 'No se ha podido guardar la transacción',
 
@@ -250,6 +252,8 @@ export const es: Language = {
   details_date: 'Fecha',
   details_comment: 'Comentario',
   details_no_comment: 'Sin comentario',
+  details_tags: 'Etiquetas',
+  details_no_tags: '—',
   details_delete: 'Eliminar',
   details_delete_title: '¿Quiere eliminar la transacción?',
   details_delete_yes: 'Sí',

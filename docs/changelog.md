@@ -1216,3 +1216,75 @@
 - Replaced ad-hoc tags table re-run with full database deletion + recursive reinit when stale state is detected.
 - Fixes stale mock data persisting after Expo Go data clear / reinstall due to orphaned WAL/SHM files.
 - Added db.closeAsync() before deleteDatabaseAsync to fix "database currently open" rejection.
+
+[2026-07-18] + | src/database/repositories/transactionRepo.ts
+- Added createWithTags(), updateWithTags(), getTagsByTransactionId(), getTagsByTransactionIds() methods for tag-transaction linking.
+
+[2026-07-18] + | src/database/webStorage.ts
+- Added createWithTags(), updateWithTags(), getTagsByTransactionId(), getTagsByTransactionIds() methods to webTransactionRepo for web platform parity.
+- Fixed bracket mismatch in searchComments() (was `])]`, corrected to `)])`).
+
+[2026-07-18] ~ | src/i18n/en.ts, es.ts, ca.ts
+- Added 2 i18n keys: add_tag_error_duplicate ("Tag already exists") and add_tag_error_empty ("Tag name cannot be empty").
+
+[2026-07-18] ~ | src/components/TagSection.tsx
+- Changed tags prop type from local `Tag` interface to database `Tag` type.
+- Changed `onCreate` prop from `(name: string) => void` to `(name: string) => Promise<boolean>` to support async duplicate validation.
+- Added duplicate validation via `onCreate` return value with Alert on failure.
+- Added empty-name validation with Alert.
+
+[2026-07-18] ~ | src/screens/AddTransactionScreen.tsx
+- Replaced local hardcoded tags array with tags from AppContext (database-backed).
+- Removed local `Tag` interface and `availableTags` state.
+- `handleCreateTag` now uses `tagRepository.create()` and `refreshTags()`.
+- `handleSubmit` now calls `transactionRepository.createWithTags()` and clears `selectedTags` after success.
+
+[2026-07-18] ~ | src/screens/ModifyTransactionScreen.tsx
+- Replaced local hardcoded tags array with tags from AppContext (database-backed).
+- Removed local `Tag` interface and `availableTags` state.
+- Added `useEffect` to load existing transaction tags via `getTagsByTransactionId()` on mount.
+- `handleCreateTag` now uses `tagRepository.create()` and `refreshTags()`.
+- `handleSubmit` now calls `transactionRepository.updateWithTags()` with selected tags.
+
+[2026-07-18] ~ | src/components/TransactionGroup.tsx
+- Added optional `tagsByTransaction` prop (`Map<number, { tag_id: number; name: string }[]>`).
+- Renders tag chips below description using `fs(11)` font size and primary-colored semi-transparent background.
+
+[2026-07-18] ~ | src/screens/TransactionsScreen.tsx
+- Added tag filtering via `route.params.tagIds` (OR logic: keep transactions matching at least one selected tag).
+- Added `tagsByTransaction` state and `useEffect` to batch-load tags for visible transactions.
+- Passes `tagsByTransaction` to `TransactionGroup`.
+
+[2026-07-18] ~ | src/screens/AllTransactionsScreen.tsx
+- Added `tagsByTransaction` state and `useEffect` to batch-load tags for visible transactions.
+- Passes `tagsByTransaction` to `TransactionGroup`.
+
+[2026-07-18] ~ | src/screens/TransactionDetailsScreen.tsx
+- Added `tagNames` state and `useFocusEffect` to reload tags every time the screen gains focus (via `getTagsByTransactionId()` + `getTagsByTransactionIds()`).
+- Added Tags `DataRow` after Comment: renders tag chips (`primary` + 20% background, `primary` text, fs(13)) or `—` placeholder if no tags.
+
+[2026-07-18] ~ | src/i18n/en.ts, es.ts, ca.ts
+- Added 2 i18n keys: `details_tags` ("Tags"/"Etiquetas"/"Etiquetes") and `details_no_tags` ("—"/"—"/"—").
+
+[2026-07-18] ~ | spec/features/019-tag-transactions/1-spec.md
+- Added §6b: TransactionDetailsScreen tag display (layout, chip style, placeholder behavior).
+- Added 4 acceptance criteria for details screen tags.
+
+[2026-07-18] ~ | spec/features/019-tag-transactions/2-plan.md
+- Added TransactionDetailsScreen to modified files list and data flow diagram.
+
+[2026-07-18] ~ | spec/features/019-tag-transactions/3-tasks.md
+- Added T11 (TransactionDetailsScreen tag display), renumbered verification to T12.
+
+[2026-07-18] ~ | src/components/TagSection.tsx
+- Replaced `Alert.alert()` with inline red error message below the input in the create modal.
+- Added real-time duplicate check with debounce (300ms) as user types.
+- Added `error` state; cleared on typing and on modal close.
+- Added red border on input when error is present (matching CreateTagScreen pattern).
+- Updated error text to `fontSize: fs(13)` and `fontWeight: '500'` (consistent with CreateTagScreen).
+- Added `borderWidth: 1` to modal input for border visibility.
+- Submit button disabled when input is empty or has error (surface color + textSecondary text).
+- Removed unused `Alert` import.
+
+[2026-07-18] ~ | src/database/repositories/tagRepo.ts, src/database/webStorage.ts
+- Changed tag sort order from alphabetical (`ORDER BY name` / `localeCompare`) to creation order (`ORDER BY id` / `id - b.id`) so newest tags appear at the end (right side, before "+ Add tag").

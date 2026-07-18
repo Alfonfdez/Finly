@@ -5,7 +5,7 @@ export const tagRepo = {
   async list(userId: number): Promise<Tag[]> {
     const db = getDatabase();
     return await db.getAllAsync<Tag>(
-      `SELECT * FROM tags WHERE user_id = ? ORDER BY name`,
+      `SELECT * FROM tags WHERE user_id = ? ORDER BY id`,
       userId
     );
   },

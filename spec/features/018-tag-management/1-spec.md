@@ -17,7 +17,7 @@
 
 ### 2. Tag repository (native SQLite)
 
-- `tagRepo.list(userId)`: returns all tags ordered by name.
+- `tagRepo.list(userId)`: returns all tags ordered by creation date (id).
 - `tagRepo.create(data)`: inserts a tag (user_id, name). Returns the created tag.
 - `tagRepo.update(id, data)`: updates name. Case-insensitive duplicate check excluding current id.
 - `tagRepo.delete(id)`: deletes tag. Junction rows cascade via ON DELETE CASCADE.
@@ -35,7 +35,7 @@
 
 - Accessed from "Tags" item in Drawer Navigator.
 - Header with hamburger menu + "Tags" title (multilingual).
-- FlatList of all tags ordered by name.
+- FlatList of all tags ordered by creation date.
 - Each row: tag name + chevron right.
 - Pressing a tag navigates to `ModifyTag` screen.
 - Floating "+" FAB centered at bottom that navigates to `CreateTag` screen.
@@ -80,7 +80,7 @@
 - [ ] The database has a `tags` table and a `transaction_tags` junction table after migration.
 - [ ] The Drawer shows "Tags" and pressing it navigates to the tags screen.
 - [ ] The header shows a hamburger menu button and "Tags" title in the active language.
-- [ ] All tags are displayed in a list ordered by name.
+- [ ] All tags are displayed in a list ordered by creation date (newest at the bottom).
 - [ ] Pressing a tag navigates to "Modify tag" with the tag id.
 - [ ] The "+" FAB navigates to "Create tag".
 - [ ] If there are no tags, an empty state is shown.

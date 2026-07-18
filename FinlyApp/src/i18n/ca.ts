@@ -108,6 +108,8 @@ export const ca: Language = {
   add_tag_urgent: 'Urgent',
   add_tag_recurring: 'Recurrent',
   add_tag_personal: 'Personal',
+  add_tag_error_duplicate: 'L\'etiqueta ja existeix',
+  add_tag_error_empty: 'El nom de l\'etiqueta no pot estar buit',
   add_error_title: 'Error',
   add_error_message: 'No s\'ha pogut guardar la transacció',
 
@@ -250,6 +252,8 @@ export const ca: Language = {
   details_date: 'Data',
   details_comment: 'Comentari',
   details_no_comment: 'Sense comentari',
+  details_tags: 'Etiquetes',
+  details_no_tags: '—',
   details_delete: 'Eliminar',
   details_delete_title: 'Voleu eliminar la transacció?',
   details_delete_yes: 'Sí',
