@@ -1,10 +1,11 @@
-import { type SQLiteDatabase, openDatabaseSync } from 'expo-sqlite';
+import { type SQLiteDatabase, openDatabaseSync, deleteDatabaseAsync } from 'expo-sqlite';
 import { migrate001 } from './migrations/001_initial';
 import { seed002 } from './migrations/002_seed';
 import { migrate003 } from './migrations/003_config';
+import { migrate004 } from './migrations/004_tags';
 
 const DATABASE_NAME = 'Finly.db';
-const DATABASE_VERSION = 3;
+const DATABASE_VERSION = 4;
 
 let db: SQLiteDatabase | null = null;
 
@@ -13,6 +14,21 @@ export function getDatabase(): SQLiteDatabase {
     db = openDatabaseSync(DATABASE_NAME);
   }
   return db;
+}
+
+async function isDatabaseConsistent(database: SQLiteDatabase): Promise<boolean> {
+  const tagsTable = await database.getFirstAsync<{ name: string }>(
+    "SELECT name FROM sqlite_master WHERE type='table' AND name='tags'"
+  );
+  return !!tagsTable;
+}
+
+async function deleteDatabaseFile(): Promise<void> {
+  if (db) {
+    await db.closeAsync();
+  }
+  db = null;
+  await deleteDatabaseAsync(DATABASE_NAME);
 }
 
 export async function initDatabase(): Promise<SQLiteDatabase> {
@@ -35,6 +51,16 @@ export async function initDatabase(): Promise<SQLiteDatabase> {
   if (currentVersion < 3) {
     await migrate003(database);
     currentVersion = 3;
+  }
+
+  if (currentVersion < 4) {
+    await migrate004(database);
+    currentVersion = 4;
+  }
+
+  if (!(await isDatabaseConsistent(database))) {
+    await deleteDatabaseFile();
+    return initDatabase();
   }
 
   await database.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
