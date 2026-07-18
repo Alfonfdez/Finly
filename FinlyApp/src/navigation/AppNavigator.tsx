@@ -22,6 +22,9 @@ import AllTransactionsScreen from '../screens/AllTransactionsScreen';
 import TransactionDetailsScreen from '../screens/TransactionDetailsScreen';
 import ModifyTransactionScreen from '../screens/ModifyTransactionScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import TagsScreen from '../screens/TagsScreen';
+import CreateTagScreen from '../screens/CreateTagScreen';
+import ModifyTagScreen from '../screens/ModifyTagScreen';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
@@ -74,6 +77,13 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
         label={labels.nav_accounts}
         onPress={() => props.navigation.navigate('Main', { screen: 'Accounts' })}
         icon={({ color, size }) => <Ionicons name="wallet-outline" size={size} color={color} />}
+        labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
+        inactiveTintColor={c.primary}
+      />
+      <DrawerItem
+        label={labels.nav_tags}
+        onPress={() => props.navigation.navigate('Main', { screen: 'Tags' })}
+        icon={({ color, size }) => <Ionicons name="pricetag-outline" size={size} color={color} />}
         labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
         inactiveTintColor={c.primary}
       />
@@ -195,6 +205,30 @@ function HomeStack() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Ionicons name="create-outline" size={20} color={c.text} />
             <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.modify_title}</Text>
+          </View>
+        ),
+      }} />
+      <Stack.Screen name="Tags" component={TagsScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="pricetag-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_tags}</Text>
+          </View>
+        ),
+      }} />
+      <Stack.Screen name="CreateTag" component={CreateTagScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="pricetag-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.create_tag_title}</Text>
+          </View>
+        ),
+      }} />
+      <Stack.Screen name="ModifyTag" component={ModifyTagScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="pricetag-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.modify_tag_title}</Text>
           </View>
         ),
       }} />

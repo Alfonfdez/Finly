@@ -262,6 +262,21 @@ export const en = {
   modify_save: 'Save',
   modify_error_title: 'Error',
   modify_error_message: 'Failed to save transaction',
+
+  // Tags
+  nav_tags: 'Tags',
+  tags_empty: 'No tags yet',
+  create_tag_title: 'New tag',
+  create_tag_name_placeholder: 'Tag name',
+  create_tag_button: 'Create',
+  create_tag_error_duplicate: 'A tag with this name already exists',
+  modify_tag_title: 'Edit tag',
+  modify_tag_delete: 'Delete tag',
+  modify_tag_save: 'Save',
+  modify_tag_delete_confirm_title: (name: string) => `Delete tag "${name}"?`,
+  modify_tag_delete_confirm_message: 'Transactions using this tag will not be deleted.',
+  modify_tag_delete_confirm_cancel: 'Cancel',
+  modify_tag_delete_confirm_delete: 'Delete',
 };
 
 export type Language = typeof en;

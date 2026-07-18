@@ -1,9 +1,10 @@
 import { createContext, useContext, useState, useMemo, useEffect, useCallback, ReactNode } from 'react';
-import { Account, Category, Transaction } from '../database/types';
+import { Account, Category, Transaction, Tag } from '../database/types';
 import { Period, TransactionType, CategoryWithTotal } from '../constants/types';
 import { accountRepository as accountRepo } from '../database';
 import { categoryRepository as categoryRepo } from '../database';
 import { transactionRepository as transactionRepo } from '../database';
+import { tagRepository as tagRepo } from '../database';
 import { useConfig } from './ConfigContext';
 import { getDisplayCategoryName } from '../i18n';
 import { formatDateForDB } from '../utils/formatters';
@@ -17,6 +18,7 @@ interface AppState {
   accounts: Account[];
   categories: Category[];
   transactions: Transaction[];
+  tags: Tag[];
   loading: boolean;
 }
 
@@ -36,6 +38,7 @@ interface AppContextType extends AppState {
   refresh: () => Promise<void>;
   refreshAccounts: () => Promise<void>;
   refreshCategories: () => Promise<void>;
+  refreshTags: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -93,20 +96,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
-      const [accountsData, categoriesData] = await Promise.all([
-        accountRepo.list(USER_ID),
-        categoryRepo.list(USER_ID),
-      ]);
-      setAccounts(accountsData);
-      setCategories(categoriesData);
-      if (accountsData.length > 0) {
-        setActiveAccount(accountsData[0]);
+      try {
+        const [accountsData, categoriesData, tagsData] = await Promise.all([
+          accountRepo.list(USER_ID),
+          categoryRepo.list(USER_ID),
+          tagRepo.list(USER_ID),
+        ]);
+        setAccounts(accountsData);
+        setCategories(categoriesData);
+        setTags(tagsData);
+        if (accountsData.length > 0) {
+          setActiveAccount(accountsData[0]);
+        }
+      } catch (error) {
+        console.error('Failed to load initial data:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     loadData();
   }, []);
@@ -233,6 +244,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setAccounts(accountsData);
   }, []);
 
+  const refreshTags = useCallback(async () => {
+    const tagsData = await tagRepo.list(USER_ID);
+    setTags(tagsData);
+  }, []);
+
   const value: AppContextType = useMemo(() => ({
     activeAccount,
     activeType,
@@ -242,6 +258,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     accounts,
     categories,
     transactions,
+    tags,
     loading,
     selectAccount: setActiveAccount,
     changeType: setActiveType,
@@ -258,12 +275,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     refresh,
     refreshAccounts,
     refreshCategories,
+    refreshTags,
   }), [
     activeAccount, activeType, activePeriod, selectedDate, customDate,
-    accounts, categories, transactions, loading,
+    accounts, categories, transactions, tags, loading,
     filteredTransactions, activeCategories, accountsWithBalance,
     totalIncome, totalExpenses, totalIncomeAll, totalExpensesAll,
-    refresh, refreshAccounts, refreshCategories,
+    refresh, refreshAccounts, refreshCategories, refreshTags,
   ]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

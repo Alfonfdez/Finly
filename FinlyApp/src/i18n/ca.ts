@@ -264,4 +264,19 @@ export const ca: Language = {
   modify_save: 'Guardar',
   modify_error_title: 'Error',
   modify_error_message: 'No s\'ha pogut guardar la transacció',
+
+  // Tags
+  nav_tags: 'Etiquetes',
+  tags_empty: 'No hi ha etiquetes',
+  create_tag_title: 'Nova etiqueta',
+  create_tag_name_placeholder: 'Nom de l\'etiqueta',
+  create_tag_button: 'Crear',
+  create_tag_error_duplicate: 'Ja existeix una etiqueta amb aquest nom',
+  modify_tag_title: 'Editar etiqueta',
+  modify_tag_delete: 'Eliminar etiqueta',
+  modify_tag_save: 'Guardar',
+  modify_tag_delete_confirm_title: (name: string) => `Eliminar etiqueta "${name}"?`,
+  modify_tag_delete_confirm_message: 'Les transaccions que fan servir aquesta etiqueta no s\'eliminiran.',
+  modify_tag_delete_confirm_cancel: 'Cancel·lar',
+  modify_tag_delete_confirm_delete: 'Eliminar',
 };

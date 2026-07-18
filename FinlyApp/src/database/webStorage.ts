@@ -1,4 +1,4 @@
-import { User, Account, Category, Transaction } from './types';
+import { User, Account, Category, Transaction, Tag, TransactionTag } from './types';
 import { TransactionType } from '../constants/types';
 import { Config } from '../context/ConfigContext';
 
@@ -60,6 +60,8 @@ function seedWebData(): void {
   setStore('accounts', accounts);
   setStore('categories', categories);
   setStore('transactions', []);
+  setStore<Tag>('tags', []);
+  setStore<TransactionTag>('transaction_tags', []);
 }
 
 // --- Repositories (web) ---
@@ -232,6 +234,52 @@ export const webTransactionRepo = {
         .filter(t => t.description && t.description.toLowerCase().includes(lower))
         .map(t => t.description!)
     )].slice(0, 5);
+  },
+};
+
+export const webTagRepo = {
+  async list(userId: number): Promise<Tag[]> {
+    return getStore<Tag>('tags')
+      .filter(t => t.user_id === userId)
+      .sort((a, b) => a.name.localeCompare(b.name));
+  },
+  async create(data: Omit<Tag, 'id' | 'created_at'>): Promise<Tag> {
+    const items = getStore<Tag>('tags');
+    const item: Tag = { ...data, id: nextId(items), created_at: now() };
+    items.push(item);
+    setStore('tags', items);
+    return item;
+  },
+  async update(id: number, data: Partial<Omit<Tag, 'id' | 'created_at'>>): Promise<void> {
+    const items = getStore<Tag>('tags');
+    const idx = items.findIndex(t => t.id === id);
+    if (idx !== -1) items[idx] = { ...items[idx], ...data };
+    setStore('tags', items);
+  },
+  async delete(id: number): Promise<void> {
+    const items = getStore<Tag>('tags');
+    setStore('tags', items.filter(t => t.id !== id));
+    const junction = getStore<TransactionTag>('transaction_tags');
+    setStore('transaction_tags', junction.filter(jt => jt.tag_id !== id));
+  },
+  async existsByName(userId: number, name: string, excludeId?: number): Promise<boolean> {
+    const items = getStore<Tag>('tags');
+    const lower = name.toLowerCase();
+    return items.some(t => {
+      if (t.user_id !== userId) return false;
+      if (t.name.toLowerCase() !== lower) return false;
+      if (excludeId !== undefined && t.id === excludeId) return false;
+      return true;
+    });
+  },
+  async getByTransactionIds(transactionIds: number[]): Promise<{ transaction_id: number; tag_id: number; name: string }[]> {
+    if (transactionIds.length === 0) return [];
+    const junction = getStore<TransactionTag>('transaction_tags');
+    const tags = getStore<Tag>('tags');
+    const tagMap = new Map(tags.map(t => [t.id, t.name]));
+    return junction
+      .filter(jt => transactionIds.includes(jt.transaction_id))
+      .map(jt => ({ transaction_id: jt.transaction_id, tag_id: jt.tag_id, name: tagMap.get(jt.tag_id) ?? '' }));
   },
 };
 
