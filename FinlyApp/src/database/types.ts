@@ -40,3 +40,15 @@ export interface Transaction {
   date: string;
   created_at: string;
 }
+
+export interface Tag {
+  id: number;
+  user_id: number;
+  name: string;
+  created_at: string;
+}
+
+export interface TransactionTag {
+  transaction_id: number;
+  tag_id: number;
+}

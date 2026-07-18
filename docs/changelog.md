@@ -1182,3 +1182,37 @@
 
 [2026-07-18] ~ | src/constants/types.ts
 - Added `tagIds?: number[]` to Transactions in RootStackParamList for tag filter inheritance from HomeScreen.
+
+[2026-07-18] + | src/screens/TagsScreen.tsx
+- Created Tags list screen with FlatList, hamburger menu, FAB, and empty state.
+- Navigates to ModifyTag on row tap; useFocusEffect refreshes list.
+
+[2026-07-18] + | src/screens/CreateTagScreen.tsx
+- Created CreateTag screen with name input (max 20 chars), debounced duplicate validation, and Create button.
+
+[2026-07-18] + | src/screens/ModifyTagScreen.tsx
+- Created ModifyTag screen with name editing, duplicate validation, Delete button with confirmation modal, and Save.
+
+[2026-07-18] ~ | src/i18n/en.ts, es.ts, ca.ts
+- Added tag i18n keys (13 total): nav_tags, tags_empty, create_tag_title, create_tag_name_placeholder, create_tag_button, create_tag_error_duplicate, modify_tag_title, modify_tag_delete, modify_tag_save, modify_tag_delete_confirm_title (function), modify_tag_delete_confirm_message, modify_tag_delete_confirm_cancel, modify_tag_delete_confirm_delete.
+
+[2026-07-18] ~ | src/screens/CreateTagScreen.tsx, ModifyTagScreen.tsx
+- Removed View wrapper around TextInput; applied borderWidth, borderRadius, padding directly on the input element to fix web focus outline not respecting rounded corners.
+
+[2026-07-18] ~ | src/context/AppContext.tsx
+- Added try/catch/finally to loadData() so loading spinner resolves even if a query fails; logs error to console.
+
+[2026-07-18] ~ | src/database/database.ts
+- Added table existence check after migrations to detect stale DB state (version set but table missing); re-runs migration 004 if tags table not found.
+
+[2026-07-18] ~ | package.json
+- Pinned react-native-worklets@0.5.1 to match Expo SDK 54 native code and fix TurboModule installTurboModule crash.
+
+[2026-07-18] + | spec/infrastructure/001-expo-sqlite-wal-cleanup/
+- Created spec documenting the expo-sqlite WAL sidecar file bug (expo/expo#43441), symptoms, and self-healing solution.
+
+[2026-07-18] ~ | src/database/database.ts
+- Added isDatabaseConsistent() and deleteDatabaseFile() helpers for WAL sidecar self-healing.
+- Replaced ad-hoc tags table re-run with full database deletion + recursive reinit when stale state is detected.
+- Fixes stale mock data persisting after Expo Go data clear / reinstall due to orphaned WAL/SHM files.
+- Added db.closeAsync() before deleteDatabaseAsync to fix "database currently open" rejection.
