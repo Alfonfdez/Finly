@@ -31,7 +31,7 @@ export type RootStackParamList = {
   CreateAccount: undefined;
   ModifyAccount: { accountId: number };
   Categories: undefined;
-  Transactions: { categoryId?: number; type?: TransactionType; period?: Period; startDate?: string; endDate?: string } | undefined;
+  Transactions: { categoryId?: number; type?: TransactionType; period?: Period; startDate?: string; endDate?: string; tagIds?: number[] } | undefined;
   AllTransactions: undefined;
   TransactionDetails: { transactionId: number };
   ModifyTransaction: { transactionId: number };

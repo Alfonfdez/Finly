@@ -1,7 +1,7 @@
 # 019 — Tag selection in transactions
 
 - **Objective**
-  Replace the hardcoded tag UI in Add/ModifyTransaction with persistent tags from the database. Users can select existing tags and create new ones inline. Tags are saved to the `transaction_tags` junction table.
+  Replace the hardcoded tag UI in Add/ModifyTransaction with persistent tags from the database. Users can select existing tags and create new ones inline. Tags are saved to the `transaction_tags` junction table. Tags are also displayed on transaction rows in the TransactionsScreen and AllTransactionsScreen.
 
 ---
 
@@ -40,10 +40,35 @@
 - Add `transactionRepo.createWithTags(data, tagIds)`: creates transaction + inserts junction rows in a single operation (or sequential).
 - Add `transactionRepo.updateWithTags(id, data, tagIds)`: updates transaction + replaces junction rows.
 - Add `transactionRepo.getTagsByTransactionId(transactionId)`: returns tag IDs for a transaction.
+- Add `transactionRepo.getTagsByTransactionIds(transactionIds: number[])`: batch query returning `{ transaction_id: number; tag_id: number; name: string }[]` for a set of transaction IDs. Used by TransactionGroup to display tags per row.
 
-### 6. Web localStorage support
+### 6. Transaction list with tags
 
-- Add `webTransactionRepo.createWithTags()`, `updateWithTags()`, `getTagsByTransactionId()`.
+- **TransactionGroup** component shows tag chips on each transaction row.
+- Tags are loaded via `getTagsByTransactionIds()` batch query for all visible transactions.
+- Layout per row:
+
+```
+[CatIcon] [CategoryName]              Amount
+          [Description]
+          [Tag1] [Tag2]               ← small chips (fs(11), compact, no icon)
+```
+
+- If a transaction has no tags, no tag chips are shown (no empty state).
+- Tag chips use `surface` background + `textSecondary` text (visually distinct from selected state in TagSection).
+- Tags are displayed in both TransactionsScreen (014) and AllTransactionsScreen (015).
+
+### 7. Tag filter in navigation
+
+- `Transactions` screen receives optional `tagIds?: number[]` navigation parameter.
+- When `tagIds` is provided, the TransactionsScreen filters its transaction list to only include transactions that match any of the provided tag IDs (OR logic).
+- When `tagIds` contains -1, includes untagged transactions (no tags).
+- When `tagIds` is not provided or empty, all transactions for the category are shown (current behavior).
+- The `tagIds` parameter is passed from HomeScreen when a tag filter is active.
+
+### 8. Web localStorage support
+
+- Add `webTransactionRepo.createWithTags()`, `updateWithTags()`, `getTagsByTransactionId()`, `getTagsByTransactionIds()`.
 - Junction operations done in JS (read/write `@Finly/transaction_tags`).
 
 ---
@@ -55,6 +80,7 @@
 - **Text**: `useFontSize()` for scaling.
 - **Tag selection UX**: same visual as current TagSection (chips, search, modal).
 - **Tags are global**: not filtered by type. A tag can appear on both expense and income transactions.
+- **Transaction row tags**: compact size (fs(11)), no icon, `surface` background, `textSecondary` color.
 
 ---
 
@@ -70,5 +96,11 @@
 - [ ] Tag names are limited to 20 characters.
 - [ ] New tags created inline are auto-selected after creation.
 - [ ] After adding/modifying, `refreshTags()` is called.
+- [ ] Transaction rows show tag chips below the description.
+- [ ] Transactions with no tags show no tag chips.
+- [ ] Tags are loaded via batch query for all visible transactions.
+- [ ] TransactionsScreen accepts optional `tagIds` navigation parameter.
+- [ ] When `tagIds` is provided, transactions are filtered by those tags (OR logic).
+- [ ] When `tagIds` contains -1, untagged transactions are included.
 - [ ] All texts change when switching language.
 - [ ] The screen respects the active theme and text size.
