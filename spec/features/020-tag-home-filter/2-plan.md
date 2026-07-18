@@ -4,24 +4,26 @@
 
 ### New components
 
-- **`TagFilterBar.tsx`**: Horizontal ScrollView of tag chips with "All" as first item. Single selection. Props: `tags: Tag[]`, `activeTagId: number | null`, `onSelect(id: number | null)`.
+- **`TagFilterBar.tsx`**: Horizontal ScrollView of tag chips with multi-select. "All" always first (resets filter), "Untagged" always second (exclusive with regular tags), remaining tags alphabetically sorted. Props: `tags: Tag[]`, `activeTagIds: number[]`, `onToggle(id: number)`, `onClear()`.
 
 ### Modified files
 
 - **`components/CategoryList.tsx`**: Each row gains an expandable tag breakdown section below the existing progress bar. Props: `tagBreakdowns: Map<number, { tag_id: number; name: string }[]>`, `expandedCategoryIds: Set<number>`, `onToggleExpand(id: number)`.
-- **`screens/HomeScreen.tsx`**: Import + render `TagFilterBar` below PeriodTabs. Pass `activeTagId` and `setActiveTagId` from AppContext. Manage expanded category state locally.
-- **`context/AppContext.tsx`**: Add `activeTagId`, `setActiveTagId`. Update `filteredTransactions` to filter by tag. Add `categoryTagBreakdowns: Map<number, { tag_id: number; name: string }[]>`.
-- **`database/repositories/transactionRepo.ts`**: Add `breakdownByCategoryAndTag()`, extend `list()` with `tag_id` filter.
+- **`screens/HomeScreen.tsx`**: Import + render `TagFilterBar` below PeriodTabs. Pass `activeTagIds`, `toggleTagId`, `clearTagFilter` from AppContext. Manage expanded category state locally. Pass `tagIds` to TransactionsScreen navigation.
+- **`context/AppContext.tsx`**: Add `activeTagIds: number[]`, `toggleTagId(id)`, `clearTagFilter()`. Update `filteredTransactions` memo to filter by `activeTagIds` (OR logic, with untagged as exclusive). Add `categoryTagBreakdowns: Map<number, { tag_id: number; name: string }[]>` computed from transactions + tags.
+- **`database/repositories/transactionRepo.ts`**: Add `breakdownByCategoryAndTag()` with Untagged row support, extend `list()` with `tagIds: number[]` filter (OR + NOT EXISTS for untagged), add `getTagsByTransactionIds()` batch query.
 - **`database/webStorage.ts`**: Same methods for web.
-- **`i18n/en.ts, es.ts, ca.ts`**: Add `home_tag_all` (All) key.
+- **`constants/types.ts`**: Add `tagIds?: number[]` to `Transactions` nav param.
+- **`i18n/en.ts, es.ts, ca.ts`**: Add `home_tag_all`, `home_tag_untagged`, `home_tag_view_all`, `home_tag_show_less` keys.
 
 ### Data flow
 
 ```
 HomeScreen:
-  AppContext.tags → TagFilterBar → activeTagId
-  AppContext.filteredTransactions (filtered by tag) → activeCategories → DonutChart / BarChart
-  AppContext.categoryTagBreakdowns → CategoryList (per-category tags)
+  AppContext.tags → TagFilterBar → activeTagIds (multi-select, OR logic)
+  AppContext.filteredTransactions (filtered by activeTagIds) → activeCategories → DonutChart / BarChart
+  AppContext.categoryTagBreakdowns → CategoryList (per-category tags, including Untagged)
+  handleCategoryPress → passes activeTagIds as tagIds nav param → TransactionsScreen
 ```
 
 ### Tag filter bar placement
@@ -34,12 +36,12 @@ HomeScreen:
 ├─────────────────────────────────┤
 │ [Day] [Week] [Month] [Year] [..]│  ← PeriodTabs
 ├─────────────────────────────────┤
-│ [All] [Urgent] [Recurring] [...]│  ← TagFilterBar (NEW)
+│ [All] [Untagged] [Urgent] [..]  │  ← TagFilterBar (NEW, multi-select)
 ├─────────────────────────────────┤
 │         Donut Chart             │
 ├─────────────────────────────────┤
 │ 🛒 Food           45.2%  120€  │
-│    [Urgent] [Recurring]         │  ← Tag chips (NEW)
+│    [Urgent] [Untagged]          │  ← Tag chips (NEW, includes Untagged)
 │ 🚌 Transport      22.1%   58€  │
 │    [Commute]                    │
 │ ...                             │
@@ -48,16 +50,62 @@ HomeScreen:
 
 ### Per-category tag breakdown
 
-- Default: collapsed. Show top 3 tags as compact chips.
-- Expanded: show all tags + "View all (N)" text becomes "Show less".
-- Tapping the category row (icon/name/amount area) navigates to Transactions (unchanged).
+- Default: collapsed. Show top 3 tags as compact chips (including "Untagged" if present).
+- Expanded: show all tags + "View all (N)" text becomes "Show less". Count includes "Untagged" as a distinct entry.
+- Tapping the category row (icon/name/amount area) navigates to Transactions (unchanged). Passes `activeTagIds` as `tagIds` nav param.
 - Tapping the tag section area (below the progress bar) toggles expand.
+
+### Multi-select filtering logic (AppContext)
+
+```typescript
+// activeTagIds = [] → no filter (All)
+// activeTagIds = [-1] → only untagged transactions
+// activeTagIds = [1, 3] → transactions with tag 1 OR tag 3
+// activeTagIds = [-1, 1] → untagged OR transactions with tag 1
+
+filteredTransactions = useMemo(() => {
+  let result = transactions.filter(t => t.type === activeType);
+  if (activeTagIds.length > 0) {
+    const hasUntagged = activeTagIds.includes(-1);
+    const regularIds = activeTagIds.filter(id => id !== -1);
+    result = result.filter(t => {
+      const txnTagIds = tagsByTransaction.get(t.id) ?? [];
+      if (hasUntagged && txnTagIds.length === 0) return true;
+      if (regularIds.length > 0 && regularIds.some(id => txnTagIds.includes(id))) return true;
+      return false;
+    });
+  }
+  return result;
+}, [transactions, activeType, activeTagIds, tagsByTransaction]);
+```
+
+### Untagged handling in breakdown queries
+
+```sql
+-- breakdownByCategoryAndTag: includes Untagged row
+SELECT tt.tag_id, t.name, SUM(tr.amount) AS total
+FROM transactions tr
+JOIN transaction_tags tt ON tr.id = tt.transaction_id
+JOIN tags t ON tt.tag_id = t.id
+WHERE tr.account_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
+  AND tr.category_id = ?
+GROUP BY tt.tag_id
+
+UNION ALL
+
+SELECT -1 AS tag_id, 'Untagged' AS name, SUM(tr.amount) AS total
+FROM transactions tr
+WHERE tr.account_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
+  AND tr.category_id = ?
+  AND NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = tr.id)
+```
 
 ### i18n
 
 | Key | EN | ES | CA |
 |---|---|---|---|
 | `home_tag_all` | All | Todos | Tots |
+| `home_tag_untagged` | Untagged | Sin etiqueta | Sense etiqueta |
 | `home_tag_view_all` | View all (N) | Ver todos (N) | Veure tots (N) |
 | `home_tag_show_less` | Show less | Mostrar menos | Mostrar menys |
 
@@ -66,10 +114,10 @@ HomeScreen:
 ## Dependencies
 
 - 018-tag-management (database schema, tagRepo, AppContext.tags)
-- 019-tag-transactions (tag persistence in transactions)
+- 019-tag-transactions (tag persistence in transactions, getTagsByTransactionIds)
 - Existing CategoryList, HomeScreen, AppContext
 
 ## Estimate
 
-- **Tasks**: 8 tasks in 3 phases
-- **Estimated time**: 3-4 hours
+- **Tasks**: 10 tasks in 3 phases
+- **Estimated time**: 4-5 hours

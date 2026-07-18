@@ -1128,3 +1128,57 @@
 
 [2026-07-17] ~ | spec/constitution/3-roadmap.md
 - Added 018-tag-management, 019-tag-transactions, 020-tag-home-filter with pending status.
+
+[2026-07-18] ~ | spec/features/020-tag-home-filter/1-spec.md
+- Rewrote tag filter bar: single-select → multi-select with OR logic.
+- Added "Untagged" chip (exclusive with regular tags, always second after "All").
+- "All" chip resets all selections (empty activeTagIds = no filter).
+- Added `tagIds?: number[]` navigation parameter for tag filter inheritance to TransactionsScreen.
+- Updated filtering logic: OR for regular tags, NOT EXISTS for untagged.
+- Updated database queries: breakdownByCategoryAndTag includes Untagged row (tag_id = -1, UNION ALL).
+- Added getTagsByTransactionIds batch query for TransactionGroup tag rendering.
+- Updated AppContext: activeTagIds: number[], toggleTagId(), clearTagFilter().
+- Updated acceptance criteria for multi-select, Untagged, and tag inheritance.
+
+[2026-07-18] ~ | spec/features/020-tag-home-filter/2-plan.md
+- Updated TagFilterBar component: multi-select props (activeTagIds, onToggle, onClear).
+- Updated AppContext plan: activeTagIds state, toggleTagId with exclusive Untagged logic, OR filtering in filteredTransactions memo.
+- Added SQL example for Untagged handling (NOT EXISTS subquery + UNION ALL).
+- Updated data flow diagram with tag inheritance to TransactionsScreen.
+- Added home_tag_untagged i18n key (en: "Untagged", es: "Sin etiqueta", ca: "Sense etiqueta").
+- Updated estimate: 10 tasks in 3 phases (was 9 tasks).
+
+[2026-07-18] ~ | spec/features/020-tag-home-filter/3-tasks.md
+- Added T3: getTagsByTransactionIds batch query for TransactionGroup.
+- Added T4: web localStorage support for all 3 new methods.
+- Added T9: update constants/types.ts with tagIds nav param.
+- Updated T5: AppContext with activeTagIds, toggleTagId, clearTagFilter, tagsByTransaction.
+- Updated T6: TagFilterBar with multi-select, Untagged exclusive chip.
+- Updated T7: CategoryList with Untagged in tag breakdown.
+- Updated T8: HomeScreen passes tagIds in navigation params.
+- Total: 11 tasks (was 9).
+
+[2026-07-18] ~ | spec/features/019-tag-transactions/1-spec.md
+- Added section 6: Transaction list with tags — TransactionGroup shows tag chips (fs(11), compact, no icon) below description per transaction row.
+- Added section 7: Tag filter in navigation — TransactionsScreen accepts optional tagIds param, filters by OR logic with untagged support.
+- Added getTagsByTransactionIds batch query to repository methods.
+- Added acceptance criteria for transaction row tags, tag filter inheritance, and untagged support.
+
+[2026-07-18] ~ | spec/features/019-tag-transactions/2-plan.md
+- Added TransactionGroup modifications: tagsByTransaction prop, chip rendering below description.
+- Added TransactionsScreen tag filtering: read tagIds from route, filter with OR logic, batch tag loading.
+- Added AllTransactionsScreen batch tag loading.
+- Added getTagsByTransactionIds method signature and TransactionsScreen filtering code example.
+- Updated dependencies: added TransactionsScreen, AllTransactionsScreen, TransactionGroup.
+- Updated estimate: 9 tasks in 3 phases (was 6 tasks).
+
+[2026-07-18] ~ | spec/features/019-tag-transactions/3-tasks.md
+- Added T3: add tagIds to constants/types.ts.
+- Added T8: update TransactionGroup with tagsByTransaction prop and chip rendering.
+- Added T9: update TransactionsScreen with tagIds filtering and batch tag loading.
+- Added T10: update AllTransactionsScreen with batch tag loading.
+- Added T11: expanded verification to include transaction row tags and tag filter inheritance.
+- Total: 11 tasks (was 7).
+
+[2026-07-18] ~ | src/constants/types.ts
+- Added `tagIds?: number[]` to Transactions in RootStackParamList for tag filter inheritance from HomeScreen.
