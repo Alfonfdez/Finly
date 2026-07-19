@@ -1500,3 +1500,7 @@
 
 [2026-07-19] ~ | src/screens/ModifyAccountScreen.tsx, spec/features/012-modify-delete-account-screen/1-spec.md
 - Reserved default account name is now blocked in ModifyAccountScreen even when editing the default account (id 1) itself, matching ModifyCategoryScreen behavior. Typing 'my wallet' / 'mi cartera' (any case/language) shows the duplicate error and disables Save; removed the previous id 1 exception.
+
+[2026-07-19] ~ | lint cleanup (pre-existing warnings/error)
+- Fixed 1 error + 24 warnings so 'npx expo lint' reports 0 problems: removed unused vars (Ionicons, result, mc, config, dates, Keyboard, setFotoUri, getShortMonthName, err), merged duplicate database imports in AppContext, removed Unicode BOM in SettingsScreen, added displayName to CommentInput, wrapped 'today'/minDate in useMemo and corrected hook dependency arrays in calendar components.
+- Verified: eslint exit 0, tsc --noEmit exit 0.

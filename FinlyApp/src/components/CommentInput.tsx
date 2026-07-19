@@ -41,6 +41,7 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus 
 
 export default CommentInput;
 
+CommentInput.displayName = 'CommentInput';
 const styles = StyleSheet.create({
   container: {
     marginBottom: 16,

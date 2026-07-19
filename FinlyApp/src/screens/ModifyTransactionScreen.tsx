@@ -87,7 +87,7 @@ export default function ModifyTransactionScreen() {
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const [comment, setComment] = useState(transaction?.description ?? '');
   const [commentSuggestions, setCommentSuggestions] = useState<string[]>([]);
-  const [fotoUri, setFotoUri] = useState<string | null>(null);
+  const [fotoUri] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const [modalAccountVisible, setModalAccountVisible] = useState(false);
@@ -116,7 +116,7 @@ export default function ModifyTransactionScreen() {
         setSelectedTags(ids);
       });
     }
-  }, [transactionId]);
+  }, [transactionId, transaction]);
 
   // Handle category selected from AddCategoryScreen
   useFocusEffect(useCallback(() => {
@@ -127,7 +127,7 @@ export default function ModifyTransactionScreen() {
       setReorderedCategory(pending.categoryId);
       setTimeout(() => scrollRef.current?.scrollTo({ y: 0, animated: false }), 100);
     }
-  }, [categories, type]));
+  }, [type]));
 
   useEffect(() => {
     if (prevType.current !== type) {
@@ -243,7 +243,7 @@ export default function ModifyTransactionScreen() {
 
       await refresh();
       navigation.goBack();
-    } catch (err) {
+    } catch {
       Alert.alert(labels.modify_error_title, labels.modify_error_message);
     } finally {
       setSubmitting(false);

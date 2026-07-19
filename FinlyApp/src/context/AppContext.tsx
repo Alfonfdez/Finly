@@ -1,10 +1,7 @@
 import { createContext, useContext, useState, useMemo, useEffect, useCallback, ReactNode } from 'react';
 import { Account, Category, Transaction, Tag } from '../database/types';
 import { Period, TransactionType, CategoryWithTotal } from '../constants/types';
-import { accountRepository as accountRepo } from '../database';
-import { categoryRepository as categoryRepo } from '../database';
-import { transactionRepository as transactionRepo } from '../database';
-import { tagRepository as tagRepo } from '../database';
+import { accountRepository as accountRepo, categoryRepository as categoryRepo, transactionRepository as transactionRepo, tagRepository as tagRepo } from '../database';
 import { useConfig } from './ConfigContext';
 import { getDisplayCategoryName } from '../i18n';
 import { formatDateForDB } from '../utils/formatters';
@@ -88,7 +85,7 @@ function calculateStartEnd(period: Period, date: Date): { start: Date; end: Date
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { config } = useConfig();
+  useConfig();
   const [activeAccount, setActiveAccount] = useState<Account | null>(null);
   const [activeType, setActiveType] = useState<TransactionType>('expense');
   const [activePeriod, setActivePeriod] = useState<Period>('day');
@@ -157,14 +154,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     loadTransactions();
   }, [activeAccount, activePeriod, selectedDate, customDate]);
-
-  const dates = useMemo(
-    () => activePeriod === 'custom'
-      ? customDate
-      : calculateStartEnd(activePeriod, selectedDate),
-    [activePeriod, customDate, selectedDate],
-  );
-
   const filteredTransactions = useMemo(
     () => {
       let result = transactions.filter(t => {
@@ -251,7 +240,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         percentage: totalByType > 0 ? (total / totalByType) * 100 : 0,
       };
     }).filter(cat => cat.total > 0);
-  }, [categories, activeType, filteredTransactions, config.language]);
+  }, [categories, activeType, filteredTransactions]);
 
   const refresh = useCallback(async () => {
     if (!activeAccount) return;

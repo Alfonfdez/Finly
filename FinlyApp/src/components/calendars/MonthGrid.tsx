@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { getMonthName } from '../../utils/formatters';
 import { CalendarBaseProps } from './types';
@@ -7,7 +7,7 @@ import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 
 export default function MonthGrid({ date, onSelect }: CalendarBaseProps) {
-  const today = new Date();
+  const today = useMemo(() => new Date(), []);
   const [year, setYear] = useState(date.getFullYear());
   const { activeColors: c } = useConfig();
   const fs = useFontSize();

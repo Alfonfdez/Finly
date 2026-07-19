@@ -25,7 +25,7 @@ function sameWeek(a: Date, b: Date, firstDay: 0 | 1): boolean {
 }
 
 export default function WeekPicker({ date, onSelect, firstDay = 1 }: Props) {
-  const today = new Date();
+  const today = useMemo(() => new Date(), []);
   const [year, setYear] = useState(date.getFullYear());
   const [activeMonth, setActiveMonth] = useState(date.getMonth() + 1);
   const { activeColors: c } = useConfig();

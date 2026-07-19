@@ -35,7 +35,6 @@ function subtitleText(period: Period, date: Date): string {
   const months = labels.months;
   const shortMonths = labels.months_short;
   const m = months[date.getMonth()];
-  const mc = shortMonths[date.getMonth()];
 
   switch (period) {
     case 'day': {
@@ -66,7 +65,7 @@ export default function CalendarModal({
   const [tempDate, setTempDate] = useState(date);
   const [tempRangeStart, setTempRangeStart] = useState(rangeStart ?? new Date(new Date().getFullYear(), 0, 1));
   const [tempRangeEnd, setTempRangeEnd] = useState(rangeEnd ?? new Date());
-  const { config, activeColors: c } = useConfig();
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
 

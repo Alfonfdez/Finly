@@ -1,6 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { getShortMonthName } from '../../utils/formatters';
 import DayPicker from './DayPicker';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
@@ -23,8 +22,8 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange, fi
   const labels = t();
   const shortMonths = labels.months_short;
 
-  const minDate = new Date(ANIO_MINIMO, 0, 1);
-  const today = new Date();
+  const minDate = useMemo(() => new Date(ANIO_MINIMO, 0, 1), []);
+  const today = useMemo(() => new Date(), []);
 
   const handleAllTime = useCallback(() => {
     const nuevoEstado = !allTime;
@@ -32,7 +31,7 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange, fi
     if (nuevoEstado) {
       onTempRangeChange(minDate, today);
     }
-  }, [allTime, onTempRangeChange]);
+  }, [allTime, onTempRangeChange, minDate, today]);
 
   const handleDayPress = useCallback((d: Date) => {
     if (allTime) return;

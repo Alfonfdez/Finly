@@ -26,7 +26,7 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
   const today = new Date();
   const [year, setYear] = useState((initialView ?? date).getFullYear());
   const [month, setMonth] = useState((initialView ?? date).getMonth() + 1);
-  const { config, activeColors: c } = useConfig();
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
 
   const daysInMonth = getDaysInMonth(year, month);
