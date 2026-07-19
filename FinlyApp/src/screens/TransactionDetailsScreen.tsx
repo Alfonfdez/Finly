@@ -8,7 +8,7 @@ import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { formatCurrency, formatDateLong } from '../utils/formatters';
-import { t, getDisplayCategoryName } from '../i18n';
+import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
 import { transactionRepository } from '../database';
 import { RootStackParamList } from '../constants/types';
 
@@ -131,7 +131,7 @@ export default function TransactionDetailsScreen() {
                   <Ionicons name={account.icon as ComponentProps<typeof Ionicons>['name']} size={18} color={account.color} />
                 </View>
               )}
-              <Text style={[styles.nameValue, { color: c.text, fontSize: fs(15) }]}>{account?.name ?? ''}</Text>
+              <Text style={[styles.nameValue, { color: c.text, fontSize: fs(15) }]}>{account ? getDisplayAccountName(account) : ''}</Text>
             </View>
           </DataRow>
 

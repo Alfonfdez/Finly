@@ -7,7 +7,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t } from '../i18n';
+import { t, getDisplayAccountName } from '../i18n';
 import TypeTabs from '../components/TypeTabs';
 import AccountModal from '../components/AccountModal';
 import CategoryGrid from '../components/CategoryGrid';
@@ -322,7 +322,7 @@ export default function ModifyTransactionScreen() {
             {labels.add_account}
           </Text>
           <Text style={[styles.accountName, { color: c.text, fontSize: fs(15) }]}>
-            {selectedAccount?.name ?? ''}
+            {selectedAccount ? getDisplayAccountName(selectedAccount) : ''}
           </Text>
         </TouchableOpacity>
 

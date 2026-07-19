@@ -28,6 +28,14 @@
 - The full row is a `TouchableOpacity` that navigates to `ModifyAccountScreen` (012) with `accountId` as a parameter when pressed.
 - If there are no accounts, an empty state is shown with an icon and message.
 
+### 4. Default account name (multilingual)
+
+- The seeded default account (id 1, "My Wallet") is treated like a default category: its name is stored in English (`'My Wallet'`) and is shown translated according to the active language via `getDisplayAccountName(account)`.
+- The mapping of account id → i18n key lives in `ACCOUNT_I18N_KEYS` in `src/i18n/index.ts` (currently `{ 1: 'account_my_wallet' }`).
+- If the user renames the default account, `account.name` no longer equals the English default, so it is displayed verbatim (custom name, no longer multilingual). Renaming it back to exactly the English default (`'My Wallet'`) restores the multilingual behavior.
+- The translated values are: en `My Wallet`, es `Mi Cartera`, ca `La meva cartera`.
+
+
 ### 4. Floating "+" button
 
 - Floating button (FAB) centered at the bottom with `Ionicons "add"` icon.
@@ -64,6 +72,7 @@
 - [ ] If the account has a note (description), it is displayed below the name in a soft color and reduced size.
 - [ ] Pressing an account navigates to "Modify account" (012) with the `accountId`.
 - [ ] If there are no accounts, an empty state is shown.
+- [ ] The default account "My Wallet" is displayed translated according to the active language (e.g. es "Mi Cartera", ca "La meva cartera") via `getDisplayAccountName`.
 - [ ] The floating "+" button navigates to "Create account" (013).
 - [ ] All texts change when switching language.
 - [ ] The screen respects the active theme and text size.

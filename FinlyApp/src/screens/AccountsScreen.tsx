@@ -8,7 +8,7 @@ import { useNavigation, DrawerActions, useFocusEffect } from '@react-navigation/
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t } from '../i18n';
+import { t, getDisplayAccountName } from '../i18n';
 import { accountRepository } from '../database';
 import { Account } from '../database/types';
 import { formatCurrency } from '../utils/formatters';
@@ -63,14 +63,14 @@ export default function AccountsScreen() {
     <TouchableOpacity
       style={[styles.accountRow, { backgroundColor: c.surface }]}
       onPress={() => navigation.navigate('ModifyAccount', { accountId: item.id })}
-      accessibilityLabel={`${item.name} ${formatCurrency(item.balance, config.currency, config.decimalSeparator)}`}
+      accessibilityLabel={`${getDisplayAccountName(item)} ${formatCurrency(item.balance, config.currency, config.decimalSeparator)}`}
     >
       <View style={[styles.iconBubble, { backgroundColor: item.color + '22', borderRadius: round ? 22 : 12 }]}>
         <Ionicons name={item.icon as any} size={24} color={item.color} />
       </View>
       <View style={styles.accountInfo}>
         <Text style={[styles.accountName, { color: c.text, fontSize: fs(15) }]} numberOfLines={1}>
-          {item.name}
+          {getDisplayAccountName(item)}
         </Text>
         {item.description ? (
           <Text

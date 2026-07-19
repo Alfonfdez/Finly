@@ -10,7 +10,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t } from '../i18n';
+import { t, getDisplayAccountName, getDefaultEnglishAccountName, getAccountName, getAllDefaultAccountNames } from '../i18n';
 import { accountRepository } from '../database';
 import { Account } from '../database/types';
 import { RootStackParamList } from '../constants/types';
@@ -64,7 +64,7 @@ export default function ModifyAccountScreen() {
       const found = list.find(a => a.id === accountId);
       if (found) {
         setAccount(found);
-        setName(found.name);
+        setName(getDisplayAccountName(found));
         setSelectedIcon(found.icon);
         setSelectedColor(found.color);
         setDescription(found.description ?? '');
@@ -84,7 +84,8 @@ export default function ModifyAccountScreen() {
     setCheckingName(true);
     try {
       const exists = await accountRepository.existsByName(value.trim(), accountId);
-      setNameError(exists ? labels.modify_account_error_duplicate : null);
+      const isDefaultName = getAllDefaultAccountNames().has(value.trim().toLowerCase());
+      setNameError(exists || isDefaultName ? labels.modify_account_error_duplicate : null);
     } catch {
       setNameError(null);
     } finally {
@@ -116,9 +117,13 @@ export default function ModifyAccountScreen() {
 
   const handleSave = async () => {
     if (!canSave || !account) return;
+    const trimmedName = name.trim();
+    const englishDefault = getDefaultEnglishAccountName(account.id);
+    const displayDefault = getAccountName(account.id);
+    const saveName = englishDefault && trimmedName === displayDefault ? englishDefault : trimmedName;
     try {
       await accountRepository.update(accountId, {
-        name: name.trim(),
+        name: saveName,
         icon: selectedIcon!,
         color: selectedColor!,
         description: description.trim(),
@@ -319,7 +324,7 @@ export default function ModifyAccountScreen() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: c.surface }]}>
             <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(16) }]}>
-              {account && labels.modify_account_delete_confirm_title(account.name)}
+              {account && labels.modify_account_delete_confirm_title(getDisplayAccountName(account))}
             </Text>
             <Text style={[styles.modalMessage, { color: c.textSecondary, fontSize: fs(14) }]}>
               {labels.modify_account_delete_confirm_message}

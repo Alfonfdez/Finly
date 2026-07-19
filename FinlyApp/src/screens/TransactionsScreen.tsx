@@ -12,7 +12,7 @@ import { RootStackParamList } from '../constants/types';
 import { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatCurrency } from '../utils/formatters';
-import { getDisplayCategoryName, t } from '../i18n';
+import { getDisplayCategoryName, t, getDisplayAccountName } from '../i18n';
 import AccountModal from '../components/AccountModal';
 import SortToggle, { SortBy, SortDirection } from '../components/SortToggle';
 import TagFilterBar from '../components/TagFilterBar';
@@ -182,7 +182,7 @@ export default function TransactionsScreen() {
             </View>
           ) : null; })()}
           <Text style={[styles.accountTriggerName, { color: c.text, fontSize: fs(14) }]} numberOfLines={1}>
-            {accountsWithBalance.find(x => x.id === selectedAccountId)?.name ?? ''}
+            {accountsWithBalance.find(x => x.id === selectedAccountId) ? getDisplayAccountName(accountsWithBalance.find(x => x.id === selectedAccountId)!) : ''}
           </Text>
           <Ionicons name="chevron-down" size={16} color={c.textSecondary} />
         </TouchableOpacity>

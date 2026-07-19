@@ -171,6 +171,9 @@ export const en = {
   cat_gift: 'Gift',
   cat_other: 'Other',
 
+  // Accounts (default - multilingual)
+  account_my_wallet: 'My Wallet',
+
   // Transactions
   transactions_title: 'Transactions',
   transactions_empty: 'No transactions',

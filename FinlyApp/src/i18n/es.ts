@@ -173,6 +173,9 @@ export const es: Language = {
   cat_gift: 'Regalo',
   cat_other: 'Otro',
 
+  // Accounts (default - multilingual)
+  account_my_wallet: 'Mi Cartera',
+
   // Transactions
   transactions_title: 'Transacciones',
   transactions_empty: 'No hay transacciones',

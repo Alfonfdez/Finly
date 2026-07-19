@@ -22,6 +22,7 @@
 - **Duplicate validation**: when typing, it verifies that an account with the same name does not already exist (case-insensitive).
   - "Cuenta", "cuenta" and "CUENTA" are considered duplicates.
   - If a duplicate exists, a red error text is shown below the input: "An account with this name already exists" (multilingual) and the "Create" button remains disabled.
+  - **Reserved default name**: the default account name and all its translations are reserved. A new account cannot be named (any casing, any language) "My Wallet", "Mi Cartera" or "La meva cartera" (checked via `getAllDefaultAccountNames()` from `src/i18n`). Attempting to use one shows the same duplicate error and disables "Create".
   - The check runs with a 300ms debounce to avoid querying on every keystroke.
 
 ### 3. Symbols (icons)
@@ -137,6 +138,7 @@
 - [ ] The "Create" button is disabled if the name is empty.
 - [ ] If the name is empty, "Enter an account name" is shown in red.
 - [ ] Duplicate validation checks case-insensitive against existing accounts.
+- [ ] Reserved default account names (any casing/language: "My Wallet", "Mi Cartera", "La meva cartera") are rejected with the duplicate error and "Create" is disabled.
 - [ ] If a duplicate exists, "An account with this name already exists" is shown in red and the button is disabled.
 - [ ] ~20 icons are shown in a 4-column grid with vertical scroll.
 - [ ] When an icon is pressed, it is selected and visually highlighted.
