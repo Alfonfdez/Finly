@@ -1426,3 +1426,18 @@
 
 [2026-07-19] ~ | src/components/CategoryGrid.tsx
 - "More"/"Create" button in compact category grid now uses a dashed outline style (transparent background + dashed border) to visually distinguish it from regular category items.
+
+[2026-07-19] ~ | src/database/database.ts, src/database/migrations/001_initial.ts, 002_seed.ts, 003_config.ts, deleted 004_tags.ts, 005_updated_at.ts, spec/constitution/2-tech-stack.md
+- Simplified DB initialization: merged tags + transaction_tags tables and transactions.updated_at column into the initial schema (001_initial.ts). Removed versioned migrations 004 (tags) and 005 (updated_at) and the WAL self-healing/recovery flow from database.ts.
+- initDatabase() now runs only the unified initial schema + seed + config defaults (no DATABASE_VERSION / PRAGMA user_version / deleteDatabaseAsync). The developer resets the DB manually (clear LocalStorage / Clear Data), so no automatic migration path is needed.
+- Updated constitution 2-tech-stack.md: SQLite now described as a single initial schema migration (no DATABASE_VERSION).
+
+[2026-07-19] ~ | src/database/migrations/001_initial.ts, 002_seed.ts, 003_config.ts, src/database/database.ts
+- Renamed migration/seed functions to reflect their purpose: migrate001 -> createSchema, seed002 -> seedData, migrate003 -> seedConfig.
+- 003_config.ts now seeds the full config set including category_icon_shape and account_icon_shape (previously missing, relied on runtime fallback to defaults).
+- initDatabase() reads as createSchema -> seedData -> seedConfig.
+
+[2026-07-19] ~ | spec/features/002-db-design/ (1-spec.md, 2-plan.md, 3-tasks.md), spec/constitution/3-roadmap.md
+- Updated 002-db-design spec to reflect the implemented schema: English table/column names, added tags + transaction_tags junction tables, transactions.updated_at, accounts.description, and the 8-key config table.
+- Documented the single-pass initialization (createSchema -> seedData -> seedConfig) with no versioned migrations in development; web localStorage fallback; and the full repository method list.
+- Updated constitution roadmap 002 entry (7 tables, no versioned migrations, web fallback).

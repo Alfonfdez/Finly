@@ -49,6 +49,7 @@ export default function HomeScreen() {
       setTagBreakdowns(new Map());
       return;
     }
+    const currentAccount = activeAccount;
 
     async function loadTagBreakdowns() {
       const dates = activePeriod === 'custom'
@@ -84,7 +85,7 @@ export default function HomeScreen() {
       const breakdowns = new Map<number, { tag_id: number; name: string; total: number }[]>();
       for (const cat of activeCategories) {
         const data = await transactionRepo.breakdownByCategoryAndTag(
-          activeAccount.id,
+          currentAccount.id,
           cat.id,
           activeType,
           formatDateForDB(dates.start),

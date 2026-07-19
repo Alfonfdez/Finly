@@ -4,7 +4,7 @@
 - **React Native** (Expo managed workflow, SDK 54) — main framework for iOS and Android.
 - **TypeScript** — static typing for the codebase.
 - **React Navigation** (native-stack + drawer) — screen navigation.
-- **SQLite** (expo-sqlite) — local persistence on native. `DATABASE_VERSION = 3`.
+- **SQLite** (expo-sqlite) — local persistence on native. Single initial schema migration (`001_initial`) with seed (`002_seed`) and config defaults (`003_config`); no versioned migrations.
 - **@expo/vector-icons** (Ionicons) — icon library used throughout the app.
 - **react-native-svg** — custom donut chart and bar chart.
 - **reanimated-color-picker** — dynamic color picker (CreateCategoryScreen).
@@ -83,14 +83,14 @@ FinlyApp/
 |   |   +-- ConfigContext.tsx        <- user preferences (theme, currency, language)
 |   |
 |   +-- database/
-|   |   +-- database.ts             <- SQLite initialization + migrations (DATABASE_VERSION = 3)
+|   |   +-- database.ts             <- SQLite initialization (runs initial schema + seed + config)
 |   |   +-- types.ts                <- TypeScript entity interfaces
 |   |   +-- index.ts                <- platform switching (SQLite vs localStorage)
 |   |   +-- webStorage.ts           <- localStorage fallback for web
 |   |   +-- migrations/
-|   |   |   +-- 001_initial.ts      <- CREATE TABLE + indexes
-|   |   |   +-- 002_seed.ts         <- default user, 1 account, categories
-|   |   |   +-- 003_config.ts       <- config table + default values
+|   |   |   +-- 001_initial.ts      <- CREATE TABLE (users, accounts, categories, transactions, tags, transaction_tags, config) + indexes
+|   |   |   +-- 002_seed.ts         <- default user, 1 account, 18 categories
+|   |   |   +-- 003_config.ts       <- config default values (table created in 001)
 |   |   +-- repositories/
 |   |       +-- userRepo.ts         <- user CRUD
 |   |       +-- accountRepo.ts      <- account CRUD + balance calculation
