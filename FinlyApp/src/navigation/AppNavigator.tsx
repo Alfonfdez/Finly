@@ -69,7 +69,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
       <DrawerItem
         label={labels.nav_categories}
         onPress={() => props.navigation.navigate('Main', { screen: 'Categories' })}
-        icon={({ color, size }) => <Ionicons name="pricetag-outline" size={size} color={color} />}
+        icon={({ color, size }) => <Ionicons name="grid-outline" size={size} color={color} />}
         labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
         inactiveTintColor={c.primary}
       />
@@ -117,7 +117,7 @@ function HomeStack() {
       <Stack.Screen name="AddCategory" component={AddCategoryScreen} options={{
         headerTitle: () => (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="pricetag-outline" size={20} color={c.text} />
+            <Ionicons name="grid-outline" size={20} color={c.text} />
             <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.add_cat_title}</Text>
           </View>
         ),
@@ -125,7 +125,7 @@ function HomeStack() {
       <Stack.Screen name="CreateCategory" component={CreateCategoryScreen} options={{
         headerTitle: () => (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="pricetag-outline" size={20} color={c.text} />
+            <Ionicons name="grid-outline" size={20} color={c.text} />
             <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.create_cat_title}</Text>
           </View>
         ),
@@ -133,7 +133,7 @@ function HomeStack() {
       <Stack.Screen name="ModifyCategory" component={ModifyCategoryScreen} options={{
         headerTitle: () => (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="pricetag-outline" size={20} color={c.text} />
+            <Ionicons name="grid-outline" size={20} color={c.text} />
             <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.modify_cat_title}</Text>
           </View>
         ),
@@ -141,7 +141,7 @@ function HomeStack() {
       <Stack.Screen name="Categories" component={CategoriesScreen} options={{
         headerTitle: () => (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="pricetag-outline" size={20} color={c.text} />
+            <Ionicons name="grid-outline" size={20} color={c.text} />
             <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_categories}</Text>
           </View>
         ),

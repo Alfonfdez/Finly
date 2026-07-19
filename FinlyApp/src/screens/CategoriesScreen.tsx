@@ -73,7 +73,7 @@ export default function CategoriesScreen() {
 
         {categoriesByType.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Ionicons name="pricetag-outline" size={64} color={c.textSecondary} />
+            <Ionicons name="grid-outline" size={64} color={c.textSecondary} />
             <Text style={[styles.emptyText, { color: c.textSecondary, fontSize: fs(16) }]}>
               {labels.add_cat_no_results}
             </Text>
