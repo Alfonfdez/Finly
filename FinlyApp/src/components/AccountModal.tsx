@@ -5,7 +5,7 @@ import { Account } from '../database/types';
 import { formatCurrency } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t } from '../i18n';
+import { t, getDisplayAccountName } from '../i18n';
 
 interface AccountWithBalance extends Account {
   balance: number;
@@ -52,7 +52,7 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
                     <Ionicons name={item.icon as ComponentProps<typeof Ionicons>['name']} size={20} color={item.color} />
                   </View>
                   <View style={styles.info}>
-                    <Text style={[styles.name, { color: c.text, fontSize: fs(14) }]}>{item.name}</Text>
+                    <Text style={[styles.name, { color: c.text, fontSize: fs(14) }]}>{getDisplayAccountName(item)}</Text>
                     <Text style={[styles.balance, { color: c.textSecondary, fontSize: fs(12) }]}>
                       {formatCurrency(item.balance, config.currency, config.decimalSeparator)}
                     </Text>

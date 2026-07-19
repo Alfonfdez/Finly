@@ -1489,3 +1489,14 @@
 [2026-07-19] ~ | src/screens/ModifyCategoryScreen.tsx, spec/features/009-modify-delete-category-screen/1-spec.md
 - Edge case: when deleting a category that has transactions but is the only category of its type (no other same-type category to move to), the modal now shows the 'no transactions' message and only 'Permanent delete' (no 'Move transactions first'), avoiding a dead-end picker with no targets.
 - Updated 009 spec: added Scenario A2 (only category of its type) and clarified the modal-button conditions in acceptance criteria.
+[2026-07-19] + | src/i18n/{en,es,ca}.ts, src/i18n/index.ts, src/screens/{AccountsScreen,HomeScreen,AddTransactionScreen,ModifyTransactionScreen,AllTransactionsScreen,TransactionsScreen,TransactionDetailsScreen,ModifyAccountScreen}.tsx, src/components/AccountModal.tsx, spec/features/{011-accounts-screen,002-db-design}/1-spec.md
+- Made the default account (id 1, 'My Wallet') multilingual, mirroring the default-category approach: stored in English and translated at display time via getDisplayAccountName(account) (en 'My Wallet', es 'Mi Cartera', ca 'La meva cartera').
+- Added ACCOUNT_I18N_KEYS map and getDisplayAccountName / getDefaultEnglishAccountName helpers to src/i18n/index.ts.
+- Wrapped all account name displays with getDisplayAccountName so the default account name follows the active language; renaming the default account stores a custom literal (no longer multilingual, restorable by renaming back to 'My Wallet').
+
+[2026-07-19] ~ | src/i18n/index.ts, src/screens/CreateAccountScreen.tsx, src/screens/ModifyAccountScreen.tsx, spec/features/{013-create-account-screen,012-modify-delete-account-screen}/1-spec.md
+- Reserved the default account name across all languages/casing: added getAllDefaultAccountNames() to src/i18n/index.ts (en 'My Wallet', es 'Mi Cartera', ca 'La meva cartera', lowercased).
+- CreateAccountScreen and ModifyAccountScreen now block naming/renaming an account to any default-name variant (case-insensitive, any language) reusing the existing duplicate error. The default account (id 1) may keep/restore its own name.
+
+[2026-07-19] ~ | src/screens/ModifyAccountScreen.tsx, spec/features/012-modify-delete-account-screen/1-spec.md
+- Reserved default account name is now blocked in ModifyAccountScreen even when editing the default account (id 1) itself, matching ModifyCategoryScreen behavior. Typing 'my wallet' / 'mi cartera' (any case/language) shows the duplicate error and disables Save; removed the previous id 1 exception.

@@ -9,7 +9,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { formatCurrency, formatDateForDB } from '../utils/formatters';
 import { RootStackParamList, Period } from '../constants/types';
-import { t } from '../i18n';
+import { t, getDisplayAccountName } from '../i18n';
 import { transactionRepository as transactionRepo } from '../database';
 import AccountModal from '../components/AccountModal';
 import TypeTabs from '../components/TypeTabs';
@@ -206,7 +206,7 @@ export default function HomeScreen() {
                <View style={[styles.accountIcon, { backgroundColor: activeAccount.color + '30', borderRadius: config.accountIconShape === 'circle' ? 12 : 4 }]}>
                 <Ionicons name={activeAccount.icon as ComponentProps<typeof Ionicons>['name']} size={18} color={activeAccount.color} />
               </View>
-              <Text style={[styles.accountLabel, { color: c.textSecondary, fontSize: fs(14) }]}>{activeAccount.name}</Text>
+              <Text style={[styles.accountLabel, { color: c.textSecondary, fontSize: fs(14) }]}>{getDisplayAccountName(activeAccount)}</Text>
               <Ionicons name="chevron-down-outline" size={14} color={c.textSecondary} />
             </TouchableOpacity>
             <Text style={[styles.totalText, { color: totalColor, fontSize: fs(28) }]}>

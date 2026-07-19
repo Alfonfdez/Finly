@@ -36,6 +36,11 @@ const CATEGORY_I18N_KEYS: Record<number, keyof Language> = {
   18: 'cat_other',
 };
 
+// Map account IDs to i18n keys for default accounts
+const ACCOUNT_I18N_KEYS: Record<number, keyof Language> = {
+  1: 'account_my_wallet',
+};
+
 export function getCategoryName(categoryId: number): string {
   const key = CATEGORY_I18N_KEYS[categoryId];
   if (key) {
@@ -65,6 +70,41 @@ export function getAllDefaultCategoryNames(): Set<string> {
   const catKeys = Object.values(CATEGORY_I18N_KEYS);
   for (const lang of Object.values(languages)) {
     for (const key of catKeys) {
+      names.add((lang[key] as string).toLowerCase());
+    }
+  }
+  return names;
+}
+
+export function getAccountName(accountId: number): string {
+  const key = ACCOUNT_I18N_KEYS[accountId];
+  if (key) {
+    return currentLanguage[key] as string;
+  }
+  return '';
+}
+
+export function getDefaultEnglishAccountName(accountId: number): string | null {
+  const key = ACCOUNT_I18N_KEYS[accountId];
+  if (key && en[key]) {
+    return en[key] as string;
+  }
+  return null;
+}
+
+export function getDisplayAccountName(account: { id: number; name: string }): string {
+  const defaultName = getDefaultEnglishAccountName(account.id);
+  if (defaultName && account.name === defaultName) {
+    return getAccountName(account.id);
+  }
+  return account.name;
+}
+
+export function getAllDefaultAccountNames(): Set<string> {
+  const names = new Set<string>();
+  const accKeys = Object.values(ACCOUNT_I18N_KEYS);
+  for (const lang of Object.values(languages)) {
+    for (const key of accKeys) {
       names.add((lang[key] as string).toLowerCase());
     }
   }

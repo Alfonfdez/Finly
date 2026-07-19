@@ -10,7 +10,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t } from '../i18n';
+import { t, getAllDefaultAccountNames } from '../i18n';
 import { accountRepository } from '../database';
 import { RootStackParamList } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
@@ -59,7 +59,8 @@ export default function CreateAccountScreen() {
     setCheckingName(true);
     try {
       const exists = await accountRepository.existsByName(value.trim());
-      setNameError(exists ? labels.create_account_error_duplicate : null);
+      const isDefaultName = getAllDefaultAccountNames().has(value.trim().toLowerCase());
+      setNameError(exists || isDefaultName ? labels.create_account_error_duplicate : null);
     } catch {
       setNameError(null);
     } finally {

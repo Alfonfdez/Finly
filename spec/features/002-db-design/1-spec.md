@@ -12,7 +12,7 @@
   6. Key-value `config` table that stores user preferences (theme, language, currency, first day of week, text size, decimal separator, icon shapes).
   7. Efficient queries by period (day, week, month, year, custom range) and by type (`expense` / `income`).
   8. Aggregations: total income and expenses by period, breakdown by categories with percentages, breakdown by category and tag.
-  9. Initial loading of default data (one user, one account "My Wallet", 18 universal categories, empty transactions and tags) when the database is created for the first time.
+  9. Initial loading of default data (one user, one account "My Wallet", 18 universal categories, empty transactions and tags) when the database is created for the first time. The default account name "My Wallet" is stored in English and translated at display time via `getDisplayAccountName` (key `account_my_wallet`: en `My Wallet`, es `Mi Cartera`, ca `La meva cartera`).
 
 - **Contents**
   SQL schema of the tables, initialization script, CRUD functions in TypeScript (repositories), and a web localStorage fallback.
