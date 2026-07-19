@@ -1393,3 +1393,6 @@
 
 [2026-07-19] ~ | src/components/TagFilterBar.tsx
 - Fix: removed alphabetical sort (`localeCompare`) so tag chips display in creation order (by ID), matching the order in AddTransaction's TagSection.
+
+[2026-07-19] ~ | src/screens/TransactionsScreen.tsx
+- Removed "+" FAB button. Transactions can only be added from HomeScreen to avoid confusion when the new transaction doesn't match the current category/period filter.
