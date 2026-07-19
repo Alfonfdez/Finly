@@ -1463,3 +1463,29 @@
 [2026-07-19] ~ | spec/features/009-modify-delete-category-screen/ (1-spec.md, 2-plan.md, 3-tasks.md)
 - Updated 009 spec: category deletion now offers a choice. Scenario A (has transactions): message 'Before deleting the category, its transactions will be moved to another category' + 'Move transactions first' and 'Permanent delete' buttons. Scenario B (no transactions): message 'This category will be permanently deleted.' + only 'Permanent delete' (no 'Move' button).
 - Added i18n keys modify_cat_delete_confirm_message_empty, modify_cat_delete_confirm_move; renamed modify_cat_delete_confirm_delete to 'Permanent delete'.
+
+[2026-07-19] + | src/screens/ModifyCategoryScreen.tsx, src/i18n/en.ts, es.ts, ca.ts
+- Category deletion now offers a choice in the confirmation modal: 'Move transactions first' (opens target category picker, then reassigns) and 'Permanent delete' (deletes the category and its transactions directly). The 'Move transactions first' button is only shown when the category has linked transactions; otherwise only 'Permanent delete' appears. Updated i18n keys: modify_cat_delete_confirm_message, modify_cat_delete_confirm_delete ('Permanent delete'), and added modify_cat_delete_confirm_move.
+
+[2026-07-19] ~ | src/screens/ModifyCategoryScreen.tsx
+- Fixed the category delete confirmation modal layout: Cancel is now a full-width button on its own row, with 'Move transactions first' and 'Permanent delete' in a clean two-button row below. This avoids the cramped 3-button row where longer labels wrapped awkwardly and broke text alignment.
+
+[2026-07-19] ~ | src/i18n/en.ts, es.ts, ca.ts, spec/features/009-modify-delete-category-screen/1-spec.md
+- Clarified the category delete confirmation message for the 'has transactions' scenario: it now states transactions are deleted by default unless the user chooses to move them (avoids implying a move always happens). Updated 009 spec to match.
+
+[2026-07-19] ~ | src/screens/ModifyCategoryScreen.tsx, spec/constitution/5-validations.md
+- 'Move transactions first' button in the category delete modal now uses the primary color (c.primary bg, c.background text) as a distinct safe-alternative action, instead of the neutral surface style.
+- Updated constitution 5-validations.md Confirmation Modals section to document the three modal button styles (Cancel neutral, Primary action, Destructive/Confirm red) and the column layout for more than two buttons.
+
+[2026-07-19] ~ | src/screens/ModifyCategoryScreen.tsx
+- Added textAlign: 'center' to modalButtonText so long button labels (e.g. Spanish 'Mover transacciones primero' / 'Eliminar permanentemente') wrap centered within the button instead of left-aligned.
+
+[2026-07-19] ~ | src/screens/ModifyCategoryScreen.tsx
+- Fixed the Cancel button not being visible in the category delete confirmation modal (with transactions): the Cancel button no longer inherits the row flex:1 style when placed in the column layout; a modalButtonFull (width 100%) style keeps it full-width and its text centered/visible.
+
+[2026-07-19] ~ | src/screens/ModifyCategoryScreen.tsx
+- Fixed the Cancel button collapsing (no height, no text) in the category delete modal on native: modalButtonFull now overrides flex to 0, and modalButton gained minHeight: 44 + justifyContent: 'center' so buttons always have a visible tappable size regardless of flex layout.
+
+[2026-07-19] ~ | src/screens/ModifyCategoryScreen.tsx, spec/features/009-modify-delete-category-screen/1-spec.md
+- Edge case: when deleting a category that has transactions but is the only category of its type (no other same-type category to move to), the modal now shows the 'no transactions' message and only 'Permanent delete' (no 'Move transactions first'), avoiding a dead-end picker with no targets.
+- Updated 009 spec: added Scenario A2 (only category of its type) and clarified the modal-button conditions in acceptance criteria.

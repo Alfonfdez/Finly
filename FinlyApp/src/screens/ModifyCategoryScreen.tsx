@@ -141,30 +141,31 @@ export default function ModifyCategoryScreen() {
     if (!category) return;
     try {
       const linkedTransactions = await transactionRepository.list({ category_id: category.id });
-      setDeleteHasTransactions(linkedTransactions.length > 0);
+      const canMove = sameTypeCategories.length > 0;
+      setDeleteHasTransactions(linkedTransactions.length > 0 && canMove);
     } catch {
       setDeleteHasTransactions(true);
     }
     setDeleteModalVisible(true);
   };
 
-  const handleDeleteConfirm = async () => {
+  const handleMoveTransactions = () => {
+    setDeleteModalVisible(false);
+    setTargetCategoryId(null);
+    setSelectModalVisible(true);
+  };
+
+  const handlePermanentDelete = async () => {
     if (!category) return;
     setDeleteModalVisible(false);
     try {
-      const linkedTransactions = await transactionRepository.list({ category_id: category.id });
-      if (linkedTransactions.length === 0) {
-        await categoryRepository.delete(category.id);
-        await refreshCategories();
-        await refresh();
-        navigation.goBack();
-        return;
-      }
+      await categoryRepository.delete(category.id);
+      await refreshCategories();
+      await refresh();
+      navigation.goBack();
     } catch (err) {
-      console.error('Failed to check category transactions:', err);
+      console.error('Failed to delete category:', err);
     }
-    setTargetCategoryId(null);
-    setSelectModalVisible(true);
   };
 
   const handleSelectTarget = async () => {
@@ -332,21 +333,33 @@ export default function ModifyCategoryScreen() {
             </Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: c.surface, borderColor: c.border }]}
+                style={[styles.modalButton, styles.modalButtonFull, { backgroundColor: c.surface, borderColor: c.border }]}
                 onPress={() => setDeleteModalVisible(false)}
               >
                 <Text style={[styles.modalButtonText, { color: c.text, fontSize: fs(14) }]}>
                   {labels.modify_cat_delete_confirm_cancel}
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: '#F87171' }]}
-                onPress={handleDeleteConfirm}
-              >
-                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
-                  {labels.modify_cat_delete_confirm_delete}
-                </Text>
-              </TouchableOpacity>
+              <View style={styles.modalButtonRow}>
+                {deleteHasTransactions && (
+                  <TouchableOpacity
+                    style={[styles.modalButton, { backgroundColor: c.primary }]}
+                    onPress={handleMoveTransactions}
+                  >
+                    <Text style={[styles.modalButtonText, { color: c.background, fontSize: fs(14) }]}>
+                      {labels.modify_cat_delete_confirm_move}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  style={[styles.modalButton, { backgroundColor: '#F87171' }]}
+                  onPress={handlePermanentDelete}
+                >
+                  <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
+                    {labels.modify_cat_delete_confirm_delete}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
@@ -527,19 +540,30 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   modalButtons: {
+    flexDirection: 'column',
+    gap: 12,
+  },
+  modalButtonRow: {
     flexDirection: 'row',
     gap: 12,
   },
+  modalButtonFull: {
+    width: '100%',
+    flex: 0,
+  },
   modalButton: {
     flex: 1,
+    minHeight: 44,
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'transparent',
   },
   modalButtonText: {
     fontWeight: '600',
+    textAlign: 'center',
   },
   selectList: {
     maxHeight: 300,
