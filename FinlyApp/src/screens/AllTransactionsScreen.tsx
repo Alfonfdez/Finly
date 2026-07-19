@@ -220,14 +220,6 @@ export default function AllTransactionsScreen() {
       />
       )}
 
-      <TouchableOpacity
-        style={[styles.fab, { backgroundColor: c.primary }]}
-        onPress={() => navigation.navigate('AddTransaction')}
-        accessibilityLabel="+"
-      >
-        <Ionicons name="add" size={28} color={c.background} />
-      </TouchableOpacity>
-
       <AccountModal
         visible={accountModalVisible}
         accounts={accountsWithBalance}
@@ -265,19 +257,4 @@ const styles = StyleSheet.create({
   listContent: { paddingBottom: 80 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   empty: { textAlign: 'center', marginTop: 40 },
-  fab: {
-    position: 'absolute',
-    bottom: 56,
-    alignSelf: 'center',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
 });
