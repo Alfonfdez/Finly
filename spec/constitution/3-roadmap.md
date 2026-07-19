@@ -271,11 +271,13 @@ Spec: spec/features/019-tag-transactions/.
 ## 020-tag-home-filter
 Status: pending.
 
-Tag filter on HomeScreen:
+Tag filter on HomeScreen, TransactionsScreen, and AllTransactionsScreen:
 - Horizontal tag filter bar below PeriodTabs (All + tag chips).
 - Per-category expandable tag breakdown (3 visible + "View all (N)").
 - Tag filtering updates chart and category totals.
 - Tag breakdown queries (breakdownByCategoryAndTag).
 - Works across all periods and both expense/income types.
+- TransactionsScreen: tag filter bar with inherited tags from HomeScreen.
+- AllTransactionsScreen: tag filter bar with local state and dynamic balance.
 
 Spec: spec/features/020-tag-home-filter/.

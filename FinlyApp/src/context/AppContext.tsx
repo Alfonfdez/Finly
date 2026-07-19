@@ -39,6 +39,10 @@ interface AppContextType extends AppState {
   refreshAccounts: () => Promise<void>;
   refreshCategories: () => Promise<void>;
   refreshTags: () => Promise<void>;
+  activeTagIds: number[];
+  toggleTagId: (id: number) => void;
+  clearTagFilter: () => void;
+  tagsByTransaction: Map<number, number[]>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -98,6 +102,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTagIds, setActiveTagIds] = useState<number[]>([]);
+  const [tagsByTransaction, setTagsByTransaction] = useState<Map<number, number[]>>(new Map());
 
   useEffect(() => {
     async function loadData() {
@@ -135,6 +141,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
         end_date: formatDateForDB(dates.end),
       });
       setTransactions(data);
+
+      const txnIds = data.map(t => t.id);
+      const tagLinks = await transactionRepo.getTagsByTransactionIds(txnIds);
+      const map = new Map<number, number[]>();
+      for (const t of data) {
+        map.set(t.id, []);
+      }
+      for (const link of tagLinks) {
+        const existing = map.get(link.transaction_id) ?? [];
+        existing.push(link.tag_id);
+        map.set(link.transaction_id, existing);
+      }
+      setTagsByTransaction(map);
     }
     loadTransactions();
   }, [activeAccount, activePeriod, selectedDate, customDate]);
@@ -147,11 +166,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 
   const filteredTransactions = useMemo(
-    () => transactions.filter(t => {
-      if (activeType && t.type !== activeType) return false;
-      return true;
-    }),
-    [transactions, activeType],
+    () => {
+      let result = transactions.filter(t => {
+        if (activeType && t.type !== activeType) return false;
+        return true;
+      });
+      if (activeTagIds.length > 0) {
+        const hasUntagged = activeTagIds.includes(-1);
+        const regularIds = activeTagIds.filter(id => id !== -1);
+        result = result.filter(t => {
+          const txnTagIds = tagsByTransaction.get(t.id) ?? [];
+          if (hasUntagged && txnTagIds.length === 0) return true;
+          if (regularIds.length > 0 && regularIds.some(id => txnTagIds.includes(id))) return true;
+          return false;
+        });
+      }
+      return result;
+    },
+    [transactions, activeType, activeTagIds, tagsByTransaction],
   );
 
   const totalIncome = useMemo(
@@ -232,6 +264,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       end_date: formatDateForDB(dates.end),
     });
     setTransactions(data);
+
+    const txnIds = data.map(t => t.id);
+    const tagLinks = await transactionRepo.getTagsByTransactionIds(txnIds);
+    const map = new Map<number, number[]>();
+    for (const t of data) {
+      map.set(t.id, []);
+    }
+    for (const link of tagLinks) {
+      const existing = map.get(link.transaction_id) ?? [];
+      existing.push(link.tag_id);
+      map.set(link.transaction_id, existing);
+    }
+    setTagsByTransaction(map);
   }, [activeAccount, activePeriod, selectedDate, customDate]);
 
   const refreshCategories = useCallback(async () => {
@@ -247,6 +292,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const refreshTags = useCallback(async () => {
     const tagsData = await tagRepo.list(USER_ID);
     setTags(tagsData);
+  }, []);
+
+  const toggleTagId = useCallback((id: number) => {
+    setActiveTagIds(prev => {
+      if (id === -1) {
+        return prev.includes(-1) ? [] : [-1];
+      }
+      if (prev.includes(-1)) {
+        return [id];
+      }
+      if (prev.includes(id)) {
+        return prev.filter(i => i !== id);
+      }
+      return [...prev, id];
+    });
+  }, []);
+
+  const clearTagFilter = useCallback(() => {
+    setActiveTagIds([]);
   }, []);
 
   const value: AppContextType = useMemo(() => ({
@@ -276,12 +340,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     refreshAccounts,
     refreshCategories,
     refreshTags,
+    activeTagIds,
+    toggleTagId,
+    clearTagFilter,
+    tagsByTransaction,
   }), [
     activeAccount, activeType, activePeriod, selectedDate, customDate,
     accounts, categories, transactions, tags, loading,
     filteredTransactions, activeCategories, accountsWithBalance,
     totalIncome, totalExpenses, totalIncomeAll, totalExpensesAll,
     refresh, refreshAccounts, refreshCategories, refreshTags,
+    activeTagIds, toggleTagId, clearTagFilter, tagsByTransaction,
   ]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

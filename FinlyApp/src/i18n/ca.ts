@@ -283,4 +283,10 @@ export const ca: Language = {
   modify_tag_delete_confirm_message: 'Les transaccions que fan servir aquesta etiqueta no s\'eliminiran.',
   modify_tag_delete_confirm_cancel: 'Cancel·lar',
   modify_tag_delete_confirm_delete: 'Eliminar',
+
+  // Home tag filter
+  home_tag_all: 'Tots',
+  home_tag_untagged: 'Sense etiqueta',
+  home_tag_view_all: (n: number) => `Veure tots (${n})`,
+  home_tag_show_less: 'Mostrar menys',
 };

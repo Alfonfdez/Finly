@@ -281,6 +281,12 @@ export const en = {
   modify_tag_delete_confirm_message: 'Transactions using this tag will not be deleted.',
   modify_tag_delete_confirm_cancel: 'Cancel',
   modify_tag_delete_confirm_delete: 'Delete',
+
+  // Home tag filter
+  home_tag_all: 'All',
+  home_tag_untagged: 'Untagged',
+  home_tag_view_all: (n: number) => `View all (${n})`,
+  home_tag_show_less: 'Show less',
 };
 
 export type Language = typeof en;

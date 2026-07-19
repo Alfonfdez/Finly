@@ -1,4 +1,4 @@
-# Implementation plan — 020 Tag filter on HomeScreen
+# Implementation plan — 020 Tag filter on HomeScreen, TransactionsScreen, and AllTransactionsScreen
 
 ## Architecture
 
@@ -13,7 +13,8 @@
 - **`context/AppContext.tsx`**: Add `activeTagIds: number[]`, `toggleTagId(id)`, `clearTagFilter()`. Update `filteredTransactions` memo to filter by `activeTagIds` (OR logic, with untagged as exclusive). Add `categoryTagBreakdowns: Map<number, { tag_id: number; name: string }[]>` computed from transactions + tags.
 - **`database/repositories/transactionRepo.ts`**: Add `breakdownByCategoryAndTag()` with Untagged row support, extend `list()` with `tagIds: number[]` filter (OR + NOT EXISTS for untagged), add `getTagsByTransactionIds()` batch query.
 - **`database/webStorage.ts`**: Same methods for web.
-- **`constants/types.ts`**: Add `tagIds?: number[]` to `Transactions` nav param.
+- **`screens/TransactionsScreen.tsx`**: Add localTagIds state from route params, render TagFilterBar, local toggle/clear handlers, move tag filtering to useMemo for real-time reactivity.
+- **`screens/AllTransactionsScreen.tsx`**: Add localTagIds state (default `[]`), render TagFilterBar below controls, local toggle/clear handlers, filter transactions by tags in useMemo, update balance to reflect filtered transactions.
 - **`i18n/en.ts, es.ts, ca.ts`**: Add `home_tag_all`, `home_tag_untagged`, `home_tag_view_all`, `home_tag_show_less` keys.
 
 ### Data flow
@@ -24,11 +25,23 @@ HomeScreen:
   AppContext.filteredTransactions (filtered by activeTagIds) → activeCategories → DonutChart / BarChart
   AppContext.categoryTagBreakdowns → CategoryList (per-category tags, including Untagged)
   handleCategoryPress → passes activeTagIds as tagIds nav param → TransactionsScreen
+
+TransactionsScreen:
+  route.params.tagIds → localTagIds (initial state from nav params)
+  TagFilterBar with localTagIds → user can toggle/clear independently
+  local filter: allTransactions.filter(by selectedAccountId, by localTagIds) → filtered → SectionList
+
+AllTransactionsScreen:
+  localTagIds = [] (always starts unfiltered, no nav params)
+  TagFilterBar with localTagIds → user can toggle/clear independently
+  local filter: allTransactions.filter(by selectedAccountId, by localTagIds) → filtered → SectionList
+  accountBalance recalculated from filtered transactions (not allTransactions)
 ```
 
 ### Tag filter bar placement
 
 ```
+HomeScreen:
 ┌─────────────────────────────────┐
 │ ☰  Account selector  📊        │  ← Header
 ├─────────────────────────────────┤
@@ -36,15 +49,32 @@ HomeScreen:
 ├─────────────────────────────────┤
 │ [Day] [Week] [Month] [Year] [..]│  ← PeriodTabs
 ├─────────────────────────────────┤
-│ [All] [Untagged] [Urgent] [..]  │  ← TagFilterBar (NEW, multi-select)
-├─────────────────────────────────┤
 │         Donut Chart             │
+├─────────────────────────────────┤
+│ [All] [Untagged] [Urgent] [..]  │  ← TagFilterBar (NEW, multi-select)
 ├─────────────────────────────────┤
 │ 🛒 Food           45.2%  120€  │
 │    [Urgent] [Untagged]          │  ← Tag chips (NEW, includes Untagged)
 │ 🚌 Transport      22.1%   58€  │
 │    [Commute]                    │
 │ ...                             │
+└─────────────────────────────────┘
+
+AllTransactionsScreen:
+┌─────────────────────────────────┐
+│ ☰  All transactions      list   │  ← Header (drawer)
+├─────────────────────────────────┤
+│ Account selector                │
+│ +1.234,56 €                     │  ← Balance (updates with tag filter)
+│ [By date ▼] [By amount]        │  ← SortToggle
+├─────────────────────────────────┤
+│ [All] [Untagged] [Urgent] [..]  │  ← TagFilterBar (NEW, multi-select)
+├─────────────────────────────────┤
+│ 📅 19 Jul 2026                  │
+│ 🛒 Food        Supermarket -45€ │
+│ 🚌 Transport   Metro card  -12€ │
+│ ...                             │
+│                    [ + ]        │  ← FAB
 └─────────────────────────────────┘
 ```
 
@@ -119,5 +149,5 @@ WHERE tr.account_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
 
 ## Estimate
 
-- **Tasks**: 10 tasks in 3 phases
-- **Estimated time**: 4-5 hours
+- **Tasks**: 14 tasks in 5 phases
+- **Estimated time**: 6-7 hours

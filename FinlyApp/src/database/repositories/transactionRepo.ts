@@ -8,6 +8,7 @@ interface TransactionFilters {
   type?: TransactionType;
   start_date?: string;
   end_date?: string;
+  tagIds?: number[];
 }
 
 interface TotalByPeriod {
@@ -19,6 +20,12 @@ interface CategoryBreakdown {
   name: string;
   icon: string;
   color: string;
+  total: number;
+}
+
+interface CategoryTagBreakdown {
+  tag_id: number;
+  name: string;
   total: number;
 }
 
@@ -47,6 +54,20 @@ export const transactionRepo = {
     if (filters.end_date !== undefined) {
       sql += ` AND date <= ?`;
       params.push(filters.end_date);
+    }
+    if (filters.tagIds && filters.tagIds.length > 0) {
+      const hasUntagged = filters.tagIds.includes(-1);
+      const regularIds = filters.tagIds.filter(id => id !== -1);
+
+      if (hasUntagged && regularIds.length > 0) {
+        sql += ` AND (id IN (SELECT transaction_id FROM transaction_tags WHERE tag_id IN (${regularIds.map(() => '?').join(',')})) OR NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = transactions.id))`;
+        params.push(...regularIds);
+      } else if (hasUntagged) {
+        sql += ` AND NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = transactions.id)`;
+      } else {
+        sql += ` AND id IN (SELECT transaction_id FROM transaction_tags WHERE tag_id IN (${regularIds.map(() => '?').join(',')}))`;
+        params.push(...regularIds);
+      }
     }
 
     sql += ` ORDER BY date DESC`;
@@ -144,6 +165,33 @@ export const transactionRepo = {
        GROUP BY t.category_id
        ORDER BY total DESC`,
       accountId, type, startDate, endDate
+    );
+  },
+
+  async breakdownByCategoryAndTag(
+    accountId: number,
+    categoryId: number,
+    type: TransactionType,
+    startDate: string,
+    endDate: string
+  ): Promise<CategoryTagBreakdown[]> {
+    const db = getDatabase();
+    return await db.getAllAsync<CategoryTagBreakdown>(
+      `SELECT tt.tag_id, t.name, SUM(tr.amount) AS total
+       FROM transactions tr
+       INNER JOIN transaction_tags tt ON tr.id = tt.transaction_id
+       INNER JOIN tags t ON tt.tag_id = t.id
+       WHERE tr.account_id = ? AND tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
+       GROUP BY tt.tag_id
+
+       UNION ALL
+
+       SELECT -1 AS tag_id, 'Untagged' AS name, SUM(tr.amount) AS total
+       FROM transactions tr
+       WHERE tr.account_id = ? AND tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
+         AND NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = tr.id)`,
+      accountId, categoryId, type, startDate, endDate,
+      accountId, categoryId, type, startDate, endDate
     );
   },
 

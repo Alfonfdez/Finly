@@ -8,19 +8,65 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 
+interface TagBreakdown {
+  tag_id: number;
+  name: string;
+  total: number;
+}
+
 interface Props {
   categories: CategoryWithTotal[];
   total: number;
   currency?: string;
   separator?: ',' | '.';
   onPress?: (category: CategoryWithTotal) => void;
+  tagBreakdowns?: Map<number, TagBreakdown[]>;
+  expandedCategoryIds?: Set<number>;
+  onToggleExpand?: (id: number) => void;
 }
 
-export default function CategoryList({ categories, total, currency = '€', separator = ',', onPress }: Props) {
+export default function CategoryList({
+  categories, total, currency = '€', separator = ',', onPress,
+  tagBreakdowns, expandedCategoryIds, onToggleExpand,
+}: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
   const round = config.categoryIconShape === 'circle';
+
+  const renderTagChips = (categoryId: number) => {
+    if (!tagBreakdowns || !expandedCategoryIds || !onToggleExpand) return null;
+    const tags = tagBreakdowns.get(categoryId);
+    if (!tags || tags.length === 0) return null;
+
+    const isExpanded = expandedCategoryIds.has(categoryId);
+    const visibleTags = isExpanded ? tags : tags.slice(0, 3);
+    const hasMore = tags.length > 3;
+
+    return (
+      <View style={styles.tagSection}>
+        <View style={styles.tagChips}>
+          {visibleTags.map((tag) => (
+            <View
+              key={tag.tag_id}
+              style={[styles.tagChip, { backgroundColor: c.surface }]}
+            >
+              <Text style={[styles.tagChipText, { color: c.textSecondary, fontSize: fs(11) }]}>
+                {tag.name}
+              </Text>
+            </View>
+          ))}
+        </View>
+        {hasMore && (
+          <TouchableOpacity onPress={() => onToggleExpand(categoryId)}>
+            <Text style={[styles.viewAll, { color: c.primary, fontSize: fs(11) }]}>
+              {isExpanded ? labels.home_tag_show_less : labels.home_tag_view_all(tags.length)}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  };
 
   return (
     <FlatList
@@ -28,38 +74,43 @@ export default function CategoryList({ categories, total, currency = '€', sepa
       data={categories}
       keyExtractor={(item) => item.id.toString()}
       renderItem={({ item }) => (
-        <TouchableOpacity
-          style={[styles.item, { borderBottomColor: c.border }]}
-          onPress={() => onPress?.(item)}
-          accessibilityLabel={`${labels.a11y_category} ${item.name}, ${item.percentage.toFixed(1)}%`}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <View style={[styles.icon, { backgroundColor: item.color + '30', borderRadius: round ? 20 : 12 }]}>
-            <Ionicons name={item.icon as ComponentProps<typeof Ionicons>['name']} size={20} color={item.color} />
-          </View>
-          <View style={styles.info}>
-            <Text style={[styles.name, { color: c.text, fontSize: fs(14) }]}>{item.name}</Text>
-            <View style={[styles.barBackground, { backgroundColor: c.surface }]}>
-              <View style={[styles.barFill, { width: `${Math.min(item.percentage, 100)}%`, backgroundColor: item.color }]} />
+        <View style={[styles.itemWrapper, { borderBottomColor: c.border }]}>
+          <TouchableOpacity
+            style={styles.item}
+            onPress={() => onPress?.(item)}
+            accessibilityLabel={`${labels.a11y_category} ${item.name}, ${item.percentage.toFixed(1)}%`}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <View style={[styles.icon, { backgroundColor: item.color + '30', borderRadius: round ? 20 : 12 }]}>
+              <Ionicons name={item.icon as ComponentProps<typeof Ionicons>['name']} size={20} color={item.color} />
             </View>
-          </View>
-          <View style={styles.amounts}>
-            <Text style={[styles.total, { color: c.text, fontSize: fs(14) }]}>{formatCurrency(item.total, currency, separator)}</Text>
-            <Text style={[styles.percentage, { color: c.textSecondary, fontSize: fs(12) }]}>{item.percentage.toFixed(1)}%</Text>
-          </View>
-        </TouchableOpacity>
+            <View style={styles.info}>
+              <Text style={[styles.name, { color: c.text, fontSize: fs(14) }]}>{item.name}</Text>
+              <View style={[styles.barBackground, { backgroundColor: c.surface }]}>
+                <View style={[styles.barFill, { width: `${Math.min(item.percentage, 100)}%`, backgroundColor: item.color }]} />
+              </View>
+            </View>
+            <View style={styles.amounts}>
+              <Text style={[styles.total, { color: c.text, fontSize: fs(14) }]}>{formatCurrency(item.total, currency, separator)}</Text>
+              <Text style={[styles.percentage, { color: c.textSecondary, fontSize: fs(12) }]}>{item.percentage.toFixed(1)}%</Text>
+            </View>
+          </TouchableOpacity>
+          {renderTagChips(item.id)}
+        </View>
       )}
     />
   );
 }
 
 const styles = StyleSheet.create({
+  itemWrapper: {
+    borderBottomWidth: 1,
+  },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
   },
   icon: {
     width: 40,
@@ -75,4 +126,25 @@ const styles = StyleSheet.create({
   amounts: { alignItems: 'flex-end' },
   total: { fontWeight: '600' },
   percentage: { marginTop: 2 },
+  tagSection: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  tagChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  tagChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  tagChipText: {
+    fontWeight: '500',
+  },
+  viewAll: {
+    marginTop: 6,
+    fontWeight: '500',
+  },
 });
