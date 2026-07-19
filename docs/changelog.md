@@ -1441,3 +1441,18 @@
 - Updated 002-db-design spec to reflect the implemented schema: English table/column names, added tags + transaction_tags junction tables, transactions.updated_at, accounts.description, and the 8-key config table.
 - Documented the single-pass initialization (createSchema -> seedData -> seedConfig) with no versioned migrations in development; web localStorage fallback; and the full repository method list.
 - Updated constitution roadmap 002 entry (7 tables, no versioned migrations, web fallback).
+
+[2026-07-19] ~ | src/navigation/AppNavigator.tsx, src/screens/CategoriesScreen.tsx
+- Changed the Categories icon from pricetag-outline to grid-outline in the drawer menu, the Categories header title, and the category list empty state. Tags keeps pricetag-outline.
+
+[2026-07-19] ~ | src/navigation/AppNavigator.tsx
+- Changed the Create category screen header title icon from pricetag-outline to grid-outline to match the Categories icon.
+
+[2026-07-19] ~ | src/navigation/AppNavigator.tsx
+- Changed the Add category and Modify category screen header title icons from pricetag-outline to grid-outline to match the Categories icon. Only Tags retains pricetag-outline.
+
+[2026-07-19] ~ | src/screens/ModifyCategoryScreen.tsx
+- Category deletion no longer shows the reassign-target modal when the category has no transactions: confirming deletion now deletes directly. The reassign modal only appears when there are linked transactions.
+
+[2026-07-19] ~ | src/screens/ModifyCategoryScreen.tsx
+- Fix: after deleting (or reassigning) a category, transactions are now reloaded via refresh() so the HomeScreen donut chart and category breakdown reflect the reassigned transactions instead of stale category_ids.

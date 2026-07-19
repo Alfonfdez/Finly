@@ -26,7 +26,7 @@ const GRID_GAP = 12;
 
 export default function ModifyCategoryScreen() {
   const { activeColors: c, config } = useConfig();
-  const { categories, refreshCategories } = useApp();
+  const { categories, refreshCategories, refresh } = useApp();
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp>();
@@ -140,8 +140,21 @@ export default function ModifyCategoryScreen() {
     setDeleteModalVisible(true);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
+    if (!category) return;
     setDeleteModalVisible(false);
+    try {
+      const linkedTransactions = await transactionRepository.list({ category_id: category.id });
+      if (linkedTransactions.length === 0) {
+        await categoryRepository.delete(category.id);
+        await refreshCategories();
+        await refresh();
+        navigation.goBack();
+        return;
+      }
+    } catch (err) {
+      console.error('Failed to check category transactions:', err);
+    }
     setTargetCategoryId(null);
     setSelectModalVisible(true);
   };
@@ -152,6 +165,7 @@ export default function ModifyCategoryScreen() {
       await transactionRepository.reassignCategory(categoryId, targetCategoryId);
       await categoryRepository.delete(categoryId);
       await refreshCategories();
+      await refresh();
       setSelectModalVisible(false);
       navigation.goBack();
     } catch (err) {
