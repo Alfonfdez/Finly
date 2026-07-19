@@ -94,7 +94,11 @@
 ### 6. "Delete" Button
 
 - "Delete" button (multilingual) with red style (`c.red`), located before the "Save" button.
-- When tapped, a confirmation modal opens:
+- **Last account protection**: when the account being edited is the only account in the database (account count ≤ 1), the "Delete" button is **disabled**:
+  - The button border and icon/text use the secondary text color (`c.textSecondary`) and the button has reduced opacity (`0.5`).
+  - The button is not tappable (`disabled` + `accessibilityState.disabled`).
+  - A helper hint is shown below the button: "You need at least one account, so this one cannot be deleted" (multilingual, `modify_account_delete_last`).
+- When tapped (and not the last account), a confirmation modal opens:
 
 **Confirmation Modal — "Delete account?"**
 - Title: "Delete account "{accountName}"" (multilingual, interpolates the account name).
@@ -153,5 +157,6 @@
 - [ ] When tapping "Save", the account is updated and navigation returns.
 - [ ] The red "Delete" button opens a confirmation modal with "Cancel" and "Delete".
 - [ ] When tapping "Delete" in the modal, the account transactions are deleted, the account is deleted, the list is refreshed, and navigation returns.
+- [ ] When the account is the last one remaining, the "Delete" button is disabled (secondary color, reduced opacity, not tappable) and a hint explaining it cannot be deleted is shown.
 - [ ] All texts change when switching language.
 - [ ] The screen respects the active theme and text size.

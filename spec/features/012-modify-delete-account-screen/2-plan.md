@@ -54,6 +54,7 @@ ellipsis-horizontal-outline
 | `modify_account_delete_confirm_message` | All transactions linked to this account will also be deleted | Se eliminarán también todas las transacciones asociadas a esta cuenta | També s'eliminaran totes les transaccions associades a aquest compte |
 | `modify_account_delete_confirm_cancel` | Cancel | Cancelar | Cancel·lar |
 | `modify_account_delete_confirm_delete` | Delete | Eliminar | Eliminar |
+| `modify_account_delete_last` | You need at least one account, so this one cannot be deleted. | Necesitas al menos una cuenta, por lo que esta no se puede eliminar. | Necessites almenys un compte, per tant aquest no es pot eliminar. |
 
 *(create_account_symbols, create_account_color are reused from 013)*
 
@@ -69,6 +70,7 @@ ALTER TABLE accounts ADD COLUMN description TEXT DEFAULT '';
 AccountsScreen → tap account → ModifyAccountScreen { accountId }
   ├── tap "Save" → accountRepository.update() → navigate back
   └── tap "Delete" → confirmation modal → transactionRepo.deleteByAccountId() → accountRepo.delete() → refreshAccounts() → navigate back
+  (If the account is the last remaining, the "Delete" button is disabled and shows a hint instead.)
 ```
 
 ---

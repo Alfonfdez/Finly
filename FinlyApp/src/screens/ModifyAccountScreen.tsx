@@ -37,6 +37,7 @@ export default function ModifyAccountScreen() {
   const { accountId } = route.params;
 
   const [account, setAccount] = useState<Account | null>(null);
+  const [accountCount, setAccountCount] = useState(0);
   const [cellSize, setCellSize] = useState(0);
 
   const onGridLayout = (e: LayoutChangeEvent) => {
@@ -59,6 +60,7 @@ export default function ModifyAccountScreen() {
 
   useEffect(() => {
     accountRepository.list(1).then((list) => {
+      setAccountCount(list.length);
       const found = list.find(a => a.id === accountId);
       if (found) {
         setAccount(found);
@@ -158,6 +160,7 @@ export default function ModifyAccountScreen() {
   }
 
   const hintText = getHintText();
+  const isLastAccount = accountCount <= 1;
 
   return (
     <>
@@ -272,14 +275,27 @@ export default function ModifyAccountScreen() {
           )}
 
           <TouchableOpacity
-            style={[styles.deleteButton, { borderColor: '#F87171' }]}
-            onPress={() => setDeleteModalVisible(true)}
+            style={[
+              styles.deleteButton,
+              isLastAccount
+                ? { borderColor: c.border, opacity: 0.5 }
+                : { borderColor: '#F87171' },
+            ]}
+            onPress={() => !isLastAccount && setDeleteModalVisible(true)}
+            disabled={isLastAccount}
+            accessibilityState={{ disabled: isLastAccount }}
           >
-            <Ionicons name="trash-outline" size={18} color="#F87171" />
-            <Text style={[styles.deleteButtonText, { color: '#F87171', fontSize: fs(15) }]}>
+            <Ionicons name="trash-outline" size={18} color={isLastAccount ? c.textSecondary : '#F87171'} />
+            <Text style={[styles.deleteButtonText, { color: isLastAccount ? c.textSecondary : '#F87171', fontSize: fs(15) }]}>
               {labels.modify_account_delete}
             </Text>
           </TouchableOpacity>
+
+          {isLastAccount && (
+            <Text style={[styles.hint, { color: c.textSecondary, fontSize: fs(12) }]}>
+              {labels.modify_account_delete_last}
+            </Text>
+          )}
 
           <TouchableOpacity
             style={[

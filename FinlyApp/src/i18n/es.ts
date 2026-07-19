@@ -202,6 +202,7 @@ export const es: Language = {
   modify_account_error_empty: 'Introduzca un nombre para la cuenta',
   modify_account_error_duplicate: 'Ya existe una cuenta con este nombre',
   modify_account_delete: 'Eliminar',
+  modify_account_delete_last: 'Necesitas al menos una cuenta, por lo que esta no se puede eliminar.',
   modify_account_delete_confirm_title: (name: string) => `Eliminar la cuenta "${name}"`,
   modify_account_delete_confirm_message: 'Se eliminarán también todas las transacciones asociadas a esta cuenta',
   modify_account_delete_confirm_cancel: 'Cancelar',
