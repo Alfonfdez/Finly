@@ -1396,3 +1396,33 @@
 
 [2026-07-19] ~ | src/screens/TransactionsScreen.tsx
 - Removed "+" FAB button. Transactions can only be added from HomeScreen to avoid confusion when the new transaction doesn't match the current category/period filter.
+
+[2026-07-19] ~ | src/screens/CategoriesScreen.tsx
+- Replaced inline "Create" grid item with a floating "+" FAB button, matching the pattern used in Accounts and Tags screens.
+
+[2026-07-19] ~ | src/i18n/index.ts, src/screens/CreateCategoryScreen.tsx, src/screens/ModifyCategoryScreen.tsx
+- Added `getAllDefaultCategoryNames()` to i18n module returning all default category names across all languages (en, es, ca). Category name validation now blocks names matching any default category in any language, not just the database.
+
+[2026-07-19] ~ | src/screens/CategoriesScreen.tsx
+- "Others" (id 15) and "Other" (id 18) categories now always appear at the end of the grid, regardless of alphabetical sort.
+
+[2026-07-19] ~ | src/screens/HomeScreen.tsx
+- Fix: "Untagged" pill no longer appears in category tag breakdowns when there are zero tags in the system.
+
+[2026-07-19] ~ | src/screens/AddTransactionScreen.tsx, src/screens/ModifyTransactionScreen.tsx
+- Fix: amount input focus border now renders on the rounded container (borderRadius: 12) instead of showing a square Android default focus outline.
+
+[2026-07-19] ~ | src/navigation/AppNavigator.tsx
+- All stack navigator header titles now centered (`headerTitleAlign: 'center'` in global `screenOptions`).
+
+[2026-07-19] ~ | src/database/types.ts, src/database/database.ts, src/database/migrations/005_updated_at.ts, src/database/repositories/transactionRepo.ts, src/database/webStorage.ts, src/screens/TransactionDetailsScreen.tsx, src/i18n/en.ts, src/i18n/es.ts, src/i18n/ca.ts
+- Feat: added `updated_at` field to Transaction (DB v5, nullable, set on every update). Details screen now shows "Created: HH:mm - DD MMM yyyy" and, when modified, a second line "Updated: HH:mm - DD MMM yyyy" underneath.
+
+[2026-07-19] ~ | src/screens/AddCategoryScreen.tsx
+- Replaced inline "Create" grid item with floating "+" FAB (matching CategoriesScreen pattern). Added "Others"/"Other" sorting to end of grid (IDs 15/18).
+
+[2026-07-19] ~ | src/constants/types.ts, src/screens/CategoriesScreen.tsx, src/screens/AddCategoryScreen.tsx
+- Extracted hardcoded category IDs 15/18 into `OTHERS_CATEGORY_ID` and `OTHER_CATEGORY_ID` constants. Added `sortCategoriesWithOthersLast()` utility used by both category grid screens.
+
+[2026-07-19] ~ | src/components/CategoryGrid.tsx
+- "More"/"Create" button in compact category grid now uses a dashed outline style (transparent background + dashed border) to visually distinguish it from regular category items.

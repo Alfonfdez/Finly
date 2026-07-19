@@ -258,6 +258,7 @@ export const en = {
   details_delete_no: 'No',
   details_edit: 'Edit',
   details_created: 'Created',
+  details_updated: 'Updated',
   type_expense: 'Expense',
   type_income: 'Income',
 

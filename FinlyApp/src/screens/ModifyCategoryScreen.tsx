@@ -10,7 +10,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t, getDisplayCategoryName, getDefaultEnglishName } from '../i18n';
+import { t, getDisplayCategoryName, getDefaultEnglishName, getAllDefaultCategoryNames } from '../i18n';
 import { categoryRepository, transactionRepository } from '../database';
 import { RootStackParamList } from '../constants/types';
 import { CATEGORY_ICONS } from '../components/IconGrid';
@@ -80,7 +80,8 @@ export default function ModifyCategoryScreen() {
     setCheckingName(true);
     try {
       const exists = await categoryRepository.existsByName(value.trim(), categoryId);
-      setNameError(exists ? labels.create_cat_error_name_duplicate : null);
+      const isDefaultName = getAllDefaultCategoryNames().has(value.trim().toLowerCase());
+      setNameError(exists || isDefaultName ? labels.create_cat_error_name_duplicate : null);
     } catch {
       setNameError(null);
     } finally {

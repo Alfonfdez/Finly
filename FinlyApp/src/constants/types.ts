@@ -1,4 +1,17 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Category } from '../database/types';
+
+export const OTHERS_CATEGORY_ID = 15;
+export const OTHER_CATEGORY_ID = 18;
+
+export function sortCategoriesWithOthersLast(categories: Category[]): Category[] {
+  return [...categories].sort((a, b) => {
+    const aEnd = a.id === OTHERS_CATEGORY_ID || a.id === OTHER_CATEGORY_ID ? 1 : 0;
+    const bEnd = b.id === OTHERS_CATEGORY_ID || b.id === OTHER_CATEGORY_ID ? 1 : 0;
+    if (aEnd !== bEnd) return aEnd - bEnd;
+    return a.name.localeCompare(b.name);
+  });
+}
 
 export type Period = 'day' | 'week' | 'month' | 'year' | 'custom';
 

@@ -3,9 +3,10 @@ import { migrate001 } from './migrations/001_initial';
 import { seed002 } from './migrations/002_seed';
 import { migrate003 } from './migrations/003_config';
 import { migrate004 } from './migrations/004_tags';
+import { migrate005 } from './migrations/005_updated_at';
 
 const DATABASE_NAME = 'Finly.db';
-const DATABASE_VERSION = 4;
+const DATABASE_VERSION = 5;
 
 let db: SQLiteDatabase | null = null;
 
@@ -56,6 +57,11 @@ export async function initDatabase(): Promise<SQLiteDatabase> {
   if (currentVersion < 4) {
     await migrate004(database);
     currentVersion = 4;
+  }
+
+  if (currentVersion < 5) {
+    await migrate005(database);
+    currentVersion = 5;
   }
 
   if (!(await isDatabaseConsistent(database))) {

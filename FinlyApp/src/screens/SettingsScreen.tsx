@@ -202,14 +202,14 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
         <SelectorInline options={SIZES} selected={config.textSize} onSelect={(v) => updateConfig({ textSize: v })} colors={c} textSize={config.textSize} />
       </View>
 
-      <Text style={[  styles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_category_icon_shape}</Text>
-      <View style={[styles.card, { backgroundColor: c.surface }]}>
-        <SelectorInline options={SHAPES} selected={config.categoryIconShape} onSelect={(v) => updateConfig({ categoryIconShape: v })} colors={c} textSize={config.textSize} />
-      </View>
-
       <Text style={[  styles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_account_icon_shape}</Text>
       <View style={[styles.card, { backgroundColor: c.surface }]}>
         <SelectorInline options={SHAPES} selected={config.accountIconShape} onSelect={(v) => updateConfig({ accountIconShape: v })} colors={c} textSize={config.textSize} />
+      </View>
+
+      <Text style={[  styles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_category_icon_shape}</Text>
+      <View style={[styles.card, { backgroundColor: c.surface }]}>
+        <SelectorInline options={SHAPES} selected={config.categoryIconShape} onSelect={(v) => updateConfig({ categoryIconShape: v })} colors={c} textSize={config.textSize} />
       </View>
 
       <View style={{ height: 40 }} />

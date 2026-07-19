@@ -56,7 +56,18 @@ export default function TransactionDetailsScreen() {
     const day = d.getDate();
     const month = labels.months_short[d.getMonth()];
     const year = d.getFullYear();
-    return `${labels.details_created} ${h}:${min} ${day} ${month.toLowerCase()} ${year}`;
+    return `${labels.details_created}: ${h}:${min} - ${day} ${month.toLowerCase()} ${year}`;
+  }, [transaction, labels]);
+
+  const updatedDate = useMemo(() => {
+    if (!transaction?.updated_at) return null;
+    const d = new Date(transaction.updated_at);
+    const h = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    const day = d.getDate();
+    const month = labels.months_short[d.getMonth()];
+    const year = d.getFullYear();
+    return `${labels.details_updated}: ${h}:${min} - ${day} ${month.toLowerCase()} ${year}`;
   }, [transaction, labels]);
 
   useFocusEffect(useCallback(() => {
@@ -188,9 +199,16 @@ export default function TransactionDetailsScreen() {
           </TouchableOpacity>
         </View>
 
-        <Text style={[styles.createdText, { color: c.textSecondary, fontSize: fs(11) }]}>
-          {createdDate}
-        </Text>
+        <View style={styles.timestamps}>
+          <Text style={[styles.timestampText, { color: c.textSecondary, fontSize: fs(11) }]}>
+            {createdDate}
+          </Text>
+          {updatedDate && (
+            <Text style={[styles.timestampText, { color: c.textSecondary, fontSize: fs(11) }]}>
+              {updatedDate}
+            </Text>
+          )}
+        </View>
       </ScrollView>
 
       <Modal visible={deleteModalVisible} transparent animationType="fade" onRequestClose={() => setDeleteModalVisible(false)}>
@@ -299,10 +317,12 @@ const styles = StyleSheet.create({
   tagChipText: {
     fontWeight: '500',
   },
-  createdText: {
+  timestamps: {
     marginHorizontal: 16,
     marginTop: 24,
+    gap: 2,
   },
+  timestampText: {},
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',

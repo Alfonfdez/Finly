@@ -10,7 +10,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t } from '../i18n';
+import { t, getAllDefaultCategoryNames } from '../i18n';
 import { categoryRepository } from '../database';
 import { RootStackParamList, TransactionType } from '../constants/types';
 import { setPendingCategory } from './AddTransactionScreen';
@@ -62,7 +62,8 @@ export default function CreateCategoryScreen() {
     setCheckingName(true);
     try {
       const exists = await categoryRepository.existsByName(value.trim());
-      setNameError(exists ? labels.create_cat_error_name_duplicate : null);
+      const isDefaultName = getAllDefaultCategoryNames().has(value.trim().toLowerCase());
+      setNameError(exists || isDefaultName ? labels.create_cat_error_name_duplicate : null);
     } catch {
       setNameError(null);
     } finally {

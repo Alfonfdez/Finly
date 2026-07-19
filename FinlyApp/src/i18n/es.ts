@@ -260,6 +260,7 @@ export const es: Language = {
   details_delete_no: 'No',
   details_edit: 'Editar',
   details_created: 'Creado',
+  details_updated: 'Actualizado',
   type_expense: 'Gasto',
   type_income: 'Ingreso',
 

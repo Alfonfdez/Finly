@@ -58,7 +58,7 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
 
   const renderAddMore = () => (
     <TouchableOpacity
-      style={[styles.item, { backgroundColor: c.surface, borderRadius: round ? 999 : 12 }]}
+      style={[styles.item, styles.addMoreItem, { borderColor: c.border, borderRadius: round ? 999 : 12 }]}
       onPress={onAddMore}
       accessibilityLabel={label}
     >
@@ -107,6 +107,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 8,
+  },
+  addMoreItem: {
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    backgroundColor: 'transparent',
   },
   iconContainer: {
     width: 40,

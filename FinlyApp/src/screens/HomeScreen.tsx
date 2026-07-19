@@ -91,15 +91,16 @@ export default function HomeScreen() {
           formatDateForDB(dates.end),
           activeTagIds.length > 0 ? activeTagIds : undefined
         );
-        if (data.length > 0) {
-          breakdowns.set(cat.id, data);
+        const filtered = tags.length > 0 ? data : data.filter(d => d.tag_id !== -1);
+        if (filtered.length > 0) {
+          breakdowns.set(cat.id, filtered);
         }
       }
       setTagBreakdowns(breakdowns);
     }
 
     loadTagBreakdowns();
-  }, [activeAccount, activeCategories, activeType, activePeriod, selectedDate, customDate, activeTagIds]);
+  }, [activeAccount, activeCategories, activeType, activePeriod, selectedDate, customDate, activeTagIds, tags]);
 
   const handleCategoryPress = useCallback((category: { id: number }) => {
     const { start, end } = activePeriod === 'custom'

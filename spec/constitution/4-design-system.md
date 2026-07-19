@@ -107,6 +107,10 @@ interface ColorPalette {
 - **Border radius:** `10` for inputs/buttons, `12` for cards, `16` for modals, `999` for pill/circle
 - **Grid gap:** `12` for icon/color grids
 
+## Header
+- All stack navigator header titles are centered (`headerTitleAlign: 'center'` in `screenOptions`).
+- Custom `headerTitle` renderers use an icon + text row.
+
 ## No External UI Library
 - Styles using React Native's `StyleSheet.create()`.
 - No Tailwind, no NativeBase, no React Native Paper.
