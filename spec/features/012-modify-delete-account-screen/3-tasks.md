@@ -5,7 +5,7 @@ Execution order. Mark each task when completed.
 
 ### Phase 1 — Infrastructure and Navigation
 
-[ ] T1 — Add i18n keys in `src/i18n/en.ts`, `src/i18n/es.ts` and `src/i18n/ca.ts`: `modify_account_title`, `modify_account_name`, `modify_account_note`, `modify_account_save`, `modify_account_error_empty`, `modify_account_error_duplicate`, `modify_account_delete`, `modify_account_delete_confirm_title`, `modify_account_delete_confirm_message`, `modify_account_delete_confirm_cancel`, `modify_account_delete_confirm_delete`.
+[ ] T1 — Add i18n keys in `src/i18n/en.ts`, `src/i18n/es.ts` and `src/i18n/ca.ts`: `modify_account_title`, `modify_account_name`, `modify_account_note`, `modify_account_save`, `modify_account_error_empty`, `modify_account_error_duplicate`, `modify_account_delete`, `modify_account_delete_confirm_title`, `modify_account_delete_confirm_message`, `modify_account_delete_confirm_cancel`, `modify_account_delete_confirm_delete`, `modify_account_delete_last`.
 
 [ ] T2 — Update `src/constants/types.ts`: add `ModifyAccount` to `RootStackParamList` with parameter `accountId: number` and create `ModifyAccountScreenProps`.
 
@@ -48,6 +48,7 @@ Execution order. Mark each task when completed.
 
 [ ] T12 — Implement "Delete" button + confirmation modal:
   - "Delete" button (red) located before the "Save" button.
+  - If the account is the last remaining (account count ≤ 1), disable the button (secondary color, reduced opacity, not tappable) and show the `modify_account_delete_last` hint.
   - Confirmation modal: title with account name, message about transaction deletion, "Cancel" and "Delete" buttons (red).
   - When tapping "Delete": call `transactionRepo.deleteByAccountId(id)`, `accountRepo.delete(id)`, `refreshAccounts()`, navigate back.
 

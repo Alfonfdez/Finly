@@ -202,6 +202,7 @@ export const ca: Language = {
   modify_account_error_empty: 'Introduïu un nom per al compte',
   modify_account_error_duplicate: 'Ja existeix un compte amb aquest nom',
   modify_account_delete: 'Eliminar',
+  modify_account_delete_last: 'Necessites almenys un compte, per tant aquest no es pot eliminar.',
   modify_account_delete_confirm_title: (name: string) => `Eliminar el compte "${name}"`,
   modify_account_delete_confirm_message: 'També s\'eliminaran totes les transaccions associades a aquest compte',
   modify_account_delete_confirm_cancel: 'Cancel·lar',

@@ -200,6 +200,7 @@ export const en = {
   modify_account_error_empty: 'Enter an account name',
   modify_account_error_duplicate: 'An account with this name already exists',
   modify_account_delete: 'Delete',
+  modify_account_delete_last: 'You need at least one account, so this one cannot be deleted.',
   modify_account_delete_confirm_title: (name: string) => `Delete account "${name}"`,
   modify_account_delete_confirm_message: 'All transactions linked to this account will also be deleted',
   modify_account_delete_confirm_cancel: 'Cancel',
