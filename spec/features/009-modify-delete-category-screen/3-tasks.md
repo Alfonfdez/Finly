@@ -47,11 +47,18 @@ Execution order. Check each task as you complete it.
   - "Delete" button (red) with double confirmation modal.
 
 [x] T11 — Implement the complete deletion flow:
-  - Modal 1: confirmation → when tapping "Delete" → Modal 2.
-  - Modal 2: select target category → when tapping "Select":
+  - Modal 1: confirmation → choice between moving transactions or permanent delete.
+  - Modal 2 (only when "Move transactions first"): select target category → when tapping "Select":
     - Call `transactionRepo.reassignCategory(oldId, newId)`.
     - Call `categoryRepo.remove(id)`.
-    - Refresh categories and navigate back.
+    - Refresh categories and transactions (`refresh()`), navigate back.
+
+[x] T11b — Make transaction deletion optional (not compulsory):
+  - On delete confirm, check whether the category has linked transactions.
+  - If it has transactions: show message + "Move transactions first" and "Permanent delete" buttons.
+  - If it has no transactions: show empty message + only "Permanent delete" (no "Move" button).
+  - "Permanent delete" deletes the category and its transactions directly (no reassignment).
+  - Add i18n keys: `modify_cat_delete_confirm_message_empty`, `modify_cat_delete_confirm_move`; rename `modify_cat_delete_confirm_delete` to "Permanent delete".
 
 [x] T12 — Implement the "Save" button:
   - Validation: disabled if name empty or duplicate.
@@ -76,5 +83,7 @@ Execution order. Check each task as you complete it.
   - Loading of current category data.
   - Name editing with duplicate validation.
   - Icon and color changes.
-  - Deletion with reassignment to another category.
+  - Deletion with reassignment to another category (via "Move transactions first").
+- Deletion with permanent delete of the category and its transactions.
+- Deletion of a category with no transactions (no "Move" button shown).
   - Language switching, theme, and text size.

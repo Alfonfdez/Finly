@@ -62,16 +62,20 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 ### 6. "Delete" Button
 
 - "Delete" button (multilingual) with red style (`c.red`), located before the "Save" button.
-- When tapped, a confirmation modal opens:
+- When tapped, a confirmation modal opens. The modal offers the user a **choice**: either move the category's transactions to another category, or delete the category **and its transactions** permanently. Which buttons are shown depends on whether the category has linked transactions.
 
-**Confirmation Modal 1 — "Delete category?"**
+**Confirmation Modal — "Delete category?"**
 - Title: "Delete category "{categoryName}"" (multilingual, interpolates the category name).
-- Message: "All transactions linked to this category will be moved to a category of your choice" (multilingual).
-- Buttons: "Cancel" (multilingual) and "Delete" (multilingual, red color).
-- When tapping "Cancel", the modal closes.
-- When tapping "Delete", a second modal opens.
+- Buttons:
+  - "Cancel" (multilingual) → closes the modal.
+  - "Permanent delete" (multilingual, red) → deletes the category, then navigates back.
 
-**Confirmation Modal 2 — "Select target category"**
+**Scenario A — Category HAS transactions**
+- Message: "Before deleting the category, its transactions will be moved to another category." (multilingual).
+- Buttons (in addition to Cancel / Permanent delete):
+  - "Move transactions first" (multilingual) → opens the target category selection modal, then deletes the category.
+
+**Confirmation Modal — "Select target category"** (only reached via "Move transactions first")
 - Title: "Select category" (multilingual).
 - List of categories of the **same type** as the category to be deleted (excluding the current category), with:
   - Radio button (single selection).
@@ -84,6 +88,15 @@ Screen accessible from the categories screen (008) that allows the user to edit 
   1. All transactions with `category_id = {deletedCategory}` are updated to `category_id = {selectedCategory}`.
   2. The category is deleted from the `categories` table.
   3. Navigation returns to `CategoriesScreen` (008).
+
+**Scenario B — Category has NO transactions**
+- Message: "This category will be permanently deleted." (multilingual).
+- Buttons:
+  - "Cancel" (multilingual) → closes the modal.
+  - "Permanent delete" (multilingual, red) → deletes the category (and, trivially, has no transactions to move), then navigates back.
+  - The "Move transactions first" button is NOT shown, since there are no transactions to move.
+
+- After deletion (either path), transactions are reloaded via `refresh()` so the HomeScreen chart and breakdown reflect the change.
 
 ### 7. "Save" Button
 
@@ -131,9 +144,11 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 - [ ] The 7th color circle shows the custom color if the current one is not among the 6 predefined.
 - [ ] The "+" opens the existing `ColorPickerModal`.
 - [ ] The "Save" button is disabled if the name is empty or is a duplicate.
-- [ ] The red "Delete" button opens a confirmation modal with "Cancel" and "Delete".
-- [ ] When tapping "Delete", a second modal opens with a list of categories of the same type (radio + icon + name).
-- [ ] When tapping "Select", transactions are reassigned and the category is deleted.
+- [ ] The red "Delete" button opens a confirmation modal with "Cancel", "Permanent delete", and (when the category has transactions) "Move transactions first".
+- [ ] When the category has transactions, the modal message is "Before deleting the category, its transactions will be moved to another category." and tapping "Move transactions first" opens the target category selection modal.
+- [ ] When tapping "Select" in the target modal, transactions are reassigned and the category is deleted.
+- [ ] When the category has no transactions, the modal message is "This category will be permanently deleted." and the "Move transactions first" button is not shown.
+- [ ] Tapping "Permanent delete" deletes the category (and its transactions) and navigates back; transactions are reloaded via refresh().
 - [ ] When tapping "Save", the category is updated and navigation returns to CategoriesScreen.
 - [ ] All texts change when switching the language in settings.
 - [ ] The screen respects the active theme (dark/light).

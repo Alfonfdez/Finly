@@ -86,19 +86,34 @@ CategoriesScreen → tap category → ModifyCategoryScreen { categoryId }
 └─────────────────────────────────┘
 ```
 
-### Confirmation Modal 1 — Delete
+### Confirmation Modal — Delete (Scenario A: category HAS transactions)
 
 ```
 ┌─────────────────────────────────┐
 │ Delete category                 │
 │ "{categoryName}"                │  ← Dynamic title
 ├─────────────────────────────────┤
-│ All transactions                │
-│ linked to this category         │  ← Message
-│ will be moved to a category     │
-│ of your choice                  │
+│ Before deleting the category,   │
+│ its transactions will be moved  │  ← Message (has transactions)
+│ to another category             │
 ├─────────────────────────────────┤
-│ [Cancel]           [Delete]     │  ← Delete in red
+│ [Cancel] [Move transactions     │  ← Move first opens target modal
+│  first] [Permanent delete]      │  ← Permanent delete in red
+└─────────────────────────────────┘
+```
+
+### Confirmation Modal — Delete (Scenario B: category has NO transactions)
+
+```
+┌─────────────────────────────────┐
+│ Delete category                 │
+│ "{categoryName}"                │  ← Dynamic title
+├─────────────────────────────────┤
+│ This category will be           │
+│ permanently deleted.            │  ← Message (no transactions)
+├─────────────────────────────────┤
+│ [Cancel]           [Permanent   │  ← Permanent delete in red
+│                    delete]      │     (no "Move" button)
 └─────────────────────────────────┘
 ```
 
@@ -129,9 +144,11 @@ New keys needed:
 | `modify_cat_delete` | Delete | Eliminar | Eliminar |
 | `modify_cat_save` | Save | Guardar | Guardar |
 | `modify_cat_delete_confirm_title` | Delete category "{name}" | Eliminar la categoría "{name}" | Eliminar la categoria "{name}" |
-| `modify_cat_delete_confirm_message` | All transactions linked to this category will be moved to a category of your choice | Todas las transacciones vinculadas a esta categoría se moverán a una categoría que usted elija | Totes les transaccions vinculades a aquesta categoria es mouran a una categoria que vostè triï |
+| `modify_cat_delete_confirm_message` | Before deleting the category, its transactions will be moved to another category | Antes de eliminar la categoría, sus transacciones se moverán a otra categoría | Abans d'eliminar la categoria, les seves transaccions es mouran a una altra categoria |
+| `modify_cat_delete_confirm_message_empty` | This category will be permanently deleted. | Esta categoría se eliminará permanentemente. | Aquesta categoria s'eliminarà permanentment. |
 | `modify_cat_delete_confirm_cancel` | Cancel | Cancelar | Cancel·lar |
-| `modify_cat_delete_confirm_delete` | Delete | Borrar | Esborrar |
+| `modify_cat_delete_confirm_delete` | Permanent delete | Eliminar permanentemente | Eliminar permanentment |
+| `modify_cat_delete_confirm_move` | Move transactions first | Mover transacciones primero | Moure les transaccions primer |
 | `modify_cat_select_title` | Select category | Seleccione la categoría | Seleccioneu la categoria |
 | `modify_cat_select_cancel` | Cancel | Cancelar | Cancel·lar |
 | `modify_cat_select_confirm` | Select | Seleccionar | Seleccionar |

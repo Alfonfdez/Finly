@@ -56,6 +56,7 @@ export default function ModifyCategoryScreen() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectModalVisible, setSelectModalVisible] = useState(false);
   const [targetCategoryId, setTargetCategoryId] = useState<number | null>(null);
+  const [deleteHasTransactions, setDeleteHasTransactions] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -136,7 +137,14 @@ export default function ModifyCategoryScreen() {
     }
   };
 
-  const handleDeletePress = () => {
+  const handleDeletePress = async () => {
+    if (!category) return;
+    try {
+      const linkedTransactions = await transactionRepository.list({ category_id: category.id });
+      setDeleteHasTransactions(linkedTransactions.length > 0);
+    } catch {
+      setDeleteHasTransactions(true);
+    }
     setDeleteModalVisible(true);
   };
 
@@ -318,7 +326,9 @@ export default function ModifyCategoryScreen() {
               {labels.modify_cat_delete_confirm_title(getDisplayCategoryName(category))}
             </Text>
             <Text style={[styles.modalMessage, { color: c.textSecondary, fontSize: fs(14) }]}>
-              {labels.modify_cat_delete_confirm_message}
+              {deleteHasTransactions
+                ? labels.modify_cat_delete_confirm_message
+                : labels.modify_cat_delete_confirm_message_empty}
             </Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity

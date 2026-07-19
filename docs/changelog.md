@@ -1456,3 +1456,10 @@
 
 [2026-07-19] ~ | src/screens/ModifyCategoryScreen.tsx
 - Fix: after deleting (or reassigning) a category, transactions are now reloaded via refresh() so the HomeScreen donut chart and category breakdown reflect the reassigned transactions instead of stale category_ids.
+
+[2026-07-19] ~ | src/screens/ModifyCategoryScreen.tsx, src/i18n/en.ts, es.ts, ca.ts
+- Category delete confirmation now shows a different message when the category has no transactions (modify_cat_delete_confirm_message_empty: 'This category will be permanently deleted.') instead of the misleading 'moved to a category of your choice' text.
+
+[2026-07-19] ~ | spec/features/009-modify-delete-category-screen/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Updated 009 spec: category deletion now offers a choice. Scenario A (has transactions): message 'Before deleting the category, its transactions will be moved to another category' + 'Move transactions first' and 'Permanent delete' buttons. Scenario B (no transactions): message 'This category will be permanently deleted.' + only 'Permanent delete' (no 'Move' button).
+- Added i18n keys modify_cat_delete_confirm_message_empty, modify_cat_delete_confirm_move; renamed modify_cat_delete_confirm_delete to 'Permanent delete'.

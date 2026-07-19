@@ -126,6 +126,7 @@ export const es: Language = {
   modify_cat_save: 'Guardar',
   modify_cat_delete_confirm_title: (name: string) => `Eliminar la categoría "${name}"`,
   modify_cat_delete_confirm_message: 'Todas las transacciones vinculadas a esta categoría se moverán a una categoría que usted elija',
+  modify_cat_delete_confirm_message_empty: 'Esta categoría se eliminará permanentemente.',
   modify_cat_delete_confirm_cancel: 'Cancelar',
   modify_cat_delete_confirm_delete: 'Borrar',
   modify_cat_select_title: 'Seleccione la categoría',
