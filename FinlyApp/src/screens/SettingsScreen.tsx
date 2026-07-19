@@ -1,4 +1,4 @@
-﻿import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Platform } from 'react-native';
 import type { ReactNode } from 'react';
 import Svg, { Rect, Line } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';

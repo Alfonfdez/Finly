@@ -24,7 +24,7 @@ export default function CalendarPicker({
   rangeStart, rangeEnd, visible = false, onOpen, onClose, firstDay = 1,
 }: Props) {
   const today = new Date();
-  const { config, activeColors: c } = useConfig();
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
   const months = labels.months;

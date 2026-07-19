@@ -8,7 +8,6 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
@@ -56,7 +55,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
       return;
     }
     if (btn === '=') {
-      const { result, error } = evaluate(expression);
+      const { error } = evaluate(expression);
       setHasError(error);
       return;
     }

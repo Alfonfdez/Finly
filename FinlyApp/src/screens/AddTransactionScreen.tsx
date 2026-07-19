@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Pressable, Keyboard } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -190,7 +190,7 @@ export default function AddTransactionScreen() {
     };
   }, [comment]);
 
-  const [fotoUri, setFotoUri] = useState<string | null>(null);
+  const [fotoUri] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const [modalAccountVisible, setModalAccountVisible] = useState(false);
@@ -293,7 +293,7 @@ export default function AddTransactionScreen() {
       await refresh();
       setSelectedTags([]);
       navigation.goBack();
-    } catch (err) {
+    } catch {
       Alert.alert(labels.add_error_title, labels.add_error_message);
     } finally {
       setSubmitting(false);
