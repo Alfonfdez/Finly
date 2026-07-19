@@ -1,6 +1,6 @@
 import { type SQLiteDatabase } from 'expo-sqlite';
 
-export async function seed002(db: SQLiteDatabase) {
+export async function seedData(db: SQLiteDatabase) {
   await db.withTransactionAsync(async () => {
     await db.runAsync(
       `INSERT OR IGNORE INTO users (id, name, email, currency) VALUES (?, ?, ?, ?)`,

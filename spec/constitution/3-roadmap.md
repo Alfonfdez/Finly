@@ -37,14 +37,16 @@ Spec: spec/features/001-home-screen/.
 ## 002-db-design
 Status: completed.
 
-Local database design with 4 main tables:
+Local database design with 7 tables:
 - `users`: user with name, email, avatar, currency.
-- `accounts`: accounts with initial balance, icon, color.
+- `accounts`: accounts with initial balance, icon, color, description.
 - `categories`: categories with name, icon, color, type (expense/income).
-- `transactions`: transactions with account, category, type, amount, description, date.
+- `transactions`: transactions with account, category, type, amount, description, date, updated_at.
+- `tags`: global tags (name).
+- `transaction_tags`: many-to-many junction between transactions and tags.
 - `config`: key-value configuration table.
 
-Includes: 5 versioned migrations, indexes on frequently queried columns, foreign keys with ON DELETE CASCADE, and seed test data.
+Schema created in a single pass (`createSchema` → `seedData` → `seedConfig`) with indexes on frequently queried columns and foreign keys with ON DELETE CASCADE. Web uses a localStorage fallback. No versioned migrations in development (DB reset manually when the schema changes).
 
 Spec: spec/features/002-db-design/.
 
@@ -245,7 +247,7 @@ Screen for modifying an existing transaction, accessible from the "Edit" button 
 Spec: spec/features/017-modify-transaction-screen/.
 
 ## 018-tag-management
-Status: pending.
+Status: completed.
 
 Tag management with database persistence:
 - `tags` table and `transaction_tags` junction table (migration 004).
@@ -257,7 +259,7 @@ Tag management with database persistence:
 Spec: spec/features/018-tag-management/.
 
 ## 019-tag-transactions
-Status: pending.
+Status: completed.
 
 Persistent tags in Add/ModifyTransaction screens:
 - Replace hardcoded tag UI with tags from the database.
@@ -269,7 +271,7 @@ Persistent tags in Add/ModifyTransaction screens:
 Spec: spec/features/019-tag-transactions/.
 
 ## 020-tag-home-filter
-Status: pending.
+Status: completed.
 
 Tag filter on HomeScreen, TransactionsScreen, and AllTransactionsScreen:
 - Horizontal tag filter bar below PeriodTabs (All + tag chips).
@@ -281,3 +283,14 @@ Tag filter on HomeScreen, TransactionsScreen, and AllTransactionsScreen:
 - AllTransactionsScreen: tag filter bar with local state and dynamic balance.
 
 Spec: spec/features/020-tag-home-filter/.
+
+## 001-expo-sqlite-wal-cleanup (infrastructure)
+Status: completed.
+
+Self-healing recovery for the expo-sqlite WAL sidecar bug:
+- `initDatabase()` detects stale state (version present but `tags` table missing in `sqlite_master`).
+- On detection, deletes the database file (`.db`, `-wal`, `-shm`), reopens, and reruns all migrations (001-005).
+- Silent recovery during splash screen; healthy databases are never affected.
+- Web platform (localStorage) is unaffected.
+
+Spec: spec/infrastructure/001-expo-sqlite-wal-cleanup/.

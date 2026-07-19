@@ -1,6 +1,6 @@
 import { type SQLiteDatabase } from 'expo-sqlite';
 
-export async function migrate001(db: SQLiteDatabase) {
+export async function createSchema(db: SQLiteDatabase) {
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,9 +42,23 @@ export async function migrate001(db: SQLiteDatabase) {
       amount REAL NOT NULL CHECK(amount > 0),
       description TEXT,
       date TEXT NOT NULL,
+      updated_at TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
       FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,
       FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS tags (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      name TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now','localtime'))
+    );
+
+    CREATE TABLE IF NOT EXISTS transaction_tags (
+      transaction_id INTEGER NOT NULL REFERENCES transactions(id) ON DELETE CASCADE,
+      tag_id INTEGER NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+      PRIMARY KEY (transaction_id, tag_id)
     );
 
     CREATE TABLE IF NOT EXISTS config (
@@ -58,5 +72,7 @@ export async function migrate001(db: SQLiteDatabase) {
     CREATE INDEX IF NOT EXISTS idx_transactions_account ON transactions(account_id, date);
     CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category_id, date);
     CREATE INDEX IF NOT EXISTS idx_transactions_type ON transactions(type, date);
+    CREATE INDEX IF NOT EXISTS idx_tags_user ON tags(user_id);
+    CREATE INDEX IF NOT EXISTS idx_transaction_tags_tag ON transaction_tags(tag_id);
   `);
 }

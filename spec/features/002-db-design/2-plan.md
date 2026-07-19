@@ -1,16 +1,14 @@
 # Implementation plan — 002 Local database design
 
-## Technical decision: SQLite with expo-sqlite
+## Technical decision: SQLite with expo-sqlite (native) + localStorage (web)
 
-AsyncStorage is replaced with **SQLite** using the `expo-sqlite` module (included in Expo SDK). Reasons:
+AsyncStorage was replaced with **SQLite** using the `expo-sqlite` module for native platforms. Web uses a `localStorage` fallback (`webStorage.ts`) behind the same repository interface. Reasons:
 
-- **Relational model**: finances have natural relationships (users → accounts → transactions → categories). SQLite is the standard for embedded databases.
-- **Complex queries**: aggregations by period and category with `GROUP BY`, `SUM`, date filters.
+- **Relational model**: finances have natural relationships (users → accounts → transactions → categories, plus tags via a junction table). SQLite is the standard for embedded databases.
+- **Complex queries**: aggregations by period and category with `GROUP BY`, `SUM`, date filters, and tag breakdowns via `JOIN`.
 - **Referential integrity**: foreign keys with `ON DELETE CASCADE`.
 - **Performance**: SQLite handles thousands of transactions without issues; AsyncStorage degrades with volume.
-- **Future migration**: makes it easier to export to a server if synchronization is needed.
-- **Native support in Expo**: `expo-sqlite` works without eject or additional native configurations.
-- **Indexes**: creation of indexes to optimize frequent queries by account, category, type, and date.
+- **Indexes**: created on frequently queried columns (account, category, type, date, user, tag).
 
 ## New dependencies
 
@@ -23,87 +21,117 @@ npx expo install expo-sqlite
 ```
 FinlyApp/src/
 ├── database/
-│   ├── database.ts           ← initialization, migrations, connection
+│   ├── database.ts           ← initialization (createSchema → seedData → seedConfig)
+│   ├── index.ts              ← platform switching (SQLite vs localStorage)
+│   ├── types.ts              ← TypeScript interfaces (User, Account, Category, Transaction, Tag, TransactionTag, Config)
 │   ├── migrations/
-│   │   ├── 001_initial.ts    ← CREATE TABLES + CREATE INDEX
-│   │   └── 002_seed.ts       ← insertion of initial test data
+│   │   ├── 001_initial.ts    ← createSchema(): CREATE TABLES + indexes
+│   │   ├── 002_seed.ts       ← seedData(): default user, account, 18 categories
+│   │   └── 003_config.ts     ← seedConfig(): config default values
 │   ├── repositories/
-│   │   ├── usuarioRepo.ts    ← CRUD users
-│   │   ├── cuentaRepo.ts     ← CRUD accounts
-│   │   ├── categoriaRepo.ts  ← CRUD categories
-│   │   └── transaccionRepo.ts← CRUD transactions + aggregated queries
-│   └── types.ts              ← TypeScript interfaces (Cuenta, Categoria, Transaccion)
-│
+│   │   ├── userRepo.ts       ← CRUD users
+│   │   ├── accountRepo.ts    ← CRUD accounts + balance
+│   │   ├── categoryRepo.ts   ← CRUD categories
+│   │   ├── transactionRepo.ts← CRUD transactions + aggregations + tags
+│   │   ├── configRepo.ts     ← config persistence
+│   │   └── tagRepo.ts        ← CRUD tags
+│   └── webStorage.ts         ← localStorage fallback (same interfaces)
 └── context/
-    └── AppContext.tsx         ← updated to use SQLite repositories
+    ├── AppContext.tsx        ← uses repositories
+    └── ConfigContext.tsx     ← uses configRepo
 ```
 
 ## Data architecture
 
 ```
-AppContext
+AppContext / ConfigContext
   └── repositories (data access layer)
-        └── database.ts (SQLite connection)
-              └── Finly.db (local file)
+        └── database.ts (SQLite) OR webStorage.ts (localStorage)
+              └── Finly.db (native) OR localStorage (web)
 ```
 
 ## Initialization flow
 
-1. `App.tsx` calls `initDatabase()` in `database.ts`.
-2. `database.ts` opens/creates `Finly.db` and runs pending migrations.
-3. If it is the first time, `002_seed.ts` inserts test data (mockData) into the database.
-4. `AppContext.tsx` connects to the repositories and loads the initial state.
-5. CRUD operations are done through the repositories, not directly.
+1. `App.tsx` calls `initDatabase()` (native) or `initWebStorage()` (web) on startup.
+2. `initDatabase()` opens/creates `Finly.db` and runs, in order:
+   - `createSchema()` — creates all tables and indexes (idempotent `CREATE TABLE IF NOT EXISTS`).
+   - `seedData()` — inserts default user, "My Wallet" account, and 18 universal categories (idempotent `INSERT OR IGNORE`).
+   - `seedConfig()` — inserts config defaults (`INSERT OR IGNORE`).
+3. `AppContext` / `ConfigContext` connect to the repositories and load the initial state.
+4. CRUD operations go through the repositories, never direct SQL.
 
-## Versioned migrations
+## No versioned migrations (development mode)
 
-Each migration is numbered (001, 002, …). The database stores the current version in an internal `_migrations` table. On startup, migrations greater than the current version are executed in order.
+During development the schema is defined entirely in `createSchema()`. There is no `DATABASE_VERSION` / `PRAGMA user_version` migration chain. When the schema changes, the developer resets the database manually:
 
-- `001_initial.ts`: creates all tables (`usuarios`, `cuentas`, `categorias`, `transacciones`) and indexes.
-- `002_seed.ts`: inserts the default user and test data (accounts, categories, and transactions from the current mockData).
+- **Web**: clear the `@Finly/*` keys in LocalStorage (DevTools → Application).
+- **Native**: Clear App Data / uninstall the Expo Go app.
+
+This keeps the initialization simple. A proper versioned migration path can be reintroduced before production release.
 
 ## Main functions by repository
 
-### usuarioRepo
-- `insertar(datos)` → creates default user
-- `obtenerPorId(id)` → gets user
-- `actualizar(id, datos)` → modifies name, currency, etc.
+### userRepo
+- `create(data)` → creates user
+- `getById(id)` → gets user
+- `update(id, data)` → modifies name, currency, etc.
 
-### cuentaRepo
-- `listar(usuarioId)` → all accounts
-- `insertar(datos)` → new account
-- `actualizar(id, datos)` → modify name, balance, icon
-- `eliminar(id)` → deletes account and associated transactions
-- `obtenerSaldoActual(id)` → initial balance + sum of income - sum of expenses
+### accountRepo
+- `list(userId)` → all accounts
+- `create(data)` → new account
+- `update(id, data)` → modify name, balance, icon, color, description
+- `delete(id)` → deletes account and associated transactions (cascade)
+- `getCurrentBalance(id)` → initial balance + sum of income − sum of expenses
+- `existsByName(name, excludeId?)` → duplicate check
 
-### categoriaRepo
-- `listar(usuarioId, tipo?)` → all or filtered by type
-- `insertar(datos)` → new category
-- `actualizar(id, datos)` → modify name, icon, color
-- `eliminar(id)` → deletes category and associated transactions
+### categoryRepo
+- `list(userId, type?)` → all or filtered by type
+- `create(data)` → new category
+- `update(id, data)` → modify name, icon, color
+- `delete(id)` → deletes category and associated transactions (cascade)
+- `existsByName(name, excludeId?)` → duplicate check
 
-### transaccionRepo
-- `listar(filtros)` → by account, category, type, date range
-- `insertar(datos)` → new transaction
-- `actualizar(id, datos)` → modify transaction
-- `eliminar(id)` → delete transaction
-- `totalPorPeriodo(usuarioId, tipo, fechaInicio, fechaFin)` → grouped SUM
-- `desglosePorCategorias(usuarioId, tipo, fechaInicio, fechaFin)` → aggregation by category
+### transactionRepo
+- `list(filters)` → by account, category, type, date range, and optional `tagIds` (OR logic, with untagged support)
+- `create(data)` / `createWithTags(data, tagIds)` → new transaction (+ tags)
+- `update(id, data)` / `updateWithTags(id, data, tagIds)` → modify transaction (+ tags)
+- `delete(id)` / `deleteByAccountId(accountId)` → delete transaction(s)
+- `totalByPeriod(accountId, type, start, end)` → grouped SUM
+- `breakdownByCategories(accountId, type, start, end)` → aggregation by category
+- `breakdownByCategoryAndTag(...)` → aggregation by tag (includes "Untagged" row)
+- `getTagsByTransactionId(id)` / `getTagsByTransactionIds(ids)` → tags for transaction(s)
+- `reassignCategory(oldId, newId)` → move transactions when deleting a category
 
-## Test data loading (seed)
+### tagRepo
+- `list(userId)` → all tags by creation order
+- `create(data)` → new tag
+- `update(id, data)` → rename
+- `delete(id)` → deletes tag and junction links (cascade)
+- `existsByName(userId, name, excludeId?)` → duplicate check
+- `getByTransactionIds(ids)` → tags for a batch of transactions
 
-When creating the database for the first time, the current test data from mockData is inserted:
+### configRepo
+- `get()` → full `Config` (merged with defaults)
+- `save(partial)` → upsert config keys
 
-1. A default user is created (`Usuario Demo`).
-2. Accounts are inserted: Efectivo, Banco, Ahorros (with `saldo_inicial: 0`).
-3. Categories are inserted: Nómina, Freelance, Alimentación, Transporte, Ocio, Vivienda, Salud, Inversiones.
-4. Example transactions are inserted with dates in `YYYY-MM-DD HH:MM:SS` format.
+## Seed data (default)
+
+When the database is created for the first time:
+
+1. A default user is created (`id = 1`, name `User`, currency `€`).
+2. One account is inserted: `My Wallet` (`id = 1`, `initial_balance: 0`, icon `wallet-outline`, color `#22D3EE`).
+3. 18 universal categories are inserted (5 income + 13 expense) with fixed IDs 1–18, including `Others` (15) and `Other` (18).
+4. `transactions` and `tags` start empty.
+
+## Web fallback
+
+`webStorage.ts` mirrors every repository method using `localStorage` keys prefixed with `@Finly/` (`users`, `accounts`, `categories`, `transactions`, `tags`, `transaction_tags`). Tag filtering, breakdowns, and cascading deletes are implemented in JavaScript.
 
 ## Verification
 
-Run `npx expo start` on an emulator/device. Verify that:
+Run `npx expo start` (native) and `npx expo start --web`. Verify that:
 - The database is created without errors.
-- Test data is loaded correctly on startup.
-- Accounts, categories, and transactions can be created.
-- Aggregation queries return correct values.
+- Default data is loaded correctly on first launch.
+- Accounts, categories, transactions, and tags can be created.
+- Aggregation and tag-breakdown queries return correct values.
 - All acceptance criteria from `1-spec.md` are met.

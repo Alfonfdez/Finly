@@ -1,24 +1,34 @@
 # Tasks — 002 Local database design
-Execution order. Check each task when completed.
+Execution order. All tasks completed.
 
-[ ] T1 — Install `expo-sqlite`. Create `src/database/` folder with `database.ts`, `types.ts`, and `migrations/`.
+[x] T1 — Install `expo-sqlite`. Create `src/database/` folder with `database.ts`, `types.ts`, `index.ts`, and `migrations/`.
 
-[ ] T2 — Implement `database.ts`: open connection, run versioned migrations, expose the database instance.
+[x] T2 — Implement `database.ts`: open connection and run `createSchema()` → `seedData()` → `seedConfig()` (no versioned migrations in dev).
 
-[ ] T3 — Write `migrations/001_initial.ts` with the CREATE TABLE for all tables (usuarios, cuentas, categorias, transacciones) and necessary indexes.
+[x] T3 — Write `migrations/001_initial.ts` (`createSchema`): CREATE TABLE for users, accounts, categories, transactions, tags, transaction_tags, config + indexes.
 
-[ ] T4 — Write `migrations/002_seed.ts` with test data insertion: default user, accounts, categories, and transactions from the current mockData.
+[x] T4 — Write `migrations/002_seed.ts` (`seedData`): insert default user, "My Wallet" account, and 18 universal categories (INSERT OR IGNORE).
 
-[ ] T5 — Implement `types.ts` with TypeScript interfaces: `Cuenta`, `Categoria`, `Transaccion`.
+[x] T5 — Write `migrations/003_config.ts` (`seedConfig`): insert config defaults including theme, first_day_of_week, currency, decimal_separator, language, text_size, category_icon_shape, account_icon_shape.
 
-[ ] T6 — Implement `usuarioRepo.ts`: insert default user, get, update.
+[x] T6 — Implement `types.ts` with TypeScript interfaces: `User`, `Account`, `Category`, `Transaction`, `Tag`, `TransactionTag`, `Config`.
 
-[ ] T7 — Implement `cuentaRepo.ts`: list, insert, update, delete, obtenerSaldoActual.
+[x] T7 — Implement `userRepo.ts`: create, getById, update.
 
-[ ] T8 — Implement `categoriaRepo.ts`: list (with optional filter by type), insert, update, delete.
+[x] T8 — Implement `accountRepo.ts`: list, create, update, delete, getCurrentBalance, existsByName.
 
-[ ] T9 — Implement `transaccionRepo.ts`: list with filters (account, category, type, date range), insert, update, delete. Aggregations: totalPorPeriodo, desglosePorCategorias.
+[x] T9 — Implement `categoryRepo.ts`: list (with optional filter by type), create, update, delete, existsByName.
 
-[ ] T10 — Update `AppContext.tsx` to use SQLite repositories instead of mockData.
+[x] T10 — Implement `transactionRepo.ts`: list with filters (account, category, type, date range, tagIds), create, createWithTags, update, updateWithTags, delete, deleteByAccountId, totalByPeriod, breakdownByCategories, breakdownByCategoryAndTag, getTagsByTransactionId(s), reassignCategory.
 
-[ ] T11 — Verification: test on emulator that the database is created, test data is loaded, CRUD operations work, and aggregations return correct data.
+[x] T11 — Implement `tagRepo.ts`: list, create, update, delete, existsByName, getByTransactionIds.
+
+[x] T12 — Implement `configRepo.ts` + `webConfigRepo`: get, save.
+
+[x] T13 — Implement `webStorage.ts`: localStorage fallback mirroring all repositories with tag filtering, breakdowns, and cascade deletes.
+
+[x] T14 — Implement `index.ts`: Platform.OS switching (SQLite on native, localStorage on web).
+
+[x] T15 — Update `AppContext.tsx` and `ConfigContext.tsx` to use the repositories instead of mock data.
+
+[x] T16 — Verification: test that the database is created, default data is loaded, CRUD works, and aggregations return correct data (native + web).

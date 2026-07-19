@@ -1,13 +1,6 @@
 import { type SQLiteDatabase } from 'expo-sqlite';
 
-export async function migrate003(db: SQLiteDatabase): Promise<void> {
-  await db.execAsync(`
-    CREATE TABLE IF NOT EXISTS config (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL
-    );
-  `);
-
+export async function seedConfig(db: SQLiteDatabase): Promise<void> {
   const defaults: [string, string][] = [
     ['theme', 'dark'],
     ['first_day_of_week', '1'],
@@ -15,6 +8,8 @@ export async function migrate003(db: SQLiteDatabase): Promise<void> {
     ['decimal_separator', ','],
     ['language', 'en'],
     ['text_size', 'medium'],
+    ['category_icon_shape', 'square'],
+    ['account_icon_shape', 'square'],
   ];
 
   for (const [key, value] of defaults) {
