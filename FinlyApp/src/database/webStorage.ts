@@ -168,13 +168,30 @@ export const webCategoryRepo = {
 };
 
 export const webTransactionRepo = {
-  async list(filters: { account_id?: number; category_id?: number; type?: TransactionType; start_date?: string; end_date?: string } = {}): Promise<Transaction[]> {
+  async list(filters: { account_id?: number; category_id?: number; type?: TransactionType; start_date?: string; end_date?: string; tagIds?: number[] } = {}): Promise<Transaction[]> {
     let items = getStore<Transaction>('transactions');
     if (filters.account_id !== undefined) items = items.filter(t => t.account_id === filters.account_id);
     if (filters.category_id !== undefined) items = items.filter(t => t.category_id === filters.category_id);
     if (filters.type !== undefined) items = items.filter(t => t.type === filters.type);
     if (filters.start_date !== undefined) items = items.filter(t => t.date >= filters.start_date!);
     if (filters.end_date !== undefined) items = items.filter(t => t.date <= filters.end_date!);
+    if (filters.tagIds && filters.tagIds.length > 0) {
+      const hasUntagged = filters.tagIds.includes(-1);
+      const regularIds = filters.tagIds.filter(id => id !== -1);
+      const links = getStore<TransactionTag>('transaction_tags');
+      const tagSet = new Set(regularIds);
+      const taggedTxIds = new Set(
+        links.filter(l => tagSet.has(l.tag_id)).map(l => l.transaction_id)
+      );
+      const untaggedTxIds = new Set(
+        links.map(l => l.transaction_id)
+      );
+      items = items.filter(t => {
+        if (hasUntagged && !untaggedTxIds.has(t.id)) return true;
+        if (regularIds.length > 0 && taggedTxIds.has(t.id)) return true;
+        return false;
+      });
+    }
     return items.sort((a, b) => b.date.localeCompare(a.date));
   },
   async create(data: Omit<Transaction, 'id' | 'created_at'>): Promise<Transaction> {
@@ -217,6 +234,42 @@ export const webTransactionRepo = {
         return { category_id: catId, name: cat?.name ?? '', icon: cat?.icon ?? '', color: cat?.color ?? '', total };
       })
       .sort((a, b) => b.total - a.total);
+  },
+
+  async breakdownByCategoryAndTag(
+    accountId: number,
+    categoryId: number,
+    type: TransactionType,
+    startDate: string,
+    endDate: string
+  ): Promise<{ tag_id: number; name: string; total: number }[]> {
+    const transactions = getStore<Transaction>('transactions')
+      .filter(t => t.account_id === accountId && t.category_id === categoryId && t.type === type && t.date >= startDate && t.date <= endDate);
+    const tags = getStore<Tag>('tags');
+    const links = getStore<TransactionTag>('transaction_tags');
+    const tagMap = new Map(tags.map(t => [t.id, t.name]));
+    const tagged = new Map<number, number>();
+    const untaggedTotal = { total: 0 };
+
+    for (const t of transactions) {
+      const txnTags = links.filter(l => l.transaction_id === t.id);
+      if (txnTags.length === 0) {
+        untaggedTotal.total += t.amount;
+      } else {
+        for (const l of txnTags) {
+          tagged.set(l.tag_id, (tagged.get(l.tag_id) ?? 0) + t.amount);
+        }
+      }
+    }
+
+    const result: { tag_id: number; name: string; total: number }[] = [];
+    for (const [tagId, total] of tagged) {
+      result.push({ tag_id: tagId, name: tagMap.get(tagId) ?? '', total });
+    }
+    if (untaggedTotal.total > 0) {
+      result.push({ tag_id: -1, name: 'Untagged', total: untaggedTotal.total });
+    }
+    return result;
   },
   async reassignCategory(oldCategoryId: number, newCategoryId: number): Promise<void> {
     const items = getStore<Transaction>('transactions');

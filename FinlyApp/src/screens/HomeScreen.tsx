@@ -1,4 +1,4 @@
-import { useState, useCallback, ComponentProps } from 'react';
+import { useState, useCallback, useEffect, ComponentProps } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +11,7 @@ import { Account } from '../database/types';
 import { formatCurrency, formatDateForDB } from '../utils/formatters';
 import { RootStackParamList, Period } from '../constants/types';
 import { t } from '../i18n';
+import { transactionRepository as transactionRepo } from '../database';
 import AccountModal from '../components/AccountModal';
 import TypeTabs from '../components/TypeTabs';
 import PeriodTabs from '../components/PeriodTabs';
@@ -18,6 +19,7 @@ import CalendarPicker from '../components/CalendarPicker';
 import DonutChart from '../components/DonutChart';
 import BarChart from '../components/BarChart';
 import CategoryList from '../components/CategoryList';
+import TagFilterBar from '../components/TagFilterBar';
 
 type ChartType = 'donut' | 'bar';
 type Navigation = NativeStackNavigationProp<RootStackParamList, 'Home'>;
@@ -27,7 +29,7 @@ export default function HomeScreen() {
   const {
     activeAccount, activeType, activePeriod, selectedDate, customDate, accountsWithBalance, activeCategories,
     totalIncome, totalExpenses, totalIncomeAll, totalExpensesAll, selectAccount, changeType,
-    changePeriod, setSelectedDate, setCustomDate, loading,
+    changePeriod, setSelectedDate, setCustomDate, loading, tags, activeTagIds, toggleTagId, clearTagFilter,
   } = useApp();
   const { config, activeColors: c } = useConfig();
   const fs = useFontSize();
@@ -36,10 +38,68 @@ export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [chartType, setChartType] = useState<ChartType>('donut');
   const [calendarVisible, setCalendarVisible] = useState(false);
+  const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<number>>(new Set());
+  const [tagBreakdowns, setTagBreakdowns] = useState<Map<number, { tag_id: number; name: string; total: number }[]>>(new Map());
 
   const total = totalIncomeAll - totalExpensesAll;
   const activeTotal = activeType === 'expense' ? totalExpenses : totalIncome;
   const totalColor = total >= 0 ? c.green : c.red;
+
+  useEffect(() => {
+    if (!activeAccount || activeCategories.length === 0) {
+      setTagBreakdowns(new Map());
+      return;
+    }
+
+    async function loadTagBreakdowns() {
+      const dates = activePeriod === 'custom'
+        ? customDate
+        : (() => {
+            const now = selectedDate;
+            switch (activePeriod) {
+              case 'day': {
+                const s = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const e = new Date(s); e.setHours(23, 59, 59, 999);
+                return { start: s, end: e };
+              }
+              case 'week': {
+                const wd = now.getDay();
+                const diff = wd === 0 ? 6 : wd - 1;
+                const s = new Date(now); s.setDate(now.getDate() - diff); s.setHours(0, 0, 0, 0);
+                const e = new Date(s); e.setDate(e.getDate() + 6); e.setHours(23, 59, 59, 999);
+                return { start: s, end: e };
+              }
+              case 'month': {
+                const s = new Date(now.getFullYear(), now.getMonth(), 1);
+                const e = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+                return { start: s, end: e };
+              }
+              case 'year': {
+                const s = new Date(now.getFullYear(), 0, 1);
+                const e = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+                return { start: s, end: e };
+              }
+            }
+          })();
+
+      const breakdowns = new Map<number, { tag_id: number; name: string; total: number }[]>();
+      for (const cat of activeCategories) {
+        const data = await transactionRepo.breakdownByCategoryAndTag(
+          activeAccount.id,
+          cat.id,
+          activeType,
+          formatDateForDB(dates.start),
+          formatDateForDB(dates.end)
+        );
+        if (data.length > 0) {
+          breakdowns.set(cat.id, data);
+        }
+      }
+      setTagBreakdowns(breakdowns);
+    }
+
+    loadTagBreakdowns();
+  }, [activeAccount, activeCategories, activeType, activePeriod, selectedDate, customDate]);
 
   const handleCategoryPress = useCallback((category: { id: number }) => {
     const { start, end } = activePeriod === 'custom'
@@ -77,8 +137,21 @@ export default function HomeScreen() {
       period: activePeriod,
       startDate: formatDateForDB(start),
       endDate: formatDateForDB(end),
+      tagIds: activeTagIds.length > 0 ? activeTagIds : undefined,
     });
-  }, [navigation, activeType, activePeriod, customDate, selectedDate]);
+  }, [navigation, activeType, activePeriod, customDate, selectedDate, activeTagIds]);
+
+  const handleToggleExpand = useCallback((categoryId: number) => {
+    setExpandedCategoryIds(prev => {
+      const next = new Set(prev);
+      if (next.has(categoryId)) {
+        next.delete(categoryId);
+      } else {
+        next.add(categoryId);
+      }
+      return next;
+    });
+  }, []);
 
   const handlePeriodChange = useCallback((period: Period) => {
     changePeriod(period);
@@ -184,12 +257,22 @@ export default function HomeScreen() {
           )}
         </TouchableOpacity>
 
+        <TagFilterBar
+          tags={tags}
+          activeTagIds={activeTagIds}
+          onToggle={toggleTagId}
+          onClear={clearTagFilter}
+        />
+
         <CategoryList
           categories={activeCategories}
           total={activeTotal}
           currency={config.currency}
           separator={config.decimalSeparator}
           onPress={handleCategoryPress}
+          tagBreakdowns={tagBreakdowns}
+          expandedCategoryIds={expandedCategoryIds}
+          onToggleExpand={handleToggleExpand}
         />
 
         <TouchableOpacity

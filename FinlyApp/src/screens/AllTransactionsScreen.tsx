@@ -15,13 +15,14 @@ import { formatCurrency } from '../utils/formatters';
 import { t } from '../i18n';
 import AccountSelector from '../components/AccountSelector';
 import SortToggle, { SortBy, SortDirection } from '../components/SortToggle';
+import TagFilterBar from '../components/TagFilterBar';
 import TransactionGroup from '../components/TransactionGroup';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'AllTransactions'>;
 
 export default function AllTransactionsScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const { categories, accounts, activeAccount, accountsWithBalance } = useApp();
+  const { categories, accounts, activeAccount, accountsWithBalance, tags } = useApp();
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -32,6 +33,26 @@ export default function AllTransactionsScreen() {
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [tagsByTransaction, setTagsByTransaction] = useState<Map<number, { tag_id: number; name: string }[]>>(new Map());
+  const [localTagIds, setLocalTagIds] = useState<number[]>([]);
+
+  const handleToggleTag = useCallback((id: number) => {
+    setLocalTagIds(prev => {
+      if (id === -1) {
+        return prev.includes(-1) ? [] : [-1];
+      }
+      if (prev.includes(-1)) {
+        return [id];
+      }
+      if (prev.includes(id)) {
+        return prev.filter(i => i !== id);
+      }
+      return [...prev, id];
+    });
+  }, []);
+
+  const handleClearTagFilter = useCallback(() => {
+    setLocalTagIds([]);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -87,6 +108,16 @@ export default function AllTransactionsScreen() {
 
   const filtered = useMemo(() => {
     let list = allTransactions.filter(t => t.account_id === selectedAccountId);
+    if (localTagIds.length > 0) {
+      const hasUntagged = localTagIds.includes(-1);
+      const regularIds = localTagIds.filter(id => id !== -1);
+      list = list.filter(tx => {
+        const txTags = tagsByTransaction.get(tx.id) ?? [];
+        if (hasUntagged && txTags.length === 0) return true;
+        if (regularIds.length > 0 && regularIds.some(id => txTags.some(t => t.tag_id === id))) return true;
+        return false;
+      });
+    }
     const sorted = [...list].sort((a, b) => {
       if (sortBy === 'date') {
         const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
@@ -96,7 +127,7 @@ export default function AllTransactionsScreen() {
       return sortDirection === 'desc' ? -diff : diff;
     });
     return sorted;
-  }, [allTransactions, selectedAccountId, sortBy, sortDirection]);
+  }, [allTransactions, selectedAccountId, sortBy, sortDirection, localTagIds, tagsByTransaction]);
 
   const sections = useMemo(() => {
     const grouped = new Map<string, Transaction[]>();
@@ -113,12 +144,11 @@ export default function AllTransactionsScreen() {
   }, [filtered]);
 
   const accountBalance = useMemo(() => {
-    return allTransactions
-      .filter(t => t.account_id === selectedAccountId)
+    return filtered
       .reduce(
         (sum, t) => sum + (t.type === 'expense' ? -t.amount : t.amount), 0
       );
-  }, [allTransactions, selectedAccountId]);
+  }, [filtered]);
 
   const handleToggleSort = (field: SortBy) => {
     if (field === sortBy) {
@@ -147,6 +177,14 @@ export default function AllTransactionsScreen() {
           onToggleDirection={() => setSortDirection(d => d === 'desc' ? 'asc' : 'desc')}
         />
       </View>
+
+      <TagFilterBar
+        tags={tags}
+        activeTagIds={localTagIds}
+        onToggle={handleToggleTag}
+        onClear={handleClearTagFilter}
+        style={{ marginTop: 12 }}
+      />
 
       {loading ? (
         <View style={styles.loadingContainer}>
