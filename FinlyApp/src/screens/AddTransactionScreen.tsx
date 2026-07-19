@@ -130,9 +130,14 @@ export default function AddTransactionScreen() {
   const [day, setDay] = useState(initialDay);
 
   const prevType = useRef(type);
+  const isFirstFocus = useRef(true);
 
   // Handle category selected from AddCategoryScreen
   useFocusEffect(useCallback(() => {
+    if (isFirstFocus.current) {
+      setSelectedTags([]);
+      isFirstFocus.current = false;
+    }
     const pending = consumePendingCategory();
     if (pending) {
       if (pending.type !== type) {
@@ -245,8 +250,8 @@ export default function AddTransactionScreen() {
     setCommentSuggestions([]);
   };
 
-  const handleSelectAccount = (account: typeof accountsWithBalance[0]) => {
-    setAccountId(account.id);
+  const handleSelectAccount = (id: number) => {
+    setAccountId(id);
     setModalAccountVisible(false);
   };
 
@@ -446,6 +451,7 @@ export default function AddTransactionScreen() {
       <AccountModal
         visible={modalAccountVisible}
         accounts={accountsWithBalance}
+        selectedId={accountId}
         onSelect={handleSelectAccount}
         onClose={() => setModalAccountVisible(false)}
       />

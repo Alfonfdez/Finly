@@ -207,8 +207,8 @@ export default function ModifyTransactionScreen() {
     setCommentSuggestions([]);
   };
 
-  const handleSelectAccount = (account: typeof accountsWithBalance[0]) => {
-    setAccountId(account.id);
+  const handleSelectAccount = (id: number) => {
+    setAccountId(id);
     setModalAccountVisible(false);
   };
 
@@ -413,6 +413,7 @@ export default function ModifyTransactionScreen() {
       <AccountModal
         visible={modalAccountVisible}
         accounts={accountsWithBalance}
+        selectedId={accountId}
         onSelect={handleSelectAccount}
         onClose={() => setModalAccountVisible(false)}
       />
