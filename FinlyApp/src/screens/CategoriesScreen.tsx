@@ -9,7 +9,7 @@ import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
 import TypeTabs from '../components/TypeTabs';
-import { TransactionType, RootStackParamList } from '../constants/types';
+import { TransactionType, RootStackParamList, sortCategoriesWithOthersLast } from '../constants/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Categories'>;
 
@@ -37,7 +37,8 @@ export default function CategoriesScreen() {
   }, [navigation, c.text, labels.home_open_menu]);
 
   const categoriesByType = useMemo(() => {
-    return categories.filter((cat) => cat.type === activeType);
+    const filtered = categories.filter((cat) => cat.type === activeType);
+    return sortCategoriesWithOthersLast(filtered);
   }, [categories, activeType]);
 
   const round = config.categoryIconShape === 'circle';
@@ -65,25 +66,6 @@ export default function CategoriesScreen() {
     );
   };
 
-  const renderCreateButton = () => (
-    <TouchableOpacity
-      key="create"
-      style={[styles.item, { backgroundColor: c.surface, borderRadius: round ? 999 : 12 }]}
-      onPress={() => navigation.navigate('CreateCategory', { type: activeType })}
-      accessibilityLabel={labels.add_cat_create}
-    >
-      <View style={[styles.iconContainer, { backgroundColor: c.textSecondary + '22', borderRadius: round ? 999 : 20 }]}>
-        <Ionicons name="add" size={24} color={c.textSecondary} />
-      </View>
-      <Text
-        style={[styles.name, { color: c.textSecondary, fontSize: fs(11) }]}
-        numberOfLines={1}
-      >
-        {labels.add_cat_create}
-      </Text>
-    </TouchableOpacity>
-  );
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
       <View style={styles.content}>
@@ -100,11 +82,18 @@ export default function CategoriesScreen() {
           <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
             <View style={styles.grid}>
               {categoriesByType.map(renderCategory)}
-              {renderCreateButton()}
             </View>
           </ScrollView>
         )}
       </View>
+
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: c.primary }]}
+        onPress={() => navigation.navigate('CreateCategory', { type: activeType })}
+        accessibilityLabel="+"
+      >
+        <Ionicons name="add" size={28} color={c.background} />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -122,7 +111,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 16,
+    paddingBottom: 80,
   },
   grid: {
     flexDirection: 'row',
@@ -155,5 +144,20 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontWeight: '500',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 56,
+    alignSelf: 'center',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
 });

@@ -109,6 +109,10 @@ useFocusEffect(
 
 Rely on React Navigation's default header with back button. Never call `setOptions` for `headerLeft`.
 
+### Header Title Alignment
+
+All headers are centered via `headerTitleAlign: 'center'` in `screenOptions` (AppNavigator.tsx). No per-screen override needed.
+
 ## Loading States
 
 ### ActivityIndicator Pattern

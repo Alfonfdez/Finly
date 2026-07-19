@@ -39,6 +39,7 @@ export interface Transaction {
   description: string | null;
   date: string;
   created_at: string;
+  updated_at: string | null;
 }
 
 export interface Tag {

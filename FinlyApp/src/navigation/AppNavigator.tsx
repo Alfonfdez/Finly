@@ -102,6 +102,7 @@ function HomeStack() {
       screenOptions={{
         headerStyle: { backgroundColor: c.surface },
         headerTintColor: c.text,
+        headerTitleAlign: 'center',
       }}
     >
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />

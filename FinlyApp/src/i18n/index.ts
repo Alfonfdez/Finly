@@ -59,3 +59,14 @@ export function getDisplayCategoryName(category: { id: number; name: string }): 
   }
   return category.name;
 }
+
+export function getAllDefaultCategoryNames(): Set<string> {
+  const names = new Set<string>();
+  const catKeys = Object.values(CATEGORY_I18N_KEYS);
+  for (const lang of Object.values(languages)) {
+    for (const key of catKeys) {
+      names.add((lang[key] as string).toLowerCase());
+    }
+  }
+  return names;
+}

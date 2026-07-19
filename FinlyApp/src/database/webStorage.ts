@@ -208,17 +208,17 @@ export const webTransactionRepo = {
     }
     return items.sort((a, b) => b.date.localeCompare(a.date));
   },
-  async create(data: Omit<Transaction, 'id' | 'created_at'>): Promise<Transaction> {
+  async create(data: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>): Promise<Transaction> {
     const items = getStore<Transaction>('transactions');
-    const item: Transaction = { ...data, id: nextId(items), created_at: now() };
+    const item: Transaction = { ...data, id: nextId(items), created_at: now(), updated_at: null };
     items.push(item);
     setStore('transactions', items);
     return item;
   },
-  async update(id: number, data: Partial<Omit<Transaction, 'id' | 'created_at'>>): Promise<void> {
+  async update(id: number, data: Partial<Omit<Transaction, 'id' | 'created_at' | 'updated_at'>>): Promise<void> {
     const items = getStore<Transaction>('transactions');
     const idx = items.findIndex(t => t.id === id);
-    if (idx !== -1) items[idx] = { ...items[idx], ...data };
+    if (idx !== -1) items[idx] = { ...items[idx], ...data, updated_at: now() };
     setStore('transactions', items);
   },
   async delete(id: number): Promise<void> {
@@ -326,7 +326,7 @@ export const webTransactionRepo = {
   },
 
   async createWithTags(
-    data: Omit<Transaction, 'id' | 'created_at'>,
+    data: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>,
     tagIds: number[]
   ): Promise<Transaction> {
     const tx = await webTransactionRepo.create(data);
@@ -340,7 +340,7 @@ export const webTransactionRepo = {
 
   async updateWithTags(
     id: number,
-    data: Partial<Omit<Transaction, 'id' | 'created_at'>>,
+    data: Partial<Omit<Transaction, 'id' | 'created_at' | 'updated_at'>>,
     tagIds: number[]
   ): Promise<void> {
     await webTransactionRepo.update(id, data);

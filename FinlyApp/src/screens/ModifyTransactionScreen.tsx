@@ -283,11 +283,11 @@ export default function ModifyTransactionScreen() {
       <ScrollView ref={scrollRef} style={[styles.container, { backgroundColor: c.background }]} keyboardShouldPersistTaps="handled">
         <TypeTabs active={type} onChange={setType} />
 
-        <View style={[styles.amountContainer, { backgroundColor: c.surface }]}>
+        <View style={styles.amountRow}>
           <TextInput
             style={[
               styles.amountInput,
-              { color: amountRaw ? c.text : c.textSecondary, fontSize: fs(24) },
+              { backgroundColor: c.surface, color: amountRaw ? c.text : c.textSecondary, fontSize: fs(24), borderColor: amountFocused ? c.primary : 'transparent' },
               isAmountInvalid && { color: c.red },
             ]}
             placeholder="0"
@@ -445,17 +445,25 @@ export default function ModifyTransactionScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   container: { flex: 1, padding: 16 },
-  amountContainer: {
+  amountRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
-    paddingHorizontal: 16,
     marginTop: 16,
     marginBottom: 4,
+    gap: 8,
+  },
+  amountContainer: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    borderRadius: 12,
+    paddingHorizontal: 16,
   },
   amountInput: {
     flex: 1,
     paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
     fontWeight: '700',
   },
   currencySymbol: {

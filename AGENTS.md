@@ -48,7 +48,7 @@ npx expo lint
 ```
 
 ## DATABASE
-- Current version: 3
+- Current version: 5
 - Migrations in `src/database/migrations/`
 - SQLite for native, localStorage for web
 - 5 repositories: user, account, category, transaction, config

@@ -75,16 +75,16 @@ export const transactionRepo = {
     return await db.getAllAsync<Transaction>(sql, ...params);
   },
 
-  async create(data: Omit<Transaction, 'id' | 'created_at'>): Promise<Transaction> {
+  async create(data: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>): Promise<Transaction> {
     const db = getDatabase();
     const result = await db.runAsync(
       `INSERT INTO transactions (account_id, category_id, type, amount, description, date) VALUES (?, ?, ?, ?, ?, ?)`,
       data.account_id, data.category_id, data.type, data.amount, data.description ?? null, data.date
     );
-    return { ...data, id: result.lastInsertRowId, created_at: new Date().toISOString() };
+    return { ...data, id: result.lastInsertRowId, created_at: new Date().toISOString(), updated_at: null };
   },
 
-  async update(id: number, data: Partial<Omit<Transaction, 'id' | 'created_at'>>): Promise<void> {
+  async update(id: number, data: Partial<Omit<Transaction, 'id' | 'created_at' | 'updated_at'>>): Promise<void> {
     const db = getDatabase();
     const fields: string[] = [];
     const values: (string | number | null)[] = [];
@@ -96,7 +96,9 @@ export const transactionRepo = {
     if (data.description !== undefined) { fields.push('description = ?'); values.push(data.description); }
     if (data.date !== undefined) { fields.push('date = ?'); values.push(data.date); }
 
-    if (fields.length === 0) return;
+    fields.push("updated_at = datetime('now', 'localtime')");
+
+    if (fields.length === 1) return;
 
     values.push(id);
     await db.runAsync(
@@ -234,7 +236,7 @@ export const transactionRepo = {
   },
 
   async createWithTags(
-    data: Omit<Transaction, 'id' | 'created_at'>,
+    data: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>,
     tagIds: number[]
   ): Promise<Transaction> {
     const db = getDatabase();
@@ -252,7 +254,7 @@ export const transactionRepo = {
 
   async updateWithTags(
     id: number,
-    data: Partial<Omit<Transaction, 'id' | 'created_at'>>,
+    data: Partial<Omit<Transaction, 'id' | 'created_at' | 'updated_at'>>,
     tagIds: number[]
   ): Promise<void> {
     const db = getDatabase();

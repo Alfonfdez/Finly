@@ -260,6 +260,7 @@ export const ca: Language = {
   details_delete_no: 'No',
   details_edit: 'Editar',
   details_created: 'Creat',
+  details_updated: 'Actualitzat',
   type_expense: 'Despesa',
   type_income: 'Ingrés',
 
