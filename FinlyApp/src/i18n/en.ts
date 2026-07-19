@@ -124,6 +124,7 @@ export const en = {
   modify_cat_save: 'Save',
   modify_cat_delete_confirm_title: (name: string) => `Delete category "${name}"`,
   modify_cat_delete_confirm_message: 'All transactions linked to this category will be moved to a category of your choice',
+  modify_cat_delete_confirm_message_empty: 'This category will be permanently deleted.',
   modify_cat_delete_confirm_cancel: 'Cancel',
   modify_cat_delete_confirm_delete: 'Delete',
   modify_cat_select_title: 'Select category',
