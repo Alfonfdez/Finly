@@ -173,26 +173,64 @@ export const transactionRepo = {
     categoryId: number,
     type: TransactionType,
     startDate: string,
-    endDate: string
+    endDate: string,
+    tagIds?: number[]
   ): Promise<CategoryTagBreakdown[]> {
     const db = getDatabase();
-    return await db.getAllAsync<CategoryTagBreakdown>(
-      `SELECT tt.tag_id, t.name, SUM(tr.amount) AS total
-       FROM transactions tr
-       INNER JOIN transaction_tags tt ON tr.id = tt.transaction_id
-       INNER JOIN tags t ON tt.tag_id = t.id
-       WHERE tr.account_id = ? AND tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
-       GROUP BY tt.tag_id
+    const hasFilter = tagIds && tagIds.length > 0;
+    const filterRegular = hasFilter ? tagIds!.filter(id => id !== -1) : [];
+    const filterUntagged = hasFilter ? tagIds!.includes(-1) : false;
 
-       UNION ALL
+    if (!hasFilter) {
+      return await db.getAllAsync<CategoryTagBreakdown>(
+        `SELECT tt.tag_id, t.name, SUM(tr.amount) AS total
+         FROM transactions tr
+         INNER JOIN transaction_tags tt ON tr.id = tt.transaction_id
+         INNER JOIN tags t ON tt.tag_id = t.id
+         WHERE tr.account_id = ? AND tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
+         GROUP BY tt.tag_id
 
-       SELECT -1 AS tag_id, 'Untagged' AS name, SUM(tr.amount) AS total
-       FROM transactions tr
-       WHERE tr.account_id = ? AND tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
-         AND NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = tr.id)`,
-      accountId, categoryId, type, startDate, endDate,
-      accountId, categoryId, type, startDate, endDate
-    );
+         UNION ALL
+
+         SELECT -1 AS tag_id, 'Untagged' AS name, SUM(tr.amount) AS total
+         FROM transactions tr
+         WHERE tr.account_id = ? AND tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
+           AND NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = tr.id)`,
+        accountId, categoryId, type, startDate, endDate,
+        accountId, categoryId, type, startDate, endDate
+      );
+    }
+
+    const results: CategoryTagBreakdown[] = [];
+
+    if (filterRegular.length > 0) {
+      const placeholders = filterRegular.map(() => '?').join(',');
+      const tagged = await db.getAllAsync<CategoryTagBreakdown>(
+        `SELECT tt.tag_id, t.name, SUM(tr.amount) AS total
+         FROM transactions tr
+         INNER JOIN transaction_tags tt ON tr.id = tt.transaction_id
+         INNER JOIN tags t ON tt.tag_id = t.id
+         WHERE tr.account_id = ? AND tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
+           AND tt.tag_id IN (${placeholders})
+         GROUP BY tt.tag_id`,
+        accountId, categoryId, type, startDate, endDate,
+        ...filterRegular
+      );
+      results.push(...tagged);
+    }
+
+    if (filterUntagged) {
+      const untagged = await db.getAllAsync<CategoryTagBreakdown>(
+        `SELECT -1 AS tag_id, 'Untagged' AS name, SUM(tr.amount) AS total
+         FROM transactions tr
+         WHERE tr.account_id = ? AND tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
+           AND NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = tr.id)`,
+        accountId, categoryId, type, startDate, endDate
+      );
+      results.push(...untagged);
+    }
+
+    return results;
   },
 
   async createWithTags(

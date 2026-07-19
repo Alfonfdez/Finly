@@ -53,23 +53,9 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
         inactiveTintColor={c.primary}
       />
       <DrawerItem
-        label={labels.nav_settings}
-        onPress={() => props.navigation.navigate('Main', { screen: 'Settings' })}
-        icon={({ color, size }) => <Ionicons name="settings-outline" size={size} color={color} />}
-        labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
-        inactiveTintColor={c.primary}
-      />
-      <DrawerItem
-        label={labels.nav_transactions}
+        label={labels.nav_all_transactions}
         onPress={() => props.navigation.navigate('Main', { screen: 'AllTransactions' })}
         icon={({ color, size }) => <Ionicons name="stats-chart-outline" size={size} color={color} />}
-        labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
-        inactiveTintColor={c.primary}
-      />
-      <DrawerItem
-        label={labels.nav_categories}
-        onPress={() => props.navigation.navigate('Main', { screen: 'Categories' })}
-        icon={({ color, size }) => <Ionicons name="pricetag-outline" size={size} color={color} />}
         labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
         inactiveTintColor={c.primary}
       />
@@ -81,9 +67,24 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
         inactiveTintColor={c.primary}
       />
       <DrawerItem
+        label={labels.nav_categories}
+        onPress={() => props.navigation.navigate('Main', { screen: 'Categories' })}
+        icon={({ color, size }) => <Ionicons name="pricetag-outline" size={size} color={color} />}
+        labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
+        inactiveTintColor={c.primary}
+      />
+      <DrawerItem
         label={labels.nav_tags}
         onPress={() => props.navigation.navigate('Main', { screen: 'Tags' })}
         icon={({ color, size }) => <Ionicons name="pricetag-outline" size={size} color={color} />}
+        labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
+        inactiveTintColor={c.primary}
+      />
+      <View style={[styles.separator, { backgroundColor: c.border }]} />
+      <DrawerItem
+        label={labels.nav_settings}
+        onPress={() => props.navigation.navigate('Main', { screen: 'Settings' })}
+        icon={({ color, size }) => <Ionicons name="settings-outline" size={size} color={color} />}
         labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
         inactiveTintColor={c.primary}
       />

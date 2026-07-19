@@ -13,7 +13,7 @@ import { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatCurrency } from '../utils/formatters';
 import { getDisplayCategoryName, t } from '../i18n';
-import AccountSelector from '../components/AccountSelector';
+import AccountModal from '../components/AccountModal';
 import SortToggle, { SortBy, SortDirection } from '../components/SortToggle';
 import TagFilterBar from '../components/TagFilterBar';
 import TransactionGroup from '../components/TransactionGroup';
@@ -35,6 +35,7 @@ export default function TransactionsScreen() {
   const tagIds = route.params?.tagIds;
 
   const [selectedAccountId, setSelectedAccountId] = useState(activeAccount?.id ?? accounts[0]?.id ?? 1);
+  const [accountModalVisible, setAccountModalVisible] = useState(false);
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
@@ -174,11 +175,17 @@ export default function TransactionsScreen() {
       )}
 
       <View style={[styles.controls, { borderBottomColor: c.border }]}>
-        <AccountSelector
-          accounts={accountsWithBalance}
-          selectedId={selectedAccountId}
-          onSelect={setSelectedAccountId}
-        />
+        <TouchableOpacity style={styles.accountTrigger} onPress={() => setAccountModalVisible(true)}>
+          {(() => { const a = accountsWithBalance.find(x => x.id === selectedAccountId); return a ? (
+            <View style={[styles.accountTriggerIcon, { backgroundColor: a.color + '30', borderRadius: config.accountIconShape === 'circle' ? 14 : 6 }]}>
+              <Ionicons name={a.icon as ComponentProps<typeof Ionicons>['name']} size={18} color={a.color} />
+            </View>
+          ) : null; })()}
+          <Text style={[styles.accountTriggerName, { color: c.text, fontSize: fs(14) }]} numberOfLines={1}>
+            {accountsWithBalance.find(x => x.id === selectedAccountId)?.name ?? ''}
+          </Text>
+          <Ionicons name="chevron-down" size={16} color={c.textSecondary} />
+        </TouchableOpacity>
         <SortToggle
           sortBy={sortBy}
           direction={sortDirection}
@@ -229,6 +236,14 @@ export default function TransactionsScreen() {
       >
         <Ionicons name="add" size={28} color={c.background} />
       </TouchableOpacity>
+
+      <AccountModal
+        visible={accountModalVisible}
+        accounts={accountsWithBalance}
+        selectedId={selectedAccountId}
+        onSelect={(id) => { setSelectedAccountId(id); setAccountModalVisible(false); }}
+        onClose={() => setAccountModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -263,6 +278,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     gap: 8,
   },
+  accountTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  accountTriggerIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  accountTriggerName: { fontWeight: '600', maxWidth: 100 },
   listContent: { paddingBottom: 80 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   empty: { textAlign: 'center', marginTop: 40 },

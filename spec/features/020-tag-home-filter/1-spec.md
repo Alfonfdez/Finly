@@ -19,6 +19,7 @@
 - Tapping a chip toggles its selection state.
 - When no tags exist in the database, the filter bar is not rendered (hidden).
 - Visual: selected chip = `primary` background + `background` text; unselected = `surface` background + `text` text.
+- **"All" and "Untagged" chips** use an outlined style when unselected (transparent background, 1px `border` color, `textSecondary` text) to signal they have different behavior from regular tag chips. When selected, they use a desaturated primary shade (80% opacity) to remain visually distinct from regular tag chips (100% primary).
 
 ### 2. Per-category tag breakdown
 

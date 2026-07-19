@@ -21,15 +21,15 @@ export default function TagFilterBar({ tags, activeTagIds, onToggle, onClear, st
 
   if (tags.length === 0) return null;
 
-  const sortedTags = [...tags].sort((a, b) => a.name.localeCompare(b.name));
-
-  const renderChip = (label: string, id: number, isSelected: boolean, onPress?: () => void) => (
+  const renderChip = (label: string, id: number, isSelected: boolean, onPress?: () => void, isSpecial = false) => (
     <TouchableOpacity
       key={id}
       style={[
         styles.chip,
         {
-          backgroundColor: isSelected ? c.primary : c.surface,
+          backgroundColor: isSelected && isSpecial ? c.primary + 'CC' : isSelected ? c.primary : isSpecial ? 'transparent' : c.surface,
+          borderWidth: !isSelected && isSpecial ? 1 : 0,
+          borderColor: c.border,
         },
       ]}
       onPress={onPress ?? (() => onToggle(id))}
@@ -38,7 +38,7 @@ export default function TagFilterBar({ tags, activeTagIds, onToggle, onClear, st
         style={[
           styles.chipText,
           {
-            color: isSelected ? c.background : c.text,
+            color: isSelected && isSpecial ? c.background + 'CC' : isSelected ? c.background : isSpecial ? c.textSecondary : c.text,
             fontSize: fs(13),
           },
         ]}
@@ -56,9 +56,9 @@ export default function TagFilterBar({ tags, activeTagIds, onToggle, onClear, st
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {renderChip(labels.home_tag_all, -2, activeTagIds.length === 0, onClear)}
-        {renderChip(labels.home_tag_untagged, -1, activeTagIds.includes(-1))}
-        {sortedTags.map(tag =>
+        {renderChip(labels.home_tag_all, -2, activeTagIds.length === 0, onClear, true)}
+        {renderChip(labels.home_tag_untagged, -1, activeTagIds.includes(-1), undefined, true)}
+        {tags.map(tag =>
           renderChip(tag.name, tag.id, activeTagIds.includes(tag.id))
         )}
       </ScrollView>

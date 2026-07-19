@@ -1308,7 +1308,7 @@
 - Created horizontal multi-select tag chip filter bar component.
 - "All" chip (always first, calls onClear), "Untagged" chip (exclusive with regular tags), remaining tags sorted by name.
 - Selected = primary background + background text; unselected = surface background + text text.
-- Hidden when no tags exist.
+- Hidden when no tags exist. Optional `style` prop for per-screen customization.
 
 [2026-07-18] + | src/database/repositories/transactionRepo.ts
 - Added `breakdownByCategoryAndTag()` with UNION ALL for Untagged row (tag_id = -1).
@@ -1322,6 +1322,7 @@
 - Added `activeTagIds: number[]` state, `toggleTagId(id)` with exclusive Untagged logic, `clearTagFilter()`.
 - Added `tagsByTransaction: Map<number, number[]>` built on both `loadTransactions` and `refresh()`.
 - Updated `filteredTransactions` memo to filter by activeTagIds (OR logic).
+- Fix: `refresh()` now rebuilds `tagsByTransaction` map (was stale after adding transactions).
 
 [2026-07-18] ~ | src/screens/HomeScreen.tsx
 - Rendered TagFilterBar below chart, above CategoryList.
@@ -1332,36 +1333,15 @@
 - Added expandable tag breakdown section below each category row (3 visible + expand/collapse).
 
 [2026-07-18] ~ | src/screens/TransactionsScreen.tsx
-- Added tag filtering via route.params.tagIds (OR logic).
-- Added tagsByTransaction state and useEffect to batch-load tags for visible transactions.
-- Passes tagsByTransaction to TransactionGroup.
-
-[2026-07-18] ~ | src/i18n/en.ts, es.ts, ca.ts
-- Added i18n keys: home_tag_all, home_tag_untagged, home_tag_view_all, home_tag_show_less.
-
-[2026-07-18] ~ | src/context/AppContext.tsx (bug fix)
-- Fix: `refresh()` now rebuilds `tagsByTransaction` map (was stale after adding transactions).
-
-[2026-07-18] ~ | src/components/TagFilterBar.tsx (bug fix)
-- Fix: "All" chip calls `onClear()` directly via custom `onPress` prop instead of `onToggle(-2)` which added -2 to the array.
-
-[2026-07-18] + | src/components/TagFilterBar.tsx
-- Created horizontal multi-select tag chip filter bar component.
-- "All" chip (always first, calls onClear), "Untagged" chip (exclusive with regular tags), remaining tags sorted by name.
-- Selected = primary background + background text; unselected = surface background + text text.
-- Hidden when no tags exist.
-
-[2026-07-18] ~ | src/screens/TransactionsScreen.tsx
 - Added TagFilterBar below controls with localTagIds state (initialized from nav params).
 - Local toggle/clear handlers independent from AppContext — HomeScreen filter is not affected.
 - Moved tag filtering from useFocusEffect to filtered useMemo for real-time reactivity.
 - categoryTotal now uses filtered (account + tag filtered) instead of allTransactions.
+- Fix: tag filtering compared object `{ tag_id, name }` with number via `.includes(id)` — changed to `.some(t => t.tag_id === id)`.
+- Fix: "All" chip calls `onClear()` directly instead of `onToggle(-2)`.
 
-[2026-07-18] ~ | src/components/TagFilterBar.tsx
-- Added optional `style` prop for per-screen customization (e.g., marginTop on TransactionsScreen).
-
-[2026-07-18] ~ | src/screens/TransactionsScreen.tsx (bug fix)
-- Fix: tag filtering compared object `{ tag_id, name }` with number via `.includes(id)` — always false. Changed to `.some(t => t.tag_id === id)`.
+[2026-07-18] ~ | src/i18n/en.ts, es.ts, ca.ts
+- Added i18n keys: home_tag_all, home_tag_untagged, home_tag_view_all, home_tag_show_less.
 
 [2026-07-19] ~ | spec/features/020-tag-home-filter/ (1-spec.md, 2-plan.md, 3-tasks.md)
 - Added AllTransactionsScreen scope: tag filter bar with local state, dynamic balance, no nav params.
@@ -1376,3 +1356,40 @@
 
 [2026-07-19] ~ | spec/constitution/3-roadmap.md
 - Updated 020-tag-home-filter description to mention TransactionsScreen and AllTransactionsScreen.
+
+[2026-07-19] ~ | src/components/TagFilterBar.tsx
+- Added outlined style for "All" and "Untagged" chips when unselected (transparent background, 1px border, textSecondary color) to visually distinguish them from regular tag chips.
+- When selected, "All" and "Untagged" use a desaturated primary shade (80% opacity) to remain visually distinct from regular tag chips (100% primary).
+
+[2026-07-19] ~ | spec/features/020-tag-home-filter/1-spec.md
+- Added note about outlined chip style for "All" and "Untagged" in section 1 (tag filter bar visual).
+
+[2026-07-19] ~ | src/screens/HomeScreen.tsx
+- Restricted account selector modal to open only when tapping the account row (icon + name + chevron-down), not the entire center area. Total and summary rows are now non-interactive.
+
+[2026-07-19] ~ | src/navigation/AppNavigator.tsx
+- Reordered drawer menu: Home, Transactions, Accounts, Categories, Tags, separator, Settings. Settings moved to bottom (rarely accessed), daily-use items grouped at top. Added visual separator before Settings.
+- Renamed drawer label from "Transactions" to "All transactions" (uses existing `nav_all_transactions` i18n key) to match the screen it navigates to.
+
+[2026-07-19] ~ | src/components/AccountModal.tsx, src/components/AccountSelector.tsx (deleted)
+- Unified account selection: rewrote AccountModal from bottom-sheet-with-immediate-selection to centered-modal-with-radio-buttons-and-confirm/cancel. Props now include `selectedId` and `onSelect(id)`.
+- Deleted AccountSelector.tsx (its functionality absorbed into AccountModal + inline trigger rows in screens).
+
+[2026-07-19] ~ | src/screens/AllTransactionsScreen.tsx, src/screens/TransactionsScreen.tsx
+- Replaced AccountSelector with AccountModal + inline trigger row (icon + name + chevron-down). Account selection now uses radio + confirm/cancel for consistency.
+
+[2026-07-19] ~ | src/screens/HomeScreen.tsx, src/screens/AddTransactionScreen.tsx, src/screens/ModifyTransactionScreen.tsx
+- Added `selectedId` prop to AccountModal. Updated `onSelect` handlers to accept `id: number` instead of full account object.
+
+[2026-07-19] ~ | src/screens/AddTransactionScreen.tsx
+- Fix: reset `selectedTags` only on first screen focus (fresh mount) via `isFirstFocus` ref in `useFocusEffect`, preventing stale tag selections from persisting when the screen is reused. Previously reset on every focus, which wiped tags when returning from CreateCategory.
+
+[2026-07-19] ~ | src/database/webStorage.ts
+- Fix: clean up orphaned `transaction_tags` entries when deleting transactions (`delete`, `deleteByAccountId`) and when deleting accounts. Orphaned entries caused ghost tags to appear on new transactions when IDs were reused after deletion.
+- Fix: `initWebStorage` now purges orphaned `transaction_tags` on startup (from pre-fix data).
+
+[2026-07-19] ~ | src/database/webStorage.ts, src/database/repositories/transactionRepo.ts, src/screens/HomeScreen.tsx
+- Added optional `tagIds` parameter to `breakdownByCategoryAndTag` in both web and native implementations. When a tag filter is active, only transactions matching the selected tags are included in the breakdown — totals and pills now reflect only the filtered set.
+
+[2026-07-19] ~ | src/components/TagFilterBar.tsx
+- Fix: removed alphabetical sort (`localeCompare`) so tag chips display in creation order (by ID), matching the order in AddTransaction's TagSection.

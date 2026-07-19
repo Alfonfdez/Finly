@@ -28,6 +28,15 @@ export async function initWebStorage(): Promise<void> {
   const users = getStore<User>('users');
   if (users.length === 0) {
     seedWebData();
+  } else {
+    // Clean up orphaned transaction_tags entries (from pre-fix data)
+    const transactions = getStore<Transaction>('transactions');
+    const txnIds = new Set(transactions.map(t => t.id));
+    const tags = getStore<TransactionTag>('transaction_tags');
+    const cleaned = tags.filter(t => txnIds.has(t.transaction_id));
+    if (cleaned.length !== tags.length) {
+      setStore('transaction_tags', cleaned);
+    }
   }
 }
 
@@ -108,7 +117,12 @@ export const webAccountRepo = {
     const items = getStore<Account>('accounts');
     setStore('accounts', items.filter(c => c.id !== id));
     const transactions = getStore<Transaction>('transactions');
+    const deletedIds = new Set(transactions.filter(t => t.account_id === id).map(t => t.id));
     setStore('transactions', transactions.filter(t => t.account_id !== id));
+    if (deletedIds.size > 0) {
+      const tags = getStore<TransactionTag>('transaction_tags');
+      setStore('transaction_tags', tags.filter(t => !deletedIds.has(t.transaction_id)));
+    }
   },
   async getCurrentBalance(id: number): Promise<number> {
     const accounts = getStore<Account>('accounts');
@@ -210,10 +224,17 @@ export const webTransactionRepo = {
   async delete(id: number): Promise<void> {
     const items = getStore<Transaction>('transactions');
     setStore('transactions', items.filter(t => t.id !== id));
+    const tags = getStore<TransactionTag>('transaction_tags');
+    setStore('transaction_tags', tags.filter(t => t.transaction_id !== id));
   },
   async deleteByAccountId(accountId: number): Promise<void> {
     const items = getStore<Transaction>('transactions');
+    const deletedIds = new Set(items.filter(t => t.account_id === accountId).map(t => t.id));
     setStore('transactions', items.filter(t => t.account_id !== accountId));
+    if (deletedIds.size > 0) {
+      const tags = getStore<TransactionTag>('transaction_tags');
+      setStore('transaction_tags', tags.filter(t => !deletedIds.has(t.transaction_id)));
+    }
   },
   async totalByPeriod(accountId: number, type: TransactionType, startDate: string, endDate: string): Promise<number> {
     return getStore<Transaction>('transactions')
@@ -241,23 +262,38 @@ export const webTransactionRepo = {
     categoryId: number,
     type: TransactionType,
     startDate: string,
-    endDate: string
+    endDate: string,
+    tagIds?: number[]
   ): Promise<{ tag_id: number; name: string; total: number }[]> {
     const transactions = getStore<Transaction>('transactions')
       .filter(t => t.account_id === accountId && t.category_id === categoryId && t.type === type && t.date >= startDate && t.date <= endDate);
     const tags = getStore<Tag>('tags');
     const links = getStore<TransactionTag>('transaction_tags');
     const tagMap = new Map(tags.map(t => [t.id, t.name]));
+
+    const hasFilter = tagIds && tagIds.length > 0;
+    const filterRegular = hasFilter ? tagIds!.filter(id => id !== -1) : [];
+    const filterUntagged = hasFilter ? tagIds!.includes(-1) : false;
+
     const tagged = new Map<number, number>();
     const untaggedTotal = { total: 0 };
 
     for (const t of transactions) {
-      const txnTags = links.filter(l => l.transaction_id === t.id);
-      if (txnTags.length === 0) {
+      const txnTagIds = links.filter(l => l.transaction_id === t.id).map(l => l.tag_id);
+      const isUntagged = txnTagIds.length === 0;
+
+      if (hasFilter) {
+        if (filterUntagged && !isUntagged) continue;
+        if (filterRegular.length > 0 && isUntagged) continue;
+        if (filterRegular.length > 0 && !filterRegular.some(id => txnTagIds.includes(id))) continue;
+      }
+
+      if (isUntagged) {
         untaggedTotal.total += t.amount;
       } else {
-        for (const l of txnTags) {
-          tagged.set(l.tag_id, (tagged.get(l.tag_id) ?? 0) + t.amount);
+        const relevantTagIds = hasFilter ? txnTagIds.filter(id => filterRegular.includes(id)) : txnTagIds;
+        for (const tagId of relevantTagIds) {
+          tagged.set(tagId, (tagged.get(tagId) ?? 0) + t.amount);
         }
       }
     }

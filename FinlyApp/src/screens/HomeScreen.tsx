@@ -7,7 +7,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { Account } from '../database/types';
 import { formatCurrency, formatDateForDB } from '../utils/formatters';
 import { RootStackParamList, Period } from '../constants/types';
 import { t } from '../i18n';
@@ -89,7 +88,8 @@ export default function HomeScreen() {
           cat.id,
           activeType,
           formatDateForDB(dates.start),
-          formatDateForDB(dates.end)
+          formatDateForDB(dates.end),
+          activeTagIds.length > 0 ? activeTagIds : undefined
         );
         if (data.length > 0) {
           breakdowns.set(cat.id, data);
@@ -99,7 +99,7 @@ export default function HomeScreen() {
     }
 
     loadTagBreakdowns();
-  }, [activeAccount, activeCategories, activeType, activePeriod, selectedDate, customDate]);
+  }, [activeAccount, activeCategories, activeType, activePeriod, selectedDate, customDate, activeTagIds]);
 
   const handleCategoryPress = useCallback((category: { id: number }) => {
     const { start, end } = activePeriod === 'custom'
@@ -163,10 +163,11 @@ export default function HomeScreen() {
     setCalendarVisible(false);
   }, [setSelectedDate]);
 
-  const handleAccountSelect = useCallback((account: Account) => {
-    selectAccount(account);
+  const handleAccountSelect = useCallback((id: number) => {
+    const account = accountsWithBalance.find(a => a.id === id);
+    if (account) selectAccount(account);
     setModalVisible(false);
-  }, [selectAccount]);
+  }, [selectAccount, accountsWithBalance]);
 
   const handleRangeChange = useCallback((start: Date, end: Date) => {
     const endDay = new Date(end);
@@ -198,14 +199,14 @@ export default function HomeScreen() {
             <Ionicons name="menu-outline" size={26} color={c.text} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.totalButton} onPress={() => setModalVisible(true)}>
-            <View style={styles.accountRow}>
+          <View style={styles.totalButton}>
+            <TouchableOpacity style={styles.accountRow} onPress={() => setModalVisible(true)}>
                <View style={[styles.accountIcon, { backgroundColor: activeAccount.color + '30', borderRadius: config.accountIconShape === 'circle' ? 12 : 4 }]}>
                 <Ionicons name={activeAccount.icon as ComponentProps<typeof Ionicons>['name']} size={18} color={activeAccount.color} />
               </View>
               <Text style={[styles.accountLabel, { color: c.textSecondary, fontSize: fs(14) }]}>{activeAccount.name}</Text>
               <Ionicons name="chevron-down-outline" size={14} color={c.textSecondary} />
-            </View>
+            </TouchableOpacity>
             <Text style={[styles.totalText, { color: totalColor, fontSize: fs(28) }]}>
               {total >= 0 ? '+' : ''}{formatCurrency(total, config.currency, config.decimalSeparator)}
             </Text>
@@ -219,7 +220,7 @@ export default function HomeScreen() {
                 <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(11) }]}> {labels.home_expenses}</Text>
               </Text>
             </View>
-          </TouchableOpacity>
+          </View>
 
           <TouchableOpacity
             onPress={() => navigation.navigate('AllTransactions')}
@@ -286,6 +287,7 @@ export default function HomeScreen() {
         <AccountModal
           visible={modalVisible}
           accounts={accountsWithBalance}
+          selectedId={activeAccount.id}
           onSelect={handleAccountSelect}
           onClose={() => setModalVisible(false)}
         />
