@@ -1555,3 +1555,9 @@
 
 [2026-07-20] ~ | FinlyApp/assets/ (6 files)
 - Replaced all app icon assets with updated versions: icon.png, android-icon-foreground.png, android-icon-background.png, android-icon-monochrome.png, favicon.png, splash-icon.png.
+
+[2026-07-20] + | src/navigation/AppNavigator.tsx, package.json
+- Added app version footer to drawer menu: reads version from expo-constants (Constants.expoConfig?.version), displayed right-aligned at the bottom. Installed expo-constants as direct dependency.
+
+[2026-07-20] + | spec/constitution/6-screens.md
+- Added "Drawer Navigator" section: structure diagram, menu items table (icons, labels, targets), and version footer spec.

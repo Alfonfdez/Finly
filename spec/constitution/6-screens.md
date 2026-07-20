@@ -105,6 +105,42 @@ useFocusEffect(
 );
 ```
 
+### Drawer Navigator
+
+The drawer is a custom `DrawerContentScrollView` in `AppNavigator.tsx` with this structure:
+
+```
+┌─────────────────────────┐
+│  [icon.png]  Finly      │  ← Header (logo + title)
+├─────────────────────────┤
+│  🏠 Home                │
+│  📊 All transactions    │
+│  💳 Accounts            │
+│  📁 Categories          │
+│  🏷️ Tags               │
+│─────────────────────────│  ← Separator
+│  ⚙️ Settings            │
+│                         │
+│       v1.0.0            │  ← Version footer (expo-constants)
+└─────────────────────────┘
+```
+
+**Menu items:**
+
+| Icon | Label key | Target screen |
+|------|-----------|---------------|
+| `home-outline` | `nav_home` | `Home` |
+| `stats-chart-outline` | `nav_all_transactions` | `AllTransactions` |
+| `wallet-outline` | `nav_accounts` | `Accounts` |
+| `grid-outline` | `nav_categories` | `Categories` |
+| `pricetag-outline` | `nav_tags` | `Tags` |
+| `settings-outline` | `nav_settings` | `Settings` |
+
+**Version footer:**
+- Reads version from `Constants.expoConfig?.version` (expo-constants, sourced from `app.json`).
+- Style: `fs(11)`, `c.textSecondary`, centered, pushed to bottom of scroll view.
+- Format: `v{version}` (e.g., `v1.0.0`).
+
 ### Sub-screens (Create, Modify, Detail)
 
 Rely on React Navigation's default header with back button. Never call `setOptions` for `headerLeft`.
