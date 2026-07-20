@@ -1504,3 +1504,15 @@
 [2026-07-19] ~ | lint cleanup (pre-existing warnings/error)
 - Fixed 1 error + 24 warnings so 'npx expo lint' reports 0 problems: removed unused vars (Ionicons, result, mc, config, dates, Keyboard, setFotoUri, getShortMonthName, err), merged duplicate database imports in AppContext, removed Unicode BOM in SettingsScreen, added displayName to CommentInput, wrapped 'today'/minDate in useMemo and corrected hook dependency arrays in calendar components.
 - Verified: eslint exit 0, tsc --noEmit exit 0.
+
+[2026-07-20] + | spec/features/015-all-transactions-screen/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Updated spec for AllTransactionsScreen with 3 new filter dimensions: type tabs (All/Expenses/Income), multi-select category filter (021), period selector (Day/Week/Month/Year/Period). 13 tasks in 4 phases.
+
+[2026-07-20] + | spec/features/021-category-filter-modal/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Created spec for CategoryFilterModal: full-screen modal with SearchBar, "All" chip, 4×N multi-select category grid, type-aware sections (Expenses/Income headers when type='all'), Apply button with count. 7 tasks in 2 phases.
+
+[2026-07-20] ~ | spec/constitution/3-roadmap.md
+- Added 021-category-filter-modal with spec-ready status. Updated 015-all-transactions-screen status to "updated (spec ready, pending implementation)".
+
+[2026-07-20] ~ | src/i18n/en.ts, es.ts, ca.ts
+- Added 8 i18n keys: tab_all, filter_categories, filter_all_categories, filter_apply (function), filter_apply_all, filter_no_results, filter_expenses, filter_income.

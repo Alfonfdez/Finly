@@ -1,7 +1,7 @@
-# 015 — Transactions page (from hamburger menu)
+# 015 — All transactions screen
 
 - **Objective**
-  Screen accessible from the hamburger menu (drawer) showing the user's full transaction list, without category or period filters. Allows filtering by account, sorting transactions, and navigating to add a new transaction. All texts are multilingual (es/en/ca).
+  Screen accessible from the hamburger menu (drawer) showing the user's full transaction list with advanced filtering: type tabs (All/Expenses/Income), multi-select category filter, period selector, account selector, tag filter, and sorting. All texts are multilingual (es/en/ca).
 
 ---
 
@@ -13,31 +13,68 @@
   - **Hamburger menu (drawer):** pressing "Transactions".
   - **HomeScreen:** pressing the statistics icon (stats-chart-outline) at the top right.
 - The screen has a back button (left arrow) in the header to return to the previous screen.
-- The header title is "All transactions" (multilingual: es: "Todas las transacciones", en: "All transactions", ca: "Totes les transaccions").
+- The header title is "All transactions" (multilingual).
 - **No navigation parameters are passed** (no `categoryId`, `type`, `period`, `startDate`, `endDate`).
-- All transactions from all categories, types, and periods are shown.
 
-### 2. Account selector and balance
+### 2. Type tabs
+
+- Three tabs shown at the top of the screen: **All | Expenses | Income**.
+- "All" is selected by default (shows both expense and income transactions).
+- Uses the new `AllTypeTabs` component (separate from the 2-tab `TypeTabs` used on HomeScreen).
+- Selecting a tab filters the transaction list by `type` field:
+  - "All" → no type filter (shows all).
+  - "Expenses" → `type = 'expense'`.
+  - "Income" → `type = 'income'`.
+- The balance below the account selector updates to reflect the selected type.
+
+### 3. Account selector and balance
 
 - Same as 014 (section 2).
 - The default account is the one selected on HomeScreen (`activeAccount` from `AppContext`).
-- Below the account selector, the total balance for the period for the selected account is shown:
+- Below the account selector, the total balance is shown:
   - Formatted with `formatCurrency()`.
   - Green color with "+" prefix if positive, red with "-" prefix if negative.
+  - Balance reflects **all active filters** (type, category, period, tags).
 
-### 3. Sorting
+### 4. Category filter
+
+- A trigger button/pill in the controls area shows the current category filter state:
+  - Default: "All categories" (multilingual).
+  - When categories are selected: "N categories" (multilingual, where N is the count).
+- Tapping the button opens the `CategoryFilterModal` (spec 021).
+- The modal receives the current `type` tab value so it adapts its category display.
+- When categories are selected, only transactions matching those categories are shown.
+- When "All" is selected (empty array), all categories are shown.
+
+### 5. Period selector
+
+- `PeriodTabs` component with 5 options: Day | Week | Month | Year | Period.
+- Default: **Year** (current year).
+- `CalendarPicker` shown below the period tabs, same as HomeScreen.
+- Period date ranges computed the same way as HomeScreen (day/week/month/year/custom).
+- The transaction list filters by the selected period's start/end dates.
+
+### 6. Sorting
 
 - Same as 014 (section 3).
 
-### 4. Transaction list
+### 7. Tag filter
 
-- FlatList with **all** user transactions, filtered only by:
-  - Selected account (item 2).
-- **Not filtered by category or period** (unlike 014).
+- `TagFilterBar` below the period section, same as current implementation.
+- Local state (`localTagIds`), independent from HomeScreen.
+
+### 8. Transaction list
+
+- FlatList with transactions filtered by **all active filters**:
+  - Selected account.
+  - Type tab (All/Expenses/Income).
+  - Selected categories (from CategoryFilterModal).
+  - Selected period (start/end dates).
+  - Selected tags (from TagFilterBar).
 - **Grouping by date:** same as 014 (section 4).
-- If there are no transactions for the selected account, an empty state is shown: "No transactions" (multilingual).
+- If there are no transactions matching the filters, an empty state is shown: "No transactions" (multilingual).
 
-### 5. Floating "+" button
+### 9. Floating "+" button
 
 - Floating "+" button centered at the bottom (same style as in 014 and 011).
 - Background: `c.primary`. Icon: `Ionicons "add"` with color `c.background`.
@@ -47,12 +84,12 @@
 
 ## Non-functional requirements
 
-- **Screen:** `AllTransactionsScreen.tsx` (standalone screen, does not share component with 014).
-- **Layout structure:** `SafeAreaView > [controls, SectionList, FAB(absolute)]`. The FAB is a direct child of SafeAreaView with `position: absolute`. No `keyboardSpacer` is used.
-- **Shared components:** reuses `AccountSelector`, `SortToggle`, and `TransactionGroup` from 014.
-- **Shared hook:** reuses `useTransactionFilters` for filtering, sorting, and grouping.
+- **Screen:** `AllTransactionsScreen.tsx` (standalone screen).
+- **Layout structure:** `SafeAreaView > [AllTypeTabs, controls(AccountSelector+Balance+CategoryButton+SortToggle), PeriodTabs, CalendarPicker, TagFilterBar, SectionList, FAB(absolute)]`.
+- **Shared components:** reuses `AccountModal`, `SortToggle`, `TransactionGroup`, `TagFilterBar`, `PeriodTabs`, `CalendarPicker`.
+- **New components:** `AllTypeTabs`, `CategoryFilterModal` (spec 021).
+- **Repository:** `transactionRepository.list()` extended with `category_ids` filter.
 - Same as 014 for the remaining non-functional requirements (multilingual, config, text, icons).
-- **Persistence**: transactions are loaded from `transactionRepository.list()` **without `account_id` filter** (loads all accounts), and filtered locally by the selected account.
 
 ---
 
@@ -60,20 +97,22 @@
 
 - [ ] The screen is accessible from the hamburger menu and from the statistics icon on HomeScreen.
 - [ ] The header shows a back arrow and title "All transactions" in the active language.
+- [ ] Three type tabs (All | Expenses | Income) are shown, with "All" selected by default.
+- [ ] Selecting "Expenses" shows only expense transactions; "Income" shows only income.
 - [ ] The selected account is shown with icon + name + chevron-down.
-- [ ] Pressing the account opens the modal with the account list (radio + icon + name + balance).
-- [ ] The modal allows canceling or selecting a different account.
-- [ ] Below the account selector, the total balance is shown with color (green/red) and prefix (+/-).
-- [ ] The sort toggle with "By date" and "By amount" is shown.
-- [ ] The active option has primary color and direction arrow.
-- [ ] Pressing the arrow reverses the direction (ASC ↔ DESC).
-- [ ] Pressing the other option changes the sort criterion.
-- [ ] By default, transactions are sorted by date descending.
-- [ ] All transactions from all categories and types are shown (no category or period filter).
+- [ ] Pressing the account opens the modal with the account list.
+- [ ] The balance updates dynamically based on all active filters (type, category, period, tags).
+- [ ] A category filter button shows "All categories" by default or "N categories" when filtered.
+- [ ] Tapping the category button opens the CategoryFilterModal (021).
+- [ ] Selecting categories in the modal filters the transaction list.
+- [ ] PeriodTabs (Day/Week/Month/Year/Period) are shown with "Year" selected by default.
+- [ ] CalendarPicker updates when the period changes.
+- [ ] The transaction list filters by the selected period's date range.
+- [ ] The sort toggle works (date/amount, ASC/DESC).
+- [ ] TagFilterBar is shown and works with local state.
+- [ ] All filters combine (AND logic) to produce the final transaction list.
 - [ ] Transactions are grouped by day with a formatted date header.
-- [ ] Each transaction shows category icon + name + description + amount with color.
-- [ ] The list is filtered only by the selected account.
-- [ ] If there are no transactions, an empty state is shown.
-- [ ] The floating "+" button centered navigates to "Add transaction" (004).
+- [ ] If no transactions match, an empty state is shown.
+- [ ] The floating "+" button navigates to "Add transaction".
 - [ ] All texts change when changing the language.
 - [ ] The screen respects the active theme and text size.
