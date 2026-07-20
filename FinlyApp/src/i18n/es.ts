@@ -35,8 +35,12 @@ export const es: Language = {
   // Category filter
   filter_categories: 'Categorías',
   filter_all_categories: 'Todas las categorías',
+  filter_all_expense_categories: 'Todas las categorías de gastos',
+  filter_all_income_categories: 'Todas las categorías de ingresos',
   filter_apply: (n: number) => `Aplicar (${n})`,
   filter_apply_all: 'Aplicar (Todas)',
+  filter_apply_all_expense: 'Aplicar (Todos los gastos)',
+  filter_apply_all_income: 'Aplicar (Todos los ingresos)',
   filter_no_results: 'No se encontraron resultados',
   filter_expenses: 'Gastos',
   filter_income: 'Ingresos',

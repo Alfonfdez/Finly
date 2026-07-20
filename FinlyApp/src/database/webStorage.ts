@@ -182,10 +182,14 @@ export const webCategoryRepo = {
 };
 
 export const webTransactionRepo = {
-  async list(filters: { account_id?: number; category_id?: number; type?: TransactionType; start_date?: string; end_date?: string; tagIds?: number[] } = {}): Promise<Transaction[]> {
+  async list(filters: { account_id?: number; category_id?: number; category_ids?: number[]; type?: TransactionType; start_date?: string; end_date?: string; tagIds?: number[] } = {}): Promise<Transaction[]> {
     let items = getStore<Transaction>('transactions');
     if (filters.account_id !== undefined) items = items.filter(t => t.account_id === filters.account_id);
     if (filters.category_id !== undefined) items = items.filter(t => t.category_id === filters.category_id);
+    if (filters.category_ids && filters.category_ids.length > 0) {
+      const catSet = new Set(filters.category_ids);
+      items = items.filter(t => catSet.has(t.category_id));
+    }
     if (filters.type !== undefined) items = items.filter(t => t.type === filters.type);
     if (filters.start_date !== undefined) items = items.filter(t => t.date >= filters.start_date!);
     if (filters.end_date !== undefined) items = items.filter(t => t.date <= filters.end_date!);

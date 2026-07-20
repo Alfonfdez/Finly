@@ -203,19 +203,21 @@ Filtered transaction list screen by category, account, and period, accessible fr
 Spec: spec/features/014-transactions-screen-from-home/.
 
 ## 015-all-transactions-screen
-Status: updated (spec ready, pending implementation).
+Status: implemented.
 
 Independent `AllTransactionsScreen` accessible from the hamburger menu (drawer) or the stats icon on HomeScreen, with advanced filtering:
 - **Type tabs** (All | Expenses | Income) — default "All", filters by transaction type.
 - **Category filter** — multi-select category modal (021) with search, "All" chip, type-aware sections.
-- **Period selector** — PeriodTabs + CalendarPicker, default "Year" (current year).
+- **Period selector** — PeriodTabs + CalendarPicker, shared with HomeScreen via AppContext. Default "Year" (current year). Custom range: Jan 1 → today.
 - Account selector with period total balance (green/red), updated by all active filters.
 - Sorting by date or amount with ASC/DESC toggle.
 - Tag filter bar with local state.
 - List grouped by day with date header.
 - Centered "+" FAB to navigate to add transaction.
 - All filters combine (AND logic).
-- Layout: SafeAreaView > [AllTypeTabs, controls, PeriodTabs, CalendarPicker, TagFilterBar, SectionList, FAB].
+- Category selection resets on type tab switch.
+- Type-aware button labels ("All categories" / "All expense categories" / "All income categories").
+- Apply button disabled when 0 categories selected.
 
 Spec: spec/features/015-all-transactions-screen/.
 
@@ -288,15 +290,17 @@ Tag filter on HomeScreen, TransactionsScreen, and AllTransactionsScreen:
 Spec: spec/features/020-tag-home-filter/.
 
 ## 021-category-filter-modal
-Status: spec ready.
+Status: implemented.
 
 Full-screen modal component for multi-select category filtering on the AllTransactionsScreen:
 - SearchBar with substring filtering.
-- "All" chip (selected by default, clears all selections).
+- "All" chip — toggles all visible-type categories on/off. Active when all of current type are selected.
 - 4×N category grid with icon + color + name, multi-select with checkmarks.
 - Type-aware sections: when type='all', grouped under "Expenses"/"Income" headers.
-- Apply button with count ("Apply (N)" / "Apply (All)").
-- Internal state with local copy of selected IDs; onApply communicates final selection.
+- Apply button with count ("Apply (N)" / "Apply (All expenses)" / "Apply (All income)").
+- Apply button disabled when 0 categories selected (grayed out).
+- Internal state synced on modal open; search reset on open.
+- Uses React Native `<Modal>` wrapper for proper overlay presentation.
 
 Spec: spec/features/021-category-filter-modal/.
 

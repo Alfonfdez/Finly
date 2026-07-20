@@ -33,8 +33,12 @@ export const en = {
   // Category filter
   filter_categories: 'Categories',
   filter_all_categories: 'All categories',
+  filter_all_expense_categories: 'All expense categories',
+  filter_all_income_categories: 'All income categories',
   filter_apply: (n: number) => `Apply (${n})`,
   filter_apply_all: 'Apply (All)',
+  filter_apply_all_expense: 'Apply (All expenses)',
+  filter_apply_all_income: 'Apply (All income)',
   filter_no_results: 'No results found',
   filter_expenses: 'Expenses',
   filter_income: 'Income',
