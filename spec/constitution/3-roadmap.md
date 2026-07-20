@@ -203,16 +203,19 @@ Filtered transaction list screen by category, account, and period, accessible fr
 Spec: spec/features/014-transactions-screen-from-home/.
 
 ## 015-all-transactions-screen
-Status: completed.
+Status: updated (spec ready, pending implementation).
 
-Independent `AllTransactionsScreen` accessible from the hamburger menu (drawer) or the stats icon on HomeScreen, without category or period filters:
-- Stack navigator header with "All transactions" title (multilingual) and `list-outline` icon.
-- Account selector with period total balance (green/red).
+Independent `AllTransactionsScreen` accessible from the hamburger menu (drawer) or the stats icon on HomeScreen, with advanced filtering:
+- **Type tabs** (All | Expenses | Income) — default "All", filters by transaction type.
+- **Category filter** — multi-select category modal (021) with search, "All" chip, type-aware sections.
+- **Period selector** — PeriodTabs + CalendarPicker, default "Year" (current year).
+- Account selector with period total balance (green/red), updated by all active filters.
 - Sorting by date or amount with ASC/DESC toggle.
+- Tag filter bar with local state.
 - List grouped by day with date header.
 - Centered "+" FAB to navigate to add transaction.
-- Loads all transactions from `transactionRepository.list()` without `account_id` filter.
-- Layout: SafeAreaView > View.container(flex:1) > [controls, SectionList, FAB].
+- All filters combine (AND logic).
+- Layout: SafeAreaView > [AllTypeTabs, controls, PeriodTabs, CalendarPicker, TagFilterBar, SectionList, FAB].
 
 Spec: spec/features/015-all-transactions-screen/.
 
@@ -283,6 +286,19 @@ Tag filter on HomeScreen, TransactionsScreen, and AllTransactionsScreen:
 - AllTransactionsScreen: tag filter bar with local state and dynamic balance.
 
 Spec: spec/features/020-tag-home-filter/.
+
+## 021-category-filter-modal
+Status: spec ready.
+
+Full-screen modal component for multi-select category filtering on the AllTransactionsScreen:
+- SearchBar with substring filtering.
+- "All" chip (selected by default, clears all selections).
+- 4×N category grid with icon + color + name, multi-select with checkmarks.
+- Type-aware sections: when type='all', grouped under "Expenses"/"Income" headers.
+- Apply button with count ("Apply (N)" / "Apply (All)").
+- Internal state with local copy of selected IDs; onApply communicates final selection.
+
+Spec: spec/features/021-category-filter-modal/.
 
 ## 001-expo-sqlite-wal-cleanup (infrastructure)
 Status: completed.

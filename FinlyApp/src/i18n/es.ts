@@ -28,8 +28,18 @@ export const es: Language = {
   size_large: 'Grande',
 
   // Tabs
+  tab_all: 'Todos',
   tab_expenses: 'Gastos',
   tab_income: 'Ingresos',
+
+  // Category filter
+  filter_categories: 'Categorías',
+  filter_all_categories: 'Todas las categorías',
+  filter_apply: (n: number) => `Aplicar (${n})`,
+  filter_apply_all: 'Aplicar (Todas)',
+  filter_no_results: 'No se encontraron resultados',
+  filter_expenses: 'Gastos',
+  filter_income: 'Ingresos',
 
   // Periods
   period_day: 'Día',

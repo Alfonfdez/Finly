@@ -28,8 +28,18 @@ export const ca: Language = {
   size_large: 'Gran',
 
   // Tabs
+  tab_all: 'Totes',
   tab_expenses: 'Despeses',
   tab_income: 'Ingressos',
+
+  // Category filter
+  filter_categories: 'Categories',
+  filter_all_categories: 'Totes les categories',
+  filter_apply: (n: number) => `Aplicar (${n})`,
+  filter_apply_all: 'Aplicar (Totes)',
+  filter_no_results: 'No s\'han trobat resultats',
+  filter_expenses: 'Despeses',
+  filter_income: 'Ingressos',
 
   // Periods
   period_day: 'Dia',

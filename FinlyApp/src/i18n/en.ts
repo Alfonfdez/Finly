@@ -26,8 +26,18 @@ export const en = {
   size_large: 'Large',
 
   // Tabs
+  tab_all: 'All',
   tab_expenses: 'Expenses',
   tab_income: 'Income',
+
+  // Category filter
+  filter_categories: 'Categories',
+  filter_all_categories: 'All categories',
+  filter_apply: (n: number) => `Apply (${n})`,
+  filter_apply_all: 'Apply (All)',
+  filter_no_results: 'No results found',
+  filter_expenses: 'Expenses',
+  filter_income: 'Income',
 
   // Periods
   period_day: 'Day',

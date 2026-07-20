@@ -1,36 +1,48 @@
-# Tasks — 015 Transactions page (from hamburger menu)
+# Tasks — 015 All transactions screen (updated)
 Execution order. Mark each task when completed.
 
 ---
 
-### Phase 1 — Implementation
+### Phase 1 — Repository and i18n
 
-[x] T1 — Create `src/screens/AllTransactionsScreen.tsx`: SafeAreaView > [AccountSelector, total period balance, SortToggle, SectionList with TransactionGroup, FAB "+", empty state]. FAB is a direct child of SafeAreaView. No `keyboardSpacer`.
+[ ] T1 — Add `category_ids?: number[]` to `TransactionFilters` interface in `src/database/repositories/transactionRepo.ts`. Add SQL clause: `AND category_id IN (...)` when `category_ids` is provided and non-empty.
 
-[x] T2 — Add `AllTransactions: undefined` to `RootStackParamList` in `src/constants/types.ts`.
-
-[x] T3 — Register `AllTransactionsScreen` in `src/navigation/AppNavigator.tsx` with Stack navigator header (list-outline icon + "All transactions" i18n `nav_all_transactions`).
-
-[x] T4 — Update DrawerItem "Transactions" to navigate to `'Main', { screen: 'AllTransactions' }`. Update stats icon in HomeScreen to navigate to `'AllTransactions'`.
-
-[x] T5 — Create `src/hooks/useTransactionFilters.ts` shared hook for transaction filtering, sorting, and grouping.
+[ ] T2 — Add i18n keys to `src/i18n/en.ts`: `tab_all`, `filter_categories`, `filter_all_categories`, `filter_apply`, `filter_no_results`, `filter_expenses`, `filter_income`. Add same keys to `es.ts` and `ca.ts`.
 
 ---
 
-### Phase 2 — Manual verification
+### Phase 2 — New components
 
-[ ] T6 — Open hamburger menu → press "Transactions" → verify that the screen is shown with header "All transactions" + AccountSelector + balance + SortToggle.
+[ ] T3 — Create `src/components/AllTypeTabs.tsx`: 3-tab component (All / Expenses / Income) following the TypeTabs visual pattern. Props: `active: 'all' | TransactionType`, `onChange: (type) => void`. "All" tab uses `c.primary` background when active. Default active: `'all'`.
 
-[ ] T6b — Press stats icon on HomeScreen → verify it opens the same AllTransactions screen.
+[ ] T4 — Create `src/components/CategoryFilterModal.tsx`: full-screen modal (spec 021). Props: `visible`, `categories`, `selectedIds: number[]`, `type: 'all' | TransactionType`, `onApply: (ids: number[]) => void`, `onClose`. Features: SearchBar, "All" chip, 4×N category grid with multi-select, type-aware sections (headers when type='all'), Apply button with count.
 
-[ ] T7 — Change account with the selector → verify that the transactions for the other account are shown.
+---
 
-[ ] T8 — Verify that no category or period filter is applied (all historical transactions are shown).
+### Phase 3 — Screen integration
 
-[ ] T9 — Verify sorting (date/amount, ASC/DESC), FAB "+", empty state, language change, and theme.
+[ ] T5 — Update `src/screens/AllTransactionsScreen.tsx`: add state for `typeTab: 'all' | TransactionType` (default 'all'), `selectedCategoryIds: number[]` (default []), `period: Period` (default 'year'), `selectedDate: Date`, custom date range. Add AllTypeTabs at top, CategoryFilterButton in controls, PeriodTabs + CalendarPicker below controls.
+
+[ ] T6 — Update transaction loading in AllTransactionsScreen: pass `type` (when not 'all'), `category_ids` (when non-empty), `start_date`/`end_date` (from period computation) to `transactionRepository.list()`. Compute period dates same as HomeScreen.
+
+[ ] T7 — Update filtered/sections/balance memos in AllTransactionsScreen to account for type, category, and period filters. Balance = sum of filtered transactions (respecting type, category, period, tags).
+
+[ ] T8 — Add CategoryFilterModal rendering to AllTransactionsScreen. Wire category button press → modal open, modal Apply → update selectedCategoryIds, modal Close.
+
+---
+
+### Phase 4 — Manual verification
+
+[ ] T9 — Verify type tabs: "All" shows all, "Expenses" shows only expenses, "Income" shows only income. Balance updates per tab.
+
+[ ] T10 — Verify category filter: button shows "All categories" by default, opens modal, multi-select works, Apply filters the list, "All" in modal clears filter.
+
+[ ] T11 — Verify period selector: Year default, changing period updates calendar and filters list. All period types work (day/week/month/year/custom).
+
+[ ] T12 — Verify all filters combine correctly (AND logic). Test empty states. Test language change, theme, text size.
 
 ---
 
 ### Verification
 
-[ ] T10 — Final verification: `npx expo start --web` and `npx expo start` (Expo Go). Test drawer navigation, account selector, sorting, FAB, empty state. Verify language change, theme, and text size.
+[ ] T13 — Final verification: `npx expo start --web` and `npx expo start`. Test all new filters, navigation, sorting, tags, FAB, empty states.
