@@ -8,21 +8,54 @@ import { scrollbarFlatList } from '../constants/platformStyles';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { RootStackParamList } from '../constants/types';
+import { RootStackParamList, Period, TransactionType } from '../constants/types';
 import { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
-import { formatCurrency } from '../utils/formatters';
+import { formatCurrency, formatDateForDB } from '../utils/formatters';
 import { t, getDisplayAccountName } from '../i18n';
 import AccountModal from '../components/AccountModal';
 import SortToggle, { SortBy, SortDirection } from '../components/SortToggle';
 import TagFilterBar from '../components/TagFilterBar';
 import TransactionGroup from '../components/TransactionGroup';
+import AllTypeTabs from '../components/AllTypeTabs';
+import CategoryFilterModal from '../components/CategoryFilterModal';
+import PeriodTabs from '../components/PeriodTabs';
+import CalendarPicker from '../components/CalendarPicker';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'AllTransactions'>;
 
+function computePeriodDates(period: Period, selectedDate: Date, customRange: { start: Date; end: Date }): { start: Date; end: Date } | null {
+  if (period === 'custom') return customRange;
+  const now = selectedDate;
+  switch (period) {
+    case 'day': {
+      const s = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const e = new Date(s); e.setHours(23, 59, 59, 999);
+      return { start: s, end: e };
+    }
+    case 'week': {
+      const wd = now.getDay();
+      const diff = wd === 0 ? 6 : wd - 1;
+      const s = new Date(now); s.setDate(now.getDate() - diff); s.setHours(0, 0, 0, 0);
+      const e = new Date(s); e.setDate(e.getDate() + 6); e.setHours(23, 59, 59, 999);
+      return { start: s, end: e };
+    }
+    case 'month': {
+      const s = new Date(now.getFullYear(), now.getMonth(), 1);
+      const e = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      return { start: s, end: e };
+    }
+    case 'year': {
+      const s = new Date(now.getFullYear(), 0, 1);
+      const e = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+      return { start: s, end: e };
+    }
+  }
+}
+
 export default function AllTransactionsScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const { categories, accounts, activeAccount, accountsWithBalance, tags } = useApp();
+  const { categories, accounts, activeAccount, accountsWithBalance, tags, activePeriod, selectedDate, customDate, changePeriod, setSelectedDate, setCustomDate } = useApp();
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -35,6 +68,15 @@ export default function AllTransactionsScreen() {
   const [loading, setLoading] = useState(true);
   const [tagsByTransaction, setTagsByTransaction] = useState<Map<number, { tag_id: number; name: string }[]>>(new Map());
   const [localTagIds, setLocalTagIds] = useState<number[]>([]);
+
+  const [typeTab, setTypeTab] = useState<'all' | TransactionType>('all');
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+  const [calendarVisible, setCalendarVisible] = useState(false);
+
+  useEffect(() => {
+    setSelectedCategoryIds([]);
+  }, [typeTab]);
 
   const handleToggleTag = useCallback((id: number) => {
     setLocalTagIds(prev => {
@@ -55,6 +97,8 @@ export default function AllTransactionsScreen() {
     setLocalTagIds([]);
   }, []);
 
+  const periodDates = useMemo(() => computePeriodDates(activePeriod, selectedDate, customDate), [activePeriod, selectedDate, customDate]);
+
   useFocusEffect(
     useCallback(() => {
       let active = true;
@@ -70,7 +114,6 @@ export default function AllTransactionsScreen() {
     }, [])
   );
 
-  // Load tags for visible transactions
   useEffect(() => {
     if (allTransactions.length === 0) {
       setTagsByTransaction(new Map());
@@ -109,6 +152,22 @@ export default function AllTransactionsScreen() {
 
   const filtered = useMemo(() => {
     let list = allTransactions.filter(t => t.account_id === selectedAccountId);
+
+    if (typeTab !== 'all') {
+      list = list.filter(t => t.type === typeTab);
+    }
+
+    if (selectedCategoryIds.length > 0) {
+      const catSet = new Set(selectedCategoryIds);
+      list = list.filter(t => catSet.has(t.category_id));
+    }
+
+    if (periodDates) {
+      const startStr = formatDateForDB(periodDates.start);
+      const endStr = formatDateForDB(periodDates.end);
+      list = list.filter(t => t.date >= startStr && t.date <= endStr);
+    }
+
     if (localTagIds.length > 0) {
       const hasUntagged = localTagIds.includes(-1);
       const regularIds = localTagIds.filter(id => id !== -1);
@@ -119,6 +178,7 @@ export default function AllTransactionsScreen() {
         return false;
       });
     }
+
     const sorted = [...list].sort((a, b) => {
       if (sortBy === 'date') {
         const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
@@ -128,7 +188,7 @@ export default function AllTransactionsScreen() {
       return sortDirection === 'desc' ? -diff : diff;
     });
     return sorted;
-  }, [allTransactions, selectedAccountId, sortBy, sortDirection, localTagIds, tagsByTransaction]);
+  }, [allTransactions, selectedAccountId, typeTab, selectedCategoryIds, periodDates, sortBy, sortDirection, localTagIds, tagsByTransaction]);
 
   const sections = useMemo(() => {
     const grouped = new Map<string, Transaction[]>();
@@ -160,8 +220,23 @@ export default function AllTransactionsScreen() {
     }
   };
 
+  const categoryButtonLabel = useMemo(() => {
+    const visibleCategories = typeTab === 'all'
+      ? categories
+      : categories.filter(cat => cat.type === typeTab);
+    const allVisibleSelected = visibleCategories.length > 0 && visibleCategories.every(cat => selectedCategoryIds.includes(cat.id));
+    if (selectedCategoryIds.length === 0 || allVisibleSelected) {
+      if (typeTab === 'expense') return labels.filter_all_expense_categories;
+      if (typeTab === 'income') return labels.filter_all_income_categories;
+      return labels.filter_all_categories;
+    }
+    return labels.filter_apply(selectedCategoryIds.length);
+  }, [selectedCategoryIds, typeTab, categories, labels]);
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+      <AllTypeTabs active={typeTab} onChange={setTypeTab} />
+
       <View style={[styles.controls, { borderBottomColor: c.border }]}>
         <TouchableOpacity style={styles.accountTrigger} onPress={() => setAccountModalVisible(true)}>
           {(() => { const a = accountsWithBalance.find(x => x.id === selectedAccountId); return a ? (
@@ -177,13 +252,38 @@ export default function AllTransactionsScreen() {
         <Text style={[styles.accountBalance, { color: accountBalance >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
           {accountBalance >= 0 ? '+' : ''}{formatCurrency(accountBalance, config.currency, config.decimalSeparator)}
         </Text>
-        <SortToggle
-          sortBy={sortBy}
-          direction={sortDirection}
-          onToggleSort={handleToggleSort}
-          onToggleDirection={() => setSortDirection(d => d === 'desc' ? 'asc' : 'desc')}
-        />
+        <View style={styles.controlsRow}>
+          <TouchableOpacity
+            style={[styles.categoryButton, { backgroundColor: c.surface }]}
+            onPress={() => setCategoryModalVisible(true)}
+          >
+            <Ionicons name="pricetag-outline" size={14} color={c.primary} />
+            <Text style={[styles.categoryButtonText, { color: c.text, fontSize: fs(13) }]} numberOfLines={1}>
+              {categoryButtonLabel}
+            </Text>
+          </TouchableOpacity>
+          <SortToggle
+            sortBy={sortBy}
+            direction={sortDirection}
+            onToggleSort={handleToggleSort}
+            onToggleDirection={() => setSortDirection(d => d === 'desc' ? 'asc' : 'desc')}
+          />
+        </View>
       </View>
+
+      <PeriodTabs active={activePeriod} onChange={changePeriod} />
+      <CalendarPicker
+        period={activePeriod}
+        date={selectedDate}
+        onDateChange={setSelectedDate}
+        onRangeChange={(start, end) => setCustomDate({ start, end })}
+        rangeStart={customDate.start}
+        rangeEnd={customDate.end}
+        visible={calendarVisible}
+        onOpen={() => setCalendarVisible(true)}
+        onClose={() => setCalendarVisible(false)}
+        firstDay={config.firstDayOfWeek === 'monday' ? 1 : 0}
+      />
 
       <TagFilterBar
         tags={tags}
@@ -227,6 +327,23 @@ export default function AllTransactionsScreen() {
         onSelect={(id) => { setSelectedAccountId(id); setAccountModalVisible(false); }}
         onClose={() => setAccountModalVisible(false)}
       />
+
+      <CategoryFilterModal
+        visible={categoryModalVisible}
+        categories={categories}
+        selectedIds={selectedCategoryIds}
+        type={typeTab}
+        onApply={(ids) => { setSelectedCategoryIds(ids); setCategoryModalVisible(false); }}
+        onClose={() => setCategoryModalVisible(false)}
+      />
+
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: c.primary }]}
+        onPress={() => navigation.navigate('AddTransaction', undefined)}
+        accessibilityLabel="+"
+      >
+        <Ionicons name="add" size={28} color={c.background} />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -254,7 +371,39 @@ const styles = StyleSheet.create({
   },
   accountTriggerName: { fontWeight: '600', maxWidth: 100 },
   accountBalance: { fontWeight: '700' },
+  controlsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  categoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  categoryButtonText: {
+    fontWeight: '500',
+    maxWidth: 120,
+  },
   listContent: { paddingBottom: 80 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   empty: { textAlign: 'center', marginTop: 40 },
+  fab: {
+    position: 'absolute',
+    bottom: 56,
+    alignSelf: 'center',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
 });

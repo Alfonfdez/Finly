@@ -35,8 +35,12 @@ export const ca: Language = {
   // Category filter
   filter_categories: 'Categories',
   filter_all_categories: 'Totes les categories',
+  filter_all_expense_categories: 'Totes les categories de despeses',
+  filter_all_income_categories: 'Totes les categories d\'ingressos',
   filter_apply: (n: number) => `Aplicar (${n})`,
   filter_apply_all: 'Aplicar (Totes)',
+  filter_apply_all_expense: 'Aplicar (Totes les despeses)',
+  filter_apply_all_income: 'Aplicar (Tots els ingressos)',
   filter_no_results: 'No s\'han trobat resultats',
   filter_expenses: 'Despeses',
   filter_income: 'Ingressos',

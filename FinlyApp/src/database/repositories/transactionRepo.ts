@@ -5,6 +5,7 @@ import { TransactionType } from '../../constants/types';
 interface TransactionFilters {
   account_id?: number;
   category_id?: number;
+  category_ids?: number[];
   type?: TransactionType;
   start_date?: string;
   end_date?: string;
@@ -42,6 +43,10 @@ export const transactionRepo = {
     if (filters.category_id !== undefined) {
       sql += ` AND category_id = ?`;
       params.push(filters.category_id);
+    }
+    if (filters.category_ids && filters.category_ids.length > 0) {
+      sql += ` AND category_id IN (${filters.category_ids.map(() => '?').join(',')})`;
+      params.push(...filters.category_ids);
     }
     if (filters.type !== undefined) {
       sql += ` AND type = ?`;

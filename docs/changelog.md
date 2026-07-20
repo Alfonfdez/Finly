@@ -1516,3 +1516,18 @@
 
 [2026-07-20] ~ | src/i18n/en.ts, es.ts, ca.ts
 - Added 8 i18n keys: tab_all, filter_categories, filter_all_categories, filter_apply (function), filter_apply_all, filter_no_results, filter_expenses, filter_income.
+
+[2026-07-20] + | src/components/AllTypeTabs.tsx
+- Created 3-tab type selector (All / Expenses / Income) for AllTransactionsScreen, extending TypeTabs visual pattern.
+
+[2026-07-20] + | src/components/CategoryFilterModal.tsx
+- Full-screen modal with SearchBar, "All" chip, 4×N multi-select category grid with checkmarks, type-aware sections (Expenses/Income headers when type='all'), Apply button with count. Uses React Native Modal wrapper. "All" chip toggles only visible type categories. Apply button disabled when 0 selected. Syncs selection on open, resets search.
+
+[2026-07-20] ~ | src/database/repositories/transactionRepo.ts, src/database/webStorage.ts
+- Added `category_ids?: number[]` to TransactionFilters interface. Added SQL `IN` clause and localStorage filter for multi-category filtering.
+
+[2026-07-20] ~ | src/i18n/en.ts, es.ts, ca.ts
+- Added 6 type-aware i18n keys: filter_all_expense_categories, filter_all_income_categories, filter_apply_all_expense, filter_apply_all_income.
+
+[2026-07-20] ~ | src/screens/AllTransactionsScreen.tsx
+- Rewrote screen with new filter layout: AllTypeTabs, category filter button + modal, PeriodTabs + CalendarPicker, TagFilterBar, sort toggle. Type-aware button labels ("All categories" / "All expense categories" / "All income categories"). Category selection resets on type tab change. Period/date/customDate state shared with HomeScreen via AppContext. Default custom range: Jan 1 → today.
