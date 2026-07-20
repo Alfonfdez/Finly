@@ -10,13 +10,12 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { initDatabase } from './src/database/database';
 import { initWebStorage } from './src/database/webStorage';
 
-const MIN_SPLASH_MS = 3000;
+const MIN_SPLASH_MS = 2000;
 const EXIT_DURATION = 400;
 
 function SplashScreen({ exiting }: { exiting: boolean }) {
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const logoScale = useRef(new Animated.Value(0.8)).current;
-  const textOpacity = useRef(new Animated.Value(0)).current;
   const lineWidth = useRef(new Animated.Value(0)).current;
   const exitOpacity = useRef(new Animated.Value(1)).current;
   const exitScale = useRef(new Animated.Value(1)).current;
@@ -27,14 +26,11 @@ function SplashScreen({ exiting }: { exiting: boolean }) {
       Animated.spring(logoScale, { toValue: 1, friction: 5, tension: 60, useNativeDriver: true }),
     ]).start();
 
-    Animated.timing(textOpacity, { toValue: 1, duration: 600, delay: 500, useNativeDriver: true }).start();
-
     Animated.timing(lineWidth, { toValue: 1, duration: MIN_SPLASH_MS * 0.8, delay: 400, useNativeDriver: false }).start();
 
     return () => {
       logoOpacity.stopAnimation();
       logoScale.stopAnimation();
-      textOpacity.stopAnimation();
       lineWidth.stopAnimation();
     };
   }, []);
@@ -52,7 +48,6 @@ function SplashScreen({ exiting }: { exiting: boolean }) {
       <Animated.View style={{ opacity: logoOpacity, transform: [{ scale: logoScale }] }}>
         <Image source={require('./assets/icon.png')} style={styles.splashLogo} />
       </Animated.View>
-      <Animated.Text style={[styles.splashTitle, { opacity: textOpacity }]}>Finly</Animated.Text>
       {!exiting && (
         <View style={styles.lineTrack}>
           <Animated.View style={[styles.lineFill, { width: lineWidth.interpolate({
@@ -139,11 +134,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 20,
-  },
-  splashTitle: {
-    color: '#22D3EE',
-    fontSize: 28,
-    fontWeight: '800',
   },
   lineTrack: {
     width: 120,

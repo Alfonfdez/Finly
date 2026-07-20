@@ -1531,3 +1531,21 @@
 
 [2026-07-20] ~ | src/screens/AllTransactionsScreen.tsx
 - Rewrote screen with new filter layout: AllTypeTabs, category filter button + modal, PeriodTabs + CalendarPicker, TagFilterBar, sort toggle. Type-aware button labels ("All categories" / "All expense categories" / "All income categories"). Category selection resets on type tab change. Period/date/customDate state shared with HomeScreen via AppContext. Default custom range: Jan 1 → today.
+
+[2026-07-20] ~ | src/screens/AllTransactionsScreen.tsx
+- Fixed category filter button icon from pricetag-outline (tags) to grid-outline (categories) to match the rest of the app.
+
+[2026-07-20] ~ | src/screens/AllTransactionsScreen.tsx
+- Removed FAB ("+") button from AllTransactionsScreen.
+
+[2026-07-20] ~ | src/screens/HomeScreen.tsx
+- Total balance font weight changed from '800' to '700'. Income/expense summary row: amounts fs(12)→fs(14), labels fs(11)→fs(12), amounts now bold ('700').
+
+[2026-07-20] ~ | src/screens/AddTransactionScreen.tsx
+- Applied sortCategoriesWithOthersLast to the 4×2 category grid so "Other"/"Others" appears as the penultimate item before the "More"/"Create" button.
+
+[2026-07-20] ~ | App.tsx
+- Splash screen duration reduced from 3s to 2s. Removed "Finly" text — now shows only the icon and loading line.
+
+[2026-07-20] ~ | spec/constitution/4-design-system.md
+- Updated font size and weight tables: removed '800' weight, merged HomeScreen total into '700'; updated fs(11)/fs(12)/fs(14) usage notes.

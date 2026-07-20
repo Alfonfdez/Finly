@@ -212,16 +212,16 @@ export default function HomeScreen() {
             <Text style={[styles.totalText, { color: totalColor, fontSize: fs(28) }]}>
               {total >= 0 ? '+' : ''}{formatCurrency(total, config.currency, config.decimalSeparator)}
             </Text>
-            <View style={styles.summaryRow}>
-              <Text style={[styles.summaryItem, { fontSize: fs(12) }]}>
-                <Text style={{ color: c.green }}>+{formatCurrency(totalIncomeAll, config.currency, config.decimalSeparator)}</Text>
-                <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(11) }]}> {labels.home_income}</Text>
-              </Text>
-              <Text style={[styles.summaryItem, { fontSize: fs(12) }]}>
-                <Text style={{ color: c.red }}>-{formatCurrency(totalExpensesAll, config.currency, config.decimalSeparator)}</Text>
-                <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(11) }]}> {labels.home_expenses}</Text>
-              </Text>
-            </View>
+      <View style={styles.summaryRow}>
+        <Text style={[styles.summaryItem, { fontSize: fs(14) }]}>
+          <Text style={{ color: c.green, fontWeight: '700' }}>+{formatCurrency(totalIncomeAll, config.currency, config.decimalSeparator)}</Text>
+          <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(12) }]}> {labels.home_income}</Text>
+        </Text>
+        <Text style={[styles.summaryItem, { fontSize: fs(14) }]}>
+          <Text style={{ color: c.red, fontWeight: '700' }}>-{formatCurrency(totalExpensesAll, config.currency, config.decimalSeparator)}</Text>
+          <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(12) }]}> {labels.home_expenses}</Text>
+        </Text>
+      </View>
           </View>
 
           <TouchableOpacity
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   summaryRow: { flexDirection: 'row', gap: 12 },
   summaryItem: {},
   summaryLabel: {},
-  totalText: { fontWeight: '800', marginVertical: 2 },
+  totalText: { fontWeight: '700', marginVertical: 2 },
   chartContainer: { alignItems: 'center', marginVertical: 8 },
   fab: {
     position: 'absolute',
