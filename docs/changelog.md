@@ -1549,3 +1549,9 @@
 
 [2026-07-20] ~ | spec/constitution/4-design-system.md
 - Updated font size and weight tables: removed '800' weight, merged HomeScreen total into '700'; updated fs(11)/fs(12)/fs(14) usage notes.
+
+[2026-07-20] + | docs/assets.md
+- Created standalone assets reference: table of all 6 PNG assets with purpose, dimensions, safe zones, app.json mapping, format requirements, and web splash notes.
+
+[2026-07-20] ~ | FinlyApp/assets/ (6 files)
+- Replaced all app icon assets with updated versions: icon.png, android-icon-foreground.png, android-icon-background.png, android-icon-monochrome.png, favicon.png, splash-icon.png.
