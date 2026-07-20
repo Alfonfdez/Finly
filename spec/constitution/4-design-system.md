@@ -62,10 +62,10 @@ interface ColorPalette {
 
 | fs(N) | Usage | Examples |
 |-------|-------|----------|
-| `fs(11)` | Auxiliary text, chart labels | CategoryGrid names, BarChart labels |
-| `fs(12)` | Badges, metadata, secondary labels, breakdown | AccountSelector balance, TransactionGroup date, error messages |
+| `fs(11)` | Auxiliary text, chart labels | BarChart labels, tag chips |
+| `fs(12)` | Badges, metadata, secondary labels | AccountSelector balance, TransactionGroup date, error messages, summary labels |
 | `fs(13)` | Period tabs, sort labels, tag chips | PeriodTabs, SortToggle, TagSection |
-| `fs(14)` | **Standard** — body text, names, buttons | AccountSelector trigger, CategoryList, modals |
+| `fs(14)` | **Standard** — body text, names, buttons, summary amounts | AccountSelector trigger, CategoryList, modals, HomeScreen income/expenses |
 | `fs(15)` | List item names, search input | AccountScreen names, SearchBar, TypeTabs |
 | `fs(16)` | Screen titles, modal titles | Modal titles, TransactionsScreen header |
 | `fs(17)` | Stack navigator header titles | All `headerTitle` in AppNavigator.tsx |
@@ -81,8 +81,7 @@ interface ColorPalette {
 |------------|-------|----------|
 | `'500'` | Normal body text, item names | AccountSelector modal names, CategoryList |
 | `'600'` | **Most used** — names, buttons, trigger text, headers | AccountSelector trigger, SortToggle, TypeTabs, headerTitle |
-| `'700'` | Monetary totals, modal titles, active labels | Modal titles, categoryTotal, DayPicker selected |
-| `'800'` | HomeScreen main total (only usage) | HomeScreen totalText |
+| `'700'` | Monetary totals, modal titles, active labels, HomeScreen total | Modal titles, categoryTotal, DayPicker selected, HomeScreen totalText |
 
 ### Currency Format Conventions
 - All totals and balances show a `+` (positive) or `-` (negative) prefix.

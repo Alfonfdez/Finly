@@ -17,7 +17,7 @@ import CommentInput from '../components/CommentInput';
 import PhotoSection from '../components/PhotoSection';
 import CalendarModal from '../components/CalendarModal';
 import CalculatorModal from '../components/CalculatorModal';
-import { TransactionType, RootStackParamList } from '../constants/types';
+import { TransactionType, RootStackParamList, sortCategoriesWithOthersLast } from '../constants/types';
 import { isSameDay } from '../utils/formatters';
 import { transactionRepository, tagRepository } from '../database';
 
@@ -300,7 +300,10 @@ export default function AddTransactionScreen() {
     }
   };
 
-  const categoriesByType = categories.filter(c => c.type === type);
+  const categoriesByType = useMemo(
+    () => sortCategoriesWithOthersLast(categories.filter(c => c.type === type)),
+    [categories, type]
+  );
   const totalByType = categoriesByType.length;
   const hasMore = totalByType > MAX_VISIBLE_CATEGORIES;
 
