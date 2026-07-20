@@ -1,5 +1,6 @@
 import { Text, View, Image, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
@@ -39,56 +40,61 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
   const labels = t();
 
   return (
-    <DrawerContentScrollView {...props} style={{ backgroundColor: c.surface }}>
-      <View style={[styles.drawerHeader, { borderBottomColor: c.border }]}>
-        <Image source={require('../../assets/icon.png')} style={styles.drawerLogo} />
-        <Text style={[styles.drawerTitle, { color: c.primary, fontSize: fs(24) }]}>Finly</Text>
-      </View>
-      <DrawerItem
-        label={labels.nav_home}
-        onPress={() => props.navigation.navigate('Main', { screen: 'Home' })}
-        icon={({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />}
-        labelStyle={[styles.drawerItemLabel, { color: c.text }]}
-        activeTintColor={c.primary}
-        inactiveTintColor={c.primary}
-      />
-      <DrawerItem
-        label={labels.nav_all_transactions}
-        onPress={() => props.navigation.navigate('Main', { screen: 'AllTransactions' })}
-        icon={({ color, size }) => <Ionicons name="stats-chart-outline" size={size} color={color} />}
-        labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
-        inactiveTintColor={c.primary}
-      />
-      <DrawerItem
-        label={labels.nav_accounts}
-        onPress={() => props.navigation.navigate('Main', { screen: 'Accounts' })}
-        icon={({ color, size }) => <Ionicons name="wallet-outline" size={size} color={color} />}
-        labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
-        inactiveTintColor={c.primary}
-      />
-      <DrawerItem
-        label={labels.nav_categories}
-        onPress={() => props.navigation.navigate('Main', { screen: 'Categories' })}
-        icon={({ color, size }) => <Ionicons name="grid-outline" size={size} color={color} />}
-        labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
-        inactiveTintColor={c.primary}
-      />
-      <DrawerItem
-        label={labels.nav_tags}
-        onPress={() => props.navigation.navigate('Main', { screen: 'Tags' })}
-        icon={({ color, size }) => <Ionicons name="pricetag-outline" size={size} color={color} />}
-        labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
-        inactiveTintColor={c.primary}
-      />
-      <View style={[styles.separator, { backgroundColor: c.border }]} />
-      <DrawerItem
-        label={labels.nav_settings}
-        onPress={() => props.navigation.navigate('Main', { screen: 'Settings' })}
-        icon={({ color, size }) => <Ionicons name="settings-outline" size={size} color={color} />}
-        labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
-        inactiveTintColor={c.primary}
-      />
-    </DrawerContentScrollView>
+    <View style={{ flex: 1, backgroundColor: c.surface }}>
+      <DrawerContentScrollView {...props} style={{ backgroundColor: c.surface }}>
+        <View style={[styles.drawerHeader, { borderBottomColor: c.border }]}>
+          <Image source={require('../../assets/icon.png')} style={styles.drawerLogo} />
+          <Text style={[styles.drawerTitle, { color: c.primary, fontSize: fs(24) }]}>Finly</Text>
+        </View>
+        <DrawerItem
+          label={labels.nav_home}
+          onPress={() => props.navigation.navigate('Main', { screen: 'Home' })}
+          icon={({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />}
+          labelStyle={[styles.drawerItemLabel, { color: c.text }]}
+          activeTintColor={c.primary}
+          inactiveTintColor={c.primary}
+        />
+        <DrawerItem
+          label={labels.nav_all_transactions}
+          onPress={() => props.navigation.navigate('Main', { screen: 'AllTransactions' })}
+          icon={({ color, size }) => <Ionicons name="stats-chart-outline" size={size} color={color} />}
+          labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
+          inactiveTintColor={c.primary}
+        />
+        <DrawerItem
+          label={labels.nav_accounts}
+          onPress={() => props.navigation.navigate('Main', { screen: 'Accounts' })}
+          icon={({ color, size }) => <Ionicons name="wallet-outline" size={size} color={color} />}
+          labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
+          inactiveTintColor={c.primary}
+        />
+        <DrawerItem
+          label={labels.nav_categories}
+          onPress={() => props.navigation.navigate('Main', { screen: 'Categories' })}
+          icon={({ color, size }) => <Ionicons name="grid-outline" size={size} color={color} />}
+          labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
+          inactiveTintColor={c.primary}
+        />
+        <DrawerItem
+          label={labels.nav_tags}
+          onPress={() => props.navigation.navigate('Main', { screen: 'Tags' })}
+          icon={({ color, size }) => <Ionicons name="pricetag-outline" size={size} color={color} />}
+          labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
+          inactiveTintColor={c.primary}
+        />
+        <View style={[styles.separator, { backgroundColor: c.border }]} />
+        <DrawerItem
+          label={labels.nav_settings}
+          onPress={() => props.navigation.navigate('Main', { screen: 'Settings' })}
+          icon={({ color, size }) => <Ionicons name="settings-outline" size={size} color={color} />}
+          labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
+          inactiveTintColor={c.primary}
+        />
+      </DrawerContentScrollView>
+      <Text style={[styles.drawerVersion, { color: c.textSecondary, fontSize: fs(11) }]}>
+        v{Constants.expoConfig?.version}
+      </Text>
+    </View>
   );
 }
 
@@ -303,4 +309,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   drawerItemLabel: {},
+  drawerVersion: {
+    textAlign: 'right',
+    paddingVertical: 12,
+    paddingRight: 16,
+  },
 });
