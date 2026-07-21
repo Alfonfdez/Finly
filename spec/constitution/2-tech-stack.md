@@ -89,7 +89,7 @@ FinlyApp/
 |   |   +-- webStorage.ts           <- localStorage fallback for web
 |   |   +-- migrations/
 |   |   |   +-- 001_initial.ts      <- CREATE TABLE (users, accounts, categories, transactions, tags, transaction_tags, config) + indexes
-|   |   |   +-- 002_seed.ts         <- default user, 1 account, 18 categories
+|   |   |   +-- 002_seed.ts         <- default user, 1 account, 31 categories
 |   |   |   +-- 003_config.ts       <- config default values (table created in 001)
 |   |   +-- repositories/
 |   |       +-- userRepo.ts         <- user CRUD

@@ -26,7 +26,7 @@ FinlyApp/src/
 │   ├── types.ts              ← TypeScript interfaces (User, Account, Category, Transaction, Tag, TransactionTag, Config)
 │   ├── migrations/
 │   │   ├── 001_initial.ts    ← createSchema(): CREATE TABLES + indexes
-│   │   ├── 002_seed.ts       ← seedData(): default user, account, 18 categories
+│   │   ├── 002_seed.ts       ← seedData(): default user, account, 31 categories
 │   │   └── 003_config.ts     ← seedConfig(): config default values
 │   ├── repositories/
 │   │   ├── userRepo.ts       ← CRUD users
@@ -55,7 +55,7 @@ AppContext / ConfigContext
 1. `App.tsx` calls `initDatabase()` (native) or `initWebStorage()` (web) on startup.
 2. `initDatabase()` opens/creates `Finly.db` and runs, in order:
    - `createSchema()` — creates all tables and indexes (idempotent `CREATE TABLE IF NOT EXISTS`).
-   - `seedData()` — inserts default user, "My Wallet" account, and 18 universal categories (idempotent `INSERT OR IGNORE`).
+   - `seedData()` — inserts default user, "My Wallet" account, and 31 universal categories (idempotent `INSERT OR IGNORE`).
    - `seedConfig()` — inserts config defaults (`INSERT OR IGNORE`).
 3. `AppContext` / `ConfigContext` connect to the repositories and load the initial state.
 4. CRUD operations go through the repositories, never direct SQL.
@@ -120,7 +120,7 @@ When the database is created for the first time:
 
 1. A default user is created (`id = 1`, name `User`, currency `€`).
 2. One account is inserted: `My Wallet` (`id = 1`, `initial_balance: 0`, icon `wallet-outline`, color `#22D3EE`).
-3. 18 universal categories are inserted (5 income + 13 expense) with fixed IDs 1–18, including `Others` (15) and `Other` (18).
+3. 31 universal categories are inserted (10 income + 19 expense) with fixed IDs 1–31, including `Others` (15) and `Other` (18).
 4. `transactions` and `tags` start empty.
 
 ## Web fallback

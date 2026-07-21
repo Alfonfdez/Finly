@@ -1076,10 +1076,10 @@
 - Removed `migrateWebStorage()` (Spanish localStorage key migration) and `migrateWebCategories()` (icon fixups). Simplified `initWebStorage()` to only seed data on first load.
 
 [2026-07-16] ~ | src/database/migrations/002_seed.ts
-- Cleaned seed data for production: 1 user ("User"), 1 account ("My Wallet", €0), 18 universal categories (5 income + 13 expense). Removed all 10 mock transactions and 2 test accounts (Bank, Savings).
+- Cleaned seed data for production: 1 user ("User"), 1 account ("My Wallet", €0), 31 universal categories (10 income + 19 expense). Removed all 10 mock transactions and 2 test accounts (Bank, Savings).
 
 [2026-07-16] ~ | src/database/webStorage.ts
-- Cleaned seed data to match 002_seed.ts: 1 account ("My Wallet"), 18 categories, 0 transactions. Removed mock transactions and duplicate accounts.
+- Cleaned seed data to match 002_seed.ts: 1 account ("My Wallet"), 31 categories, 0 transactions. Removed mock transactions and duplicate accounts.
 
 [2026-07-16] - | src/database/migrations/004_new_categories.ts
 - Deleted. Categories now consolidated in 002_seed.ts.
