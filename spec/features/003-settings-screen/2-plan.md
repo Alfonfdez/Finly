@@ -1,137 +1,274 @@
-# Implementation plan — 003 Settings page
+# Implementation plan — 003 Settings page (restructure)
+
+## Overview
+
+Restructure the flat Settings screen into a main subsection list (4 rows) with navigation to detail screens. Add new Personalization and Data subsections.
+
+---
 
 ## Files to create
 
 ```
-src/
-├── constants/
-│   ├── themes.ts              ← dark and light palettes
-│   └── types.ts               ← add Configuracion to RootStackParamList
-│
-├── context/
-│   └── ConfigContext.tsx       ← Context + Provider for settings
-│
-├── database/
-│   ├── migrations/
-│   │   └── 003_configuracion.ts  ← CREATE TABLE IF NOT EXISTS configuracion
-│   └── repositories/
-│       └── configRepo.ts       ← read/save settings
-│
-├── i18n/
-│   ├── es.ts                  ← Spanish texts
-│   └── en.ts                  ← English texts
-│
-├── screens/
-│   └── SettingsScreen.tsx      ← settings screen
-│
-└── utils/
-    └── formatters.ts           ← modify formatearMoneda to support currency and separator
+src/screens/settings/
+├── SettingsScreen.tsx          ← main screen (subsection list)
+├── AppearanceScreen.tsx        ← theme, text size, icon shapes
+├── RegionalScreen.tsx          ← language, currency, separator, first day
+├── PersonalizationScreen.tsx   ← home defaults, add transaction defaults, privacy
+└── DataScreen.tsx              ← delete transactions, delete all data
 ```
 
 ## Files to modify
 
 ```
-src/constants/colors.ts        ← export coloresDark and coloresLight
-src/context/AppContext.tsx      ← consume ConfigContext for primerDiaSemana
-src/components/calendars/DayPicker.tsx  ← use primerDia from config, fix headers/grid alignment
-src/components/calendars/WeekPicker.tsx ← use primerDia from config
-src/navigation/AppNavigator.tsx ← add SettingsScreen to Stack, connect DrawerItem
-src/constants/types.ts         ← add Configuracion and SettingsScreenProps
-src/utils/formatters.ts        ← formatearMoneda with currency and separator parameters
+src/context/ConfigContext.tsx    ← add 7 new config fields
+src/database/migrations/003_config.ts ← add new defaults
+src/database/webStorage.ts      ← add new config defaults
+src/constants/types.ts          ← add Settings stack params + props
+src/navigation/AppNavigator.tsx ← register 4 new screens, update Settings route
+src/screens/AddTransactionScreen.tsx ← respect addDefaultAccountId + optional fields
+src/screens/ModifyTransactionScreen.tsx ← respect optional fields
+src/screens/HomeScreen.tsx      ← respect homeDefaultAccountId + homeDefaultPeriod
+src/screens/AccountsScreen.tsx  ← eye icon + hideBalances
+src/components/AccountModal.tsx ← eye icon + hideBalances
+src/components/AccountSelector.tsx (if exists) ← eye icon + hideBalances
+src/i18n/en.ts, es.ts, ca.ts   ← ~30 new keys
+src/i18n/index.ts               ← nothing new needed
+```
+
+## Files to delete
+
+```
+src/screens/SettingsScreen.tsx  ← replaced by src/screens/settings/SettingsScreen.tsx
 ```
 
 ---
 
 ## Architecture
 
-### ConfigContext
+### Config Interface
 
 ```ts
-interface Configuracion {
-  tema: 'oscuro' | 'claro' | 'sistema';
-  primerDiaSemana: 0 | 1;        // 0=domingo, 1=lunes
-  divisa: string;                 // '€', '$', '£', '¥'
-  separadorDecimal: ',' | '.';
-  idioma: 'es' | 'en';
-  tamanoTexto: 'pequeño' | 'mediano' | 'grande';
-  formaIconoCategoria: 'cuadrado' | 'circulo';
+export interface Config {
+  // Existing
+  theme: 'dark' | 'light' | 'system';
+  firstDayOfWeek: 0 | 1;
+  currency: string;
+  decimalSeparator: ',' | '.';
+  language: 'es' | 'en' | 'ca';
+  textSize: 'small' | 'medium' | 'large';
+  categoryIconShape: 'square' | 'circle';
+  accountIconShape: 'square' | 'circle';
+
+  // New — Personalization > Home screen
+  homeDefaultAccountId: number | null;   // null = no default (current behavior)
+  homeDefaultPeriod: 'day' | 'week' | 'month' | 'year';
+
+  // New — Personalization > Add transaction
+  addDefaultAccountId: number | null;    // null = inherit from HomeScreen
+  addShowLabels: boolean;
+  addShowComments: boolean;
+  addShowPhoto: boolean;
+
+  // New — Personalization > Privacy
+  hideBalances: boolean;
 }
 ```
 
-- `ConfigProvider` wraps the app (alongside `AppProvider`).
-- Exposes `config` (current object) and `actualizarConfig(partial)`.
-- On mount, loads from storage. On change, persists and re-renders.
-
-### Color palettes
+### Config Defaults
 
 ```ts
-// themes.ts
-export const coloresDark = { /* current palette */ };
-export const coloresLight = {
-  fondo: '#FFFFFF',
-  fondoAlto: '#F1F5F9',
-  texto: '#1E293B',
-  textoSuave: '#64748B',
-  primario: '#0891B2',   // cyan-600 (darker for contrast on light background)
-  ...
+const CONFIG_DEFAULT: Config = {
+  // Existing
+  theme: 'dark',
+  firstDayOfWeek: 1,
+  currency: '€',
+  decimalSeparator: ',',
+  language: 'en',
+  textSize: 'medium',
+  categoryIconShape: 'square',
+  accountIconShape: 'square',
+
+  // New
+  homeDefaultAccountId: null,
+  homeDefaultPeriod: 'month',
+  addDefaultAccountId: null,
+  addShowLabels: true,
+  addShowComments: true,
+  addShowPhoto: true,
+  hideBalances: false,
 };
 ```
 
-A `useTema()` hook is created that reads `config.tema` + OS `Appearance` and returns the active palette. All components using `colores` must migrate to `useTema()` or receive the palette via context.
+### Navigation Structure
 
-### Lightweight i18n
-
-No `i18next` or external library is installed. A plain object per language is created with the necessary keys and a `t(key)` helper that reads `config.idioma`.
-
-```ts
-// es.ts
-export const es = {
-  tab_gastos: 'Gastos',
-  tab_ingresos: 'Ingresos',
-  periodo_dia: 'Día',
-  ...
-};
+```
+HomeStack
+├── Home (existing)
+├── Settings (main subsection list)     ← headerShown: false
+├── SettingsAppearance (detail screen)  ← headerShown: false
+├── SettingsRegional (detail screen)    ← headerShown: false
+├── SettingsPersonalization (detail screen) ← headerShown: false
+├── SettingsData (detail screen)        ← headerShown: false
+├── ... (other existing screens)
 ```
 
-### Persistence
+All settings detail screens use a custom header with back arrow + title (same pattern as other screens in the app).
 
-- **SQLite**: `configuracion` table with columns `clave TEXT PRIMARY KEY, valor TEXT`. One row is inserted per option. `configRepo.ts` exposes `obtenerConfig()` and `guardarConfig(partial)`.
-- **localStorage** (web): a single `finly_config` key with serialized JSON. Uses the same interface as the repo.
+### RevealContext (Privacy — eye icon)
 
-### Calendar integration
+A lightweight context to manage temporary balance reveal state:
 
-- `DayPicker.tsx` accepts `primerDia` as a prop (WeekPicker already does).
-- The alignment bug is fixed: headers and grid use the same `primerDia`.
-- `AppContext` passes `config.primerDiaSemana` to `CalendarPicker`.
+```ts
+interface RevealContextType {
+  isRevealed: boolean;
+  toggleReveal: () => void;
+}
 
-### Formatter integration
+// Provided at the app root level (or within HomeStack).
+// State resets on screen focus via useFocusEffect in consuming screens.
+```
 
-- `formatearMoneda(amount, currency, separator)` receives the config parameters.
-- With separator `,`: `Number.toLocaleString('es-ES', ...)` or manual formatting.
-- With separator `.`: `Number.toLocaleString('en-US', ...)` or manual formatting.
+When `hideBalances` is OFF:
+- Balances visible, icon = `eye-off-outline`.
+- Tap → balances hidden, icon = `eye-outline`.
+- Navigate away → state resets (balances visible again).
+
+When `hideBalances` is ON:
+- Balances hidden (`•••••`), icon = `eye-outline`.
+- Tap → balances revealed, icon = `eye-off-outline`.
+- Navigate away → state resets (balances hidden again).
+
+**Implementation approach:** instead of a global context, each affected screen manages its own `isRevealed` state via `useState` + `useFocusEffect` to reset on focus. The `hideBalances` config value determines the initial state.
+
+```tsx
+// In HomeScreen, AccountsScreen, etc.
+const { config } = useConfig();
+const [isRevealed, setIsRevealed] = useState(false);
+
+// Reset to setting default when screen gains focus
+useFocusEffect(
+  useCallback(() => {
+    setIsRevealed(false);
+  }, [])
+);
+
+const isHidden = config.hideBalances !== isRevealed;
+// If hideBalances=true and isRevealed=false → hidden
+// If hideBalances=true and isRevealed=true → visible
+// If hideBalances=false and isRevealed=false → visible
+// If hideBalances=false and isRevealed=true → hidden
+```
+
+### Eye Icon Component
+
+```tsx
+function EyeToggle({ isHidden, onToggle }: { isHidden: boolean; onToggle: () => void }) {
+  return (
+    <TouchableOpacity onPress={onToggle} hitSlop={8}>
+      <Ionicons
+        name={isHidden ? 'eye-outline' : 'eye-off-outline'}
+        size={18}
+        color={c.textSecondary}
+      />
+    </TouchableOpacity>
+  );
+}
+```
+
+### Balance Display Helper
+
+```tsx
+function formatBalance(amount: number, isHidden: boolean, currency: string, separator: ',' | '.'): string {
+  if (isHidden) return '•••••';
+  return formatCurrency(amount, currency, separator);
+}
+```
 
 ---
 
-## Decisions
+## Data Subsection — Deletion Logic
 
-- **No i18n library** — the volume of texts is small; a plain object per language is sufficient and adds no dependency.
-- **ConfigContext separate from AppContext** — settings have their own lifecycle (persist, load at startup) and should not be mixed with business state.
-- **Theme as exported palette** — instead of CSS variables (which don't exist in native RN), a color object is injected via context.
-- **Incremental `colores` migration** — existing components will continue importing `colores` from `colors.ts` during this feature. Full migration to `useTema()` will happen in a future feature to avoid a massive refactor. During this feature, the theme will only affect new components (SettingsScreen) and DayPicker.
+### Delete all transactions
 
-### i18n — New keys
+```ts
+// Native (SQLite)
+await db.runAsync('DELETE FROM transactions');
+await db.runAsync('DELETE FROM transaction_tags');
+
+// Web (localStorage)
+removeStore('transactions');
+removeStore('transaction_tags');
+```
+
+### Delete all data (factory reset)
+
+```ts
+// Native (SQLite)
+await db.runAsync('DELETE FROM transactions');
+await db.runAsync('DELETE FROM transaction_tags');
+await db.runAsync('DELETE FROM accounts');
+await db.runAsync('DELETE FROM categories');
+await db.runAsync('DELETE FROM tags');
+// Re-seed
+await seedData(db);   // from 002_seed.ts
+await seedConfig(db); // from 003_config.ts
+
+// Web (localStorage)
+removeStore('transactions');
+removeStore('transaction_tags');
+removeStore('accounts');
+removeStore('categories');
+removeStore('tags');
+// Re-seed
+seedWebData();    // from webStorage.ts
+// Config is re-initialized with defaults on next get()
+```
+
+---
+
+## i18n — New Keys
 
 | Key | EN | ES | CA |
 |---|---|---|---|
-| `settings_category_icon_shape` | CATEGORY ICON SHAPE | ASPECTO DE CATEGORÍAS | ASPECTE DE CATEGORIES |
-| `shape_square` | Square | Cuadrado | Quadrat |
-| `shape_circle` | Circle | Círculo | Cercle |
-| `settings_account_icon_shape` | ACCOUNT ICON SHAPE | ASPECTO DE CUENTAS | ASPECTE DE COMPTES |
+| `settings_appearance` | Appearance | Apariencia | Aparença |
+| `settings_regional` | Regional | Regional | Regional |
+| `settings_personalization` | Personalization | Personalización | Personalització |
+| `settings_data` | Data | Datos | Dades |
+| `settings_home_screen` | Home screen | Pantalla principal | Pantalla principal |
+| `settings_add_transaction` | Add transaction | Añadir transacción | Afegir transacció |
+| `settings_privacy` | Privacy | Privacidad | Privacitat |
+| `settings_default_account` | Default account | Cuenta predeterminada | Compte predeterminat |
+| `settings_default_period` | Default period | Período predeterminat | Període predeterminat |
+| `settings_not_selected` | Not selected | No seleccionado | No seleccionat |
+| `settings_optional_fields` | Optional fields | Campos opcionals | Camps opcionals |
+| `settings_labels` | Labels | Etiquetas | Etiquetes |
+| `settings_comments` | Comments | Comentarios | Comentaris |
+| `settings_photo` | Photo | Foto | Foto |
+| `settings_hide_balances` | Hide account balances | Ocultar saldos de cuentas | Amagar saldos de comptes |
+| `settings_delete_all_transactions` | Delete all transactions | Eliminar todas las transacciones | Eliminar totes les transaccions |
+| `settings_delete_all_data` | Delete all data | Eliminar todos los datos | Eliminar totes les dades |
+| `settings_delete_transactions_confirm_title` | Delete all transactions? | ¿Eliminar todas las transacciones? | Eliminar totes les transaccions? |
+| `settings_delete_transactions_confirm_message` | All transaction history will be permanently deleted. Accounts, categories, and tags are kept. | Todo el historial de transacciones se eliminará permanentemente. Las cuentas, categorías y etiquetas se conservarán. | Tot l'historial de transaccions s'eliminarà permanentment. Els comptes, categories i etiquetes es conservaran. |
+| `settings_delete_data_confirm_title` | Delete all data? | ¿Eliminar todos los datos? | Eliminar totes les dades? |
+| `settings_delete_data_confirm_message` | This will reset the app to factory state. All accounts, categories, tags, transactions, and settings will be deleted. This cannot be undone. | Esto restablecerá la app al estado de fábrica. Todas las cuentas, categorías, etiquetas, transacciones y configuración se eliminarán. Esto no se puede deshacer. | Això restablirà l'app a l'estat de fàbrica. Tots els comptes, categories, etiquetes, transaccions i configuració s'eliminaran. Això no es pot desfer. |
+| `settings_delete_data_confirm_title2` | Are you sure? | ¿Estás seguro? | N\'estàs segur? |
+| `settings_delete_data_confirm_message2` | Type DELETE to confirm | Escribe DELETE para confirmar | Escriu DELETE per confirmar |
+| `settings_delete_data_confirm_placeholder` | Type DELETE here | Escribe DELETE aquí | Escriu DELETE aquí |
+| `settings_delete_confirm` | Confirm | Confirmar | Confirmar |
+| `settings_delete_all_transactions_done` | All transactions deleted | Todas las transacciones eliminadas | Totes les transaccions eliminades |
+| `settings_delete_all_data_done` | All data deleted. App reset to factory state. | Todos los datos eliminados. App restablecida al estado de fábrica. | Totes les dades eliminades. App restablerta a l'estat de fàbrica. |
+| `settings_home_default_period_day` | Day | Día | Dia |
+| `settings_home_default_period_week` | Week | Semana | Setmana |
+| `settings_home_default_period_month` | Month | Mes | Mes |
+| `settings_home_default_period_year` | Year | Any | Any |
 
 ---
 
 ## Verification
 
-1. `npx expo start --web` — test in browser: light/dark theme, change settings, reload.
-2. `npx expo start` + Expo Go — test on native: SQLite persistence, theme, calendar.
+1. `npx expo start --web` — test in browser: navigate to each subsection, change settings, verify persistence on reload.
+2. `npx expo start` + Expo Go — test on native: SQLite persistence, theme, eye icon, delete flows.
 3. Validate all acceptance criteria from `1-spec.md`.
+4. Test Privacy eye icon: reveal → navigate away → come back → verify reset.
+5. Test Data: delete transactions (verify accounts/categories kept), delete all data (verify factory reset).
+6. Test Add transaction default account: set "My Wallet" → go to Home with different account → tap "+" → verify "My Wallet" selected.
