@@ -1567,3 +1567,10 @@
 - Categories with 0 transactions appear after used ones, sorted alphabetically among themselves.
 - Removed special "Other"/"Others" last-position logic — they now follow the same usage-based ranking.
 - Added 2 new acceptance criteria for usage-based sorting and zero-usage behavior.
+
+[2026-07-21] + | src/database/repositories/transactionRepo.ts, src/database/webStorage.ts, src/screens/AddTransactionScreen.tsx
+- Implemented usage-based category sorting in AddTransactionScreen grid (feature 004).
+- Added `getCategoryUsageCounts(userId, type, startDate)` to transactionRepo (native SQL LEFT JOIN + COUNT) and webStorage (JS filter + count).
+- Returns categories sorted by transaction count descending (90-day window), then alphabetically for ties.
+- AddTransactionScreen: replaced `sortCategoriesWithOthersLast` alphabetical sort with usage-frequency sort via `useFocusEffect` + `useMemo`.
+- "Other"/"Others" now follow the same usage-based ranking (no special position).

@@ -3,6 +3,7 @@ import { Category } from '../database/types';
 
 export const OTHERS_CATEGORY_ID = 15;
 export const OTHER_CATEGORY_ID = 18;
+export const CATEGORY_USAGE_WINDOW_DAYS = 90;
 
 export function sortCategoriesWithOthersLast(categories: Category[]): Category[] {
   return [...categories].sort((a, b) => {

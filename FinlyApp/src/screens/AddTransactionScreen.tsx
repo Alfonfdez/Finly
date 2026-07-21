@@ -17,8 +17,8 @@ import CommentInput from '../components/CommentInput';
 import PhotoSection from '../components/PhotoSection';
 import CalendarModal from '../components/CalendarModal';
 import CalculatorModal from '../components/CalculatorModal';
-import { TransactionType, RootStackParamList, sortCategoriesWithOthersLast } from '../constants/types';
-import { isSameDay } from '../utils/formatters';
+import { TransactionType, RootStackParamList, CATEGORY_USAGE_WINDOW_DAYS } from '../constants/types';
+import { isSameDay, formatDateForDB } from '../utils/formatters';
 import { transactionRepository, tagRepository } from '../database';
 
 // Module-level pending category data (passed back from AddCategoryScreen)
@@ -128,6 +128,7 @@ export default function AddTransactionScreen() {
     return selectedDate;
   })();
   const [day, setDay] = useState(initialDay);
+  const [categoryUsage, setCategoryUsage] = useState<Map<number, number>>(new Map());
 
   const prevType = useRef(type);
   const isFirstFocus = useRef(true);
@@ -152,6 +153,14 @@ export default function AddTransactionScreen() {
         scrollRef.current?.scrollTo({ y: 0, animated: false });
       }, 100);
     }
+    // Refresh category usage counts when screen gains focus
+    const loadUsage = async () => {
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - CATEGORY_USAGE_WINDOW_DAYS);
+      const counts = await transactionRepository.getCategoryUsageCounts(1, type, formatDateForDB(startDate));
+      setCategoryUsage(new Map(counts.map(c => [c.id, c.count])));
+    };
+    loadUsage();
   }, [categories, type]));
 
   useEffect(() => {
@@ -300,10 +309,15 @@ export default function AddTransactionScreen() {
     }
   };
 
-  const categoriesByType = useMemo(
-    () => sortCategoriesWithOthersLast(categories.filter(c => c.type === type)),
-    [categories, type]
-  );
+  const categoriesByType = useMemo(() => {
+    const byType = categories.filter(c => c.type === type);
+    return [...byType].sort((a, b) => {
+      const countA = categoryUsage.get(a.id) ?? 0;
+      const countB = categoryUsage.get(b.id) ?? 0;
+      if (countB !== countA) return countB - countA;
+      return a.name.localeCompare(b.name);
+    });
+  }, [categories, type, categoryUsage]);
   const totalByType = categoriesByType.length;
   const hasMore = totalByType > MAX_VISIBLE_CATEGORIES;
 
