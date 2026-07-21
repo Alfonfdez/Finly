@@ -5,7 +5,7 @@ export const accountRepo = {
   async list(userId: number): Promise<Account[]> {
     const db = getDatabase();
     return await db.getAllAsync<Account>(
-      `SELECT * FROM accounts WHERE user_id = ? ORDER BY name`,
+      `SELECT * FROM accounts WHERE user_id = ? ORDER BY is_total DESC, name`,
       userId
     );
   },
@@ -41,7 +41,7 @@ export const accountRepo = {
 
   async delete(id: number): Promise<void> {
     const db = getDatabase();
-    await db.runAsync(`DELETE FROM accounts WHERE id = ?`, id);
+    await db.runAsync(`DELETE FROM accounts WHERE id = ? AND is_total = 0`, id);
   },
 
   async getCurrentBalance(id: number): Promise<number> {

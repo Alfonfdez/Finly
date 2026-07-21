@@ -69,6 +69,7 @@ export default function ModifyTransactionScreen() {
   const { transactionId } = route.params;
   const { activeColors: c, config } = useConfig();
   const { transactions, accounts, categories, accountsWithBalance, tags, refresh, refreshTags } = useApp();
+  const selectableAccounts = useMemo(() => accountsWithBalance.filter(a => (a.is_total ?? 0) !== 1), [accountsWithBalance]);
   const fs = useFontSize();
   const labels = t();
 
@@ -412,7 +413,7 @@ export default function ModifyTransactionScreen() {
 
       <AccountModal
         visible={modalAccountVisible}
-        accounts={accountsWithBalance}
+        accounts={selectableAccounts}
         selectedId={accountId}
         onSelect={handleSelectAccount}
         onClose={() => setModalAccountVisible(false)}

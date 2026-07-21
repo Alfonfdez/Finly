@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useMemo, useEffect, useCallback, ReactNode } from 'react';
 import { Account, Category, Transaction, Tag } from '../database/types';
-import { Period, TransactionType, CategoryWithTotal } from '../constants/types';
+import { Period, TransactionType, CategoryWithTotal, DATE_MIN, DATE_MAX } from '../constants/types';
 import { accountRepository as accountRepo, categoryRepository as categoryRepo, transactionRepository as transactionRepo, tagRepository as tagRepo } from '../database';
 import { useConfig } from './ConfigContext';
 import { getDisplayCategoryName } from '../i18n';
@@ -132,8 +132,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ? customDate
         : calculateStartEnd(activePeriod, selectedDate);
 
+      const isTotal = (activeAccount!.is_total ?? 0) === 1;
       const data = await transactionRepo.list({
-        account_id: activeAccount!.id,
+        account_id: isTotal ? undefined : activeAccount!.id,
         start_date: formatDateForDB(dates.start),
         end_date: formatDateForDB(dates.end),
       });
@@ -195,9 +196,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!activeAccount) return;
     async function loadAllTotals() {
+      const isTotal = (activeAccount!.is_total ?? 0) === 1;
+      const accountId = isTotal ? null : activeAccount!.id;
       const [income, expenses] = await Promise.all([
-        transactionRepo.totalByPeriod(activeAccount!.id, 'income', '1900-01-01', '2100-12-31'),
-        transactionRepo.totalByPeriod(activeAccount!.id, 'expense', '1900-01-01', '2100-12-31'),
+        transactionRepo.totalByPeriod(accountId, 'income', DATE_MIN, DATE_MAX),
+        transactionRepo.totalByPeriod(accountId, 'expense', DATE_MIN, DATE_MAX),
       ]);
       setTotalIncomeAll(income);
       setTotalExpensesAll(expenses);
@@ -209,12 +212,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function calculateBalances() {
-      const results = await Promise.all(
-        accounts.map(async (account) => {
+      const nonTotal = accounts.filter(a => (a.is_total ?? 0) !== 1);
+      const nonTotalBalances = await Promise.all(
+        nonTotal.map(async (account) => {
           const balance = await accountRepo.getCurrentBalance(account.id);
-          return { ...account, balance };
+          return { account, balance };
         })
       );
+      const totalBalance = nonTotalBalances.reduce((sum, { balance }) => sum + balance, 0);
+
+      const results = accounts.map((account) => {
+        if ((account.is_total ?? 0) === 1) {
+          return { ...account, balance: totalBalance };
+        }
+        const found = nonTotalBalances.find(b => b.account.id === account.id);
+        return { ...account, balance: found?.balance ?? 0 };
+      });
       setAccountsWithBalance(results);
     }
     if (accounts.length > 0) {
@@ -247,8 +260,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const dates = activePeriod === 'custom'
       ? customDate
       : calculateStartEnd(activePeriod, selectedDate);
+    const isTotal = (activeAccount.is_total ?? 0) === 1;
     const data = await transactionRepo.list({
-      account_id: activeAccount.id,
+      account_id: isTotal ? undefined : activeAccount.id,
       start_date: formatDateForDB(dates.start),
       end_date: formatDateForDB(dates.end),
     });

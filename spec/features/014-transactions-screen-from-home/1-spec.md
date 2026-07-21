@@ -20,12 +20,12 @@
 
 - Horizontal row at the top, left side.
 - Shows: account icon (with background color) + account name + chevron-down icon.
-- Default account is the one selected on the HomeScreen (`activeAccount` from `AppContext`).
+- Default account is the one selected on the HomeScreen (`activeAccount` from `AppContext`), including Total.
 - On tap, opens an account selection modal:
 
 **"Select an account" modal**
 - Title: "Select an account" (multilingual).
-- List of all user accounts, each row with:
+- List of all user accounts **including Total**, each row with:
   - Radio button (single selection).
   - Account icon (with background color).
   - Account name.
@@ -34,6 +34,7 @@
 - Buttons: "Cancel" (multilingual) and "Select" (multilingual).
 - On tapping "Cancel", the modal closes without changing the account.
 - On tapping "Select", the selected account is updated and filtered transactions are reloaded for that account.
+- **Total account behavior**: when Total is selected, the account filter is skipped and all transactions for the category and period are shown (across all accounts).
 
 ### 3. Sorting
 
@@ -101,6 +102,8 @@
 - [ ] Transactions are grouped by day with a formatted date header.
 - [ ] Each transaction shows category icon + name + description + amount with color.
 - [ ] The list is filtered by account, category, and period.
+- [ ] The Total account is shown in the account selector modal.
+- [ ] When the active account is Total (is_total=1), the account filter is skipped and all transactions for the category and period are shown.
 - [ ] If there are no transactions, the empty state is displayed.
 - [ ] The centered floating "+" button navigates to "Add transaction" (004).
 - [ ] All texts change when the language is changed.

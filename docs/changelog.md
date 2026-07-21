@@ -1589,3 +1589,109 @@
 - Updated 011-accounts-screen: Total account appears first in the list, added acceptance criteria.
 - Updated 012-modify-delete-account-screen: added Total account behavior (read-only name, hidden delete), added acceptance criterion.
 - Added 022-total-account to roadmap with pending status.
+
+[2026-07-21] ~ | src/database/types.ts
+- Added `is_total?: number` to `Account` interface.
+
+[2026-07-21] ~ | src/database/migrations/001_initial.ts
+- Added `is_total INTEGER NOT NULL DEFAULT 0` column to accounts CREATE TABLE.
+
+[2026-07-21] ~ | src/database/migrations/002_seed.ts
+- Inserted Total account (id=2, icon=layers-outline, color=#475569, is_total=1). Updated My Wallet insert with is_total column.
+
+[2026-07-21] ~ | src/database/webStorage.ts
+- Added Total account to seed data. Updated list() sort to put Total first (is_total DESC, name). Added delete guard for Total. Updated totalByPeriod() and breakdownByCategories() to accept null accountId for "all accounts" mode.
+
+[2026-07-21] ~ | src/database/repositories/accountRepo.ts
+- Updated list() ORDER BY is_total DESC, name. Added is_total guard to delete().
+
+[2026-07-21] ~ | src/database/repositories/transactionRepo.ts
+- Updated totalByPeriod() and breakdownByCategories() to accept accountId: number | null, querying all accounts when null.
+
+[2026-07-21] ~ | src/i18n/en.ts, es.ts, ca.ts
+- Added account_total: 'Total' translation key in all three languages.
+
+[2026-07-21] ~ | src/i18n/index.ts
+- Added mapping 2: 'account_total' to ACCOUNT_I18N_KEYS.
+
+[2026-07-21] ~ | src/context/AppContext.tsx
+- Updated loadTransactions, refresh, and loadAllTotals to handle is_total (passes null accountId for Total). Updated balance calculation: Total balance = sum of all non-total accounts.
+
+[2026-07-21] ~ | src/screens/AddTransactionScreen.tsx
+- Filtered Total account from selectableAccounts passed to AccountModal.
+
+[2026-07-21] ~ | src/screens/ModifyTransactionScreen.tsx
+- Filtered Total account from selectableAccounts passed to AccountModal.
+
+[2026-07-21] ~ | src/screens/ModifyAccountScreen.tsx
+- Total mode: name input hidden, delete button hidden, save only updates icon/color/note.
+
+[2026-07-21] ~ | src/screens/TransactionsScreen.tsx
+- When Total account is selected, skip account_id filter to show all transactions. Default to first non-Total account. Filter Total from AccountModal.
+
+[2026-07-21] ~ | src/screens/AllTransactionsScreen.tsx
+- When Total account is selected, skip account_id filter to show all transactions. Default to first non-Total account. Filter Total from AccountModal.
+
+[2026-07-21] ~ | src/screens/AddTransactionScreen.tsx
+- Fallback: if activeAccount is Total, pre-select first non-Total account instead.
+
+[2026-07-21] ~ | src/constants/types.ts
+- Added DATE_MIN and DATE_MAX constants to replace magic date strings.
+
+[2026-07-21] ~ | spec/features/022-total-account/1-spec.md
+- Added section 5 (TransactionsScreen behavior), updated section 6 (fallback behavior), added acceptance criteria for TransactionsScreen and AddTransactionScreen fallback.
+
+[2026-07-21] ~ | spec/features/014-transactions-screen-from-home/1-spec.md
+- Added acceptance criteria for Total account: skip filter, exclude from selector.
+
+[2026-07-21] ~ | spec/features/004-add-transaction-screen/1-spec.md
+- Added fallback behavior and Total exclusion notes in account selection section.
+
+[2026-07-21] ~ | spec/features/015-all-transactions-screen/1-spec.md
+- Added Total account behavior: skip filter, exclude from selector, fallback. Added 3 acceptance criteria.
+
+[2026-07-21] ~ | spec/features/022-total-account/1-spec.md
+- Updated section 5: Total IS selectable in TransactionsScreen (not filtered out). Updated section 6: Total IS shown in TransactionsScreen/AllTransactionsScreen selectors. Updated acceptance criteria.
+
+[2026-07-21] ~ | spec/features/014-transactions-screen-from-home/1-spec.md
+- Updated section 2: Total IS included in account selector with skip-filter behavior. Updated acceptance criteria.
+
+[2026-07-21] ~ | spec/features/015-all-transactions-screen/1-spec.md
+- Updated section 3: Total IS included in account selector. Updated acceptance criteria.
+
+[2026-07-21] ~ | src/screens/TransactionsScreen.tsx, src/screens/AllTransactionsScreen.tsx
+- Initialize selectedAccountId from activeAccount directly (preserves Total selection from HomeScreen).
+
+[2026-07-21] ~ | spec/features/022-total-account/1-spec.md, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md
+- Updated default account initialization docs: preserves activeAccount from HomeScreen including Total.
+
+[2026-07-21] ~ | src/screens/TransactionDetailsScreen.tsx
+- Fetch transaction directly from database instead of AppContext to avoid stale/filtered state when navigating from AllTransactionsScreen or TransactionsScreen.
+
+[2026-07-21] ~ | spec/features/016-transaction-details-screen/1-spec.md
+- Added note: transaction is fetched directly from database (not AppContext) to work from any screen.
+
+[2026-07-21] ~ | spec/constitution/3-roadmap.md
+- Updated 022 entry: Total IS selectable in TransactionsScreen/AllTransactionsScreen, hidden from AddTransaction/ModifyTransaction.
+
+[2026-07-21] ~ | spec/features/022-total-account/1-spec.md
+- Added section 10: Default account descriptions (multilingual). My Wallet and Total have stored English descriptions in seed data, displayed via i18n translations using getDisplayAccountDescription(). Users can edit freely.
+
+[2026-07-21] ~ | spec/features/012-modify-delete-account-screen/1-spec.md
+- Updated section 5 (Note): added "Default Descriptions" subsection documenting the getDisplayAccountDescription() pattern for My Wallet (id=1) and Total (id=2).
+
+[2026-07-21] + | src/i18n/en.ts, es.ts, ca.ts
+- Added i18n keys: account_my_wallet_description ('Your default account for everyday transactions') and account_total_description ('Combined balance and transactions from all your accounts') in en/es/ca.
+
+[2026-07-21] ~ | src/database/migrations/002_seed.ts, src/database/webStorage.ts
+- Set default English descriptions for My Wallet and Total accounts in seed data.
+
+[2026-07-21] + | src/i18n/index.ts
+- Added ACCOUNT_DESCRIPTION_I18N_KEYS map (id 1→account_my_wallet_description, id 2→account_total_description).
+- Added getDisplayAccountDescription(), getDefaultEnglishAccountDescription(), getAccountDescription() helpers (same pattern as account names).
+
+[2026-07-21] ~ | src/screens/ModifyAccountScreen.tsx
+- Description input now shows translated default via getDisplayAccountDescription(). Save preserves English default (same pattern as name: if user hasn't changed the translated default, saves the English string so translation continues to work).
+
+[2026-07-21] ~ | src/screens/AccountsScreen.tsx
+- Account list shows translated description via getDisplayAccountDescription() instead of raw DB value.

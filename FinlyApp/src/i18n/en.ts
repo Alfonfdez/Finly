@@ -200,6 +200,9 @@ export const en = {
 
   // Accounts (default - multilingual)
   account_my_wallet: 'My Wallet',
+  account_total: 'Total',
+  account_my_wallet_description: 'Your default account for everyday transactions',
+  account_total_description: 'Combined balance and transactions from all your accounts',
 
   // Transactions
   transactions_title: 'Transactions',

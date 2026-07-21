@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, ComponentProps } from 'react';
+import { useState, useMemo, useCallback, useEffect, ComponentProps } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +10,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { formatCurrency, formatDateLong } from '../utils/formatters';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
 import { transactionRepository } from '../database';
+import { Transaction } from '../database/types';
 import { RootStackParamList } from '../constants/types';
 
 type DetailsRouteProp = RouteProp<RootStackParamList, 'TransactionDetails'>;
@@ -19,7 +20,7 @@ export default function TransactionDetailsScreen() {
   const navigation = useNavigation<DetailsNavProp>();
   const route = useRoute<DetailsRouteProp>();
   const { transactionId } = route.params;
-  const { transactions, categories, accounts, refresh } = useApp();
+  const { categories, accounts, refresh } = useApp();
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -27,11 +28,17 @@ export default function TransactionDetailsScreen() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [tagNames, setTagNames] = useState<{ tag_id: number; name: string }[]>([]);
+  const [transaction, setTransaction] = useState<Transaction | null>(null);
 
-  const transaction = useMemo(
-    () => transactions.find(tx => tx.id === transactionId),
-    [transactions, transactionId]
-  );
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const data = await transactionRepository.list({});
+      if (!active) return;
+      setTransaction(data.find(tx => tx.id === transactionId) ?? null);
+    })();
+    return () => { active = false; };
+  }, [transactionId]);
 
   const category = useMemo(
     () => categories.find(cat => cat.id === transaction?.category_id),

@@ -8,8 +8,13 @@ export async function seedData(db: SQLiteDatabase) {
     );
 
     await db.runAsync(
-      `INSERT OR IGNORE INTO accounts (id, user_id, name, initial_balance, icon, color) VALUES (?, ?, ?, ?, ?, ?)`,
-      1, 1, 'My Wallet', 0, 'wallet-outline', '#22D3EE'
+      `INSERT OR IGNORE INTO accounts (id, user_id, name, initial_balance, icon, color, description, is_total) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      1, 1, 'My Wallet', 0, 'wallet-outline', '#22D3EE', 'Your default account for everyday transactions', 0
+    );
+
+    await db.runAsync(
+      `INSERT OR IGNORE INTO accounts (id, user_id, name, initial_balance, icon, color, description, is_total) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      2, 1, 'Total', 0, 'layers-outline', '#475569', 'Combined balance and transactions from all your accounts', 1
     );
 
     const categories: [number, string, string, string, string][] = [

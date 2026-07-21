@@ -10,6 +10,7 @@
 ### 1. Access and navigation
 
 - Tapping a transaction in any listing (`TransactionsScreen`, `AllTransactionsScreen`, `TransactionGroup`) navigates to `TransactionDetails` passing `transactionId` as a parameter.
+- The transaction is fetched directly from the database (not from AppContext) to ensure it works when navigating from any screen, including when the Total account is selected.
 - The screen has a back button (left arrow) in the header to return to the previous screen.
 - The header title is "Transaction details" — i18n key `details_title` (multilingual).
 
@@ -82,6 +83,7 @@ Each field is displayed in a row with a label on the left (gray, `textSecondary`
 ## Acceptance criteria
 
 - [ ] Tapping a transaction in any listing navigates to the details screen.
+- [ ] The transaction data is fetched directly from the database and displays correctly regardless of the source screen or active account.
 - [ ] The header shows a back arrow and the title "Transaction details" in the active language.
 - [ ] The "Amount" row displays the formatted amount with the type color (green income / red expense) and sign (+/-).
 - [ ] The "Account" section shows icon + account name.

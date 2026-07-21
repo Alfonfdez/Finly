@@ -305,7 +305,7 @@ Full-screen modal component for multi-select category filtering on the AllTransa
 Spec: spec/features/021-category-filter-modal/.
 
 ## 022-total-account
-Status: pending.
+Status: completed.
 
 Special "Total" account that aggregates data from all existing accounts:
 - Real DB account with `is_total = 1` flag, seeded as id=2.
@@ -313,7 +313,8 @@ Special "Total" account that aggregates data from all existing accounts:
 - AccountsScreen: Total appears as the first card in the account list.
 - ModifyAccountScreen: Total has read-only name, editable icon/color/note, no delete.
 - Balance: dynamically computed as sum of all non-total accounts.
-- Transaction screens: Total is hidden from the account selector.
+- TransactionsScreen / AllTransactionsScreen: Total is selectable in the account selector. When selected, shows all transactions across accounts.
+- AddTransactionScreen / ModifyTransactionScreen: Total is hidden from the account selector.
 - Name: not editable (fixed concept), multilingual via `account_total` i18n key.
 - `transactionRepo.totalByPeriod()`: supports `null` accountId for "all accounts" mode.
 

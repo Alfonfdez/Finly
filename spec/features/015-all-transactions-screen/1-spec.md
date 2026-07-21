@@ -30,7 +30,9 @@
 ### 3. Account selector and balance
 
 - Same as 014 (section 2).
-- The default account is the one selected on HomeScreen (`activeAccount` from `AppContext`).
+- The default account is the one selected on HomeScreen (`activeAccount` from `AppContext`), including Total.
+- **Total account behavior**: when the selected account is Total, the `account_id` filter is skipped and all transactions for the active filters are shown.
+- **AccountModal**: includes Total as a selectable option alongside all other accounts.
 - Below the account selector, the total balance is shown:
   - Formatted with `formatCurrency()`.
   - Green color with "+" prefix if positive, red with "-" prefix if negative.
@@ -101,6 +103,8 @@
 - [ ] Selecting "Expenses" shows only expense transactions; "Income" shows only income.
 - [ ] The selected account is shown with icon + name + chevron-down.
 - [ ] Pressing the account opens the modal with the account list.
+- [ ] The Total account is shown in the account selector modal.
+- [ ] When the active account is Total, the account filter is skipped and all transactions matching other filters are shown.
 - [ ] The balance updates dynamically based on all active filters (type, category, period, tags).
 - [ ] A category filter button shows "All categories" by default or "N categories" when filtered.
 - [ ] Tapping the category button opens the CategoryFilterModal (021).

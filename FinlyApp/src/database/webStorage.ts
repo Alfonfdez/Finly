@@ -43,7 +43,8 @@ export async function initWebStorage(): Promise<void> {
 function seedWebData(): void {
   const users: User[] = [{ id: 1, name: 'User', email: null, avatar: null, currency: '€', created_at: now() }];
   const accounts: Account[] = [
-    { id: 1, user_id: 1, name: 'My Wallet', initial_balance: 0, icon: 'wallet-outline', color: '#22D3EE', created_at: now() },
+    { id: 1, user_id: 1, name: 'My Wallet', initial_balance: 0, icon: 'wallet-outline', color: '#22D3EE', description: 'Your default account for everyday transactions', is_total: 0, created_at: now() },
+    { id: 2, user_id: 1, name: 'Total', initial_balance: 0, icon: 'layers-outline', color: '#475569', description: 'Combined balance and transactions from all your accounts', is_total: 1, created_at: now() },
   ];
   const categories: Category[] = [
     { id: 1, user_id: 1, name: 'Salary', icon: 'briefcase-outline', color: '#22D3EE', type: 'income', created_at: now() },
@@ -111,7 +112,10 @@ export const webAccountRepo = {
   async list(userId: number): Promise<Account[]> {
     return getStore<Account>('accounts')
       .filter(c => c.user_id === userId)
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .sort((a, b) => {
+        if ((a.is_total ?? 0) !== (b.is_total ?? 0)) return (b.is_total ?? 0) - (a.is_total ?? 0);
+        return a.name.localeCompare(b.name);
+      });
   },
   async create(data: Omit<Account, 'id' | 'created_at'>): Promise<Account> {
     const items = getStore<Account>('accounts');
@@ -128,6 +132,8 @@ export const webAccountRepo = {
   },
   async delete(id: number): Promise<void> {
     const items = getStore<Account>('accounts');
+    const target = items.find(c => c.id === id);
+    if (target?.is_total === 1) return;
     setStore('accounts', items.filter(c => c.id !== id));
     const transactions = getStore<Transaction>('transactions');
     const deletedIds = new Set(transactions.filter(t => t.account_id === id).map(t => t.id));
@@ -253,14 +259,14 @@ export const webTransactionRepo = {
       setStore('transaction_tags', tags.filter(t => !deletedIds.has(t.transaction_id)));
     }
   },
-  async totalByPeriod(accountId: number, type: TransactionType, startDate: string, endDate: string): Promise<number> {
+  async totalByPeriod(accountId: number | null, type: TransactionType, startDate: string, endDate: string): Promise<number> {
     return getStore<Transaction>('transactions')
-      .filter(t => t.account_id === accountId && t.type === type && t.date >= startDate && t.date <= endDate)
+      .filter(t => (accountId === null || t.account_id === accountId) && t.type === type && t.date >= startDate && t.date <= endDate)
       .reduce((sum, t) => sum + t.amount, 0);
   },
-  async breakdownByCategories(accountId: number, type: TransactionType, startDate: string, endDate: string): Promise<{ category_id: number; name: string; icon: string; color: string; total: number }[]> {
+  async breakdownByCategories(accountId: number | null, type: TransactionType, startDate: string, endDate: string): Promise<{ category_id: number; name: string; icon: string; color: string; total: number }[]> {
     const transactions = getStore<Transaction>('transactions')
-      .filter(t => t.account_id === accountId && t.type === type && t.date >= startDate && t.date <= endDate);
+      .filter(t => (accountId === null || t.account_id === accountId) && t.type === type && t.date >= startDate && t.date <= endDate);
     const categories = getStore<Category>('categories');
     const grouped = new Map<number, number>();
     for (const t of transactions) {

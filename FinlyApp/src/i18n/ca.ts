@@ -202,6 +202,9 @@ export const ca: Language = {
 
   // Accounts (default - multilingual)
   account_my_wallet: 'La meva cartera',
+  account_total: 'Total',
+  account_my_wallet_description: 'El vostre compte predeterminat per a transaccions del dia a dia',
+  account_total_description: 'Saldo i transaccions combinats de tots els vostres comptes',
 
   // Transactions
   transactions_title: 'Transaccions',
