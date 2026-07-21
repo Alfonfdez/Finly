@@ -1561,3 +1561,9 @@
 
 [2026-07-20] + | spec/constitution/6-screens.md
 - Added "Drawer Navigator" section: structure diagram, menu items table (icons, labels, targets), and version footer spec.
+
+[2026-07-21] ~ | spec/features/004-add-transaction-screen/1-spec.md
+- Updated category grid sorting logic: replaced alphabetical sort with usage-frequency sort (90-day window).
+- Categories with 0 transactions appear after used ones, sorted alphabetically among themselves.
+- Removed special "Other"/"Others" last-position logic — they now follow the same usage-based ranking.
+- Added 2 new acceptance criteria for usage-based sorting and zero-usage behavior.
