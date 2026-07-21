@@ -304,6 +304,21 @@ Full-screen modal component for multi-select category filtering on the AllTransa
 
 Spec: spec/features/021-category-filter-modal/.
 
+## 022-total-account
+Status: pending.
+
+Special "Total" account that aggregates data from all existing accounts:
+- Real DB account with `is_total = 1` flag, seeded as id=2.
+- HomeScreen: Total is selectable in the account selector. Shows combined transactions from all accounts.
+- AccountsScreen: Total appears as the first card in the account list.
+- ModifyAccountScreen: Total has read-only name, editable icon/color/note, no delete.
+- Balance: dynamically computed as sum of all non-total accounts.
+- Transaction screens: Total is hidden from the account selector.
+- Name: not editable (fixed concept), multilingual via `account_total` i18n key.
+- `transactionRepo.totalByPeriod()`: supports `null` accountId for "all accounts" mode.
+
+Spec: spec/features/022-total-account/.
+
 ## 001-expo-sqlite-wal-cleanup (infrastructure)
 Status: completed.
 

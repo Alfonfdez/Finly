@@ -1580,3 +1580,12 @@
 - Added 13 new categories (8 expense: Restaurants, Rent, Games, Gifts, Subscriptions, Pets, Insurance, Utilities; 5 income: Interest, Sales, Refund, Bonus, Allowance) with unique icons and colors.
 - Updated CATEGORY_I18N_KEYS map with IDs 19–31 and renamed refs for IDs 3, 14.
 - Translations added in en/es/ca for all 15 new/renamed keys.
+
+[2026-07-21] + | spec/features/022-total-account/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Created spec for the "Total" special account: real DB account with `is_total` flag, aggregates all accounts, read-only name, editable icon/color/note, no delete. 11 tasks in 3 phases.
+
+[2026-07-21] ~ | spec/features/002-db-design/1-spec.md, spec/features/011-accounts-screen/1-spec.md, spec/features/012-modify-delete-account-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Updated 002-db-design: added `is_total INTEGER NOT NULL DEFAULT 0` to accounts schema, updated seed description.
+- Updated 011-accounts-screen: Total account appears first in the list, added acceptance criteria.
+- Updated 012-modify-delete-account-screen: added Total account behavior (read-only name, hidden delete), added acceptance criterion.
+- Added 022-total-account to roadmap with pending status.

@@ -21,12 +21,13 @@
 
 ### 3. Account list
 
-- Below the total, a list (FlatList or ScrollView) is displayed with one row per account.
+- Below the total, a list (FlatList or ScrollView) is displayed with one row per account, **including the Total account** (id=2, `is_total=1`).
+- The Total account always appears **first** in the list (sorted by `is_total DESC, name`).
 - Each row contains:
   - **First row** (always visible): account icon with its background color on the left, account name in the center, current balance formatted with the active currency on the right.
   - **Second row** (only if the account has a note): note text below the name, in `textoSuave` color and reduced size, spanning the available width.
 - The full row is a `TouchableOpacity` that navigates to `ModifyAccountScreen` (012) with `accountId` as a parameter when pressed.
-- If there are no accounts, an empty state is shown with an icon and message.
+- If there are no accounts (except the Total account), an empty state is shown with an icon and message. The Total account is always present in the seed data.
 
 ### 4. Default account name (multilingual)
 
@@ -73,6 +74,8 @@
 - [ ] Pressing an account navigates to "Modify account" (012) with the `accountId`.
 - [ ] If there are no accounts, an empty state is shown.
 - [ ] The default account "My Wallet" is displayed translated according to the active language (e.g. es "Mi Cartera", ca "La meva cartera") via `getDisplayAccountName`.
+- [ ] The Total account appears first in the accounts list with its icon and total balance.
+- [ ] Tapping the Total account navigates to "Modify account" (012) with the Total account's id.
 - [ ] The floating "+" button navigates to "Create account" (013).
 - [ ] All texts change when switching language.
 - [ ] The screen respects the active theme and text size.
