@@ -1574,3 +1574,9 @@
 - Returns categories sorted by transaction count descending (90-day window), then alphabetically for ties.
 - AddTransactionScreen: replaced `sortCategoriesWithOthersLast` alphabetical sort with usage-frequency sort via `useFocusEffect` + `useMemo`.
 - "Other"/"Others" now follow the same usage-based ranking (no special position).
+
+[2026-07-21] ~ | src/database/migrations/002_seed.ts, src/database/webStorage.ts, src/i18n/en.ts, src/i18n/es.ts, src/i18n/ca.ts, src/i18n/index.ts
+- Category expansion: renamed Food→Groceries (id:3, basket-outline, #F87171) and Exercise→Workout (id:14, barbell-outline, #22D3EE).
+- Added 13 new categories (8 expense: Restaurants, Rent, Games, Gifts, Subscriptions, Pets, Insurance, Utilities; 5 income: Interest, Sales, Refund, Bonus, Allowance) with unique icons and colors.
+- Updated CATEGORY_I18N_KEYS map with IDs 19–31 and renamed refs for IDs 3, 14.
+- Translations added in en/es/ca for all 15 new/renamed keys.
