@@ -5,14 +5,14 @@
 
 - **Functional requirements**
   1. Local user (single default user, `id = 1`) with name, email, avatar, and currency.
-  2. Full CRUD for accounts: each account belongs to a user, has a name, initial balance, icon, color, and optional description.
+  2. Full CRUD for accounts: each account belongs to a user, has a name, initial balance, icon, color, optional description, and an `is_total` flag (0=regular, 1=special "Total" account that aggregates all accounts).
   3. Full CRUD for categories: each category belongs to a user, has a name, icon, color, and type (`expense` / `income`).
   4. Full CRUD for transactions: each transaction belongs to an account and a category, has a type (`expense` / `income`), amount, description, date, and an `updated_at` column.
   5. Full CRUD for tags (global, not tied to a type) and a `transaction_tags` junction table (many-to-many) for tagging transactions.
   6. Key-value `config` table that stores user preferences (theme, language, currency, first day of week, text size, decimal separator, icon shapes).
   7. Efficient queries by period (day, week, month, year, custom range) and by type (`expense` / `income`).
   8. Aggregations: total income and expenses by period, breakdown by categories with percentages, breakdown by category and tag.
-   9. Initial loading of default data (one user, one account "My Wallet", 31 universal categories, empty transactions and tags) when the database is created for the first time. The default account name "My Wallet" is stored in English and translated at display time via `getDisplayAccountName` (key `account_my_wallet`: en `My Wallet`, es `Mi Cartera`, ca `La meva cartera`).
+   9. Initial loading of default data (one user, two accounts "My Wallet" and "Total", 31 universal categories, empty transactions and tags) when the database is created for the first time. The default account name "My Wallet" is stored in English and translated at display time via `getDisplayAccountName` (key `account_my_wallet`: en `My Wallet`, es `Mi Cartera`, ca `La meva cartera`). The Total account (`is_total=1`) is a special aggregate account whose name "Total" is also translated at display time (key `account_total`: en/es/ca `Total`).
 
 - **Contents**
   SQL schema of the tables, initialization script, CRUD functions in TypeScript (repositories), and a web localStorage fallback.
@@ -50,6 +50,7 @@ CREATE TABLE accounts (
   icon TEXT NOT NULL DEFAULT 'wallet',
   color TEXT NOT NULL DEFAULT '#22D3EE',
   description TEXT DEFAULT '',
+  is_total INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

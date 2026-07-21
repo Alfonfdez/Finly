@@ -18,6 +18,7 @@
 - Title: "Account name" (multilingual).
 - Text input with the current account name.
 - Maximum 30 characters with a "0/30" counter.
+- **Total account (id=2, `is_total=1`)**: the name field is **read-only** (disabled). Shows the i18n "Total" in the active language. Validation and duplicate checks are skipped.
 - **Validation**: empty name is not allowed. If empty, a red error text is shown and the "Save" button remains disabled.
 - **Duplicate validation**: when editing the name, it checks that no other account already exists with the same name (case-insensitive), **excluding the current account**. Keeping the same name should not trigger an error; only if the new name matches a different account.
   - "Account", "account" and "ACCOUNT" are considered duplicates.
@@ -94,6 +95,7 @@
 
 ### 6. "Delete" Button
 
+- **Total account (id=2, `is_total=1`)**: the "Delete" button is **hidden entirely**. The Total account cannot be deleted.
 - "Delete" button (multilingual) with red style (`c.red`), located before the "Save" button.
 - **Last account protection**: when the account being edited is the only account in the database (account count ≤ 1), the "Delete" button is **disabled**:
   - The button border and icon/text use the secondary text color (`c.textSecondary`) and the button has reduced opacity (`0.5`).
@@ -160,5 +162,6 @@
 - [ ] The red "Delete" button opens a confirmation modal with "Cancel" and "Delete".
 - [ ] When tapping "Delete" in the modal, the account transactions are deleted, the account is deleted, the list is refreshed, and navigation returns.
 - [ ] When the account is the last one remaining, the "Delete" button is disabled (secondary color, reduced opacity, not tappable) and a hint explaining it cannot be deleted is shown.
+- [ ] When the account is the Total account (id=2, `is_total=1`), the name field is read-only, the "Delete" button is hidden, and save updates only icon/color/note.
 - [ ] All texts change when switching language.
 - [ ] The screen respects the active theme and text size.
