@@ -51,16 +51,15 @@ Schema created in a single pass (`createSchema` → `seedData` → `seedConfig`)
 Spec: spec/features/002-db-design/.
 
 ## 003-settings-screen
-Status: completed.
+Status: updated (spec ready, pending implementation).
 
-Settings screen with 5 sections:
-- Appearance: Dark / Light / System theme with real-time switching.
-- Calendar: first day of the week (Monday / Sunday).
-- Currency format: currency (Euro / Dollar / Pound / Yen) and decimal separator (comma / dot).
-- Language: English / Español / Català with flag icons.
-- Text size: Small / Medium / Large.
+Restructured Settings screen with 4 subsections:
+- Appearance: Theme, Text size, Account icon shape, Category icon shape.
+- Regional: Language, Currency, Decimal separator, First day of week.
+- Personalization: Home screen defaults (account, period), Add transaction defaults (account, optional fields), Privacy (hide account balances with eye icon).
+- Data: Delete all transactions, Delete all data (double confirmation).
 
-Persistent config in SQLite (native) or localStorage (web).
+Persistent config in SQLite (native) or localStorage (web). 7 new config fields.
 
 Spec: spec/features/003-settings-screen/.
 

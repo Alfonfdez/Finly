@@ -1,94 +1,118 @@
-# Tasks — 003 Settings page
+# Tasks — 003 Settings page (restructure)
 Execution order. Mark each task when completed.
 
 ---
 
-### Phase 1 — Settings infrastructure
+### Phase 1 — Config infrastructure
 
-[ ] T1 — Create `src/constants/themes.ts` with `coloresDark` (current palette) and `coloresLight` (light palette with white backgrounds, dark text, cyan-600 primary). Export `PaletaColores` type.
+[ ] T1 — Add 7 new fields to `Config` interface in `src/context/ConfigContext.tsx`: `homeDefaultAccountId`, `homeDefaultPeriod`, `addDefaultAccountId`, `addShowLabels`, `addShowComments`, `addShowPhoto`, `hideBalances`. Update `CONFIG_DEFAULT` with sensible defaults.
 
-[ ] T2 — Create `src/context/ConfigContext.tsx` with `Configuracion` interface (theme, primerDiaSemana, currency, decimalSeparator, language, text size) and default values. Implement `ConfigProvider` that loads settings on mount and persists on change. Exposes `config` and `actualizarConfig()`.
-
-[ ] T3 — Create `src/database/migrations/003_configuracion.ts` with `CREATE TABLE IF NOT EXISTS configuracion (clave TEXT PRIMARY KEY, valor TEXT)`. Insert default values if the table is empty.
-
-[ ] T4 — Create `src/database/repositories/configRepo.ts` with `obtenerConfig(): Configuracion` and `guardarConfig(partial: Partial<Configuracion>)`. Also implement the web version with localStorage key `finly_config`.
-
-[ ] T5 — Update `src/database/index.ts` to export `configRepository` with the same interface on both platforms (SQLite native, localStorage web).
-
-[ ] T6 — Wrap the app with `ConfigProvider` in `App.tsx` (alongside `AppProvider`). Ensure settings are loaded before the first render (loading state).
+[ ] T2 — Add new config defaults to `src/database/migrations/003_config.ts` (SQLite) and `src/database/webStorage.ts` (localStorage). Ensure new fields are persisted and loaded correctly.
 
 ---
 
-### Phase 2 — Settings screen
+### Phase 2 — Settings navigation restructure
 
-[ ] T7 — Update `src/constants/types.ts`: add `Configuracion` to the root stack type and create `SettingsScreenProps`. Add `SettingsScreen` to `HomeStack` in `AppNavigator.tsx` with title "Settings" and headerStyle/headerTintColor.
+[ ] T3 — Create `src/screens/settings/` folder. Move existing `SettingsScreen.tsx` to `src/screens/settings/SettingsScreen.tsx` (rename old file to be replaced).
 
-[ ] T8 — Connect the "Settings" DrawerItem in `AppNavigator.tsx` to navigate to `SettingsScreen` (replace `onPress={() => {}}`).
+[ ] T4 — Rewrite `src/screens/settings/SettingsScreen.tsx` as the main subsection list: 4 rows (Appearance, Regional, Personalization, Data) with icons, labels, and chevron-right. Each row navigates to the corresponding detail screen.
 
-[ ] T9 — Create `src/screens/SettingsScreen.tsx` with 5 sections: Appearance (theme), Calendar (first day), Money format (currency, separator), Language, Text (size). Each section uses a `View` with a header and `TouchableOpacity` rows showing the current value and a selection indicator (checkmark).
+[ ] T5 — Update `src/constants/types.ts`: add `SettingsAppearance`, `SettingsRegional`, `SettingsPersonalization`, `SettingsData` to `RootStackParamList` with `undefined` params. Add corresponding screen props types.
 
-[ ] T10 — Implement selection logic in each row: when tapped, a sub-selector (inline or modal) shows the available options. The selected value is saved immediately in `ConfigContext`.
-
----
-
-### Phase 3 — Theme integration
-
-[ ] T11 — Modify `SettingsScreen.tsx` to use the active theme's color palette (read from `ConfigContext` + `themes.ts`). Verify it looks correct in both dark and light mode.
-
-[ ] T12 — Modify `AppNavigator.tsx` so the Drawer and Stack headers use the active theme palette instead of importing `colores` directly.
+[ ] T6 — Update `src/navigation/AppNavigator.tsx`: register 4 new screens in HomeStack with `headerShown: false`. Update existing Settings route to point to new `settings/SettingsScreen.tsx`.
 
 ---
 
-### Phase 4 — Calendar
+### Phase 3 — Appearance subsection
 
-[ ] T13 — Modify `DayPicker.tsx`: accept `primerDia` as a prop. Fix the alignment bug: headers and grid must use the same offset calculation. With `primerDia=1` (Monday), headers are `Mo Tu We Th Fr Sa Su`; with `primerDia=0` (Sunday), headers are `Su Mo Tu We Th Fr Sa`.
+[ ] T7 — Create `src/screens/settings/AppearanceScreen.tsx`. Custom header (back arrow + "Appearance" title). Theme selector (Dark/Light/System), Text size selector (Small/Medium/Large), Account icon shape (Square/Circle), Category icon shape (Square/Circle). Reuse `SelectorInline` component pattern from current SettingsScreen.
 
-[ ] T14 — Modify `WeekPicker.tsx`: accept `primerDia` as a prop and pass it to `inicioDeSemana`/`finDeSemana`.
-
-[ ] T15 — Update `AppContext.tsx` so `CalendarPicker` receives `config.primerDiaSemana` from `ConfigContext`.
+[ ] T8 — Add i18n keys: `settings_appearance`, `settings_personalization`, `settings_data`, `settings_regional` (section titles) in en/es/ca.
 
 ---
 
-### Phase 5 — Money format and language
+### Phase 4 — Regional subsection
 
-[ ] T16 — Modify `formatearMoneda` in `src/utils/formatters.ts` to accept `currency` and `decimalSeparator` parameters. With separator `,`: use `toLocaleString('es-ES')` or manual formatting with `.` for thousands and `,` for decimal. With separator `.`: use `toLocaleString('en-US')` or manual formatting with `,` for thousands and `.` for decimal.
-
-[ ] T17 — Create `src/i18n/es.ts` and `src/i18n/en.ts` with UI texts (tabs, buttons, placeholders, month names, days of the week). Create a `t(key)` helper that reads `config.idioma`.
-
-[ ] T18 — Update `DayPicker.tsx` so day headers use the configured language (e.g., `Lu` → `Mo` in English).
-
-[ ] T19 — Update `obtenerNombreMes` and `obtenerNombreMesAbrev` in `formatters.ts` to accept language and return names in Spanish or English based on config.
+[ ] T9 — Create `src/screens/settings/RegionalScreen.tsx`. Custom header (back arrow + "Regional" title). Language selector (EN/ES/CA with flags), Currency selector (€/$/£/¥), Decimal separator (Comma/Period), First day of week (Monday/Sunday). Reuse `SelectorInline` component pattern.
 
 ---
 
-### Phase 6 — Text size
+### Phase 5 — Personalization > Home screen defaults
 
-[ ] T20 — Add `escalarFontSize(size: number, config: Configuracion): number` function in `formatters.ts` that applies the scale factor (Small=0.85, Medium=1.0, Large=1.15).
+[ ] T10 — Create `src/screens/settings/PersonalizationScreen.tsx` with custom header (back arrow + "Personalization" title).
 
-[ ] T21 — Apply `escalarFontSize` in `SettingsScreen.tsx` as a proof of concept. Existing components will be incrementally migrated in future features.
+[ ] T11 — Add "Home screen" subtitle section. Default account selector: lists ALL accounts (including Total), sorted with Total first. Default = Total. Reads/writes `config.homeDefaultAccountId`.
 
----
+[ ] T12 — Default period selector: Day/Week/Month/Year. Default = Month. Reads/writes `config.homeDefaultPeriod`. No "Period" (custom range) option.
 
-### Phase 7 — Category icon shape
-
-[ ] T22 — Add field `categoryIconShape: 'square' | 'circle'` with default `'square'` to the `Config` type in `ConfigContext.tsx`. Add i18n keys `settings_category_icon_shape`, `shape_square`, `shape_circle` in all 3 languages.
-
-[ ] T23 — Add "Category icon shape" section in `SettingsScreen.tsx` with a shape selector (Square/Circle). Use `updateConfig({ categoryIconShape })` on change.
-
-[ ] T24 — Update components that render category icons (`CategoryGrid`, `CategoryList`, grid in `CategoriesScreen`, grid in `AddCategoryScreen`, inline grid in `CreateCategoryScreen`, preview in `ModifyCategoryScreen`, category icon in transaction details) to read `config.categoryIconShape` and apply square (12) or circular (half the size) `borderRadius`.
+[ ] T13 — Add i18n keys: `settings_home_screen`, `settings_add_transaction`, `settings_privacy`, `settings_default_account`, `settings_default_period`, `settings_not_selected` in en/es/ca.
 
 ---
 
-### Phase 8 — Account icon shape
+### Phase 6 — Personalization > Add transaction defaults
 
-[ ] T25 — Add field `accountIconShape: 'square' | 'circle'` with default `'square'` to the `Config` type in `ConfigContext.tsx`. Add i18n key `settings_account_icon_shape` in all 3 languages.
+[ ] T14 — Add "Add transaction" subtitle section in PersonalizationScreen. Default account selector: lists accounts EXCLUDING Total, sorted alphabetically. Default = "Not selected" (`null`). Reads/writes `config.addDefaultAccountId`.
 
-[ ] T26 — Add "Account icon shape" section in `SettingsScreen.tsx` with a shape selector (Square/Circle). Use `updateConfig({ accountIconShape })` on change.
+[ ] T15 — Add "Optional fields" subsection with 3 checkboxes: Labels, Comments, Photo. All checked by default. Each checkbox reads/writes the corresponding `config.addShowLabels`, `config.addShowComments`, `config.addShowPhoto`.
 
-[ ] T27 — Update components that render account icons (`AccountsScreen`, `HomeScreen`, `AccountSelector`, `AccountModal`, grid in `CreateAccountScreen`, grid in `ModifyAccountScreen`) to read `config.accountIconShape` and apply square (12) or circular (half the size) `borderRadius`.
+[ ] T16 — Add i18n keys: `settings_optional_fields`, `settings_labels`, `settings_comments`, `settings_photo` in en/es/ca.
+
+---
+
+### Phase 7 — Personalization > Privacy
+
+[ ] T17 — Add "Privacy" subtitle section in PersonalizationScreen. Toggle: "Hide account balances" (default: off). Reads/writes `config.hideBalances`.
+
+[ ] T18 — Add i18n keys: `settings_hide_balances` in en/es/ca.
+
+---
+
+### Phase 8 — Privacy eye icon implementation
+
+[ ] T19 — Create `src/components/EyeToggle.tsx`: small eye icon button (`eye-outline` / `eye-off-outline`). Props: `isHidden: boolean`, `onToggle: () => void`.
+
+[ ] T20 — Implement eye icon in `HomeScreen.tsx`: add `isRevealed` state + `useFocusEffect` reset. EyeToggle next to balance amount. Balance masked with `•••••` when hidden.
+
+[ ] T21 — Implement eye icon in `AccountsScreen.tsx`: `isRevealed` state + reset. EyeToggle in total header row. All account balances in list masked when hidden.
+
+[ ] T22 — Implement eye icon in `AccountModal.tsx`: `isRevealed` state + reset. EyeToggle in modal header. Account balances in list masked when hidden.
+
+[ ] T23 — Verify eye icon does NOT appear in TransactionDetailsScreen, AddTransactionScreen, or ModifyTransactionScreen (amounts always visible there).
+
+---
+
+### Phase 9 — Apply personalization defaults
+
+[ ] T24 — Update `HomeScreen.tsx`: on mount, if `homeDefaultAccountId` is set (not null), initialize `activeAccount` to that account. If `homeDefaultAccountId` is null, preserve current behavior.
+
+[ ] T25 — Update `HomeScreen.tsx`: on mount, if `homeDefaultPeriod` is set, initialize `activePeriod` to that value.
+
+[ ] T26 — Update `AddTransactionScreen.tsx`: initialize `accountId` based on `addDefaultAccountId`. If null, use current logic (inherit from HomeScreen; if Total, fallback to first non-Total). If set to a specific account, use that account.
+
+[ ] T27 — Update `AddTransactionScreen.tsx`: conditionally hide Labels, Comments, and Photo sections based on `config.addShowLabels`, `config.addShowComments`, `config.addShowPhoto`.
+
+[ ] T28 — Update `ModifyTransactionScreen.tsx`: same optional fields logic as AddTransactionScreen.
+
+---
+
+### Phase 10 — Data subsection
+
+[ ] T29 — Create `src/screens/settings/DataScreen.tsx` with custom header (back arrow + "Data" title). Two rows: "Delete all transactions" (trash-outline, red) and "Delete all data" (warning-outline, red). Each with chevron-right.
+
+[ ] T30 — Implement "Delete all transactions" confirmation modal. Title, message, Cancel/Delete buttons. On confirm: delete all rows from `transactions` and `transaction_tags`. Show toast/snackbar confirmation.
+
+[ ] T31 — Implement "Delete all data" double confirmation modal. First modal: title, message, Cancel/Delete all. Second modal: title, message, text input ("DELETE"), Cancel/Confirm (disabled until correct text). On confirm: clear all data, re-seed defaults.
+
+[ ] T32 — Add i18n keys: `settings_delete_all_transactions`, `settings_delete_all_data`, `settings_delete_transactions_confirm_title`, `settings_delete_transactions_confirm_message`, `settings_delete_data_confirm_title`, `settings_delete_data_confirm_message`, `settings_delete_data_confirm_title2`, `settings_delete_data_confirm_message2`, `settings_delete_data_confirm_placeholder`, `settings_delete_confirm`, `settings_delete_all_transactions_done`, `settings_delete_all_data_done` in en/es/ca.
+
+[ ] T33 — Implement native deletion logic: `DELETE FROM transactions`, `DELETE FROM transaction_tags` for transactions; full clear + `seedData()` + `seedConfig()` for factory reset.
+
+[ ] T34 — Implement web deletion logic: `removeStore('transactions')`, `removeStore('transaction_tags')` for transactions; full clear + `seedWebData()` for factory reset.
 
 ---
 
 ### Verification
 
-[ ] T28 — Manual verification: `npx expo start --web` and `npx expo start` (Expo Go). Test all acceptance criteria from `1-spec.md`. Verify persistence across restarts.
+[ ] T35 — Lint check: `npx expo lint` — 0 errors, 0 warnings.
+
+[ ] T36 — Manual verification: navigate to each subsection, change settings, verify persistence on restart. Test eye icon reveal/reset. Test delete flows. Test Add transaction default account behavior. Test optional fields visibility. Validate all acceptance criteria from `1-spec.md`.

@@ -1695,3 +1695,15 @@
 
 [2026-07-21] ~ | src/screens/AccountsScreen.tsx
 - Account list shows translated description via getDisplayAccountDescription() instead of raw DB value.
+
+[2026-07-22] ~ | spec/features/003-settings-screen/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Complete rewrite of Settings spec. Restructured from flat 7-section layout to 4 subsections (Appearance, Regional, Personalization, Data) with navigation to detail screens.
+- Added Personalization: Home screen defaults (default account with Total, default period), Add transaction defaults (default account without Total, optional fields checkboxes), Privacy (hide account balances with eye icon toggle).
+- Added Data: Delete all transactions (single confirmation modal), Delete all data (double confirmation modal with text input).
+- Added 7 new config fields: homeDefaultAccountId, homeDefaultPeriod, addDefaultAccountId, addShowLabels, addShowComments, addShowPhoto, hideBalances.
+- Added eye icon behavior: symmetric reveal/hide that resets on navigation (temporary override of privacy setting).
+- Added ~30 new i18n keys for subsection titles, option labels, and confirmation messages.
+- 36 tasks in 10 phases.
+
+[2026-07-22] ~ | spec/constitution/3-roadmap.md
+- Updated 003-settings-screen status to "updated (spec ready, pending implementation)". Updated description with new subsection structure.
