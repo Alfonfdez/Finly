@@ -7,7 +7,7 @@ Execution order. All tasks completed.
 
 [x] T3 — Write `migrations/001_initial.ts` (`createSchema`): CREATE TABLE for users, accounts, categories, transactions, tags, transaction_tags, config + indexes.
 
-[x] T4 — Write `migrations/002_seed.ts` (`seedData`): insert default user, "My Wallet" account, and 18 universal categories (INSERT OR IGNORE).
+[x] T4 — Write `migrations/002_seed.ts` (`seedData`): insert default user, "My Wallet" account, and 31 universal categories (INSERT OR IGNORE).
 
 [x] T5 — Write `migrations/003_config.ts` (`seedConfig`): insert config defaults including theme, first_day_of_week, currency, decimal_separator, language, text_size, category_icon_shape, account_icon_shape.
 
