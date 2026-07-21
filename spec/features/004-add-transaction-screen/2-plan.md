@@ -68,10 +68,11 @@ Reusable component (already exists `TypeTabs.tsx`). Receives `tipo` and `onChang
 
 ### CategoryGrid
 
-- Receives `categorias: Categoria[]` (the 7 most used) and `onSelect(id)`.
+- Receives `categories: Category[]` (sorted by usage frequency, 90-day window) and `onSelect(id)`.
 - 4×2 grid: 7 categories + 1 "More" button.
-- Each cell displays an icon (emoji or component) + name below.
+- Each cell displays an icon + name below.
 - The "More" button has a "+" icon and "More" text.
+- Sorting: transaction count descending (90-day window), then alphabetical for ties/zero-usage. No special position for "Other"/"Others".
 
 ### DaySelector
 

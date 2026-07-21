@@ -43,8 +43,13 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 
 - Title: "Categories" (multilingual).
 - 4-column × 2-row grid (8 positions):
-  - The first 7 positions show the most used categories (icon + name below).
+  - The first 7 positions show categories sorted by **usage frequency** (most used first) within a **90-day window** from today.
+  - Categories with 0 transactions in the last 90 days appear after used categories, sorted alphabetically among themselves.
   - The eighth position always shows a "+" icon with the text "More" (multilingual).
+- Sorting logic:
+  - Primary sort: transaction count descending (categories used more often appear first).
+  - Secondary sort (ties or 0 usage): alphabetical by name.
+  - No special treatment for "Other" or "Others" — they follow the same usage-based ranking.
 - When tapping "More":
   - If the active type has **more than 7 categories**: the "Add category" screen opens to select from existing ones.
   - If the active type has **7 or fewer categories**: the "Create category" screen opens directly to create a new one.
@@ -145,7 +150,9 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - [x] The calculator icon is visible but not functional (TODO).
 - [x] The displayed account matches the one selected in Home.
 - [x] The account modal allows changing the selected account.
-- [x] 7 most used categories are displayed in a 4×2 grid + "More" button.
+- [x] 7 categories sorted by usage frequency (last 90 days) are displayed in a 4×2 grid + "More" button.
+- [x] Categories with 0 transactions appear after used ones, alphabetically sorted.
+- [x] "Other" and "Others" follow the same usage-based ranking (no special position).
 - [x] The "More" button is always visible: with >7 categories navigates to Add category, with ≤7 navigates directly to Create category.
 - [x] The 3 days show the correct dates according to the described rule.
 - [x] The calendar button opens the day selection modal.
