@@ -17,6 +17,7 @@ export interface Account {
   icon: string;
   color: string;
   description?: string;
+  is_total?: number;
   created_at: string;
 }
 

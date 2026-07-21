@@ -60,7 +60,7 @@ export default function AllTransactionsScreen() {
   const fs = useFontSize();
   const labels = t();
 
-  const [selectedAccountId, setSelectedAccountId] = useState(activeAccount?.id ?? accounts[0]?.id ?? 1);
+  const [selectedAccountId, setSelectedAccountId] = useState(activeAccount?.id ?? accounts.find(a => (a.is_total ?? 0) !== 1)?.id ?? 1);
   const [accountModalVisible, setAccountModalVisible] = useState(false);
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -68,6 +68,11 @@ export default function AllTransactionsScreen() {
   const [loading, setLoading] = useState(true);
   const [tagsByTransaction, setTagsByTransaction] = useState<Map<number, { tag_id: number; name: string }[]>>(new Map());
   const [localTagIds, setLocalTagIds] = useState<number[]>([]);
+
+  const isTotal = useMemo(
+    () => accounts.find(a => a.id === selectedAccountId)?.is_total === 1,
+    [accounts, selectedAccountId]
+  );
 
   const [typeTab, setTypeTab] = useState<'all' | TransactionType>('all');
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
@@ -151,7 +156,9 @@ export default function AllTransactionsScreen() {
   );
 
   const filtered = useMemo(() => {
-    let list = allTransactions.filter(t => t.account_id === selectedAccountId);
+    let list = isTotal
+      ? [...allTransactions]
+      : allTransactions.filter(t => t.account_id === selectedAccountId);
 
     if (typeTab !== 'all') {
       list = list.filter(t => t.type === typeTab);
@@ -188,7 +195,7 @@ export default function AllTransactionsScreen() {
       return sortDirection === 'desc' ? -diff : diff;
     });
     return sorted;
-  }, [allTransactions, selectedAccountId, typeTab, selectedCategoryIds, periodDates, sortBy, sortDirection, localTagIds, tagsByTransaction]);
+  }, [allTransactions, selectedAccountId, isTotal, typeTab, selectedCategoryIds, periodDates, sortBy, sortDirection, localTagIds, tagsByTransaction]);
 
   const sections = useMemo(() => {
     const grouped = new Map<string, Transaction[]>();

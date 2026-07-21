@@ -8,7 +8,7 @@ import { useNavigation, DrawerActions, useFocusEffect } from '@react-navigation/
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t, getDisplayAccountName } from '../i18n';
+import { t, getDisplayAccountName, getDisplayAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
 import { Account } from '../database/types';
 import { formatCurrency } from '../utils/formatters';
@@ -77,7 +77,7 @@ export default function AccountsScreen() {
             style={[styles.accountNote, { color: c.textSecondary, fontSize: fs(12) }]}
             numberOfLines={1}
           >
-            {item.description}
+            {getDisplayAccountDescription(item)}
           </Text>
         ) : null}
       </View>

@@ -132,18 +132,19 @@ export const transactionRepo = {
   },
 
   async totalByPeriod(
-    accountId: number,
+    accountId: number | null,
     type: TransactionType,
     startDate: string,
     endDate: string
   ): Promise<number> {
     const db = getDatabase();
-    const result = await db.getFirstAsync<TotalByPeriod>(
-      `SELECT COALESCE(SUM(amount), 0) AS total
-       FROM transactions
-       WHERE account_id = ? AND type = ? AND date >= ? AND date <= ?`,
-      accountId, type, startDate, endDate
-    );
+    const sql = accountId !== null
+      ? `SELECT COALESCE(SUM(amount), 0) AS total FROM transactions WHERE account_id = ? AND type = ? AND date >= ? AND date <= ?`
+      : `SELECT COALESCE(SUM(amount), 0) AS total FROM transactions WHERE type = ? AND date >= ? AND date <= ?`;
+    const params = accountId !== null
+      ? [accountId, type, startDate, endDate]
+      : [type, startDate, endDate];
+    const result = await db.getFirstAsync<TotalByPeriod>(sql, ...params);
     return result?.total ?? 0;
   },
 
@@ -167,21 +168,29 @@ export const transactionRepo = {
   },
 
   async breakdownByCategories(
-    accountId: number,
+    accountId: number | null,
     type: TransactionType,
     startDate: string,
     endDate: string
   ): Promise<CategoryBreakdown[]> {
     const db = getDatabase();
-    return await db.getAllAsync<CategoryBreakdown>(
-      `SELECT t.category_id, c.name, c.icon, c.color, SUM(t.amount) AS total
-       FROM transactions t
-       INNER JOIN categories c ON t.category_id = c.id
-       WHERE t.account_id = ? AND t.type = ? AND t.date >= ? AND t.date <= ?
-       GROUP BY t.category_id
-       ORDER BY total DESC`,
-      accountId, type, startDate, endDate
-    );
+    const sql = accountId !== null
+      ? `SELECT t.category_id, c.name, c.icon, c.color, SUM(t.amount) AS total
+         FROM transactions t
+         INNER JOIN categories c ON t.category_id = c.id
+         WHERE t.account_id = ? AND t.type = ? AND t.date >= ? AND t.date <= ?
+         GROUP BY t.category_id
+         ORDER BY total DESC`
+      : `SELECT t.category_id, c.name, c.icon, c.color, SUM(t.amount) AS total
+         FROM transactions t
+         INNER JOIN categories c ON t.category_id = c.id
+         WHERE t.type = ? AND t.date >= ? AND t.date <= ?
+         GROUP BY t.category_id
+         ORDER BY total DESC`;
+    const params = accountId !== null
+      ? [accountId, type, startDate, endDate]
+      : [type, startDate, endDate];
+    return await db.getAllAsync<CategoryBreakdown>(sql, ...params);
   },
 
   async breakdownByCategoryAndTag(

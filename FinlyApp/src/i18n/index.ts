@@ -52,6 +52,13 @@ const CATEGORY_I18N_KEYS: Record<number, keyof Language> = {
 // Map account IDs to i18n keys for default accounts
 const ACCOUNT_I18N_KEYS: Record<number, keyof Language> = {
   1: 'account_my_wallet',
+  2: 'account_total',
+};
+
+// Map account IDs to i18n keys for default account descriptions
+const ACCOUNT_DESCRIPTION_I18N_KEYS: Record<number, keyof Language> = {
+  1: 'account_my_wallet_description',
+  2: 'account_total_description',
 };
 
 export function getCategoryName(categoryId: number): string {
@@ -122,4 +129,28 @@ export function getAllDefaultAccountNames(): Set<string> {
     }
   }
   return names;
+}
+
+export function getDisplayAccountDescription(account: { id: number; description: string }): string {
+  const key = ACCOUNT_DESCRIPTION_I18N_KEYS[account.id];
+  if (key && en[key] && account.description === en[key]) {
+    return currentLanguage[key] as string;
+  }
+  return account.description;
+}
+
+export function getDefaultEnglishAccountDescription(accountId: number): string | null {
+  const key = ACCOUNT_DESCRIPTION_I18N_KEYS[accountId];
+  if (key && en[key]) {
+    return en[key] as string;
+  }
+  return null;
+}
+
+export function getAccountDescription(accountId: number): string {
+  const key = ACCOUNT_DESCRIPTION_I18N_KEYS[accountId];
+  if (key) {
+    return currentLanguage[key] as string;
+  }
+  return '';
 }

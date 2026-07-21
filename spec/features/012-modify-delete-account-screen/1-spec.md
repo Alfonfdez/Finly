@@ -91,7 +91,13 @@
 - Maximum 200 characters with a "0/200" counter.
 - Default value: empty or the current `description` value if the account has one.
 
-> Note: the `description` field currently does not exist in the `accounts` table. It will be added as an optional column via a migration.
+#### Default Descriptions (multilingual)
+
+- Default accounts (My Wallet id=1, Total id=2) have a stored English description in the seed data.
+- `ACCOUNT_DESCRIPTION_I18N_KEYS` maps account ids to i18n keys (`account_my_wallet_description`, `account_total_description`).
+- When the stored description matches the English default, `getDisplayAccountDescription(account)` returns the i18n translation instead.
+- Users can edit the description freely. Once edited (no longer matches English default), the literal user text is shown.
+- Non-default accounts always show their stored description as-is (or empty).
 
 ### 6. "Delete" Button
 

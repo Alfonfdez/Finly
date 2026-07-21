@@ -34,7 +34,7 @@ export default function TransactionsScreen() {
   const endDate = route.params?.endDate;
   const tagIds = route.params?.tagIds;
 
-  const [selectedAccountId, setSelectedAccountId] = useState(activeAccount?.id ?? accounts[0]?.id ?? 1);
+  const [selectedAccountId, setSelectedAccountId] = useState(activeAccount?.id ?? accounts.find(a => (a.is_total ?? 0) !== 1)?.id ?? 1);
   const [accountModalVisible, setAccountModalVisible] = useState(false);
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -42,6 +42,11 @@ export default function TransactionsScreen() {
   const [loading, setLoading] = useState(true);
   const [tagsByTransaction, setTagsByTransaction] = useState<Map<number, { tag_id: number; name: string }[]>>(new Map());
   const [localTagIds, setLocalTagIds] = useState<number[]>(() => tagIds ?? []);
+
+  const isTotal = useMemo(
+    () => accounts.find(a => a.id === selectedAccountId)?.is_total === 1,
+    [accounts, selectedAccountId]
+  );
 
   const handleToggleTag = useCallback((id: number) => {
     setLocalTagIds(prev => {
@@ -104,7 +109,9 @@ export default function TransactionsScreen() {
   }, [allTransactions]);
 
   const filtered = useMemo(() => {
-    let list = allTransactions.filter(t => t.account_id === selectedAccountId);
+    let list = isTotal
+      ? [...allTransactions]
+      : allTransactions.filter(t => t.account_id === selectedAccountId);
     if (localTagIds.length > 0) {
       const hasUntagged = localTagIds.includes(-1);
       const regularIds = localTagIds.filter(id => id !== -1);
@@ -124,7 +131,7 @@ export default function TransactionsScreen() {
       return sortDirection === 'desc' ? -diff : diff;
     });
     return sorted;
-  }, [allTransactions, selectedAccountId, sortBy, sortDirection, localTagIds, tagsByTransaction]);
+  }, [allTransactions, selectedAccountId, isTotal, sortBy, sortDirection, localTagIds, tagsByTransaction]);
 
   const sections = useMemo(() => {
     const grouped = new Map<string, Transaction[]>();

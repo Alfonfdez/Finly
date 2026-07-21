@@ -5,6 +5,9 @@ export const OTHERS_CATEGORY_ID = 15;
 export const OTHER_CATEGORY_ID = 18;
 export const CATEGORY_USAGE_WINDOW_DAYS = 90;
 
+export const DATE_MIN = '1900-01-01';
+export const DATE_MAX = '2100-12-31';
+
 export function sortCategoriesWithOthersLast(categories: Category[]): Category[] {
   return [...categories].sort((a, b) => {
     const aEnd = a.id === OTHERS_CATEGORY_ID || a.id === OTHER_CATEGORY_ID ? 1 : 0;

@@ -110,6 +110,7 @@ function formatAmountDisplay(raw: string, decimalSeparator: ',' | '.'): string {
 export default function AddTransactionScreen() {
   const { activeColors: c, config } = useConfig();
   const { activeType, activePeriod, customDate, selectedDate, accounts, categories, accountsWithBalance, activeAccount, tags, refresh, refreshTags } = useApp();
+  const selectableAccounts = useMemo(() => accountsWithBalance.filter(a => (a.is_total ?? 0) !== 1), [accountsWithBalance]);
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp>();
@@ -117,7 +118,11 @@ export default function AddTransactionScreen() {
   const [type, setType] = useState<TransactionType>(activeType);
   const [amountRaw, setAmountRaw] = useState('');
   const [amountFocused, setAmountFocused] = useState(false);
-  const [accountId, setAccountId] = useState(activeAccount?.id ?? 1);
+  const [accountId, setAccountId] = useState(
+    (activeAccount && (activeAccount.is_total ?? 0) !== 1)
+      ? activeAccount.id
+      : accounts.find(a => (a.is_total ?? 0) !== 1)?.id ?? 1
+  );
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [reorderedCategory, setReorderedCategory] = useState<number | null>(null);
   const initialDay = (() => {
@@ -467,7 +472,7 @@ export default function AddTransactionScreen() {
 
       <AccountModal
         visible={modalAccountVisible}
-        accounts={accountsWithBalance}
+        accounts={selectableAccounts}
         selectedId={accountId}
         onSelect={handleSelectAccount}
         onClose={() => setModalAccountVisible(false)}

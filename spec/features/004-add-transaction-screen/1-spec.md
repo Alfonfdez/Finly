@@ -37,7 +37,8 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - Title: "Account" (multilingual).
 - Below it shows the name of the selected account.
 - The default account is the account selected on the main screen (HomeScreen).
-- When tapping on the account name, a modal (`AccountModal`) opens to select another account.
+- **Fallback**: if the active account is the Total account (`is_total=1`), the first non-Total account is pre-selected instead.
+- When tapping on the account name, a modal (`AccountModal`) opens to select another account. The Total account is excluded from the modal.
 
 ### 5. Category selection
 

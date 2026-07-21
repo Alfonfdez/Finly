@@ -10,7 +10,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t, getDisplayAccountName, getDefaultEnglishAccountName, getAccountName, getAllDefaultAccountNames } from '../i18n';
+import { t, getDisplayAccountName, getDefaultEnglishAccountName, getAccountName, getAllDefaultAccountNames, getDisplayAccountDescription, getDefaultEnglishAccountDescription, getAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
 import { Account } from '../database/types';
 import { RootStackParamList } from '../constants/types';
@@ -67,7 +67,7 @@ export default function ModifyAccountScreen() {
         setName(getDisplayAccountName(found));
         setSelectedIcon(found.icon);
         setSelectedColor(found.color);
-        setDescription(found.description ?? '');
+        setDescription(getDisplayAccountDescription(found));
         if (!QUICK_COLORS.includes(found.color)) {
           setCustomColor(found.color);
         }
@@ -107,7 +107,11 @@ export default function ModifyAccountScreen() {
     };
   }, []);
 
-  const canSave = name.trim().length > 0 && !nameError && !checkingName;
+  const isTotal = (account?.is_total ?? 0) === 1;
+
+  const canSave = isTotal
+    ? !checkingName
+    : name.trim().length > 0 && !nameError && !checkingName;
 
   const getHintText = (): string | null => {
     if (name.trim().length === 0) return labels.modify_account_error_empty;
@@ -117,17 +121,22 @@ export default function ModifyAccountScreen() {
 
   const handleSave = async () => {
     if (!canSave || !account) return;
-    const trimmedName = name.trim();
-    const englishDefault = getDefaultEnglishAccountName(account.id);
-    const displayDefault = getAccountName(account.id);
-    const saveName = englishDefault && trimmedName === displayDefault ? englishDefault : trimmedName;
+    const trimmedDescription = description.trim();
+    const englishDescDefault = getDefaultEnglishAccountDescription(account.id);
+    const displayDescDefault = getAccountDescription(account.id);
+    const updateData: { icon: string; color: string; description: string; name?: string } = {
+      icon: selectedIcon!,
+      color: selectedColor!,
+      description: englishDescDefault && trimmedDescription === displayDescDefault ? englishDescDefault : trimmedDescription,
+    };
+    if (!isTotal) {
+      const trimmedName = name.trim();
+      const englishDefault = getDefaultEnglishAccountName(account.id);
+      const displayDefault = getAccountName(account.id);
+      updateData.name = englishDefault && trimmedName === displayDefault ? englishDefault : trimmedName;
+    }
     try {
-      await accountRepository.update(accountId, {
-        name: saveName,
-        icon: selectedIcon!,
-        color: selectedColor!,
-        description: description.trim(),
-      });
+      await accountRepository.update(accountId, updateData);
       await refreshAccounts();
       navigation.goBack();
     } catch (err) {
@@ -177,28 +186,32 @@ export default function ModifyAccountScreen() {
           keyboardShouldPersistTaps="handled"
           onScrollBeginDrag={() => Keyboard.dismiss()}
         >
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.modify_account_name}
-          </Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: c.surface,
-                color: c.text,
-                borderColor: nameError || (nameTouched && name.trim().length === 0) ? '#F87171' : c.border,
-                fontSize: fs(14),
-              },
-            ]}
-            value={name}
-            onChangeText={handleNameChange}
-            maxLength={MAX_NAME_LENGTH}
-            autoCapitalize="words"
-            autoCorrect={false}
-          />
-          <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
-            {name.length}/{MAX_NAME_LENGTH}
-          </Text>
+          {!isTotal && (
+            <>
+              <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
+                {labels.modify_account_name}
+              </Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: c.surface,
+                    color: c.text,
+                    borderColor: nameError || (nameTouched && name.trim().length === 0) ? '#F87171' : c.border,
+                    fontSize: fs(14),
+                  },
+                ]}
+                value={name}
+                onChangeText={handleNameChange}
+                maxLength={MAX_NAME_LENGTH}
+                autoCapitalize="words"
+                autoCorrect={false}
+              />
+              <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
+                {name.length}/{MAX_NAME_LENGTH}
+              </Text>
+            </>
+          )}
 
           <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
             {labels.create_account_symbols}
@@ -279,27 +292,31 @@ export default function ModifyAccountScreen() {
             </Text>
           )}
 
-          <TouchableOpacity
-            style={[
-              styles.deleteButton,
-              isLastAccount
-                ? { borderColor: c.border, opacity: 0.5 }
-                : { borderColor: '#F87171' },
-            ]}
-            onPress={() => !isLastAccount && setDeleteModalVisible(true)}
-            disabled={isLastAccount}
-            accessibilityState={{ disabled: isLastAccount }}
-          >
-            <Ionicons name="trash-outline" size={18} color={isLastAccount ? c.textSecondary : '#F87171'} />
-            <Text style={[styles.deleteButtonText, { color: isLastAccount ? c.textSecondary : '#F87171', fontSize: fs(15) }]}>
-              {labels.modify_account_delete}
-            </Text>
-          </TouchableOpacity>
+          {!isTotal && (
+            <>
+              <TouchableOpacity
+                style={[
+                  styles.deleteButton,
+                  isLastAccount
+                    ? { borderColor: c.border, opacity: 0.5 }
+                    : { borderColor: '#F87171' },
+                ]}
+                onPress={() => !isLastAccount && setDeleteModalVisible(true)}
+                disabled={isLastAccount}
+                accessibilityState={{ disabled: isLastAccount }}
+              >
+                <Ionicons name="trash-outline" size={18} color={isLastAccount ? c.textSecondary : '#F87171'} />
+                <Text style={[styles.deleteButtonText, { color: isLastAccount ? c.textSecondary : '#F87171', fontSize: fs(15) }]}>
+                  {labels.modify_account_delete}
+                </Text>
+              </TouchableOpacity>
 
-          {isLastAccount && (
-            <Text style={[styles.hint, { color: c.textSecondary, fontSize: fs(12) }]}>
-              {labels.modify_account_delete_last}
-            </Text>
+              {isLastAccount && (
+                <Text style={[styles.hint, { color: c.textSecondary, fontSize: fs(12) }]}>
+                  {labels.modify_account_delete_last}
+                </Text>
+              )}
+            </>
           )}
 
           <TouchableOpacity
