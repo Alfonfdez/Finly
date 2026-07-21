@@ -30,6 +30,15 @@ interface CategoryTagBreakdown {
   total: number;
 }
 
+interface CategoryUsageCount {
+  id: number;
+  name: string;
+  icon: string;
+  color: string;
+  type: TransactionType;
+  count: number;
+}
+
 export const transactionRepo = {
   async list(filters: TransactionFilters = {}): Promise<Transaction[]> {
     const db = getDatabase();
@@ -294,6 +303,25 @@ export const transactionRepo = {
        INNER JOIN tags t ON tt.tag_id = t.id
        WHERE tt.transaction_id IN (${placeholders})`,
       ...transactionIds
+    );
+  },
+
+  async getCategoryUsageCounts(
+    userId: number,
+    type: TransactionType,
+    startDate: string
+  ): Promise<CategoryUsageCount[]> {
+    const db = getDatabase();
+    return await db.getAllAsync<CategoryUsageCount>(
+      `SELECT c.id, c.name, c.icon, c.color, c.type, COUNT(t.id) AS count
+       FROM categories c
+       LEFT JOIN transactions t
+         ON c.id = t.category_id
+         AND t.date >= ?
+       WHERE c.user_id = ? AND c.type = ?
+       GROUP BY c.id
+       ORDER BY count DESC, c.name ASC`,
+      startDate, userId, type
     );
   },
 };

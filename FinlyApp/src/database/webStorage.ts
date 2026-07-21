@@ -374,6 +374,24 @@ export const webTransactionRepo = {
         return { transaction_id: l.transaction_id, tag_id: l.tag_id, name: tag?.name ?? '' };
       });
   },
+
+  async getCategoryUsageCounts(
+    userId: number,
+    type: TransactionType,
+    startDate: string
+  ): Promise<{ id: number; name: string; icon: string; color: string; type: TransactionType; count: number }[]> {
+    const categories = getStore<Category>('categories')
+      .filter(c => c.user_id === userId && c.type === type);
+    const transactions = getStore<Transaction>('transactions')
+      .filter(t => t.type === type && t.date >= startDate);
+    const counts = new Map<number, number>();
+    for (const t of transactions) {
+      counts.set(t.category_id, (counts.get(t.category_id) ?? 0) + 1);
+    }
+    return categories
+      .map(c => ({ id: c.id, name: c.name, icon: c.icon, color: c.color, type: c.type, count: counts.get(c.id) ?? 0 }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  },
 };
 
 export const webTagRepo = {
