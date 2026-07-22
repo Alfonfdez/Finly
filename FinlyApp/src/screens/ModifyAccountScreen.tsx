@@ -10,7 +10,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig, Config } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t, getDisplayAccountName, getDefaultEnglishAccountName, getAccountName, getAllDefaultAccountNames, getDisplayAccountDescription, getDefaultEnglishAccountDescription, getAccountDescription } from '../i18n';
+import { t, getDisplayAccountName, getDefaultEnglishAccountName, getAccountName, getDefaultAccountIdByName, getDisplayAccountDescription, getDefaultEnglishAccountDescription, getAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
 import { Account } from '../database/types';
 import { RootStackParamList } from '../constants/types';
@@ -83,9 +83,19 @@ export default function ModifyAccountScreen() {
     }
     setCheckingName(true);
     try {
+      const defaultId = getDefaultAccountIdByName(value.trim());
+      if (defaultId !== null) {
+        const englishName = getDefaultEnglishAccountName(defaultId);
+        if (englishName) {
+          const defaultExists = await accountRepository.existsByName(englishName, accountId);
+          if (defaultExists) {
+            setNameError(labels.modify_account_error_duplicate);
+            return;
+          }
+        }
+      }
       const exists = await accountRepository.existsByName(value.trim(), accountId);
-      const isDefaultName = getAllDefaultAccountNames().has(value.trim().toLowerCase());
-      setNameError(exists || isDefaultName ? labels.modify_account_error_duplicate : null);
+      setNameError(exists ? labels.modify_account_error_duplicate : null);
     } catch {
       setNameError(null);
     } finally {

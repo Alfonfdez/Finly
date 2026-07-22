@@ -90,6 +90,33 @@ const handleSubmit = async () => {
 | Missing color | - | `if (!selectedColor)` | `*_error_color` |
 | Checking in progress | - | `if (checkingName)` | - |
 
+### Multilingual Duplicate Name Guard (Categories & Accounts)
+
+Default categories and accounts are stored in English in the DB and translated at display time via `getDisplayCategoryName()` / `getDisplayAccountName()`. The duplicate name check must be language-aware:
+
+1. Map the entered name → default entity ID using the **current language** (`getDefaultCategoryIdByName` / `getDefaultAccountIdByName`).
+2. If a default ID is found, get the **English name** for that ID (`getDefaultEnglishName` / `getDefaultEnglishAccountName`).
+3. Check if a category/account with that English name exists in the DB (`existsByName`).
+4. Also check for regular duplicates via `existsByName(name)`.
+
+This allows reusing deleted default names while preventing duplicates with existing defaults in any language.
+
+```ts
+const defaultId = getDefaultCategoryIdByName(value.trim());
+if (defaultId !== null) {
+  const englishName = getDefaultEnglishName(defaultId);
+  if (englishName) {
+    const defaultExists = await categoryRepository.existsByName(englishName, excludeId);
+    if (defaultExists) {
+      setNameError(labels.create_cat_error_name_duplicate);
+      return;
+    }
+  }
+}
+const exists = await categoryRepository.existsByName(value.trim(), excludeId);
+setNameError(exists ? labels.create_cat_error_name_duplicate : null);
+```
+
 ### Transaction Form
 - Category: required, validated on submit.
 - Amount: required, positive, validated on submit.
