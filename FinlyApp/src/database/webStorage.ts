@@ -143,6 +143,9 @@ export const webAccountRepo = {
       setStore('transaction_tags', tags.filter(t => !deletedIds.has(t.transaction_id)));
     }
   },
+  async deleteAll(): Promise<void> {
+    setStore('accounts', []);
+  },
   async getCurrentBalance(id: number): Promise<number> {
     const accounts = getStore<Account>('accounts');
     const transactions = getStore<Transaction>('transactions');
@@ -188,6 +191,9 @@ export const webCategoryRepo = {
     setStore('categories', items.filter(c => c.id !== id));
     const transactions = getStore<Transaction>('transactions');
     setStore('transactions', transactions.filter(t => t.category_id !== id));
+  },
+  async deleteAll(): Promise<void> {
+    setStore('categories', []);
   },
   async existsByName(name: string, excludeId?: number): Promise<boolean> {
     const items = getStore<Category>('categories');
@@ -258,6 +264,10 @@ export const webTransactionRepo = {
       const tags = getStore<TransactionTag>('transaction_tags');
       setStore('transaction_tags', tags.filter(t => !deletedIds.has(t.transaction_id)));
     }
+  },
+  async deleteAllTransactions(): Promise<void> {
+    setStore('transactions', []);
+    setStore('transaction_tags', []);
   },
   async totalByPeriod(accountId: number | null, type: TransactionType, startDate: string, endDate: string): Promise<number> {
     return getStore<Transaction>('transactions')
@@ -438,6 +448,10 @@ export const webTagRepo = {
     const junction = getStore<TransactionTag>('transaction_tags');
     setStore('transaction_tags', junction.filter(jt => jt.tag_id !== id));
   },
+  async deleteAll(): Promise<void> {
+    setStore('tags', []);
+    setStore('transaction_tags', []);
+  },
   async existsByName(userId: number, name: string, excludeId?: number): Promise<boolean> {
     const items = getStore<Tag>('tags');
     const lower = name.toLowerCase();
@@ -468,6 +482,13 @@ const CONFIG_DEFAULTS: Config = {
   textSize: 'medium',
   categoryIconShape: 'square',
   accountIconShape: 'square',
+  homeDefaultAccountId: null,
+  homeDefaultPeriod: 'month',
+  addDefaultAccountId: null,
+  addShowLabels: true,
+  addShowComments: true,
+  addShowPhoto: true,
+  hideBalances: false,
 };
 
 const CONFIG_KEY = '@Finly/config';

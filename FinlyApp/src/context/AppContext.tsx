@@ -36,6 +36,7 @@ interface AppContextType extends AppState {
   refreshAccounts: () => Promise<void>;
   refreshCategories: () => Promise<void>;
   refreshTags: () => Promise<void>;
+  resetAll: () => Promise<void>;
   activeTagIds: number[];
   toggleTagId: (id: number) => void;
   clearTagFilter: () => void;
@@ -85,7 +86,7 @@ function calculateStartEnd(period: Period, date: Date): { start: Date; end: Date
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  useConfig();
+  const { config: appConfig } = useConfig();
   const [activeAccount, setActiveAccount] = useState<Account | null>(null);
   const [activeType, setActiveType] = useState<TransactionType>('expense');
   const [activePeriod, setActivePeriod] = useState<Period>('day');
@@ -114,7 +115,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setCategories(categoriesData);
         setTags(tagsData);
         if (accountsData.length > 0) {
-          setActiveAccount(accountsData[0]);
+          // Apply home default account
+          if (appConfig.homeDefaultAccountId !== null) {
+            const found = accountsData.find(a => a.id === appConfig.homeDefaultAccountId);
+            if (found) setActiveAccount(found);
+            else setActiveAccount(accountsData[0]);
+          } else {
+            setActiveAccount(accountsData[0]);
+          }
+          // Apply home default period
+          if (appConfig.homeDefaultPeriod) {
+            setActivePeriod(appConfig.homeDefaultPeriod);
+          }
         }
       } catch (error) {
         console.error('Failed to load initial data:', error);
@@ -123,7 +135,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     }
     loadData();
-  }, []);
+  }, [appConfig.homeDefaultAccountId, appConfig.homeDefaultPeriod]);
 
   useEffect(() => {
     if (!activeAccount) return;
@@ -297,6 +309,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTags(tagsData);
   }, []);
 
+  const resetAll = useCallback(async () => {
+    try {
+      const [accountsData, categoriesData, tagsData] = await Promise.all([
+        accountRepo.list(USER_ID),
+        categoryRepo.list(USER_ID),
+        tagRepo.list(USER_ID),
+      ]);
+      setAccounts(accountsData);
+      setCategories(categoriesData);
+      setTags(tagsData);
+      setActiveTagIds([]);
+      setTagsByTransaction(new Map());
+      setSelectedDate(new Date());
+      setCustomDateState({ start: new Date(new Date().getFullYear(), 0, 1), end: new Date() });
+      if (accountsData.length > 0) {
+        if (appConfig.homeDefaultAccountId !== null) {
+          const found = accountsData.find(a => a.id === appConfig.homeDefaultAccountId);
+          if (found) setActiveAccount(found);
+          else setActiveAccount(accountsData[0]);
+        } else {
+          setActiveAccount(accountsData[0]);
+        }
+        if (appConfig.homeDefaultPeriod) {
+          setActivePeriod(appConfig.homeDefaultPeriod);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to reset all data:', error);
+    }
+  }, [appConfig.homeDefaultAccountId, appConfig.homeDefaultPeriod]);
+
   const toggleTagId = useCallback((id: number) => {
     setActiveTagIds(prev => {
       if (id === -1) {
@@ -343,6 +386,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     refreshAccounts,
     refreshCategories,
     refreshTags,
+    resetAll,
     activeTagIds,
     toggleTagId,
     clearTagFilter,
@@ -352,7 +396,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     accounts, categories, transactions, tags, loading,
     filteredTransactions, activeCategories, accountsWithBalance,
     totalIncome, totalExpenses, totalIncomeAll, totalExpensesAll,
-    refresh, refreshAccounts, refreshCategories, refreshTags,
+    refresh, refreshAccounts, refreshCategories, refreshTags, resetAll,
     activeTagIds, toggleTagId, clearTagFilter, tagsByTransaction,
   ]);
 

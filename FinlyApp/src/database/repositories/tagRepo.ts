@@ -40,6 +40,11 @@ export const tagRepo = {
     await db.runAsync(`DELETE FROM tags WHERE id = ?`, id);
   },
 
+  async deleteAll(): Promise<void> {
+    const db = getDatabase();
+    await db.runAsync('DELETE FROM tags');
+  },
+
   async existsByName(userId: number, name: string, excludeId?: number): Promise<boolean> {
     const db = getDatabase();
     let sql = `SELECT COUNT(*) as count FROM tags WHERE user_id = ? AND LOWER(name) = LOWER(?)`;

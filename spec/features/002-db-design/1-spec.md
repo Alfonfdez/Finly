@@ -13,6 +13,7 @@
   7. Efficient queries by period (day, week, month, year, custom range) and by type (`expense` / `income`).
   8. Aggregations: total income and expenses by period, breakdown by categories with percentages, breakdown by category and tag.
    9. Initial loading of default data (one user, two accounts "My Wallet" and "Total", 31 universal categories, empty transactions and tags) when the database is created for the first time. The default account name "My Wallet" is stored in English and translated at display time via `getDisplayAccountName` (key `account_my_wallet`: en `My Wallet`, es `Mi Cartera`, ca `La meva cartera`). The Total account (`is_total=1`) is a special aggregate account whose name "Total" is also translated at display time (key `account_total`: en/es/ca `Total`).
+  10. Bulk deletion methods for DataScreen: `deleteAllTransactions()` clears `transactions` + `transaction_tags`; `deleteAll()` clears all rows from `accounts`, `categories`, or `tags`. After bulk deletes, `resetAll()` in AppContext re-fetches all data and re-applies home defaults.
 
 - **Contents**
   SQL schema of the tables, initialization script, CRUD functions in TypeScript (repositories), and a web localStorage fallback.
@@ -121,6 +122,13 @@ CREATE INDEX idx_transaction_tags_tag ON transaction_tags(tag_id);
 | `text_size` | `small` \| `medium` \| `large` | font scaling |
 | `category_icon_shape` | `square` \| `circle` | category icon shape |
 | `account_icon_shape` | `square` \| `circle` | account icon shape |
+| `home_default_account_id` | `null` \| `<id>` | default account on HomeScreen (null = Total) |
+| `home_default_period` | `day` \| `week` \| `month` \| `year` | default period on HomeScreen |
+| `add_default_account_id` | `null` \| `<id>` | default account in AddTransactionScreen (null = not selected) |
+| `add_show_labels` | `true` \| `false` | show labels section in Add/ModifyTransactionScreen |
+| `add_show_comments` | `true` \| `false` | show comments section in Add/ModifyTransactionScreen |
+| `add_show_photo` | `true` \| `false` | show photo section in Add/ModifyTransactionScreen |
+| `hide_balances` | `true` \| `false` | hide account balances across the app |
 
 - **Date format**
   All dates are stored in TEXT format with the pattern `YYYY-MM-DD HH:MM:SS`. Example: `'2026-07-01 14:30:00'`. `datetime('now', 'localtime')` is used to automatically generate `created_at`; `date` is stored when creating the transaction; `updated_at` is set on every update (nullable).
@@ -133,5 +141,8 @@ CREATE INDEX idx_transaction_tags_tag ON transaction_tags(tag_id);
   - [x] When deleting a category, its associated transactions are also deleted.
   - [x] When deleting an account, its associated transactions are also deleted.
   - [x] When deleting a tag, its junction links are also deleted.
+  - [x] `deleteAllTransactions()` clears all transactions and transaction_tags.
+  - [x] `deleteAll()` clears all rows from accounts, categories, or tags.
+  - [x] After bulk deletion, `resetAll()` re-fetches all data and re-applies home defaults.
   - [x] Insertions and queries do not block the user interface.
   - [x] TypeScript type names match the code: `User`, `Account`, `Category`, `Transaction`, `Tag`, `TransactionTag`, `Config`.

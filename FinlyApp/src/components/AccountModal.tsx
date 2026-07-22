@@ -6,6 +6,7 @@ import { formatCurrency } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayAccountName } from '../i18n';
+import EyeToggle from './EyeToggle';
 
 interface AccountWithBalance extends Account {
   balance: number;
@@ -25,16 +26,25 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
   const labels = t();
   const round = config.accountIconShape === 'circle';
   const [tempId, setTempId] = useState(selectedId);
+  const [isRevealed, setIsRevealed] = useState(false);
 
   useEffect(() => {
-    if (visible) setTempId(selectedId);
+    if (visible) {
+      setTempId(selectedId);
+      setIsRevealed(false);
+    }
   }, [visible, selectedId]);
+
+  const isBalanceHidden = config.hideBalances !== isRevealed;
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={[styles.modal, { backgroundColor: c.surface }]}>
-          <Text style={[styles.title, { color: c.text, fontSize: fs(16) }]}>{labels.account_select}</Text>
+          <View style={styles.titleRow}>
+            <Text style={[styles.title, { color: c.text, fontSize: fs(16) }]}>{labels.account_select}</Text>
+            <EyeToggle isHidden={isBalanceHidden} onToggle={() => setIsRevealed(prev => !prev)} color={c.textSecondary} />
+          </View>
           <FlatList
             data={accounts}
             keyExtractor={(item) => item.id.toString()}
@@ -54,7 +64,7 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
                   <View style={styles.info}>
                     <Text style={[styles.name, { color: c.text, fontSize: fs(14) }]}>{getDisplayAccountName(item)}</Text>
                     <Text style={[styles.balance, { color: c.textSecondary, fontSize: fs(12) }]}>
-                      {formatCurrency(item.balance, config.currency, config.decimalSeparator)}
+                      {isBalanceHidden ? '\u2022\u2022\u2022\u2022\u2022' : formatCurrency(item.balance, config.currency, config.decimalSeparator)}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -94,6 +104,7 @@ const styles = StyleSheet.create({
     maxHeight: '70%',
   },
   title: { fontWeight: '700', marginBottom: 16, textAlign: 'center' },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

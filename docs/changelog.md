@@ -1707,3 +1707,65 @@
 
 [2026-07-22] ~ | spec/constitution/3-roadmap.md
 - Updated 003-settings-screen status to "updated (spec ready, pending implementation)". Updated description with new subsection structure.
+
+[2026-07-22] + | Settings screen restructure (Phase 1-10 partial)
+- Implemented Phase 1: Added 7 new config fields to ConfigContext.tsx, configRepo.ts, webStorage.ts, 003_config.ts.
+- Implemented Phase 2: Created src/screens/settings/ folder with 5 screens (SettingsScreen, AppearanceScreen, RegionalScreen, PersonalizationScreen, DataScreen).
+- Implemented Phase 3-4: AppearanceScreen (theme, text size, icon shapes) and RegionalScreen (language, currency, decimal separator, first day of week).
+- Implemented Phase 5-7: PersonalizationScreen (home defaults, add transaction defaults, privacy toggle).
+- Implemented Phase 10: DataScreen (delete all transactions, delete all data with double confirmation).
+- Added 4 new screen types to RootStackParamList and corresponding ScreenProps.
+- Updated AppNavigator.tsx with 4 new settings screens.
+- Added ~30 i18n keys in en/es/ca for subsection titles, option labels, and confirmation messages.
+- Lint check: 0 errors, 0 warnings.
+
+[2026-07-22] + | Settings screen restructure (Phase 8-9 completion)
+- Created src/components/EyeToggle.tsx: reusable eye icon button for privacy toggle.
+- Added generic i18n keys (cancel, delete) in en/es/ca.
+- Implemented Phase 8: Privacy eye icon in HomeScreen, AccountsScreen, and AccountModal.
+  - Each screen manages its own isRevealed state via useState + useFocusEffect reset.
+  - Balances masked with bullet characters when hidden; eye icon toggles temporary reveal.
+  - HomeScreen: EyeToggle next to total balance.
+  - AccountsScreen: EyeToggle in total section header + masked account balances.
+  - AccountModal: EyeToggle in modal header + masked account balances in list.
+- Implemented Phase 9: Personalization defaults applied.
+  - AppContext: homeDefaultAccountId and homeDefaultPeriod applied on initial load.
+  - AddTransactionScreen: addDefaultAccountId used for initial account selection; optional fields (Labels, Comments, Photo) conditionally hidden based on config.
+  - ModifyTransactionScreen: same optional fields logic as AddTransactionScreen.
+- Lint check: 0 errors, 0 warnings.
+
+[2026-07-22] ~ | DataScreen: fix web crash + modal error handling
+- Rewrote DataScreen to use platform-aware repos (transactionRepository, accountRepository, categoryRepository, tagRepository) instead of raw getDatabase() calls, fixing the expo-sqlite WASM bundle error on web.
+- Added deleteAllTransactions() to native transactionRepo and webTransactionRepo.
+- Added deleteAll() to native accountRepo, categoryRepo, tagRepo and their web counterparts.
+- Added try/catch around both delete handlers so modals always close even on failure.
+- On web "delete all data", clears localStorage and re-seeds via initWebStorage().
+- On native "delete all data", re-seeds via seedData() + seedConfig().
+- Lint check: 0 errors, 0 warnings.
+
+[2026-07-22] ~ | PersonalizationScreen: translated seed account names
+- Replaced a.name with getDisplayAccountName(a) in both homeAccounts and addAccounts selectors.
+- Seed accounts ("My Wallet" → "Mi Cartera", "Total" → "Total") now display in the current language.
+- Custom user-created accounts remain unchanged.
+- Lint check: 0 errors, 0 warnings.
+
+[2026-07-22] + | AppContext.resetAll() + DataScreen refresh after deletion
+- Added resetAll() to AppContext: re-fetches accounts/categories/tags, re-applies home defaults from config, resets selectedDate/customDate/activeTagIds/tagsByTransaction.
+- DataScreen: both handleDeleteTransactions and handleDeleteAll now call resetAll() after DB operations, so all screens reflect changes immediately.
+- Updated spec (1-spec.md): privacy hidden styling, implementation note, data deletion steps, acceptance criteria.
+- Lint check: 0 errors, 0 warnings.
+- Replaced a.name with getDisplayAccountName(a) in both homeAccounts and addAccounts selectors.
+- Seed accounts ("My Wallet" → "Mi Cartera", "Total" → "Total") now display in the current language.
+- Custom user-created accounts remain unchanged.
+- Lint check: 0 errors, 0 warnings.
+
+[2026-07-22] ~ | Account deletion fallback for default config
+- ModifyAccountScreen: after deleting an account, checks if it was the homeDefaultAccountId or addDefaultAccountId.
+  - homeDefaultAccountId: resets to null (Total).
+  - addDefaultAccountId: falls back to first remaining non-total account, or null.
+- DataScreen: clears config table before re-seeding on "Delete all data" to ensure defaults are reset.
+- Lint check: 0 errors, 0 warnings.
+
+[2026-07-22] ~ | AccountsScreen: fix Total balance calculation
+- Total balance now sums only non-total accounts (filters out is_total === 1), preventing the Total account's own 0 balance from diluting the sum.
+- Lint check: 0 errors, 0 warnings.

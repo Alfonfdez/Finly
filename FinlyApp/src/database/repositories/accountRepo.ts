@@ -44,6 +44,11 @@ export const accountRepo = {
     await db.runAsync(`DELETE FROM accounts WHERE id = ? AND is_total = 0`, id);
   },
 
+  async deleteAll(): Promise<void> {
+    const db = getDatabase();
+    await db.runAsync('DELETE FROM accounts');
+  },
+
   async getCurrentBalance(id: number): Promise<number> {
     const db = getDatabase();
     const result = await db.getFirstAsync<{ balance: number }>(

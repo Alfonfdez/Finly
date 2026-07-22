@@ -13,6 +13,7 @@ import { accountRepository } from '../database';
 import { Account } from '../database/types';
 import { formatCurrency } from '../utils/formatters';
 import { RootStackParamList } from '../constants/types';
+import EyeToggle from '../components/EyeToggle';
 
 const USER_ID = 1;
 
@@ -29,17 +30,30 @@ export default function AccountsScreen() {
 
   const [accounts, setAccounts] = useState<AccountWithBalance[]>([]);
   const [total, setTotal] = useState(0);
+  const [isRevealed, setIsRevealed] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      setIsRevealed(false);
+    }, [])
+  );
+
+  const isBalanceHidden = config.hideBalances !== isRevealed;
 
   const loadData = useCallback(async () => {
     const list = await accountRepository.list(USER_ID);
     const withBalance = await Promise.all(
       list.map(async (account) => {
+        if (account.is_total === 1) return { ...account, balance: 0 };
         const balance = await accountRepository.getCurrentBalance(account.id);
         return { ...account, balance };
       })
     );
-    setAccounts(withBalance);
-    setTotal(withBalance.reduce((sum, a) => sum + a.balance, 0));
+    const nonTotal = withBalance.filter(a => a.is_total !== 1);
+    const totalSum = nonTotal.reduce((sum, a) => sum + a.balance, 0);
+    const result = withBalance.map(a => a.is_total === 1 ? { ...a, balance: totalSum } : a);
+    setAccounts(result);
+    setTotal(totalSum);
   }, []);
 
   useFocusEffect(
@@ -59,41 +73,52 @@ export default function AccountsScreen() {
     }, [navigation, c.text, labels.home_open_menu, loadData])
   );
 
-  const renderItem = ({ item }: { item: AccountWithBalance }) => (
-    <TouchableOpacity
-      style={[styles.accountRow, { backgroundColor: c.surface }]}
-      onPress={() => navigation.navigate('ModifyAccount', { accountId: item.id })}
-      accessibilityLabel={`${getDisplayAccountName(item)} ${formatCurrency(item.balance, config.currency, config.decimalSeparator)}`}
-    >
-      <View style={[styles.iconBubble, { backgroundColor: item.color + '22', borderRadius: round ? 22 : 12 }]}>
-        <Ionicons name={item.icon as any} size={24} color={item.color} />
-      </View>
-      <View style={styles.accountInfo}>
-        <Text style={[styles.accountName, { color: c.text, fontSize: fs(15) }]} numberOfLines={1}>
-          {getDisplayAccountName(item)}
-        </Text>
-        {item.description ? (
+  const renderItem = ({ item }: { item: AccountWithBalance }) => {
+    const isTotal = item.is_total === 1;
+    return (
+      <>
+        <TouchableOpacity
+          style={[
+            styles.accountRow,
+            { backgroundColor: isTotal ? c.primary + '15' : c.surface },
+          ]}
+          onPress={() => navigation.navigate('ModifyAccount', { accountId: item.id })}
+          accessibilityLabel={`${getDisplayAccountName(item)} ${isBalanceHidden ? '\u2022\u2022\u2022\u2022\u2022' : formatCurrency(item.balance, config.currency, config.decimalSeparator)}`}
+        >
+          <View style={[styles.iconBubble, { backgroundColor: item.color + '22', borderRadius: round ? 22 : 12 }]}>
+            <Ionicons name={item.icon as any} size={24} color={item.color} />
+          </View>
+          <View style={styles.accountInfo}>
+            <Text style={[styles.accountName, { color: c.text, fontSize: fs(15) }]} numberOfLines={1}>
+              {getDisplayAccountName(item)}
+            </Text>
+            {item.description ? (
+              <Text
+                style={[styles.accountNote, { color: c.textSecondary, fontSize: fs(12) }]}
+                numberOfLines={1}
+              >
+                {getDisplayAccountDescription(item)}
+              </Text>
+            ) : null}
+          </View>
           <Text
-            style={[styles.accountNote, { color: c.textSecondary, fontSize: fs(12) }]}
-            numberOfLines={1}
+            style={[
+              styles.accountBalance,
+              {
+                color: isBalanceHidden ? c.textSecondary : (item.balance >= 0 ? c.green : c.red),
+                fontSize: fs(15),
+              },
+            ]}
           >
-            {getDisplayAccountDescription(item)}
+            {isBalanceHidden
+              ? '\u2022\u2022\u2022\u2022\u2022'
+              : `${item.balance >= 0 ? '+' : ''}${formatCurrency(item.balance, config.currency, config.decimalSeparator)}`}
           </Text>
-        ) : null}
-      </View>
-      <Text
-        style={[
-          styles.accountBalance,
-          {
-            color: item.balance >= 0 ? c.green : c.red,
-            fontSize: fs(15),
-          },
-        ]}
-      >
-        {item.balance >= 0 ? '+' : ''}{formatCurrency(item.balance, config.currency, config.decimalSeparator)}
-      </Text>
-    </TouchableOpacity>
-  );
+        </TouchableOpacity>
+        {isTotal && <View style={[styles.separator, { backgroundColor: c.primary + '40' }]} />}
+      </>
+    );
+  };
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
@@ -110,17 +135,22 @@ export default function AccountsScreen() {
         <Text style={[styles.totalLabel, { color: c.textSecondary, fontSize: fs(14) }]}>
           {labels.accounts_total}:
         </Text>
-        <Text
-          style={[
-            styles.totalValue,
-            {
-              color: total >= 0 ? c.green : c.red,
-              fontSize: fs(22),
-            },
-          ]}
-        >
-          {total >= 0 ? '+' : ''}{formatCurrency(total, config.currency, config.decimalSeparator)}
-        </Text>
+        <View style={styles.totalRow}>
+          <Text
+            style={[
+              styles.totalValue,
+              {
+                color: isBalanceHidden ? c.textSecondary : (total >= 0 ? c.green : c.red),
+                fontSize: fs(22),
+              },
+            ]}
+          >
+            {isBalanceHidden
+              ? '\u2022\u2022\u2022\u2022\u2022'
+              : `${total >= 0 ? '+' : ''}${formatCurrency(total, config.currency, config.decimalSeparator)}`}
+          </Text>
+          <EyeToggle isHidden={isBalanceHidden} onToggle={() => setIsRevealed(prev => !prev)} color={c.textSecondary} />
+        </View>
       </View>
 
       <FlatList
@@ -156,6 +186,11 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 2,
   },
+  totalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   totalValue: {
     fontWeight: '700',
   },
@@ -171,6 +206,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 14,
     borderRadius: 12,
+    marginBottom: 10,
+  },
+  separator: {
+    height: 1,
+    marginHorizontal: 16,
     marginBottom: 10,
   },
   iconBubble: {
