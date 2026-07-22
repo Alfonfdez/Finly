@@ -22,7 +22,7 @@
 - **Duplicate validation**: when typing, it verifies that an account with the same name does not already exist (case-insensitive).
   - "Cuenta", "cuenta" and "CUENTA" are considered duplicates.
   - If a duplicate exists, a red error text is shown below the input: "An account with this name already exists" (multilingual) and the "Create" button remains disabled.
-  - **Reserved default name**: the default account name and all its translations are reserved. A new account cannot be named (any casing, any language) "My Wallet", "Mi Cartera" or "La meva cartera" (checked via `getAllDefaultAccountNames()` from `src/i18n`). Attempting to use one shows the same duplicate error and disables "Create".
+  - **Reserved default name**: the default account name is checked via a language-aware guard. The entered name is mapped to a default account ID using the current language (`getDefaultAccountIdByName`). If a match is found, the English name for that default is checked against the DB (`existsByName`). If the default account still exists in the DB, the name is blocked with the duplicate error. If the default was deleted, the name is allowed. Attempting to use an existing default name shows the same duplicate error and disables "Create".
   - The check runs with a 300ms debounce to avoid querying on every keystroke.
 
 ### 3. Symbols (icons)
@@ -138,7 +138,7 @@
 - [ ] The "Create" button is disabled if the name is empty.
 - [ ] If the name is empty, "Enter an account name" is shown in red.
 - [ ] Duplicate validation checks case-insensitive against existing accounts.
-- [ ] Reserved default account names (any casing/language: "My Wallet", "Mi Cartera", "La meva cartera") are rejected with the duplicate error and "Create" is disabled.
+- [ ] Reserved default account names are blocked with the duplicate error only when the corresponding default account still exists in the DB (language-aware check via `getDefaultAccountIdByName`). Deleted default names can be reused.
 - [ ] If a duplicate exists, "An account with this name already exists" is shown in red and the button is disabled.
 - [ ] ~20 icons are shown in a 4-column grid with vertical scroll.
 - [ ] When an icon is pressed, it is selected and visually highlighted.

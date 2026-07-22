@@ -10,7 +10,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t, getDisplayCategoryName, getDefaultEnglishName, getAllDefaultCategoryNames } from '../i18n';
+import { t, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdByName } from '../i18n';
 import { categoryRepository, transactionRepository } from '../database';
 import { RootStackParamList } from '../constants/types';
 import { CATEGORY_ICONS } from '../components/IconGrid';
@@ -80,9 +80,19 @@ export default function ModifyCategoryScreen() {
     }
     setCheckingName(true);
     try {
+      const defaultId = getDefaultCategoryIdByName(value.trim());
+      if (defaultId !== null) {
+        const englishName = getDefaultEnglishName(defaultId);
+        if (englishName) {
+          const defaultExists = await categoryRepository.existsByName(englishName, categoryId);
+          if (defaultExists) {
+            setNameError(labels.create_cat_error_name_duplicate);
+            return;
+          }
+        }
+      }
       const exists = await categoryRepository.existsByName(value.trim(), categoryId);
-      const isDefaultName = getAllDefaultCategoryNames().has(value.trim().toLowerCase());
-      setNameError(exists || isDefaultName ? labels.create_cat_error_name_duplicate : null);
+      setNameError(exists ? labels.create_cat_error_name_duplicate : null);
     } catch {
       setNameError(null);
     } finally {

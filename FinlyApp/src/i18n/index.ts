@@ -85,15 +85,15 @@ export function getDisplayCategoryName(category: { id: number; name: string }): 
   return category.name;
 }
 
-export function getAllDefaultCategoryNames(): Set<string> {
-  const names = new Set<string>();
-  const catKeys = Object.values(CATEGORY_I18N_KEYS);
-  for (const lang of Object.values(languages)) {
-    for (const key of catKeys) {
-      names.add((lang[key] as string).toLowerCase());
+export function getDefaultCategoryIdByName(name: string): number | null {
+  const lower = name.trim().toLowerCase();
+  for (const [id, key] of Object.entries(CATEGORY_I18N_KEYS)) {
+    const currentName = currentLanguage[key] as string;
+    if (currentName.toLowerCase() === lower) {
+      return Number(id);
     }
   }
-  return names;
+  return null;
 }
 
 export function getAccountName(accountId: number): string {
@@ -120,15 +120,15 @@ export function getDisplayAccountName(account: { id: number; name: string }): st
   return account.name;
 }
 
-export function getAllDefaultAccountNames(): Set<string> {
-  const names = new Set<string>();
-  const accKeys = Object.values(ACCOUNT_I18N_KEYS);
-  for (const lang of Object.values(languages)) {
-    for (const key of accKeys) {
-      names.add((lang[key] as string).toLowerCase());
+export function getDefaultAccountIdByName(name: string): number | null {
+  const lower = name.trim().toLowerCase();
+  for (const [id, key] of Object.entries(ACCOUNT_I18N_KEYS)) {
+    const currentName = currentLanguage[key] as string;
+    if (currentName.toLowerCase() === lower) {
+      return Number(id);
     }
   }
-  return names;
+  return null;
 }
 
 export function getDisplayAccountDescription(account: { id: number; description: string }): string {

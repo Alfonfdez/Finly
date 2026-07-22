@@ -22,7 +22,7 @@
 - **Validation**: empty name is not allowed. If empty, a red error text is shown and the "Save" button remains disabled.
 - **Duplicate validation**: when editing the name, it checks that no other account already exists with the same name (case-insensitive), **excluding the current account**. Keeping the same name should not trigger an error; only if the new name matches a different account.
   - "Account", "account" and "ACCOUNT" are considered duplicates.
-  - **Reserved default name**: the default account name and all its translations are reserved. Renaming to any casing/language variant of "My Wallet" / "Mi Cartera" / "La meva cartera" (checked via `getAllDefaultAccountNames()`) shows the duplicate error and disables "Save" — this applies even when editing the default account (id 1) itself, matching the category modification behavior (the default name cannot be re-typed, even unchanged).
+  - **Reserved default name**: the default account name is checked via a language-aware guard. The entered name is mapped to a default account ID using the current language (`getDefaultAccountIdByName`). If a match is found, the English name for that default is checked against the DB (`existsByName`, excluding the current account). If the default account still exists in the DB, the name is blocked. If the default was deleted, the name is allowed. This applies even when editing the default account (id 1) itself.
   - If there is a duplicate, a red error text is shown below the input: "An account with this name already exists" (multilingual) and the "Save" button remains disabled.
   - The check is executed with a 300ms debounce to avoid querying on every keystroke.
 
@@ -155,7 +155,7 @@
 - [ ] "Account name" is shown with an editable input, counter 0/30.
 - [ ] If the name is empty, a red error is shown and "Save" is disabled.
 - [ ] Duplicate validation excludes the current account (keeping the same name does not cause an error).
-- [ ] Renaming to a reserved default name variant (any casing/language) is blocked with the duplicate error, including for the default account (id 1) itself.
+- [ ] Renaming to a reserved default name is blocked with the duplicate error only when the corresponding default account still exists in the DB (language-aware check via `getDefaultAccountIdByName`), including for the default account (id 1) itself. Deleted default names can be reused.
 - [ ] If there is a duplicate, "An account with this name already exists" is shown in red and "Save" is disabled.
 - [ ] ~20 icons are shown in a 4-column grid with the current icon preselected.
 - [ ] When selecting an icon, the icon background color changes to the selected color.

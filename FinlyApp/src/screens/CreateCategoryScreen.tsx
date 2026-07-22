@@ -10,7 +10,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t, getAllDefaultCategoryNames } from '../i18n';
+import { t, getDefaultCategoryIdByName, getDefaultEnglishName } from '../i18n';
 import { categoryRepository } from '../database';
 import { RootStackParamList, TransactionType } from '../constants/types';
 import { setPendingCategory } from './AddTransactionScreen';
@@ -61,9 +61,19 @@ export default function CreateCategoryScreen() {
     }
     setCheckingName(true);
     try {
+      const defaultId = getDefaultCategoryIdByName(value.trim());
+      if (defaultId !== null) {
+        const englishName = getDefaultEnglishName(defaultId);
+        if (englishName) {
+          const defaultExists = await categoryRepository.existsByName(englishName);
+          if (defaultExists) {
+            setNameError(labels.create_cat_error_name_duplicate);
+            return;
+          }
+        }
+      }
       const exists = await categoryRepository.existsByName(value.trim());
-      const isDefaultName = getAllDefaultCategoryNames().has(value.trim().toLowerCase());
-      setNameError(exists || isDefaultName ? labels.create_cat_error_name_duplicate : null);
+      setNameError(exists ? labels.create_cat_error_name_duplicate : null);
     } catch {
       setNameError(null);
     } finally {

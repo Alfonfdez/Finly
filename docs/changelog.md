@@ -1769,3 +1769,11 @@
 [2026-07-22] ~ | AccountsScreen: fix Total balance calculation
 - Total balance now sums only non-total accounts (filters out is_total === 1), preventing the Total account's own 0 balance from diluting the sum.
 - Lint check: 0 errors, 0 warnings.
+
+[2026-07-22] ~ | Fix: multilingual duplicate name guard for categories and accounts
+- Replaced getAllDefaultCategoryNames() / getAllDefaultAccountNames() (which collected ALL names in ALL 3 languages and blocked them unconditionally) with ID-based lookups that check the current language and verify DB existence.
+- Added getDefaultCategoryIdByName(name) and getDefaultAccountIdByName(name) to src/i18n/index.ts: returns the default entity ID if the name matches a default in the current language, null otherwise.
+- CreateCategoryScreen and ModifyCategoryScreen: replaced isDefaultName check with language-aware guard — maps entered name → default ID → English name → DB existence check. Allows reusing deleted default names, blocks only if the corresponding default still exists.
+- CreateAccountScreen and ModifyAccountScreen: same fix applied.
+- Removed getAllDefaultCategoryNames() and getAllDefaultAccountNames() from src/i18n/index.ts (no longer needed).
+- Lint check: 0 errors, 0 warnings.

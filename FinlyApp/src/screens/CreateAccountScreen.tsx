@@ -10,7 +10,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t, getAllDefaultAccountNames } from '../i18n';
+import { t, getDefaultAccountIdByName, getDefaultEnglishAccountName } from '../i18n';
 import { accountRepository } from '../database';
 import { RootStackParamList } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
@@ -58,9 +58,19 @@ export default function CreateAccountScreen() {
     }
     setCheckingName(true);
     try {
+      const defaultId = getDefaultAccountIdByName(value.trim());
+      if (defaultId !== null) {
+        const englishName = getDefaultEnglishAccountName(defaultId);
+        if (englishName) {
+          const defaultExists = await accountRepository.existsByName(englishName);
+          if (defaultExists) {
+            setNameError(labels.create_account_error_duplicate);
+            return;
+          }
+        }
+      }
       const exists = await accountRepository.existsByName(value.trim());
-      const isDefaultName = getAllDefaultAccountNames().has(value.trim().toLowerCase());
-      setNameError(exists || isDefaultName ? labels.create_account_error_duplicate : null);
+      setNameError(exists ? labels.create_account_error_duplicate : null);
     } catch {
       setNameError(null);
     } finally {
