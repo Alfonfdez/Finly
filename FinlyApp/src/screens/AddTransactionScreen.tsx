@@ -118,11 +118,16 @@ export default function AddTransactionScreen() {
   const [type, setType] = useState<TransactionType>(activeType);
   const [amountRaw, setAmountRaw] = useState('');
   const [amountFocused, setAmountFocused] = useState(false);
-  const [accountId, setAccountId] = useState(
-    (activeAccount && (activeAccount.is_total ?? 0) !== 1)
-      ? activeAccount.id
-      : accounts.find(a => (a.is_total ?? 0) !== 1)?.id ?? 1
-  );
+  const [accountId, setAccountId] = useState(() => {
+    // Respect addDefaultAccountId setting
+    if (config.addDefaultAccountId !== null) {
+      const found = accountsWithBalance.find(a => a.id === config.addDefaultAccountId && (a.is_total ?? 0) !== 1);
+      if (found) return found.id;
+    }
+    // Fallback: inherit from HomeScreen; if Total, use first non-Total
+    if (activeAccount && (activeAccount.is_total ?? 0) !== 1) return activeAccount.id;
+    return accounts.find(a => (a.is_total ?? 0) !== 1)?.id ?? 1;
+  });
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [reorderedCategory, setReorderedCategory] = useState<number | null>(null);
   const initialDay = (() => {
@@ -404,45 +409,53 @@ export default function AddTransactionScreen() {
           onOpenCalendar={() => setModalCalendarVisible(true)}
         />
 
-        <TagSection
-          tags={tags}
-          selectedTags={selectedTags}
-          onToggle={handleToggleTag}
-          onCreate={handleCreateTag}
-        />
-
-        {commentSuggestions.length > 0 && (
-          <View style={[styles.suggestionsPanel, { backgroundColor: c.surface, borderColor: c.border }]}>
-            {commentSuggestions.map((item, i) => (
-              <Pressable
-                key={i}
-                style={[styles.suggestionItem, { borderBottomColor: c.border }]}
-                onPress={() => handleSelectSuggestion(item)}
-              >
-                <Text style={[styles.suggestionText, { color: c.text, fontSize: fs(13) }]} numberOfLines={1}>
-                  {item}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+        {config.addShowLabels && (
+          <TagSection
+            tags={tags}
+            selectedTags={selectedTags}
+            onToggle={handleToggleTag}
+            onCreate={handleCreateTag}
+          />
         )}
 
-        <CommentInput
-          ref={inputRef}
-          comment={comment}
-          onChange={setComment}
-          onFocus={() => {
-            setTimeout(() => {
-              scrollRef.current?.scrollToEnd({ animated: true });
-            }, 300);
-          }}
-        />
+        {config.addShowComments && (
+          <>
+            {commentSuggestions.length > 0 && (
+              <View style={[styles.suggestionsPanel, { backgroundColor: c.surface, borderColor: c.border }]}>
+                {commentSuggestions.map((item, i) => (
+                  <Pressable
+                    key={i}
+                    style={[styles.suggestionItem, { borderBottomColor: c.border }]}
+                    onPress={() => handleSelectSuggestion(item)}
+                  >
+                    <Text style={[styles.suggestionText, { color: c.text, fontSize: fs(13) }]} numberOfLines={1}>
+                      {item}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
 
-        <PhotoSection
-          photoUri={fotoUri}
-          onTakePhoto={handleTakePhoto}
-          onPickFromGallery={handlePickFromGallery}
-        />
+            <CommentInput
+              ref={inputRef}
+              comment={comment}
+              onChange={setComment}
+              onFocus={() => {
+                setTimeout(() => {
+                  scrollRef.current?.scrollToEnd({ animated: true });
+                }, 300);
+              }}
+            />
+          </>
+        )}
+
+        {config.addShowPhoto && (
+          <PhotoSection
+            photoUri={fotoUri}
+            onTakePhoto={handleTakePhoto}
+            onPickFromGallery={handlePickFromGallery}
+          />
+        )}
 
         {!canSubmit && !submitting && (
           <Text style={[styles.hintText, { color: c.red, fontSize: fs(12) }]}>

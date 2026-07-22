@@ -131,6 +131,12 @@ export const transactionRepo = {
     await db.runAsync(`DELETE FROM transactions WHERE account_id = ?`, accountId);
   },
 
+  async deleteAllTransactions(): Promise<void> {
+    const db = getDatabase();
+    await db.runAsync('DELETE FROM transactions');
+    await db.runAsync('DELETE FROM transaction_tags');
+  },
+
   async totalByPeriod(
     accountId: number | null,
     type: TransactionType,

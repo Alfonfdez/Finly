@@ -22,7 +22,11 @@ import TransactionsScreen from '../screens/TransactionsScreen';
 import AllTransactionsScreen from '../screens/AllTransactionsScreen';
 import TransactionDetailsScreen from '../screens/TransactionDetailsScreen';
 import ModifyTransactionScreen from '../screens/ModifyTransactionScreen';
-import SettingsScreen from '../screens/SettingsScreen';
+import SettingsScreen from '../screens/settings/SettingsScreen';
+import AppearanceScreen from '../screens/settings/AppearanceScreen';
+import RegionalScreen from '../screens/settings/RegionalScreen';
+import PersonalizationScreen from '../screens/settings/PersonalizationScreen';
+import DataScreen from '../screens/settings/DataScreen';
 import TagsScreen from '../screens/TagsScreen';
 import CreateTagScreen from '../screens/CreateTagScreen';
 import ModifyTagScreen from '../screens/ModifyTagScreen';
@@ -197,6 +201,38 @@ function HomeStack() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Ionicons name="settings-outline" size={20} color={c.text} />
             <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_settings}</Text>
+          </View>
+        ),
+      }} />
+      <Stack.Screen name="SettingsAppearance" component={AppearanceScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="color-palette-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.settings_appearance}</Text>
+          </View>
+        ),
+      }} />
+      <Stack.Screen name="SettingsRegional" component={RegionalScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="globe-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.settings_regional}</Text>
+          </View>
+        ),
+      }} />
+      <Stack.Screen name="SettingsPersonalization" component={PersonalizationScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="options-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.settings_personalization}</Text>
+          </View>
+        ),
+      }} />
+      <Stack.Screen name="SettingsData" component={DataScreen} options={{
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="server-outline" size={20} color={c.text} />
+            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.settings_data}</Text>
           </View>
         ),
       }} />

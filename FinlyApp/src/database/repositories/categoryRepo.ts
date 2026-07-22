@@ -50,6 +50,11 @@ export const categoryRepo = {
     await db.runAsync(`DELETE FROM categories WHERE id = ?`, id);
   },
 
+  async deleteAll(): Promise<void> {
+    const db = getDatabase();
+    await db.runAsync('DELETE FROM categories');
+  },
+
   async existsByName(name: string, excludeId?: number): Promise<boolean> {
     const db = getDatabase();
     let sql = `SELECT COUNT(*) as count FROM categories WHERE LOWER(name) = LOWER(?)`;

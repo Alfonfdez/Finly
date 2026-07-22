@@ -10,6 +10,13 @@ const CONFIG_DEFAULTS: Config = {
   textSize: 'medium',
   categoryIconShape: 'square',
   accountIconShape: 'square',
+  homeDefaultAccountId: null,
+  homeDefaultPeriod: 'month',
+  addDefaultAccountId: null,
+  addShowLabels: true,
+  addShowComments: true,
+  addShowPhoto: true,
+  hideBalances: false,
 };
 
 const DB_KEY_MAP: Record<string, keyof Config> = {
@@ -21,6 +28,13 @@ const DB_KEY_MAP: Record<string, keyof Config> = {
   text_size: 'textSize',
   category_icon_shape: 'categoryIconShape',
   account_icon_shape: 'accountIconShape',
+  home_default_account_id: 'homeDefaultAccountId',
+  home_default_period: 'homeDefaultPeriod',
+  add_default_account_id: 'addDefaultAccountId',
+  add_show_labels: 'addShowLabels',
+  add_show_comments: 'addShowComments',
+  add_show_photo: 'addShowPhoto',
+  hide_balances: 'hideBalances',
 };
 
 function parseConfig(rows: { key: string; value: string }[]): Config {
@@ -34,6 +48,13 @@ function parseConfig(rows: { key: string; value: string }[]): Config {
     textSize: (map.text_size as Config['textSize']) ?? CONFIG_DEFAULTS.textSize,
     categoryIconShape: (map.category_icon_shape as Config['categoryIconShape']) ?? CONFIG_DEFAULTS.categoryIconShape,
     accountIconShape: (map.account_icon_shape as Config['accountIconShape']) ?? CONFIG_DEFAULTS.accountIconShape,
+    homeDefaultAccountId: map.home_default_account_id === 'null' ? null : map.home_default_account_id ? Number(map.home_default_account_id) : CONFIG_DEFAULTS.homeDefaultAccountId,
+    homeDefaultPeriod: (map.home_default_period as Config['homeDefaultPeriod']) ?? CONFIG_DEFAULTS.homeDefaultPeriod,
+    addDefaultAccountId: map.add_default_account_id === 'null' ? null : map.add_default_account_id ? Number(map.add_default_account_id) : CONFIG_DEFAULTS.addDefaultAccountId,
+    addShowLabels: map.add_show_labels === 'true',
+    addShowComments: map.add_show_comments === 'true',
+    addShowPhoto: map.add_show_photo === 'true',
+    hideBalances: map.hide_balances === 'true',
   };
 }
 

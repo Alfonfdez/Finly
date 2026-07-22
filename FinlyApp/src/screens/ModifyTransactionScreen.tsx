@@ -345,45 +345,53 @@ export default function ModifyTransactionScreen() {
           onOpenCalendar={() => setModalCalendarVisible(true)}
         />
 
-        <TagSection
-          tags={tags}
-          selectedTags={selectedTags}
-          onToggle={handleToggleTag}
-          onCreate={handleCreateTag}
-        />
-
-        {commentSuggestions.length > 0 && (
-          <View style={[styles.suggestionsPanel, { backgroundColor: c.surface, borderColor: c.border }]}>
-            {commentSuggestions.map((item, i) => (
-              <Pressable
-                key={i}
-                style={[styles.suggestionItem, { borderBottomColor: c.border }]}
-                onPress={() => handleSelectSuggestion(item)}
-              >
-                <Text style={[styles.suggestionText, { color: c.text, fontSize: fs(13) }]} numberOfLines={1}>
-                  {item}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+        {config.addShowLabels && (
+          <TagSection
+            tags={tags}
+            selectedTags={selectedTags}
+            onToggle={handleToggleTag}
+            onCreate={handleCreateTag}
+          />
         )}
 
-        <CommentInput
-          ref={inputRef}
-          comment={comment}
-          onChange={setComment}
-          onFocus={() => {
-            setTimeout(() => {
-              scrollRef.current?.scrollToEnd({ animated: true });
-            }, 300);
-          }}
-        />
+        {config.addShowComments && (
+          <>
+            {commentSuggestions.length > 0 && (
+              <View style={[styles.suggestionsPanel, { backgroundColor: c.surface, borderColor: c.border }]}>
+                {commentSuggestions.map((item, i) => (
+                  <Pressable
+                    key={i}
+                    style={[styles.suggestionItem, { borderBottomColor: c.border }]}
+                    onPress={() => handleSelectSuggestion(item)}
+                  >
+                    <Text style={[styles.suggestionText, { color: c.text, fontSize: fs(13) }]} numberOfLines={1}>
+                      {item}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
 
-        <PhotoSection
-          photoUri={fotoUri}
-          onTakePhoto={handleTakePhoto}
-          onPickFromGallery={handlePickFromGallery}
-        />
+            <CommentInput
+              ref={inputRef}
+              comment={comment}
+              onChange={setComment}
+              onFocus={() => {
+                setTimeout(() => {
+                  scrollRef.current?.scrollToEnd({ animated: true });
+                }, 300);
+              }}
+            />
+          </>
+        )}
+
+        {config.addShowPhoto && (
+          <PhotoSection
+            photoUri={fotoUri}
+            onTakePhoto={handleTakePhoto}
+            onPickFromGallery={handlePickFromGallery}
+          />
+        )}
 
         {!canSubmit && !submitting && (
           <Text style={[styles.hintText, { color: c.red, fontSize: fs(12) }]}>

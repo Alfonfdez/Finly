@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, ComponentProps } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, DrawerActions } from '@react-navigation/native';
+import { useNavigation, DrawerActions, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
@@ -12,6 +12,7 @@ import { RootStackParamList, Period } from '../constants/types';
 import { t, getDisplayAccountName } from '../i18n';
 import { transactionRepository as transactionRepo } from '../database';
 import AccountModal from '../components/AccountModal';
+import EyeToggle from '../components/EyeToggle';
 import TypeTabs from '../components/TypeTabs';
 import PeriodTabs from '../components/PeriodTabs';
 import CalendarPicker from '../components/CalendarPicker';
@@ -39,6 +40,15 @@ export default function HomeScreen() {
   const [calendarVisible, setCalendarVisible] = useState(false);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<number>>(new Set());
   const [tagBreakdowns, setTagBreakdowns] = useState<Map<number, { tag_id: number; name: string; total: number }[]>>(new Map());
+  const [isRevealed, setIsRevealed] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      setIsRevealed(false);
+    }, [])
+  );
+
+  const isBalanceHidden = config.hideBalances !== isRevealed;
 
   const total = totalIncomeAll - totalExpensesAll;
   const activeTotal = activeType === 'expense' ? totalExpenses : totalIncome;
@@ -209,18 +219,36 @@ export default function HomeScreen() {
               <Text style={[styles.accountLabel, { color: c.textSecondary, fontSize: fs(14) }]}>{getDisplayAccountName(activeAccount)}</Text>
               <Ionicons name="chevron-down-outline" size={14} color={c.textSecondary} />
             </TouchableOpacity>
-            <Text style={[styles.totalText, { color: totalColor, fontSize: fs(28) }]}>
-              {total >= 0 ? '+' : ''}{formatCurrency(total, config.currency, config.decimalSeparator)}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={[styles.totalText, { color: isBalanceHidden ? c.textSecondary : totalColor, fontSize: fs(28) }]}>
+                {isBalanceHidden ? '\u2022\u2022\u2022\u2022\u2022' : `${total >= 0 ? '+' : ''}${formatCurrency(total, config.currency, config.decimalSeparator)}`}
+              </Text>
+              <EyeToggle isHidden={isBalanceHidden} onToggle={() => setIsRevealed(prev => !prev)} color={c.textSecondary} />
+            </View>
       <View style={styles.summaryRow}>
-        <Text style={[styles.summaryItem, { fontSize: fs(14) }]}>
-          <Text style={{ color: c.green, fontWeight: '700' }}>+{formatCurrency(totalIncomeAll, config.currency, config.decimalSeparator)}</Text>
-          <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(12) }]}> {labels.home_income}</Text>
-        </Text>
-        <Text style={[styles.summaryItem, { fontSize: fs(14) }]}>
-          <Text style={{ color: c.red, fontWeight: '700' }}>-{formatCurrency(totalExpensesAll, config.currency, config.decimalSeparator)}</Text>
-          <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(12) }]}> {labels.home_expenses}</Text>
-        </Text>
+        {isBalanceHidden ? (
+          <>
+            <Text style={[styles.summaryItem, { fontSize: fs(14) }]}>
+              <Text style={{ color: c.textSecondary, fontWeight: '700' }}>{'\u2022\u2022\u2022\u2022\u2022'}</Text>
+              <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(12) }]}> {labels.home_income}</Text>
+            </Text>
+            <Text style={[styles.summaryItem, { fontSize: fs(14) }]}>
+              <Text style={{ color: c.textSecondary, fontWeight: '700' }}>{'\u2022\u2022\u2022\u2022\u2022'}</Text>
+              <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(12) }]}> {labels.home_expenses}</Text>
+            </Text>
+          </>
+        ) : (
+          <>
+            <Text style={[styles.summaryItem, { fontSize: fs(14) }]}>
+              <Text style={{ color: c.green, fontWeight: '700' }}>+{formatCurrency(totalIncomeAll, config.currency, config.decimalSeparator)}</Text>
+              <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(12) }]}> {labels.home_income}</Text>
+            </Text>
+            <Text style={[styles.summaryItem, { fontSize: fs(14) }]}>
+              <Text style={{ color: c.red, fontWeight: '700' }}>-{formatCurrency(totalExpensesAll, config.currency, config.decimalSeparator)}</Text>
+              <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(12) }]}> {labels.home_expenses}</Text>
+            </Text>
+          </>
+        )}
       </View>
           </View>
 

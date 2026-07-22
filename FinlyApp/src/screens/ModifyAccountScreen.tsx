@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useConfig } from '../context/ConfigContext';
+import { useConfig, Config } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayAccountName, getDefaultEnglishAccountName, getAccountName, getAllDefaultAccountNames, getDisplayAccountDescription, getDefaultEnglishAccountDescription, getAccountDescription } from '../i18n';
@@ -27,8 +27,8 @@ const GRID_COLS = 4;
 const GRID_GAP = 12;
 
 export default function ModifyAccountScreen() {
-  const { activeColors: c, config } = useConfig();
-  const { refreshAccounts } = useApp();
+  const { activeColors: c, config, updateConfig } = useConfig();
+  const { accounts, refreshAccounts } = useApp();
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp>();
@@ -155,6 +155,19 @@ export default function ModifyAccountScreen() {
     try {
       await accountRepository.delete(accountId);
       await refreshAccounts();
+
+      const updates: Partial<Config> = {};
+      if (config.homeDefaultAccountId === accountId) {
+        updates.homeDefaultAccountId = null;
+      }
+      if (config.addDefaultAccountId === accountId) {
+        const remaining = accounts.filter(a => a.id !== accountId && a.is_total !== 1);
+        updates.addDefaultAccountId = remaining.length > 0 ? remaining[0].id : null;
+      }
+      if (Object.keys(updates).length > 0) {
+        updateConfig(updates);
+      }
+
       navigation.goBack();
     } catch (err) {
       console.error('Failed to delete account:', err);

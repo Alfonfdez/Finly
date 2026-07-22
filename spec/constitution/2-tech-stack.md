@@ -93,10 +93,11 @@ FinlyApp/
 |   |   |   +-- 003_config.ts       <- config default values (table created in 001)
 |   |   +-- repositories/
 |   |       +-- userRepo.ts         <- user CRUD
-|   |       +-- accountRepo.ts      <- account CRUD + balance calculation
-|   |       +-- categoryRepo.ts     <- category CRUD
-|   |       +-- transactionRepo.ts  <- transaction CRUD + aggregations
+|   |       +-- accountRepo.ts      <- account CRUD + balance calculation + deleteAll()
+|   |       +-- categoryRepo.ts     <- category CRUD + deleteAll()
+|   |       +-- transactionRepo.ts  <- transaction CRUD + aggregations + deleteAllTransactions()
 |   |       +-- configRepo.ts       <- config persistence
+|   |       +-- tagRepo.ts          <- tag CRUD + deleteAll()
 |   |
 |   +-- i18n/
 |   |   +-- index.ts                <- language selector + getCategoryName helper

@@ -10,6 +10,13 @@ export async function seedConfig(db: SQLiteDatabase): Promise<void> {
     ['text_size', 'medium'],
     ['category_icon_shape', 'square'],
     ['account_icon_shape', 'square'],
+    ['home_default_account_id', 'null'],
+    ['home_default_period', 'month'],
+    ['add_default_account_id', 'null'],
+    ['add_show_labels', 'true'],
+    ['add_show_comments', 'true'],
+    ['add_show_photo', 'true'],
+    ['hide_balances', 'false'],
   ];
 
   for (const [key, value] of defaults) {

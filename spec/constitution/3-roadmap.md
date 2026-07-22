@@ -51,7 +51,7 @@ Schema created in a single pass (`createSchema` → `seedData` → `seedConfig`)
 Spec: spec/features/002-db-design/.
 
 ## 003-settings-screen
-Status: updated (spec ready, pending implementation).
+Status: completed.
 
 Restructured Settings screen with 4 subsections:
 - Appearance: Theme, Text size, Account icon shape, Category icon shape.

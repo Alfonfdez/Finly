@@ -53,6 +53,10 @@ export type RootStackParamList = {
   TransactionDetails: { transactionId: number };
   ModifyTransaction: { transactionId: number };
   Settings: undefined;
+  SettingsAppearance: undefined;
+  SettingsRegional: undefined;
+  SettingsPersonalization: undefined;
+  SettingsData: undefined;
   Tags: undefined;
   CreateTag: undefined;
   ModifyTag: { tagId: number };
@@ -71,6 +75,10 @@ export type TransactionsScreenProps = NativeStackScreenProps<RootStackParamList,
 export type AllTransactionsScreenProps = NativeStackScreenProps<RootStackParamList, 'AllTransactions'>;
 export type TransactionDetailsScreenProps = NativeStackScreenProps<RootStackParamList, 'TransactionDetails'>;
 export type SettingsScreenProps = NativeStackScreenProps<RootStackParamList, 'Settings'>;
+export type SettingsAppearanceScreenProps = NativeStackScreenProps<RootStackParamList, 'SettingsAppearance'>;
+export type SettingsRegionalScreenProps = NativeStackScreenProps<RootStackParamList, 'SettingsRegional'>;
+export type SettingsPersonalizationScreenProps = NativeStackScreenProps<RootStackParamList, 'SettingsPersonalization'>;
+export type SettingsDataScreenProps = NativeStackScreenProps<RootStackParamList, 'SettingsData'>;
 export type TagsScreenProps = NativeStackScreenProps<RootStackParamList, 'Tags'>;
 export type CreateTagScreenProps = NativeStackScreenProps<RootStackParamList, 'CreateTag'>;
 export type ModifyTagScreenProps = NativeStackScreenProps<RootStackParamList, 'ModifyTag'>;

@@ -185,13 +185,17 @@ Subtitle: "Privacy" (multilingual).
 - **On:** account balances are masked with `•••••` across the app.
 
 **Affected screens:**
-- HomeScreen: balance amount below account name.
+- HomeScreen: total balance, income subtotal, and expenses subtotal below account name.
 - AccountsScreen: each account balance in the list + total balance in header.
 - AccountModal/AccountSelector: balances in the account list.
 
 **NOT affected:**
 - TransactionDetailsScreen: amount is shown (it's a specific transaction, not an account balance).
 - AddTransactionScreen / ModifyTransactionScreen: no balance displayed.
+
+**Hidden balance styling:**
+- Masked balances display `•••••` in `textSecondary` (gray) color, with no `+`/`-` sign.
+- This avoids leaking positive/negative hints about the balance value.
 
 **Eye icon behavior:**
 
@@ -214,7 +218,7 @@ An eye icon appears next to every masked balance. The icon represents the curren
 3. Navigate to AccountsScreen → balances hidden again (reset to setting).
 4. Navigate back to HomeScreen → balances hidden again (reset to setting).
 
-**Implementation:** a lightweight `RevealContext` (or similar) provides `isRevealed` state + `toggleReveal()` to affected screens. State resets on screen focus.
+**Implementation:** each screen manages local `isRevealed` state via `useState`. State resets on screen focus via `useFocusEffect` (screens) or `useEffect` on `visible` change (modals). The `isBalanceHidden` derived value is `config.hideBalances !== isRevealed`.
 
 ### 6. Data Subsection
 
@@ -234,8 +238,9 @@ An eye icon appears next to every masked balance. The icon represents the curren
 - When tapping "Delete":
   1. All rows from `transactions` table are deleted.
   2. All rows from `transaction_tags` junction table are deleted (cleanup).
-  3. Modal closes.
-  4. A toast/snackbar confirms: "All transactions deleted" (multilingual).
+  3. AppContext state is refreshed via `resetAll()` so all screens reflect changes immediately.
+  4. Modal closes.
+  5. A toast/snackbar confirms: "All transactions deleted" (multilingual).
 
 #### 6.2 — Delete all data
 
@@ -258,9 +263,10 @@ An eye icon appears next to every masked balance. The icon represents the curren
 - When tapping "Confirm":
   1. All data is cleared (transactions, transaction_tags, accounts, categories, tags).
   2. Default data is re-seeded: My Wallet, Total, 31 categories, default config.
-  3. Both modals close.
-  4. App reloads from seed state (effectively a fresh install).
-  5. A toast/snackbar confirms: "All data deleted. App reset to factory state." (multilingual).
+  3. AppContext state is fully refreshed via `resetAll()`, re-applying home defaults from config.
+  4. Both modals close.
+  5. All screens reflect the fresh seed state immediately.
+  6. A toast/snackbar confirms: "All data deleted. App reset to factory state." (multilingual).
 
 ---
 
@@ -313,7 +319,9 @@ An eye icon appears next to every masked balance. The icon represents the curren
 
 ### Personalization — Privacy
 - [ ] Hide account balances toggle (default: off).
-- [ ] When on, balances show `•••••` on HomeScreen, AccountsScreen, and AccountModal.
+- [ ] When on, total balance, income subtotal, and expenses subtotal show `•••••` on HomeScreen.
+- [ ] When on, balances show `•••••` on AccountsScreen and AccountModal.
+- [ ] Hidden balances use gray (`textSecondary`) color with no `+`/`-` sign.
 - [ ] Eye icon appears next to masked balances.
 - [ ] Tapping eye temporarily reveals/hides ALL balances on screen.
 - [ ] Visibility resets to setting default when navigating away and coming back.
@@ -322,6 +330,8 @@ An eye icon appears next to every masked balance. The icon represents the curren
 ### Data
 - [ ] "Delete all transactions" row opens a single confirmation modal.
 - [ ] Confirming deletes all transactions and transaction_tags, not accounts/categories/tags.
+- [ ] After deletion, all screens (HomeScreen, AccountsScreen, etc.) reflect updated data immediately via `resetAll()`.
 - [ ] "Delete all data" row opens a double confirmation modal (second requires typing "DELETE").
 - [ ] Confirming deletes everything and re-seeds defaults (factory reset).
+- [ ] After reset, all screens reflect fresh seed state immediately via `resetAll()`.
 - [ ] Settings persist across app restarts.

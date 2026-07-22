@@ -78,8 +78,18 @@ const { param1, param2 } = route.params;
 ### App Context (when global state needed)
 
 ```typescript
-const { categories, accounts, tags, refreshCategories, refreshAccounts, refreshTags } = useApp();
+const { categories, accounts, tags, refreshCategories, refreshAccounts, refreshTags, resetAll } = useApp();
 ```
+
+**Refresh methods** — call after local mutations to keep AppContext state in sync:
+
+| Method | Use case |
+|--------|----------|
+| `refresh()` | After adding/editing/deleting transactions |
+| `refreshAccounts()` | After creating/modifying/deleting accounts |
+| `refreshCategories()` | After creating/modifying/deleting categories |
+| `refreshTags()` | After creating/modifying/deleting tags |
+| `resetAll()` | After bulk deletions (DataScreen): re-fetches all data, re-applies home defaults from config, resets active selections |
 
 ## Navigation Patterns
 

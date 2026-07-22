@@ -13,6 +13,13 @@ export interface Config {
   textSize: 'small' | 'medium' | 'large';
   categoryIconShape: 'square' | 'circle';
   accountIconShape: 'square' | 'circle';
+  homeDefaultAccountId: number | null;
+  homeDefaultPeriod: 'day' | 'week' | 'month' | 'year';
+  addDefaultAccountId: number | null;
+  addShowLabels: boolean;
+  addShowComments: boolean;
+  addShowPhoto: boolean;
+  hideBalances: boolean;
 }
 
 const CONFIG_DEFAULT: Config = {
@@ -24,6 +31,13 @@ const CONFIG_DEFAULT: Config = {
   textSize: 'medium',
   categoryIconShape: 'square',
   accountIconShape: 'square',
+  homeDefaultAccountId: null,
+  homeDefaultPeriod: 'month',
+  addDefaultAccountId: null,
+  addShowLabels: true,
+  addShowComments: true,
+  addShowPhoto: true,
+  hideBalances: false,
 };
 
 interface ConfigContextType {
