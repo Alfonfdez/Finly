@@ -407,12 +407,13 @@ export const webTransactionRepo = {
   async getCategoryUsageCounts(
     userId: number,
     type: TransactionType,
-    startDate: string
+    startDate: string,
+    accountId: number
   ): Promise<{ id: number; name: string; icon: string; color: string; type: TransactionType; count: number }[]> {
     const categories = getStore<Category>('categories')
       .filter(c => c.user_id === userId && c.type === type);
     const transactions = getStore<Transaction>('transactions')
-      .filter(t => t.type === type && t.date >= startDate);
+      .filter(t => t.type === type && t.date >= startDate && t.account_id === accountId);
     const counts = new Map<number, number>();
     for (const t of transactions) {
       counts.set(t.category_id, (counts.get(t.category_id) ?? 0) + 1);

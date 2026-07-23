@@ -324,7 +324,8 @@ export const transactionRepo = {
   async getCategoryUsageCounts(
     userId: number,
     type: TransactionType,
-    startDate: string
+    startDate: string,
+    accountId: number
   ): Promise<CategoryUsageCount[]> {
     const db = getDatabase();
     return await db.getAllAsync<CategoryUsageCount>(
@@ -333,10 +334,11 @@ export const transactionRepo = {
        LEFT JOIN transactions t
          ON c.id = t.category_id
          AND t.date >= ?
+         AND t.account_id = ?
        WHERE c.user_id = ? AND c.type = ?
        GROUP BY c.id
        ORDER BY count DESC, c.name ASC`,
-      startDate, userId, type
+      startDate, accountId, userId, type
     );
   },
 };
