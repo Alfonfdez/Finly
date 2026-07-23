@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Modal, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -9,9 +9,10 @@ interface Props {
   photoUri: string | null;
   onTakePhoto: () => void;
   onPickFromGallery: () => void;
+  onRemovePhoto?: () => void;
 }
 
-export default function PhotoSection({ photoUri, onTakePhoto, onPickFromGallery }: Props) {
+export default function PhotoSection({ photoUri, onTakePhoto, onPickFromGallery, onRemovePhoto }: Props) {
   const [modalVisible, setModalVisible] = useState(false);
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
@@ -28,14 +29,23 @@ export default function PhotoSection({ photoUri, onTakePhoto, onPickFromGallery 
         {labels.add_photo}
       </Text>
       <TouchableOpacity
-        style={[styles.photoButton, { backgroundColor: c.surface, borderColor: c.border }]}
+        style={[styles.photoButton, { backgroundColor: c.surface, borderColor: photoUri ? 'transparent' : c.border }]}
         onPress={() => setModalVisible(true)}
         accessibilityLabel={labels.add_photo}
       >
         {photoUri ? (
-          <Text style={[styles.photoText, { color: c.text, fontSize: fs(14) }]}>
-            Selected photo
-          </Text>
+          <>
+            <Image source={{ uri: photoUri }} style={styles.photoThumbnail} />
+            {onRemovePhoto && (
+              <TouchableOpacity
+                style={[styles.removeButton, { backgroundColor: c.red }]}
+                onPress={(e) => { e.stopPropagation?.(); onRemovePhoto(); }}
+                accessibilityLabel={labels.photo_remove}
+              >
+                <Ionicons name="close" size={14} color="#fff" />
+              </TouchableOpacity>
+            )}
+          </>
         ) : (
           <Ionicons name="add" size={32} color={c.textSecondary} />
         )}
@@ -96,9 +106,23 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
-  photoText: {
-    textAlign: 'center',
+  photoThumbnail: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+  },
+  removeButton: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
   },
   modalOverlay: {
     flex: 1,

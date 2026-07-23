@@ -331,6 +331,9 @@ export const ca: Language = {
   details_edit: 'Editar',
   details_created: 'Creat',
   details_updated: 'Actualitzat',
+  details_photo: 'Foto',
+  photo_viewer_close: 'Tancar',
+  photo_remove: 'Eliminar foto',
   type_expense: 'Despesa',
   type_income: 'Ingrés',
 

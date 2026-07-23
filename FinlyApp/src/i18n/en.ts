@@ -329,6 +329,9 @@ export const en = {
   details_edit: 'Edit',
   details_created: 'Created',
   details_updated: 'Updated',
+  details_photo: 'Photo',
+  photo_viewer_close: 'Close',
+  photo_remove: 'Remove photo',
   type_expense: 'Expense',
   type_income: 'Income',
 

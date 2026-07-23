@@ -92,8 +92,8 @@ export const transactionRepo = {
   async create(data: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>): Promise<Transaction> {
     const db = getDatabase();
     const result = await db.runAsync(
-      `INSERT INTO transactions (account_id, category_id, type, amount, description, date) VALUES (?, ?, ?, ?, ?, ?)`,
-      data.account_id, data.category_id, data.type, data.amount, data.description ?? null, data.date
+      `INSERT INTO transactions (account_id, category_id, type, amount, description, photo, date) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      data.account_id, data.category_id, data.type, data.amount, data.description ?? null, data.photo ?? null, data.date
     );
     return { ...data, id: result.lastInsertRowId, created_at: new Date().toISOString(), updated_at: null };
   },
@@ -108,6 +108,7 @@ export const transactionRepo = {
     if (data.type !== undefined) { fields.push('type = ?'); values.push(data.type); }
     if (data.amount !== undefined) { fields.push('amount = ?'); values.push(data.amount); }
     if (data.description !== undefined) { fields.push('description = ?'); values.push(data.description); }
+    if (data.photo !== undefined) { fields.push('photo = ?'); values.push(data.photo); }
     if (data.date !== undefined) { fields.push('date = ?'); values.push(data.date); }
 
     fields.push("updated_at = datetime('now', 'localtime')");
