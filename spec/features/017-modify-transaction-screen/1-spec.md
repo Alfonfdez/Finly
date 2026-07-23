@@ -91,7 +91,11 @@
   - Title: "Add photo" (multilingual).
   - Option 1: "Take photo" (multilingual).
   - Option 2: "Add from gallery" (multilingual).
-- TODO: future implementation of permissions and image capture. For now, UI only.
+- When editing a transaction that has an existing photo, the thumbnail is preloaded from `transaction.photo`.
+- The user can replace it (camera or gallery) or remove it (× button).
+- If the user replaces the photo, the old file is deleted from `documentDirectory`.
+- **Web**: the entire PhotoSection is hidden on web (platform guard `Platform.OS !== 'web'`).
+- **Implementation**: see spec `023-photo-attachment` for full functional requirements.
 
 ### 10. Save button
 
@@ -143,7 +147,7 @@
 - [ ] The comment field is preloaded with the current transaction's comment.
 - [ ] The comment field allows up to 4096 characters with a counter.
 - [ ] The comment autocomplete works the same as in AddTransaction.
-- [ ] The photo button opens the modal with both options (TODO).
+- [ ] The photo section preloads existing photo and allows replacement/removal (full implementation in 023).
 - [ ] The "Save" button is disabled if category, valid amount, day, or account is missing.
 - [ ] The help text is shown when the button is disabled.
 - [ ] Tapping "Save" updates the transaction and returns to the previous screen.

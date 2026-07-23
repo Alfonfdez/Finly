@@ -1783,3 +1783,28 @@
 
 [2026-07-23] ~ | spec/features/004-add-transaction-screen/1-spec.md
 - Updated category grid sorting documentation: usage frequency is now scoped to the selected account, not global. Updated acceptance criteria.
+
+[2026-07-23] + | spec/features/023-photo-attachment/ (1-spec.md, 2-plan.md, 3-tasks.md)
+- Created spec for photo attachment feature: camera + gallery on iOS/Android, hidden on web.
+- 1-spec.md: 10 functional requirements (platform scope, camera, gallery, thumbnail, persistence, display, cleanup, settings), 18 acceptance criteria.
+- 2-plan.md: architecture with expo-image-picker + expo-file-system, data flow diagrams, platform guards, file cleanup utility.
+- 3-tasks.md: 13 tasks in 5 phases + verification (database, library install, handlers, UI, i18n/specs).
+
+[2026-07-23] ~ | spec/features/004-add-transaction-screen/1-spec.md
+- Updated section 9 (Photo): replaced TODO with reference to 023 spec. Updated acceptance criterion.
+
+[2026-07-23] ~ | spec/features/016-transaction-details-screen/1-spec.md
+- Added section 5 (Photo): photo row with thumbnail, full-screen viewer, platform guard. Added 2 acceptance criteria.
+
+[2026-07-23] ~ | spec/features/017-modify-transaction-screen/1-spec.md
+- Updated section 9 (Photo): replaced TODO with reference to 023 spec, added preload/replace/remove behavior.
+
+[2026-07-23] ~ | spec/constitution/3-roadmap.md
+- Added 023-photo-attachment with pending status.
+
+[2026-07-23] ~ | spec/features/002-db-design/1-spec.md
+- Added `photo TEXT` column to transactions table schema (nullable, stores file URI for receipt images).
+- Updated functional requirement #4 and added acceptance criterion for photo storage.
+
+[2026-07-23] + | spec/constitution/7-platform-differences.md
+- Created platform differences doc: storage layer (SQLite vs localStorage), feature availability matrix, platform guard conventions, photo feature decision, and guidelines for adding new platform-dependent features.

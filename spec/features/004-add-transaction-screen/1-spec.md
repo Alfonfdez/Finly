@@ -123,7 +123,8 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - Title: "Add photo" (multilingual).
 - Option 1: "Take photo" (multilingual) — opens the camera (requires permissions).
 - Option 2: "Add from gallery" (multilingual) — opens the gallery (requires permissions).
-- TODO: future implementation of permissions and image capture. For now only the modal with the options is displayed.
+- **Implementation**: see spec `023-photo-attachment` for full functional requirements (camera, gallery, file persistence, platform guards).
+- **Web**: the entire PhotoSection is hidden on web (platform guard `Platform.OS !== 'web'`).
 
 ### 10. Submit button
 
@@ -160,7 +161,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - [x] The tags section allows searching, creating and selecting tags.
 - [x] The "Add tag" modal validates a maximum of 20 characters.
 - [x] The comment field allows up to 4096 characters with a counter.
-- [x] The photo button opens the modal with the two options (TODO).
+- [x] The photo button opens the modal with the two options (full implementation in 023).
 - [ ] The "Add" button creates the transaction and returns to Home.
 - [x] All texts change when changing the language in settings.
 - [x] The screen respects the active theme (dark/light).
