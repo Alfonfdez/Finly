@@ -1,10 +1,11 @@
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig, Config } from '../../context/ConfigContext';
 import { useApp } from '../../context/AppContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { scaleFontSize } from '../../utils/formatters';
 import { t, getDisplayAccountName } from '../../i18n';
+import { isNative } from '../../utils/platform';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList, Period } from '../../constants/types';
 
@@ -152,7 +153,7 @@ export default function PersonalizationScreen({ navigation }: Props) {
           textSize={config.textSize}
           label={labels.settings_comments}
         />
-        {Platform.OS !== 'web' && (
+        {isNative && (
           <Checkbox
             checked={config.addShowPhoto}
             onToggle={() => updateConfig({ addShowPhoto: !config.addShowPhoto })}

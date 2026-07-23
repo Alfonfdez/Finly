@@ -259,6 +259,43 @@ import { cuentaRepository } from '../database';
 const cuentas = await cuentaRepository.listar(usuarioId);
 ```
 
+## Centralized platform checks
+**Definition:** Centralized utility module that exports platform detection constants, avoiding repeated `Platform.OS` checks across the codebase.
+**Explanation:** Instead of writing `Platform.OS === 'web'` or `Platform.OS !== 'web'` in every file, a single utility file (`src/utils/platform.ts`) exports named constants (`isWeb`, `isNative`, `isIOS`, `isAndroid`). All files import from this utility, making the code more readable and maintainable. If the platform detection logic ever changes, it only needs to be updated in one place.
+**Example:**
+```tsx
+// src/utils/platform.ts
+import { Platform } from 'react-native';
+
+export const isWeb = Platform.OS === 'web';
+export const isNative = Platform.OS !== 'web';
+export const isIOS = Platform.OS === 'ios';
+export const isAndroid = Platform.OS === 'android';
+
+// Usage in any screen
+import { isNative } from '../utils/platform';
+{config.addShowPhoto && isNative && <PhotoSection />}
+```
+
+## Centralized language checks
+**Definition:** Centralized utility module that exports language type and helper functions, avoiding repeated string comparisons across the codebase.
+**Explanation:** Instead of writing `language === 'ca'` or `language === 'es'` in every file, a single utility file (`src/utils/language.ts`) exports the `Language` type and helper functions (`isSpanish()`, `isEnglish()`, `isCatalan()`). All files import from this utility, ensuring consistency and making language-related changes easier. The type definition is also reused by ConfigContext, i18n, and formatters.
+**Example:**
+```tsx
+// src/utils/language.ts
+export type Language = 'es' | 'en' | 'ca';
+export const LANGUAGES: Language[] = ['en', 'es', 'ca'];
+export const isSpanish = (lang: Language) => lang === 'es';
+export const isEnglish = (lang: Language) => lang === 'en';
+export const isCatalan = (lang: Language) => lang === 'ca';
+
+// Usage in any screen
+import { isCatalan } from '../utils/language';
+if (isCatalan(language)) {
+  return <SenyeraIcon size={size} />;
+}
+```
+
 # UI Components
 
 ## FlatList

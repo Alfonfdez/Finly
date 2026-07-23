@@ -1822,3 +1822,33 @@
 
 [2026-07-23] ~ | spec/constitution/3-roadmap.md
 - Marked 023-photo-attachment as completed.
+
+[2026-07-23] ~ | src/screens/AddTransactionScreen.tsx
+- Fix: added photo cleanup before setting new URI in handleTakePhoto and handlePickFromGallery (deletes old photo file when replacing).
+
+[2026-07-23] ~ | src/screens/AddTransactionScreen.tsx, src/screens/ModifyTransactionScreen.tsx, src/screens/TransactionDetailsScreen.tsx
+- Added error logging (console.warn) to deletePhoto function in all three screens (was silent catch).
+
+[2026-07-23] ~ | src/screens/TransactionDetailsScreen.tsx
+- Fix: added useFocusEffect to reload transaction data when screen gains focus, so photo changes from ModifyTransactionScreen appear immediately.
+
+[2026-07-23] + | Multi-photo support (up to 3 photos per transaction)
+- PhotoSection: rewrote to support multiple photos (up to 3) with horizontal row layout, individual delete buttons, and "add" button when < 3 photos.
+- PhotoSection: added delete confirmation modal (Cancel/Delete) before removing a photo.
+- AddTransactionScreen: changed photo state from single URI to string array, stores as JSON string in DB.
+- ModifyTransactionScreen: changed photo state from single URI to string array, parses existing photo on mount (backwards compatible with old single URI).
+- TransactionDetailsScreen: displays multiple photos in a horizontal row, supports tapping to view in full-screen viewer, deletes all photos on transaction delete.
+- i18n: added photo_delete_title and photo_delete_message keys in en/es/ca.
+- Backwards compatible: existing single-photo transactions are parsed correctly.
+
+[2026-07-23] ~ | src/database/repositories/transactionRepo.ts
+- Fix: deleteAllTransactions() now cleans up photo files from documentDirectory before deleting DB records.
+- Fix: deleteByAccountId() now cleans up photo files from documentDirectory before deleting DB records.
+
+[2026-07-23] ~ | src/utils/platform.ts
+- Added centralized platform checks (isWeb, isNative, isIOS, isAndroid).
+- Updated all files to use centralized platform utils instead of Platform.OS checks.
+
+[2026-07-23] ~ | src/utils/language.ts
+- Added centralized language type and checks (Language, isSpanish, isEnglish, isCatalan).
+- Updated i18n, formatters, ConfigContext, SettingsScreen, RegionalScreen to use centralized language utils.

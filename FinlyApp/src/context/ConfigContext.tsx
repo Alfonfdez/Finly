@@ -1,15 +1,17 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Appearance, Platform } from 'react-native';
+import { Appearance } from 'react-native';
 import { ColorPalette, darkColors, lightColors } from '../constants/themes';
 import { configRepository } from '../database';
 import { setLanguage } from '../i18n';
+import { isWeb } from '../utils/platform';
+import type { Language } from '../utils/language';
 
 export interface Config {
   theme: 'dark' | 'light' | 'system';
   firstDayOfWeek: 0 | 1;
   currency: string;
   decimalSeparator: ',' | '.';
-  language: 'es' | 'en' | 'ca';
+  language: Language;
   textSize: 'small' | 'medium' | 'large';
   categoryIconShape: 'square' | 'circle';
   accountIconShape: 'square' | 'circle';
@@ -98,7 +100,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   }, [config.theme]);
 
   useEffect(() => {
-    if (Platform.OS !== 'web') return;
+    if (!isWeb) return;
     const styleId = 'finly-scrollbar-style';
     let style = document.getElementById(styleId) as HTMLStyleElement | null;
     if (!style) {

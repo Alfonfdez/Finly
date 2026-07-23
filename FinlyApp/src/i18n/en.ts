@@ -332,6 +332,8 @@ export const en = {
   details_photo: 'Photo',
   photo_viewer_close: 'Close',
   photo_remove: 'Remove photo',
+  photo_delete_title: 'Delete photo',
+  photo_delete_message: 'Are you sure you want to delete this photo?',
   type_expense: 'Expense',
   type_income: 'Income',
 

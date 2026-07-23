@@ -1,6 +1,8 @@
 import { getDatabase } from '../database';
 import { Transaction } from '../types';
 import { TransactionType } from '../../constants/types';
+import * as FileSystem from 'expo-file-system';
+import { Platform } from 'react-native';
 
 interface TransactionFilters {
   account_id?: number;
@@ -128,11 +130,51 @@ export const transactionRepo = {
   },
 
   async deleteByAccountId(accountId: number): Promise<void> {
+    if (Platform.OS !== 'web') {
+      try {
+        const db = getDatabase();
+        const rows = await db.getAllAsync<{ photo: string | null }>('SELECT photo FROM transactions WHERE account_id = ? AND photo IS NOT NULL', accountId);
+        for (const row of rows) {
+          if (row.photo) {
+            try {
+              const photos = JSON.parse(row.photo);
+              const uris = Array.isArray(photos) ? photos : [photos];
+              for (const uri of uris) {
+                const info = await FileSystem.getInfoAsync(uri);
+                if (info.exists) {
+                  await FileSystem.deleteAsync(uri);
+                }
+              }
+            } catch {}
+          }
+        }
+      } catch {}
+    }
     const db = getDatabase();
     await db.runAsync(`DELETE FROM transactions WHERE account_id = ?`, accountId);
   },
 
   async deleteAllTransactions(): Promise<void> {
+    if (Platform.OS !== 'web') {
+      try {
+        const db = getDatabase();
+        const rows = await db.getAllAsync<{ photo: string | null }>('SELECT photo FROM transactions WHERE photo IS NOT NULL');
+        for (const row of rows) {
+          if (row.photo) {
+            try {
+              const photos = JSON.parse(row.photo);
+              const uris = Array.isArray(photos) ? photos : [photos];
+              for (const uri of uris) {
+                const info = await FileSystem.getInfoAsync(uri);
+                if (info.exists) {
+                  await FileSystem.deleteAsync(uri);
+                }
+              }
+            } catch {}
+          }
+        }
+      } catch {}
+    }
     const db = getDatabase();
     await db.runAsync('DELETE FROM transactions');
     await db.runAsync('DELETE FROM transaction_tags');

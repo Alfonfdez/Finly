@@ -1,12 +1,13 @@
 import { en, Language } from './en';
 import { es } from './es';
 import { ca } from './ca';
+import type { Language as LanguageType } from '../utils/language';
 
 const languages: Record<string, Language> = { en, es, ca };
 
 let currentLanguage: Language = en;
 
-export function setLanguage(id: 'es' | 'en' | 'ca') {
+export function setLanguage(id: LanguageType) {
   currentLanguage = languages[id] ?? en;
 }
 

@@ -1,5 +1,6 @@
 import { Config } from '../context/ConfigContext';
 import { t } from '../i18n';
+import type { Language } from './language';
 
 export function formatCurrency(amount: number, currency = '€', separator: ',' | '.' = ','): string {
   const sign = amount < 0 ? '-' : '';
@@ -69,7 +70,7 @@ export function isSameDay(a: Date, b: Date): boolean {
     && a.getDate() === b.getDate();
 }
 
-export function formatDateLong(date: Date, language: 'es' | 'en' | 'ca'): string {
+export function formatDateLong(date: Date, language: Language): string {
   const day = date.getDate();
   const month = (date.getMonth() + 1);
   const year = date.getFullYear();

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import type { ReactNode } from 'react';
 import Svg, { Rect, Line } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,6 +6,9 @@ import { useConfig, Config } from '../context/ConfigContext';
 import { SettingsScreenProps } from '../constants/types';
 import { scaleFontSize } from '../utils/formatters';
 import { t } from '../i18n';
+import { isWeb } from '../utils/platform';
+import { isCatalan } from '../utils/language';
+import type { Language } from '../utils/language';
 
 function SenyeraIcon({ size = 16 }: { size?: number }) {
   return (
@@ -64,11 +67,11 @@ const FLAG_EMOJI: Record<string, string> = {
   ca: '\u{1F1F5}\u{1F1F8}',
 };
 
-function FlagIcon({ code, size = 16 }: { code: string; size?: number }) {
-  if (code === 'ca') {
+function FlagIcon({ code, size = 16 }: { code: Language; size?: number }) {
+  if (isCatalan(code)) {
     return <SenyeraIcon size={size} />;
   }
-  if (Platform.OS === 'web') {
+  if (isWeb) {
     return <>{FLAG_WEB[code] ?? null}</>;
   }
   return <Text style={{ fontSize: size }}>{FLAG_EMOJI[code] ?? ''}</Text>;

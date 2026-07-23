@@ -5,13 +5,13 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { evaluate } from '../utils/calculator';
+import { isWeb } from '../utils/platform';
 
 interface Props {
   visible: boolean;
@@ -28,7 +28,6 @@ const BUTTONS = [
 ];
 
 const OP_keys = new Set(['+', '-', '*', '/']);
-const isWeb = Platform.OS === 'web';
 
 export default function CalculatorModal({ visible, onAccept, onCancel }: Props) {
   const { activeColors } = useConfig();

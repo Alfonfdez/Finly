@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Pressable, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
@@ -10,6 +10,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayAccountName } from '../i18n';
+import { isNative } from '../utils/platform';
 import TypeTabs from '../components/TypeTabs';
 import AccountModal from '../components/AccountModal';
 import CategoryGrid from '../components/CategoryGrid';
@@ -90,7 +91,17 @@ export default function ModifyTransactionScreen() {
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const [comment, setComment] = useState(transaction?.description ?? '');
   const [commentSuggestions, setCommentSuggestions] = useState<string[]>([]);
-  const [fotoUri, setFotoUri] = useState<string | null>(transaction?.photo ?? null);
+  const [photos, setPhotos] = useState<string[]>(() => {
+    if (transaction?.photo) {
+      try {
+        const parsed = JSON.parse(transaction.photo);
+        return Array.isArray(parsed) ? parsed : [transaction.photo];
+      } catch {
+        return transaction.photo ? [transaction.photo] : [];
+      }
+    }
+    return [];
+  });
   const [submitting, setSubmitting] = useState(false);
 
   const [modalAccountVisible, setModalAccountVisible] = useState(false);
@@ -220,12 +231,18 @@ export default function ModifyTransactionScreen() {
     setModalCalendarVisible(false);
   };
 
-  const deletePhoto = async (uri: string | null) => {
-    if (!uri) return;
+  const deletePhoto = async (uri: string) => {
     try {
       const file = new File(uri);
       if (file.exists) file.delete();
-    } catch {}
+    } catch (e) {
+      console.warn('Failed to delete photo:', uri, e);
+    }
+  };
+
+  const handleRemovePhoto = async (uri: string) => {
+    await deletePhoto(uri);
+    setPhotos(prev => prev.filter(p => p !== uri));
   };
 
   const handleTakePhoto = async () => {
@@ -238,8 +255,7 @@ export default function ModifyTransactionScreen() {
       const srcFile = new File(src);
       const destFile = new File(dest);
       srcFile.copy(destFile);
-      if (fotoUri) await deletePhoto(fotoUri);
-      setFotoUri(dest);
+      setPhotos(prev => [...prev, dest]);
     }
   };
 
@@ -253,8 +269,7 @@ export default function ModifyTransactionScreen() {
       const srcFile = new File(src);
       const destFile = new File(dest);
       srcFile.copy(destFile);
-      if (fotoUri) await deletePhoto(fotoUri);
-      setFotoUri(dest);
+      setPhotos(prev => [...prev, dest]);
     }
   };
 
@@ -276,7 +291,7 @@ export default function ModifyTransactionScreen() {
         type,
         amount: numericAmount!,
         description: comment || null,
-        photo: fotoUri,
+        photo: photos.length > 0 ? JSON.stringify(photos) : null,
         date: dateStr,
       }, selectedTags);
 
@@ -423,12 +438,12 @@ export default function ModifyTransactionScreen() {
           </>
         )}
 
-        {config.addShowPhoto && Platform.OS !== 'web' && (
+        {config.addShowPhoto && isNative && (
           <PhotoSection
-            photoUri={fotoUri}
+            photos={photos}
             onTakePhoto={handleTakePhoto}
             onPickFromGallery={handlePickFromGallery}
-            onRemovePhoto={() => { deletePhoto(fotoUri); setFotoUri(null); }}
+            onRemovePhoto={handleRemovePhoto}
           />
         )}
 
