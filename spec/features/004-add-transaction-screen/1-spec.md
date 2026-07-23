@@ -44,8 +44,8 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 
 - Title: "Categories" (multilingual).
 - 4-column × 2-row grid (8 positions):
-  - The first 7 positions show categories sorted by **usage frequency** (most used first) within a **90-day window** from today.
-  - Categories with 0 transactions in the last 90 days appear after used categories, sorted alphabetically among themselves.
+  - The first 7 positions show categories sorted by **usage frequency** (most used first) within a **90-day window** from today, **scoped to the selected account**. This means the sort order adapts when the user switches accounts, showing the most relevant categories for that specific account.
+  - Categories with 0 transactions in the last 90 days for the selected account appear after used categories, sorted alphabetically among themselves.
   - The eighth position always shows a "+" icon with the text "More" (multilingual).
 - Sorting logic:
   - Primary sort: transaction count descending (categories used more often appear first).
@@ -151,8 +151,8 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - [x] The calculator icon is visible but not functional (TODO).
 - [x] The displayed account matches the one selected in Home.
 - [x] The account modal allows changing the selected account.
-- [x] 7 categories sorted by usage frequency (last 90 days) are displayed in a 4×2 grid + "More" button.
-- [x] Categories with 0 transactions appear after used ones, alphabetically sorted.
+- [x] 7 categories sorted by usage frequency (last 90 days, per-account) are displayed in a 4×2 grid + "More" button.
+- [x] Categories with 0 transactions for the selected account appear after used ones, alphabetically sorted.
 - [x] "Other" and "Others" follow the same usage-based ranking (no special position).
 - [x] The "More" button is always visible: with >7 categories navigates to Add category, with ≤7 navigates directly to Create category.
 - [x] The 3 days show the correct dates according to the described rule.

@@ -1777,3 +1777,9 @@
 - CreateAccountScreen and ModifyAccountScreen: same fix applied.
 - Removed getAllDefaultCategoryNames() and getAllDefaultAccountNames() from src/i18n/index.ts (no longer needed).
 - Lint check: 0 errors, 0 warnings.
+
+[2026-07-23] ~ | src/database/repositories/transactionRepo.ts, src/database/webStorage.ts, src/screens/AddTransactionScreen.tsx
+- Changed category usage sort from global to per-account: getCategoryUsageCounts now accepts accountId parameter and filters transactions by that account. AddTransactionScreen passes the selected accountId and refreshes usage counts when account changes. Categories now sort by relevance to the selected account.
+
+[2026-07-23] ~ | spec/features/004-add-transaction-screen/1-spec.md
+- Updated category grid sorting documentation: usage frequency is now scoped to the selected account, not global. Updated acceptance criteria.

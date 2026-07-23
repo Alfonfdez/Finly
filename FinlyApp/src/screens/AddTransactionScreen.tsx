@@ -167,11 +167,11 @@ export default function AddTransactionScreen() {
     const loadUsage = async () => {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - CATEGORY_USAGE_WINDOW_DAYS);
-      const counts = await transactionRepository.getCategoryUsageCounts(1, type, formatDateForDB(startDate));
+      const counts = await transactionRepository.getCategoryUsageCounts(1, type, formatDateForDB(startDate), accountId);
       setCategoryUsage(new Map(counts.map(c => [c.id, c.count])));
     };
     loadUsage();
-  }, [categories, type]));
+  }, [categories, type, accountId]));
 
   useEffect(() => {
     if (prevType.current !== type) {
