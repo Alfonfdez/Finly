@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, TextInput, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../../context/ConfigContext';
 import { useApp } from '../../context/AppContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
+import { isWeb } from '../../utils/platform';
 import { transactionRepository, accountRepository, categoryRepository, tagRepository } from '../../database';
 import { initWebStorage } from '../../database/webStorage';
 import { getDatabase } from '../../database/database';
@@ -42,7 +43,7 @@ export default function DataScreen({ navigation }: Props) {
       await accountRepository.deleteAll();
       await categoryRepository.deleteAll();
       await tagRepository.deleteAll();
-      if (Platform.OS === 'web') {
+      if (isWeb) {
         localStorage.clear();
         await initWebStorage();
       } else {

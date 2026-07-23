@@ -1,11 +1,14 @@
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import Svg, { Rect, Line } from 'react-native-svg';
 import { useConfig, Config } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { scaleFontSize } from '../../utils/formatters';
 import { t } from '../../i18n';
+import { isWeb } from '../../utils/platform';
+import { isCatalan } from '../../utils/language';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../constants/types';
+import type { Language } from '../../utils/language';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'SettingsRegional'>;
@@ -70,11 +73,11 @@ const FLAG_EMOJI: Record<string, string> = {
   ca: '\u{1F1F5}\u{1F1F8}',
 };
 
-function FlagIcon({ code, size = 16 }: { code: string; size?: number }) {
-  if (code === 'ca') {
+function FlagIcon({ code, size = 16 }: { code: Language; size?: number }) {
+  if (isCatalan(code)) {
     return <SenyeraIcon size={size} />;
   }
-  if (Platform.OS === 'web') {
+  if (isWeb) {
     return <>{FLAG_WEB[code] ?? null}</>;
   }
   return <Text style={{ fontSize: size }}>{FLAG_EMOJI[code] ?? ''}</Text>;

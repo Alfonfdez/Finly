@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, ComponentProps } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Image, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
@@ -10,6 +10,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { formatCurrency, formatDateLong } from '../utils/formatters';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
+import { isNative } from '../utils/platform';
 import { transactionRepository } from '../database';
 import { Transaction } from '../database/types';
 import { RootStackParamList } from '../constants/types';
@@ -31,6 +32,18 @@ export default function TransactionDetailsScreen() {
   const [tagNames, setTagNames] = useState<{ tag_id: number; name: string }[]>([]);
   const [transaction, setTransaction] = useState<Transaction | null>(null);
   const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+
+  // Parse photos from DB (supports both old single URI and new JSON array)
+  const parsedPhotos = useMemo(() => {
+    if (!transaction?.photo) return [];
+    try {
+      const parsed = JSON.parse(transaction.photo);
+      return Array.isArray(parsed) ? parsed : [transaction.photo];
+    } catch {
+      return transaction.photo ? [transaction.photo] : [];
+    }
+  }, [transaction?.photo]);
 
   useEffect(() => {
     let active = true;
@@ -41,6 +54,17 @@ export default function TransactionDetailsScreen() {
     })();
     return () => { active = false; };
   }, [transactionId]);
+
+  // Refresh transaction data when screen gains focus (after editing)
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    (async () => {
+      const data = await transactionRepository.list({});
+      if (!active) return;
+      setTransaction(data.find(tx => tx.id === transactionId) ?? null);
+    })();
+    return () => { active = false; };
+  }, [transactionId]));
 
   const category = useMemo(
     () => categories.find(cat => cat.id === transaction?.category_id),
@@ -94,19 +118,22 @@ export default function TransactionDetailsScreen() {
     return () => { active = false; };
   }, [transactionId]));
 
-  const deletePhoto = async (uri: string | null) => {
-    if (!uri) return;
+  const deletePhoto = async (uri: string) => {
     try {
       const file = new File(uri);
       if (file.exists) file.delete();
-    } catch {}
+    } catch (e) {
+      console.warn('Failed to delete photo:', uri, e);
+    }
   };
 
   const handleDelete = async () => {
     if (deleting) return;
     setDeleting(true);
     try {
-      await deletePhoto(transaction?.photo ?? null);
+      for (const uri of parsedPhotos) {
+        await deletePhoto(uri);
+      }
       await transactionRepository.delete(transactionId);
       await refresh();
       navigation.goBack();
@@ -194,11 +221,15 @@ export default function TransactionDetailsScreen() {
             )}
           </DataRow>
 
-          {transaction.photo && Platform.OS !== 'web' && (
+          {parsedPhotos.length > 0 && isNative && (
             <DataRow label={labels.details_photo} c={c} fs={fs} noBorder>
-              <TouchableOpacity onPress={() => setPhotoViewerVisible(true)}>
-                <Image source={{ uri: transaction.photo }} style={styles.photoThumbnail} />
-              </TouchableOpacity>
+              <View style={styles.photoGrid}>
+                {parsedPhotos.map((uri, index) => (
+                  <TouchableOpacity key={uri} onPress={() => { setSelectedPhotoIndex(index); setPhotoViewerVisible(true); }}>
+                    <Image source={{ uri }} style={styles.photoThumbnail} />
+                  </TouchableOpacity>
+                ))}
+              </View>
             </DataRow>
           )}
         </View>
@@ -270,8 +301,8 @@ export default function TransactionDetailsScreen() {
           <TouchableOpacity style={styles.viewerClose} onPress={() => setPhotoViewerVisible(false)}>
             <Ionicons name="close" size={28} color="#fff" />
           </TouchableOpacity>
-          {transaction.photo && (
-            <Image source={{ uri: transaction.photo }} resizeMode="contain" style={styles.viewerImage} />
+          {parsedPhotos.length > 0 && (
+            <Image source={{ uri: parsedPhotos[selectedPhotoIndex] || parsedPhotos[0] }} resizeMode="contain" style={styles.viewerImage} />
           )}
         </View>
       </Modal>
@@ -353,6 +384,10 @@ const styles = StyleSheet.create({
   },
   tagChipText: {
     fontWeight: '500',
+  },
+  photoGrid: {
+    flexDirection: 'row',
+    gap: 8,
   },
   photoThumbnail: {
     width: 48,

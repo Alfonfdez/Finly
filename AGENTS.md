@@ -70,8 +70,12 @@ FinlyApp/
     i18n/          — Translations (en, es, ca)
     navigation/    — AppNavigator (Drawer + Stack)
     screens/       — Screen components (PascalCase)
-    utils/         — Formatters, calculator
+    utils/         — Formatters, calculator, platform.ts, language.ts
 ```
+
+## UTILS
+- `src/utils/platform.ts` — Centralized platform checks (isWeb, isNative, isIOS, isAndroid)
+- `src/utils/language.ts` — Centralized language type and checks (Language, isSpanish, isEnglish, isCatalan)
 
 ## NAMING CONVENTIONS
 - Screens: `PascalCaseScreen.tsx` (e.g., `AddTransactionScreen.tsx`)

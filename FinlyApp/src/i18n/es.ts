@@ -334,6 +334,8 @@ export const es: Language = {
   details_photo: 'Foto',
   photo_viewer_close: 'Cerrar',
   photo_remove: 'Eliminar foto',
+  photo_delete_title: 'Eliminar foto',
+  photo_delete_message: '¿Estás seguro de que quieres eliminar esta foto?',
   type_expense: 'Gasto',
   type_income: 'Ingreso',
 

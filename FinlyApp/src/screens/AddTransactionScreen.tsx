@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Pressable, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -10,6 +10,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayAccountName } from '../i18n';
+import { isNative } from '../utils/platform';
 import TypeTabs from '../components/TypeTabs';
 import AccountModal from '../components/AccountModal';
 import CategoryGrid from '../components/CategoryGrid';
@@ -211,7 +212,7 @@ export default function AddTransactionScreen() {
     };
   }, [comment]);
 
-  const [fotoUri, setFotoUri] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
   const [modalAccountVisible, setModalAccountVisible] = useState(false);
@@ -281,12 +282,18 @@ export default function AddTransactionScreen() {
     setModalCalendarVisible(false);
   };
 
-  const deletePhoto = async (uri: string | null) => {
-    if (!uri) return;
+  const deletePhoto = async (uri: string) => {
     try {
       const file = new File(uri);
       if (file.exists) file.delete();
-    } catch {}
+    } catch (e) {
+      console.warn('Failed to delete photo:', uri, e);
+    }
+  };
+
+  const handleRemovePhoto = async (uri: string) => {
+    await deletePhoto(uri);
+    setPhotos(prev => prev.filter(p => p !== uri));
   };
 
   const handleTakePhoto = async () => {
@@ -299,7 +306,7 @@ export default function AddTransactionScreen() {
       const srcFile = new File(src);
       const destFile = new File(dest);
       srcFile.copy(destFile);
-      setFotoUri(dest);
+      setPhotos(prev => [...prev, dest]);
     }
   };
 
@@ -313,7 +320,7 @@ export default function AddTransactionScreen() {
       const srcFile = new File(src);
       const destFile = new File(dest);
       srcFile.copy(destFile);
-      setFotoUri(dest);
+      setPhotos(prev => [...prev, dest]);
     }
   };
 
@@ -336,7 +343,7 @@ export default function AddTransactionScreen() {
         type,
         amount: numericAmount!,
         description: comment || null,
-        photo: fotoUri,
+        photo: photos.length > 0 ? JSON.stringify(photos) : null,
         date: dateStr,
       }, selectedTags);
 
@@ -480,12 +487,12 @@ export default function AddTransactionScreen() {
           </>
         )}
 
-        {config.addShowPhoto && Platform.OS !== 'web' && (
+        {config.addShowPhoto && isNative && (
           <PhotoSection
-            photoUri={fotoUri}
+            photos={photos}
             onTakePhoto={handleTakePhoto}
             onPickFromGallery={handlePickFromGallery}
-            onRemovePhoto={() => { deletePhoto(fotoUri); setFotoUri(null); }}
+            onRemovePhoto={handleRemovePhoto}
           />
         )}
 
