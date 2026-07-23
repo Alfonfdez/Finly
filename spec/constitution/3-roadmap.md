@@ -319,6 +319,21 @@ Special "Total" account that aggregates data from all existing accounts:
 
 Spec: spec/features/022-total-account/.
 
+## 023-photo-attachment
+Status: pending.
+
+Photo attachment for transactions (camera + gallery) on iOS and Android:
+- PhotoSection component with camera and gallery options (expo-image-picker).
+- Photo file persistence via expo-file-system (cache → documentDirectory).
+- Photo display in TransactionDetailsScreen with full-screen viewer.
+- Photo preloading and replacement in ModifyTransactionScreen.
+- File cleanup on transaction delete, photo replace, and photo remove.
+- Hidden on web (localStorage quota limitations).
+- "Show photo" checkbox hidden in Settings on web.
+- Photo column added directly to 001_initial.ts (no migration — app not in production).
+
+Spec: spec/features/023-photo-attachment/.
+
 ## 001-expo-sqlite-wal-cleanup (infrastructure)
 Status: completed.
 

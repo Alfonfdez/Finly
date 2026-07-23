@@ -7,7 +7,7 @@
   1. Local user (single default user, `id = 1`) with name, email, avatar, and currency.
   2. Full CRUD for accounts: each account belongs to a user, has a name, initial balance, icon, color, optional description, and an `is_total` flag (0=regular, 1=special "Total" account that aggregates all accounts).
   3. Full CRUD for categories: each category belongs to a user, has a name, icon, color, and type (`expense` / `income`).
-  4. Full CRUD for transactions: each transaction belongs to an account and a category, has a type (`expense` / `income`), amount, description, date, and an `updated_at` column.
+   4. Full CRUD for transactions: each transaction belongs to an account and a category, has a type (`expense` / `income`), amount, description, date, `updated_at` column, and an optional `photo` column (stores the file URI of an attached receipt/invoice image, null when no photo).
   5. Full CRUD for tags (global, not tied to a type) and a `transaction_tags` junction table (many-to-many) for tagging transactions.
   6. Key-value `config` table that stores user preferences (theme, language, currency, first day of week, text size, decimal separator, icon shapes).
   7. Efficient queries by period (day, week, month, year, custom range) and by type (`expense` / `income`).
@@ -74,6 +74,7 @@ CREATE TABLE transactions (
   type TEXT NOT NULL CHECK(type IN ('expense', 'income')),
   amount REAL NOT NULL CHECK(amount > 0),
   description TEXT,
+  photo TEXT,
   date TEXT NOT NULL,
   updated_at TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
@@ -146,3 +147,4 @@ CREATE INDEX idx_transaction_tags_tag ON transaction_tags(tag_id);
   - [x] After bulk deletion, `resetAll()` re-fetches all data and re-applies home defaults.
   - [x] Insertions and queries do not block the user interface.
   - [x] TypeScript type names match the code: `User`, `Account`, `Category`, `Transaction`, `Tag`, `TransactionTag`, `Config`.
+  - [x] The `photo` column in transactions stores an optional file URI (TEXT, nullable) for attached receipt images.

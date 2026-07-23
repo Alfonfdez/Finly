@@ -40,6 +40,14 @@ Each field is displayed in a row with a label on the left (gray, `textSecondary`
 - If `transaction.description` is `null` or an empty string, the text "No comment" / "Sin comentario" / "Sense comentari" is displayed in `textSecondary` color without background.
 - If there is a comment, the full text is displayed in `text` color.
 
+### 5. Photo
+
+- A "Photo" row (i18n key `details_photo`) appears after the Tags row, but only if the transaction has a photo (`transaction.photo` is not null) and the platform is not web.
+- Shows a tappable thumbnail (max width 200, aspect ratio preserved).
+- Tapping opens a full-screen image viewer: a `<Modal>` with black background, the image displayed with `resizeMode: 'contain'`, and a close button ("×" icon) in the top-right corner (i18n key `photo_viewer_close`).
+- If no photo, the row is hidden entirely (not showing "—").
+- **Implementation**: see spec `023-photo-attachment` for full functional requirements.
+
 ### 5. "Delete" button
 
 - Button with `trash-outline` icon and "Delete" text (key `details_delete`, multilingual).
@@ -90,6 +98,8 @@ Each field is displayed in a row with a label on the left (gray, `textSecondary`
 - [ ] The "Category" section shows icon + category name.
 - [ ] The "Date" section displays the date in long format according to the language.
 - [ ] The "Comment" section is always shown; if empty, "No comment" appears in gray.
+- [ ] The "Photo" row shows a thumbnail when a photo exists (hidden on web, hidden when no photo).
+- [ ] Tapping the photo thumbnail opens a full-screen viewer with close button.
 - [ ] The "Delete" button shows a confirmation modal with "No" and "Yes".
 - [ ] Confirming "Yes" deletes the transaction and returns to the previous screen.
 - [ ] The "Edit" button navigates to `ModifyTransaction` with `transactionId` (TODO).
