@@ -1808,3 +1808,17 @@
 
 [2026-07-23] + | spec/constitution/7-platform-differences.md
 - Created platform differences doc: storage layer (SQLite vs localStorage), feature availability matrix, platform guard conventions, photo feature decision, and guidelines for adding new platform-dependent features.
+
+[2026-07-23] + | Feature 023 — Photo Attachment (code implementation)
+- Added `photo TEXT` column to transactions table (001_initial.ts) and Transaction type.
+- Updated transactionRepo create/update to include photo field.
+- Installed expo-image-picker (SDK 54 compatible).
+- AddTransactionScreen: implemented camera + gallery handlers with expo-file-system (new API: File, Paths.document), photo state setter, web guard, pass photo to createWithTags.
+- ModifyTransactionScreen: same handlers, initializes from transaction.photo, deletes old photo on replace, web guard, pass photo to updateWithTags.
+- PhotoSection: added onRemovePhoto prop, Image thumbnail when photoUri set, "×" remove button overlay.
+- TransactionDetailsScreen: photo DataRow with thumbnail, full-screen image viewer Modal, deletePhoto in handleDelete.
+- PersonalizationScreen: wrapped photo Checkbox with Platform.OS !== 'web' guard.
+- i18n: added details_photo, photo_viewer_close, photo_remove in en/es/ca.
+
+[2026-07-23] ~ | spec/constitution/3-roadmap.md
+- Marked 023-photo-attachment as completed.

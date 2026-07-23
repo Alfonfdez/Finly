@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Pressable } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Pressable, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import * as ImagePicker from 'expo-image-picker';
+import { File, Paths } from 'expo-file-system';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -88,7 +90,7 @@ export default function ModifyTransactionScreen() {
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const [comment, setComment] = useState(transaction?.description ?? '');
   const [commentSuggestions, setCommentSuggestions] = useState<string[]>([]);
-  const [fotoUri] = useState<string | null>(null);
+  const [fotoUri, setFotoUri] = useState<string | null>(transaction?.photo ?? null);
   const [submitting, setSubmitting] = useState(false);
 
   const [modalAccountVisible, setModalAccountVisible] = useState(false);
@@ -218,8 +220,43 @@ export default function ModifyTransactionScreen() {
     setModalCalendarVisible(false);
   };
 
-  const handleTakePhoto = () => {};
-  const handlePickFromGallery = () => {};
+  const deletePhoto = async (uri: string | null) => {
+    if (!uri) return;
+    try {
+      const file = new File(uri);
+      if (file.exists) file.delete();
+    } catch {}
+  };
+
+  const handleTakePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') return;
+    const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.7 });
+    if (!result.canceled && result.assets[0]) {
+      const src = result.assets[0].uri;
+      const dest = Paths.document.uri + `photo_${Date.now()}.jpg`;
+      const srcFile = new File(src);
+      const destFile = new File(dest);
+      srcFile.copy(destFile);
+      if (fotoUri) await deletePhoto(fotoUri);
+      setFotoUri(dest);
+    }
+  };
+
+  const handlePickFromGallery = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') return;
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7 });
+    if (!result.canceled && result.assets[0]) {
+      const src = result.assets[0].uri;
+      const dest = Paths.document.uri + `photo_${Date.now()}.jpg`;
+      const srcFile = new File(src);
+      const destFile = new File(dest);
+      srcFile.copy(destFile);
+      if (fotoUri) await deletePhoto(fotoUri);
+      setFotoUri(dest);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!canSubmit || submitting || !transaction) return;
@@ -239,6 +276,7 @@ export default function ModifyTransactionScreen() {
         type,
         amount: numericAmount!,
         description: comment || null,
+        photo: fotoUri,
         date: dateStr,
       }, selectedTags);
 
@@ -385,11 +423,12 @@ export default function ModifyTransactionScreen() {
           </>
         )}
 
-        {config.addShowPhoto && (
+        {config.addShowPhoto && Platform.OS !== 'web' && (
           <PhotoSection
             photoUri={fotoUri}
             onTakePhoto={handleTakePhoto}
             onPickFromGallery={handlePickFromGallery}
+            onRemovePhoto={() => { deletePhoto(fotoUri); setFotoUri(null); }}
           />
         )}
 

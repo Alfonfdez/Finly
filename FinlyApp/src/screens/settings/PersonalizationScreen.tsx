@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig, Config } from '../../context/ConfigContext';
 import { useApp } from '../../context/AppContext';
@@ -119,7 +119,7 @@ export default function PersonalizationScreen({ navigation }: Props) {
         <SelectorRadio
           options={PERIODS}
           selected={config.homeDefaultPeriod}
-          onSelect={(v) => updateConfig({ homeDefaultPeriod: v as Period })}
+          onSelect={(v) => updateConfig({ homeDefaultPeriod: v as Config['homeDefaultPeriod'] })}
           colors={c}
           textSize={config.textSize}
         />
@@ -152,13 +152,15 @@ export default function PersonalizationScreen({ navigation }: Props) {
           textSize={config.textSize}
           label={labels.settings_comments}
         />
-        <Checkbox
-          checked={config.addShowPhoto}
-          onToggle={() => updateConfig({ addShowPhoto: !config.addShowPhoto })}
-          colors={c}
-          textSize={config.textSize}
-          label={labels.settings_photo}
-        />
+        {Platform.OS !== 'web' && (
+          <Checkbox
+            checked={config.addShowPhoto}
+            onToggle={() => updateConfig({ addShowPhoto: !config.addShowPhoto })}
+            colors={c}
+            textSize={config.textSize}
+            label={labels.settings_photo}
+          />
+        )}
       </View>
 
       <Text style={[styles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_privacy}</Text>

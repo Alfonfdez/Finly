@@ -331,6 +331,9 @@ export const es: Language = {
   details_edit: 'Editar',
   details_created: 'Creado',
   details_updated: 'Actualizado',
+  details_photo: 'Foto',
+  photo_viewer_close: 'Cerrar',
+  photo_remove: 'Eliminar foto',
   type_expense: 'Gasto',
   type_income: 'Ingreso',
 

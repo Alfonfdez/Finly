@@ -131,7 +131,8 @@ export function getDefaultAccountIdByName(name: string): number | null {
   return null;
 }
 
-export function getDisplayAccountDescription(account: { id: number; description: string }): string {
+export function getDisplayAccountDescription(account: { id: number; description?: string }): string {
+  if (!account.description) return '';
   const key = ACCOUNT_DESCRIPTION_I18N_KEYS[account.id];
   if (key && en[key] && account.description === en[key]) {
     return currentLanguage[key] as string;

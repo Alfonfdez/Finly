@@ -289,7 +289,7 @@ export default function AllTransactionsScreen() {
         visible={calendarVisible}
         onOpen={() => setCalendarVisible(true)}
         onClose={() => setCalendarVisible(false)}
-        firstDay={config.firstDayOfWeek === 'monday' ? 1 : 0}
+        firstDay={config.firstDayOfWeek}
       />
 
       <TagFilterBar

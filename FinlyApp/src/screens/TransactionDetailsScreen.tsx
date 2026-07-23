@@ -1,9 +1,10 @@
 import { useState, useMemo, useCallback, useEffect, ComponentProps } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Image, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { File } from 'expo-file-system';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -29,6 +30,7 @@ export default function TransactionDetailsScreen() {
   const [deleting, setDeleting] = useState(false);
   const [tagNames, setTagNames] = useState<{ tag_id: number; name: string }[]>([]);
   const [transaction, setTransaction] = useState<Transaction | null>(null);
+  const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -92,10 +94,19 @@ export default function TransactionDetailsScreen() {
     return () => { active = false; };
   }, [transactionId]));
 
+  const deletePhoto = async (uri: string | null) => {
+    if (!uri) return;
+    try {
+      const file = new File(uri);
+      if (file.exists) file.delete();
+    } catch {}
+  };
+
   const handleDelete = async () => {
     if (deleting) return;
     setDeleting(true);
     try {
+      await deletePhoto(transaction?.photo ?? null);
       await transactionRepository.delete(transactionId);
       await refresh();
       navigation.goBack();
@@ -182,6 +193,14 @@ export default function TransactionDetailsScreen() {
               </Text>
             )}
           </DataRow>
+
+          {transaction.photo && Platform.OS !== 'web' && (
+            <DataRow label={labels.details_photo} c={c} fs={fs} noBorder>
+              <TouchableOpacity onPress={() => setPhotoViewerVisible(true)}>
+                <Image source={{ uri: transaction.photo }} style={styles.photoThumbnail} />
+              </TouchableOpacity>
+            </DataRow>
+          )}
         </View>
 
         <View style={styles.actionSection}>
@@ -243,6 +262,17 @@ export default function TransactionDetailsScreen() {
               </TouchableOpacity>
             </View>
           </View>
+        </View>
+      </Modal>
+
+      <Modal visible={photoViewerVisible} transparent animationType="fade" onRequestClose={() => setPhotoViewerVisible(false)}>
+        <View style={styles.viewerOverlay}>
+          <TouchableOpacity style={styles.viewerClose} onPress={() => setPhotoViewerVisible(false)}>
+            <Ionicons name="close" size={28} color="#fff" />
+          </TouchableOpacity>
+          {transaction.photo && (
+            <Image source={{ uri: transaction.photo }} resizeMode="contain" style={styles.viewerImage} />
+          )}
         </View>
       </Modal>
     </SafeAreaView>
@@ -323,6 +353,28 @@ const styles = StyleSheet.create({
   },
   tagChipText: {
     fontWeight: '500',
+  },
+  photoThumbnail: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+  },
+  viewerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  viewerClose: {
+    position: 'absolute',
+    top: 48,
+    right: 24,
+    zIndex: 1,
+    padding: 8,
+  },
+  viewerImage: {
+    width: '90%',
+    height: '80%',
   },
   timestamps: {
     marginHorizontal: 16,

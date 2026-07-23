@@ -320,7 +320,7 @@ Special "Total" account that aggregates data from all existing accounts:
 Spec: spec/features/022-total-account/.
 
 ## 023-photo-attachment
-Status: pending.
+Status: completed.
 
 Photo attachment for transactions (camera + gallery) on iOS and Android:
 - PhotoSection component with camera and gallery options (expo-image-picker).

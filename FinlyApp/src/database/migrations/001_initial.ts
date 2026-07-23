@@ -42,6 +42,7 @@ export async function createSchema(db: SQLiteDatabase) {
       type TEXT NOT NULL CHECK(type IN ('expense', 'income')),
       amount REAL NOT NULL CHECK(amount > 0),
       description TEXT,
+      photo TEXT,
       date TEXT NOT NULL,
       updated_at TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),

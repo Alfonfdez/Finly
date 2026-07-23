@@ -38,6 +38,7 @@ export interface Transaction {
   type: TransactionType;
   amount: number;
   description: string | null;
+  photo: string | null;
   date: string;
   created_at: string;
   updated_at: string | null;
