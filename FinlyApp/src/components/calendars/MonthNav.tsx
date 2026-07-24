@@ -1,8 +1,8 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, StyleSheet } from 'react-native';
 import { getMonthName } from '../../utils/formatters';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
+import NavArrows from './NavArrows';
 
 interface Props {
   year: number;
@@ -27,17 +27,13 @@ export default function MonthNav({ year, month, onChange }: Props) {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => goToMonth(-1)}>
-        <Ionicons name="chevron-back-outline" size={22} color={c.text} />
-      </TouchableOpacity>
+      <NavArrows
+        color={c.text}
+        onPrev={() => goToMonth(-1)}
+        onNext={() => goToMonth(1)}
+        nextDisabled={isLast}
+      />
       <Text style={{ color: c.text, fontSize: fs(16), fontWeight: '700' }}>{getMonthName(month)} {year}</Text>
-      <TouchableOpacity
-        onPress={() => goToMonth(1)}
-        style={{ opacity: isLast ? 0.3 : 1 }}
-        disabled={isLast}
-      >
-        <Ionicons name="chevron-forward-outline" size={22} color={c.text} />
-      </TouchableOpacity>
     </View>
   );
 }

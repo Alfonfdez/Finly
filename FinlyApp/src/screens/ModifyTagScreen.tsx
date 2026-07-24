@@ -8,6 +8,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
+import { colors } from '../constants/colors';
 import { tagRepository } from '../database';
 import { RootStackParamList } from '../constants/types';
 
@@ -150,7 +151,7 @@ export default function ModifyTagScreen() {
                   handleDelete();
                 }}
               >
-                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
+                <Text style={[styles.modalButtonText, { color: colors.white, fontSize: fs(14) }]}>
                   {labels.modify_tag_delete_confirm_delete}
                 </Text>
               </TouchableOpacity>

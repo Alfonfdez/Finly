@@ -1,9 +1,10 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
+import { colors } from '../constants/colors';
 
 export const QUICK_COLORS = [
-  '#22D3EE', '#F87171', '#34D399', '#FBBF24',
+  colors.primary, colors.red, colors.green, '#FBBF24',
   '#F472B6', '#60A5FA',
 ];
 
@@ -34,7 +35,7 @@ export default function ColorGrid({ selectedColor, customColor, onSelect, onOpen
             accessibilityState={{ selected: isSelected }}
           >
             {isSelected && (
-              <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+              <Ionicons name="checkmark" size={14} color={colors.white} />
             )}
           </TouchableOpacity>
         );
@@ -51,16 +52,16 @@ export default function ColorGrid({ selectedColor, customColor, onSelect, onOpen
           accessibilityState={{ selected: selectedColor === customColor }}
         >
           {selectedColor === customColor && (
-            <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+            <Ionicons name="checkmark" size={14} color={colors.white} />
           )}
         </TouchableOpacity>
       )}
       <TouchableOpacity
-        style={[styles.circle, { backgroundColor: '#94A3B8' }]}
+        style={[styles.circle, { backgroundColor: colors.textSecondary }]}
         onPress={onOpenPicker}
         accessibilityLabel="More colors"
       >
-        <Ionicons name="add" size={18} color="#FFFFFF" />
+        <Ionicons name="add" size={18} color={colors.white} />
       </TouchableOpacity>
     </View>
   );

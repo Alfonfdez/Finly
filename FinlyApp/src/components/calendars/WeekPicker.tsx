@@ -6,6 +6,7 @@ import MonthNav from './MonthNav';
 import YearNav from './YearNav';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
+import { FUTURE_OPACITY } from './calendarStyles';
 
 interface Props extends CalendarBaseProps {
   firstDay?: 0 | 1;
@@ -65,7 +66,7 @@ export default function WeekPicker({ date, onSelect, firstDay = 1 }: Props) {
           return (
             <TouchableOpacity
               key={i}
-              style={[styles.weekRow, { backgroundColor: c.surface }, isSelected && { backgroundColor: c.primary }, isFuture && styles.futureWeek]}
+              style={[styles.weekRow, { backgroundColor: c.surface }, isSelected && { backgroundColor: c.primary }, isFuture && { opacity: FUTURE_OPACITY }]}
               onPress={() => !isFuture && onSelect(week.start)}
               disabled={isFuture}
             >
@@ -83,5 +84,4 @@ export default function WeekPicker({ date, onSelect, firstDay = 1 }: Props) {
 const styles = StyleSheet.create({
   container: { padding: 8 },
   weekRow: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8, marginBottom: 4 },
-  futureWeek: { opacity: 0.3 },
 });

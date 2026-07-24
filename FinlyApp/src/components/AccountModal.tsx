@@ -6,6 +6,7 @@ import { formatCurrency } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayAccountName } from '../i18n';
+import { colors } from '../constants/colors';
 import EyeToggle from './EyeToggle';
 
 interface AccountWithBalance extends Account {
@@ -79,7 +80,7 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
               <Text style={[styles.btnText, { color: c.text, fontSize: fs(14) }]}>{labels.transactions_cancel}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.btn, { backgroundColor: c.primary }]} onPress={() => onSelect(tempId!)}>
-              <Text style={[styles.btnText, { color: '#FFFFFF', fontSize: fs(14) }]}>{labels.transactions_confirm}</Text>
+              <Text style={[styles.btnText, { color: colors.white, fontSize: fs(14) }]}>{labels.transactions_confirm}</Text>
             </TouchableOpacity>
           </View>
         </View>

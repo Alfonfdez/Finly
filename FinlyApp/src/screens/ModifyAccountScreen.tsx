@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  StyleSheet, Keyboard, Platform, LayoutChangeEvent, Modal,
+  StyleSheet, Keyboard, LayoutChangeEvent, Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +11,8 @@ import { useConfig, Config } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayAccountName, getDefaultEnglishAccountName, getAccountName, getDefaultAccountIdByName, getDisplayAccountDescription, getDefaultEnglishAccountDescription, getAccountDescription } from '../i18n';
+import { isAndroid } from '../utils/platform';
+import { colors } from '../constants/colors';
 import { accountRepository } from '../database';
 import { Account } from '../database/types';
 import { RootStackParamList } from '../constants/types';
@@ -220,7 +222,7 @@ export default function ModifyAccountScreen() {
                   {
                     backgroundColor: c.surface,
                     color: c.text,
-                    borderColor: nameError || (nameTouched && name.trim().length === 0) ? '#F87171' : c.border,
+                    borderColor: nameError || (nameTouched && name.trim().length === 0) ? colors.red : c.border,
                     fontSize: fs(14),
                   },
                 ]}
@@ -242,7 +244,7 @@ export default function ModifyAccountScreen() {
           <View style={styles.grid} onLayout={onGridLayout}>
             {cellSize > 0 && ACCOUNT_ICONS.map((icon) => {
               const isSelected = selectedIcon === icon;
-              const iconColor = isSelected && selectedColor ? selectedColor : (isSelected ? c.primary : '#94A3B8');
+              const iconColor = isSelected && selectedColor ? selectedColor : (isSelected ? c.primary : colors.textSecondary);
               const bgColor = isSelected && selectedColor ? selectedColor + '33' : (isSelected ? c.primary + '33' : c.surface);
               const borderColor = isSelected ? (selectedColor || c.primary) : 'transparent';
               return (
@@ -310,7 +312,7 @@ export default function ModifyAccountScreen() {
           </Text>
 
           {hintText && (
-            <Text style={[styles.hint, { color: '#F87171', fontSize: fs(12) }]}>
+            <Text style={[styles.hint, { color: colors.red, fontSize: fs(12) }]}>
               {hintText}
             </Text>
           )}
@@ -322,14 +324,14 @@ export default function ModifyAccountScreen() {
                   styles.deleteButton,
                   isLastAccount
                     ? { borderColor: c.border, opacity: 0.5 }
-                    : { borderColor: '#F87171' },
+                    : { borderColor: colors.red },
                 ]}
                 onPress={() => !isLastAccount && setDeleteModalVisible(true)}
                 disabled={isLastAccount}
                 accessibilityState={{ disabled: isLastAccount }}
               >
-                <Ionicons name="trash-outline" size={18} color={isLastAccount ? c.textSecondary : '#F87171'} />
-                <Text style={[styles.deleteButtonText, { color: isLastAccount ? c.textSecondary : '#F87171', fontSize: fs(15) }]}>
+                <Ionicons name="trash-outline" size={18} color={isLastAccount ? c.textSecondary : colors.red} />
+                <Text style={[styles.deleteButtonText, { color: isLastAccount ? c.textSecondary : colors.red, fontSize: fs(15) }]}>
                   {labels.modify_account_delete}
                 </Text>
               </TouchableOpacity>
@@ -345,17 +347,17 @@ export default function ModifyAccountScreen() {
           <TouchableOpacity
             style={[
               styles.button,
-              { backgroundColor: canSave ? c.primary : '#475569' },
+              { backgroundColor: canSave ? c.primary : colors.disabled },
             ]}
             onPress={handleSave}
             disabled={!canSave}
           >
-            <Text style={[styles.buttonText, { color: '#FFFFFF', fontSize: fs(15) }]}>
+            <Text style={[styles.buttonText, { color: colors.white, fontSize: fs(15) }]}>
               {labels.modify_account_save}
             </Text>
           </TouchableOpacity>
 
-          {Platform.OS === 'android' && <View style={styles.keyboardSpacer} />}
+          {isAndroid && <View style={styles.keyboardSpacer} />}
         </ScrollView>
       </View>
     </SafeAreaView>
@@ -379,10 +381,10 @@ export default function ModifyAccountScreen() {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: '#F87171' }]}
+                style={[styles.modalButton, { backgroundColor: colors.red }]}
                 onPress={handleDeleteConfirm}
               >
-                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
+                <Text style={[styles.modalButtonText, { color: colors.white, fontSize: fs(14) }]}>
                   {labels.modify_account_delete_confirm_delete}
                 </Text>
               </TouchableOpacity>

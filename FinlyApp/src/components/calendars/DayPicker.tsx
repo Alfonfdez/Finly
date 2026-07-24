@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { getDaysInMonth, isSameDay, isFutureDate } from '../../utils/formatters';
 import { CalendarBaseProps } from './types';
@@ -6,6 +6,7 @@ import MonthNav from './MonthNav';
 import { useConfig } from '../../context/ConfigContext';
 import { t } from '../../i18n';
 import { useFontSize } from '../../hooks/useFontSize';
+import { FUTURE_OPACITY } from './calendarStyles';
 
 interface Props extends CalendarBaseProps {
   rangeStart?: Date | null;
@@ -23,7 +24,7 @@ function getDayOffset(dayDate: Date, firstDay: 0 | 1): number {
 }
 
 export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initialView, firstDay = 1 }: Props) {
-  const today = new Date();
+  const today = useMemo(() => new Date(), []);
   const [year, setYear] = useState((initialView ?? date).getFullYear());
   const [month, setMonth] = useState((initialView ?? date).getMonth() + 1);
   const { activeColors: c } = useConfig();
@@ -64,7 +65,7 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
           return (
             <TouchableOpacity
               key={day}
-              style={[styles.day, isFuture && styles.futureDay]}
+              style={[styles.day, isFuture && { opacity: FUTURE_OPACITY }]}
               onPress={() => !isFuture && onSelect(dayDate)}
               disabled={isFuture}
             >
@@ -109,6 +110,5 @@ const styles = StyleSheet.create({
   dayCenter: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   todayBorder: { borderWidth: 1 },
   selectedDay: {},
-  futureDay: { opacity: 0.3 },
   dayText: { textAlign: 'center' },
 });

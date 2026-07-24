@@ -11,6 +11,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { formatCurrency, formatDateLong } from '../utils/formatters';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
 import { isNative } from '../utils/platform';
+import { colors } from '../constants/colors';
 import { transactionRepository } from '../database';
 import { Transaction } from '../database/types';
 import { RootStackParamList } from '../constants/types';
@@ -236,11 +237,11 @@ export default function TransactionDetailsScreen() {
 
         <View style={styles.actionSection}>
           <TouchableOpacity
-            style={[styles.actionButton, { borderColor: '#F87171' }]}
+            style={[styles.actionButton, { borderColor: colors.red }]}
             onPress={() => setDeleteModalVisible(true)}
           >
-            <Ionicons name="trash-outline" size={18} color="#F87171" />
-            <Text style={[styles.actionButtonText, { color: '#F87171', fontSize: fs(15) }]}>
+            <Ionicons name="trash-outline" size={18} color={colors.red} />
+            <Text style={[styles.actionButtonText, { color: colors.red, fontSize: fs(15) }]}>
               {labels.details_delete}
             </Text>
           </TouchableOpacity>
@@ -284,10 +285,10 @@ export default function TransactionDetailsScreen() {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: '#F87171' }]}
+                style={[styles.modalButton, { backgroundColor: colors.red }]}
                 onPress={handleDelete}
               >
-                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
+                <Text style={[styles.modalButtonText, { color: colors.white, fontSize: fs(14) }]}>
                   {labels.details_delete_yes}
                 </Text>
               </TouchableOpacity>
@@ -299,7 +300,7 @@ export default function TransactionDetailsScreen() {
       <Modal visible={photoViewerVisible} transparent animationType="fade" onRequestClose={() => setPhotoViewerVisible(false)}>
         <View style={styles.viewerOverlay}>
           <TouchableOpacity style={styles.viewerClose} onPress={() => setPhotoViewerVisible(false)}>
-            <Ionicons name="close" size={28} color="#fff" />
+            <Ionicons name="close" size={28} color={colors.white} />
           </TouchableOpacity>
           {parsedPhotos.length > 0 && (
             <Image source={{ uri: parsedPhotos[selectedPhotoIndex] || parsedPhotos[0] }} resizeMode="contain" style={styles.viewerImage} />

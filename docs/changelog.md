@@ -1852,3 +1852,47 @@
 [2026-07-23] ~ | src/utils/language.ts
 - Added centralized language type and checks (Language, isSpanish, isEnglish, isCatalan).
 - Updated i18n, formatters, ConfigContext, SettingsScreen, RegionalScreen to use centralized language utils.
+
+[2026-07-23] ~ | src/constants/colors.ts
+- Added white color constant (#FFFFFF).
+- Updated 15 files to use colors.white instead of hardcoded '#FFFFFF'.
+- Fixed 4 remaining Platform.OS checks to use isAndroid from utils/platform.ts.
+
+[2026-07-24] ~ | src/constants/colors.ts
+- Added disabled (#475569) and flagColors (senyeraYellow, senyeraRed, spainRed, spainYellow) to centralized color palette.
+
+[2026-07-24] ~ | src/components/IconGrid.tsx, ColorGrid.tsx, screens/ (CreateAccountScreen, CreateCategoryScreen, ModifyAccountScreen, ModifyCategoryScreen, TransactionDetailsScreen, DataScreen)
+- Replaced all remaining hardcoded '#F87171' → colors.red, '#94A3B8' → colors.textSecondary, '#475569' → colors.disabled across 15 files.
+
+[2026-07-24] ~ | src/screens/SettingsScreen.tsx, src/screens/settings/RegionalScreen.tsx
+- Replaced hardcoded flag colors ('#FCDD09', '#DA2919', '#AA151B', '#F1BF00') → flagColors.* in SenyeraIcon and SpainFlagWeb components.
+
+[2026-07-24] ~ | src/components/ColorGrid.tsx, IconGrid.tsx, PhotoSection.tsx, screens/ (ModifyCategoryScreen, TransactionDetailsScreen)
+- Replaced all hardcoded color strings in Ionicons (color="#FFFFFF", color="#F87171", color="#fff") → colors.white / colors.red. Zero remaining hardcoded Ionicon colors.
+
+[2026-07-24] + | src/components/calendars/NavArrows.tsx
+- Created shared navigation arrows component with prev/next chevron buttons, onPrev/onNext/nextDisabled/color props. Used by YearNav, MonthNav, and YearGrid.
+
+[2026-07-24] + | src/components/calendars/calendarStyles.ts
+- Created shared calendar styles: grid, gridItem, gridItemInner, gridItemText, and FUTURE_OPACITY constant. Used by MonthGrid and YearGrid.
+
+[2026-07-24] ~ | src/components/calendars/YearNav.tsx
+- Refactored to use NavArrows component instead of inline Ionicons chevrons.
+
+[2026-07-24] ~ | src/components/calendars/MonthNav.tsx
+- Refactored to use NavArrows component instead of inline Ionicons chevrons.
+
+[2026-07-24] ~ | src/components/calendars/YearGrid.tsx
+- Refactored to use NavArrows for navigation and calendarStyles for grid/item styles. Removed duplicated inline styles.
+
+[2026-07-24] ~ | src/components/calendars/MonthGrid.tsx
+- Refactored to use calendarStyles for grid/item styles. Removed duplicated local styles.
+
+[2026-07-24] ~ | src/components/calendars/DayPicker.tsx
+- Added useMemo for today, replaced hardcoded futureDay opacity with FUTURE_OPACITY constant.
+
+[2026-07-24] ~ | src/components/calendars/WeekPicker.tsx
+- Replaced hardcoded futureWeek opacity with FUTURE_OPACITY constant.
+
+[2026-07-24] ~ | src/components/calendars/PeriodPicker.tsx
+- Fixed Spanish variable names: ANIO_MINIMO → MIN_YEAR, nuevoEstado → nextAllTime, i/f → start/end.

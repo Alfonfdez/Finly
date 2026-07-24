@@ -5,7 +5,7 @@ import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
 
-const ANIO_MINIMO = new Date().getFullYear();
+const MIN_YEAR = new Date().getFullYear();
 
 interface Props {
   tempStart: Date;
@@ -22,13 +22,13 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange, fi
   const labels = t();
   const shortMonths = labels.months_short;
 
-  const minDate = useMemo(() => new Date(ANIO_MINIMO, 0, 1), []);
+  const minDate = useMemo(() => new Date(MIN_YEAR, 0, 1), []);
   const today = useMemo(() => new Date(), []);
 
   const handleAllTime = useCallback(() => {
-    const nuevoEstado = !allTime;
-    setAllTime(nuevoEstado);
-    if (nuevoEstado) {
+    const nextAllTime = !allTime;
+    setAllTime(nextAllTime);
+    if (nextAllTime) {
       onTempRangeChange(minDate, today);
     }
   }, [allTime, onTempRangeChange, minDate, today]);
@@ -39,9 +39,9 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange, fi
       onTempRangeChange(d, d);
       setSelecting('end');
     } else {
-      const i = tempStart < d ? tempStart : d;
-      const f = tempStart < d ? d : tempStart;
-      onTempRangeChange(i, f);
+      const start = tempStart < d ? tempStart : d;
+      const end = tempStart < d ? d : tempStart;
+      onTempRangeChange(start, end);
     }
   }, [selecting, tempStart, allTime, onTempRangeChange]);
 

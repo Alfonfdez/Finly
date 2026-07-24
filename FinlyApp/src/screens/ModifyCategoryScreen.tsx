@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  Modal, StyleSheet, Keyboard, Platform, LayoutChangeEvent,
+  Modal, StyleSheet, Keyboard, LayoutChangeEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +11,8 @@ import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdByName } from '../i18n';
+import { isAndroid } from '../utils/platform';
+import { colors } from '../constants/colors';
 import { categoryRepository, transactionRepository } from '../database';
 import { RootStackParamList } from '../constants/types';
 import { CATEGORY_ICONS } from '../components/IconGrid';
@@ -228,7 +230,7 @@ export default function ModifyCategoryScreen() {
                   {
                     backgroundColor: c.surface,
                     color: c.text,
-                    borderColor: nameError ? '#F87171' : c.border,
+                    borderColor: nameError ? colors.red : c.border,
                     fontSize: fs(14),
                   },
                 ]}
@@ -244,7 +246,7 @@ export default function ModifyCategoryScreen() {
                 {name.length}/{MAX_NAME_LENGTH}
               </Text>
               {validationError && (
-                <Text style={[styles.errorText, { color: '#F87171', fontSize: fs(12) }]}>
+                <Text style={[styles.errorText, { color: colors.red, fontSize: fs(12) }]}>
                   {validationError}
                 </Text>
               )}
@@ -264,7 +266,7 @@ export default function ModifyCategoryScreen() {
           <View style={styles.grid} onLayout={onGridLayout}>
             {cellSize > 0 && CATEGORY_ICONS.map((icon) => {
               const isSelected = selectedIcon === icon;
-              const iconColor = isSelected && selectedColor ? selectedColor : (isSelected ? c.primary : '#94A3B8');
+              const iconColor = isSelected && selectedColor ? selectedColor : (isSelected ? c.primary : colors.textSecondary);
               const bgColor = isSelected && selectedColor ? selectedColor + '33' : (isSelected ? c.primary + '33' : c.surface);
               const borderColor = isSelected ? (selectedColor || c.primary) : 'transparent';
               return (
@@ -304,11 +306,11 @@ export default function ModifyCategoryScreen() {
           />
 
           <TouchableOpacity
-            style={[styles.deleteButton, { borderColor: '#F87171' }]}
+            style={[styles.deleteButton, { borderColor: colors.red }]}
             onPress={handleDeletePress}
           >
-            <Ionicons name="trash-outline" size={18} color="#F87171" />
-            <Text style={[styles.deleteButtonText, { color: '#F87171', fontSize: fs(15) }]}>
+            <Ionicons name="trash-outline" size={18} color={colors.red} />
+            <Text style={[styles.deleteButtonText, { color: colors.red, fontSize: fs(15) }]}>
               {labels.modify_cat_delete}
             </Text>
           </TouchableOpacity>
@@ -316,17 +318,17 @@ export default function ModifyCategoryScreen() {
           <TouchableOpacity
             style={[
               styles.button,
-              { backgroundColor: canSave ? c.primary : '#475569' },
+              { backgroundColor: canSave ? c.primary : colors.disabled },
             ]}
             onPress={handleSave}
             disabled={!canSave}
           >
-            <Text style={[styles.buttonText, { color: '#FFFFFF', fontSize: fs(15) }]}>
+            <Text style={[styles.buttonText, { color: colors.white, fontSize: fs(15) }]}>
               {labels.modify_cat_save}
             </Text>
           </TouchableOpacity>
 
-          {Platform.OS === 'android' && <View style={styles.keyboardSpacer} />}
+          {isAndroid && <View style={styles.keyboardSpacer} />}
         </ScrollView>
       </View>
 
@@ -362,10 +364,10 @@ export default function ModifyCategoryScreen() {
                   </TouchableOpacity>
                 )}
                 <TouchableOpacity
-                  style={[styles.modalButton, { backgroundColor: '#F87171' }]}
+                  style={[styles.modalButton, { backgroundColor: colors.red }]}
                   onPress={handlePermanentDelete}
                 >
-                  <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
+                  <Text style={[styles.modalButtonText, { color: colors.white, fontSize: fs(14) }]}>
                     {labels.modify_cat_delete_confirm_delete}
                   </Text>
                 </TouchableOpacity>
@@ -423,12 +425,12 @@ export default function ModifyCategoryScreen() {
               <TouchableOpacity
                 style={[
                   styles.modalButton,
-                  { backgroundColor: targetCategoryId !== null ? c.primary : '#475569' },
+                  { backgroundColor: targetCategoryId !== null ? c.primary : colors.disabled },
                 ]}
                 onPress={handleSelectTarget}
                 disabled={targetCategoryId === null}
               >
-                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
+                <Text style={[styles.modalButtonText, { color: colors.white, fontSize: fs(14) }]}>
                   {labels.modify_cat_select_confirm}
                 </Text>
               </TouchableOpacity>
