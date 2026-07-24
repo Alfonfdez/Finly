@@ -11,7 +11,7 @@ import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayAccountName } from '../i18n';
 import { isNative } from '../utils/platform';
-import TypeTabs from '../components/TypeTabs';
+import TabBar from '../components/TabBar';
 import AccountModal from '../components/AccountModal';
 import CategoryGrid from '../components/CategoryGrid';
 import DaySelector from '../components/DaySelector';
@@ -335,7 +335,14 @@ export default function ModifyTransactionScreen() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]}>
       <ScrollView ref={scrollRef} style={[styles.container, { backgroundColor: c.background }]} keyboardShouldPersistTaps="handled">
-        <TypeTabs active={type} onChange={setType} />
+        <TabBar
+          tabs={[
+            { key: 'expense', label: labels.tab_expenses },
+            { key: 'income', label: labels.tab_income },
+          ]}
+          active={type}
+          onChange={setType}
+        />
 
         <View style={styles.amountRow}>
           <TextInput

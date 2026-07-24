@@ -15,9 +15,9 @@ interface Props {
 export default function DonutChart({ data, total, currency = '€', separator = ',' }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const radio = 60;
-  const circunferencia = 2 * Math.PI * radio;
-  const grosor = 15;
+  const radius = 60;
+  const circumference = 2 * Math.PI * radius;
+  const strokeWidth = 15;
 
   let accumulatedOffset = 0;
 
@@ -25,24 +25,24 @@ export default function DonutChart({ data, total, currency = '€', separator = 
     <View style={styles.container}>
       <Svg width={160} height={160} viewBox="0 0 160 160">
         <G transform="rotate(-90, 80, 80)">
-          <Circle cx="80" cy="80" r={radio} stroke={c.surface} strokeWidth={grosor} fill="none" />
+          <Circle cx="80" cy="80" r={radius} stroke={c.surface} strokeWidth={strokeWidth} fill="none" />
           {data.map((item) => {
-            const longitud = (item.percentage / 100) * circunferencia;
-            const segmento = (
+            const arcLength = (item.percentage / 100) * circumference;
+            const segment = (
               <Circle
                 key={item.name}
                 cx="80"
                 cy="80"
-                r={radio}
+                r={radius}
                 stroke={item.color}
-                strokeWidth={grosor}
+                strokeWidth={strokeWidth}
                 fill="none"
-                strokeDasharray={`${longitud} ${circunferencia - longitud}`}
+                strokeDasharray={`${arcLength} ${circumference - arcLength}`}
                 strokeDashoffset={-accumulatedOffset}
               />
             );
-            accumulatedOffset += longitud;
-            return segmento;
+            accumulatedOffset += arcLength;
+            return segment;
           })}
         </G>
       </Svg>

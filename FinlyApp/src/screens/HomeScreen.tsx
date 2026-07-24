@@ -13,7 +13,7 @@ import { t, getDisplayAccountName } from '../i18n';
 import { transactionRepository as transactionRepo } from '../database';
 import AccountModal from '../components/AccountModal';
 import EyeToggle from '../components/EyeToggle';
-import TypeTabs from '../components/TypeTabs';
+import TabBar from '../components/TabBar';
 import PeriodTabs from '../components/PeriodTabs';
 import CalendarPicker from '../components/CalendarPicker';
 import DonutChart from '../components/DonutChart';
@@ -261,7 +261,14 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        <TypeTabs active={activeType} onChange={changeType} />
+        <TabBar
+          tabs={[
+            { key: 'expense', label: labels.tab_expenses, accessibilityLabel: labels.a11y_show_expenses },
+            { key: 'income', label: labels.tab_income, accessibilityLabel: labels.a11y_show_income },
+          ]}
+          active={activeType}
+          onChange={changeType}
+        />
         <PeriodTabs active={activePeriod} onChange={handlePeriodChange} />
         <CalendarPicker
           period={activePeriod}

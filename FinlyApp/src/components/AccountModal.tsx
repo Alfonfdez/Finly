@@ -79,7 +79,7 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
             >
               <Text style={[styles.btnText, { color: c.text, fontSize: fs(14) }]}>{labels.transactions_cancel}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.btn, { backgroundColor: c.primary }]} onPress={() => onSelect(tempId!)}>
+            <TouchableOpacity style={[styles.btn, { backgroundColor: c.primary }]} onPress={() => { if (tempId != null) onSelect(tempId); }}>
               <Text style={[styles.btnText, { color: colors.white, fontSize: fs(14) }]}>{labels.transactions_confirm}</Text>
             </TouchableOpacity>
           </View>

@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, ComponentProps } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
@@ -19,7 +19,7 @@ export default function SortToggle({ sortBy, direction, onToggleSort, onToggleDi
   const fs = useFontSize();
   const labels = t();
 
-  const arrowIcon = direction === 'desc' ? 'arrow-down' : 'arrow-up';
+  const arrowIcon: ComponentProps<typeof Ionicons>['name'] = direction === 'desc' ? 'arrow-down' : 'arrow-up';
 
   return (
     <View style={styles.container}>
@@ -36,7 +36,7 @@ export default function SortToggle({ sortBy, direction, onToggleSort, onToggleDi
         </Text>
         {sortBy === 'date' && (
           <TouchableOpacity onPress={onToggleDirection} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Ionicons name={arrowIcon as any} size={14} color={c.primary} />
+            <Ionicons name={arrowIcon} size={14} color={c.primary} />
           </TouchableOpacity>
         )}
       </TouchableOpacity>
@@ -54,7 +54,7 @@ export default function SortToggle({ sortBy, direction, onToggleSort, onToggleDi
         </Text>
         {sortBy === 'amount' && (
           <TouchableOpacity onPress={onToggleDirection} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Ionicons name={arrowIcon as any} size={14} color={c.primary} />
+            <Ionicons name={arrowIcon} size={14} color={c.primary} />
           </TouchableOpacity>
         )}
       </TouchableOpacity>

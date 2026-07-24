@@ -1,26 +1,22 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { TransactionType } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t } from '../i18n';
 
-type AllType = 'all' | TransactionType;
-
-interface Props {
-  active: AllType;
-  onChange: (type: AllType) => void;
+interface Tab<T extends string> {
+  key: T;
+  label: string;
+  accessibilityLabel?: string;
 }
 
-export default function AllTypeTabs({ active, onChange }: Props) {
+interface Props<T extends string> {
+  tabs: Tab<T>[];
+  active: T;
+  onChange: (key: T) => void;
+}
+
+export default function TabBar<T extends string>({ tabs, active, onChange }: Props<T>) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const labels = t();
-
-  const tabs: { key: AllType; label: string }[] = [
-    { key: 'all', label: labels.tab_all },
-    { key: 'expense', label: labels.tab_expenses },
-    { key: 'income', label: labels.tab_income },
-  ];
 
   return (
     <View style={[styles.container, { backgroundColor: c.surface }]}>
@@ -29,6 +25,7 @@ export default function AllTypeTabs({ active, onChange }: Props) {
           key={tab.key}
           style={[styles.tab, active === tab.key && { backgroundColor: c.background }]}
           onPress={() => onChange(tab.key)}
+          accessibilityLabel={tab.accessibilityLabel}
         >
           <Text
             style={[
