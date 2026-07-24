@@ -29,7 +29,7 @@ npx expo start
 ```tsx
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F172A' },
-  texto: { color: '#E2E8F0', fontSize: 16 },
+  text: { color: '#E2E8F0', fontSize: 16 },
 });
 ```
 
@@ -49,11 +49,11 @@ npx expo install react-native-worklets@0.5.1
 **Explanation:** Interfaces (`interface`) are used to define object contracts and are extensible. Types (`type`) are more flexible (unions, tuples). In Finly, interfaces are used for data models.
 **Example:**
 ```tsx
-interface Cuenta {
+interface Account {
   id: number;
-  nombre: string;
-  saldo: number;
-  icono: string;
+  name: string;
+  balance: number;
+  icon: string;
 }
 ```
 
@@ -63,11 +63,11 @@ interface Cuenta {
 **Example:**
 ```tsx
 // constants/types.ts — original definition
-export type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo';
+export type Period = 'day' | 'week' | 'month' | 'year' | 'period';
 
 // calendars/types.ts — re-export
-import { Periodo } from '../../constants/types';
-export type { Periodo };
+import { Period } from '../../constants/types';
+export type { Period };
 ```
 
 # React
@@ -95,9 +95,9 @@ const [modalVisible, setModalVisible] = useState(false);
 **Explanation:** Only recalculates when dependencies change. In Finly, it is used to filter transactions, calculate totals, and generate active categories without recalculating on every render.
 **Example:**
 ```tsx
-const totalGastos = useMemo(() =>
-  transacciones.filter(t => t.tipo === 'gasto').reduce((s, t) => s + t.cantidad, 0),
-  [transacciones]
+const totalExpenses = useMemo(() =>
+  transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0),
+  [transactions]
 );
 ```
 
@@ -106,8 +106,8 @@ const totalGastos = useMemo(() =>
 **Explanation:** Similar to useMemo but for functions. Useful for passing them as props to child components and avoiding unnecessary re-renders.
 **Example:**
 ```tsx
-const handleCategoriaPress = useCallback((cat) => {
-  navigation.navigate('Transactions', { categoriaId: cat.id });
+const handleCategoryPress = useCallback((cat) => {
+  navigation.navigate('Transactions', { categoryId: cat.id });
 }, [navigation]);
 ```
 
@@ -128,7 +128,7 @@ const Stack = createNativeStackNavigator({
 
 ## React Navigation (Drawer Navigator)
 **Definition:** Side menu that slides from the left edge of the screen.
-**Explanation:** Shows navigation options in a hidden panel. In Finly, it contains Home, and placeholders for Accounts, Categories, and Settings.
+**Explanation:** Shows navigation options in a hidden panel. In Finly, it contains Home, Transactions, Accounts, Categories, Tags, and Settings.
 **Example:**
 ```tsx
 const Drawer = createDrawerNavigator({
@@ -144,11 +144,11 @@ const Drawer = createDrawerNavigator({
 ```tsx
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 
-function MiPantalla() {
+function MyScreen() {
   const navigation = useNavigation();
   return (
     <TouchableOpacity onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
-      <Text>Abrir menú</Text>
+      <Text>Open menu</Text>
     </TouchableOpacity>
   );
 }
@@ -164,33 +164,33 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 type RootStackParamList = {
   Home: undefined;
   AddTransaction: undefined;
-  Transactions: { categoriaId?: number } | undefined;
+  Transactions: { categoryId?: number } | undefined;
 };
 
 type Navigation = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 function HomeScreen() {
   const navigation = useNavigation<Navigation>();
-  navigation.navigate('Transactions', { categoriaId: 1 });
+  navigation.navigate('Transactions', { categoryId: 1 });
 }
 ```
 
 ## RouteProp
 **Definition:** TypeScript type that defines the shape of route parameters received by a screen.
-**Explanation:** Used with `useRoute()` to access navigation parameters with type safety. Eliminates the need for casts with `as`. In Finly, it is used in TransactionsScreen to receive `categoriaId` and `tipo`.
+**Explanation:** Used with `useRoute()` to access navigation parameters with type safety. Eliminates the need for casts with `as`. In Finly, it is used in TransactionsScreen to receive `categoryId` and `type`.
 **Example:**
 ```tsx
 import { useRoute, RouteProp } from '@react-navigation/native';
 
 type RootStackParamList = {
-  Transactions: { categoriaId?: number; tipo?: string } | undefined;
+  Transactions: { categoryId?: number; type?: string } | undefined;
 };
 
 type TransactionsRouteProp = RouteProp<RootStackParamList, 'Transactions'>;
 
 function TransactionsScreen() {
   const route = useRoute<TransactionsRouteProp>();
-  const categoriaId = route.params?.categoriaId;
+  const categoryId = route.params?.categoryId;
 }
 ```
 
@@ -227,8 +227,8 @@ import Svg, { Circle } from 'react-native-svg';
 ```tsx
 import { openDatabaseSync } from 'expo-sqlite';
 const db = openDatabaseSync('Finly.db');
-await db.runAsync('INSERT INTO cuentas (nombre, icono, color) VALUES (?, ?, ?)', 'Efectivo', 'wallet', '#22D3EE');
-const cuentas = await db.getAllAsync('SELECT * FROM cuentas');
+await db.runAsync('INSERT INTO accounts (name, icon, color) VALUES (?, ?, ?)', 'Cash', 'wallet', '#22D3EE');
+const accounts = await db.getAllAsync('SELECT * FROM accounts');
 ```
 
 ## localStorage
@@ -236,9 +236,9 @@ const cuentas = await db.getAllAsync('SELECT * FROM cuentas');
 **Explanation:** Similar to AsyncStorage but native to the browser. Data is stored as JSON strings and persists between sessions. Has a limit of ~5-10 MB depending on the browser. In Finly, it is used as an alternative to SQLite when the app runs on web, since expo-sqlite is not available in that environment.
 **Example:**
 ```tsx
-localStorage.setItem('@Finly/cuentas', JSON.stringify(cuentas));
-const raw = localStorage.getItem('@Finly/cuentas');
-const cuentas = raw ? JSON.parse(raw) : [];
+localStorage.setItem('@Finly/accounts', JSON.stringify(accounts));
+const raw = localStorage.getItem('@Finly/accounts');
+const accounts = raw ? JSON.parse(raw) : [];
 ```
 
 ## Platform switching (SQLite / localStorage)
@@ -248,15 +248,15 @@ const cuentas = raw ? JSON.parse(raw) : [];
 ```tsx
 // src/database/index.ts
 import { Platform } from 'react-native';
-import { cuentaRepo } from './repositories/cuentaRepo';       // SQLite
-import { webCuentaRepo } from './webStorage';                  // localStorage
+import { accountRepo } from './repositories/accountRepo';       // SQLite
+import { webAccountRepo } from './webStorage';                   // localStorage
 
 const isWeb = Platform.OS === 'web';
-export const cuentaRepository = isWeb ? webCuentaRepo : cuentaRepo;
+export const accountRepository = isWeb ? webAccountRepo : accountRepo;
 
 // AppContext.tsx — consumes the correct implementation automatically
-import { cuentaRepository } from '../database';
-const cuentas = await cuentaRepository.listar(usuarioId);
+import { accountRepository } from '../database';
+const accounts = await accountRepository.list(userId);
 ```
 
 ## Centralized platform checks
@@ -306,7 +306,7 @@ if (isCatalan(language)) {
 <FlatList
   data={items}
   keyExtractor={(item) => item.id.toString()}
-  renderItem={({ item }) => <Text>{item.nombre}</Text>}
+  renderItem={({ item }) => <Text>{item.name}</Text>}
 />
 ```
 
@@ -316,7 +316,7 @@ if (isCatalan(language)) {
 **Example:**
 ```tsx
 <Modal visible={visible} transparent animationType="slide">
-  <View style={overlay}><Text>Contenido del modal</Text></View>
+  <View style={overlay}><Text>Modal content</Text></View>
 </Modal>
 ```
 
@@ -326,7 +326,7 @@ if (isCatalan(language)) {
 **Example:**
 ```tsx
 <TouchableOpacity onPress={handlePress} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-  <Text>Pulsar</Text>
+  <Text>Press</Text>
 </TouchableOpacity>
 ```
 
@@ -336,7 +336,7 @@ if (isCatalan(language)) {
 **Example:**
 ```tsx
 <SafeAreaView style={{ flex: 1 }}>
-  <Text>Contenido seguro</Text>
+  <Text>Safe content</Text>
 </SafeAreaView>
 ```
 
@@ -368,15 +368,15 @@ if (isCatalan(language)) {
 ```tsx
 // ✅ SSOT: a single file defines the type
 // constants/types.ts
-export type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo';
+export type Period = 'day' | 'week' | 'month' | 'year' | 'period';
 
 // components import from the single source
-import { Periodo } from '../constants/types';
+import { Period } from '../constants/types';
 
 // ❌ Without SSOT: the same type defined in 3 different files
-type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo'; // in AppContext
-type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo'; // in PeriodTabs
-type Periodo = 'dia' | 'semana' | 'mes' | 'año' | 'periodo'; // in calendars/types
+type Period = 'day' | 'week' | 'month' | 'year' | 'period'; // in AppContext
+type Period = 'day' | 'week' | 'month' | 'year' | 'period'; // in PeriodTabs
+type Period = 'day' | 'week' | 'month' | 'year' | 'period'; // in calendars/types
 ```
 
 ## Shared constants across screens
@@ -399,15 +399,15 @@ import { ACCOUNT_ICONS } from '../constants/accountIcons';
 
 ## Named Constants (Avoiding Magic Numbers)
 **Definition:** Replacing hardcoded literal values with constants that have descriptive names.
-**Explanation:** "Magic numbers" or "magic strings" are values that appear out of nowhere in the code, making comprehension and maintenance difficult. If the value changes, you have to search for it throughout the entire codebase. By extracting it to a named constant, its purpose becomes clear and it can be modified in a single place. In Finly, `new Date(2026, 0, 1)` was replaced with `new Date(ANIO_MINIMO, 0, 1)` where `ANIO_MINIMO` is a dynamically calculated constant.
+**Explanation:** "Magic numbers" or "magic strings" are values that appear out of nowhere in the code, making comprehension and maintenance difficult. If the value changes, you have to search for it throughout the entire codebase. By extracting it to a named constant, its purpose becomes clear and it can be modified in a single place. In Finly, `new Date(2026, 0, 1)` was replaced with `new Date(MIN_YEAR, 0, 1)` where `MIN_YEAR` is a dynamically calculated constant.
 **Example:**
 ```tsx
 // ❌ Magic number: why 2026?
-const fechaMinima = new Date(2026, 0, 1);
+const minDate = new Date(2026, 0, 1);
 
 // ✅ Named constant: the purpose is clear
-const ANIO_MINIMO = new Date().getFullYear();
-const fechaMinima = new Date(ANIO_MINIMO, 0, 1);
+const MIN_YEAR = new Date().getFullYear();
+const minDate = new Date(MIN_YEAR, 0, 1);
 ```
 
 ## useMemo
@@ -416,16 +416,16 @@ const fechaMinima = new Date(ANIO_MINIMO, 0, 1);
 **Example:**
 ```tsx
 // ❌ Every render creates a new object → all dependent useEffects re-execute
-const fechas = periodoActivo === 'periodo'
-  ? fechaPersonalizada
-  : calcularInicioFin(periodoActivo, fechaSeleccionada);
+const dates = activePeriod === 'period'
+  ? customDate
+  : calculateStartEnd(activePeriod, selectedDate);
 
-// ✅ Only recalculates when periodoActivo, fechaPersonalizada, or fechaSeleccionada change
-const fechas = useMemo(
-  () => periodoActivo === 'periodo'
-    ? fechaPersonalizada
-    : calcularInicioFin(periodoActivo, fechaSeleccionada),
-  [periodoActivo, fechaPersonalizada, fechaSeleccionada],
+// ✅ Only recalculates when activePeriod, customDate, or selectedDate change
+const dates = useMemo(
+  () => activePeriod === 'period'
+    ? customDate
+    : calculateStartEnd(activePeriod, selectedDate),
+  [activePeriod, customDate, selectedDate],
 );
 ```
 
@@ -435,10 +435,10 @@ const fechas = useMemo(
 **Example:**
 ```tsx
 // ❌ In-place mutation: modifies the state array directly
-return lista.sort((a, b) => b.fecha - a.fecha);
+return list.sort((a, b) => b.date - a.date);
 
 // ✅ Safe copy: does not touch the original array
-return [...lista].sort((a, b) => b.fecha - a.fecha);
+return [...list].sort((a, b) => b.date - a.date);
 ```
 
 ## Avoiding Circular Dependencies in Types
@@ -447,18 +447,18 @@ return [...lista].sort((a, b) => b.fecha - a.fecha);
 **Example:**
 ```tsx
 // ❌ types.ts imports from mockData.ts, and mockData.ts imports from types.ts → circular
-import { Categoria } from '../data/mockData';
-export type CategoriaConTotal = Categoria & { total: number; porcentaje: number };
+import { Category } from '../data/mockData';
+export type CategoryWithTotal = Category & { total: number; percentage: number };
 
 // ✅ Defining the fields inline breaks the circular dependency
-export type CategoriaConTotal = {
+export type CategoryWithTotal = {
   id: number;
-  nombre: string;
-  icono: string;
+  name: string;
+  icon: string;
   color: string;
-  tipo: TipoTransaccion;
+  type: TransactionType;
   total: number;
-  porcentaje: number;
+  percentage: number;
 };
 ```
 
@@ -468,13 +468,13 @@ export type CategoriaConTotal = {
 **Example:**
 ```tsx
 // ❌ Both branches return the same thing → the if is useless
-if (inicio.getMonth() === fin.getMonth()) {
-  return `${dInicio} ${mAbrev(inicio.getMonth())} - ${dFin} ${mAbrev(fin.getMonth())}`;
+if (start.getMonth() === end.getMonth()) {
+  return `${startDay} ${monthAbbr(start.getMonth())} - ${endDay} ${monthAbbr(end.getMonth())}`;
 }
-return `${dInicio} ${mAbrev(inicio.getMonth())} - ${dFin} ${mAbrev(fin.getMonth())}`;
+return `${startDay} ${monthAbbr(start.getMonth())} - ${endDay} ${monthAbbr(end.getMonth())}`;
 
 // ✅ Simplified: a single line
-return `${dInicio} ${mAbrev(inicio.getMonth())} - ${dFin} ${mAbrev(fin.getMonth())}`;
+return `${startDay} ${monthAbbr(start.getMonth())} - ${endDay} ${monthAbbr(end.getMonth())}`;
 ```
 
 ## ComponentProps (Type-Safe Library Props)
@@ -483,11 +483,11 @@ return `${dInicio} ${mAbrev(inicio.getMonth())} - ${dFin} ${mAbrev(fin.getMonth(
 **Example:**
 ```tsx
 // ❌ as any: loses all type checking
-<Ionicons name={item.icono as any} size={22} color={item.color} />
+<Ionicons name={item.icon as any} size={22} color={item.color} />
 
 // ✅ ComponentProps: type-safe against the component definition
 import { ComponentProps } from 'react';
-<Ionicons name={item.icono as ComponentProps<typeof Ionicons>['name']} size={22} color={item.color} />
+<Ionicons name={item.icon as ComponentProps<typeof Ionicons>['name']} size={22} color={item.color} />
 ```
 
 ## Extracting Pure Functions Outside the Component
@@ -496,20 +496,20 @@ import { ComponentProps } from 'react';
 **Example:**
 ```tsx
 // ❌ Recreated on every render
-function WeekPicker({ fecha, primerDia }) {
-  function mismaSemana(a, b) {
-    return inicioDeSemana(a, primerDia).getTime() === inicioDeSemana(b, primerDia).getTime();
+function WeekPicker({ date, firstDay }) {
+  function sameWeek(a, b) {
+    return weekStart(a, firstDay).getTime() === weekStart(b, firstDay).getTime();
   }
 }
 
 // ✅ Defined outside, stable reference
-function mismaSemana(a: Date, b: Date, primerDia: 0 | 1): boolean {
-  return inicioDeSemana(a, primerDia).getTime() === inicioDeSemana(b, primerDia).getTime();
+function sameWeek(a: Date, b: Date, firstDay: 0 | 1): boolean {
+  return weekStart(a, firstDay).getTime() === weekStart(b, firstDay).getTime();
 }
 
-function WeekPicker({ fecha, primerDia }) {
-  // mismaSemana is called with primerDia as an argument
-  const seleccionada = mismaSemana(sem.inicio, fecha, primerDia);
+function WeekPicker({ date, firstDay }) {
+  // sameWeek is called with firstDay as an argument
+  const isSelected = sameWeek(week.start, date, firstDay);
 }
 ```
 
@@ -519,22 +519,22 @@ function WeekPicker({ fecha, primerDia }) {
 **Example:**
 ```tsx
 // ❌ O(accounts × transactions): iterates transactions for each account
-cuentas.map(cuenta => {
-  const ingresos = transacciones
-    .filter(t => t.cuentaId === cuenta.id && t.tipo === 'ingreso')
-    .reduce((sum, t) => sum + t.cantidad, 0);
-  const gastos = transacciones
-    .filter(t => t.cuentaId === cuenta.id && t.tipo === 'gasto')
-    .reduce((sum, t) => sum + t.cantidad, 0);
-  return { ...cuenta, saldo: ingresos - gastos };
+accounts.map(account => {
+  const income = transactions
+    .filter(t => t.accountId === account.id && t.type === 'income')
+    .reduce((sum, t) => sum + t.amount, 0);
+  const expenses = transactions
+    .filter(t => t.accountId === account.id && t.type === 'expense')
+    .reduce((sum, t) => sum + t.amount, 0);
+  return { ...account, balance: income - expenses };
 });
 
 // ✅ O(transactions): a single reduce accumulates balances by accountId
-const saldos = transacciones.reduce((acc, t) => {
-  acc[t.cuentaId] = (acc[t.cuentaId] ?? 0) + (t.tipo === 'ingreso' ? t.cantidad : -t.cantidad);
+const balances = transactions.reduce((acc, t) => {
+  acc[t.accountId] = (acc[t.accountId] ?? 0) + (t.type === 'income' ? t.amount : -t.amount);
   return acc;
 }, {});
-cuentas.map(cuenta => ({ ...cuenta, saldo: saldos[cuenta.id] ?? 0 }));
+accounts.map(account => ({ ...account, balance: balances[account.id] ?? 0 }));
 ```
 
 # SQL and Database
@@ -566,7 +566,7 @@ await db.getAllAsync('SELECT * FROM transactions WHERE date >= ?', startDate);
 
 ## PRAGMA user_version
 **Definition:** Integer metadata that SQLite stores in the database header to control which migrations have been executed.
-**Explanation:** Used as a schema version counter. Each migration checks if `user_version` is less than its number, runs the necessary SQL changes, and then increments the value with `PRAGMA user_version = N`. This way, the app knows at each startup which migrations are missing without needing additional control tables. In Finly, the schema goes from version 0 → 1 (tables), 1→2 (seed), 2→3 (configuration), 3→4 (new categories).
+**Explanation:** Used as a schema version counter. Each migration checks if `user_version` is less than its number, runs the necessary SQL changes, and then increments the value with `PRAGMA user_version = N`. This way, the app knows at each startup which migrations are missing without needing additional control tables. In Finly, the current approach uses a single initial schema (createSchema → seedData → seedConfig) with no versioned migrations — the developer resets the DB manually during development.
 **Example:**
 ```tsx
 let { user_version: v } = await db.getFirstAsync('PRAGMA user_version');
@@ -582,8 +582,8 @@ await db.execAsync(`PRAGMA user_version = ${v}`);
 ```tsx
 // Inserts the category only if id=10 does not exist yet
 await db.runAsync(
-  'INSERT OR IGNORE INTO categorias (id, nombre, icono) VALUES (?, ?, ?)',
-  10, 'Videojuego', 'game-controller-outline'
+  'INSERT OR IGNORE INTO categories (id, name, icon) VALUES (?, ?, ?)',
+  10, 'Videogame', 'game-controller-outline'
 );
 // If id=10 already exists, it does nothing — the old icon stays
 ```
@@ -595,19 +595,19 @@ await db.runAsync(
 ```tsx
 // webStorage.ts — migrates stale icons in localStorage
 function migrateWebCategories(): void {
-  const categorias = getStore<Categoria>('categorias');
+  const categories = getStore<Category>('categories');
   const invalidIcons: Record<string, string> = {
     'gamepad-outline': 'game-controller-outline',
   };
-  const updated = categorias.map(c => ({
+  const updated = categories.map(c => ({
     ...c,
-    icono: invalidIcons[c.icono] ?? c.icono,
+    icon: invalidIcons[c.icon] ?? c.icon,
   }));
-  setStore('categorias', updated);
+  setStore('categories', updated);
 }
 
 // database.ts — migrates stale icons in SQLite (at each startup)
-await db.runAsync(`UPDATE categorias SET icono = 'game-controller-outline' WHERE id = 10`);
+await db.runAsync(`UPDATE categories SET icon = 'game-controller-outline' WHERE id = 10`);
 ```
 
 ## Data migration vs. Schema migration
@@ -619,7 +619,7 @@ await db.runAsync(`UPDATE categorias SET icono = 'game-controller-outline' WHERE
 if (v < 4) { await seed004(db); }
 
 // Data migration — every startup (correct stale values)
-await db.runAsync(`UPDATE categorias SET icono = ? WHERE id = ?`, nuevoIcono, id);
+await db.runAsync(`UPDATE categories SET icon = ? WHERE id = ?`, newIcon, id);
 ```
 
 ## Difference between native (SQLite) and web (localStorage) in migrations
@@ -629,8 +629,8 @@ await db.runAsync(`UPDATE categorias SET icono = ? WHERE id = ?`, nuevoIcono, id
 ```tsx
 // webStorage.ts — runs every time the app starts on web
 export async function initWebStorage(): Promise<void> {
-  const usuarios = getStore<Usuario>('usuarios');
-  if (usuarios.length === 0) {
+  const users = getStore<User>('users');
+  if (users.length === 0) {
     seedWebData();
   } else {
     migrateWebCategories(); // idempotent: corrects stale data
@@ -750,8 +750,7 @@ const fs = useFontSize();
 |------------|-------|----------|
 | `'500'` | Normal body text, item names, labels | AccountSelector modal names, CategoryList, DaySelector |
 | `'600'` | **Most used** — account/category names, buttons, trigger text, light headers | AccountSelector trigger, AccountScreen names, SortToggle, TypeTabs, AppNavigator headerTitle |
-| `'700'` | Monetary totals, modal titles, active labels, selected items | AccountSelector modal balance, TransactionsScreen categoryTotal, modal titles, DayPicker selected |
-| `'800'` | Main HomeScreen total (only usage) | HomeScreen totalText |
+| `'700'` | Monetary totals, modal titles, active labels, selected items, main HomeScreen total | AccountSelector modal balance, TransactionsScreen categoryTotal, HomeScreen totalText, modal titles, DayPicker selected |
 
 ## Text style conventions
 
@@ -761,7 +760,7 @@ const fs = useFontSize();
 - **AccountScreen list:** `fs(15)`, `fontWeight: '600'`, color `text`
 
 ### Monetary totals
-- **Main total (HomeScreen):** `fs(28)`, `fontWeight: '800'`, dynamic color (green/red), with `+`/`-` prefix
+- **Main total (HomeScreen):** `fs(28)`, `fontWeight: '700'`, dynamic color (green/red), with `+`/`-` prefix
 - **Screen total (Accounts, Transactions):** `fs(22)`, `fontWeight: '700'`, dynamic color, with `+`/`-` prefix
 - **Balance in modal:** `fs(12)`, `fontWeight: '700'`, color `textSecondary`
 - **Transaction amount:** `fs(14)`, `fontWeight: '600'`, color green (income) / red (expense)
