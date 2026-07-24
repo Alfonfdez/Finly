@@ -8,7 +8,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
-import TypeTabs from '../components/TypeTabs';
+import TabBar from '../components/TabBar';
 import { TransactionType, RootStackParamList, sortCategoriesWithOthersLast } from '../constants/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Categories'>;
@@ -69,7 +69,14 @@ export default function CategoriesScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
       <View style={styles.content}>
-        <TypeTabs active={activeType} onChange={setActiveType} />
+        <TabBar
+          tabs={[
+            { key: 'expense', label: labels.tab_expenses },
+            { key: 'income', label: labels.tab_income },
+          ]}
+          active={activeType}
+          onChange={setActiveType}
+        />
 
         {categoriesByType.length === 0 ? (
           <View style={styles.emptyContainer}>

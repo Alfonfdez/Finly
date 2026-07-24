@@ -1,5 +1,5 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, ComponentProps } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { colors } from '../constants/colors';
 
@@ -35,7 +35,7 @@ export default function IconGrid({ selectedIcon, onSelect }: Props) {
             style={[
               styles.item,
               {
-                backgroundColor: isSelected ? c.primary + '33' : '#334155',
+                backgroundColor: isSelected ? c.primary + '33' : colors.border,
                 borderRadius: round ? 999 : 12,
               },
               isSelected && { borderWidth: 2, borderColor: c.primary },
@@ -44,8 +44,8 @@ export default function IconGrid({ selectedIcon, onSelect }: Props) {
             accessibilityLabel={icon}
             accessibilityState={{ selected: isSelected }}
           >
-            <View style={[styles.iconContainer, { backgroundColor: (isSelected ? c.primary : '#334155') + '22' }]}>
-              <Ionicons name={icon as any} size={24} color={isSelected ? c.primary : colors.textSecondary} />
+            <View style={[styles.iconContainer, { backgroundColor: (isSelected ? c.primary : colors.border) + '22' }]}>
+              <Ionicons name={icon as ComponentProps<typeof Ionicons>['name']} size={24} color={isSelected ? c.primary : colors.textSecondary} />
             </View>
           </TouchableOpacity>
         );

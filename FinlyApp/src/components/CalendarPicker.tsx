@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { formatDate } from '../utils/formatters';
+import { formatDate, formatWeekRangeShort } from '../utils/formatters';
 import CalendarModal from './CalendarModal';
 import { Period } from './calendars/types';
 import { useConfig } from '../context/ConfigContext';
@@ -33,14 +33,7 @@ export default function CalendarPicker({
   const dateText = () => {
     switch (period) {
       case 'day': return formatDate(date);
-      case 'week': {
-        const start = new Date(date);
-        const dayOfWeek = start.getDay();
-        start.setDate(start.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-        const end = new Date(start);
-        end.setDate(end.getDate() + 6);
-        return `${start.getDate()} ${shortMonths[start.getMonth()]} – ${end.getDate()} ${shortMonths[end.getMonth()]}`;
-      }
+      case 'week': return formatWeekRangeShort(date, shortMonths);
       case 'month': return `${months[date.getMonth()]} ${date.getFullYear()}`;
       case 'year': return date.getFullYear().toString();
       case 'custom': {

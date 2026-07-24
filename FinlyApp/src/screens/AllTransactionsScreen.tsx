@@ -17,7 +17,7 @@ import AccountModal from '../components/AccountModal';
 import SortToggle, { SortBy, SortDirection } from '../components/SortToggle';
 import TagFilterBar from '../components/TagFilterBar';
 import TransactionGroup from '../components/TransactionGroup';
-import AllTypeTabs from '../components/AllTypeTabs';
+import TabBar from '../components/TabBar';
 import CategoryFilterModal from '../components/CategoryFilterModal';
 import PeriodTabs from '../components/PeriodTabs';
 import CalendarPicker from '../components/CalendarPicker';
@@ -242,7 +242,15 @@ export default function AllTransactionsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
-      <AllTypeTabs active={typeTab} onChange={setTypeTab} />
+      <TabBar
+        tabs={[
+          { key: 'all', label: labels.tab_all },
+          { key: 'expense', label: labels.tab_expenses },
+          { key: 'income', label: labels.tab_income },
+        ]}
+        active={typeTab}
+        onChange={setTypeTab}
+      />
 
       <View style={[styles.controls, { borderBottomColor: c.border }]}>
         <TouchableOpacity style={styles.accountTrigger} onPress={() => setAccountModalVisible(true)}>

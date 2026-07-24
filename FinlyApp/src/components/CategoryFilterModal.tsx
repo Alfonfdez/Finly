@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, ComponentProps } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
@@ -170,7 +170,7 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
                           onPress={() => handleToggleCategory(cat.id)}
                         >
                           <View style={[styles.iconContainer, { backgroundColor: cat.color + '22', borderRadius: round ? 999 : 20 }]}>
-                            <Ionicons name={cat.icon as any} size={24} color={cat.color} />
+                            <Ionicons name={cat.icon as ComponentProps<typeof Ionicons>['name']} size={24} color={cat.color} />
                             {isSelected && (
                               <View style={[styles.checkmark, { backgroundColor: cat.color }]}>
                                 <Ionicons name="checkmark" size={12} color={c.background} />

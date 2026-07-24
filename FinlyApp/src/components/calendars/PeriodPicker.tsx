@@ -87,7 +87,6 @@ const styles = StyleSheet.create({
   title: { marginBottom: 12 },
   allTimeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, marginRight: 8 },
-  allTimeText: {},
   indicator: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, marginBottom: 8, alignItems: 'center' },
   indicatorText: { fontWeight: '600' },
 });

@@ -110,3 +110,36 @@ const FACTORS: Record<Config['textSize'], number> = {
 export function scaleFontSize(size: number, textSize: Config['textSize']): number {
   return Math.round(size * FACTORS[textSize]);
 }
+
+export function formatWeekRange(date: Date, shortMonths: string[]): string {
+  const start = new Date(date);
+  const weekDay = start.getDay();
+  start.setDate(start.getDate() - (weekDay === 0 ? 6 : weekDay - 1));
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  const startDay = start.getDate();
+  const startMonth = shortMonths[start.getMonth()];
+  const endDay = end.getDate();
+  const endMonth = shortMonths[end.getMonth()];
+  return `${startDay} ${startMonth} – ${endDay} ${endMonth} ${date.getFullYear()}`;
+}
+
+export function formatWeekRangeShort(date: Date, shortMonths: string[]): string {
+  const start = new Date(date);
+  const dayOfWeek = start.getDay();
+  start.setDate(start.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  return `${start.getDate()} ${shortMonths[start.getMonth()]} – ${end.getDate()} ${shortMonths[end.getMonth()]}`;
+}
+
+export function formatPeriodText(period: string, date: Date, months: string[], shortMonths: string[]): string {
+  const m = months[date.getMonth()];
+  switch (period) {
+    case 'day': return `${date.getDate()} ${m} ${date.getFullYear()}`;
+    case 'week': return formatWeekRange(date, shortMonths);
+    case 'month': return `${m} ${date.getFullYear()}`;
+    case 'year': return date.getFullYear().toString();
+    default: return '';
+  }
+}

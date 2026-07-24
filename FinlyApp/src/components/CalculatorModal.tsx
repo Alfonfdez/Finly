@@ -12,6 +12,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { evaluate } from '../utils/calculator';
 import { isWeb } from '../utils/platform';
+import { colors } from '../constants/colors';
 
 interface Props {
   visible: boolean;
@@ -27,10 +28,10 @@ const BUTTONS = [
   ['⌫', '', '', '='],
 ];
 
-const OP_keys = new Set(['+', '-', '*', '/']);
+const OP_KEYS = new Set(['+', '-', '*', '/']);
 
 export default function CalculatorModal({ visible, onAccept, onCancel }: Props) {
-  const { activeColors } = useConfig();
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const [expression, setExpression] = useState('');
   const [hasError, setHasError] = useState(false);
@@ -62,9 +63,9 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
     setHasError(false);
     setExpression(prev => {
       const lastChar = prev.slice(-1);
-      if (OP_keys.has(btn)) {
+      if (OP_KEYS.has(btn)) {
         if (!prev) return btn === '-' ? prev + btn : prev;
-        if (OP_keys.has(lastChar)) {
+        if (OP_KEYS.has(lastChar)) {
           return prev.slice(0, -1) + btn;
         }
       }
@@ -85,16 +86,16 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
   const labels = t();
 
   const getButtonBg = (btn: string) => {
-    if (OP_keys.has(btn)) return activeColors.primary;
-    if (btn === '=') return activeColors.green;
-    if (btn === 'C') return activeColors.red;
-    if (btn === '⌫') return activeColors.border;
-    return activeColors.surface;
+    if (OP_KEYS.has(btn)) return c.primary;
+    if (btn === '=') return c.green;
+    if (btn === 'C') return c.red;
+    if (btn === '⌫') return c.border;
+    return c.surface;
   };
 
   const getButtonFg = (btn: string) => {
-    if (OP_keys.has(btn) || btn === '=' || btn === 'C') return '#fff';
-    return activeColors.text;
+    if (OP_KEYS.has(btn) || btn === '=' || btn === 'C') return colors.white;
+    return c.text;
   };
 
   const renderButton = (btn: string, rowIdx: number, colIdx: number) => {
@@ -128,15 +129,15 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
 
   const content = (
     <>
-      <View style={[styles.header, { borderBottomColor: activeColors.border }]}>
-        <Text style={[styles.title, { color: activeColors.text, fontSize: fs(18) }]}>
+      <View style={[styles.header, { borderBottomColor: c.border }]}>
+        <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>
           {labels.calc_title}
         </Text>
       </View>
 
       <View style={styles.displayArea}>
         <Text
-          style={[styles.expression, { color: activeColors.textSecondary, fontSize: fs(16) }]}
+          style={[styles.expression, { color: c.textSecondary, fontSize: fs(16) }]}
           numberOfLines={2}
         >
           {expression || ' '}
@@ -145,7 +146,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
           style={[
             styles.result,
             {
-              color: hasError ? activeColors.red : activeColors.text,
+              color: hasError ? c.red : c.text,
               fontSize: fs(28),
             },
           ]}
@@ -167,13 +168,13 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
         ))}
       </View>
 
-      <View style={[styles.actions, { borderTopColor: activeColors.border }]}>
+      <View style={[styles.actions, { borderTopColor: c.border }]}>
         <TouchableOpacity
-          style={[styles.actionBtn, { backgroundColor: activeColors.surface }]}
+          style={[styles.actionBtn, { backgroundColor: c.surface }]}
           onPress={onCancel}
           accessibilityLabel={labels.calc_cancel}
         >
-          <Text style={[styles.actionText, { color: activeColors.text, fontSize: fs(16) }]}>
+          <Text style={[styles.actionText, { color: c.text, fontSize: fs(16) }]}>
             {labels.calc_cancel}
           </Text>
         </TouchableOpacity>
@@ -181,7 +182,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
           style={[
             styles.actionBtn,
             {
-              backgroundColor: resultDisplay !== null && !hasError ? activeColors.primary : activeColors.border,
+              backgroundColor: resultDisplay !== null && !hasError ? c.primary : c.border,
             },
           ]}
           onPress={handleAccept}
@@ -192,7 +193,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
             style={[
               styles.actionText,
               {
-                color: resultDisplay !== null && !hasError ? '#fff' : activeColors.textSecondary,
+                color: resultDisplay !== null && !hasError ? colors.white : c.textSecondary,
                 fontSize: fs(16),
               },
             ]}
@@ -208,7 +209,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
     return (
       <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
         <View style={webStyles.overlay}>
-          <View style={[webStyles.modal, { backgroundColor: activeColors.background }]}>
+          <View style={[webStyles.modal, { backgroundColor: c.background }]}>
             {content}
           </View>
         </View>
@@ -218,7 +219,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <SafeAreaView style={[mobileStyles.container, { backgroundColor: activeColors.background }]}>
+      <SafeAreaView style={[mobileStyles.container, { backgroundColor: c.background }]}>
         {content}
       </SafeAreaView>
     </Modal>

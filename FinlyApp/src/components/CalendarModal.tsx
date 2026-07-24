@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { isWeb } from '../utils/platform';
+import { formatPeriodText } from '../utils/formatters';
 import { Period } from './calendars/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -29,34 +31,6 @@ const TITLE_KEYS: Record<Period, keyof ReturnType<typeof t>> = {
   year: 'cal_select_year',
   custom: 'cal_select_period',
 };
-
-function subtitleText(period: Period, date: Date): string {
-  const labels = t();
-  const months = labels.months;
-  const shortMonths = labels.months_short;
-  const m = months[date.getMonth()];
-
-  switch (period) {
-    case 'day': {
-      return `${date.getDate()} ${m} ${date.getFullYear()}`;
-    }
-    case 'week': {
-      const start = new Date(date);
-      const weekDay = start.getDay();
-      start.setDate(start.getDate() - (weekDay === 0 ? 6 : weekDay - 1));
-      const end = new Date(start);
-      end.setDate(end.getDate() + 6);
-      const startDay = start.getDate();
-      const startMonth = shortMonths[start.getMonth()];
-      const endDay = end.getDate();
-      const endMonth = shortMonths[end.getMonth()];
-      return `${startDay} ${startMonth} – ${endDay} ${endMonth} ${date.getFullYear()}`;
-    }
-    case 'month': return `${m} ${date.getFullYear()}`;
-    case 'year': return date.getFullYear().toString();
-    default: return '';
-  }
-}
 
 export default function CalendarModal({
   visible, period, date, rangeStart, rangeEnd,
@@ -99,7 +73,7 @@ export default function CalendarModal({
       <View style={styles.overlay}>
         <View style={[styles.modal, { backgroundColor: c.background }]}>
           <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>{labels[TITLE_KEYS[period]] as string}</Text>
-          {period !== 'custom' && <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(13) }]}>{subtitleText(period, tempDate)}</Text>}
+          {period !== 'custom' && <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(13) }]}>{formatPeriodText(period, tempDate, labels.months, labels.months_short)}</Text>}
 
           {period === 'day' && (
             <DayPicker date={tempDate} onSelect={handleSelect} firstDay={firstDay} />
@@ -139,7 +113,7 @@ export default function CalendarModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
@@ -149,10 +123,9 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 380,
     padding: 16,
-    ...Platform.select({
-      web: { boxShadow: '0 8px 32px rgba(0,0,0,0.5)' },
-      default: { elevation: 10 },
-    }),
+    ...(isWeb
+      ? { boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }
+      : { elevation: 10 }),
   },
   title: { fontWeight: '700', marginBottom: 2 },
   subtitle: { marginBottom: 12 },

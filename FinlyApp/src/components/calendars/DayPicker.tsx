@@ -93,6 +93,9 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
             </TouchableOpacity>
           );
         })}
+        {Array.from({ length: 42 - prevDays - daysInMonth }).map((_, i) => (
+          <View key={`pad-${i}`} style={styles.emptyDay} />
+        ))}
       </View>
     </View>
   );

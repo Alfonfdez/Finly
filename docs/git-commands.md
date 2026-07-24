@@ -44,7 +44,7 @@ With this info, generate:
 Delete all local branches except `develop` and `main`:
 
 ```bash
-git branch | Where-Object { $_.Trim() -notmatch '^\*?(develop|main)$' } | ForEach-Object { git branch -D $_.Trim() }
+git branch | Where-Object { $_.Trim() -notmatch '^\*?\s*(develop|main)$' } | ForEach-Object { git branch -D $_.Trim() }
 ```
 
-> **Note:** The `.Trim()` and `\*?` handle the current-branch `*` prefix correctly, so `main` or `develop` are never accidentally deleted.
+> **Note:** The `.Trim()`, `\*?`, and `\s*` handle the current-branch `* ` prefix correctly, so `main` or `develop` are never accidentally deleted.

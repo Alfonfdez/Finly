@@ -1,5 +1,6 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { FUTURE_OPACITY } from './calendarStyles';
 
 interface Props {
   color: string;
@@ -16,7 +17,7 @@ export default function NavArrows({ color, onPrev, onNext, nextDisabled = false 
       </TouchableOpacity>
       <TouchableOpacity
         onPress={onNext}
-        style={{ opacity: nextDisabled ? 0.3 : 1 }}
+        style={{ opacity: nextDisabled ? FUTURE_OPACITY : 1 }}
         disabled={nextDisabled}
       >
         <Ionicons name="chevron-forward-outline" size={22} color={color} />

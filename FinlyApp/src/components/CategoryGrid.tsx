@@ -1,15 +1,9 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, ComponentProps } from '@expo/vector-icons';
+import { Category } from '../database/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
-
-interface Category {
-  id: number;
-  name: string;
-  icon: string;
-  color: string;
-}
 
 interface Props {
   categories: Category[];
@@ -26,7 +20,7 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
   const labels = t();
   const round = config.categoryIconShape === 'circle';
 
-  const renderCategory = (cat: Category, index: number) => {
+  const renderCategory = (cat: Category) => {
     const isSelected = cat.id === selectedCategory;
     const categoryName = getDisplayCategoryName(cat);
 
@@ -42,7 +36,7 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
         accessibilityLabel={`${labels.a11y_category} ${categoryName}`}
       >
         <View style={[styles.iconContainer, { backgroundColor: cat.color + '22', borderRadius: round ? 999 : 20 }]}>
-          <Ionicons name={cat.icon as any} size={24} color={cat.color} />
+          <Ionicons name={cat.icon as ComponentProps<typeof Ionicons>['name']} size={24} color={cat.color} />
         </View>
         <Text
           style={[styles.name, { color: c.text, fontSize: fs(11) }]}
@@ -80,7 +74,7 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
         {labels.add_categories}
       </Text>
       <View style={styles.grid}>
-        {categories.map((cat, index) => renderCategory(cat, index))}
+        {categories.map((cat) => renderCategory(cat))}
         {showAddMore && renderAddMore()}
       </View>
     </View>

@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -17,7 +16,6 @@ export default function TagFilterBar({ tags, activeTagIds, onToggle, onClear, st
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const scrollRef = useRef<ScrollView>(null);
 
   if (tags.length === 0) return null;
 
@@ -51,7 +49,6 @@ export default function TagFilterBar({ tags, activeTagIds, onToggle, onClear, st
   return (
     <View style={[styles.container, style]}>
       <ScrollView
-        ref={scrollRef}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}

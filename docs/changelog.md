@@ -1911,3 +1911,23 @@
 - Replaced all Spanish variable names in code examples with English (~30 examples across all sections).
 - Updated outdated references: ANIO_MINIMO → MIN_YEAR, PRAGMA user_version description to reflect single-schema approach, fontWeight '800' merged into '700'.
 - Updated Drawer description to list implemented screens instead of "placeholders".
+
+[2026-07-24] ~ | docs/git-commands.md
+- Fixed branch cleanup regex: added `\s*` to handle the space in `* develop` output from `git branch`, preventing a false error when running the delete command.
+
+[2026-07-24] ~ | Component refactor: quality, deduplication, and shared patterns
+- **1.1** DonutChart.tsx: renamed Spanish variables (radio→radius, circunferencia→circumference, grosor→strokeWidth, longitud→arcLength, segmento→segment).
+- **1.2** IconGrid, CalculatorModal, ColorPickerModal, NavArrows: replaced hardcoded colors (#334155, '#fff', '#22D3EE', 0.3) with theme tokens (colors.border, colors.white, colors.primary, FUTURE_OPACITY).
+- **1.3** CategoryGrid, CategoryFilterModal, IconGrid, SortToggle: replaced `as any` casts with `ComponentProps<typeof Ionicons>['name']`.
+- **1.4** CalculatorModal: OP_keys→OP_KEYS, activeColors→c alias.
+- **1.5** TagFilterBar: removed dead scrollRef/useRef; CategoryGrid: removed unused index param; PeriodPicker: removed dead allTimeText style.
+- **1.6** CalendarModal: replaced direct `Platform` import with `isWeb` from utils/platform.ts.
+- **1.7** TagSection, CalendarModal: standardized overlay alpha to 0.6.
+- **2** Created `src/components/componentStyles.ts` with shared constants (OVERLAY_BG, MODAL_MAX_WIDTH, MODAL_BORDER_RADIUS, MODAL_PADDING, BUTTON_BORDER_RADIUS) and reusable styles (overlay, modal, buttons, button, buttonText).
+- **3A** Created generic `TabBar<T>` component. Updated HomeScreen, CategoriesScreen, AddTransactionScreen, ModifyTransactionScreen, AllTransactionsScreen to use TabBar. Deleted TypeTabs.tsx and AllTypeTabs.tsx.
+- **3B** Created `ConfirmationModal` component (reusable Cancel/Confirm with destructive variant).
+- **4** Extracted `formatWeekRange`, `formatWeekRangeShort`, `formatPeriodText` to formatters.ts. Updated CalendarModal and CalendarPicker to use them.
+- **5** CategoryGrid: replaced local Category interface with database Category type. AccountModal: replaced `onSelect(tempId!)` non-null assertion with null guard.
+
+[2026-07-24] ~ | src/components/calendars/DayPicker.tsx
+- Fix: calendar grid now always renders 6 rows (42 cells) regardless of month. Empty cells pad rows 5–6 for months with fewer days (e.g. February with 28 days). Prevents modal height jumping when navigating between months with different row counts (5 vs 6). Affects Day period modal and Period custom range modal.
