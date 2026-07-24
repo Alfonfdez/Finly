@@ -1896,3 +1896,18 @@
 
 [2026-07-24] ~ | src/components/calendars/PeriodPicker.tsx
 - Fixed Spanish variable names: ANIO_MINIMO → MIN_YEAR, nuevoEstado → nextAllTime, i/f → start/end.
+
+[2026-07-24] + | docs/git-commands.md
+- Created git commands reference: opencode rules (read-only, no commit/push/pull), commit message generation workflow (git status + git diff --stat), and branch cleanup command.
+
+[2026-07-24] ~ | PROMPT.md
+- Rewrote project description: React Native/Expo personal finance app with SQLite (mobile) and localStorage (web), SDD workflow.
+- Added step to read spec/constitution/ and spec/features/ separately.
+- Added step to read docs/ (changelog, git workflows, programming concepts, assets).
+- Added rule: any code update must be documented in docs/changelog.md.
+- Added step 9: commit message workflow via docs/git-commands.md.
+
+[2026-07-24] ~ | docs/programming-concepts.md
+- Replaced all Spanish variable names in code examples with English (~30 examples across all sections).
+- Updated outdated references: ANIO_MINIMO → MIN_YEAR, PRAGMA user_version description to reflect single-schema approach, fontWeight '800' merged into '700'.
+- Updated Drawer description to list implemented screens instead of "placeholders".
