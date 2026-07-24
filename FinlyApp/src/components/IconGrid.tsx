@@ -1,6 +1,7 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
+import { colors } from '../constants/colors';
 
 export const CATEGORY_ICONS = [
   'wallet-outline', 'cart-outline', 'bus-outline', 'home-outline',
@@ -44,7 +45,7 @@ export default function IconGrid({ selectedIcon, onSelect }: Props) {
             accessibilityState={{ selected: isSelected }}
           >
             <View style={[styles.iconContainer, { backgroundColor: (isSelected ? c.primary : '#334155') + '22' }]}>
-              <Ionicons name={icon as any} size={24} color={isSelected ? c.primary : '#94A3B8'} />
+              <Ionicons name={icon as any} size={24} color={isSelected ? c.primary : colors.textSecondary} />
             </View>
           </TouchableOpacity>
         );

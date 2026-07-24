@@ -8,18 +8,19 @@ import { scaleFontSize } from '../utils/formatters';
 import { t } from '../i18n';
 import { isWeb } from '../utils/platform';
 import { isCatalan } from '../utils/language';
+import { flagColors } from '../constants/colors';
 import type { Language } from '../utils/language';
 
 function SenyeraIcon({ size = 16 }: { size?: number }) {
   return (
     <View style={{ width: size, height: size * 0.75, borderRadius: 2, overflow: 'hidden' }}>
-      <View style={{ flex: 1, backgroundColor: '#FCDD09' }} />
-      <View style={{ height: 1, backgroundColor: '#DA2919' }} />
-      <View style={{ flex: 1, backgroundColor: '#FCDD09' }} />
-      <View style={{ height: 1, backgroundColor: '#DA2919' }} />
-      <View style={{ flex: 1, backgroundColor: '#FCDD09' }} />
-      <View style={{ height: 1, backgroundColor: '#DA2919' }} />
-      <View style={{ flex: 1, backgroundColor: '#FCDD09' }} />
+      <View style={{ flex: 1, backgroundColor: flagColors.senyeraYellow }} />
+      <View style={{ height: 1, backgroundColor: flagColors.senyeraRed }} />
+      <View style={{ flex: 1, backgroundColor: flagColors.senyeraYellow }} />
+      <View style={{ height: 1, backgroundColor: flagColors.senyeraRed }} />
+      <View style={{ flex: 1, backgroundColor: flagColors.senyeraYellow }} />
+      <View style={{ height: 1, backgroundColor: flagColors.senyeraRed }} />
+      <View style={{ flex: 1, backgroundColor: flagColors.senyeraYellow }} />
     </View>
   );
 }
@@ -48,9 +49,9 @@ function SpainFlagWeb({ size = 16 }: { size?: number }) {
   const h = size * 0.75;
   return (
     <View style={{ width: size, height: h, borderRadius: 2, overflow: 'hidden' }}>
-      <View style={{ flex: 1, backgroundColor: '#AA151B' }} />
-      <View style={{ flex: 2, backgroundColor: '#F1BF00' }} />
-      <View style={{ flex: 1, backgroundColor: '#AA151B' }} />
+      <View style={{ flex: 1, backgroundColor: flagColors.spainRed }} />
+      <View style={{ flex: 2, backgroundColor: flagColors.spainYellow }} />
+      <View style={{ flex: 1, backgroundColor: flagColors.spainRed }} />
     </View>
   );
 }

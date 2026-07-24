@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
+import { colors } from '../constants/colors';
 
 const MAX_PHOTOS = 3;
 
@@ -67,7 +68,7 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
               onPress={() => handlePressDelete(uri)}
               accessibilityLabel={labels.photo_remove}
             >
-              <Ionicons name="close" size={14} color="#fff" />
+              <Ionicons name="close" size={14} color={colors.white} />
             </TouchableOpacity>
           </View>
         ))}
@@ -140,7 +141,7 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
                 style={[styles.modalButton, { backgroundColor: c.red }]}
                 onPress={handleConfirmDelete}
               >
-                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
+                <Text style={[styles.modalButtonText, { color: colors.white, fontSize: fs(14) }]}>
                   {labels.delete}
                 </Text>
               </TouchableOpacity>

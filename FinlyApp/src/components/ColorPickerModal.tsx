@@ -4,6 +4,7 @@ import ColorPicker, { Panel1, HueSlider, OpacitySlider, Preview } from 'reanimat
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
+import { colors } from '../constants/colors';
 
 interface Props {
   visible: boolean;
@@ -70,7 +71,7 @@ export default function ColorPickerModal({ visible, selectedColor, onSelect, onC
               style={[styles.button, { backgroundColor: c.primary }]}
               onPress={handleConfirm}
             >
-              <Text style={[styles.buttonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
+              <Text style={[styles.buttonText, { color: colors.white, fontSize: fs(14) }]}>
                 {labels.create_cat_color_picker_ok}
               </Text>
             </TouchableOpacity>
