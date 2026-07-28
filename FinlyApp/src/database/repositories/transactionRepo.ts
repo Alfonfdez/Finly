@@ -2,7 +2,7 @@ import { getDatabase } from '../database';
 import { Transaction } from '../types';
 import { TransactionType } from '../../constants/types';
 import * as FileSystem from 'expo-file-system';
-import { Platform } from 'react-native';
+import { UNTAGGED_ID, buildUpdateQuery } from '../helpers';
 
 interface TransactionFilters {
   account_id?: number;
@@ -41,6 +41,30 @@ interface CategoryUsageCount {
   count: number;
 }
 
+async function deleteTransactionPhotos(whereClause: string, ...params: any[]): Promise<void> {
+  try {
+    const db = getDatabase();
+    const rows = await db.getAllAsync<{ photo: string | null }>(
+      `SELECT photo FROM transactions WHERE ${whereClause}`,
+      ...params
+    );
+    for (const row of rows) {
+      if (row.photo) {
+        try {
+          const photos = JSON.parse(row.photo);
+          const uris = Array.isArray(photos) ? photos : [photos];
+          for (const uri of uris) {
+            const info = await FileSystem.getInfoAsync(uri);
+            if (info.exists) {
+              await FileSystem.deleteAsync(uri);
+            }
+          }
+        } catch {}
+      }
+    }
+  } catch {}
+}
+
 export const transactionRepo = {
   async list(filters: TransactionFilters = {}): Promise<Transaction[]> {
     const db = getDatabase();
@@ -72,8 +96,8 @@ export const transactionRepo = {
       params.push(filters.end_date);
     }
     if (filters.tagIds && filters.tagIds.length > 0) {
-      const hasUntagged = filters.tagIds.includes(-1);
-      const regularIds = filters.tagIds.filter(id => id !== -1);
+      const hasUntagged = filters.tagIds.includes(UNTAGGED_ID);
+      const regularIds = filters.tagIds.filter(id => id !== UNTAGGED_ID);
 
       if (hasUntagged && regularIds.length > 0) {
         sql += ` AND (id IN (SELECT transaction_id FROM transaction_tags WHERE tag_id IN (${regularIds.map(() => '?').join(',')})) OR NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = transactions.id))`;
@@ -102,25 +126,12 @@ export const transactionRepo = {
 
   async update(id: number, data: Partial<Omit<Transaction, 'id' | 'created_at' | 'updated_at'>>): Promise<void> {
     const db = getDatabase();
-    const fields: string[] = [];
-    const values: (string | number | null)[] = [];
-
-    if (data.account_id !== undefined) { fields.push('account_id = ?'); values.push(data.account_id); }
-    if (data.category_id !== undefined) { fields.push('category_id = ?'); values.push(data.category_id); }
-    if (data.type !== undefined) { fields.push('type = ?'); values.push(data.type); }
-    if (data.amount !== undefined) { fields.push('amount = ?'); values.push(data.amount); }
-    if (data.description !== undefined) { fields.push('description = ?'); values.push(data.description); }
-    if (data.photo !== undefined) { fields.push('photo = ?'); values.push(data.photo); }
-    if (data.date !== undefined) { fields.push('date = ?'); values.push(data.date); }
-
-    fields.push("updated_at = datetime('now', 'localtime')");
-
-    if (fields.length === 1) return;
-
-    values.push(id);
+    const result = buildUpdateQuery(data, ['account_id', 'category_id', 'type', 'amount', 'description', 'photo', 'date']);
+    if (!result) return;
+    result.values.push(id);
     await db.runAsync(
-      `UPDATE transactions SET ${fields.join(', ')} WHERE id = ?`,
-      ...values
+      `UPDATE transactions SET ${result.sets}, updated_at = datetime('now', 'localtime') WHERE id = ?`,
+      ...result.values
     );
   },
 
@@ -130,51 +141,13 @@ export const transactionRepo = {
   },
 
   async deleteByAccountId(accountId: number): Promise<void> {
-    if (Platform.OS !== 'web') {
-      try {
-        const db = getDatabase();
-        const rows = await db.getAllAsync<{ photo: string | null }>('SELECT photo FROM transactions WHERE account_id = ? AND photo IS NOT NULL', accountId);
-        for (const row of rows) {
-          if (row.photo) {
-            try {
-              const photos = JSON.parse(row.photo);
-              const uris = Array.isArray(photos) ? photos : [photos];
-              for (const uri of uris) {
-                const info = await FileSystem.getInfoAsync(uri);
-                if (info.exists) {
-                  await FileSystem.deleteAsync(uri);
-                }
-              }
-            } catch {}
-          }
-        }
-      } catch {}
-    }
+    await deleteTransactionPhotos('account_id = ? AND photo IS NOT NULL', accountId);
     const db = getDatabase();
     await db.runAsync(`DELETE FROM transactions WHERE account_id = ?`, accountId);
   },
 
   async deleteAllTransactions(): Promise<void> {
-    if (Platform.OS !== 'web') {
-      try {
-        const db = getDatabase();
-        const rows = await db.getAllAsync<{ photo: string | null }>('SELECT photo FROM transactions WHERE photo IS NOT NULL');
-        for (const row of rows) {
-          if (row.photo) {
-            try {
-              const photos = JSON.parse(row.photo);
-              const uris = Array.isArray(photos) ? photos : [photos];
-              for (const uri of uris) {
-                const info = await FileSystem.getInfoAsync(uri);
-                if (info.exists) {
-                  await FileSystem.deleteAsync(uri);
-                }
-              }
-            } catch {}
-          }
-        }
-      } catch {}
-    }
+    await deleteTransactionPhotos('photo IS NOT NULL');
     const db = getDatabase();
     await db.runAsync('DELETE FROM transactions');
     await db.runAsync('DELETE FROM transaction_tags');
@@ -252,8 +225,8 @@ export const transactionRepo = {
   ): Promise<CategoryTagBreakdown[]> {
     const db = getDatabase();
     const hasFilter = tagIds && tagIds.length > 0;
-    const filterRegular = hasFilter ? tagIds!.filter(id => id !== -1) : [];
-    const filterUntagged = hasFilter ? tagIds!.includes(-1) : false;
+    const filterRegular = hasFilter ? tagIds.filter(id => id !== UNTAGGED_ID) : [];
+    const filterUntagged = hasFilter ? tagIds.includes(UNTAGGED_ID) : false;
 
     if (!hasFilter) {
       return await db.getAllAsync<CategoryTagBreakdown>(
@@ -266,7 +239,7 @@ export const transactionRepo = {
 
          UNION ALL
 
-         SELECT -1 AS tag_id, 'Untagged' AS name, SUM(tr.amount) AS total
+         SELECT ${UNTAGGED_ID} AS tag_id, 'Untagged' AS name, SUM(tr.amount) AS total
          FROM transactions tr
          WHERE tr.account_id = ? AND tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
            AND NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = tr.id)`,
@@ -295,7 +268,7 @@ export const transactionRepo = {
 
     if (filterUntagged) {
       const untagged = await db.getAllAsync<CategoryTagBreakdown>(
-        `SELECT -1 AS tag_id, 'Untagged' AS name, SUM(tr.amount) AS total
+        `SELECT ${UNTAGGED_ID} AS tag_id, 'Untagged' AS name, SUM(tr.amount) AS total
          FROM transactions tr
          WHERE tr.account_id = ? AND tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
            AND NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = tr.id)`,
