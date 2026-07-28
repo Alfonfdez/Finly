@@ -1,6 +1,7 @@
 import { getDatabase } from '../database';
 import { Category } from '../types';
 import { TransactionType } from '../../constants/types';
+import { buildUpdateQuery } from '../helpers';
 
 export const categoryRepo = {
   async list(userId: number, type?: TransactionType): Promise<Category[]> {
@@ -28,21 +29,9 @@ export const categoryRepo = {
 
   async update(id: number, data: Partial<Omit<Category, 'id' | 'created_at'>>): Promise<void> {
     const db = getDatabase();
-    const fields: string[] = [];
-    const values: (string | number)[] = [];
-
-    if (data.name !== undefined) { fields.push('name = ?'); values.push(data.name); }
-    if (data.icon !== undefined) { fields.push('icon = ?'); values.push(data.icon); }
-    if (data.color !== undefined) { fields.push('color = ?'); values.push(data.color); }
-    if (data.type !== undefined) { fields.push('type = ?'); values.push(data.type); }
-
-    if (fields.length === 0) return;
-
-    values.push(id);
-    await db.runAsync(
-      `UPDATE categories SET ${fields.join(', ')} WHERE id = ?`,
-      ...values
-    );
+    const result = buildUpdateQuery(data, ['name', 'icon', 'color', 'type']);
+    if (!result) return;
+    await db.runAsync(`UPDATE categories SET ${result.sets} WHERE id = ?`, ...result.values, id);
   },
 
   async delete(id: number): Promise<void> {

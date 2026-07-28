@@ -1,5 +1,6 @@
 import { getDatabase } from '../database';
 import { User } from '../types';
+import { buildUpdateQuery } from '../helpers';
 
 export const userRepo = {
   async create(data: Omit<User, 'id' | 'created_at'>): Promise<User> {
@@ -21,20 +22,8 @@ export const userRepo = {
 
   async update(id: number, data: Partial<Omit<User, 'id' | 'created_at'>>): Promise<void> {
     const db = getDatabase();
-    const fields: string[] = [];
-    const values: (string | number | null)[] = [];
-
-    if (data.name !== undefined) { fields.push('name = ?'); values.push(data.name); }
-    if (data.email !== undefined) { fields.push('email = ?'); values.push(data.email); }
-    if (data.avatar !== undefined) { fields.push('avatar = ?'); values.push(data.avatar); }
-    if (data.currency !== undefined) { fields.push('currency = ?'); values.push(data.currency); }
-
-    if (fields.length === 0) return;
-
-    values.push(id);
-    await db.runAsync(
-      `UPDATE users SET ${fields.join(', ')} WHERE id = ?`,
-      ...values
-    );
+    const result = buildUpdateQuery(data, ['name', 'email', 'avatar', 'currency']);
+    if (!result) return;
+    await db.runAsync(`UPDATE users SET ${result.sets} WHERE id = ?`, ...result.values, id);
   },
 };

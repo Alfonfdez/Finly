@@ -1,5 +1,6 @@
 import { getDatabase } from '../database';
 import { Tag } from '../types';
+import { buildUpdateQuery } from '../helpers';
 
 export const tagRepo = {
   async list(userId: number): Promise<Tag[]> {
@@ -21,18 +22,9 @@ export const tagRepo = {
 
   async update(id: number, data: Partial<Omit<Tag, 'id' | 'created_at'>>): Promise<void> {
     const db = getDatabase();
-    const fields: string[] = [];
-    const values: (string | number)[] = [];
-
-    if (data.name !== undefined) { fields.push('name = ?'); values.push(data.name); }
-
-    if (fields.length === 0) return;
-
-    values.push(id);
-    await db.runAsync(
-      `UPDATE tags SET ${fields.join(', ')} WHERE id = ?`,
-      ...values
-    );
+    const result = buildUpdateQuery(data, ['name']);
+    if (!result) return;
+    await db.runAsync(`UPDATE tags SET ${result.sets} WHERE id = ?`, ...result.values, id);
   },
 
   async delete(id: number): Promise<void> {

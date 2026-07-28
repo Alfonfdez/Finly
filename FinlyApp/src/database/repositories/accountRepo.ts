@@ -1,5 +1,6 @@
 import { getDatabase } from '../database';
 import { Account } from '../types';
+import { buildUpdateQuery } from '../helpers';
 
 export const accountRepo = {
   async list(userId: number): Promise<Account[]> {
@@ -21,22 +22,9 @@ export const accountRepo = {
 
   async update(id: number, data: Partial<Omit<Account, 'id' | 'created_at'>>): Promise<void> {
     const db = getDatabase();
-    const fields: string[] = [];
-    const values: (string | number)[] = [];
-
-    if (data.name !== undefined) { fields.push('name = ?'); values.push(data.name); }
-    if (data.initial_balance !== undefined) { fields.push('initial_balance = ?'); values.push(data.initial_balance); }
-    if (data.icon !== undefined) { fields.push('icon = ?'); values.push(data.icon); }
-    if (data.color !== undefined) { fields.push('color = ?'); values.push(data.color); }
-    if (data.description !== undefined) { fields.push('description = ?'); values.push(data.description); }
-
-    if (fields.length === 0) return;
-
-    values.push(id);
-    await db.runAsync(
-      `UPDATE accounts SET ${fields.join(', ')} WHERE id = ?`,
-      ...values
-    );
+    const result = buildUpdateQuery(data, ['name', 'initial_balance', 'icon', 'color', 'description']);
+    if (!result) return;
+    await db.runAsync(`UPDATE accounts SET ${result.sets} WHERE id = ?`, ...result.values, id);
   },
 
   async delete(id: number): Promise<void> {
