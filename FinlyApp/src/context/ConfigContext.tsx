@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { Appearance } from 'react-native';
 import { ColorPalette, darkColors, lightColors } from '../constants/themes';
 import { configRepository } from '../database';
@@ -70,16 +70,18 @@ function resolveColors(theme: Config['theme']): ColorPalette {
 
 export function ConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<Config>(CONFIG_DEFAULT);
+  const configRef = useRef(config);
+  configRef.current = config;
   const [loading, setLoading] = useState(true);
   const [activeColors, setActiveColors] = useState<ColorPalette>(darkColors);
 
   useEffect(() => {
     (async () => {
       try {
-      const loaded = await configRepository.get();
-      setConfig(loaded);
-      setActiveColors(resolveColors(loaded.theme));
-      setLanguage(loaded.language);
+        const loaded = await configRepository.get();
+        setConfig(loaded);
+        setActiveColors(resolveColors(loaded.theme));
+        setLanguage(loaded.language);
       } catch {
         setActiveColors(resolveColors(CONFIG_DEFAULT.theme));
       }
@@ -118,13 +120,11 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   }, [activeColors]);
 
   const updateConfig = async (partial: Partial<Config>) => {
-    setConfig(prev => {
-      const updated = { ...prev, ...partial };
-      setActiveColors(resolveColors(updated.theme));
-      if (partial.language) setLanguage(partial.language);
-      configRepository.save(partial).catch(() => {});
-      return updated;
-    });
+    const updated = { ...configRef.current, ...partial };
+    if (partial.language) setLanguage(partial.language);
+    configRepository.save(partial).catch(() => {});
+    setConfig(updated);
+    if (partial.theme) setActiveColors(resolveColors(partial.theme));
   };
 
   return (

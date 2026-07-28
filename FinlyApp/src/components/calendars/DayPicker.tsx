@@ -29,11 +29,12 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
   const [month, setMonth] = useState((initialView ?? date).getMonth() + 1);
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
+  const labels = t();
 
   const daysInMonth = getDaysInMonth(year, month);
   const firstDayOfMonth = new Date(year, month - 1, 1);
   const prevDays = getDayOffset(firstDayOfMonth, firstDay);
-  const headers = firstDay === 1 ? t().days_short_mon : t().days_short_sun;
+  const headers = firstDay === 1 ? labels.days_short_mon : labels.days_short_sun;
 
   const inRange = (d: Date) => rangeStart && rangeEnd && d >= rangeStart && d <= rangeEnd;
   const isStartEdge = (d: Date) => rangeStart && isSameDay(d, rangeStart);

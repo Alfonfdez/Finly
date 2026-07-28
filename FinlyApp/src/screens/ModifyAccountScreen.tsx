@@ -12,7 +12,6 @@ import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayAccountName, getDefaultEnglishAccountName, getAccountName, getDefaultAccountIdByName, getDisplayAccountDescription, getDefaultEnglishAccountDescription, getAccountDescription } from '../i18n';
 import { isAndroid } from '../utils/platform';
-import { colors } from '../constants/colors';
 import { accountRepository } from '../database';
 import { Account } from '../database/types';
 import { RootStackParamList } from '../constants/types';
@@ -222,7 +221,7 @@ export default function ModifyAccountScreen() {
                   {
                     backgroundColor: c.surface,
                     color: c.text,
-                    borderColor: nameError || (nameTouched && name.trim().length === 0) ? colors.red : c.border,
+                    borderColor: nameError || (nameTouched && name.trim().length === 0) ? c.red : c.border,
                     fontSize: fs(14),
                   },
                 ]}
@@ -244,7 +243,7 @@ export default function ModifyAccountScreen() {
           <View style={styles.grid} onLayout={onGridLayout}>
             {cellSize > 0 && ACCOUNT_ICONS.map((icon) => {
               const isSelected = selectedIcon === icon;
-              const iconColor = isSelected && selectedColor ? selectedColor : (isSelected ? c.primary : colors.textSecondary);
+              const iconColor = isSelected && selectedColor ? selectedColor : (isSelected ? c.primary : c.textSecondary);
               const bgColor = isSelected && selectedColor ? selectedColor + '33' : (isSelected ? c.primary + '33' : c.surface);
               const borderColor = isSelected ? (selectedColor || c.primary) : 'transparent';
               return (
@@ -312,7 +311,7 @@ export default function ModifyAccountScreen() {
           </Text>
 
           {hintText && (
-            <Text style={[styles.hint, { color: colors.red, fontSize: fs(12) }]}>
+            <Text style={[styles.hint, { color: c.red, fontSize: fs(12) }]}>
               {hintText}
             </Text>
           )}
@@ -324,14 +323,14 @@ export default function ModifyAccountScreen() {
                   styles.deleteButton,
                   isLastAccount
                     ? { borderColor: c.border, opacity: 0.5 }
-                    : { borderColor: colors.red },
+                    : { borderColor: c.red },
                 ]}
                 onPress={() => !isLastAccount && setDeleteModalVisible(true)}
                 disabled={isLastAccount}
                 accessibilityState={{ disabled: isLastAccount }}
               >
-                <Ionicons name="trash-outline" size={18} color={isLastAccount ? c.textSecondary : colors.red} />
-                <Text style={[styles.deleteButtonText, { color: isLastAccount ? c.textSecondary : colors.red, fontSize: fs(15) }]}>
+                <Ionicons name="trash-outline" size={18} color={isLastAccount ? c.textSecondary : c.red} />
+                <Text style={[styles.deleteButtonText, { color: isLastAccount ? c.textSecondary : c.red, fontSize: fs(15) }]}>
                   {labels.modify_account_delete}
                 </Text>
               </TouchableOpacity>
@@ -347,12 +346,12 @@ export default function ModifyAccountScreen() {
           <TouchableOpacity
             style={[
               styles.button,
-              { backgroundColor: canSave ? c.primary : colors.disabled },
+              { backgroundColor: canSave ? c.primary : c.textSecondary },
             ]}
             onPress={handleSave}
             disabled={!canSave}
           >
-            <Text style={[styles.buttonText, { color: colors.white, fontSize: fs(15) }]}>
+            <Text style={[styles.buttonText, { color: '#FFFFFF', fontSize: fs(15) }]}>
               {labels.modify_account_save}
             </Text>
           </TouchableOpacity>
@@ -381,10 +380,10 @@ export default function ModifyAccountScreen() {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: colors.red }]}
+                style={[styles.modalButton, { backgroundColor: c.red }]}
                 onPress={handleDeleteConfirm}
               >
-                <Text style={[styles.modalButtonText, { color: colors.white, fontSize: fs(14) }]}>
+                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
                   {labels.modify_account_delete_confirm_delete}
                 </Text>
               </TouchableOpacity>

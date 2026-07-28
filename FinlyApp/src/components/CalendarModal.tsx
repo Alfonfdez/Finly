@@ -11,6 +11,7 @@ import WeekPicker from './calendars/WeekPicker';
 import MonthGrid from './calendars/MonthGrid';
 import YearGrid from './calendars/YearGrid';
 import PeriodPicker from './calendars/PeriodPicker';
+import { OVERLAY_BG } from './componentStyles';
 
 interface Props {
   visible: boolean;
@@ -113,7 +114,7 @@ export default function CalendarModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: OVERLAY_BG,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,

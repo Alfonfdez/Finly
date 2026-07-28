@@ -4,7 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import { colors } from '../constants/colors';
+import { OVERLAY_BG } from './componentStyles';
+
 
 const MAX_PHOTOS = 3;
 
@@ -56,20 +57,16 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
       <View style={styles.photoRow}>
         {photos.map((uri) => (
           <View key={uri} style={styles.photoWrapper}>
-            <TouchableOpacity
-              style={[styles.photoButton, { backgroundColor: c.surface }]}
-              onPress={() => {}}
-              activeOpacity={1}
-            >
+            <View style={[styles.photoButton, { backgroundColor: c.surface }]}>
               <Image source={{ uri }} style={styles.photoThumbnail} />
-            </TouchableOpacity>
+            </View>
             <TouchableOpacity
               style={[styles.removeButton, { backgroundColor: c.red }]}
               onPress={() => handlePressDelete(uri)}
               accessibilityLabel={labels.photo_remove}
             >
-              <Ionicons name="close" size={14} color={colors.white} />
-            </TouchableOpacity>
+              <Ionicons name="close" size={14} color="#FFFFFF" />
+                </TouchableOpacity>
           </View>
         ))}
         {canAddMore && (
@@ -141,7 +138,7 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
                 style={[styles.modalButton, { backgroundColor: c.red }]}
                 onPress={handleConfirmDelete}
               >
-                <Text style={[styles.modalButtonText, { color: colors.white, fontSize: fs(14) }]}>
+                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
                   {labels.delete}
                 </Text>
               </TouchableOpacity>
@@ -198,7 +195,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: OVERLAY_BG,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,

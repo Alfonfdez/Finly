@@ -76,13 +76,43 @@ function calculateStartEnd(period: Period, date: Date): { start: Date; end: Date
       const end = new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999);
       return { start, end };
     }
-    case 'custom': {
+    default: {
       const start = new Date(date.getFullYear(), date.getMonth(), 1);
       const end = new Date(date);
       end.setHours(23, 59, 59, 999);
       return { start, end };
     }
   }
+}
+
+async function fetchTransactionsAndTags(
+  account: Account,
+  period: Period,
+  date: Date,
+  customDateRange: { start: Date; end: Date },
+): Promise<{ data: Transaction[]; tagMap: Map<number, number[]> }> {
+  const dates = period === 'custom'
+    ? customDateRange
+    : calculateStartEnd(period, date);
+  const isTotal = (account.is_total ?? 0) === 1;
+  const data = await transactionRepo.list({
+    account_id: isTotal ? undefined : account.id,
+    start_date: formatDateForDB(dates.start),
+    end_date: formatDateForDB(dates.end),
+  });
+
+  const txnIds = data.map(t => t.id);
+  const tagLinks = await transactionRepo.getTagsByTransactionIds(txnIds);
+  const tagMap = new Map<number, number[]>();
+  for (const t of data) {
+    tagMap.set(t.id, []);
+  }
+  for (const link of tagLinks) {
+    const existing = tagMap.get(link.transaction_id) ?? [];
+    existing.push(link.tag_id);
+    tagMap.set(link.transaction_id, existing);
+  }
+  return { data, tagMap };
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -103,6 +133,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [activeTagIds, setActiveTagIds] = useState<number[]>([]);
   const [tagsByTransaction, setTagsByTransaction] = useState<Map<number, number[]>>(new Map());
 
+  const applyHomeDefaults = useCallback((accountsData: Account[]) => {
+    if (accountsData.length > 0) {
+      if (appConfig.homeDefaultAccountId !== null) {
+        const found = accountsData.find(a => a.id === appConfig.homeDefaultAccountId);
+        if (found) setActiveAccount(found);
+        else setActiveAccount(accountsData[0]);
+      } else {
+        setActiveAccount(accountsData[0]);
+      }
+      if (appConfig.homeDefaultPeriod) {
+        setActivePeriod(appConfig.homeDefaultPeriod);
+      }
+    }
+  }, [appConfig.homeDefaultAccountId, appConfig.homeDefaultPeriod]);
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -114,20 +159,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setAccounts(accountsData);
         setCategories(categoriesData);
         setTags(tagsData);
-        if (accountsData.length > 0) {
-          // Apply home default account
-          if (appConfig.homeDefaultAccountId !== null) {
-            const found = accountsData.find(a => a.id === appConfig.homeDefaultAccountId);
-            if (found) setActiveAccount(found);
-            else setActiveAccount(accountsData[0]);
-          } else {
-            setActiveAccount(accountsData[0]);
-          }
-          // Apply home default period
-          if (appConfig.homeDefaultPeriod) {
-            setActivePeriod(appConfig.homeDefaultPeriod);
-          }
-        }
+        applyHomeDefaults(accountsData);
       } catch (error) {
         console.error('Failed to load initial data:', error);
       } finally {
@@ -135,35 +167,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     }
     loadData();
-  }, [appConfig.homeDefaultAccountId, appConfig.homeDefaultPeriod]);
+  }, [appConfig.homeDefaultAccountId, appConfig.homeDefaultPeriod, applyHomeDefaults]);
 
   useEffect(() => {
     if (!activeAccount) return;
     async function loadTransactions() {
-      const dates = activePeriod === 'custom'
-        ? customDate
-        : calculateStartEnd(activePeriod, selectedDate);
-
-      const isTotal = (activeAccount!.is_total ?? 0) === 1;
-      const data = await transactionRepo.list({
-        account_id: isTotal ? undefined : activeAccount!.id,
-        start_date: formatDateForDB(dates.start),
-        end_date: formatDateForDB(dates.end),
-      });
+      const { data, tagMap } = await fetchTransactionsAndTags(
+        activeAccount, activePeriod, selectedDate, customDate,
+      );
       setTransactions(data);
-
-      const txnIds = data.map(t => t.id);
-      const tagLinks = await transactionRepo.getTagsByTransactionIds(txnIds);
-      const map = new Map<number, number[]>();
-      for (const t of data) {
-        map.set(t.id, []);
-      }
-      for (const link of tagLinks) {
-        const existing = map.get(link.transaction_id) ?? [];
-        existing.push(link.tag_id);
-        map.set(link.transaction_id, existing);
-      }
-      setTagsByTransaction(map);
+      setTagsByTransaction(tagMap);
     }
     loadTransactions();
   }, [activeAccount, activePeriod, selectedDate, customDate]);
@@ -250,48 +263,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const activeCategories = useMemo(() => {
     const categoriesByType = categories.filter(c => c.type === activeType);
     const totalByType = filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
-
-    return categoriesByType.map(cat => {
-      const total = filteredTransactions
-        .filter(t => t.category_id === cat.id)
-        .reduce((sum, t) => sum + t.amount, 0);
-      return {
+    const categoryTotals: Record<number, number> = {};
+    for (const t of filteredTransactions) {
+      categoryTotals[t.category_id] = (categoryTotals[t.category_id] ?? 0) + t.amount;
+    }
+    return categoriesByType
+      .filter(cat => categoryTotals[cat.id] > 0)
+      .map(cat => ({
         id: cat.id,
         name: getDisplayCategoryName(cat),
         icon: cat.icon,
         color: cat.color,
         type: cat.type,
-        total,
-        percentage: totalByType > 0 ? (total / totalByType) * 100 : 0,
-      };
-    }).filter(cat => cat.total > 0);
+        total: categoryTotals[cat.id],
+        percentage: totalByType > 0 ? (categoryTotals[cat.id] / totalByType) * 100 : 0,
+      }));
   }, [categories, activeType, filteredTransactions]);
 
   const refresh = useCallback(async () => {
     if (!activeAccount) return;
-    const dates = activePeriod === 'custom'
-      ? customDate
-      : calculateStartEnd(activePeriod, selectedDate);
-    const isTotal = (activeAccount.is_total ?? 0) === 1;
-    const data = await transactionRepo.list({
-      account_id: isTotal ? undefined : activeAccount.id,
-      start_date: formatDateForDB(dates.start),
-      end_date: formatDateForDB(dates.end),
-    });
+    const { data, tagMap } = await fetchTransactionsAndTags(
+      activeAccount, activePeriod, selectedDate, customDate,
+    );
     setTransactions(data);
-
-    const txnIds = data.map(t => t.id);
-    const tagLinks = await transactionRepo.getTagsByTransactionIds(txnIds);
-    const map = new Map<number, number[]>();
-    for (const t of data) {
-      map.set(t.id, []);
-    }
-    for (const link of tagLinks) {
-      const existing = map.get(link.transaction_id) ?? [];
-      existing.push(link.tag_id);
-      map.set(link.transaction_id, existing);
-    }
-    setTagsByTransaction(map);
+    setTagsByTransaction(tagMap);
   }, [activeAccount, activePeriod, selectedDate, customDate]);
 
   const refreshCategories = useCallback(async () => {
@@ -319,26 +314,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setAccounts(accountsData);
       setCategories(categoriesData);
       setTags(tagsData);
+      applyHomeDefaults(accountsData);
       setActiveTagIds([]);
       setTagsByTransaction(new Map());
       setSelectedDate(new Date());
       setCustomDateState({ start: new Date(new Date().getFullYear(), 0, 1), end: new Date() });
-      if (accountsData.length > 0) {
-        if (appConfig.homeDefaultAccountId !== null) {
-          const found = accountsData.find(a => a.id === appConfig.homeDefaultAccountId);
-          if (found) setActiveAccount(found);
-          else setActiveAccount(accountsData[0]);
-        } else {
-          setActiveAccount(accountsData[0]);
-        }
-        if (appConfig.homeDefaultPeriod) {
-          setActivePeriod(appConfig.homeDefaultPeriod);
-        }
-      }
     } catch (error) {
       console.error('Failed to reset all data:', error);
     }
-  }, [appConfig.homeDefaultAccountId, appConfig.homeDefaultPeriod]);
+  }, [applyHomeDefaults]);
 
   const toggleTagId = useCallback((id: number) => {
     setActiveTagIds(prev => {

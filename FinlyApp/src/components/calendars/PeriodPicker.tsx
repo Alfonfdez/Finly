@@ -6,6 +6,7 @@ import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
 
 const MIN_YEAR = new Date().getFullYear();
+const MIN_DATE = new Date(MIN_YEAR, 0, 1);
 
 interface Props {
   tempStart: Date;
@@ -22,16 +23,15 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange, fi
   const labels = t();
   const shortMonths = labels.months_short;
 
-  const minDate = useMemo(() => new Date(MIN_YEAR, 0, 1), []);
   const today = useMemo(() => new Date(), []);
 
   const handleAllTime = useCallback(() => {
     const nextAllTime = !allTime;
     setAllTime(nextAllTime);
     if (nextAllTime) {
-      onTempRangeChange(minDate, today);
+      onTempRangeChange(MIN_DATE, today);
     }
-  }, [allTime, onTempRangeChange, minDate, today]);
+  }, [allTime, onTempRangeChange, today]);
 
   const handleDayPress = useCallback((d: Date) => {
     if (allTime) return;

@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { getMonthName, weekStart } from '../../utils/formatters';
+import { getShortMonthName, weekStart } from '../../utils/formatters';
 import { CalendarBaseProps } from './types';
 import MonthNav from './MonthNav';
 import YearNav from './YearNav';
@@ -14,9 +14,10 @@ interface Props extends CalendarBaseProps {
 
 function formatShortWeek(start: Date, end: Date): string {
   const startDay = start.getDate();
-  const monthAbrev = (m: number) => getMonthName(m + 1).slice(0, 3).toLowerCase();
   const endDay = end.getDate();
-  return `${startDay} ${monthAbrev(start.getMonth())} - ${endDay} ${monthAbrev(end.getMonth())}`;
+  const startMonth = getShortMonthName(start.getMonth() + 1).toLowerCase();
+  const endMonth = getShortMonthName(end.getMonth() + 1).toLowerCase();
+  return `${startDay} ${startMonth} - ${endDay} ${endMonth}`;
 }
 
 function sameWeek(a: Date, b: Date, firstDay: 0 | 1): boolean {

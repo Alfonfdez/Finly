@@ -6,7 +6,6 @@ import { useApp } from '../../context/AppContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
 import { isWeb } from '../../utils/platform';
-import { colors } from '../../constants/colors';
 import { transactionRepository, accountRepository, categoryRepository, tagRepository } from '../../database';
 import { initWebStorage } from '../../database/webStorage';
 import { getDatabase } from '../../database/database';
@@ -96,7 +95,7 @@ export default function DataScreen({ navigation }: Props) {
                 style={[styles.modalButton, { backgroundColor: c.red }]}
                 onPress={handleDeleteTransactions}
               >
-                <Text style={[styles.modalButtonText, { color: colors.white, fontSize: fs(14) }]}>{labels.delete}</Text>
+                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>{labels.delete}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -119,7 +118,7 @@ export default function DataScreen({ navigation }: Props) {
                 style={[styles.modalButton, { backgroundColor: c.red }]}
                 onPress={() => setDeleteAllModal2(true)}
               >
-                <Text style={[styles.modalButtonText, { color: colors.white, fontSize: fs(14) }]}>{labels.settings_delete_confirm}</Text>
+                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>{labels.settings_delete_confirm}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -151,7 +150,7 @@ export default function DataScreen({ navigation }: Props) {
                 style={[styles.modalButton, { backgroundColor: deleteAllText.toUpperCase() === 'DELETE' ? c.red : c.surface }]}
                 onPress={deleteAllText.toUpperCase() === 'DELETE' ? handleDeleteAll : undefined}
               >
-                <Text style={[styles.modalButtonText, { color: deleteAllText.toUpperCase() === 'DELETE' ? colors.white : c.textSecondary, fontSize: fs(14) }]}>{labels.settings_delete_confirm}</Text>
+                <Text style={[styles.modalButtonText, { color: deleteAllText.toUpperCase() === 'DELETE' ? '#FFFFFF' : c.textSecondary, fontSize: fs(14) }]}>{labels.settings_delete_confirm}</Text>
               </TouchableOpacity>
             </View>
           </View>

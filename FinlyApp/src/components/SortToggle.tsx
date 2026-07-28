@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons, ComponentProps } from '@expo/vector-icons';
+import { View, Text, TouchableOpacity, StyleSheet, ComponentProps } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';

@@ -12,7 +12,6 @@ import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDefaultAccountIdByName, getDefaultEnglishAccountName } from '../i18n';
 import { isAndroid } from '../utils/platform';
-import { colors } from '../constants/colors';
 import { accountRepository } from '../database';
 import { RootStackParamList } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
@@ -149,7 +148,7 @@ export default function CreateAccountScreen() {
               {
                 backgroundColor: c.surface,
                 color: c.text,
-                borderColor: nameError ? colors.red : c.border,
+                borderColor: nameError ? c.red : c.border,
                 fontSize: fs(14),
               },
             ]}
@@ -171,7 +170,7 @@ export default function CreateAccountScreen() {
           <View style={styles.grid} onLayout={onGridLayout}>
             {cellSize > 0 && ACCOUNT_ICONS.map((icon) => {
               const isSelected = selectedIcon === icon;
-              const iconColor = isSelected && selectedColor ? selectedColor : (isSelected ? c.primary : colors.textSecondary);
+              const iconColor = isSelected && selectedColor ? selectedColor : (isSelected ? c.primary : c.textSecondary);
               const bgColor = isSelected && selectedColor ? selectedColor + '33' : (isSelected ? c.primary + '33' : c.surface);
               const borderColor = isSelected ? (selectedColor || c.primary) : 'transparent';
               return (
@@ -239,7 +238,7 @@ export default function CreateAccountScreen() {
           </Text>
 
           {hintText && (
-            <Text style={[styles.hint, { color: colors.red, fontSize: fs(12) }]}>
+            <Text style={[styles.hint, { color: c.red, fontSize: fs(12) }]}>
               {hintText}
             </Text>
           )}
@@ -247,12 +246,12 @@ export default function CreateAccountScreen() {
           <TouchableOpacity
             style={[
               styles.button,
-              { backgroundColor: canCreate ? c.primary : colors.disabled },
+              { backgroundColor: canCreate ? c.primary : c.textSecondary },
             ]}
             onPress={handleCreate}
             disabled={!canCreate}
           >
-            <Text style={[styles.buttonText, { color: colors.white, fontSize: fs(15) }]}>
+            <Text style={[styles.buttonText, { color: '#FFFFFF', fontSize: fs(15) }]}>
               {labels.create_account_button}
             </Text>
           </TouchableOpacity>

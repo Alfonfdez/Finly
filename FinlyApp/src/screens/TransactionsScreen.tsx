@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { scrollbarFlatList } from '../constants/platformStyles';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -215,7 +214,6 @@ export default function TransactionsScreen() {
         </View>
       ) : (
       <SectionList
-        style={scrollbarFlatList}
         contentContainerStyle={styles.listContent}
         sections={sections}
         keyExtractor={(item) => item.id.toString()}

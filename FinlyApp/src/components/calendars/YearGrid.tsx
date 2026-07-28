@@ -11,7 +11,7 @@ export default function YearGrid({ date, onSelect }: CalendarBaseProps) {
   const [startYear, setStartYear] = useState(date.getFullYear() - 5);
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const years = Array.from({ length: 12 }, (_, i) => startYear + i);
+  const years = useMemo(() => Array.from({ length: 12 }, (_, i) => startYear + i), [startYear]);
 
   return (
     <View style={styles.container}>

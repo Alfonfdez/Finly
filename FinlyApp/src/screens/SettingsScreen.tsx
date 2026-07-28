@@ -8,7 +8,7 @@ import { scaleFontSize } from '../utils/formatters';
 import { t } from '../i18n';
 import { isWeb } from '../utils/platform';
 import { isCatalan } from '../utils/language';
-import { flagColors } from '../constants/colors';
+import { flagColors } from '../constants/flagColors';
 import type { Language } from '../utils/language';
 
 function SenyeraIcon({ size = 16 }: { size?: number }) {
