@@ -9,7 +9,8 @@ import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
 import TabBar from '../components/TabBar';
-import { TransactionType, RootStackParamList, sortCategoriesWithOthersLast } from '../constants/types';
+import { TransactionType, RootStackParamList } from '../constants/types';
+import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Categories'>;
 

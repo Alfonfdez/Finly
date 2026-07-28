@@ -1,12 +1,13 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, ComponentProps } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, ComponentProps } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
-import SearchBar from '../components/SearchBar';
-import { TransactionType, sortCategoriesWithOthersLast } from '../constants/types';
+import SearchBar from './SearchBar';
+import { TransactionType } from '../constants/types';
+import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
 import { Category } from '../database/types';
 
 interface Props {

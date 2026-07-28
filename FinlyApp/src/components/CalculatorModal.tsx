@@ -12,7 +12,8 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { evaluate } from '../utils/calculator';
 import { isWeb } from '../utils/platform';
-import { colors } from '../constants/colors';
+import { OVERLAY_BG } from './componentStyles';
+
 
 interface Props {
   visible: boolean;
@@ -94,7 +95,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
   };
 
   const getButtonFg = (btn: string) => {
-    if (OP_KEYS.has(btn) || btn === '=' || btn === 'C') return colors.white;
+    if (OP_KEYS.has(btn) || btn === '=' || btn === 'C') return '#FFFFFF';
     return c.text;
   };
 
@@ -193,7 +194,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
             style={[
               styles.actionText,
               {
-                color: resultDisplay !== null && !hasError ? colors.white : c.textSecondary,
+                color: resultDisplay !== null && !hasError ? '#FFFFFF' : c.textSecondary,
                 fontSize: fs(16),
               },
             ]}
@@ -301,7 +302,7 @@ const mobileStyles = StyleSheet.create({
 const webStyles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: OVERLAY_BG,
     justifyContent: 'center',
     alignItems: 'center',
   },

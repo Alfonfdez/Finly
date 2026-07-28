@@ -1,7 +1,6 @@
 import { ComponentProps } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { scrollbarFlatList } from '../constants/platformStyles';
 import { CategoryWithTotal } from '../constants/types';
 import { formatCurrency } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
@@ -70,7 +69,6 @@ export default function CategoryList({
 
   return (
     <FlatList
-      style={scrollbarFlatList}
       data={categories}
       keyExtractor={(item) => item.id.toString()}
       renderItem={({ item }) => (

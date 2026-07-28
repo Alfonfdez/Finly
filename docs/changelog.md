@@ -1931,3 +1931,53 @@
 
 [2026-07-24] ~ | src/components/calendars/DayPicker.tsx
 - Fix: calendar grid now always renders 6 rows (42 cells) regardless of month. Empty cells pad rows 5–6 for months with fewer days (e.g. February with 28 days). Prevents modal height jumping when navigating between months with different row counts (5 vs 6). Affects Day period modal and Period custom range modal.
+
+[2026-07-28] ~ | src/context/AppContext.tsx
+- Replaced `case 'custom'` with `default:` in calculateStartEnd switch — the `case 'custom'` branch was unreachable because fetchTransactionsAndTags handles `period === 'custom'` before calling calculateStartEnd.
+
+[2026-07-28] ~ | src/context/ConfigContext.tsx
+- Fixed stale closure in updateConfig: added configRef (useRef) so the callback always reads the latest config state, preventing stale values on rapid successive calls.
+
+[2026-07-28] ~ | src/constants/flagColors.ts (+)
+- Created flagColors.ts extracted from colors.ts (senyeraYellow, senyeraRed, spainRed, spainYellow). Updated SettingsScreen and RegionalScreen imports.
+
+[2026-07-28] ~ | 13 consumer files
+- Removed `import { colors } from '../constants/colors'` from AccountModal, CalculatorModal, ColorGrid, ColorPickerModal, IconGrid, PhotoSection, CreateAccountScreen, CreateCategoryScreen, ModifyAccountScreen, ModifyCategoryScreen, ModifyTagScreen, TransactionDetailsScreen, DataScreen.
+- Replaced colors.red→c.red, colors.white→'#FFFFFF', colors.disabled→c.textSecondary, colors.textSecondary→c.textSecondary, colors.primary→'#22D3EE' (static), colors.border→c.border, QUICK_COLORS tokens→inline hex.
+- Deleted src/constants/colors.ts (no remaining imports).
+
+[2026-07-28] - | src/constants/platformStyles.ts
+- Removed platformStyles.ts (scrollbarFlatList was redundant with global scrollbar CSS injected by ConfigContext). Cleaned up 3 consumers: AllTransactionsScreen, TransactionsScreen, CategoryList.
+
+[2026-07-28] ~ | src/utils/categoryUtils.ts (+), src/constants/types.ts (-)
+- Moved sortCategoriesWithOthersLast from constants/types.ts to new utils/categoryUtils.ts. Removed unused `import { Category }` from types.ts. Updated 4 importers: CategoryFilterModal, AddCategoryScreen, CategoriesScreen.
+
+[2026-07-28] ~ | 4 components (CategoryGrid, CategoryFilterModal, IconGrid, SortToggle)
+- Fixed ComponentProps import source: changed from `@expo/vector-icons` to `react`/`react-native` (the package only re-exports it; correct source is 'react').
+
+[2026-07-28] ~ | 6 components (AccountModal, CalculatorModal, CalendarModal, ColorPickerModal, PhotoSection, TagSection)
+- Replaced hardcoded `'rgba(0,0,0,0.6)'` with shared `OVERLAY_BG` constant from componentStyles.ts.
+
+[2026-07-28] ~ | PhotoSection.tsx
+- Removed dead `onPress={() => {}}` wrapper around image thumbnail (placeholder for unimplemented full-screen viewer).
+
+[2026-07-28] ~ | CategoryFilterModal.tsx
+- Fixed circuitous import path: `'../components/SearchBar'` → `'./SearchBar'`.
+
+[2026-07-28] ~ | calendars/DayPicker.tsx
+- Fixed inconsistent `t()` pattern: now destructures into `labels` variable like the rest of the codebase.
+
+[2026-07-28] ~ | calendars/MonthNav.tsx
+- Fixed `today` not memoized: replaced `const today = new Date()` with `useMemo(() => new Date(), [])` for consistency with sibling calendar components.
+
+[2026-07-28] ~ | calendars/MonthGrid.tsx
+- Extracted `months` array to module-level constant `MONTHS` instead of recreating it on every render.
+
+[2026-07-28] ~ | calendars/WeekPicker.tsx
+- Refactored `formatShortWeek` to use shared `getShortMonthName` utility instead of manual `slice(0,3).toLowerCase()`. Removed unused `getMonthName` import.
+
+[2026-07-28] ~ | calendars/YearGrid.tsx
+- Wrapped `years` array in `useMemo` to avoid recomputation on every render.
+
+[2026-07-28] ~ | calendars/PeriodPicker.tsx
+- Removed unnecessary `useMemo` wrapping `minDate` — now a module-level `MIN_DATE` constant (evaluated once at module load). Updated `handleAllTime` dependency array.

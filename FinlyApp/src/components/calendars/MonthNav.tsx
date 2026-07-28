@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { getMonthName } from '../../utils/formatters';
 import { useConfig } from '../../context/ConfigContext';
@@ -11,7 +12,7 @@ interface Props {
 }
 
 export default function MonthNav({ year, month, onChange }: Props) {
-  const today = new Date();
+  const today = useMemo(() => new Date(), []);
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const isLast = year === today.getFullYear() && month >= today.getMonth() + 1;

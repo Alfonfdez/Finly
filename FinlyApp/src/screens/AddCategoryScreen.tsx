@@ -9,7 +9,8 @@ import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
 import SearchBar from '../components/SearchBar';
-import { RootStackParamList, sortCategoriesWithOthersLast } from '../constants/types';
+import { RootStackParamList } from '../constants/types';
+import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
 import { setPendingCategory } from './AddTransactionScreen';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'AddCategory'>;

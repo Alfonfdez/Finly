@@ -4,7 +4,8 @@ import ColorPicker, { Panel1, HueSlider, OpacitySlider, Preview } from 'reanimat
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import { colors } from '../constants/colors';
+import { OVERLAY_BG } from './componentStyles';
+
 
 interface Props {
   visible: boolean;
@@ -17,11 +18,11 @@ export default function ColorPickerModal({ visible, selectedColor, onSelect, onC
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const [tempColor, setTempColor] = useState(selectedColor ?? colors.primary);
+  const [tempColor, setTempColor] = useState(selectedColor ?? '#22D3EE');
 
   useEffect(() => {
     if (visible) {
-      setTempColor(selectedColor ?? colors.primary);
+      setTempColor(selectedColor ?? '#22D3EE');
     }
   }, [visible, selectedColor]);
 
@@ -71,7 +72,7 @@ export default function ColorPickerModal({ visible, selectedColor, onSelect, onC
               style={[styles.button, { backgroundColor: c.primary }]}
               onPress={handleConfirm}
             >
-              <Text style={[styles.buttonText, { color: colors.white, fontSize: fs(14) }]}>
+              <Text style={[styles.buttonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
                 {labels.create_cat_color_picker_ok}
               </Text>
             </TouchableOpacity>
@@ -85,7 +86,7 @@ export default function ColorPickerModal({ visible, selectedColor, onSelect, onC
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: OVERLAY_BG,
     justifyContent: 'center',
     alignItems: 'center',
   },

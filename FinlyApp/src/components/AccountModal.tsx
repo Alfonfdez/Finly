@@ -6,8 +6,8 @@ import { formatCurrency } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayAccountName } from '../i18n';
-import { colors } from '../constants/colors';
 import EyeToggle from './EyeToggle';
+import { OVERLAY_BG } from './componentStyles';
 
 interface AccountWithBalance extends Account {
   balance: number;
@@ -80,7 +80,7 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
               <Text style={[styles.btnText, { color: c.text, fontSize: fs(14) }]}>{labels.transactions_cancel}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.btn, { backgroundColor: c.primary }]} onPress={() => { if (tempId != null) onSelect(tempId); }}>
-              <Text style={[styles.btnText, { color: colors.white, fontSize: fs(14) }]}>{labels.transactions_confirm}</Text>
+              <Text style={[styles.btnText, { color: '#FFFFFF', fontSize: fs(14) }]}>{labels.transactions_confirm}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -92,7 +92,7 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: OVERLAY_BG,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
