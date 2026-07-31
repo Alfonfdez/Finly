@@ -7,7 +7,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { formatCurrency, formatDateForDB } from '../utils/formatters';
+import { formatCurrency, formatDateForDB, formatSignedCurrency, HIDDEN_BALANCE, getPeriodRange } from '../utils/formatters';
 import { RootStackParamList, Period } from '../constants/types';
 import { t, getDisplayAccountName } from '../i18n';
 import { transactionRepository as transactionRepo } from '../database';
@@ -20,6 +20,7 @@ import DonutChart from '../components/DonutChart';
 import BarChart from '../components/BarChart';
 import CategoryList from '../components/CategoryList';
 import TagFilterBar from '../components/TagFilterBar';
+import Fab from '../components/Fab';
 
 type ChartType = 'donut' | 'bar';
 type Navigation = NativeStackNavigationProp<RootStackParamList, 'Home'>;
@@ -64,33 +65,7 @@ export default function HomeScreen() {
     async function loadTagBreakdowns() {
       const dates = activePeriod === 'custom'
         ? customDate
-        : (() => {
-            const now = selectedDate;
-            switch (activePeriod) {
-              case 'day': {
-                const s = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                const e = new Date(s); e.setHours(23, 59, 59, 999);
-                return { start: s, end: e };
-              }
-              case 'week': {
-                const wd = now.getDay();
-                const diff = wd === 0 ? 6 : wd - 1;
-                const s = new Date(now); s.setDate(now.getDate() - diff); s.setHours(0, 0, 0, 0);
-                const e = new Date(s); e.setDate(e.getDate() + 6); e.setHours(23, 59, 59, 999);
-                return { start: s, end: e };
-              }
-              case 'month': {
-                const s = new Date(now.getFullYear(), now.getMonth(), 1);
-                const e = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-                return { start: s, end: e };
-              }
-              case 'year': {
-                const s = new Date(now.getFullYear(), 0, 1);
-                const e = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
-                return { start: s, end: e };
-              }
-            }
-          })();
+        : getPeriodRange(activePeriod, selectedDate);
 
       const breakdowns = new Map<number, { tag_id: number; name: string; total: number }[]>();
       for (const cat of activeCategories) {
@@ -116,33 +91,7 @@ export default function HomeScreen() {
   const handleCategoryPress = useCallback((category: { id: number }) => {
     const { start, end } = activePeriod === 'custom'
       ? customDate
-      : (() => {
-          const now = selectedDate;
-          switch (activePeriod) {
-            case 'day': {
-              const s = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-              const e = new Date(s); e.setHours(23, 59, 59, 999);
-              return { start: s, end: e };
-            }
-            case 'week': {
-              const wd = now.getDay();
-              const diff = wd === 0 ? 6 : wd - 1;
-              const s = new Date(now); s.setDate(now.getDate() - diff); s.setHours(0, 0, 0, 0);
-              const e = new Date(s); e.setDate(e.getDate() + 6); e.setHours(23, 59, 59, 999);
-              return { start: s, end: e };
-            }
-            case 'month': {
-              const s = new Date(now.getFullYear(), now.getMonth(), 1);
-              const e = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-              return { start: s, end: e };
-            }
-            case 'year': {
-              const s = new Date(now.getFullYear(), 0, 1);
-              const e = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
-              return { start: s, end: e };
-            }
-          }
-        })();
+      : getPeriodRange(activePeriod, selectedDate);
     navigation.navigate('Transactions', {
       categoryId: category.id,
       type: activeType,
@@ -221,7 +170,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <Text style={[styles.totalText, { color: isBalanceHidden ? c.textSecondary : totalColor, fontSize: fs(28) }]}>
-                {isBalanceHidden ? '\u2022\u2022\u2022\u2022\u2022' : `${total >= 0 ? '+' : ''}${formatCurrency(total, config.currency, config.decimalSeparator)}`}
+                {isBalanceHidden ? HIDDEN_BALANCE : formatSignedCurrency(total, config.currency, config.decimalSeparator)}
               </Text>
               <EyeToggle isHidden={isBalanceHidden} onToggle={() => setIsRevealed(prev => !prev)} color={c.textSecondary} />
             </View>
@@ -229,11 +178,11 @@ export default function HomeScreen() {
         {isBalanceHidden ? (
           <>
             <Text style={[styles.summaryItem, { fontSize: fs(14) }]}>
-              <Text style={{ color: c.textSecondary, fontWeight: '700' }}>{'\u2022\u2022\u2022\u2022\u2022'}</Text>
+              <Text style={{ color: c.textSecondary, fontWeight: '700' }}>{HIDDEN_BALANCE}</Text>
               <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(12) }]}> {labels.home_income}</Text>
             </Text>
             <Text style={[styles.summaryItem, { fontSize: fs(14) }]}>
-              <Text style={{ color: c.textSecondary, fontWeight: '700' }}>{'\u2022\u2022\u2022\u2022\u2022'}</Text>
+              <Text style={{ color: c.textSecondary, fontWeight: '700' }}>{HIDDEN_BALANCE}</Text>
               <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(12) }]}> {labels.home_expenses}</Text>
             </Text>
           </>
@@ -313,13 +262,10 @@ export default function HomeScreen() {
           onToggleExpand={handleToggleExpand}
         />
 
-        <TouchableOpacity
-          style={[styles.fab, { backgroundColor: c.primary }]}
+        <Fab
           onPress={() => navigation.navigate('AddTransaction')}
           accessibilityLabel={labels.home_add}
-        >
-          <Ionicons name="add" size={28} color={c.background} />
-        </TouchableOpacity>
+        />
 
         <AccountModal
           visible={modalVisible}
@@ -358,19 +304,4 @@ const styles = StyleSheet.create({
   summaryLabel: {},
   totalText: { fontWeight: '700', marginVertical: 2 },
   chartContainer: { alignItems: 'center', marginVertical: 8 },
-  fab: {
-    position: 'absolute',
-    bottom: 56,
-    alignSelf: 'center',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
 });

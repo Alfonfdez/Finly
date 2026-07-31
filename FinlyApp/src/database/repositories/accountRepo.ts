@@ -20,6 +20,11 @@ export const accountRepo = {
     return { ...data, id: result.lastInsertRowId, created_at: new Date().toISOString() };
   },
 
+  async getById(id: number): Promise<Account | null> {
+    const db = getDatabase();
+    return await db.getFirstAsync<Account>('SELECT * FROM accounts WHERE id = ?', id);
+  },
+
   async update(id: number, data: Partial<Omit<Account, 'id' | 'created_at'>>): Promise<void> {
     const db = getDatabase();
     const result = buildUpdateQuery(data, ['name', 'initial_balance', 'icon', 'color', 'description']);

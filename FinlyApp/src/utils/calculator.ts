@@ -5,6 +5,8 @@ type CalcResult = {
 
 const MAX_VALUE = 999999999.99;
 
+const precedence = (op: string) => (op === '+' || op === '-') ? 1 : 2;
+
 function tokenize(expr: string): (number | string)[] {
   const tokens: (number | string)[] = [];
   let num = '';
@@ -37,8 +39,6 @@ function applyOp(a: number, b: number, op: string): number {
 function evalTokens(tokens: (number | string)[]): number {
   const nums: number[] = [];
   const ops: string[] = [];
-
-  const precedence = (op: string) => (op === '+' || op === '-') ? 1 : 2;
 
   const calcTop = () => {
     const b = nums.pop()!;

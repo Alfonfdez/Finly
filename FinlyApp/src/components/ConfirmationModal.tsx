@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
+import type { ReactNode } from 'react';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { OVERLAY_BG, MODAL_MAX_WIDTH, MODAL_BORDER_RADIUS, MODAL_PADDING, BUTTON_BORDER_RADIUS } from './componentStyles';
@@ -13,11 +14,12 @@ interface Props {
   onCancel: () => void;
   confirmDisabled?: boolean;
   destructive?: boolean;
+  children?: ReactNode;
 }
 
 export default function ConfirmationModal({
   visible, title, message, confirmLabel, cancelLabel,
-  onConfirm, onCancel, confirmDisabled = false, destructive = true,
+  onConfirm, onCancel, confirmDisabled = false, destructive = true, children,
 }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
@@ -30,6 +32,7 @@ export default function ConfirmationModal({
           {message && (
             <Text style={[styles.message, { color: c.textSecondary, fontSize: fs(14) }]}>{message}</Text>
           )}
+          {children}
           <View style={styles.buttons}>
             <TouchableOpacity
               style={[styles.button, { backgroundColor: c.surface, borderColor: c.border }]}

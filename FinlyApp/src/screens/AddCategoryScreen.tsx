@@ -9,6 +9,8 @@ import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
 import SearchBar from '../components/SearchBar';
+import CategoryGrid from '../components/CategoryGrid';
+import Fab from '../components/Fab';
 import { RootStackParamList } from '../constants/types';
 import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
 import { setPendingCategory } from './AddTransactionScreen';
@@ -17,7 +19,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'AddCategory
 type AddCategoryRouteProp = RouteProp<RootStackParamList, 'AddCategory'>;
 
 export default function AddCategoryScreen() {
-  const { activeColors: c, config } = useConfig();
+  const { activeColors: c } = useConfig();
   const { categories } = useApp();
   const fs = useFontSize();
   const labels = t();
@@ -65,31 +67,6 @@ export default function AddCategoryScreen() {
     navigation.goBack();
   };
 
-  const round = config.categoryIconShape === 'circle';
-
-  const renderCategory = (cat: typeof categories[0]) => {
-    const name = getDisplayCategoryName(cat);
-
-    return (
-      <TouchableOpacity
-        key={cat.id}
-        style={[styles.item, { backgroundColor: c.surface, borderRadius: round ? 999 : 12 }]}
-        onPress={() => handleSelectCategory(cat.id)}
-        accessibilityLabel={`${labels.a11y_category} ${name}`}
-      >
-        <View style={[styles.iconContainer, { backgroundColor: cat.color + '22', borderRadius: round ? 999 : 20 }]}>
-          <Ionicons name={cat.icon as any} size={24} color={cat.color} />
-        </View>
-        <Text
-          style={[styles.name, { color: c.text, fontSize: fs(11) }]}
-          numberOfLines={1}
-        >
-          {name}
-        </Text>
-      </TouchableOpacity>
-    );
-  };
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
       <View style={styles.content}>
@@ -114,20 +91,22 @@ export default function AddCategoryScreen() {
           </View>
         ) : (
           <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-            <View style={styles.grid}>
-              {filteredCategories.map(renderCategory)}
-            </View>
+            <CategoryGrid
+              categories={filteredCategories}
+              selectedCategory={null}
+              onSelect={handleSelectCategory}
+              onAddMore={() => navigation.navigate('CreateCategory', { type })}
+              showAddMore={false}
+              hideTitle
+            />
           </ScrollView>
         )}
       </View>
 
-      <TouchableOpacity
-        style={[styles.fab, { backgroundColor: c.primary }]}
+      <Fab
         onPress={() => navigation.navigate('CreateCategory', { type })}
         accessibilityLabel="+"
-      >
-        <Ionicons name="add" size={28} color={c.background} />
-      </TouchableOpacity>
+      />
     </SafeAreaView>
   );
 }
@@ -147,29 +126,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 80,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  item: {
-    width: '22%',
-    aspectRatio: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 8,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  name: {
-    fontWeight: '500',
-    textAlign: 'center',
-  },
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
@@ -182,20 +138,5 @@ const styles = StyleSheet.create({
   searchButton: {
     marginRight: 8,
     padding: 4,
-  },
-  fab: {
-    position: 'absolute',
-    bottom: 56,
-    alignSelf: 'center',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
   },
 });

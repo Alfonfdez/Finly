@@ -1,12 +1,13 @@
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import Svg, { Rect, Line } from 'react-native-svg';
 import { useConfig, Config } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
-import { scaleFontSize } from '../../utils/formatters';
 import { t } from '../../i18n';
 import { isWeb } from '../../utils/platform';
 import { isCatalan } from '../../utils/language';
 import { flagColors } from '../../constants/flagColors';
+import SelectorInline, { Option } from '../../components/SelectorInline';
+import { settingsStyles } from './settingsStyles';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../constants/types';
 import type { Language } from '../../utils/language';
@@ -14,8 +15,6 @@ import type { Language } from '../../utils/language';
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'SettingsRegional'>;
 };
-
-type Option<T = string> = { label: string; value: T; icon?: React.ReactNode };
 
 function SenyeraIcon({ size = 16 }: { size?: number }) {
   return (
@@ -94,41 +93,6 @@ function DayCircleIcon({ letter, size = 16, colors }: { letter: string; size?: n
   );
 }
 
-function SelectorInline<T extends string>({
-  options,
-  selected,
-  onSelect,
-  colors,
-  textSize,
-}: {
-  options: Option<T>[];
-  selected: T;
-  onSelect: (v: T) => void;
-  colors: ReturnType<typeof useConfig>['activeColors'];
-  textSize: Config['textSize'];
-}) {
-  const fs = (s: number) => scaleFontSize(s, textSize);
-  return (
-    <View style={styles.options}>
-      {options.map(op => (
-        <TouchableOpacity
-          key={String(op.value)}
-          style={[styles.option, { backgroundColor: selected === op.value ? colors.primary + '20' : colors.surface }]}
-          onPress={() => onSelect(op.value)}
-        >
-          {op.icon && <View style={styles.iconWrap}>{op.icon}</View>}
-          <Text style={[styles.optionText, { color: selected === op.value ? colors.primary : colors.text, fontSize: fs(14) }]}>
-            {op.label}
-          </Text>
-          {selected === op.value && (
-            <Text style={[styles.check, { color: colors.primary, fontSize: fs(14) }]}>✓</Text>
-          )}
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
-}
-
 export default function RegionalScreen({ navigation }: Props) {
   const { config, activeColors: c, updateConfig } = useConfig();
   const fs = useFontSize();
@@ -158,48 +122,31 @@ export default function RegionalScreen({ navigation }: Props) {
   ];
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: c.background }]} contentContainerStyle={styles.content}>
-      <Text style={[styles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_language}</Text>
-      <View style={[styles.card, { backgroundColor: c.surface }]}>
-        <SelectorInline options={LANGUAGES} selected={config.language} onSelect={(v) => updateConfig({ language: v })} colors={c} textSize={config.textSize} />
+    <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
+      <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_language}</Text>
+      <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
+        <SelectorInline options={LANGUAGES} selected={config.language} onSelect={(v) => updateConfig({ language: v })} textSize={config.textSize} />
       </View>
 
-      <Text style={[styles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_money}</Text>
-      <View style={[styles.card, { backgroundColor: c.surface }]}>
-        <Text style={[styles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_currency}</Text>
-        <SelectorInline options={DIVAS} selected={config.currency} onSelect={(v) => updateConfig({ currency: v })} colors={c} textSize={config.textSize} />
+      <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_money}</Text>
+      <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
+        <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_currency}</Text>
+        <SelectorInline options={DIVAS} selected={config.currency} onSelect={(v) => updateConfig({ currency: v })} textSize={config.textSize} />
       </View>
-      <View style={[styles.card, { backgroundColor: c.surface }]}>
-        <Text style={[styles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_decimal_sep}</Text>
-        <SelectorInline options={SEPARATORS} selected={config.decimalSeparator} onSelect={(v) => updateConfig({ decimalSeparator: v })} colors={c} textSize={config.textSize} />
+      <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
+        <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_decimal_sep}</Text>
+        <SelectorInline options={SEPARATORS} selected={config.decimalSeparator} onSelect={(v) => updateConfig({ decimalSeparator: v })} textSize={config.textSize} />
       </View>
 
-      <Text style={[styles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_calendar}</Text>
-      <View style={[styles.card, { backgroundColor: c.surface }]}>
-        <Text style={[styles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_first_day}</Text>
-        <SelectorInline options={PRIMER_DIA} selected={String(config.firstDayOfWeek)} onSelect={(v) => updateConfig({ firstDayOfWeek: Number(v) as 0 | 1 })} colors={c} textSize={config.textSize} />
+      <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_calendar}</Text>
+      <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
+        <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_first_day}</Text>
+        <SelectorInline options={PRIMER_DIA} selected={String(config.firstDayOfWeek)} onSelect={(v) => updateConfig({ firstDayOfWeek: Number(v) as 0 | 1 })} textSize={config.textSize} />
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { padding: 16 },
-  section: {
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginTop: 20,
-    marginBottom: 8,
-    paddingHorizontal: 4,
-  },
-  card: { borderRadius: 12, padding: 16, marginBottom: 8 },
-  label: { fontWeight: '600', marginBottom: 10 },
-  options: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  option: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, gap: 6 },
-  optionText: { fontWeight: '500' },
-  check: { fontWeight: '700' },
-  iconWrap: { justifyContent: 'center', alignItems: 'center' },
   currencyIcon: { fontWeight: '700' },
 });

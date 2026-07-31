@@ -1,4 +1,6 @@
-export const ACCOUNT_ICONS = [
+import type { IconName } from '../components/IconGrid';
+
+export const ACCOUNT_ICONS: readonly IconName[] = [
   'wallet-outline',
   'cash-outline',
   'card-outline',
@@ -19,4 +21,4 @@ export const ACCOUNT_ICONS = [
   'storefront-outline',
   'pricetag-outline',
   'ellipsis-horizontal-outline',
-] as const;
+];

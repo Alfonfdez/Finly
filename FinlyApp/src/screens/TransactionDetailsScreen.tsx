@@ -1,19 +1,20 @@
-import { useState, useMemo, useCallback, useEffect, ComponentProps } from 'react';
+import { useState, useMemo, useCallback, ComponentProps } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { File } from 'expo-file-system';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { formatCurrency, formatDateLong } from '../utils/formatters';
+import { deletePhotoFile, parsePhotos } from '../utils/photoUtils';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
 import { isNative } from '../utils/platform';
 import { transactionRepository } from '../database';
 import { Transaction } from '../database/types';
 import { RootStackParamList } from '../constants/types';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 type DetailsRouteProp = RouteProp<RootStackParamList, 'TransactionDetails'>;
 type DetailsNavProp = NativeStackNavigationProp<RootStackParamList, 'TransactionDetails'>;
@@ -35,25 +36,7 @@ export default function TransactionDetailsScreen() {
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
 
   // Parse photos from DB (supports both old single URI and new JSON array)
-  const parsedPhotos = useMemo(() => {
-    if (!transaction?.photo) return [];
-    try {
-      const parsed = JSON.parse(transaction.photo);
-      return Array.isArray(parsed) ? parsed : [transaction.photo];
-    } catch {
-      return transaction.photo ? [transaction.photo] : [];
-    }
-  }, [transaction?.photo]);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      const data = await transactionRepository.list({});
-      if (!active) return;
-      setTransaction(data.find(tx => tx.id === transactionId) ?? null);
-    })();
-    return () => { active = false; };
-  }, [transactionId]);
+  const parsedPhotos = useMemo(() => parsePhotos(transaction?.photo), [transaction?.photo]);
 
   // Refresh transaction data when screen gains focus (after editing)
   useFocusEffect(useCallback(() => {
@@ -118,21 +101,12 @@ export default function TransactionDetailsScreen() {
     return () => { active = false; };
   }, [transactionId]));
 
-  const deletePhoto = async (uri: string) => {
-    try {
-      const file = new File(uri);
-      if (file.exists) file.delete();
-    } catch (e) {
-      console.warn('Failed to delete photo:', uri, e);
-    }
-  };
-
   const handleDelete = async () => {
     if (deleting) return;
     setDeleting(true);
     try {
       for (const uri of parsedPhotos) {
-        await deletePhoto(uri);
+        await deletePhotoFile(uri);
       }
       await transactionRepository.delete(transactionId);
       await refresh();
@@ -268,33 +242,14 @@ export default function TransactionDetailsScreen() {
         </View>
       </ScrollView>
 
-      <Modal visible={deleteModalVisible} transparent animationType="fade" onRequestClose={() => setDeleteModalVisible(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: c.surface }]}>
-            <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(16) }]}>
-              {labels.details_delete_title}
-            </Text>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: c.surface, borderColor: c.border }]}
-                onPress={() => setDeleteModalVisible(false)}
-              >
-                <Text style={[styles.modalButtonText, { color: c.text, fontSize: fs(14) }]}>
-                  {labels.details_delete_no}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: c.red }]}
-                onPress={handleDelete}
-              >
-                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
-                  {labels.details_delete_yes}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <ConfirmationModal
+        visible={deleteModalVisible}
+        title={labels.details_delete_title}
+        confirmLabel={labels.details_delete_yes}
+        cancelLabel={labels.details_delete_no}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteModalVisible(false)}
+      />
 
       <Modal visible={photoViewerVisible} transparent animationType="fade" onRequestClose={() => setPhotoViewerVisible(false)}>
         <View style={styles.viewerOverlay}>
@@ -417,35 +372,4 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   timestampText: {},
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-  },
-  modalContent: {
-    width: '100%',
-    maxWidth: 320,
-    borderRadius: 16,
-    padding: 24,
-  },
-  modalTitle: {
-    fontWeight: '700',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  modalButtonText: { fontWeight: '600' },
 });

@@ -1,15 +1,17 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet, Keyboard } from 'react-native';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
 import { RootStackParamList } from '../constants/types';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const MAX_NAME_LENGTH = 20;
 
@@ -34,7 +36,6 @@ export default function ModifyTagScreen() {
   const [nameError, setNameError] = useState<string | null>(null);
   const [checkingName, setCheckingName] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (tag) {
@@ -55,15 +56,12 @@ export default function ModifyTagScreen() {
     setCheckingName(false);
   }, [labels.create_tag_error_duplicate, tagId]);
 
+  const debouncedCheck = useUniqueNameCheck(checkNameDuplicate);
+
   const handleNameChange = (text: string) => {
-    if (text.length > MAX_NAME_LENGTH) return;
     setName(text);
     setNameError(null);
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      checkNameDuplicate(text);
-    }, 300);
+    debouncedCheck(text);
   };
 
   const handleSave = async () => {
@@ -94,6 +92,7 @@ export default function ModifyTagScreen() {
           onChangeText={handleNameChange}
           placeholder={labels.create_tag_name_placeholder}
           placeholderTextColor={c.textSecondary}
+          maxLength={MAX_NAME_LENGTH}
           returnKeyType="done"
         />
         <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(12) }]}>
@@ -125,39 +124,18 @@ export default function ModifyTagScreen() {
         </TouchableOpacity>
       </View>
 
-      <Modal visible={deleteModalVisible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: c.surface }]}>
-            <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(16) }]}>
-              {labels.modify_tag_delete_confirm_title(tag?.name ?? '')}
-            </Text>
-            <Text style={[styles.modalMessage, { color: c.textSecondary, fontSize: fs(14) }]}>
-              {labels.modify_tag_delete_confirm_message}
-            </Text>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: c.surface, borderWidth: 1, borderColor: c.border }]}
-                onPress={() => setDeleteModalVisible(false)}
-              >
-                <Text style={[styles.modalButtonText, { color: c.text, fontSize: fs(14) }]}>
-                  {labels.modify_tag_delete_confirm_cancel}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: c.red }]}
-                onPress={() => {
-                  setDeleteModalVisible(false);
-                  handleDelete();
-                }}
-              >
-                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
-                  {labels.modify_tag_delete_confirm_delete}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <ConfirmationModal
+        visible={deleteModalVisible}
+        title={labels.modify_tag_delete_confirm_title(tag?.name ?? '')}
+        message={labels.modify_tag_delete_confirm_message}
+        confirmLabel={labels.modify_tag_delete_confirm_delete}
+        cancelLabel={labels.modify_tag_delete_confirm_cancel}
+        onConfirm={() => {
+          setDeleteModalVisible(false);
+          handleDelete();
+        }}
+        onCancel={() => setDeleteModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -206,42 +184,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
-    fontWeight: '600',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  modalContent: {
-    borderRadius: 16,
-    padding: 24,
-    width: '100%',
-    maxWidth: 360,
-  },
-  modalTitle: {
-    fontWeight: '700',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  modalMessage: {
-    marginBottom: 20,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  modalButton: {
-    flex: 1,
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  modalButtonText: {
     fontWeight: '600',
   },
 });

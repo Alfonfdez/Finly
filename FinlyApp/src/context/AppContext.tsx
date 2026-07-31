@@ -3,7 +3,7 @@ import { Account, Category, Transaction, Tag } from '../database/types';
 import { Period, TransactionType, CategoryWithTotal, DATE_MIN, DATE_MAX } from '../constants/types';
 import { accountRepository as accountRepo, categoryRepository as categoryRepo, transactionRepository as transactionRepo, tagRepository as tagRepo } from '../database';
 import { useConfig } from './ConfigContext';
-import { formatDateForDB } from '../utils/formatters';
+import { formatDateForDB, getPeriodRange } from '../utils/formatters';
 
 interface AppState {
   activeAccount: Account | null;
@@ -46,44 +46,6 @@ const AppContext = createContext<AppContextType | null>(null);
 
 const USER_ID = 1;
 
-function calculateStartEnd(period: Period, date: Date): { start: Date; end: Date } {
-  switch (period) {
-    case 'day': {
-      const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      const end = new Date(start);
-      end.setHours(23, 59, 59, 999);
-      return { start, end };
-    }
-    case 'week': {
-      const weekDay = date.getDay();
-      const diff = weekDay === 0 ? 6 : weekDay - 1;
-      const start = new Date(date);
-      start.setDate(date.getDate() - diff);
-      start.setHours(0, 0, 0, 0);
-      const end = new Date(start);
-      end.setDate(end.getDate() + 6);
-      end.setHours(23, 59, 59, 999);
-      return { start, end };
-    }
-    case 'month': {
-      const start = new Date(date.getFullYear(), date.getMonth(), 1);
-      const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
-      return { start, end };
-    }
-    case 'year': {
-      const start = new Date(date.getFullYear(), 0, 1);
-      const end = new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999);
-      return { start, end };
-    }
-    default: {
-      const start = new Date(date.getFullYear(), date.getMonth(), 1);
-      const end = new Date(date);
-      end.setHours(23, 59, 59, 999);
-      return { start, end };
-    }
-  }
-}
-
 async function fetchTransactionsAndTags(
   account: Account,
   period: Period,
@@ -92,7 +54,7 @@ async function fetchTransactionsAndTags(
 ): Promise<{ data: Transaction[]; tagMap: Map<number, number[]> }> {
   const dates = period === 'custom'
     ? customDateRange
-    : calculateStartEnd(period, date);
+    : getPeriodRange(period, date);
   const isTotal = (account.is_total ?? 0) === 1;
   const data = await transactionRepo.list({
     account_id: isTotal ? undefined : account.id,

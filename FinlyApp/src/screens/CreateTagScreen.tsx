@@ -1,10 +1,11 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
@@ -25,7 +26,6 @@ export default function CreateTagScreen() {
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState<string | null>(null);
   const [checkingName, setCheckingName] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const checkNameDuplicate = useCallback(async (value: string) => {
     if (!value.trim()) {
@@ -39,15 +39,12 @@ export default function CreateTagScreen() {
     setCheckingName(false);
   }, [labels.create_tag_error_duplicate]);
 
+  const debouncedCheck = useUniqueNameCheck(checkNameDuplicate);
+
   const handleNameChange = (text: string) => {
-    if (text.length > MAX_NAME_LENGTH) return;
     setName(text);
     setNameError(null);
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      checkNameDuplicate(text);
-    }, 300);
+    debouncedCheck(text);
   };
 
   const handleCreate = async () => {
@@ -73,6 +70,7 @@ export default function CreateTagScreen() {
           placeholder={labels.create_tag_name_placeholder}
           placeholderTextColor={c.textSecondary}
           autoFocus
+          maxLength={MAX_NAME_LENGTH}
           returnKeyType="done"
         />
         <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(12) }]}>

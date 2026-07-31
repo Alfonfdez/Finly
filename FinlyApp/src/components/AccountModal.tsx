@@ -2,7 +2,7 @@ import { useState, useEffect, ComponentProps } from 'react';
 import { Modal, View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Account } from '../database/types';
-import { formatCurrency } from '../utils/formatters';
+import { formatCurrency, HIDDEN_BALANCE } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayAccountName } from '../i18n';
@@ -65,7 +65,7 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
                   <View style={styles.info}>
                     <Text style={[styles.name, { color: c.text, fontSize: fs(14) }]}>{getDisplayAccountName(item)}</Text>
                     <Text style={[styles.balance, { color: c.textSecondary, fontSize: fs(12) }]}>
-                      {isBalanceHidden ? '\u2022\u2022\u2022\u2022\u2022' : formatCurrency(item.balance, config.currency, config.decimalSeparator)}
+                      {isBalanceHidden ? HIDDEN_BALANCE : formatCurrency(item.balance, config.currency, config.decimalSeparator)}
                     </Text>
                   </View>
                 </TouchableOpacity>
