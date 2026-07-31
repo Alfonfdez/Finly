@@ -42,8 +42,6 @@ export const es: Language = {
   settings_delete_data_confirm_message2: 'Escribe DELETE para confirmar',
   settings_delete_data_confirm_placeholder: 'Escribe DELETE aquí',
   settings_delete_confirm: 'Confirmar',
-  settings_delete_all_transactions_done: 'Todas las transacciones eliminadas',
-  settings_delete_all_data_done: 'Todos los datos eliminados. App restablecida al estado de fábrica.',
   settings_home_default_period_day: 'Día',
   settings_home_default_period_week: 'Semana',
   settings_home_default_period_month: 'Mes',
@@ -84,7 +82,6 @@ export const es: Language = {
   period_week: 'Semana',
   period_month: 'Mes',
   period_year: 'Año',
-  period_custom: 'Personalizado',
   period_period: 'Período',
 
   // Calendar modal
@@ -102,9 +99,6 @@ export const es: Language = {
   cal_to: 'hasta',
 
   // Calendar picker display
-  cal_month_of: (m: string, y: number) => `${m} de ${y}`,
-  cal_range_from_to: (d1: string, m1: string, d2: string, m2: string, y: number) => `${d1} ${m1} – ${d2} ${m2} ${y}`,
-  cal_period_from: (d: string, m: string) => `desde ${d} ${m}`,
   cal_period_to_hint: 'seleccione fin',
 
   // Day abbreviations (Sunday-first)
@@ -125,11 +119,9 @@ export const es: Language = {
 
   // Account modal
   account_select: 'Seleccionar cuenta',
-  account_close: 'Cerrar',
 
   // Add transaction
   add_title: 'Añadir transacción',
-  add_amount_placeholder: 'Cantidad',
   add_amount_error: 'La cantidad que se ha introducido no es válida',
   add_account: 'Cuenta',
   add_categories: 'Categorías',
@@ -153,11 +145,7 @@ export const es: Language = {
   add_hint_category: 'Selecciona una categoría',
   add_hint_amount: 'Introduce una cantidad válida mayor que 0',
   add_hint_category_amount: 'Selecciona una categoría e introduce una cantidad',
-  add_tag_urgent: 'Urgente',
-  add_tag_recurring: 'Recurrente',
-  add_tag_personal: 'Personal',
   add_tag_error_duplicate: 'La etiqueta ya existe',
-  add_tag_error_empty: 'El nombre de la etiqueta no puede estar vacío',
   add_error_title: 'Error',
   add_error_message: 'No se ha podido guardar la transacción',
 
@@ -241,23 +229,19 @@ export const es: Language = {
   account_total_description: 'Saldo y transacciones combinados de todas tus cuentas',
 
   // Transactions
-  transactions_title: 'Transacciones',
   transactions_empty: 'No hay transacciones',
-  transactions_select_account: 'Seleccionar cuenta',
   transactions_cancel: 'Cancelar',
   transactions_confirm: 'Seleccionar',
   transactions_sort_date: 'Por fecha',
   transactions_sort_amount: 'Por cantidad',
 
   // Navigation
-  nav_add: 'Añadir',
   nav_transactions: 'Transacciones',
   nav_all_transactions: 'Todas las transacciones',
   nav_settings: 'Ajustes',
   nav_home: 'Inicio',
   nav_accounts: 'Cuentas',
   nav_categories: 'Categorías',
-  nav_coming_soon: 'Futuras funciones',
 
   // Accounts
   accounts_total: 'Total',
@@ -304,7 +288,6 @@ export const es: Language = {
   // Accessibility
   a11y_show_expenses: 'Mostrar gastos',
   a11y_show_income: 'Mostrar ingresos',
-  a11y_select_account: 'Seleccionar cuenta',
   a11y_category: 'Categoría',
   a11y_period: 'Período',
 
@@ -332,12 +315,9 @@ export const es: Language = {
   details_created: 'Creado',
   details_updated: 'Actualizado',
   details_photo: 'Foto',
-  photo_viewer_close: 'Cerrar',
   photo_remove: 'Eliminar foto',
   photo_delete_title: 'Eliminar foto',
   photo_delete_message: '¿Estás seguro de que quieres eliminar esta foto?',
-  type_expense: 'Gasto',
-  type_income: 'Ingreso',
 
   // Modify transaction
   modify_title: 'Modificar transacción',

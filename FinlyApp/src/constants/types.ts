@@ -11,14 +11,7 @@ export type Period = 'day' | 'week' | 'month' | 'year' | 'custom';
 
 export type TransactionType = 'expense' | 'income';
 
-export interface ChartData {
-  name: string;
-  color: string;
-  total: number;
-  percentage: number;
-}
-
-export type CategoryWithTotal = {
+export interface CategoryWithTotal {
   id: number;
   name: string;
   icon: string;
@@ -26,7 +19,7 @@ export type CategoryWithTotal = {
   type: TransactionType;
   total: number;
   percentage: number;
-};
+}
 
 export type RootStackParamList = {
   Home: undefined;
@@ -64,7 +57,6 @@ export type ModifyAccountScreenProps = NativeStackScreenProps<RootStackParamList
 export type TransactionsScreenProps = NativeStackScreenProps<RootStackParamList, 'Transactions'>;
 export type AllTransactionsScreenProps = NativeStackScreenProps<RootStackParamList, 'AllTransactions'>;
 export type TransactionDetailsScreenProps = NativeStackScreenProps<RootStackParamList, 'TransactionDetails'>;
-export type SettingsScreenProps = NativeStackScreenProps<RootStackParamList, 'Settings'>;
 export type SettingsAppearanceScreenProps = NativeStackScreenProps<RootStackParamList, 'SettingsAppearance'>;
 export type SettingsRegionalScreenProps = NativeStackScreenProps<RootStackParamList, 'SettingsRegional'>;
 export type SettingsPersonalizationScreenProps = NativeStackScreenProps<RootStackParamList, 'SettingsPersonalization'>;

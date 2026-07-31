@@ -3,7 +3,6 @@ import { Account, Category, Transaction, Tag } from '../database/types';
 import { Period, TransactionType, CategoryWithTotal, DATE_MIN, DATE_MAX } from '../constants/types';
 import { accountRepository as accountRepo, categoryRepository as categoryRepo, transactionRepository as transactionRepo, tagRepository as tagRepo } from '../database';
 import { useConfig } from './ConfigContext';
-import { getDisplayCategoryName } from '../i18n';
 import { formatDateForDB } from '../utils/formatters';
 
 interface AppState {
@@ -171,9 +170,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!activeAccount) return;
+    const account = activeAccount;
     async function loadTransactions() {
       const { data, tagMap } = await fetchTransactionsAndTags(
-        activeAccount, activePeriod, selectedDate, customDate,
+        account, activePeriod, selectedDate, customDate,
       );
       setTransactions(data);
       setTagsByTransaction(tagMap);
@@ -271,7 +271,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       .filter(cat => categoryTotals[cat.id] > 0)
       .map(cat => ({
         id: cat.id,
-        name: getDisplayCategoryName(cat),
+        name: cat.name,
         icon: cat.icon,
         color: cat.color,
         type: cat.type,
