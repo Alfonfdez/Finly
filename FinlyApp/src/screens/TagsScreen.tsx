@@ -10,6 +10,7 @@ import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { Tag } from '../database/types';
 import { RootStackParamList } from '../constants/types';
+import Fab from '../components/Fab';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Tags'>;
 
@@ -67,13 +68,10 @@ export default function TagsScreen() {
         contentContainerStyle={tags.length === 0 ? styles.emptyList : styles.list}
       />
 
-      <TouchableOpacity
-        style={[styles.fab, { backgroundColor: c.primary }]}
+      <Fab
         onPress={() => navigation.navigate('CreateTag')}
         accessibilityLabel="+"
-      >
-        <Ionicons name="add" size={28} color={c.background} />
-      </TouchableOpacity>
+      />
     </SafeAreaView>
   );
 }
@@ -108,20 +106,5 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontWeight: '500',
-  },
-  fab: {
-    position: 'absolute',
-    bottom: 56,
-    alignSelf: 'center',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
   },
 });

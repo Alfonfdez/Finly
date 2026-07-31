@@ -1,9 +1,11 @@
-import { ComponentProps } from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { ComponentProps, useState } from 'react';
+import { View, TouchableOpacity, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 
-export const CATEGORY_ICONS = [
+export type IconName = ComponentProps<typeof Ionicons>['name'];
+
+export const CATEGORY_ICONS: IconName[] = [
   'wallet-outline', 'cart-outline', 'bus-outline', 'home-outline',
   'musical-notes-outline', 'game-controller-outline', 'bag-outline', 'film-outline',
   'restaurant-outline', 'heart-outline', 'fitness-outline', 'school-outline',
@@ -16,37 +18,48 @@ export const CATEGORY_ICONS = [
   'football-outline', 'wine-outline', 'ellipsis-horizontal-outline', 'phone-portrait-outline',
 ];
 
+const GRID_COLS = 4;
+const GRID_GAP = 12;
+
 interface Props {
+  icons: readonly IconName[];
   selectedIcon: string | null;
+  selectedColor?: string | null;
+  shape: 'circle' | 'square';
   onSelect: (icon: string) => void;
 }
 
-export default function IconGrid({ selectedIcon, onSelect }: Props) {
-  const { activeColors: c, config } = useConfig();
-  const round = config.categoryIconShape === 'circle';
+export default function IconGrid({ icons, selectedIcon, selectedColor = null, shape, onSelect }: Props) {
+  const { activeColors: c } = useConfig();
+  const [cellSize, setCellSize] = useState(0);
+  const round = shape === 'circle';
+
+  const onGridLayout = (e: LayoutChangeEvent) => {
+    const gridWidth = e.nativeEvent.layout.width;
+    setCellSize(Math.floor((gridWidth - (GRID_COLS - 1) * GRID_GAP) / GRID_COLS));
+  };
 
   return (
-    <View style={styles.grid}>
-      {CATEGORY_ICONS.map((icon) => {
+    <View style={styles.grid} onLayout={onGridLayout}>
+      {cellSize > 0 && icons.map((icon) => {
         const isSelected = selectedIcon === icon;
+        const iconColor = isSelected && selectedColor ? selectedColor : (isSelected ? c.primary : c.textSecondary);
+        const bgColor = isSelected && selectedColor ? selectedColor + '33' : (isSelected ? c.primary + '33' : c.surface);
+        const borderColor = isSelected ? (selectedColor || c.primary) : 'transparent';
         return (
           <TouchableOpacity
             key={icon}
             style={[
               styles.item,
-              {
-                backgroundColor: isSelected ? c.primary + '33' : c.border,
-                borderRadius: round ? 999 : 12,
-              },
-              isSelected && { borderWidth: 2, borderColor: c.primary },
+              { width: cellSize, height: cellSize, borderRadius: round ? 999 : 12 },
+              { backgroundColor: bgColor },
+              isSelected && { borderWidth: 2, borderColor },
             ]}
             onPress={() => onSelect(icon)}
             accessibilityLabel={icon}
             accessibilityState={{ selected: isSelected }}
           >
-            <View style={[styles.iconContainer, { backgroundColor: (isSelected ? c.primary : c.border) + '22' }]}>
-              <Ionicons name={icon as ComponentProps<typeof Ionicons>['name']} size={24} color={isSelected ? c.primary : c.textSecondary} />
-            </View>
+            <Ionicons name={icon} size={24} color={iconColor} />
           </TouchableOpacity>
         );
       })}
@@ -58,21 +71,11 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: GRID_GAP,
   },
   item: {
-    width: '22%',
-    aspectRatio: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 8,
   },
 });

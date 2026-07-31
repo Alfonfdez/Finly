@@ -1,5 +1,6 @@
 import { Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import type { ComponentProps } from 'react';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
@@ -11,9 +12,9 @@ type Props = {
 };
 
 type Subsection = {
-  icon: string;
+  icon: ComponentProps<typeof Ionicons>['name'];
   label: string;
-  screen: keyof RootStackParamList;
+  screen: 'SettingsAppearance' | 'SettingsRegional' | 'SettingsPersonalization' | 'SettingsData';
 };
 
 export default function SettingsScreen({ navigation }: Props) {
@@ -34,9 +35,9 @@ export default function SettingsScreen({ navigation }: Props) {
         <TouchableOpacity
           key={item.screen}
           style={[styles.row, { backgroundColor: c.surface }]}
-          onPress={() => navigation.navigate(item.screen as any)}
+          onPress={() => navigation.navigate(item.screen)}
         >
-          <Ionicons name={item.icon as any} size={24} color={c.primary} />
+          <Ionicons name={item.icon} size={24} color={c.primary} />
           <Text style={[styles.label, { color: c.text, fontSize: fs(15) }]}>{item.label}</Text>
           <Ionicons name="chevron-forward-outline" size={20} color={c.textSecondary} />
         </TouchableOpacity>

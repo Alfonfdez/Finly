@@ -1,20 +1,21 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  StyleSheet, Keyboard, LayoutChangeEvent,
+  StyleSheet, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
 import { t, getDefaultAccountIdByName, getDefaultEnglishAccountName } from '../i18n';
 import { isAndroid } from '../utils/platform';
 import { accountRepository } from '../database';
 import { RootStackParamList } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
+import IconGrid from '../components/IconGrid';
 import ColorGrid, { QUICK_COLORS } from '../components/ColorGrid';
 import ColorPickerModal from '../components/ColorPickerModal';
 
@@ -22,8 +23,6 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateAccou
 
 const MAX_NAME_LENGTH = 30;
 const MAX_NOTE_LENGTH = 200;
-const GRID_COLS = 4;
-const GRID_GAP = 12;
 
 export default function CreateAccountScreen() {
   const { activeColors: c, config } = useConfig();
@@ -31,14 +30,6 @@ export default function CreateAccountScreen() {
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp>();
-  const round = config.accountIconShape === 'circle';
-
-  const [cellSize, setCellSize] = useState(0);
-
-  const onGridLayout = (e: LayoutChangeEvent) => {
-    const gridWidth = e.nativeEvent.layout.width;
-    setCellSize(Math.floor((gridWidth - (GRID_COLS - 1) * GRID_GAP) / GRID_COLS));
-  };
 
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState<string | null>(null);
@@ -48,8 +39,6 @@ export default function CreateAccountScreen() {
   const [description, setDescription] = useState('');
   const [checkingName, setCheckingName] = useState(false);
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
-
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const checkNameDuplicate = useCallback(async (value: string) => {
     if (!value.trim()) {
@@ -79,18 +68,13 @@ export default function CreateAccountScreen() {
     }
   }, [labels.create_account_error_duplicate]);
 
+  const debouncedCheck = useUniqueNameCheck(checkNameDuplicate);
+
   const handleNameChange = (value: string) => {
     setName(value);
     setNameError(null);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => checkNameDuplicate(value), 300);
+    debouncedCheck(value);
   };
-
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
 
   const canCreate = name.trim().length > 0 && !nameError && !checkingName && selectedIcon !== null && selectedColor !== null;
 
@@ -167,30 +151,13 @@ export default function CreateAccountScreen() {
           <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
             {labels.create_account_symbols}
           </Text>
-          <View style={styles.grid} onLayout={onGridLayout}>
-            {cellSize > 0 && ACCOUNT_ICONS.map((icon) => {
-              const isSelected = selectedIcon === icon;
-              const iconColor = isSelected && selectedColor ? selectedColor : (isSelected ? c.primary : c.textSecondary);
-              const bgColor = isSelected && selectedColor ? selectedColor + '33' : (isSelected ? c.primary + '33' : c.surface);
-              const borderColor = isSelected ? (selectedColor || c.primary) : 'transparent';
-              return (
-                <TouchableOpacity
-                  key={icon}
-                  style={[
-                    styles.gridItem,
-                    { width: cellSize, height: cellSize, borderRadius: round ? 999 : 12 },
-                    { backgroundColor: bgColor },
-                    isSelected && { borderWidth: 2, borderColor },
-                  ]}
-                  onPress={() => setSelectedIcon(icon)}
-                  accessibilityLabel={icon}
-                  accessibilityState={{ selected: isSelected }}
-                >
-                  <Ionicons name={icon as any} size={24} color={iconColor} />
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+          <IconGrid
+            icons={ACCOUNT_ICONS}
+            selectedIcon={selectedIcon}
+            selectedColor={selectedColor}
+            shape={config.accountIconShape}
+            onSelect={setSelectedIcon}
+          />
 
           <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
             {labels.create_account_color}
@@ -295,16 +262,6 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginTop: 4,
     marginBottom: 4,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  gridItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 8,
   },
   hint: {
     marginTop: 16,

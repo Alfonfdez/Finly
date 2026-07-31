@@ -113,6 +113,9 @@ export const webAccountRepo = {
   async deleteAll(): Promise<void> {
     setStore('accounts', []);
   },
+  async getById(id: number): Promise<Account | null> {
+    return getStore<Account>('accounts').find(c => c.id === id) ?? null;
+  },
   async getCurrentBalance(id: number): Promise<number> {
     const accounts = getStore<Account>('accounts');
     const transactions = getStore<Transaction>('transactions');

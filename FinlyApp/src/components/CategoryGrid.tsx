@@ -13,9 +13,10 @@ interface Props {
   onAddMore: () => void;
   showAddMore?: boolean;
   addMoreLabel?: string;
+  hideTitle?: boolean;
 }
 
-export default function CategoryGrid({ categories, selectedCategory, onSelect, onAddMore, showAddMore = true, addMoreLabel }: Props) {
+export default function CategoryGrid({ categories, selectedCategory, onSelect, onAddMore, showAddMore = true, addMoreLabel, hideTitle = false }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -71,9 +72,11 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>
-        {labels.add_categories}
-      </Text>
+      {!hideTitle && (
+        <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>
+          {labels.add_categories}
+        </Text>
+      )}
       <View style={styles.grid}>
         {categories.map((cat) => renderCategory(cat))}
         {showAddMore && renderAddMore()}

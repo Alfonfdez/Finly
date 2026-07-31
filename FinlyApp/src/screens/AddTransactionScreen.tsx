@@ -1,17 +1,16 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Pressable } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import * as ImagePicker from 'expo-image-picker';
-import { File, Paths } from 'expo-file-system';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { usePhotos } from '../hooks/usePhotos';
 import { t, getDisplayAccountName } from '../i18n';
 import { isNative } from '../utils/platform';
 import TabBar from '../components/TabBar';
+import AmountInput from '../components/AmountInput';
 import AccountModal from '../components/AccountModal';
 import CategoryGrid from '../components/CategoryGrid';
 import DaySelector from '../components/DaySelector';
@@ -22,6 +21,7 @@ import CalendarModal from '../components/CalendarModal';
 import CalculatorModal from '../components/CalculatorModal';
 import { TransactionType, RootStackParamList, CATEGORY_USAGE_WINDOW_DAYS } from '../constants/types';
 import { isSameDay, formatDateForDB } from '../utils/formatters';
+import { parseAmountInput, parseAmountValue } from '../utils/amountInput';
 import { transactionRepository, tagRepository } from '../database';
 
 // Module-level pending category data (passed back from AddCategoryScreen)
@@ -48,67 +48,6 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'AddTransact
 const GRID_ROWS = 2;
 const GRID_COLS = 4;
 const MAX_VISIBLE_CATEGORIES = GRID_ROWS * GRID_COLS - 1;
-const MAX_AMOUNT_INTEGER_DIGITS = 9; // up to 999,999,999.99
-
-/**
- * Parse user input into a clean raw amount string (digits + optional '.' separator).
- * Returns null if input is invalid (both separators present).
- */
-function parseAmountInput(text: string): string | null {
-  let raw = text.replace(/\s/g, '');
-
-  const hasComma = raw.includes(',');
-  const hasDot = raw.includes('.');
-
-  // Both separators at same time is invalid
-  if (hasComma && hasDot) return null;
-
-  // Normalize comma to dot
-  if (hasComma) {
-    raw = raw.replace(',', '.');
-  }
-
-  // Remove all non-digit, non-dot characters
-  raw = raw.replace(/[^0-9.]/g, '');
-
-  // Only allow one dot
-  const dotIndex = raw.indexOf('.');
-  if (dotIndex !== -1) {
-    let before = raw.slice(0, dotIndex);
-    let after = raw.slice(dotIndex + 1).replace(/\./g, '');
-    // Remove leading zeros from integer part (keep single "0")
-    before = before.replace(/^0+(?=\d)/, '') || '0';
-    // Limit integer digits
-    before = before.slice(0, MAX_AMOUNT_INTEGER_DIGITS);
-    // Max 2 decimal digits
-    after = after.slice(0, 2);
-    raw = before + '.' + after;
-  } else {
-    // No dot - remove leading zeros
-    raw = raw.replace(/^0+(?=\d)/, '') || '0';
-    // Limit integer digits
-    raw = raw.slice(0, MAX_AMOUNT_INTEGER_DIGITS);
-  }
-
-  return raw;
-}
-
-/**
- * Format a raw amount string for display: add thousand separators (spaces)
- * and use the configured decimal separator.
- */
-function formatAmountDisplay(raw: string, decimalSeparator: ',' | '.'): string {
-  if (!raw) return '';
-  const parts = raw.split('.');
-  const integerPart = parts[0];
-  const decimalPart = parts[1] || '';
-  const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  // Show decimal separator even if no decimal digits yet (user is still typing)
-  if (decimalPart || raw.endsWith('.')) {
-    return `${formattedInteger}${decimalSeparator}${decimalPart}`;
-  }
-  return formattedInteger;
-}
 
 export default function AddTransactionScreen() {
   const { activeColors: c, config } = useConfig();
@@ -120,7 +59,6 @@ export default function AddTransactionScreen() {
 
   const [type, setType] = useState<TransactionType>(activeType);
   const [amountRaw, setAmountRaw] = useState('');
-  const [amountFocused, setAmountFocused] = useState(false);
   const [accountId, setAccountId] = useState(() => {
     // Respect addDefaultAccountId setting
     if (config.addDefaultAccountId !== null) {
@@ -186,57 +124,18 @@ export default function AddTransactionScreen() {
 
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const [comment, setComment] = useState('');
-  const [commentSuggestions, setCommentSuggestions] = useState<string[]>([]);
   const inputRef = useRef<TextInput>(null);
   const scrollRef = useRef<ScrollView>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const skipNextSearch = useRef(false);
 
-  // Debounced search of existing comments for autocomplete
-  useEffect(() => {
-    if (skipNextSearch.current) {
-      skipNextSearch.current = false;
-      return;
-    }
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (comment.length < 1) {
-      setCommentSuggestions([]);
-      return;
-    }
-    debounceRef.current = setTimeout(async () => {
-      const results = await transactionRepository.searchComments(comment);
-      setCommentSuggestions(results);
-    }, 300);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [comment]);
-
-  const [photos, setPhotos] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const { photos, handleTakePhoto, handlePickFromGallery, handleRemovePhoto } = usePhotos();
 
   const [modalAccountVisible, setModalAccountVisible] = useState(false);
   const [modalCalendarVisible, setModalCalendarVisible] = useState(false);
   const [calculatorVisible, setCalculatorVisible] = useState(false);
 
-  // Display-formatted amount (empty when focused and empty, so placeholder shows)
-  const displayAmount = useMemo(() => {
-    if (!amountRaw) return '';
-    return formatAmountDisplay(amountRaw, config.decimalSeparator);
-  }, [amountRaw, config.decimalSeparator]);
-
   // Parsed numeric value (null if invalid or empty)
-  const numericAmount = useMemo(() => {
-    if (!amountRaw) return null;
-    const num = parseFloat(amountRaw);
-    return isNaN(num) ? null : num;
-  }, [amountRaw]);
-
-  // Validation (only truly invalid input)
-  const isAmountInvalid = useMemo(() => {
-    if (!amountRaw) return false;
-    return numericAmount === null;
-  }, [amountRaw, numericAmount]);
+  const numericAmount = useMemo(() => parseAmountValue(amountRaw), [amountRaw]);
 
   const canSubmit = useMemo(() => {
     if (categoryId === null) return false;
@@ -245,12 +144,6 @@ export default function AddTransactionScreen() {
     if (accountId === undefined) return false;
     return true;
   }, [categoryId, numericAmount, day, accountId]);
-
-  const handleAmountChange = useCallback((text: string) => {
-    const clean = parseAmountInput(text);
-    if (clean === null) return; // invalid - both separators
-    setAmountRaw(clean);
-  }, []);
 
   const handleToggleTag = (id: number) => {
     setSelectedTags(prev =>
@@ -266,12 +159,6 @@ export default function AddTransactionScreen() {
     return true;
   };
 
-  const handleSelectSuggestion = (text: string) => {
-    skipNextSearch.current = true;
-    setComment(text);
-    setCommentSuggestions([]);
-  };
-
   const handleSelectAccount = (id: number) => {
     setAccountId(id);
     setModalAccountVisible(false);
@@ -282,60 +169,12 @@ export default function AddTransactionScreen() {
     setModalCalendarVisible(false);
   };
 
-  const deletePhoto = async (uri: string) => {
-    try {
-      const file = new File(uri);
-      if (file.exists) file.delete();
-    } catch (e) {
-      console.warn('Failed to delete photo:', uri, e);
-    }
-  };
-
-  const handleRemovePhoto = async (uri: string) => {
-    await deletePhoto(uri);
-    setPhotos(prev => prev.filter(p => p !== uri));
-  };
-
-  const handleTakePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') return;
-    const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.7 });
-    if (!result.canceled && result.assets[0]) {
-      const src = result.assets[0].uri;
-      const dest = Paths.document.uri + `photo_${Date.now()}.jpg`;
-      const srcFile = new File(src);
-      const destFile = new File(dest);
-      srcFile.copy(destFile);
-      setPhotos(prev => [...prev, dest]);
-    }
-  };
-
-  const handlePickFromGallery = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') return;
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7 });
-    if (!result.canceled && result.assets[0]) {
-      const src = result.assets[0].uri;
-      const dest = Paths.document.uri + `photo_${Date.now()}.jpg`;
-      const srcFile = new File(src);
-      const destFile = new File(dest);
-      srcFile.copy(destFile);
-      setPhotos(prev => [...prev, dest]);
-    }
-  };
-
   const handleSubmit = async () => {
     if (!canSubmit || submitting) return;
     setSubmitting(true);
 
     try {
-      const y = day.getFullYear();
-      const m = String(day.getMonth() + 1).padStart(2, '0');
-      const d = String(day.getDate()).padStart(2, '0');
-      const h = String(day.getHours()).padStart(2, '0');
-      const min = String(day.getMinutes()).padStart(2, '0');
-      const s = String(day.getSeconds()).padStart(2, '0');
-      const dateStr = `${y}-${m}-${d} ${h}:${min}:${s}`;
+      const dateStr = formatDateForDB(day);
 
       await transactionRepository.createWithTags({
         account_id: accountId,
@@ -393,36 +232,11 @@ export default function AddTransactionScreen() {
             onChange={setType}
           />
 
-        <View style={styles.amountRow}>
-          <TextInput
-            style={[
-              styles.amountInput,
-              { backgroundColor: c.surface, color: amountRaw ? c.text : c.textSecondary, fontSize: fs(24), borderColor: amountFocused ? c.primary : 'transparent' },
-              isAmountInvalid && { color: c.red },
-            ]}
-            placeholder="0"
-            placeholderTextColor={c.textSecondary}
-            value={displayAmount}
-            onChangeText={handleAmountChange}
-            onFocus={() => setAmountFocused(true)}
-            onBlur={() => setAmountFocused(false)}
-            keyboardType="decimal-pad"
-          />
-          <Text style={[styles.currencySymbol, { color: c.textSecondary, fontSize: fs(18) }]}>
-            {config.currency}
-          </Text>
-          <TouchableOpacity
-            style={styles.calculatorButton}
-            onPress={() => setCalculatorVisible(true)}
-          >
-            <Ionicons name="calculator-outline" size={24} color={c.primary} />
-          </TouchableOpacity>
-        </View>
-        {isAmountInvalid && (
-          <Text style={[styles.errorText, { color: c.red, fontSize: fs(12) }]}>
-            {labels.add_amount_error}
-          </Text>
-        )}
+        <AmountInput
+          raw={amountRaw}
+          onChangeRaw={setAmountRaw}
+          onOpenCalculator={() => setCalculatorVisible(true)}
+        />
 
         <TouchableOpacity
           style={[styles.accountContainer, { backgroundColor: c.surface }]}
@@ -464,34 +278,16 @@ export default function AddTransactionScreen() {
         )}
 
         {config.addShowComments && (
-          <>
-            {commentSuggestions.length > 0 && (
-              <View style={[styles.suggestionsPanel, { backgroundColor: c.surface, borderColor: c.border }]}>
-                {commentSuggestions.map((item, i) => (
-                  <Pressable
-                    key={i}
-                    style={[styles.suggestionItem, { borderBottomColor: c.border }]}
-                    onPress={() => handleSelectSuggestion(item)}
-                  >
-                    <Text style={[styles.suggestionText, { color: c.text, fontSize: fs(13) }]} numberOfLines={1}>
-                      {item}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            )}
-
-            <CommentInput
-              ref={inputRef}
-              comment={comment}
-              onChange={setComment}
-              onFocus={() => {
-                setTimeout(() => {
-                  scrollRef.current?.scrollToEnd({ animated: true });
-                }, 300);
-              }}
-            />
-          </>
+          <CommentInput
+            ref={inputRef}
+            comment={comment}
+            onChange={setComment}
+            onFocus={() => {
+              setTimeout(() => {
+                scrollRef.current?.scrollToEnd({ animated: true });
+              }, 300);
+            }}
+          />
         )}
 
         {config.addShowPhoto && isNative && (
@@ -564,37 +360,6 @@ export default function AddTransactionScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   container: { flex: 1, padding: 16 },
-  amountRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 4,
-    gap: 8,
-  },
-  amountContainer: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-  },
-  amountInput: {
-    flex: 1,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    fontWeight: '700',
-  },
-  currencySymbol: {
-    marginRight: 8,
-    fontWeight: '600',
-  },
-  calculatorButton: {
-    padding: 8,
-  },
-  errorText: {
-    marginBottom: 8,
-  },
   accountContainer: {
     borderRadius: 12,
     padding: 16,
@@ -622,19 +387,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 8,
-  },
-  suggestionsPanel: {
-    borderWidth: 1,
-    borderRadius: 8,
-    maxHeight: 180,
-    marginBottom: 16,
-  },
-  suggestionItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-  },
-  suggestionText: {
-    fontWeight: '500',
   },
 });

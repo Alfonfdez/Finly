@@ -2016,3 +2016,52 @@
 - Fixed Home showing stale category names after switching language: activeCategories no longer bakes getDisplayCategoryName() into the memoized name (its deps did not include language, so default categories kept the previous language). CategoryList and BarChart now resolve the display name via getDisplayCategoryName() at render time, matching every other consumer.
 - BarChart and DonutChart retyped from ChartData[] to CategoryWithTotal[] and keyed by item.id (stable, unique) instead of item.name.
 - Removed now-unused ChartData interface from constants/types.ts.
+
+[2026-07-31] ~ | utils/formatters.ts, utils/calculator.ts, components/componentStyles.ts, components/AccountModal.tsx, screens/AccountsScreen.tsx, screens/HomeScreen.tsx, components/CalendarPicker.tsx
+- Removed dead formatWeek and the unused componentStyles StyleSheet object (only the scalar constants remain).
+- Merged formatWeekRange/formatWeekRangeShort into formatWeekRange(date, shortMonths, includeYear?) using weekStart/weekEnd; collapsed the duplicated ca/es branch in formatDateLong.
+- Added getPeriodRange(period, date), formatSignedCurrency, and HIDDEN_BALANCE const; replaced inline signed-currency and '•••••' strings in AccountsScreen, HomeScreen, AccountModal; reused formatSignedCurrency in AccountsScreen totals.
+- Hoisted calculator precedence function to module scope; CalendarPicker now uses formatWeekRange.
+
+[2026-07-31] ~ | components/SelectorInline.tsx, screens/settings/settingsStyles.ts, screens/settings/AppearanceScreen.tsx, screens/settings/RegionalScreen.tsx, screens/settings/PersonalizationScreen.tsx, screens/settings/SettingsScreen.tsx, screens/settings/DataScreen.tsx, components/ConfirmationModal.tsx
+- Extracted duplicated inline selector into shared components/SelectorInline.tsx with typed Option<T> (optional icon); Appearance, Regional and Personalization screens now use it (Personalization's SelectorRadio removed).
+- Added shared screens/settings/settingsStyles.ts (container/content/section/card/label) used by the four settings subscreens.
+- SettingsScreen: typed Subsection icon as Ionicons name and screen as the four paramless settings routes, removing both as any casts.
+- DataScreen: replaced the three hand-rolled delete modals with ConfirmationModal, extended with a children slot for the DELETE text input; removed dead modal styles.
+
+[2026-07-31] ~ | components/IconGrid.tsx, constants/accountIcons.ts, components/Fab.tsx, hooks/useUniqueNameCheck.ts, screens/CreateAccountScreen.tsx, screens/ModifyAccountScreen.tsx, screens/CreateCategoryScreen.tsx, screens/ModifyCategoryScreen.tsx, screens/CreateTagScreen.tsx, screens/ModifyTagScreen.tsx, screens/CategoriesScreen.tsx, screens/AddCategoryScreen.tsx, screens/TagsScreen.tsx, screens/AccountsScreen.tsx, screens/HomeScreen.tsx, components/CategoryGrid.tsx, utils/categoryUtils.ts, database/repositories/accountRepo.ts, database/webStorage.ts
+- Generalised IconGrid into the shared icon picker (icons prop, selectedColor tinting, explicit shape); typed CATEGORY_ICONS and ACCOUNT_ICONS as IconName, removing the 4 duplicated grids and their as any Ionicons casts in the create/modify account and category screens.
+- New components/Fab.tsx replacing the byte-identical floating action button in Home, Accounts, Categories, AddCategory and Tags screens.
+- New hooks/useUniqueNameCheck.ts centralising the debounced duplicate-name check with timer cleanup on unmount (tag screens previously leaked pending timers); now used by all six create/modify entity screens (tag inputs also got maxLength).
+- Categories and AddCategory screens now render through CategoryGrid (new hideTitle prop) instead of hand-rolled tiles.
+- sortCategoriesWithOthersLast now compares getDisplayCategoryName, fixing the ordering of default categories in ca/es.
+- Added accountRepo.getById (native + web); ModifyAccountScreen no longer loads the whole account list to find one account.
+- ModifyAccount and ModifyTag delete dialogs now use ConfirmationModal (ModifyTag was missing onRequestClose).
+
+[2026-07-31] ~ | context/AppContext.tsx, screens/HomeScreen.tsx, screens/AllTransactionsScreen.tsx, utils/formatters.ts
+- Replaced the 4 duplicated period-range computations (calculateStartEnd in AppContext, the two byte-identical IIFEs in HomeScreen, computePeriodDates in AllTransactionsScreen) with the shared getPeriodRange(period, date) from utils/formatters.ts.
+
+[2026-07-31] + | hooks/useTransactionFilters.ts, utils/transactionTags.ts
+- Created useTransactionFilters hook encapsulating transaction filtering (account, type, category, period, tags), sorting, date grouping and tagsByTransaction batch loading; used by both transaction listing screens.
+- Created utils/transactionTags.ts with the buildTagsByTransactionMap helper and TagsByTransaction type.
+
+[2026-07-31] ~ | screens/TransactionsScreen.tsx, screens/AllTransactionsScreen.tsx
+- Refactored both screens to consume useTransactionFilters; removed duplicated account/tag/sort/grouping logic and tags-loading effects from each screen.
+
+[2026-07-31] + | utils/amountInput.ts, components/AmountInput.tsx
+- Created shared amount parsing/format utils (parseAmountInput, parseAmountDisplay, parseAmountValue, MAX_AMOUNT_INTEGER_DIGITS) and AmountInput component; AddTransaction and ModifyTransaction screens now use them, removing their duplicated parseAmountInput/formatAmountDisplay, focus/invalid state and amount-row styles.
+
+[2026-07-31] + | components/AccountTrigger.tsx
+- Created shared account selector trigger used by TransactionsScreen and AllTransactionsScreen, replacing the duplicated account-row blocks (accountsWithBalance.find + IIFE icon) and their accountTrigger styles.
+
+[2026-07-31] ~ | components/CommentInput.tsx, screens/AddTransactionScreen.tsx, screens/ModifyTransactionScreen.tsx
+- CommentInput now owns the debounced comment-suggestion search (300 ms, transactionRepository.searchComments, skipNextSearch on suggestion select) and renders the suggestions panel; both form screens removed their local suggestion state, effects, handleSelectSuggestion and inline panel.
+
+[2026-07-31] + | hooks/usePhotos.ts, utils/photoUtils.ts
+- Created usePhotos hook (take/pick/remove photo with copy to app document dir) and photoUtils (parsePhotos for the DB photo field, deletePhotoFile); AddTransaction, ModifyTransaction and TransactionDetails screens now share them, removing the triplicated deletePhoto/take/pick logic and JSON.parse(photo) re-implementations.
+
+[2026-07-31] ~ | screens/AddTransactionScreen.tsx, screens/ModifyTransactionScreen.tsx
+- Submit handlers now reuse formatDateForDB(day) instead of the inlined y/m/d/h/min/s string building.
+
+[2026-07-31] ~ | screens/TransactionDetailsScreen.tsx
+- Replaced the hand-rolled delete modal with the shared ConfirmationModal; removed the redundant mount useEffect (data is already reloaded by the useFocusEffect).

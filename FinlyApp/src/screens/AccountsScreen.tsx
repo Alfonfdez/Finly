@@ -11,9 +11,10 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayAccountName, getDisplayAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
 import { Account } from '../database/types';
-import { formatCurrency } from '../utils/formatters';
+import { formatCurrency, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
 import { RootStackParamList } from '../constants/types';
 import EyeToggle from '../components/EyeToggle';
+import Fab from '../components/Fab';
 
 const USER_ID = 1;
 
@@ -83,7 +84,7 @@ export default function AccountsScreen() {
             { backgroundColor: isTotal ? c.primary + '15' : c.surface },
           ]}
           onPress={() => navigation.navigate('ModifyAccount', { accountId: item.id })}
-          accessibilityLabel={`${getDisplayAccountName(item)} ${isBalanceHidden ? '\u2022\u2022\u2022\u2022\u2022' : formatCurrency(item.balance, config.currency, config.decimalSeparator)}`}
+          accessibilityLabel={`${getDisplayAccountName(item)} ${isBalanceHidden ? HIDDEN_BALANCE : formatCurrency(item.balance, config.currency, config.decimalSeparator)}`}
         >
           <View style={[styles.iconBubble, { backgroundColor: item.color + '22', borderRadius: round ? 22 : 12 }]}>
             <Ionicons name={item.icon as any} size={24} color={item.color} />
@@ -111,8 +112,8 @@ export default function AccountsScreen() {
             ]}
           >
             {isBalanceHidden
-              ? '\u2022\u2022\u2022\u2022\u2022'
-              : `${item.balance >= 0 ? '+' : ''}${formatCurrency(item.balance, config.currency, config.decimalSeparator)}`}
+              ? HIDDEN_BALANCE
+              : formatSignedCurrency(item.balance, config.currency, config.decimalSeparator)}
           </Text>
         </TouchableOpacity>
         {isTotal && <View style={[styles.separator, { backgroundColor: c.primary + '40' }]} />}
@@ -146,8 +147,8 @@ export default function AccountsScreen() {
             ]}
           >
             {isBalanceHidden
-              ? '\u2022\u2022\u2022\u2022\u2022'
-              : `${total >= 0 ? '+' : ''}${formatCurrency(total, config.currency, config.decimalSeparator)}`}
+              ? HIDDEN_BALANCE
+              : formatSignedCurrency(total, config.currency, config.decimalSeparator)}
           </Text>
           <EyeToggle isHidden={isBalanceHidden} onToggle={() => setIsRevealed(prev => !prev)} color={c.textSecondary} />
         </View>
@@ -161,13 +162,10 @@ export default function AccountsScreen() {
         contentContainerStyle={accounts.length === 0 ? styles.emptyList : styles.list}
       />
 
-      <TouchableOpacity
-        style={[styles.fab, { backgroundColor: c.primary }]}
+      <Fab
         onPress={() => navigation.navigate('CreateAccount')}
         accessibilityLabel="+"
-      >
-        <Ionicons name="add" size={28} color={c.background} />
-      </TouchableOpacity>
+      />
     </SafeAreaView>
   );
 }
@@ -242,20 +240,5 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontWeight: '500',
-  },
-  fab: {
-    position: 'absolute',
-    bottom: 56,
-    alignSelf: 'center',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
   },
 });
