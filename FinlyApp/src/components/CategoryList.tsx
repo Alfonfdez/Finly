@@ -5,7 +5,7 @@ import { CategoryWithTotal } from '../constants/types';
 import { formatCurrency } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t } from '../i18n';
+import { t, getDisplayCategoryName } from '../i18n';
 
 interface TagBreakdown {
   tag_id: number;
@@ -71,31 +71,34 @@ export default function CategoryList({
     <FlatList
       data={categories}
       keyExtractor={(item) => item.id.toString()}
-      renderItem={({ item }) => (
-        <View style={[styles.itemWrapper, { borderBottomColor: c.border }]}>
-          <TouchableOpacity
-            style={styles.item}
-            onPress={() => onPress?.(item)}
-            accessibilityLabel={`${labels.a11y_category} ${item.name}, ${item.percentage.toFixed(1)}%`}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <View style={[styles.icon, { backgroundColor: item.color + '30', borderRadius: round ? 20 : 12 }]}>
-              <Ionicons name={item.icon as ComponentProps<typeof Ionicons>['name']} size={20} color={item.color} />
-            </View>
-            <View style={styles.info}>
-              <Text style={[styles.name, { color: c.text, fontSize: fs(14) }]}>{item.name}</Text>
-              <View style={[styles.barBackground, { backgroundColor: c.surface }]}>
-                <View style={[styles.barFill, { width: `${Math.min(item.percentage, 100)}%`, backgroundColor: item.color }]} />
+      renderItem={({ item }) => {
+        const displayName = getDisplayCategoryName(item);
+        return (
+          <View style={[styles.itemWrapper, { borderBottomColor: c.border }]}>
+            <TouchableOpacity
+              style={styles.item}
+              onPress={() => onPress?.(item)}
+              accessibilityLabel={`${labels.a11y_category} ${displayName}, ${item.percentage.toFixed(1)}%`}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <View style={[styles.icon, { backgroundColor: item.color + '30', borderRadius: round ? 20 : 12 }]}>
+                <Ionicons name={item.icon as ComponentProps<typeof Ionicons>['name']} size={20} color={item.color} />
               </View>
-            </View>
-            <View style={styles.amounts}>
-              <Text style={[styles.total, { color: c.text, fontSize: fs(14) }]}>{formatCurrency(item.total, currency, separator)}</Text>
-              <Text style={[styles.percentage, { color: c.textSecondary, fontSize: fs(12) }]}>{item.percentage.toFixed(1)}%</Text>
-            </View>
-          </TouchableOpacity>
-          {renderTagChips(item.id)}
-        </View>
-      )}
+              <View style={styles.info}>
+                <Text style={[styles.name, { color: c.text, fontSize: fs(14) }]}>{displayName}</Text>
+                <View style={[styles.barBackground, { backgroundColor: c.surface }]}>
+                  <View style={[styles.barFill, { width: `${Math.min(item.percentage, 100)}%`, backgroundColor: item.color }]} />
+                </View>
+              </View>
+              <View style={styles.amounts}>
+                <Text style={[styles.total, { color: c.text, fontSize: fs(14) }]}>{formatCurrency(item.total, currency, separator)}</Text>
+                <Text style={[styles.percentage, { color: c.textSecondary, fontSize: fs(12) }]}>{item.percentage.toFixed(1)}%</Text>
+              </View>
+            </TouchableOpacity>
+            {renderTagChips(item.id)}
+          </View>
+        );
+      }}
     />
   );
 }

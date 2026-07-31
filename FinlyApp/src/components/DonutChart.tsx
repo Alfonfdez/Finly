@@ -1,12 +1,12 @@
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { G, Circle } from 'react-native-svg';
-import { ChartData } from '../constants/types';
+import { CategoryWithTotal } from '../constants/types';
 import { formatCurrency } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 
 interface Props {
-  data: ChartData[];
+  data: CategoryWithTotal[];
   total: number;
   currency?: string;
   separator?: ',' | '.';
@@ -30,7 +30,7 @@ export default function DonutChart({ data, total, currency = '€', separator = 
             const arcLength = (item.percentage / 100) * circumference;
             const segment = (
               <Circle
-                key={item.name}
+                key={item.id}
                 cx="80"
                 cy="80"
                 r={radius}

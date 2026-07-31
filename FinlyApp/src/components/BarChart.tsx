@@ -1,11 +1,12 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { ChartData } from '../constants/types';
+import { CategoryWithTotal } from '../constants/types';
 import { formatCurrency } from '../utils/formatters';
+import { getDisplayCategoryName } from '../i18n';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 
 interface Props {
-  data: ChartData[];
+  data: CategoryWithTotal[];
   total?: number;
   currency?: string;
   separator?: ',' | '.';
@@ -21,7 +22,7 @@ export default function BarChart({ data, total = 0, currency = '€', separator 
       <View style={[styles.barBackground, { backgroundColor: c.surface }]}>
         {data.map((item) => (
           <View
-            key={item.name}
+            key={item.id}
             style={[
               styles.segment,
               { width: `${Math.max(item.percentage, 0.5)}%`, backgroundColor: item.color },
@@ -36,9 +37,9 @@ export default function BarChart({ data, total = 0, currency = '€', separator 
 
       <View style={styles.legend}>
         {data.map((item) => (
-          <View key={item.name} style={styles.legendItem}>
+          <View key={item.id} style={styles.legendItem}>
             <View style={[styles.legendColor, { backgroundColor: item.color }]} />
-            <Text style={{ color: c.text, fontSize: fs(12) }}>{item.name}</Text>
+            <Text style={{ color: c.text, fontSize: fs(12) }}>{getDisplayCategoryName(item)}</Text>
             <Text style={{ color: c.textSecondary, fontSize: fs(11) }}>{item.percentage.toFixed(1)}%</Text>
           </View>
         ))}

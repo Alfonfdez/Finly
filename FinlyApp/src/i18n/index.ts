@@ -62,97 +62,90 @@ const ACCOUNT_DESCRIPTION_I18N_KEYS: Record<number, keyof Language> = {
   2: 'account_total_description',
 };
 
-export function getCategoryName(categoryId: number): string {
-  const key = CATEGORY_I18N_KEYS[categoryId];
-  if (key) {
-    return currentLanguage[key] as string;
+function createDefaultResolver(keysMap: Record<number, keyof Language>) {
+  let nameLookup: Map<string, number> | null = null;
+  let lookupLanguage: Language | null = null;
+
+  function getName(id: number): string {
+    const key = keysMap[id];
+    return key ? (currentLanguage[key] as string) : '';
   }
-  return '';
+
+  function getDefaultEnglishName(id: number): string | null {
+    const key = keysMap[id];
+    return key && en[key] ? (en[key] as string) : null;
+  }
+
+  function getDisplayName(entity: { id: number; name: string }): string {
+    const defaultName = getDefaultEnglishName(entity.id);
+    if (defaultName && entity.name === defaultName) {
+      return getName(entity.id);
+    }
+    return entity.name;
+  }
+
+  function getIdByName(name: string): number | null {
+    if (lookupLanguage !== currentLanguage) {
+      nameLookup = new Map();
+      for (const [id, key] of Object.entries(keysMap)) {
+        const entry = (currentLanguage[key] as string).toLowerCase();
+        if (!nameLookup.has(entry)) {
+          nameLookup.set(entry, Number(id));
+        }
+      }
+      lookupLanguage = currentLanguage;
+    }
+    return nameLookup!.get(name.trim().toLowerCase()) ?? null;
+  }
+
+  return { getName, getDefaultEnglishName, getDisplayName, getIdByName };
+}
+
+const categoryResolver = createDefaultResolver(CATEGORY_I18N_KEYS);
+const accountResolver = createDefaultResolver(ACCOUNT_I18N_KEYS);
+const accountDescriptionResolver = createDefaultResolver(ACCOUNT_DESCRIPTION_I18N_KEYS);
+
+export function getCategoryName(categoryId: number): string {
+  return categoryResolver.getName(categoryId);
 }
 
 export function getDefaultEnglishName(categoryId: number): string | null {
-  const key = CATEGORY_I18N_KEYS[categoryId];
-  if (key && en[key]) {
-    return en[key] as string;
-  }
-  return null;
+  return categoryResolver.getDefaultEnglishName(categoryId);
 }
 
 export function getDisplayCategoryName(category: { id: number; name: string }): string {
-  const defaultName = getDefaultEnglishName(category.id);
-  if (defaultName && category.name === defaultName) {
-    return getCategoryName(category.id);
-  }
-  return category.name;
+  return categoryResolver.getDisplayName(category);
 }
 
 export function getDefaultCategoryIdByName(name: string): number | null {
-  const lower = name.trim().toLowerCase();
-  for (const [id, key] of Object.entries(CATEGORY_I18N_KEYS)) {
-    const currentName = currentLanguage[key] as string;
-    if (currentName.toLowerCase() === lower) {
-      return Number(id);
-    }
-  }
-  return null;
+  return categoryResolver.getIdByName(name);
 }
 
 export function getAccountName(accountId: number): string {
-  const key = ACCOUNT_I18N_KEYS[accountId];
-  if (key) {
-    return currentLanguage[key] as string;
-  }
-  return '';
+  return accountResolver.getName(accountId);
 }
 
 export function getDefaultEnglishAccountName(accountId: number): string | null {
-  const key = ACCOUNT_I18N_KEYS[accountId];
-  if (key && en[key]) {
-    return en[key] as string;
-  }
-  return null;
+  return accountResolver.getDefaultEnglishName(accountId);
 }
 
 export function getDisplayAccountName(account: { id: number; name: string }): string {
-  const defaultName = getDefaultEnglishAccountName(account.id);
-  if (defaultName && account.name === defaultName) {
-    return getAccountName(account.id);
-  }
-  return account.name;
+  return accountResolver.getDisplayName(account);
 }
 
 export function getDefaultAccountIdByName(name: string): number | null {
-  const lower = name.trim().toLowerCase();
-  for (const [id, key] of Object.entries(ACCOUNT_I18N_KEYS)) {
-    const currentName = currentLanguage[key] as string;
-    if (currentName.toLowerCase() === lower) {
-      return Number(id);
-    }
-  }
-  return null;
+  return accountResolver.getIdByName(name);
 }
 
 export function getDisplayAccountDescription(account: { id: number; description?: string }): string {
   if (!account.description) return '';
-  const key = ACCOUNT_DESCRIPTION_I18N_KEYS[account.id];
-  if (key && en[key] && account.description === en[key]) {
-    return currentLanguage[key] as string;
-  }
-  return account.description;
+  return accountDescriptionResolver.getDisplayName({ id: account.id, name: account.description });
 }
 
 export function getDefaultEnglishAccountDescription(accountId: number): string | null {
-  const key = ACCOUNT_DESCRIPTION_I18N_KEYS[accountId];
-  if (key && en[key]) {
-    return en[key] as string;
-  }
-  return null;
+  return accountDescriptionResolver.getDefaultEnglishName(accountId);
 }
 
 export function getAccountDescription(accountId: number): string {
-  const key = ACCOUNT_DESCRIPTION_I18N_KEYS[accountId];
-  if (key) {
-    return currentLanguage[key] as string;
-  }
-  return '';
+  return accountDescriptionResolver.getName(accountId);
 }

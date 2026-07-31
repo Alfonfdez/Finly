@@ -1981,3 +1981,38 @@
 
 [2026-07-28] ~ | calendars/PeriodPicker.tsx
 - Removed unnecessary `useMemo` wrapping `minDate` — now a module-level `MIN_DATE` constant (evaluated once at module load). Updated `handleAllTime` dependency array.
+
+[2026-07-31] - | src/hooks/useTransactionFilters.ts
+- Removed dead code (never imported anywhere). Screens implement filtering/sorting/grouping inline and import SortBy/SortDirection from SortToggle.tsx directly.
+
+[2026-07-31] - | src/i18n/en.ts, es.ts, ca.ts
+- Removed 20 unused i18n keys from each language: settings_delete_all_transactions_done, settings_delete_all_data_done, period_custom, cal_month_of, cal_range_from_to, cal_period_from, account_close, add_amount_placeholder, add_tag_urgent, add_tag_recurring, add_tag_personal, add_tag_error_empty, transactions_title, transactions_select_account, nav_add, nav_coming_soon, a11y_select_account, photo_viewer_close, type_expense, type_income.
+
+[2026-07-31] ~ | src/i18n/index.ts
+- Replaced 8 near-identical category/account name resolvers with a generic createDefaultResolver factory over the three i18n-key maps (CATEGORY_I18N_KEYS, ACCOUNT_I18N_KEYS, ACCOUNT_DESCRIPTION_I18N_KEYS). Public API unchanged.
+- getDefaultXIdByName now uses a language-keyed lookup cache rebuilt on setLanguage instead of iterating Object.entries per call (preserves current-language name matching).
+
+[2026-07-31] ~ | src/navigation/AppNavigator.tsx
+- Extracted shared HeaderTitle component; replaced 20 duplicated inline headerTitle blocks.
+- Extracted DrawerNavItem helper; unified drawer item styling (added missing fontSize fs(14) on Home item, removed dead activeTintColor).
+- Removed dead drawerSection and empty drawerItemLabel styles; drawerTitle fontWeight 800→700.
+
+[2026-07-31] - | src/screens/SettingsScreen.tsx
+- Removed dead legacy settings screen (not imported anywhere; the active settings screens live in src/screens/settings/).
+
+[2026-07-31] - | src/constants/types.ts
+- Removed orphaned SettingsScreenProps type (its only consumer was the deleted src/screens/SettingsScreen.tsx).
+
+[2026-07-31] ~ | CategoryGrid.tsx, IconGrid.tsx, SortToggle.tsx
+- Fixed ComponentProps import source: moved from 'react-native' to 'react' (react-native does not export ComponentProps; 'react' does — consistent with the other 9 files). Resolves 3 pre-existing tsc errors.
+
+[2026-07-31] ~ | calendars/PeriodPicker.tsx
+- Restored missing allTimeText style ({ fontWeight: '600' }) referenced by the "All" checkbox label. Resolves 1 pre-existing tsc error.
+
+[2026-07-31] ~ | context/AppContext.tsx
+- Fixed tsc error in the transactions useEffect: captured narrowed `const account = activeAccount` after the null guard (function declaration hoisting was losing the narrowing inside the async loadTransactions closure). Resolves 1 pre-existing tsc error.
+
+[2026-07-31] ~ | context/AppContext.tsx, components/CategoryList.tsx, components/BarChart.tsx, components/DonutChart.tsx, constants/types.ts
+- Fixed Home showing stale category names after switching language: activeCategories no longer bakes getDisplayCategoryName() into the memoized name (its deps did not include language, so default categories kept the previous language). CategoryList and BarChart now resolve the display name via getDisplayCategoryName() at render time, matching every other consumer.
+- BarChart and DonutChart retyped from ChartData[] to CategoryWithTotal[] and keyed by item.id (stable, unique) instead of item.name.
+- Removed now-unused ChartData interface from constants/types.ts.

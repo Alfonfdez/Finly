@@ -42,8 +42,6 @@ export const ca: Language = {
   settings_delete_data_confirm_message2: 'Escriu DELETE per confirmar',
   settings_delete_data_confirm_placeholder: 'Escriu DELETE aquí',
   settings_delete_confirm: 'Confirmar',
-  settings_delete_all_transactions_done: 'Totes les transaccions eliminades',
-  settings_delete_all_data_done: 'Totes les dades eliminades. App restablerta a l\'estat de fàbrica.',
   settings_home_default_period_day: 'Dia',
   settings_home_default_period_week: 'Setmana',
   settings_home_default_period_month: 'Mes',
@@ -84,7 +82,6 @@ export const ca: Language = {
   period_week: 'Setmana',
   period_month: 'Mes',
   period_year: 'Any',
-  period_custom: 'Personalitzat',
   period_period: 'Període',
 
   // Calendar modal
@@ -102,9 +99,6 @@ export const ca: Language = {
   cal_to: 'fins a',
 
   // Calendar picker display
-  cal_month_of: (m: string, y: number) => `${m} de ${y}`,
-  cal_range_from_to: (d1: string, m1: string, d2: string, m2: string, y: number) => `${d1} ${m1} – ${d2} ${m2} ${y}`,
-  cal_period_from: (d: string, m: string) => `des de ${d} ${m}`,
   cal_period_to_hint: 'seleccioneu fi',
 
   // Day abbreviations (Sunday-first)
@@ -125,11 +119,9 @@ export const ca: Language = {
 
   // Account modal
   account_select: 'Seleccionar compte',
-  account_close: 'Tancar',
 
   // Add transaction
   add_title: 'Afegir transacció',
-  add_amount_placeholder: 'Import',
   add_amount_error: 'L\'import introduït no és vàlid',
   add_account: 'Compte',
   add_categories: 'Categories',
@@ -153,11 +145,7 @@ export const ca: Language = {
   add_hint_category: 'Selecciona una categoria',
   add_hint_amount: 'Introdueix un import vàlid major que 0',
   add_hint_category_amount: 'Selecciona una categoria i introdueix un import',
-  add_tag_urgent: 'Urgent',
-  add_tag_recurring: 'Recurrent',
-  add_tag_personal: 'Personal',
   add_tag_error_duplicate: 'L\'etiqueta ja existeix',
-  add_tag_error_empty: 'El nom de l\'etiqueta no pot estar buit',
   add_error_title: 'Error',
   add_error_message: 'No s\'ha pogut guardar la transacció',
 
@@ -241,23 +229,19 @@ export const ca: Language = {
   account_total_description: 'Saldo i transaccions combinats de tots els vostres comptes',
 
   // Transactions
-  transactions_title: 'Transaccions',
   transactions_empty: 'No hi ha transaccions',
-  transactions_select_account: 'Seleccionar compte',
   transactions_cancel: 'Cancel·lar',
   transactions_confirm: 'Seleccionar',
   transactions_sort_date: 'Per data',
   transactions_sort_amount: 'Per quantitat',
 
   // Navigation
-  nav_add: 'Afegir',
   nav_transactions: 'Transaccions',
   nav_all_transactions: 'Totes les transaccions',
   nav_settings: 'Configuració',
   nav_home: 'Inici',
   nav_accounts: 'Comptes',
   nav_categories: 'Categories',
-  nav_coming_soon: 'Properes funcions',
 
   // Accounts
   accounts_total: 'Total',
@@ -304,7 +288,6 @@ export const ca: Language = {
   // Accessibility
   a11y_show_expenses: 'Mostrar despeses',
   a11y_show_income: 'Mostrar ingressos',
-  a11y_select_account: 'Seleccionar compte',
   a11y_category: 'Categoria',
   a11y_period: 'Període',
 
@@ -332,12 +315,9 @@ export const ca: Language = {
   details_created: 'Creat',
   details_updated: 'Actualitzat',
   details_photo: 'Foto',
-  photo_viewer_close: 'Tancar',
   photo_remove: 'Eliminar foto',
   photo_delete_title: 'Eliminar foto',
   photo_delete_message: 'Estàs segur que vols eliminar aquesta foto?',
-  type_expense: 'Despesa',
-  type_income: 'Ingrés',
 
   // Modify transaction
   modify_title: 'Modificar transacció',

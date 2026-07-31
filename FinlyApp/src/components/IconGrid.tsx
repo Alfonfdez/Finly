@@ -1,4 +1,5 @@
-import { View, TouchableOpacity, StyleSheet, ComponentProps } from 'react-native';
+import { ComponentProps } from 'react';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 

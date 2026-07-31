@@ -38,6 +38,39 @@ import { RootStackParamList } from '../constants/types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator();
 
+function HeaderTitle({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; label: string }) {
+  const { activeColors: c } = useConfig();
+  const fs = useFontSize();
+  return (
+    <View style={styles.headerTitleRow}>
+      <Ionicons name={icon} size={20} color={c.text} />
+      <Text style={[styles.headerTitleText, { color: c.text, fontSize: fs(17) }]}>{label}</Text>
+    </View>
+  );
+}
+
+function DrawerNavItem({
+  label,
+  icon,
+  onPress,
+}: {
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  onPress: () => void;
+}) {
+  const { activeColors: c } = useConfig();
+  const fs = useFontSize();
+  return (
+    <DrawerItem
+      label={label}
+      onPress={onPress}
+      icon={({ color, size }) => <Ionicons name={icon} size={size} color={color} />}
+      labelStyle={{ color: c.text, fontSize: fs(14) }}
+      inactiveTintColor={c.primary}
+    />
+  );
+}
+
 function CustomDrawerContent(props: DrawerContentComponentProps) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
@@ -50,49 +83,36 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
           <Image source={require('../../assets/icon.png')} style={styles.drawerLogo} />
           <Text style={[styles.drawerTitle, { color: c.primary, fontSize: fs(24) }]}>Finly</Text>
         </View>
-        <DrawerItem
+        <DrawerNavItem
           label={labels.nav_home}
+          icon="home-outline"
           onPress={() => props.navigation.navigate('Main', { screen: 'Home' })}
-          icon={({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />}
-          labelStyle={[styles.drawerItemLabel, { color: c.text }]}
-          activeTintColor={c.primary}
-          inactiveTintColor={c.primary}
         />
-        <DrawerItem
+        <DrawerNavItem
           label={labels.nav_all_transactions}
+          icon="stats-chart-outline"
           onPress={() => props.navigation.navigate('Main', { screen: 'AllTransactions' })}
-          icon={({ color, size }) => <Ionicons name="stats-chart-outline" size={size} color={color} />}
-          labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
-          inactiveTintColor={c.primary}
         />
-        <DrawerItem
+        <DrawerNavItem
           label={labels.nav_accounts}
+          icon="wallet-outline"
           onPress={() => props.navigation.navigate('Main', { screen: 'Accounts' })}
-          icon={({ color, size }) => <Ionicons name="wallet-outline" size={size} color={color} />}
-          labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
-          inactiveTintColor={c.primary}
         />
-        <DrawerItem
+        <DrawerNavItem
           label={labels.nav_categories}
+          icon="grid-outline"
           onPress={() => props.navigation.navigate('Main', { screen: 'Categories' })}
-          icon={({ color, size }) => <Ionicons name="grid-outline" size={size} color={color} />}
-          labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
-          inactiveTintColor={c.primary}
         />
-        <DrawerItem
+        <DrawerNavItem
           label={labels.nav_tags}
+          icon="pricetag-outline"
           onPress={() => props.navigation.navigate('Main', { screen: 'Tags' })}
-          icon={({ color, size }) => <Ionicons name="pricetag-outline" size={size} color={color} />}
-          labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
-          inactiveTintColor={c.primary}
         />
         <View style={[styles.separator, { backgroundColor: c.border }]} />
-        <DrawerItem
+        <DrawerNavItem
           label={labels.nav_settings}
+          icon="settings-outline"
           onPress={() => props.navigation.navigate('Main', { screen: 'Settings' })}
-          icon={({ color, size }) => <Ionicons name="settings-outline" size={size} color={color} />}
-          labelStyle={[styles.drawerItemLabel, { color: c.text, fontSize: fs(14) }]}
-          inactiveTintColor={c.primary}
         />
       </DrawerContentScrollView>
       <Text style={[styles.drawerVersion, { color: c.textSecondary, fontSize: fs(11) }]}>
@@ -104,7 +124,6 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
 
 function HomeStack() {
   const { activeColors: c } = useConfig();
-  const fs = useFontSize();
   const labels = t();
 
   return (
@@ -116,166 +135,106 @@ function HomeStack() {
       }}
     >
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="AddTransaction" component={AddTransactionScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="add-circle-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.add_title}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="AddCategory" component={AddCategoryScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="grid-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.add_cat_title}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="CreateCategory" component={CreateCategoryScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="grid-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.create_cat_title}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="ModifyCategory" component={ModifyCategoryScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="grid-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.modify_cat_title}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="Categories" component={CategoriesScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="grid-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_categories}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="Accounts" component={AccountsScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="wallet-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_accounts}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="ModifyAccount" component={ModifyAccountScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="wallet-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.modify_account_title}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="CreateAccount" component={CreateAccountScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="wallet-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.create_account_title}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="Transactions" component={TransactionsScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="stats-chart-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_transactions}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="AllTransactions" component={AllTransactionsScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="stats-chart-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_all_transactions}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="Settings" component={SettingsScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="settings-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_settings}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="SettingsAppearance" component={AppearanceScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="color-palette-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.settings_appearance}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="SettingsRegional" component={RegionalScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="globe-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.settings_regional}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="SettingsPersonalization" component={PersonalizationScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="options-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.settings_personalization}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="SettingsData" component={DataScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="server-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.settings_data}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="TransactionDetails" component={TransactionDetailsScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="information-circle-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.details_title}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="ModifyTransaction" component={ModifyTransactionScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="create-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.modify_title}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="Tags" component={TagsScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="pricetag-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.nav_tags}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="CreateTag" component={CreateTagScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="pricetag-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.create_tag_title}</Text>
-          </View>
-        ),
-      }} />
-      <Stack.Screen name="ModifyTag" component={ModifyTagScreen} options={{
-        headerTitle: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="pricetag-outline" size={20} color={c.text} />
-            <Text style={{ color: c.text, fontSize: fs(17), fontWeight: '600' }}>{labels.modify_tag_title}</Text>
-          </View>
-        ),
-      }} />
+      <Stack.Screen
+        name="AddTransaction"
+        component={AddTransactionScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="add-circle-outline" label={labels.add_title} /> }}
+      />
+      <Stack.Screen
+        name="AddCategory"
+        component={AddCategoryScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="grid-outline" label={labels.add_cat_title} /> }}
+      />
+      <Stack.Screen
+        name="CreateCategory"
+        component={CreateCategoryScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="grid-outline" label={labels.create_cat_title} /> }}
+      />
+      <Stack.Screen
+        name="ModifyCategory"
+        component={ModifyCategoryScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="grid-outline" label={labels.modify_cat_title} /> }}
+      />
+      <Stack.Screen
+        name="Categories"
+        component={CategoriesScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="grid-outline" label={labels.nav_categories} /> }}
+      />
+      <Stack.Screen
+        name="Accounts"
+        component={AccountsScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="wallet-outline" label={labels.nav_accounts} /> }}
+      />
+      <Stack.Screen
+        name="ModifyAccount"
+        component={ModifyAccountScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="wallet-outline" label={labels.modify_account_title} /> }}
+      />
+      <Stack.Screen
+        name="CreateAccount"
+        component={CreateAccountScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="wallet-outline" label={labels.create_account_title} /> }}
+      />
+      <Stack.Screen
+        name="Transactions"
+        component={TransactionsScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="stats-chart-outline" label={labels.nav_transactions} /> }}
+      />
+      <Stack.Screen
+        name="AllTransactions"
+        component={AllTransactionsScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="stats-chart-outline" label={labels.nav_all_transactions} /> }}
+      />
+      <Stack.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="settings-outline" label={labels.nav_settings} /> }}
+      />
+      <Stack.Screen
+        name="SettingsAppearance"
+        component={AppearanceScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="color-palette-outline" label={labels.settings_appearance} /> }}
+      />
+      <Stack.Screen
+        name="SettingsRegional"
+        component={RegionalScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="globe-outline" label={labels.settings_regional} /> }}
+      />
+      <Stack.Screen
+        name="SettingsPersonalization"
+        component={PersonalizationScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="options-outline" label={labels.settings_personalization} /> }}
+      />
+      <Stack.Screen
+        name="SettingsData"
+        component={DataScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="server-outline" label={labels.settings_data} /> }}
+      />
+      <Stack.Screen
+        name="TransactionDetails"
+        component={TransactionDetailsScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="information-circle-outline" label={labels.details_title} /> }}
+      />
+      <Stack.Screen
+        name="ModifyTransaction"
+        component={ModifyTransactionScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="create-outline" label={labels.modify_title} /> }}
+      />
+      <Stack.Screen
+        name="Tags"
+        component={TagsScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="pricetag-outline" label={labels.nav_tags} /> }}
+      />
+      <Stack.Screen
+        name="CreateTag"
+        component={CreateTagScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="pricetag-outline" label={labels.create_tag_title} /> }}
+      />
+      <Stack.Screen
+        name="ModifyTag"
+        component={ModifyTagScreen}
+        options={{ headerTitle: () => <HeaderTitle icon="pricetag-outline" label={labels.modify_tag_title} /> }}
+      />
     </Stack.Navigator>
   );
 }
@@ -330,24 +289,24 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   drawerTitle: {
-    fontWeight: '800',
+    fontWeight: '700',
   },
   separator: {
     height: 1,
     marginVertical: 12,
     marginHorizontal: 16,
   },
-  drawerSection: {
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    paddingHorizontal: 16,
-    marginBottom: 4,
-  },
-  drawerItemLabel: {},
   drawerVersion: {
     textAlign: 'right',
     paddingVertical: 12,
     paddingRight: 16,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  headerTitleText: {
+    fontWeight: '600',
   },
 });

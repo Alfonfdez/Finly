@@ -40,8 +40,6 @@ export const en = {
   settings_delete_data_confirm_message2: 'Type DELETE to confirm',
   settings_delete_data_confirm_placeholder: 'Type DELETE here',
   settings_delete_confirm: 'Confirm',
-  settings_delete_all_transactions_done: 'All transactions deleted',
-  settings_delete_all_data_done: 'All data deleted. App reset to factory state.',
   settings_home_default_period_day: 'Day',
   settings_home_default_period_week: 'Week',
   settings_home_default_period_month: 'Month',
@@ -82,7 +80,6 @@ export const en = {
   period_week: 'Week',
   period_month: 'Month',
   period_year: 'Year',
-  period_custom: 'Custom',
   period_period: 'Period',
 
   // Calendar modal
@@ -100,9 +97,6 @@ export const en = {
   cal_to: 'to',
 
   // Calendar picker display
-  cal_month_of: (m: string, y: number) => `${m} ${y}`,
-  cal_range_from_to: (d1: string, m1: string, d2: string, m2: string, y: number) => `${d1} ${m1} – ${d2} ${m2} ${y}`,
-  cal_period_from: (d: string, m: string) => `from ${d} ${m}`,
   cal_period_to_hint: 'select end',
 
   // Day abbreviations (Sunday-first)
@@ -123,11 +117,9 @@ export const en = {
 
   // Account modal
   account_select: 'Select account',
-  account_close: 'Close',
 
   // Add transaction
   add_title: 'Add transaction',
-  add_amount_placeholder: 'Amount',
   add_amount_error: 'The amount entered is not valid',
   add_account: 'Account',
   add_categories: 'Categories',
@@ -151,11 +143,7 @@ export const en = {
   add_hint_category: 'Select a category',
   add_hint_amount: 'Enter a valid amount greater than 0',
   add_hint_category_amount: 'Select a category and enter an amount',
-  add_tag_urgent: 'Urgent',
-  add_tag_recurring: 'Recurring',
-  add_tag_personal: 'Personal',
   add_tag_error_duplicate: 'Tag already exists',
-  add_tag_error_empty: 'Tag name cannot be empty',
   add_error_title: 'Error',
   add_error_message: 'Failed to save transaction',
 
@@ -239,23 +227,19 @@ export const en = {
   account_total_description: 'Combined balance and transactions from all your accounts',
 
   // Transactions
-  transactions_title: 'Transactions',
   transactions_empty: 'No transactions',
-  transactions_select_account: 'Select account',
   transactions_cancel: 'Cancel',
   transactions_confirm: 'Select',
   transactions_sort_date: 'By date',
   transactions_sort_amount: 'By amount',
 
   // Navigation (static — won't update live, but correct per language)
-  nav_add: 'Add',
   nav_transactions: 'Transactions',
   nav_all_transactions: 'All transactions',
   nav_settings: 'Settings',
   nav_home: 'Home',
   nav_accounts: 'Accounts',
   nav_categories: 'Categories',
-  nav_coming_soon: 'Coming soon',
 
   // Accounts
   accounts_total: 'Total',
@@ -302,7 +286,6 @@ export const en = {
   // Accessibility
   a11y_show_expenses: 'Show expenses',
   a11y_show_income: 'Show income',
-  a11y_select_account: 'Select account',
   a11y_category: 'Category',
   a11y_period: 'Period',
 
@@ -330,12 +313,9 @@ export const en = {
   details_created: 'Created',
   details_updated: 'Updated',
   details_photo: 'Photo',
-  photo_viewer_close: 'Close',
   photo_remove: 'Remove photo',
   photo_delete_title: 'Delete photo',
   photo_delete_message: 'Are you sure you want to delete this photo?',
-  type_expense: 'Expense',
-  type_income: 'Income',
 
   // Modify transaction
   modify_title: 'Modify transaction',
