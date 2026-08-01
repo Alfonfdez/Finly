@@ -13,16 +13,14 @@ import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
 import { t, getDefaultAccountIdByName, getDefaultEnglishAccountName } from '../i18n';
 import { isAndroid } from '../utils/platform';
 import { accountRepository } from '../database';
-import { RootStackParamList } from '../constants/types';
+import { RootStackParamList, USER_ID, MAX_ACCOUNT_NAME_LENGTH, MAX_NOTE_LENGTH } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
+import { WHITE } from '../constants/themes';
 import IconGrid from '../components/IconGrid';
 import ColorGrid, { QUICK_COLORS } from '../components/ColorGrid';
 import ColorPickerModal from '../components/ColorPickerModal';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateAccount'>;
-
-const MAX_NAME_LENGTH = 30;
-const MAX_NOTE_LENGTH = 200;
 
 export default function CreateAccountScreen() {
   const { activeColors: c, config } = useConfig();
@@ -88,13 +86,13 @@ export default function CreateAccountScreen() {
   };
 
   const handleCreate = async () => {
-    if (!canCreate) return;
+    if (!canCreate || selectedIcon === null || selectedColor === null) return;
     try {
       await accountRepository.create({
-        user_id: 1,
+        user_id: USER_ID,
         name: name.trim(),
-        icon: selectedIcon!,
-        color: selectedColor!,
+        icon: selectedIcon,
+        color: selectedColor,
         initial_balance: 0,
         description: description.trim(),
       });
@@ -140,12 +138,12 @@ export default function CreateAccountScreen() {
             placeholderTextColor={c.textSecondary}
             value={name}
             onChangeText={handleNameChange}
-            maxLength={MAX_NAME_LENGTH}
+            maxLength={MAX_ACCOUNT_NAME_LENGTH}
             autoCapitalize="words"
             autoCorrect={false}
           />
           <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
-            {name.length}/{MAX_NAME_LENGTH}
+            {name.length}/{MAX_ACCOUNT_NAME_LENGTH}
           </Text>
 
           <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
@@ -218,7 +216,7 @@ export default function CreateAccountScreen() {
             onPress={handleCreate}
             disabled={!canCreate}
           >
-            <Text style={[styles.buttonText, { color: '#FFFFFF', fontSize: fs(15) }]}>
+            <Text style={[styles.buttonText, { color: WHITE, fontSize: fs(15) }]}>
               {labels.create_account_button}
             </Text>
           </TouchableOpacity>

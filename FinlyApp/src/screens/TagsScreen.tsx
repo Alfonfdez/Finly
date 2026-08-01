@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, DrawerActions, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -11,6 +11,8 @@ import { useApp } from '../context/AppContext';
 import { Tag } from '../database/types';
 import { RootStackParamList } from '../constants/types';
 import Fab from '../components/Fab';
+import EmptyState from '../components/EmptyState';
+import DrawerMenuButton from '../components/DrawerMenuButton';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Tags'>;
 
@@ -25,16 +27,10 @@ export default function TagsScreen() {
     useCallback(() => {
       navigation.setOptions({
         headerLeft: () => (
-          <TouchableOpacity
-            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-            style={{ marginLeft: 8, padding: 4 }}
-            accessibilityLabel={labels.home_open_menu}
-          >
-            <Ionicons name="menu-outline" size={24} color={c.text} />
-          </TouchableOpacity>
+          <DrawerMenuButton accessibilityLabel={labels.home_open_menu} />
         ),
       });
-    }, [navigation, c.text, labels.home_open_menu])
+    }, [navigation, labels.home_open_menu])
   );
 
   const renderItem = ({ item }: { item: Tag }) => (
@@ -50,12 +46,7 @@ export default function TagsScreen() {
   );
 
   const renderEmpty = () => (
-    <View style={styles.emptyContainer}>
-      <Ionicons name="pricetag-outline" size={64} color={c.textSecondary} />
-      <Text style={[styles.emptyText, { color: c.textSecondary, fontSize: fs(16) }]}>
-        {labels.tags_empty}
-      </Text>
-    </View>
+    <EmptyState icon="pricetag-outline" message={labels.tags_empty} />
   );
 
   return (
@@ -97,14 +88,5 @@ const styles = StyleSheet.create({
   tagName: {
     fontWeight: '500',
     flex: 1,
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-  },
-  emptyText: {
-    fontWeight: '500',
   },
 });

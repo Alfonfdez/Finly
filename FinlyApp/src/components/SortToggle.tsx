@@ -1,12 +1,12 @@
-import { ComponentProps } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
+import type { IconName } from './IconGrid';
+import { SORT_BY, SORT_DIRECTIONS, type SortBy, type SortDirection } from '../constants/types';
 
-export type SortBy = 'date' | 'amount';
-export type SortDirection = 'asc' | 'desc';
+export type { SortBy, SortDirection };
 
 interface Props {
   sortBy: SortBy;
@@ -20,22 +20,22 @@ export default function SortToggle({ sortBy, direction, onToggleSort, onToggleDi
   const fs = useFontSize();
   const labels = t();
 
-  const arrowIcon: ComponentProps<typeof Ionicons>['name'] = direction === 'desc' ? 'arrow-down' : 'arrow-up';
+  const arrowIcon: IconName = direction === SORT_DIRECTIONS.desc ? 'arrow-down' : 'arrow-up';
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.option}
-        onPress={() => onToggleSort('date')}
+        onPress={() => onToggleSort(SORT_BY.date)}
         accessibilityLabel={labels.transactions_sort_date}
       >
         <Text style={[
           styles.label,
-          { color: sortBy === 'date' ? c.primary : c.textSecondary, fontSize: fs(13) },
+          { color: sortBy === SORT_BY.date ? c.primary : c.textSecondary, fontSize: fs(13) },
         ]}>
           {labels.transactions_sort_date}
         </Text>
-        {sortBy === 'date' && (
+        {sortBy === SORT_BY.date && (
           <TouchableOpacity onPress={onToggleDirection} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Ionicons name={arrowIcon} size={14} color={c.primary} />
           </TouchableOpacity>
@@ -44,16 +44,16 @@ export default function SortToggle({ sortBy, direction, onToggleSort, onToggleDi
 
       <TouchableOpacity
         style={styles.option}
-        onPress={() => onToggleSort('amount')}
+        onPress={() => onToggleSort(SORT_BY.amount)}
         accessibilityLabel={labels.transactions_sort_amount}
       >
         <Text style={[
           styles.label,
-          { color: sortBy === 'amount' ? c.primary : c.textSecondary, fontSize: fs(13) },
+          { color: sortBy === SORT_BY.amount ? c.primary : c.textSecondary, fontSize: fs(13) },
         ]}>
           {labels.transactions_sort_amount}
         </Text>
-        {sortBy === 'amount' && (
+        {sortBy === SORT_BY.amount && (
           <TouchableOpacity onPress={onToggleDirection} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Ionicons name={arrowIcon} size={14} color={c.primary} />
           </TouchableOpacity>

@@ -115,6 +115,15 @@ export const transactionRepo = {
     return await db.getAllAsync<Transaction>(sql, ...params);
   },
 
+  async getById(id: number): Promise<Transaction | null> {
+    const db = getDatabase();
+    const row = await db.getFirstAsync<Transaction>(
+      `SELECT * FROM transactions WHERE id = ?`,
+      id
+    );
+    return row ?? null;
+  },
+
   async create(data: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>): Promise<Transaction> {
     const db = getDatabase();
     const result = await db.runAsync(

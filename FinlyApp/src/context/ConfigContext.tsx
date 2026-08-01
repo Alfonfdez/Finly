@@ -4,19 +4,22 @@ import { ColorPalette, darkColors, lightColors } from '../constants/themes';
 import { configRepository } from '../database';
 import { setLanguage } from '../i18n';
 import { isWeb } from '../utils/platform';
-import type { Language } from '../utils/language';
+import { LANGUAGES, type Language } from '../utils/language';
+import { withAlpha } from '../utils/color';
+import { CONFIG_ICON_SHAPES, PERIODS, TEXT_SIZES, THEMES, DECIMAL_SEPARATORS, FIRST_DAYS, type ConfigIconShape, type DecimalSeparator, type FirstDay, type Period, type TextSize, type Theme } from '../constants/types';
+import { DEFAULT_CURRENCY } from '../constants/currencies';
 
 export interface Config {
-  theme: 'dark' | 'light' | 'system';
-  firstDayOfWeek: 0 | 1;
+  theme: Theme;
+  firstDayOfWeek: FirstDay;
   currency: string;
-  decimalSeparator: ',' | '.';
+  decimalSeparator: DecimalSeparator;
   language: Language;
-  textSize: 'small' | 'medium' | 'large';
-  categoryIconShape: 'square' | 'circle';
-  accountIconShape: 'square' | 'circle';
+  textSize: TextSize;
+  categoryIconShape: ConfigIconShape;
+  accountIconShape: ConfigIconShape;
   homeDefaultAccountId: number | null;
-  homeDefaultPeriod: 'day' | 'week' | 'month' | 'year';
+  homeDefaultPeriod: Exclude<Period, 'custom'>;
   addDefaultAccountId: number | null;
   addShowLabels: boolean;
   addShowComments: boolean;
@@ -25,16 +28,16 @@ export interface Config {
 }
 
 const CONFIG_DEFAULT: Config = {
-  theme: 'dark',
-  firstDayOfWeek: 1,
-  currency: '€',
-  decimalSeparator: ',',
-  language: 'en',
-  textSize: 'medium',
-  categoryIconShape: 'square',
-  accountIconShape: 'square',
+  theme: THEMES.dark,
+  firstDayOfWeek: FIRST_DAYS.monday,
+  currency: DEFAULT_CURRENCY,
+  decimalSeparator: DECIMAL_SEPARATORS.comma,
+  language: LANGUAGES.en,
+  textSize: TEXT_SIZES.medium,
+  categoryIconShape: CONFIG_ICON_SHAPES.square,
+  accountIconShape: CONFIG_ICON_SHAPES.square,
   homeDefaultAccountId: null,
-  homeDefaultPeriod: 'month',
+  homeDefaultPeriod: PERIODS.month,
   addDefaultAccountId: null,
   addShowLabels: true,
   addShowComments: true,
@@ -57,15 +60,15 @@ export function useConfig() {
   return ctx;
 }
 
-function resolveTheme(theme: Config['theme']): 'dark' | 'light' {
-  if (theme === 'system') {
-    return Appearance.getColorScheme() === 'dark' ? 'dark' : 'light';
+function resolveTheme(theme: Theme): Exclude<Theme, 'system'> {
+  if (theme === THEMES.system) {
+    return Appearance.getColorScheme() === THEMES.dark ? THEMES.dark : THEMES.light;
   }
   return theme;
 }
 
-function resolveColors(theme: Config['theme']): ColorPalette {
-  return resolveTheme(theme) === 'dark' ? darkColors : lightColors;
+function resolveColors(theme: Theme): ColorPalette {
+  return resolveTheme(theme) === THEMES.dark ? darkColors : lightColors;
 }
 
 export function ConfigProvider({ children }: { children: ReactNode }) {
@@ -94,9 +97,9 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   }, [config.theme]);
 
   useEffect(() => {
-    if (config.theme !== 'system') return;
+    if (config.theme !== THEMES.system) return;
     const sub = Appearance.addChangeListener(() => {
-      setActiveColors(resolveColors('system'));
+      setActiveColors(resolveColors(THEMES.system));
     });
     return () => sub?.remove();
   }, [config.theme]);
@@ -113,9 +116,9 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     style.textContent = `
       ::-webkit-scrollbar { width: 6px; height: 6px; }
       ::-webkit-scrollbar-track { background: ${activeColors.background}; }
-      ::-webkit-scrollbar-thumb { background: ${activeColors.primary}40; border-radius: 3px; }
-      ::-webkit-scrollbar-thumb:hover { background: ${activeColors.primary}80; }
-      * { scrollbar-width: thin; scrollbar-color: ${activeColors.primary}40 ${activeColors.background}; }
+      ::-webkit-scrollbar-thumb { background: ${withAlpha(activeColors.primary, 25)}; border-radius: 3px; }
+      ::-webkit-scrollbar-thumb:hover { background: ${withAlpha(activeColors.primary, 50)}; }
+      * { scrollbar-width: thin; scrollbar-color: ${withAlpha(activeColors.primary, 25)} ${activeColors.background}; }
     `;
   }, [activeColors]);
 

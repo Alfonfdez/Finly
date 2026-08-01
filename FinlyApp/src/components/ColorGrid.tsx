@@ -1,5 +1,6 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { WHITE } from '../constants/themes';
 import { useConfig } from '../context/ConfigContext';
 
 
@@ -35,7 +36,7 @@ export default function ColorGrid({ selectedColor, customColor, onSelect, onOpen
             accessibilityState={{ selected: isSelected }}
           >
             {isSelected && (
-              <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+              <Ionicons name="checkmark" size={14} color={WHITE} />
             )}
           </TouchableOpacity>
         );
@@ -52,7 +53,7 @@ export default function ColorGrid({ selectedColor, customColor, onSelect, onOpen
           accessibilityState={{ selected: selectedColor === customColor }}
         >
           {selectedColor === customColor && (
-            <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+            <Ionicons name="checkmark" size={14} color={WHITE} />
           )}
         </TouchableOpacity>
       )}
@@ -61,7 +62,7 @@ export default function ColorGrid({ selectedColor, customColor, onSelect, onOpen
         onPress={onOpenPicker}
         accessibilityLabel="More colors"
       >
-        <Ionicons name="add" size={18} color="#FFFFFF" />
+        <Ionicons name="add" size={18} color={WHITE} />
       </TouchableOpacity>
     </View>
   );

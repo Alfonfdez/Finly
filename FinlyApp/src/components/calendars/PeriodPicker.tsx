@@ -4,18 +4,15 @@ import DayPicker from './DayPicker';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
-
-const MIN_YEAR = new Date().getFullYear();
-const MIN_DATE = new Date(MIN_YEAR, 0, 1);
+import { calendarStyles, MIN_DATE } from './calendarStyles';
 
 interface Props {
   tempStart: Date;
   tempEnd: Date;
   onTempRangeChange: (start: Date, end: Date) => void;
-  firstDay?: 0 | 1;
 }
 
-export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange, firstDay = 1 }: Props) {
+export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: Props) {
   const [allTime, setAllTime] = useState(false);
   const [selecting, setSelecting] = useState<'start' | 'end'>('start');
   const { activeColors: c } = useConfig();
@@ -52,7 +49,7 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange, fi
       : `${labels.cal_from} ${tempStart.getDate()} ${shortMonths[tempStart.getMonth()]} ${labels.cal_to} ${tempEnd.getDate()} ${shortMonths[tempEnd.getMonth()]} ${tempEnd.getFullYear()}`;
 
   return (
-    <View style={styles.container}>
+    <View style={calendarStyles.container}>
       <Text style={[styles.title, { color: c.textSecondary, fontSize: fs(13) }]}>{rangeText}</Text>
 
       <TouchableOpacity style={styles.allTimeRow} onPress={handleAllTime}>
@@ -75,7 +72,6 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange, fi
           rangeStart={tempStart}
           rangeEnd={tempEnd}
           initialView={new Date()}
-          firstDay={firstDay}
         />
       )}
     </View>
@@ -83,7 +79,6 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange, fi
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 8 },
   title: { marginBottom: 12 },
   allTimeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, marginRight: 8 },

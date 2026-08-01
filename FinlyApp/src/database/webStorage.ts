@@ -1,7 +1,9 @@
 import { User, Account, Category, Transaction, Tag, TransactionTag } from './types';
-import { TransactionType } from '../constants/types';
+import { CONFIG_ICON_SHAPES, PERIODS, TEXT_SIZES, THEMES, TRANSACTION_TYPES, MAX_SUGGESTIONS, DECIMAL_SEPARATORS, FIRST_DAYS, type TransactionType } from '../constants/types';
 import { Config } from '../context/ConfigContext';
-import { UNTAGGED_ID } from './helpers';
+import { LANGUAGES } from '../utils/language';
+import { DEFAULT_CURRENCY } from '../constants/currencies';
+import { UNTAGGED_ID, isTotalAccount } from './helpers';
 import { SEED_USER_DATA, SEED_ACCOUNTS, SEED_CATEGORIES } from './seedData';
 
 const STORAGE_PREFIX = '@Finly/';
@@ -80,7 +82,7 @@ export const webAccountRepo = {
     return getStore<Account>('accounts')
       .filter(c => c.user_id === userId)
       .sort((a, b) => {
-        if ((a.is_total ?? 0) !== (b.is_total ?? 0)) return (b.is_total ?? 0) - (a.is_total ?? 0);
+        if (isTotalAccount(a) !== isTotalAccount(b)) return isTotalAccount(a) ? -1 : 1;
         return a.name.localeCompare(b.name);
       });
   },
@@ -100,7 +102,7 @@ export const webAccountRepo = {
   async delete(id: number): Promise<void> {
     const items = getStore<Account>('accounts');
     const target = items.find(c => c.id === id);
-    if (target?.is_total === 1) return;
+    if (!target || isTotalAccount(target)) return;
     setStore('accounts', items.filter(c => c.id !== id));
     const transactions = getStore<Transaction>('transactions');
     const deletedIds = new Set(transactions.filter(t => t.account_id === id).map(t => t.id));
@@ -123,7 +125,7 @@ export const webAccountRepo = {
     if (!account) return 0;
     const transactionBalance = transactions
       .filter(t => t.account_id === id)
-      .reduce((sum, t) => sum + (t.type === 'income' ? t.amount : -t.amount), 0);
+      .reduce((sum, t) => sum + (t.type === TRANSACTION_TYPES.income ? t.amount : -t.amount), 0);
     return account.initial_balance + transactionBalance;
   },
   async existsByName(name: string, excludeId?: number): Promise<boolean> {
@@ -208,6 +210,9 @@ export const webTransactionRepo = {
       });
     }
     return items.sort((a, b) => b.date.localeCompare(a.date));
+  },
+  async getById(id: number): Promise<Transaction | null> {
+    return getStore<Transaction>('transactions').find(t => t.id === id) ?? null;
   },
   async create(data: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>): Promise<Transaction> {
     const items = getStore<Transaction>('transactions');
@@ -325,9 +330,9 @@ export const webTransactionRepo = {
     const lower = search.toLowerCase();
     return [...new Set(
       items
-        .filter(t => t.description && t.description.toLowerCase().includes(lower))
-        .map(t => t.description!)
-    )].slice(0, 5);
+        .map(t => t.description)
+        .filter((d): d is string => !!d && d.toLowerCase().includes(lower))
+    )].slice(0, MAX_SUGGESTIONS);
   },
 
   async createWithTags(
@@ -447,16 +452,16 @@ export const webTagRepo = {
 };
 
 const CONFIG_DEFAULTS: Config = {
-  theme: 'dark',
-  firstDayOfWeek: 1,
-  currency: '€',
-  decimalSeparator: ',',
-  language: 'en',
-  textSize: 'medium',
-  categoryIconShape: 'square',
-  accountIconShape: 'square',
+  theme: THEMES.dark,
+  firstDayOfWeek: FIRST_DAYS.monday,
+  currency: DEFAULT_CURRENCY,
+  decimalSeparator: DECIMAL_SEPARATORS.comma,
+  language: LANGUAGES.en,
+  textSize: TEXT_SIZES.medium,
+  categoryIconShape: CONFIG_ICON_SHAPES.square,
+  accountIconShape: CONFIG_ICON_SHAPES.square,
   homeDefaultAccountId: null,
-  homeDefaultPeriod: 'month',
+  homeDefaultPeriod: PERIODS.month,
   addDefaultAccountId: null,
   addShowLabels: true,
   addShowComments: true,

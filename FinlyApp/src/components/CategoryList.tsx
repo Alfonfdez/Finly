@@ -1,11 +1,11 @@
-import { ComponentProps } from 'react';
+import { useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { CategoryWithTotal } from '../constants/types';
+import { CategoryWithTotal, BADGE_SHAPES, CONFIG_ICON_SHAPES, MAX_VISIBLE_TAGS } from '../constants/types';
 import { formatCurrency } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
+import IconBadge from './IconBadge';
 
 interface TagBreakdown {
   tag_id: number;
@@ -15,9 +15,6 @@ interface TagBreakdown {
 
 interface Props {
   categories: CategoryWithTotal[];
-  total: number;
-  currency?: string;
-  separator?: ',' | '.';
   onPress?: (category: CategoryWithTotal) => void;
   tagBreakdowns?: Map<number, TagBreakdown[]>;
   expandedCategoryIds?: Set<number>;
@@ -25,22 +22,22 @@ interface Props {
 }
 
 export default function CategoryList({
-  categories, total, currency = '€', separator = ',', onPress,
+  categories, onPress,
   tagBreakdowns, expandedCategoryIds, onToggleExpand,
 }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const round = config.categoryIconShape === 'circle';
+  const round = config.categoryIconShape === CONFIG_ICON_SHAPES.circle;
 
-  const renderTagChips = (categoryId: number) => {
+  const renderTagChips = useCallback((categoryId: number) => {
     if (!tagBreakdowns || !expandedCategoryIds || !onToggleExpand) return null;
     const tags = tagBreakdowns.get(categoryId);
     if (!tags || tags.length === 0) return null;
 
     const isExpanded = expandedCategoryIds.has(categoryId);
-    const visibleTags = isExpanded ? tags : tags.slice(0, 3);
-    const hasMore = tags.length > 3;
+    const visibleTags = isExpanded ? tags : tags.slice(0, MAX_VISIBLE_TAGS);
+    const hasMore = tags.length > MAX_VISIBLE_TAGS;
 
     return (
       <View style={styles.tagSection}>
@@ -65,40 +62,51 @@ export default function CategoryList({
         )}
       </View>
     );
-  };
+  }, [tagBreakdowns, expandedCategoryIds, onToggleExpand, c, fs, labels]);
+
+  const keyExtractor = useCallback((item: CategoryWithTotal) => item.id.toString(), []);
+
+  const renderItem = useCallback(({ item }: { item: CategoryWithTotal }) => {
+    const displayName = getDisplayCategoryName(item);
+    return (
+      <View style={[styles.itemWrapper, { borderBottomColor: c.border }]}>
+        <TouchableOpacity
+          style={styles.item}
+          onPress={() => onPress?.(item)}
+          accessibilityLabel={`${labels.a11y_category} ${displayName}, ${item.percentage.toFixed(1)}%`}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <IconBadge
+            icon={item.icon}
+            color={item.color}
+            shape={round ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+            size={40}
+            iconSize={20}
+            roundedRadius={12}
+            backgroundAlpha={19}
+            style={styles.icon}
+          />
+          <View style={styles.info}>
+            <Text style={[styles.name, { color: c.text, fontSize: fs(14) }]}>{displayName}</Text>
+            <View style={[styles.barBackground, { backgroundColor: c.surface }]}>
+              <View style={[styles.barFill, { width: `${Math.min(item.percentage, 100)}%`, backgroundColor: item.color }]} />
+            </View>
+          </View>
+          <View style={styles.amounts}>
+            <Text style={[styles.total, { color: c.text, fontSize: fs(14) }]}>{formatCurrency(item.total, config.currency, config.decimalSeparator)}</Text>
+            <Text style={[styles.percentage, { color: c.textSecondary, fontSize: fs(12) }]}>{item.percentage.toFixed(1)}%</Text>
+          </View>
+        </TouchableOpacity>
+        {renderTagChips(item.id)}
+      </View>
+    );
+  }, [c, labels, round, fs, config.currency, config.decimalSeparator, onPress, renderTagChips]);
 
   return (
     <FlatList
       data={categories}
-      keyExtractor={(item) => item.id.toString()}
-      renderItem={({ item }) => {
-        const displayName = getDisplayCategoryName(item);
-        return (
-          <View style={[styles.itemWrapper, { borderBottomColor: c.border }]}>
-            <TouchableOpacity
-              style={styles.item}
-              onPress={() => onPress?.(item)}
-              accessibilityLabel={`${labels.a11y_category} ${displayName}, ${item.percentage.toFixed(1)}%`}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <View style={[styles.icon, { backgroundColor: item.color + '30', borderRadius: round ? 20 : 12 }]}>
-                <Ionicons name={item.icon as ComponentProps<typeof Ionicons>['name']} size={20} color={item.color} />
-              </View>
-              <View style={styles.info}>
-                <Text style={[styles.name, { color: c.text, fontSize: fs(14) }]}>{displayName}</Text>
-                <View style={[styles.barBackground, { backgroundColor: c.surface }]}>
-                  <View style={[styles.barFill, { width: `${Math.min(item.percentage, 100)}%`, backgroundColor: item.color }]} />
-                </View>
-              </View>
-              <View style={styles.amounts}>
-                <Text style={[styles.total, { color: c.text, fontSize: fs(14) }]}>{formatCurrency(item.total, currency, separator)}</Text>
-                <Text style={[styles.percentage, { color: c.textSecondary, fontSize: fs(12) }]}>{item.percentage.toFixed(1)}%</Text>
-              </View>
-            </TouchableOpacity>
-            {renderTagChips(item.id)}
-          </View>
-        );
-      }}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
     />
   );
 }
@@ -114,10 +122,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   icon: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginRight: 12,
   },
   info: { flex: 1, marginRight: 12 },

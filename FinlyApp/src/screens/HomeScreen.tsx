@@ -1,16 +1,17 @@
-import { useState, useCallback, useEffect, ComponentProps } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, DrawerActions, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { formatCurrency, formatDateForDB, formatSignedCurrency, HIDDEN_BALANCE, getPeriodRange } from '../utils/formatters';
-import { RootStackParamList, Period } from '../constants/types';
+import { formatCurrency, formatDateForDB, formatSignedCurrency, HIDDEN_BALANCE, getPeriodRange, endOfDay, startOfDay } from '../utils/formatters';
+import { RootStackParamList, PERIODS, TRANSACTION_TYPES, type Period, CHART_TYPES, BADGE_SHAPES, type ChartType } from '../constants/types';
 import { t, getDisplayAccountName } from '../i18n';
 import { transactionRepository as transactionRepo } from '../database';
+import { UNTAGGED_ID } from '../database/helpers';
 import AccountModal from '../components/AccountModal';
 import EyeToggle from '../components/EyeToggle';
 import TabBar from '../components/TabBar';
@@ -21,8 +22,9 @@ import BarChart from '../components/BarChart';
 import CategoryList from '../components/CategoryList';
 import TagFilterBar from '../components/TagFilterBar';
 import Fab from '../components/Fab';
+import DrawerMenuButton from '../components/DrawerMenuButton';
+import IconBadge from '../components/IconBadge';
 
-type ChartType = 'donut' | 'bar';
 type Navigation = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 export default function HomeScreen() {
@@ -37,7 +39,7 @@ export default function HomeScreen() {
   const labels = t();
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [chartType, setChartType] = useState<ChartType>('donut');
+  const [chartType, setChartType] = useState<ChartType>(CHART_TYPES.donut);
   const [calendarVisible, setCalendarVisible] = useState(false);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<number>>(new Set());
   const [tagBreakdowns, setTagBreakdowns] = useState<Map<number, { tag_id: number; name: string; total: number }[]>>(new Map());
@@ -52,7 +54,7 @@ export default function HomeScreen() {
   const isBalanceHidden = config.hideBalances !== isRevealed;
 
   const total = totalIncomeAll - totalExpensesAll;
-  const activeTotal = activeType === 'expense' ? totalExpenses : totalIncome;
+  const activeTotal = activeType === TRANSACTION_TYPES.expense ? totalExpenses : totalIncome;
   const totalColor = total >= 0 ? c.green : c.red;
 
   useEffect(() => {
@@ -61,35 +63,46 @@ export default function HomeScreen() {
       return;
     }
     const currentAccount = activeAccount;
+    let active = true;
 
     async function loadTagBreakdowns() {
-      const dates = activePeriod === 'custom'
+      const dates = activePeriod === PERIODS.custom
         ? customDate
         : getPeriodRange(activePeriod, selectedDate);
 
-      const breakdowns = new Map<number, { tag_id: number; name: string; total: number }[]>();
-      for (const cat of activeCategories) {
-        const data = await transactionRepo.breakdownByCategoryAndTag(
-          currentAccount.id,
-          cat.id,
-          activeType,
-          formatDateForDB(dates.start),
-          formatDateForDB(dates.end),
-          activeTagIds.length > 0 ? activeTagIds : undefined
+      try {
+        const results = await Promise.all(
+          activeCategories.map(async (cat) => {
+            const data = await transactionRepo.breakdownByCategoryAndTag(
+              currentAccount.id,
+              cat.id,
+              activeType,
+              formatDateForDB(dates.start),
+              formatDateForDB(dates.end),
+              activeTagIds.length > 0 ? activeTagIds : undefined
+            );
+            const filtered = tags.length > 0 ? data : data.filter(d => d.tag_id !== UNTAGGED_ID);
+            return filtered.length > 0 ? [cat.id, filtered] as const : null;
+          })
         );
-        const filtered = tags.length > 0 ? data : data.filter(d => d.tag_id !== -1);
-        if (filtered.length > 0) {
-          breakdowns.set(cat.id, filtered);
+
+        if (!active) return;
+        const breakdowns = new Map<number, { tag_id: number; name: string; total: number }[]>();
+        for (const entry of results) {
+          if (entry) breakdowns.set(entry[0], entry[1]);
         }
+        setTagBreakdowns(breakdowns);
+      } catch {
+        if (active) setTagBreakdowns(new Map());
       }
-      setTagBreakdowns(breakdowns);
     }
 
     loadTagBreakdowns();
+    return () => { active = false; };
   }, [activeAccount, activeCategories, activeType, activePeriod, selectedDate, customDate, activeTagIds, tags]);
 
   const handleCategoryPress = useCallback((category: { id: number }) => {
-    const { start, end } = activePeriod === 'custom'
+    const { start, end } = activePeriod === PERIODS.custom
       ? customDate
       : getPeriodRange(activePeriod, selectedDate);
     navigation.navigate('Transactions', {
@@ -116,7 +129,7 @@ export default function HomeScreen() {
 
   const handlePeriodChange = useCallback((period: Period) => {
     changePeriod(period);
-    if (period === 'custom') setCalendarVisible(true);
+    if (period === PERIODS.custom) setCalendarVisible(true);
   }, [changePeriod]);
 
   const handleDateChange = useCallback((date: Date) => {
@@ -131,11 +144,7 @@ export default function HomeScreen() {
   }, [selectAccount, accountsWithBalance]);
 
   const handleRangeChange = useCallback((start: Date, end: Date) => {
-    const endDay = new Date(end);
-    endDay.setHours(23, 59, 59, 999);
-    const startDay = new Date(start);
-    startDay.setHours(0, 0, 0, 0);
-    setCustomDate({ start: startDay, end: endDay });
+    setCustomDate({ start: startOfDay(start), end: endOfDay(end) });
   }, [setCustomDate]);
 
   if (loading || !activeAccount) {
@@ -152,19 +161,23 @@ export default function HomeScreen() {
     <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]}>
       <View style={[styles.container, { backgroundColor: c.background }]}>
         <View style={[styles.header, { backgroundColor: c.surface }]}>
-          <TouchableOpacity
-            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+          <DrawerMenuButton
+            size={26}
             accessibilityLabel={labels.home_open_menu}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="menu-outline" size={26} color={c.text} />
-          </TouchableOpacity>
+            style={styles.menuButton}
+          />
 
           <View style={styles.totalButton}>
             <TouchableOpacity style={styles.accountRow} onPress={() => setModalVisible(true)}>
-               <View style={[styles.accountIcon, { backgroundColor: activeAccount.color + '30', borderRadius: config.accountIconShape === 'circle' ? 12 : 4 }]}>
-                <Ionicons name={activeAccount.icon as ComponentProps<typeof Ionicons>['name']} size={18} color={activeAccount.color} />
-              </View>
+              <IconBadge
+                icon={activeAccount.icon}
+                color={activeAccount.color}
+                shape={config.accountIconShape === BADGE_SHAPES.circle ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+                size={24}
+                iconSize={18}
+                roundedRadius={4}
+              />
               <Text style={[styles.accountLabel, { color: c.textSecondary, fontSize: fs(14) }]}>{getDisplayAccountName(activeAccount)}</Text>
               <Ionicons name="chevron-down-outline" size={14} color={c.textSecondary} />
             </TouchableOpacity>
@@ -212,8 +225,8 @@ export default function HomeScreen() {
 
         <TabBar
           tabs={[
-            { key: 'expense', label: labels.tab_expenses, accessibilityLabel: labels.a11y_show_expenses },
-            { key: 'income', label: labels.tab_income, accessibilityLabel: labels.a11y_show_income },
+            { key: TRANSACTION_TYPES.expense, label: labels.tab_expenses, accessibilityLabel: labels.a11y_show_expenses },
+            { key: TRANSACTION_TYPES.income, label: labels.tab_income, accessibilityLabel: labels.a11y_show_income },
           ]}
           active={activeType}
           onChange={changeType}
@@ -229,18 +242,17 @@ export default function HomeScreen() {
           visible={calendarVisible}
           onOpen={() => setCalendarVisible(true)}
           onClose={() => setCalendarVisible(false)}
-          firstDay={config.firstDayOfWeek}
         />
 
         <TouchableOpacity
           style={styles.chartContainer}
-          onPress={() => setChartType(chartType === 'donut' ? 'bar' : 'donut')}
+          onPress={() => setChartType(chartType === CHART_TYPES.donut ? CHART_TYPES.bar : CHART_TYPES.donut)}
           activeOpacity={0.7}
         >
-          {chartType === 'donut' ? (
-            <DonutChart data={activeCategories} total={activeTotal} currency={config.currency} separator={config.decimalSeparator} />
+          {chartType === CHART_TYPES.donut ? (
+            <DonutChart data={activeCategories} total={activeTotal} />
           ) : (
-            <BarChart data={activeCategories} total={activeTotal} currency={config.currency} separator={config.decimalSeparator} />
+            <BarChart data={activeCategories} total={activeTotal} />
           )}
         </TouchableOpacity>
 
@@ -253,9 +265,6 @@ export default function HomeScreen() {
 
         <CategoryList
           categories={activeCategories}
-          total={activeTotal}
-          currency={config.currency}
-          separator={config.decimalSeparator}
           onPress={handleCategoryPress}
           tagBreakdowns={tagBreakdowns}
           expandedCategoryIds={expandedCategoryIds}
@@ -282,6 +291,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   container: { flex: 1 },
+  menuButton: { marginLeft: 0, padding: 0 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -291,13 +301,6 @@ const styles = StyleSheet.create({
   },
   totalButton: { alignItems: 'center', flex: 1 },
   accountRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  accountIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   accountLabel: {},
   summaryRow: { flexDirection: 'row', gap: 12 },
   summaryItem: {},

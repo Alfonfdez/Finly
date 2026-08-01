@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, ComponentProps } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,8 +13,11 @@ import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
 import { isNative } from '../utils/platform';
 import { transactionRepository } from '../database';
 import { Transaction } from '../database/types';
-import { RootStackParamList } from '../constants/types';
+import { RootStackParamList, BADGE_SHAPES, TRANSACTION_TYPES } from '../constants/types';
+import { WHITE } from '../constants/themes';
 import ConfirmationModal from '../components/ConfirmationModal';
+import EmptyState from '../components/EmptyState';
+import IconBadge from '../components/IconBadge';
 
 type DetailsRouteProp = RouteProp<RootStackParamList, 'TransactionDetails'>;
 type DetailsNavProp = NativeStackNavigationProp<RootStackParamList, 'TransactionDetails'>;
@@ -42,9 +45,9 @@ export default function TransactionDetailsScreen() {
   useFocusEffect(useCallback(() => {
     let active = true;
     (async () => {
-      const data = await transactionRepository.list({});
+      const data = await transactionRepository.getById(transactionId);
       if (!active) return;
-      setTransaction(data.find(tx => tx.id === transactionId) ?? null);
+      setTransaction(data);
     })();
     return () => { active = false; };
   }, [transactionId]));
@@ -120,16 +123,14 @@ export default function TransactionDetailsScreen() {
   if (!transaction) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
-        <View style={[styles.content, { justifyContent: 'center', alignItems: 'center' }]}>
-          <Text style={{ color: c.textSecondary, fontSize: fs(16) }}>
-            {labels.transactions_empty}
-          </Text>
+        <View style={styles.content}>
+          <EmptyState message={labels.transactions_empty} />
         </View>
       </SafeAreaView>
     );
   }
 
-  const isExpense = transaction.type === 'expense';
+  const isExpense = transaction.type === TRANSACTION_TYPES.expense;
   const typeColor = isExpense ? c.red : c.green;
   const catName = category ? getDisplayCategoryName(category) : '';
 
@@ -146,9 +147,14 @@ export default function TransactionDetailsScreen() {
           <DataRow label={labels.details_account} c={c} fs={fs}>
             <View style={styles.iconRow}>
               {account && (
-                <View style={[styles.rowIcon, { backgroundColor: account.color + '30', borderRadius: config.accountIconShape === 'circle' ? 14 : 4 }]}>
-                  <Ionicons name={account.icon as ComponentProps<typeof Ionicons>['name']} size={18} color={account.color} />
-                </View>
+                <IconBadge
+                  icon={account.icon}
+                  color={account.color}
+                  shape={config.accountIconShape === BADGE_SHAPES.circle ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+                  size={28}
+                  iconSize={18}
+                  roundedRadius={4}
+                />
               )}
               <Text style={[styles.nameValue, { color: c.text, fontSize: fs(15) }]}>{account ? getDisplayAccountName(account) : ''}</Text>
             </View>
@@ -157,9 +163,14 @@ export default function TransactionDetailsScreen() {
           <DataRow label={labels.details_category} c={c} fs={fs}>
             <View style={styles.iconRow}>
               {category && (
-                <View style={[styles.rowIcon, { backgroundColor: category.color + '30', borderRadius: config.categoryIconShape === 'circle' ? 14 : 4 }]}>
-                  <Ionicons name={category.icon as ComponentProps<typeof Ionicons>['name']} size={18} color={category.color} />
-                </View>
+                <IconBadge
+                  icon={category.icon}
+                  color={category.color}
+                  shape={config.categoryIconShape === BADGE_SHAPES.circle ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+                  size={28}
+                  iconSize={18}
+                  roundedRadius={4}
+                />
               )}
               <Text style={[styles.nameValue, { color: c.text, fontSize: fs(15) }]}>{catName}</Text>
             </View>
@@ -254,7 +265,7 @@ export default function TransactionDetailsScreen() {
       <Modal visible={photoViewerVisible} transparent animationType="fade" onRequestClose={() => setPhotoViewerVisible(false)}>
         <View style={styles.viewerOverlay}>
           <TouchableOpacity style={styles.viewerClose} onPress={() => setPhotoViewerVisible(false)}>
-            <Ionicons name="close" size={28} color={'#FFFFFF'} />
+            <Ionicons name="close" size={28} color={WHITE} />
           </TouchableOpacity>
           {parsedPhotos.length > 0 && (
             <Image source={{ uri: parsedPhotos[selectedPhotoIndex] || parsedPhotos[0] }} resizeMode="contain" style={styles.viewerImage} />
@@ -303,12 +314,6 @@ const styles = StyleSheet.create({
   dataValue: { fontWeight: '600', flex: 2, textAlign: 'right' },
   nameValue: { fontWeight: '600' },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 2, justifyContent: 'flex-end' },
-  rowIcon: {
-    width: 28,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   actionSection: {
     flexDirection: 'row',
     gap: 12,

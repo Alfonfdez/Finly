@@ -2065,3 +2065,46 @@
 
 [2026-07-31] ~ | screens/TransactionDetailsScreen.tsx
 - Replaced the hand-rolled delete modal with the shared ConfirmationModal; removed the redundant mount useEffect (data is already reloaded by the useFocusEffect).
+
+[2026-08-01] ~ | Phase 5 Tier 1 cross-cutting cleanup
+- T1 dead code removal: deleted unused exports (LANGUAGES/isSpanish/isEnglish, getCategoryName, settings_text key, 19 *ScreenProps types), removed dead total prop from CategoryList and unused navigation prop from the 4 settings subscreens.
+
+[2026-08-01] ~ | components/, screens/
+- T2 typed icons: replaced all 'as any' / ComponentProps<Ionicons>['name'] casts with IconName across 17 screens and components.
+
+[2026-08-01] + | constants/types.ts, database/helpers.ts
+- T3 shared constants/helpers: added USER_ID, MAX_VISIBLE_CATEGORIES, DEBOUNCE_MS, MAX_PHOTOS in constants/types.ts and isTotalAccount + UNTAGGED_ID in database/helpers.ts; replaced all hardcoded user_id:1 literals, is_total checks, and local GRID_ROWS/DEBOUNCE_MS/MAX_PHOTOS declarations across screens and hooks.
+
+[2026-08-01] ~ | screens/, database/, context/
+- T4 bug fixes: AllTransactionsScreen custom-range end normalized to 23:59:59.999; getById added to native/web transaction repos and used by TransactionDetailsScreen; HomeScreen loadTagBreakdowns now Promise.all with cancellation flag and try/catch; checkNameDuplicate wrapped in try/finally in CreateTag/ModifyTag screens; prefill-clobber guards (userEditedRef) added to ModifyTag/ModifyCategory screens.
+
+[2026-08-01] + | components/EmptyState.tsx, components/DrawerMenuButton.tsx, components/IconBadge.tsx
+- T5 component consolidation: created EmptyState, DrawerMenuButton and IconBadge (with iconRadius helper); applied EmptyState to 10 sites, DrawerMenuButton to 5 sites, IconBadge to 16 sites; applied shared MODAL_*/BUTTON_BORDER_RADIUS constants from componentStyles.ts to 7 modals; extended ConfirmationModal with moveLabel/onMove and converted PhotoSection and ModifyCategoryScreen delete modals; memoized TransactionRow in TransactionGroup and added useCallback to CategoryList handlers.
+
+[2026-08-01] ~ | components/calendars/, components/charts/, components/
+- T6 prop drilling removal: DayPicker/WeekPicker/PeriodPicker/CalendarModal/CalendarPicker now read config.firstDayOfWeek internally (firstDay prop removed from all call sites); DonutChart/BarChart/CategoryList read config.currency/separator/textSize internally.
+
+[2026-08-01] ~ | utils/formatters.ts, components/calendars/
+- T7 calendar date-math centralization: exported weekEnd (sets 23:59:59.999) and dayOffset from formatters.ts; formatWeekRange accepts firstDay; exported MIN_DATE and shared container style from calendarStyles.ts; DayPicker/WeekPicker/MonthGrid/YearGrid/PeriodPicker/CalendarModal now share these, removing duplicated month/date constructions.
+
+[2026-08-01] ~ | utils/calculator.ts, database/webStorage.ts, screens/, context/AppContext.tsx, i18n/index.ts
+- T8 type-safety pass: removed all non-null assertions (pop()!, description!, selectedIcon!/selectedColor!, categoryId!/numericAmount!, activeAccount!, nameLookup!) via narrowed locals/guards; repo-wide 'as any' sweep clean.
+
+[2026-08-01] ~ | screens/settings/RegionalScreen.tsx
+- Renamed Spanish-named constants to English: PRIMER_DIA -> FIRST_DAY_OPTIONS, DIVAS -> CURRENCIES.
+
+[2026-08-01] ~ | constants/types.ts, components/, screens/
+- Replaced magic shape/chart strings with typed constants in constants/types.ts: BADGE_SHAPES + BadgeShape (circle/rounded), CONFIG_ICON_SHAPES + ConfigIconShape (square/circle), CHART_TYPES + ChartType (donut/bar); applied across IconBadge, IconGrid, config defaults (ConfigContext/configRepo/webStorage), AppearanceScreen and all IconBadge shape ternaries in 10 components/screens.
+
+[2026-08-01] ~ | constants/types.ts, utils/language.ts, context/ConfigContext.tsx, database/repositories/configRepo.ts, database/webStorage.ts, screens/, components/
+- Tier A domain constants: added TRANSACTION_TYPES + TransactionType, TYPE_FILTERS + TransactionTypeFilter, PERIODS + Period, THEMES + Theme, TEXT_SIZES + TextSize, SORT_BY + SortBy, SORT_DIRECTIONS + SortDirection and CALC_KEYS to constants/types.ts, plus LANGUAGES + Language in utils/language.ts; applied across ConfigContext, config defaults (configRepo/webStorage), CalculatorModal, SortToggle, useTransactionFilters, PeriodTabs, CalendarModal/CalendarPicker, formatters, HomeScreen, AppContext, AddTransaction/AllTransactions/Categories/CategoryFilterModal/CreateCategory/ModifyCategory/ModifyTransaction/TransactionDetails/Transactions screens and TransactionGroup; AppearanceScreen theme options renamed THEMES -> THEME_OPTIONS and RegionalScreen language options renamed LANGUAGES -> LANGUAGE_OPTIONS to avoid TDZ collisions.
+[2026-08-01] ~ | utils/color.ts, constants/themes.ts, components/componentStyles.ts, components/IconBadge.tsx, components/, screens/
+- Tier B color/alpha helpers: new utils/color.ts with withAlpha(color, percent); WHITE/BLACK exported from constants/themes.ts and PILL_RADIUS from componentStyles.ts; IconBadge backgroundAlpha prop is now a percent number; replaced all '+<hex>' alpha suffixes (CategoryGrid, CategoryFilterModal, IconGrid, ConfigContext scrollbars), backgroundAlpha string literals, 'round ? 999 : N' ternaries and '#FFFFFF'/'#000' color literals across 11 components/screens.
+[2026-08-01] ~ | constants/types.ts, screens/, components/, database/webStorage.ts, utils/amountInput.ts
+- Tier C limit constants: added MAX_CATEGORY_NAME_LENGTH/MAX_ACCOUNT_NAME_LENGTH (30), MAX_TAG_NAME_LENGTH (20), MAX_NOTE_LENGTH (200), MAX_COMMENT_LENGTH (4096), MAX_VISIBLE_TAGS (3), MAX_SUGGESTIONS (5) and DECIMAL_PLACES (2) to constants/types.ts; replaced local MAX_NAME_LENGTH/MAX_NOTE_LENGTH consts and literal 20/4096/3/5/2 across CreateAccount/ModifyAccount/CreateCategory/ModifyCategory/CreateTag/ModifyTag screens, TagSection, CommentInput, CategoryList, webStorage searchComments and amountInput decimals.
+[2026-08-01] ~ | utils/formatters.ts, screens/HomeScreen.tsx, screens/AllTransactionsScreen.tsx
+- Tier D date-time utils: added startOfDay/endOfDay to utils/formatters.ts; refactored weekStart/weekEnd/getPeriodRange/isFutureDate to use them and replaced the setHours(0,0,0,0)/setHours(23,59,59,999) duplicates in HomeScreen and AllTransactionsScreen custom-range handlers.
+[2026-08-01] + | constants/currencies.ts, utils/formatters.ts, context/ConfigContext.tsx, database/repositories/configRepo.ts, database/webStorage.ts, database/seedData.ts, screens/settings/RegionalScreen.tsx
+- Tier E currency symbols: created constants/currencies.ts with DEFAULT_CURRENCY ('€') and CURRENCY_OPTIONS ({ value, labelKey } for euro/dollar/pound/yen); replaced all '€' defaults across formatters, ConfigContext, configRepo, webStorage and seedData; RegionalScreen CURRENCIES now derive from CURRENCY_OPTIONS keeping the labels.currency_* mapping.
+[2026-08-01] ~ | constants/types.ts, context/ConfigContext.tsx, database/repositories/configRepo.ts, database/webStorage.ts, utils/formatters.ts, utils/amountInput.ts, components/calendars/, screens/settings/RegionalScreen.tsx
+- Tier F config domain constants: added FIRST_DAYS + FirstDay (monday/sunday) and DECIMAL_SEPARATORS + DecimalSeparator (comma/dot) to constants/types.ts; applied to Config.firstDayOfWeek/decimalSeparator types and all defaults, formatters params/defaults (weekStart/weekEnd/dayOffset/formatWeekRange/formatCurrency/formatSignedCurrency), amountInput formatAmountDisplay, WeekPicker sameWeek, DayPicker header compare and RegionalScreen separator/first-day options + FirstDay cast.

@@ -9,10 +9,7 @@ import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
-import { RootStackParamList } from '../constants/types';
-
-const USER_ID = 1;
-const MAX_NAME_LENGTH = 20;
+import { RootStackParamList, USER_ID, MAX_TAG_NAME_LENGTH } from '../constants/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateTag'>;
 
@@ -34,9 +31,12 @@ export default function CreateTagScreen() {
       return;
     }
     setCheckingName(true);
-    const exists = await tagRepository.existsByName(USER_ID, value.trim());
-    setNameError(exists ? labels.create_tag_error_duplicate : null);
-    setCheckingName(false);
+    try {
+      const exists = await tagRepository.existsByName(USER_ID, value.trim());
+      setNameError(exists ? labels.create_tag_error_duplicate : null);
+    } finally {
+      setCheckingName(false);
+    }
   }, [labels.create_tag_error_duplicate]);
 
   const debouncedCheck = useUniqueNameCheck(checkNameDuplicate);
@@ -70,11 +70,11 @@ export default function CreateTagScreen() {
           placeholder={labels.create_tag_name_placeholder}
           placeholderTextColor={c.textSecondary}
           autoFocus
-          maxLength={MAX_NAME_LENGTH}
+          maxLength={MAX_TAG_NAME_LENGTH}
           returnKeyType="done"
         />
         <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(12) }]}>
-          {name.length}/{MAX_NAME_LENGTH}
+          {name.length}/{MAX_TAG_NAME_LENGTH}
         </Text>
 
         {nameError ? (

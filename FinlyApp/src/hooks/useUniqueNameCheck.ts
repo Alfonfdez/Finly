@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback } from 'react';
+import { DEBOUNCE_MS } from '../constants/types';
 
-export function useUniqueNameCheck(check: (value: string) => void, debounceMs = 300) {
+export function useUniqueNameCheck(check: (value: string) => void, debounceMs = DEBOUNCE_MS) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {

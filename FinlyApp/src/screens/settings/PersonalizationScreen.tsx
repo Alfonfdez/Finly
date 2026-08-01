@@ -6,29 +6,24 @@ import { useFontSize } from '../../hooks/useFontSize';
 import { scaleFontSize } from '../../utils/formatters';
 import { t, getDisplayAccountName } from '../../i18n';
 import { isNative } from '../../utils/platform';
+import { isTotalAccount } from '../../database/helpers';
 import SelectorInline, { Option } from '../../components/SelectorInline';
 import { settingsStyles } from './settingsStyles';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList, Period } from '../../constants/types';
-
-type Props = {
-  navigation: NativeStackNavigationProp<RootStackParamList, 'SettingsPersonalization'>;
-};
+import type { Period } from '../../constants/types';
 
 function Checkbox({
   checked,
   onToggle,
   colors,
-  textSize,
   label,
 }: {
   checked: boolean;
   onToggle: () => void;
   colors: ReturnType<typeof useConfig>['activeColors'];
-  textSize: Config['textSize'];
   label: string;
 }) {
-  const fs = (s: number) => scaleFontSize(s, textSize);
+  const { config } = useConfig();
+  const fs = (s: number) => scaleFontSize(s, config.textSize);
   return (
     <TouchableOpacity style={styles.checkboxRow} onPress={onToggle}>
       <Ionicons
@@ -41,24 +36,24 @@ function Checkbox({
   );
 }
 
-export default function PersonalizationScreen({ navigation }: Props) {
+export default function PersonalizationScreen() {
   const { config, activeColors: c, updateConfig } = useConfig();
   const { accounts } = useApp();
   const fs = useFontSize();
   const labels = t();
 
-  const allAccounts = accounts.filter(a => a.is_total === 1).concat(
-    accounts.filter(a => a.is_total !== 1).sort((a, b) => a.name.localeCompare(b.name))
+  const allAccounts = accounts.filter(a => isTotalAccount(a)).concat(
+    accounts.filter(a => !isTotalAccount(a)).sort((a, b) => a.name.localeCompare(b.name))
   );
 
   const homeAccounts: Option<string>[] = [
     { label: labels.account_total, value: 'total' },
-    ...allAccounts.filter(a => a.is_total !== 1).map(a => ({ label: getDisplayAccountName(a), value: String(a.id) })),
+    ...allAccounts.filter(a => !isTotalAccount(a)).map(a => ({ label: getDisplayAccountName(a), value: String(a.id) })),
   ];
 
   const addAccounts: Option<string>[] = [
     { label: labels.settings_not_selected, value: 'null' },
-    ...allAccounts.filter(a => a.is_total !== 1).sort((a, b) => a.name.localeCompare(b.name)).map(a => ({ label: getDisplayAccountName(a), value: String(a.id) })),
+    ...allAccounts.filter(a => !isTotalAccount(a)).sort((a, b) => a.name.localeCompare(b.name)).map(a => ({ label: getDisplayAccountName(a), value: String(a.id) })),
   ];
 
   const PERIODS: Option<Period>[] = [
@@ -77,7 +72,6 @@ export default function PersonalizationScreen({ navigation }: Props) {
           options={homeAccounts}
           selected={config.homeDefaultAccountId === null ? 'total' : String(config.homeDefaultAccountId)}
           onSelect={(v) => updateConfig({ homeDefaultAccountId: v === 'total' ? null : Number(v) })}
-          textSize={config.textSize}
         />
       </View>
       <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
@@ -86,7 +80,6 @@ export default function PersonalizationScreen({ navigation }: Props) {
           options={PERIODS}
           selected={config.homeDefaultPeriod}
           onSelect={(v) => updateConfig({ homeDefaultPeriod: v as Config['homeDefaultPeriod'] })}
-          textSize={config.textSize}
         />
       </View>
 
@@ -97,7 +90,6 @@ export default function PersonalizationScreen({ navigation }: Props) {
           options={addAccounts}
           selected={config.addDefaultAccountId === null ? 'null' : String(config.addDefaultAccountId)}
           onSelect={(v) => updateConfig({ addDefaultAccountId: v === 'null' ? null : Number(v) })}
-          textSize={config.textSize}
         />
       </View>
       <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
@@ -106,14 +98,12 @@ export default function PersonalizationScreen({ navigation }: Props) {
           checked={config.addShowLabels}
           onToggle={() => updateConfig({ addShowLabels: !config.addShowLabels })}
           colors={c}
-          textSize={config.textSize}
           label={labels.settings_labels}
         />
         <Checkbox
           checked={config.addShowComments}
           onToggle={() => updateConfig({ addShowComments: !config.addShowComments })}
           colors={c}
-          textSize={config.textSize}
           label={labels.settings_comments}
         />
         {isNative && (
@@ -121,7 +111,6 @@ export default function PersonalizationScreen({ navigation }: Props) {
             checked={config.addShowPhoto}
             onToggle={() => updateConfig({ addShowPhoto: !config.addShowPhoto })}
             colors={c}
-            textSize={config.textSize}
             label={labels.settings_photo}
           />
         )}

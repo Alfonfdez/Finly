@@ -19,10 +19,11 @@ import CommentInput from '../components/CommentInput';
 import PhotoSection from '../components/PhotoSection';
 import CalendarModal from '../components/CalendarModal';
 import CalculatorModal from '../components/CalculatorModal';
-import { TransactionType, RootStackParamList, CATEGORY_USAGE_WINDOW_DAYS } from '../constants/types';
+import { PERIODS, TRANSACTION_TYPES, type TransactionType, type RootStackParamList, CATEGORY_USAGE_WINDOW_DAYS, USER_ID, MAX_VISIBLE_CATEGORIES } from '../constants/types';
 import { isSameDay, formatDateForDB } from '../utils/formatters';
 import { parseAmountInput, parseAmountValue } from '../utils/amountInput';
 import { transactionRepository, tagRepository } from '../database';
+import { isTotalAccount } from '../database/helpers';
 
 // Module-level pending category data (passed back from AddCategoryScreen)
 let pendingCategoryId: number | null = null;
@@ -45,14 +46,10 @@ export function consumePendingCategory(): { categoryId: number; type: Transactio
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'AddTransaction'>;
 
-const GRID_ROWS = 2;
-const GRID_COLS = 4;
-const MAX_VISIBLE_CATEGORIES = GRID_ROWS * GRID_COLS - 1;
-
 export default function AddTransactionScreen() {
   const { activeColors: c, config } = useConfig();
   const { activeType, activePeriod, customDate, selectedDate, accounts, categories, accountsWithBalance, activeAccount, tags, refresh, refreshTags } = useApp();
-  const selectableAccounts = useMemo(() => accountsWithBalance.filter(a => (a.is_total ?? 0) !== 1), [accountsWithBalance]);
+  const selectableAccounts = useMemo(() => accountsWithBalance.filter(a => !isTotalAccount(a)), [accountsWithBalance]);
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp>();
@@ -62,17 +59,17 @@ export default function AddTransactionScreen() {
   const [accountId, setAccountId] = useState(() => {
     // Respect addDefaultAccountId setting
     if (config.addDefaultAccountId !== null) {
-      const found = accountsWithBalance.find(a => a.id === config.addDefaultAccountId && (a.is_total ?? 0) !== 1);
+      const found = accountsWithBalance.find(a => a.id === config.addDefaultAccountId && !isTotalAccount(a));
       if (found) return found.id;
     }
     // Fallback: inherit from HomeScreen; if Total, use first non-Total
-    if (activeAccount && (activeAccount.is_total ?? 0) !== 1) return activeAccount.id;
-    return accounts.find(a => (a.is_total ?? 0) !== 1)?.id ?? 1;
+    if (activeAccount && !isTotalAccount(activeAccount)) return activeAccount.id;
+    return accounts.find(a => !isTotalAccount(a))?.id ?? 1;
   });
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [reorderedCategory, setReorderedCategory] = useState<number | null>(null);
   const initialDay = (() => {
-    if (activePeriod === 'custom') {
+    if (activePeriod === PERIODS.custom) {
       const isSingleDay = isSameDay(customDate.start, customDate.end);
       if (isSingleDay) return customDate.start;
     }
@@ -108,7 +105,7 @@ export default function AddTransactionScreen() {
     const loadUsage = async () => {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - CATEGORY_USAGE_WINDOW_DAYS);
-      const counts = await transactionRepository.getCategoryUsageCounts(1, type, formatDateForDB(startDate), accountId);
+      const counts = await transactionRepository.getCategoryUsageCounts(USER_ID, type, formatDateForDB(startDate), accountId);
       setCategoryUsage(new Map(counts.map(c => [c.id, c.count])));
     };
     loadUsage();
@@ -154,7 +151,7 @@ export default function AddTransactionScreen() {
   const handleCreateTag = async (name: string) => {
     const existing = tags.some(t => t.name.toLowerCase() === name.toLowerCase());
     if (existing) return false;
-    await tagRepository.create({ user_id: 1, name });
+    await tagRepository.create({ user_id: USER_ID, name });
     await refreshTags();
     return true;
   };
@@ -171,6 +168,7 @@ export default function AddTransactionScreen() {
 
   const handleSubmit = async () => {
     if (!canSubmit || submitting) return;
+    if (categoryId === null || numericAmount === null) return;
     setSubmitting(true);
 
     try {
@@ -178,9 +176,9 @@ export default function AddTransactionScreen() {
 
       await transactionRepository.createWithTags({
         account_id: accountId,
-        category_id: categoryId!,
+        category_id: categoryId,
         type,
-        amount: numericAmount!,
+        amount: numericAmount,
         description: comment || null,
         photo: photos.length > 0 ? JSON.stringify(photos) : null,
         date: dateStr,
@@ -225,8 +223,8 @@ export default function AddTransactionScreen() {
         <ScrollView ref={scrollRef} style={[styles.container, { backgroundColor: c.background }]} keyboardShouldPersistTaps="handled">
           <TabBar
             tabs={[
-              { key: 'expense', label: labels.tab_expenses },
-              { key: 'income', label: labels.tab_income },
+              { key: TRANSACTION_TYPES.expense, label: labels.tab_expenses },
+              { key: TRANSACTION_TYPES.income, label: labels.tab_income },
             ]}
             active={type}
             onChange={setType}
@@ -339,7 +337,6 @@ export default function AddTransactionScreen() {
         date={day}
         onSelectDate={handleSelectDate}
         onClose={() => setModalCalendarVisible(false)}
-        firstDay={config.firstDayOfWeek}
       />
 
       <CalculatorModal

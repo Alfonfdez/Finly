@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Period } from '../constants/types';
+import { PERIODS, type Period } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
@@ -15,11 +15,11 @@ export default function PeriodTabs({ active, onChange }: Props) {
   const labels = t();
 
   const periods: { key: Period; label: string }[] = [
-    { key: 'day', label: labels.period_day },
-    { key: 'week', label: labels.period_week },
-    { key: 'month', label: labels.period_month },
-    { key: 'year', label: labels.period_year },
-    { key: 'custom', label: labels.period_period },
+    { key: PERIODS.day, label: labels.period_day },
+    { key: PERIODS.week, label: labels.period_week },
+    { key: PERIODS.month, label: labels.period_month },
+    { key: PERIODS.year, label: labels.period_year },
+    { key: PERIODS.custom, label: labels.period_period },
   ];
 
   return (

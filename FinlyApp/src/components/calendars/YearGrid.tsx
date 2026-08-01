@@ -14,7 +14,7 @@ export default function YearGrid({ date, onSelect }: CalendarBaseProps) {
   const years = useMemo(() => Array.from({ length: 12 }, (_, i) => startYear + i), [startYear]);
 
   return (
-    <View style={styles.container}>
+    <View style={calendarStyles.container}>
       <View style={styles.header}>
         <NavArrows
           color={c.text}
@@ -49,6 +49,5 @@ export default function YearGrid({ date, onSelect }: CalendarBaseProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 8 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
 });

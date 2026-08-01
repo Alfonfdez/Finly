@@ -8,12 +8,10 @@ import { useFontSize } from '../hooks/useFontSize';
 interface Props {
   data: CategoryWithTotal[];
   total?: number;
-  currency?: string;
-  separator?: ',' | '.';
 }
 
-export default function BarChart({ data, total = 0, currency = '€', separator = ',' }: Props) {
-  const { activeColors: c } = useConfig();
+export default function BarChart({ data, total = 0 }: Props) {
+  const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const isEmpty = data.length === 0;
 
@@ -32,7 +30,7 @@ export default function BarChart({ data, total = 0, currency = '€', separator 
       </View>
 
       {isEmpty && (
-        <Text style={[styles.emptyText, { color: c.textSecondary, fontSize: fs(14) }]}>{formatCurrency(total, currency, separator)}</Text>
+        <Text style={[styles.emptyText, { color: c.textSecondary, fontSize: fs(14) }]}>{formatCurrency(total, config.currency, config.decimalSeparator)}</Text>
       )}
 
       <View style={styles.legend}>

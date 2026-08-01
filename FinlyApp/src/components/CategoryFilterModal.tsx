@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, ComponentProps } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,15 +6,19 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
 import SearchBar from './SearchBar';
-import { TransactionType } from '../constants/types';
+import EmptyState from './EmptyState';
+import type { IconName } from './IconGrid';
+import { TRANSACTION_TYPES, TYPE_FILTERS, CONFIG_ICON_SHAPES, type TransactionTypeFilter } from '../constants/types';
 import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
+import { withAlpha } from '../utils/color';
 import { Category } from '../database/types';
+import { PILL_RADIUS } from './componentStyles';
 
 interface Props {
   visible: boolean;
   categories: Category[];
   selectedIds: number[];
-  type: 'all' | TransactionType;
+  type: TransactionTypeFilter;
   onApply: (ids: number[]) => void;
   onClose: () => void;
 }
@@ -23,7 +27,7 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const round = config.categoryIconShape === 'circle';
+  const round = config.categoryIconShape === CONFIG_ICON_SHAPES.circle;
 
   const [localSelectedIds, setLocalSelectedIds] = useState<number[]>(selectedIds);
   const [searchText, setSearchText] = useState('');
@@ -37,7 +41,7 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
 
   const allCategoryIds = useMemo(() => categories.map(cat => cat.id), [categories]);
   const visibleCategoryIds = useMemo(() => {
-    if (type === 'all') return allCategoryIds;
+    if (type === TYPE_FILTERS.all) return allCategoryIds;
     return categories.filter(cat => cat.type === type).map(cat => cat.id);
   }, [categories, type, allCategoryIds]);
   const allSelected = visibleCategoryIds.length > 0 && visibleCategoryIds.every(id => localSelectedIds.includes(id));
@@ -61,7 +65,7 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
 
   const displayedCategories = useMemo(() => {
     let filtered = categories;
-    if (type !== 'all') {
+    if (type !== TYPE_FILTERS.all) {
       filtered = categories.filter(cat => cat.type === type);
     }
     if (searchText.trim()) {
@@ -75,11 +79,11 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
   }, [categories, type, searchText]);
 
   const sections = useMemo(() => {
-    if (type !== 'all') {
+    if (type !== TYPE_FILTERS.all) {
       return [{ label: null, data: sortCategoriesWithOthersLast(displayedCategories) }];
     }
-    const expenses = sortCategoriesWithOthersLast(displayedCategories.filter(c => c.type === 'expense'));
-    const income = sortCategoriesWithOthersLast(displayedCategories.filter(c => c.type === 'income'));
+    const expenses = sortCategoriesWithOthersLast(displayedCategories.filter(c => c.type === TRANSACTION_TYPES.expense));
+    const income = sortCategoriesWithOthersLast(displayedCategories.filter(c => c.type === TRANSACTION_TYPES.income));
     const result: { label: string | null; data: Category[] }[] = [];
     if (expenses.length > 0) result.push({ label: labels.filter_expenses, data: expenses });
     if (income.length > 0) result.push({ label: labels.filter_income, data: income });
@@ -88,8 +92,8 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
 
   const applyLabel = useMemo(() => {
     if (allSelected) {
-      if (type === 'expense') return labels.filter_apply_all_expense;
-      if (type === 'income') return labels.filter_apply_all_income;
+      if (type === TRANSACTION_TYPES.expense) return labels.filter_apply_all_expense;
+      if (type === TRANSACTION_TYPES.income) return labels.filter_apply_all_income;
       return labels.filter_apply_all;
     }
     return labels.filter_apply(localSelectedIds.length);
@@ -138,12 +142,7 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
           </TouchableOpacity>
 
           {sections.length === 0 || (sections.length === 1 && sections[0].data.length === 0) ? (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="search-outline" size={64} color={c.textSecondary} />
-              <Text style={[styles.emptyText, { color: c.textSecondary, fontSize: fs(16) }]}>
-                {labels.filter_no_results}
-              </Text>
-            </View>
+            <EmptyState icon="search-outline" message={labels.filter_no_results} />
           ) : (
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
               {sections.map((section, sIdx) => (
@@ -163,15 +162,15 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
                           style={[
                             styles.item,
                             {
-                              backgroundColor: isSelected ? cat.color + '33' : c.surface,
-                              borderRadius: round ? 999 : 12,
+                              backgroundColor: isSelected ? withAlpha(cat.color, 20) : c.surface,
+                              borderRadius: round ? PILL_RADIUS : 12,
                             },
                             isSelected && { borderWidth: 2, borderColor: cat.color },
                           ]}
                           onPress={() => handleToggleCategory(cat.id)}
                         >
-                          <View style={[styles.iconContainer, { backgroundColor: cat.color + '22', borderRadius: round ? 999 : 20 }]}>
-                            <Ionicons name={cat.icon as ComponentProps<typeof Ionicons>['name']} size={24} color={cat.color} />
+                          <View style={[styles.iconContainer, { backgroundColor: withAlpha(cat.color, 13), borderRadius: round ? PILL_RADIUS : 20 }]}>
+                            <Ionicons name={cat.icon as IconName} size={24} color={cat.color} />
                             {isSelected && (
                               <View style={[styles.checkmark, { backgroundColor: cat.color }]}>
                                 <Ionicons name="checkmark" size={12} color={c.background} />
@@ -281,15 +280,6 @@ const styles = StyleSheet.create({
   name: {
     fontWeight: '500',
     textAlign: 'center',
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-  },
-  emptyText: {
-    fontWeight: '500',
   },
   applyButton: {
     marginHorizontal: 16,

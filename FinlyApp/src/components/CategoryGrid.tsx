@@ -1,10 +1,12 @@
-import { ComponentProps } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { Category } from '../database/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
+import { BADGE_SHAPES, CONFIG_ICON_SHAPES } from '../constants/types';
+import { withAlpha } from '../utils/color';
+import IconBadge from './IconBadge';
+import { PILL_RADIUS } from './componentStyles';
 
 interface Props {
   categories: Category[];
@@ -20,7 +22,7 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const round = config.categoryIconShape === 'circle';
+  const round = config.categoryIconShape === CONFIG_ICON_SHAPES.circle;
 
   const renderCategory = (cat: Category) => {
     const isSelected = cat.id === selectedCategory;
@@ -31,15 +33,22 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
         key={cat.id}
         style={[
           styles.item,
-          { backgroundColor: isSelected ? cat.color + '33' : c.surface, borderRadius: round ? 999 : 12 },
+          { backgroundColor: isSelected ? withAlpha(cat.color, 20) : c.surface, borderRadius: round ? PILL_RADIUS : 12 },
           isSelected && { borderWidth: 2, borderColor: cat.color },
         ]}
         onPress={() => onSelect(cat.id)}
         accessibilityLabel={`${labels.a11y_category} ${categoryName}`}
       >
-        <View style={[styles.iconContainer, { backgroundColor: cat.color + '22', borderRadius: round ? 999 : 20 }]}>
-          <Ionicons name={cat.icon as ComponentProps<typeof Ionicons>['name']} size={24} color={cat.color} />
-        </View>
+        <IconBadge
+          icon={cat.icon}
+          color={cat.color}
+          shape={round ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+          size={40}
+          iconSize={24}
+          roundedRadius={20}
+          backgroundAlpha={13}
+          style={styles.iconContainer}
+        />
         <Text
           style={[styles.name, { color: c.text, fontSize: fs(11) }]}
           numberOfLines={1}
@@ -54,13 +63,20 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
 
   const renderAddMore = () => (
     <TouchableOpacity
-      style={[styles.item, styles.addMoreItem, { borderColor: c.border, borderRadius: round ? 999 : 12 }]}
+      style={[styles.item, styles.addMoreItem, { borderColor: c.border, borderRadius: round ? PILL_RADIUS : 12 }]}
       onPress={onAddMore}
       accessibilityLabel={label}
     >
-      <View style={[styles.iconContainer, { backgroundColor: c.textSecondary + '22', borderRadius: round ? 999 : 20 }]}>
-        <Ionicons name="add" size={24} color={c.textSecondary} />
-      </View>
+      <IconBadge
+        icon="add"
+        color={c.textSecondary}
+        shape={BADGE_SHAPES.rounded}
+        size={40}
+        iconSize={24}
+        roundedRadius={20}
+        backgroundAlpha={13}
+        style={styles.iconContainer}
+      />
       <Text
         style={[styles.name, { color: c.textSecondary, fontSize: fs(11) }]}
         numberOfLines={1}
@@ -112,11 +128,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: 4,
   },
   name: {

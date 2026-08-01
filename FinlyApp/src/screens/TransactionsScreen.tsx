@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, ComponentProps } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { View, Text, SectionList, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
@@ -8,7 +8,7 @@ import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
-import { RootStackParamList } from '../constants/types';
+import { RootStackParamList, TRANSACTION_TYPES } from '../constants/types';
 import { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatCurrency } from '../utils/formatters';
@@ -18,6 +18,8 @@ import AccountTrigger from '../components/AccountTrigger';
 import SortToggle from '../components/SortToggle';
 import TagFilterBar from '../components/TagFilterBar';
 import TransactionGroup from '../components/TransactionGroup';
+import EmptyState from '../components/EmptyState';
+import type { IconName } from '../components/IconGrid';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Transactions'>;
 type TransactionsRouteProp = RouteProp<RootStackParamList, 'Transactions'>;
@@ -69,7 +71,7 @@ export default function TransactionsScreen() {
 
   const categoryTotal = useMemo(() => {
     return filters.filtered
-      .reduce((sum, t) => sum + (t.type === 'expense' ? -t.amount : t.amount), 0);
+      .reduce((sum, t) => sum + (t.type === TRANSACTION_TYPES.expense ? -t.amount : t.amount), 0);
   }, [filters.filtered]);
 
   return (
@@ -78,7 +80,7 @@ export default function TransactionsScreen() {
         <View style={[styles.categoryInfo, { borderBottomColor: c.border }]}>
           <View style={styles.categoryRow}>
             <View style={[styles.categoryIcon, { backgroundColor: category.color + '30' }]}>
-              <Ionicons name={category.icon as ComponentProps<typeof Ionicons>['name']} size={22} color={category.color} />
+              <Ionicons name={category.icon as IconName} size={22} color={category.color} />
             </View>
             <Text style={[styles.categoryName, { color: c.text, fontSize: fs(16) }]} numberOfLines={1}>
               {getDisplayCategoryName(category)}
@@ -132,7 +134,7 @@ export default function TransactionsScreen() {
         )}
         renderItem={({ item }) => null}
         ListEmptyComponent={
-          <Text style={[styles.empty, { color: c.textSecondary, fontSize: fs(14) }]}>{labels.transactions_empty}</Text>
+          <EmptyState message={labels.transactions_empty} />
         }
         stickySectionHeadersEnabled={false}
       />
@@ -181,5 +183,4 @@ const styles = StyleSheet.create({
   },
   listContent: { paddingBottom: 80 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  empty: { textAlign: 'center', marginTop: 40 },
 });

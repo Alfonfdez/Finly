@@ -13,14 +13,8 @@ import { seedData } from '../../database/migrations/002_seed';
 import { seedConfig } from '../../database/migrations/003_config';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import { settingsStyles } from './settingsStyles';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../constants/types';
 
-type Props = {
-  navigation: NativeStackNavigationProp<RootStackParamList, 'SettingsData'>;
-};
-
-export default function DataScreen({ navigation }: Props) {
+export default function DataScreen() {
   const { activeColors: c } = useConfig();
   const { resetAll } = useApp();
   const fs = useFontSize();

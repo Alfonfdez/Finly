@@ -12,7 +12,9 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { evaluate } from '../utils/calculator';
 import { isWeb } from '../utils/platform';
-import { OVERLAY_BG } from './componentStyles';
+import { OVERLAY_BG, MODAL_BORDER_RADIUS, BUTTON_BORDER_RADIUS } from './componentStyles';
+import { CALC_KEYS } from '../constants/types';
+import { WHITE } from '../constants/themes';
 
 
 interface Props {
@@ -25,8 +27,8 @@ const BUTTONS = [
   ['7', '8', '9', '/'],
   ['4', '5', '6', '*'],
   ['1', '2', '3', '-'],
-  ['C', '0', '.', '+'],
-  ['⌫', '', '', '='],
+  [CALC_KEYS.clear, '0', '.', '+'],
+  ['⌫', '', '', CALC_KEYS.equals],
 ];
 
 const OP_KEYS = new Set(['+', '-', '*', '/']);
@@ -45,7 +47,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
   }, [expression]);
 
   const handleButton = useCallback((btn: string) => {
-    if (btn === 'C') {
+    if (btn === CALC_KEYS.clear) {
       setExpression('');
       setHasError(false);
       return;
@@ -55,7 +57,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
       setHasError(false);
       return;
     }
-    if (btn === '=') {
+    if (btn === CALC_KEYS.equals) {
       const { error } = evaluate(expression);
       setHasError(error);
       return;
@@ -88,14 +90,14 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
 
   const getButtonBg = (btn: string) => {
     if (OP_KEYS.has(btn)) return c.primary;
-    if (btn === '=') return c.green;
-    if (btn === 'C') return c.red;
+    if (btn === CALC_KEYS.equals) return c.green;
+    if (btn === CALC_KEYS.clear) return c.red;
     if (btn === '⌫') return c.border;
     return c.surface;
   };
 
   const getButtonFg = (btn: string) => {
-    if (OP_KEYS.has(btn) || btn === '=' || btn === 'C') return '#FFFFFF';
+    if (OP_KEYS.has(btn) || btn === CALC_KEYS.equals || btn === CALC_KEYS.clear) return WHITE;
     return c.text;
   };
 
@@ -104,7 +106,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
       return <View key={`${rowIdx}-${colIdx}`} style={isWeb ? webStyles.emptyCell : mobileStyles.emptyCell} />;
     }
 
-    const disabled = btn === '=' && (!expression || hasError);
+    const disabled = btn === CALC_KEYS.equals && (!expression || hasError);
     const label = btn === '*' ? '×' : btn === '/' ? '÷' : btn;
     const btnStyle = isWeb ? webStyles.button : mobileStyles.button;
 
@@ -194,7 +196,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
             style={[
               styles.actionText,
               {
-                color: resultDisplay !== null && !hasError ? '#FFFFFF' : c.textSecondary,
+                color: resultDisplay !== null && !hasError ? WHITE : c.textSecondary,
                 fontSize: fs(16),
               },
             ]}
@@ -308,7 +310,7 @@ const webStyles = StyleSheet.create({
   },
   modal: {
     width: 360,
-    borderRadius: 16,
+    borderRadius: MODAL_BORDER_RADIUS,
     overflow: 'hidden',
   },
   keyboard: {
@@ -323,7 +325,7 @@ const webStyles = StyleSheet.create({
   button: {
     width: 72,
     height: 52,
-    borderRadius: 10,
+    borderRadius: BUTTON_BORDER_RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 4,
