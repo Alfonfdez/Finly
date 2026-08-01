@@ -12,7 +12,8 @@ import { accountRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
 import { Account } from '../database/types';
 import { formatCurrency, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
-import { RootStackParamList, USER_ID, BADGE_SHAPES, CONFIG_ICON_SHAPES } from '../constants/types';
+import { badgeShapeFor } from '../utils/badgeShape';
+import { RootStackParamList, USER_ID } from '../constants/types';
 import EyeToggle from '../components/EyeToggle';
 import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
@@ -28,7 +29,6 @@ export default function AccountsScreen() {
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp>();
-  const round = config.accountIconShape === CONFIG_ICON_SHAPES.circle;
 
   const [accounts, setAccounts] = useState<AccountWithBalance[]>([]);
   const [total, setTotal] = useState(0);
@@ -44,13 +44,13 @@ export default function AccountsScreen() {
 
   const loadData = useCallback(async () => {
     const list = await accountRepository.list(USER_ID);
-    const withBalance = await Promise.all(
-      list.map(async (account) => {
-        if (isTotalAccount(account)) return { ...account, balance: 0 };
-        const balance = await accountRepository.getCurrentBalance(account.id);
-        return { ...account, balance };
-      })
+    const balanceById = new Map(
+      (await accountRepository.getBalances()).map(b => [b.account_id, b.balance])
     );
+    const withBalance = list.map((account) => {
+      if (isTotalAccount(account)) return { ...account, balance: 0 };
+      return { ...account, balance: balanceById.get(account.id) ?? 0 };
+    });
     const nonTotal = withBalance.filter(a => !isTotalAccount(a));
     const totalSum = nonTotal.reduce((sum, a) => sum + a.balance, 0);
     const result = withBalance.map(a => isTotalAccount(a) ? { ...a, balance: totalSum } : a);
@@ -84,7 +84,7 @@ export default function AccountsScreen() {
           <IconBadge
             icon={item.icon}
             color={item.color}
-            shape={round ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+            shape={badgeShapeFor(config, 'account')}
             size={44}
             iconSize={24}
             roundedRadius={12}

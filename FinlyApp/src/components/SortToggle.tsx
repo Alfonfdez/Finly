@@ -6,8 +6,6 @@ import { t } from '../i18n';
 import type { IconName } from './IconGrid';
 import { SORT_BY, SORT_DIRECTIONS, type SortBy, type SortDirection } from '../constants/types';
 
-export type { SortBy, SortDirection };
-
 interface Props {
   sortBy: SortBy;
   direction: SortDirection;

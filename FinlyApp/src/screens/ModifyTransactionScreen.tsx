@@ -48,7 +48,9 @@ export default function ModifyTransactionScreen() {
 
   const [type, setType] = useState<TransactionType>(transaction?.type ?? TRANSACTION_TYPES.expense);
   const [amountRaw, setAmountRaw] = useState('');
-  const [accountId, setAccountId] = useState(transaction?.account_id ?? 1);
+  const [accountId, setAccountId] = useState(
+    transaction?.account_id ?? accounts.find(a => !isTotalAccount(a))?.id ?? 1
+  );
   const [categoryId, setCategoryId] = useState<number | null>(transaction?.category_id ?? null);
   const [reorderedCategory, setReorderedCategory] = useState<number | null>(transaction?.category_id ?? null);
   const [day, setDay] = useState<Date>(transaction ? new Date(transaction.date) : new Date());
@@ -78,11 +80,14 @@ export default function ModifyTransactionScreen() {
 
   // Load existing tags for this transaction
   useEffect(() => {
-    if (transaction) {
-      transactionRepository.getTagsByTransactionId(transactionId).then(ids => {
-        setSelectedTags(ids);
-      });
-    }
+    if (!transaction) return;
+    let active = true;
+    transactionRepository.getTagsByTransactionId(transactionId).then(ids => {
+      if (active) setSelectedTags(ids);
+    });
+    return () => {
+      active = false;
+    };
   }, [transactionId, transaction]);
 
   // Handle category selected from AddCategoryScreen

@@ -1,6 +1,7 @@
 import { getDatabase } from '../database';
 import { User } from '../types';
 import { buildUpdateQuery } from '../helpers';
+import { dbTimestamp } from '../../utils/formatters';
 
 export const userRepo = {
   async create(data: Omit<User, 'id' | 'created_at'>): Promise<User> {
@@ -9,7 +10,7 @@ export const userRepo = {
       `INSERT INTO users (name, email, avatar, currency) VALUES (?, ?, ?, ?)`,
       data.name, data.email ?? null, data.avatar ?? null, data.currency
     );
-    return { ...data, id: result.lastInsertRowId, created_at: new Date().toISOString() };
+    return { ...data, id: result.lastInsertRowId, created_at: dbTimestamp() };
   },
 
   async getById(id: number): Promise<User | null> {

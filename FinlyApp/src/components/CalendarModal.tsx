@@ -7,6 +7,8 @@ import { PERIODS } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
+import type { Language } from '../i18n/en';
+import type { StringKeyOf } from '../constants/types';
 import DayPicker from './calendars/DayPicker';
 import WeekPicker from './calendars/WeekPicker';
 import MonthGrid from './calendars/MonthGrid';
@@ -26,7 +28,7 @@ interface Props {
   onClose: () => void;
 }
 
-const TITLE_KEYS: Record<Period, keyof ReturnType<typeof t>> = {
+const TITLE_KEYS: Record<Period, StringKeyOf<Language>> = {
   [PERIODS.day]: 'cal_select_day',
   [PERIODS.week]: 'cal_select_week',
   [PERIODS.month]: 'cal_select_month',
@@ -74,7 +76,7 @@ export default function CalendarModal({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={handleCancel}>
       <View style={styles.overlay}>
         <View style={[styles.modal, { backgroundColor: c.background }]}>
-          <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>{labels[TITLE_KEYS[period]] as string}</Text>
+          <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>{labels[TITLE_KEYS[period]]}</Text>
           {period !== PERIODS.custom && <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(13) }]}>{formatPeriodText(period, tempDate, labels.months, labels.months_short)}</Text>}
 
           {period === PERIODS.day && (

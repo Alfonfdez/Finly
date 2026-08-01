@@ -37,10 +37,6 @@ export function getMonthName(month: number): string {
   return t().months[month - 1] ?? '';
 }
 
-export function getShortMonthName(month: number): string {
-  return t().months_short[month - 1] ?? '';
-}
-
 export function startOfDay(date: Date): Date {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
@@ -106,6 +102,14 @@ export function getPeriodRange(period: Period, date: Date): { start: Date; end: 
   }
 }
 
+export function resolvePeriodRange(
+  period: Period,
+  date: Date,
+  custom: { start: Date; end: Date }
+): { start: Date; end: Date } {
+  return period === PERIODS.custom ? custom : getPeriodRange(period, date);
+}
+
 export function getDaysInMonth(year: number, month: number): number {
   return new Date(year, month, 0).getDate();
 }
@@ -136,6 +140,10 @@ export function formatDateForDB(date: Date): string {
   const min = String(date.getMinutes()).padStart(2, '0');
   const s = String(date.getSeconds()).padStart(2, '0');
   return `${y}-${m}-${d} ${h}:${min}:${s}`;
+}
+
+export function dbTimestamp(): string {
+  return formatDateForDB(new Date());
 }
 
 export function isFutureDate(date: Date): boolean {

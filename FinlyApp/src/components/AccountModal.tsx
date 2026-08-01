@@ -5,8 +5,8 @@ import { formatCurrency, HIDDEN_BALANCE } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayAccountName } from '../i18n';
-import { BADGE_SHAPES, CONFIG_ICON_SHAPES } from '../constants/types';
 import { WHITE } from '../constants/themes';
+import { badgeShapeFor } from '../utils/badgeShape';
 import EyeToggle from './EyeToggle';
 import { OVERLAY_BG, MODAL_MAX_WIDTH, MODAL_BORDER_RADIUS, MODAL_PADDING, BUTTON_BORDER_RADIUS } from './componentStyles';
 import IconBadge from './IconBadge';
@@ -27,7 +27,6 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
   const { config, activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const round = config.accountIconShape === CONFIG_ICON_SHAPES.circle;
   const [tempId, setTempId] = useState(selectedId);
   const [isRevealed, setIsRevealed] = useState(false);
 
@@ -64,7 +63,7 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
                   <IconBadge
                     icon={item.icon}
                     color={item.color}
-                    shape={round ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+                    shape={badgeShapeFor(config, 'account')}
                     size={36}
                     iconSize={20}
                     roundedRadius={8}

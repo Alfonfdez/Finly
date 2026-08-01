@@ -1,59 +1,22 @@
 import { getDatabase } from '../database';
 import { Config } from '../../context/ConfigContext';
-import { CONFIG_ICON_SHAPES, PERIODS, TEXT_SIZES, THEMES, DECIMAL_SEPARATORS, FIRST_DAYS, type DecimalSeparator } from '../../constants/types';
-import { LANGUAGES } from '../../utils/language';
-import { DEFAULT_CURRENCY } from '../../constants/currencies';
-
-const CONFIG_DEFAULTS: Config = {
-  theme: THEMES.dark,
-  firstDayOfWeek: FIRST_DAYS.monday,
-  currency: DEFAULT_CURRENCY,
-  decimalSeparator: DECIMAL_SEPARATORS.comma,
-  language: LANGUAGES.en,
-  textSize: TEXT_SIZES.medium,
-  categoryIconShape: CONFIG_ICON_SHAPES.square,
-  accountIconShape: CONFIG_ICON_SHAPES.square,
-  homeDefaultAccountId: null,
-  homeDefaultPeriod: PERIODS.month,
-  addDefaultAccountId: null,
-  addShowLabels: true,
-  addShowComments: true,
-  addShowPhoto: true,
-  hideBalances: false,
-};
-
-const DB_KEY_MAP: Record<string, keyof Config> = {
-  theme: 'theme',
-  first_day_of_week: 'firstDayOfWeek',
-  currency: 'currency',
-  decimal_separator: 'decimalSeparator',
-  language: 'language',
-  text_size: 'textSize',
-  category_icon_shape: 'categoryIconShape',
-  account_icon_shape: 'accountIconShape',
-  home_default_account_id: 'homeDefaultAccountId',
-  home_default_period: 'homeDefaultPeriod',
-  add_default_account_id: 'addDefaultAccountId',
-  add_show_labels: 'addShowLabels',
-  add_show_comments: 'addShowComments',
-  add_show_photo: 'addShowPhoto',
-  hide_balances: 'hideBalances',
-};
+import { FIRST_DAYS, type DecimalSeparator } from '../../constants/types';
+import { DEFAULT_CONFIG, toConfigRows } from '../configDefaults';
 
 function parseConfig(rows: { key: string; value: string }[]): Config {
   const map = Object.fromEntries(rows.map(r => [r.key, r.value]));
   return {
-    theme: (map.theme as Config['theme']) ?? CONFIG_DEFAULTS.theme,
+    theme: (map.theme as Config['theme']) ?? DEFAULT_CONFIG.theme,
     firstDayOfWeek: map.first_day_of_week === String(FIRST_DAYS.sunday) ? FIRST_DAYS.sunday : FIRST_DAYS.monday,
-    currency: map.currency ?? CONFIG_DEFAULTS.currency,
-    decimalSeparator: (map.decimal_separator as DecimalSeparator) ?? CONFIG_DEFAULTS.decimalSeparator,
-    language: (map.language as Config['language']) ?? CONFIG_DEFAULTS.language,
-    textSize: (map.text_size as Config['textSize']) ?? CONFIG_DEFAULTS.textSize,
-    categoryIconShape: (map.category_icon_shape as Config['categoryIconShape']) ?? CONFIG_DEFAULTS.categoryIconShape,
-    accountIconShape: (map.account_icon_shape as Config['accountIconShape']) ?? CONFIG_DEFAULTS.accountIconShape,
-    homeDefaultAccountId: map.home_default_account_id === 'null' ? null : map.home_default_account_id ? Number(map.home_default_account_id) : CONFIG_DEFAULTS.homeDefaultAccountId,
-    homeDefaultPeriod: (map.home_default_period as Config['homeDefaultPeriod']) ?? CONFIG_DEFAULTS.homeDefaultPeriod,
-    addDefaultAccountId: map.add_default_account_id === 'null' ? null : map.add_default_account_id ? Number(map.add_default_account_id) : CONFIG_DEFAULTS.addDefaultAccountId,
+    currency: map.currency ?? DEFAULT_CONFIG.currency,
+    decimalSeparator: (map.decimal_separator as DecimalSeparator) ?? DEFAULT_CONFIG.decimalSeparator,
+    language: (map.language as Config['language']) ?? DEFAULT_CONFIG.language,
+    textSize: (map.text_size as Config['textSize']) ?? DEFAULT_CONFIG.textSize,
+    categoryIconShape: (map.category_icon_shape as Config['categoryIconShape']) ?? DEFAULT_CONFIG.categoryIconShape,
+    accountIconShape: (map.account_icon_shape as Config['accountIconShape']) ?? DEFAULT_CONFIG.accountIconShape,
+    homeDefaultAccountId: map.home_default_account_id === 'null' ? null : map.home_default_account_id ? Number(map.home_default_account_id) : DEFAULT_CONFIG.homeDefaultAccountId,
+    homeDefaultPeriod: (map.home_default_period as Config['homeDefaultPeriod']) ?? DEFAULT_CONFIG.homeDefaultPeriod,
+    addDefaultAccountId: map.add_default_account_id === 'null' ? null : map.add_default_account_id ? Number(map.add_default_account_id) : DEFAULT_CONFIG.addDefaultAccountId,
     addShowLabels: map.add_show_labels === 'true',
     addShowComments: map.add_show_comments === 'true',
     addShowPhoto: map.add_show_photo === 'true',
@@ -65,23 +28,16 @@ export const configRepo = {
   async get(): Promise<Config> {
     const db = getDatabase();
     const rows = await db.getAllAsync<{ key: string; value: string }>('SELECT key, value FROM config');
-    return rows.length > 0 ? parseConfig(rows) : CONFIG_DEFAULTS;
+    return rows.length > 0 ? parseConfig(rows) : DEFAULT_CONFIG;
   },
 
   async save(partial: Partial<Config>): Promise<void> {
     const db = getDatabase();
-    const reverseMap: Record<string, string> = {};
-    for (const [dbKey, configKey] of Object.entries(DB_KEY_MAP)) {
-      reverseMap[configKey] = dbKey;
-    }
-    for (const [key, value] of Object.entries(partial)) {
-      if (value === undefined) continue;
-      const dbKey = reverseMap[key] ?? key;
-      const val = String(value);
+    for (const row of toConfigRows(partial)) {
       await db.runAsync(
         'INSERT INTO config (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
-        dbKey,
-        val
+        row.key,
+        row.value
       );
     }
   },

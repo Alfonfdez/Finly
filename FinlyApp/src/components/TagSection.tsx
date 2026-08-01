@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
@@ -25,6 +25,12 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   const filteredTags = tags.filter(tag =>
     tag.name.toLowerCase().includes(search.toLowerCase())

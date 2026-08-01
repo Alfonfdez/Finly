@@ -2,6 +2,7 @@ import { en, Language } from './en';
 import { es } from './es';
 import { ca } from './ca';
 import type { Language as LanguageType } from '../utils/language';
+import type { StringKeyOf } from '../constants/types';
 
 const languages: Record<string, Language> = { en, es, ca };
 
@@ -16,7 +17,7 @@ export function t(): Language {
 }
 
 // Map category IDs to i18n keys for default categories
-const CATEGORY_I18N_KEYS: Record<number, keyof Language> = {
+const CATEGORY_I18N_KEYS: Record<number, StringKeyOf<Language>> = {
   1: 'cat_salary',
   2: 'cat_freelance',
   3: 'cat_groceries',
@@ -51,29 +52,29 @@ const CATEGORY_I18N_KEYS: Record<number, keyof Language> = {
 };
 
 // Map account IDs to i18n keys for default accounts
-const ACCOUNT_I18N_KEYS: Record<number, keyof Language> = {
+const ACCOUNT_I18N_KEYS: Record<number, StringKeyOf<Language>> = {
   1: 'account_my_wallet',
   2: 'account_total',
 };
 
 // Map account IDs to i18n keys for default account descriptions
-const ACCOUNT_DESCRIPTION_I18N_KEYS: Record<number, keyof Language> = {
+const ACCOUNT_DESCRIPTION_I18N_KEYS: Record<number, StringKeyOf<Language>> = {
   1: 'account_my_wallet_description',
   2: 'account_total_description',
 };
 
-function createDefaultResolver(keysMap: Record<number, keyof Language>) {
+function createDefaultResolver(keysMap: Record<number, StringKeyOf<Language>>) {
   let nameLookup: Map<string, number> | null = null;
   let lookupLanguage: Language | null = null;
 
   function getName(id: number): string {
     const key = keysMap[id];
-    return key ? (currentLanguage[key] as string) : '';
+    return key ? currentLanguage[key] : '';
   }
 
   function getDefaultEnglishName(id: number): string | null {
     const key = keysMap[id];
-    return key && en[key] ? (en[key] as string) : null;
+    return key && en[key] ? en[key] : null;
   }
 
   function getDisplayName(entity: { id: number; name: string }): string {
@@ -88,7 +89,7 @@ function createDefaultResolver(keysMap: Record<number, keyof Language>) {
     if (lookupLanguage !== currentLanguage) {
       nameLookup = new Map();
       for (const [id, key] of Object.entries(keysMap)) {
-        const entry = (currentLanguage[key] as string).toLowerCase();
+        const entry = currentLanguage[key].toLowerCase();
         if (!nameLookup.has(entry)) {
           nameLookup.set(entry, Number(id));
         }

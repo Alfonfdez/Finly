@@ -14,7 +14,8 @@ import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
 import { t, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdByName } from '../i18n';
 import { isAndroid } from '../utils/platform';
 import { categoryRepository, transactionRepository } from '../database';
-import { RootStackParamList, BADGE_SHAPES, CONFIG_ICON_SHAPES, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH } from '../constants/types';
+import { RootStackParamList, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH } from '../constants/types';
+import { badgeShapeFor } from '../utils/badgeShape';
 import { WHITE } from '../constants/themes';
 import IconGrid, { CATEGORY_ICONS } from '../components/IconGrid';
 import ColorGrid, { QUICK_COLORS } from '../components/ColorGrid';
@@ -103,7 +104,6 @@ export default function ModifyCategoryScreen() {
 
   const validationError = name.trim().length === 0 ? labels.create_cat_error_name_empty : nameError;
   const canSave = name.trim().length > 0 && !nameError && !checkingName;
-  const round = config.categoryIconShape === CONFIG_ICON_SHAPES.circle;
 
   const sameTypeCategories = useMemo(() => {
     if (!category) return [];
@@ -205,7 +205,7 @@ export default function ModifyCategoryScreen() {
             <IconBadge
               icon={selectedIcon || category.icon}
               color={selectedColor || category.color}
-                        shape={round ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+                        shape={badgeShapeFor(config, 'category')}
               size={48}
               iconSize={28}
               roundedRadius={12}
@@ -346,7 +346,7 @@ export default function ModifyCategoryScreen() {
                       <IconBadge
                         icon={cat.icon}
                         color={cat.color}
-              shape={round ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+              shape={badgeShapeFor(config, 'category')}
                         size={36}
                         iconSize={20}
                         roundedRadius={8}

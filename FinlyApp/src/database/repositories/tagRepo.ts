@@ -1,6 +1,7 @@
 import { getDatabase } from '../database';
 import { Tag } from '../types';
 import { buildUpdateQuery } from '../helpers';
+import { dbTimestamp } from '../../utils/formatters';
 
 export const tagRepo = {
   async list(userId: number): Promise<Tag[]> {
@@ -17,7 +18,7 @@ export const tagRepo = {
       `INSERT INTO tags (user_id, name) VALUES (?, ?)`,
       data.user_id, data.name
     );
-    return { ...data, id: result.lastInsertRowId, created_at: new Date().toISOString() };
+    return { ...data, id: result.lastInsertRowId, created_at: dbTimestamp() };
   },
 
   async update(id: number, data: Partial<Omit<Tag, 'id' | 'created_at'>>): Promise<void> {

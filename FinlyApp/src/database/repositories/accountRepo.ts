@@ -1,6 +1,7 @@
 import { getDatabase } from '../database';
 import { Account } from '../types';
 import { buildUpdateQuery } from '../helpers';
+import { dbTimestamp } from '../../utils/formatters';
 
 export const accountRepo = {
   async list(userId: number): Promise<Account[]> {
@@ -17,7 +18,7 @@ export const accountRepo = {
       `INSERT INTO accounts (user_id, name, initial_balance, icon, color, description) VALUES (?, ?, ?, ?, ?, ?)`,
       data.user_id, data.name, data.initial_balance, data.icon, data.color, data.description ?? ''
     );
-    return { ...data, id: result.lastInsertRowId, created_at: new Date().toISOString() };
+    return { ...data, id: result.lastInsertRowId, created_at: dbTimestamp() };
   },
 
   async getById(id: number): Promise<Account | null> {
@@ -42,18 +43,19 @@ export const accountRepo = {
     await db.runAsync('DELETE FROM accounts');
   },
 
-  async getCurrentBalance(id: number): Promise<number> {
+  async getBalances(): Promise<{ account_id: number; balance: number }[]> {
     const db = getDatabase();
-    const result = await db.getFirstAsync<{ balance: number }>(
-      `SELECT a.initial_balance + COALESCE(
-        (SELECT SUM(t.amount) FROM transactions t WHERE t.account_id = a.id AND t.type = 'income'), 0
-      ) - COALESCE(
-        (SELECT SUM(t.amount) FROM transactions t WHERE t.account_id = a.id AND t.type = 'expense'), 0
-      ) AS balance
-      FROM accounts a WHERE a.id = ?`,
-      id
+    return await db.getAllAsync<{ account_id: number; balance: number }>(
+      `SELECT a.id AS account_id,
+              a.initial_balance + COALESCE(SUM(
+                CASE WHEN t.type = 'income' THEN t.amount ELSE -t.amount END
+              ), 0) AS balance
+       FROM accounts a
+       LEFT JOIN transactions t ON t.account_id = a.id
+       WHERE a.is_total = 0
+       GROUP BY a.id
+       ORDER BY a.id`
     );
-    return result?.balance ?? 0;
   },
 
   async existsByName(name: string, excludeId?: number): Promise<boolean> {

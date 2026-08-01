@@ -88,7 +88,7 @@ function formatDateHeader(dateStr: string): string {
   return `${day} ${month} ${year}`;
 }
 
-export default function TransactionGroup({ date, transactions, categories, tagsByTransaction, onTransactionPress }: Props) {
+export default memo(function TransactionGroup({ date, transactions, categories, tagsByTransaction, onTransactionPress }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
 
@@ -110,7 +110,7 @@ export default function TransactionGroup({ date, transactions, categories, tagsB
       ))}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   group: { marginBottom: 8 },
