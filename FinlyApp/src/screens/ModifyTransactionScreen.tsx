@@ -19,19 +19,17 @@ import CommentInput from '../components/CommentInput';
 import PhotoSection from '../components/PhotoSection';
 import CalendarModal from '../components/CalendarModal';
 import CalculatorModal from '../components/CalculatorModal';
-import { TransactionType, RootStackParamList } from '../constants/types';
+import { TRANSACTION_TYPES, type TransactionType, type RootStackParamList, USER_ID, MAX_VISIBLE_CATEGORIES } from '../constants/types';
 import { parseAmountInput, parseAmountValue } from '../utils/amountInput';
 import { formatDateForDB } from '../utils/formatters';
 import { parsePhotos } from '../utils/photoUtils';
 import { transactionRepository, tagRepository } from '../database';
+import { isTotalAccount } from '../database/helpers';
 import { consumePendingCategory } from './AddTransactionScreen';
+import EmptyState from '../components/EmptyState';
 
 type ModifyRouteProp = RouteProp<RootStackParamList, 'ModifyTransaction'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ModifyTransaction'>;
-
-const GRID_ROWS = 2;
-const GRID_COLS = 4;
-const MAX_VISIBLE_CATEGORIES = GRID_ROWS * GRID_COLS - 1;
 
 export default function ModifyTransactionScreen() {
   const navigation = useNavigation<NavigationProp>();
@@ -39,7 +37,7 @@ export default function ModifyTransactionScreen() {
   const { transactionId } = route.params;
   const { activeColors: c, config } = useConfig();
   const { transactions, accounts, categories, accountsWithBalance, tags, refresh, refreshTags } = useApp();
-  const selectableAccounts = useMemo(() => accountsWithBalance.filter(a => (a.is_total ?? 0) !== 1), [accountsWithBalance]);
+  const selectableAccounts = useMemo(() => accountsWithBalance.filter(a => !isTotalAccount(a)), [accountsWithBalance]);
   const fs = useFontSize();
   const labels = t();
 
@@ -48,7 +46,7 @@ export default function ModifyTransactionScreen() {
     [transactions, transactionId]
   );
 
-  const [type, setType] = useState<TransactionType>(transaction?.type ?? 'expense');
+  const [type, setType] = useState<TransactionType>(transaction?.type ?? TRANSACTION_TYPES.expense);
   const [amountRaw, setAmountRaw] = useState('');
   const [accountId, setAccountId] = useState(transaction?.account_id ?? 1);
   const [categoryId, setCategoryId] = useState<number | null>(transaction?.category_id ?? null);
@@ -125,7 +123,7 @@ export default function ModifyTransactionScreen() {
   const handleCreateTag = async (name: string) => {
     const existing = tags.some(t => t.name.toLowerCase() === name.toLowerCase());
     if (existing) return false;
-    await tagRepository.create({ user_id: 1, name });
+    await tagRepository.create({ user_id: USER_ID, name });
     await refreshTags();
     return true;
   };
@@ -142,15 +140,16 @@ export default function ModifyTransactionScreen() {
 
   const handleSubmit = async () => {
     if (!canSubmit || submitting || !transaction) return;
+    if (categoryId === null || numericAmount === null) return;
     setSubmitting(true);
     try {
       const dateStr = formatDateForDB(day);
 
       await transactionRepository.updateWithTags(transactionId, {
         account_id: accountId,
-        category_id: categoryId!,
+        category_id: categoryId,
         type,
-        amount: numericAmount!,
+        amount: numericAmount,
         description: comment || null,
         photo: photos.length > 0 ? JSON.stringify(photos) : null,
         date: dateStr,
@@ -184,11 +183,7 @@ export default function ModifyTransactionScreen() {
   if (!transaction) {
     return (
       <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: c.textSecondary, fontSize: fs(16) }}>
-            {labels.transactions_empty}
-          </Text>
-        </View>
+        <EmptyState message={labels.transactions_empty} />
       </SafeAreaView>
     );
   }
@@ -198,8 +193,8 @@ export default function ModifyTransactionScreen() {
       <ScrollView ref={scrollRef} style={[styles.container, { backgroundColor: c.background }]} keyboardShouldPersistTaps="handled">
         <TabBar
           tabs={[
-            { key: 'expense', label: labels.tab_expenses },
-            { key: 'income', label: labels.tab_income },
+            { key: TRANSACTION_TYPES.expense, label: labels.tab_expenses },
+            { key: TRANSACTION_TYPES.income, label: labels.tab_income },
           ]}
           active={type}
           onChange={setType}
@@ -312,7 +307,6 @@ export default function ModifyTransactionScreen() {
         date={day}
         onSelectDate={handleSelectDate}
         onClose={() => setModalCalendarVisible(false)}
-        firstDay={config.firstDayOfWeek}
       />
 
       <CalculatorModal

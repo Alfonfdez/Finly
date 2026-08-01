@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,10 +10,8 @@ import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
-import { RootStackParamList } from '../constants/types';
+import { RootStackParamList, USER_ID, MAX_TAG_NAME_LENGTH } from '../constants/types';
 import ConfirmationModal from '../components/ConfirmationModal';
-
-const MAX_NAME_LENGTH = 20;
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ModifyTag'>;
 type ModifyTagRouteProp = RouteProp<RootStackParamList, 'ModifyTag'>;
@@ -36,9 +34,10 @@ export default function ModifyTagScreen() {
   const [nameError, setNameError] = useState<string | null>(null);
   const [checkingName, setCheckingName] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const userEditedRef = useRef(false);
 
   useEffect(() => {
-    if (tag) {
+    if (tag && !userEditedRef.current) {
       setName(tag.name);
       setNameError(null);
     }
@@ -51,14 +50,18 @@ export default function ModifyTagScreen() {
       return;
     }
     setCheckingName(true);
-    const exists = await tagRepository.existsByName(1, value.trim(), tagId);
-    setNameError(exists ? labels.create_tag_error_duplicate : null);
-    setCheckingName(false);
+    try {
+      const exists = await tagRepository.existsByName(USER_ID, value.trim(), tagId);
+      setNameError(exists ? labels.create_tag_error_duplicate : null);
+    } finally {
+      setCheckingName(false);
+    }
   }, [labels.create_tag_error_duplicate, tagId]);
 
   const debouncedCheck = useUniqueNameCheck(checkNameDuplicate);
 
   const handleNameChange = (text: string) => {
+    userEditedRef.current = true;
     setName(text);
     setNameError(null);
     debouncedCheck(text);
@@ -92,11 +95,11 @@ export default function ModifyTagScreen() {
           onChangeText={handleNameChange}
           placeholder={labels.create_tag_name_placeholder}
           placeholderTextColor={c.textSecondary}
-          maxLength={MAX_NAME_LENGTH}
+          maxLength={MAX_TAG_NAME_LENGTH}
           returnKeyType="done"
         />
         <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(12) }]}>
-          {name.length}/{MAX_NAME_LENGTH}
+          {name.length}/{MAX_TAG_NAME_LENGTH}
         </Text>
 
         {nameError ? (

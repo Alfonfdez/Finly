@@ -2,6 +2,9 @@ import { ComponentProps, useState } from 'react';
 import { View, TouchableOpacity, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
+import { CONFIG_ICON_SHAPES, type ConfigIconShape } from '../constants/types';
+import { withAlpha } from '../utils/color';
+import { PILL_RADIUS } from './componentStyles';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -25,14 +28,14 @@ interface Props {
   icons: readonly IconName[];
   selectedIcon: string | null;
   selectedColor?: string | null;
-  shape: 'circle' | 'square';
+  shape: ConfigIconShape;
   onSelect: (icon: string) => void;
 }
 
 export default function IconGrid({ icons, selectedIcon, selectedColor = null, shape, onSelect }: Props) {
   const { activeColors: c } = useConfig();
   const [cellSize, setCellSize] = useState(0);
-  const round = shape === 'circle';
+  const round = shape === CONFIG_ICON_SHAPES.circle;
 
   const onGridLayout = (e: LayoutChangeEvent) => {
     const gridWidth = e.nativeEvent.layout.width;
@@ -44,14 +47,14 @@ export default function IconGrid({ icons, selectedIcon, selectedColor = null, sh
       {cellSize > 0 && icons.map((icon) => {
         const isSelected = selectedIcon === icon;
         const iconColor = isSelected && selectedColor ? selectedColor : (isSelected ? c.primary : c.textSecondary);
-        const bgColor = isSelected && selectedColor ? selectedColor + '33' : (isSelected ? c.primary + '33' : c.surface);
+        const bgColor = isSelected && selectedColor ? withAlpha(selectedColor, 20) : (isSelected ? withAlpha(c.primary, 20) : c.surface);
         const borderColor = isSelected ? (selectedColor || c.primary) : 'transparent';
         return (
           <TouchableOpacity
             key={icon}
             style={[
               styles.item,
-              { width: cellSize, height: cellSize, borderRadius: round ? 999 : 12 },
+              { width: cellSize, height: cellSize, borderRadius: round ? PILL_RADIUS : 12 },
               { backgroundColor: bgColor },
               isSelected && { borderWidth: 2, borderColor },
             ]}

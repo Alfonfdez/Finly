@@ -8,12 +8,10 @@ import { useFontSize } from '../hooks/useFontSize';
 interface Props {
   data: CategoryWithTotal[];
   total: number;
-  currency?: string;
-  separator?: ',' | '.';
 }
 
-export default function DonutChart({ data, total, currency = '€', separator = ',' }: Props) {
-  const { activeColors: c } = useConfig();
+export default function DonutChart({ data, total }: Props) {
+  const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const radius = 60;
   const circumference = 2 * Math.PI * radius;
@@ -47,7 +45,7 @@ export default function DonutChart({ data, total, currency = '€', separator = 
         </G>
       </Svg>
       <View style={styles.totalContainer}>
-        <Text style={[styles.total, { color: c.text, fontSize: fs(18) }]}>{formatCurrency(total, currency, separator)}</Text>
+        <Text style={[styles.total, { color: c.text, fontSize: fs(18) }]}>{formatCurrency(total, config.currency, config.decimalSeparator)}</Text>
       </View>
     </View>
   );

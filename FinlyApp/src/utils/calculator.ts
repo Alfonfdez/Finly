@@ -41,9 +41,10 @@ function evalTokens(tokens: (number | string)[]): number {
   const ops: string[] = [];
 
   const calcTop = () => {
-    const b = nums.pop()!;
-    const a = nums.pop()!;
-    const op = ops.pop()!;
+    const b = nums.pop();
+    const a = nums.pop();
+    const op = ops.pop();
+    if (a === undefined || b === undefined || op === undefined) return;
     nums.push(applyOp(a, b, op));
   };
 

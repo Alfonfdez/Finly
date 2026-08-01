@@ -1,11 +1,11 @@
-import { Config } from '../context/ConfigContext';
 import { t } from '../i18n';
-import { Period } from '../constants/types';
-import type { Language } from './language';
+import { PERIODS, TEXT_SIZES, DECIMAL_SEPARATORS, FIRST_DAYS, type DecimalSeparator, type FirstDay, type Period, type TextSize } from '../constants/types';
+import { LANGUAGES, type Language } from './language';
+import { DEFAULT_CURRENCY } from '../constants/currencies';
 
 export const HIDDEN_BALANCE = '•••••';
 
-export function formatCurrency(amount: number, currency = '€', separator: ',' | '.' = ','): string {
+export function formatCurrency(amount: number, currency = DEFAULT_CURRENCY, separator: DecimalSeparator = DECIMAL_SEPARATORS.comma): string {
   const sign = amount < 0 ? '-' : '';
   const abs = Math.round(Math.abs(amount) * 100) / 100;
   const integer = Math.floor(abs);
@@ -21,7 +21,7 @@ export function formatCurrency(amount: number, currency = '€', separator: ',' 
   return `${sign}${integerFmt}${decSep}${decStr} ${currency}`;
 }
 
-export function formatSignedCurrency(amount: number, currency = '€', separator: ',' | '.' = ','): string {
+export function formatSignedCurrency(amount: number, currency = DEFAULT_CURRENCY, separator: DecimalSeparator = DECIMAL_SEPARATORS.comma): string {
   const sign = amount >= 0 ? '+' : '';
   return `${sign}${formatCurrency(amount, currency, separator)}`;
 }
@@ -41,50 +41,66 @@ export function getShortMonthName(month: number): string {
   return t().months_short[month - 1] ?? '';
 }
 
-export function weekStart(date: Date, firstDay: 0 | 1 = 1): Date {
+export function startOfDay(date: Date): Date {
   const d = new Date(date);
-  const day = d.getDay();
-  const diff = (day < firstDay ? 7 : 0) + day - firstDay;
-  d.setDate(d.getDate() - diff);
   d.setHours(0, 0, 0, 0);
   return d;
 }
 
-export function weekEnd(date: Date, firstDay: 0 | 1 = 1): Date {
+export function endOfDay(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
+
+export function weekStart(date: Date, firstDay: FirstDay = FIRST_DAYS.monday): Date {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = (day < firstDay ? 7 : 0) + day - firstDay;
+  d.setDate(d.getDate() - diff);
+  return startOfDay(d);
+}
+
+export function weekEnd(date: Date, firstDay: FirstDay = FIRST_DAYS.monday): Date {
   const start = weekStart(date, firstDay);
   const end = new Date(start);
   end.setDate(end.getDate() + 6);
-  end.setHours(23, 59, 59, 999);
-  return end;
+  return endOfDay(end);
+}
+
+export function dayOffset(dayDate: Date, firstDay: FirstDay): number {
+  const weekDay = dayDate.getDay();
+  if (firstDay === FIRST_DAYS.monday) {
+    return weekDay === 0 ? 6 : weekDay - 1;
+  }
+  return weekDay;
 }
 
 export function getPeriodRange(period: Period, date: Date): { start: Date; end: Date } {
   switch (period) {
-    case 'day': {
+    case PERIODS.day: {
       const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      const end = new Date(start);
-      end.setHours(23, 59, 59, 999);
+      const end = endOfDay(start);
       return { start, end };
     }
-    case 'week': {
+    case PERIODS.week: {
       const start = weekStart(date);
       const end = weekEnd(date);
       return { start, end };
     }
-    case 'month': {
+    case PERIODS.month: {
       const start = new Date(date.getFullYear(), date.getMonth(), 1);
-      const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+      const end = endOfDay(new Date(date.getFullYear(), date.getMonth() + 1, 0));
       return { start, end };
     }
-    case 'year': {
+    case PERIODS.year: {
       const start = new Date(date.getFullYear(), 0, 1);
-      const end = new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999);
+      const end = endOfDay(new Date(date.getFullYear(), 11, 31));
       return { start, end };
     }
     default: {
       const start = new Date(date.getFullYear(), date.getMonth(), 1);
-      const end = new Date(date);
-      end.setHours(23, 59, 59, 999);
+      const end = endOfDay(new Date(date));
       return { start, end };
     }
   }
@@ -106,7 +122,7 @@ export function formatDateLong(date: Date, language: Language): string {
   const year = date.getFullYear();
   const monthName = getMonthName(month);
 
-  if (language === 'en') {
+  if (language === LANGUAGES.en) {
     return `${monthName} ${day}, ${year}`;
   }
   return `${day} de ${monthName.toLowerCase()} de ${year}`;
@@ -123,24 +139,23 @@ export function formatDateForDB(date: Date): string {
 }
 
 export function isFutureDate(date: Date): boolean {
-  const today = new Date();
-  today.setHours(23, 59, 59, 999);
+  const today = endOfDay(new Date());
   return date.getTime() > today.getTime();
 }
 
-const FACTORS: Record<Config['textSize'], number> = {
-  'small': 0.85,
-  'medium': 1.0,
-  'large': 1.15,
+const FACTORS: Record<TextSize, number> = {
+  [TEXT_SIZES.small]: 0.85,
+  [TEXT_SIZES.medium]: 1.0,
+  [TEXT_SIZES.large]: 1.15,
 };
 
-export function scaleFontSize(size: number, textSize: Config['textSize']): number {
+export function scaleFontSize(size: number, textSize: TextSize): number {
   return Math.round(size * FACTORS[textSize]);
 }
 
-export function formatWeekRange(date: Date, shortMonths: string[], includeYear = false): string {
-  const start = weekStart(date);
-  const end = weekEnd(date);
+export function formatWeekRange(date: Date, shortMonths: string[], includeYear = false, firstDay: FirstDay = FIRST_DAYS.monday): string {
+  const start = weekStart(date, firstDay);
+  const end = weekEnd(date, firstDay);
   const startDay = start.getDate();
   const startMonth = shortMonths[start.getMonth()];
   const endDay = end.getDate();
@@ -152,10 +167,10 @@ export function formatWeekRange(date: Date, shortMonths: string[], includeYear =
 export function formatPeriodText(period: string, date: Date, months: string[], shortMonths: string[]): string {
   const m = months[date.getMonth()];
   switch (period) {
-    case 'day': return `${date.getDate()} ${m} ${date.getFullYear()}`;
-    case 'week': return formatWeekRange(date, shortMonths, true);
-    case 'month': return `${m} ${date.getFullYear()}`;
-    case 'year': return date.getFullYear().toString();
+    case PERIODS.day: return `${date.getDate()} ${m} ${date.getFullYear()}`;
+    case PERIODS.week: return formatWeekRange(date, shortMonths, true);
+    case PERIODS.month: return `${m} ${date.getFullYear()}`;
+    case PERIODS.year: return date.getFullYear().toString();
     default: return '';
   }
 }

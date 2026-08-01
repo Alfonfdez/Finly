@@ -3,20 +3,21 @@ import {
   View, Text, TouchableOpacity, FlatList, StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, DrawerActions, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayAccountName, getDisplayAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
+import { isTotalAccount } from '../database/helpers';
 import { Account } from '../database/types';
 import { formatCurrency, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
-import { RootStackParamList } from '../constants/types';
+import { RootStackParamList, USER_ID, BADGE_SHAPES, CONFIG_ICON_SHAPES } from '../constants/types';
 import EyeToggle from '../components/EyeToggle';
 import Fab from '../components/Fab';
-
-const USER_ID = 1;
+import EmptyState from '../components/EmptyState';
+import DrawerMenuButton from '../components/DrawerMenuButton';
+import IconBadge from '../components/IconBadge';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Accounts'>;
 
@@ -27,7 +28,7 @@ export default function AccountsScreen() {
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp>();
-  const round = config.accountIconShape === 'circle';
+  const round = config.accountIconShape === CONFIG_ICON_SHAPES.circle;
 
   const [accounts, setAccounts] = useState<AccountWithBalance[]>([]);
   const [total, setTotal] = useState(0);
@@ -45,14 +46,14 @@ export default function AccountsScreen() {
     const list = await accountRepository.list(USER_ID);
     const withBalance = await Promise.all(
       list.map(async (account) => {
-        if (account.is_total === 1) return { ...account, balance: 0 };
+        if (isTotalAccount(account)) return { ...account, balance: 0 };
         const balance = await accountRepository.getCurrentBalance(account.id);
         return { ...account, balance };
       })
     );
-    const nonTotal = withBalance.filter(a => a.is_total !== 1);
+    const nonTotal = withBalance.filter(a => !isTotalAccount(a));
     const totalSum = nonTotal.reduce((sum, a) => sum + a.balance, 0);
-    const result = withBalance.map(a => a.is_total === 1 ? { ...a, balance: totalSum } : a);
+    const result = withBalance.map(a => isTotalAccount(a) ? { ...a, balance: totalSum } : a);
     setAccounts(result);
     setTotal(totalSum);
   }, []);
@@ -61,21 +62,15 @@ export default function AccountsScreen() {
     useCallback(() => {
       navigation.setOptions({
         headerLeft: () => (
-          <TouchableOpacity
-            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-            style={{ marginLeft: 8, padding: 4 }}
-            accessibilityLabel={labels.home_open_menu}
-          >
-            <Ionicons name="menu-outline" size={24} color={c.text} />
-          </TouchableOpacity>
+          <DrawerMenuButton accessibilityLabel={labels.home_open_menu} />
         ),
       });
       loadData();
-    }, [navigation, c.text, labels.home_open_menu, loadData])
+    }, [navigation, labels.home_open_menu, loadData])
   );
 
   const renderItem = ({ item }: { item: AccountWithBalance }) => {
-    const isTotal = item.is_total === 1;
+    const isTotal = isTotalAccount(item);
     return (
       <>
         <TouchableOpacity
@@ -86,9 +81,16 @@ export default function AccountsScreen() {
           onPress={() => navigation.navigate('ModifyAccount', { accountId: item.id })}
           accessibilityLabel={`${getDisplayAccountName(item)} ${isBalanceHidden ? HIDDEN_BALANCE : formatCurrency(item.balance, config.currency, config.decimalSeparator)}`}
         >
-          <View style={[styles.iconBubble, { backgroundColor: item.color + '22', borderRadius: round ? 22 : 12 }]}>
-            <Ionicons name={item.icon as any} size={24} color={item.color} />
-          </View>
+          <IconBadge
+            icon={item.icon}
+            color={item.color}
+            shape={round ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+            size={44}
+            iconSize={24}
+            roundedRadius={12}
+            backgroundAlpha={13}
+            style={styles.iconBubble}
+          />
           <View style={styles.accountInfo}>
             <Text style={[styles.accountName, { color: c.text, fontSize: fs(15) }]} numberOfLines={1}>
               {getDisplayAccountName(item)}
@@ -122,12 +124,7 @@ export default function AccountsScreen() {
   };
 
   const renderEmpty = () => (
-    <View style={styles.emptyContainer}>
-      <Ionicons name="wallet-outline" size={64} color={c.textSecondary} />
-      <Text style={[styles.emptyText, { color: c.textSecondary, fontSize: fs(16) }]}>
-        {labels.accounts_empty}
-      </Text>
-    </View>
+    <EmptyState icon="wallet-outline" message={labels.accounts_empty} />
   );
 
   return (
@@ -212,11 +209,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   iconBubble: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginRight: 12,
   },
   accountInfo: {
@@ -231,14 +223,5 @@ const styles = StyleSheet.create({
   accountBalance: {
     fontWeight: '600',
     marginLeft: 8,
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-  },
-  emptyText: {
-    fontWeight: '500',
   },
 });

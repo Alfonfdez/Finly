@@ -1,9 +1,9 @@
 import { Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import type { ComponentProps } from 'react';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
+import type { IconName } from '../../components/IconGrid';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../constants/types';
 
@@ -12,7 +12,7 @@ type Props = {
 };
 
 type Subsection = {
-  icon: ComponentProps<typeof Ionicons>['name'];
+  icon: IconName;
   label: string;
   screen: 'SettingsAppearance' | 'SettingsRegional' | 'SettingsPersonalization' | 'SettingsData';
 };

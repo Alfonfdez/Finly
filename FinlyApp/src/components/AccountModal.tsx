@@ -1,13 +1,15 @@
-import { useState, useEffect, ComponentProps } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal, View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { Account } from '../database/types';
 import { formatCurrency, HIDDEN_BALANCE } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayAccountName } from '../i18n';
+import { BADGE_SHAPES, CONFIG_ICON_SHAPES } from '../constants/types';
+import { WHITE } from '../constants/themes';
 import EyeToggle from './EyeToggle';
-import { OVERLAY_BG } from './componentStyles';
+import { OVERLAY_BG, MODAL_MAX_WIDTH, MODAL_BORDER_RADIUS, MODAL_PADDING, BUTTON_BORDER_RADIUS } from './componentStyles';
+import IconBadge from './IconBadge';
 
 interface AccountWithBalance extends Account {
   balance: number;
@@ -25,7 +27,7 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
   const { config, activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const round = config.accountIconShape === 'circle';
+  const round = config.accountIconShape === CONFIG_ICON_SHAPES.circle;
   const [tempId, setTempId] = useState(selectedId);
   const [isRevealed, setIsRevealed] = useState(false);
 
@@ -59,9 +61,15 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
                   <View style={[styles.radio, { borderColor: isSelected ? c.primary : c.textSecondary }]}>
                     {isSelected && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
                   </View>
-                  <View style={[styles.icon, { backgroundColor: item.color + '30', borderRadius: round ? 18 : 8 }]}>
-                    <Ionicons name={item.icon as ComponentProps<typeof Ionicons>['name']} size={20} color={item.color} />
-                  </View>
+                  <IconBadge
+                    icon={item.icon}
+                    color={item.color}
+                    shape={round ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+                    size={36}
+                    iconSize={20}
+                    roundedRadius={8}
+                    style={styles.icon}
+                  />
                   <View style={styles.info}>
                     <Text style={[styles.name, { color: c.text, fontSize: fs(14) }]}>{getDisplayAccountName(item)}</Text>
                     <Text style={[styles.balance, { color: c.textSecondary, fontSize: fs(12) }]}>
@@ -80,7 +88,7 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
               <Text style={[styles.btnText, { color: c.text, fontSize: fs(14) }]}>{labels.transactions_cancel}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.btn, { backgroundColor: c.primary }]} onPress={() => { if (tempId != null) onSelect(tempId); }}>
-              <Text style={[styles.btnText, { color: '#FFFFFF', fontSize: fs(14) }]}>{labels.transactions_confirm}</Text>
+              <Text style={[styles.btnText, { color: WHITE, fontSize: fs(14) }]}>{labels.transactions_confirm}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -99,9 +107,9 @@ const styles = StyleSheet.create({
   },
   modal: {
     width: '100%',
-    maxWidth: 360,
-    borderRadius: 16,
-    padding: 24,
+    maxWidth: MODAL_MAX_WIDTH,
+    borderRadius: MODAL_BORDER_RADIUS,
+    padding: MODAL_PADDING,
     maxHeight: '70%',
   },
   title: { fontWeight: '700', marginBottom: 16, textAlign: 'center' },
@@ -127,11 +135,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   icon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginRight: 12,
   },
   info: { flex: 1 },
@@ -145,7 +148,7 @@ const styles = StyleSheet.create({
   btn: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: BUTTON_BORDER_RADIUS,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'transparent',

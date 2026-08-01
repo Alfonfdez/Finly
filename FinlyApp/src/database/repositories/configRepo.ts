@@ -1,17 +1,20 @@
 import { getDatabase } from '../database';
 import { Config } from '../../context/ConfigContext';
+import { CONFIG_ICON_SHAPES, PERIODS, TEXT_SIZES, THEMES, DECIMAL_SEPARATORS, FIRST_DAYS, type DecimalSeparator } from '../../constants/types';
+import { LANGUAGES } from '../../utils/language';
+import { DEFAULT_CURRENCY } from '../../constants/currencies';
 
 const CONFIG_DEFAULTS: Config = {
-  theme: 'dark',
-  firstDayOfWeek: 1,
-  currency: '€',
-  decimalSeparator: ',',
-  language: 'en',
-  textSize: 'medium',
-  categoryIconShape: 'square',
-  accountIconShape: 'square',
+  theme: THEMES.dark,
+  firstDayOfWeek: FIRST_DAYS.monday,
+  currency: DEFAULT_CURRENCY,
+  decimalSeparator: DECIMAL_SEPARATORS.comma,
+  language: LANGUAGES.en,
+  textSize: TEXT_SIZES.medium,
+  categoryIconShape: CONFIG_ICON_SHAPES.square,
+  accountIconShape: CONFIG_ICON_SHAPES.square,
   homeDefaultAccountId: null,
-  homeDefaultPeriod: 'month',
+  homeDefaultPeriod: PERIODS.month,
   addDefaultAccountId: null,
   addShowLabels: true,
   addShowComments: true,
@@ -41,9 +44,9 @@ function parseConfig(rows: { key: string; value: string }[]): Config {
   const map = Object.fromEntries(rows.map(r => [r.key, r.value]));
   return {
     theme: (map.theme as Config['theme']) ?? CONFIG_DEFAULTS.theme,
-    firstDayOfWeek: map.first_day_of_week === '0' ? 0 : 1,
+    firstDayOfWeek: map.first_day_of_week === String(FIRST_DAYS.sunday) ? FIRST_DAYS.sunday : FIRST_DAYS.monday,
     currency: map.currency ?? CONFIG_DEFAULTS.currency,
-    decimalSeparator: (map.decimal_separator as Config['decimalSeparator']) ?? CONFIG_DEFAULTS.decimalSeparator,
+    decimalSeparator: (map.decimal_separator as DecimalSeparator) ?? CONFIG_DEFAULTS.decimalSeparator,
     language: (map.language as Config['language']) ?? CONFIG_DEFAULTS.language,
     textSize: (map.text_size as Config['textSize']) ?? CONFIG_DEFAULTS.textSize,
     categoryIconShape: (map.category_icon_shape as Config['categoryIconShape']) ?? CONFIG_DEFAULTS.categoryIconShape,

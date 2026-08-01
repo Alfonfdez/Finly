@@ -5,7 +5,8 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { Tag } from '../database/types';
-import { OVERLAY_BG } from './componentStyles';
+import { OVERLAY_BG, MODAL_BORDER_RADIUS } from './componentStyles';
+import { DEBOUNCE_MS, MAX_TAG_NAME_LENGTH } from '../constants/types';
 
 interface Props {
   tags: Tag[];
@@ -45,7 +46,7 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       checkDuplicate(text);
-    }, 300);
+    }, DEBOUNCE_MS);
   };
 
   const handleCreate = async () => {
@@ -144,10 +145,10 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
               placeholderTextColor={c.textSecondary}
               value={newTag}
               onChangeText={handleNameChange}
-              maxLength={20}
+              maxLength={MAX_TAG_NAME_LENGTH}
             />
             <Text style={[styles.modalCounter, { color: c.textSecondary, fontSize: fs(12) }]}>
-              {newTag.length}/20
+              {newTag.length}/{MAX_TAG_NAME_LENGTH}
             </Text>
             {error ? (
               <Text style={[styles.modalError, { color: c.red, fontSize: fs(13) }]}>
@@ -228,7 +229,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modal: {
-    borderRadius: 16,
+    borderRadius: MODAL_BORDER_RADIUS,
     width: '100%',
     maxWidth: 380,
     padding: 16,

@@ -1,17 +1,17 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { View, Text, SectionList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useFocusEffect, DrawerActions } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
-import { RootStackParamList, TransactionType } from '../constants/types';
+import { PERIODS, TRANSACTION_TYPES, TYPE_FILTERS, type RootStackParamList, type TransactionTypeFilter } from '../constants/types';
 import { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
-import { formatCurrency, getPeriodRange } from '../utils/formatters';
+import { formatCurrency, getPeriodRange, endOfDay, startOfDay } from '../utils/formatters';
 import { t } from '../i18n';
 import AccountModal from '../components/AccountModal';
 import AccountTrigger from '../components/AccountTrigger';
@@ -19,7 +19,9 @@ import SortToggle from '../components/SortToggle';
 import TagFilterBar from '../components/TagFilterBar';
 import TransactionGroup from '../components/TransactionGroup';
 import TabBar from '../components/TabBar';
+import EmptyState from '../components/EmptyState';
 import CategoryFilterModal from '../components/CategoryFilterModal';
+import DrawerMenuButton from '../components/DrawerMenuButton';
 import PeriodTabs from '../components/PeriodTabs';
 import CalendarPicker from '../components/CalendarPicker';
 
@@ -35,7 +37,7 @@ export default function AllTransactionsScreen() {
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [typeTab, setTypeTab] = useState<'all' | TransactionType>('all');
+  const [typeTab, setTypeTab] = useState<TransactionTypeFilter>(TYPE_FILTERS.all);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
   const [calendarVisible, setCalendarVisible] = useState(false);
@@ -44,7 +46,7 @@ export default function AllTransactionsScreen() {
     setSelectedCategoryIds([]);
   }, [typeTab]);
 
-  const periodDates = useMemo(() => activePeriod === 'custom' ? customDate : getPeriodRange(activePeriod, selectedDate), [activePeriod, selectedDate, customDate]);
+  const periodDates = useMemo(() => activePeriod === PERIODS.custom ? customDate : getPeriodRange(activePeriod, selectedDate), [activePeriod, selectedDate, customDate]);
 
   const filters = useTransactionFilters({
     transactions: allTransactions,
@@ -74,45 +76,43 @@ export default function AllTransactionsScreen() {
     useCallback(() => {
       navigation.setOptions({
         headerLeft: () => (
-          <TouchableOpacity
-            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-            style={{ marginLeft: 8, padding: 4 }}
-            accessibilityLabel={labels.home_open_menu}
-          >
-            <Ionicons name="menu-outline" size={24} color={c.text} />
-          </TouchableOpacity>
+          <DrawerMenuButton accessibilityLabel={labels.home_open_menu} />
         ),
       });
-    }, [navigation, c.text, labels.home_open_menu])
+    }, [navigation, labels.home_open_menu])
   );
 
   const accountBalance = useMemo(() => {
     return filters.filtered
       .reduce(
-        (sum, t) => sum + (t.type === 'expense' ? -t.amount : t.amount), 0
+        (sum, t) => sum + (t.type === TRANSACTION_TYPES.expense ? -t.amount : t.amount), 0
       );
   }, [filters.filtered]);
 
   const categoryButtonLabel = useMemo(() => {
-    const visibleCategories = typeTab === 'all'
+    const visibleCategories = typeTab === TYPE_FILTERS.all
       ? categories
       : categories.filter(cat => cat.type === typeTab);
     const allVisibleSelected = visibleCategories.length > 0 && visibleCategories.every(cat => selectedCategoryIds.includes(cat.id));
     if (selectedCategoryIds.length === 0 || allVisibleSelected) {
-      if (typeTab === 'expense') return labels.filter_all_expense_categories;
-      if (typeTab === 'income') return labels.filter_all_income_categories;
+      if (typeTab === TRANSACTION_TYPES.expense) return labels.filter_all_expense_categories;
+      if (typeTab === TRANSACTION_TYPES.income) return labels.filter_all_income_categories;
       return labels.filter_all_categories;
     }
     return labels.filter_apply(selectedCategoryIds.length);
   }, [selectedCategoryIds, typeTab, categories, labels]);
 
+  const handleRangeChange = useCallback((start: Date, end: Date) => {
+    setCustomDate({ start: startOfDay(start), end: endOfDay(end) });
+  }, [setCustomDate]);
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
       <TabBar
         tabs={[
-          { key: 'all', label: labels.tab_all },
-          { key: 'expense', label: labels.tab_expenses },
-          { key: 'income', label: labels.tab_income },
+          { key: TYPE_FILTERS.all, label: labels.tab_all },
+          { key: TRANSACTION_TYPES.expense, label: labels.tab_expenses },
+          { key: TRANSACTION_TYPES.income, label: labels.tab_income },
         ]}
         active={typeTab}
         onChange={setTypeTab}
@@ -151,13 +151,12 @@ export default function AllTransactionsScreen() {
         period={activePeriod}
         date={selectedDate}
         onDateChange={setSelectedDate}
-        onRangeChange={(start, end) => setCustomDate({ start, end })}
+        onRangeChange={handleRangeChange}
         rangeStart={customDate.start}
         rangeEnd={customDate.end}
         visible={calendarVisible}
         onOpen={() => setCalendarVisible(true)}
         onClose={() => setCalendarVisible(false)}
-        firstDay={config.firstDayOfWeek}
       />
 
       <TagFilterBar
@@ -188,7 +187,7 @@ export default function AllTransactionsScreen() {
         )}
         renderItem={({ item }) => null}
         ListEmptyComponent={
-          <Text style={[styles.empty, { color: c.textSecondary, fontSize: fs(14) }]}>{labels.transactions_empty}</Text>
+          <EmptyState message={labels.transactions_empty} />
         }
         stickySectionHeadersEnabled={false}
       />
@@ -243,5 +242,4 @@ const styles = StyleSheet.create({
   },
   listContent: { paddingBottom: 80 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  empty: { textAlign: 'center', marginTop: 40 },
 });

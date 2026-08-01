@@ -1,37 +1,29 @@
 import { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { getShortMonthName, weekStart } from '../../utils/formatters';
+import { weekStart, formatWeekRange } from '../../utils/formatters';
 import { CalendarBaseProps } from './types';
 import MonthNav from './MonthNav';
 import YearNav from './YearNav';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
-import { FUTURE_OPACITY } from './calendarStyles';
+import { t } from '../../i18n';
+import { calendarStyles, FUTURE_OPACITY } from './calendarStyles';
+import { type FirstDay } from '../../constants/types';
 
-interface Props extends CalendarBaseProps {
-  firstDay?: 0 | 1;
-}
-
-function formatShortWeek(start: Date, end: Date): string {
-  const startDay = start.getDate();
-  const endDay = end.getDate();
-  const startMonth = getShortMonthName(start.getMonth() + 1).toLowerCase();
-  const endMonth = getShortMonthName(end.getMonth() + 1).toLowerCase();
-  return `${startDay} ${startMonth} - ${endDay} ${endMonth}`;
-}
-
-function sameWeek(a: Date, b: Date, firstDay: 0 | 1): boolean {
+function sameWeek(a: Date, b: Date, firstDay: FirstDay): boolean {
   const ia = weekStart(a, firstDay);
   const ib = weekStart(b, firstDay);
   return ia.getTime() === ib.getTime();
 }
 
-export default function WeekPicker({ date, onSelect, firstDay = 1 }: Props) {
+export default function WeekPicker({ date, onSelect }: CalendarBaseProps) {
   const today = useMemo(() => new Date(), []);
   const [year, setYear] = useState(date.getFullYear());
   const [activeMonth, setActiveMonth] = useState(date.getMonth() + 1);
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
+  const labels = t();
+  const firstDay = config.firstDayOfWeek;
 
   const weeks = useMemo(() => {
     const result: { start: Date; end: Date }[] = [];
@@ -55,7 +47,7 @@ export default function WeekPicker({ date, onSelect, firstDay = 1 }: Props) {
   }, [today, activeMonth]);
 
   return (
-    <View style={styles.container}>
+    <View style={calendarStyles.container}>
       <YearNav year={year} onChange={changeYear} />
 
       <MonthNav year={year} month={activeMonth} onChange={(a, m) => { setYear(a); setActiveMonth(m); }} />
@@ -72,7 +64,7 @@ export default function WeekPicker({ date, onSelect, firstDay = 1 }: Props) {
               disabled={isFuture}
             >
               <Text style={{ color: isSelected ? c.background : c.text, fontWeight: isSelected ? '700' : '400', fontSize: fs(14) }}>
-                {formatShortWeek(week.start, week.end)}
+                {formatWeekRange(week.start, labels.months_short, false, firstDay)}
               </Text>
             </TouchableOpacity>
           );
@@ -83,6 +75,5 @@ export default function WeekPicker({ date, onSelect, firstDay = 1 }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 8 },
   weekRow: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8, marginBottom: 4 },
 });

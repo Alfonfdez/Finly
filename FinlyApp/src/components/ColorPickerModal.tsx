@@ -4,7 +4,8 @@ import ColorPicker, { Panel1, HueSlider, OpacitySlider, Preview } from 'reanimat
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import { OVERLAY_BG } from './componentStyles';
+import { OVERLAY_BG, MODAL_MAX_WIDTH, MODAL_BORDER_RADIUS, BUTTON_BORDER_RADIUS } from './componentStyles';
+import { WHITE } from '../constants/themes';
 
 
 interface Props {
@@ -72,7 +73,7 @@ export default function ColorPickerModal({ visible, selectedColor, onSelect, onC
               style={[styles.button, { backgroundColor: c.primary }]}
               onPress={handleConfirm}
             >
-              <Text style={[styles.buttonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
+              <Text style={[styles.buttonText, { color: WHITE, fontSize: fs(14) }]}>
                 {labels.create_cat_color_picker_ok}
               </Text>
             </TouchableOpacity>
@@ -92,8 +93,8 @@ const styles = StyleSheet.create({
   },
   modal: {
     width: '90%',
-    maxWidth: 360,
-    borderRadius: 16,
+    maxWidth: MODAL_MAX_WIDTH,
+    borderRadius: MODAL_BORDER_RADIUS,
     padding: 20,
   },
   header: {
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: BUTTON_BORDER_RADIUS,
     alignItems: 'center',
     borderWidth: 1,
   },

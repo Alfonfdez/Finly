@@ -95,7 +95,8 @@ function createDefaultResolver(keysMap: Record<number, keyof Language>) {
       }
       lookupLanguage = currentLanguage;
     }
-    return nameLookup!.get(name.trim().toLowerCase()) ?? null;
+    const lookup = nameLookup;
+    return lookup?.get(name.trim().toLowerCase()) ?? null;
   }
 
   return { getName, getDefaultEnglishName, getDisplayName, getIdByName };
@@ -104,10 +105,6 @@ function createDefaultResolver(keysMap: Record<number, keyof Language>) {
 const categoryResolver = createDefaultResolver(CATEGORY_I18N_KEYS);
 const accountResolver = createDefaultResolver(ACCOUNT_I18N_KEYS);
 const accountDescriptionResolver = createDefaultResolver(ACCOUNT_DESCRIPTION_I18N_KEYS);
-
-export function getCategoryName(categoryId: number): string {
-  return categoryResolver.getName(categoryId);
-}
 
 export function getDefaultEnglishName(categoryId: number): string | null {
   return categoryResolver.getDefaultEnglishName(categoryId);

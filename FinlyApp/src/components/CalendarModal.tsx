@@ -3,6 +3,7 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { isWeb } from '../utils/platform';
 import { formatPeriodText } from '../utils/formatters';
 import { Period } from './calendars/types';
+import { PERIODS } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
@@ -11,7 +12,8 @@ import WeekPicker from './calendars/WeekPicker';
 import MonthGrid from './calendars/MonthGrid';
 import YearGrid from './calendars/YearGrid';
 import PeriodPicker from './calendars/PeriodPicker';
-import { OVERLAY_BG } from './componentStyles';
+import { MIN_DATE } from './calendars/calendarStyles';
+import { OVERLAY_BG, MODAL_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
   visible: boolean;
@@ -22,23 +24,22 @@ interface Props {
   onSelectDate: (date: Date) => void;
   onSelectRange?: (start: Date, end: Date) => void;
   onClose: () => void;
-  firstDay?: 0 | 1;
 }
 
 const TITLE_KEYS: Record<Period, keyof ReturnType<typeof t>> = {
-  day: 'cal_select_day',
-  week: 'cal_select_week',
-  month: 'cal_select_month',
-  year: 'cal_select_year',
-  custom: 'cal_select_period',
+  [PERIODS.day]: 'cal_select_day',
+  [PERIODS.week]: 'cal_select_week',
+  [PERIODS.month]: 'cal_select_month',
+  [PERIODS.year]: 'cal_select_year',
+  [PERIODS.custom]: 'cal_select_period',
 };
 
 export default function CalendarModal({
   visible, period, date, rangeStart, rangeEnd,
-  onSelectDate, onSelectRange, onClose, firstDay = 1,
+  onSelectDate, onSelectRange, onClose,
 }: Props) {
   const [tempDate, setTempDate] = useState(date);
-  const [tempRangeStart, setTempRangeStart] = useState(rangeStart ?? new Date(new Date().getFullYear(), 0, 1));
+  const [tempRangeStart, setTempRangeStart] = useState(rangeStart ?? MIN_DATE);
   const [tempRangeEnd, setTempRangeEnd] = useState(rangeEnd ?? new Date());
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
@@ -54,7 +55,7 @@ export default function CalendarModal({
   }, []);
 
   const handleOk = useCallback(() => {
-    if (period === 'custom') {
+    if (period === PERIODS.custom) {
       onSelectRange?.(tempRangeStart, tempRangeEnd);
     } else {
       onSelectDate(tempDate);
@@ -64,7 +65,7 @@ export default function CalendarModal({
 
   const handleCancel = useCallback(() => {
     setTempDate(date);
-    setTempRangeStart(rangeStart ?? new Date(new Date().getFullYear(), 0, 1));
+    setTempRangeStart(rangeStart ?? MIN_DATE);
     setTempRangeEnd(rangeEnd ?? new Date());
     onClose();
   }, [date, rangeStart, rangeEnd, onClose]);
@@ -74,26 +75,25 @@ export default function CalendarModal({
       <View style={styles.overlay}>
         <View style={[styles.modal, { backgroundColor: c.background }]}>
           <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>{labels[TITLE_KEYS[period]] as string}</Text>
-          {period !== 'custom' && <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(13) }]}>{formatPeriodText(period, tempDate, labels.months, labels.months_short)}</Text>}
+          {period !== PERIODS.custom && <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(13) }]}>{formatPeriodText(period, tempDate, labels.months, labels.months_short)}</Text>}
 
-          {period === 'day' && (
-            <DayPicker date={tempDate} onSelect={handleSelect} firstDay={firstDay} />
+          {period === PERIODS.day && (
+            <DayPicker date={tempDate} onSelect={handleSelect} />
           )}
-          {period === 'week' && (
-            <WeekPicker date={tempDate} onSelect={handleSelect} firstDay={firstDay} />
+          {period === PERIODS.week && (
+            <WeekPicker date={tempDate} onSelect={handleSelect} />
           )}
-          {period === 'month' && (
+          {period === PERIODS.month && (
             <MonthGrid date={tempDate} onSelect={handleSelect} />
           )}
-          {period === 'year' && (
+          {period === PERIODS.year && (
             <YearGrid date={tempDate} onSelect={handleSelect} />
           )}
-          {period === 'custom' && (
+          {period === PERIODS.custom && (
             <PeriodPicker
               tempStart={tempRangeStart}
               tempEnd={tempRangeEnd}
               onTempRangeChange={handleRangeChange}
-              firstDay={firstDay}
             />
           )}
 
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modal: {
-    borderRadius: 16,
+    borderRadius: MODAL_BORDER_RADIUS,
     width: '100%',
     maxWidth: 380,
     padding: 16,

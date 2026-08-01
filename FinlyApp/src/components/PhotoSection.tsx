@@ -4,10 +4,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import { OVERLAY_BG } from './componentStyles';
-
-
-const MAX_PHOTOS = 3;
+import { OVERLAY_BG, MODAL_MAX_WIDTH, MODAL_BORDER_RADIUS, MODAL_PADDING } from './componentStyles';
+import { MAX_PHOTOS } from '../constants/types';
+import { WHITE } from '../constants/themes';
+import ConfirmationModal from './ConfirmationModal';
 
 interface Props {
   photos: string[];
@@ -65,7 +65,7 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
               onPress={() => handlePressDelete(uri)}
               accessibilityLabel={labels.photo_remove}
             >
-              <Ionicons name="close" size={14} color="#FFFFFF" />
+              <Ionicons name="close" size={14} color={WHITE} />
                 </TouchableOpacity>
           </View>
         ))}
@@ -116,36 +116,15 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
         </View>
       </Modal>
 
-      <Modal visible={deleteModalVisible} transparent animationType="fade" onRequestClose={handleCancelDelete}>
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modal, { backgroundColor: c.background }]}>
-            <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(16) }]}>
-              {labels.photo_delete_title}
-            </Text>
-            <Text style={[styles.modalMessage, { color: c.textSecondary, fontSize: fs(14) }]}>
-              {labels.photo_delete_message}
-            </Text>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: c.surface, borderColor: c.border }]}
-                onPress={handleCancelDelete}
-              >
-                <Text style={[styles.modalButtonText, { color: c.text, fontSize: fs(14) }]}>
-                  {labels.cancel}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: c.red }]}
-                onPress={handleConfirmDelete}
-              >
-                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
-                  {labels.delete}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <ConfirmationModal
+        visible={deleteModalVisible}
+        title={labels.photo_delete_title}
+        message={labels.photo_delete_message}
+        confirmLabel={labels.delete}
+        cancelLabel={labels.cancel}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </View>
   );
 }
@@ -202,30 +181,13 @@ const styles = StyleSheet.create({
   },
   modal: {
     width: '100%',
-    maxWidth: 360,
-    borderRadius: 16,
-    padding: 24,
+    maxWidth: MODAL_MAX_WIDTH,
+    borderRadius: MODAL_BORDER_RADIUS,
+    padding: MODAL_PADDING,
   },
   modalTitle: {
     fontWeight: '700',
     marginBottom: 12,
-  },
-  modalMessage: {
-    marginBottom: 20,
-    lineHeight: 20,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  modalButtonText: {
-    fontWeight: '600',
   },
   modalOption: {
     flexDirection: 'row',

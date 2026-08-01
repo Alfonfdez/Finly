@@ -1,4 +1,4 @@
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+export const USER_ID = 1;
 
 export const OTHERS_CATEGORY_ID = 15;
 export const OTHER_CATEGORY_ID = 18;
@@ -7,9 +7,112 @@ export const CATEGORY_USAGE_WINDOW_DAYS = 90;
 export const DATE_MIN = '1900-01-01';
 export const DATE_MAX = '2100-12-31';
 
-export type Period = 'day' | 'week' | 'month' | 'year' | 'custom';
+export const MAX_VISIBLE_CATEGORIES = 7;
+export const DEBOUNCE_MS = 300;
+export const MAX_PHOTOS = 3;
 
-export type TransactionType = 'expense' | 'income';
+export const MAX_CATEGORY_NAME_LENGTH = 30;
+export const MAX_ACCOUNT_NAME_LENGTH = 30;
+export const MAX_TAG_NAME_LENGTH = 20;
+export const MAX_NOTE_LENGTH = 200;
+export const MAX_COMMENT_LENGTH = 4096;
+export const MAX_VISIBLE_TAGS = 3;
+export const MAX_SUGGESTIONS = 5;
+export const DECIMAL_PLACES = 2;
+
+export const TRANSACTION_TYPES = {
+  expense: 'expense',
+  income: 'income',
+} as const;
+
+export type TransactionType = keyof typeof TRANSACTION_TYPES;
+
+export const TYPE_FILTERS = {
+  all: 'all',
+  ...TRANSACTION_TYPES,
+} as const;
+
+export type TransactionTypeFilter = keyof typeof TYPE_FILTERS;
+
+export const PERIODS = {
+  day: 'day',
+  week: 'week',
+  month: 'month',
+  year: 'year',
+  custom: 'custom',
+} as const;
+
+export type Period = keyof typeof PERIODS;
+
+export const THEMES = {
+  dark: 'dark',
+  light: 'light',
+  system: 'system',
+} as const;
+
+export type Theme = keyof typeof THEMES;
+
+export const TEXT_SIZES = {
+  small: 'small',
+  medium: 'medium',
+  large: 'large',
+} as const;
+
+export type TextSize = keyof typeof TEXT_SIZES;
+
+export const SORT_BY = {
+  date: 'date',
+  amount: 'amount',
+} as const;
+
+export type SortBy = keyof typeof SORT_BY;
+
+export const SORT_DIRECTIONS = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type SortDirection = keyof typeof SORT_DIRECTIONS;
+
+export const CALC_KEYS = {
+  clear: 'C',
+  equals: '=',
+} as const;
+
+export const FIRST_DAYS = {
+  monday: 1,
+  sunday: 0,
+} as const;
+
+export type FirstDay = (typeof FIRST_DAYS)[keyof typeof FIRST_DAYS];
+
+export const DECIMAL_SEPARATORS = {
+  comma: ',',
+  dot: '.',
+} as const;
+
+export type DecimalSeparator = (typeof DECIMAL_SEPARATORS)[keyof typeof DECIMAL_SEPARATORS];
+
+export const BADGE_SHAPES = {
+  circle: 'circle',
+  rounded: 'rounded',
+} as const;
+
+export type BadgeShape = (typeof BADGE_SHAPES)[keyof typeof BADGE_SHAPES];
+
+export const CONFIG_ICON_SHAPES = {
+  square: 'square',
+  circle: 'circle',
+} as const;
+
+export type ConfigIconShape = (typeof CONFIG_ICON_SHAPES)[keyof typeof CONFIG_ICON_SHAPES];
+
+export const CHART_TYPES = {
+  donut: 'donut',
+  bar: 'bar',
+} as const;
+
+export type ChartType = (typeof CHART_TYPES)[keyof typeof CHART_TYPES];
 
 export interface CategoryWithTotal {
   id: number;
@@ -44,23 +147,3 @@ export type RootStackParamList = {
   CreateTag: undefined;
   ModifyTag: { tagId: number };
 };
-
-export type HomeScreenProps = NativeStackScreenProps<RootStackParamList, 'Home'>;
-export type AddTransactionScreenProps = NativeStackScreenProps<RootStackParamList, 'AddTransaction'>;
-export type AddCategoryScreenProps = NativeStackScreenProps<RootStackParamList, 'AddCategory'>;
-export type CreateCategoryScreenProps = NativeStackScreenProps<RootStackParamList, 'CreateCategory'>;
-export type ModifyCategoryScreenProps = NativeStackScreenProps<RootStackParamList, 'ModifyCategory'>;
-export type CategoriesScreenProps = NativeStackScreenProps<RootStackParamList, 'Categories'>;
-export type AccountsScreenProps = NativeStackScreenProps<RootStackParamList, 'Accounts'>;
-export type CreateAccountScreenProps = NativeStackScreenProps<RootStackParamList, 'CreateAccount'>;
-export type ModifyAccountScreenProps = NativeStackScreenProps<RootStackParamList, 'ModifyAccount'>;
-export type TransactionsScreenProps = NativeStackScreenProps<RootStackParamList, 'Transactions'>;
-export type AllTransactionsScreenProps = NativeStackScreenProps<RootStackParamList, 'AllTransactions'>;
-export type TransactionDetailsScreenProps = NativeStackScreenProps<RootStackParamList, 'TransactionDetails'>;
-export type SettingsAppearanceScreenProps = NativeStackScreenProps<RootStackParamList, 'SettingsAppearance'>;
-export type SettingsRegionalScreenProps = NativeStackScreenProps<RootStackParamList, 'SettingsRegional'>;
-export type SettingsPersonalizationScreenProps = NativeStackScreenProps<RootStackParamList, 'SettingsPersonalization'>;
-export type SettingsDataScreenProps = NativeStackScreenProps<RootStackParamList, 'SettingsData'>;
-export type TagsScreenProps = NativeStackScreenProps<RootStackParamList, 'Tags'>;
-export type CreateTagScreenProps = NativeStackScreenProps<RootStackParamList, 'CreateTag'>;
-export type ModifyTagScreenProps = NativeStackScreenProps<RootStackParamList, 'ModifyTag'>;

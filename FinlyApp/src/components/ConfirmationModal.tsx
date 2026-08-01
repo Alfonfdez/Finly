@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { OVERLAY_BG, MODAL_MAX_WIDTH, MODAL_BORDER_RADIUS, MODAL_PADDING, BUTTON_BORDER_RADIUS } from './componentStyles';
+import { WHITE } from '../constants/themes';
 
 interface Props {
   visible: boolean;
@@ -15,14 +16,18 @@ interface Props {
   confirmDisabled?: boolean;
   destructive?: boolean;
   children?: ReactNode;
+  moveLabel?: string;
+  onMove?: () => void;
 }
 
 export default function ConfirmationModal({
   visible, title, message, confirmLabel, cancelLabel,
   onConfirm, onCancel, confirmDisabled = false, destructive = true, children,
+  moveLabel, onMove,
 }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
+  const hasMove = !!moveLabel && !!onMove;
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
@@ -33,30 +38,55 @@ export default function ConfirmationModal({
             <Text style={[styles.message, { color: c.textSecondary, fontSize: fs(14) }]}>{message}</Text>
           )}
           {children}
-          <View style={styles.buttons}>
+          <View style={[styles.buttons, hasMove && styles.buttonsStacked]}>
             <TouchableOpacity
               style={[styles.button, { backgroundColor: c.surface, borderColor: c.border }]}
               onPress={onCancel}
             >
               <Text style={[styles.buttonText, { color: c.text, fontSize: fs(14) }]}>{cancelLabel}</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.button,
-                { backgroundColor: destructive ? c.red : (confirmDisabled ? c.surface : c.primary) },
-              ]}
-              onPress={onConfirm}
-              disabled={confirmDisabled}
-            >
-              <Text
+            {hasMove ? (
+              <View style={styles.actionRow}>
+                <TouchableOpacity
+                  style={[styles.button, { backgroundColor: c.primary }]}
+                  onPress={onMove}
+                >
+                  <Text style={[styles.buttonText, { color: c.background, fontSize: fs(14) }]}>{moveLabel}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, { backgroundColor: destructive ? c.red : c.primary }]}
+                  onPress={onConfirm}
+                  disabled={confirmDisabled}
+                >
+                  <Text
+                    style={[
+                      styles.buttonText,
+                      { color: destructive ? WHITE : (confirmDisabled ? c.textSecondary : c.background), fontSize: fs(14) },
+                    ]}
+                  >
+                    {confirmLabel}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
                 style={[
-                  styles.buttonText,
-                  { color: destructive ? '#FFFFFF' : (confirmDisabled ? c.textSecondary : c.background), fontSize: fs(14) },
+                  styles.button,
+                  { backgroundColor: destructive ? c.red : (confirmDisabled ? c.surface : c.primary) },
                 ]}
+                onPress={onConfirm}
+                disabled={confirmDisabled}
               >
-                {confirmLabel}
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={[
+                    styles.buttonText,
+                    { color: destructive ? WHITE : (confirmDisabled ? c.textSecondary : c.background), fontSize: fs(14) },
+                  ]}
+                >
+                  {confirmLabel}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </View>
@@ -89,6 +119,13 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   buttons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  buttonsStacked: {
+    flexDirection: 'column',
+  },
+  actionRow: {
     flexDirection: 'row',
     gap: 12,
   },

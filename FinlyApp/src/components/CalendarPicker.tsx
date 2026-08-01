@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { formatDate, formatWeekRange } from '../utils/formatters';
 import CalendarModal from './CalendarModal';
 import { Period } from './calendars/types';
+import { PERIODS } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
@@ -16,12 +17,11 @@ interface Props {
   visible?: boolean;
   onOpen?: () => void;
   onClose?: () => void;
-  firstDay?: 0 | 1;
 }
 
 export default function CalendarPicker({
   period, date, onDateChange, onRangeChange,
-  rangeStart, rangeEnd, visible = false, onOpen, onClose, firstDay = 1,
+  rangeStart, rangeEnd, visible = false, onOpen, onClose,
 }: Props) {
   const today = new Date();
   const { activeColors: c } = useConfig();
@@ -32,11 +32,11 @@ export default function CalendarPicker({
 
   const dateText = () => {
     switch (period) {
-      case 'day': return formatDate(date);
-      case 'week': return formatWeekRange(date, shortMonths);
-      case 'month': return `${months[date.getMonth()]} ${date.getFullYear()}`;
-      case 'year': return date.getFullYear().toString();
-      case 'custom': {
+      case PERIODS.day: return formatDate(date);
+      case PERIODS.week: return formatWeekRange(date, shortMonths);
+      case PERIODS.month: return `${months[date.getMonth()]} ${date.getFullYear()}`;
+      case PERIODS.year: return date.getFullYear().toString();
+      case PERIODS.custom: {
         const startDate = rangeStart ?? new Date(today.getFullYear(), 0, 1);
         const endDate = rangeEnd ?? today;
         return `${labels.cal_from} ${startDate.getDate()} ${shortMonths[startDate.getMonth()]} ${labels.cal_to} ${endDate.getDate()} ${shortMonths[endDate.getMonth()]} ${endDate.getFullYear()}`;
@@ -62,7 +62,6 @@ export default function CalendarPicker({
         onSelectDate={onDateChange}
         onSelectRange={onRangeChange}
         onClose={() => onClose?.()}
-        firstDay={firstDay}
       />
     </View>
   );

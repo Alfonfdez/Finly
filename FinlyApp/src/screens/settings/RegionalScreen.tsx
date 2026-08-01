@@ -4,17 +4,12 @@ import { useConfig, Config } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
 import { isWeb } from '../../utils/platform';
-import { isCatalan } from '../../utils/language';
+import { LANGUAGES, isCatalan, type Language } from '../../utils/language';
 import { flagColors } from '../../constants/flagColors';
+import { CURRENCY_OPTIONS } from '../../constants/currencies';
+import { DECIMAL_SEPARATORS, FIRST_DAYS, type FirstDay } from '../../constants/types';
 import SelectorInline, { Option } from '../../components/SelectorInline';
 import { settingsStyles } from './settingsStyles';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../constants/types';
-import type { Language } from '../../utils/language';
-
-type Props = {
-  navigation: NativeStackNavigationProp<RootStackParamList, 'SettingsRegional'>;
-};
 
 function SenyeraIcon({ size = 16 }: { size?: number }) {
   return (
@@ -62,15 +57,15 @@ function SpainFlagWeb({ size = 16 }: { size?: number }) {
 }
 
 const FLAG_WEB: Record<string, React.ReactNode> = {
-  en: <UKFlagWeb size={16} />,
-  es: <SpainFlagWeb size={16} />,
-  ca: <SenyeraIcon size={16} />,
+  [LANGUAGES.en]: <UKFlagWeb size={16} />,
+  [LANGUAGES.es]: <SpainFlagWeb size={16} />,
+  [LANGUAGES.ca]: <SenyeraIcon size={16} />,
 };
 
 const FLAG_EMOJI: Record<string, string> = {
-  en: '\u{1F1EC}\u{1F1E7}',
-  es: '\u{1F1EA}\u{1F1F8}',
-  ca: '\u{1F1F5}\u{1F1F8}',
+  [LANGUAGES.en]: '\u{1F1EC}\u{1F1E7}',
+  [LANGUAGES.es]: '\u{1F1EA}\u{1F1F8}',
+  [LANGUAGES.ca]: '\u{1F1F5}\u{1F1F8}',
 };
 
 function FlagIcon({ code, size = 16 }: { code: Language; size?: number }) {
@@ -93,55 +88,54 @@ function DayCircleIcon({ letter, size = 16, colors }: { letter: string; size?: n
   );
 }
 
-export default function RegionalScreen({ navigation }: Props) {
+export default function RegionalScreen() {
   const { config, activeColors: c, updateConfig } = useConfig();
   const fs = useFontSize();
   const labels = t();
 
-  const LANGUAGES: Option<Config['language']>[] = [
-    { label: labels.lang_en, value: 'en', icon: <FlagIcon code="en" size={16} /> },
-    { label: labels.lang_es, value: 'es', icon: <FlagIcon code="es" size={16} /> },
-    { label: labels.lang_ca, value: 'ca', icon: <FlagIcon code="ca" size={16} /> },
+  const LANGUAGE_OPTIONS: Option<Config['language']>[] = [
+    { label: labels.lang_en, value: LANGUAGES.en, icon: <FlagIcon code={LANGUAGES.en} size={16} /> },
+    { label: labels.lang_es, value: LANGUAGES.es, icon: <FlagIcon code={LANGUAGES.es} size={16} /> },
+    { label: labels.lang_ca, value: LANGUAGES.ca, icon: <FlagIcon code={LANGUAGES.ca} size={16} /> },
   ];
 
-  const DIVAS: Option[] = [
-    { label: labels.currency_euro, value: '\u20AC', icon: <Text style={[styles.currencyIcon, { color: c.text, fontSize: fs(16) }]}>{'\u20AC'}</Text> },
-    { label: labels.currency_dollar, value: '$', icon: <Text style={[styles.currencyIcon, { color: c.text, fontSize: fs(16) }]}>$</Text> },
-    { label: labels.currency_pound, value: '\u00A3', icon: <Text style={[styles.currencyIcon, { color: c.text, fontSize: fs(16) }]}>{'\u00A3'}</Text> },
-    { label: labels.currency_yen, value: '\u00A5', icon: <Text style={[styles.currencyIcon, { color: c.text, fontSize: fs(16) }]}>{'\u00A5'}</Text> },
-  ];
+  const CURRENCIES: Option[] = CURRENCY_OPTIONS.map(option => ({
+    label: labels[option.labelKey],
+    value: option.value,
+    icon: <Text style={[styles.currencyIcon, { color: c.text, fontSize: fs(16) }]}>{option.value}</Text>,
+  }));
 
   const SEPARATORS: Option<Config['decimalSeparator']>[] = [
-    { label: labels.sep_comma, value: ',', icon: <Text style={[styles.currencyIcon, { color: c.text, fontSize: fs(16) }]}>,</Text> },
-    { label: labels.sep_dot, value: '.', icon: <Text style={[styles.currencyIcon, { color: c.text, fontSize: fs(16) }]}>.</Text> },
+    { label: labels.sep_comma, value: DECIMAL_SEPARATORS.comma, icon: <Text style={[styles.currencyIcon, { color: c.text, fontSize: fs(16) }]}>{DECIMAL_SEPARATORS.comma}</Text> },
+    { label: labels.sep_dot, value: DECIMAL_SEPARATORS.dot, icon: <Text style={[styles.currencyIcon, { color: c.text, fontSize: fs(16) }]}>{DECIMAL_SEPARATORS.dot}</Text> },
   ];
 
-  const PRIMER_DIA: Option[] = [
-    { label: labels.day_monday, value: '1', icon: <DayCircleIcon letter={labels.day_mon_letter} size={16} colors={c} /> },
-    { label: labels.day_sunday, value: '0', icon: <DayCircleIcon letter={labels.day_sun_letter} size={16} colors={c} /> },
+  const FIRST_DAY_OPTIONS: Option[] = [
+    { label: labels.day_monday, value: String(FIRST_DAYS.monday), icon: <DayCircleIcon letter={labels.day_mon_letter} size={16} colors={c} /> },
+    { label: labels.day_sunday, value: String(FIRST_DAYS.sunday), icon: <DayCircleIcon letter={labels.day_sun_letter} size={16} colors={c} /> },
   ];
 
   return (
     <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
       <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_language}</Text>
       <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
-        <SelectorInline options={LANGUAGES} selected={config.language} onSelect={(v) => updateConfig({ language: v })} textSize={config.textSize} />
+        <SelectorInline options={LANGUAGE_OPTIONS} selected={config.language} onSelect={(v) => updateConfig({ language: v })} />
       </View>
 
       <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_money}</Text>
       <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
         <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_currency}</Text>
-        <SelectorInline options={DIVAS} selected={config.currency} onSelect={(v) => updateConfig({ currency: v })} textSize={config.textSize} />
+        <SelectorInline options={CURRENCIES} selected={config.currency} onSelect={(v) => updateConfig({ currency: v })} />
       </View>
       <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
         <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_decimal_sep}</Text>
-        <SelectorInline options={SEPARATORS} selected={config.decimalSeparator} onSelect={(v) => updateConfig({ decimalSeparator: v })} textSize={config.textSize} />
+        <SelectorInline options={SEPARATORS} selected={config.decimalSeparator} onSelect={(v) => updateConfig({ decimalSeparator: v })} />
       </View>
 
       <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_calendar}</Text>
       <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
         <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_first_day}</Text>
-        <SelectorInline options={PRIMER_DIA} selected={String(config.firstDayOfWeek)} onSelect={(v) => updateConfig({ firstDayOfWeek: Number(v) as 0 | 1 })} textSize={config.textSize} />
+        <SelectorInline options={FIRST_DAY_OPTIONS} selected={String(config.firstDayOfWeek)} onSelect={(v) => updateConfig({ firstDayOfWeek: Number(v) as FirstDay })} />
       </View>
     </ScrollView>
   );

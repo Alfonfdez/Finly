@@ -14,19 +14,19 @@ import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
 import { t, getDisplayAccountName, getDefaultEnglishAccountName, getAccountName, getDefaultAccountIdByName, getDisplayAccountDescription, getDefaultEnglishAccountDescription, getAccountDescription } from '../i18n';
 import { isAndroid } from '../utils/platform';
 import { accountRepository } from '../database';
+import { isTotalAccount } from '../database/helpers';
 import { Account } from '../database/types';
-import { RootStackParamList } from '../constants/types';
+import { RootStackParamList, MAX_ACCOUNT_NAME_LENGTH, MAX_NOTE_LENGTH } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
+import { WHITE } from '../constants/themes';
 import IconGrid from '../components/IconGrid';
 import ColorGrid, { QUICK_COLORS } from '../components/ColorGrid';
 import ColorPickerModal from '../components/ColorPickerModal';
 import ConfirmationModal from '../components/ConfirmationModal';
+import EmptyState from '../components/EmptyState';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ModifyAccount'>;
 type ModifyAccountRouteProp = RouteProp<RootStackParamList, 'ModifyAccount'>;
-
-const MAX_NAME_LENGTH = 30;
-const MAX_NOTE_LENGTH = 200;
 
 export default function ModifyAccountScreen() {
   const { activeColors: c, config, updateConfig } = useConfig();
@@ -102,7 +102,7 @@ export default function ModifyAccountScreen() {
     debouncedCheck(value);
   };
 
-  const isTotal = (account?.is_total ?? 0) === 1;
+  const isTotal = account ? isTotalAccount(account) : false;
 
   const canSave = isTotal
     ? !checkingName
@@ -116,12 +116,13 @@ export default function ModifyAccountScreen() {
 
   const handleSave = async () => {
     if (!canSave || !account) return;
+    if (selectedIcon === null || selectedColor === null) return;
     const trimmedDescription = description.trim();
     const englishDescDefault = getDefaultEnglishAccountDescription(account.id);
     const displayDescDefault = getAccountDescription(account.id);
     const updateData: { icon: string; color: string; description: string; name?: string } = {
-      icon: selectedIcon!,
-      color: selectedColor!,
+      icon: selectedIcon,
+      color: selectedColor,
       description: englishDescDefault && trimmedDescription === displayDescDefault ? englishDescDefault : trimmedDescription,
     };
     if (!isTotal) {
@@ -156,7 +157,7 @@ export default function ModifyAccountScreen() {
         updates.homeDefaultAccountId = null;
       }
       if (config.addDefaultAccountId === accountId) {
-        const remaining = accounts.filter(a => a.id !== accountId && a.is_total !== 1);
+        const remaining = accounts.filter(a => a.id !== accountId && !isTotalAccount(a));
         updates.addDefaultAccountId = remaining.length > 0 ? remaining[0].id : null;
       }
       if (Object.keys(updates).length > 0) {
@@ -172,11 +173,7 @@ export default function ModifyAccountScreen() {
   if (!account) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
-        <View style={[styles.content, { justifyContent: 'center', alignItems: 'center' }]}>
-          <Text style={{ color: c.textSecondary, fontSize: fs(16) }}>
-            {labels.accounts_empty}
-          </Text>
-        </View>
+        <EmptyState message={labels.accounts_empty} />
       </SafeAreaView>
     );
   }
@@ -211,12 +208,12 @@ export default function ModifyAccountScreen() {
                 ]}
                 value={name}
                 onChangeText={handleNameChange}
-                maxLength={MAX_NAME_LENGTH}
+                maxLength={MAX_ACCOUNT_NAME_LENGTH}
                 autoCapitalize="words"
                 autoCorrect={false}
               />
               <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
-                {name.length}/{MAX_NAME_LENGTH}
+                {name.length}/{MAX_ACCOUNT_NAME_LENGTH}
               </Text>
             </>
           )}
@@ -318,7 +315,7 @@ export default function ModifyAccountScreen() {
             onPress={handleSave}
             disabled={!canSave}
           >
-            <Text style={[styles.buttonText, { color: '#FFFFFF', fontSize: fs(15) }]}>
+            <Text style={[styles.buttonText, { color: WHITE, fontSize: fs(15) }]}>
               {labels.modify_account_save}
             </Text>
           </TouchableOpacity>

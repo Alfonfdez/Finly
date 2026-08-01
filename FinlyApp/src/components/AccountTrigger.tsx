@@ -1,10 +1,11 @@
-import { ComponentProps } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Account } from '../database/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { getDisplayAccountName } from '../i18n';
+import { BADGE_SHAPES } from '../constants/types';
+import IconBadge from './IconBadge';
 
 interface Props {
   accountId: number;
@@ -20,9 +21,14 @@ export default function AccountTrigger({ accountId, accounts, onPress }: Props) 
   return (
     <TouchableOpacity style={styles.accountTrigger} onPress={onPress}>
       {account && (
-        <View style={[styles.accountTriggerIcon, { backgroundColor: account.color + '30', borderRadius: config.accountIconShape === 'circle' ? 14 : 6 }]}>
-          <Ionicons name={account.icon as ComponentProps<typeof Ionicons>['name']} size={18} color={account.color} />
-        </View>
+        <IconBadge
+          icon={account.icon}
+          color={account.color}
+          shape={config.accountIconShape === BADGE_SHAPES.circle ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+          size={28}
+          iconSize={18}
+          roundedRadius={6}
+        />
       )}
       <Text style={[styles.accountTriggerName, { color: c.text, fontSize: fs(14) }]} numberOfLines={1}>
         {account ? getDisplayAccountName(account) : ''}
@@ -37,13 +43,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  accountTriggerIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   accountTriggerName: { fontWeight: '600', maxWidth: 100 },
 });

@@ -13,7 +13,8 @@ import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
 import { t, getDefaultCategoryIdByName, getDefaultEnglishName } from '../i18n';
 import { isAndroid } from '../utils/platform';
 import { categoryRepository } from '../database';
-import { RootStackParamList, TransactionType } from '../constants/types';
+import { RootStackParamList, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, type TransactionType, USER_ID } from '../constants/types';
+import { WHITE } from '../constants/themes';
 import { setPendingCategory } from './AddTransactionScreen';
 import IconGrid, { CATEGORY_ICONS } from '../components/IconGrid';
 import ColorGrid, { QUICK_COLORS } from '../components/ColorGrid';
@@ -21,8 +22,6 @@ import ColorPickerModal from '../components/ColorPickerModal';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateCategory'>;
 type CreateCategoryRouteProp = RouteProp<RootStackParamList, 'CreateCategory'>;
-
-const MAX_NAME_LENGTH = 30;
 
 export default function CreateCategoryScreen() {
   const { activeColors: c, config } = useConfig();
@@ -32,7 +31,7 @@ export default function CreateCategoryScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<CreateCategoryRouteProp>();
 
-  const initialType = route.params?.type ?? 'expense';
+  const initialType = route.params?.type ?? TRANSACTION_TYPES.expense;
 
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState<string | null>(null);
@@ -91,13 +90,13 @@ export default function CreateCategoryScreen() {
   };
 
   const handleCreate = async () => {
-    if (!canCreate) return;
+    if (!canCreate || selectedIcon === null || selectedColor === null) return;
     try {
       const created = await categoryRepository.create({
-        user_id: 1,
+        user_id: USER_ID,
         name: name.trim(),
-        icon: selectedIcon!,
-        color: selectedColor!,
+        icon: selectedIcon,
+        color: selectedColor,
         type,
       });
       await refreshCategories();
@@ -136,12 +135,12 @@ export default function CreateCategoryScreen() {
             placeholderTextColor={c.textSecondary}
             value={name}
             onChangeText={handleNameChange}
-            maxLength={MAX_NAME_LENGTH}
+            maxLength={MAX_CATEGORY_NAME_LENGTH}
             autoCapitalize="words"
             autoCorrect={false}
           />
           <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
-            {name.length}/{MAX_NAME_LENGTH}
+            {name.length}/{MAX_CATEGORY_NAME_LENGTH}
           </Text>
 
           <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
@@ -151,11 +150,11 @@ export default function CreateCategoryScreen() {
             <TouchableOpacity
               style={[
                 styles.radio,
-                { borderColor: type === 'expense' ? c.primary : c.border },
+                { borderColor: type === TRANSACTION_TYPES.expense ? c.primary : c.border },
               ]}
-              onPress={() => setType('expense')}
+              onPress={() => setType(TRANSACTION_TYPES.expense)}
             >
-              {type === 'expense' && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
+              {type === TRANSACTION_TYPES.expense && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
             </TouchableOpacity>
             <Text style={[styles.radioLabel, { color: c.text, fontSize: fs(14) }]}>
               {labels.create_cat_expense}
@@ -164,11 +163,11 @@ export default function CreateCategoryScreen() {
             <TouchableOpacity
               style={[
                 styles.radio,
-                { borderColor: type === 'income' ? c.primary : c.border },
+                { borderColor: type === TRANSACTION_TYPES.income ? c.primary : c.border },
               ]}
-              onPress={() => setType('income')}
+              onPress={() => setType(TRANSACTION_TYPES.income)}
             >
-              {type === 'income' && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
+              {type === TRANSACTION_TYPES.income && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
             </TouchableOpacity>
             <Text style={[styles.radioLabel, { color: c.text, fontSize: fs(14) }]}>
               {labels.create_cat_income}
@@ -222,7 +221,7 @@ export default function CreateCategoryScreen() {
             onPress={handleCreate}
             disabled={!canCreate}
           >
-            <Text style={[styles.buttonText, { color: '#FFFFFF', fontSize: fs(15) }]}>
+            <Text style={[styles.buttonText, { color: WHITE, fontSize: fs(15) }]}>
               {labels.create_cat_add}
             </Text>
           </TouchableOpacity>

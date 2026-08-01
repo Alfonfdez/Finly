@@ -4,6 +4,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
+import { DEBOUNCE_MS, MAX_COMMENT_LENGTH } from '../constants/types';
 
 interface Props {
   comment: string;
@@ -32,7 +33,7 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus 
     debounceRef.current = setTimeout(async () => {
       const results = await transactionRepository.searchComments(comment);
       setSuggestions(results);
-    }, 300);
+    }, DEBOUNCE_MS);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
@@ -74,11 +75,11 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus 
           onChangeText={onChange}
           onFocus={onFocus}
           multiline
-          maxLength={4096}
+          maxLength={MAX_COMMENT_LENGTH}
           textAlignVertical="top"
         />
         <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(12) }]}>
-          {comment.length}/4096
+          {comment.length}/{MAX_COMMENT_LENGTH}
         </Text>
       </View>
     </>

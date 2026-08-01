@@ -1,47 +1,40 @@
 import { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { getDaysInMonth, isSameDay, isFutureDate } from '../../utils/formatters';
+import { getDaysInMonth, isSameDay, isFutureDate, dayOffset } from '../../utils/formatters';
 import { CalendarBaseProps } from './types';
 import MonthNav from './MonthNav';
 import { useConfig } from '../../context/ConfigContext';
 import { t } from '../../i18n';
 import { useFontSize } from '../../hooks/useFontSize';
-import { FUTURE_OPACITY } from './calendarStyles';
+import { calendarStyles, FUTURE_OPACITY } from './calendarStyles';
+import { FIRST_DAYS } from '../../constants/types';
 
 interface Props extends CalendarBaseProps {
   rangeStart?: Date | null;
   rangeEnd?: Date | null;
   initialView?: Date;
-  firstDay?: 0 | 1;
 }
 
-function getDayOffset(dayDate: Date, firstDay: 0 | 1): number {
-  const weekDay = dayDate.getDay();
-  if (firstDay === 1) {
-    return weekDay === 0 ? 6 : weekDay - 1;
-  }
-  return weekDay;
-}
-
-export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initialView, firstDay = 1 }: Props) {
+export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initialView }: Props) {
   const today = useMemo(() => new Date(), []);
   const [year, setYear] = useState((initialView ?? date).getFullYear());
   const [month, setMonth] = useState((initialView ?? date).getMonth() + 1);
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
+  const firstDay = config.firstDayOfWeek;
 
   const daysInMonth = getDaysInMonth(year, month);
   const firstDayOfMonth = new Date(year, month - 1, 1);
-  const prevDays = getDayOffset(firstDayOfMonth, firstDay);
-  const headers = firstDay === 1 ? labels.days_short_mon : labels.days_short_sun;
+  const prevDays = dayOffset(firstDayOfMonth, firstDay);
+  const headers = firstDay === FIRST_DAYS.monday ? labels.days_short_mon : labels.days_short_sun;
 
   const inRange = (d: Date) => rangeStart && rangeEnd && d >= rangeStart && d <= rangeEnd;
   const isStartEdge = (d: Date) => rangeStart && isSameDay(d, rangeStart);
   const isEndEdge = (d: Date) => rangeEnd && isSameDay(d, rangeEnd);
 
   return (
-    <View style={styles.container}>
+    <View style={calendarStyles.container}>
       <MonthNav year={year} month={month} onChange={(a, m) => { setYear(a); setMonth(m); }} />
 
       <View style={styles.weekDays}>
@@ -74,7 +67,7 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
                 <View style={[
                   styles.dayBg,
                   isToday && [styles.todayBorder, { borderColor: c.primary }],
-                  isSelected && [styles.selectedDay, { backgroundColor: c.primary }],
+                  isSelected && { backgroundColor: c.primary },
                   withinRange && !isSelected && { backgroundColor: c.primary + '25', borderRadius: 4 },
                   isStart && !isSelected && { backgroundColor: c.primary + '40' },
                   isEnd && !isSelected && { backgroundColor: c.primary + '40' },
@@ -103,7 +96,6 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 8 },
   weekDays: { flexDirection: 'row', marginBottom: 8 },
   weekDayText: { flex: 1, textAlign: 'center', fontWeight: '600' },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
@@ -113,6 +105,5 @@ const styles = StyleSheet.create({
   dayBg: { ...StyleSheet.absoluteFillObject, borderRadius: 20, overflow: 'hidden' },
   dayCenter: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   todayBorder: { borderWidth: 1 },
-  selectedDay: {},
   dayText: { textAlign: 'center' },
 });

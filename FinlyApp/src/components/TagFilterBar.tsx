@@ -3,6 +3,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { Tag } from '../database/types';
+import { UNTAGGED_ID } from '../database/helpers';
 
 interface Props {
   tags: Tag[];
@@ -54,7 +55,7 @@ export default function TagFilterBar({ tags, activeTagIds, onToggle, onClear, st
         contentContainerStyle={styles.scrollContent}
       >
         {renderChip(labels.home_tag_all, -2, activeTagIds.length === 0, onClear, true)}
-        {renderChip(labels.home_tag_untagged, -1, activeTagIds.includes(-1), undefined, true)}
+        {renderChip(labels.home_tag_untagged, UNTAGGED_ID, activeTagIds.includes(UNTAGGED_ID), undefined, true)}
         {tags.map(tag =>
           renderChip(tag.name, tag.id, activeTagIds.includes(tag.id))
         )}

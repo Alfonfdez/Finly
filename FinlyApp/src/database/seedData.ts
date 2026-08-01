@@ -1,7 +1,8 @@
 import type { Account, Category, User } from './types';
+import { DEFAULT_CURRENCY } from '../constants/currencies';
 
 export const SEED_USER_DATA: Omit<User, 'created_at'> = {
-  id: 1, name: 'User', email: null, avatar: null, currency: '€',
+  id: 1, name: 'User', email: null, avatar: null, currency: DEFAULT_CURRENCY,
 };
 
 export const SEED_ACCOUNTS: Omit<Account, 'created_at'>[] = [

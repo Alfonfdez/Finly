@@ -1,3 +1,6 @@
+export const WHITE = '#FFFFFF';
+export const BLACK = '#000000';
+
 export interface ColorPalette {
   background: string;
   surface: string;
@@ -23,7 +26,7 @@ export const darkColors: ColorPalette = {
 };
 
 export const lightColors: ColorPalette = {
-  background: '#FFFFFF',
+  background: WHITE,
   surface: '#F1F5F9',
   text: '#1E293B',
   textSecondary: '#64748B',

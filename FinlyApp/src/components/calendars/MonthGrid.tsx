@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { getMonthName } from '../../utils/formatters';
 import { CalendarBaseProps } from './types';
 import YearNav from './YearNav';
@@ -14,24 +14,25 @@ export default function MonthGrid({ date, onSelect }: CalendarBaseProps) {
   const [year, setYear] = useState(date.getFullYear());
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
+  const futureMonthLimit = useMemo(() => new Date(today.getFullYear(), today.getMonth(), 1), [today]);
   const changeYear = useCallback((newYear: number) => {
     if (newYear > today.getFullYear()) return;
     setYear(newYear);
   }, [today]);
 
   return (
-    <View style={styles.container}>
+    <View style={calendarStyles.container}>
       <YearNav year={year} onChange={changeYear} />
       <View style={calendarStyles.grid}>
         {MONTHS.map(m => {
           const monthDate = new Date(year, m - 1, 1);
-          const isFuture = monthDate > new Date(today.getFullYear(), today.getMonth(), 1);
+          const isFuture = monthDate > futureMonthLimit;
           const isActive = m === date.getMonth() + 1;
           return (
             <TouchableOpacity
               key={m}
               style={[calendarStyles.gridItem, isFuture && { opacity: FUTURE_OPACITY }]}
-              onPress={() => !isFuture && onSelect(new Date(year, m - 1, 1))}
+              onPress={() => !isFuture && onSelect(monthDate)}
               disabled={isFuture}
             >
               <View style={[calendarStyles.gridItemInner, { backgroundColor: c.surface }, isActive && { backgroundColor: c.primary }]}>
@@ -46,7 +47,3 @@ export default function MonthGrid({ date, onSelect }: CalendarBaseProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { padding: 8 },
-});

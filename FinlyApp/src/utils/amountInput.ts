@@ -1,3 +1,5 @@
+import { DECIMAL_PLACES, type DecimalSeparator } from '../constants/types';
+
 export const MAX_AMOUNT_INTEGER_DIGITS = 9; // up to 999,999,999.99
 
 /**
@@ -31,7 +33,7 @@ export function parseAmountInput(text: string): string | null {
     // Limit integer digits
     before = before.slice(0, MAX_AMOUNT_INTEGER_DIGITS);
     // Max 2 decimal digits
-    after = after.slice(0, 2);
+    after = after.slice(0, DECIMAL_PLACES);
     raw = before + '.' + after;
   } else {
     // No dot - remove leading zeros
@@ -47,7 +49,7 @@ export function parseAmountInput(text: string): string | null {
  * Format a raw amount string for display: add thousand separators (spaces)
  * and use the configured decimal separator.
  */
-export function formatAmountDisplay(raw: string, decimalSeparator: ',' | '.'): string {
+export function formatAmountDisplay(raw: string, decimalSeparator: DecimalSeparator): string {
   if (!raw) return '';
   const parts = raw.split('.');
   const integerPart = parts[0];

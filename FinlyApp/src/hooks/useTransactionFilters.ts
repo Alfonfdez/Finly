@@ -1,17 +1,17 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Transaction, Account } from '../database/types';
-import { TransactionType } from '../constants/types';
+import { SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, type SortBy, type SortDirection, type TransactionTypeFilter } from '../constants/types';
 import { transactionRepository } from '../database';
+import { isTotalAccount, UNTAGGED_ID } from '../database/helpers';
 import { formatDateForDB } from '../utils/formatters';
 import { buildTagsByTransactionMap, TagsByTransaction } from '../utils/transactionTags';
-import { SortBy, SortDirection } from '../components/SortToggle';
 
 interface UseTransactionFiltersOptions {
   transactions: Transaction[];
   accounts: Account[];
   activeAccount: Account | null;
   initialTagIds?: number[];
-  typeTab?: 'all' | TransactionType;
+  typeTab?: TransactionTypeFilter;
   selectedCategoryIds?: number[];
   periodDates?: { start: Date; end: Date } | null;
 }
@@ -26,16 +26,19 @@ export function useTransactionFilters({
   periodDates,
 }: UseTransactionFiltersOptions) {
   const [selectedAccountId, setSelectedAccountId] = useState(
-    () => activeAccount?.id ?? accounts.find(a => (a.is_total ?? 0) !== 1)?.id ?? 1
+    () => activeAccount?.id ?? accounts.find(a => !isTotalAccount(a))?.id ?? 1
   );
   const [accountModalVisible, setAccountModalVisible] = useState(false);
-  const [sortBy, setSortBy] = useState<SortBy>('date');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [sortBy, setSortBy] = useState<SortBy>(SORT_BY.date);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(SORT_DIRECTIONS.desc);
   const [tagsByTransaction, setTagsByTransaction] = useState<TagsByTransaction>(new Map());
   const [localTagIds, setLocalTagIds] = useState<number[]>(initialTagIds);
 
   const isTotal = useMemo(
-    () => accounts.find(a => a.id === selectedAccountId)?.is_total === 1,
+    () => {
+      const account = accounts.find(a => a.id === selectedAccountId);
+      return account ? isTotalAccount(account) : false;
+    },
     [accounts, selectedAccountId]
   );
 
@@ -56,10 +59,10 @@ export function useTransactionFilters({
 
   const handleToggleTag = useCallback((id: number) => {
     setLocalTagIds(prev => {
-      if (id === -1) {
-        return prev.includes(-1) ? [] : [-1];
+      if (id === UNTAGGED_ID) {
+        return prev.includes(UNTAGGED_ID) ? [] : [UNTAGGED_ID];
       }
-      if (prev.includes(-1)) {
+      if (prev.includes(UNTAGGED_ID)) {
         return [id];
       }
       if (prev.includes(id)) {
@@ -78,7 +81,7 @@ export function useTransactionFilters({
       ? [...transactions]
       : transactions.filter(t => t.account_id === selectedAccountId);
 
-    if (typeTab && typeTab !== 'all') {
+    if (typeTab && typeTab !== TYPE_FILTERS.all) {
       list = list.filter(t => t.type === typeTab);
     }
 
@@ -94,8 +97,8 @@ export function useTransactionFilters({
     }
 
     if (localTagIds.length > 0) {
-      const hasUntagged = localTagIds.includes(-1);
-      const regularIds = localTagIds.filter(id => id !== -1);
+      const hasUntagged = localTagIds.includes(UNTAGGED_ID);
+      const regularIds = localTagIds.filter(id => id !== UNTAGGED_ID);
       list = list.filter(tx => {
         const txTags = tagsByTransaction.get(tx.id) ?? [];
         if (hasUntagged && txTags.length === 0) return true;
@@ -105,12 +108,12 @@ export function useTransactionFilters({
     }
 
     const sorted = [...list].sort((a, b) => {
-      if (sortBy === 'date') {
+      if (sortBy === SORT_BY.date) {
         const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
-        return sortDirection === 'desc' ? -diff : diff;
+        return sortDirection === SORT_DIRECTIONS.desc ? -diff : diff;
       }
       const diff = a.amount - b.amount;
-      return sortDirection === 'desc' ? -diff : diff;
+      return sortDirection === SORT_DIRECTIONS.desc ? -diff : diff;
     });
     return sorted;
   }, [transactions, selectedAccountId, isTotal, typeTab, selectedCategoryIds, periodDates, sortBy, sortDirection, localTagIds, tagsByTransaction]);
@@ -131,15 +134,15 @@ export function useTransactionFilters({
 
   const handleToggleSort = useCallback((field: SortBy) => {
     if (field === sortBy) {
-      setSortDirection(d => (d === 'desc' ? 'asc' : 'desc'));
+      setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
     } else {
       setSortBy(field);
-      setSortDirection('desc');
+      setSortDirection(SORT_DIRECTIONS.desc);
     }
   }, [sortBy]);
 
   const handleToggleDirection = useCallback(() => {
-    setSortDirection(d => (d === 'desc' ? 'asc' : 'desc'));
+    setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
   }, []);
 
   const openAccountModal = useCallback(() => setAccountModalVisible(true), []);
