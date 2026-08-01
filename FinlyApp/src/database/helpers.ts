@@ -5,7 +5,7 @@ export function isTotalAccount(account: { is_total?: number }): boolean {
 }
 
 export function buildUpdateQuery(
-  data: Record<string, any>,
+  data: Partial<Record<string, string | number | null>>,
   columns: string[]
 ): { sets: string; values: (string | number | null)[] } | null {
   const sets: string[] = [];

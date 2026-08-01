@@ -1,9 +1,9 @@
 import { User, Account, Category, Transaction, Tag, TransactionTag } from './types';
-import { CONFIG_ICON_SHAPES, PERIODS, TEXT_SIZES, THEMES, TRANSACTION_TYPES, MAX_SUGGESTIONS, DECIMAL_SEPARATORS, FIRST_DAYS, type TransactionType } from '../constants/types';
+import { TRANSACTION_TYPES, MAX_SUGGESTIONS, UNTAGGED_LABEL, type TransactionType } from '../constants/types';
 import { Config } from '../context/ConfigContext';
-import { LANGUAGES } from '../utils/language';
-import { DEFAULT_CURRENCY } from '../constants/currencies';
 import { UNTAGGED_ID, isTotalAccount } from './helpers';
+import { DEFAULT_CONFIG } from './configDefaults';
+import { dbTimestamp } from '../utils/formatters';
 import { SEED_USER_DATA, SEED_ACCOUNTS, SEED_CATEGORIES } from './seedData';
 
 const STORAGE_PREFIX = '@Finly/';
@@ -21,10 +21,6 @@ function setStore<T>(key: string, data: T[]): void {
 
 function nextId<T extends { id: number }>(items: T[]): number {
   return items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
-}
-
-function now(): string {
-  return new Date().toISOString().replace('T', ' ').substring(0, 19);
 }
 
 // --- Initialization ---
@@ -45,9 +41,9 @@ export async function initWebStorage(): Promise<void> {
 }
 
 function seedWebData(): void {
-  const users: User[] = [{ ...SEED_USER_DATA, created_at: now() }];
-  const accounts: Account[] = SEED_ACCOUNTS.map(a => ({ ...a, created_at: now() }));
-  const categories: Category[] = SEED_CATEGORIES.map(c => ({ ...c, created_at: now() }));
+  const users: User[] = [{ ...SEED_USER_DATA, created_at: dbTimestamp() }];
+  const accounts: Account[] = SEED_ACCOUNTS.map(a => ({ ...a, created_at: dbTimestamp() }));
+  const categories: Category[] = SEED_CATEGORIES.map(c => ({ ...c, created_at: dbTimestamp() }));
   setStore('users', users);
   setStore('accounts', accounts);
   setStore('categories', categories);
@@ -61,7 +57,7 @@ function seedWebData(): void {
 export const webUserRepo = {
   async create(data: Omit<User, 'id' | 'created_at'>): Promise<User> {
     const items = getStore<User>('users');
-    const item: User = { ...data, id: nextId(items), created_at: now() };
+    const item: User = { ...data, id: nextId(items), created_at: dbTimestamp() };
     items.push(item);
     setStore('users', items);
     return item;
@@ -88,7 +84,7 @@ export const webAccountRepo = {
   },
   async create(data: Omit<Account, 'id' | 'created_at'>): Promise<Account> {
     const items = getStore<Account>('accounts');
-    const item: Account = { ...data, id: nextId(items), created_at: now() };
+    const item: Account = { ...data, id: nextId(items), created_at: dbTimestamp() };
     items.push(item);
     setStore('accounts', items);
     return item;
@@ -118,15 +114,15 @@ export const webAccountRepo = {
   async getById(id: number): Promise<Account | null> {
     return getStore<Account>('accounts').find(c => c.id === id) ?? null;
   },
-  async getCurrentBalance(id: number): Promise<number> {
-    const accounts = getStore<Account>('accounts');
+  async getBalances(): Promise<{ account_id: number; balance: number }[]> {
+    const accounts = getStore<Account>('accounts').filter(c => !isTotalAccount(c));
     const transactions = getStore<Transaction>('transactions');
-    const account = accounts.find(c => c.id === id);
-    if (!account) return 0;
-    const transactionBalance = transactions
-      .filter(t => t.account_id === id)
-      .reduce((sum, t) => sum + (t.type === TRANSACTION_TYPES.income ? t.amount : -t.amount), 0);
-    return account.initial_balance + transactionBalance;
+    const deltas = new Map<number, number>();
+    for (const t of transactions) {
+      const delta = t.type === TRANSACTION_TYPES.income ? t.amount : -t.amount;
+      deltas.set(t.account_id, (deltas.get(t.account_id) ?? 0) + delta);
+    }
+    return accounts.map(a => ({ account_id: a.id, balance: a.initial_balance + (deltas.get(a.id) ?? 0) }));
   },
   async existsByName(name: string, excludeId?: number): Promise<boolean> {
     const items = getStore<Account>('accounts');
@@ -147,7 +143,7 @@ export const webCategoryRepo = {
   },
   async create(data: Omit<Category, 'id' | 'created_at'>): Promise<Category> {
     const items = getStore<Category>('categories');
-    const item: Category = { ...data, id: nextId(items), created_at: now() };
+    const item: Category = { ...data, id: nextId(items), created_at: dbTimestamp() };
     items.push(item);
     setStore('categories', items);
     return item;
@@ -216,7 +212,7 @@ export const webTransactionRepo = {
   },
   async create(data: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>): Promise<Transaction> {
     const items = getStore<Transaction>('transactions');
-    const item: Transaction = { ...data, id: nextId(items), created_at: now(), updated_at: null };
+    const item: Transaction = { ...data, id: nextId(items), created_at: dbTimestamp(), updated_at: null };
     items.push(item);
     setStore('transactions', items);
     return item;
@@ -224,7 +220,7 @@ export const webTransactionRepo = {
   async update(id: number, data: Partial<Omit<Transaction, 'id' | 'created_at' | 'updated_at'>>): Promise<void> {
     const items = getStore<Transaction>('transactions');
     const idx = items.findIndex(t => t.id === id);
-    if (idx !== -1) items[idx] = { ...items[idx], ...data, updated_at: now() };
+    if (idx !== -1) items[idx] = { ...items[idx], ...data, updated_at: dbTimestamp() };
     setStore('transactions', items);
   },
   async delete(id: number): Promise<void> {
@@ -268,7 +264,7 @@ export const webTransactionRepo = {
   },
 
   async breakdownByCategoryAndTag(
-    accountId: number,
+    accountId: number | null,
     categoryId: number,
     type: TransactionType,
     startDate: string,
@@ -276,7 +272,7 @@ export const webTransactionRepo = {
     tagIds?: number[]
   ): Promise<{ tag_id: number; name: string; total: number }[]> {
     const transactions = getStore<Transaction>('transactions')
-      .filter(t => t.account_id === accountId && t.category_id === categoryId && t.type === type && t.date >= startDate && t.date <= endDate);
+      .filter(t => (accountId === null || t.account_id === accountId) && t.category_id === categoryId && t.type === type && t.date >= startDate && t.date <= endDate);
     const tags = getStore<Tag>('tags');
     const links = getStore<TransactionTag>('transaction_tags');
     const tagMap = new Map(tags.map(t => [t.id, t.name]));
@@ -313,7 +309,7 @@ export const webTransactionRepo = {
       result.push({ tag_id: tagId, name: tagMap.get(tagId) ?? '', total });
     }
     if (untaggedTotal.total > 0) {
-      result.push({ tag_id: UNTAGGED_ID, name: 'Untagged', total: untaggedTotal.total });
+      result.push({ tag_id: UNTAGGED_ID, name: UNTAGGED_LABEL, total: untaggedTotal.total });
     }
     return result;
   },
@@ -409,7 +405,7 @@ export const webTagRepo = {
   },
   async create(data: Omit<Tag, 'id' | 'created_at'>): Promise<Tag> {
     const items = getStore<Tag>('tags');
-    const item: Tag = { ...data, id: nextId(items), created_at: now() };
+    const item: Tag = { ...data, id: nextId(items), created_at: dbTimestamp() };
     items.push(item);
     setStore('tags', items);
     return item;
@@ -451,35 +447,22 @@ export const webTagRepo = {
   },
 };
 
-const CONFIG_DEFAULTS: Config = {
-  theme: THEMES.dark,
-  firstDayOfWeek: FIRST_DAYS.monday,
-  currency: DEFAULT_CURRENCY,
-  decimalSeparator: DECIMAL_SEPARATORS.comma,
-  language: LANGUAGES.en,
-  textSize: TEXT_SIZES.medium,
-  categoryIconShape: CONFIG_ICON_SHAPES.square,
-  accountIconShape: CONFIG_ICON_SHAPES.square,
-  homeDefaultAccountId: null,
-  homeDefaultPeriod: PERIODS.month,
-  addDefaultAccountId: null,
-  addShowLabels: true,
-  addShowComments: true,
-  addShowPhoto: true,
-  hideBalances: false,
-};
-
 const CONFIG_KEY = '@Finly/config';
 
 export const webConfigRepo = {
   async get(): Promise<Config> {
-    if (typeof localStorage === 'undefined') return CONFIG_DEFAULTS;
+    if (typeof localStorage === 'undefined') return DEFAULT_CONFIG;
     const raw = localStorage.getItem(CONFIG_KEY);
-    return raw ? { ...CONFIG_DEFAULTS, ...JSON.parse(raw) } : CONFIG_DEFAULTS;
+    if (!raw) return DEFAULT_CONFIG;
+    try {
+      return { ...DEFAULT_CONFIG, ...JSON.parse(raw) };
+    } catch {
+      return DEFAULT_CONFIG;
+    }
   },
   async save(partial: Partial<Config>): Promise<void> {
     if (typeof localStorage === 'undefined') return;
-    const current = await this.get();
+    const current = await webConfigRepo.get();
     localStorage.setItem(CONFIG_KEY, JSON.stringify({ ...current, ...partial }));
   },
 };

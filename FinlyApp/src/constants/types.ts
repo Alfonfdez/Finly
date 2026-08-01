@@ -20,6 +20,8 @@ export const MAX_VISIBLE_TAGS = 3;
 export const MAX_SUGGESTIONS = 5;
 export const DECIMAL_PLACES = 2;
 
+export const UNTAGGED_LABEL = 'Untagged';
+
 export const TRANSACTION_TYPES = {
   expense: 'expense',
   income: 'income',
@@ -106,6 +108,8 @@ export const CONFIG_ICON_SHAPES = {
 } as const;
 
 export type ConfigIconShape = (typeof CONFIG_ICON_SHAPES)[keyof typeof CONFIG_ICON_SHAPES];
+
+export type StringKeyOf<T> = { [K in keyof T]-?: T[K] extends string ? K : never }[keyof T];
 
 export const CHART_TYPES = {
   donut: 'donut',

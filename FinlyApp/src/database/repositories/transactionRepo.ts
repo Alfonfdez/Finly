@@ -1,8 +1,9 @@
 import { getDatabase } from '../database';
 import { Transaction } from '../types';
-import { TransactionType } from '../../constants/types';
-import * as FileSystem from 'expo-file-system';
+import { TransactionType, MAX_SUGGESTIONS, UNTAGGED_LABEL } from '../../constants/types';
 import { UNTAGGED_ID, buildUpdateQuery } from '../helpers';
+import { parsePhotos, deletePhotoFile } from '../../utils/photoUtils';
+import { dbTimestamp } from '../../utils/formatters';
 
 interface TransactionFilters {
   account_id?: number;
@@ -41,7 +42,7 @@ interface CategoryUsageCount {
   count: number;
 }
 
-async function deleteTransactionPhotos(whereClause: string, ...params: any[]): Promise<void> {
+async function deleteTransactionPhotos(whereClause: string, ...params: (string | number)[]): Promise<void> {
   try {
     const db = getDatabase();
     const rows = await db.getAllAsync<{ photo: string | null }>(
@@ -50,16 +51,9 @@ async function deleteTransactionPhotos(whereClause: string, ...params: any[]): P
     );
     for (const row of rows) {
       if (row.photo) {
-        try {
-          const photos = JSON.parse(row.photo);
-          const uris = Array.isArray(photos) ? photos : [photos];
-          for (const uri of uris) {
-            const info = await FileSystem.getInfoAsync(uri);
-            if (info.exists) {
-              await FileSystem.deleteAsync(uri);
-            }
-          }
-        } catch {}
+        for (const uri of parsePhotos(row.photo)) {
+          await deletePhotoFile(uri);
+        }
       }
     }
   } catch {}
@@ -130,7 +124,7 @@ export const transactionRepo = {
       `INSERT INTO transactions (account_id, category_id, type, amount, description, photo, date) VALUES (?, ?, ?, ?, ?, ?, ?)`,
       data.account_id, data.category_id, data.type, data.amount, data.description ?? null, data.photo ?? null, data.date
     );
-    return { ...data, id: result.lastInsertRowId, created_at: new Date().toISOString(), updated_at: null };
+    return { ...data, id: result.lastInsertRowId, created_at: dbTimestamp(), updated_at: null };
   },
 
   async update(id: number, data: Partial<Omit<Transaction, 'id' | 'created_at' | 'updated_at'>>): Promise<void> {
@@ -192,7 +186,7 @@ export const transactionRepo = {
     const results = await db.getAllAsync<{ description: string }>(
       `SELECT DISTINCT description FROM transactions
        WHERE description IS NOT NULL AND description LIKE ?
-       ORDER BY description LIMIT 5`,
+       ORDER BY description LIMIT ${MAX_SUGGESTIONS}`,
       `%${search}%`
     );
     return results.map(r => r.description);
@@ -225,7 +219,7 @@ export const transactionRepo = {
   },
 
   async breakdownByCategoryAndTag(
-    accountId: number,
+    accountId: number | null,
     categoryId: number,
     type: TransactionType,
     startDate: string,
@@ -233,6 +227,8 @@ export const transactionRepo = {
     tagIds?: number[]
   ): Promise<CategoryTagBreakdown[]> {
     const db = getDatabase();
+    const accountClause = accountId === null ? '' : 'AND tr.account_id = ?';
+    const accountParams = accountId === null ? [] : [accountId];
     const hasFilter = tagIds && tagIds.length > 0;
     const filterRegular = hasFilter ? tagIds.filter(id => id !== UNTAGGED_ID) : [];
     const filterUntagged = hasFilter ? tagIds.includes(UNTAGGED_ID) : false;
@@ -243,17 +239,19 @@ export const transactionRepo = {
          FROM transactions tr
          INNER JOIN transaction_tags tt ON tr.id = tt.transaction_id
          INNER JOIN tags t ON tt.tag_id = t.id
-         WHERE tr.account_id = ? AND tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
+         WHERE tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
+           ${accountClause}
          GROUP BY tt.tag_id
 
          UNION ALL
 
-         SELECT ${UNTAGGED_ID} AS tag_id, 'Untagged' AS name, SUM(tr.amount) AS total
+         SELECT ${UNTAGGED_ID} AS tag_id, '${UNTAGGED_LABEL}' AS name, SUM(tr.amount) AS total
          FROM transactions tr
-         WHERE tr.account_id = ? AND tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
-           AND NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = tr.id)`,
-        accountId, categoryId, type, startDate, endDate,
-        accountId, categoryId, type, startDate, endDate
+         WHERE tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
+           AND NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = tr.id)
+           ${accountClause}`,
+        categoryId, type, startDate, endDate, ...accountParams,
+        categoryId, type, startDate, endDate, ...accountParams
       );
     }
 
@@ -266,10 +264,11 @@ export const transactionRepo = {
          FROM transactions tr
          INNER JOIN transaction_tags tt ON tr.id = tt.transaction_id
          INNER JOIN tags t ON tt.tag_id = t.id
-         WHERE tr.account_id = ? AND tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
+         WHERE tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
            AND tt.tag_id IN (${placeholders})
+           ${accountClause}
          GROUP BY tt.tag_id`,
-        accountId, categoryId, type, startDate, endDate,
+        categoryId, type, startDate, endDate, ...accountParams,
         ...filterRegular
       );
       results.push(...tagged);
@@ -277,11 +276,12 @@ export const transactionRepo = {
 
     if (filterUntagged) {
       const untagged = await db.getAllAsync<CategoryTagBreakdown>(
-        `SELECT ${UNTAGGED_ID} AS tag_id, 'Untagged' AS name, SUM(tr.amount) AS total
+        `SELECT ${UNTAGGED_ID} AS tag_id, '${UNTAGGED_LABEL}' AS name, SUM(tr.amount) AS total
          FROM transactions tr
-         WHERE tr.account_id = ? AND tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
-           AND NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = tr.id)`,
-        accountId, categoryId, type, startDate, endDate
+         WHERE tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
+           AND NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = tr.id)
+           ${accountClause}`,
+        categoryId, type, startDate, endDate, ...accountParams
       );
       results.push(...untagged);
     }

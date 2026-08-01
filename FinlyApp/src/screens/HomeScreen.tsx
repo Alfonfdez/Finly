@@ -7,11 +7,12 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { formatCurrency, formatDateForDB, formatSignedCurrency, HIDDEN_BALANCE, getPeriodRange, endOfDay, startOfDay } from '../utils/formatters';
-import { RootStackParamList, PERIODS, TRANSACTION_TYPES, type Period, CHART_TYPES, BADGE_SHAPES, type ChartType } from '../constants/types';
+import { formatCurrency, formatDateForDB, formatSignedCurrency, HIDDEN_BALANCE, resolvePeriodRange, endOfDay, startOfDay } from '../utils/formatters';
+import { RootStackParamList, PERIODS, TRANSACTION_TYPES, type Period, CHART_TYPES, type ChartType } from '../constants/types';
+import { badgeShapeFor } from '../utils/badgeShape';
 import { t, getDisplayAccountName } from '../i18n';
 import { transactionRepository as transactionRepo } from '../database';
-import { UNTAGGED_ID } from '../database/helpers';
+import { UNTAGGED_ID, isTotalAccount } from '../database/helpers';
 import AccountModal from '../components/AccountModal';
 import EyeToggle from '../components/EyeToggle';
 import TabBar from '../components/TabBar';
@@ -66,15 +67,13 @@ export default function HomeScreen() {
     let active = true;
 
     async function loadTagBreakdowns() {
-      const dates = activePeriod === PERIODS.custom
-        ? customDate
-        : getPeriodRange(activePeriod, selectedDate);
+      const dates = resolvePeriodRange(activePeriod, selectedDate, customDate);
 
       try {
         const results = await Promise.all(
           activeCategories.map(async (cat) => {
             const data = await transactionRepo.breakdownByCategoryAndTag(
-              currentAccount.id,
+              isTotalAccount(currentAccount) ? null : currentAccount.id,
               cat.id,
               activeType,
               formatDateForDB(dates.start),
@@ -102,9 +101,7 @@ export default function HomeScreen() {
   }, [activeAccount, activeCategories, activeType, activePeriod, selectedDate, customDate, activeTagIds, tags]);
 
   const handleCategoryPress = useCallback((category: { id: number }) => {
-    const { start, end } = activePeriod === PERIODS.custom
-      ? customDate
-      : getPeriodRange(activePeriod, selectedDate);
+    const { start, end } = resolvePeriodRange(activePeriod, selectedDate, customDate);
     navigation.navigate('Transactions', {
       categoryId: category.id,
       type: activeType,
@@ -173,7 +170,7 @@ export default function HomeScreen() {
               <IconBadge
                 icon={activeAccount.icon}
                 color={activeAccount.color}
-                shape={config.accountIconShape === BADGE_SHAPES.circle ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+                shape={badgeShapeFor(config, 'account')}
                 size={24}
                 iconSize={18}
                 roundedRadius={4}

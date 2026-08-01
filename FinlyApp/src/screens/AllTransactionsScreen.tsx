@@ -8,10 +8,10 @@ import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
-import { PERIODS, TRANSACTION_TYPES, TYPE_FILTERS, type RootStackParamList, type TransactionTypeFilter } from '../constants/types';
+import { TRANSACTION_TYPES, TYPE_FILTERS, type RootStackParamList, type TransactionTypeFilter } from '../constants/types';
 import { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
-import { formatCurrency, getPeriodRange, endOfDay, startOfDay } from '../utils/formatters';
+import { formatCurrency, resolvePeriodRange, endOfDay, startOfDay } from '../utils/formatters';
 import { t } from '../i18n';
 import AccountModal from '../components/AccountModal';
 import AccountTrigger from '../components/AccountTrigger';
@@ -46,7 +46,7 @@ export default function AllTransactionsScreen() {
     setSelectedCategoryIds([]);
   }, [typeTab]);
 
-  const periodDates = useMemo(() => activePeriod === PERIODS.custom ? customDate : getPeriodRange(activePeriod, selectedDate), [activePeriod, selectedDate, customDate]);
+  const periodDates = useMemo(() => resolvePeriodRange(activePeriod, selectedDate, customDate), [activePeriod, selectedDate, customDate]);
 
   const filters = useTransactionFilters({
     transactions: allTransactions,
@@ -56,6 +56,10 @@ export default function AllTransactionsScreen() {
     selectedCategoryIds,
     periodDates,
   });
+
+  const handleTransactionPress = useCallback((id: number) => {
+    navigation.navigate('TransactionDetails', { transactionId: id });
+  }, [navigation]);
 
   useFocusEffect(
     useCallback(() => {
@@ -182,7 +186,7 @@ export default function AllTransactionsScreen() {
             transactions={section.data}
             categories={categories}
             tagsByTransaction={filters.tagsByTransaction}
-            onTransactionPress={(id) => navigation.navigate('TransactionDetails', { transactionId: id })}
+            onTransactionPress={handleTransactionPress}
           />
         )}
         renderItem={({ item }) => null}

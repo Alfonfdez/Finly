@@ -13,7 +13,8 @@ import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
 import { isNative } from '../utils/platform';
 import { transactionRepository } from '../database';
 import { Transaction } from '../database/types';
-import { RootStackParamList, BADGE_SHAPES, TRANSACTION_TYPES } from '../constants/types';
+import { RootStackParamList, TRANSACTION_TYPES } from '../constants/types';
+import { badgeShapeFor } from '../utils/badgeShape';
 import { WHITE } from '../constants/themes';
 import ConfirmationModal from '../components/ConfirmationModal';
 import EmptyState from '../components/EmptyState';
@@ -150,7 +151,7 @@ export default function TransactionDetailsScreen() {
                 <IconBadge
                   icon={account.icon}
                   color={account.color}
-                  shape={config.accountIconShape === BADGE_SHAPES.circle ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+                  shape={badgeShapeFor(config, 'account')}
                   size={28}
                   iconSize={18}
                   roundedRadius={4}
@@ -166,7 +167,7 @@ export default function TransactionDetailsScreen() {
                 <IconBadge
                   icon={category.icon}
                   color={category.color}
-                  shape={config.categoryIconShape === BADGE_SHAPES.circle ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+                  shape={badgeShapeFor(config, 'category')}
                   size={28}
                   iconSize={18}
                   roundedRadius={4}

@@ -74,6 +74,10 @@ export default function TransactionsScreen() {
       .reduce((sum, t) => sum + (t.type === TRANSACTION_TYPES.expense ? -t.amount : t.amount), 0);
   }, [filters.filtered]);
 
+  const handleTransactionPress = useCallback((id: number) => {
+    navigation.navigate('TransactionDetails', { transactionId: id });
+  }, [navigation]);
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
       {category && (
@@ -129,7 +133,7 @@ export default function TransactionsScreen() {
             transactions={section.data}
             categories={categories}
             tagsByTransaction={filters.tagsByTransaction}
-            onTransactionPress={(id) => navigation.navigate('TransactionDetails', { transactionId: id })}
+            onTransactionPress={handleTransactionPress}
           />
         )}
         renderItem={({ item }) => null}

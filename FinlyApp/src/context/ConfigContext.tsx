@@ -1,13 +1,13 @@
-import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo, ReactNode } from 'react';
 import { Appearance } from 'react-native';
 import { ColorPalette, darkColors, lightColors } from '../constants/themes';
 import { configRepository } from '../database';
 import { setLanguage } from '../i18n';
 import { isWeb } from '../utils/platform';
-import { LANGUAGES, type Language } from '../utils/language';
+import { type Language } from '../utils/language';
 import { withAlpha } from '../utils/color';
-import { CONFIG_ICON_SHAPES, PERIODS, TEXT_SIZES, THEMES, DECIMAL_SEPARATORS, FIRST_DAYS, type ConfigIconShape, type DecimalSeparator, type FirstDay, type Period, type TextSize, type Theme } from '../constants/types';
-import { DEFAULT_CURRENCY } from '../constants/currencies';
+import { THEMES, type ConfigIconShape, type DecimalSeparator, type FirstDay, type Period, type TextSize, type Theme } from '../constants/types';
+import { DEFAULT_CONFIG } from '../database/configDefaults';
 
 export interface Config {
   theme: Theme;
@@ -26,24 +26,6 @@ export interface Config {
   addShowPhoto: boolean;
   hideBalances: boolean;
 }
-
-const CONFIG_DEFAULT: Config = {
-  theme: THEMES.dark,
-  firstDayOfWeek: FIRST_DAYS.monday,
-  currency: DEFAULT_CURRENCY,
-  decimalSeparator: DECIMAL_SEPARATORS.comma,
-  language: LANGUAGES.en,
-  textSize: TEXT_SIZES.medium,
-  categoryIconShape: CONFIG_ICON_SHAPES.square,
-  accountIconShape: CONFIG_ICON_SHAPES.square,
-  homeDefaultAccountId: null,
-  homeDefaultPeriod: PERIODS.month,
-  addDefaultAccountId: null,
-  addShowLabels: true,
-  addShowComments: true,
-  addShowPhoto: true,
-  hideBalances: false,
-};
 
 interface ConfigContextType {
   config: Config;
@@ -72,7 +54,7 @@ function resolveColors(theme: Theme): ColorPalette {
 }
 
 export function ConfigProvider({ children }: { children: ReactNode }) {
-  const [config, setConfig] = useState<Config>(CONFIG_DEFAULT);
+  const [config, setConfig] = useState<Config>(DEFAULT_CONFIG);
   const configRef = useRef(config);
   configRef.current = config;
   const [loading, setLoading] = useState(true);
@@ -86,7 +68,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         setActiveColors(resolveColors(loaded.theme));
         setLanguage(loaded.language);
       } catch {
-        setActiveColors(resolveColors(CONFIG_DEFAULT.theme));
+        setActiveColors(resolveColors(DEFAULT_CONFIG.theme));
       }
       setLoading(false);
     })();
@@ -122,16 +104,21 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     `;
   }, [activeColors]);
 
-  const updateConfig = async (partial: Partial<Config>) => {
+  const updateConfig = useCallback(async (partial: Partial<Config>) => {
     const updated = { ...configRef.current, ...partial };
     if (partial.language) setLanguage(partial.language);
     configRepository.save(partial).catch(() => {});
     setConfig(updated);
     if (partial.theme) setActiveColors(resolveColors(partial.theme));
-  };
+  }, []);
+
+  const value = useMemo(
+    () => ({ config, activeColors, updateConfig, loading }),
+    [config, activeColors, updateConfig, loading]
+  );
 
   return (
-    <ConfigContext.Provider value={{ config, activeColors, updateConfig, loading }}>
+    <ConfigContext.Provider value={value}>
       {children}
     </ConfigContext.Provider>
   );

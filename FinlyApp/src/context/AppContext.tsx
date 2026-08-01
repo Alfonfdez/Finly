@@ -4,7 +4,7 @@ import { PERIODS, TRANSACTION_TYPES, type Period, type TransactionType, type Cat
 import { accountRepository as accountRepo, categoryRepository as categoryRepo, transactionRepository as transactionRepo, tagRepository as tagRepo } from '../database';
 import { isTotalAccount, UNTAGGED_ID } from '../database/helpers';
 import { useConfig } from './ConfigContext';
-import { formatDateForDB, getPeriodRange } from '../utils/formatters';
+import { formatDateForDB, resolvePeriodRange } from '../utils/formatters';
 
 interface AppState {
   activeAccount: Account | null;
@@ -45,15 +45,18 @@ interface AppContextType extends AppState {
 
 const AppContext = createContext<AppContextType | null>(null);
 
+function defaultCustomDate(): { start: Date; end: Date } {
+  const now = new Date();
+  return { start: new Date(now.getFullYear(), 0, 1), end: now };
+}
+
 async function fetchTransactionsAndTags(
   account: Account,
   period: Period,
   date: Date,
   customDateRange: { start: Date; end: Date },
 ): Promise<{ data: Transaction[]; tagMap: Map<number, number[]> }> {
-  const dates = period === PERIODS.custom
-    ? customDateRange
-    : getPeriodRange(period, date);
+  const dates = resolvePeriodRange(period, date, customDateRange);
   const isTotal = isTotalAccount(account);
   const data = await transactionRepo.list({
     account_id: isTotal ? undefined : account.id,
@@ -81,10 +84,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [activeType, setActiveType] = useState<TransactionType>(TRANSACTION_TYPES.expense);
   const [activePeriod, setActivePeriod] = useState<Period>(PERIODS.day);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [customDate, setCustomDateState] = useState<{ start: Date; end: Date }>(() => {
-    const now = new Date();
-    return { start: new Date(now.getFullYear(), 0, 1), end: now };
-  });
+  const [customDate, setCustomDateState] = useState<{ start: Date; end: Date }>(defaultCustomDate);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -92,6 +92,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [activeTagIds, setActiveTagIds] = useState<number[]>([]);
   const [tagsByTransaction, setTagsByTransaction] = useState<Map<number, number[]>>(new Map());
+  const [transactionsVersion, setTransactionsVersion] = useState(0);
 
   const applyHomeDefaults = useCallback((accountsData: Account[]) => {
     if (accountsData.length > 0) {
@@ -132,14 +133,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!activeAccount) return;
     const account = activeAccount;
+    let active = true;
     async function loadTransactions() {
       const { data, tagMap } = await fetchTransactionsAndTags(
         account, activePeriod, selectedDate, customDate,
       );
+      if (!active) return;
       setTransactions(data);
       setTagsByTransaction(tagMap);
     }
     loadTransactions();
+    return () => { active = false; };
   }, [activeAccount, activePeriod, selectedDate, customDate]);
   const filteredTransactions = useMemo(
     () => {
@@ -182,6 +186,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!activeAccount) return;
     const account = activeAccount;
+    let active = true;
     async function loadAllTotals() {
       const isTotal = isTotalAccount(account);
       const accountId = isTotal ? null : account.id;
@@ -189,38 +194,39 @@ export function AppProvider({ children }: { children: ReactNode }) {
         transactionRepo.totalByPeriod(accountId, TRANSACTION_TYPES.income, DATE_MIN, DATE_MAX),
         transactionRepo.totalByPeriod(accountId, TRANSACTION_TYPES.expense, DATE_MIN, DATE_MAX),
       ]);
+      if (!active) return;
       setTotalIncomeAll(income);
       setTotalExpensesAll(expenses);
     }
     loadAllTotals();
-  }, [activeAccount, transactions]);
+    return () => { active = false; };
+  }, [activeAccount, transactionsVersion]);
 
   const [accountsWithBalance, setAccountsWithBalance] = useState<(Account & { balance: number })[]>([]);
 
   useEffect(() => {
+    let active = true;
     async function calculateBalances() {
       const nonTotal = accounts.filter(a => !isTotalAccount(a));
-      const nonTotalBalances = await Promise.all(
-        nonTotal.map(async (account) => {
-          const balance = await accountRepo.getCurrentBalance(account.id);
-          return { account, balance };
-        })
+      const balanceById = new Map(
+        (await accountRepo.getBalances()).map(b => [b.account_id, b.balance])
       );
-      const totalBalance = nonTotalBalances.reduce((sum, { balance }) => sum + balance, 0);
+      const totalBalance = nonTotal.reduce((sum, a) => sum + (balanceById.get(a.id) ?? 0), 0);
 
       const results = accounts.map((account) => {
         if (isTotalAccount(account)) {
           return { ...account, balance: totalBalance };
         }
-        const found = nonTotalBalances.find(b => b.account.id === account.id);
-        return { ...account, balance: found?.balance ?? 0 };
+        return { ...account, balance: balanceById.get(account.id) ?? 0 };
       });
+      if (!active) return;
       setAccountsWithBalance(results);
     }
     if (accounts.length > 0) {
       calculateBalances();
     }
-  }, [accounts, transactions]);
+    return () => { active = false; };
+  }, [accounts, transactionsVersion]);
 
   const activeCategories = useMemo(() => {
     const categoriesByType = categories.filter(c => c.type === activeType);
@@ -249,6 +255,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     );
     setTransactions(data);
     setTagsByTransaction(tagMap);
+    setTransactionsVersion(v => v + 1);
   }, [activeAccount, activePeriod, selectedDate, customDate]);
 
   const refreshCategories = useCallback(async () => {
@@ -259,6 +266,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const refreshAccounts = useCallback(async () => {
     const accountsData = await accountRepo.list(USER_ID);
     setAccounts(accountsData);
+    setTransactionsVersion(v => v + 1);
   }, []);
 
   const refreshTags = useCallback(async () => {
@@ -280,7 +288,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setActiveTagIds([]);
       setTagsByTransaction(new Map());
       setSelectedDate(new Date());
-      setCustomDateState({ start: new Date(new Date().getFullYear(), 0, 1), end: new Date() });
+      setCustomDateState(defaultCustomDate());
+      setTransactionsVersion(v => v + 1);
     } catch (error) {
       console.error('Failed to reset all data:', error);
     }

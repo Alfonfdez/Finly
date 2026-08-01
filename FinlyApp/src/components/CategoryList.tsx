@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { CategoryWithTotal, BADGE_SHAPES, CONFIG_ICON_SHAPES, MAX_VISIBLE_TAGS } from '../constants/types';
+import { CategoryWithTotal, MAX_VISIBLE_TAGS } from '../constants/types';
 import { formatCurrency } from '../utils/formatters';
+import { badgeShapeFor } from '../utils/badgeShape';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
@@ -28,7 +29,6 @@ export default function CategoryList({
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const round = config.categoryIconShape === CONFIG_ICON_SHAPES.circle;
 
   const renderTagChips = useCallback((categoryId: number) => {
     if (!tagBreakdowns || !expandedCategoryIds || !onToggleExpand) return null;
@@ -79,7 +79,7 @@ export default function CategoryList({
           <IconBadge
             icon={item.icon}
             color={item.color}
-            shape={round ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+            shape={badgeShapeFor(config, 'category')}
             size={40}
             iconSize={20}
             roundedRadius={12}
@@ -100,7 +100,7 @@ export default function CategoryList({
         {renderTagChips(item.id)}
       </View>
     );
-  }, [c, labels, round, fs, config.currency, config.decimalSeparator, onPress, renderTagChips]);
+  }, [c, labels, fs, config, onPress, renderTagChips]);
 
   return (
     <FlatList

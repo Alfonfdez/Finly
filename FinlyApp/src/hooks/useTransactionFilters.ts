@@ -28,6 +28,13 @@ export function useTransactionFilters({
   const [selectedAccountId, setSelectedAccountId] = useState(
     () => activeAccount?.id ?? accounts.find(a => !isTotalAccount(a))?.id ?? 1
   );
+
+  const activeAccountId = activeAccount?.id;
+  useEffect(() => {
+    if (activeAccountId !== undefined) {
+      setSelectedAccountId(activeAccountId);
+    }
+  }, [activeAccountId]);
   const [accountModalVisible, setAccountModalVisible] = useState(false);
   const [sortBy, setSortBy] = useState<SortBy>(SORT_BY.date);
   const [sortDirection, setSortDirection] = useState<SortDirection>(SORT_DIRECTIONS.desc);

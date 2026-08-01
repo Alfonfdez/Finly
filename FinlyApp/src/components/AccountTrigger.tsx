@@ -4,7 +4,7 @@ import { Account } from '../database/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { getDisplayAccountName } from '../i18n';
-import { BADGE_SHAPES } from '../constants/types';
+import { badgeShapeFor } from '../utils/badgeShape';
 import IconBadge from './IconBadge';
 
 interface Props {
@@ -24,7 +24,7 @@ export default function AccountTrigger({ accountId, accounts, onPress }: Props) 
         <IconBadge
           icon={account.icon}
           color={account.color}
-          shape={config.accountIconShape === BADGE_SHAPES.circle ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+          shape={badgeShapeFor(config, 'account')}
           size={28}
           iconSize={18}
           roundedRadius={6}

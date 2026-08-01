@@ -2,6 +2,7 @@ import { getDatabase } from '../database';
 import { Category } from '../types';
 import { TransactionType } from '../../constants/types';
 import { buildUpdateQuery } from '../helpers';
+import { dbTimestamp } from '../../utils/formatters';
 
 export const categoryRepo = {
   async list(userId: number, type?: TransactionType): Promise<Category[]> {
@@ -24,7 +25,7 @@ export const categoryRepo = {
       `INSERT INTO categories (user_id, name, icon, color, type) VALUES (?, ?, ?, ?, ?)`,
       data.user_id, data.name, data.icon, data.color, data.type
     );
-    return { ...data, id: result.lastInsertRowId, created_at: new Date().toISOString() };
+    return { ...data, id: result.lastInsertRowId, created_at: dbTimestamp() };
   },
 
   async update(id: number, data: Partial<Omit<Category, 'id' | 'created_at'>>): Promise<void> {

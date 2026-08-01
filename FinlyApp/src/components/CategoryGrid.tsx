@@ -5,6 +5,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
 import { BADGE_SHAPES, CONFIG_ICON_SHAPES } from '../constants/types';
 import { withAlpha } from '../utils/color';
+import { badgeShapeFor } from '../utils/badgeShape';
 import IconBadge from './IconBadge';
 import { PILL_RADIUS } from './componentStyles';
 
@@ -42,7 +43,7 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
         <IconBadge
           icon={cat.icon}
           color={cat.color}
-          shape={round ? BADGE_SHAPES.circle : BADGE_SHAPES.rounded}
+          shape={badgeShapeFor(config, 'category')}
           size={40}
           iconSize={24}
           roundedRadius={20}
