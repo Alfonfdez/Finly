@@ -23,6 +23,20 @@ function nextId<T extends { id: number }>(items: T[]): number {
   return items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
 }
 
+function nameExists<T extends { id: number; name: string; user_id?: number }>(
+  items: T[],
+  name: string,
+  opts: { userId?: number; excludeId?: number } = {}
+): boolean {
+  const lower = name.toLowerCase();
+  return items.some(item => {
+    if (opts.userId !== undefined && item.user_id !== opts.userId) return false;
+    if (item.name.toLowerCase() !== lower) return false;
+    if (opts.excludeId !== undefined && item.id === opts.excludeId) return false;
+    return true;
+  });
+}
+
 // --- Initialization ---
 export async function initWebStorage(): Promise<void> {
   const users = getStore<User>('users');
@@ -125,13 +139,7 @@ export const webAccountRepo = {
     return accounts.map(a => ({ account_id: a.id, balance: a.initial_balance + (deltas.get(a.id) ?? 0) }));
   },
   async existsByName(name: string, excludeId?: number): Promise<boolean> {
-    const items = getStore<Account>('accounts');
-    const lower = name.toLowerCase();
-    return items.some(a => {
-      if (a.name.toLowerCase() !== lower) return false;
-      if (excludeId !== undefined && a.id === excludeId) return false;
-      return true;
-    });
+    return nameExists(getStore<Account>('accounts'), name, { excludeId });
   },
 };
 
@@ -164,13 +172,7 @@ export const webCategoryRepo = {
     setStore('categories', []);
   },
   async existsByName(name: string, excludeId?: number): Promise<boolean> {
-    const items = getStore<Category>('categories');
-    const lower = name.toLowerCase();
-    return items.some(c => {
-      if (c.name.toLowerCase() !== lower) return false;
-      if (excludeId !== undefined && c.id === excludeId) return false;
-      return true;
-    });
+    return nameExists(getStore<Category>('categories'), name, { excludeId });
   },
 };
 
@@ -289,9 +291,10 @@ export const webTransactionRepo = {
       const isUntagged = txnTagIds.length === 0;
 
       if (hasFilter) {
-        if (filterUntagged && !isUntagged) continue;
-        if (filterRegular.length > 0 && isUntagged) continue;
-        if (filterRegular.length > 0 && !filterRegular.some(id => txnTagIds.includes(id))) continue;
+        const matches =
+          (filterUntagged && isUntagged) ||
+          (filterRegular.length > 0 && txnTagIds.some(id => filterRegular.includes(id)));
+        if (!matches) continue;
       }
 
       if (isUntagged) {
@@ -427,23 +430,7 @@ export const webTagRepo = {
     setStore('transaction_tags', []);
   },
   async existsByName(userId: number, name: string, excludeId?: number): Promise<boolean> {
-    const items = getStore<Tag>('tags');
-    const lower = name.toLowerCase();
-    return items.some(t => {
-      if (t.user_id !== userId) return false;
-      if (t.name.toLowerCase() !== lower) return false;
-      if (excludeId !== undefined && t.id === excludeId) return false;
-      return true;
-    });
-  },
-  async getByTransactionIds(transactionIds: number[]): Promise<{ transaction_id: number; tag_id: number; name: string }[]> {
-    if (transactionIds.length === 0) return [];
-    const junction = getStore<TransactionTag>('transaction_tags');
-    const tags = getStore<Tag>('tags');
-    const tagMap = new Map(tags.map(t => [t.id, t.name]));
-    return junction
-      .filter(jt => transactionIds.includes(jt.transaction_id))
-      .map(jt => ({ transaction_id: jt.transaction_id, tag_id: jt.tag_id, name: tagMap.get(jt.tag_id) ?? '' }));
+    return nameExists(getStore<Tag>('tags'), name, { userId, excludeId });
   },
 };
 

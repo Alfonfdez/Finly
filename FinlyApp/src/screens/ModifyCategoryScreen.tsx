@@ -1,28 +1,34 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  Modal, StyleSheet, Keyboard,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useColorSelection } from '../hooks/useColorSelection';
 import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
 import { t, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdByName } from '../i18n';
-import { isAndroid } from '../utils/platform';
 import { categoryRepository, transactionRepository } from '../database';
 import { RootStackParamList, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
-import { WHITE } from '../constants/themes';
+import { WHITE, TRANSPARENT } from '../constants/themes';
 import IconGrid, { CATEGORY_ICONS } from '../components/IconGrid';
 import ColorGrid, { QUICK_COLORS } from '../components/ColorGrid';
 import ColorPickerModal from '../components/ColorPickerModal';
 import IconBadge from '../components/IconBadge';
 import ConfirmationModal from '../components/ConfirmationModal';
-import { OVERLAY_BG, MODAL_MAX_WIDTH, MODAL_BORDER_RADIUS, MODAL_PADDING, BUTTON_BORDER_RADIUS } from '../components/componentStyles';
+import ModalShell from '../components/ModalShell';
+import ListItemRow from '../components/ListItemRow';
+import SectionTitle from '../components/form/SectionTitle';
+import PrimaryButton from '../components/form/PrimaryButton';
+import DeleteButton from '../components/form/DeleteButton';
+import KeyboardSpacer from '../components/form/KeyboardSpacer';
+import FormScrollView from '../components/form/FormScrollView';
+import { BUTTON_BORDER_RADIUS } from '../components/componentStyles';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ModifyCategory'>;
 type ModifyCategoryRouteProp = RouteProp<RootStackParamList, 'ModifyCategory'>;
@@ -44,8 +50,6 @@ export default function ModifyCategoryScreen() {
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState<string | null>(null);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [customColor, setCustomColor] = useState<string | null>(null);
   const [checkingName, setCheckingName] = useState(false);
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
   const userEditedRef = useRef(false);
@@ -53,6 +57,7 @@ export default function ModifyCategoryScreen() {
   const [selectModalVisible, setSelectModalVisible] = useState(false);
   const [targetCategoryId, setTargetCategoryId] = useState<number | null>(null);
   const [deleteHasTransactions, setDeleteHasTransactions] = useState(false);
+  const { selectedColor, customColor, setSelectedColor, setCustomColor, handleColorSelect } = useColorSelection();
 
   useEffect(() => {
     if (category && !userEditedRef.current) {
@@ -63,7 +68,7 @@ export default function ModifyCategoryScreen() {
         setCustomColor(category.color);
       }
     }
-  }, [category]);
+  }, [category, setCustomColor, setSelectedColor]);
 
   const checkNameDuplicate = useCallback(async (value: string) => {
     if (!value.trim()) {
@@ -109,13 +114,6 @@ export default function ModifyCategoryScreen() {
     if (!category) return [];
     return categories.filter(cat => cat.type === category.type && cat.id !== category.id);
   }, [categories, category]);
-
-  const handleColorSelect = (color: string) => {
-    setSelectedColor(color);
-    if (!QUICK_COLORS.includes(color)) {
-      setCustomColor(color);
-    }
-  };
 
   const handleSave = async () => {
     if (!canSave || !category) return;
@@ -195,12 +193,7 @@ export default function ModifyCategoryScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
       <View style={styles.content}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          onScrollBeginDrag={() => Keyboard.dismiss()}
-        >
+        <FormScrollView>
           <View style={styles.nameRow}>
             <IconBadge
               icon={selectedIcon || category.icon}
@@ -242,16 +235,12 @@ export default function ModifyCategoryScreen() {
             </View>
           </View>
 
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.modify_cat_type}
-          </Text>
+          <SectionTitle text={labels.modify_cat_type} />
           <Text style={[styles.typeText, { color: c.textSecondary, fontSize: fs(14) }]}>
             {category.type === TRANSACTION_TYPES.expense ? labels.tab_expenses : labels.tab_income}
           </Text>
 
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_cat_symbols}
-          </Text>
+          <SectionTitle text={labels.create_cat_symbols} />
           <IconGrid
             icons={CATEGORY_ICONS}
             selectedIcon={selectedIcon}
@@ -260,9 +249,7 @@ export default function ModifyCategoryScreen() {
             onSelect={setSelectedIcon}
           />
 
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_cat_color}
-          </Text>
+          <SectionTitle text={labels.create_cat_color} />
           <ColorGrid
             selectedColor={selectedColor}
             customColor={customColor}
@@ -277,31 +264,17 @@ export default function ModifyCategoryScreen() {
             onClose={() => setColorPickerVisible(false)}
           />
 
-          <TouchableOpacity
-            style={[styles.deleteButton, { borderColor: c.red }]}
-            onPress={handleDeletePress}
-          >
-            <Ionicons name="trash-outline" size={18} color={c.red} />
-            <Text style={[styles.deleteButtonText, { color: c.red, fontSize: fs(15) }]}>
-              {labels.modify_cat_delete}
-            </Text>
-          </TouchableOpacity>
+          <DeleteButton label={labels.modify_cat_delete} onPress={handleDeletePress} />
 
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { backgroundColor: canSave ? c.primary : c.textSecondary },
-            ]}
+          <PrimaryButton
+            label={labels.modify_cat_save}
             onPress={handleSave}
             disabled={!canSave}
-          >
-            <Text style={[styles.buttonText, { color: WHITE, fontSize: fs(15) }]}>
-              {labels.modify_cat_save}
-            </Text>
-          </TouchableOpacity>
+            style={styles.button}
+          />
 
-          {isAndroid && <View style={styles.keyboardSpacer} />}
-        </ScrollView>
+          <KeyboardSpacer />
+        </FormScrollView>
       </View>
 
       <ConfirmationModal
@@ -318,74 +291,68 @@ export default function ModifyCategoryScreen() {
         onMove={deleteHasTransactions ? handleMoveTransactions : undefined}
       />
 
-      <Modal visible={selectModalVisible} transparent animationType="fade" onRequestClose={() => setSelectModalVisible(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: c.surface }]}>
-            <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(16) }]}>
-              {labels.modify_cat_select_title}
+      <ModalShell visible={selectModalVisible} onClose={() => setSelectModalVisible(false)}>
+        <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(16) }]}>
+          {labels.modify_cat_select_title}
+        </Text>
+        <ScrollView style={styles.selectList}>
+          {sameTypeCategories.length === 0 ? (
+            <Text style={[styles.emptySelect, { color: c.textSecondary, fontSize: fs(14) }]}>
+              {labels.add_cat_no_results}
             </Text>
-            <ScrollView style={styles.selectList}>
-              {sameTypeCategories.length === 0 ? (
-                <Text style={[styles.emptySelect, { color: c.textSecondary, fontSize: fs(14) }]}>
-                  {labels.add_cat_no_results}
-                </Text>
-              ) : (
-                sameTypeCategories.map((cat) => {
-                  const isSelected = targetCategoryId === cat.id;
-                  return (
-                    <TouchableOpacity
-                      key={cat.id}
-                      style={[styles.selectItem, { backgroundColor: isSelected ? c.background : 'transparent' }]}
-                      onPress={() => setTargetCategoryId(cat.id)}
-                      accessibilityLabel={getDisplayCategoryName(cat)}
-                      accessibilityState={{ selected: isSelected }}
-                    >
-                      <View style={[styles.radio, { borderColor: isSelected ? c.primary : c.border }]}>
-                        {isSelected && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
-                      </View>
-                      <IconBadge
-                        icon={cat.icon}
-                        color={cat.color}
-              shape={badgeShapeFor(config, 'category')}
-                        size={36}
-                        iconSize={20}
-                        roundedRadius={8}
-                        backgroundAlpha={20}
-                        style={styles.selectIcon}
-                      />
-                      <Text style={[styles.selectName, { color: c.text, fontSize: fs(14) }]}>
-                        {getDisplayCategoryName(cat)}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })
-              )}
-            </ScrollView>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: c.surface, borderColor: c.border }]}
-                onPress={() => setSelectModalVisible(false)}
-              >
-                <Text style={[styles.modalButtonText, { color: c.text, fontSize: fs(14) }]}>
-                  {labels.modify_cat_select_cancel}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.modalButton,
-                  { backgroundColor: targetCategoryId !== null ? c.primary : c.textSecondary },
-                ]}
-                onPress={handleSelectTarget}
-                disabled={targetCategoryId === null}
-              >
-                <Text style={[styles.modalButtonText, { color: WHITE, fontSize: fs(14) }]}>
-                  {labels.modify_cat_select_confirm}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          ) : (
+            sameTypeCategories.map((cat) => {
+              const isSelected = targetCategoryId === cat.id;
+              const radio = (
+                <View style={[styles.radio, { borderColor: isSelected ? c.primary : c.border }]}>
+                  {isSelected && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
+                </View>
+              );
+              return (
+                <ListItemRow
+                  key={cat.id}
+                  title={getDisplayCategoryName(cat)}
+                  leading={radio}
+                  icon={cat.icon}
+                  color={cat.color}
+                  shape={badgeShapeFor(config, 'category')}
+                  badgeSize={36}
+                  badgeIconSize={20}
+                  badgeRadius={8}
+                  badgeAlpha={20}
+                  badgeGap={12}
+                  style={[styles.selectItem, { backgroundColor: isSelected ? c.background : TRANSPARENT }]}
+                  onPress={() => setTargetCategoryId(cat.id)}
+                  accessibilityLabel={getDisplayCategoryName(cat)}
+                  accessibilityState={{ selected: isSelected }}
+                />
+              );
+            })
+          )}
+        </ScrollView>
+        <View style={styles.modalButtons}>
+          <TouchableOpacity
+            style={[styles.modalButton, { backgroundColor: c.surface, borderColor: c.border }]}
+            onPress={() => setSelectModalVisible(false)}
+          >
+            <Text style={[styles.modalButtonText, { color: c.text, fontSize: fs(14) }]}>
+              {labels.modify_cat_select_cancel}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.modalButton,
+              { backgroundColor: targetCategoryId !== null ? c.primary : c.textSecondary },
+            ]}
+            onPress={handleSelectTarget}
+            disabled={targetCategoryId === null}
+          >
+            <Text style={[styles.modalButtonText, { color: WHITE, fontSize: fs(14) }]}>
+              {labels.modify_cat_select_confirm}
+            </Text>
+          </TouchableOpacity>
         </View>
-      </Modal>
+      </ModalShell>
     </SafeAreaView>
   );
 }
@@ -396,14 +363,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 32,
   },
   nameRow: {
     flexDirection: 'row',
@@ -438,43 +397,8 @@ const styles = StyleSheet.create({
   typeText: {
     marginLeft: 4,
   },
-  deleteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 24,
-    paddingVertical: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  deleteButtonText: {
-    fontWeight: '600',
-  },
   button: {
     marginTop: 12,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontWeight: '600',
-  },
-  keyboardSpacer: {
-    height: 200,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: OVERLAY_BG,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-  },
-  modalContent: {
-    width: '100%',
-    maxWidth: MODAL_MAX_WIDTH,
-    borderRadius: MODAL_BORDER_RADIUS,
-    padding: MODAL_PADDING,
   },
   modalTitle: {
     fontWeight: '700',
@@ -504,13 +428,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   selectItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 8,
     borderRadius: 8,
     marginBottom: 4,
-    gap: 12,
   },
   radio: {
     width: 22,
@@ -524,13 +445,6 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-  },
-  selectIcon: {
-    marginHorizontal: 12,
-  },
-  selectName: {
-    flex: 1,
-    fontWeight: '500',
   },
   emptySelect: {
     textAlign: 'center',

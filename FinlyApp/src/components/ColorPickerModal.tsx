@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { View, TouchableOpacity, Modal, Text, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import ColorPicker, { Panel1, HueSlider, OpacitySlider, Preview } from 'reanimated-color-picker';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import { OVERLAY_BG, MODAL_MAX_WIDTH, MODAL_BORDER_RADIUS, BUTTON_BORDER_RADIUS } from './componentStyles';
+import { BUTTON_BORDER_RADIUS } from './componentStyles';
 import { WHITE } from '../constants/themes';
+import ModalShell from './ModalShell';
 
 
 interface Props {
@@ -37,66 +38,50 @@ export default function ColorPickerModal({ visible, selectedColor, onSelect, onC
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <View style={[styles.modal, { backgroundColor: c.surface }]}>
-          <View style={[styles.header, { borderBottomColor: c.border }]}>
-            <Text style={[styles.title, { color: c.text, fontSize: fs(16) }]}>
-              {labels.create_cat_color_picker_title}
-            </Text>
-          </View>
-
-          <View style={styles.pickerContainer}>
-            <ColorPicker
-              value={tempColor}
-              onChangeJS={handleChange}
-              style={styles.picker}
-              boundedThumb
-            >
-              <Panel1 style={styles.panel} />
-              <HueSlider style={styles.slider} />
-              <OpacitySlider style={styles.slider} />
-              <Preview hideInitialColor />
-            </ColorPicker>
-          </View>
-
-          <View style={[styles.footer, { borderTopColor: c.border }]}>
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: c.surface, borderColor: c.border }]}
-              onPress={onClose}
-            >
-              <Text style={[styles.buttonText, { color: c.text, fontSize: fs(14) }]}>
-                {labels.create_cat_color_picker_cancel}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: c.primary }]}
-              onPress={handleConfirm}
-            >
-              <Text style={[styles.buttonText, { color: WHITE, fontSize: fs(14) }]}>
-                {labels.create_cat_color_picker_ok}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+    <ModalShell visible={visible} onClose={onClose} padding={20} overlayPadding={0}>
+      <View style={[styles.header, { borderBottomColor: c.border }]}>
+        <Text style={[styles.title, { color: c.text, fontSize: fs(16) }]}>
+          {labels.create_cat_color_picker_title}
+        </Text>
       </View>
-    </Modal>
+
+      <View style={styles.pickerContainer}>
+        <ColorPicker
+          value={tempColor}
+          onChangeJS={handleChange}
+          style={styles.picker}
+          boundedThumb
+        >
+          <Panel1 style={styles.panel} />
+          <HueSlider style={styles.slider} />
+          <OpacitySlider style={styles.slider} />
+          <Preview hideInitialColor />
+        </ColorPicker>
+      </View>
+
+      <View style={[styles.footer, { borderTopColor: c.border }]}>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: c.surface, borderColor: c.border }]}
+          onPress={onClose}
+        >
+          <Text style={[styles.buttonText, { color: c.text, fontSize: fs(14) }]}>
+            {labels.create_cat_color_picker_cancel}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: c.primary }]}
+          onPress={handleConfirm}
+        >
+          <Text style={[styles.buttonText, { color: WHITE, fontSize: fs(14) }]}>
+            {labels.create_cat_color_picker_ok}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </ModalShell>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: OVERLAY_BG,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modal: {
-    width: '90%',
-    maxWidth: MODAL_MAX_WIDTH,
-    borderRadius: MODAL_BORDER_RADIUS,
-    padding: 20,
-  },
   header: {
     borderBottomWidth: 1,
     paddingBottom: 12,

@@ -1,9 +1,9 @@
-import { Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { ScrollView } from 'react-native';
 import { useConfig } from '../../context/ConfigContext';
-import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
 import type { IconName } from '../../components/IconGrid';
+import SettingsRow from '../../components/settings/SettingsRow';
+import { settingsStyles } from '../../components/settings/settingsStyles';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../constants/types';
 
@@ -19,7 +19,6 @@ type Subsection = {
 
 export default function SettingsScreen({ navigation }: Props) {
   const { activeColors: c } = useConfig();
-  const fs = useFontSize();
   const labels = t();
 
   const subsections: Subsection[] = [
@@ -30,35 +29,15 @@ export default function SettingsScreen({ navigation }: Props) {
   ];
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: c.background }]} contentContainerStyle={styles.content}>
+    <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
       {subsections.map((item) => (
-        <TouchableOpacity
+        <SettingsRow
           key={item.screen}
-          style={[styles.row, { backgroundColor: c.surface }]}
+          icon={item.icon}
+          label={item.label}
           onPress={() => navigation.navigate(item.screen)}
-        >
-          <Ionicons name={item.icon} size={24} color={c.primary} />
-          <Text style={[styles.label, { color: c.text, fontSize: fs(15) }]}>{item.label}</Text>
-          <Ionicons name="chevron-forward-outline" size={20} color={c.textSecondary} />
-        </TouchableOpacity>
+        />
       ))}
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { padding: 16 },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    gap: 12,
-  },
-  label: {
-    flex: 1,
-    fontWeight: '600',
-  },
-});

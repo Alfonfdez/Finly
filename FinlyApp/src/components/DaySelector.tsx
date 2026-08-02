@@ -4,6 +4,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { isSameDay } from '../utils/formatters';
+import { withAlpha } from '../utils/color';
 
 interface Props {
   selectedDate: Date;
@@ -47,7 +48,7 @@ export default function DaySelector({ selectedDate, onSelect, onOpenCalendar }: 
     <TouchableOpacity
       style={[
         styles.option,
-        { backgroundColor: isSelected ? c.primary + '22' : c.surface },
+        { backgroundColor: isSelected ? withAlpha(c.primary, 14) : c.surface },
         isSelected && { borderWidth: 2, borderColor: c.primary },
       ]}
       onPress={() => onSelect(date)}

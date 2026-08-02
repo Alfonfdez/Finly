@@ -12,9 +12,10 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { evaluate } from '../utils/calculator';
 import { isWeb } from '../utils/platform';
-import { OVERLAY_BG, MODAL_BORDER_RADIUS, BUTTON_BORDER_RADIUS } from './componentStyles';
+import { BUTTON_BORDER_RADIUS } from './componentStyles';
 import { CALC_KEYS } from '../constants/types';
 import { WHITE } from '../constants/themes';
+import ModalShell from './ModalShell';
 
 
 interface Props {
@@ -24,14 +25,19 @@ interface Props {
 }
 
 const BUTTONS = [
-  ['7', '8', '9', '/'],
-  ['4', '5', '6', '*'],
-  ['1', '2', '3', '-'],
-  [CALC_KEYS.clear, '0', '.', '+'],
-  ['⌫', '', '', CALC_KEYS.equals],
+  ['7', '8', '9', CALC_KEYS.divide],
+  ['4', '5', '6', CALC_KEYS.multiply],
+  ['1', '2', '3', CALC_KEYS.subtract],
+  [CALC_KEYS.clear, '0', CALC_KEYS.decimal, CALC_KEYS.add],
+  [CALC_KEYS.backspace, '', '', CALC_KEYS.equals],
 ];
 
-const OP_KEYS = new Set(['+', '-', '*', '/']);
+const OP_KEYS = new Set<string>([
+  CALC_KEYS.add,
+  CALC_KEYS.subtract,
+  CALC_KEYS.multiply,
+  CALC_KEYS.divide,
+]);
 
 export default function CalculatorModal({ visible, onAccept, onCancel }: Props) {
   const { activeColors: c } = useConfig();
@@ -52,7 +58,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
       setHasError(false);
       return;
     }
-    if (btn === '⌫') {
+    if (btn === CALC_KEYS.backspace) {
       setExpression(prev => prev.slice(0, -1));
       setHasError(false);
       return;
@@ -67,12 +73,12 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
     setExpression(prev => {
       const lastChar = prev.slice(-1);
       if (OP_KEYS.has(btn)) {
-        if (!prev) return btn === '-' ? prev + btn : prev;
+        if (!prev) return btn === CALC_KEYS.subtract ? prev + btn : prev;
         if (OP_KEYS.has(lastChar)) {
           return prev.slice(0, -1) + btn;
         }
       }
-      if (btn === '.') {
+      if (btn === CALC_KEYS.decimal) {
         const lastNumber = prev.split(/[+\-*/]/).pop() || '';
         if (lastNumber.includes('.')) return prev;
       }
@@ -92,7 +98,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
     if (OP_KEYS.has(btn)) return c.primary;
     if (btn === CALC_KEYS.equals) return c.green;
     if (btn === CALC_KEYS.clear) return c.red;
-    if (btn === '⌫') return c.border;
+    if (btn === CALC_KEYS.backspace) return c.border;
     return c.surface;
   };
 
@@ -107,7 +113,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
     }
 
     const disabled = btn === CALC_KEYS.equals && (!expression || hasError);
-    const label = btn === '*' ? '×' : btn === '/' ? '÷' : btn;
+    const label = btn === CALC_KEYS.multiply ? '×' : btn === CALC_KEYS.divide ? '÷' : btn;
     const btnStyle = isWeb ? webStyles.button : mobileStyles.button;
 
     return (
@@ -210,13 +216,9 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
 
   if (isWeb) {
     return (
-      <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
-        <View style={webStyles.overlay}>
-          <View style={[webStyles.modal, { backgroundColor: c.background }]}>
-            {content}
-          </View>
-        </View>
-      </Modal>
+      <ModalShell visible={visible} onClose={onCancel} padding={0} overlayPadding={0} backgroundColor={c.background} maxHeight={undefined}>
+        {content}
+      </ModalShell>
     );
   }
 
@@ -302,17 +304,6 @@ const mobileStyles = StyleSheet.create({
 });
 
 const webStyles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: OVERLAY_BG,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modal: {
-    width: 360,
-    borderRadius: MODAL_BORDER_RADIUS,
-    overflow: 'hidden',
-  },
   keyboard: {
     paddingHorizontal: 16,
     paddingBottom: 8,

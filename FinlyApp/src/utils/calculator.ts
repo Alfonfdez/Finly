@@ -1,3 +1,5 @@
+import { CALC_KEYS } from '../constants/types';
+
 type CalcResult = {
   result: number | null;
   error: boolean;
@@ -5,14 +7,23 @@ type CalcResult = {
 
 const MAX_VALUE = 999999999.99;
 
-const precedence = (op: string) => (op === '+' || op === '-') ? 1 : 2;
+const OP_CHARS = [
+  CALC_KEYS.add,
+  CALC_KEYS.subtract,
+  CALC_KEYS.multiply,
+  CALC_KEYS.divide,
+].join('');
+
+const precedence = (op: string) => (
+  op === CALC_KEYS.add || op === CALC_KEYS.subtract ? 1 : 2
+);
 
 function tokenize(expr: string): (number | string)[] {
   const tokens: (number | string)[] = [];
   let num = '';
   for (const ch of expr) {
     if (ch === ' ') continue;
-    if ('+-*/'.includes(ch)) {
+    if (OP_CHARS.includes(ch)) {
       if (num) {
         tokens.push(parseFloat(num));
         num = '';
@@ -28,10 +39,10 @@ function tokenize(expr: string): (number | string)[] {
 
 function applyOp(a: number, b: number, op: string): number {
   switch (op) {
-    case '+': return a + b;
-    case '-': return a - b;
-    case '*': return a * b;
-    case '/': return b === 0 ? NaN : a / b;
+    case CALC_KEYS.add: return a + b;
+    case CALC_KEYS.subtract: return a - b;
+    case CALC_KEYS.multiply: return a * b;
+    case CALC_KEYS.divide: return b === 0 ? NaN : a / b;
     default: return 0;
   }
 }
@@ -75,7 +86,7 @@ export function evaluate(expression: string): CalcResult {
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i];
     if (typeof t === 'string') {
-      if (i === 0 && t !== '-') return { result: null, error: true };
+      if (i === 0 && t !== CALC_KEYS.subtract) return { result: null, error: true };
       if (i === tokens.length - 1) return { result: null, error: true };
       if (i > 0 && typeof tokens[i - 1] === 'string') return { result: null, error: true };
     }

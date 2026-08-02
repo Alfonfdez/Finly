@@ -22,3 +22,23 @@ export function buildUpdateQuery(
 
   return { sets: sets.join(', '), values };
 }
+
+export type NameTable = 'accounts' | 'categories' | 'tags';
+
+export function buildNameExistsQuery(
+  table: NameTable,
+  name: string,
+  opts: { userId?: number; excludeId?: number } = {}
+): { sql: string; params: (string | number)[] } {
+  let sql = `SELECT COUNT(*) as count FROM ${table} WHERE LOWER(name) = LOWER(?)`;
+  const params: (string | number)[] = [name];
+  if (opts.userId !== undefined) {
+    sql += ` AND user_id = ?`;
+    params.push(opts.userId);
+  }
+  if (opts.excludeId !== undefined) {
+    sql += ` AND id != ?`;
+    params.push(opts.excludeId);
+  }
+  return { sql, params };
+}

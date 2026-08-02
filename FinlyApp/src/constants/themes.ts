@@ -1,5 +1,6 @@
 export const WHITE = '#FFFFFF';
 export const BLACK = '#000000';
+export const TRANSPARENT = 'transparent';
 
 export interface ColorPalette {
   background: string;

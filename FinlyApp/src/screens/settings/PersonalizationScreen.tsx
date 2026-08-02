@@ -1,40 +1,15 @@
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, ScrollView } from 'react-native';
 import { useConfig, Config } from '../../context/ConfigContext';
 import { useApp } from '../../context/AppContext';
 import { useFontSize } from '../../hooks/useFontSize';
-import { scaleFontSize } from '../../utils/formatters';
 import { t, getDisplayAccountName } from '../../i18n';
 import { isNative } from '../../utils/platform';
 import { isTotalAccount } from '../../database/helpers';
 import SelectorInline, { Option } from '../../components/SelectorInline';
-import { settingsStyles } from './settingsStyles';
+import CheckboxRow from '../../components/settings/CheckboxRow';
+import ToggleRow from '../../components/settings/ToggleRow';
+import { settingsStyles } from '../../components/settings/settingsStyles';
 import type { Period } from '../../constants/types';
-
-function Checkbox({
-  checked,
-  onToggle,
-  colors,
-  label,
-}: {
-  checked: boolean;
-  onToggle: () => void;
-  colors: ReturnType<typeof useConfig>['activeColors'];
-  label: string;
-}) {
-  const { config } = useConfig();
-  const fs = (s: number) => scaleFontSize(s, config.textSize);
-  return (
-    <TouchableOpacity style={styles.checkboxRow} onPress={onToggle}>
-      <Ionicons
-        name={checked ? 'checkbox' : 'square-outline'}
-        size={22}
-        color={checked ? colors.primary : colors.textSecondary}
-      />
-      <Text style={[styles.checkboxLabel, { color: colors.text, fontSize: fs(14) }]}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
 
 export default function PersonalizationScreen() {
   const { config, activeColors: c, updateConfig } = useConfig();
@@ -94,23 +69,20 @@ export default function PersonalizationScreen() {
       </View>
       <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
         <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_optional_fields}</Text>
-        <Checkbox
+        <CheckboxRow
           checked={config.addShowLabels}
           onToggle={() => updateConfig({ addShowLabels: !config.addShowLabels })}
-          colors={c}
           label={labels.settings_labels}
         />
-        <Checkbox
+        <CheckboxRow
           checked={config.addShowComments}
           onToggle={() => updateConfig({ addShowComments: !config.addShowComments })}
-          colors={c}
           label={labels.settings_comments}
         />
         {isNative && (
-          <Checkbox
+          <CheckboxRow
             checked={config.addShowPhoto}
             onToggle={() => updateConfig({ addShowPhoto: !config.addShowPhoto })}
-            colors={c}
             label={labels.settings_photo}
           />
         )}
@@ -118,22 +90,12 @@ export default function PersonalizationScreen() {
 
       <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_privacy}</Text>
       <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
-        <TouchableOpacity style={styles.toggleRow} onPress={() => updateConfig({ hideBalances: !config.hideBalances })}>
-          <Text style={[styles.toggleLabel, { color: c.text, fontSize: fs(14) }]}>{labels.settings_hide_balances}</Text>
-          <Ionicons
-            name={config.hideBalances ? 'toggle' : 'toggle-outline'}
-            size={32}
-            color={config.hideBalances ? c.primary : c.textSecondary}
-          />
-        </TouchableOpacity>
+        <ToggleRow
+          checked={config.hideBalances}
+          onToggle={() => updateConfig({ hideBalances: !config.hideBalances })}
+          label={labels.settings_hide_balances}
+        />
       </View>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6 },
-  checkboxLabel: { fontWeight: '500' },
-  toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  toggleLabel: { fontWeight: '500' },
-});

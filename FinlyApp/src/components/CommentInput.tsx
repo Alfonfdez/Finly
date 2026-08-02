@@ -1,7 +1,8 @@
-import { forwardRef, useEffect, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import { DEBOUNCE_MS, MAX_COMMENT_LENGTH } from '../constants/types';
@@ -17,27 +18,26 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus 
   const fs = useFontSize();
   const labels = t();
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipNextSearch = useRef(false);
+
+  const searchComments = useCallback(async (value: string) => {
+    const results = await transactionRepository.searchComments(value);
+    setSuggestions(results);
+  }, []);
+
+  const debouncedSearch = useDebouncedCallback(searchComments, DEBOUNCE_MS);
 
   useEffect(() => {
     if (skipNextSearch.current) {
       skipNextSearch.current = false;
       return;
     }
-    if (debounceRef.current) clearTimeout(debounceRef.current);
     if (comment.length < 1) {
       setSuggestions([]);
       return;
     }
-    debounceRef.current = setTimeout(async () => {
-      const results = await transactionRepository.searchComments(comment);
-      setSuggestions(results);
-    }, DEBOUNCE_MS);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [comment]);
+    debouncedSearch(comment);
+  }, [comment, debouncedSearch]);
 
   const handleSelectSuggestion = (text: string) => {
     skipNextSearch.current = true;

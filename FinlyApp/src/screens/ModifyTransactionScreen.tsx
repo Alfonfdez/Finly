@@ -22,6 +22,7 @@ import CalculatorModal from '../components/CalculatorModal';
 import { TRANSACTION_TYPES, type TransactionType, type RootStackParamList, USER_ID, MAX_VISIBLE_CATEGORIES } from '../constants/types';
 import { parseAmountInput, parseAmountValue } from '../utils/amountInput';
 import { formatDateForDB } from '../utils/formatters';
+import { withAlpha } from '../utils/color';
 import { parsePhotos } from '../utils/photoUtils';
 import { transactionRepository, tagRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
@@ -286,7 +287,7 @@ export default function ModifyTransactionScreen() {
         <TouchableOpacity
           style={[
             styles.submitButton,
-            { backgroundColor: canSubmit ? c.primary : c.textSecondary + '60' },
+            { backgroundColor: canSubmit ? c.primary : withAlpha(c.textSecondary, 38) },
           ]}
           onPress={handleSubmit}
           disabled={!canSubmit || submitting}

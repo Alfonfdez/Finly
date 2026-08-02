@@ -1,7 +1,8 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import type { ReactNode } from 'react';
 import { useConfig } from '../context/ConfigContext';
-import { scaleFontSize } from '../utils/formatters';
+import { useFontSize } from '../hooks/useFontSize';
+import { withAlpha } from '../utils/color';
 
 export type Option<T extends string = string> = { label: string; value: T; icon?: ReactNode };
 
@@ -12,14 +13,14 @@ interface Props<T extends string> {
 }
 
 export default function SelectorInline<T extends string>({ options, selected, onSelect }: Props<T>) {
-  const { activeColors: c, config } = useConfig();
-  const fs = (s: number) => scaleFontSize(s, config.textSize);
+  const { activeColors: c } = useConfig();
+  const fs = useFontSize();
   return (
     <View style={styles.options}>
       {options.map(op => (
         <TouchableOpacity
           key={String(op.value)}
-          style={[styles.option, { backgroundColor: selected === op.value ? c.primary + '20' : c.surface }]}
+          style={[styles.option, { backgroundColor: selected === op.value ? withAlpha(c.primary, 13) : c.surface }]}
           onPress={() => onSelect(op.value)}
         >
           {op.icon && <View style={styles.iconWrap}>{op.icon}</View>}

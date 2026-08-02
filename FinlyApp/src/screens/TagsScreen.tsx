@@ -1,8 +1,7 @@
-import { useCallback } from 'react';
 import { Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -12,7 +11,6 @@ import { Tag } from '../database/types';
 import { RootStackParamList } from '../constants/types';
 import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
-import DrawerMenuButton from '../components/DrawerMenuButton';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Tags'>;
 
@@ -22,17 +20,6 @@ export default function TagsScreen() {
   const labels = t();
   const navigation = useNavigation<NavigationProp>();
   const { tags } = useApp();
-
-  useFocusEffect(
-    useCallback(() => {
-      navigation.setOptions({
-        headerLeft: () => (
-          <DrawerMenuButton accessibilityLabel={labels.home_open_menu} />
-        ),
-      });
-    }, [navigation, labels.home_open_menu])
-  );
-
   const renderItem = ({ item }: { item: Tag }) => (
     <TouchableOpacity
       style={[styles.row, { backgroundColor: c.surface, borderBottomColor: c.border }]}

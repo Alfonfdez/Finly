@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { isWeb } from '../utils/platform';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { formatPeriodText } from '../utils/formatters';
 import { Period } from './calendars/types';
 import { PERIODS } from '../constants/types';
@@ -15,7 +14,7 @@ import MonthGrid from './calendars/MonthGrid';
 import YearGrid from './calendars/YearGrid';
 import PeriodPicker from './calendars/PeriodPicker';
 import { MIN_DATE } from './calendars/calendarStyles';
-import { OVERLAY_BG, MODAL_BORDER_RADIUS } from './componentStyles';
+import ModalShell from './ModalShell';
 
 interface Props {
   visible: boolean;
@@ -73,63 +72,51 @@ export default function CalendarModal({
   }, [date, rangeStart, rangeEnd, onClose]);
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleCancel}>
-      <View style={styles.overlay}>
-        <View style={[styles.modal, { backgroundColor: c.background }]}>
-          <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>{labels[TITLE_KEYS[period]]}</Text>
-          {period !== PERIODS.custom && <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(13) }]}>{formatPeriodText(period, tempDate, labels.months, labels.months_short)}</Text>}
+    <ModalShell
+      visible={visible}
+      onClose={handleCancel}
+      maxWidth={380}
+      padding={16}
+      overlayPadding={24}
+      backgroundColor={c.background}
+      shadow
+    >
+      <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>{labels[TITLE_KEYS[period]]}</Text>
+      {period !== PERIODS.custom && <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(13) }]}>{formatPeriodText(period, tempDate, labels.months, labels.months_short)}</Text>}
 
-          {period === PERIODS.day && (
-            <DayPicker date={tempDate} onSelect={handleSelect} />
-          )}
-          {period === PERIODS.week && (
-            <WeekPicker date={tempDate} onSelect={handleSelect} />
-          )}
-          {period === PERIODS.month && (
-            <MonthGrid date={tempDate} onSelect={handleSelect} />
-          )}
-          {period === PERIODS.year && (
-            <YearGrid date={tempDate} onSelect={handleSelect} />
-          )}
-          {period === PERIODS.custom && (
-            <PeriodPicker
-              tempStart={tempRangeStart}
-              tempEnd={tempRangeEnd}
-              onTempRangeChange={handleRangeChange}
-            />
-          )}
+      {period === PERIODS.day && (
+        <DayPicker date={tempDate} onSelect={handleSelect} />
+      )}
+      {period === PERIODS.week && (
+        <WeekPicker date={tempDate} onSelect={handleSelect} />
+      )}
+      {period === PERIODS.month && (
+        <MonthGrid date={tempDate} onSelect={handleSelect} />
+      )}
+      {period === PERIODS.year && (
+        <YearGrid date={tempDate} onSelect={handleSelect} />
+      )}
+      {period === PERIODS.custom && (
+        <PeriodPicker
+          tempStart={tempRangeStart}
+          tempEnd={tempRangeEnd}
+          onTempRangeChange={handleRangeChange}
+        />
+      )}
 
-          <View style={[styles.buttons, { borderTopColor: c.border }]}>
-            <TouchableOpacity style={[styles.cancelButton, { backgroundColor: c.surface }]} onPress={handleCancel}>
-              <Text style={[styles.cancelButtonText, { color: c.textSecondary, fontSize: fs(14) }]}>{labels.cal_cancel}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.okButton, { backgroundColor: c.primary }]} onPress={handleOk}>
-              <Text style={[styles.okButtonText, { color: c.background, fontSize: fs(14) }]}>{labels.cal_ok}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+      <View style={[styles.buttons, { borderTopColor: c.border }]}>
+        <TouchableOpacity style={[styles.cancelButton, { backgroundColor: c.surface }]} onPress={handleCancel}>
+          <Text style={[styles.cancelButtonText, { color: c.textSecondary, fontSize: fs(14) }]}>{labels.cal_cancel}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.okButton, { backgroundColor: c.primary }]} onPress={handleOk}>
+          <Text style={[styles.okButtonText, { color: c.background, fontSize: fs(14) }]}>{labels.cal_ok}</Text>
+        </TouchableOpacity>
       </View>
-    </Modal>
+    </ModalShell>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: OVERLAY_BG,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  modal: {
-    borderRadius: MODAL_BORDER_RADIUS,
-    width: '100%',
-    maxWidth: 380,
-    padding: 16,
-    ...(isWeb
-      ? { boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }
-      : { elevation: 10 }),
-  },
   title: { fontWeight: '700', marginBottom: 2 },
   subtitle: { marginBottom: 12 },
   buttons: {

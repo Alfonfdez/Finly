@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { CONFIG_ICON_SHAPES, type ConfigIconShape } from '../constants/types';
 import { withAlpha } from '../utils/color';
+import { TRANSPARENT } from '../constants/themes';
 import { PILL_RADIUS } from './componentStyles';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -48,7 +49,7 @@ export default function IconGrid({ icons, selectedIcon, selectedColor = null, sh
         const isSelected = selectedIcon === icon;
         const iconColor = isSelected && selectedColor ? selectedColor : (isSelected ? c.primary : c.textSecondary);
         const bgColor = isSelected && selectedColor ? withAlpha(selectedColor, 20) : (isSelected ? withAlpha(c.primary, 20) : c.surface);
-        const borderColor = isSelected ? (selectedColor || c.primary) : 'transparent';
+        const borderColor = isSelected ? (selectedColor || c.primary) : TRANSPARENT;
         return (
           <TouchableOpacity
             key={icon}

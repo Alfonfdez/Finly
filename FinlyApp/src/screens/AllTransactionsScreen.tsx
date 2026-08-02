@@ -2,11 +2,12 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { View, Text, SectionList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
 import { TRANSACTION_TYPES, TYPE_FILTERS, type RootStackParamList, type TransactionTypeFilter } from '../constants/types';
 import { Transaction } from '../database/types';
@@ -21,7 +22,6 @@ import TransactionGroup from '../components/TransactionGroup';
 import TabBar from '../components/TabBar';
 import EmptyState from '../components/EmptyState';
 import CategoryFilterModal from '../components/CategoryFilterModal';
-import DrawerMenuButton from '../components/DrawerMenuButton';
 import PeriodTabs from '../components/PeriodTabs';
 import CalendarPicker from '../components/CalendarPicker';
 
@@ -34,9 +34,6 @@ export default function AllTransactionsScreen() {
   const fs = useFontSize();
   const labels = t();
 
-  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-
   const [typeTab, setTypeTab] = useState<TransactionTypeFilter>(TYPE_FILTERS.all);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
@@ -47,6 +44,12 @@ export default function AllTransactionsScreen() {
   }, [typeTab]);
 
   const periodDates = useMemo(() => resolvePeriodRange(activePeriod, selectedDate, customDate), [activePeriod, selectedDate, customDate]);
+
+  const loadTransactions = useCallback(async () => {
+    return await transactionRepository.list({});
+  }, []);
+
+  const { data: allTransactions, loading } = useFocusLoad(loadTransactions, [] as Transaction[]);
 
   const filters = useTransactionFilters({
     transactions: allTransactions,
@@ -60,31 +63,6 @@ export default function AllTransactionsScreen() {
   const handleTransactionPress = useCallback((id: number) => {
     navigation.navigate('TransactionDetails', { transactionId: id });
   }, [navigation]);
-
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-      (async () => {
-        setLoading(true);
-        const data = await transactionRepository.list({});
-        if (active) {
-          setAllTransactions(data);
-          setLoading(false);
-        }
-      })();
-      return () => { active = false; };
-    }, [])
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      navigation.setOptions({
-        headerLeft: () => (
-          <DrawerMenuButton accessibilityLabel={labels.home_open_menu} />
-        ),
-      });
-    }, [navigation, labels.home_open_menu])
-  );
 
   const accountBalance = useMemo(() => {
     return filters.filtered

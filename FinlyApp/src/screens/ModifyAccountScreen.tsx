@@ -1,29 +1,31 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  View, Text, TextInput, TouchableOpacity, ScrollView,
-  StyleSheet, Keyboard,
-} from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig, Config } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
+import { useColorSelection } from '../hooks/useColorSelection';
 import { t, getDisplayAccountName, getDefaultEnglishAccountName, getAccountName, getDefaultAccountIdByName, getDisplayAccountDescription, getDefaultEnglishAccountDescription, getAccountDescription } from '../i18n';
-import { isAndroid } from '../utils/platform';
 import { accountRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
 import { Account } from '../database/types';
 import { RootStackParamList, MAX_ACCOUNT_NAME_LENGTH, MAX_NOTE_LENGTH } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
-import { WHITE } from '../constants/themes';
 import IconGrid from '../components/IconGrid';
 import ColorGrid, { QUICK_COLORS } from '../components/ColorGrid';
 import ColorPickerModal from '../components/ColorPickerModal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import EmptyState from '../components/EmptyState';
+import SectionTitle from '../components/form/SectionTitle';
+import LabeledTextField from '../components/form/LabeledTextField';
+import PrimaryButton from '../components/form/PrimaryButton';
+import FormError from '../components/form/FormError';
+import DeleteButton from '../components/form/DeleteButton';
+import KeyboardSpacer from '../components/form/KeyboardSpacer';
+import FormScrollView from '../components/form/FormScrollView';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ModifyAccount'>;
 type ModifyAccountRouteProp = RouteProp<RootStackParamList, 'ModifyAccount'>;
@@ -43,27 +45,27 @@ export default function ModifyAccountScreen() {
   const [nameTouched, setNameTouched] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [customColor, setCustomColor] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [checkingName, setCheckingName] = useState(false);
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const { selectedColor, customColor, setSelectedColor, setCustomColor, handleColorSelect } = useColorSelection();
 
   useEffect(() => {
+    let active = true;
     accountRepository.getById(accountId).then((found) => {
-      if (found) {
-        setAccount(found);
-        setName(getDisplayAccountName(found));
-        setSelectedIcon(found.icon);
-        setSelectedColor(found.color);
-        setDescription(getDisplayAccountDescription(found));
-        if (!QUICK_COLORS.includes(found.color)) {
-          setCustomColor(found.color);
-        }
+      if (!active || !found) return;
+      setAccount(found);
+      setName(getDisplayAccountName(found));
+      setSelectedIcon(found.icon);
+      setSelectedColor(found.color);
+      setDescription(getDisplayAccountDescription(found));
+      if (!QUICK_COLORS.includes(found.color)) {
+        setCustomColor(found.color);
       }
     });
-  }, [accountId]);
+    return () => { active = false; };
+  }, [accountId, setCustomColor, setSelectedColor]);
 
   const checkNameDuplicate = useCallback(async (value: string) => {
     if (!value.trim()) {
@@ -140,15 +142,7 @@ export default function ModifyAccountScreen() {
     }
   };
 
-  const handleColorSelect = (color: string) => {
-    setSelectedColor(color);
-    if (!QUICK_COLORS.includes(color)) {
-      setCustomColor(color);
-    }
-  };
-
-  const handleDeleteConfirm = async () => {
-    try {
+  const handleDeleteConfirm = async () => {    try {
       await accountRepository.delete(accountId);
       await refreshAccounts();
 
@@ -185,42 +179,22 @@ export default function ModifyAccountScreen() {
     <>
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
       <View style={styles.content}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          onScrollBeginDrag={() => Keyboard.dismiss()}
-        >
+        <FormScrollView>
           {!isTotal && (
-            <>
-              <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-                {labels.modify_account_name}
-              </Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: c.surface,
-                    color: c.text,
-                    borderColor: nameError || (nameTouched && name.trim().length === 0) ? c.red : c.border,
-                    fontSize: fs(14),
-                  },
-                ]}
-                value={name}
-                onChangeText={handleNameChange}
-                maxLength={MAX_ACCOUNT_NAME_LENGTH}
-                autoCapitalize="words"
-                autoCorrect={false}
-              />
-              <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
-                {name.length}/{MAX_ACCOUNT_NAME_LENGTH}
-              </Text>
-            </>
+            <LabeledTextField
+              label={labels.modify_account_name}
+              placeholder={labels.modify_account_name}
+              value={name}
+              onChangeText={handleNameChange}
+              maxLength={MAX_ACCOUNT_NAME_LENGTH}
+              autoCapitalize="words"
+              autoCorrect={false}
+              error={(nameError || (nameTouched && name.trim().length === 0)) ? (nameError ?? ' ') : null}
+              showCounter
+            />
           )}
 
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_account_symbols}
-          </Text>
+          <SectionTitle text={labels.create_account_symbols} />
           <IconGrid
             icons={ACCOUNT_ICONS}
             selectedIcon={selectedIcon}
@@ -229,9 +203,7 @@ export default function ModifyAccountScreen() {
             onSelect={setSelectedIcon}
           />
 
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_account_color}
-          </Text>
+          <SectionTitle text={labels.create_account_color} />
           <ColorGrid
             selectedColor={selectedColor}
             customColor={customColor}
@@ -242,26 +214,12 @@ export default function ModifyAccountScreen() {
           <ColorPickerModal
             visible={colorPickerVisible}
             selectedColor={selectedColor}
-            onSelect={(color) => {
-              handleColorSelect(color);
-            }}
+            onSelect={handleColorSelect}
             onClose={() => setColorPickerVisible(false)}
           />
 
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.modify_account_note}
-          </Text>
-          <TextInput
-            style={[
-              styles.input,
-              styles.textArea,
-              {
-                backgroundColor: c.surface,
-                color: c.text,
-                borderColor: c.border,
-                fontSize: fs(14),
-              },
-            ]}
+          <LabeledTextField
+            label={labels.modify_account_note}
             value={description}
             onChangeText={(value) => {
               if (value.length <= MAX_NOTE_LENGTH) setDescription(value);
@@ -269,35 +227,20 @@ export default function ModifyAccountScreen() {
             multiline
             numberOfLines={3}
             textAlignVertical="top"
+            maxLength={MAX_NOTE_LENGTH}
+            showCounter
           />
-          <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
-            {description.length}/{MAX_NOTE_LENGTH}
-          </Text>
 
-          {hintText && (
-            <Text style={[styles.hint, { color: c.red, fontSize: fs(12) }]}>
-              {hintText}
-            </Text>
-          )}
+          <FormError message={hintText} fontSize={fs(12)} style={styles.hint} />
 
           {!isTotal && (
             <>
-              <TouchableOpacity
-                style={[
-                  styles.deleteButton,
-                  isLastAccount
-                    ? { borderColor: c.border, opacity: 0.5 }
-                    : { borderColor: c.red },
-                ]}
+              <DeleteButton
+                label={labels.modify_account_delete}
                 onPress={() => !isLastAccount && setDeleteModalVisible(true)}
                 disabled={isLastAccount}
-                accessibilityState={{ disabled: isLastAccount }}
-              >
-                <Ionicons name="trash-outline" size={18} color={isLastAccount ? c.textSecondary : c.red} />
-                <Text style={[styles.deleteButtonText, { color: isLastAccount ? c.textSecondary : c.red, fontSize: fs(15) }]}>
-                  {labels.modify_account_delete}
-                </Text>
-              </TouchableOpacity>
+                style={styles.deleteButton}
+              />
 
               {isLastAccount && (
                 <Text style={[styles.hint, { color: c.textSecondary, fontSize: fs(12) }]}>
@@ -307,21 +250,15 @@ export default function ModifyAccountScreen() {
             </>
           )}
 
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { backgroundColor: canSave ? c.primary : c.textSecondary },
-            ]}
+          <PrimaryButton
+            label={labels.modify_account_save}
             onPress={handleSave}
             disabled={!canSave}
-          >
-            <Text style={[styles.buttonText, { color: WHITE, fontSize: fs(15) }]}>
-              {labels.modify_account_save}
-            </Text>
-          </TouchableOpacity>
+            style={styles.button}
+          />
 
-          {isAndroid && <View style={styles.keyboardSpacer} />}
-        </ScrollView>
+          <KeyboardSpacer />
+        </FormScrollView>
       </View>
     </SafeAreaView>
 
@@ -345,59 +282,16 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 32,
-  },
-  sectionTitle: {
-    fontWeight: '600',
-    marginBottom: 4,
-    marginTop: 10,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
-  },
-  textArea: {
-    minHeight: 80,
-  },
-  counter: {
-    textAlign: 'right',
-    marginTop: 4,
-    marginBottom: 4,
-  },
   hint: {
     marginTop: 16,
     textAlign: 'center',
   },
   deleteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
     marginTop: 24,
     paddingVertical: 12,
     borderRadius: 10,
-    borderWidth: 1,
-  },
-  deleteButtonText: {
-    fontWeight: '600',
   },
   button: {
     marginTop: 12,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontWeight: '600',
-  },
-  keyboardSpacer: {
-    height: 200,
   },
 });

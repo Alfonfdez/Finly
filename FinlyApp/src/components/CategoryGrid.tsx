@@ -1,13 +1,11 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Category } from '../database/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
-import { BADGE_SHAPES, CONFIG_ICON_SHAPES } from '../constants/types';
-import { withAlpha } from '../utils/color';
+import { BADGE_SHAPES } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
-import IconBadge from './IconBadge';
-import { PILL_RADIUS } from './componentStyles';
+import CategoryTile from './CategoryTile';
 
 interface Props {
   categories: Category[];
@@ -23,68 +21,36 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const round = config.categoryIconShape === CONFIG_ICON_SHAPES.circle;
 
   const renderCategory = (cat: Category) => {
-    const isSelected = cat.id === selectedCategory;
     const categoryName = getDisplayCategoryName(cat);
 
     return (
-      <TouchableOpacity
+      <CategoryTile
         key={cat.id}
-        style={[
-          styles.item,
-          { backgroundColor: isSelected ? withAlpha(cat.color, 20) : c.surface, borderRadius: round ? PILL_RADIUS : 12 },
-          isSelected && { borderWidth: 2, borderColor: cat.color },
-        ]}
+        icon={cat.icon}
+        color={cat.color}
+        shape={badgeShapeFor(config, 'category')}
+        label={categoryName}
+        selected={cat.id === selectedCategory}
         onPress={() => onSelect(cat.id)}
         accessibilityLabel={`${labels.a11y_category} ${categoryName}`}
-      >
-        <IconBadge
-          icon={cat.icon}
-          color={cat.color}
-          shape={badgeShapeFor(config, 'category')}
-          size={40}
-          iconSize={24}
-          roundedRadius={20}
-          backgroundAlpha={13}
-          style={styles.iconContainer}
-        />
-        <Text
-          style={[styles.name, { color: c.text, fontSize: fs(11) }]}
-          numberOfLines={1}
-        >
-          {categoryName}
-        </Text>
-      </TouchableOpacity>
+      />
     );
   };
 
   const label = addMoreLabel ?? labels.add_more;
 
   const renderAddMore = () => (
-    <TouchableOpacity
-      style={[styles.item, styles.addMoreItem, { borderColor: c.border, borderRadius: round ? PILL_RADIUS : 12 }]}
+    <CategoryTile
+      icon="add"
+      color={c.textSecondary}
+      shape={BADGE_SHAPES.rounded}
+      label={label}
+      dashed
       onPress={onAddMore}
       accessibilityLabel={label}
-    >
-      <IconBadge
-        icon="add"
-        color={c.textSecondary}
-        shape={BADGE_SHAPES.rounded}
-        size={40}
-        iconSize={24}
-        roundedRadius={20}
-        backgroundAlpha={13}
-        style={styles.iconContainer}
-      />
-      <Text
-        style={[styles.name, { color: c.textSecondary, fontSize: fs(11) }]}
-        numberOfLines={1}
-      >
-        {label}
-      </Text>
-    </TouchableOpacity>
+    />
   );
 
   return (
@@ -114,25 +80,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-  },
-  item: {
-    width: '22%',
-    aspectRatio: 1,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 8,
-  },
-  addMoreItem: {
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    backgroundColor: 'transparent',
-  },
-  iconContainer: {
-    marginBottom: 4,
-  },
-  name: {
-    fontWeight: '500',
-    textAlign: 'center',
   },
 });

@@ -6,8 +6,9 @@ import YearNav from './YearNav';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { calendarStyles, FUTURE_OPACITY } from './calendarStyles';
+import { MONTHS_PER_YEAR } from '../../constants/calendar';
 
-const MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+const MONTHS = Array.from({ length: MONTHS_PER_YEAR }, (_, i) => i + 1);
 
 export default function MonthGrid({ date, onSelect }: CalendarBaseProps) {
   const today = useMemo(() => new Date(), []);

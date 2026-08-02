@@ -1,8 +1,5 @@
 import { useState, useCallback } from 'react';
-import {
-  View, Text, TextInput, TouchableOpacity, ScrollView,
-  StyleSheet, Keyboard,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -10,15 +7,20 @@ import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
+import { useColorSelection } from '../hooks/useColorSelection';
 import { t, getDefaultCategoryIdByName, getDefaultEnglishName } from '../i18n';
-import { isAndroid } from '../utils/platform';
 import { categoryRepository } from '../database';
 import { RootStackParamList, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, type TransactionType, USER_ID } from '../constants/types';
-import { WHITE } from '../constants/themes';
 import { setPendingCategory } from './AddTransactionScreen';
 import IconGrid, { CATEGORY_ICONS } from '../components/IconGrid';
-import ColorGrid, { QUICK_COLORS } from '../components/ColorGrid';
+import ColorGrid from '../components/ColorGrid';
 import ColorPickerModal from '../components/ColorPickerModal';
+import SectionTitle from '../components/form/SectionTitle';
+import LabeledTextField from '../components/form/LabeledTextField';
+import PrimaryButton from '../components/form/PrimaryButton';
+import FormError from '../components/form/FormError';
+import KeyboardSpacer from '../components/form/KeyboardSpacer';
+import FormScrollView from '../components/form/FormScrollView';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateCategory'>;
 type CreateCategoryRouteProp = RouteProp<RootStackParamList, 'CreateCategory'>;
@@ -37,10 +39,9 @@ export default function CreateCategoryScreen() {
   const [nameError, setNameError] = useState<string | null>(null);
   const [type, setType] = useState<TransactionType>(initialType);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [customColor, setCustomColor] = useState<string | null>(null);
   const [checkingName, setCheckingName] = useState(false);
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
+  const { selectedColor, customColor, handleColorSelect } = useColorSelection();
 
   const checkNameDuplicate = useCallback(async (value: string) => {
     if (!value.trim()) {
@@ -112,40 +113,20 @@ export default function CreateCategoryScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
       <View style={styles.content}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          onScrollBeginDrag={() => Keyboard.dismiss()}
-        >
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_cat_name}
-          </Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: c.surface,
-                color: c.text,
-                borderColor: nameError ? c.red : c.border,
-                fontSize: fs(14),
-              },
-            ]}
+        <FormScrollView>
+          <LabeledTextField
+            label={labels.create_cat_name}
             placeholder={labels.create_cat_name_placeholder}
-            placeholderTextColor={c.textSecondary}
             value={name}
             onChangeText={handleNameChange}
             maxLength={MAX_CATEGORY_NAME_LENGTH}
             autoCapitalize="words"
             autoCorrect={false}
+            error={nameError}
+            showCounter
           />
-          <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
-            {name.length}/{MAX_CATEGORY_NAME_LENGTH}
-          </Text>
 
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_cat_type}
-          </Text>
+          <SectionTitle text={labels.create_cat_type} />
           <View style={styles.typeRow}>
             <TouchableOpacity
               style={[
@@ -174,9 +155,7 @@ export default function CreateCategoryScreen() {
             </Text>
           </View>
 
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_cat_symbols}
-          </Text>
+          <SectionTitle text={labels.create_cat_symbols} />
           <IconGrid
             icons={CATEGORY_ICONS}
             selectedIcon={selectedIcon}
@@ -185,49 +164,32 @@ export default function CreateCategoryScreen() {
             onSelect={setSelectedIcon}
           />
 
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_cat_color}
-          </Text>
+          <SectionTitle text={labels.create_cat_color} />
           <ColorGrid
             selectedColor={selectedColor}
             customColor={customColor}
-            onSelect={setSelectedColor}
+            onSelect={handleColorSelect}
             onOpenPicker={() => setColorPickerVisible(true)}
           />
 
           <ColorPickerModal
             visible={colorPickerVisible}
             selectedColor={selectedColor}
-            onSelect={(color) => {
-              setSelectedColor(color);
-              if (!QUICK_COLORS.includes(color)) {
-                setCustomColor(color);
-              }
-            }}
+            onSelect={handleColorSelect}
             onClose={() => setColorPickerVisible(false)}
           />
 
-          {hintText && (
-            <Text style={[styles.hint, { color: c.red, fontSize: fs(12) }]}>
-              {hintText}
-            </Text>
-          )}
+          <FormError message={hintText} fontSize={fs(12)} style={styles.hint} />
 
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { backgroundColor: canCreate ? c.primary : c.textSecondary },
-            ]}
+          <PrimaryButton
+            label={labels.create_cat_add}
             onPress={handleCreate}
             disabled={!canCreate}
-          >
-            <Text style={[styles.buttonText, { color: WHITE, fontSize: fs(15) }]}>
-              {labels.create_cat_add}
-            </Text>
-          </TouchableOpacity>
+            style={styles.button}
+          />
 
-          {isAndroid && <View style={styles.keyboardSpacer} />}
-        </ScrollView>
+          <KeyboardSpacer />
+        </FormScrollView>
       </View>
     </SafeAreaView>
   );
@@ -239,29 +201,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 32,
-  },
-  sectionTitle: {
-    fontWeight: '600',
-    marginBottom: 4,
-    marginTop: 10,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
-  },
-  counter: {
-    textAlign: 'right',
-    marginTop: 4,
-    marginBottom: 4,
   },
   typeRow: {
     flexDirection: 'row',
@@ -290,14 +229,5 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 16,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontWeight: '600',
-  },
-  keyboardSpacer: {
-    height: 200,
   },
 });

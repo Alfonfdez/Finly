@@ -6,7 +6,7 @@ import { badgeShapeFor } from '../utils/badgeShape';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
-import IconBadge from './IconBadge';
+import ListItemRow from './ListItemRow';
 
 interface TagBreakdown {
   tag_id: number;
@@ -70,33 +70,29 @@ export default function CategoryList({
     const displayName = getDisplayCategoryName(item);
     return (
       <View style={[styles.itemWrapper, { borderBottomColor: c.border }]}>
-        <TouchableOpacity
-          style={styles.item}
-          onPress={() => onPress?.(item)}
-          accessibilityLabel={`${labels.a11y_category} ${displayName}, ${item.percentage.toFixed(1)}%`}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <IconBadge
-            icon={item.icon}
-            color={item.color}
-            shape={badgeShapeFor(config, 'category')}
-            size={40}
-            iconSize={20}
-            roundedRadius={12}
-            backgroundAlpha={19}
-            style={styles.icon}
-          />
-          <View style={styles.info}>
-            <Text style={[styles.name, { color: c.text, fontSize: fs(14) }]}>{displayName}</Text>
+        <ListItemRow
+          title={displayName}
+          icon={item.icon}
+          color={item.color}
+          shape={badgeShapeFor(config, 'category')}
+          badgeSize={40}
+          badgeIconSize={20}
+          badgeRadius={12}
+          middle={
             <View style={[styles.barBackground, { backgroundColor: c.surface }]}>
               <View style={[styles.barFill, { width: `${Math.min(item.percentage, 100)}%`, backgroundColor: item.color }]} />
             </View>
-          </View>
-          <View style={styles.amounts}>
-            <Text style={[styles.total, { color: c.text, fontSize: fs(14) }]}>{formatCurrency(item.total, config.currency, config.decimalSeparator)}</Text>
-            <Text style={[styles.percentage, { color: c.textSecondary, fontSize: fs(12) }]}>{item.percentage.toFixed(1)}%</Text>
-          </View>
-        </TouchableOpacity>
+          }
+          right={
+            <View style={styles.amounts}>
+              <Text style={[styles.total, { color: c.text, fontSize: fs(14) }]}>{formatCurrency(item.total, config.currency, config.decimalSeparator)}</Text>
+              <Text style={[styles.percentage, { color: c.textSecondary, fontSize: fs(12) }]}>{item.percentage.toFixed(1)}%</Text>
+            </View>
+          }
+          onPress={() => onPress?.(item)}
+          accessibilityLabel={`${labels.a11y_category} ${displayName}, ${item.percentage.toFixed(1)}%`}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        />
         {renderTagChips(item.id)}
       </View>
     );
@@ -115,20 +111,9 @@ const styles = StyleSheet.create({
   itemWrapper: {
     borderBottomWidth: 1,
   },
-  item: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  icon: {
-    marginRight: 12,
-  },
-  info: { flex: 1, marginRight: 12 },
-  name: { fontWeight: '500', marginBottom: 6 },
-  barBackground: { height: 4, borderRadius: 2, overflow: 'hidden' },
+  barBackground: { height: 4, borderRadius: 2, overflow: 'hidden', marginTop: 6 },
   barFill: { height: '100%', borderRadius: 2 },
-  amounts: { alignItems: 'flex-end' },
+  amounts: { alignItems: 'flex-end', marginLeft: 12 },
   total: { fontWeight: '600' },
   percentage: { marginTop: 2 },
   tagSection: {

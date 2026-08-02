@@ -48,8 +48,8 @@ npx expo lint
 ```
 
 ## DATABASE
-- Current version: 5
-- Migrations in `src/database/migrations/`
+- 3 idempotent migrations in `src/database/migrations/`: `001_initial` (schema), `002_seed` (seed data), `003_config` (config defaults)
+- No version counter; all statements use `CREATE TABLE/INDEX IF NOT EXISTS`
 - SQLite for native, localStorage for web
 - 5 repositories: user, account, category, transaction, config
 

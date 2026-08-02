@@ -1,7 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Keyboard } from 'react-native';
+import { View, StyleSheet, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
@@ -12,6 +11,10 @@ import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
 import { RootStackParamList, USER_ID, MAX_TAG_NAME_LENGTH } from '../constants/types';
 import ConfirmationModal from '../components/ConfirmationModal';
+import LabeledTextField from '../components/form/LabeledTextField';
+import PrimaryButton from '../components/form/PrimaryButton';
+import FormError from '../components/form/FormError';
+import DeleteButton from '../components/form/DeleteButton';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ModifyTag'>;
 type ModifyTagRouteProp = RouteProp<RootStackParamList, 'ModifyTag'>;
@@ -89,42 +92,36 @@ export default function ModifyTagScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
       <View style={styles.content}>
-        <TextInput
-          style={[styles.input, { backgroundColor: c.surface, borderColor: nameError ? c.red : c.border, color: c.text, fontSize: fs(15) }]}
+        <LabeledTextField
+          placeholder={labels.create_tag_name_placeholder}
           value={name}
           onChangeText={handleNameChange}
-          placeholder={labels.create_tag_name_placeholder}
-          placeholderTextColor={c.textSecondary}
           maxLength={MAX_TAG_NAME_LENGTH}
           returnKeyType="done"
+          error={nameError}
+          showCounter
+          counterFontSize={fs(12)}
+          counterStyle={styles.counter}
+          inputStyle={styles.input}
         />
-        <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(12) }]}>
-          {name.length}/{MAX_TAG_NAME_LENGTH}
-        </Text>
 
-        {nameError ? (
-          <Text style={[styles.error, { color: c.red, fontSize: fs(13) }]}>{nameError}</Text>
-        ) : null}
+        <FormError message={nameError} style={styles.error} />
 
-        <TouchableOpacity
-          style={[styles.deleteButton, { borderColor: c.red }]}
+        <DeleteButton
+          label={labels.modify_tag_delete}
           onPress={() => setDeleteModalVisible(true)}
-        >
-          <Ionicons name="trash-outline" size={18} color={c.red} />
-          <Text style={[styles.deleteButtonText, { color: c.red, fontSize: fs(15) }]}>
-            {labels.modify_tag_delete}
-          </Text>
-        </TouchableOpacity>
+          style={styles.deleteButton}
+        />
 
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: isDisabled ? c.surface : c.primary }]}
+        <PrimaryButton
+          label={labels.modify_tag_save}
           onPress={handleSave}
           disabled={isDisabled}
-        >
-          <Text style={[styles.buttonText, { color: isDisabled ? c.textSecondary : c.background, fontSize: fs(15) }]}>
-            {labels.modify_tag_save}
-          </Text>
-        </TouchableOpacity>
+          enabledTextColor={c.background}
+          disabledBg={c.surface}
+          disabledTextColor={c.textSecondary}
+          style={styles.button}
+        />
       </View>
 
       <ConfirmationModal
@@ -153,14 +150,12 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   input: {
-    borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 14,
     fontWeight: '500',
   },
   counter: {
-    textAlign: 'right',
     marginTop: 6,
     marginBottom: 12,
   },
@@ -169,24 +164,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   deleteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 14,
     marginBottom: 12,
-  },
-  deleteButtonText: {
-    fontWeight: '600',
   },
   button: {
     borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontWeight: '600',
   },
 });

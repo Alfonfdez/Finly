@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Modal, View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Account } from '../database/types';
 import { formatCurrency, HIDDEN_BALANCE } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayAccountName } from '../i18n';
-import { WHITE } from '../constants/themes';
+import { WHITE, TRANSPARENT } from '../constants/themes';
 import { badgeShapeFor } from '../utils/badgeShape';
 import EyeToggle from './EyeToggle';
-import { OVERLAY_BG, MODAL_MAX_WIDTH, MODAL_BORDER_RADIUS, MODAL_PADDING, BUTTON_BORDER_RADIUS } from './componentStyles';
-import IconBadge from './IconBadge';
+import { BUTTON_BORDER_RADIUS } from './componentStyles';
+import ModalShell from './ModalShell';
+import ListItemRow from './ListItemRow';
 
 interface AccountWithBalance extends Account {
   balance: number;
@@ -40,42 +41,36 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
   const isBalanceHidden = config.hideBalances !== isRevealed;
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <View style={[styles.modal, { backgroundColor: c.surface }]}>
-          <View style={styles.titleRow}>
-            <Text style={[styles.title, { color: c.text, fontSize: fs(16) }]}>{labels.account_select}</Text>
-            <EyeToggle isHidden={isBalanceHidden} onToggle={() => setIsRevealed(prev => !prev)} color={c.textSecondary} />
-          </View>
-          <FlatList
+    <ModalShell visible={visible} onClose={onClose}>
+      <View style={styles.titleRow}>
+        <Text style={[styles.title, { color: c.text, fontSize: fs(16) }]}>{labels.account_select}</Text>
+        <EyeToggle isHidden={isBalanceHidden} onToggle={() => setIsRevealed(prev => !prev)} color={c.textSecondary} />
+      </View>
+      <FlatList
             data={accounts}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => {
               const isSelected = item.id === tempId;
+              const radio = (
+                <View style={[styles.radio, { borderColor: isSelected ? c.primary : c.textSecondary }]}>
+                  {isSelected && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
+                </View>
+              );
               return (
-                <TouchableOpacity
-                  style={[styles.row, { borderBottomColor: c.border }]}
+                <ListItemRow
+                  title={getDisplayAccountName(item)}
+                  subtitle={isBalanceHidden ? HIDDEN_BALANCE : formatCurrency(item.balance, config.currency, config.decimalSeparator)}
+                  leading={radio}
+                  icon={item.icon}
+                  color={item.color}
+                  shape={badgeShapeFor(config, 'account')}
+                  badgeSize={36}
+                  badgeIconSize={20}
+                  badgeRadius={8}
+                  divider
+                  style={styles.row}
                   onPress={() => setTempId(item.id)}
-                >
-                  <View style={[styles.radio, { borderColor: isSelected ? c.primary : c.textSecondary }]}>
-                    {isSelected && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
-                  </View>
-                  <IconBadge
-                    icon={item.icon}
-                    color={item.color}
-                    shape={badgeShapeFor(config, 'account')}
-                    size={36}
-                    iconSize={20}
-                    roundedRadius={8}
-                    style={styles.icon}
-                  />
-                  <View style={styles.info}>
-                    <Text style={[styles.name, { color: c.text, fontSize: fs(14) }]}>{getDisplayAccountName(item)}</Text>
-                    <Text style={[styles.balance, { color: c.textSecondary, fontSize: fs(12) }]}>
-                      {isBalanceHidden ? HIDDEN_BALANCE : formatCurrency(item.balance, config.currency, config.decimalSeparator)}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+                />
               );
             }}
           />
@@ -90,34 +85,15 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
               <Text style={[styles.btnText, { color: WHITE, fontSize: fs(14) }]}>{labels.transactions_confirm}</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </View>
-    </Modal>
+    </ModalShell>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: OVERLAY_BG,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-  },
-  modal: {
-    width: '100%',
-    maxWidth: MODAL_MAX_WIDTH,
-    borderRadius: MODAL_BORDER_RADIUS,
-    padding: MODAL_PADDING,
-    maxHeight: '70%',
-  },
   title: { fontWeight: '700', marginBottom: 16, textAlign: 'center' },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
+    paddingHorizontal: 0,
   },
   radio: {
     width: 20,
@@ -126,19 +102,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
   },
   radioInner: {
     width: 10,
     height: 10,
     borderRadius: 5,
   },
-  icon: {
-    marginRight: 12,
-  },
-  info: { flex: 1 },
-  name: { fontWeight: '500' },
-  balance: { marginTop: 2 },
   buttons: {
     flexDirection: 'row',
     gap: 12,
@@ -150,7 +119,7 @@ const styles = StyleSheet.create({
     borderRadius: BUTTON_BORDER_RADIUS,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'transparent',
+    borderColor: TRANSPARENT,
   },
   btnText: { fontWeight: '600' },
 });

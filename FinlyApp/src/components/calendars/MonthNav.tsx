@@ -4,6 +4,7 @@ import { getMonthName } from '../../utils/formatters';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import NavArrows from './NavArrows';
+import { MONTHS_PER_YEAR } from '../../constants/calendar';
 
 interface Props {
   year: number;
@@ -20,8 +21,8 @@ export default function MonthNav({ year, month, onChange }: Props) {
   const goToMonth = (delta: number) => {
     let newMonth = month + delta;
     let newYear = year;
-    if (newMonth > 12) { newMonth = 1; newYear++; }
-    if (newMonth < 1) { newMonth = 12; newYear--; }
+    if (newMonth > MONTHS_PER_YEAR) { newMonth = 1; newYear++; }
+    if (newMonth < 1) { newMonth = MONTHS_PER_YEAR; newYear--; }
     if (newYear > today.getFullYear() || (newYear === today.getFullYear() && newMonth > today.getMonth() + 1)) return;
     onChange(newYear, newMonth);
   };

@@ -1,7 +1,8 @@
 import { getDatabase } from '../database';
 import { Category } from '../types';
 import { TransactionType } from '../../constants/types';
-import { buildUpdateQuery } from '../helpers';
+import { buildUpdateQuery, buildNameExistsQuery } from '../helpers';
+import { deleteTransactionPhotos } from '../photoCleanup';
 import { dbTimestamp } from '../../utils/formatters';
 
 export const categoryRepo = {
@@ -37,6 +38,8 @@ export const categoryRepo = {
 
   async delete(id: number): Promise<void> {
     const db = getDatabase();
+    await deleteTransactionPhotos('category_id = ?', id);
+    await db.runAsync(`DELETE FROM transactions WHERE category_id = ?`, id);
     await db.runAsync(`DELETE FROM categories WHERE id = ?`, id);
   },
 
@@ -47,12 +50,7 @@ export const categoryRepo = {
 
   async existsByName(name: string, excludeId?: number): Promise<boolean> {
     const db = getDatabase();
-    let sql = `SELECT COUNT(*) as count FROM categories WHERE LOWER(name) = LOWER(?)`;
-    const params: (string | number)[] = [name];
-    if (excludeId !== undefined) {
-      sql += ` AND id != ?`;
-      params.push(excludeId);
-    }
+    const { sql, params } = buildNameExistsQuery('categories', name, { excludeId });
     const result = await db.getFirstAsync<{ count: number }>(sql, ...params);
     return (result?.count ?? 0) > 0;
   },
