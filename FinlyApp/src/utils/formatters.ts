@@ -1,5 +1,6 @@
 import { t } from '../i18n';
 import { PERIODS, TEXT_SIZES, DECIMAL_SEPARATORS, FIRST_DAYS, type DecimalSeparator, type FirstDay, type Period, type TextSize } from '../constants/types';
+import { DAYS_PER_WEEK } from '../constants/calendar';
 import { LANGUAGES, type Language } from './language';
 import { DEFAULT_CURRENCY } from '../constants/currencies';
 
@@ -52,7 +53,7 @@ export function endOfDay(date: Date): Date {
 export function weekStart(date: Date, firstDay: FirstDay = FIRST_DAYS.monday): Date {
   const d = new Date(date);
   const day = d.getDay();
-  const diff = (day < firstDay ? 7 : 0) + day - firstDay;
+  const diff = (day < firstDay ? DAYS_PER_WEEK : 0) + day - firstDay;
   d.setDate(d.getDate() - diff);
   return startOfDay(d);
 }
@@ -60,14 +61,14 @@ export function weekStart(date: Date, firstDay: FirstDay = FIRST_DAYS.monday): D
 export function weekEnd(date: Date, firstDay: FirstDay = FIRST_DAYS.monday): Date {
   const start = weekStart(date, firstDay);
   const end = new Date(start);
-  end.setDate(end.getDate() + 6);
+  end.setDate(end.getDate() + DAYS_PER_WEEK - 1);
   return endOfDay(end);
 }
 
 export function dayOffset(dayDate: Date, firstDay: FirstDay): number {
   const weekDay = dayDate.getDay();
   if (firstDay === FIRST_DAYS.monday) {
-    return weekDay === 0 ? 6 : weekDay - 1;
+    return weekDay === 0 ? DAYS_PER_WEEK - 1 : weekDay - 1;
   }
   return weekDay;
 }

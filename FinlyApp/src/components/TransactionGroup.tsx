@@ -1,12 +1,13 @@
 import { memo, useCallback, useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Transaction, Category } from '../database/types';
 import { formatCurrency, getMonthName } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { getDisplayCategoryName } from '../i18n';
 import { BADGE_SHAPES, TRANSACTION_TYPES } from '../constants/types';
-import IconBadge from './IconBadge';
+import { withAlpha } from '../utils/color';
+import ListItemRow from './ListItemRow';
 
 interface Props {
   date: string;
@@ -30,47 +31,35 @@ function TransactionRow({ tx, category, tags, onPress }: TransactionRowProps) {
   const handlePress = useCallback(() => onPress?.(tx.id), [onPress, tx.id]);
 
   return (
-    <TouchableOpacity
-      style={[styles.row, { borderBottomColor: c.border }]}
-      onPress={handlePress}
-      activeOpacity={0.6}
-    >
-      {category && (
-        <IconBadge
-          icon={category.icon}
-          color={category.color}
-          shape={BADGE_SHAPES.circle}
-          size={36}
-          iconSize={18}
-          backgroundAlpha={19}
-          style={styles.catIcon}
-        />
-      )}
-      <View style={styles.info}>
-        <Text style={[styles.catName, { color: c.text, fontSize: fs(14) }]} numberOfLines={1}>
-          {category ? getDisplayCategoryName(category) : ''}
+    <ListItemRow
+      title={category ? getDisplayCategoryName(category) : ''}
+      subtitle={tx.description ?? undefined}
+      icon={category?.icon}
+      color={category?.color}
+      shape={BADGE_SHAPES.circle}
+      badgeSize={36}
+      badgeIconSize={18}
+      badgeAlpha={19}
+      middle={tags && tags.length > 0 ? (
+        <View style={styles.tagsContainer}>
+          {tags.map((tag) => (
+            <View key={tag.tag_id} style={[styles.tagChip, { backgroundColor: withAlpha(c.primary, 13) }]}>
+              <Text style={[styles.tagChipText, { color: c.primary, fontSize: fs(11) }]} numberOfLines={1}>
+                {tag.name}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ) : undefined}
+      right={
+        <Text style={[styles.amount, { color: tx.type === TRANSACTION_TYPES.income ? c.green : c.red, fontSize: fs(15) }]}>
+          {tx.type === TRANSACTION_TYPES.income ? '+' : '-'}{formatCurrency(tx.amount, config.currency, config.decimalSeparator)}
         </Text>
-        {tx.description ? (
-          <Text style={[styles.desc, { color: c.textSecondary, fontSize: fs(12) }]} numberOfLines={1}>
-            {tx.description}
-          </Text>
-        ) : null}
-        {tags && tags.length > 0 && (
-          <View style={styles.tagsContainer}>
-            {tags.map((tag) => (
-              <View key={tag.tag_id} style={[styles.tagChip, { backgroundColor: c.primary + '20' }]}>
-                <Text style={[styles.tagChipText, { color: c.primary, fontSize: fs(11) }]} numberOfLines={1}>
-                  {tag.name}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
-      </View>
-      <Text style={[styles.amount, { color: tx.type === TRANSACTION_TYPES.income ? c.green : c.red, fontSize: fs(15) }]}>
-        {tx.type === TRANSACTION_TYPES.income ? '+' : '-'}{formatCurrency(tx.amount, config.currency, config.decimalSeparator)}
-      </Text>
-    </TouchableOpacity>
+      }
+      divider
+      activeOpacity={0.6}
+      onPress={handlePress}
+    />
   );
 }
 
@@ -119,19 +108,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-  },
-  catIcon: {
-    marginRight: 12,
-  },
-  info: { flex: 1 },
-  catName: { fontWeight: '500' },
-  desc: { marginTop: 2 },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',

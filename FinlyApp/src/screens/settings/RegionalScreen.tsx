@@ -9,7 +9,7 @@ import { flagColors } from '../../constants/flagColors';
 import { CURRENCY_OPTIONS } from '../../constants/currencies';
 import { DECIMAL_SEPARATORS, FIRST_DAYS, type FirstDay } from '../../constants/types';
 import SelectorInline, { Option } from '../../components/SelectorInline';
-import { settingsStyles } from './settingsStyles';
+import { settingsStyles } from '../../components/settings/settingsStyles';
 
 function SenyeraIcon({ size = 16 }: { size?: number }) {
   return (

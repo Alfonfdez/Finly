@@ -21,7 +21,7 @@ export const DEFAULT_CONFIG: Config = {
   hideBalances: false,
 };
 
-const DB_KEY_MAP: Record<string, keyof Config> = {
+export const DB_KEY_MAP: Record<string, keyof Config> = {
   theme: 'theme',
   first_day_of_week: 'firstDayOfWeek',
   currency: 'currency',

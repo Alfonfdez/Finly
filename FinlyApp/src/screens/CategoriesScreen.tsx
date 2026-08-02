@@ -1,4 +1,4 @@
-import { useState, useMemo, useLayoutEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -10,7 +10,6 @@ import TabBar from '../components/TabBar';
 import CategoryGrid from '../components/CategoryGrid';
 import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
-import DrawerMenuButton from '../components/DrawerMenuButton';
 import { TRANSACTION_TYPES, type TransactionType, type RootStackParamList } from '../constants/types';
 import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
 
@@ -23,15 +22,6 @@ export default function CategoriesScreen() {
   const navigation = useNavigation<NavigationProp>();
 
   const [activeType, setActiveType] = useState<TransactionType>(TRANSACTION_TYPES.expense);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <DrawerMenuButton accessibilityLabel={labels.home_open_menu} />
-      ),
-    });
-  }, [navigation, labels.home_open_menu]);
-
   const categoriesByType = useMemo(() => {
     const filtered = categories.filter((cat) => cat.type === activeType);
     return sortCategoriesWithOthersLast(filtered);

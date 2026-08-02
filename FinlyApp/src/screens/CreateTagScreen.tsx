@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Keyboard } from 'react-native';
+import { View, StyleSheet, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -10,6 +10,9 @@ import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
 import { RootStackParamList, USER_ID, MAX_TAG_NAME_LENGTH } from '../constants/types';
+import LabeledTextField from '../components/form/LabeledTextField';
+import PrimaryButton from '../components/form/PrimaryButton';
+import FormError from '../components/form/FormError';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateTag'>;
 
@@ -63,33 +66,31 @@ export default function CreateTagScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
       <View style={styles.content}>
-        <TextInput
-          style={[styles.input, { backgroundColor: c.surface, borderColor: nameError ? c.red : c.border, color: c.text, fontSize: fs(15) }]}
+        <LabeledTextField
+          placeholder={labels.create_tag_name_placeholder}
           value={name}
           onChangeText={handleNameChange}
-          placeholder={labels.create_tag_name_placeholder}
-          placeholderTextColor={c.textSecondary}
           autoFocus
           maxLength={MAX_TAG_NAME_LENGTH}
           returnKeyType="done"
+          error={nameError}
+          showCounter
+          counterFontSize={fs(12)}
+          counterStyle={styles.counter}
+          inputStyle={styles.input}
         />
-        <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(12) }]}>
-          {name.length}/{MAX_TAG_NAME_LENGTH}
-        </Text>
 
-        {nameError ? (
-          <Text style={[styles.error, { color: c.red, fontSize: fs(13) }]}>{nameError}</Text>
-        ) : null}
+        <FormError message={nameError} style={styles.error} />
 
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: isDisabled ? c.surface : c.primary }]}
+        <PrimaryButton
+          label={labels.create_tag_button}
           onPress={handleCreate}
           disabled={isDisabled}
-        >
-          <Text style={[styles.buttonText, { color: isDisabled ? c.textSecondary : c.background, fontSize: fs(15) }]}>
-            {labels.create_tag_button}
-          </Text>
-        </TouchableOpacity>
+          enabledTextColor={c.background}
+          disabledBg={c.surface}
+          disabledTextColor={c.textSecondary}
+          style={styles.button}
+        />
       </View>
     </SafeAreaView>
   );
@@ -105,14 +106,12 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   input: {
-    borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 14,
     fontWeight: '500',
   },
   counter: {
-    textAlign: 'right',
     marginTop: 6,
     marginBottom: 12,
   },
@@ -122,10 +121,5 @@ const styles = StyleSheet.create({
   },
   button: {
     borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontWeight: '600',
   },
 });

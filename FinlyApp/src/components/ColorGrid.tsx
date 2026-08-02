@@ -1,6 +1,6 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { WHITE } from '../constants/themes';
+import { WHITE, TRANSPARENT } from '../constants/themes';
 import { useConfig } from '../context/ConfigContext';
 
 
@@ -81,6 +81,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: TRANSPARENT,
   },
 });

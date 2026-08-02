@@ -1,27 +1,28 @@
 import { getDatabase } from '../database';
 import { Config } from '../../context/ConfigContext';
-import { FIRST_DAYS, type DecimalSeparator } from '../../constants/types';
-import { DEFAULT_CONFIG, toConfigRows } from '../configDefaults';
+import { FIRST_DAYS } from '../../constants/types';
+import { DEFAULT_CONFIG, DB_KEY_MAP, toConfigRows } from '../configDefaults';
+
+const BOOLEAN_KEYS: (keyof Config)[] = ['addShowLabels', 'addShowComments', 'addShowPhoto', 'hideBalances'];
+const INT_OR_NULL_KEYS: (keyof Config)[] = ['homeDefaultAccountId', 'addDefaultAccountId'];
 
 function parseConfig(rows: { key: string; value: string }[]): Config {
   const map = Object.fromEntries(rows.map(r => [r.key, r.value]));
-  return {
-    theme: (map.theme as Config['theme']) ?? DEFAULT_CONFIG.theme,
-    firstDayOfWeek: map.first_day_of_week === String(FIRST_DAYS.sunday) ? FIRST_DAYS.sunday : FIRST_DAYS.monday,
-    currency: map.currency ?? DEFAULT_CONFIG.currency,
-    decimalSeparator: (map.decimal_separator as DecimalSeparator) ?? DEFAULT_CONFIG.decimalSeparator,
-    language: (map.language as Config['language']) ?? DEFAULT_CONFIG.language,
-    textSize: (map.text_size as Config['textSize']) ?? DEFAULT_CONFIG.textSize,
-    categoryIconShape: (map.category_icon_shape as Config['categoryIconShape']) ?? DEFAULT_CONFIG.categoryIconShape,
-    accountIconShape: (map.account_icon_shape as Config['accountIconShape']) ?? DEFAULT_CONFIG.accountIconShape,
-    homeDefaultAccountId: map.home_default_account_id === 'null' ? null : map.home_default_account_id ? Number(map.home_default_account_id) : DEFAULT_CONFIG.homeDefaultAccountId,
-    homeDefaultPeriod: (map.home_default_period as Config['homeDefaultPeriod']) ?? DEFAULT_CONFIG.homeDefaultPeriod,
-    addDefaultAccountId: map.add_default_account_id === 'null' ? null : map.add_default_account_id ? Number(map.add_default_account_id) : DEFAULT_CONFIG.addDefaultAccountId,
-    addShowLabels: map.add_show_labels === 'true',
-    addShowComments: map.add_show_comments === 'true',
-    addShowPhoto: map.add_show_photo === 'true',
-    hideBalances: map.hide_balances === 'true',
-  };
+  const parsed: Record<string, unknown> = {};
+  for (const [dbKey, configKey] of Object.entries(DB_KEY_MAP)) {
+    const raw = map[dbKey];
+    if (raw === undefined) continue;
+    if (configKey === 'firstDayOfWeek') {
+      parsed[configKey] = raw === String(FIRST_DAYS.sunday) ? FIRST_DAYS.sunday : FIRST_DAYS.monday;
+    } else if (BOOLEAN_KEYS.includes(configKey)) {
+      parsed[configKey] = raw === 'true';
+    } else if (INT_OR_NULL_KEYS.includes(configKey)) {
+      parsed[configKey] = raw === 'null' ? null : Number(raw);
+    } else {
+      parsed[configKey] = raw;
+    }
+  }
+  return { ...DEFAULT_CONFIG, ...(parsed as Partial<Config>) };
 }
 
 export const configRepo = {

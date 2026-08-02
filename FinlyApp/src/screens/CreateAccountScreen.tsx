@@ -1,8 +1,5 @@
 import { useState, useCallback } from 'react';
-import {
-  View, Text, TextInput, TouchableOpacity, ScrollView,
-  StyleSheet, Keyboard,
-} from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -10,15 +7,20 @@ import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
+import { useColorSelection } from '../hooks/useColorSelection';
 import { t, getDefaultAccountIdByName, getDefaultEnglishAccountName } from '../i18n';
-import { isAndroid } from '../utils/platform';
 import { accountRepository } from '../database';
 import { RootStackParamList, USER_ID, MAX_ACCOUNT_NAME_LENGTH, MAX_NOTE_LENGTH } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
-import { WHITE } from '../constants/themes';
 import IconGrid from '../components/IconGrid';
-import ColorGrid, { QUICK_COLORS } from '../components/ColorGrid';
+import ColorGrid from '../components/ColorGrid';
 import ColorPickerModal from '../components/ColorPickerModal';
+import SectionTitle from '../components/form/SectionTitle';
+import LabeledTextField from '../components/form/LabeledTextField';
+import PrimaryButton from '../components/form/PrimaryButton';
+import FormError from '../components/form/FormError';
+import KeyboardSpacer from '../components/form/KeyboardSpacer';
+import FormScrollView from '../components/form/FormScrollView';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateAccount'>;
 
@@ -32,11 +34,10 @@ export default function CreateAccountScreen() {
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState<string | null>(null);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [customColor, setCustomColor] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [checkingName, setCheckingName] = useState(false);
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
+  const { selectedColor, customColor, handleColorSelect } = useColorSelection();
 
   const checkNameDuplicate = useCallback(async (value: string) => {
     if (!value.trim()) {
@@ -103,52 +104,25 @@ export default function CreateAccountScreen() {
     }
   };
 
-  const handleColorSelect = (color: string) => {
-    setSelectedColor(color);
-    if (!QUICK_COLORS.includes(color)) {
-      setCustomColor(color);
-    }
-  };
-
   const hintText = getHintText();
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
       <View style={styles.content}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          onScrollBeginDrag={() => Keyboard.dismiss()}
-        >
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_account_name}
-          </Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: c.surface,
-                color: c.text,
-                borderColor: nameError ? c.red : c.border,
-                fontSize: fs(14),
-              },
-            ]}
+        <FormScrollView>
+          <LabeledTextField
+            label={labels.create_account_name}
             placeholder={labels.create_account_name}
-            placeholderTextColor={c.textSecondary}
             value={name}
             onChangeText={handleNameChange}
             maxLength={MAX_ACCOUNT_NAME_LENGTH}
             autoCapitalize="words"
             autoCorrect={false}
+            error={nameError}
+            showCounter
           />
-          <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
-            {name.length}/{MAX_ACCOUNT_NAME_LENGTH}
-          </Text>
 
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_account_symbols}
-          </Text>
+          <SectionTitle text={labels.create_account_symbols} />
           <IconGrid
             icons={ACCOUNT_ICONS}
             selectedIcon={selectedIcon}
@@ -157,9 +131,7 @@ export default function CreateAccountScreen() {
             onSelect={setSelectedIcon}
           />
 
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_account_color}
-          </Text>
+          <SectionTitle text={labels.create_account_color} />
           <ColorGrid
             selectedColor={selectedColor}
             customColor={customColor}
@@ -170,26 +142,12 @@ export default function CreateAccountScreen() {
           <ColorPickerModal
             visible={colorPickerVisible}
             selectedColor={selectedColor}
-            onSelect={(color) => {
-              handleColorSelect(color);
-            }}
+            onSelect={handleColorSelect}
             onClose={() => setColorPickerVisible(false)}
           />
 
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_account_note}
-          </Text>
-          <TextInput
-            style={[
-              styles.input,
-              styles.textArea,
-              {
-                backgroundColor: c.surface,
-                color: c.text,
-                borderColor: c.border,
-                fontSize: fs(14),
-              },
-            ]}
+          <LabeledTextField
+            label={labels.create_account_note}
             value={description}
             onChangeText={(value) => {
               if (value.length <= MAX_NOTE_LENGTH) setDescription(value);
@@ -197,32 +155,21 @@ export default function CreateAccountScreen() {
             multiline
             numberOfLines={3}
             textAlignVertical="top"
+            maxLength={MAX_NOTE_LENGTH}
+            showCounter
           />
-          <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
-            {description.length}/{MAX_NOTE_LENGTH}
-          </Text>
 
-          {hintText && (
-            <Text style={[styles.hint, { color: c.red, fontSize: fs(12) }]}>
-              {hintText}
-            </Text>
-          )}
+          <FormError message={hintText} fontSize={fs(12)} style={styles.hint} />
 
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { backgroundColor: canCreate ? c.primary : c.textSecondary },
-            ]}
+          <PrimaryButton
+            label={labels.create_account_button}
             onPress={handleCreate}
             disabled={!canCreate}
-          >
-            <Text style={[styles.buttonText, { color: WHITE, fontSize: fs(15) }]}>
-              {labels.create_account_button}
-            </Text>
-          </TouchableOpacity>
+            style={styles.button}
+          />
 
-          {isAndroid && <View style={styles.keyboardSpacer} />}
-        </ScrollView>
+          <KeyboardSpacer />
+        </FormScrollView>
       </View>
     </SafeAreaView>
   );
@@ -235,46 +182,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 32,
-  },
-  sectionTitle: {
-    fontWeight: '600',
-    marginBottom: 4,
-    marginTop: 10,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
-  },
-  textArea: {
-    minHeight: 80,
-  },
-  counter: {
-    textAlign: 'right',
-    marginTop: 4,
-    marginBottom: 4,
-  },
   hint: {
     marginTop: 16,
     textAlign: 'center',
   },
   button: {
     marginTop: 16,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontWeight: '600',
-  },
-  keyboardSpacer: {
-    height: 200,
   },
 });

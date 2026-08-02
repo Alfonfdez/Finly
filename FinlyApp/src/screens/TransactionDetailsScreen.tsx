@@ -2,17 +2,18 @@ import { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useFocusLoad } from '../hooks/useFocusLoad';
 import { formatCurrency, formatDateLong } from '../utils/formatters';
 import { deletePhotoFile, parsePhotos } from '../utils/photoUtils';
+import { withAlpha } from '../utils/color';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
 import { isNative } from '../utils/platform';
 import { transactionRepository } from '../database';
-import { Transaction } from '../database/types';
 import { RootStackParamList, TRANSACTION_TYPES } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { WHITE } from '../constants/themes';
@@ -34,24 +35,18 @@ export default function TransactionDetailsScreen() {
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [tagNames, setTagNames] = useState<{ tag_id: number; name: string }[]>([]);
-  const [transaction, setTransaction] = useState<Transaction | null>(null);
   const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
 
+  // Refresh transaction data when screen gains focus (after editing)
+  const loadTransaction = useCallback(async () => {
+    return await transactionRepository.getById(transactionId);
+  }, [transactionId]);
+
+  const { data: transaction } = useFocusLoad(loadTransaction, null);
+
   // Parse photos from DB (supports both old single URI and new JSON array)
   const parsedPhotos = useMemo(() => parsePhotos(transaction?.photo), [transaction?.photo]);
-
-  // Refresh transaction data when screen gains focus (after editing)
-  useFocusEffect(useCallback(() => {
-    let active = true;
-    (async () => {
-      const data = await transactionRepository.getById(transactionId);
-      if (!active) return;
-      setTransaction(data);
-    })();
-    return () => { active = false; };
-  }, [transactionId]));
 
   const category = useMemo(
     () => categories.find(cat => cat.id === transaction?.category_id),
@@ -90,20 +85,13 @@ export default function TransactionDetailsScreen() {
     return `${labels.details_updated}: ${h}:${min} - ${day} ${month.toLowerCase()} ${year}`;
   }, [transaction, labels]);
 
-  useFocusEffect(useCallback(() => {
-    let active = true;
-    (async () => {
-      const tagIds = await transactionRepository.getTagsByTransactionId(transactionId);
-      if (!active) return;
-      if (tagIds.length === 0) {
-        setTagNames([]);
-        return;
-      }
-      const tagLinks = await transactionRepository.getTagsByTransactionIds([transactionId]);
-      if (active) setTagNames(tagLinks);
-    })();
-    return () => { active = false; };
-  }, [transactionId]));
+  const loadTags = useCallback(async () => {
+    const tagIds = await transactionRepository.getTagsByTransactionId(transactionId);
+    if (tagIds.length === 0) return [] as { tag_id: number; name: string }[];
+    return await transactionRepository.getTagsByTransactionIds([transactionId]);
+  }, [transactionId]);
+
+  const { data: tagNames } = useFocusLoad(loadTags, [] as { tag_id: number; name: string }[]);
 
   const handleDelete = async () => {
     if (deleting) return;
@@ -193,7 +181,7 @@ export default function TransactionDetailsScreen() {
             {tagNames.length > 0 ? (
               <View style={styles.tagsContainer}>
                 {tagNames.map(tag => (
-                  <View key={tag.tag_id} style={[styles.tagChip, { backgroundColor: c.primary + '20' }]}>
+                  <View key={tag.tag_id} style={[styles.tagChip, { backgroundColor: withAlpha(c.primary, 13) }]}>
                     <Text style={[styles.tagChipText, { color: c.primary, fontSize: fs(13) }]} numberOfLines={1}>
                       {tag.name}
                     </Text>

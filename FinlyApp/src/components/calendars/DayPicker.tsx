@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { getDaysInMonth, isSameDay, isFutureDate, dayOffset } from '../../utils/formatters';
+import { withAlpha } from '../../utils/color';
 import { CalendarBaseProps } from './types';
 import MonthNav from './MonthNav';
 import { useConfig } from '../../context/ConfigContext';
@@ -8,6 +9,7 @@ import { t } from '../../i18n';
 import { useFontSize } from '../../hooks/useFontSize';
 import { calendarStyles, FUTURE_OPACITY } from './calendarStyles';
 import { FIRST_DAYS } from '../../constants/types';
+import { CALENDAR_GRID_CELLS, DAY_WIDTH_PERCENT } from '../../constants/calendar';
 
 interface Props extends CalendarBaseProps {
   rangeStart?: Date | null;
@@ -68,9 +70,9 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
                   styles.dayBg,
                   isToday && [styles.todayBorder, { borderColor: c.primary }],
                   isSelected && { backgroundColor: c.primary },
-                  withinRange && !isSelected && { backgroundColor: c.primary + '25', borderRadius: 4 },
-                  isStart && !isSelected && { backgroundColor: c.primary + '40' },
-                  isEnd && !isSelected && { backgroundColor: c.primary + '40' },
+                  withinRange && !isSelected && { backgroundColor: withAlpha(c.primary, 16), borderRadius: 4 },
+                  isStart && !isSelected && { backgroundColor: withAlpha(c.primary, 25) },
+                  isEnd && !isSelected && { backgroundColor: withAlpha(c.primary, 25) },
                 ]} />
                 <View style={styles.dayCenter}>
                   <Text style={[
@@ -87,7 +89,7 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
             </TouchableOpacity>
           );
         })}
-        {Array.from({ length: 42 - prevDays - daysInMonth }).map((_, i) => (
+        {Array.from({ length: CALENDAR_GRID_CELLS - prevDays - daysInMonth }).map((_, i) => (
           <View key={`pad-${i}`} style={styles.emptyDay} />
         ))}
       </View>
@@ -99,8 +101,8 @@ const styles = StyleSheet.create({
   weekDays: { flexDirection: 'row', marginBottom: 8 },
   weekDayText: { flex: 1, textAlign: 'center', fontWeight: '600' },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
-  day: { width: '14.28%', aspectRatio: 1 },
-  emptyDay: { width: '14.28%', aspectRatio: 1 },
+  day: { width: DAY_WIDTH_PERCENT, aspectRatio: 1 },
+  emptyDay: { width: DAY_WIDTH_PERCENT, aspectRatio: 1 },
   dayWrap: { flex: 1 },
   dayBg: { ...StyleSheet.absoluteFillObject, borderRadius: 20, overflow: 'hidden' },
   dayCenter: { flex: 1, alignItems: 'center', justifyContent: 'center' },

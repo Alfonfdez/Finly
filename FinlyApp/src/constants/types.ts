@@ -21,6 +21,7 @@ export const MAX_SUGGESTIONS = 5;
 export const DECIMAL_PLACES = 2;
 
 export const UNTAGGED_LABEL = 'Untagged';
+export const DELETE_ALL_CONFIRMATION = 'DELETE';
 
 export const TRANSACTION_TYPES = {
   expense: 'expense',
@@ -79,6 +80,12 @@ export type SortDirection = keyof typeof SORT_DIRECTIONS;
 export const CALC_KEYS = {
   clear: 'C',
   equals: '=',
+  backspace: '⌫',
+  decimal: '.',
+  add: '+',
+  subtract: '-',
+  multiply: '*',
+  divide: '/',
 } as const;
 
 export const FIRST_DAYS = {

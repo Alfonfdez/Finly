@@ -17,6 +17,7 @@ export function getDatabase(): SQLiteDatabase {
 export async function initDatabase(): Promise<SQLiteDatabase> {
   const database = getDatabase();
 
+  await database.execAsync('PRAGMA foreign_keys = ON;');
   await createSchema(database);
   await seedData(database);
   await seedConfig(database);

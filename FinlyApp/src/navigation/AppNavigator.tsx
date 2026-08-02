@@ -34,9 +34,22 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { RootStackParamList } from '../constants/types';
+import DrawerMenuButton from '../components/DrawerMenuButton';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator();
+
+type ScreenDef = {
+  name: keyof RootStackParamList;
+  component: React.ComponentType<any>;
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  drawerMenu?: boolean;
+};
+
+type DrawerItemDef =
+  | { label: string; icon: keyof typeof Ionicons.glyphMap; screen: 'Home' | 'AllTransactions' | 'Accounts' | 'Categories' | 'Tags' | 'Settings' }
+  | { separator: true };
 
 function HeaderTitle({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; label: string }) {
   const { activeColors: c } = useConfig();
@@ -76,6 +89,16 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
   const fs = useFontSize();
   const labels = t();
 
+  const drawerItems: DrawerItemDef[] = [
+    { label: labels.nav_home, icon: 'home-outline', screen: 'Home' },
+    { label: labels.nav_all_transactions, icon: 'stats-chart-outline', screen: 'AllTransactions' },
+    { label: labels.nav_accounts, icon: 'wallet-outline', screen: 'Accounts' },
+    { label: labels.nav_categories, icon: 'grid-outline', screen: 'Categories' },
+    { label: labels.nav_tags, icon: 'pricetag-outline', screen: 'Tags' },
+    { separator: true },
+    { label: labels.nav_settings, icon: 'settings-outline', screen: 'Settings' },
+  ];
+
   return (
     <View style={{ flex: 1, backgroundColor: c.surface }}>
       <DrawerContentScrollView {...props} style={{ backgroundColor: c.surface }}>
@@ -83,37 +106,18 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
           <Image source={require('../../assets/icon.png')} style={styles.drawerLogo} />
           <Text style={[styles.drawerTitle, { color: c.primary, fontSize: fs(24) }]}>Finly</Text>
         </View>
-        <DrawerNavItem
-          label={labels.nav_home}
-          icon="home-outline"
-          onPress={() => props.navigation.navigate('Main', { screen: 'Home' })}
-        />
-        <DrawerNavItem
-          label={labels.nav_all_transactions}
-          icon="stats-chart-outline"
-          onPress={() => props.navigation.navigate('Main', { screen: 'AllTransactions' })}
-        />
-        <DrawerNavItem
-          label={labels.nav_accounts}
-          icon="wallet-outline"
-          onPress={() => props.navigation.navigate('Main', { screen: 'Accounts' })}
-        />
-        <DrawerNavItem
-          label={labels.nav_categories}
-          icon="grid-outline"
-          onPress={() => props.navigation.navigate('Main', { screen: 'Categories' })}
-        />
-        <DrawerNavItem
-          label={labels.nav_tags}
-          icon="pricetag-outline"
-          onPress={() => props.navigation.navigate('Main', { screen: 'Tags' })}
-        />
-        <View style={[styles.separator, { backgroundColor: c.border }]} />
-        <DrawerNavItem
-          label={labels.nav_settings}
-          icon="settings-outline"
-          onPress={() => props.navigation.navigate('Main', { screen: 'Settings' })}
-        />
+        {drawerItems.map((item, index) =>
+          'separator' in item ? (
+            <View key={`sep-${index}`} style={[styles.separator, { backgroundColor: c.border }]} />
+          ) : (
+            <DrawerNavItem
+              key={item.screen}
+              label={item.label}
+              icon={item.icon}
+              onPress={() => props.navigation.navigate('Main', { screen: item.screen })}
+            />
+          )
+        )}
       </DrawerContentScrollView>
       <Text style={[styles.drawerVersion, { color: c.textSecondary, fontSize: fs(11) }]}>
         v{Constants.expoConfig?.version}
@@ -126,6 +130,29 @@ function HomeStack() {
   const { activeColors: c } = useConfig();
   const labels = t();
 
+  const screens: ScreenDef[] = [
+    { name: 'AddTransaction', component: AddTransactionScreen, icon: 'add-circle-outline', label: labels.add_title },
+    { name: 'AddCategory', component: AddCategoryScreen, icon: 'grid-outline', label: labels.add_cat_title },
+    { name: 'CreateCategory', component: CreateCategoryScreen, icon: 'grid-outline', label: labels.create_cat_title },
+    { name: 'ModifyCategory', component: ModifyCategoryScreen, icon: 'grid-outline', label: labels.modify_cat_title },
+    { name: 'Categories', component: CategoriesScreen, icon: 'grid-outline', label: labels.nav_categories, drawerMenu: true },
+    { name: 'Accounts', component: AccountsScreen, icon: 'wallet-outline', label: labels.nav_accounts, drawerMenu: true },
+    { name: 'ModifyAccount', component: ModifyAccountScreen, icon: 'wallet-outline', label: labels.modify_account_title },
+    { name: 'CreateAccount', component: CreateAccountScreen, icon: 'wallet-outline', label: labels.create_account_title },
+    { name: 'Transactions', component: TransactionsScreen, icon: 'stats-chart-outline', label: labels.nav_transactions },
+    { name: 'AllTransactions', component: AllTransactionsScreen, icon: 'stats-chart-outline', label: labels.nav_all_transactions, drawerMenu: true },
+    { name: 'Settings', component: SettingsScreen, icon: 'settings-outline', label: labels.nav_settings },
+    { name: 'SettingsAppearance', component: AppearanceScreen, icon: 'color-palette-outline', label: labels.settings_appearance },
+    { name: 'SettingsRegional', component: RegionalScreen, icon: 'globe-outline', label: labels.settings_regional },
+    { name: 'SettingsPersonalization', component: PersonalizationScreen, icon: 'options-outline', label: labels.settings_personalization },
+    { name: 'SettingsData', component: DataScreen, icon: 'server-outline', label: labels.settings_data },
+    { name: 'TransactionDetails', component: TransactionDetailsScreen, icon: 'information-circle-outline', label: labels.details_title },
+    { name: 'ModifyTransaction', component: ModifyTransactionScreen, icon: 'create-outline', label: labels.modify_title },
+    { name: 'Tags', component: TagsScreen, icon: 'pricetag-outline', label: labels.nav_tags, drawerMenu: true },
+    { name: 'CreateTag', component: CreateTagScreen, icon: 'pricetag-outline', label: labels.create_tag_title },
+    { name: 'ModifyTag', component: ModifyTagScreen, icon: 'pricetag-outline', label: labels.modify_tag_title },
+  ];
+
   return (
     <Stack.Navigator
       screenOptions={{
@@ -135,106 +162,19 @@ function HomeStack() {
       }}
     >
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-      <Stack.Screen
-        name="AddTransaction"
-        component={AddTransactionScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="add-circle-outline" label={labels.add_title} /> }}
-      />
-      <Stack.Screen
-        name="AddCategory"
-        component={AddCategoryScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="grid-outline" label={labels.add_cat_title} /> }}
-      />
-      <Stack.Screen
-        name="CreateCategory"
-        component={CreateCategoryScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="grid-outline" label={labels.create_cat_title} /> }}
-      />
-      <Stack.Screen
-        name="ModifyCategory"
-        component={ModifyCategoryScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="grid-outline" label={labels.modify_cat_title} /> }}
-      />
-      <Stack.Screen
-        name="Categories"
-        component={CategoriesScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="grid-outline" label={labels.nav_categories} /> }}
-      />
-      <Stack.Screen
-        name="Accounts"
-        component={AccountsScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="wallet-outline" label={labels.nav_accounts} /> }}
-      />
-      <Stack.Screen
-        name="ModifyAccount"
-        component={ModifyAccountScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="wallet-outline" label={labels.modify_account_title} /> }}
-      />
-      <Stack.Screen
-        name="CreateAccount"
-        component={CreateAccountScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="wallet-outline" label={labels.create_account_title} /> }}
-      />
-      <Stack.Screen
-        name="Transactions"
-        component={TransactionsScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="stats-chart-outline" label={labels.nav_transactions} /> }}
-      />
-      <Stack.Screen
-        name="AllTransactions"
-        component={AllTransactionsScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="stats-chart-outline" label={labels.nav_all_transactions} /> }}
-      />
-      <Stack.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="settings-outline" label={labels.nav_settings} /> }}
-      />
-      <Stack.Screen
-        name="SettingsAppearance"
-        component={AppearanceScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="color-palette-outline" label={labels.settings_appearance} /> }}
-      />
-      <Stack.Screen
-        name="SettingsRegional"
-        component={RegionalScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="globe-outline" label={labels.settings_regional} /> }}
-      />
-      <Stack.Screen
-        name="SettingsPersonalization"
-        component={PersonalizationScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="options-outline" label={labels.settings_personalization} /> }}
-      />
-      <Stack.Screen
-        name="SettingsData"
-        component={DataScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="server-outline" label={labels.settings_data} /> }}
-      />
-      <Stack.Screen
-        name="TransactionDetails"
-        component={TransactionDetailsScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="information-circle-outline" label={labels.details_title} /> }}
-      />
-      <Stack.Screen
-        name="ModifyTransaction"
-        component={ModifyTransactionScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="create-outline" label={labels.modify_title} /> }}
-      />
-      <Stack.Screen
-        name="Tags"
-        component={TagsScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="pricetag-outline" label={labels.nav_tags} /> }}
-      />
-      <Stack.Screen
-        name="CreateTag"
-        component={CreateTagScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="pricetag-outline" label={labels.create_tag_title} /> }}
-      />
-      <Stack.Screen
-        name="ModifyTag"
-        component={ModifyTagScreen}
-        options={{ headerTitle: () => <HeaderTitle icon="pricetag-outline" label={labels.modify_tag_title} /> }}
-      />
+      {screens.map(({ name, component, icon, label, drawerMenu }) => (
+        <Stack.Screen
+          key={name}
+          name={name}
+          component={component}
+          options={{
+            headerTitle: () => <HeaderTitle icon={icon} label={label} />,
+            ...(drawerMenu
+              ? { headerLeft: () => <DrawerMenuButton accessibilityLabel={labels.home_open_menu} /> }
+              : {}),
+          }}
+        />
+      ))}
     </Stack.Navigator>
   );
 }

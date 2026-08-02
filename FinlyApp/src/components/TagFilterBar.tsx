@@ -4,6 +4,8 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { Tag } from '../database/types';
 import { UNTAGGED_ID } from '../database/helpers';
+import { withAlpha } from '../utils/color';
+import { TRANSPARENT } from '../constants/themes';
 
 interface Props {
   tags: Tag[];
@@ -26,7 +28,7 @@ export default function TagFilterBar({ tags, activeTagIds, onToggle, onClear, st
       style={[
         styles.chip,
         {
-          backgroundColor: isSelected && isSpecial ? c.primary + 'CC' : isSelected ? c.primary : isSpecial ? 'transparent' : c.surface,
+          backgroundColor: isSelected && isSpecial ? withAlpha(c.primary, 80) : isSelected ? c.primary : isSpecial ? TRANSPARENT : c.surface,
           borderWidth: !isSelected && isSpecial ? 1 : 0,
           borderColor: c.border,
         },
@@ -37,7 +39,7 @@ export default function TagFilterBar({ tags, activeTagIds, onToggle, onClear, st
         style={[
           styles.chipText,
           {
-            color: isSelected && isSpecial ? c.background + 'CC' : isSelected ? c.background : isSpecial ? c.textSecondary : c.text,
+            color: isSelected && isSpecial ? withAlpha(c.background, 80) : isSelected ? c.background : isSpecial ? c.textSecondary : c.text,
             fontSize: fs(13),
           },
         ]}

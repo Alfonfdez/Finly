@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Text, TouchableOpacity, ScrollView, StyleSheet, TextInput } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { TextInput, ScrollView, StyleSheet } from 'react-native';
 import { useConfig } from '../../context/ConfigContext';
 import { useApp } from '../../context/AppContext';
 import { useFontSize } from '../../hooks/useFontSize';
@@ -12,7 +11,9 @@ import { getDatabase } from '../../database/database';
 import { seedData } from '../../database/migrations/002_seed';
 import { seedConfig } from '../../database/migrations/003_config';
 import ConfirmationModal from '../../components/ConfirmationModal';
-import { settingsStyles } from './settingsStyles';
+import SettingsRow from '../../components/settings/SettingsRow';
+import { settingsStyles } from '../../components/settings/settingsStyles';
+import { DELETE_ALL_CONFIRMATION } from '../../constants/types';
 
 export default function DataScreen() {
   const { activeColors: c } = useConfig();
@@ -64,27 +65,25 @@ export default function DataScreen() {
     setDeleteAllText('');
   };
 
-  const canDeleteAll = deleteAllText.toUpperCase() === 'DELETE';
+  const canDeleteAll = deleteAllText.toUpperCase() === DELETE_ALL_CONFIRMATION;
 
   return (
     <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
-      <TouchableOpacity
-        style={[styles.row, { backgroundColor: c.surface }]}
+      <SettingsRow
+        icon="trash-outline"
+        iconColor={c.red}
+        label={labels.settings_delete_all_transactions}
+        labelColor={c.red}
         onPress={() => setDeleteTransactionsModal(true)}
-      >
-        <Ionicons name="trash-outline" size={22} color={c.red} />
-        <Text style={[styles.rowLabel, { color: c.red, fontSize: fs(15) }]}>{labels.settings_delete_all_transactions}</Text>
-        <Ionicons name="chevron-forward-outline" size={20} color={c.textSecondary} />
-      </TouchableOpacity>
+      />
 
-      <TouchableOpacity
-        style={[styles.row, { backgroundColor: c.surface }]}
+      <SettingsRow
+        icon="warning-outline"
+        iconColor={c.red}
+        label={labels.settings_delete_all_data}
+        labelColor={c.red}
         onPress={() => setDeleteAllModal1(true)}
-      >
-        <Ionicons name="warning-outline" size={22} color={c.red} />
-        <Text style={[styles.rowLabel, { color: c.red, fontSize: fs(15) }]}>{labels.settings_delete_all_data}</Text>
-        <Ionicons name="chevron-forward-outline" size={20} color={c.textSecondary} />
-      </TouchableOpacity>
+      />
 
       <ConfirmationModal
         visible={deleteTransactionsModal}
@@ -131,18 +130,6 @@ export default function DataScreen() {
 }
 
 const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    gap: 12,
-  },
-  rowLabel: {
-    flex: 1,
-    fontWeight: '600',
-  },
   input: {
     borderWidth: 1,
     borderRadius: 10,

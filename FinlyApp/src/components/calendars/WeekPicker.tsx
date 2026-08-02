@@ -9,6 +9,7 @@ import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
 import { calendarStyles, FUTURE_OPACITY } from './calendarStyles';
 import { type FirstDay } from '../../constants/types';
+import { DAYS_PER_WEEK, CALENDAR_GRID_CELLS } from '../../constants/calendar';
 
 function sameWeek(a: Date, b: Date, firstDay: FirstDay): boolean {
   const ia = weekStart(a, firstDay);
@@ -29,11 +30,11 @@ export default function WeekPicker({ date, onSelect }: CalendarBaseProps) {
     const result: { start: Date; end: Date }[] = [];
     const firstMonthDay = new Date(year, activeMonth - 1, 1);
     let cursor = weekStart(firstMonthDay, firstDay);
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < CALENDAR_GRID_CELLS / DAYS_PER_WEEK; i++) {
       const end = new Date(cursor);
-      end.setDate(end.getDate() + 6);
+      end.setDate(end.getDate() + DAYS_PER_WEEK - 1);
       result.push({ start: new Date(cursor), end });
-      cursor.setDate(cursor.getDate() + 7);
+      cursor.setDate(cursor.getDate() + DAYS_PER_WEEK);
     }
     return result;
   }, [year, activeMonth, firstDay]);

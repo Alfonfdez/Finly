@@ -1,6 +1,7 @@
 import { getDatabase } from '../database';
 import { Account } from '../types';
-import { buildUpdateQuery } from '../helpers';
+import { buildUpdateQuery, buildNameExistsQuery } from '../helpers';
+import { deleteTransactionPhotos } from '../photoCleanup';
 import { dbTimestamp } from '../../utils/formatters';
 
 export const accountRepo = {
@@ -35,6 +36,8 @@ export const accountRepo = {
 
   async delete(id: number): Promise<void> {
     const db = getDatabase();
+    await deleteTransactionPhotos('account_id = ?', id);
+    await db.runAsync(`DELETE FROM transactions WHERE account_id = ?`, id);
     await db.runAsync(`DELETE FROM accounts WHERE id = ? AND is_total = 0`, id);
   },
 
@@ -60,12 +63,7 @@ export const accountRepo = {
 
   async existsByName(name: string, excludeId?: number): Promise<boolean> {
     const db = getDatabase();
-    let sql = `SELECT COUNT(*) as count FROM accounts WHERE LOWER(name) = LOWER(?)`;
-    const params: (string | number)[] = [name];
-    if (excludeId !== undefined) {
-      sql += ` AND id != ?`;
-      params.push(excludeId);
-    }
+    const { sql, params } = buildNameExistsQuery('accounts', name, { excludeId });
     const result = await db.getFirstAsync<{ count: number }>(sql, ...params);
     return (result?.count ?? 0) > 0;
   },

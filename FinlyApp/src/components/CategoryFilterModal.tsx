@@ -7,12 +7,11 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
 import SearchBar from './SearchBar';
 import EmptyState from './EmptyState';
-import type { IconName } from './IconGrid';
-import { TRANSACTION_TYPES, TYPE_FILTERS, CONFIG_ICON_SHAPES, type TransactionTypeFilter } from '../constants/types';
+import { TRANSACTION_TYPES, TYPE_FILTERS, type TransactionTypeFilter } from '../constants/types';
 import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
-import { withAlpha } from '../utils/color';
 import { Category } from '../database/types';
-import { PILL_RADIUS } from './componentStyles';
+import { badgeShapeFor } from '../utils/badgeShape';
+import CategoryTile from './CategoryTile';
 
 interface Props {
   visible: boolean;
@@ -27,7 +26,6 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const round = config.categoryIconShape === CONFIG_ICON_SHAPES.circle;
 
   const [localSelectedIds, setLocalSelectedIds] = useState<number[]>(selectedIds);
   const [searchText, setSearchText] = useState('');
@@ -153,39 +151,18 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
                     </Text>
                   )}
                   <View style={styles.grid}>
-                    {section.data.map((cat) => {
-                      const isSelected = localSelectedIds.includes(cat.id);
-                      const name = getDisplayCategoryName(cat);
-                      return (
-                        <TouchableOpacity
-                          key={cat.id}
-                          style={[
-                            styles.item,
-                            {
-                              backgroundColor: isSelected ? withAlpha(cat.color, 20) : c.surface,
-                              borderRadius: round ? PILL_RADIUS : 12,
-                            },
-                            isSelected && { borderWidth: 2, borderColor: cat.color },
-                          ]}
-                          onPress={() => handleToggleCategory(cat.id)}
-                        >
-                          <View style={[styles.iconContainer, { backgroundColor: withAlpha(cat.color, 13), borderRadius: round ? PILL_RADIUS : 20 }]}>
-                            <Ionicons name={cat.icon as IconName} size={24} color={cat.color} />
-                            {isSelected && (
-                              <View style={[styles.checkmark, { backgroundColor: cat.color }]}>
-                                <Ionicons name="checkmark" size={12} color={c.background} />
-                              </View>
-                            )}
-                          </View>
-                          <Text
-                            style={[styles.name, { color: c.text, fontSize: fs(11) }]}
-                            numberOfLines={1}
-                          >
-                            {name}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
+                    {section.data.map((cat) => (
+                      <CategoryTile
+                        key={cat.id}
+                        icon={cat.icon}
+                        color={cat.color}
+                        shape={badgeShapeFor(config, 'category')}
+                        label={getDisplayCategoryName(cat)}
+                        selected={localSelectedIds.includes(cat.id)}
+                        checkmark
+                        onPress={() => handleToggleCategory(cat.id)}
+                      />
+                    ))}
                   </View>
                 </View>
               ))}
@@ -252,34 +229,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
-  },
-  item: {
-    width: '22%',
-    aspectRatio: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 8,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  checkmark: {
-    position: 'absolute',
-    top: -2,
-    right: -2,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  name: {
-    fontWeight: '500',
-    textAlign: 'center',
   },
   applyButton: {
     marginHorizontal: 16,

@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import { OVERLAY_BG, MODAL_MAX_WIDTH, MODAL_BORDER_RADIUS, MODAL_PADDING } from './componentStyles';
 import { MAX_PHOTOS } from '../constants/types';
 import { WHITE } from '../constants/themes';
 import ConfirmationModal from './ConfirmationModal';
+import ModalShell from './ModalShell';
 
 interface Props {
   photos: string[];
@@ -80,41 +80,41 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
         )}
       </View>
 
-      <Modal visible={sourceModalVisible} transparent animationType="fade" onRequestClose={() => setSourceModalVisible(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modal, { backgroundColor: c.background }]}>
-            <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(18) }]}>
-              {labels.add_photo_title}
-            </Text>
-            <TouchableOpacity
-              style={[styles.modalOption, { backgroundColor: c.surface }]}
-              onPress={() => handleSourceOption(onTakePhoto)}
-            >
-              <Ionicons name="camera-outline" size={24} color={c.primary} />
-              <Text style={[styles.modalOptionText, { color: c.text, fontSize: fs(15) }]}>
-                {labels.add_photo_camera}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.modalOption, { backgroundColor: c.surface }]}
-              onPress={() => handleSourceOption(onPickFromGallery)}
-            >
-              <Ionicons name="images-outline" size={24} color={c.primary} />
-              <Text style={[styles.modalOptionText, { color: c.text, fontSize: fs(15) }]}>
-                {labels.add_photo_gallery}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.modalCancelButton, { backgroundColor: c.surface }]}
-              onPress={() => setSourceModalVisible(false)}
-            >
-              <Text style={[styles.modalCancelText, { color: c.textSecondary, fontSize: fs(14) }]}>
-                {labels.cal_cancel}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      <ModalShell
+        visible={sourceModalVisible}
+        onClose={() => setSourceModalVisible(false)}
+        backgroundColor={c.background}
+      >
+        <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(18) }]}>
+          {labels.add_photo_title}
+        </Text>
+        <TouchableOpacity
+          style={[styles.modalOption, { backgroundColor: c.surface }]}
+          onPress={() => handleSourceOption(onTakePhoto)}
+        >
+          <Ionicons name="camera-outline" size={24} color={c.primary} />
+          <Text style={[styles.modalOptionText, { color: c.text, fontSize: fs(15) }]}>
+            {labels.add_photo_camera}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.modalOption, { backgroundColor: c.surface }]}
+          onPress={() => handleSourceOption(onPickFromGallery)}
+        >
+          <Ionicons name="images-outline" size={24} color={c.primary} />
+          <Text style={[styles.modalOptionText, { color: c.text, fontSize: fs(15) }]}>
+            {labels.add_photo_gallery}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.modalCancelButton, { backgroundColor: c.surface }]}
+          onPress={() => setSourceModalVisible(false)}
+        >
+          <Text style={[styles.modalCancelText, { color: c.textSecondary, fontSize: fs(14) }]}>
+            {labels.cal_cancel}
+          </Text>
+        </TouchableOpacity>
+      </ModalShell>
 
       <ConfirmationModal
         visible={deleteModalVisible}
@@ -171,19 +171,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: OVERLAY_BG,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-  },
-  modal: {
-    width: '100%',
-    maxWidth: MODAL_MAX_WIDTH,
-    borderRadius: MODAL_BORDER_RADIUS,
-    padding: MODAL_PADDING,
   },
   modalTitle: {
     fontWeight: '700',

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import {
-  View, Text, TouchableOpacity, FlatList, StyleSheet,
+  View, Text, FlatList, StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -12,13 +12,13 @@ import { accountRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
 import { Account } from '../database/types';
 import { formatCurrency, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
+import { withAlpha } from '../utils/color';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { RootStackParamList, USER_ID } from '../constants/types';
 import EyeToggle from '../components/EyeToggle';
 import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
-import DrawerMenuButton from '../components/DrawerMenuButton';
-import IconBadge from '../components/IconBadge';
+import ListItemRow from '../components/ListItemRow';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Accounts'>;
 
@@ -42,7 +42,7 @@ export default function AccountsScreen() {
 
   const isBalanceHidden = config.hideBalances !== isRevealed;
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (): Promise<{ accounts: AccountWithBalance[]; total: number }> => {
     const list = await accountRepository.list(USER_ID);
     const balanceById = new Map(
       (await accountRepository.getBalances()).map(b => [b.account_id, b.balance])
@@ -54,71 +54,59 @@ export default function AccountsScreen() {
     const nonTotal = withBalance.filter(a => !isTotalAccount(a));
     const totalSum = nonTotal.reduce((sum, a) => sum + a.balance, 0);
     const result = withBalance.map(a => isTotalAccount(a) ? { ...a, balance: totalSum } : a);
-    setAccounts(result);
-    setTotal(totalSum);
+    return { accounts: result, total: totalSum };
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      navigation.setOptions({
-        headerLeft: () => (
-          <DrawerMenuButton accessibilityLabel={labels.home_open_menu} />
-        ),
+      let active = true;
+      loadData().then(({ accounts, total }) => {
+        if (!active) return;
+        setAccounts(accounts);
+        setTotal(total);
       });
-      loadData();
-    }, [navigation, labels.home_open_menu, loadData])
+      return () => { active = false; };
+    }, [loadData])
   );
 
   const renderItem = ({ item }: { item: AccountWithBalance }) => {
     const isTotal = isTotalAccount(item);
     return (
       <>
-        <TouchableOpacity
+        <ListItemRow
+          title={getDisplayAccountName(item)}
+          titleSize={15}
+          subtitle={item.description ? getDisplayAccountDescription(item) : undefined}
+          icon={item.icon}
+          color={item.color}
+          shape={badgeShapeFor(config, 'account')}
+          badgeSize={44}
+          badgeIconSize={24}
+          badgeRadius={12}
+          badgeAlpha={13}
+          right={
+            <Text
+              style={[
+                styles.accountBalance,
+                {
+                  color: isBalanceHidden ? c.textSecondary : (item.balance >= 0 ? c.green : c.red),
+                  fontSize: fs(15),
+                },
+              ]}
+            >
+              {isBalanceHidden
+                ? HIDDEN_BALANCE
+                : formatSignedCurrency(item.balance, config.currency, config.decimalSeparator)}
+            </Text>
+          }
           style={[
             styles.accountRow,
-            { backgroundColor: isTotal ? c.primary + '15' : c.surface },
+            { backgroundColor: isTotal ? withAlpha(c.primary, 8) : c.surface },
           ]}
           onPress={() => navigation.navigate('ModifyAccount', { accountId: item.id })}
           accessibilityLabel={`${getDisplayAccountName(item)} ${isBalanceHidden ? HIDDEN_BALANCE : formatCurrency(item.balance, config.currency, config.decimalSeparator)}`}
-        >
-          <IconBadge
-            icon={item.icon}
-            color={item.color}
-            shape={badgeShapeFor(config, 'account')}
-            size={44}
-            iconSize={24}
-            roundedRadius={12}
-            backgroundAlpha={13}
-            style={styles.iconBubble}
-          />
-          <View style={styles.accountInfo}>
-            <Text style={[styles.accountName, { color: c.text, fontSize: fs(15) }]} numberOfLines={1}>
-              {getDisplayAccountName(item)}
-            </Text>
-            {item.description ? (
-              <Text
-                style={[styles.accountNote, { color: c.textSecondary, fontSize: fs(12) }]}
-                numberOfLines={1}
-              >
-                {getDisplayAccountDescription(item)}
-              </Text>
-            ) : null}
-          </View>
-          <Text
-            style={[
-              styles.accountBalance,
-              {
-                color: isBalanceHidden ? c.textSecondary : (item.balance >= 0 ? c.green : c.red),
-                fontSize: fs(15),
-              },
-            ]}
-          >
-            {isBalanceHidden
-              ? HIDDEN_BALANCE
-              : formatSignedCurrency(item.balance, config.currency, config.decimalSeparator)}
-          </Text>
-        </TouchableOpacity>
-        {isTotal && <View style={[styles.separator, { backgroundColor: c.primary + '40' }]} />}
+        />
+        {isTotal && <View style={[styles.separator, { backgroundColor: withAlpha(c.primary, 25) }]} />}
       </>
     );
   };
@@ -197,31 +185,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   accountRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
     borderRadius: 12,
     marginBottom: 10,
+    padding: 14,
   },
   separator: {
     height: 1,
     marginHorizontal: 16,
     marginBottom: 10,
   },
-  iconBubble: {
-    marginRight: 12,
-  },
-  accountInfo: {
-    flex: 1,
-  },
-  accountName: {
-    fontWeight: '600',
-  },
-  accountNote: {
-    marginTop: 2,
-  },
   accountBalance: {
-    fontWeight: '600',
-    marginLeft: 8,
+    fontWeight: '700',
   },
 });

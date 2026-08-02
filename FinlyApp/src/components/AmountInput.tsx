@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-nativ
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { TRANSPARENT } from '../constants/themes';
 import { t } from '../i18n';
 import { parseAmountInput, formatAmountDisplay, parseAmountValue } from '../utils/amountInput';
 
@@ -31,7 +32,7 @@ export default function AmountInput({ raw, onChangeRaw, onOpenCalculator }: Prop
               backgroundColor: c.surface,
               color: showError ? c.red : raw ? c.text : c.textSecondary,
               fontSize: fs(24),
-              borderColor: focused ? c.primary : 'transparent',
+              borderColor: focused ? c.primary : TRANSPARENT,
             },
           ]}
           placeholder="0"

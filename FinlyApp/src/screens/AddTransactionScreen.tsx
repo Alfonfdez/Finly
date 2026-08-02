@@ -21,6 +21,7 @@ import CalendarModal from '../components/CalendarModal';
 import CalculatorModal from '../components/CalculatorModal';
 import { PERIODS, TRANSACTION_TYPES, type TransactionType, type RootStackParamList, CATEGORY_USAGE_WINDOW_DAYS, USER_ID, MAX_VISIBLE_CATEGORIES } from '../constants/types';
 import { isSameDay, formatDateForDB } from '../utils/formatters';
+import { withAlpha } from '../utils/color';
 import { parseAmountInput, parseAmountValue } from '../utils/amountInput';
 import { transactionRepository, tagRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
@@ -83,6 +84,7 @@ export default function AddTransactionScreen() {
 
   // Handle category selected from AddCategoryScreen
   useFocusEffect(useCallback(() => {
+    let active = true;
     if (isFirstFocus.current) {
       setSelectedTags([]);
       isFirstFocus.current = false;
@@ -106,9 +108,10 @@ export default function AddTransactionScreen() {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - CATEGORY_USAGE_WINDOW_DAYS);
       const counts = await transactionRepository.getCategoryUsageCounts(USER_ID, type, formatDateForDB(startDate), accountId);
-      setCategoryUsage(new Map(counts.map(c => [c.id, c.count])));
+      if (active) setCategoryUsage(new Map(counts.map(c => [c.id, c.count])));
     };
     loadUsage();
+    return () => { active = false; };
   }, [categories, type, accountId]));
 
   useEffect(() => {
@@ -311,7 +314,7 @@ export default function AddTransactionScreen() {
         <TouchableOpacity
           style={[
             styles.submitButton,
-            { backgroundColor: canSubmit ? c.primary : c.textSecondary + '60' },
+            { backgroundColor: canSubmit ? c.primary : withAlpha(c.textSecondary, 38) },
           ]}
           onPress={handleSubmit}
           disabled={!canSubmit || submitting}

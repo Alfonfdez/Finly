@@ -1,17 +1,19 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import { View, Text, SectionList, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
 import { RootStackParamList, TRANSACTION_TYPES } from '../constants/types';
 import { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatCurrency } from '../utils/formatters';
+import { withAlpha } from '../utils/color';
 import { getDisplayCategoryName, t } from '../i18n';
 import AccountModal from '../components/AccountModal';
 import AccountTrigger from '../components/AccountTrigger';
@@ -37,8 +39,15 @@ export default function TransactionsScreen() {
   const endDate = route.params?.endDate;
   const tagIds = route.params?.tagIds;
 
-  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
+  const loadTransactions = useCallback(async () => {
+    const query: { category_id?: number; start_date?: string; end_date?: string } = {};
+    if (categoryId) query.category_id = categoryId;
+    if (startDate) query.start_date = startDate;
+    if (endDate) query.end_date = endDate;
+    return await transactionRepository.list(query);
+  }, [categoryId, startDate, endDate]);
+
+  const { data: allTransactions, loading } = useFocusLoad(loadTransactions, [] as Transaction[]);
 
   const filters = useTransactionFilters({
     transactions: allTransactions,
@@ -46,26 +55,6 @@ export default function TransactionsScreen() {
     activeAccount,
     initialTagIds: tagIds ?? [],
   });
-
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-      (async () => {
-        setLoading(true);
-        const query: { category_id?: number; start_date?: string; end_date?: string } = {};
-        if (categoryId) query.category_id = categoryId;
-        if (startDate) query.start_date = startDate;
-        if (endDate) query.end_date = endDate;
-        const data = await transactionRepository.list(query);
-
-        if (active) {
-          setAllTransactions(data);
-          setLoading(false);
-        }
-      })();
-      return () => { active = false; };
-    }, [categoryId, startDate, endDate])
-  );
 
   const category = categories.find(ct => ct.id === categoryId);
 
@@ -83,7 +72,7 @@ export default function TransactionsScreen() {
       {category && (
         <View style={[styles.categoryInfo, { borderBottomColor: c.border }]}>
           <View style={styles.categoryRow}>
-            <View style={[styles.categoryIcon, { backgroundColor: category.color + '30' }]}>
+            <View style={[styles.categoryIcon, { backgroundColor: withAlpha(category.color, 19) }]}>
               <Ionicons name={category.icon as IconName} size={22} color={category.color} />
             </View>
             <Text style={[styles.categoryName, { color: c.text, fontSize: fs(16) }]} numberOfLines={1}>
