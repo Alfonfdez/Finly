@@ -1,5 +1,5 @@
 import { getDatabase } from '../database';
-import { Tag } from '../types';
+import type { Tag } from '../types';
 import { buildUpdateQuery, buildNameExistsQuery } from '../helpers';
 import { dbTimestamp } from '../../utils/formatters';
 

@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { CategoryWithTotal, MAX_VISIBLE_TAGS } from '../constants/types';
+import { type CategoryWithTotal, MAX_VISIBLE_TAGS } from '../constants/types';
+import { UNTAGGED_ID } from '../database/helpers';
 import { formatCurrency } from '../utils/formatters';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { useConfig } from '../context/ConfigContext';
@@ -48,7 +49,7 @@ export default function CategoryList({
               style={[styles.tagChip, { backgroundColor: c.surface }]}
             >
               <Text style={[styles.tagChipText, { color: c.textSecondary, fontSize: fs(11) }]}>
-                {tag.name}
+                {tag.tag_id === UNTAGGED_ID ? labels.home_tag_untagged : tag.name}
               </Text>
             </View>
           ))}

@@ -1,4 +1,4 @@
-import { Category } from '../database/types';
+import type { Category } from '../database/types';
 import { getDisplayCategoryName } from '../i18n';
 import { OTHERS_CATEGORY_ID, OTHER_CATEGORY_ID } from '../constants/types';
 

@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo, type ReactNode } from 'react';
 import { Appearance } from 'react-native';
-import { ColorPalette, darkColors, lightColors } from '../constants/themes';
+import { type ColorPalette, darkColors, lightColors } from '../constants/themes';
 import { configRepository } from '../database';
 import { setLanguage } from '../i18n';
 import { isWeb } from '../utils/platform';
@@ -107,7 +107,9 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   const updateConfig = useCallback(async (partial: Partial<Config>) => {
     const updated = { ...configRef.current, ...partial };
     if (partial.language) setLanguage(partial.language);
-    configRepository.save(partial).catch(() => {});
+    configRepository.save(partial).catch((error) => {
+      console.error('Failed to save config:', error);
+    });
     setConfig(updated);
     if (partial.theme) setActiveColors(resolveColors(partial.theme));
   }, []);

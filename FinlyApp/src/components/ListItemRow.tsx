@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import type { ReactNode } from 'react';
 import type { AccessibilityState, StyleProp, ViewStyle } from 'react-native';
@@ -38,7 +39,7 @@ interface Props {
   accessibilityState?: AccessibilityState;
 }
 
-export default function ListItemRow({
+function ListItemRow({
   title,
   icon,
   color,
@@ -114,6 +115,8 @@ export default function ListItemRow({
     </TouchableOpacity>
   );
 }
+
+export default memo(ListItemRow);
 
 const styles = StyleSheet.create({
   row: {

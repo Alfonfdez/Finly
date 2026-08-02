@@ -1,4 +1,4 @@
-import { Language } from './en';
+import type { Language } from './en';
 
 export const es: Language = {
   // Generic
@@ -41,6 +41,10 @@ export const es: Language = {
   settings_delete_data_confirm_message2: 'Escribe DELETE para confirmar',
   settings_delete_data_confirm_placeholder: 'Escribe DELETE aquí',
   settings_delete_confirm: 'Confirmar',
+  settings_delete_transactions_error_title: 'Error',
+  settings_delete_transactions_error_message: 'No se pudieron eliminar todas las transacciones.',
+  settings_delete_data_error_title: 'Error',
+  settings_delete_data_error_message: 'No se pudieron eliminar todos los datos.',
   settings_home_default_period_day: 'Día',
   settings_home_default_period_week: 'Semana',
   settings_home_default_period_month: 'Mes',

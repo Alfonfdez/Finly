@@ -1,5 +1,5 @@
 import { getDatabase } from '../database';
-import { User } from '../types';
+import type { User } from '../types';
 import { buildUpdateQuery } from '../helpers';
 import { dbTimestamp } from '../../utils/formatters';
 

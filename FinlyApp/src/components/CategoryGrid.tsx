@@ -1,5 +1,6 @@
+import { useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Category } from '../database/types';
+import type { Category } from '../database/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
@@ -22,7 +23,7 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
   const fs = useFontSize();
   const labels = t();
 
-  const renderCategory = (cat: Category) => {
+  const renderCategory = useCallback((cat: Category) => {
     const categoryName = getDisplayCategoryName(cat);
 
     return (
@@ -37,11 +38,11 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
         accessibilityLabel={`${labels.a11y_category} ${categoryName}`}
       />
     );
-  };
+  }, [config, selectedCategory, onSelect, labels]);
 
   const label = addMoreLabel ?? labels.add_more;
 
-  const renderAddMore = () => (
+  const renderAddMore = useCallback(() => (
     <CategoryTile
       icon="add"
       color={c.textSecondary}
@@ -51,7 +52,7 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
       onPress={onAddMore}
       accessibilityLabel={label}
     />
-  );
+  ), [c.textSecondary, label, onAddMore]);
 
   return (
     <View style={styles.container}>

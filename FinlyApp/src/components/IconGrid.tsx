@@ -1,5 +1,5 @@
-import { ComponentProps, useState } from 'react';
-import { View, TouchableOpacity, StyleSheet, LayoutChangeEvent } from 'react-native';
+import { type ComponentProps, useState } from 'react';
+import { View, TouchableOpacity, StyleSheet, type LayoutChangeEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { CONFIG_ICON_SHAPES, type ConfigIconShape } from '../constants/types';

@@ -1,15 +1,15 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { View, StyleSheet, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
-import { RootStackParamList, USER_ID, MAX_TAG_NAME_LENGTH } from '../constants/types';
+import { type RootStackParamList, USER_ID, MAX_TAG_NAME_LENGTH } from '../constants/types';
 import ConfirmationModal from '../components/ConfirmationModal';
 import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';

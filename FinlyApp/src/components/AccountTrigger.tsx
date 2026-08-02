@@ -1,6 +1,6 @@
 import { Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Account } from '../database/types';
+import type { Account } from '../database/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { getDisplayAccountName } from '../i18n';
@@ -8,7 +8,7 @@ import { badgeShapeFor } from '../utils/badgeShape';
 import IconBadge from './IconBadge';
 
 interface Props {
-  accountId: number;
+  accountId: number | undefined;
   accounts: (Account & { balance: number })[];
   onPress: () => void;
 }

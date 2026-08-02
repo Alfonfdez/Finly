@@ -3,12 +3,12 @@ import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { formatCurrency, formatDateForDB, formatSignedCurrency, HIDDEN_BALANCE, resolvePeriodRange, endOfDay, startOfDay } from '../utils/formatters';
-import { RootStackParamList, PERIODS, TRANSACTION_TYPES, type Period, CHART_TYPES, type ChartType } from '../constants/types';
+import { type RootStackParamList, PERIODS, TRANSACTION_TYPES, type Period, CHART_TYPES, type ChartType } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { t, getDisplayAccountName } from '../i18n';
 import { transactionRepository as transactionRepo } from '../database';
@@ -70,28 +70,24 @@ export default function HomeScreen() {
       const dates = resolvePeriodRange(activePeriod, selectedDate, customDate);
 
       try {
-        const results = await Promise.all(
-          activeCategories.map(async (cat) => {
-            const data = await transactionRepo.breakdownByCategoryAndTag(
-              isTotalAccount(currentAccount) ? null : currentAccount.id,
-              cat.id,
-              activeType,
-              formatDateForDB(dates.start),
-              formatDateForDB(dates.end),
-              activeTagIds.length > 0 ? activeTagIds : undefined
-            );
-            const filtered = tags.length > 0 ? data : data.filter(d => d.tag_id !== UNTAGGED_ID);
-            return filtered.length > 0 ? [cat.id, filtered] as const : null;
-          })
+        const data = await transactionRepo.breakdownByCategoriesAndTags(
+          isTotalAccount(currentAccount) ? null : currentAccount.id,
+          activeCategories.map(cat => cat.id),
+          activeType,
+          formatDateForDB(dates.start),
+          formatDateForDB(dates.end),
+          activeTagIds.length > 0 ? activeTagIds : undefined
         );
 
         if (!active) return;
         const breakdowns = new Map<number, { tag_id: number; name: string; total: number }[]>();
-        for (const entry of results) {
-          if (entry) breakdowns.set(entry[0], entry[1]);
+        for (const [catId, rows] of data) {
+          const filtered = tags.length > 0 ? rows : rows.filter(d => d.tag_id !== UNTAGGED_ID);
+          if (filtered.length > 0) breakdowns.set(catId, filtered);
         }
         setTagBreakdowns(breakdowns);
-      } catch {
+      } catch (error) {
+        console.error('Failed to load tag breakdowns:', error);
         if (active) setTagBreakdowns(new Map());
       }
     }

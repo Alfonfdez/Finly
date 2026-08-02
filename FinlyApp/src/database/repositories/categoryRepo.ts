@@ -1,6 +1,6 @@
 import { getDatabase } from '../database';
-import { Category } from '../types';
-import { TransactionType } from '../../constants/types';
+import type { Category } from '../types';
+import type { TransactionType } from '../../constants/types';
 import { buildUpdateQuery, buildNameExistsQuery } from '../helpers';
 import { deleteTransactionPhotos } from '../photoCleanup';
 import { dbTimestamp } from '../../utils/formatters';
@@ -39,8 +39,18 @@ export const categoryRepo = {
   async delete(id: number): Promise<void> {
     const db = getDatabase();
     await deleteTransactionPhotos('category_id = ?', id);
-    await db.runAsync(`DELETE FROM transactions WHERE category_id = ?`, id);
-    await db.runAsync(`DELETE FROM categories WHERE id = ?`, id);
+    await db.withTransactionAsync(async () => {
+      await db.runAsync(`DELETE FROM transactions WHERE category_id = ?`, id);
+      await db.runAsync(`DELETE FROM categories WHERE id = ?`, id);
+    });
+  },
+
+  async reassignAndDelete(oldCategoryId: number, newCategoryId: number): Promise<void> {
+    const db = getDatabase();
+    await db.withTransactionAsync(async () => {
+      await db.runAsync(`UPDATE transactions SET category_id = ? WHERE category_id = ?`, newCategoryId, oldCategoryId);
+      await db.runAsync(`DELETE FROM categories WHERE id = ?`, oldCategoryId);
+    });
   },
 
   async deleteAll(): Promise<void> {

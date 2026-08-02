@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { StyleProp, ViewStyle } from 'react-native';
@@ -23,7 +24,7 @@ interface Props {
   style?: StyleProp<ViewStyle>;
 }
 
-export default function CategoryTile({
+function CategoryTile({
   icon,
   color,
   shape,
@@ -80,6 +81,8 @@ export default function CategoryTile({
     </TouchableOpacity>
   );
 }
+
+export default memo(CategoryTile);
 
 const styles = StyleSheet.create({
   item: {

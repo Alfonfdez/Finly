@@ -1,5 +1,5 @@
 import { getDatabase } from '../database';
-import { Account } from '../types';
+import type { Account } from '../types';
 import { buildUpdateQuery, buildNameExistsQuery } from '../helpers';
 import { deleteTransactionPhotos } from '../photoCleanup';
 import { dbTimestamp } from '../../utils/formatters';
@@ -37,8 +37,10 @@ export const accountRepo = {
   async delete(id: number): Promise<void> {
     const db = getDatabase();
     await deleteTransactionPhotos('account_id = ?', id);
-    await db.runAsync(`DELETE FROM transactions WHERE account_id = ?`, id);
-    await db.runAsync(`DELETE FROM accounts WHERE id = ? AND is_total = 0`, id);
+    await db.withTransactionAsync(async () => {
+      await db.runAsync(`DELETE FROM transactions WHERE account_id = ?`, id);
+      await db.runAsync(`DELETE FROM accounts WHERE id = ? AND is_total = 0`, id);
+    });
   },
 
   async deleteAll(): Promise<void> {

@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { formatDate, formatWeekRange } from '../utils/formatters';
 import CalendarModal from './CalendarModal';
-import { Period } from './calendars/types';
+import type { Period } from './calendars/types';
 import { PERIODS } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';

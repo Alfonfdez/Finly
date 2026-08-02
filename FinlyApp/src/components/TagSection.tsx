@@ -5,7 +5,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { t } from '../i18n';
-import { Tag } from '../database/types';
+import type { Tag } from '../database/types';
 import { DEBOUNCE_MS, MAX_TAG_NAME_LENGTH } from '../constants/types';
 import ModalShell from './ModalShell';
 

@@ -2,13 +2,13 @@ import { Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
-import { Tag } from '../database/types';
-import { RootStackParamList } from '../constants/types';
+import type { Tag } from '../database/types';
+import type { RootStackParamList } from '../constants/types';
 import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
 

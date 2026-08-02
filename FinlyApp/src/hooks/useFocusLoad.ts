@@ -16,6 +16,10 @@ export function useFocusLoad<T>(
         if (!active) return;
         setData(result);
         setLoading(false);
+      }).catch((error) => {
+        if (!active) return;
+        console.error('useFocusLoad failed:', error);
+        setLoading(false);
       });
       return () => { active = false; };
     }, [loader])

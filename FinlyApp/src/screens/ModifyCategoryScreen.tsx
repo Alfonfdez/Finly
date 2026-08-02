@@ -4,8 +4,8 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -13,7 +13,7 @@ import { useColorSelection } from '../hooks/useColorSelection';
 import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
 import { t, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdByName } from '../i18n';
 import { categoryRepository, transactionRepository } from '../database';
-import { RootStackParamList, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH } from '../constants/types';
+import { type RootStackParamList, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { WHITE, TRANSPARENT } from '../constants/themes';
 import IconGrid, { CATEGORY_ICONS } from '../components/IconGrid';
@@ -167,8 +167,7 @@ export default function ModifyCategoryScreen() {
   const handleSelectTarget = async () => {
     if (targetCategoryId === null || !category) return;
     try {
-      await transactionRepository.reassignCategory(categoryId, targetCategoryId);
-      await categoryRepository.delete(categoryId);
+      await categoryRepository.reassignAndDelete(categoryId, targetCategoryId);
       await refreshCategories();
       await refresh();
       setSelectModalVisible(false);
@@ -264,7 +263,7 @@ export default function ModifyCategoryScreen() {
             onClose={() => setColorPickerVisible(false)}
           />
 
-          <DeleteButton label={labels.modify_cat_delete} onPress={handleDeletePress} />
+          <DeleteButton label={labels.modify_cat_delete} onPress={handleDeletePress} style={styles.deleteButton} />
 
           <PrimaryButton
             label={labels.modify_cat_save}
@@ -399,6 +398,9 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 12,
+  },
+  deleteButton: {
+    marginTop: 16,
   },
   modalTitle: {
     fontWeight: '700',

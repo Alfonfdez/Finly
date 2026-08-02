@@ -143,6 +143,16 @@ export function formatDateForDB(date: Date): string {
   return `${y}-${m}-${d} ${h}:${min}:${s}`;
 }
 
+export function parseDbDate(value: string): Date {
+  const [datePart, timePart] = value.split(' ');
+  const [year, month, day] = datePart.split('-').map(Number);
+  if (timePart) {
+    const [hours, minutes, seconds] = timePart.split(':').map(Number);
+    return new Date(year, month - 1, day, hours, minutes, seconds);
+  }
+  return new Date(year, month - 1, day);
+}
+
 export function dbTimestamp(): string {
   return formatDateForDB(new Date());
 }

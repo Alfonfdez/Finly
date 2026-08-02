@@ -1,10 +1,10 @@
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useConfig, Config } from '../../context/ConfigContext';
+import { useConfig, type Config } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
 import { CONFIG_ICON_SHAPES, TEXT_SIZES, THEMES } from '../../constants/types';
-import SelectorInline, { Option } from '../../components/SelectorInline';
+import SelectorInline, { type Option } from '../../components/SelectorInline';
 import { settingsStyles } from '../../components/settings/settingsStyles';
 
 export default function AppearanceScreen() {
