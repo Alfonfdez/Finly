@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { CategoryWithTotal } from '../constants/types';
+import type { CategoryWithTotal } from '../constants/types';
 import { formatCurrency } from '../utils/formatters';
 import { getDisplayCategoryName } from '../i18n';
 import { useConfig } from '../context/ConfigContext';

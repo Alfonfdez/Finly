@@ -1,4 +1,5 @@
 import { Text, View, Image, StyleSheet } from 'react-native';
+import type { ComponentType } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { NavigationContainer } from '@react-navigation/native';
@@ -7,7 +8,7 @@ import {
   createDrawerNavigator,
   DrawerContentScrollView,
   DrawerItem,
-  DrawerContentComponentProps,
+  type DrawerContentComponentProps,
 } from '@react-navigation/drawer';
 import HomeScreen from '../screens/HomeScreen';
 import AddTransactionScreen from '../screens/AddTransactionScreen';
@@ -33,7 +34,7 @@ import ModifyTagScreen from '../screens/ModifyTagScreen';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import { RootStackParamList } from '../constants/types';
+import type { RootStackParamList } from '../constants/types';
 import DrawerMenuButton from '../components/DrawerMenuButton';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -41,7 +42,7 @@ const Drawer = createDrawerNavigator();
 
 type ScreenDef = {
   name: keyof RootStackParamList;
-  component: React.ComponentType<any>;
+  component: ComponentType<any>;
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   drawerMenu?: boolean;

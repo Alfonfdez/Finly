@@ -1,4 +1,4 @@
-import { Period } from '../../constants/types';
+import type { Period } from '../../constants/types';
 
 export type { Period };
 

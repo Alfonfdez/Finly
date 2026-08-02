@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { weekStart, formatWeekRange } from '../../utils/formatters';
-import { CalendarBaseProps } from './types';
+import type { CalendarBaseProps } from './types';
 import MonthNav from './MonthNav';
 import YearNav from './YearNav';
 import { useConfig } from '../../context/ConfigContext';

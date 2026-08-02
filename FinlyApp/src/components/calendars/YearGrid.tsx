@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { CalendarBaseProps } from './types';
+import type { CalendarBaseProps } from './types';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import NavArrows from './NavArrows';

@@ -1,11 +1,11 @@
 import { View, Text, ScrollView } from 'react-native';
-import { useConfig, Config } from '../../context/ConfigContext';
+import { useConfig, type Config } from '../../context/ConfigContext';
 import { useApp } from '../../context/AppContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t, getDisplayAccountName } from '../../i18n';
 import { isNative } from '../../utils/platform';
 import { isTotalAccount } from '../../database/helpers';
-import SelectorInline, { Option } from '../../components/SelectorInline';
+import SelectorInline, { type Option } from '../../components/SelectorInline';
 import CheckboxRow from '../../components/settings/CheckboxRow';
 import ToggleRow from '../../components/settings/ToggleRow';
 import { settingsStyles } from '../../components/settings/settingsStyles';

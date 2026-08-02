@@ -1,21 +1,13 @@
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Transaction, Category } from '../database/types';
-import { formatCurrency, getMonthName } from '../utils/formatters';
+import type { Transaction, Category } from '../database/types';
+import { formatCurrency, getMonthName, parseDbDate } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { getDisplayCategoryName } from '../i18n';
 import { BADGE_SHAPES, TRANSACTION_TYPES } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import ListItemRow from './ListItemRow';
-
-interface Props {
-  date: string;
-  transactions: Transaction[];
-  categories: Category[];
-  tagsByTransaction?: Map<number, { tag_id: number; name: string }[]>;
-  onTransactionPress?: (transactionId: number) => void;
-}
 
 interface TransactionRowProps {
   tx: Transaction;
@@ -24,7 +16,7 @@ interface TransactionRowProps {
   onPress?: (transactionId: number) => void;
 }
 
-function TransactionRow({ tx, category, tags, onPress }: TransactionRowProps) {
+export const TransactionRow = memo(function TransactionRow({ tx, category, tags, onPress }: TransactionRowProps) {
   const { config, activeColors: c } = useConfig();
   const fs = useFontSize();
 
@@ -61,12 +53,21 @@ function TransactionRow({ tx, category, tags, onPress }: TransactionRowProps) {
       onPress={handlePress}
     />
   );
-}
+});
 
-const MemoizedTransactionRow = memo(TransactionRow);
+export const TransactionDateHeader = memo(function TransactionDateHeader({ date }: { date: string }) {
+  const { activeColors: c } = useConfig();
+  const fs = useFontSize();
+
+  return (
+    <Text style={[styles.dateHeader, { color: c.textSecondary, fontSize: fs(13) }]}>
+      {formatDateHeader(date)}
+    </Text>
+  );
+});
 
 function formatDateHeader(dateStr: string): string {
-  const d = new Date(dateStr);
+  const d = parseDbDate(dateStr);
   const day = d.getDate();
   const month = getMonthName(d.getMonth() + 1).toLowerCase();
   const year = d.getFullYear();
@@ -77,32 +78,7 @@ function formatDateHeader(dateStr: string): string {
   return `${day} ${month} ${year}`;
 }
 
-export default memo(function TransactionGroup({ date, transactions, categories, tagsByTransaction, onTransactionPress }: Props) {
-  const { activeColors: c } = useConfig();
-  const fs = useFontSize();
-
-  const categoriesById = useMemo(() => new Map(categories.map(cat => [cat.id, cat])), [categories]);
-
-  return (
-    <View style={styles.group}>
-      <Text style={[styles.dateHeader, { color: c.textSecondary, fontSize: fs(13) }]}>
-        {formatDateHeader(date)}
-      </Text>
-      {transactions.map((tx) => (
-        <MemoizedTransactionRow
-          key={tx.id}
-          tx={tx}
-          category={categoriesById.get(tx.category_id)}
-          tags={tagsByTransaction?.get(tx.id)}
-          onPress={onTransactionPress}
-        />
-      ))}
-    </View>
-  );
-});
-
 const styles = StyleSheet.create({
-  group: { marginBottom: 8 },
   dateHeader: {
     fontWeight: '600',
     paddingVertical: 8,

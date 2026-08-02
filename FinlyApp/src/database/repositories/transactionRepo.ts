@@ -1,6 +1,6 @@
 import { getDatabase } from '../database';
-import { Transaction } from '../types';
-import { TransactionType, MAX_SUGGESTIONS, UNTAGGED_LABEL } from '../../constants/types';
+import type { Transaction } from '../types';
+import { type TransactionType, MAX_SUGGESTIONS, UNTAGGED_LABEL } from '../../constants/types';
 import { UNTAGGED_ID, buildUpdateQuery } from '../helpers';
 import { deleteTransactionPhotos } from '../photoCleanup';
 import { dbTimestamp } from '../../utils/formatters';
@@ -135,8 +135,10 @@ export const transactionRepo = {
   async deleteAllTransactions(): Promise<void> {
     await deleteTransactionPhotos('photo IS NOT NULL');
     const db = getDatabase();
-    await db.runAsync('DELETE FROM transactions');
-    await db.runAsync('DELETE FROM transaction_tags');
+    await db.withTransactionAsync(async () => {
+      await db.runAsync('DELETE FROM transactions');
+      await db.runAsync('DELETE FROM transaction_tags');
+    });
   },
 
   async totalByPeriod(
@@ -228,11 +230,13 @@ export const transactionRepo = {
 
          UNION ALL
 
-         SELECT ${UNTAGGED_ID} AS tag_id, '${UNTAGGED_LABEL}' AS name, SUM(tr.amount) AS total
+         SELECT ${UNTAGGED_ID} AS tag_id, '${UNTAGGED_LABEL}' AS name, COALESCE(SUM(tr.amount), 0) AS total
          FROM transactions tr
          WHERE tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
            AND NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = tr.id)
-           ${accountClause}`,
+           ${accountClause}
+         GROUP BY tr.category_id
+         HAVING COALESCE(SUM(tr.amount), 0) > 0`,
         categoryId, type, startDate, endDate, ...accountParams,
         categoryId, type, startDate, endDate, ...accountParams
       );
@@ -259,14 +263,81 @@ export const transactionRepo = {
 
     if (filterUntagged) {
       const untagged = await db.getAllAsync<CategoryTagBreakdown>(
-        `SELECT ${UNTAGGED_ID} AS tag_id, '${UNTAGGED_LABEL}' AS name, SUM(tr.amount) AS total
+        `SELECT ${UNTAGGED_ID} AS tag_id, '${UNTAGGED_LABEL}' AS name, COALESCE(SUM(tr.amount), 0) AS total
          FROM transactions tr
          WHERE tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
            AND NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = tr.id)
-           ${accountClause}`,
+           ${accountClause}
+         GROUP BY tr.category_id
+         HAVING COALESCE(SUM(tr.amount), 0) > 0`,
         categoryId, type, startDate, endDate, ...accountParams
       );
       results.push(...untagged);
+    }
+
+    return results;
+  },
+
+  async breakdownByCategoriesAndTags(
+    accountId: number | null,
+    categoryIds: number[],
+    type: TransactionType,
+    startDate: string,
+    endDate: string,
+    tagIds?: number[]
+  ): Promise<Map<number, CategoryTagBreakdown[]>> {
+    const db = getDatabase();
+    const accountClause = accountId === null ? '' : 'AND tr.account_id = ?';
+    const accountParams = accountId === null ? [] : [accountId];
+    const catPlaceholders = categoryIds.map(() => '?').join(',');
+    const hasFilter = tagIds && tagIds.length > 0;
+    const filterRegular = hasFilter ? tagIds.filter(id => id !== UNTAGGED_ID) : [];
+    const filterUntagged = hasFilter ? tagIds.includes(UNTAGGED_ID) : false;
+
+    const results = new Map<number, CategoryTagBreakdown[]>();
+
+    if (!hasFilter || filterRegular.length > 0) {
+      const tagClause = filterRegular.length > 0
+        ? `AND tt.tag_id IN (${filterRegular.map(() => '?').join(',')})`
+        : '';
+      const tagged = await db.getAllAsync<CategoryTagBreakdown & { category_id: number }>(
+        `SELECT tr.category_id, tt.tag_id, t.name, SUM(tr.amount) AS total
+         FROM transactions tr
+         INNER JOIN transaction_tags tt ON tr.id = tt.transaction_id
+         INNER JOIN tags t ON tt.tag_id = t.id
+         WHERE tr.category_id IN (${catPlaceholders})
+           AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
+           ${tagClause}
+           ${accountClause}
+         GROUP BY tr.category_id, tt.tag_id`,
+        ...categoryIds, type, startDate, endDate,
+        ...filterRegular,
+        ...accountParams
+      );
+      for (const row of tagged) {
+        const list = results.get(row.category_id) ?? [];
+        list.push({ tag_id: row.tag_id, name: row.name, total: row.total });
+        results.set(row.category_id, list);
+      }
+    }
+
+    if (!hasFilter || filterUntagged) {
+      const untagged = await db.getAllAsync<CategoryTagBreakdown & { category_id: number }>(
+        `SELECT tr.category_id, ${UNTAGGED_ID} AS tag_id, '${UNTAGGED_LABEL}' AS name, COALESCE(SUM(tr.amount), 0) AS total
+         FROM transactions tr
+         WHERE tr.category_id IN (${catPlaceholders})
+           AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
+           AND NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = tr.id)
+           ${accountClause}
+         GROUP BY tr.category_id
+         HAVING COALESCE(SUM(tr.amount), 0) > 0`,
+        ...categoryIds, type, startDate, endDate, ...accountParams
+      );
+      for (const row of untagged) {
+        const list = results.get(row.category_id) ?? [];
+        list.push({ tag_id: row.tag_id, name: row.name, total: row.total });
+        results.set(row.category_id, list);
+      }
     }
 
     return results;
@@ -277,16 +348,20 @@ export const transactionRepo = {
     tagIds: number[]
   ): Promise<Transaction> {
     const db = getDatabase();
-    const tx = await transactionRepo.create(data);
-    if (tagIds.length > 0) {
-      for (const tagId of tagIds) {
-        await db.runAsync(
-          `INSERT INTO transaction_tags (transaction_id, tag_id) VALUES (?, ?)`,
-          tx.id, tagId
-        );
+    let created: Transaction | null = null;
+    await db.withTransactionAsync(async () => {
+      created = await transactionRepo.create(data);
+      if (tagIds.length > 0) {
+        for (const tagId of tagIds) {
+          await db.runAsync(
+            `INSERT INTO transaction_tags (transaction_id, tag_id) VALUES (?, ?)`,
+            created.id, tagId
+          );
+        }
       }
-    }
-    return tx;
+    });
+    if (!created) throw new Error('createWithTags failed to create transaction');
+    return created;
   },
 
   async updateWithTags(
@@ -295,16 +370,18 @@ export const transactionRepo = {
     tagIds: number[]
   ): Promise<void> {
     const db = getDatabase();
-    await transactionRepo.update(id, data);
-    await db.runAsync(`DELETE FROM transaction_tags WHERE transaction_id = ?`, id);
-    if (tagIds.length > 0) {
-      for (const tagId of tagIds) {
-        await db.runAsync(
-          `INSERT INTO transaction_tags (transaction_id, tag_id) VALUES (?, ?)`,
-          id, tagId
-        );
+    await db.withTransactionAsync(async () => {
+      await transactionRepo.update(id, data);
+      await db.runAsync(`DELETE FROM transaction_tags WHERE transaction_id = ?`, id);
+      if (tagIds.length > 0) {
+        for (const tagId of tagIds) {
+          await db.runAsync(
+            `INSERT INTO transaction_tags (transaction_id, tag_id) VALUES (?, ?)`,
+            id, tagId
+          );
+        }
       }
-    }
+    });
   },
 
   async getTagsByTransactionId(transactionId: number): Promise<number[]> {
@@ -343,10 +420,11 @@ export const transactionRepo = {
          ON c.id = t.category_id
          AND t.date >= ?
          AND t.account_id = ?
+         AND t.type = ?
        WHERE c.user_id = ? AND c.type = ?
        GROUP BY c.id
        ORDER BY count DESC, c.name ASC`,
-      startDate, accountId, userId, type
+      startDate, accountId, type, userId, type
     );
   },
 };

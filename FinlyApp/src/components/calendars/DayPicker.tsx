@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { getDaysInMonth, isSameDay, isFutureDate, dayOffset } from '../../utils/formatters';
 import { withAlpha } from '../../utils/color';
-import { CalendarBaseProps } from './types';
+import type { CalendarBaseProps } from './types';
 import MonthNav from './MonthNav';
 import { useConfig } from '../../context/ConfigContext';
 import { t } from '../../i18n';

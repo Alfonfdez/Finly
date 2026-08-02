@@ -1,6 +1,6 @@
-import { User, Account, Category, Transaction, Tag, TransactionTag } from './types';
+import type { User, Account, Category, Transaction, Tag, TransactionTag } from './types';
 import { TRANSACTION_TYPES, MAX_SUGGESTIONS, UNTAGGED_LABEL, type TransactionType } from '../constants/types';
-import { Config } from '../context/ConfigContext';
+import type { Config } from '../context/ConfigContext';
 import { UNTAGGED_ID, isTotalAccount } from './helpers';
 import { DEFAULT_CONFIG } from './configDefaults';
 import { dbTimestamp } from '../utils/formatters';
@@ -168,6 +168,14 @@ export const webCategoryRepo = {
     const transactions = getStore<Transaction>('transactions');
     setStore('transactions', transactions.filter(t => t.category_id !== id));
   },
+  async reassignAndDelete(oldCategoryId: number, newCategoryId: number): Promise<void> {
+    const items = getStore<Category>('categories');
+    setStore('categories', items.filter(c => c.id !== oldCategoryId));
+    const transactions = getStore<Transaction>('transactions');
+    setStore('transactions', transactions.map(t =>
+      t.category_id === oldCategoryId ? { ...t, category_id: newCategoryId } : t
+    ));
+  },
   async deleteAll(): Promise<void> {
     setStore('categories', []);
   },
@@ -316,6 +324,73 @@ export const webTransactionRepo = {
     }
     return result;
   },
+  async breakdownByCategoriesAndTags(
+    accountId: number | null,
+    categoryIds: number[],
+    type: TransactionType,
+    startDate: string,
+    endDate: string,
+    tagIds?: number[]
+  ): Promise<Map<number, { tag_id: number; name: string; total: number }[]>> {
+    const transactions = getStore<Transaction>('transactions')
+      .filter(t => (accountId === null || t.account_id === accountId)
+        && categoryIds.includes(t.category_id)
+        && t.type === type
+        && t.date >= startDate
+        && t.date <= endDate);
+    const tags = getStore<Tag>('tags');
+    const links = getStore<TransactionTag>('transaction_tags');
+    const tagMap = new Map(tags.map(t => [t.id, t.name]));
+
+    const hasFilter = tagIds && tagIds.length > 0;
+    const filterRegular = hasFilter ? tagIds.filter(id => id !== UNTAGGED_ID) : [];
+    const filterUntagged = hasFilter ? tagIds.includes(UNTAGGED_ID) : false;
+
+    const tagged = new Map<number, Map<number, number>>();
+    const untaggedByCategory = new Map<number, number>();
+
+    for (const t of transactions) {
+      const txnTagIds = links.filter(l => l.transaction_id === t.id).map(l => l.tag_id);
+      const isUntagged = txnTagIds.length === 0;
+
+      if (hasFilter) {
+        const matches =
+          (filterUntagged && isUntagged) ||
+          (filterRegular.length > 0 && txnTagIds.some(id => filterRegular.includes(id)));
+        if (!matches) continue;
+      }
+
+      if (isUntagged) {
+        untaggedByCategory.set(t.category_id, (untaggedByCategory.get(t.category_id) ?? 0) + t.amount);
+      } else {
+        const relevantTagIds = hasFilter ? txnTagIds.filter(id => filterRegular.includes(id)) : txnTagIds;
+        for (const tagId of relevantTagIds) {
+          let catTags = tagged.get(t.category_id);
+          if (!catTags) {
+            catTags = new Map();
+            tagged.set(t.category_id, catTags);
+          }
+          catTags.set(tagId, (catTags.get(tagId) ?? 0) + t.amount);
+        }
+      }
+    }
+
+    const result = new Map<number, { tag_id: number; name: string; total: number }[]>();
+    for (const [catId, catTags] of tagged) {
+      const list: { tag_id: number; name: string; total: number }[] = [];
+      for (const [tagId, total] of catTags) {
+        list.push({ tag_id: tagId, name: tagMap.get(tagId) ?? '', total });
+      }
+      result.set(catId, list);
+    }
+    for (const [catId, total] of untaggedByCategory) {
+      if (total <= 0) continue;
+      const list = result.get(catId) ?? [];
+      list.push({ tag_id: UNTAGGED_ID, name: UNTAGGED_LABEL, total });
+      result.set(catId, list);
+    }
+    return result;
+  },
   async reassignCategory(oldCategoryId: number, newCategoryId: number): Promise<void> {
     const items = getStore<Transaction>('transactions');
     const updated = items.map(t =>
@@ -331,7 +406,7 @@ export const webTransactionRepo = {
       items
         .map(t => t.description)
         .filter((d): d is string => !!d && d.toLowerCase().includes(lower))
-    )].slice(0, MAX_SUGGESTIONS);
+    )].sort((a, b) => a.localeCompare(b)).slice(0, MAX_SUGGESTIONS);
   },
 
   async createWithTags(

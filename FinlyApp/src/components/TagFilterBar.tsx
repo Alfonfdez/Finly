@@ -2,7 +2,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-nati
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import { Tag } from '../database/types';
+import type { Tag } from '../database/types';
 import { UNTAGGED_ID } from '../database/helpers';
 import { withAlpha } from '../utils/color';
 import { TRANSPARENT } from '../constants/themes';

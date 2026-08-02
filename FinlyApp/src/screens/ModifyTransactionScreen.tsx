@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, useFocusEffect, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation, useRoute, useFocusEffect, type RouteProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -21,7 +21,7 @@ import CalendarModal from '../components/CalendarModal';
 import CalculatorModal from '../components/CalculatorModal';
 import { TRANSACTION_TYPES, type TransactionType, type RootStackParamList, USER_ID, MAX_VISIBLE_CATEGORIES } from '../constants/types';
 import { parseAmountInput, parseAmountValue } from '../utils/amountInput';
-import { formatDateForDB } from '../utils/formatters';
+import { formatDateForDB, parseDbDate } from '../utils/formatters';
 import { withAlpha } from '../utils/color';
 import { parsePhotos } from '../utils/photoUtils';
 import { transactionRepository, tagRepository } from '../database';
@@ -50,11 +50,11 @@ export default function ModifyTransactionScreen() {
   const [type, setType] = useState<TransactionType>(transaction?.type ?? TRANSACTION_TYPES.expense);
   const [amountRaw, setAmountRaw] = useState('');
   const [accountId, setAccountId] = useState(
-    transaction?.account_id ?? accounts.find(a => !isTotalAccount(a))?.id ?? 1
+    transaction?.account_id ?? accounts.find(a => !isTotalAccount(a))?.id
   );
   const [categoryId, setCategoryId] = useState<number | null>(transaction?.category_id ?? null);
   const [reorderedCategory, setReorderedCategory] = useState<number | null>(transaction?.category_id ?? null);
-  const [day, setDay] = useState<Date>(transaction ? new Date(transaction.date) : new Date());
+  const [day, setDay] = useState<Date>(transaction ? parseDbDate(transaction.date) : new Date());
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const [comment, setComment] = useState(transaction?.description ?? '');
   const [submitting, setSubmitting] = useState(false);
@@ -146,7 +146,7 @@ export default function ModifyTransactionScreen() {
 
   const handleSubmit = async () => {
     if (!canSubmit || submitting || !transaction) return;
-    if (categoryId === null || numericAmount === null) return;
+    if (categoryId === null || numericAmount === null || accountId === undefined) return;
     setSubmitting(true);
     try {
       const dateStr = formatDateForDB(day);

@@ -4,17 +4,17 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayAccountName, getDisplayAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
-import { Account } from '../database/types';
+import type { Account } from '../database/types';
 import { formatCurrency, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
 import { withAlpha } from '../utils/color';
 import { badgeShapeFor } from '../utils/badgeShape';
-import { RootStackParamList, USER_ID } from '../constants/types';
+import { type RootStackParamList, USER_ID } from '../constants/types';
 import EyeToggle from '../components/EyeToggle';
 import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
@@ -69,7 +69,7 @@ export default function AccountsScreen() {
     }, [loadData])
   );
 
-  const renderItem = ({ item }: { item: AccountWithBalance }) => {
+  const renderItem = useCallback(({ item }: { item: AccountWithBalance }) => {
     const isTotal = isTotalAccount(item);
     return (
       <>
@@ -109,11 +109,11 @@ export default function AccountsScreen() {
         {isTotal && <View style={[styles.separator, { backgroundColor: withAlpha(c.primary, 25) }]} />}
       </>
     );
-  };
+  }, [c, config, navigation, isBalanceHidden, fs]);
 
-  const renderEmpty = () => (
+  const renderEmpty = useCallback(() => (
     <EmptyState icon="wallet-outline" message={labels.accounts_empty} />
-  );
+  ), [labels.accounts_empty]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>

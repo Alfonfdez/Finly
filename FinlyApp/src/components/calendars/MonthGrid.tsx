@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { getMonthName } from '../../utils/formatters';
-import { CalendarBaseProps } from './types';
+import type { CalendarBaseProps } from './types';
 import YearNav from './YearNav';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';

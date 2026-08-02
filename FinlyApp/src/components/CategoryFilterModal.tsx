@@ -9,7 +9,7 @@ import SearchBar from './SearchBar';
 import EmptyState from './EmptyState';
 import { TRANSACTION_TYPES, TYPE_FILTERS, type TransactionTypeFilter } from '../constants/types';
 import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
-import { Category } from '../database/types';
+import type { Category } from '../database/types';
 import { badgeShapeFor } from '../utils/badgeShape';
 import CategoryTile from './CategoryTile';
 

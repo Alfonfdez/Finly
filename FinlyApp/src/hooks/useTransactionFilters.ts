@@ -1,10 +1,10 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { Transaction, Account } from '../database/types';
+import type { Transaction, Account } from '../database/types';
 import { SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, type SortBy, type SortDirection, type TransactionTypeFilter } from '../constants/types';
 import { transactionRepository } from '../database';
 import { isTotalAccount, UNTAGGED_ID } from '../database/helpers';
-import { formatDateForDB } from '../utils/formatters';
-import { buildTagsByTransactionMap, TagsByTransaction } from '../utils/transactionTags';
+import { formatDateForDB, parseDbDate } from '../utils/formatters';
+import { buildTagsByTransactionMap, type TagsByTransaction } from '../utils/transactionTags';
 
 interface UseTransactionFiltersOptions {
   transactions: Transaction[];
@@ -26,7 +26,7 @@ export function useTransactionFilters({
   periodDates,
 }: UseTransactionFiltersOptions) {
   const [selectedAccountId, setSelectedAccountId] = useState(
-    () => activeAccount?.id ?? accounts.find(a => !isTotalAccount(a))?.id ?? 1
+    () => activeAccount?.id ?? accounts.find(a => !isTotalAccount(a))?.id
   );
 
   const activeAccountId = activeAccount?.id;
@@ -116,7 +116,7 @@ export function useTransactionFilters({
 
     const sorted = [...list].sort((a, b) => {
       if (sortBy === SORT_BY.date) {
-        const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
+        const diff = parseDbDate(a.date).getTime() - parseDbDate(b.date).getTime();
         return sortDirection === SORT_DIRECTIONS.desc ? -diff : diff;
       }
       const diff = a.amount - b.amount;

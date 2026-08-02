@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TextInput, ScrollView, StyleSheet } from 'react-native';
+import { TextInput, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useConfig } from '../../context/ConfigContext';
 import { useApp } from '../../context/AppContext';
 import { useFontSize } from '../../hooks/useFontSize';
@@ -7,9 +7,7 @@ import { t } from '../../i18n';
 import { isWeb } from '../../utils/platform';
 import { transactionRepository, accountRepository, categoryRepository, tagRepository } from '../../database';
 import { initWebStorage } from '../../database/webStorage';
-import { getDatabase } from '../../database/database';
-import { seedData } from '../../database/migrations/002_seed';
-import { seedConfig } from '../../database/migrations/003_config';
+import { resetDatabase } from '../../database/database';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import SettingsRow from '../../components/settings/SettingsRow';
 import { settingsStyles } from '../../components/settings/settingsStyles';
@@ -40,7 +38,10 @@ export default function DataScreen() {
     try {
       await transactionRepository.deleteAllTransactions();
       await resetAll();
-    } catch {}
+    } catch (error) {
+      console.error('Failed to delete all transactions:', error);
+      Alert.alert(labels.settings_delete_transactions_error_title, labels.settings_delete_transactions_error_message);
+    }
     setDeleteTransactionsModal(false);
   };
 
@@ -54,13 +55,13 @@ export default function DataScreen() {
         localStorage.clear();
         await initWebStorage();
       } else {
-        const db = getDatabase();
-        await db.runAsync('DELETE FROM config');
-        await seedData(db);
-        await seedConfig(db);
+        await resetDatabase();
       }
       await resetAll();
-    } catch {}
+    } catch (error) {
+      console.error('Failed to delete all data:', error);
+      Alert.alert(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
+    }
     closeDeleteAll();
     setDeleteAllText('');
   };

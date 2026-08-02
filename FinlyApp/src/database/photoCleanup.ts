@@ -15,5 +15,7 @@ export async function deleteTransactionPhotos(whereClause: string, ...params: (s
         }
       }
     }
-  } catch {}
+  } catch (error) {
+    console.error('Failed to delete transaction photos:', error);
+  }
 }

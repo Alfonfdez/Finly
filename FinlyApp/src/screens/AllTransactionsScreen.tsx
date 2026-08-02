@@ -3,14 +3,14 @@ import { View, Text, SectionList, TouchableOpacity, StyleSheet, ActivityIndicato
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
 import { TRANSACTION_TYPES, TYPE_FILTERS, type RootStackParamList, type TransactionTypeFilter } from '../constants/types';
-import { Transaction } from '../database/types';
+import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatCurrency, resolvePeriodRange, endOfDay, startOfDay } from '../utils/formatters';
 import { t } from '../i18n';
@@ -18,7 +18,7 @@ import AccountModal from '../components/AccountModal';
 import AccountTrigger from '../components/AccountTrigger';
 import SortToggle from '../components/SortToggle';
 import TagFilterBar from '../components/TagFilterBar';
-import TransactionGroup from '../components/TransactionGroup';
+import { TransactionRow, TransactionDateHeader } from '../components/TransactionGroup';
 import TabBar from '../components/TabBar';
 import EmptyState from '../components/EmptyState';
 import CategoryFilterModal from '../components/CategoryFilterModal';
@@ -63,6 +63,26 @@ export default function AllTransactionsScreen() {
   const handleTransactionPress = useCallback((id: number) => {
     navigation.navigate('TransactionDetails', { transactionId: id });
   }, [navigation]);
+
+  const categoriesById = useMemo(
+    () => new Map(categories.map(cat => [cat.id, cat])),
+    [categories]
+  );
+
+  const keyExtractor = useCallback((item: Transaction) => item.id.toString(), []);
+
+  const renderSectionHeader = useCallback(({ section }: { section: { date: string } }) => (
+    <TransactionDateHeader date={section.date} />
+  ), []);
+
+  const renderItem = useCallback(({ item }: { item: Transaction }) => (
+    <TransactionRow
+      tx={item}
+      category={categoriesById.get(item.category_id)}
+      tags={filters.tagsByTransaction.get(item.id)}
+      onPress={handleTransactionPress}
+    />
+  ), [categoriesById, filters.tagsByTransaction, handleTransactionPress]);
 
   const accountBalance = useMemo(() => {
     return filters.filtered
@@ -157,21 +177,16 @@ export default function AllTransactionsScreen() {
       <SectionList
         contentContainerStyle={styles.listContent}
         sections={filters.sections}
-        keyExtractor={(item) => item.id.toString()}
-        renderSectionHeader={({ section }) => (
-          <TransactionGroup
-            date={section.date}
-            transactions={section.data}
-            categories={categories}
-            tagsByTransaction={filters.tagsByTransaction}
-            onTransactionPress={handleTransactionPress}
-          />
-        )}
-        renderItem={({ item }) => null}
+        keyExtractor={keyExtractor}
+        renderSectionHeader={renderSectionHeader}
+        renderItem={renderItem}
         ListEmptyComponent={
           <EmptyState message={labels.transactions_empty} />
         }
         stickySectionHeadersEnabled={false}
+        initialNumToRender={12}
+        windowSize={7}
+        removeClippedSubviews
       />
       )}
 

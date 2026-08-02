@@ -1,4 +1,4 @@
-import { en, Language } from './en';
+import { en, type Language } from './en';
 import { es } from './es';
 import { ca } from './ca';
 import type { Language as LanguageType } from '../utils/language';

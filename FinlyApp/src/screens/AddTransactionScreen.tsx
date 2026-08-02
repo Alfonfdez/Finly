@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -65,7 +65,7 @@ export default function AddTransactionScreen() {
     }
     // Fallback: inherit from HomeScreen; if Total, use first non-Total
     if (activeAccount && !isTotalAccount(activeAccount)) return activeAccount.id;
-    return accounts.find(a => !isTotalAccount(a))?.id ?? 1;
+    return accounts.find(a => !isTotalAccount(a))?.id;
   });
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [reorderedCategory, setReorderedCategory] = useState<number | null>(null);
@@ -105,6 +105,7 @@ export default function AddTransactionScreen() {
     }
     // Refresh category usage counts when screen gains focus
     const loadUsage = async () => {
+      if (accountId === undefined) return;
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - CATEGORY_USAGE_WINDOW_DAYS);
       const counts = await transactionRepository.getCategoryUsageCounts(USER_ID, type, formatDateForDB(startDate), accountId);
@@ -171,7 +172,7 @@ export default function AddTransactionScreen() {
 
   const handleSubmit = async () => {
     if (!canSubmit || submitting) return;
-    if (categoryId === null || numericAmount === null) return;
+    if (categoryId === null || numericAmount === null || accountId === undefined) return;
     setSubmitting(true);
 
     try {

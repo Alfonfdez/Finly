@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import Svg, { Rect, Line } from 'react-native-svg';
-import { useConfig, Config } from '../../context/ConfigContext';
+import { useConfig, type Config } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
 import { isWeb } from '../../utils/platform';
@@ -8,7 +8,7 @@ import { LANGUAGES, isCatalan, type Language } from '../../utils/language';
 import { flagColors } from '../../constants/flagColors';
 import { CURRENCY_OPTIONS } from '../../constants/currencies';
 import { DECIMAL_SEPARATORS, FIRST_DAYS, type FirstDay } from '../../constants/types';
-import SelectorInline, { Option } from '../../components/SelectorInline';
+import SelectorInline, { type Option } from '../../components/SelectorInline';
 import { settingsStyles } from '../../components/settings/settingsStyles';
 
 function SenyeraIcon({ size = 16 }: { size?: number }) {

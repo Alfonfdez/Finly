@@ -2,19 +2,19 @@ import { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
-import { formatCurrency, formatDateLong } from '../utils/formatters';
+import { formatCurrency, formatDateLong, parseDbDate } from '../utils/formatters';
 import { deletePhotoFile, parsePhotos } from '../utils/photoUtils';
 import { withAlpha } from '../utils/color';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
 import { isNative } from '../utils/platform';
 import { transactionRepository } from '../database';
-import { RootStackParamList, TRANSACTION_TYPES } from '../constants/types';
+import { type RootStackParamList, TRANSACTION_TYPES } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { WHITE } from '../constants/themes';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -59,13 +59,13 @@ export default function TransactionDetailsScreen() {
   );
 
   const transactionDate = useMemo(
-    () => transaction ? new Date(transaction.date) : null,
+    () => transaction ? parseDbDate(transaction.date) : null,
     [transaction]
   );
 
   const createdDate = useMemo(() => {
     if (!transaction) return '';
-    const d = new Date(transaction.date);
+    const d = parseDbDate(transaction.date);
     const h = String(d.getHours()).padStart(2, '0');
     const min = String(d.getMinutes()).padStart(2, '0');
     const day = d.getDate();
@@ -76,7 +76,7 @@ export default function TransactionDetailsScreen() {
 
   const updatedDate = useMemo(() => {
     if (!transaction?.updated_at) return null;
-    const d = new Date(transaction.updated_at);
+    const d = parseDbDate(transaction.updated_at);
     const h = String(d.getHours()).padStart(2, '0');
     const min = String(d.getMinutes()).padStart(2, '0');
     const day = d.getDate();

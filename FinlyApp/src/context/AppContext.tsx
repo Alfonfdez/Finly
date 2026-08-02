@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useMemo, useEffect, useCallback, ReactNode } from 'react';
-import { Account, Category, Transaction, Tag } from '../database/types';
+import { createContext, useContext, useState, useMemo, useEffect, useCallback, type ReactNode } from 'react';
+import type { Account, Category, Transaction, Tag } from '../database/types';
 import { PERIODS, TRANSACTION_TYPES, type Period, type TransactionType, type CategoryWithTotal, DATE_MIN, DATE_MAX, USER_ID } from '../constants/types';
 import { accountRepository as accountRepo, categoryRepository as categoryRepo, transactionRepository as transactionRepo, tagRepository as tagRepo } from '../database';
 import { isTotalAccount, UNTAGGED_ID } from '../database/helpers';
@@ -266,8 +266,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const refreshAccounts = useCallback(async () => {
     const accountsData = await accountRepo.list(USER_ID);
     setAccounts(accountsData);
+    setActiveAccount(prev => {
+      if (prev && accountsData.some(a => a.id === prev.id)) return prev;
+      if (accountsData.length === 0) return null;
+      if (appConfig.homeDefaultAccountId !== null) {
+        const found = accountsData.find(a => a.id === appConfig.homeDefaultAccountId);
+        if (found) return found;
+      }
+      return accountsData[0];
+    });
     setTransactionsVersion(v => v + 1);
-  }, []);
+  }, [appConfig.homeDefaultAccountId]);
 
   const refreshTags = useCallback(async () => {
     const tagsData = await tagRepo.list(USER_ID);

@@ -1,4 +1,4 @@
-import { TransactionType } from '../constants/types';
+import type { TransactionType } from '../constants/types';
 
 export interface User {
   id: number;
