@@ -12,6 +12,7 @@ import { initWebStorage } from './src/database/webStorage';
 
 const MIN_SPLASH_MS = 2000;
 const EXIT_DURATION = 400;
+const USE_NATIVE_DRIVER = Platform.OS !== 'web';
 
 function SplashScreen({ exiting }: { exiting: boolean }) {
   const logoOpacity = useRef(new Animated.Value(0)).current;
@@ -22,8 +23,8 @@ function SplashScreen({ exiting }: { exiting: boolean }) {
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(logoOpacity, { toValue: 1, duration: 800, useNativeDriver: true }),
-      Animated.spring(logoScale, { toValue: 1, friction: 5, tension: 60, useNativeDriver: true }),
+      Animated.timing(logoOpacity, { toValue: 1, duration: 800, useNativeDriver: USE_NATIVE_DRIVER }),
+      Animated.spring(logoScale, { toValue: 1, friction: 5, tension: 60, useNativeDriver: USE_NATIVE_DRIVER }),
     ]).start();
 
     Animated.timing(lineWidth, { toValue: 1, duration: MIN_SPLASH_MS * 0.8, delay: 400, useNativeDriver: false }).start();
@@ -38,8 +39,8 @@ function SplashScreen({ exiting }: { exiting: boolean }) {
   useEffect(() => {
     if (!exiting) return;
     Animated.parallel([
-      Animated.timing(exitOpacity, { toValue: 0, duration: EXIT_DURATION, useNativeDriver: true }),
-      Animated.timing(exitScale, { toValue: 1.1, duration: EXIT_DURATION, useNativeDriver: true }),
+      Animated.timing(exitOpacity, { toValue: 0, duration: EXIT_DURATION, useNativeDriver: USE_NATIVE_DRIVER }),
+      Animated.timing(exitScale, { toValue: 1.1, duration: EXIT_DURATION, useNativeDriver: USE_NATIVE_DRIVER }),
     ]).start();
   }, [exiting]);
 

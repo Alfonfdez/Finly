@@ -2,6 +2,7 @@ import { StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { BLACK } from '../constants/themes';
+import { isWeb } from '../utils/platform';
 
 interface Props {
   onPress: () => void;
@@ -12,7 +13,7 @@ export default function Fab({ onPress, accessibilityLabel }: Props) {
   const { activeColors: c } = useConfig();
   return (
     <TouchableOpacity
-      style={[styles.fab, { backgroundColor: c.primary }]}
+      style={[styles.fab, { backgroundColor: c.primary }, isWeb ? fabShadowWeb : fabShadowNative]}
       onPress={onPress}
       accessibilityLabel={accessibilityLabel}
     >
@@ -31,10 +32,17 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 6,
-    shadowColor: BLACK,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
   },
 });
+
+const fabShadowNative = {
+  elevation: 6,
+  shadowColor: BLACK,
+  shadowOffset: { width: 0, height: 3 },
+  shadowOpacity: 0.3,
+  shadowRadius: 4,
+};
+
+const fabShadowWeb = {
+  boxShadow: '0 3px 6px rgba(0,0,0,0.3)',
+};
