@@ -32,14 +32,20 @@
     "@types/react": "~19.1.10",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~10.0.0",
-    "typescript": "~5.9.2"
+    "happy-dom": "^20.11.1",
+    "typescript": "~5.9.2",
+    "vitest": "^4.1.10"
   },
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "test:all": "npm run typecheck && npm run lint && npm run test"
   },
   "private": true
 }
