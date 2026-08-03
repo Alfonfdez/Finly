@@ -23,7 +23,7 @@ export function buildUpdateQuery(
   return { sets: sets.join(', '), values };
 }
 
-export type NameTable = 'accounts' | 'categories' | 'tags';
+type NameTable = 'accounts' | 'categories' | 'tags';
 
 export function buildNameExistsQuery(
   table: NameTable,

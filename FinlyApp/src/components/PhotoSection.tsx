@@ -8,6 +8,7 @@ import { MAX_PHOTOS } from '../constants/types';
 import { WHITE } from '../constants/themes';
 import ConfirmationModal from './ConfirmationModal';
 import ModalShell from './ModalShell';
+import ModalHeader from './ModalHeader';
 
 interface Props {
   photos: string[];
@@ -85,9 +86,7 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
         onClose={() => setSourceModalVisible(false)}
         backgroundColor={c.background}
       >
-        <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(18) }]}>
-          {labels.add_photo_title}
-        </Text>
+        <ModalHeader title={labels.add_photo_title} />
         <TouchableOpacity
           style={[styles.modalOption, { backgroundColor: c.surface }]}
           onPress={() => handleSourceOption(onTakePhoto)}
@@ -171,10 +170,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1,
-  },
-  modalTitle: {
-    fontWeight: '700',
-    marginBottom: 12,
   },
   modalOption: {
     flexDirection: 'row',

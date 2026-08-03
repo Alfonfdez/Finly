@@ -2,23 +2,20 @@ import { Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import type { Tag } from '../database/types';
-import type { RootStackParamList } from '../constants/types';
+import type { NavigationProp } from '../constants/types';
 import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Tags'>;
 
 export default function TagsScreen() {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationProp<'Tags'>>();
   const { tags } = useApp();
   const renderItem = ({ item }: { item: Tag }) => (
     <TouchableOpacity

@@ -8,6 +8,8 @@ import { t } from '../i18n';
 import type { Tag } from '../database/types';
 import { DEBOUNCE_MS, MAX_TAG_NAME_LENGTH } from '../constants/types';
 import ModalShell from './ModalShell';
+import ModalHeader from './ModalHeader';
+import PrimaryButton from './form/PrimaryButton';
 
 interface Props {
   tags: Tag[];
@@ -140,9 +142,7 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
         overlayPadding={24}
         backgroundColor={c.background}
       >
-        <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(18) }]}>
-          {labels.add_tag_modal_title}
-        </Text>
+        <ModalHeader title={labels.add_tag_modal_title} />
         <TextInput
           style={[styles.modalInput, { backgroundColor: c.surface, color: c.text, fontSize: fs(14), borderColor: error ? c.red : c.border }]}
           placeholder={labels.add_tag_name_placeholder}
@@ -168,15 +168,15 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
               {labels.cal_cancel}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.modalButton, { backgroundColor: isDisabled ? c.surface : c.primary }]}
+          <PrimaryButton
+            label={labels.add_submit}
             onPress={handleCreate}
             disabled={isDisabled}
-          >
-            <Text style={[styles.modalButtonText, { color: isDisabled ? c.textSecondary : c.background, fontSize: fs(14) }]}>
-              {labels.add_submit}
-            </Text>
-          </TouchableOpacity>
+            enabledTextColor={c.background}
+            disabledBg={c.surface}
+            disabledTextColor={c.textSecondary}
+            style={styles.modalButton}
+          />
         </View>
       </ModalShell>
     </View>
@@ -222,10 +222,6 @@ const styles = StyleSheet.create({
   },
   tagText: {
     fontWeight: '500',
-  },
-  modalTitle: {
-    fontWeight: '700',
-    marginBottom: 12,
   },
   modalInput: {
     borderWidth: 1,

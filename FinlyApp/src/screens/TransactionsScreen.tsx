@@ -2,14 +2,13 @@ import { useMemo, useCallback } from 'react';
 import { View, Text, SectionList, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
-import { type RootStackParamList, TRANSACTION_TYPES } from '../constants/types';
+import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES } from '../constants/types';
 import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatCurrency } from '../utils/formatters';
@@ -23,11 +22,10 @@ import { TransactionRow, TransactionDateHeader } from '../components/Transaction
 import EmptyState from '../components/EmptyState';
 import type { IconName } from '../components/IconGrid';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Transactions'>;
 type TransactionsRouteProp = RouteProp<RootStackParamList, 'Transactions'>;
 
 export default function TransactionsScreen() {
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationProp<'Transactions'>>();
   const route = useRoute<TransactionsRouteProp>();
   const { categories, accounts, activeAccount, accountsWithBalance, tags } = useApp();
   const { activeColors: c, config } = useConfig();

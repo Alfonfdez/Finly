@@ -1,27 +1,28 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useColorSelection } from '../hooks/useColorSelection';
-import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
+import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { t, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdByName } from '../i18n';
 import { categoryRepository, transactionRepository } from '../database';
-import { type RootStackParamList, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH } from '../constants/types';
+import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { WHITE, TRANSPARENT } from '../constants/themes';
-import IconGrid, { CATEGORY_ICONS } from '../components/IconGrid';
-import ColorGrid, { QUICK_COLORS } from '../components/ColorGrid';
-import ColorPickerModal from '../components/ColorPickerModal';
+import { CATEGORY_ICONS } from '../components/IconGrid';
+import { QUICK_COLORS } from '../components/ColorGrid';
 import IconBadge from '../components/IconBadge';
+import IconColorSection from '../components/IconColorSection';
 import ConfirmationModal from '../components/ConfirmationModal';
 import ModalShell from '../components/ModalShell';
+import ModalHeader from '../components/ModalHeader';
+import RadioButton from '../components/RadioButton';
 import ListItemRow from '../components/ListItemRow';
 import SectionTitle from '../components/form/SectionTitle';
 import PrimaryButton from '../components/form/PrimaryButton';
@@ -30,7 +31,6 @@ import KeyboardSpacer from '../components/form/KeyboardSpacer';
 import FormScrollView from '../components/form/FormScrollView';
 import { BUTTON_BORDER_RADIUS } from '../components/componentStyles';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ModifyCategory'>;
 type ModifyCategoryRouteProp = RouteProp<RootStackParamList, 'ModifyCategory'>;
 
 export default function ModifyCategoryScreen() {
@@ -38,7 +38,7 @@ export default function ModifyCategoryScreen() {
   const { categories, refreshCategories, refresh } = useApp();
   const fs = useFontSize();
   const labels = t();
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationProp<'ModifyCategory'>>();
   const route = useRoute<ModifyCategoryRouteProp>();
   const { categoryId } = route.params;
 
@@ -48,10 +48,7 @@ export default function ModifyCategoryScreen() {
   );
 
   const [name, setName] = useState('');
-  const [nameError, setNameError] = useState<string | null>(null);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
-  const [checkingName, setCheckingName] = useState(false);
-  const [colorPickerVisible, setColorPickerVisible] = useState(false);
   const userEditedRef = useRef(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectModalVisible, setSelectModalVisible] = useState(false);
@@ -70,40 +67,20 @@ export default function ModifyCategoryScreen() {
     }
   }, [category, setCustomColor, setSelectedColor]);
 
-  const checkNameDuplicate = useCallback(async (value: string) => {
-    if (!value.trim()) {
-      setNameError(null);
-      setCheckingName(false);
-      return;
-    }
-    setCheckingName(true);
-    try {
-      const defaultId = getDefaultCategoryIdByName(value.trim());
-      if (defaultId !== null) {
-        const englishName = getDefaultEnglishName(defaultId);
-        if (englishName) {
-          const defaultExists = await categoryRepository.existsByName(englishName, categoryId);
-          if (defaultExists) {
-            setNameError(labels.create_cat_error_name_duplicate);
-            return;
-          }
-        }
-      }
-      const exists = await categoryRepository.existsByName(value.trim(), categoryId);
-      setNameError(exists ? labels.create_cat_error_name_duplicate : null);
-    } catch {
-      setNameError(null);
-    } finally {
-      setCheckingName(false);
-    }
-  }, [categoryId, labels.create_cat_error_name_duplicate]);
-
-  const debouncedCheck = useUniqueNameCheck(checkNameDuplicate);
+  const { nameError, checkingName, clearNameError, debouncedCheck } = useNameDuplicateCheck({
+    existsByName: (value, excludeId) => categoryRepository.existsByName(value, excludeId),
+    resolveDefaultEnglishName: (value) => {
+      const defaultId = getDefaultCategoryIdByName(value);
+      return defaultId !== null ? getDefaultEnglishName(defaultId) : null;
+    },
+    duplicateErrorKey: labels.create_cat_error_name_duplicate,
+    excludeId: categoryId,
+  });
 
   const handleNameChange = (value: string) => {
     userEditedRef.current = true;
     setName(value);
-    setNameError(null);
+    clearNameError();
     debouncedCheck(value);
   };
 
@@ -239,28 +216,16 @@ export default function ModifyCategoryScreen() {
             {category.type === TRANSACTION_TYPES.expense ? labels.tab_expenses : labels.tab_income}
           </Text>
 
-          <SectionTitle text={labels.create_cat_symbols} />
-          <IconGrid
+          <IconColorSection
             icons={CATEGORY_ICONS}
-            selectedIcon={selectedIcon}
-            selectedColor={selectedColor}
             shape={config.categoryIconShape}
-            onSelect={setSelectedIcon}
-          />
-
-          <SectionTitle text={labels.create_cat_color} />
-          <ColorGrid
+            symbolTitle={labels.create_cat_symbols}
+            colorTitle={labels.create_cat_color}
+            selectedIcon={selectedIcon}
+            onSelectIcon={setSelectedIcon}
             selectedColor={selectedColor}
             customColor={customColor}
-            onSelect={handleColorSelect}
-            onOpenPicker={() => setColorPickerVisible(true)}
-          />
-
-          <ColorPickerModal
-            visible={colorPickerVisible}
-            selectedColor={selectedColor}
-            onSelect={handleColorSelect}
-            onClose={() => setColorPickerVisible(false)}
+            onSelectColor={handleColorSelect}
           />
 
           <DeleteButton label={labels.modify_cat_delete} onPress={handleDeletePress} style={styles.deleteButton} />
@@ -291,9 +256,7 @@ export default function ModifyCategoryScreen() {
       />
 
       <ModalShell visible={selectModalVisible} onClose={() => setSelectModalVisible(false)}>
-        <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(16) }]}>
-          {labels.modify_cat_select_title}
-        </Text>
+        <ModalHeader title={labels.modify_cat_select_title} size={16} />
         <ScrollView style={styles.selectList}>
           {sameTypeCategories.length === 0 ? (
             <Text style={[styles.emptySelect, { color: c.textSecondary, fontSize: fs(14) }]}>
@@ -302,11 +265,7 @@ export default function ModifyCategoryScreen() {
           ) : (
             sameTypeCategories.map((cat) => {
               const isSelected = targetCategoryId === cat.id;
-              const radio = (
-                <View style={[styles.radio, { borderColor: isSelected ? c.primary : c.border }]}>
-                  {isSelected && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
-                </View>
-              );
+              const radio = <RadioButton selected={isSelected} />;
               return (
                 <ListItemRow
                   key={cat.id}
@@ -338,18 +297,14 @@ export default function ModifyCategoryScreen() {
               {labels.modify_cat_select_cancel}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.modalButton,
-              { backgroundColor: targetCategoryId !== null ? c.primary : c.textSecondary },
-            ]}
+          <PrimaryButton
+            label={labels.modify_cat_select_confirm}
             onPress={handleSelectTarget}
             disabled={targetCategoryId === null}
-          >
-            <Text style={[styles.modalButtonText, { color: WHITE, fontSize: fs(14) }]}>
-              {labels.modify_cat_select_confirm}
-            </Text>
-          </TouchableOpacity>
+            disabledBg={c.textSecondary}
+            enabledTextColor={WHITE}
+            style={styles.modalButton}
+          />
         </View>
       </ModalShell>
     </SafeAreaView>
@@ -402,11 +357,6 @@ const styles = StyleSheet.create({
   deleteButton: {
     marginTop: 16,
   },
-  modalTitle: {
-    fontWeight: '700',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
   modalButtons: {
     flexDirection: 'column',
     gap: 12,
@@ -434,19 +384,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 8,
     marginBottom: 4,
-  },
-  radio: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
   },
   emptySelect: {
     textAlign: 'center',

@@ -1,28 +1,27 @@
-import { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
+import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useColorSelection } from '../hooks/useColorSelection';
 import { t, getDefaultCategoryIdByName, getDefaultEnglishName } from '../i18n';
 import { categoryRepository } from '../database';
-import { type RootStackParamList, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, type TransactionType, USER_ID } from '../constants/types';
-import { setPendingCategory } from './AddTransactionScreen';
-import IconGrid, { CATEGORY_ICONS } from '../components/IconGrid';
-import ColorGrid from '../components/ColorGrid';
-import ColorPickerModal from '../components/ColorPickerModal';
-import SectionTitle from '../components/form/SectionTitle';
+import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, type TransactionType, USER_ID } from '../constants/types';
+import { setPendingCategory } from '../utils/pendingCategory';
+import { getIconColorHintText } from '../utils/formHints';
+import { CATEGORY_ICONS } from '../components/IconGrid';
+import IconColorSection from '../components/IconColorSection';
+import RadioButton from '../components/RadioButton';
 import LabeledTextField from '../components/form/LabeledTextField';
+import SectionTitle from '../components/form/SectionTitle';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormError from '../components/form/FormError';
 import KeyboardSpacer from '../components/form/KeyboardSpacer';
 import FormScrollView from '../components/form/FormScrollView';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateCategory'>;
 type CreateCategoryRouteProp = RouteProp<RootStackParamList, 'CreateCategory'>;
 
 export default function CreateCategoryScreen() {
@@ -30,65 +29,45 @@ export default function CreateCategoryScreen() {
   const { refreshCategories } = useApp();
   const fs = useFontSize();
   const labels = t();
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationProp<'CreateCategory'>>();
   const route = useRoute<CreateCategoryRouteProp>();
 
   const initialType = route.params?.type ?? TRANSACTION_TYPES.expense;
 
   const [name, setName] = useState('');
-  const [nameError, setNameError] = useState<string | null>(null);
   const [type, setType] = useState<TransactionType>(initialType);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
-  const [checkingName, setCheckingName] = useState(false);
-  const [colorPickerVisible, setColorPickerVisible] = useState(false);
   const { selectedColor, customColor, handleColorSelect } = useColorSelection();
 
-  const checkNameDuplicate = useCallback(async (value: string) => {
-    if (!value.trim()) {
-      setNameError(null);
-      setCheckingName(false);
-      return;
-    }
-    setCheckingName(true);
-    try {
-      const defaultId = getDefaultCategoryIdByName(value.trim());
-      if (defaultId !== null) {
-        const englishName = getDefaultEnglishName(defaultId);
-        if (englishName) {
-          const defaultExists = await categoryRepository.existsByName(englishName);
-          if (defaultExists) {
-            setNameError(labels.create_cat_error_name_duplicate);
-            return;
-          }
-        }
-      }
-      const exists = await categoryRepository.existsByName(value.trim());
-      setNameError(exists ? labels.create_cat_error_name_duplicate : null);
-    } catch {
-      setNameError(null);
-    } finally {
-      setCheckingName(false);
-    }
-  }, [labels.create_cat_error_name_duplicate]);
-
-  const debouncedCheck = useUniqueNameCheck(checkNameDuplicate);
+  const { nameError, checkingName, clearNameError, debouncedCheck } = useNameDuplicateCheck({
+    existsByName: (value, excludeId) => categoryRepository.existsByName(value, excludeId),
+    resolveDefaultEnglishName: (value) => {
+      const defaultId = getDefaultCategoryIdByName(value);
+      return defaultId !== null ? getDefaultEnglishName(defaultId) : null;
+    },
+    duplicateErrorKey: labels.create_cat_error_name_duplicate,
+  });
 
   const handleNameChange = (value: string) => {
     setName(value);
-    setNameError(null);
+    clearNameError();
     debouncedCheck(value);
   };
 
   const canCreate = name.trim().length > 0 && !nameError && !checkingName && selectedIcon !== null && selectedColor !== null;
 
-  const getHintText = (): string | null => {
-    if (name.trim().length === 0) return labels.create_cat_error_name_empty;
-    if (nameError) return nameError;
-    if (!selectedIcon && !selectedColor) return labels.create_cat_hint_icon_color;
-    if (!selectedIcon) return labels.create_cat_hint_icon;
-    if (!selectedColor) return labels.create_cat_hint_color;
-    return null;
-  };
+  const hintText = getIconColorHintText(
+    name,
+    nameError,
+    selectedIcon,
+    selectedColor,
+    {
+      empty: labels.create_cat_error_name_empty,
+      iconColor: labels.create_cat_hint_icon_color,
+      icon: labels.create_cat_hint_icon,
+      color: labels.create_cat_hint_color,
+    }
+  );
 
   const handleCreate = async () => {
     if (!canCreate || selectedIcon === null || selectedColor === null) return;
@@ -108,8 +87,6 @@ export default function CreateCategoryScreen() {
     }
   };
 
-  const hintText = getHintText();
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
       <View style={styles.content}>
@@ -128,55 +105,33 @@ export default function CreateCategoryScreen() {
 
           <SectionTitle text={labels.create_cat_type} />
           <View style={styles.typeRow}>
-            <TouchableOpacity
-              style={[
-                styles.radio,
-                { borderColor: type === TRANSACTION_TYPES.expense ? c.primary : c.border },
-              ]}
+            <RadioButton
+              selected={type === TRANSACTION_TYPES.expense}
               onPress={() => setType(TRANSACTION_TYPES.expense)}
-            >
-              {type === TRANSACTION_TYPES.expense && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
-            </TouchableOpacity>
+            />
             <Text style={[styles.radioLabel, { color: c.text, fontSize: fs(14) }]}>
               {labels.create_cat_expense}
             </Text>
 
-            <TouchableOpacity
-              style={[
-                styles.radio,
-                { borderColor: type === TRANSACTION_TYPES.income ? c.primary : c.border },
-              ]}
+            <RadioButton
+              selected={type === TRANSACTION_TYPES.income}
               onPress={() => setType(TRANSACTION_TYPES.income)}
-            >
-              {type === TRANSACTION_TYPES.income && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
-            </TouchableOpacity>
+            />
             <Text style={[styles.radioLabel, { color: c.text, fontSize: fs(14) }]}>
               {labels.create_cat_income}
             </Text>
           </View>
 
-          <SectionTitle text={labels.create_cat_symbols} />
-          <IconGrid
+          <IconColorSection
             icons={CATEGORY_ICONS}
-            selectedIcon={selectedIcon}
-            selectedColor={selectedColor}
             shape={config.categoryIconShape}
-            onSelect={setSelectedIcon}
-          />
-
-          <SectionTitle text={labels.create_cat_color} />
-          <ColorGrid
+            symbolTitle={labels.create_cat_symbols}
+            colorTitle={labels.create_cat_color}
+            selectedIcon={selectedIcon}
+            onSelectIcon={setSelectedIcon}
             selectedColor={selectedColor}
             customColor={customColor}
-            onSelect={handleColorSelect}
-            onOpenPicker={() => setColorPickerVisible(true)}
-          />
-
-          <ColorPickerModal
-            visible={colorPickerVisible}
-            selectedColor={selectedColor}
-            onSelect={handleColorSelect}
-            onClose={() => setColorPickerVisible(false)}
+            onSelectColor={handleColorSelect}
           />
 
           <FormError message={hintText} fontSize={fs(12)} style={styles.hint} />
@@ -206,19 +161,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  radio: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
   },
   radioLabel: {
     marginRight: 12,

@@ -2,13 +2,13 @@ import { useState, useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useBalanceVisibility } from '../hooks/useBalanceVisibility';
 import { formatCurrency, formatDateForDB, formatSignedCurrency, HIDDEN_BALANCE, resolvePeriodRange, endOfDay, startOfDay } from '../utils/formatters';
-import { type RootStackParamList, PERIODS, TRANSACTION_TYPES, type Period, CHART_TYPES, type ChartType } from '../constants/types';
+import { type NavigationProp, PERIODS, TRANSACTION_TYPES, type Period, CHART_TYPES, type ChartType } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { t, getDisplayAccountName } from '../i18n';
 import { transactionRepository as transactionRepo } from '../database';
@@ -26,10 +26,8 @@ import Fab from '../components/Fab';
 import DrawerMenuButton from '../components/DrawerMenuButton';
 import IconBadge from '../components/IconBadge';
 
-type Navigation = NativeStackNavigationProp<RootStackParamList, 'Home'>;
-
 export default function HomeScreen() {
-  const navigation = useNavigation<Navigation>();
+  const navigation = useNavigation<NavigationProp<'Home'>>();
   const {
     activeAccount, activeType, activePeriod, selectedDate, customDate, accountsWithBalance, activeCategories,
     totalIncome, totalExpenses, totalIncomeAll, totalExpensesAll, selectAccount, changeType,
@@ -44,15 +42,7 @@ export default function HomeScreen() {
   const [calendarVisible, setCalendarVisible] = useState(false);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<number>>(new Set());
   const [tagBreakdowns, setTagBreakdowns] = useState<Map<number, { tag_id: number; name: string; total: number }[]>>(new Map());
-  const [isRevealed, setIsRevealed] = useState(false);
-
-  useFocusEffect(
-    useCallback(() => {
-      setIsRevealed(false);
-    }, [])
-  );
-
-  const isBalanceHidden = config.hideBalances !== isRevealed;
+  const { isBalanceHidden, toggleReveal } = useBalanceVisibility(config.hideBalances);
 
   const total = totalIncomeAll - totalExpensesAll;
   const activeTotal = activeType === TRANSACTION_TYPES.expense ? totalExpenses : totalIncome;
@@ -174,11 +164,11 @@ export default function HomeScreen() {
               <Text style={[styles.accountLabel, { color: c.textSecondary, fontSize: fs(14) }]}>{getDisplayAccountName(activeAccount)}</Text>
               <Ionicons name="chevron-down-outline" size={14} color={c.textSecondary} />
             </TouchableOpacity>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View style={styles.balanceRow}>
               <Text style={[styles.totalText, { color: isBalanceHidden ? c.textSecondary : totalColor, fontSize: fs(28) }]}>
                 {isBalanceHidden ? HIDDEN_BALANCE : formatSignedCurrency(total, config.currency, config.decimalSeparator)}
               </Text>
-              <EyeToggle isHidden={isBalanceHidden} onToggle={() => setIsRevealed(prev => !prev)} color={c.textSecondary} />
+              <EyeToggle isHidden={isBalanceHidden} onToggle={toggleReveal} color={c.textSecondary} />
             </View>
       <View style={styles.summaryRow}>
         {isBalanceHidden ? (
@@ -294,6 +284,7 @@ const styles = StyleSheet.create({
   },
   totalButton: { alignItems: 'center', flex: 1 },
   accountRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  balanceRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   accountLabel: {},
   summaryRow: { flexDirection: 'row', gap: 12 },
   summaryItem: {},

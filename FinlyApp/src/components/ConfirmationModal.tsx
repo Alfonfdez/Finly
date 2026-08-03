@@ -5,6 +5,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { BUTTON_BORDER_RADIUS } from './componentStyles';
 import { WHITE } from '../constants/themes';
 import ModalShell from './ModalShell';
+import ModalHeader from './ModalHeader';
 
 interface Props {
   visible: boolean;
@@ -32,7 +33,7 @@ export default function ConfirmationModal({
 
   return (
     <ModalShell visible={visible} onClose={onCancel}>
-      <Text style={[styles.title, { color: c.text, fontSize: fs(16) }]}>{title}</Text>
+      <ModalHeader title={title} size={16} />
       {message && (
         <Text style={[styles.message, { color: c.textSecondary, fontSize: fs(14) }]}>{message}</Text>
       )}
@@ -92,11 +93,6 @@ export default function ConfirmationModal({
 }
 
 const styles = StyleSheet.create({
-  title: {
-    fontWeight: '700',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
   message: {
     marginBottom: 20,
     textAlign: 'center',

@@ -4,9 +4,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useBalanceVisibility } from '../hooks/useBalanceVisibility';
 import { t, getDisplayAccountName, getDisplayAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
@@ -14,13 +14,11 @@ import type { Account } from '../database/types';
 import { formatCurrency, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
 import { withAlpha } from '../utils/color';
 import { badgeShapeFor } from '../utils/badgeShape';
-import { type RootStackParamList, USER_ID } from '../constants/types';
+import { type NavigationProp, USER_ID } from '../constants/types';
 import EyeToggle from '../components/EyeToggle';
 import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
 import ListItemRow from '../components/ListItemRow';
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Accounts'>;
 
 type AccountWithBalance = Account & { balance: number };
 
@@ -28,19 +26,11 @@ export default function AccountsScreen() {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationProp<'Accounts'>>();
 
   const [accounts, setAccounts] = useState<AccountWithBalance[]>([]);
   const [total, setTotal] = useState(0);
-  const [isRevealed, setIsRevealed] = useState(false);
-
-  useFocusEffect(
-    useCallback(() => {
-      setIsRevealed(false);
-    }, [])
-  );
-
-  const isBalanceHidden = config.hideBalances !== isRevealed;
+  const { isBalanceHidden, toggleReveal } = useBalanceVisibility(config.hideBalances);
 
   const loadData = useCallback(async (): Promise<{ accounts: AccountWithBalance[]; total: number }> => {
     const list = await accountRepository.list(USER_ID);
@@ -135,7 +125,7 @@ export default function AccountsScreen() {
               ? HIDDEN_BALANCE
               : formatSignedCurrency(total, config.currency, config.decimalSeparator)}
           </Text>
-          <EyeToggle isHidden={isBalanceHidden} onToggle={() => setIsRevealed(prev => !prev)} color={c.textSecondary} />
+          <EyeToggle isHidden={isBalanceHidden} onToggle={toggleReveal} color={c.textSecondary} />
         </View>
       </View>
 

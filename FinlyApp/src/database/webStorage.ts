@@ -68,25 +68,6 @@ function seedWebData(): void {
 
 // --- Repositories (web) ---
 
-export const webUserRepo = {
-  async create(data: Omit<User, 'id' | 'created_at'>): Promise<User> {
-    const items = getStore<User>('users');
-    const item: User = { ...data, id: nextId(items), created_at: dbTimestamp() };
-    items.push(item);
-    setStore('users', items);
-    return item;
-  },
-  async getById(id: number): Promise<User | null> {
-    return getStore<User>('users').find(u => u.id === id) ?? null;
-  },
-  async update(id: number, data: Partial<Omit<User, 'id' | 'created_at'>>): Promise<void> {
-    const items = getStore<User>('users');
-    const idx = items.findIndex(u => u.id === id);
-    if (idx !== -1) items[idx] = { ...items[idx], ...data };
-    setStore('users', items);
-  },
-};
-
 export const webAccountRepo = {
   async list(userId: number): Promise<Account[]> {
     return getStore<Account>('accounts')
@@ -239,15 +220,6 @@ export const webTransactionRepo = {
     const tags = getStore<TransactionTag>('transaction_tags');
     setStore('transaction_tags', tags.filter(t => t.transaction_id !== id));
   },
-  async deleteByAccountId(accountId: number): Promise<void> {
-    const items = getStore<Transaction>('transactions');
-    const deletedIds = new Set(items.filter(t => t.account_id === accountId).map(t => t.id));
-    setStore('transactions', items.filter(t => t.account_id !== accountId));
-    if (deletedIds.size > 0) {
-      const tags = getStore<TransactionTag>('transaction_tags');
-      setStore('transaction_tags', tags.filter(t => !deletedIds.has(t.transaction_id)));
-    }
-  },
   async deleteAllTransactions(): Promise<void> {
     setStore('transactions', []);
     setStore('transaction_tags', []);
@@ -256,73 +228,6 @@ export const webTransactionRepo = {
     return getStore<Transaction>('transactions')
       .filter(t => (accountId === null || t.account_id === accountId) && t.type === type && t.date >= startDate && t.date <= endDate)
       .reduce((sum, t) => sum + t.amount, 0);
-  },
-  async breakdownByCategories(accountId: number | null, type: TransactionType, startDate: string, endDate: string): Promise<{ category_id: number; name: string; icon: string; color: string; total: number }[]> {
-    const transactions = getStore<Transaction>('transactions')
-      .filter(t => (accountId === null || t.account_id === accountId) && t.type === type && t.date >= startDate && t.date <= endDate);
-    const categories = getStore<Category>('categories');
-    const grouped = new Map<number, number>();
-    for (const t of transactions) {
-      grouped.set(t.category_id, (grouped.get(t.category_id) ?? 0) + t.amount);
-    }
-    return Array.from(grouped.entries())
-      .map(([catId, total]) => {
-        const cat = categories.find(c => c.id === catId);
-        return { category_id: catId, name: cat?.name ?? '', icon: cat?.icon ?? '', color: cat?.color ?? '', total };
-      })
-      .sort((a, b) => b.total - a.total);
-  },
-
-  async breakdownByCategoryAndTag(
-    accountId: number | null,
-    categoryId: number,
-    type: TransactionType,
-    startDate: string,
-    endDate: string,
-    tagIds?: number[]
-  ): Promise<{ tag_id: number; name: string; total: number }[]> {
-    const transactions = getStore<Transaction>('transactions')
-      .filter(t => (accountId === null || t.account_id === accountId) && t.category_id === categoryId && t.type === type && t.date >= startDate && t.date <= endDate);
-    const tags = getStore<Tag>('tags');
-    const links = getStore<TransactionTag>('transaction_tags');
-    const tagMap = new Map(tags.map(t => [t.id, t.name]));
-
-    const hasFilter = tagIds && tagIds.length > 0;
-    const filterRegular = hasFilter ? tagIds.filter(id => id !== UNTAGGED_ID) : [];
-    const filterUntagged = hasFilter ? tagIds.includes(UNTAGGED_ID) : false;
-
-    const tagged = new Map<number, number>();
-    const untaggedTotal = { total: 0 };
-
-    for (const t of transactions) {
-      const txnTagIds = links.filter(l => l.transaction_id === t.id).map(l => l.tag_id);
-      const isUntagged = txnTagIds.length === 0;
-
-      if (hasFilter) {
-        const matches =
-          (filterUntagged && isUntagged) ||
-          (filterRegular.length > 0 && txnTagIds.some(id => filterRegular.includes(id)));
-        if (!matches) continue;
-      }
-
-      if (isUntagged) {
-        untaggedTotal.total += t.amount;
-      } else {
-        const relevantTagIds = hasFilter ? txnTagIds.filter(id => filterRegular.includes(id)) : txnTagIds;
-        for (const tagId of relevantTagIds) {
-          tagged.set(tagId, (tagged.get(tagId) ?? 0) + t.amount);
-        }
-      }
-    }
-
-    const result: { tag_id: number; name: string; total: number }[] = [];
-    for (const [tagId, total] of tagged) {
-      result.push({ tag_id: tagId, name: tagMap.get(tagId) ?? '', total });
-    }
-    if (untaggedTotal.total > 0) {
-      result.push({ tag_id: UNTAGGED_ID, name: UNTAGGED_LABEL, total: untaggedTotal.total });
-    }
-    return result;
   },
   async breakdownByCategoriesAndTags(
     accountId: number | null,
@@ -391,14 +296,6 @@ export const webTransactionRepo = {
     }
     return result;
   },
-  async reassignCategory(oldCategoryId: number, newCategoryId: number): Promise<void> {
-    const items = getStore<Transaction>('transactions');
-    const updated = items.map(t =>
-      t.category_id === oldCategoryId ? { ...t, category_id: newCategoryId } : t
-    );
-    setStore('transactions', updated);
-  },
-
   async searchComments(search: string): Promise<string[]> {
     const items = getStore<Transaction>('transactions');
     const lower = search.toLowerCase();

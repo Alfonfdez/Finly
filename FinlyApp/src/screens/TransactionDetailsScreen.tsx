@@ -3,29 +3,27 @@ import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Image } fr
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { formatCurrency, formatDateLong, parseDbDate } from '../utils/formatters';
 import { deletePhotoFile, parsePhotos } from '../utils/photoUtils';
-import { withAlpha } from '../utils/color';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
 import { isNative } from '../utils/platform';
 import { transactionRepository } from '../database';
-import { type RootStackParamList, TRANSACTION_TYPES } from '../constants/types';
+import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { WHITE } from '../constants/themes';
 import ConfirmationModal from '../components/ConfirmationModal';
 import EmptyState from '../components/EmptyState';
 import IconBadge from '../components/IconBadge';
+import TagChip from '../components/TagChip';
 
 type DetailsRouteProp = RouteProp<RootStackParamList, 'TransactionDetails'>;
-type DetailsNavProp = NativeStackNavigationProp<RootStackParamList, 'TransactionDetails'>;
 
 export default function TransactionDetailsScreen() {
-  const navigation = useNavigation<DetailsNavProp>();
+  const navigation = useNavigation<NavigationProp<'TransactionDetails'>>();
   const route = useRoute<DetailsRouteProp>();
   const { transactionId } = route.params;
   const { categories, accounts, refresh } = useApp();
@@ -181,11 +179,7 @@ export default function TransactionDetailsScreen() {
             {tagNames.length > 0 ? (
               <View style={styles.tagsContainer}>
                 {tagNames.map(tag => (
-                  <View key={tag.tag_id} style={[styles.tagChip, { backgroundColor: withAlpha(c.primary, 13) }]}>
-                    <Text style={[styles.tagChipText, { color: c.primary, fontSize: fs(13) }]} numberOfLines={1}>
-                      {tag.name}
-                    </Text>
-                  </View>
+                  <TagChip key={tag.tag_id} label={tag.name} size={13} />
                 ))}
               </View>
             ) : (
@@ -325,14 +319,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 6,
     justifyContent: 'flex-end',
-  },
-  tagChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  tagChipText: {
-    fontWeight: '500',
   },
   photoGrid: {
     flexDirection: 'row',

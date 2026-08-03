@@ -5,9 +5,10 @@ import { useFontSize } from '../../hooks/useFontSize';
 import { t, getDisplayAccountName } from '../../i18n';
 import { isNative } from '../../utils/platform';
 import { isTotalAccount } from '../../database/helpers';
-import SelectorInline, { type Option } from '../../components/SelectorInline';
+import { type Option } from '../../components/SelectorInline';
 import CheckboxRow from '../../components/settings/CheckboxRow';
 import ToggleRow from '../../components/settings/ToggleRow';
+import SettingsSelectRow from '../../components/settings/SettingsSelectRow';
 import { settingsStyles } from '../../components/settings/settingsStyles';
 import type { Period } from '../../constants/types';
 
@@ -41,32 +42,26 @@ export default function PersonalizationScreen() {
   return (
     <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
       <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_home_screen}</Text>
-      <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
-        <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_default_account}</Text>
-        <SelectorInline
-          options={homeAccounts}
-          selected={config.homeDefaultAccountId === null ? 'total' : String(config.homeDefaultAccountId)}
-          onSelect={(v) => updateConfig({ homeDefaultAccountId: v === 'total' ? null : Number(v) })}
-        />
-      </View>
-      <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
-        <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_default_period}</Text>
-        <SelectorInline
-          options={PERIODS}
-          selected={config.homeDefaultPeriod}
-          onSelect={(v) => updateConfig({ homeDefaultPeriod: v as Config['homeDefaultPeriod'] })}
-        />
-      </View>
+      <SettingsSelectRow
+        label={labels.settings_default_account}
+        options={homeAccounts}
+        selected={config.homeDefaultAccountId === null ? 'total' : String(config.homeDefaultAccountId)}
+        onSelect={(v) => updateConfig({ homeDefaultAccountId: v === 'total' ? null : Number(v) })}
+      />
+      <SettingsSelectRow
+        label={labels.settings_default_period}
+        options={PERIODS}
+        selected={config.homeDefaultPeriod}
+        onSelect={(v) => updateConfig({ homeDefaultPeriod: v as Config['homeDefaultPeriod'] })}
+      />
 
       <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_add_transaction}</Text>
-      <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
-        <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_default_account}</Text>
-        <SelectorInline
-          options={addAccounts}
-          selected={config.addDefaultAccountId === null ? 'null' : String(config.addDefaultAccountId)}
-          onSelect={(v) => updateConfig({ addDefaultAccountId: v === 'null' ? null : Number(v) })}
-        />
-      </View>
+      <SettingsSelectRow
+        label={labels.settings_default_account}
+        options={addAccounts}
+        selected={config.addDefaultAccountId === null ? 'null' : String(config.addDefaultAccountId)}
+        onSelect={(v) => updateConfig({ addDefaultAccountId: v === 'null' ? null : Number(v) })}
+      />
       <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
         <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_optional_fields}</Text>
         <CheckboxRow

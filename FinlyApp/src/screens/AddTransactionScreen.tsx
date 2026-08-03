@@ -1,392 +1,49 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useMemo } from 'react';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
-import { useFontSize } from '../hooks/useFontSize';
-import { usePhotos } from '../hooks/usePhotos';
-import { t, getDisplayAccountName } from '../i18n';
-import { isNative } from '../utils/platform';
-import TabBar from '../components/TabBar';
-import AmountInput from '../components/AmountInput';
-import AccountModal from '../components/AccountModal';
-import CategoryGrid from '../components/CategoryGrid';
-import DaySelector from '../components/DaySelector';
-import TagSection from '../components/TagSection';
-import CommentInput from '../components/CommentInput';
-import PhotoSection from '../components/PhotoSection';
-import CalendarModal from '../components/CalendarModal';
-import CalculatorModal from '../components/CalculatorModal';
-import { PERIODS, TRANSACTION_TYPES, type TransactionType, type RootStackParamList, CATEGORY_USAGE_WINDOW_DAYS, USER_ID, MAX_VISIBLE_CATEGORIES } from '../constants/types';
-import { isSameDay, formatDateForDB } from '../utils/formatters';
-import { withAlpha } from '../utils/color';
-import { parseAmountInput, parseAmountValue } from '../utils/amountInput';
-import { transactionRepository, tagRepository } from '../database';
+import { t } from '../i18n';
+import { PERIODS } from '../constants/types';
+import { isSameDay } from '../utils/formatters';
+import { transactionRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
-
-// Module-level pending category data (passed back from AddCategoryScreen)
-let pendingCategoryId: number | null = null;
-let pendingCategoryType: TransactionType | null = null;
-
-export function setPendingCategory(categoryId: number, type: TransactionType) {
-  pendingCategoryId = categoryId;
-  pendingCategoryType = type;
-}
-
-export function consumePendingCategory(): { categoryId: number; type: TransactionType } | null {
-  if (pendingCategoryId !== null && pendingCategoryType !== null) {
-    const result = { categoryId: pendingCategoryId, type: pendingCategoryType };
-    pendingCategoryId = null;
-    pendingCategoryType = null;
-    return result;
-  }
-  return null;
-}
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'AddTransaction'>;
+import TransactionForm from '../components/TransactionForm';
 
 export default function AddTransactionScreen() {
-  const { activeColors: c, config } = useConfig();
-  const { activeType, activePeriod, customDate, selectedDate, accounts, categories, accountsWithBalance, activeAccount, tags, refresh, refreshTags } = useApp();
-  const selectableAccounts = useMemo(() => accountsWithBalance.filter(a => !isTotalAccount(a)), [accountsWithBalance]);
-  const fs = useFontSize();
+  const { config } = useConfig();
+  const { activeType, activePeriod, customDate, selectedDate, accounts, accountsWithBalance, activeAccount } = useApp();
   const labels = t();
-  const navigation = useNavigation<NavigationProp>();
 
-  const [type, setType] = useState<TransactionType>(activeType);
-  const [amountRaw, setAmountRaw] = useState('');
-  const [accountId, setAccountId] = useState(() => {
-    // Respect addDefaultAccountId setting
+  const initialAccountId = useMemo(() => {
     if (config.addDefaultAccountId !== null) {
       const found = accountsWithBalance.find(a => a.id === config.addDefaultAccountId && !isTotalAccount(a));
       if (found) return found.id;
     }
-    // Fallback: inherit from HomeScreen; if Total, use first non-Total
     if (activeAccount && !isTotalAccount(activeAccount)) return activeAccount.id;
     return accounts.find(a => !isTotalAccount(a))?.id;
-  });
-  const [categoryId, setCategoryId] = useState<number | null>(null);
-  const [reorderedCategory, setReorderedCategory] = useState<number | null>(null);
-  const initialDay = (() => {
+  }, [config.addDefaultAccountId, accountsWithBalance, activeAccount, accounts]);
+
+  const initialDay = useMemo(() => {
     if (activePeriod === PERIODS.custom) {
       const isSingleDay = isSameDay(customDate.start, customDate.end);
       if (isSingleDay) return customDate.start;
     }
     return selectedDate;
-  })();
-  const [day, setDay] = useState(initialDay);
-  const [categoryUsage, setCategoryUsage] = useState<Map<number, number>>(new Map());
-
-  const prevType = useRef(type);
-  const isFirstFocus = useRef(true);
-
-  // Handle category selected from AddCategoryScreen
-  useFocusEffect(useCallback(() => {
-    let active = true;
-    if (isFirstFocus.current) {
-      setSelectedTags([]);
-      isFirstFocus.current = false;
-    }
-    const pending = consumePendingCategory();
-    if (pending) {
-      if (pending.type !== type) {
-        setType(pending.type);
-      }
-      setCategoryId(pending.categoryId);
-      const allByType = categories.filter(c => c.type === pending.type);
-      const isVisible = allByType.slice(0, MAX_VISIBLE_CATEGORIES).some(c => c.id === pending.categoryId);
-      setReorderedCategory(isVisible ? null : pending.categoryId);
-      // Scroll to top so user can see the newly created category
-      setTimeout(() => {
-        scrollRef.current?.scrollTo({ y: 0, animated: false });
-      }, 100);
-    }
-    // Refresh category usage counts when screen gains focus
-    const loadUsage = async () => {
-      if (accountId === undefined) return;
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - CATEGORY_USAGE_WINDOW_DAYS);
-      const counts = await transactionRepository.getCategoryUsageCounts(USER_ID, type, formatDateForDB(startDate), accountId);
-      if (active) setCategoryUsage(new Map(counts.map(c => [c.id, c.count])));
-    };
-    loadUsage();
-    return () => { active = false; };
-  }, [categories, type, accountId]));
-
-  useEffect(() => {
-    if (prevType.current !== type) {
-      prevType.current = type;
-      setCategoryId(null);
-      setReorderedCategory(null);
-    }
-  }, [type]);
-
-  const [selectedTags, setSelectedTags] = useState<number[]>([]);
-  const [comment, setComment] = useState('');
-  const inputRef = useRef<TextInput>(null);
-  const scrollRef = useRef<ScrollView>(null);
-
-  const [submitting, setSubmitting] = useState(false);
-  const { photos, handleTakePhoto, handlePickFromGallery, handleRemovePhoto } = usePhotos();
-
-  const [modalAccountVisible, setModalAccountVisible] = useState(false);
-  const [modalCalendarVisible, setModalCalendarVisible] = useState(false);
-  const [calculatorVisible, setCalculatorVisible] = useState(false);
-
-  // Parsed numeric value (null if invalid or empty)
-  const numericAmount = useMemo(() => parseAmountValue(amountRaw), [amountRaw]);
-
-  const canSubmit = useMemo(() => {
-    if (categoryId === null) return false;
-    if (numericAmount === null || numericAmount <= 0) return false;
-    if (day === null) return false;
-    if (accountId === undefined) return false;
-    return true;
-  }, [categoryId, numericAmount, day, accountId]);
-
-  const handleToggleTag = (id: number) => {
-    setSelectedTags(prev =>
-      prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id]
-    );
-  };
-
-  const handleCreateTag = async (name: string) => {
-    const existing = tags.some(t => t.name.toLowerCase() === name.toLowerCase());
-    if (existing) return false;
-    await tagRepository.create({ user_id: USER_ID, name });
-    await refreshTags();
-    return true;
-  };
-
-  const handleSelectAccount = (id: number) => {
-    setAccountId(id);
-    setModalAccountVisible(false);
-  };
-
-  const handleSelectDate = (date: Date) => {
-    setDay(date);
-    setModalCalendarVisible(false);
-  };
-
-  const handleSubmit = async () => {
-    if (!canSubmit || submitting) return;
-    if (categoryId === null || numericAmount === null || accountId === undefined) return;
-    setSubmitting(true);
-
-    try {
-      const dateStr = formatDateForDB(day);
-
-      await transactionRepository.createWithTags({
-        account_id: accountId,
-        category_id: categoryId,
-        type,
-        amount: numericAmount,
-        description: comment || null,
-        photo: photos.length > 0 ? JSON.stringify(photos) : null,
-        date: dateStr,
-      }, selectedTags);
-
-      await refresh();
-      setSelectedTags([]);
-      navigation.goBack();
-    } catch {
-      Alert.alert(labels.add_error_title, labels.add_error_message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const categoriesByType = useMemo(() => {
-    const byType = categories.filter(c => c.type === type);
-    return [...byType].sort((a, b) => {
-      const countA = categoryUsage.get(a.id) ?? 0;
-      const countB = categoryUsage.get(b.id) ?? 0;
-      if (countB !== countA) return countB - countA;
-      return a.name.localeCompare(b.name);
-    });
-  }, [categories, type, categoryUsage]);
-  const totalByType = categoriesByType.length;
-  const hasMore = totalByType > MAX_VISIBLE_CATEGORIES;
-
-  const visibleCategories = useMemo(() => {
-    if (reorderedCategory) {
-      const selected = categoriesByType.find(c => c.id === reorderedCategory);
-      if (selected) {
-        return [selected, ...categoriesByType.filter(c => c.id !== reorderedCategory)].slice(0, MAX_VISIBLE_CATEGORIES);
-      }
-    }
-    return categoriesByType.slice(0, MAX_VISIBLE_CATEGORIES);
-  }, [categoriesByType, reorderedCategory]);
-
-  const selectedAccount = accounts.find(c => c.id === accountId);
+  }, [activePeriod, customDate, selectedDate]);
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]}>
-        <ScrollView ref={scrollRef} style={[styles.container, { backgroundColor: c.background }]} keyboardShouldPersistTaps="handled">
-          <TabBar
-            tabs={[
-              { key: TRANSACTION_TYPES.expense, label: labels.tab_expenses },
-              { key: TRANSACTION_TYPES.income, label: labels.tab_income },
-            ]}
-            active={type}
-            onChange={setType}
-          />
-
-        <AmountInput
-          raw={amountRaw}
-          onChangeRaw={setAmountRaw}
-          onOpenCalculator={() => setCalculatorVisible(true)}
-        />
-
-        <TouchableOpacity
-          style={[styles.accountContainer, { backgroundColor: c.surface }]}
-          onPress={() => setModalAccountVisible(true)}
-        >
-          <Text style={[styles.accountLabel, { color: c.textSecondary, fontSize: fs(12) }]}>
-            {labels.add_account}
-          </Text>
-          <Text style={[styles.accountName, { color: c.text, fontSize: fs(15) }]}>
-            {selectedAccount ? getDisplayAccountName(selectedAccount) : ''}
-          </Text>
-        </TouchableOpacity>
-
-        <CategoryGrid
-          categories={visibleCategories}
-          selectedCategory={categoryId}
-          onSelect={setCategoryId}
-          onAddMore={() => hasMore
-            ? navigation.navigate('AddCategory', { type })
-            : navigation.navigate('CreateCategory', { type })
-          }
-          showAddMore
-          addMoreLabel={hasMore ? labels.add_more : labels.add_cat_create}
-        />
-
-        <DaySelector
-          selectedDate={day}
-          onSelect={setDay}
-          onOpenCalendar={() => setModalCalendarVisible(true)}
-        />
-
-        {config.addShowLabels && (
-          <TagSection
-            tags={tags}
-            selectedTags={selectedTags}
-            onToggle={handleToggleTag}
-            onCreate={handleCreateTag}
-          />
-        )}
-
-        {config.addShowComments && (
-          <CommentInput
-            ref={inputRef}
-            comment={comment}
-            onChange={setComment}
-            onFocus={() => {
-              setTimeout(() => {
-                scrollRef.current?.scrollToEnd({ animated: true });
-              }, 300);
-            }}
-          />
-        )}
-
-        {config.addShowPhoto && isNative && (
-          <PhotoSection
-            photos={photos}
-            onTakePhoto={handleTakePhoto}
-            onPickFromGallery={handlePickFromGallery}
-            onRemovePhoto={handleRemovePhoto}
-          />
-        )}
-
-        {!canSubmit && !submitting && (
-          <Text style={[styles.hintText, { color: c.red, fontSize: fs(12) }]}>
-            {categoryId === null && (numericAmount === null || numericAmount <= 0)
-              ? labels.add_hint_category_amount
-              : categoryId === null
-              ? labels.add_hint_category
-              : numericAmount === null || numericAmount <= 0
-              ? labels.add_hint_amount
-              : ''}
-          </Text>
-        )}
-        <TouchableOpacity
-          style={[
-            styles.submitButton,
-            { backgroundColor: canSubmit ? c.primary : withAlpha(c.textSecondary, 38) },
-          ]}
-          onPress={handleSubmit}
-          disabled={!canSubmit || submitting}
-        >
-          <Text style={[styles.submitButtonText, { color: canSubmit ? c.background : c.text, fontSize: fs(16) }]}>
-            {submitting ? '...' : labels.add_submit}
-          </Text>
-        </TouchableOpacity>
-        <View style={{ height: 200 }} />
-        </ScrollView>
-
-      <AccountModal
-        visible={modalAccountVisible}
-        accounts={selectableAccounts}
-        selectedId={accountId}
-        onSelect={handleSelectAccount}
-        onClose={() => setModalAccountVisible(false)}
-      />
-
-      <CalendarModal
-        visible={modalCalendarVisible}
-        period="day"
-        date={day}
-        onSelectDate={handleSelectDate}
-        onClose={() => setModalCalendarVisible(false)}
-      />
-
-      <CalculatorModal
-        visible={calculatorVisible}
-        onAccept={(result) => {
-          const clean = parseAmountInput(result);
-          if (clean !== null && clean !== '') {
-            setAmountRaw(clean);
-          }
-          setCalculatorVisible(false);
-        }}
-        onCancel={() => setCalculatorVisible(false)}
-      />
-    </SafeAreaView>
+    <TransactionForm
+      initialType={activeType}
+      initialAccountId={initialAccountId}
+      initialCategoryId={null}
+      initialReorderedCategory={null}
+      initialDay={initialDay}
+      initialComment=""
+      initialPhotos={[]}
+      submitLabel={labels.add_submit}
+      errorTitle={labels.add_error_title}
+      errorMessage={labels.add_error_message}
+      onSubmit={async (data, tagIds) => { await transactionRepository.createWithTags(data, tagIds); }}
+      resetTagsOnFirstFocus
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  container: { flex: 1, padding: 16 },
-  accountContainer: {
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 16,
-    marginBottom: 16,
-  },
-  accountLabel: {
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  accountName: {
-    fontWeight: '600',
-  },
-  submitButton: {
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 32,
-  },
-  submitButtonText: {
-    fontWeight: '700',
-  },
-  hintText: {
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 8,
-  },
-});
