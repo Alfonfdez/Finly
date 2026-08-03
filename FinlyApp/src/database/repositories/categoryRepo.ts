@@ -10,12 +10,12 @@ export const categoryRepo = {
     const db = getDatabase();
     if (type) {
       return await db.getAllAsync<Category>(
-        `SELECT * FROM categories WHERE user_id = ? AND type = ? ORDER BY name`,
+        `SELECT * FROM categories WHERE user_id = ? AND type = ? ORDER BY name COLLATE NOCASE`,
         userId, type
       );
     }
     return await db.getAllAsync<Category>(
-      `SELECT * FROM categories WHERE user_id = ? ORDER BY name`,
+      `SELECT * FROM categories WHERE user_id = ? ORDER BY name COLLATE NOCASE`,
       userId
     );
   },

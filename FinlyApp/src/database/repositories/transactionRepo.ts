@@ -149,7 +149,7 @@ export const transactionRepo = {
     const results = await db.getAllAsync<{ description: string }>(
       `SELECT DISTINCT description FROM transactions
        WHERE description IS NOT NULL AND description LIKE ?
-       ORDER BY description LIMIT ${MAX_SUGGESTIONS}`,
+       ORDER BY description COLLATE NOCASE LIMIT ${MAX_SUGGESTIONS}`,
       `%${search}%`
     );
     return results.map(r => r.description);
@@ -300,7 +300,7 @@ export const transactionRepo = {
          AND t.type = ?
        WHERE c.user_id = ? AND c.type = ?
        GROUP BY c.id
-       ORDER BY count DESC, c.name ASC`,
+       ORDER BY count DESC, c.name COLLATE NOCASE ASC`,
       startDate, accountId, type, userId, type
     );
   },

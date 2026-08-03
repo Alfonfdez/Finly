@@ -30,9 +30,11 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.10",
+    "@types/sql.js": "^1.4.11",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~10.0.0",
     "happy-dom": "^20.11.1",
+    "sql.js": "^1.14.1",
     "typescript": "~5.9.2",
     "vitest": "^4.1.10"
   },
