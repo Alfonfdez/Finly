@@ -47,11 +47,17 @@ npx expo start
 npx expo lint
 ```
 
+## VERIFICATION
+- A change is only "done" when `npm run test:all` passes (typecheck + lint + tests).
+- Changes to `src/utils/` or `src/database/` logic must include or update tests (Phase A/B harnesses).
+- A feature's "verification" task is done only via the `verification-loop` skill: run `test:all`, boot `npx expo start --web`, then check the spec's acceptance criteria in a real browser (viewport 375px for mobile criteria).
+- Criteria that cannot be checked on web (e.g. camera/photo capture) are reported as "not checkable on web", never marked done.
+
 ## DATABASE
 - 3 idempotent migrations in `src/database/migrations/`: `001_initial` (schema), `002_seed` (seed data), `003_config` (config defaults)
-- No version counter; all statements use `CREATE TABLE/INDEX IF NOT EXISTS`
+- Version counter: `src/database/database.ts` runs migrations from `PRAGMA user_version` (`SCHEMA_VERSION = 3`), applying each step (schema -> seed data -> config defaults) once inside a transaction
 - SQLite for native, localStorage for web
-- 5 repositories: user, account, category, transaction, config
+- 5 repositories: account, category, tag, transaction, config
 
 ## I18N
 - Languages: English, Spanish, Catalan

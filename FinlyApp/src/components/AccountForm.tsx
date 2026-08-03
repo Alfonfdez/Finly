@@ -17,6 +17,7 @@ interface AccountFormProps {
   onNameChange: (value: string) => void;
   nameErrorDisplay: string | null;
   showNameField: boolean;
+  nameDisabled?: boolean;
   icons: readonly IconName[];
   iconShape: ConfigIconShape;
   symbolTitle: string;
@@ -45,6 +46,7 @@ export default function AccountForm({
   onNameChange,
   nameErrorDisplay,
   showNameField,
+  nameDisabled = false,
   icons,
   iconShape,
   symbolTitle,
@@ -82,6 +84,8 @@ export default function AccountForm({
           autoCorrect={false}
           error={nameErrorDisplay}
           showCounter
+          editable={!nameDisabled}
+          inputStyle={nameDisabled && { color: c.textSecondary }}
         />
       )}
 

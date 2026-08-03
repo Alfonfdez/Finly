@@ -143,7 +143,8 @@ export default function ModifyAccountScreen() {
         <View style={styles.content}>
           <AccountForm
             nameLabel={labels.modify_account_name}
-            showNameField={!isTotal}
+            showNameField
+            nameDisabled={isTotal}
             name={name}
             onNameChange={handleNameChange}
             nameErrorDisplay={(nameError || (nameTouched && name.trim().length === 0)) ? (nameError ?? ' ') : null}
