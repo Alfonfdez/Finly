@@ -1,29 +1,27 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { View, StyleSheet, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
+import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
-import { type RootStackParamList, USER_ID, MAX_TAG_NAME_LENGTH } from '../constants/types';
+import { type RootStackParamList, type NavigationProp, USER_ID, MAX_TAG_NAME_LENGTH } from '../constants/types';
 import ConfirmationModal from '../components/ConfirmationModal';
 import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormError from '../components/form/FormError';
 import DeleteButton from '../components/form/DeleteButton';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ModifyTag'>;
 type ModifyTagRouteProp = RouteProp<RootStackParamList, 'ModifyTag'>;
 
 export default function ModifyTagScreen() {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationProp<'ModifyTag'>>();
   const route = useRoute<ModifyTagRouteProp>();
   const { tags, refreshTags } = useApp();
   const { tagId } = route.params;
@@ -34,39 +32,27 @@ export default function ModifyTagScreen() {
   );
 
   const [name, setName] = useState('');
-  const [nameError, setNameError] = useState<string | null>(null);
-  const [checkingName, setCheckingName] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const userEditedRef = useRef(false);
+
+  const { nameError, checkingName, clearNameError, debouncedCheck } = useNameDuplicateCheck({
+    existsByName: (value, excludeId) => tagRepository.existsByName(USER_ID, value, excludeId),
+    resolveDefaultEnglishName: () => null,
+    duplicateErrorKey: labels.create_tag_error_duplicate,
+    excludeId: tagId,
+  });
 
   useEffect(() => {
     if (tag && !userEditedRef.current) {
       setName(tag.name);
-      setNameError(null);
+      clearNameError();
     }
-  }, [tag]);
-
-  const checkNameDuplicate = useCallback(async (value: string) => {
-    if (!value.trim()) {
-      setNameError(null);
-      setCheckingName(false);
-      return;
-    }
-    setCheckingName(true);
-    try {
-      const exists = await tagRepository.existsByName(USER_ID, value.trim(), tagId);
-      setNameError(exists ? labels.create_tag_error_duplicate : null);
-    } finally {
-      setCheckingName(false);
-    }
-  }, [labels.create_tag_error_duplicate, tagId]);
-
-  const debouncedCheck = useUniqueNameCheck(checkNameDuplicate);
+  }, [tag, clearNameError]);
 
   const handleNameChange = (text: string) => {
     userEditedRef.current = true;
     setName(text);
-    setNameError(null);
+    clearNameError();
     debouncedCheck(text);
   };
 

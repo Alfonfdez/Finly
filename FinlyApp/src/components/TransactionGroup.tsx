@@ -6,8 +6,8 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { getDisplayCategoryName } from '../i18n';
 import { BADGE_SHAPES, TRANSACTION_TYPES } from '../constants/types';
-import { withAlpha } from '../utils/color';
 import ListItemRow from './ListItemRow';
+import TagChip from './TagChip';
 
 interface TransactionRowProps {
   tx: Transaction;
@@ -35,11 +35,7 @@ export const TransactionRow = memo(function TransactionRow({ tx, category, tags,
       middle={tags && tags.length > 0 ? (
         <View style={styles.tagsContainer}>
           {tags.map((tag) => (
-            <View key={tag.tag_id} style={[styles.tagChip, { backgroundColor: withAlpha(c.primary, 13) }]}>
-              <Text style={[styles.tagChipText, { color: c.primary, fontSize: fs(11) }]} numberOfLines={1}>
-                {tag.name}
-              </Text>
-            </View>
+            <TagChip key={tag.tag_id} label={tag.name} />
           ))}
         </View>
       ) : undefined}
@@ -89,14 +85,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 4,
     marginTop: 4,
-  },
-  tagChip: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  tagChipText: {
-    fontWeight: '500',
   },
   amount: { fontWeight: '700' },
 });

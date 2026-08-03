@@ -1,6 +1,6 @@
 export const DEFAULT_CURRENCY = '€';
 
-export interface CurrencyOption {
+interface CurrencyOption {
   value: string;
   labelKey: 'currency_euro' | 'currency_dollar' | 'currency_pound' | 'currency_yen';
 }

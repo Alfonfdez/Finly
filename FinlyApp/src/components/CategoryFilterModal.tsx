@@ -139,7 +139,7 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
             </Text>
           </TouchableOpacity>
 
-          {sections.length === 0 || (sections.length === 1 && sections[0].data.length === 0) ? (
+          {sections.every(section => section.data.length === 0) ? (
             <EmptyState icon="search-outline" message={labels.filter_no_results} />
           ) : (
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>

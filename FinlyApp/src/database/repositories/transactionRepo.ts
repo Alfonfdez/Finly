@@ -19,14 +19,6 @@ interface TotalByPeriod {
   total: number;
 }
 
-interface CategoryBreakdown {
-  category_id: number;
-  name: string;
-  icon: string;
-  color: string;
-  total: number;
-}
-
 interface CategoryTagBreakdown {
   tag_id: number;
   name: string;
@@ -126,12 +118,6 @@ export const transactionRepo = {
     await db.runAsync(`DELETE FROM transactions WHERE id = ?`, id);
   },
 
-  async deleteByAccountId(accountId: number): Promise<void> {
-    await deleteTransactionPhotos('account_id = ? AND photo IS NOT NULL', accountId);
-    const db = getDatabase();
-    await db.runAsync(`DELETE FROM transactions WHERE account_id = ?`, accountId);
-  },
-
   async deleteAllTransactions(): Promise<void> {
     await deleteTransactionPhotos('photo IS NOT NULL');
     const db = getDatabase();
@@ -158,14 +144,6 @@ export const transactionRepo = {
     return result?.total ?? 0;
   },
 
-  async reassignCategory(oldCategoryId: number, newCategoryId: number): Promise<void> {
-    const db = getDatabase();
-    await db.runAsync(
-      `UPDATE transactions SET category_id = ? WHERE category_id = ?`,
-      newCategoryId, oldCategoryId
-    );
-  },
-
   async searchComments(search: string): Promise<string[]> {
     const db = getDatabase();
     const results = await db.getAllAsync<{ description: string }>(
@@ -175,107 +153,6 @@ export const transactionRepo = {
       `%${search}%`
     );
     return results.map(r => r.description);
-  },
-
-  async breakdownByCategories(
-    accountId: number | null,
-    type: TransactionType,
-    startDate: string,
-    endDate: string
-  ): Promise<CategoryBreakdown[]> {
-    const db = getDatabase();
-    const sql = accountId !== null
-      ? `SELECT t.category_id, c.name, c.icon, c.color, SUM(t.amount) AS total
-         FROM transactions t
-         INNER JOIN categories c ON t.category_id = c.id
-         WHERE t.account_id = ? AND t.type = ? AND t.date >= ? AND t.date <= ?
-         GROUP BY t.category_id
-         ORDER BY total DESC`
-      : `SELECT t.category_id, c.name, c.icon, c.color, SUM(t.amount) AS total
-         FROM transactions t
-         INNER JOIN categories c ON t.category_id = c.id
-         WHERE t.type = ? AND t.date >= ? AND t.date <= ?
-         GROUP BY t.category_id
-         ORDER BY total DESC`;
-    const params = accountId !== null
-      ? [accountId, type, startDate, endDate]
-      : [type, startDate, endDate];
-    return await db.getAllAsync<CategoryBreakdown>(sql, ...params);
-  },
-
-  async breakdownByCategoryAndTag(
-    accountId: number | null,
-    categoryId: number,
-    type: TransactionType,
-    startDate: string,
-    endDate: string,
-    tagIds?: number[]
-  ): Promise<CategoryTagBreakdown[]> {
-    const db = getDatabase();
-    const accountClause = accountId === null ? '' : 'AND tr.account_id = ?';
-    const accountParams = accountId === null ? [] : [accountId];
-    const hasFilter = tagIds && tagIds.length > 0;
-    const filterRegular = hasFilter ? tagIds.filter(id => id !== UNTAGGED_ID) : [];
-    const filterUntagged = hasFilter ? tagIds.includes(UNTAGGED_ID) : false;
-
-    if (!hasFilter) {
-      return await db.getAllAsync<CategoryTagBreakdown>(
-        `SELECT tt.tag_id, t.name, SUM(tr.amount) AS total
-         FROM transactions tr
-         INNER JOIN transaction_tags tt ON tr.id = tt.transaction_id
-         INNER JOIN tags t ON tt.tag_id = t.id
-         WHERE tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
-           ${accountClause}
-         GROUP BY tt.tag_id
-
-         UNION ALL
-
-         SELECT ${UNTAGGED_ID} AS tag_id, '${UNTAGGED_LABEL}' AS name, COALESCE(SUM(tr.amount), 0) AS total
-         FROM transactions tr
-         WHERE tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
-           AND NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = tr.id)
-           ${accountClause}
-         GROUP BY tr.category_id
-         HAVING COALESCE(SUM(tr.amount), 0) > 0`,
-        categoryId, type, startDate, endDate, ...accountParams,
-        categoryId, type, startDate, endDate, ...accountParams
-      );
-    }
-
-    const results: CategoryTagBreakdown[] = [];
-
-    if (filterRegular.length > 0) {
-      const placeholders = filterRegular.map(() => '?').join(',');
-      const tagged = await db.getAllAsync<CategoryTagBreakdown>(
-        `SELECT tt.tag_id, t.name, SUM(tr.amount) AS total
-         FROM transactions tr
-         INNER JOIN transaction_tags tt ON tr.id = tt.transaction_id
-         INNER JOIN tags t ON tt.tag_id = t.id
-         WHERE tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
-           AND tt.tag_id IN (${placeholders})
-           ${accountClause}
-         GROUP BY tt.tag_id`,
-        categoryId, type, startDate, endDate, ...accountParams,
-        ...filterRegular
-      );
-      results.push(...tagged);
-    }
-
-    if (filterUntagged) {
-      const untagged = await db.getAllAsync<CategoryTagBreakdown>(
-        `SELECT ${UNTAGGED_ID} AS tag_id, '${UNTAGGED_LABEL}' AS name, COALESCE(SUM(tr.amount), 0) AS total
-         FROM transactions tr
-         WHERE tr.category_id = ? AND tr.type = ? AND tr.date >= ? AND tr.date <= ?
-           AND NOT EXISTS (SELECT 1 FROM transaction_tags WHERE transaction_id = tr.id)
-           ${accountClause}
-         GROUP BY tr.category_id
-         HAVING COALESCE(SUM(tr.amount), 0) > 0`,
-        categoryId, type, startDate, endDate, ...accountParams
-      );
-      results.push(...untagged);
-    }
-
-    return results;
   },
 
   async breakdownByCategoriesAndTags(

@@ -27,10 +27,6 @@ export default function DataScreen() {
   const closeDeleteAll = () => {
     setDeleteAllModal1(false);
     setDeleteAllModal2(false);
-  };
-
-  const closeDeleteAllWithText = () => {
-    setDeleteAllModal2(false);
     setDeleteAllText('');
   };
 
@@ -63,7 +59,6 @@ export default function DataScreen() {
       Alert.alert(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
     }
     closeDeleteAll();
-    setDeleteAllText('');
   };
 
   const canDeleteAll = deleteAllText.toUpperCase() === DELETE_ALL_CONFIRMATION;
@@ -113,7 +108,7 @@ export default function DataScreen() {
         confirmLabel={labels.settings_delete_confirm}
         cancelLabel={labels.cancel}
         onConfirm={handleDeleteAll}
-        onCancel={closeDeleteAllWithText}
+        onCancel={closeDeleteAll}
         confirmDisabled={!canDeleteAll}
       >
         <TextInput

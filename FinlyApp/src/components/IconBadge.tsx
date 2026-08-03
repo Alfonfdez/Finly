@@ -16,7 +16,7 @@ interface Props {
   style?: StyleProp<ViewStyle>;
 }
 
-export function iconRadius(
+function iconRadius(
   size: number,
   shape: BadgeShape,
   roundedRadius = Math.max(4, Math.round(size / 4))

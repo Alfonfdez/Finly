@@ -1,4 +1,4 @@
-export type TransactionTagLink = { transaction_id: number; tag_id: number; name: string };
+type TransactionTagLink = { transaction_id: number; tag_id: number; name: string };
 
 export type TagsByTransaction = Map<number, { tag_id: number; name: string }[]>;
 

@@ -1,41 +1,30 @@
-import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig, type Config } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
-import { useFontSize } from '../hooks/useFontSize';
-import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
+import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useColorSelection } from '../hooks/useColorSelection';
 import { t, getDisplayAccountName, getDefaultEnglishAccountName, getAccountName, getDefaultAccountIdByName, getDisplayAccountDescription, getDefaultEnglishAccountDescription, getAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
 import type { Account } from '../database/types';
-import { type RootStackParamList, MAX_ACCOUNT_NAME_LENGTH, MAX_NOTE_LENGTH } from '../constants/types';
+import type { RootStackParamList, NavigationProp } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
-import IconGrid from '../components/IconGrid';
-import ColorGrid, { QUICK_COLORS } from '../components/ColorGrid';
-import ColorPickerModal from '../components/ColorPickerModal';
+import { QUICK_COLORS } from '../components/ColorGrid';
 import ConfirmationModal from '../components/ConfirmationModal';
 import EmptyState from '../components/EmptyState';
-import SectionTitle from '../components/form/SectionTitle';
-import LabeledTextField from '../components/form/LabeledTextField';
-import PrimaryButton from '../components/form/PrimaryButton';
-import FormError from '../components/form/FormError';
-import DeleteButton from '../components/form/DeleteButton';
-import KeyboardSpacer from '../components/form/KeyboardSpacer';
-import FormScrollView from '../components/form/FormScrollView';
+import AccountForm from '../components/AccountForm';
+import { getNameHintText } from '../utils/formHints';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ModifyAccount'>;
 type ModifyAccountRouteProp = RouteProp<RootStackParamList, 'ModifyAccount'>;
 
 export default function ModifyAccountScreen() {
   const { activeColors: c, config, updateConfig } = useConfig();
   const { accounts, refreshAccounts } = useApp();
-  const fs = useFontSize();
   const labels = t();
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationProp<'ModifyAccount'>>();
   const route = useRoute<ModifyAccountRouteProp>();
   const { accountId } = route.params;
 
@@ -43,11 +32,8 @@ export default function ModifyAccountScreen() {
 
   const [name, setName] = useState('');
   const [nameTouched, setNameTouched] = useState(false);
-  const [nameError, setNameError] = useState<string | null>(null);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [description, setDescription] = useState('');
-  const [checkingName, setCheckingName] = useState(false);
-  const [colorPickerVisible, setColorPickerVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const { selectedColor, customColor, setSelectedColor, setCustomColor, handleColorSelect } = useColorSelection();
 
@@ -67,40 +53,20 @@ export default function ModifyAccountScreen() {
     return () => { active = false; };
   }, [accountId, setCustomColor, setSelectedColor]);
 
-  const checkNameDuplicate = useCallback(async (value: string) => {
-    if (!value.trim()) {
-      setNameError(null);
-      setCheckingName(false);
-      return;
-    }
-    setCheckingName(true);
-    try {
-      const defaultId = getDefaultAccountIdByName(value.trim());
-      if (defaultId !== null) {
-        const englishName = getDefaultEnglishAccountName(defaultId);
-        if (englishName) {
-          const defaultExists = await accountRepository.existsByName(englishName, accountId);
-          if (defaultExists) {
-            setNameError(labels.modify_account_error_duplicate);
-            return;
-          }
-        }
-      }
-      const exists = await accountRepository.existsByName(value.trim(), accountId);
-      setNameError(exists ? labels.modify_account_error_duplicate : null);
-    } catch {
-      setNameError(null);
-    } finally {
-      setCheckingName(false);
-    }
-  }, [accountId, labels.modify_account_error_duplicate]);
-
-  const debouncedCheck = useUniqueNameCheck(checkNameDuplicate);
+  const { nameError, checkingName, clearNameError, debouncedCheck } = useNameDuplicateCheck({
+    existsByName: (value, excludeId) => accountRepository.existsByName(value, excludeId),
+    resolveDefaultEnglishName: (value) => {
+      const defaultId = getDefaultAccountIdByName(value);
+      return defaultId !== null ? getDefaultEnglishAccountName(defaultId) : null;
+    },
+    duplicateErrorKey: labels.modify_account_error_duplicate,
+    excludeId: accountId,
+  });
 
   const handleNameChange = (value: string) => {
     setName(value);
     setNameTouched(true);
-    setNameError(null);
+    clearNameError();
     debouncedCheck(value);
   };
 
@@ -110,11 +76,7 @@ export default function ModifyAccountScreen() {
     ? !checkingName
     : name.trim().length > 0 && !nameError && !checkingName;
 
-  const getHintText = (): string | null => {
-    if (name.trim().length === 0) return labels.modify_account_error_empty;
-    if (nameError) return nameError;
-    return null;
-  };
+  const hintText = getNameHintText(name, nameError, labels.modify_account_error_empty);
 
   const handleSave = async () => {
     if (!canSave || !account) return;
@@ -142,7 +104,8 @@ export default function ModifyAccountScreen() {
     }
   };
 
-  const handleDeleteConfirm = async () => {    try {
+  const handleDeleteConfirm = async () => {
+    try {
       await accountRepository.delete(accountId);
       await refreshAccounts();
 
@@ -172,95 +135,41 @@ export default function ModifyAccountScreen() {
     );
   }
 
-  const hintText = getHintText();
-  const isLastAccount = accounts.length <= 1;
+  const isLastAccount = accounts.filter(a => !isTotalAccount(a)).length <= 1;
 
   return (
     <>
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
-      <View style={styles.content}>
-        <FormScrollView>
-          {!isTotal && (
-            <LabeledTextField
-              label={labels.modify_account_name}
-              placeholder={labels.modify_account_name}
-              value={name}
-              onChangeText={handleNameChange}
-              maxLength={MAX_ACCOUNT_NAME_LENGTH}
-              autoCapitalize="words"
-              autoCorrect={false}
-              error={(nameError || (nameTouched && name.trim().length === 0)) ? (nameError ?? ' ') : null}
-              showCounter
-            />
-          )}
-
-          <SectionTitle text={labels.create_account_symbols} />
-          <IconGrid
+      <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+        <View style={styles.content}>
+          <AccountForm
+            nameLabel={labels.modify_account_name}
+            showNameField={!isTotal}
+            name={name}
+            onNameChange={handleNameChange}
+            nameErrorDisplay={(nameError || (nameTouched && name.trim().length === 0)) ? (nameError ?? ' ') : null}
             icons={ACCOUNT_ICONS}
+            iconShape={config.accountIconShape}
+            symbolTitle={labels.create_account_symbols}
+            colorTitle={labels.create_account_color}
             selectedIcon={selectedIcon}
-            selectedColor={selectedColor}
-            shape={config.accountIconShape}
-            onSelect={setSelectedIcon}
-          />
-
-          <SectionTitle text={labels.create_account_color} />
-          <ColorGrid
+            onSelectIcon={setSelectedIcon}
             selectedColor={selectedColor}
             customColor={customColor}
-            onSelect={handleColorSelect}
-            onOpenPicker={() => setColorPickerVisible(true)}
+            onSelectColor={handleColorSelect}
+            noteLabel={labels.modify_account_note}
+            description={description}
+            onDescriptionChange={setDescription}
+            hintText={hintText}
+            submitLabel={labels.modify_account_save}
+            isSubmitDisabled={!canSave}
+            onSubmit={handleSave}
+            deleteLabel={isTotal ? undefined : labels.modify_account_delete}
+            onDeletePress={isTotal ? undefined : () => setDeleteModalVisible(true)}
+            deleteDisabled={isLastAccount}
+            deleteLastHint={isLastAccount ? labels.modify_account_delete_last : null}
           />
-
-          <ColorPickerModal
-            visible={colorPickerVisible}
-            selectedColor={selectedColor}
-            onSelect={handleColorSelect}
-            onClose={() => setColorPickerVisible(false)}
-          />
-
-          <LabeledTextField
-            label={labels.modify_account_note}
-            value={description}
-            onChangeText={(value) => {
-              if (value.length <= MAX_NOTE_LENGTH) setDescription(value);
-            }}
-            multiline
-            numberOfLines={3}
-            textAlignVertical="top"
-            maxLength={MAX_NOTE_LENGTH}
-            showCounter
-          />
-
-          <FormError message={hintText} fontSize={fs(12)} style={styles.hint} />
-
-          {!isTotal && (
-            <>
-              <DeleteButton
-                label={labels.modify_account_delete}
-                onPress={() => !isLastAccount && setDeleteModalVisible(true)}
-                disabled={isLastAccount}
-                style={styles.deleteButton}
-              />
-
-              {isLastAccount && (
-                <Text style={[styles.hint, { color: c.textSecondary, fontSize: fs(12) }]}>
-                  {labels.modify_account_delete_last}
-                </Text>
-              )}
-            </>
-          )}
-
-          <PrimaryButton
-            label={labels.modify_account_save}
-            onPress={handleSave}
-            disabled={!canSave}
-            style={styles.button}
-          />
-
-          <KeyboardSpacer />
-        </FormScrollView>
-      </View>
-    </SafeAreaView>
+        </View>
+      </SafeAreaView>
 
       <ConfirmationModal
         visible={deleteModalVisible}
@@ -281,17 +190,5 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  hint: {
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  deleteButton: {
-    marginTop: 24,
-    paddingVertical: 12,
-    borderRadius: 10,
-  },
-  button: {
-    marginTop: 12,
   },
 });

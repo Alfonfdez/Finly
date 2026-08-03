@@ -4,11 +4,10 @@ import { t } from '../../i18n';
 import type { IconName } from '../../components/IconGrid';
 import SettingsRow from '../../components/settings/SettingsRow';
 import { settingsStyles } from '../../components/settings/settingsStyles';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../constants/types';
+import type { NavigationProp } from '../../constants/types';
 
 type Props = {
-  navigation: NativeStackNavigationProp<RootStackParamList, 'Settings'>;
+  navigation: NavigationProp<'Settings'>;
 };
 
 type Subsection = {

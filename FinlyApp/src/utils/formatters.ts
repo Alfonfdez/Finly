@@ -58,7 +58,7 @@ export function weekStart(date: Date, firstDay: FirstDay = FIRST_DAYS.monday): D
   return startOfDay(d);
 }
 
-export function weekEnd(date: Date, firstDay: FirstDay = FIRST_DAYS.monday): Date {
+function weekEnd(date: Date, firstDay: FirstDay = FIRST_DAYS.monday): Date {
   const start = weekStart(date, firstDay);
   const end = new Date(start);
   end.setDate(end.getDate() + DAYS_PER_WEEK - 1);
@@ -73,7 +73,7 @@ export function dayOffset(dayDate: Date, firstDay: FirstDay): number {
   return weekDay;
 }
 
-export function getPeriodRange(period: Period, date: Date): { start: Date; end: Date } {
+function getPeriodRange(period: Period, date: Date): { start: Date; end: Date } {
   switch (period) {
     case PERIODS.day: {
       const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());

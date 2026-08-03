@@ -8,6 +8,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
 import ListItemRow from './ListItemRow';
+import TagChip from './TagChip';
 
 interface TagBreakdown {
   tag_id: number;
@@ -44,14 +45,11 @@ export default function CategoryList({
       <View style={styles.tagSection}>
         <View style={styles.tagChips}>
           {visibleTags.map((tag) => (
-            <View
+            <TagChip
               key={tag.tag_id}
-              style={[styles.tagChip, { backgroundColor: c.surface }]}
-            >
-              <Text style={[styles.tagChipText, { color: c.textSecondary, fontSize: fs(11) }]}>
-                {tag.tag_id === UNTAGGED_ID ? labels.home_tag_untagged : tag.name}
-              </Text>
-            </View>
+              label={tag.tag_id === UNTAGGED_ID ? labels.home_tag_untagged : tag.name}
+              variant="neutral"
+            />
           ))}
         </View>
         {hasMore && (
@@ -125,14 +123,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-  },
-  tagChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  tagChipText: {
-    fontWeight: '500',
   },
   viewAll: {
     marginTop: 6,

@@ -1,3 +1,5 @@
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 export const USER_ID = 1;
 
 export const OTHERS_CATEGORY_ID = 15;
@@ -158,3 +160,6 @@ export type RootStackParamList = {
   CreateTag: undefined;
   ModifyTag: { tagId: number };
 };
+
+export type NavigationProp<RouteName extends keyof RootStackParamList> =
+  NativeStackNavigationProp<RootStackParamList, RouteName>;

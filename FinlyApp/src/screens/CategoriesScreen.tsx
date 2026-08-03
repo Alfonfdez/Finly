@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { t } from '../i18n';
@@ -10,16 +9,14 @@ import TabBar from '../components/TabBar';
 import CategoryGrid from '../components/CategoryGrid';
 import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
-import { TRANSACTION_TYPES, type TransactionType, type RootStackParamList } from '../constants/types';
+import { TRANSACTION_TYPES, type TransactionType, type NavigationProp } from '../constants/types';
 import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Categories'>;
 
 export default function CategoriesScreen() {
   const { activeColors: c } = useConfig();
   const { categories } = useApp();
   const labels = t();
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationProp<'Categories'>>();
 
   const [activeType, setActiveType] = useState<TransactionType>(TRANSACTION_TYPES.expense);
   const categoriesByType = useMemo(() => {

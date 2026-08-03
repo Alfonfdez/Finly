@@ -9,6 +9,7 @@ import { flagColors } from '../../constants/flagColors';
 import { CURRENCY_OPTIONS } from '../../constants/currencies';
 import { DECIMAL_SEPARATORS, FIRST_DAYS, type FirstDay } from '../../constants/types';
 import SelectorInline, { type Option } from '../../components/SelectorInline';
+import SettingsSelectRow from '../../components/settings/SettingsSelectRow';
 import { settingsStyles } from '../../components/settings/settingsStyles';
 
 function SenyeraIcon({ size = 16 }: { size?: number }) {
@@ -123,20 +124,26 @@ export default function RegionalScreen() {
       </View>
 
       <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_money}</Text>
-      <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
-        <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_currency}</Text>
-        <SelectorInline options={CURRENCIES} selected={config.currency} onSelect={(v) => updateConfig({ currency: v })} />
-      </View>
-      <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
-        <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_decimal_sep}</Text>
-        <SelectorInline options={SEPARATORS} selected={config.decimalSeparator} onSelect={(v) => updateConfig({ decimalSeparator: v })} />
-      </View>
+      <SettingsSelectRow
+        label={labels.settings_currency}
+        options={CURRENCIES}
+        selected={config.currency}
+        onSelect={(v) => updateConfig({ currency: v })}
+      />
+      <SettingsSelectRow
+        label={labels.settings_decimal_sep}
+        options={SEPARATORS}
+        selected={config.decimalSeparator}
+        onSelect={(v) => updateConfig({ decimalSeparator: v })}
+      />
 
       <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_calendar}</Text>
-      <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
-        <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_first_day}</Text>
-        <SelectorInline options={FIRST_DAY_OPTIONS} selected={String(config.firstDayOfWeek)} onSelect={(v) => updateConfig({ firstDayOfWeek: Number(v) as FirstDay })} />
-      </View>
+      <SettingsSelectRow
+        label={labels.settings_first_day}
+        options={FIRST_DAY_OPTIONS}
+        selected={String(config.firstDayOfWeek)}
+        onSelect={(v) => updateConfig({ firstDayOfWeek: Number(v) as FirstDay })}
+      />
     </ScrollView>
   );
 }

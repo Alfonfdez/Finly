@@ -1,52 +1,36 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { View, StyleSheet, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { useUniqueNameCheck } from '../hooks/useUniqueNameCheck';
+import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
-import { type RootStackParamList, USER_ID, MAX_TAG_NAME_LENGTH } from '../constants/types';
+import { type NavigationProp, USER_ID, MAX_TAG_NAME_LENGTH } from '../constants/types';
 import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormError from '../components/form/FormError';
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateTag'>;
 
 export default function CreateTagScreen() {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationProp<'CreateTag'>>();
   const { refreshTags } = useApp();
 
   const [name, setName] = useState('');
-  const [nameError, setNameError] = useState<string | null>(null);
-  const [checkingName, setCheckingName] = useState(false);
 
-  const checkNameDuplicate = useCallback(async (value: string) => {
-    if (!value.trim()) {
-      setNameError(null);
-      setCheckingName(false);
-      return;
-    }
-    setCheckingName(true);
-    try {
-      const exists = await tagRepository.existsByName(USER_ID, value.trim());
-      setNameError(exists ? labels.create_tag_error_duplicate : null);
-    } finally {
-      setCheckingName(false);
-    }
-  }, [labels.create_tag_error_duplicate]);
-
-  const debouncedCheck = useUniqueNameCheck(checkNameDuplicate);
+  const { nameError, checkingName, clearNameError, debouncedCheck } = useNameDuplicateCheck({
+    existsByName: (value, excludeId) => tagRepository.existsByName(USER_ID, value, excludeId),
+    resolveDefaultEnglishName: () => null,
+    duplicateErrorKey: labels.create_tag_error_duplicate,
+  });
 
   const handleNameChange = (text: string) => {
     setName(text);
-    setNameError(null);
+    clearNameError();
     debouncedCheck(text);
   };
 

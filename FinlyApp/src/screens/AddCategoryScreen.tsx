@@ -3,7 +3,6 @@ import { View, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { t, getDisplayCategoryName } from '../i18n';
@@ -11,18 +10,17 @@ import SearchBar from '../components/SearchBar';
 import CategoryGrid from '../components/CategoryGrid';
 import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
-import type { RootStackParamList } from '../constants/types';
+import type { RootStackParamList, NavigationProp } from '../constants/types';
 import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
-import { setPendingCategory } from './AddTransactionScreen';
+import { setPendingCategory } from '../utils/pendingCategory';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'AddCategory'>;
 type AddCategoryRouteProp = RouteProp<RootStackParamList, 'AddCategory'>;
 
 export default function AddCategoryScreen() {
   const { activeColors: c } = useConfig();
   const { categories } = useApp();
   const labels = t();
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationProp<'AddCategory'>>();
   const route = useRoute<AddCategoryRouteProp>();
 
   const type = route.params.type;
