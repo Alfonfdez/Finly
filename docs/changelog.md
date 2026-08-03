@@ -2167,3 +2167,9 @@
 [2026-08-03] ~ | src/database/repositories/ (accountRepo.ts, categoryRepo.ts, transactionRepo.ts), docs/harnesses.md
 - Fixed the name-sort drift by standardizing native sorts to case-insensitive collation: accountRepo.list and categoryRepo.list → ORDER BY name COLLATE NOCASE, transactionRepo.searchComments → ORDER BY description COLLATE NOCASE, transactionRepo.getCategoryUsageCounts → ORDER BY count DESC, c.name COLLATE NOCASE ASC. A mixed-case ordering test in the contract suite guards this.
 - docs/harnesses.md: marked Phase B implemented and documented the sql.js mock, the six test files and the drift findings/fix.
+
+[2026-08-03] ~ | FinlyApp/App.tsx, FinlyApp/src/components/Fab.tsx
+- Web console-warning fixes: splash animations now use USE_NATIVE_DRIVER (Platform.OS !== 'web') instead of useNativeDriver: true, removing the "useNativeDriver is not supported" warning on web; Fab.tsx split the drop shadow into fabShadowNative (elevation + shadow*) and fabShadowWeb (boxShadow) via isWeb, removing the "shadow* style props are deprecated" warning. Remaining dev-only noise (gesture-handler/screens pointerEvents prop deprecation, RN DevTools message-channel error) originates in third-party libraries and is not patched.
+
+[2026-08-03] ~ | FinlyApp/src/components/Fab.tsx
+- Final shadow* warning fix: react-native-web preprocesses every style registered via StyleSheet.create at module load and warns on shadow* keys even if never applied, so the previous split (conditional at render) still warned on web. Hoisted fabShadowNative and fabShadowWeb out of StyleSheet.create into module-level plain constants; RNW no longer preprocesses them, removing the warning while keeping the native (elevation + shadow*) and web (boxShadow) shadows.
