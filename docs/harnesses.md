@@ -25,7 +25,7 @@ acceptance criteria in a real browser.
 | Type-checking | `tsc --noEmit` (strict) | ✅ Implemented | Whole codebase types, `verbatimModuleSyntax` enforced |
 | Linting | `npx expo lint` (eslint-config-expo) | ✅ Implemented | Code style, unused imports, React hooks rules |
 | Dual-storage contract suite | Vitest + sql.js (real SQLite in Node) | ✅ Implemented (Phase B) | Web (`localStorage`) vs native (SQLite) repo parity + DB drift vs types |
-| UI / E2E verification | Playwright MCP + `verification-loop` skill | 🔜 Planned (Phase C) | Spec acceptance criteria in a live Expo web app |
+| UI / E2E verification | Playwright MCP + `verification-loop` skill | ✅ Implemented (Phase C) | Spec acceptance criteria in a live Expo web app |
 | SDD alignment | `spec/` + changelog + test mapping | ✅ In use | Every feature spec maps to tests + changelog entries |
 
 Deferred (not planned yet): React Native Testing Library (RNTL) component tests, Zod/Drizzle
@@ -86,13 +86,39 @@ test:all`).
 `transactionRepo.getCategoryUsageCounts` → `ORDER BY count DESC, c.name COLLATE NOCASE ASC`.
 A mixed-case ordering test in the suite guards this.
 
-## Phase C — Codified loop + E2E (planned)
+## Phase C — Codified loop + E2E (implemented)
 
-- `opencode.jsonc`: enable the Playwright MCP server and allow the verification scripts.
-- `AGENTS.md`: document that "verified" means `npm run test:all` green and that changes to
+Spec acceptance criteria are checked in the **real Expo web app** via the **Playwright MCP**
+server and the **`verification-loop`** skill, instead of by reading code.
+
+- `opencode.jsonc` runs the Playwright MCP pinned to `@playwright/mcp@0.0.78` in headless
+  system **Chrome** (`--browser chrome`, no browser download) and adds a bash permission
+  allowlist for the loop's commands (`npm run test:all`, `npx vitest *`, `npx expo start*`).
+- `AGENTS.md` documents that "verified" means `npm run test:all` green and that changes to
   `src/utils/` / `src/database/` logic must include or update tests.
-- `verification-loop` skill: run `test:all`, then boot `npx expo start --web` and check each
-  spec's acceptance criteria in a real browser (viewport 375px for responsive criteria).
+- `verification-loop` skill: runs `test:all`, boots `npx expo start --web` on port 8081,
+  opens the app in a fresh browser context (cleared `localStorage`, since web persists
+  there), and checks each spec's acceptance criteria by real interaction — viewport 375px
+  for mobile/responsive criteria, 3-attempt cap per criterion, dev server terminated when
+  done. Native-only criteria (camera/photo) are reported as not checkable on web, never
+  marked done.
+- Config changes to `opencode.jsonc` (MCP server, permissions) require restarting opencode
+  — config is loaded once at startup.
+
+### Pilot results (2026-08-03)
+
+First two features verified end-to-end through the loop: **022-total-account** (15 criteria)
+and **008-categories-screen** (12 criteria). All 27 criteria PASS; 25/27 on the first pass,
+2 spec deviations found, fixed, re-verified and documented in `docs/changelog.md`:
+
+- **022 c10**: the Total account name field is shown **disabled/read-only** (grayed out,
+  i18n `Total`) instead of hidden — `AccountForm` gained a `nameDisabled` prop and
+  `ModifyAccountScreen` passes `showNameField + nameDisabled={isTotal}`.
+- **008 c7**: Create is the spec's **dashed "+ Create" tile** in the last grid position
+  (`CategoryGrid` `showAddMore` + `addMoreLabel`), replacing the floating `Fab "+"`.
+
+Both features kept `npm run test:all` green (138 tests / 10 files) after each fix. Full
+per-criterion evidence is in the changelog entry.
 
 ## Adding a test
 

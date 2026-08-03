@@ -7,7 +7,6 @@ import { useApp } from '../context/AppContext';
 import { t } from '../i18n';
 import TabBar from '../components/TabBar';
 import CategoryGrid from '../components/CategoryGrid';
-import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
 import { TRANSACTION_TYPES, type TransactionType, type NavigationProp } from '../constants/types';
 import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
@@ -45,17 +44,12 @@ export default function CategoriesScreen() {
               selectedCategory={null}
               onSelect={(id) => navigation.navigate('ModifyCategory', { categoryId: id })}
               onAddMore={() => navigation.navigate('CreateCategory', { type: activeType })}
-              showAddMore={false}
+              addMoreLabel={labels.add_cat_create}
               hideTitle
             />
           </ScrollView>
         )}
       </View>
-
-      <Fab
-        onPress={() => navigation.navigate('CreateCategory', { type: activeType })}
-        accessibilityLabel="+"
-      />
     </SafeAreaView>
   );
 }
