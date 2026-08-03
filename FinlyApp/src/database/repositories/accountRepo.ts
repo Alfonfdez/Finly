@@ -8,7 +8,7 @@ export const accountRepo = {
   async list(userId: number): Promise<Account[]> {
     const db = getDatabase();
     return await db.getAllAsync<Account>(
-      `SELECT * FROM accounts WHERE user_id = ? ORDER BY is_total DESC, name`,
+      `SELECT * FROM accounts WHERE user_id = ? ORDER BY is_total DESC, name COLLATE NOCASE`,
       userId
     );
   },
