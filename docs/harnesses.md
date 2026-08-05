@@ -40,10 +40,11 @@ acceptance criteria in a real browser.
 | Linting | `npx expo lint` (eslint-config-expo) | ✅ Implemented | Code style, unused imports, React hooks rules |
 | Dual-storage contract suite | Vitest + sql.js (real SQLite in Node) | ✅ Implemented (Phase B) | Web (`localStorage`) vs native (SQLite) repo parity + DB drift vs types |
 | UI / E2E verification | Playwright MCP + `verification-loop` skill | ✅ Implemented (Phase C) | Spec acceptance criteria in a live Expo web app |
+| CI pipeline | GitHub Actions (`.github/workflows/ci.yml`) | ✅ Implemented | `npm run test:all` on every PR to `develop`/`main` and push to those branches |
 | SDD alignment | `spec/` + changelog + test mapping | ✅ In use | Every feature spec maps to tests + changelog entries |
 
 Deferred (not planned yet): React Native Testing Library (RNTL) component tests, Zod/Drizzle
-schemas, eslint-plugin-boundaries, CI pipeline.
+schemas, eslint-plugin-boundaries.
 
 ## Phase A — Pure-logic unit tests (implemented)
 
@@ -152,6 +153,23 @@ on web, so Finly added a **Maestro** harness for the Android emulator:
   Camera capture and gallery picking open system UIs Maestro cannot drive reliably on an
   emulator, so the full capture path is reported "not automatable on emulator".
 - All four flows PASS on the emulator (2026-08-05).
+
+### CI pipeline — GitHub Actions (2026-08-05)
+
+The local "done" gate (`npm run test:all`) is now enforced automatically on a server:
+
+- **Workflow:** `.github/workflows/ci.yml` — runs on pull requests targeting
+  `develop`/`main` and on pushes to those branches.
+- **Steps:** `checkout` → `setup-node` (Node 24, npm cache via
+  `FinlyApp/package-lock.json`) → `npm ci` → `npm run test:all`, all with
+  `working-directory: FinlyApp` on an Ubuntu runner. The suite is pure Node (Vitest +
+  happy-dom + sql.js WASM), so no native build or Expo dev server is needed.
+- **`concurrency`** cancels superseded runs when a new commit is pushed to the same branch
+  (saves runner minutes).
+- **Node version** is pinned to 24 (matching the dev machines) both in the workflow and in
+  `FinlyApp/.nvmrc`.
+- **Merge gating** (branch protection "require status checks to pass") is a manual GitHub
+  settings step and can only be enabled after the `CI` check has run at least once.
 
 ## Adding a test
 
