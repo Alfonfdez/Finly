@@ -1,0 +1,9 @@
+appId: com.anonymous.FinlyApp
+---
+# Reset app to a clean state: stop, clear data (SQLite DB + config), relaunch.
+# Note: the dev-client build does not register the exp:// scheme, so we launch
+# the activity directly. Metro is reachable via `adb reverse tcp:8081 tcp:8081`.
+- stopApp
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd

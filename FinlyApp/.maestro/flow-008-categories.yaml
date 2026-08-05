@@ -1,0 +1,21 @@
+appId: com.anonymous.FinlyApp
+---
+- runFlow:
+    file: "helpers/state-reset.yaml"
+- runFlow:
+    file: "helpers/dismiss-dev-menu.yaml"
+# 008 c1: drawer shows Categories and tapping navigates
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- assertVisible: "Categories"
+- tapOn: "Categories"
+# 008 c3: Expenses default tab + Income tab present
+- assertVisible: "Expenses"
+- assertVisible: "Income"
+# 008 c5: expense category tiles render
+- assertVisible: "Groceries"
+# 008 c7: Create tile in the grid
+- assertVisible: "Create"
+# 008 c9: tapping a category navigates to Modify category
+- tapOn: "Groceries"
+- assertVisible: "Modify category"

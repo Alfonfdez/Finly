@@ -4,6 +4,20 @@ This document describes the harnesses that guarantee the code generated in this 
 correct, tested, and aligned with its specs. It is the single reference for how Finly is
 verified, and it is updated as new harnesses land (each phase).
 
+## How to run
+
+All commands run from the `FinlyApp/` directory.
+
+| Harness | Command |
+|---------|---------|
+| Everything (typecheck + lint + tests) | `npm run test:all` |
+| Pure-logic unit tests | `npm run test` (`npx vitest run`) |
+| Dual-storage contract suite | `npx vitest run tests/database/` |
+| Typecheck | `npm run typecheck` |
+| Lint | `npm run lint` |
+| Web E2E (spec criteria) | `npx expo start --web` then run the `verification-loop` skill (Playwright, 375px viewport) |
+| Mobile E2E (Maestro flows) | boot the emulator (`emulator -avd finly_test`), `adb reverse tcp:8081 tcp:8081`, `npx expo start`, then `maestro test .maestro/<flow>.yaml` |
+
 ## Verification loop (what "done" means)
 
 After every code change, the agent runs:
@@ -119,6 +133,25 @@ and **008-categories-screen** (12 criteria). All 27 criteria PASS; 25/27 on the 
 
 Both features kept `npm run test:all` green (138 tests / 10 files) after each fix. Full
 per-criterion evidence is in the changelog entry.
+
+### Mobile mode — Maestro on Android emulator (2026-08-05)
+
+Native-only criteria (camera/photo capture, native pickers, file system) cannot be checked
+on web, so Finly added a **Maestro** harness for the Android emulator:
+
+- Flows live in `FinlyApp/.maestro/` (`flow-smoke`, `flow-022-total-account`,
+  `flow-008-categories`, `flow-023-photo-attachment`) plus `helpers/`
+  (`state-reset.yaml`, `open-drawer.yaml`, `dismiss-dev-menu.yaml`).
+- The app is verified on the **dev-client debug build** (`com.anonymous.FinlyApp`, built
+  with `npx expo run:android`), not Expo Go — the dev-client does not register the
+  `exp://` scheme, so every flow starts with `helpers/state-reset.yaml`
+  (`launchApp` + `clearState`) to reset the SQLite DB to the seeded state, then drives the
+  activity directly over the `adb reverse tcp:8081 tcp:8081` tunnel to Metro.
+- `flow-023` covers PhotoSection visibility, the source modal (Take photo / Add from
+  gallery), and the Settings → Personalization "Photo" toggle at the modal/UI level.
+  Camera capture and gallery picking open system UIs Maestro cannot drive reliably on an
+  emulator, so the full capture path is reported "not automatable on emulator".
+- All four flows PASS on the emulator (2026-08-05).
 
 ## Adding a test
 

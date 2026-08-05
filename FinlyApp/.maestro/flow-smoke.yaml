@@ -1,0 +1,13 @@
+appId: com.anonymous.FinlyApp
+---
+- runFlow:
+    file: "helpers/state-reset.yaml"
+- runFlow:
+    file: "helpers/dismiss-dev-menu.yaml"
+- assertVisible: "Total"
+- assertVisible: "Expenses"
+- assertVisible: "Income"
+- assertVisible: "Day"
+- assertVisible: "Week"
+- assertVisible: "Month"
+- assertVisible: "Year"

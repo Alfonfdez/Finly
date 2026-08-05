@@ -1,0 +1,66 @@
+appId: com.anonymous.FinlyApp
+---
+# 023 Photo Attachment — mobile flow
+# Targets the native dev-client build (native modules required: expo-image-picker,
+# expo-file-system). Camera capture and gallery picking open system UIs that Maestro
+# cannot drive reliably, so those criteria are verified here at the modal level and
+# the full capture path is reported separately as "not automatable on emulator".
+
+# --- Open app fresh (config.addShowPhoto defaults to true) ---
+- runFlow:
+    file: "helpers/state-reset.yaml"
+- runFlow:
+    file: "helpers/dismiss-dev-menu.yaml"
+
+# 023 c1: PhotoSection is visible on Add Transaction when addShowPhoto is true
+- tapOn: "Add expense or income"
+- assertVisible: "Add transaction"
+- scrollUntilVisible:
+    element:
+      text: "Photo"
+    direction: DOWN
+- assertVisible: "Photo"
+
+# 023 c5/c3/c4: "+" button opens source modal with both options
+# index 1 = the "+" add button (index 0 is the section title, same label)
+- tapOn:
+    text: "Photo"
+    index: 1
+- assertVisible: "Add photo"
+- assertVisible: "Take photo"
+- assertVisible: "Add from gallery"
+- tapOn: "Cancel"
+- assertNotVisible: "Add photo"
+
+# --- Back to Home ---
+- back
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- tapOn: "Settings"
+- tapOn: "Personalization"
+- scrollUntilVisible:
+    element:
+      text: "Photo"
+    direction: DOWN
+- assertVisible: "Photo"
+
+# 023 c2/c11: toggling the "Photo" checkbox hides/shows PhotoSection
+- tapOn: "Photo"
+- back
+- back
+- tapOn: "Add expense or income"
+- assertVisible: "Add transaction"
+- assertNotVisible: "Photo"
+
+# --- Re-enable for further tests ---
+- back
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- tapOn: "Settings"
+- tapOn: "Personalization"
+- scrollUntilVisible:
+    element:
+      text: "Photo"
+    direction: DOWN
+- tapOn: "Photo"
+- assertVisible: "Photo"

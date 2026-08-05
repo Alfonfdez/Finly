@@ -1,0 +1,13 @@
+appId: com.anonymous.FinlyApp
+---
+# Open the drawer via the hamburger. The first tap right after a cold start
+# (post `pm clear`) is swallowed by the app, so tap again if the drawer did
+# not open. Warm apps open on the first tap.
+- tapOn: "Open menu"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      notVisible: "Close drawer"
+    commands:
+      - tapOn: "Open menu"
+- assertVisible: "Close drawer"

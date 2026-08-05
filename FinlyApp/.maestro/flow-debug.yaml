@@ -1,0 +1,4 @@
+appId: com.anonymous.FinlyApp
+---
+- tapOn: "Open menu"
+- assertVisible: "Close drawer"
