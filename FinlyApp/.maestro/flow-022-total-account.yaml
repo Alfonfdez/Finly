@@ -1,0 +1,26 @@
+appId: com.anonymous.FinlyApp
+---
+- runFlow:
+    file: "helpers/state-reset.yaml"
+- runFlow:
+    file: "helpers/dismiss-dev-menu.yaml"
+# 022 c1: Total appears in the Home account selector
+- assertVisible: "Total"
+# 022 c8: Total appears as the first card in the Accounts screen
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- assertVisible: "Accounts"
+- tapOn: "Accounts"
+- assertVisible: "Total"
+# 022 c9: tapping Total navigates to ModifyAccountScreen
+- tapOn: "Total"
+- assertVisible: "Modify account"
+# 022 c10: name field shown (read-only), Save present, delete hidden
+- assertVisible: "Account name"
+- assertVisible: "Total"
+- assertNotVisible: "Delete"
+- scrollUntilVisible:
+    element:
+      text: "Save"
+    direction: DOWN
+- assertVisible: "Save"

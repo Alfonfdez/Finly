@@ -1,0 +1,14 @@
+appId: com.anonymous.FinlyApp
+---
+# Wait for the app to be interactive, then dismiss the first-launch
+# developer-menu overlay if present. Its scrim intercepts taps, so the
+# hamburger/drawer will not open until it is dismissed.
+- assertVisible: "Total"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+- waitForAnimationToEnd
+- assertNotVisible: "Continue"
