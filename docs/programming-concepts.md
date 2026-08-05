@@ -1,5 +1,10 @@
 # Programming concepts
 
+> **Purpose:** This document is a **learning reference** for the programming concepts used
+> across the project. It explains ideas in a general, educational way. It is **not** a
+> project working/tooling document — for the actual Finly setup, conventions, and tooling
+> see `docs/harnesses.md`, `docs/changelog.md`, `docs/git-commands.md`, and `docs/assets.md`.
+
 # React Native
 
 ## React Native
@@ -773,3 +778,73 @@ const fs = useFontSize();
 - **FAB (floating button):** `fs(28)` for the "+" symbol, `fontWeight: '600'`
 - **Modal buttons:** `fs(14)`, `fontWeight: '600'`
 - **Active tab:** `fs(13)` or `fs(14)`, `fontWeight: '600'`, color `primary`
+
+# CI/CD
+
+## Continuous Integration (CI)
+**Definition:** The practice of merging small code changes frequently and automatically verifying every proposed change the moment it is made.
+**Explanation:** CI moves the project's verification commands (tests, type-checking, linting) onto a server that runs them every time a change is pushed or a pull request is opened. It answers the question "does this change still pass everything?" without relying on each developer remembering to run the checks locally. In Finly, the CI server runs the same "done" gate used locally: `npm run test:all`. A failed pipeline marks the PR as red, so broken code cannot be merged.
+**Example:**
+```bash
+# Local gate, now also enforced on the CI server
+npm run test:all   # typecheck + lint + unit/contract tests
+```
+
+## Continuous Delivery / Deployment (CD)
+**Definition:** The practice of automatically building and preparing the application for release after CI passes.
+**Explanation:** CD builds on CI. Continuous Delivery means every change that passes CI can be released at any time (a build artifact such as an APK is produced automatically). Continuous Deployment goes further and automatically ships that build to users. They are a spectrum: CI → Continuous Delivery → Continuous Deployment. Finly currently implements CI only; a CD stage (producing an APK artifact) could be added later.
+**Example:**
+```text
+CI (tests pass) → CD Delivery (build APK/IPA) → CD Deployment (ship to stores)
+```
+
+## Pipeline
+**Definition:** The automated recipe that describes what a CI/CD system does, defined as a file (usually YAML) with jobs and steps.
+**Explanation:** A pipeline is a sequence of jobs; each job is a batch of steps that run on the same machine, and each step is one command (e.g. checkout, install dependencies, run tests). If any step fails, the job fails and the change is flagged. In GitHub this file lives in `.github/workflows/`.
+**Example:**
+```yaml
+jobs:
+  test:
+    steps:
+      - checkout the code
+      - install dependencies
+      - run the tests
+```
+
+## GitHub Actions
+**Definition:** GitHub's built-in CI/CD service that executes pipelines (workflows) in repositories hosted on GitHub.
+**Explanation:** A workflow is a YAML file under `.github/workflows/`. Key vocabulary:
+- **Trigger (`on:`)** — when the workflow runs: on push, on pull request, on a schedule, or on specific branches.
+- **Job** — a group of steps that run together on one machine.
+- **Runner** — the machine that executes a job (GitHub's hosted Ubuntu/macOS/Windows runners, or self-hosted).
+- **Step** — a single command or action within a job.
+- **Cache** — reused files (e.g. `node_modules`) between runs so dependency installs are fast.
+- **Artifact** — a file produced by a run and saved for download (e.g. a test report or an APK).
+- **Concurrency** — a setting that cancels superseded runs when a new commit is pushed to the same branch, saving runner minutes.
+- **Status check** — the green/red result attached to a commit or PR.
+
+**Example:**
+```yaml
+on:
+  pull_request:
+    branches: [develop, main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm run test:all
+```
+
+## Status checks and branch protection
+**Definition:** A GitHub feature that blocks merging until the required checks pass.
+**Explanation:** A "required status check" makes a specific CI check a condition for merging a pull request. Two practical rules: the check must be enabled only after the workflow has run at least once (GitHub cannot require a check it has never seen), and enabling it is a manual step in the repository settings (Branches → "Require status checks to pass"), not part of the workflow file itself. Once enabled, a red pipeline physically prevents the merge.
+**Example:**
+```text
+PR opened → CI check runs → green ✓ (mergeable) or red ✗ (blocked)
+```
+
