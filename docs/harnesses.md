@@ -11,7 +11,8 @@ All commands run from the `FinlyApp/` directory.
 | Harness | Command |
 |---------|---------|
 | Everything (typecheck + lint + tests) | `npm run test:all` |
-| Pure-logic unit tests | `npm run test` (`npx vitest run`) |
+| Unit tests (pure-logic + component) | `npm run test` (`npx vitest run`) |
+| Component tests | `npx vitest run tests/component/` |
 | Dual-storage contract suite | `npx vitest run tests/database/` |
 | Typecheck | `npm run typecheck` |
 | Lint | `npm run lint` |
@@ -36,6 +37,7 @@ acceptance criteria in a real browser.
 | Harness | Tooling | Status | Covers |
 |---------|---------|--------|--------|
 | Pure-logic unit tests | Vitest + happy-dom | ✅ Implemented (Phase A) | Calculator, formatters, amount input, category sorting, tag maps, color utils, DB query builders |
+| Component unit tests | Vitest + vitest-native + RNTL 14 | ✅ Implemented (Phase D) | 12 presentational components (79 tests) with ConfigContext stubbed |
 | Type-checking | `tsc --noEmit` (strict) | ✅ Implemented | Whole codebase types, `verbatimModuleSyntax` enforced |
 | Linting | `npx expo lint` (eslint-config-expo) | ✅ Implemented | Code style, unused imports, React hooks rules |
 | Dual-storage contract suite | Vitest + sql.js (real SQLite in Node) | ✅ Implemented (Phase B) | Web (`localStorage`) vs native (SQLite) repo parity + DB drift vs types |
@@ -43,8 +45,7 @@ acceptance criteria in a real browser.
 | CI pipeline | GitHub Actions (`.github/workflows/ci.yml`) | ✅ Implemented | `npm run test:all` on every PR to `develop`/`main` and push to those branches |
 | SDD alignment | `spec/` + changelog + test mapping | ✅ In use | Every feature spec maps to tests + changelog entries |
 
-Deferred (not planned yet): React Native Testing Library (RNTL) component tests, Zod/Drizzle
-schemas, eslint-plugin-boundaries.
+Deferred (not planned yet): Zod/Drizzle schemas, eslint-plugin-boundaries.
 
 ## Phase A — Pure-logic unit tests (implemented)
 
@@ -171,6 +172,36 @@ The local "done" gate (`npm run test:all`) is now enforced automatically on a se
 - **Merge gating** (branch protection "require status checks to pass") is a manual GitHub
   settings step and can only be enabled after the `CI` check has run at least once.
 
+## Phase D — Component unit tests (implemented)
+
+Runner: **Vitest + `vitest-native` + React Native Testing Library 14** (happy-dom, tests
+under `FinlyApp/tests/component/`).
+
+`vitest-native`'s `reactNative()` plugin lets RNTL mount real components (babel-preset
+transforms) without a device. `@expo/vector-icons` is aliased to a plain-`Text` mock
+(`tests/mocks/expo-vector-icons.tsx`, `IconProps = TextProps & { name: string }`) in
+`vitest.config.mts`, and `ConfigContext` is stubbed via `tests/component/helpers/configStub.ts`,
+registered as a vitest **`setupFiles`** entry. The stub's live value lives on
+`globalThis.__finlyConfigStub__` (exporting a `vi.hoisted` stub fails with `Cannot export
+hoisted variable`), the `vi.mock` factory reads it at call time so components see live state,
+and each suite calls `resetStub()` in `beforeEach`. i18n is NOT stubbed — the real `t()` from
+`src/i18n` returns English labels by default.
+
+| Test file | Module under test |
+|-----------|-------------------|
+| `tests/component/IconBadge.test.tsx` | `IconBadge` — shape/color badge, `BADGE_SHAPES` circle/rounded |
+| `tests/component/SearchBar.test.tsx` | `SearchBar` — input, clear button, onChangeText |
+| `tests/component/TabBar.test.tsx` | `TabBar<T>` — tabs, active styling, font scaling, onChange |
+| `tests/component/PeriodTabs.test.tsx` | `PeriodTabs` — period options, active highlight |
+| `tests/component/SortToggle.test.tsx` | `SortToggle` — date/amount, ASC/DESC arrow, direction toggle |
+| `tests/component/AmountInput.test.tsx` | `AmountInput` — decimal separator, formatting, error, calculator hook |
+| `tests/component/CategoryGrid.test.tsx` | `CategoryGrid` — selection, dashed add-more tile, onSelect/onAddMore |
+| `tests/component/TransactionGroup.test.tsx` | `TransactionRow` + `TransactionDateHeader` — formats, tag chips, divider, press |
+| `tests/component/RadioButton.test.tsx` | `RadioButton` — selection dot, custom color |
+| `tests/component/EyeToggle.test.tsx` | `EyeToggle` — eye/eye-off toggle, hitSlop |
+| `tests/component/EmptyState.test.tsx` | `EmptyState` — icon, title, message |
+| `tests/component/Fab.test.tsx` | `Fab` — icon, onPress, a11y label |
+
 ## Adding a test
 
 1. Create `FinlyApp/tests/<area>/<module>.test.ts` (mirror the module path).
@@ -178,3 +209,8 @@ The local "done" gate (`npm run test:all`) is now enforced automatically on a se
    imports those, mock them or keep it out of Phase A scope.
 3. Cover: normal cases, edge cases, and at least one regression seed per previously fixed bug.
 4. Run `npm run test` (or `npm run test:watch`) and `npm run test:all` before finishing.
+
+For component tests (`.test.tsx` under `tests/component/`, see Phase D): render with
+`await render(...)`, stub `ConfigContext` via `tests/component/helpers/configStub.ts`
+(`resetStub()` in `beforeEach`), and rely on the `@expo/vector-icons` alias — no other
+component mocks are needed.
