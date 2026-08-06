@@ -2203,3 +2203,14 @@
 - vitest.config.mts: added reactNative() plugin (vitest-native), the @expo/vector-icons alias to the icons mock, setupFiles for the configStub, and include now covers *.test.{ts,tsx}.
 - package.json: added dev deps vitest-native@^0.9.0, @testing-library/react-native@^14.0.1, test-renderer@1.1, @react-native/babel-preset@^0.81.5 and @babel/core@^7.29.7 (babel presets kept for vitest-native's transform).
 - Full suite now 22 files / 217 tests; npm run test:all (typecheck + lint + vitest) green.
+
+[2026-08-06] ~ | FinlyApp/src (screens/AllTransactionsScreen.tsx, navigation/AppNavigator.tsx, i18n/en.ts, i18n/es.ts, i18n/ca.ts, components/CategoryFilterModal.tsx), spec/constitution/3-roadmap.md
+- Verification of 015-all-transactions-screen and 021-category-filter-modal (verification-loop skill, Playwright in headless Chrome, 375px viewport). All 40 acceptance criteria PASS; 4 spec deviations found, fixed and re-verified, then both features promoted to completed in the roadmap:
+- Fix 015 c2: AllTransactionsScreen header now shows a back arrow (navigates Home) when it can go back, hamburger only on the root screen (new AllTransactionsHeaderLeft in AppNavigator using navigation.canGoBack()).
+- Fix 015 c10: the category-filter pill on the screen now shows the spec label "N categories" (new filter_categories_count(n) i18n key, singular/plural) instead of the modal's "Apply (N)" label. CategoryFilterModal still uses "Apply (N)".
+- Fix 015 c21: added the shared Fab so AllTransactionsScreen has the floating "+" (Add expense or income) navigating to AddTransaction, matching Home/Accounts/Categories/Tags screens.
+- Fix 021 c2: the modal header label changed from "Categories" to "Select categories" / "Seleccionar categorías" / "Seleccionar categories" (filter_categories value updated in en/es/ca).
+- Also verified on this pass: dynamic back arrow vs hamburger for both entry paths (stats icon and drawer), combined filters (category + account + tags + period), type tabs, account selector with Total skip-filter, date/amount sort toggle, day-grouped list, empty state, FAB, theme (dark/light) and text-size (14px→16px) scaling, and full Spanish UI switch.
+
+[2026-08-06] ~ | FinlyApp/.gitignore
+- Added `*.log` to ignore the Expo web dev-server output file (expo-web.log) created during verification runs.

@@ -2,6 +2,7 @@ export const en = {
   // Generic
   cancel: 'Cancel',
   delete: 'Delete',
+  common_back: 'Back',
 
   // Settings
   settings_appearance: 'Appearance',
@@ -66,7 +67,8 @@ export const en = {
   tab_income: 'Income',
 
   // Category filter
-  filter_categories: 'Categories',
+  filter_categories: 'Select categories',
+  filter_categories_count: (n: number) => (n === 1 ? '1 category' : `${n} categories`),
   filter_all_categories: 'All categories',
   filter_all_expense_categories: 'All expense categories',
   filter_all_income_categories: 'All income categories',

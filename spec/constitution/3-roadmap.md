@@ -202,7 +202,7 @@ Filtered transaction list screen by category, account, and period, accessible fr
 Spec: spec/features/014-transactions-screen-from-home/.
 
 ## 015-all-transactions-screen
-Status: implemented.
+Status: completed.
 
 Independent `AllTransactionsScreen` accessible from the hamburger menu (drawer) or the stats icon on HomeScreen, with advanced filtering:
 - **Type tabs** (All | Expenses | Income) — default "All", filters by transaction type.
@@ -289,7 +289,7 @@ Tag filter on HomeScreen, TransactionsScreen, and AllTransactionsScreen:
 Spec: spec/features/020-tag-home-filter/.
 
 ## 021-category-filter-modal
-Status: implemented.
+Status: completed.
 
 Full-screen modal component for multi-select category filtering on the AllTransactionsScreen:
 - SearchBar with substring filtering.

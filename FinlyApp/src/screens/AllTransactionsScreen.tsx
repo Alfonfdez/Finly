@@ -20,6 +20,7 @@ import TagFilterBar from '../components/TagFilterBar';
 import { TransactionRow, TransactionDateHeader } from '../components/TransactionGroup';
 import TabBar from '../components/TabBar';
 import EmptyState from '../components/EmptyState';
+import Fab from '../components/Fab';
 import CategoryFilterModal from '../components/CategoryFilterModal';
 import PeriodTabs from '../components/PeriodTabs';
 import CalendarPicker from '../components/CalendarPicker';
@@ -98,7 +99,7 @@ export default function AllTransactionsScreen() {
       if (typeTab === TRANSACTION_TYPES.income) return labels.filter_all_income_categories;
       return labels.filter_all_categories;
     }
-    return labels.filter_apply(selectedCategoryIds.length);
+    return labels.filter_categories_count(selectedCategoryIds.length);
   }, [selectedCategoryIds, typeTab, categories, labels]);
 
   const handleRangeChange = useCallback((start: Date, end: Date) => {
@@ -202,6 +203,11 @@ export default function AllTransactionsScreen() {
         type={typeTab}
         onApply={(ids) => { setSelectedCategoryIds(ids); setCategoryModalVisible(false); }}
         onClose={() => setCategoryModalVisible(false)}
+      />
+
+      <Fab
+        onPress={() => navigation.navigate('AddTransaction')}
+        accessibilityLabel={labels.home_add}
       />
     </SafeAreaView>
   );
