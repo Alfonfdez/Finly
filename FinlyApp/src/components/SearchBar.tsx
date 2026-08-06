@@ -8,9 +8,10 @@ interface Props {
   value: string;
   onChangeText: (text: string) => void;
   onClose: () => void;
+  autoFocus?: boolean;
 }
 
-export default function SearchBar({ placeholder, value, onChangeText, onClose }: Props) {
+export default function SearchBar({ placeholder, value, onChangeText, onClose, autoFocus = false }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
 
@@ -23,7 +24,7 @@ export default function SearchBar({ placeholder, value, onChangeText, onClose }:
         placeholderTextColor={c.textSecondary}
         value={value}
         onChangeText={onChangeText}
-        autoFocus
+        autoFocus={autoFocus}
       />
       <TouchableOpacity onPress={onClose} style={styles.closeButton}>
         <Ionicons name="close-circle" size={20} color={c.textSecondary} />

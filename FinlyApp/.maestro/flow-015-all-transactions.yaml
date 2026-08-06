@@ -1,0 +1,61 @@
+appId: com.anonymous.FinlyApp
+---
+- runFlow:
+    file: "helpers/state-reset.yaml"
+- runFlow:
+    file: "helpers/dismiss-dev-menu.yaml"
+# 015 c1a: accessible from the hamburger menu (drawer)
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- assertVisible: "All transactions"
+- tapOn: "All transactions"
+- waitForAnimationToEnd
+# 015 c2: header shows a back arrow and the title
+- assertVisible: "Back"
+- assertVisible: "All transactions"
+# 015 c3: three type tabs with All/Expenses/Income
+- assertVisible: "All"
+- assertVisible: "Expenses"
+- assertVisible: "Income"
+# 015 c4: tab switching works (content filtering verified on web with fixtures)
+- tapOn: "Expenses"
+- waitForAnimationToEnd
+- tapOn: "All"
+- waitForAnimationToEnd
+# 015 c10: category pill default label
+- assertVisible: "All categories"
+# 015 c13: PeriodTabs shown with Day/Week/Month/Year/Period
+- assertVisible: "Day"
+- assertVisible: "Week"
+- assertVisible: "Month"
+- assertVisible: "Year"
+- assertVisible: "Period"
+# 015 c20: empty state on a fresh seed (no transactions)
+- assertVisible: "No transactions"
+# 015 c5/c6: account selector opens a modal with the account list incl. Total
+- tapOn: "Total"
+- waitForAnimationToEnd
+- assertVisible: "Select account"
+- assertVisible: "My Wallet"
+- assertVisible: "Total"
+- tapOn: "Cancel"
+- waitForAnimationToEnd
+# 015 c21: the floating "+" navigates to Add transaction
+- tapOn: "Add expense or income"
+- waitForAnimationToEnd
+- assertVisible: "Add transaction"
+# Leave Add Transaction (default header back button has no "Back" label,
+# so use the Android hardware back) and return Home via the AllTransactions back arrow
+- back
+- waitForAnimationToEnd
+- tapOn: "Back"
+- waitForAnimationToEnd
+- assertVisible: "Total"
+# 015 c1b: accessible from the stats icon, with a back arrow to return Home
+- tapOn: "View transactions"
+- waitForAnimationToEnd
+- assertVisible: "Back"
+- assertVisible: "All transactions"
+- tapOn: "Back"
+- waitForAnimationToEnd
+- assertVisible: "Total"

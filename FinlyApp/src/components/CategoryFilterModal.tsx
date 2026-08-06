@@ -104,7 +104,7 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
       <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['top', 'bottom']}>
         <View style={[styles.header, { borderBottomColor: c.border }]}>
           <Text style={[styles.title, { color: c.text, fontSize: fs(16) }]}>{labels.filter_categories}</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <TouchableOpacity onPress={onClose} accessibilityLabel={labels.common_close} style={styles.closeButton}>
             <Ionicons name="close" size={24} color={c.text} />
           </TouchableOpacity>
         </View>
@@ -142,7 +142,7 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
           {sections.every(section => section.data.length === 0) ? (
             <EmptyState icon="search-outline" message={labels.filter_no_results} />
           ) : (
-            <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+            <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
               {sections.map((section, sIdx) => (
                 <View key={sIdx}>
                   {section.label && (

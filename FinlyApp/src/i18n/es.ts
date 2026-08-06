@@ -5,6 +5,7 @@ export const es: Language = {
   cancel: 'Cancelar',
   delete: 'Eliminar',
   common_back: 'Atrás',
+  common_close: 'Cerrar',
 
   // Settings
   settings_appearance: 'Apariencia',

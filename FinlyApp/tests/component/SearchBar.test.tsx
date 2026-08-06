@@ -75,9 +75,9 @@ describe('SearchBar', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('is focused on mount', async () => {
+  it('is focused on mount when autoFocus is set', async () => {
     const view = await render(
-      <SearchBar placeholder="Search" value="" onChangeText={() => {}} onClose={() => {}} />
+      <SearchBar placeholder="Search" value="" onChangeText={() => {}} onClose={() => {}} autoFocus />
     );
 
     expect(view.getByPlaceholderText('Search').props.autoFocus).toBe(true);

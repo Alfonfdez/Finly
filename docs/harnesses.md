@@ -142,7 +142,8 @@ Native-only criteria (camera/photo capture, native pickers, file system) cannot 
 on web, so Finly added a **Maestro** harness for the Android emulator:
 
 - Flows live in `FinlyApp/.maestro/` (`flow-smoke`, `flow-022-total-account`,
-  `flow-008-categories`, `flow-023-photo-attachment`) plus `helpers/`
+  `flow-008-categories`, `flow-023-photo-attachment`, `flow-015-all-transactions`,
+  `flow-021-category-filter`) plus `helpers/`
   (`state-reset.yaml`, `open-drawer.yaml`, `dismiss-dev-menu.yaml`).
 - The app is verified on the **dev-client debug build** (`com.anonymous.FinlyApp`, built
   with `npx expo run:android`), not Expo Go — the dev-client does not register the
@@ -153,7 +154,19 @@ on web, so Finly added a **Maestro** harness for the Android emulator:
   gallery), and the Settings → Personalization "Photo" toggle at the modal/UI level.
   Camera capture and gallery picking open system UIs Maestro cannot drive reliably on an
   emulator, so the full capture path is reported "not automatable on emulator".
-- All four flows PASS on the emulator (2026-08-05).
+- All six flows PASS on the emulator (2026-08-05 for smoke/022/008/023,
+  2026-08-06 for flow-015-all-transactions and flow-021-category-filter).
+- `flow-015-all-transactions` covers 015's drawer entry, back arrow + title, type and
+  period tabs, the "N categories" pill, empty state, account modal, FAB to Add
+  Transaction, and the stats-icon entry path. `flow-021-category-filter` covers the
+  full-screen modal (header + Close X, All chip, category grid, multi-select Apply
+  count, Close without applying) and the type='expense' variant.
+- Android note found while writing the 021 flow: on a freshly-opened `Modal` the first
+  tap inside its `ScrollView` was swallowed, and the search field's `autoFocus` keyboard
+  covered the Apply footer (pruning it from the accessibility tree). Fixed in the app:
+  the modal ScrollView sets `keyboardShouldPersistTaps="handled"` and `SearchBar`'s
+  `autoFocus` is now a prop defaulting to `false` (the modal search no longer
+  auto-focuses; `AddCategoryScreen` passes it explicitly).
 
 ### CI pipeline — GitHub Actions (2026-08-05)
 

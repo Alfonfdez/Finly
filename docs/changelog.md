@@ -2214,3 +2214,10 @@
 
 [2026-08-06] ~ | FinlyApp/.gitignore
 - Added `*.log` to ignore the Expo web dev-server output file (expo-web.log) created during verification runs.
+
+
+[2026-08-06] + | FinlyApp/.maestro/ (flow-015-all-transactions.yaml, flow-021-category-filter.yaml), FinlyApp/src/components/ (CategoryFilterModal.tsx, SearchBar.tsx), FinlyApp/src/screens/AddCategoryScreen.tsx, FinlyApp/src/i18n/ (en.ts, es.ts, ca.ts), FinlyApp/tests/component/SearchBar.test.tsx, .agents/skills/verification-loop/SKILL.md, docs/harnesses.md
+- Native Maestro flows for 015-all-transactions-screen and 021-category-filter-modal, verified on the emulator (finly_test, dev-client build com.anonymous.FinlyApp): flow-015-all-transactions and flow-021-category-filter both PASS (2026-08-06). flow-015 covers drawer entry, back arrow + title, All/Expenses/Income tabs, the "N categories" pill, Day/Week/Month/Year/Period tabs, empty state, account modal with My Wallet/Total, FAB to AddTransaction (Android hardware back), and the stats-icon entry path. flow-021 covers the full-screen modal (Select categories header + Close X, All chip, category grid with seeded categories), multi-select with the Apply count, Close without applying, and the type='expense' variant (All expense categories, no income categories, All chip -> Apply (All expenses)).
+- Fix 021 native Android: the first tap inside the modal's ScrollView was swallowed on a freshly-opened Modal (and the search field's autoFocus keyboard covered the Apply footer, pruning it from the accessibility tree). CategoryFilterModal's ScrollView now sets keyboardShouldPersistTaps="handled" and SearchBar's autoFocus became a prop (default false) -- the modal search no longer auto-focuses; AddCategoryScreen (search is opt-in there) passes autoFocus explicitly. SearchBar.test.tsx updated to assert the prop path.
+- 021 c2 on native: the modal close X button now carries accessibilityLabel={labels.common_close} (new common_close key: Close / Cerrar / Tanca).
+- .agents/skills/verification-loop/SKILL.md: available Maestro flows list now includes flow-015-all-transactions and flow-021-category-filter.

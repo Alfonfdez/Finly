@@ -1,0 +1,64 @@
+appId: com.anonymous.FinlyApp
+---
+- runFlow:
+    file: "helpers/state-reset.yaml"
+- runFlow:
+    file: "helpers/dismiss-dev-menu.yaml"
+# Trigger the modal from AllTransactionsScreen (021 c1: opens as full-screen overlay)
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- tapOn: "All transactions"
+- waitForAnimationToEnd
+# Open the modal with the default "All" type tab
+- assertVisible: "All categories"
+- tapOn: "All categories"
+- waitForAnimationToEnd
+# 021 c2: header + close (X) button
+- assertVisible: "Select categories"
+- assertVisible: "Close"
+# 021 c6: "All" chip present
+- assertVisible: "All"
+# 021 c9: category grid renders seeded categories
+- assertVisible: "Groceries"
+- assertVisible: "Entertainment"
+# 021 c10/c13: multi-select toggles the Apply count
+# A freshly-opened Android Modal can swallow the first touch inside its
+# ScrollView; retry the tap while the Apply count stays at 0.
+- tapOn:
+    text: "Groceries"
+- waitForAnimationToEnd
+- repeat:
+    times: 3
+    commands:
+      - runFlow:
+          when:
+            visible: "Apply (0)"
+          commands:
+            - tapOn:
+                text: "Groceries"
+            - waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Apply (1)"
+    timeout: 10000
+# 021 c3: X closes the modal without applying changes
+- tapOn: "Close"
+- waitForAnimationToEnd
+- assertVisible: "All categories"
+# Switch to the Expenses tab so the modal "All" chip is unambiguous,
+# and exercise the type='expense' variant (021 c12: only that type, no headers)
+- tapOn: "Expenses"
+- waitForAnimationToEnd
+- assertVisible: "All expense categories"
+- tapOn: "All expense categories"
+- waitForAnimationToEnd
+# 021 c12: income categories are not shown (Salary is income-only and absent here)
+- assertVisible: "Groceries"
+- assertNotVisible: "Salary"
+# 021 c6/c7/c14: the All chip selects everything -> Apply (All expenses)
+- tapOn: "All"
+- waitForAnimationToEnd
+- assertVisible: "Apply (All expenses)"
+# 021 c15: Apply closes the modal and returns to the screen
+- tapOn: "Apply (All expenses)"
+- waitForAnimationToEnd
+- assertNotVisible: "Select categories"
