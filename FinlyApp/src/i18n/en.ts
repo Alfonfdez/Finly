@@ -3,6 +3,7 @@ export const en = {
   cancel: 'Cancel',
   delete: 'Delete',
   common_back: 'Back',
+  common_close: 'Close',
 
   // Settings
   settings_appearance: 'Appearance',

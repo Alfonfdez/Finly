@@ -76,6 +76,7 @@ export default function AddCategoryScreen() {
               setSearchActive(false);
               setSearchText('');
             }}
+            autoFocus
           />
         )}
 

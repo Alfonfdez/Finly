@@ -45,7 +45,8 @@ addition to) the web loop:
    also resets the SQLite DB to the seeded state before each run.
 5. Run a flow: `maestro test FinlyApp/.maestro/<flow>.yaml`. Available flows:
    `flow-smoke`, `flow-022-total-account`, `flow-008-categories`,
-   `flow-023-photo-attachment` (all prefixed with a state reset).
+   `flow-023-photo-attachment`, `flow-015-all-transactions`,
+   `flow-021-category-filter` (all prefixed with a state reset).
 6. Camera capture and gallery picking open system UIs Maestro cannot drive reliably on an
    emulator; `flow-023` verifies those criteria at the modal level and the full capture
    path is reported "not automatable on emulator".

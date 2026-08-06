@@ -5,6 +5,7 @@ export const ca: Language = {
   cancel: 'Cancel·lar',
   delete: 'Eliminar',
   common_back: 'Enrere',
+  common_close: 'Tanca',
 
   // Settings
   settings_appearance: 'Aparença',
