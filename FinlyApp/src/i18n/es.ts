@@ -4,6 +4,7 @@ export const es: Language = {
   // Generic
   cancel: 'Cancelar',
   delete: 'Eliminar',
+  common_back: 'Atrás',
 
   // Settings
   settings_appearance: 'Apariencia',
@@ -68,7 +69,8 @@ export const es: Language = {
   tab_income: 'Ingresos',
 
   // Category filter
-  filter_categories: 'Categorías',
+  filter_categories: 'Seleccionar categorías',
+  filter_categories_count: (n: number) => (n === 1 ? '1 categoría' : `${n} categorías`),
   filter_all_categories: 'Todas las categorías',
   filter_all_expense_categories: 'Todas las categorías de gastos',
   filter_all_income_categories: 'Todas las categorías de ingresos',

@@ -2,8 +2,9 @@ import { Text, View, Image, StyleSheet } from 'react-native';
 import type { ComponentType } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { HeaderBackButton } from '@react-navigation/elements';
 import {
   createDrawerNavigator,
   DrawerContentScrollView,
@@ -61,6 +62,23 @@ function HeaderTitle({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; la
       <Text style={[styles.headerTitleText, { color: c.text, fontSize: fs(17) }]}>{label}</Text>
     </View>
   );
+}
+
+function AllTransactionsHeaderLeft() {
+  const navigation = useNavigation();
+  const { activeColors: c } = useConfig();
+  const labels = t();
+  if (navigation.canGoBack()) {
+    return (
+      <HeaderBackButton
+        displayMode="minimal"
+        tintColor={c.text}
+        onPress={() => navigation.goBack()}
+        accessibilityLabel={labels.common_back}
+      />
+    );
+  }
+  return <DrawerMenuButton accessibilityLabel={labels.home_open_menu} />;
 }
 
 function DrawerNavItem({
@@ -170,9 +188,11 @@ function HomeStack() {
           component={component}
           options={{
             headerTitle: () => <HeaderTitle icon={icon} label={label} />,
-            ...(drawerMenu
-              ? { headerLeft: () => <DrawerMenuButton accessibilityLabel={labels.home_open_menu} /> }
-              : {}),
+            ...(name === 'AllTransactions'
+              ? { headerLeft: () => <AllTransactionsHeaderLeft /> }
+              : drawerMenu
+                ? { headerLeft: () => <DrawerMenuButton accessibilityLabel={labels.home_open_menu} /> }
+                : {}),
           }}
         />
       ))}
