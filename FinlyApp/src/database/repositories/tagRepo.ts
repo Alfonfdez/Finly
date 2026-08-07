@@ -1,15 +1,18 @@
 import { getDatabase } from '../database';
 import type { Tag } from '../types';
+import { tagSchema } from '../schemas';
+import { parseRows } from '../validate';
 import { buildUpdateQuery, buildNameExistsQuery } from '../helpers';
 import { dbTimestamp } from '../../utils/formatters';
 
 export const tagRepo = {
   async list(userId: number): Promise<Tag[]> {
     const db = getDatabase();
-    return await db.getAllAsync<Tag>(
+    const rows = await db.getAllAsync(
       `SELECT * FROM tags WHERE user_id = ? ORDER BY id`,
       userId
     );
+    return parseRows(tagSchema, 'tags', rows);
   },
 
   async create(data: Omit<Tag, 'id' | 'created_at'>): Promise<Tag> {

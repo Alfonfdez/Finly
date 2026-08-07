@@ -1,6 +1,8 @@
 import { getDatabase } from '../database';
 import type { Transaction } from '../types';
 import { type TransactionType, MAX_SUGGESTIONS, UNTAGGED_LABEL } from '../../constants/types';
+import { transactionSchema } from '../schemas';
+import { parseRowOrNull, parseRows } from '../validate';
 import { UNTAGGED_ID, buildUpdateQuery } from '../helpers';
 import { deleteTransactionPhotos } from '../photoCleanup';
 import { dbTimestamp } from '../../utils/formatters';
@@ -81,16 +83,17 @@ export const transactionRepo = {
 
     sql += ` ORDER BY date DESC`;
 
-    return await db.getAllAsync<Transaction>(sql, ...params);
+    const rows = await db.getAllAsync(sql, ...params);
+    return parseRows(transactionSchema, 'transactions', rows);
   },
 
   async getById(id: number): Promise<Transaction | null> {
     const db = getDatabase();
-    const row = await db.getFirstAsync<Transaction>(
+    const row = await db.getFirstAsync(
       `SELECT * FROM transactions WHERE id = ?`,
       id
     );
-    return row ?? null;
+    return parseRowOrNull(transactionSchema, 'transactions', row);
   },
 
   async create(data: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>): Promise<Transaction> {

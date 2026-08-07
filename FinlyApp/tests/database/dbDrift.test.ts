@@ -3,6 +3,14 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 import { initSqlJsOnce, resetMockDatabase } from './sqliteMock';
 import { DB_KEY_MAP } from '../../src/database/configDefaults';
 import type { User, Account, Category, Transaction, Tag, TransactionTag } from '../../src/database/types';
+import {
+  accountSchema,
+  categorySchema,
+  tagSchema,
+  transactionSchema,
+  transactionTagSchema,
+  userSchema,
+} from '../../src/database/schemas';
 
 vi.mock('expo-sqlite', async () => {
   const mod = await import('./sqliteMock');
@@ -158,6 +166,24 @@ describe('DB drift', () => {
     const configInfo = await columns(db, 'config');
     const configNames = configInfo.map(c => c.name);
     expect(configNames).toEqual(['key', 'value']);
+  });
+
+  it('zod schema keys exactly match the migration columns', async () => {
+    const db = await freshDb();
+    const schemaByTable: Record<string, { shape: Record<string, unknown> }> = {
+      users: userSchema,
+      accounts: accountSchema,
+      categories: categorySchema,
+      transactions: transactionSchema,
+      tags: tagSchema,
+      transaction_tags: transactionTagSchema,
+    };
+    for (const [table, schema] of Object.entries(schemaByTable)) {
+      const info = await columns(db, table);
+      const schemaKeys = Object.keys(schema.shape).sort();
+      const columnNames = info.map(c => c.name).sort();
+      expect(schemaKeys, `zod schema keys vs columns for ${table}`).toEqual(columnNames);
+    }
   });
 
   it('migrates to user_version 3 and seeds the expected rows', async () => {

@@ -41,12 +41,13 @@ acceptance criteria in a real browser.
 | Type-checking | `tsc --noEmit` (strict) | ✅ Implemented | Whole codebase types, `verbatimModuleSyntax` enforced |
 | Linting | `npx expo lint` (eslint-config-expo) | ✅ Implemented | Code style, unused imports, React hooks rules |
 | Module-boundary linting | `eslint-plugin-boundaries` | ✅ Implemented (Phase E) | `src/` layer DAG — inverted/cyclic imports are lint errors |
+| Schema layer + validation | Zod 4 (`src/database/schemas.ts`) | ✅ Implemented (Phase F) | Row types derived via `z.infer`; read-path validation in native + web backends; schema-vs-migration drift test |
 | Dual-storage contract suite | Vitest + sql.js (real SQLite in Node) | ✅ Implemented (Phase B) | Web (`localStorage`) vs native (SQLite) repo parity + DB drift vs types |
 | UI / E2E verification | Playwright MCP + `verification-loop` skill | ✅ Implemented (Phase C) | Spec acceptance criteria in a live Expo web app |
 | CI pipeline | GitHub Actions (`.github/workflows/ci.yml`) | ✅ Implemented | `npm run test:all` on every PR to `develop`/`main` and push to those branches |
 | SDD alignment | `spec/` + changelog + test mapping | ✅ In use | Every feature spec maps to tests + changelog entries |
 
-Deferred (not planned yet): Zod/Drizzle schemas.
+Deferred (not planned yet): Drizzle ORM (needs web storage to move to real SQLite in the browser first).
 
 ## Phase A — Pure-logic unit tests (implemented)
 
@@ -297,6 +298,33 @@ lower layer and re-exporting from the old location (no test changes needed): `Ic
 
 Run with `npm run lint` (already part of `npm run test:all`); a violation fails the "done"
 gate and CI.
+
+## Phase F — Zod schema layer (implemented)
+
+`src/database/schemas.ts` is the **single source of truth** for every stored row shape, and
+data is validated at the storage boundary of both backends (spec
+`infrastructure/002-database-schemas`).
+
+- One Zod schema per table (`userSchema`, `accountSchema`, `categorySchema`,
+  `transactionSchema`, `tagSchema`, `transactionTagSchema`) plus `configSchema`. Enums are
+  built from the existing constant sets in `src/constants/` (types, languages), so the
+  schema can't drift from the UI options.
+- `src/database/types.ts` now re-exports `z.infer` types under the same names (`User`,
+  `Account`, `Category`, `Transaction`, `Tag`, `TransactionTag`, `Config`) — no import-site
+  changes were needed anywhere in the app.
+- **Read-path validation:** native repos parse `SELECT *` rows (`parseRows`/`parseRowOrNull`
+  from `src/database/validate.ts`, throwing a descriptive error on invalid rows); web
+  `getStore` validates every entity read. Aggregate/derived queries are left unvalidated.
+- **Config:** both `configRepo.get` and `webConfigRepo.get` run stored config through
+  `configSchema` via `sanitizeConfig` (`src/database/configDefaults.ts`) and fall back to
+  `DEFAULT_CONFIG` on any invalid value (or malformed JSON on web).
+- **Drift guard:** `tests/database/dbDrift.test.ts` asserts that the Zod schema keys exactly
+  match the migration columns for all entity tables — a column added to a migration without
+  the schema (or vice versa) fails the suite. `tests/database/schemas.test.ts` covers the
+  accept/reject matrix and config fallback.
+- **Drizzle is deferred:** its `expo-sqlite` driver can't cover the localStorage web
+  backend, so adopting it would fork the dual-storage parity Phase B enforces. It stays
+  deferred until web storage moves to a real SQLite-in-browser engine.
 
 ## Adding a test
 
