@@ -1,7 +1,7 @@
 import { en, type Language } from './en';
 import { es } from './es';
 import { ca } from './ca';
-import type { Language as LanguageType } from '../utils/language';
+import type { Language as LanguageType } from '../constants/languages';
 import type { StringKeyOf } from '../constants/types';
 
 const languages: Record<string, Language> = { en, es, ca };

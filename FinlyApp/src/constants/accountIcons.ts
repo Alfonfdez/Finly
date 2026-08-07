@@ -1,4 +1,4 @@
-import type { IconName } from '../components/IconGrid';
+import type { IconName } from './types';
 
 export const ACCOUNT_ICONS: readonly IconName[] = [
   'wallet-outline',

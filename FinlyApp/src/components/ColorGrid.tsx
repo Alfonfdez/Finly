@@ -1,13 +1,8 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { WHITE, TRANSPARENT } from '../constants/themes';
+import { QUICK_COLORS } from '../constants/colors';
 import { useConfig } from '../context/ConfigContext';
-
-
-export const QUICK_COLORS = [
-  '#22D3EE', '#F87171', '#34D399', '#FBBF24',
-  '#F472B6', '#60A5FA',
-];
 
 interface Props {
   selectedColor: string | null;

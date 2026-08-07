@@ -1,13 +1,13 @@
-import { type ComponentProps, useState } from 'react';
+import { useState } from 'react';
 import { View, TouchableOpacity, StyleSheet, type LayoutChangeEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
-import { CONFIG_ICON_SHAPES, type ConfigIconShape } from '../constants/types';
+import { CONFIG_ICON_SHAPES, type ConfigIconShape, type IconName } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import { TRANSPARENT } from '../constants/themes';
 import { PILL_RADIUS } from './componentStyles';
 
-export type IconName = ComponentProps<typeof Ionicons>['name'];
+export type { IconName };
 
 export const CATEGORY_ICONS: IconName[] = [
   'wallet-outline', 'cart-outline', 'bus-outline', 'home-outline',

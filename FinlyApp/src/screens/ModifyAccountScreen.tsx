@@ -12,7 +12,7 @@ import { isTotalAccount } from '../database/helpers';
 import type { Account } from '../database/types';
 import type { RootStackParamList, NavigationProp } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
-import { QUICK_COLORS } from '../components/ColorGrid';
+import { QUICK_COLORS } from '../constants/colors';
 import ConfirmationModal from '../components/ConfirmationModal';
 import EmptyState from '../components/EmptyState';
 import AccountForm from '../components/AccountForm';

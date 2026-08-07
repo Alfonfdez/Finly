@@ -1,6 +1,5 @@
-import type { User, Account, Category, Transaction, Tag, TransactionTag } from './types';
+import type { User, Account, Category, Transaction, Tag, TransactionTag, Config } from './types';
 import { TRANSACTION_TYPES, MAX_SUGGESTIONS, UNTAGGED_LABEL, type TransactionType } from '../constants/types';
-import type { Config } from '../context/ConfigContext';
 import { UNTAGGED_ID, isTotalAccount } from './helpers';
 import { DEFAULT_CONFIG } from './configDefaults';
 import { dbTimestamp } from '../utils/formatters';
