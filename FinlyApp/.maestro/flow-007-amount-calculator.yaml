@@ -1,0 +1,41 @@
+appId: com.anonymous.FinlyApp
+---
+- runFlow:
+    file: "helpers/state-reset.yaml"
+- runFlow:
+    file: "helpers/dismiss-dev-menu.yaml"
+# Open the add transaction screen to reach the amount field's calculator
+- tapOn: "Add expense or income"
+- waitForAnimationToEnd
+- assertVisible: "Add transaction"
+# 007 c1: the calculator icon opens the modal (keeps form context)
+- tapOn: "Open calculator"
+- waitForAnimationToEnd
+- assertVisible: "Calculator"
+# 007 c2/c3: numeric + operation buttons build the expression; = evaluates it
+- tapOn: "1"
+- tapOn: "2"
+- tapOn: "3"
+- tapOn: "+"
+- tapOn: "5"
+- tapOn: "="
+- assertVisible: "= 128"
+# 007 c4: Accept closes the modal and pastes the result into the amount field
+- tapOn: "Accept"
+- waitForAnimationToEnd
+- assertNotVisible: "Calculator"
+- assertVisible: "128"
+# 007 c5: C clears the expression; Cancel closes without modifying the field
+- tapOn: "Open calculator"
+- waitForAnimationToEnd
+- tapOn: "C"
+- tapOn: "9"
+- tapOn: "+"
+- tapOn: "9"
+- tapOn: "="
+- assertVisible: "= 18"
+- tapOn: "Cancel"
+- waitForAnimationToEnd
+- assertNotVisible: "Calculator"
+# amount field is unchanged after Cancel
+- assertVisible: "128"

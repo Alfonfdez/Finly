@@ -141,9 +141,11 @@ per-criterion evidence is in the changelog entry.
 Native-only criteria (camera/photo capture, native pickers, file system) cannot be checked
 on web, so Finly added a **Maestro** harness for the Android emulator:
 
-- Flows live in `FinlyApp/.maestro/` (`flow-smoke`, `flow-022-total-account`,
-  `flow-008-categories`, `flow-023-photo-attachment`, `flow-015-all-transactions`,
-  `flow-021-category-filter`) plus `helpers/`
+- Flows live in `FinlyApp/.maestro/` (`flow-smoke`, `flow-004-add-transaction`,
+  `flow-007-amount-calculator`, `flow-008-categories`, `flow-015-all-transactions`,
+  `flow-016-transaction-details`, `flow-017-modify-transaction`,
+  `flow-021-category-filter`, `flow-022-total-account`, `flow-023-photo-attachment`)
+  plus `helpers/`
   (`state-reset.yaml`, `open-drawer.yaml`, `dismiss-dev-menu.yaml`).
 - The app is verified on the **dev-client debug build** (`com.anonymous.FinlyApp`, built
   with `npx expo run:android`), not Expo Go — the dev-client does not register the
@@ -154,8 +156,10 @@ on web, so Finly added a **Maestro** harness for the Android emulator:
   gallery), and the Settings → Personalization "Photo" toggle at the modal/UI level.
   Camera capture and gallery picking open system UIs Maestro cannot drive reliably on an
   emulator, so the full capture path is reported "not automatable on emulator".
-- All six flows PASS on the emulator (2026-08-05 for smoke/022/008/023,
-  2026-08-06 for flow-015-all-transactions and flow-021-category-filter).
+- All ten flows PASS on the emulator (2026-08-05 for smoke/022/008/023,
+  2026-08-06 for flow-015-all-transactions and flow-021-category-filter,
+  2026-08-07 for flow-004-add-transaction, flow-007-amount-calculator,
+  flow-016-transaction-details and flow-017-modify-transaction).
 - `flow-015-all-transactions` covers 015's drawer entry, back arrow + title, type and
   period tabs, the "N categories" pill, empty state, account modal, FAB to Add
   Transaction, and the stats-icon entry path. `flow-021-category-filter` covers the
@@ -167,6 +171,45 @@ on web, so Finly added a **Maestro** harness for the Android emulator:
   the modal ScrollView sets `keyboardShouldPersistTaps="handled"` and `SearchBar`'s
   `autoFocus` is now a prop defaulting to `false` (the modal search no longer
   auto-focuses; `AddCategoryScreen` passes it explicitly).
+
+### Transaction-core flows — 004 / 007 / 016 / 017 (2026-08-07)
+
+Native Maestro coverage for the transaction-core features, all PASS on the emulator:
+- `flow-004-add-transaction` — Home "+" → Add transaction; Expenses/Income tabs; default
+  account My Wallet; amount input (comma decimal separator, `42,50`); category grid
+  (Groceries); 3-day selector; inline tag creation (modal, auto-selected and persisted);
+  comment with counter; submit returns Home; row persists in All transactions with the
+  tag chip.
+- `flow-007-amount-calculator` — calculator modal: `123 + 5 = 128` → Accept pastes "128";
+  `C` clears the expression; Cancel leaves the amount unchanged.
+- `flow-016-transaction-details` — row tap → details; header back arrow ("Navigate up")
+  + title; Amount/Account/Category/Date/Comment rows; Tags row with chip; "Created:"
+  footer; Edit → Modify and back; Delete → confirmation modal, "No" keeps, "Yes" deletes
+  and returns to an empty list.
+- `flow-017-modify-transaction` — Edit from details; amount preloaded (current value) and
+  replaced (`42,50` → `99,99`); category switched (Groceries → Games); comment replaced;
+  Save updates and returns to details; the list reflects the change.
+
+Android / Maestro notes found and fixed while writing them:
+- **`hideKeyboard` is a BACK keyevent.** When the soft keyboard is not actually shown
+  (emulator headless text input without Maestro's IME), `hideKeyboard` pops the whole
+  screen or closes the open native `Modal` instead of just dismissing the keyboard. The
+  flows now never call `hideKeyboard` after typing; a `waitForAnimationToEnd` after
+  `inputText` lets the keyboard settle so the next tap (modal "Add", submit "Add"/"Save")
+  is reachable.
+- **016 c2 back arrow**: the details screen's native-stack back button is exposed to the
+  accessibility tree as "Navigate up", not "Back" (the All transactions screen uses a
+  custom `HeaderBackButton` labelled "Back"). The flow asserts "Navigate up" on details.
+- **017 c5 amount preload**: the amount is stored as a numeric DB value (42.5), so the
+  preloaded formatted input shows "42,5" (not "42,50"); the flow asserts the formatted
+  current value.
+- **App fix — tag auto-select on inline create**: `handleCreateTag` created the tag and
+  refreshed the list but never added it to `selectedTags`, so transactions created with an
+  inline tag were saved WITHOUT the `transaction_tags` link (details screen showed the
+  "no tags" dash). Now the created tag is auto-selected, matching the 019 spec ("On
+  create: `tagRepo.create()` → `refreshTags()` → auto-select the new tag → close modal").
+  The tag-modal flows only passed on the list screen before because its tag-filter chip
+  shows every tag regardless of link.
 
 ### CI pipeline — GitHub Actions (2026-08-05)
 

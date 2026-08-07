@@ -296,6 +296,9 @@ export const es: Language = {
   a11y_show_income: 'Mostrar ingresos',
   a11y_category: 'Categoría',
   a11y_period: 'Período',
+  a11y_amount: 'Campo de importe',
+  a11y_calculator: 'Abrir calculadora',
+  a11y_comment: 'Campo de comentario',
 
   // Calculator
   calc_title: 'Calculadora',

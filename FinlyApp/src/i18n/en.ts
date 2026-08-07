@@ -294,6 +294,9 @@ export const en = {
   a11y_show_income: 'Show income',
   a11y_category: 'Category',
   a11y_period: 'Period',
+  a11y_amount: 'Amount input',
+  a11y_calculator: 'Open calculator',
+  a11y_comment: 'Comment input',
 
   // Calculator
   calc_title: 'Calculator',

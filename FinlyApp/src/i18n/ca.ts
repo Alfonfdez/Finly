@@ -296,6 +296,9 @@ export const ca: Language = {
   a11y_show_income: 'Mostrar ingressos',
   a11y_category: 'Categoria',
   a11y_period: 'Període',
+  a11y_amount: 'Camp d\'import',
+  a11y_calculator: 'Obrir calculadora',
+  a11y_comment: 'Camp de comentari',
 
   // Calculator
   calc_title: 'Calculadora',

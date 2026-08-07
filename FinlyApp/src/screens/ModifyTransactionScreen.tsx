@@ -42,6 +42,7 @@ export default function ModifyTransactionScreen() {
       initialDay={parseDbDate(transaction.date)}
       transactionId={transactionId}
       initialComment={transaction.description ?? ''}
+      initialAmount={String(transaction.amount)}
       initialPhotos={parsePhotos(transaction.photo)}
       submitLabel={labels.modify_save}
       errorTitle={labels.modify_error_title}

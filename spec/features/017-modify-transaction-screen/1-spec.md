@@ -128,11 +128,11 @@
 
 ## Acceptance criteria
 
-- [ ] The "Edit" button of TransactionDetailsScreen navigates to ModifyTransaction with the `transactionId`.
-- [ ] The header shows a back arrow and the title "Modify transaction" in the active language.
+- [x] The "Edit" button of TransactionDetailsScreen navigates to ModifyTransaction with the `transactionId`.
+- [x] The header shows a back arrow and the title "Modify transaction" in the active language.
 - [ ] The "Expenses"/"Income" tabs show the current transaction type as selected.
 - [ ] When changing type, the selected category is reset and the grid is reloaded.
-- [ ] The amount input is preloaded with the current value of the transaction.
+- [x] The amount input is preloaded with the current value of the transaction.
 - [ ] The amount input validates max 9 integers and 2 decimals.
 - [ ] The calculator icon opens the CalculatorModal and pastes the result on confirm.
 - [ ] The displayed account is the current transaction's account.
@@ -144,14 +144,14 @@
 - [ ] The 3 days show the correct dates and the initial selection matches.
 - [ ] The calendar button opens the day selection modal.
 - [ ] The tags section exists but pre-selected tags do not affect saving (TODO).
-- [ ] The comment field is preloaded with the current transaction's comment.
+- [x] The comment field is preloaded with the current transaction's comment.
 - [ ] The comment field allows up to 4096 characters with a counter.
 - [ ] The comment autocomplete works the same as in AddTransaction.
 - [ ] The photo section preloads existing photo and allows replacement/removal (full implementation in 023).
 - [ ] The "Save" button is disabled if category, valid amount, day, or account is missing.
 - [ ] The help text is shown when the button is disabled.
-- [ ] Tapping "Save" updates the transaction and returns to the previous screen.
-- [ ] Data refreshes when returning to the list (useFocusEffect).
+- [x] Tapping "Save" updates the transaction and returns to the previous screen.
+- [x] Data refreshes when returning to the list (useFocusEffect).
 - [ ] All texts change when changing the language in settings.
 - [ ] The screen respects the active theme (dark/light).
 - [ ] The screen respects the configured text size.
