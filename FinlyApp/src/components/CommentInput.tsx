@@ -77,6 +77,7 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus 
           multiline
           maxLength={MAX_COMMENT_LENGTH}
           textAlignVertical="top"
+          accessibilityLabel={labels.a11y_comment}
         />
         <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(12) }]}>
           {comment.length}/{MAX_COMMENT_LENGTH}

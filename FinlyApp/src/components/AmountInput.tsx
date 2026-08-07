@@ -46,12 +46,17 @@ export default function AmountInput({ raw, onChangeRaw, onOpenCalculator }: Prop
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           keyboardType="decimal-pad"
+          accessibilityLabel={labels.a11y_amount}
         />
         <Text style={[styles.currencySymbol, { color: c.textSecondary, fontSize: fs(18) }]}>
           {config.currency}
         </Text>
         {onOpenCalculator && (
-          <TouchableOpacity style={styles.calculatorButton} onPress={onOpenCalculator}>
+          <TouchableOpacity
+            style={styles.calculatorButton}
+            onPress={onOpenCalculator}
+            accessibilityLabel={labels.a11y_calculator}
+          >
             <Ionicons name="calculator-outline" size={24} color={c.primary} />
           </TouchableOpacity>
         )}

@@ -1,0 +1,88 @@
+appId: com.anonymous.FinlyApp
+---
+- runFlow:
+    file: "helpers/state-reset.yaml"
+- runFlow:
+    file: "helpers/dismiss-dev-menu.yaml"
+# --- Setup: create an expense transaction with a tag and a comment via the UI ---
+- tapOn: "Add expense or income"
+- waitForAnimationToEnd
+- assertVisible: "Add transaction"
+- tapOn: "Amount input"
+- inputText: "42,50"
+- assertVisible: "42,50"
+- tapOn: "Groceries"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "+ Add tag"
+    direction: DOWN
+- tapOn: "+ Add tag"
+- waitForAnimationToEnd
+- tapOn: "Tag name"
+- inputText: "Urgent"
+- waitForAnimationToEnd
+- tapOn: "Add"
+- waitForAnimationToEnd
+- assertNotVisible: "Add tag"
+- assertVisible: "Urgent"
+- scrollUntilVisible:
+    element:
+      text: "Comment input"
+    direction: DOWN
+- tapOn: "Comment input"
+- inputText: "Weekly groceries"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Add"
+    direction: DOWN
+- tapOn: "Add"
+- waitForAnimationToEnd
+- assertVisible: "Total"
+# --- 016 c1: tap a transaction in a listing -> details screen ---
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- tapOn: "All transactions"
+- waitForAnimationToEnd
+- tapOn: "Groceries"
+- waitForAnimationToEnd
+# 016 c2/c3: header with back arrow and title
+- assertVisible: "Navigate up"
+- assertVisible: "Transaction details"
+# 016 c2: data card rows
+- assertVisible: "Amount"
+- assertVisible: "-42,50 €"
+- assertVisible: "Account"
+- assertVisible: "My Wallet"
+- assertVisible: "Category"
+- assertVisible: "Groceries"
+- assertVisible: "Date"
+- assertVisible: "Comment"
+- assertVisible: "Weekly groceries"
+# 019: tags row shown after Comment with the tag chip
+- assertVisible: "Tags"
+- assertVisible: "Urgent"
+# 016 c7: creation footer in 24h format
+- assertVisible: "Created: .*"
+# 016 c6: Edit navigates to Modify transaction (TODO completed by 017)
+- tapOn: "Edit"
+- waitForAnimationToEnd
+- assertVisible: "Modify transaction"
+- back
+- waitForAnimationToEnd
+- assertVisible: "Transaction details"
+# 016 c5: Delete -> confirmation modal; "No" keeps the transaction
+- tapOn: "Delete"
+- waitForAnimationToEnd
+- assertVisible: "Delete this transaction?"
+- tapOn: "No"
+- waitForAnimationToEnd
+- assertVisible: "Transaction details"
+# 016 c5: confirming "Yes" deletes the transaction and returns to the list
+- tapOn: "Delete"
+- waitForAnimationToEnd
+- tapOn: "Yes"
+- waitForAnimationToEnd
+- assertVisible: "All transactions"
+- assertVisible: "No transactions"

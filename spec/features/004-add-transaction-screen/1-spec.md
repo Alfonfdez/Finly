@@ -162,7 +162,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - [x] The "Add tag" modal validates a maximum of 20 characters.
 - [x] The comment field allows up to 4096 characters with a counter.
 - [x] The photo button opens the modal with the two options (full implementation in 023).
-- [ ] The "Add" button creates the transaction and returns to Home.
+- [x] The "Add" button creates the transaction and returns to Home.
 - [x] All texts change when changing the language in settings.
 - [x] The screen respects the active theme (dark/light).
 - [x] The screen respects the configured text size.

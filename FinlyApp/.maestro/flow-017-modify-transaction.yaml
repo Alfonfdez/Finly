@@ -1,0 +1,87 @@
+appId: com.anonymous.FinlyApp
+---
+- runFlow:
+    file: "helpers/state-reset.yaml"
+- runFlow:
+    file: "helpers/dismiss-dev-menu.yaml"
+# --- Setup: create an expense transaction with a comment via the UI ---
+- tapOn: "Add expense or income"
+- waitForAnimationToEnd
+- assertVisible: "Add transaction"
+- tapOn: "Amount input"
+- inputText: "42,50"
+- assertVisible: "42,50"
+- tapOn: "Groceries"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Comment input"
+    direction: DOWN
+- tapOn: "Comment input"
+- inputText: "Weekly groceries"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Add"
+    direction: DOWN
+- tapOn: "Add"
+- waitForAnimationToEnd
+- assertVisible: "Total"
+# Open the transaction details and the Edit (Modify) screen
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- tapOn: "All transactions"
+- waitForAnimationToEnd
+- tapOn: "Groceries"
+- waitForAnimationToEnd
+- assertVisible: "Transaction details"
+- tapOn: "Edit"
+- waitForAnimationToEnd
+# 017 c2: header title
+- assertVisible: "Modify transaction"
+# 017 c5: the amount input is preloaded with the current value
+- assertVisible: "42,5"
+# 017 c8: the comment field is preloaded with the current comment
+- scrollUntilVisible:
+    element:
+      text: "Comment input"
+    direction: DOWN
+- assertVisible: "Weekly groceries"
+# 017 c3/c11: change the amount
+- scrollUntilVisible:
+    element:
+      text: "Amount input"
+    direction: UP
+- tapOn: "Amount input"
+- eraseText
+- inputText: "99,99"
+- assertVisible: "99,99"
+# 017 c4/c5: change the category to another one visible in the grid (Games)
+- tapOn: "Games"
+- waitForAnimationToEnd
+# 017 c8: change the comment
+- scrollUntilVisible:
+    element:
+      text: "Comment input"
+    direction: DOWN
+- tapOn: "Comment input"
+- eraseText
+- inputText: "Commute bus pass"
+- waitForAnimationToEnd
+# 017 c14: Save updates the transaction and returns to the previous screen
+- scrollUntilVisible:
+    element:
+      text: "Save"
+    direction: DOWN
+- tapOn: "Save"
+- waitForAnimationToEnd
+- assertVisible: "Transaction details"
+- assertVisible: "-99,99 €"
+- assertVisible: "Games"
+- assertVisible: "Commute bus pass"
+# 017 c15: the list reflects the change (auto-refresh on focus)
+- back
+- waitForAnimationToEnd
+- assertVisible: "All transactions"
+- assertVisible: "Games"
+- assertVisible: "-99,99 €"

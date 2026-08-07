@@ -90,20 +90,20 @@ Each field is displayed in a row with a label on the left (gray, `textSecondary`
 
 ## Acceptance criteria
 
-- [ ] Tapping a transaction in any listing navigates to the details screen.
-- [ ] The transaction data is fetched directly from the database and displays correctly regardless of the source screen or active account.
-- [ ] The header shows a back arrow and the title "Transaction details" in the active language.
-- [ ] The "Amount" row displays the formatted amount with the type color (green income / red expense) and sign (+/-).
-- [ ] The "Account" section shows icon + account name.
-- [ ] The "Category" section shows icon + category name.
-- [ ] The "Date" section displays the date in long format according to the language.
-- [ ] The "Comment" section is always shown; if empty, "No comment" appears in gray.
+- [x] Tapping a transaction in any listing navigates to the details screen.
+- [x] The transaction data is fetched directly from the database and displays correctly regardless of the source screen or active account.
+- [x] The header shows a back arrow and the title "Transaction details" in the active language.
+- [x] The "Amount" row displays the formatted amount with the type color (green income / red expense) and sign (+/-).
+- [x] The "Account" section shows icon + account name.
+- [x] The "Category" section shows icon + category name.
+- [x] The "Date" section displays the date in long format according to the language.
+- [x] The "Comment" section is always shown; if empty, "No comment" appears in gray.
 - [ ] The "Photo" row shows a thumbnail when a photo exists (hidden on web, hidden when no photo).
 - [ ] Tapping the photo thumbnail opens a full-screen viewer with close button.
-- [ ] The "Delete" button shows a confirmation modal with "No" and "Yes".
-- [ ] Confirming "Yes" deletes the transaction and returns to the previous screen.
-- [ ] The "Edit" button navigates to `ModifyTransaction` with `transactionId` (TODO).
-- [ ] The footer shows "Created HH:mm dd MMM yyyy" in 24h with the active language (year always visible).
+- [x] The "Delete" button shows a confirmation modal with "No" and "Yes".
+- [x] Confirming "Yes" deletes the transaction and returns to the previous screen.
+- [x] The "Edit" button navigates to `ModifyTransaction` with `transactionId` (TODO).
+- [x] The footer shows "Created HH:mm dd MMM yyyy" in 24h with the active language (year always visible).
 - [ ] All texts change when switching the language in settings.
 - [ ] The screen respects the active theme (dark/light).
 - [ ] The screen respects the configured text size.

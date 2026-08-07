@@ -52,6 +52,7 @@ interface TransactionFormProps {
   transactionId?: number;
   initialComment: string;
   initialPhotos: string[];
+  initialAmount?: string;
   submitLabel: string;
   errorTitle: string;
   errorMessage: string;
@@ -73,6 +74,7 @@ export default function TransactionForm({
   errorMessage,
   onSubmit,
   resetTagsOnFirstFocus = false,
+  initialAmount,
 }: TransactionFormProps) {
   const { activeColors: c, config } = useConfig();
   const { accounts, categories, accountsWithBalance, tags, refresh, refreshTags } = useApp();
@@ -82,7 +84,7 @@ export default function TransactionForm({
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const [type, setType] = useState<TransactionType>(initialType);
-  const [amountRaw, setAmountRaw] = useState('');
+  const [amountRaw, setAmountRaw] = useState<string>(initialAmount ?? '');
   const [accountId, setAccountId] = useState<number | undefined>(initialAccountId);
   const [categoryId, setCategoryId] = useState<number | null>(initialCategoryId);
   const [reorderedCategory, setReorderedCategory] = useState<number | null>(initialReorderedCategory);
@@ -173,8 +175,9 @@ export default function TransactionForm({
   const handleCreateTag = async (name: string) => {
     const existing = tags.some(t => t.name.toLowerCase() === name.toLowerCase());
     if (existing) return false;
-    await tagRepository.create({ user_id: USER_ID, name });
+    const created = await tagRepository.create({ user_id: USER_ID, name });
     await refreshTags();
+    setSelectedTags(prev => prev.includes(created.id) ? prev : [...prev, created.id]);
     return true;
   };
 
