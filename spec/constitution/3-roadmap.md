@@ -344,3 +344,15 @@ Self-healing recovery for the expo-sqlite WAL sidecar bug:
 - Web platform (localStorage) is unaffected.
 
 Spec: spec/infrastructure/001-expo-sqlite-wal-cleanup/.
+
+## 002-database-schemas (infrastructure)
+Status: completed.
+
+Zod schema layer — single source of truth for stored row shapes + runtime validation:
+- `src/database/schemas.ts` defines one Zod schema per table (users, accounts, categories, transactions, tags, transaction_tags) plus `configSchema`, with enums built from the existing constant sets.
+- `src/database/types.ts` derives all row types via `z.infer` (same exported names; no import-site changes).
+- Native repos validate full-row reads; web `getStore` validates entity reads; both config backends fall back to `DEFAULT_CONFIG` on invalid values.
+- `dbDrift` asserts Zod schema keys exactly match migration columns.
+- Drizzle remains deferred (its SQLite driver cannot cover the localStorage web backend).
+
+Spec: spec/infrastructure/002-database-schemas/.

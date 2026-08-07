@@ -1,5 +1,7 @@
 import { getDatabase } from '../database';
 import type { Account } from '../types';
+import { accountSchema } from '../schemas';
+import { parseRowOrNull, parseRows } from '../validate';
 import { buildUpdateQuery, buildNameExistsQuery } from '../helpers';
 import { deleteTransactionPhotos } from '../photoCleanup';
 import { dbTimestamp } from '../../utils/formatters';
@@ -7,10 +9,11 @@ import { dbTimestamp } from '../../utils/formatters';
 export const accountRepo = {
   async list(userId: number): Promise<Account[]> {
     const db = getDatabase();
-    return await db.getAllAsync<Account>(
+    const rows = await db.getAllAsync(
       `SELECT * FROM accounts WHERE user_id = ? ORDER BY is_total DESC, name COLLATE NOCASE`,
       userId
     );
+    return parseRows(accountSchema, 'accounts', rows);
   },
 
   async create(data: Omit<Account, 'id' | 'created_at'>): Promise<Account> {
@@ -24,7 +27,8 @@ export const accountRepo = {
 
   async getById(id: number): Promise<Account | null> {
     const db = getDatabase();
-    return await db.getFirstAsync<Account>('SELECT * FROM accounts WHERE id = ?', id);
+    const row = await db.getFirstAsync(`SELECT * FROM accounts WHERE id = ?`, id);
+    return parseRowOrNull(accountSchema, 'accounts', row);
   },
 
   async update(id: number, data: Partial<Omit<Account, 'id' | 'created_at'>>): Promise<void> {

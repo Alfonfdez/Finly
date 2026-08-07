@@ -1,6 +1,8 @@
 import { getDatabase } from '../database';
 import type { Category } from '../types';
 import type { TransactionType } from '../../constants/types';
+import { categorySchema } from '../schemas';
+import { parseRows } from '../validate';
 import { buildUpdateQuery, buildNameExistsQuery } from '../helpers';
 import { deleteTransactionPhotos } from '../photoCleanup';
 import { dbTimestamp } from '../../utils/formatters';
@@ -8,16 +10,16 @@ import { dbTimestamp } from '../../utils/formatters';
 export const categoryRepo = {
   async list(userId: number, type?: TransactionType): Promise<Category[]> {
     const db = getDatabase();
-    if (type) {
-      return await db.getAllAsync<Category>(
-        `SELECT * FROM categories WHERE user_id = ? AND type = ? ORDER BY name COLLATE NOCASE`,
-        userId, type
-      );
-    }
-    return await db.getAllAsync<Category>(
-      `SELECT * FROM categories WHERE user_id = ? ORDER BY name COLLATE NOCASE`,
-      userId
-    );
+    const rows = type
+      ? await db.getAllAsync(
+          `SELECT * FROM categories WHERE user_id = ? AND type = ? ORDER BY name COLLATE NOCASE`,
+          userId, type
+        )
+      : await db.getAllAsync(
+          `SELECT * FROM categories WHERE user_id = ? ORDER BY name COLLATE NOCASE`,
+          userId
+        );
+    return parseRows(categorySchema, 'categories', rows);
   },
 
   async create(data: Omit<Category, 'id' | 'created_at'>): Promise<Category> {

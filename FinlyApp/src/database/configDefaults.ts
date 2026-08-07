@@ -1,6 +1,7 @@
 import { CONFIG_ICON_SHAPES, PERIODS, TEXT_SIZES, THEMES, DECIMAL_SEPARATORS, FIRST_DAYS } from '../constants/types';
 import { LANGUAGES } from '../utils/language';
 import { DEFAULT_CURRENCY } from '../constants/currencies';
+import { configSchema } from './schemas';
 import type { Config } from './types';
 
 export const DEFAULT_CONFIG: Config = {
@@ -50,4 +51,9 @@ export function toConfigRows(partial: Partial<Config>): { key: string; value: st
     rows.push({ key: reverseMap[key] ?? key, value: String(value) });
   }
   return rows;
+}
+
+export function sanitizeConfig(config: Config): Config {
+  const result = configSchema.safeParse(config);
+  return result.success ? result.data : DEFAULT_CONFIG;
 }

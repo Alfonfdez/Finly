@@ -1,7 +1,7 @@
 import { getDatabase } from '../database';
 import type { Config } from '../types';
 import { FIRST_DAYS } from '../../constants/types';
-import { DEFAULT_CONFIG, DB_KEY_MAP, toConfigRows } from '../configDefaults';
+import { DEFAULT_CONFIG, DB_KEY_MAP, sanitizeConfig, toConfigRows } from '../configDefaults';
 
 const BOOLEAN_KEYS: (keyof Config)[] = ['addShowLabels', 'addShowComments', 'addShowPhoto', 'hideBalances'];
 const INT_OR_NULL_KEYS: (keyof Config)[] = ['homeDefaultAccountId', 'addDefaultAccountId'];
@@ -29,7 +29,7 @@ export const configRepo = {
   async get(): Promise<Config> {
     const db = getDatabase();
     const rows = await db.getAllAsync<{ key: string; value: string }>('SELECT key, value FROM config');
-    return rows.length > 0 ? parseConfig(rows) : DEFAULT_CONFIG;
+    return sanitizeConfig(rows.length > 0 ? parseConfig(rows) : DEFAULT_CONFIG);
   },
 
   async save(partial: Partial<Config>): Promise<void> {
