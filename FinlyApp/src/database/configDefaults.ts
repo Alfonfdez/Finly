@@ -1,7 +1,7 @@
 import { CONFIG_ICON_SHAPES, PERIODS, TEXT_SIZES, THEMES, DECIMAL_SEPARATORS, FIRST_DAYS } from '../constants/types';
 import { LANGUAGES } from '../utils/language';
 import { DEFAULT_CURRENCY } from '../constants/currencies';
-import type { Config } from '../context/ConfigContext';
+import type { Config } from './types';
 
 export const DEFAULT_CONFIG: Config = {
   theme: THEMES.dark,

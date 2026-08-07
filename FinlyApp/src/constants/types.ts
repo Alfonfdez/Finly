@@ -1,4 +1,8 @@
+import type { ComponentProps } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+export type IconName = ComponentProps<typeof Ionicons>['name'];
 
 export const USER_ID = 1;
 

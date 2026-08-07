@@ -1,4 +1,5 @@
-import type { TransactionType } from '../constants/types';
+import type { TransactionType, Theme, FirstDay, DecimalSeparator, TextSize, Period, ConfigIconShape } from '../constants/types';
+import type { Language } from '../constants/languages';
 
 export interface User {
   id: number;
@@ -54,4 +55,22 @@ export interface Tag {
 export interface TransactionTag {
   transaction_id: number;
   tag_id: number;
+}
+
+export interface Config {
+  theme: Theme;
+  firstDayOfWeek: FirstDay;
+  currency: string;
+  decimalSeparator: DecimalSeparator;
+  language: Language;
+  textSize: TextSize;
+  categoryIconShape: ConfigIconShape;
+  accountIconShape: ConfigIconShape;
+  homeDefaultAccountId: number | null;
+  homeDefaultPeriod: Exclude<Period, 'custom'>;
+  addDefaultAccountId: number | null;
+  addShowLabels: boolean;
+  addShowComments: boolean;
+  addShowPhoto: boolean;
+  hideBalances: boolean;
 }

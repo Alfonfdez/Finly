@@ -40,12 +40,13 @@ acceptance criteria in a real browser.
 | Component unit tests | Vitest + vitest-native + RNTL 14 | ✅ Implemented (Phase D) | 12 presentational components (79 tests) with ConfigContext stubbed |
 | Type-checking | `tsc --noEmit` (strict) | ✅ Implemented | Whole codebase types, `verbatimModuleSyntax` enforced |
 | Linting | `npx expo lint` (eslint-config-expo) | ✅ Implemented | Code style, unused imports, React hooks rules |
+| Module-boundary linting | `eslint-plugin-boundaries` | ✅ Implemented (Phase E) | `src/` layer DAG — inverted/cyclic imports are lint errors |
 | Dual-storage contract suite | Vitest + sql.js (real SQLite in Node) | ✅ Implemented (Phase B) | Web (`localStorage`) vs native (SQLite) repo parity + DB drift vs types |
 | UI / E2E verification | Playwright MCP + `verification-loop` skill | ✅ Implemented (Phase C) | Spec acceptance criteria in a live Expo web app |
 | CI pipeline | GitHub Actions (`.github/workflows/ci.yml`) | ✅ Implemented | `npm run test:all` on every PR to `develop`/`main` and push to those branches |
 | SDD alignment | `spec/` + changelog + test mapping | ✅ In use | Every feature spec maps to tests + changelog entries |
 
-Deferred (not planned yet): Zod/Drizzle schemas, eslint-plugin-boundaries.
+Deferred (not planned yet): Zod/Drizzle schemas.
 
 ## Phase A — Pure-logic unit tests (implemented)
 
@@ -257,6 +258,45 @@ and each suite calls `resetStub()` in `beforeEach`. i18n is NOT stubbed — the 
 | `tests/component/EyeToggle.test.tsx` | `EyeToggle` — eye/eye-off toggle, hitSlop |
 | `tests/component/EmptyState.test.tsx` | `EmptyState` — icon, title, message |
 | `tests/component/Fab.test.tsx` | `Fab` — icon, onPress, a11y label |
+
+## Phase E — Module-boundary linting (implemented)
+
+`src/` layering is enforced as lint errors by **`eslint-plugin-boundaries`** (dev dep,
+`FinlyApp/eslint.config.js`). It guards the architecture from inverted or cyclic imports.
+
+- One element descriptor per `src/` folder (`boundaries/elements`, `partialMatch: false`,
+  patterns are the folder path, e.g. `src/components` — the plugin expands them to
+  `<pattern>/**/*`, so a trailing `/*` would NOT match files directly in the folder).
+- `boundaries/dependencies` with `default: "disallow"` plus an allow-list policy set, and
+  `boundaries/no-unknown-files` enabled.
+
+Allowed dependency DAG (each layer may also import its own folder and external packages):
+
+```
+constants   (leaf — external only)
+utils       → constants, i18n, database (type-only)
+i18n        → constants
+database    → constants, utils
+context     → constants, utils, i18n, database
+hooks       → constants, utils, i18n, database, context
+components  → + hooks
+screens     → + components
+navigation  → + screens
+```
+
+`utils → database` is restricted to `dependency: { kind: "type" }` (e.g.
+`utils/categoryUtils.ts` imports the `Category` type); any value/runtime import from `utils`
+into `database` is an error.
+
+The 5 pre-existing violations were resolved by moving the shared type/constant into the
+lower layer and re-exporting from the old location (no test changes needed): `IconName` →
+`constants/types.ts` (re-exported by `components/IconGrid`), `Config` → `database/types.ts`
+(re-exported by `context/ConfigContext`), `Language`/`LANGUAGES` →
+`constants/languages.ts` (re-exported by `utils/language`), `QUICK_COLORS` →
+`constants/colors.ts`. This also broke the `i18n ⇄ utils` and `database → context` cycles.
+
+Run with `npm run lint` (already part of `npm run test:all`); a violation fails the "done"
+gate and CI.
 
 ## Adding a test
 

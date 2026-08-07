@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { QUICK_COLORS } from '../components/ColorGrid';
+import { QUICK_COLORS } from '../constants/colors';
 
 export function useColorSelection(initialColor?: string | null) {
   const [selectedColor, setSelectedColor] = useState<string | null>(

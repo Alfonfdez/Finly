@@ -4,28 +4,12 @@ import { type ColorPalette, darkColors, lightColors } from '../constants/themes'
 import { configRepository } from '../database';
 import { setLanguage } from '../i18n';
 import { isWeb } from '../utils/platform';
-import { type Language } from '../utils/language';
 import { withAlpha } from '../utils/color';
-import { THEMES, type ConfigIconShape, type DecimalSeparator, type FirstDay, type Period, type TextSize, type Theme } from '../constants/types';
+import { THEMES, type Theme } from '../constants/types';
 import { DEFAULT_CONFIG } from '../database/configDefaults';
+import { type Config } from '../database/types';
 
-export interface Config {
-  theme: Theme;
-  firstDayOfWeek: FirstDay;
-  currency: string;
-  decimalSeparator: DecimalSeparator;
-  language: Language;
-  textSize: TextSize;
-  categoryIconShape: ConfigIconShape;
-  accountIconShape: ConfigIconShape;
-  homeDefaultAccountId: number | null;
-  homeDefaultPeriod: Exclude<Period, 'custom'>;
-  addDefaultAccountId: number | null;
-  addShowLabels: boolean;
-  addShowComments: boolean;
-  addShowPhoto: boolean;
-  hideBalances: boolean;
-}
+export type { Config };
 
 interface ConfigContextType {
   config: Config;

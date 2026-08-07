@@ -16,7 +16,7 @@ import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CA
 import { badgeShapeFor } from '../utils/badgeShape';
 import { WHITE, TRANSPARENT } from '../constants/themes';
 import { CATEGORY_ICONS } from '../components/IconGrid';
-import { QUICK_COLORS } from '../components/ColorGrid';
+import { QUICK_COLORS } from '../constants/colors';
 import IconBadge from '../components/IconBadge';
 import IconColorSection from '../components/IconColorSection';
 import ConfirmationModal from '../components/ConfirmationModal';

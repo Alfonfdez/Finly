@@ -1,5 +1,5 @@
 import { getDatabase } from '../database';
-import type { Config } from '../../context/ConfigContext';
+import type { Config } from '../types';
 import { FIRST_DAYS } from '../../constants/types';
 import { DEFAULT_CONFIG, DB_KEY_MAP, toConfigRows } from '../configDefaults';
 
