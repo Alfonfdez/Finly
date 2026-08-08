@@ -51,7 +51,7 @@ npx expo lint
 - A change is only "done" when `npm run test:all` passes (typecheck + lint + tests).
 - Changes to `src/utils/` or `src/database/` logic must include or update tests (Phase A/B harnesses).
 - A feature's "verification" task is done only via the `verification-loop` skill: run `test:all`, boot `npx expo start --web`, then check the spec's acceptance criteria in a real browser (viewport 375px for mobile criteria).
-- Criteria that cannot be checked on web (e.g. camera/photo capture) are reported as "not checkable on web", never marked done.
+- Criteria that cannot be checked on web (e.g. camera capture) are reported as "not checkable on web", never marked done. Web photo *gallery* picking IS checkable (file picker → base64 data URI in the sql.js/IndexedDB DB); only camera capture stays native-only.
 
 ## DATABASE
 - 3 idempotent migrations in `src/database/migrations/`: `001_initial` (schema), `002_seed` (seed data), `003_config` (config defaults)

@@ -334,6 +334,19 @@ Photo attachment for transactions (camera + gallery) on iOS and Android:
 
 Spec: spec/features/023-photo-attachment/.
 
+## 024-photo-on-web
+Status: completed.
+
+Photo attachment extended to web, closing the last platform gap from 023:
+- Web picks via `expo-image-picker` file picker; image read as a base64 data URI (`FileReader`) and stored in the existing `transactions.photo` JSON array.
+- Data URIs survive full page reloads (column persisted by the sql.js/IndexedDB engine); `<Image source={{uri: dataUri}}>` renders in react-native-web.
+- Removed the three 023 `isNative` gates: PhotoSection in Add/Modify, the details photo row, and the Settings "Show photo" checkbox (now available on all platforms).
+- Camera stays native-only: PhotoSection hides "Take photo" on web; web offers gallery only.
+- `deletePhotoFile` no-ops on `data:` URIs (web photos live in the DB row, not the file system).
+- Tests: photoUtils data-URI parse/no-op; PhotoSection camera-option visibility per platform.
+
+Spec: spec/features/024-photo-on-web/.
+
 ## 001-expo-sqlite-wal-cleanup (infrastructure)
 Status: completed.
 

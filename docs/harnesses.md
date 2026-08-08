@@ -124,8 +124,10 @@ server and the **`verification-loop`** skill, instead of by reading code.
   opens the app in a fresh browser context (cleared IndexedDB, since web persists there
   through sql.js WASM), and checks each spec's acceptance criteria by real interaction — viewport 375px
   for mobile/responsive criteria, 3-attempt cap per criterion, dev server terminated when
-  done. Native-only criteria (camera/photo) are reported as not checkable on web, never
-  marked done.
+  done. Native-only criteria (camera capture) are reported as not checkable on web, never
+  marked done. Since feature 024, web photo *gallery* picking IS checkable on web (file
+  picker → base64 data URI persisted via sql.js/IndexedDB); only camera capture remains
+  native-only.
 - Config changes to `opencode.jsonc` (MCP server, permissions) require restarting opencode
   — config is loaded once at startup.
 
@@ -146,7 +148,7 @@ per-criterion evidence is in the changelog entry.
 
 ### Mobile mode — Maestro on Android emulator (2026-08-05)
 
-Native-only criteria (camera/photo capture, native pickers, file system) cannot be checked
+Native-only criteria (camera capture, native pickers) cannot be checked
 on web, so Finly added a **Maestro** harness for the Android emulator:
 
 - Flows live in `FinlyApp/.maestro/` (`flow-smoke`, `flow-004-add-transaction`,

@@ -6,6 +6,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { MAX_PHOTOS } from '../constants/types';
 import { WHITE } from '../constants/themes';
+import { isNative } from '../utils/platform';
 import ConfirmationModal from './ConfirmationModal';
 import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
@@ -56,8 +57,8 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
         {labels.add_photo}
       </Text>
       <View style={styles.photoRow}>
-        {photos.map((uri) => (
-          <View key={uri} style={styles.photoWrapper}>
+        {photos.map((uri, index) => (
+          <View key={`${uri}-${index}`} style={styles.photoWrapper}>
             <View style={[styles.photoButton, { backgroundColor: c.surface }]}>
               <Image source={{ uri }} style={styles.photoThumbnail} />
             </View>
@@ -87,15 +88,17 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
         backgroundColor={c.background}
       >
         <ModalHeader title={labels.add_photo_title} />
-        <TouchableOpacity
-          style={[styles.modalOption, { backgroundColor: c.surface }]}
-          onPress={() => handleSourceOption(onTakePhoto)}
-        >
-          <Ionicons name="camera-outline" size={24} color={c.primary} />
-          <Text style={[styles.modalOptionText, { color: c.text, fontSize: fs(15) }]}>
-            {labels.add_photo_camera}
-          </Text>
-        </TouchableOpacity>
+        {isNative && (
+          <TouchableOpacity
+            style={[styles.modalOption, { backgroundColor: c.surface }]}
+            onPress={() => handleSourceOption(onTakePhoto)}
+          >
+            <Ionicons name="camera-outline" size={24} color={c.primary} />
+            <Text style={[styles.modalOptionText, { color: c.text, fontSize: fs(15) }]}>
+              {labels.add_photo_camera}
+            </Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity
           style={[styles.modalOption, { backgroundColor: c.surface }]}
           onPress={() => handleSourceOption(onPickFromGallery)}

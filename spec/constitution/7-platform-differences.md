@@ -22,8 +22,9 @@ platform fork of the repository layer.
   `localStorage` ceiling).
 - **Persistence**: the engine writes the exported SQLite bytes once per committed
   transaction.
-- **Impact**: photos would now be viable on web, but that remains out of scope; the photo
-  feature stays hidden on web (unchanged decision).
+- **Impact**: photos are viable on web (feature 024). Picked images are stored as base64
+  data URIs in the `transactions.photo` column, which the engine persists to IndexedDB —
+  no separate blob store needed at the app's scale (max 3 photos, `quality: 0.7`).
 
 ---
 
@@ -32,10 +33,11 @@ platform fork of the repository layer.
 | Feature | iOS / Android | Web | Rationale |
 |---------|--------------|-----|-----------|
 | SQLite storage | ✅ | ✅ | Native: `expo-sqlite`; web: sql.js WASM persisted to IndexedDB (same schema, migrations and repos) |
-| Camera / gallery (photo) | ✅ | ❌ | `expo-image-picker` is native-only; photo on web still out of scope |
-| Photo section in Add/Modify | ✅ | ❌ | Hidden via `Platform.OS !== 'web'` |
-| Photo setting checkbox | ✅ | ❌ | Hidden in PersonalizationScreen |
-| Photo row in Transaction Details | ✅ | ❌ | Hidden via platform guard |
+| Camera / gallery (photo) | ✅ | ⚠️ gallery only | `expo-image-picker` web opens a file picker; camera capture (`capture="camera"`) is native-only |
+| Photo section in Add/Modify | ✅ | ✅ | Rendered on all platforms when `config.addShowPhoto` is true |
+| Photo setting checkbox | ✅ | ✅ | Visible in PersonalizationScreen on all platforms |
+| Photo row in Transaction Details | ✅ | ✅ | Rendered on all platforms; base64 data URIs render in react-native-web |
+| Photo persistence | ✅ file URI | ✅ data URI in DB | Native: copied to `documentDirectory`; web: base64 in `transactions.photo` column (survives reloads via sql.js/IndexedDB) |
 | File system (copy/cache) | ✅ | ❌ | `expo-file-system` for URI persistence |
 | Flag icons (emoji) | ✅ | ❌ | Web uses SVG flags (`FLAG_WEB`) instead of emoji |
 | Keyboard spacer (Android) | ✅ (Android) | ❌ | Android-specific `keyboardVerticalOffset` spacer |
@@ -52,8 +54,8 @@ platform fork of the repository layer.
 ```tsx
 import { Platform } from 'react-native';
 
-// Hide entire section on web
-{Platform.OS !== 'web' && <PhotoSection />}
+// Hide camera capture on web (native-only)
+{Platform.OS !== 'web' && <CameraButton />}
 
 // Web-specific fallback (e.g., flag icons use SVG on web instead of emoji)
 if (Platform.OS === 'web') {
@@ -68,7 +70,7 @@ if (Platform.OS === 'web') {
 
 ### Rules
 
-1. **Use `Platform.OS !== 'web'`** to hide native-only UI (camera, photo section, notifications).
+1. **Use `Platform.OS !== 'web'`** to hide native-only UI (camera capture, notifications).
 2. **Use `Platform.OS === 'web'`** to render web-specific fallbacks (e.g., SVG flags). Storage logic no longer branches by platform — both use the same `DatabaseHandle`.
 3. **Use `Platform.OS === 'android'`** only for Android-specific layout adjustments (keyboard spacer).
 4. **Never assume a feature is web-available** without checking the quota/storage implications.
@@ -76,16 +78,16 @@ if (Platform.OS === 'web') {
 
 ---
 
-## Photo feature decision (Feature 023)
+## Photo feature decision (Features 023 + 024)
 
 | Aspect | Decision |
 |--------|----------|
-| **Why hidden on web** | Photo on web is out of scope (IndexedDB now has the quota for it; revisit later) |
-| **Native behavior** | Camera or gallery via `expo-image-picker`; file copied to `documentDirectory` via `expo-file-system` for persistence |
-| **Storage on native** | File URI stored in `transactions.photo` column (TEXT, nullable) |
-| **Cleanup** | File deleted from disk on transaction delete, photo replace, or manual remove |
-| **Setting** | `add_show_photo` config key controls section visibility; checkbox hidden on web too |
-| **Future consideration** | Photo on web may become viable now that web storage runs on IndexedDB (sql.js engine) |
+| **Native (023)** | Camera or gallery via `expo-image-picker`; file copied to `documentDirectory` via `expo-file-system` for persistence |
+| **Web (024)** | Gallery/file-picker only (camera stays native-only). Picked image read as a base64 data URI (`FileReader`) and stored in `transactions.photo`; persisted via the sql.js/IndexedDB engine, so it survives reloads |
+| **Storage** | Native: file URI in `transactions.photo` (TEXT, nullable, JSON array). Web: data URIs in the same column |
+| **Cleanup** | Native: file deleted from disk. Web: `deletePhotoFile` no-ops on `data:` URIs — removal happens by deleting the string/row |
+| **Setting** | `add_show_photo` config key controls section visibility on all platforms |
+| **Camera on web** | Out of scope: `capture="camera"` only works on mobile browsers and cannot be verified in a desktop browser at 375px |
 
 ---
 
