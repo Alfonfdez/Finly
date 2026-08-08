@@ -11,6 +11,7 @@ export function parsePhotos(photoField: string | null | undefined): string[] {
 }
 
 export async function deletePhotoFile(uri: string): Promise<void> {
+  if (uri.startsWith('data:')) return;
   try {
     const file = new File(uri);
     if (file.exists) file.delete();

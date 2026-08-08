@@ -10,7 +10,6 @@ import { useFocusLoad } from '../hooks/useFocusLoad';
 import { formatCurrency, formatDateLong, parseDbDate } from '../utils/formatters';
 import { deletePhotoFile, parsePhotos } from '../utils/photoUtils';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
-import { isNative } from '../utils/platform';
 import { transactionRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
@@ -189,11 +188,11 @@ export default function TransactionDetailsScreen() {
             )}
           </DataRow>
 
-          {parsedPhotos.length > 0 && isNative && (
+          {parsedPhotos.length > 0 && (
             <DataRow label={labels.details_photo} c={c} fs={fs} noBorder>
               <View style={styles.photoGrid}>
                 {parsedPhotos.map((uri, index) => (
-                  <TouchableOpacity key={uri} onPress={() => { setSelectedPhotoIndex(index); setPhotoViewerVisible(true); }}>
+                  <TouchableOpacity key={`${uri}-${index}`} onPress={() => { setSelectedPhotoIndex(index); setPhotoViewerVisible(true); }}>
                     <Image source={{ uri }} style={styles.photoThumbnail} />
                   </TouchableOpacity>
                 ))}

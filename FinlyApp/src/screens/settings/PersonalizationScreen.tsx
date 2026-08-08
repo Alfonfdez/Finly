@@ -3,7 +3,6 @@ import { useConfig, type Config } from '../../context/ConfigContext';
 import { useApp } from '../../context/AppContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t, getDisplayAccountName } from '../../i18n';
-import { isNative } from '../../utils/platform';
 import { isTotalAccount } from '../../database/helpers';
 import { type Option } from '../../components/SelectorInline';
 import CheckboxRow from '../../components/settings/CheckboxRow';
@@ -74,13 +73,11 @@ export default function PersonalizationScreen() {
           onToggle={() => updateConfig({ addShowComments: !config.addShowComments })}
           label={labels.settings_comments}
         />
-        {isNative && (
-          <CheckboxRow
-            checked={config.addShowPhoto}
-            onToggle={() => updateConfig({ addShowPhoto: !config.addShowPhoto })}
-            label={labels.settings_photo}
-          />
-        )}
+        <CheckboxRow
+          checked={config.addShowPhoto}
+          onToggle={() => updateConfig({ addShowPhoto: !config.addShowPhoto })}
+          label={labels.settings_photo}
+        />
       </View>
 
       <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_privacy}</Text>

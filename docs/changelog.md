@@ -2284,3 +2284,27 @@
 - README.md / README.es.md: Persistence row updated (sql.js WASM + IndexedDB on web); language links now plain text ([Español] · [Català] / [English] · [Català]).
 - New README.ca.md: full Catalan translation of the English README, linking [English] and [Español].
 - Historical entries in spec/features/* and completed infrastructure specs were intentionally left untouched.
+
+[2026-08-08] ~ | spec/features/024-photo-on-web/ (1-spec.md, 2-plan.md, 3-tasks.md), FinlyApp/src/hooks/usePhotos.ts, FinlyApp/src/utils/photoUtils.ts, FinlyApp/src/components/ (PhotoSection.tsx, TransactionForm.tsx), FinlyApp/src/screens/ (TransactionDetailsScreen.tsx, settings/PersonalizationScreen.tsx), FinlyApp/tests/utils/photoUtils.test.ts (new), FinlyApp/tests/component/PhotoSection.test.tsx (new), spec/constitution/ (3-roadmap.md, 7-platform-differences.md), AGENTS.md, docs/harnesses.md, docs/changelog.md
+- 024-photo-on-web: photo attachment extended to web (previously 023 was iOS/Android-only, photos always null on web).
+- Web persistence: picked images are read as base64 data URIs (FileReader over the picker's web `File`) and stored in the existing `transactions.photo` JSON array; the sql.js/IndexedDB engine persists the column, so photos survive full page reloads. No new dependencies; native file-URI storage is unchanged.
+- Guards: removed the three 023 `isNative` gates (PhotoSection render in TransactionForm, details photo row, Settings "Show photo" checkbox — now available on all platforms). Camera stays native-only: PhotoSection hides "Take photo" on web (gallery only).
+- Cleanup: `deletePhotoFile` no-ops on `data:` URIs (web photos live in the DB row); bulk delete paths need no web branch.
+- Tests: photoUtils.test.ts (data-URI parse round-trips; deletePhotoFile no-op on data:, deletes on file:) and PhotoSection.test.tsx (camera hidden on web, gallery shown; remove-confirm flow).
+- Docs: 7-platform-differences.md photo matrix/decision updated for 024; harnesses.md + AGENTS.md clarify web gallery picking is checkable while camera capture stays native-only.
+
+[2026-08-08] ~ | FinlyApp/src/components/PhotoSection.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, docs/changelog.md
+- Fixed duplicate React key warning when the same data URI is attached twice (e.g. re-picking the same file): photo list keys changed from the raw URI to `${uri}-${index}` in both the Add/Modify PhotoSection thumbnails and the Details photo grid. Without this, duplicate keys caused a ghost duplicated thumbnail in the form.
+- 024 web verification loop (T14) PASS with Playwright at 375px against a live Expo web build on 8081, all 14 acceptance criteria checked:
+  - [x] PhotoSection visible on web when config.addShowPhoto is true; "Show photo" checkbox visible in PersonalizationScreen (toggle hides/shows the section on AddTransaction and the setting persists in the config table).
+  - [x] "Add from gallery" opens the native file picker and the picked file renders as a base64 data-URI thumbnail (`data:image/png;base64,...` confirmed in the DOM).
+  - [x] Photos persist across a full page reload (Details re-renders the data-URI thumbnails from the sql.js/IndexedDB row).
+  - [x] Up to 3 photos per transaction: at MAX_PHOTOS the "+" button is no longer rendered; no console errors, no ghost thumbnails.
+  - [x] "Take photo" (camera) option not shown on web — the source modal offers only "Add from gallery" and "Cancel".
+  - [x] Photo removal (× + confirmation modal) works on web and the removal persists after save.
+  - [x] TransactionDetailsScreen shows tappable thumbnails on web and the full-screen viewer Modal (black background, contain, close button) opens and closes cleanly.
+  - [x] ModifyTransactionScreen preloads web photos and allows adding/removing in one session.
+  - [x] Deleting a transaction with photos deletes the row cleanly (photo gone, balance resets, survives reload).
+  - [x] deletePhotoFile no-op on data: URIs and parsePhotos data-URI round-trips are covered by unit tests (photoUtils.test.ts); multiline/es/ca texts and theme/text-size respected via the existing 023 i18n labels.
+  - [x] npm run test:all green after the key fixes (typecheck + lint + 213 tests, 25 files).
+- Camera capture stays "not checkable on web"; native-only criteria (camera) are out of the web loop by design.

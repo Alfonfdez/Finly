@@ -7,7 +7,6 @@ import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { usePhotos } from '../hooks/usePhotos';
 import { t, getDisplayAccountName } from '../i18n';
-import { isNative } from '../utils/platform';
 import TabBar from './TabBar';
 import AmountInput from './AmountInput';
 import AccountModal from './AccountModal';
@@ -312,7 +311,7 @@ export default function TransactionForm({
           />
         )}
 
-        {config.addShowPhoto && isNative && (
+        {config.addShowPhoto && (
           <PhotoSection
             photos={photos}
             onTakePhoto={handleTakePhoto}
