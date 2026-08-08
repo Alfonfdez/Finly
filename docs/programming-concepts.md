@@ -227,7 +227,7 @@ import Svg, { Circle } from 'react-native-svg';
 
 ## SQLite (expo-sqlite)
 **Definition:** Embedded relational database for React Native with native support in Expo.
-**Explanation:** Stores data in a local file with a schema of tables, relationships, and SQL queries. Supports referential integrity, cascade deletes, indexes for query optimization, and versioned migrations. In Finly, it is used on mobile devices (Android/iOS) to persist users, accounts, categories, and transactions. It does not work on web because it depends on native modules and WebAssembly that the Expo bundler cannot resolve correctly.
+**Explanation:** Stores data in a local file with a schema of tables, relationships, and SQL queries. Supports referential integrity, cascade deletes, indexes for query optimization, and versioned migrations. In Finly, it is used on mobile devices (Android/iOS) to persist users, accounts, categories, and transactions. Web runs the same SQLite schema through sql.js (a WebAssembly build of SQLite) persisted to IndexedDB, so both platforms share the same migrations and repositories (see "IndexedDB (web SQLite)" below).
 **Example:**
 ```tsx
 import { openDatabaseSync } from 'expo-sqlite';
@@ -236,30 +236,38 @@ await db.runAsync('INSERT INTO accounts (name, icon, color) VALUES (?, ?, ?)', '
 const accounts = await db.getAllAsync('SELECT * FROM accounts');
 ```
 
-## localStorage
-**Definition:** Browser API for storing key-value pairs persistently in the browser.
-**Explanation:** Similar to AsyncStorage but native to the browser. Data is stored as JSON strings and persists between sessions. Has a limit of ~5-10 MB depending on the browser. In Finly, it is used as an alternative to SQLite when the app runs on web, since expo-sqlite is not available in that environment.
+## IndexedDB (web SQLite)
+**Definition:** Browser database API for storing large structured data (objects, blobs) asynchronously and persistently per origin.
+**Explanation:** IndexedDB keeps the whole exported SQLite database file as a single value under the `Finly.db` store. On web the app opens the same schema with sql.js (`initSqlJs({ locateFile })`), so every query is real SQL — filtering, joins and aggregates behave identically to native. The engine writes the database bytes back once per committed transaction (never while a transaction is open), so a page reload restores exactly the committed state. IndexedDB quota (~50 MB+ per origin) is far above the old `localStorage` ceiling (~5 MB), which was the previous web backend (`src/database/webStorage.ts`, now deleted) and one of the reasons photos stayed hidden on web.
 **Example:**
-```tsx
-localStorage.setItem('@Finly/accounts', JSON.stringify(accounts));
-const raw = localStorage.getItem('@Finly/accounts');
-const accounts = raw ? JSON.parse(raw) : [];
+```ts
+import { createIndexedDbStorage } from './storage/indexedDb';
+const storage = createIndexedDbStorage();   // reads/writes the 'sqlite' record
+const bytes = await storage.get();          // Uint8Array | null
+await storage.set(exportedBytes);
 ```
 
-## Platform switching (SQLite / localStorage)
-**Definition:** Pattern that uses React Native's `Platform.OS` to automatically select the persistence implementation based on the execution environment.
-**Explanation:** Since `expo-sqlite` only works on native (Android/iOS) and `localStorage` only exists on web, an abstraction layer is created with the same interface for both implementations. An `index.ts` file exports the correct repositories using a `Platform.OS === 'web'` conditional. The rest of the app (AppContext, components) imports from `index.ts` without knowing the underlying implementation. This allows the app to work on any platform without changes to the business logic.
+## Platform-resolved database engine (one SQLite on both platforms)
+**Definition:** Pattern that opens the same `DatabaseHandle` on every platform, delegating only the *engine* selection to the platform.
+**Explanation:** Finly has a single repository layer (`src/database/repositories/*.ts`) and a single set of migrations. A factory module `src/database/engine.ts` (native) and `src/database/engine.web.ts` (web) exports an `openEngine(name)` function that returns the engine: native opens `expo-sqlite` synchronously, web loads the sql.js WASM engine bound to IndexedDB storage. `src/database/database.ts` calls `openEngine` and runs the same `PRAGMA user_version` migrations on either handle. The rest of the app (AppContext, components) imports the repositories from `src/database/index.ts` without knowing which engine backs them.
 **Example:**
 ```tsx
-// src/database/index.ts
-import { Platform } from 'react-native';
-import { accountRepo } from './repositories/accountRepo';       // SQLite
-import { webAccountRepo } from './webStorage';                   // localStorage
+// src/database/engine.ts (native)
+import { openDatabaseSync } from 'expo-sqlite';
+export async function openEngine(name: string): Promise<DatabaseHandle> {
+  return openDatabaseSync(name) as unknown as DatabaseHandle;
+}
 
-const isWeb = Platform.OS === 'web';
-export const accountRepository = isWeb ? webAccountRepo : accountRepo;
+// src/database/engine.web.ts (web)
+import { createIndexedDbStorage } from './storage/indexedDb';
+import { createSqlJsDatabase } from './sqliteWeb';
+export async function openEngine(_name: string): Promise<DatabaseHandle> {
+  const storage = createIndexedDbStorage();
+  const bytes = await storage.get();
+  return createSqlJsDatabase(bytes, storage, () => sqlWasmUrl);
+}
 
-// AppContext.tsx — consumes the correct implementation automatically
+// AppContext.tsx — consumes the repository without knowing the engine
 import { accountRepository } from '../database';
 const accounts = await accountRepository.list(userId);
 ```
@@ -594,25 +602,15 @@ await db.runAsync(
 ```
 
 ## Stale data in persistent storage
-**Definition:** Situation where data saved in the database or localStorage contains values from previous code versions that are no longer valid.
+**Definition:** Situation where data saved in the database contains values from previous code versions that are no longer valid.
 **Explanation:** When a value is corrected in the source code (e.g., renaming an icon from `gamepad-outline` to `game-controller-outline`), users who already have saved data do not receive the change automatically, because persistence retains the old values. This causes runtime errors like `"'gamepad-outline' is not a valid icon name"`. The solution is to add update logic that runs at each startup, correcting the known stale values.
 **Example:**
 ```tsx
-// webStorage.ts — migrates stale icons in localStorage
-function migrateWebCategories(): void {
-  const categories = getStore<Category>('categories');
-  const invalidIcons: Record<string, string> = {
-    'gamepad-outline': 'game-controller-outline',
-  };
-  const updated = categories.map(c => ({
-    ...c,
-    icon: invalidIcons[c.icon] ?? c.icon,
-  }));
-  setStore('categories', updated);
-}
-
-// database.ts — migrates stale icons in SQLite (at each startup)
+// database.ts — corrects stale values at each startup (single backend on all platforms)
 await db.runAsync(`UPDATE categories SET icon = 'game-controller-outline' WHERE id = 10`);
+
+// or a guarded step in the versioned migration runner (runs once per version)
+if (v < 4) { await seed004(db); } // INSERT OR IGNORE — idempotent
 ```
 
 ## Data migration vs. Schema migration
@@ -627,19 +625,16 @@ if (v < 4) { await seed004(db); }
 await db.runAsync(`UPDATE categories SET icon = ? WHERE id = ?`, newIcon, id);
 ```
 
-## Difference between native (SQLite) and web (localStorage) in migrations
-**Definition:** In native environments, migration runs once thanks to `PRAGMA user_version`; on web, data lives in `localStorage` and there is no automatic version control.
-**Explanation:** In native, SQLite preserves `PRAGMA user_version` between sessions, so each migration runs exactly once. On web, `localStorage` is a simple dictionary with no concept of version, so the data migration logic must run every time the app starts (similar to an "integrity check"). This means web migrations must be idempotent: running them multiple times produces the same result as running them once.
+## Versioned migrations across platforms (single runner)
+**Definition:** Because both native and web run real SQLite, migrations are versioned once with `PRAGMA user_version` on every platform.
+**Explanation:** SQLite preserves `PRAGMA user_version` in the database file, so each migration step runs exactly once per database. On web the exported database bytes (including the version) are stored in IndexedDB, so the same runner behaves identically to native: `database.ts` reads the version, applies each pending step inside a transaction, and writes the new version. Data migrations that correct stale values still run at every startup regardless of version.
 **Example:**
 ```tsx
-// webStorage.ts — runs every time the app starts on web
-export async function initWebStorage(): Promise<void> {
-  const users = getStore<User>('users');
-  if (users.length === 0) {
-    seedWebData();
-  } else {
-    migrateWebCategories(); // idempotent: corrects stale data
-  }
+// src/database/database.ts — one runner, any engine (expo-sqlite or sql.js)
+const row = await database.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
+if (row.user_version < 1) {
+  await createSchema(database);
+  await database.execAsync('PRAGMA user_version = 1');
 }
 ```
 

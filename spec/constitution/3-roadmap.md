@@ -30,7 +30,7 @@ d) Floating "+" button (FAB) that navigates to the "Add Expense/Income" screen.
 
 e) Category breakdown list (icon, name, percentage, total).
 
-f) Transactions are stored in SQLite (native) or localStorage (web) and loaded on app startup.
+f) Transactions are stored in SQLite on both platforms and loaded on app startup.
 
 Spec: spec/features/001-home-screen/.
 
@@ -46,7 +46,7 @@ Local database design with 7 tables:
 - `transaction_tags`: many-to-many junction between transactions and tags.
 - `config`: key-value configuration table.
 
-Schema created in a single pass (`createSchema` → `seedData` → `seedConfig`) with indexes on frequently queried columns and foreign keys with ON DELETE CASCADE. Web uses a localStorage fallback. No versioned migrations in development (DB reset manually when the schema changes).
+Schema created in a single pass (`createSchema` → `seedData` → `seedConfig`) with indexes on frequently queried columns and foreign keys with ON DELETE CASCADE. One SQLite engine on all platforms (expo-sqlite native, sql.js + IndexedDB web). Versioned migrations were introduced later in infrastructure 003-web-sqlite-engine.
 
 Spec: spec/features/002-db-design/.
 
@@ -59,7 +59,7 @@ Restructured Settings screen with 4 subsections:
 - Personalization: Home screen defaults (account, period), Add transaction defaults (account, optional fields), Privacy (hide account balances with eye icon).
 - Data: Delete all transactions, Delete all data (double confirmation).
 
-Persistent config in SQLite (native) or localStorage (web). 7 new config fields.
+Persistent config in SQLite on both platforms. 7 new config fields.
 
 Spec: spec/features/003-settings-screen/.
 
@@ -255,7 +255,7 @@ Status: completed.
 
 Tag management with database persistence:
 - `tags` table and `transaction_tags` junction table (migration 004).
-- Tag repository CRUD (native SQLite / web localStorage).
+- Tag repository CRUD (SQLite on both platforms).
 - Tags screen accessible from the Drawer with tag list + FAB.
 - Create tag screen with name validation (empty, duplicate, max 20 chars).
 - Modify/delete tag screen with name edit and delete confirmation.
@@ -328,7 +328,7 @@ Photo attachment for transactions (camera + gallery) on iOS and Android:
 - Photo display in TransactionDetailsScreen with full-screen viewer.
 - Photo preloading and replacement in ModifyTransactionScreen.
 - File cleanup on transaction delete, photo replace, and photo remove.
-- Hidden on web (localStorage quota limitations).
+- Hidden on web (native camera + file system; not checkable on web).
 - "Show photo" checkbox hidden in Settings on web.
 - Photo column added directly to 001_initial.ts (no migration — app not in production).
 
@@ -341,7 +341,7 @@ Self-healing recovery for the expo-sqlite WAL sidecar bug:
 - `initDatabase()` detects stale state (version present but `tags` table missing in `sqlite_master`).
 - On detection, deletes the database file (`.db`, `-wal`, `-shm`), reopens, and reruns all migrations (001-005).
 - Silent recovery during splash screen; healthy databases are never affected.
-- Web platform (localStorage) is unaffected.
+- Web platform is unaffected (it never used expo-sqlite WAL files).
 
 Spec: spec/infrastructure/001-expo-sqlite-wal-cleanup/.
 
@@ -353,7 +353,7 @@ Zod schema layer — single source of truth for stored row shapes + runtime vali
 - `src/database/types.ts` derives all row types via `z.infer` (same exported names; no import-site changes).
 - Native repos validate full-row reads; web `getStore` validates entity reads; both config backends fall back to `DEFAULT_CONFIG` on invalid values.
 - `dbDrift` asserts Zod schema keys exactly match migration columns.
-- Drizzle remains deferred (its SQLite driver cannot cover the localStorage web backend).
+- Drizzle remains deferred (its `expo-sqlite` driver expects a native connection; driving the custom `DatabaseHandle` engines — including sql.js on web — would need a custom adapter).
 
 Spec: spec/infrastructure/002-database-schemas/.
 

@@ -1,6 +1,6 @@
 # Finly
 
-[🇬🇧 English](README.md)
+[English](README.md) · [Català](README.ca.md)
 
 App para gestionar ingresos y gastos personales con múltiples cuentas, categorías personalizables, filtros por período y gráficos visuales.
 
@@ -20,7 +20,7 @@ App para gestionar ingresos y gastos personales con múltiples cuentas, categor�
 | Iconos | @expo/vector-icons (Ionicons) |
 | Gráficos | react-native-svg |
 | Color picker | reanimated-color-picker |
-| Persistencia | SQLite (expo-sqlite) en nativo, localStorage en web |
+| Persistencia | SQLite (expo-sqlite) en nativo, sql.js (WASM) + IndexedDB en web |
 | Web | react-native-web |
 | Estado | Context API (AppContext + ConfigContext) |
 | i18n | Sistema propio (español, inglés, catalán) |
