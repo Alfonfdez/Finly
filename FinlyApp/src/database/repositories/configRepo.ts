@@ -27,13 +27,13 @@ function parseConfig(rows: { key: string; value: string }[]): Config {
 
 export const configRepo = {
   async get(): Promise<Config> {
-    const db = getDatabase();
+    const db = await getDatabase();
     const rows = await db.getAllAsync<{ key: string; value: string }>('SELECT key, value FROM config');
     return sanitizeConfig(rows.length > 0 ? parseConfig(rows) : DEFAULT_CONFIG);
   },
 
   async save(partial: Partial<Config>): Promise<void> {
-    const db = getDatabase();
+    const db = await getDatabase();
     for (const row of toConfigRows(partial)) {
       await db.runAsync(
         'INSERT INTO config (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',

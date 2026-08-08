@@ -9,16 +9,21 @@ Defines which features behave differently across **iOS**, **Android**, and **Web
 | Platform | Engine | File |
 |----------|--------|------|
 | iOS / Android | `expo-sqlite` (async) | `src/database/repositories/*.ts` |
-| Web | `localStorage` (sync) | `src/database/webStorage.ts` |
+| Web | sql.js WASM (async API, `DatabaseHandle`) persisted to IndexedDB | `src/database/repositories/*.ts` (same set) |
 
-The repository selector lives in `src/database/index.ts`: a single `isWeb` flag swaps all five repositories at import time.
+Both platforms run the **same** migrations, repositories, and `DatabaseHandle` interface.
+The engine is resolved by platform in `src/database/engine.ts` (native → `openDatabaseSync`)
+and `src/database/engine.web.ts` (web → `SqlJsDatabase` + IndexedDB storage); there is no
+platform fork of the repository layer.
 
-### localStorage limits
+### IndexedDB limits
 
-- **Typical quota**: ~5 MB per origin (browser-dependent).
-- **Base64 image cost**: a 1 MB photo becomes ~1.33 MB in base64.
-- **Impact**: storing multiple receipt photos would exhaust the quota quickly.
-- **Decision**: photo attachment is **hidden on web entirely** (section, setting, details row).
+- **Typical quota**: ~50 MB+ per origin (browser-dependent, far above the old 5 MB
+  `localStorage` ceiling).
+- **Persistence**: the engine writes the exported SQLite bytes once per committed
+  transaction.
+- **Impact**: photos would now be viable on web, but that remains out of scope; the photo
+  feature stays hidden on web (unchanged decision).
 
 ---
 
@@ -26,9 +31,8 @@ The repository selector lives in `src/database/index.ts`: a single `isWeb` flag 
 
 | Feature | iOS / Android | Web | Rationale |
 |---------|--------------|-----|-----------|
-| SQLite storage | ✅ | ❌ | Uses `expo-sqlite` native module |
-| localStorage storage | ❌ | ✅ | Web fallback |
-| Camera / gallery (photo) | ✅ | ❌ | `expo-image-picker` is native-only; localStorage quota |
+| SQLite storage | ✅ | ✅ | Native: `expo-sqlite`; web: sql.js WASM persisted to IndexedDB (same schema, migrations and repos) |
+| Camera / gallery (photo) | ✅ | ❌ | `expo-image-picker` is native-only; photo on web still out of scope |
 | Photo section in Add/Modify | ✅ | ❌ | Hidden via `Platform.OS !== 'web'` |
 | Photo setting checkbox | ✅ | ❌ | Hidden in PersonalizationScreen |
 | Photo row in Transaction Details | ✅ | ❌ | Hidden via platform guard |
@@ -36,7 +40,7 @@ The repository selector lives in `src/database/index.ts`: a single `isWeb` flag 
 | Flag icons (emoji) | ✅ | ❌ | Web uses SVG flags (`FLAG_WEB`) instead of emoji |
 | Keyboard spacer (Android) | ✅ (Android) | ❌ | Android-specific `keyboardVerticalOffset` spacer |
 | Theme picker (system) | ✅ | ❌ (system option hidden) | Web has no "system" theme concept |
-| Data reset (full reseed) | ✅ | ✅ | Both paths reseed; web additionally calls `localStorage.clear()` |
+| Data reset (full reseed) | ✅ | ✅ | Single path: `resetDatabase()` reseeds on all platforms |
 | Notifications / haptics | Planned | ❌ | Native-only APIs, not yet implemented |
 
 ---
@@ -51,11 +55,11 @@ import { Platform } from 'react-native';
 // Hide entire section on web
 {Platform.OS !== 'web' && <PhotoSection />}
 
-// Web-specific fallback
+// Web-specific fallback (e.g., flag icons use SVG on web instead of emoji)
 if (Platform.OS === 'web') {
-  // localStorage path
+  // FLAG_WEB SVG rendering
 } else {
-  // SQLite path
+  // emoji rendering
 }
 
 // Android-only spacer
@@ -65,7 +69,7 @@ if (Platform.OS === 'web') {
 ### Rules
 
 1. **Use `Platform.OS !== 'web'`** to hide native-only UI (camera, photo section, notifications).
-2. **Use `Platform.OS === 'web'`** to branch storage logic or render web-specific fallbacks.
+2. **Use `Platform.OS === 'web'`** to render web-specific fallbacks (e.g., SVG flags). Storage logic no longer branches by platform — both use the same `DatabaseHandle`.
 3. **Use `Platform.OS === 'android'`** only for Android-specific layout adjustments (keyboard spacer).
 4. **Never assume a feature is web-available** without checking the quota/storage implications.
 5. **Document every guard** in this file when adding a new platform-dependent feature.
@@ -76,12 +80,12 @@ if (Platform.OS === 'web') {
 
 | Aspect | Decision |
 |--------|----------|
-| **Why hidden on web** | localStorage 5 MB quota cannot reliably store base64 images alongside app data |
+| **Why hidden on web** | Photo on web is out of scope (IndexedDB now has the quota for it; revisit later) |
 | **Native behavior** | Camera or gallery via `expo-image-picker`; file copied to `documentDirectory` via `expo-file-system` for persistence |
 | **Storage on native** | File URI stored in `transactions.photo` column (TEXT, nullable) |
 | **Cleanup** | File deleted from disk on transaction delete, photo replace, or manual remove |
 | **Setting** | `add_show_photo` config key controls section visibility; checkbox hidden on web too |
-| **Future consideration** | If web storage migrates to IndexedDB or cloud sync is added, photo on web may become viable |
+| **Future consideration** | Photo on web may become viable now that web storage runs on IndexedDB (sql.js engine) |
 
 ---
 

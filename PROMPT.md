@@ -1,6 +1,6 @@
 # Prompt — Copy & Paste for New Sessions
 
-This is the Finly project — a React Native/Expo personal finance app with SQLite (mobile) and localStorage (web), following Specification-Driven Development (SDD). Follow these steps to get context:
+This is the Finly project — a React Native/Expo personal finance app with SQLite (mobile) and sql.js/IndexedDB (web), following Specification-Driven Development (SDD). Follow these steps to get context:
 
 1. Read `AGENTS.md` for rules, tech stack, and conventions.
 2. Read `spec/constitution/` files for project mission, tech stack, design system, validations, screens, and platform differences (mobile vs web).

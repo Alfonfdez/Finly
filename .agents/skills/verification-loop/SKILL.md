@@ -17,7 +17,7 @@ When done, report the checklist criterion by criterion with [] or [x] and a comm
 
 Rules:
 - Criteria live in the spec: do not invent, skip, or reinterpret them. If one cannot be checked, say so.
-- The web build persists data in localStorage. Before each feature run, clear localStorage (or start from a fresh browser context) so state from previous checks never leaks into the next one.
+- The web build persists data in IndexedDB (sql.js engine). Before each feature run, start from a fresh browser context (or clear the site's IndexedDB/localStorage) so state from previous checks never leaks into the next one.
 - When a criterion mentions responsive or mobile, check it with the viewport at 375px (or 1280px for large screens).
 - Criteria that only make sense on a native device (camera/photo capture, native pickers, file system access) are reported as "not checkable on web" — never silently marked done.
 - Do not mark any feature as closed (or the verification task as done) with any criterion pending.
@@ -25,7 +25,7 @@ Rules:
 Expo web specifics:
 - The dev server is `npx expo start --web` on port 8081 (`npm run web` is an alias). Start it in the background, poll the URL until it serves HTML, and kill exactly the process you started (or free port 8081) when finished. Do not leave it running between verifications.
 - First paint can be slow on web (Metro bundling). After navigating, wait for the UI element you assert on instead of relying on fixed sleeps.
-- The web build persists data in localStorage, so a "fresh install" means a cleared localStorage before the run.
+- The web build persists data in IndexedDB (sql.js engine), so a "fresh install" means a fresh browser context with the site's IndexedDB cleared before the run.
 
 ## Mobile mode (Android emulator via Maestro)
 

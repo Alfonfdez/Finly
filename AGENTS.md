@@ -14,10 +14,10 @@
 - React Native 0.81.5 + Expo SDK 54
 - TypeScript 5.9
 - React Navigation 7 (Drawer + Native Stack)
-- SQLite (native) / localStorage (web)
+- SQLite (native) / sql.js WASM (web)
 - react-native-svg, reanimated-color-picker
 - Context API for global state
-- Platforms: iOS, Android, Web (web uses localStorage fallback)
+- Platforms: iOS, Android, Web (web runs the same SQLite schema via sql.js WASM, persisted to IndexedDB)
 
 ## GIT WORKFLOW
 - `main` — stable releases only, merged from `develop`
@@ -56,7 +56,7 @@ npx expo lint
 ## DATABASE
 - 3 idempotent migrations in `src/database/migrations/`: `001_initial` (schema), `002_seed` (seed data), `003_config` (config defaults)
 - Version counter: `src/database/database.ts` runs migrations from `PRAGMA user_version` (`SCHEMA_VERSION = 3`), applying each step (schema -> seed data -> config defaults) once inside a transaction
-- SQLite for native, localStorage for web
+- SQLite for native, sql.js (WASM) for web — one `DatabaseHandle` interface, same migrations and repositories on both platforms; web persists the database bytes to IndexedDB
 - 5 repositories: account, category, tag, transaction, config
 
 ## I18N
@@ -71,7 +71,7 @@ FinlyApp/
     components/    — Reusable UI components
     constants/     — Themes, types, colors, icons
     context/       — AppContext, ConfigContext (global state)
-    database/      — SQLite/localStorage repos, migrations, types
+    database/      — SQLite/sql.js repos, migrations, types
     hooks/         — Custom hooks (useFontSize, useTransactionFilters)
     i18n/          — Translations (en, es, ca)
     navigation/    — AppNavigator (Drawer + Stack)

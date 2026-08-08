@@ -2254,3 +2254,23 @@
 - Tests: new tests/database/schemas.test.ts (valid rows, invalid type/amount/id/missing-field cases, config accept + corrupt-value fallback); dbDrift.test.ts gained an exact-match test between Zod schema keys and migration columns for all entity tables.
 - Drizzle ORM remains deferred: its expo-sqlite driver cannot cover the localStorage web backend, so adopting it would fork the dual-storage parity Phase B enforces; it stays deferred until web storage moves to a real SQLite-in-browser engine.
 - npm run test:all (typecheck + lint + 229 tests, 23 files) green; eslint clean.
+
+[2026-08-08] ~ | FinlyApp/src/database/ (sqliteWeb.ts, database.ts, engine.ts, engine.web.ts, migrations/001_initial.ts, migrations/002_seed.ts, migrations/003_config.ts), FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/tests/database/ (sqliteMock.ts, sqliteContract.test.ts, dbDrift.test.ts), docs/ (AGENTS.md, PROMPT.md, harnesses.md), .agents/skills/verification-loop/SKILL.md
+- Web storage unification: the localStorage web backend (webStorage.ts) is removed; web now runs the exact same SQLite schema as native through a shared sql.js (WASM) engine (SqlJsDatabase in sqliteWeb.ts) persisted to IndexedDB (storage/indexedDb.ts). One DatabaseHandle interface, same migrations and repositories on both platforms — no more platform-forked repos.
+- engine.web.ts opens the engine with the IndexedDB-stored DB bytes; database.ts runs the same createSchema -> seed -> user_version migrations on either handle; repositories are now platform-agnostic.
+- DataScreen "delete all data" now always calls resetDatabase() (resets + re-seeds the engine) instead of clearing localStorage, so web and native reset identically.
+- Tests: sqliteMock.ts now reuses the shared SqlJsDatabase engine instead of a separate copy of the expo-sqlite API; deleted tests/database/webContract.test.ts (the web runner duplicated the shared engine); new tests/database/sqliteWebEngine.test.ts covers engine results (lastInsertRowId/changes), persist-on-commit + reload restore, one persist per committed transaction, no uncommitted state persisted, and full schema boot with seed counts; dbDrift.test.ts dropped the localStorage parity case (now covered by the engine itself) and now types handles as DatabaseHandle.
+- Docs updated: AGENTS.md, PROMPT.md and docs/harnesses.md describe the single sql.js/IndexedDB engine; the verification-loop skill clears IndexedDB instead of localStorage.
+- npm run test:all (typecheck + lint + 202 tests, 23 files) green; eslint clean.
+
+[2026-08-08] - | FinlyApp/src/database/webStorage.ts, FinlyApp/tests/database/webContract.test.ts
+- Deleted the localStorage web repository module and its dedicated contract test; the unified sql.js engine replaces both (see entry above).
+
+[2026-08-08] ~ | spec/infrastructure/003-web-sqlite-engine/ (1-spec.md, 2-plan.md, 3-tasks.md), spec/constitution/ (3-roadmap.md, 7-platform-differences.md), docs/changelog.md
+- Web verification loop (T3 + T17) PASS, run with Playwright against a live Expo web build on 8081:
+  - [x] Metro serves sql-wasm-browser.wasm (200 OK at /assets/?unstable_path=.../sql-wasm-browser.wasm); the app fully boots with 0 console errors, so initSqlJs({ locateFile }) loads in a real browser.
+  - [x] Fresh IndexedDB seeds the app: Home boots with the Total account, +0,00 EUR, expense/income tabs and seeded categories (My Wallet visible on AddTransaction).
+  - [x] CRUD persists across a reload: added a 12,50 EUR Groceries expense, navigated Home, then did a full page reload — Home still shows -12,50 EUR and the Groceries 100% breakdown.
+  - [x] "Delete all data" reseeds: Settings > Data > Delete all data > Confirm > typed DELETE > Confirm; after reload Home is back to factory seed (+0,00 EUR, no transactions).
+- All 9 acceptance criteria of the 003 spec marked done; T1-T20 all checked in 3-tasks.md; npm run test:all green (typecheck + lint + 202 tests, 23 files).
+- Also updated spec/constitution/7-platform-differences.md (storage matrix now SQLite on both platforms with the platform-resolved openEngine; IndexedDB limits section replaces the localStorage one; photo-on-web rationale reworded) and spec/constitution/3-roadmap.md (003-web-sqlite-engine completed).

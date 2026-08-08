@@ -356,3 +356,15 @@ Zod schema layer — single source of truth for stored row shapes + runtime vali
 - Drizzle remains deferred (its SQLite driver cannot cover the localStorage web backend).
 
 Spec: spec/infrastructure/002-database-schemas/.
+
+## 003-web-sqlite-engine (infrastructure)
+Status: completed.
+
+Unified web data layer on real SQLite (sql.js):
+- `src/database/sqliteWeb.ts` provides `SqlJsDatabase`, a `DatabaseHandle` implementation over sql.js (WASM) with IndexedDB persistence (one write per committed transaction; never while a transaction is open).
+- Web now runs the exact same migrations and repositories as native through a platform-resolved `openEngine` (`engine.ts` native / `engine.web.ts` web); `src/database/webStorage.ts` and the localStorage web repos are deleted.
+- `App.tsx` and `DataScreen` init/reset via `database.ts` on all platforms.
+- Phase B contract suite exercises the single repo set over the single engine; `sqliteWebEngine.test.ts` covers engine semantics (persistence round-trip, transaction batching, rollback).
+- Drizzle's `expo-sqlite` driver still cannot drive the web's custom `DatabaseHandle`, so Drizzle remains deferred.
+
+Spec: spec/infrastructure/003-web-sqlite-engine/.

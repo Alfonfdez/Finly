@@ -1,6 +1,6 @@
-import { type SQLiteDatabase } from 'expo-sqlite';
+import type { DatabaseHandle } from '../types';
 
-export async function createSchema(db: SQLiteDatabase) {
+export async function createSchema(db: DatabaseHandle) {
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

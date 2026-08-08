@@ -38,7 +38,7 @@ interface CategoryUsageCount {
 
 export const transactionRepo = {
   async list(filters: TransactionFilters = {}): Promise<Transaction[]> {
-    const db = getDatabase();
+    const db = await getDatabase();
     let sql = `SELECT * FROM transactions WHERE 1=1`;
     const params: (string | number)[] = [];
 
@@ -88,7 +88,7 @@ export const transactionRepo = {
   },
 
   async getById(id: number): Promise<Transaction | null> {
-    const db = getDatabase();
+    const db = await getDatabase();
     const row = await db.getFirstAsync(
       `SELECT * FROM transactions WHERE id = ?`,
       id
@@ -97,7 +97,7 @@ export const transactionRepo = {
   },
 
   async create(data: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>): Promise<Transaction> {
-    const db = getDatabase();
+    const db = await getDatabase();
     const result = await db.runAsync(
       `INSERT INTO transactions (account_id, category_id, type, amount, description, photo, date) VALUES (?, ?, ?, ?, ?, ?, ?)`,
       data.account_id, data.category_id, data.type, data.amount, data.description ?? null, data.photo ?? null, data.date
@@ -106,7 +106,7 @@ export const transactionRepo = {
   },
 
   async update(id: number, data: Partial<Omit<Transaction, 'id' | 'created_at' | 'updated_at'>>): Promise<void> {
-    const db = getDatabase();
+    const db = await getDatabase();
     const result = buildUpdateQuery(data, ['account_id', 'category_id', 'type', 'amount', 'description', 'photo', 'date']);
     if (!result) return;
     result.values.push(id);
@@ -117,13 +117,13 @@ export const transactionRepo = {
   },
 
   async delete(id: number): Promise<void> {
-    const db = getDatabase();
+    const db = await getDatabase();
     await db.runAsync(`DELETE FROM transactions WHERE id = ?`, id);
   },
 
   async deleteAllTransactions(): Promise<void> {
     await deleteTransactionPhotos('photo IS NOT NULL');
-    const db = getDatabase();
+    const db = await getDatabase();
     await db.withTransactionAsync(async () => {
       await db.runAsync('DELETE FROM transactions');
       await db.runAsync('DELETE FROM transaction_tags');
@@ -136,7 +136,7 @@ export const transactionRepo = {
     startDate: string,
     endDate: string
   ): Promise<number> {
-    const db = getDatabase();
+    const db = await getDatabase();
     const sql = accountId !== null
       ? `SELECT COALESCE(SUM(amount), 0) AS total FROM transactions WHERE account_id = ? AND type = ? AND date >= ? AND date <= ?`
       : `SELECT COALESCE(SUM(amount), 0) AS total FROM transactions WHERE type = ? AND date >= ? AND date <= ?`;
@@ -148,7 +148,7 @@ export const transactionRepo = {
   },
 
   async searchComments(search: string): Promise<string[]> {
-    const db = getDatabase();
+    const db = await getDatabase();
     const results = await db.getAllAsync<{ description: string }>(
       `SELECT DISTINCT description FROM transactions
        WHERE description IS NOT NULL AND description LIKE ?
@@ -166,7 +166,7 @@ export const transactionRepo = {
     endDate: string,
     tagIds?: number[]
   ): Promise<Map<number, CategoryTagBreakdown[]>> {
-    const db = getDatabase();
+    const db = await getDatabase();
     const accountClause = accountId === null ? '' : 'AND tr.account_id = ?';
     const accountParams = accountId === null ? [] : [accountId];
     const catPlaceholders = categoryIds.map(() => '?').join(',');
@@ -227,7 +227,7 @@ export const transactionRepo = {
     data: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>,
     tagIds: number[]
   ): Promise<Transaction> {
-    const db = getDatabase();
+    const db = await getDatabase();
     let created: Transaction | null = null;
     await db.withTransactionAsync(async () => {
       created = await transactionRepo.create(data);
@@ -249,7 +249,7 @@ export const transactionRepo = {
     data: Partial<Omit<Transaction, 'id' | 'created_at' | 'updated_at'>>,
     tagIds: number[]
   ): Promise<void> {
-    const db = getDatabase();
+    const db = await getDatabase();
     await db.withTransactionAsync(async () => {
       await transactionRepo.update(id, data);
       await db.runAsync(`DELETE FROM transaction_tags WHERE transaction_id = ?`, id);
@@ -265,7 +265,7 @@ export const transactionRepo = {
   },
 
   async getTagsByTransactionId(transactionId: number): Promise<number[]> {
-    const db = getDatabase();
+    const db = await getDatabase();
     const rows = await db.getAllAsync<{ tag_id: number }>(
       `SELECT tag_id FROM transaction_tags WHERE transaction_id = ?`,
       transactionId
@@ -275,7 +275,7 @@ export const transactionRepo = {
 
   async getTagsByTransactionIds(transactionIds: number[]): Promise<{ transaction_id: number; tag_id: number; name: string }[]> {
     if (transactionIds.length === 0) return [];
-    const db = getDatabase();
+    const db = await getDatabase();
     const placeholders = transactionIds.map(() => '?').join(',');
     return await db.getAllAsync<{ transaction_id: number; tag_id: number; name: string }>(
       `SELECT tt.transaction_id, tt.tag_id, t.name
@@ -292,7 +292,7 @@ export const transactionRepo = {
     startDate: string,
     accountId: number
   ): Promise<CategoryUsageCount[]> {
-    const db = getDatabase();
+    const db = await getDatabase();
     return await db.getAllAsync<CategoryUsageCount>(
       `SELECT c.id, c.name, c.icon, c.color, c.type, COUNT(t.id) AS count
        FROM categories c

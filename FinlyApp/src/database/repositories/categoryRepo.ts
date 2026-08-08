@@ -9,7 +9,7 @@ import { dbTimestamp } from '../../utils/formatters';
 
 export const categoryRepo = {
   async list(userId: number, type?: TransactionType): Promise<Category[]> {
-    const db = getDatabase();
+    const db = await getDatabase();
     const rows = type
       ? await db.getAllAsync(
           `SELECT * FROM categories WHERE user_id = ? AND type = ? ORDER BY name COLLATE NOCASE`,
@@ -23,7 +23,7 @@ export const categoryRepo = {
   },
 
   async create(data: Omit<Category, 'id' | 'created_at'>): Promise<Category> {
-    const db = getDatabase();
+    const db = await getDatabase();
     const result = await db.runAsync(
       `INSERT INTO categories (user_id, name, icon, color, type) VALUES (?, ?, ?, ?, ?)`,
       data.user_id, data.name, data.icon, data.color, data.type
@@ -32,14 +32,14 @@ export const categoryRepo = {
   },
 
   async update(id: number, data: Partial<Omit<Category, 'id' | 'created_at'>>): Promise<void> {
-    const db = getDatabase();
+    const db = await getDatabase();
     const result = buildUpdateQuery(data, ['name', 'icon', 'color', 'type']);
     if (!result) return;
     await db.runAsync(`UPDATE categories SET ${result.sets} WHERE id = ?`, ...result.values, id);
   },
 
   async delete(id: number): Promise<void> {
-    const db = getDatabase();
+    const db = await getDatabase();
     await deleteTransactionPhotos('category_id = ?', id);
     await db.withTransactionAsync(async () => {
       await db.runAsync(`DELETE FROM transactions WHERE category_id = ?`, id);
@@ -48,7 +48,7 @@ export const categoryRepo = {
   },
 
   async reassignAndDelete(oldCategoryId: number, newCategoryId: number): Promise<void> {
-    const db = getDatabase();
+    const db = await getDatabase();
     await db.withTransactionAsync(async () => {
       await db.runAsync(`UPDATE transactions SET category_id = ? WHERE category_id = ?`, newCategoryId, oldCategoryId);
       await db.runAsync(`DELETE FROM categories WHERE id = ?`, oldCategoryId);
@@ -56,12 +56,12 @@ export const categoryRepo = {
   },
 
   async deleteAll(): Promise<void> {
-    const db = getDatabase();
+    const db = await getDatabase();
     await db.runAsync('DELETE FROM categories');
   },
 
   async existsByName(name: string, excludeId?: number): Promise<boolean> {
-    const db = getDatabase();
+    const db = await getDatabase();
     const { sql, params } = buildNameExistsQuery('categories', name, { excludeId });
     const result = await db.getFirstAsync<{ count: number }>(sql, ...params);
     return (result?.count ?? 0) > 0;
