@@ -4,9 +4,7 @@ import { useConfig } from '../../context/ConfigContext';
 import { useApp } from '../../context/AppContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
-import { isWeb } from '../../utils/platform';
 import { transactionRepository, accountRepository, categoryRepository, tagRepository } from '../../database';
-import { initWebStorage } from '../../database/webStorage';
 import { resetDatabase } from '../../database/database';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import SettingsRow from '../../components/settings/SettingsRow';
@@ -47,12 +45,7 @@ export default function DataScreen() {
       await accountRepository.deleteAll();
       await categoryRepository.deleteAll();
       await tagRepository.deleteAll();
-      if (isWeb) {
-        localStorage.clear();
-        await initWebStorage();
-      } else {
-        await resetDatabase();
-      }
+      await resetDatabase();
       await resetAll();
     } catch (error) {
       console.error('Failed to delete all data:', error);

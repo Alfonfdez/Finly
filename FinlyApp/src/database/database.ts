@@ -1,4 +1,5 @@
-import { type SQLiteDatabase, openDatabaseSync } from 'expo-sqlite';
+import type { DatabaseHandle } from './types';
+import { openEngine } from './engine';
 import { createSchema } from './migrations/001_initial';
 import { seedData, seedDataInner } from './migrations/002_seed';
 import { seedConfig, seedConfigInner } from './migrations/003_config';
@@ -6,16 +7,16 @@ import { seedConfig, seedConfigInner } from './migrations/003_config';
 const DATABASE_NAME = 'Finly.db';
 const SCHEMA_VERSION = 3;
 
-let db: SQLiteDatabase | null = null;
+let dbPromise: Promise<DatabaseHandle> | null = null;
 
-export function getDatabase(): SQLiteDatabase {
-  if (!db) {
-    db = openDatabaseSync(DATABASE_NAME);
+export function getDatabase(): Promise<DatabaseHandle> {
+  if (!dbPromise) {
+    dbPromise = openEngine(DATABASE_NAME);
   }
-  return db;
+  return dbPromise;
 }
 
-async function migrate(database: SQLiteDatabase): Promise<void> {
+async function migrate(database: DatabaseHandle): Promise<void> {
   const row = await database.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
   const currentVersion = row?.user_version ?? 0;
 
@@ -43,22 +44,27 @@ async function migrate(database: SQLiteDatabase): Promise<void> {
   });
 }
 
-export async function initDatabase(): Promise<SQLiteDatabase> {
-  const database = getDatabase();
+let initPromise: Promise<DatabaseHandle> | null = null;
 
-  await database.execAsync('PRAGMA foreign_keys = ON;');
-  await migrate(database);
-  const user = await database.getFirstAsync<{ count: number }>('SELECT COUNT(*) AS count FROM users');
-  if ((user?.count ?? 0) === 0) {
-    await seedData(database);
-    await seedConfig(database);
+export function initDatabase(): Promise<DatabaseHandle> {
+  if (!initPromise) {
+    initPromise = (async () => {
+      const database = await getDatabase();
+      await database.execAsync('PRAGMA foreign_keys = ON;');
+      await migrate(database);
+      const user = await database.getFirstAsync<{ count: number }>('SELECT COUNT(*) AS count FROM users');
+      if ((user?.count ?? 0) === 0) {
+        await seedData(database);
+        await seedConfig(database);
+      }
+      return database;
+    })();
   }
-
-  return database;
+  return initPromise;
 }
 
 export async function resetDatabase(): Promise<void> {
-  const database = getDatabase();
+  const database = await getDatabase();
   await database.withTransactionAsync(async () => {
     await database.runAsync('DELETE FROM transactions');
     await database.runAsync('DELETE FROM transaction_tags');

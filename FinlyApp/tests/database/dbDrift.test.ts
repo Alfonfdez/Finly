@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, vi } from 'vitest';
-import type { SQLiteDatabase } from 'expo-sqlite';
+import type { DatabaseHandle } from '../../src/database/types';
 import { initSqlJsOnce, resetMockDatabase } from './sqliteMock';
 import { DB_KEY_MAP } from '../../src/database/configDefaults';
 import type { User, Account, Category, Transaction, Tag, TransactionTag } from '../../src/database/types';
@@ -26,11 +26,11 @@ beforeAll(async () => {
   await initSqlJsOnce();
 });
 
-async function freshDb(): Promise<SQLiteDatabase> {
+async function freshDb(): Promise<DatabaseHandle> {
   vi.resetModules();
   resetMockDatabase();
   const { initDatabase } = await import('../../src/database/database');
-  return (await initDatabase()) as unknown as SQLiteDatabase;
+  return initDatabase();
 }
 
 // Columns as declared in migrations/001_initial.ts: [name, declared type, NOT NULL?]
@@ -135,12 +135,12 @@ const TYPE_SAMPLES: Record<string, { sample: Record<string, unknown> }> = {
   },
 };
 
-async function countRows(db: SQLiteDatabase, table: string): Promise<number> {
+async function countRows(db: DatabaseHandle, table: string): Promise<number> {
   const row = await db.getFirstAsync<{ n: number }>(`SELECT COUNT(*) AS n FROM ${table}`);
   return row?.n ?? 0;
 }
 
-async function columns(db: SQLiteDatabase, table: string): Promise<{ name: string; type: string; notnull: number }[]> {
+async function columns(db: DatabaseHandle, table: string): Promise<{ name: string; type: string; notnull: number }[]> {
   return db.getAllAsync<{ name: string; type: string; notnull: number }>(`PRAGMA table_info(${table})`);
 }
 
@@ -209,24 +209,5 @@ describe('DB drift', () => {
     expect(await countRows(db, 'users')).toBe(1);
     expect(await countRows(db, 'accounts')).toBe(2);
     expect(await countRows(db, 'categories')).toBe(31);
-  });
-
-  it('web storage seeds the same entity counts as SQLite', async () => {
-    localStorage.clear();
-    const { initWebStorage } = await import('../../src/database/webStorage');
-    await initWebStorage();
-
-    const store = (key: string): unknown[] =>
-      JSON.parse(localStorage.getItem('@Finly/' + key) ?? '[]') as unknown[];
-    expect(store('users')).toHaveLength(1);
-    expect(store('accounts')).toHaveLength(2);
-    expect(store('categories')).toHaveLength(31);
-    expect(store('transactions')).toHaveLength(0);
-    expect(store('tags')).toHaveLength(0);
-    expect(store('transaction_tags')).toHaveLength(0);
-
-    await initWebStorage(); // re-init must not duplicate
-    expect(store('accounts')).toHaveLength(2);
-    expect(store('categories')).toHaveLength(31);
   });
 });

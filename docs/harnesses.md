@@ -42,12 +42,12 @@ acceptance criteria in a real browser.
 | Linting | `npx expo lint` (eslint-config-expo) | ✅ Implemented | Code style, unused imports, React hooks rules |
 | Module-boundary linting | `eslint-plugin-boundaries` | ✅ Implemented (Phase E) | `src/` layer DAG — inverted/cyclic imports are lint errors |
 | Schema layer + validation | Zod 4 (`src/database/schemas.ts`) | ✅ Implemented (Phase F) | Row types derived via `z.infer`; read-path validation in native + web backends; schema-vs-migration drift test |
-| Dual-storage contract suite | Vitest + sql.js (real SQLite in Node) | ✅ Implemented (Phase B) | Web (`localStorage`) vs native (SQLite) repo parity + DB drift vs types |
+| Dual-storage contract suite | Vitest + sql.js (real SQLite in Node) | ✅ Implemented (Phase B) | One shared SQLite engine (native parity via expo-sqlite mock + web via sql.js/IndexedDB), repo contract + DB drift vs types |
 | UI / E2E verification | Playwright MCP + `verification-loop` skill | ✅ Implemented (Phase C) | Spec acceptance criteria in a live Expo web app |
 | CI pipeline | GitHub Actions (`.github/workflows/ci.yml`) | ✅ Implemented | `npm run test:all` on every PR to `develop`/`main` and push to those branches |
 | SDD alignment | `spec/` + changelog + test mapping | ✅ In use | Every feature spec maps to tests + changelog entries |
 
-Deferred (not planned yet): Drizzle ORM (needs web storage to move to real SQLite in the browser first).
+Deferred (not planned yet): Drizzle ORM (its `expo-sqlite` driver cannot drive the web's custom `DatabaseHandle` — see Phase F).
 
 ## Phase A — Pure-logic unit tests (implemented)
 
@@ -66,32 +66,38 @@ Regression seeds come from real bugs previously fixed in this project.
 | `tests/utils/color.test.ts` | `src/utils/color.ts` — `withAlpha` clamping and rounding |
 | `tests/database/helpers.test.ts` | `src/database/helpers.ts` — `isTotalAccount`, `buildUpdateQuery`, `buildNameExistsQuery` |
 
-## Phase B — Dual-storage contract suite (implemented)
+## Phase B — Unified SQLite engine + contract suite (implemented)
 
-Finly stores data in **SQLite (native)** and **localStorage (web)** through mirror
-repositories selected in `src/database/index.ts`. The two layers have historically drifted
-(sort order, `COALESCE`/`HAVING` untagged rows, category usage type filter). The contract
-suite eliminates that drift:
+Finly stores data in **SQLite on both platforms** through one shared engine: `expo-sqlite`
+on native and a **sql.js (WASM)** engine on web persisted to **IndexedDB** (the same DB bytes
+are reloaded on each launch). Both expose the same `DatabaseHandle` interface
+(`src/database/types.ts`), so `src/database/` holds one set of migrations and repositories
+used identically on every platform. The harness guarantees that parity:
 
 - One shared scenario suite (CRUD, `existsByName` + `excludeId`, balances/total-account,
   `reassignAndDelete`, `totalByPeriod`, breakdowns, tag cascade, config defaults, category
-  usage counts) executed against **both** backends, asserting exact values **and order**.
-- **Web backend**: `webStorage.ts` repos over a fresh `localStorage` (happy-dom).
-- **Native backend**: native repos over `expo-sqlite` **mocked with sql.js** — real SQLite
-  running in Node (WASM), so true SQL semantics are exercised without a device.
+  usage counts) executed against the real repos over the shared sql.js engine, asserting
+  exact values **and order**.
+- **Engine tests**: `sqliteWebEngine.test.ts` asserts the sql.js engine's own semantics —
+  `lastInsertRowId`/`changes`, persist-on-commit + reload restore, one persist per committed
+  transaction (not per statement), never persisting uncommitted state, and a full schema
+  boot with the expected seed counts.
+- **Native parity**: the same engine backs the `expo-sqlite` mock (`sqliteMock.ts`), so the
+  native repos run against real SQLite semantics in Node (WASM) without a device.
 - **DB drift test**: after running migrations on sql.js, `PRAGMA table_info` must match
-  `src/database/types.ts` and the web storage fields; seed row counts must match the seed
-  data. This catches a column added to a migration that types or web storage forgot.
+  `src/database/types.ts`; seed row counts must match the seed data, `user_version` must be
+  3, config rows must equal `DB_KEY_MAP`, and re-init must be idempotent. This catches a
+  column added to a migration that the types forgot.
 
 Test files (under `FinlyApp/tests/database/`):
 
 | Test file | What it verifies |
 |-----------|------------------|
-| `contractSuite.ts` + `contractTypes.ts` | The shared scenario suite run against a `ContractBackend` (web and native runners are two instances of it) |
-| `sqliteContract.test.ts` | Native repos (`account/category/tag/transaction/config`) over the sql.js mock pass the suite |
-| `webContract.test.ts` | Web repos (`webStorage.ts`) pass the same suite |
-| `sqliteMock.ts` | `expo-sqlite` → sql.js adapter (`run/getAll/getFirst/exec/withTransaction`, `lastInsertRowid` via `SELECT last_insert_rowid()`, eager sql.js init so fresh module copies work after `vi.resetModules()`) |
-| `dbDrift.test.ts` | Schema drift: 7 tables' `PRAGMA table_info` vs declared columns, every `types.ts` field covered by a migration column, `user_version` 3, seed counts (1 user / 2 accounts / 31 categories / 0 transactions), config rows == `DB_KEY_MAP`, init idempotence, web parity |
+| `contractSuite.ts` + `contractTypes.ts` | The shared scenario suite run against a `ContractBackend` (repos over the shared engine) |
+| `sqliteContract.test.ts` | The repos (`account/category/tag/transaction/config`) over the sql.js engine pass the suite |
+| `sqliteMock.ts` | `expo-sqlite` → shared sql.js engine adapter (`openDatabaseSync` backed by `SqlJsDatabase`) |
+| `sqliteWebEngine.test.ts` | Engine semantics: results, persistence, transactions, schema boot + seed counts |
+| `dbDrift.test.ts` | Schema drift: 7 tables' `PRAGMA table_info` vs declared columns, every `types.ts` field covered by a migration column, `user_version` 3, seed counts (1 user / 2 accounts / 31 categories / 0 transactions), config rows == `DB_KEY_MAP`, init idempotence |
 
 Run the suite alone with `npx vitest run tests/database/` (or all harnesses with `npm run
 test:all`).
@@ -322,9 +328,10 @@ data is validated at the storage boundary of both backends (spec
   match the migration columns for all entity tables — a column added to a migration without
   the schema (or vice versa) fails the suite. `tests/database/schemas.test.ts` covers the
   accept/reject matrix and config fallback.
-- **Drizzle is deferred:** its `expo-sqlite` driver can't cover the localStorage web
-  backend, so adopting it would fork the dual-storage parity Phase B enforces. It stays
-  deferred until web storage moves to a real SQLite-in-browser engine.
+- **Drizzle is deferred:** web storage now runs real SQLite (sql.js) but through a custom
+  `DatabaseHandle` that is not an `expo-sqlite` driver, so Drizzle's `expo-sqlite` driver
+  still cannot cover it. It stays deferred until the web engine is exposed through an
+  ORM-compatible driver.
 
 ## Adding a test
 

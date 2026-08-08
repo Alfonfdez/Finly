@@ -8,7 +8,6 @@ import { AppProvider } from './src/context/AppContext';
 import { ConfigProvider } from './src/context/ConfigContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import { initDatabase } from './src/database/database';
-import { initWebStorage } from './src/database/webStorage';
 
 const MIN_SPLASH_MS = 2000;
 const EXIT_DURATION = 400;
@@ -73,11 +72,7 @@ export default function App() {
 
     async function setup() {
       try {
-        if (Platform.OS === 'web') {
-          await initWebStorage();
-        } else {
-          await initDatabase();
-        }
+        await initDatabase();
         setDbReady(true);
       } catch (error) {
         setDbError(String(error));

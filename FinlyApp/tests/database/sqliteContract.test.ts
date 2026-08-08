@@ -1,5 +1,5 @@
 import { describe, beforeAll, vi } from 'vitest';
-import type { SQLiteDatabase } from 'expo-sqlite';
+import type { DatabaseHandle } from '../../src/database/types';
 import { initSqlJsOnce, resetMockDatabase, openDatabaseSync } from './sqliteMock';
 import type { ContractBackend } from './contractTypes';
 import { runContractSuite } from './contractSuite';
@@ -27,15 +27,15 @@ describe('sqlite contract', () => {
     vi.resetModules();
     resetMockDatabase();
 
-    const db = openDatabaseSync('Finly.db');
+    const db = openDatabaseSync('Finly.db') as DatabaseHandle;
     await db.execAsync('PRAGMA foreign_keys = ON;');
 
     const { createSchema } = await import('../../src/database/migrations/001_initial');
     const { seedDataInner } = await import('../../src/database/migrations/002_seed');
     const { seedConfigInner } = await import('../../src/database/migrations/003_config');
-    await createSchema(db as unknown as SQLiteDatabase);
-    await seedDataInner(db as unknown as SQLiteDatabase);
-    await seedConfigInner(db as unknown as SQLiteDatabase);
+    await createSchema(db);
+    await seedDataInner(db);
+    await seedConfigInner(db);
 
     const { accountRepo } = await import('../../src/database/repositories/accountRepo');
     const { categoryRepo } = await import('../../src/database/repositories/categoryRepo');

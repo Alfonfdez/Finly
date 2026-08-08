@@ -1,13 +1,13 @@
-import { type SQLiteDatabase } from 'expo-sqlite';
+import type { DatabaseHandle } from '../types';
 import { SEED_USER_DATA, SEED_ACCOUNTS, SEED_CATEGORIES } from '../seedData';
 
-export async function seedData(db: SQLiteDatabase) {
+export async function seedData(db: DatabaseHandle) {
   await db.withTransactionAsync(async () => {
     await seedDataInner(db);
   });
 }
 
-export async function seedDataInner(db: SQLiteDatabase) {
+export async function seedDataInner(db: DatabaseHandle) {
   await db.runAsync(
     `INSERT OR IGNORE INTO users (id, name, email, currency) VALUES (?, ?, ?, ?)`,
     SEED_USER_DATA.id, SEED_USER_DATA.name, SEED_USER_DATA.email, SEED_USER_DATA.currency
