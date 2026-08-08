@@ -2256,7 +2256,7 @@
 - npm run test:all (typecheck + lint + 229 tests, 23 files) green; eslint clean.
 
 [2026-08-08] ~ | FinlyApp/src/database/ (sqliteWeb.ts, database.ts, engine.ts, engine.web.ts, migrations/001_initial.ts, migrations/002_seed.ts, migrations/003_config.ts), FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/tests/database/ (sqliteMock.ts, sqliteContract.test.ts, dbDrift.test.ts), docs/ (AGENTS.md, PROMPT.md, harnesses.md), .agents/skills/verification-loop/SKILL.md
-- Web storage unification: the localStorage web backend (webStorage.ts) is removed; web now runs the exact same SQLite schema as native through a shared sql.js (WASM) engine (SqlJsDatabase in sqliteWeb.ts) persisted to IndexedDB (storage/indexedDb.ts). One DatabaseHandle interface, same migrations and repositories on both platforms � no more platform-forked repos.
+- Web storage unification: the localStorage web backend (webStorage.ts) is removed; web now runs the exact same SQLite schema as native through a shared sql.js (WASM) engine (SqlJsDatabase in sqliteWeb.ts) persisted to IndexedDB (storage/indexedDb.ts). One DatabaseHandle interface, same migrations and repositories on both platforms � no more platform-forked repos.
 - engine.web.ts opens the engine with the IndexedDB-stored DB bytes; database.ts runs the same createSchema -> seed -> user_version migrations on either handle; repositories are now platform-agnostic.
 - DataScreen "delete all data" now always calls resetDatabase() (resets + re-seeds the engine) instead of clearing localStorage, so web and native reset identically.
 - Tests: sqliteMock.ts now reuses the shared SqlJsDatabase engine instead of a separate copy of the expo-sqlite API; deleted tests/database/webContract.test.ts (the web runner duplicated the shared engine); new tests/database/sqliteWebEngine.test.ts covers engine results (lastInsertRowId/changes), persist-on-commit + reload restore, one persist per committed transaction, no uncommitted state persisted, and full schema boot with seed counts; dbDrift.test.ts dropped the localStorage parity case (now covered by the engine itself) and now types handles as DatabaseHandle.
@@ -2270,7 +2270,17 @@
 - Web verification loop (T3 + T17) PASS, run with Playwright against a live Expo web build on 8081:
   - [x] Metro serves sql-wasm-browser.wasm (200 OK at /assets/?unstable_path=.../sql-wasm-browser.wasm); the app fully boots with 0 console errors, so initSqlJs({ locateFile }) loads in a real browser.
   - [x] Fresh IndexedDB seeds the app: Home boots with the Total account, +0,00 EUR, expense/income tabs and seeded categories (My Wallet visible on AddTransaction).
-  - [x] CRUD persists across a reload: added a 12,50 EUR Groceries expense, navigated Home, then did a full page reload � Home still shows -12,50 EUR and the Groceries 100% breakdown.
+  - [x] CRUD persists across a reload: added a 12,50 EUR Groceries expense, navigated Home, then did a full page reload � Home still shows -12,50 EUR and the Groceries 100% breakdown.
   - [x] "Delete all data" reseeds: Settings > Data > Delete all data > Confirm > typed DELETE > Confirm; after reload Home is back to factory seed (+0,00 EUR, no transactions).
 - All 9 acceptance criteria of the 003 spec marked done; T1-T20 all checked in 3-tasks.md; npm run test:all green (typecheck + lint + 202 tests, 23 files).
 - Also updated spec/constitution/7-platform-differences.md (storage matrix now SQLite on both platforms with the platform-resolved openEngine; IndexedDB limits section replaces the localStorage one; photo-on-web rationale reworded) and spec/constitution/3-roadmap.md (003-web-sqlite-engine completed).
+
+[2026-08-08] ~ | docs/programming-concepts.md, docs/harnesses.md, spec/constitution/ (2-tech-stack.md, 3-roadmap.md), README.md, README.es.md, README.ca.md (new)
+- Docs storage cleanup: live documentation no longer references the retired localStorage/webStorage architecture.
+- programming-concepts.md: SQLite section now covers both platforms; new "IndexedDB (web SQLite)" concept section; "localStorage" and "Platform switching (SQLite / localStorage)" sections replaced by "Platform-resolved database engine" (engine.ts / engine.web.ts / openEngine); stale-data example rewritten around database.ts; native-vs-web migrations section replaced by "Versioned migrations across platforms" (single PRAGMA user_version runner).
+- harnesses.md: verification loop clears IndexedDB (not localStorage).
+- 2-tech-stack.md: database file tree reflects the current structure (engine.ts, engine.web.ts, sqliteWeb.ts, storage/indexedDb.ts; webStorage.ts and userRepo.ts removed); persistence convention now "one SQLite engine on all platforms".
+- 3-roadmap.md: removed stale "(native) / localStorage (web)" phrasing from the 001/002/003/018/023 entries and the WAL-cleanup / 002-database-schemas notes; Drizzle rationale refreshed (custom DatabaseHandle needs a custom adapter).
+- README.md / README.es.md: Persistence row updated (sql.js WASM + IndexedDB on web); language links now plain text ([Español] · [Català] / [English] · [Català]).
+- New README.ca.md: full Catalan translation of the English README, linking [English] and [Español].
+- Historical entries in spec/features/* and completed infrastructure specs were intentionally left untouched.

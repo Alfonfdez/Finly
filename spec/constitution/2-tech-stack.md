@@ -83,16 +83,18 @@ FinlyApp/
 |   |   +-- ConfigContext.tsx        <- user preferences (theme, currency, language)
 |   |
 |   +-- database/
-|   |   +-- database.ts             <- SQLite initialization (runs initial schema + seed + config)
+|   |   +-- database.ts             <- shared SQLite init: applies schema + seed + config migrations (PRAGMA user_version)
+|   |   +-- engine.ts               <- native engine: opens the expo-sqlite database
+|   |   +-- engine.web.ts           <- web engine: sql.js (WASM) + IndexedDB persistence
+|   |   +-- sqliteWeb.ts            <- SqlJsDatabase: sql.js engine with autocommit + export/import
+|   |   +-- storage/indexedDb.ts    <- IndexedDB persistence for the exported SQLite bytes
 |   |   +-- types.ts                <- TypeScript entity interfaces
-|   |   +-- index.ts                <- platform switching (SQLite vs localStorage)
-|   |   +-- webStorage.ts           <- localStorage fallback for web
+|   |   +-- index.ts                <- exports repositories for all platforms (single DatabaseHandle)
 |   |   +-- migrations/
 |   |   |   +-- 001_initial.ts      <- CREATE TABLE (users, accounts, categories, transactions, tags, transaction_tags, config) + indexes
 |   |   |   +-- 002_seed.ts         <- default user, 1 account, 31 categories
 |   |   |   +-- 003_config.ts       <- config default values (table created in 001)
 |   |   +-- repositories/
-|   |       +-- userRepo.ts         <- user CRUD
 |   |       +-- accountRepo.ts      <- account CRUD + balance calculation + deleteAll()
 |   |       +-- categoryRepo.ts     <- category CRUD + deleteAll()
 |   |       +-- transactionRepo.ts  <- transaction CRUD + aggregations + deleteAllTransactions()
@@ -133,4 +135,4 @@ See **`4-design-system.md`** for colors, typography, icons, and layout conventio
 - Mobile-first: all components designed for touch screens.
 - Clean code with single-responsibility components.
 - i18n: all user-facing strings go through the translation system (i18n/).
-- Persistence: switching via Platform.OS — SQLite on native, localStorage on web.
+- Persistence: one SQLite engine on all platforms — expo-sqlite on native, sql.js (WASM) + IndexedDB on web — selected per platform by `engine.ts` / `engine.web.ts`.

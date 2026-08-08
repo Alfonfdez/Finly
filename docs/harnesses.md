@@ -121,8 +121,8 @@ server and the **`verification-loop`** skill, instead of by reading code.
 - `AGENTS.md` documents that "verified" means `npm run test:all` green and that changes to
   `src/utils/` / `src/database/` logic must include or update tests.
 - `verification-loop` skill: runs `test:all`, boots `npx expo start --web` on port 8081,
-  opens the app in a fresh browser context (cleared `localStorage`, since web persists
-  there), and checks each spec's acceptance criteria by real interaction — viewport 375px
+  opens the app in a fresh browser context (cleared IndexedDB, since web persists there
+  through sql.js WASM), and checks each spec's acceptance criteria by real interaction — viewport 375px
   for mobile/responsive criteria, 3-attempt cap per criterion, dev server terminated when
   done. Native-only criteria (camera/photo) are reported as not checkable on web, never
   marked done.

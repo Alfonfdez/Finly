@@ -1,6 +1,6 @@
 # Finly
 
-[🇪🇸 Español](README.es.md)
+[Español](README.es.md) · [Català](README.ca.md)
 
 A personal finance app for tracking income and expenses with multiple accounts, customizable categories, period filters, and visual charts.
 
@@ -20,7 +20,7 @@ A personal finance app for tracking income and expenses with multiple accounts, 
 | Icons | @expo/vector-icons (Ionicons) |
 | Charts | react-native-svg |
 | Color picker | reanimated-color-picker |
-| Persistence | SQLite (expo-sqlite) on native, localStorage on web |
+| Persistence | SQLite (expo-sqlite) on native, sql.js (WASM) + IndexedDB on web |
 | Web | react-native-web |
 | State | Context API (AppContext + ConfigContext) |
 | i18n | Custom system (English, Spanish, Catalan) |
