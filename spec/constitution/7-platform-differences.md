@@ -43,6 +43,7 @@ platform fork of the repository layer.
 | Keyboard spacer (Android) | ✅ (Android) | ❌ | Android-specific `keyboardVerticalOffset` spacer |
 | Theme picker (system) | ✅ | ❌ (system option hidden) | Web has no "system" theme concept |
 | Data reset (full reseed) | ✅ | ✅ | Single path: `resetDatabase()` reseeds on all platforms |
+| Data export / import (backup) | ✅ | ✅ | Same JSON snapshot format on all platforms. Native: written to `documentDirectory` + `expo-sharing` share sheet; import via `expo-document-picker`. Web: browser download (`Blob` + `<a download>`) and file-input import (`FileReader`) |
 | Notifications / haptics | Planned | ❌ | Native-only APIs, not yet implemented |
 
 ---

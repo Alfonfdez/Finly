@@ -95,6 +95,21 @@ describe('sql.js web engine', () => {
     reloaded.close();
   });
 
+  it('keeps foreign keys enabled after persisting (export must not reset the pragma)', async () => {
+    const storage = new MemoryStorage();
+    const db = await createSqlJsDatabase(null, storage);
+    await db.execAsync('PRAGMA foreign_keys = ON;');
+    await db.execAsync(
+      'CREATE TABLE accounts (id INTEGER PRIMARY KEY, name TEXT);' +
+        'CREATE TABLE transactions (id INTEGER PRIMARY KEY, account_id INTEGER REFERENCES accounts(id));'
+    );
+    await db.runAsync('INSERT INTO accounts (id, name) VALUES (1, ?)', 'a');
+    const fk = await db.getFirstAsync<{ foreign_keys: number }>('PRAGMA foreign_keys');
+    expect(fk?.foreign_keys).toBe(1);
+    await expect(db.runAsync('INSERT INTO transactions (id, account_id) VALUES (1, ?)', 999)).rejects.toThrow();
+    db.close();
+  });
+
   it('boots the app schema and seeds the expected rows', async () => {
     const db = await boot();
     const count = (table: string): Promise<number> =>

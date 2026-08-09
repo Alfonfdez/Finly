@@ -4,15 +4,25 @@ import { useConfig } from '../../context/ConfigContext';
 import { useApp } from '../../context/AppContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
-import { transactionRepository, accountRepository, categoryRepository, tagRepository } from '../../database';
+import {
+  transactionRepository,
+  accountRepository,
+  categoryRepository,
+  tagRepository,
+  configRepository,
+  exportBackup,
+  importBackup,
+  BackupValidationError,
+} from '../../database';
 import { resetDatabase } from '../../database/database';
+import { saveBackupFile, pickBackupFile } from '../../utils/backupIO';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import SettingsRow from '../../components/settings/SettingsRow';
 import { settingsStyles } from '../../components/settings/settingsStyles';
 import { DELETE_ALL_CONFIRMATION } from '../../constants/types';
 
 export default function DataScreen() {
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, updateConfig } = useConfig();
   const { resetAll } = useApp();
   const fs = useFontSize();
   const labels = t();
@@ -21,6 +31,50 @@ export default function DataScreen() {
   const [deleteAllModal1, setDeleteAllModal1] = useState(false);
   const [deleteAllModal2, setDeleteAllModal2] = useState(false);
   const [deleteAllText, setDeleteAllText] = useState('');
+  const [importModalVisible, setImportModalVisible] = useState(false);
+  const [pendingImport, setPendingImport] = useState<string | null>(null);
+
+  const handleExport = async () => {
+    try {
+      const json = await exportBackup();
+      await saveBackupFile(json);
+      Alert.alert(labels.settings_export_success_title, labels.settings_export_success_message);
+    } catch (error) {
+      console.error('Failed to export data:', error);
+      Alert.alert(labels.settings_export_error_title, labels.settings_export_error_message);
+    }
+  };
+
+  const handlePickImport = async () => {
+    try {
+      const json = await pickBackupFile();
+      if (json === null) return;
+      setPendingImport(json);
+      setImportModalVisible(true);
+    } catch (error) {
+      console.error('Failed to read backup file:', error);
+      Alert.alert(labels.settings_import_error_title, labels.settings_import_error_message);
+    }
+  };
+
+  const handleConfirmImport = async () => {
+    if (pendingImport === null) return;
+    try {
+      await importBackup(pendingImport);
+      await resetAll();
+      updateConfig(await configRepository.get());
+      Alert.alert(labels.settings_import_success_title, labels.settings_import_success_message);
+    } catch (error) {
+      console.error('Failed to import data:', error);
+      if (error instanceof BackupValidationError) {
+        Alert.alert(labels.settings_import_invalid_title, labels.settings_import_invalid_message);
+      } else {
+        Alert.alert(labels.settings_import_error_title, labels.settings_import_error_message);
+      }
+    }
+    setImportModalVisible(false);
+    setPendingImport(null);
+  };
 
   const closeDeleteAll = () => {
     setDeleteAllModal1(false);
@@ -59,6 +113,20 @@ export default function DataScreen() {
   return (
     <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
       <SettingsRow
+        icon="download-outline"
+        iconColor={c.primary}
+        label={labels.settings_export_data}
+        onPress={handleExport}
+      />
+
+      <SettingsRow
+        icon="cloud-upload-outline"
+        iconColor={c.primary}
+        label={labels.settings_import_data}
+        onPress={handlePickImport}
+      />
+
+      <SettingsRow
         icon="trash-outline"
         iconColor={c.red}
         label={labels.settings_delete_all_transactions}
@@ -82,6 +150,19 @@ export default function DataScreen() {
         cancelLabel={labels.cancel}
         onConfirm={handleDeleteTransactions}
         onCancel={() => setDeleteTransactionsModal(false)}
+      />
+
+      <ConfirmationModal
+        visible={importModalVisible}
+        title={labels.settings_import_confirm_title}
+        message={labels.settings_import_confirm_message}
+        confirmLabel={labels.settings_delete_confirm}
+        cancelLabel={labels.cancel}
+        onConfirm={handleConfirmImport}
+        onCancel={() => {
+          setImportModalVisible(false);
+          setPendingImport(null);
+        }}
       />
 
       <ConfirmationModal

@@ -5,7 +5,7 @@ import { seedData, seedDataInner } from './migrations/002_seed';
 import { seedConfig, seedConfigInner } from './migrations/003_config';
 
 const DATABASE_NAME = 'Finly.db';
-const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 3;
 
 let dbPromise: Promise<DatabaseHandle> | null = null;
 

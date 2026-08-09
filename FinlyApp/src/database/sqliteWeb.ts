@@ -102,6 +102,7 @@ export class SqlJsDatabase implements DatabaseHandle {
   private persistIfCommitted(): Promise<void> {
     if (this.inTransaction > 0 || !this.storage) return Promise.resolve();
     const bytes = this.db.export();
+    this.db.exec('PRAGMA foreign_keys = ON;');
     this.persistQueue = this.persistQueue
       .then(() => this.storage!.set(bytes))
       .catch((error) => {
