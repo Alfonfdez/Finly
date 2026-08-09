@@ -347,6 +347,20 @@ Photo attachment extended to web, closing the last platform gap from 023:
 
 Spec: spec/features/024-photo-on-web/.
 
+## 025-data-backup
+Status: completed.
+
+Data export / import (backup) on iOS, Android, and web:
+- Export the whole database (users, accounts, categories, transactions incl. photos, tags, tag links, config) as a versioned JSON snapshot; import restores it.
+- One shared code path through the unified `DatabaseHandle` (`src/database/backup.ts` + `backupService.ts`); import is transactional (FK-safe delete/insert order, rollback on any violation).
+- Import reuses the row Zod schemas for validation and is gated by an explicit confirmation modal (replaces all current data).
+- Web: `Blob` + `<a download>` for export, programmatic `<input type="file">` + `FileReader` for import. Native: file written to `documentDirectory` and shared via `expo-sharing`; import via `expo-document-picker`.
+- Post-import reload: `resetAll()` (AppContext) + `updateConfig(configRepository.get())`.
+- UI: "Export data" / "Import data" rows in DataScreen above the delete rows (SettingsRow, theme + text-size aware, multilingual en/es/ca).
+- Tests: snapshot build/parse/apply round-trips on a real sql.js DB, empty-DB export, invalid/FK/version rejection with rollback, facade round-trip and newer-version guard.
+
+Spec: spec/features/025-data-backup/.
+
 ## 001-expo-sqlite-wal-cleanup (infrastructure)
 Status: completed.
 

@@ -43,6 +43,7 @@ acceptance criteria in a real browser.
 | Module-boundary linting | `eslint-plugin-boundaries` | ✅ Implemented (Phase E) | `src/` layer DAG — inverted/cyclic imports are lint errors |
 | Schema layer + validation | Zod 4 (`src/database/schemas.ts`) | ✅ Implemented (Phase F) | Row types derived via `z.infer`; read-path validation in native + web backends; schema-vs-migration drift test |
 | Dual-storage contract suite | Vitest + sql.js (real SQLite in Node) | ✅ Implemented (Phase B) | One shared SQLite engine (native parity via expo-sqlite mock + web via sql.js/IndexedDB), repo contract + DB drift vs types |
+| Backup round-trip | Vitest + sql.js (`tests/database/backup.test.ts`) | ✅ Implemented (025) | Snapshot build/parse/apply round-trips (photos + tag links), empty-DB export, invalid / FK / newer-version rejection with rollback, facade round-trip |
 | UI / E2E verification | Playwright MCP + `verification-loop` skill | ✅ Implemented (Phase C) | Spec acceptance criteria in a live Expo web app |
 | CI pipeline | GitHub Actions (`.github/workflows/ci.yml`) | ✅ Implemented | `npm run test:all` on every PR to `develop`/`main` and push to those branches |
 | SDD alignment | `spec/` + changelog + test mapping | ✅ In use | Every feature spec maps to tests + changelog entries |

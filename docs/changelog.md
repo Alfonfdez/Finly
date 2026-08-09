@@ -2308,3 +2308,12 @@
   - [x] deletePhotoFile no-op on data: URIs and parsePhotos data-URI round-trips are covered by unit tests (photoUtils.test.ts); multiline/es/ca texts and theme/text-size respected via the existing 023 i18n labels.
   - [x] npm run test:all green after the key fixes (typecheck + lint + 213 tests, 25 files).
 - Camera capture stays "not checkable on web"; native-only criteria (camera) are out of the web loop by design.
+
+[2026-08-08] + | FinlyApp/src/database/ (backup.ts, backupService.ts), FinlyApp/src/utils/ (backupIO.ts, backupIO.web.ts), FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/src/i18n/ (en.ts, es.ts, ca.ts), FinlyApp/tests/database/backup.test.ts, FinlyApp/package.json, spec/features/025-data-backup/, spec/constitution/ (3-roadmap.md, 7-platform-differences.md), docs/harnesses.md
+- Feature 025 Data Export/Import (backup): export the whole database (users, accounts, categories, transactions incl. photos, tags, tag links, config) as a versioned JSON snapshot and restore it on any platform.
+- src/database/backup.ts: pure DB layer (buildBackup / parseBackup / applyBackup) over the shared DatabaseHandle — snapshot schema with formatVersion 1 + schema guard, import reuses the row Zod schemas, transactional apply (FK-safe delete order, dependency-order inserts, full rollback on any violation).
+- src/database/backupService.ts: exportBackup() / importBackup() facades (newer-version guard); re-exported from src/database/index.ts (split out so tests never pull the repository layer's expo-file-system import).
+- src/utils/backupIO.ts (native) + backupIO.web.ts (web): native writes to documentDirectory via expo-file-system and shares via expo-sharing, imports via expo-document-picker; web downloads via Blob + <a download> and imports via a programmatic <input type="file"> + FileReader. Added expo-sharing + expo-document-picker (SDK 54) deps.
+- DataScreen: "Export data" / "Import data" SettingsRows above the delete rows; import gated by a ConfirmationModal, then resetAll() + updateConfig(configRepository.get()).
+- Tests (backup.test.ts, 11 tests): snapshot collections match schema tables, serialize/parse round-trip, empty-DB export, full round-trip restoring photos (data URIs) + tag links, invalid JSON/format/rows rejection, FK-violation rollback leaving data unchanged, facade round-trip and newer-version guard.
+- test:all green (typecheck + lint + 224 tests, 26 files).
