@@ -57,7 +57,7 @@ Restructured Settings screen with 4 subsections:
 - Appearance: Theme, Text size, Account icon shape, Category icon shape.
 - Regional: Language, Currency, Decimal separator, First day of week.
 - Personalization: Home screen defaults (account, period), Add transaction defaults (account, optional fields), Privacy (hide account balances with eye icon).
-- Data: Delete all transactions, Delete all data (double confirmation).
+- Data: Delete all transactions, Delete all data (settings kept), Reset to factory state (all double-confirmation flows).
 
 Persistent config in SQLite on both platforms. 7 new config fields.
 

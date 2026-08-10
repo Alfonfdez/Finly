@@ -31,6 +31,16 @@ export default function PersonalizationScreen() {
     ...allAccounts.filter(a => !isTotalAccount(a)).sort((a, b) => a.name.localeCompare(b.name)).map(a => ({ label: getDisplayAccountName(a), value: String(a.id) })),
   ];
 
+  const homeSelected =
+    config.homeDefaultAccountId !== null && homeAccounts.some(o => o.value === String(config.homeDefaultAccountId))
+      ? String(config.homeDefaultAccountId)
+      : 'total';
+
+  const addSelected =
+    config.addDefaultAccountId !== null && addAccounts.some(o => o.value === String(config.addDefaultAccountId))
+      ? String(config.addDefaultAccountId)
+      : 'null';
+
   const PERIODS: Option<Period>[] = [
     { label: labels.settings_home_default_period_day, value: 'day' },
     { label: labels.settings_home_default_period_week, value: 'week' },
@@ -44,7 +54,7 @@ export default function PersonalizationScreen() {
       <SettingsSelectRow
         label={labels.settings_default_account}
         options={homeAccounts}
-        selected={config.homeDefaultAccountId === null ? 'total' : String(config.homeDefaultAccountId)}
+        selected={homeSelected}
         onSelect={(v) => updateConfig({ homeDefaultAccountId: v === 'total' ? null : Number(v) })}
       />
       <SettingsSelectRow
@@ -58,7 +68,7 @@ export default function PersonalizationScreen() {
       <SettingsSelectRow
         label={labels.settings_default_account}
         options={addAccounts}
-        selected={config.addDefaultAccountId === null ? 'null' : String(config.addDefaultAccountId)}
+        selected={addSelected}
         onSelect={(v) => updateConfig({ addDefaultAccountId: v === 'null' ? null : Number(v) })}
       />
       <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>

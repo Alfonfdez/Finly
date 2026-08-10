@@ -23,7 +23,7 @@ The main screen displays 4 subsection rows:
 | 1 | `color-palette-outline` | Appearance | Theme, Text size, Account icon shape, Category icon shape |
 | 2 | `globe-outline` | Regional | Language, Currency, Decimal separator, First day of week |
 | 3 | `options-outline` | Personalization | Home screen defaults, Add transaction defaults, Privacy |
-| 4 | `server-outline` | Data | Delete all transactions, Delete all data |
+| 4 | `server-outline` | Data | Delete all transactions, Delete all data, Reset to factory state |
 
 - Each row shows the subsection icon (24px, primary color), label (fs(15), bold), and a chevron-right (`chevron-forward-outline`, textSecondary).
 - Tapping a row navigates to the corresponding detail screen.
@@ -244,12 +244,12 @@ An eye icon appears next to every masked balance. The icon represents the curren
 
 #### 6.2 — Delete all data
 
-- Row with icon `warning-outline` (red), label "Delete all data" (multilingual), and chevron-right.
+- Row with icon `warning-outline` (red), label "Delete all data" (multilingual), description "Deletes all accounts, categories, tags, and transactions. Your settings are kept." (multilingual), and chevron-right.
 - Tapping opens a **first confirmation modal**:
 
 **Modal 1 — "Delete all data?"**
 - Title: "Delete all data?" (multilingual).
-- Message: "This will reset the app to factory state. All accounts, categories, tags, transactions, and settings will be deleted. This cannot be undone." (multilingual).
+- Message: "All accounts, categories, tags, and transactions will be permanently deleted. Your settings (language, theme, currency, and defaults) are kept. This cannot be undone." (multilingual).
 - Buttons: "Cancel" (neutral) and "Delete all" (red).
 - When tapping "Cancel": modal closes.
 - When tapping "Delete all": opens a **second confirmation modal**.
@@ -262,11 +262,39 @@ An eye icon appears next to every masked balance. The icon represents the curren
 - When tapping "Cancel": both modals close.
 - When tapping "Confirm":
   1. All data is cleared (transactions, transaction_tags, accounts, categories, tags).
-  2. Default data is re-seeded: My Wallet, Total, 31 categories, default config.
-  3. AppContext state is fully refreshed via `resetAll()`, re-applying home defaults from config.
-  4. Both modals close.
-  5. All screens reflect the fresh seed state immediately.
-  6. A toast/snackbar confirms: "All data deleted. App reset to factory state." (multilingual).
+  2. Default data is re-seeded: My Wallet, Total, 31 categories, 4 tags.
+  3. The `config` table is **preserved**: language, theme, currency and all other settings are kept.
+  4. `home_default_account_id` / `add_default_account_id` fall back to "null" **only** when the referenced account no longer exists after the wipe (e.g. a custom account). Defaults referencing surviving seed accounts (e.g. "My Wallet") are kept.
+  5. AppContext state is fully refreshed via `resetAll()`, re-applying home defaults from config.
+  6. Both modals close.
+  7. All screens reflect the fresh seed state immediately.
+  8. A toast/snackbar confirms: "All data deleted. App reset to factory state." (multilingual).
+
+#### 6.3 — Reset to factory state
+
+- Row with icon `refresh-outline` (red), label "Reset to factory state" (multilingual), description "Deletes everything and restores defaults: language, theme, currency, and settings." (multilingual), and chevron-right.
+- Tapping opens a **first confirmation modal**:
+
+**Modal 1 — "Reset to factory state?"**
+- Title: "Reset to factory state?" (multilingual).
+- Message: "This will reset the app to factory state. All accounts, categories, tags, transactions, and settings will be deleted and returned to their defaults. This cannot be undone." (multilingual).
+- Buttons: "Cancel" (neutral) and "Reset" (red).
+- When tapping "Cancel": modal closes.
+- When tapping "Reset": opens a **second confirmation modal**.
+
+**Modal 2 — "Are you sure?"**
+- Title: "Are you sure?" (multilingual).
+- Message: "Type DELETE to confirm" (multilingual).
+- Text input: placeholder "Type DELETE here" (multilingual). Only the word "DELETE" (case-insensitive) enables the confirm button.
+- Buttons: "Cancel" (neutral) and "Confirm" (red, disabled until correct text is typed).
+- When tapping "Cancel": both modals close.
+- When tapping "Confirm":
+  1. All data is cleared (transactions, transaction_tags, accounts, categories, tags).
+  2. The `config` table is cleared and re-seeded with default values: language English, dark theme, EUR, comma separator, Monday, and all default account/period settings.
+  3. Default data is re-seeded: My Wallet, Total, 31 categories, 4 tags.
+  4. AppContext state is fully refreshed via `resetAll()`, re-applying home defaults from config.
+  5. Both modals close.
+  6. All screens reflect the fresh seed state immediately.
 
 ---
 
@@ -331,7 +359,11 @@ An eye icon appears next to every masked balance. The icon represents the curren
 - [ ] "Delete all transactions" row opens a single confirmation modal.
 - [ ] Confirming deletes all transactions and transaction_tags, not accounts/categories/tags.
 - [ ] After deletion, all screens (HomeScreen, AccountsScreen, etc.) reflect updated data immediately via `resetAll()`.
+- [ ] Each destructive row shows a short description of what it deletes/keeps.
 - [ ] "Delete all data" row opens a double confirmation modal (second requires typing "DELETE").
-- [ ] Confirming deletes everything and re-seeds defaults (factory reset).
+- [ ] Confirming "Delete all data" deletes all data, re-seeds seed data, and keeps settings (language, theme, currency, and other config).
+- [ ] After "Delete all data", default-account settings fall back to Total/"Not selected" only when the referenced account no longer exists; defaults referencing surviving accounts (e.g. "My Wallet") are kept.
+- [ ] "Reset to factory state" row opens a double confirmation modal (second requires typing "DELETE").
+- [ ] Confirming "Reset to factory state" deletes all data and re-seeds config to defaults (language English, dark theme, etc.).
 - [ ] After reset, all screens reflect fresh seed state immediately via `resetAll()`.
 - [ ] Settings persist across app restarts.

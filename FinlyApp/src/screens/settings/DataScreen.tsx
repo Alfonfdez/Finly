@@ -6,15 +6,12 @@ import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
 import {
   transactionRepository,
-  accountRepository,
-  categoryRepository,
-  tagRepository,
   configRepository,
   exportBackup,
   importBackup,
   BackupValidationError,
 } from '../../database';
-import { resetDatabase } from '../../database/database';
+import { clearDataKeepSettings, resetDatabase } from '../../database/database';
 import { saveBackupFile, pickBackupFile } from '../../utils/backupIO';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import SettingsRow from '../../components/settings/SettingsRow';
@@ -31,6 +28,9 @@ export default function DataScreen() {
   const [deleteAllModal1, setDeleteAllModal1] = useState(false);
   const [deleteAllModal2, setDeleteAllModal2] = useState(false);
   const [deleteAllText, setDeleteAllText] = useState('');
+  const [factoryResetModal1, setFactoryResetModal1] = useState(false);
+  const [factoryResetModal2, setFactoryResetModal2] = useState(false);
+  const [factoryResetText, setFactoryResetText] = useState('');
   const [importModalVisible, setImportModalVisible] = useState(false);
   const [pendingImport, setPendingImport] = useState<string | null>(null);
 
@@ -82,6 +82,12 @@ export default function DataScreen() {
     setDeleteAllText('');
   };
 
+  const closeFactoryReset = () => {
+    setFactoryResetModal1(false);
+    setFactoryResetModal2(false);
+    setFactoryResetText('');
+  };
+
   const handleDeleteTransactions = async () => {
     try {
       await transactionRepository.deleteAllTransactions();
@@ -95,12 +101,9 @@ export default function DataScreen() {
 
   const handleDeleteAll = async () => {
     try {
-      await transactionRepository.deleteAllTransactions();
-      await accountRepository.deleteAll();
-      await categoryRepository.deleteAll();
-      await tagRepository.deleteAll();
-      await resetDatabase();
+      await clearDataKeepSettings();
       await resetAll();
+      updateConfig(await configRepository.get());
     } catch (error) {
       console.error('Failed to delete all data:', error);
       Alert.alert(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
@@ -108,7 +111,20 @@ export default function DataScreen() {
     closeDeleteAll();
   };
 
+  const handleFactoryReset = async () => {
+    try {
+      await resetDatabase();
+      await resetAll();
+      updateConfig(await configRepository.get());
+    } catch (error) {
+      console.error('Failed to reset to factory state:', error);
+      Alert.alert(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
+    }
+    closeFactoryReset();
+  };
+
   const canDeleteAll = deleteAllText.toUpperCase() === DELETE_ALL_CONFIRMATION;
+  const canFactoryReset = factoryResetText.toUpperCase() === DELETE_ALL_CONFIRMATION;
 
   return (
     <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
@@ -130,6 +146,7 @@ export default function DataScreen() {
         icon="trash-outline"
         iconColor={c.red}
         label={labels.settings_delete_all_transactions}
+        description={labels.settings_delete_all_transactions_description}
         labelColor={c.red}
         onPress={() => setDeleteTransactionsModal(true)}
       />
@@ -138,8 +155,18 @@ export default function DataScreen() {
         icon="warning-outline"
         iconColor={c.red}
         label={labels.settings_delete_all_data}
+        description={labels.settings_delete_all_data_description}
         labelColor={c.red}
         onPress={() => setDeleteAllModal1(true)}
+      />
+
+      <SettingsRow
+        icon="refresh-outline"
+        iconColor={c.red}
+        label={labels.settings_factory_reset}
+        description={labels.settings_factory_reset_description}
+        labelColor={c.red}
+        onPress={() => setFactoryResetModal1(true)}
       />
 
       <ConfirmationModal
@@ -191,6 +218,37 @@ export default function DataScreen() {
           placeholderTextColor={c.textSecondary}
           value={deleteAllText}
           onChangeText={setDeleteAllText}
+          autoCapitalize="characters"
+          autoCorrect={false}
+        />
+      </ConfirmationModal>
+
+      <ConfirmationModal
+        visible={factoryResetModal1}
+        title={labels.settings_factory_reset_confirm_title}
+        message={labels.settings_factory_reset_confirm_message}
+        confirmLabel={labels.settings_delete_confirm}
+        cancelLabel={labels.cancel}
+        onConfirm={() => setFactoryResetModal2(true)}
+        onCancel={() => setFactoryResetModal1(false)}
+      />
+
+      <ConfirmationModal
+        visible={factoryResetModal2}
+        title={labels.settings_delete_data_confirm_title2}
+        message={labels.settings_delete_data_confirm_message2}
+        confirmLabel={labels.settings_delete_confirm}
+        cancelLabel={labels.cancel}
+        onConfirm={handleFactoryReset}
+        onCancel={closeFactoryReset}
+        confirmDisabled={!canFactoryReset}
+      >
+        <TextInput
+          style={[styles.input, { backgroundColor: c.background, color: c.text, borderColor: c.border, fontSize: fs(14) }]}
+          placeholder={labels.settings_delete_data_confirm_placeholder}
+          placeholderTextColor={c.textSecondary}
+          value={factoryResetText}
+          onChangeText={setFactoryResetText}
           autoCapitalize="characters"
           autoCorrect={false}
         />

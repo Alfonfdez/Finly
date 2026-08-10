@@ -1,4 +1,4 @@
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
@@ -9,6 +9,7 @@ import type { IconName } from '../IconGrid';
 
 interface Props {
   label: string;
+  description?: string;
   onPress: () => void;
   icon?: IconName;
   iconColor?: string;
@@ -20,6 +21,7 @@ interface Props {
 
 export default function SettingsRow({
   label,
+  description,
   onPress,
   icon,
   iconColor,
@@ -37,7 +39,12 @@ export default function SettingsRow({
       accessibilityRole="button"
     >
       {icon && <Ionicons name={icon} size={22} color={iconColor ?? c.primary} />}
-      <Text style={[styles.label, { color: labelColor ?? c.text, fontSize: fs(15) }]}>{label}</Text>
+      <View style={styles.text}>
+        <Text style={[styles.label, { color: labelColor ?? c.text, fontSize: fs(15) }]}>{label}</Text>
+        {description ? (
+          <Text style={[styles.description, { color: c.textSecondary, fontSize: fs(12) }]}>{description}</Text>
+        ) : null}
+      </View>
       {right}
       {showChevron && <Ionicons name="chevron-forward-outline" size={20} color={c.textSecondary} />}
     </TouchableOpacity>
@@ -51,8 +58,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     gap: 12,
   },
-  label: {
+  text: {
     flex: 1,
+    gap: 2,
+  },
+  label: {
     fontWeight: '600',
+  },
+  description: {
+    fontWeight: '400',
   },
 });

@@ -17,6 +17,7 @@ import type {
   TransactionTag,
   User,
 } from './types';
+import { sanitizeDefaultAccountConfig } from './configDefaults';
 
 interface ConfigRow {
   key: string;
@@ -186,5 +187,7 @@ export async function applyBackup(db: DatabaseHandle, snapshot: BackupSnapshot):
     for (const row of snapshot.data.config) {
       await db.runAsync('INSERT INTO config (key, value) VALUES (?, ?)', row.key, row.value);
     }
+
+    await sanitizeDefaultAccountConfig(db);
   });
 }
