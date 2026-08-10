@@ -2335,3 +2335,13 @@
 - Tests: new resetDatabase.test.ts (3 tests) — factory reset restores config defaults + seed data; clearDataKeepSettings preserves language and sanitizes only dangling account defaults; defaults referencing surviving accounts kept.
 - Specs updated: 003 1-spec §6.2 (delete-all keeps settings) + new §6.3 (factory reset) + Data AC; 2-plan split sections + i18n table; 3-tasks T29/T31/T31b/T32/T33/T34; web-sqlite-engine note; roadmap Data row.
 - test:all green (typecheck + lint + 234 tests, 28 files).
+
+[2026-08-10] ~ | FinlyApp/src/components/AmountInput.tsx, FinlyApp/src/components/AccountForm.tsx, FinlyApp/src/screens/CreateAccountScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/i18n/ (en.ts, es.ts, ca.ts), spec/features/026-account-initial-balance/ (1-spec.md, 2-plan.md, 3-tasks.md, new), spec/constitution/3-roadmap.md
+- New optional "Initial balance" field on Create and Modify account screens (feature 026).
+- AmountInput: added optional label and accessibilityLabel props (label renders above the amount row; a11y defaults to a11y_amount).
+- AccountForm: added showInitialBalance/initialBalanceLabel/initialBalanceA11yLabel/initialBalanceRaw/onInitialBalanceChange props; renders a labeled AmountInput (no calculator) between the icon/color section and the Note field.
+- CreateAccountScreen: initialBalanceRaw state; stores initial_balance: parseAmountValue(raw) ?? 0; non-empty invalid value disables Create.
+- ModifyAccountScreen: initialBalanceRaw preloaded from the account; saves initial_balance for non-total accounts; field hidden on the Total account (showInitialBalance={!isTotal}); non-empty invalid value disables Save.
+- No schema/migration changes: the initial_balance column already existed and was already included in getBalances() and the Total balance, so balances update automatically.
+- i18n keys create_account_initial_balance, modify_account_initial_balance, a11y_initial_balance (en/es/ca); add_amount_error reused for invalid input.
+- Specs: new 026-account-initial-balance feature folder + roadmap entry.

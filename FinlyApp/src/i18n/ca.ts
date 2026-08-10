@@ -274,6 +274,7 @@ export const ca: Language = {
   accounts_empty: 'No hi ha comptes',
   modify_account_title: 'Modificar compte',
   modify_account_name: 'Nom del compte',
+  modify_account_initial_balance: 'Saldo inicial',
   modify_account_note: 'Nota',
   modify_account_save: 'Desar',
   modify_account_error_empty: 'Introduïu un nom per al compte',
@@ -288,6 +289,7 @@ export const ca: Language = {
   create_account_color: 'Color',
   create_account_title: 'Crear compte',
   create_account_name: 'Nom del compte',
+  create_account_initial_balance: 'Saldo inicial',
   create_account_note: 'Nota',
   create_account_button: 'Crear',
   create_account_error_empty: 'Introduïu un nom per al compte',
@@ -317,6 +319,7 @@ export const ca: Language = {
   a11y_category: 'Categoria',
   a11y_period: 'Període',
   a11y_amount: 'Camp d\'import',
+  a11y_initial_balance: 'Camp de saldo inicial',
   a11y_calculator: 'Obrir calculadora',
   a11y_comment: 'Camp de comentari',
 

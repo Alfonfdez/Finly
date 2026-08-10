@@ -11,6 +11,7 @@ import { accountRepository } from '../database';
 import { type NavigationProp, USER_ID } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
 import { getIconColorHintText } from '../utils/formHints';
+import { parseAmountValue } from '../utils/amountInput';
 import AccountForm from '../components/AccountForm';
 
 export default function CreateAccountScreen() {
@@ -22,6 +23,7 @@ export default function CreateAccountScreen() {
   const [name, setName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [description, setDescription] = useState('');
+  const [initialBalanceRaw, setInitialBalanceRaw] = useState('');
   const { selectedColor, customColor, handleColorSelect } = useColorSelection();
 
   const { nameError, checkingName, clearNameError, debouncedCheck } = useNameDuplicateCheck({
@@ -39,7 +41,9 @@ export default function CreateAccountScreen() {
     debouncedCheck(value);
   };
 
-  const canCreate = name.trim().length > 0 && !nameError && !checkingName && selectedIcon !== null && selectedColor !== null;
+  const initialBalanceError = initialBalanceRaw.length > 0 && parseAmountValue(initialBalanceRaw) === null;
+
+  const canCreate = name.trim().length > 0 && !nameError && !checkingName && selectedIcon !== null && selectedColor !== null && initialBalanceError === false;
 
   const hintText = getIconColorHintText(
     name,
@@ -62,7 +66,7 @@ export default function CreateAccountScreen() {
         name: name.trim(),
         icon: selectedIcon,
         color: selectedColor,
-        initial_balance: 0,
+        initial_balance: parseAmountValue(initialBalanceRaw) ?? 0,
         description: description.trim(),
       });
       await refreshAccounts();
@@ -90,6 +94,11 @@ export default function CreateAccountScreen() {
           selectedColor={selectedColor}
           customColor={customColor}
           onSelectColor={handleColorSelect}
+          showInitialBalance
+          initialBalanceLabel={labels.create_account_initial_balance}
+          initialBalanceA11yLabel={labels.a11y_initial_balance}
+          initialBalanceRaw={initialBalanceRaw}
+          onInitialBalanceChange={setInitialBalanceRaw}
           noteLabel={labels.create_account_note}
           description={description}
           onDescriptionChange={setDescription}

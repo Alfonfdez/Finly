@@ -11,9 +11,11 @@ interface Props {
   raw: string;
   onChangeRaw: (raw: string) => void;
   onOpenCalculator?: () => void;
+  label?: string;
+  accessibilityLabel?: string;
 }
 
-export default function AmountInput({ raw, onChangeRaw, onOpenCalculator }: Props) {
+export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label, accessibilityLabel }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -24,6 +26,11 @@ export default function AmountInput({ raw, onChangeRaw, onOpenCalculator }: Prop
 
   return (
     <>
+      {label && (
+        <Text style={[styles.label, { color: c.textSecondary, fontSize: fs(12) }]}>
+          {label}
+        </Text>
+      )}
       <View style={styles.amountRow}>
         <TextInput
           style={[
@@ -46,7 +53,7 @@ export default function AmountInput({ raw, onChangeRaw, onOpenCalculator }: Prop
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           keyboardType="decimal-pad"
-          accessibilityLabel={labels.a11y_amount}
+          accessibilityLabel={accessibilityLabel ?? labels.a11y_amount}
         />
         <Text style={[styles.currencySymbol, { color: c.textSecondary, fontSize: fs(18) }]}>
           {config.currency}
@@ -71,6 +78,11 @@ export default function AmountInput({ raw, onChangeRaw, onOpenCalculator }: Prop
 }
 
 const styles = StyleSheet.create({
+  label: {
+    marginTop: 16,
+    marginBottom: 4,
+    fontWeight: '600',
+  },
   amountRow: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -10,6 +10,7 @@ import FormError from './form/FormError';
 import DeleteButton from './form/DeleteButton';
 import KeyboardSpacer from './form/KeyboardSpacer';
 import FormScrollView from './form/FormScrollView';
+import AmountInput from './AmountInput';
 
 interface AccountFormProps {
   nameLabel: string;
@@ -27,6 +28,11 @@ interface AccountFormProps {
   selectedColor: string | null;
   customColor: string | null;
   onSelectColor: (color: string) => void;
+  showInitialBalance?: boolean;
+  initialBalanceLabel?: string;
+  initialBalanceA11yLabel?: string;
+  initialBalanceRaw?: string;
+  onInitialBalanceChange?: (value: string) => void;
   noteLabel: string;
   description: string;
   onDescriptionChange: (value: string) => void;
@@ -56,6 +62,11 @@ export default function AccountForm({
   selectedColor,
   customColor,
   onSelectColor,
+  showInitialBalance = false,
+  initialBalanceLabel,
+  initialBalanceA11yLabel,
+  initialBalanceRaw = '',
+  onInitialBalanceChange,
   noteLabel,
   description,
   onDescriptionChange,
@@ -100,6 +111,15 @@ export default function AccountForm({
         customColor={customColor}
         onSelectColor={onSelectColor}
       />
+
+      {showInitialBalance && (
+        <AmountInput
+          raw={initialBalanceRaw}
+          onChangeRaw={onInitialBalanceChange ?? (() => {})}
+          label={initialBalanceLabel}
+          accessibilityLabel={initialBalanceA11yLabel}
+        />
+      )}
 
       <LabeledTextField
         label={noteLabel}
