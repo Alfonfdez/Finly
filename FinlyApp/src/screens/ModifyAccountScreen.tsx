@@ -17,6 +17,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import EmptyState from '../components/EmptyState';
 import AccountForm from '../components/AccountForm';
 import { getNameHintText } from '../utils/formHints';
+import { parseAmountValue } from '../utils/amountInput';
 
 type ModifyAccountRouteProp = RouteProp<RootStackParamList, 'ModifyAccount'>;
 
@@ -34,6 +35,7 @@ export default function ModifyAccountScreen() {
   const [nameTouched, setNameTouched] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [description, setDescription] = useState('');
+  const [initialBalanceRaw, setInitialBalanceRaw] = useState('');
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const { selectedColor, customColor, setSelectedColor, setCustomColor, handleColorSelect } = useColorSelection();
 
@@ -46,6 +48,7 @@ export default function ModifyAccountScreen() {
       setSelectedIcon(found.icon);
       setSelectedColor(found.color);
       setDescription(getDisplayAccountDescription(found));
+      setInitialBalanceRaw(String(found.initial_balance ?? 0));
       if (!QUICK_COLORS.includes(found.color)) {
         setCustomColor(found.color);
       }
@@ -71,10 +74,11 @@ export default function ModifyAccountScreen() {
   };
 
   const isTotal = account ? isTotalAccount(account) : false;
+  const initialBalanceError = initialBalanceRaw.length > 0 && parseAmountValue(initialBalanceRaw) === null;
 
   const canSave = isTotal
     ? !checkingName
-    : name.trim().length > 0 && !nameError && !checkingName;
+    : name.trim().length > 0 && !nameError && !checkingName && initialBalanceError === false;
 
   const hintText = getNameHintText(name, nameError, labels.modify_account_error_empty);
 
@@ -84,7 +88,7 @@ export default function ModifyAccountScreen() {
     const trimmedDescription = description.trim();
     const englishDescDefault = getDefaultEnglishAccountDescription(account.id);
     const displayDescDefault = getAccountDescription(account.id);
-    const updateData: { icon: string; color: string; description: string; name?: string } = {
+    const updateData: { icon: string; color: string; description: string; name?: string; initial_balance?: number } = {
       icon: selectedIcon,
       color: selectedColor,
       description: englishDescDefault && trimmedDescription === displayDescDefault ? englishDescDefault : trimmedDescription,
@@ -94,6 +98,7 @@ export default function ModifyAccountScreen() {
       const englishDefault = getDefaultEnglishAccountName(account.id);
       const displayDefault = getAccountName(account.id);
       updateData.name = englishDefault && trimmedName === displayDefault ? englishDefault : trimmedName;
+      updateData.initial_balance = parseAmountValue(initialBalanceRaw) ?? 0;
     }
     try {
       await accountRepository.update(accountId, updateData);
@@ -157,6 +162,11 @@ export default function ModifyAccountScreen() {
             selectedColor={selectedColor}
             customColor={customColor}
             onSelectColor={handleColorSelect}
+            showInitialBalance={!isTotal}
+            initialBalanceLabel={labels.modify_account_initial_balance}
+            initialBalanceA11yLabel={labels.a11y_initial_balance}
+            initialBalanceRaw={initialBalanceRaw}
+            onInitialBalanceChange={setInitialBalanceRaw}
             noteLabel={labels.modify_account_note}
             description={description}
             onDescriptionChange={setDescription}

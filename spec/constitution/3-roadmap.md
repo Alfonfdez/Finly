@@ -361,6 +361,19 @@ Data export / import (backup) on iOS, Android, and web:
 
 Spec: spec/features/025-data-backup/.
 
+## 026-account-initial-balance
+Status: completed.
+
+Optional starting balance for accounts on Create and Modify account screens:
+- New "Initial balance" field between the icon/color section and the Note field, reusing the `AmountInput` component (currency symbol, decimal-separator aware, localized parsing, no calculator).
+- `AmountInput` gained optional `label` and `accessibilityLabel` props; `AccountForm` gained `showInitialBalance`/`initialBalanceLabel`/`initialBalanceRaw`/`onInitialBalanceChange`.
+- Empty field stores `0`; non-empty invalid values disable Create/Save with the existing amount error.
+- Modify preloads the current value; the Total aggregate account never shows the field.
+- No schema/migration/DB changes: `initial_balance` already existed and was already included in `getBalances()` and Total (AppContext), so account/Total balances update automatically.
+- i18n keys `create_account_initial_balance`, `modify_account_initial_balance`, `a11y_initial_balance` (en/es/ca).
+
+Spec: spec/features/026-account-initial-balance/.
+
 ## 001-expo-sqlite-wal-cleanup (infrastructure)
 Status: completed.
 

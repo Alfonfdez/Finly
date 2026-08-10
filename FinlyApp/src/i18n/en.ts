@@ -272,6 +272,7 @@ export const en = {
   accounts_empty: 'No accounts',
   modify_account_title: 'Modify account',
   modify_account_name: 'Account name',
+  modify_account_initial_balance: 'Initial balance',
   modify_account_note: 'Note',
   modify_account_save: 'Save',
   modify_account_error_empty: 'Enter an account name',
@@ -286,6 +287,7 @@ export const en = {
   create_account_color: 'Color',
   create_account_title: 'Create account',
   create_account_name: 'Account name',
+  create_account_initial_balance: 'Initial balance',
   create_account_note: 'Note',
   create_account_button: 'Create',
   create_account_error_empty: 'Enter an account name',
@@ -315,6 +317,7 @@ export const en = {
   a11y_category: 'Category',
   a11y_period: 'Period',
   a11y_amount: 'Amount input',
+  a11y_initial_balance: 'Initial balance input',
   a11y_calculator: 'Open calculator',
   a11y_comment: 'Comment input',
 
