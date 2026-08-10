@@ -97,17 +97,19 @@ Execution order. Mark each task when completed.
 
 ### Phase 10 — Data subsection
 
-[ ] T29 — Create `src/screens/settings/DataScreen.tsx` with custom header (back arrow + "Data" title). Two rows: "Delete all transactions" (trash-outline, red) and "Delete all data" (warning-outline, red). Each with chevron-right.
+[ ] T29 — Create `src/screens/settings/DataScreen.tsx` with custom header (back arrow + "Data" title). Rows: "Delete all transactions" (trash-outline, red), "Delete all data" (warning-outline, red), "Reset to factory state" (refresh-outline, red). Each destructive row shows a short description. Each with chevron-right.
 
 [ ] T30 — Implement "Delete all transactions" confirmation modal. Title, message, Cancel/Delete buttons. On confirm: delete all rows from `transactions` and `transaction_tags`. Show toast/snackbar confirmation.
 
-[ ] T31 — Implement "Delete all data" double confirmation modal. First modal: title, message, Cancel/Delete all. Second modal: title, message, text input ("DELETE"), Cancel/Confirm (disabled until correct text). On confirm: clear all data, re-seed defaults.
+[ ] T31 — Implement "Delete all data" double confirmation modal. First modal: title, message, Cancel/Delete all. Second modal: title, message, text input ("DELETE"), Cancel/Confirm (disabled until correct text). On confirm: clear all data, re-seed seed data, keep config (only null dangling default-account keys).
 
-[ ] T32 — Add i18n keys: `settings_delete_all_transactions`, `settings_delete_all_data`, `settings_delete_transactions_confirm_title`, `settings_delete_transactions_confirm_message`, `settings_delete_data_confirm_title`, `settings_delete_data_confirm_message`, `settings_delete_data_confirm_title2`, `settings_delete_data_confirm_message2`, `settings_delete_data_confirm_placeholder`, `settings_delete_confirm`, `settings_delete_all_transactions_done`, `settings_delete_all_data_done` in en/es/ca.
+[ ] T31b — Implement "Reset to factory state" double confirmation modal (same two-step pattern). On confirm: clear all data and re-seed config to defaults (language English, dark theme, etc.).
 
-[ ] T33 — Implement native deletion logic: `DELETE FROM transactions`, `DELETE FROM transaction_tags` for transactions; full clear + `seedData()` + `seedConfig()` for factory reset.
+[ ] T32 — Add i18n keys: `settings_delete_all_transactions`, `settings_delete_all_transactions_description`, `settings_delete_all_data`, `settings_delete_all_data_description`, `settings_factory_reset`, `settings_factory_reset_description`, `settings_factory_reset_confirm_title`, `settings_factory_reset_confirm_message`, `settings_delete_transactions_confirm_title`, `settings_delete_transactions_confirm_message`, `settings_delete_data_confirm_title`, `settings_delete_data_confirm_message`, `settings_delete_data_confirm_title2`, `settings_delete_data_confirm_message2`, `settings_delete_data_confirm_placeholder`, `settings_delete_confirm`, `settings_delete_all_transactions_done`, `settings_delete_all_data_done` in en/es/ca.
 
-[ ] T34 — Implement web deletion logic: `removeStore('transactions')`, `removeStore('transaction_tags')` for transactions; full clear + `seedWebData()` for factory reset.
+[ ] T33 — Implement native deletion logic: `DELETE FROM transactions`, `DELETE FROM transaction_tags` for transactions; `clearDataKeepSettings()` (delete data + re-seed data + sanitize dangling account defaults) for "Delete all data"; `resetDatabase()` (delete data + re-seed data and config defaults) for factory reset.
+
+[ ] T34 — Implement web deletion logic: same paths via sql.js `getDatabase()` (no `localStorage` branches).
 
 ---
 

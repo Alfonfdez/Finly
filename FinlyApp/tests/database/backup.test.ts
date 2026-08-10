@@ -217,6 +217,52 @@ describe('backup validation', () => {
     source.close();
     target.close();
   });
+
+  it('nulls default-account config keys referencing missing or total accounts', async () => {
+    const source = await boot();
+    await source.runAsync(
+      "INSERT INTO config (key, value) VALUES ('home_default_account_id', '424242') ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+    );
+    await source.runAsync(
+      "INSERT INTO config (key, value) VALUES ('add_default_account_id', '2') ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+    );
+    const snapshot = await buildBackup(source, SCHEMA_VERSION);
+
+    const target = await createSqlJsDatabase(null, null);
+    await target.execAsync('PRAGMA foreign_keys = ON;');
+    await createSchema(target);
+    await applyBackup(target, snapshot);
+
+    const rows = await target.getAllAsync<{ key: string; value: string }>(
+      "SELECT key, value FROM config WHERE key IN ('home_default_account_id', 'add_default_account_id') ORDER BY key"
+    );
+    expect(rows).toEqual([
+      { key: 'add_default_account_id', value: 'null' },
+      { key: 'home_default_account_id', value: 'null' },
+    ]);
+    source.close();
+    target.close();
+  });
+
+  it('keeps default-account config keys that reference existing accounts', async () => {
+    const source = await boot();
+    await source.runAsync(
+      "INSERT INTO config (key, value) VALUES ('home_default_account_id', '1') ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+    );
+    const snapshot = await buildBackup(source, SCHEMA_VERSION);
+
+    const target = await createSqlJsDatabase(null, null);
+    await target.execAsync('PRAGMA foreign_keys = ON;');
+    await createSchema(target);
+    await applyBackup(target, snapshot);
+
+    const row = await target.getFirstAsync<{ value: string }>(
+      "SELECT value FROM config WHERE key = 'home_default_account_id'"
+    );
+    expect(row?.value).toBe('1');
+    source.close();
+    target.close();
+  });
 });
 
 describe('backup facades', () => {

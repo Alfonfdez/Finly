@@ -3,6 +3,7 @@ import { openEngine } from './engine';
 import { createSchema } from './migrations/001_initial';
 import { seedData, seedDataInner } from './migrations/002_seed';
 import { seedConfig, seedConfigInner } from './migrations/003_config';
+import { sanitizeDefaultAccountConfig } from './configDefaults';
 
 const DATABASE_NAME = 'Finly.db';
 export const SCHEMA_VERSION = 3;
@@ -74,5 +75,18 @@ export async function resetDatabase(): Promise<void> {
     await database.runAsync('DELETE FROM config');
     await seedDataInner(database);
     await seedConfigInner(database);
+  });
+}
+
+export async function clearDataKeepSettings(): Promise<void> {
+  const database = await getDatabase();
+  await database.withTransactionAsync(async () => {
+    await database.runAsync('DELETE FROM transactions');
+    await database.runAsync('DELETE FROM transaction_tags');
+    await database.runAsync('DELETE FROM accounts');
+    await database.runAsync('DELETE FROM categories');
+    await database.runAsync('DELETE FROM tags');
+    await seedDataInner(database);
+    await sanitizeDefaultAccountConfig(database);
   });
 }

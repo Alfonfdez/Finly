@@ -2,7 +2,7 @@ import { CONFIG_ICON_SHAPES, PERIODS, TEXT_SIZES, THEMES, DECIMAL_SEPARATORS, FI
 import { LANGUAGES } from '../utils/language';
 import { DEFAULT_CURRENCY } from '../constants/currencies';
 import { configSchema } from './schemas';
-import type { Config } from './types';
+import type { Config, DatabaseHandle } from './types';
 
 export const DEFAULT_CONFIG: Config = {
   theme: THEMES.dark,
@@ -56,4 +56,28 @@ export function toConfigRows(partial: Partial<Config>): { key: string; value: st
 export function sanitizeConfig(config: Config): Config {
   const result = configSchema.safeParse(config);
   return result.success ? result.data : DEFAULT_CONFIG;
+}
+
+export function sanitizeDefaultAccounts(
+  config: Config,
+  accounts: { id: number; is_total?: number }[]
+): Partial<Config> {
+  const ids = new Set(accounts.filter(a => (a.is_total ?? 0) === 0).map(a => a.id));
+  const updates: Partial<Config> = {};
+  if (config.homeDefaultAccountId !== null && !ids.has(config.homeDefaultAccountId)) {
+    updates.homeDefaultAccountId = null;
+  }
+  if (config.addDefaultAccountId !== null && !ids.has(config.addDefaultAccountId)) {
+    updates.addDefaultAccountId = null;
+  }
+  return updates;
+}
+
+export async function sanitizeDefaultAccountConfig(database: DatabaseHandle): Promise<void> {
+  await database.runAsync(`
+    UPDATE config SET value = 'null'
+    WHERE key IN ('home_default_account_id', 'add_default_account_id')
+      AND value != 'null'
+      AND value NOT IN (SELECT CAST(id AS TEXT) FROM accounts WHERE is_total = 0)
+  `);
 }

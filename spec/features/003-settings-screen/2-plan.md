@@ -200,28 +200,43 @@ removeStore('transactions');
 removeStore('transaction_tags');
 ```
 
-### Delete all data (factory reset)
+### Delete all data (keeps settings)
 
 ```ts
-// Native (SQLite)
+// Native (SQLite) — clearDataKeepSettings() in database.ts
 await db.runAsync('DELETE FROM transactions');
 await db.runAsync('DELETE FROM transaction_tags');
 await db.runAsync('DELETE FROM accounts');
 await db.runAsync('DELETE FROM categories');
 await db.runAsync('DELETE FROM tags');
-// Re-seed
-await seedData(db);   // from 002_seed.ts
-await seedConfig(db); // from 003_config.ts
+// Re-seed data only
+await seedData(db); // from 002_seed.ts
+// Config is preserved; null dangling account defaults only
+await db.runAsync(`
+  UPDATE config SET value = 'null'
+  WHERE key IN ('home_default_account_id', 'add_default_account_id')
+    AND value != 'null'
+    AND value NOT IN (SELECT CAST(id AS TEXT) FROM accounts WHERE is_total = 0)
+`);
 
-// Web (localStorage)
-removeStore('transactions');
-removeStore('transaction_tags');
-removeStore('accounts');
-removeStore('categories');
-removeStore('tags');
-// Re-seed
-seedWebData();    // from webStorage.ts
-// Config is re-initialized with defaults on next get()
+// Web (sql.js) — same path via getDatabase()
+```
+
+### Reset to factory state
+
+```ts
+// Native (SQLite) — resetDatabase() in database.ts
+await db.runAsync('DELETE FROM transactions');
+await db.runAsync('DELETE FROM transaction_tags');
+await db.runAsync('DELETE FROM accounts');
+await db.runAsync('DELETE FROM categories');
+await db.runAsync('DELETE FROM tags');
+await db.runAsync('DELETE FROM config');
+// Re-seed data + config defaults
+await seedData(db);    // from 002_seed.ts
+await seedConfig(db);  // from 003_config.ts
+
+// Web (sql.js) — same path via getDatabase()
 ```
 
 ---
@@ -246,17 +261,23 @@ seedWebData();    // from webStorage.ts
 | `settings_photo` | Photo | Foto | Foto |
 | `settings_hide_balances` | Hide account balances | Ocultar saldos de cuentas | Amagar saldos de comptes |
 | `settings_delete_all_transactions` | Delete all transactions | Eliminar todas las transacciones | Eliminar totes les transaccions |
+| `settings_delete_all_transactions_description` | Removes all transactions. Accounts, categories, and tags are kept. | Elimina todas las transacciones. Las cuentas, categorías y etiquetas se conservan. | Elimina totes les transaccions. Els comptes, categories i etiquetes es conserven. |
 | `settings_delete_all_data` | Delete all data | Eliminar todos los datos | Eliminar totes les dades |
+| `settings_delete_all_data_description` | Deletes all accounts, categories, tags, and transactions. Your settings are kept. | Elimina todas las cuentas, categorías, etiquetas y transacciones. Tu configuración se conserva. | Elimina tots els comptes, categories, etiquetes i transaccions. La teva configuració es conserva. |
+| `settings_factory_reset` | Reset to factory state | Restablecer estado de fábrica | Restablir estat de fàbrica |
+| `settings_factory_reset_description` | Deletes everything and restores defaults: language, theme, currency, and settings. | Elimina todo y restablece los valores predeterminados: idioma, tema, moneda y configuración. | Elimina-ho tot i restableix els valors per defecte: idioma, tema, moneda i configuració. |
+| `settings_factory_reset_confirm_title` | Reset to factory state? | ¿Restablecer el estado de fábrica? | Restablir l\'estat de fàbrica? |
+| `settings_factory_reset_confirm_message` | This will reset the app to factory state. All accounts, categories, tags, transactions, and settings will be deleted and returned to their defaults. This cannot be undone. | Esto restablecerá la app al estado de fábrica. Todas las cuentas, categorías, etiquetas, transacciones y configuración se eliminarán y volverán a sus valores predeterminados. Esto no se puede deshacer. | Això restablirà l\'app a l\'estat de fàbrica. Tots els comptes, categories, etiquetes, transaccions i configuració s\'eliminaran i tornaran als seus valors per defecte. Això no es pot desfer. |
 | `settings_delete_transactions_confirm_title` | Delete all transactions? | ¿Eliminar todas las transacciones? | Eliminar totes les transaccions? |
 | `settings_delete_transactions_confirm_message` | All transaction history will be permanently deleted. Accounts, categories, and tags are kept. | Todo el historial de transacciones se eliminará permanentemente. Las cuentas, categorías y etiquetas se conservarán. | Tot l'historial de transaccions s'eliminarà permanentment. Els comptes, categories i etiquetes es conservaran. |
 | `settings_delete_data_confirm_title` | Delete all data? | ¿Eliminar todos los datos? | Eliminar totes les dades? |
-| `settings_delete_data_confirm_message` | This will reset the app to factory state. All accounts, categories, tags, transactions, and settings will be deleted. This cannot be undone. | Esto restablecerá la app al estado de fábrica. Todas las cuentas, categorías, etiquetas, transacciones y configuración se eliminarán. Esto no se puede deshacer. | Això restablirà l'app a l'estat de fàbrica. Tots els comptes, categories, etiquetes, transaccions i configuració s'eliminaran. Això no es pot desfer. |
+| `settings_delete_data_confirm_message` | All accounts, categories, tags, and transactions will be permanently deleted. Your settings (language, theme, currency, and defaults) are kept. This cannot be undone. | Todas las cuentas, categorías, etiquetas y transacciones se eliminarán permanentemente. Tu configuración (idioma, tema, moneda y valores predeterminados) se conserva. Esto no se puede deshacer. | Tots els comptes, categories, etiquetes i transaccions s\'eliminaran permanentment. La teva configuració (idioma, tema, moneda i valors per defecte) es conserva. Això no es pot desfer. |
 | `settings_delete_data_confirm_title2` | Are you sure? | ¿Estás seguro? | N\'estàs segur? |
 | `settings_delete_data_confirm_message2` | Type DELETE to confirm | Escribe DELETE para confirmar | Escriu DELETE per confirmar |
 | `settings_delete_data_confirm_placeholder` | Type DELETE here | Escribe DELETE aquí | Escriu DELETE aquí |
 | `settings_delete_confirm` | Confirm | Confirmar | Confirmar |
 | `settings_delete_all_transactions_done` | All transactions deleted | Todas las transacciones eliminadas | Totes les transaccions eliminades |
-| `settings_delete_all_data_done` | All data deleted. App reset to factory state. | Todos los datos eliminados. App restablecida al estado de fábrica. | Totes les dades eliminades. App restablerta a l'estat de fàbrica. |
+| `settings_delete_all_data_done` | All data deleted. Settings kept. | Todos los datos eliminados. Configuración conservada. | Totes les dades eliminades. Configuració conservada. |
 | `settings_home_default_period_day` | Day | Día | Dia |
 | `settings_home_default_period_week` | Week | Semana | Setmana |
 | `settings_home_default_period_month` | Month | Mes | Mes |
@@ -270,5 +291,5 @@ seedWebData();    // from webStorage.ts
 2. `npx expo start` + Expo Go — test on native: SQLite persistence, theme, eye icon, delete flows.
 3. Validate all acceptance criteria from `1-spec.md`.
 4. Test Privacy eye icon: reveal → navigate away → come back → verify reset.
-5. Test Data: delete transactions (verify accounts/categories kept), delete all data (verify factory reset).
+5. Test Data: delete transactions (verify accounts/categories kept), delete all data (verify settings kept, defaults fall back only when account gone), reset to factory state (verify full defaults incl. English).
 6. Test Add transaction default account: set "My Wallet" → go to Home with different account → tap "+" → verify "My Wallet" selected.

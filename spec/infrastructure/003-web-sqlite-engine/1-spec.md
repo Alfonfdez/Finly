@@ -42,7 +42,7 @@ sql.js is the same SQLite (compiled with Emscripten to WebAssembly) the test sui
 ### 3. Init & data-reset cleanup
 
 - `App.tsx` initializes via `initDatabase()` on all platforms (no `initWebStorage`).
-- `DataScreen` "Delete all data" calls `resetDatabase()` on every platform (no `localStorage.clear()` branch).
+- `DataScreen` "Delete all data" calls `clearDataKeepSettings()` and "Reset to factory state" calls `resetDatabase()` on every platform (no `localStorage.clear()` branch).
 
 ---
 
