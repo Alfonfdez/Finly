@@ -358,6 +358,7 @@ export const en = {
   // Tags
   nav_tags: 'Tags',
   tags_empty: 'No tags yet',
+  tags_search: 'Search tags',
   create_tag_title: 'New tag',
   create_tag_name_placeholder: 'Tag name',
   create_tag_button: 'Create',

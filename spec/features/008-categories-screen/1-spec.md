@@ -9,9 +9,10 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 
 ### 1. Access and navigation
 
-- The screen is accessed from the "Categories" item in the Drawer Navigator (hamburger menu), currently a placeholder showing "Coming soon".
+- The screen is accessed from the "Categories" item in the Drawer Navigator (hamburger menu).
 - The header has a hamburger menu button on the left to open/close the Drawer.
 - The header title is "Categories" (multilingual).
+- To the right of the title, a search button (magnifying glass icon) toggles the search bar (section 5).
 
 ### 2. Type tabs
 
@@ -31,6 +32,15 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 
 - In the last position of the grid, a "+" button with the text "Create" (multilingual) is displayed.
 - Tapping the "Create" button navigates to the existing "Create category" screen (006), passing the active type as a parameter.
+
+### 5. Search
+
+- To the right of the header title, a search button (magnifying glass icon) that toggles the search bar.
+- When active, a `SearchBar` appears below the tabs with placeholder "Search category" (multilingual, reuse `add_cat_search`).
+- To the right of the input, an "x" button closes the search and restores the full grid.
+- Search filters the categories of the currently active type (expense/income) client-side.
+- Matching is case-insensitive and by characters contained in the category's display name in the current language (via `getDisplayCategoryName`), so default categories are searchable by their translated name in the active language only. Multi-word terms must all be contained in the name.
+- When a search returns no results, the empty state shows a search icon + "No results found" (reuse `add_cat_no_results`).
 
 ---
 
@@ -55,6 +65,10 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 - [ ] The "Create" button (icon "+" + text) is in the last position of the grid.
 - [ ] Tapping "Create" navigates to "Create category" (006) with the active type.
 - [ ] Tapping a category navigates to "Modify category" (009) with the selected category.
+- [x] The header shows a search button that opens/closes the "Search category" bar below the tabs.
+- [x] Typing filters the active type's categories by the current-language display name (case-insensitive, multi-term).
+- [x] Closing the search restores the full grid.
+- [x] A search with no matches shows a search icon + "No results found".
 - [ ] All texts change when switching the language in settings.
 - [ ] The screen respects the active theme (dark/light).
 - [ ] The screen respects the configured text size.

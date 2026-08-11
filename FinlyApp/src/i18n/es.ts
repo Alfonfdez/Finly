@@ -360,6 +360,7 @@ export const es: Language = {
   // Tags
   nav_tags: 'Etiquetas',
   tags_empty: 'No hay etiquetas',
+  tags_search: 'Buscar etiquetas',
   create_tag_title: 'Nueva etiqueta',
   create_tag_name_placeholder: 'Nombre de la etiqueta',
   create_tag_button: 'Crear',

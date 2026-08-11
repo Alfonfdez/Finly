@@ -122,6 +122,7 @@ Screen accessible from the Drawer that shows all existing categories organized b
 - Expense/Income tabs to filter by type.
 - 4×N grid with icon + color + name per category.
 - "Create" button in the last grid position (navigates to 006).
+- Header search that filters the active type's categories by the current-language display name.
 - Tapping a category navigates to modify category (009).
 
 Spec: spec/features/008-categories-screen/.
@@ -256,7 +257,7 @@ Status: completed.
 Tag management with database persistence:
 - `tags` table and `transaction_tags` junction table (migration 004).
 - Tag repository CRUD (SQLite on both platforms).
-- Tags screen accessible from the Drawer with tag list + FAB.
+- Tags screen accessible from the Drawer with tag list, header search toggle and FAB.
 - Create tag screen with name validation (empty, duplicate, max 20 chars).
 - Modify/delete tag screen with name edit and delete confirmation.
 

@@ -35,6 +35,10 @@
 
 - Accessed from "Tags" item in Drawer Navigator.
 - Header with hamburger menu + "Tags" title (multilingual).
+- Header search toggle (magnifying glass icon) that shows/hides a `SearchBar` below the header.
+- Search placeholder "Search tags" (multilingual, new `tags_search` key); "x" button closes the search and restores the full list.
+- Search filters the list client-side by characters contained in the tag name (case-insensitive).
+- When a search returns no results, empty state with search icon + "No results found" (reuse `filter_no_results`).
 - FlatList of all tags ordered by creation date.
 - Each row: tag name + chevron right.
 - Pressing a tag navigates to `ModifyTag` screen.
@@ -66,6 +70,7 @@
 ## Non-functional requirements
 
 - **Multilingual**: all visible texts must use `t()`.
+- **i18n**: new key `tags_search` (en/es/ca) for the search placeholder.
 - **Configuration**: `useConfig().activeColors` for colors.
 - **Text**: `useFontSize()` for scaling.
 - **Navigation**: add `Tags`, `CreateTag`, `ModifyTag` to `RootStackParamList` and `HomeStack`. Connect "Tags" DrawerItem.
@@ -83,6 +88,10 @@
 - [ ] All tags are displayed in a list ordered by creation date (newest at the bottom).
 - [ ] Pressing a tag navigates to "Modify tag" with the tag id.
 - [ ] The "+" FAB navigates to "Create tag".
+- [x] The header search button shows/hides a "Search tags" bar.
+- [x] Typing filters the tag list by name (case-insensitive substring).
+- [x] Closing the search restores the full list.
+- [x] A search with no matches shows "No results found".
 - [ ] If there are no tags, an empty state is shown.
 - [ ] Creating a tag with a duplicate name (case-insensitive) shows an error.
 - [ ] Creating a tag with an empty name shows an error.
