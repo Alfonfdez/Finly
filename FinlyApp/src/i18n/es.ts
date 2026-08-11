@@ -372,6 +372,21 @@ export const es: Language = {
   modify_tag_delete_confirm_cancel: 'Cancelar',
   modify_tag_delete_confirm_delete: 'Eliminar',
 
+  // Comments
+  nav_comments: 'Comentarios',
+  comments_empty: 'No hay comentarios',
+  comments_search_placeholder: 'Buscar comentarios',
+  comments_used_in: (n: number) => `Usado en ${n} transacción${n === 1 ? '' : 'es'}`,
+  comments_modify_title: 'Editar comentario',
+  comments_save: 'Guardar',
+  comments_delete: 'Eliminar comentario',
+  comments_delete_confirm_title: '¿Eliminar este comentario?',
+  comments_delete_confirm_message: (n: number) => `Se eliminará de ${n} transacción${n === 1 ? '' : 'es'}. Esta acción no se puede deshacer.`,
+  comments_delete_confirm_delete: 'Eliminar',
+  comments_delete_confirm_cancel: 'Cancelar',
+  comments_error_empty: 'El comentario no puede estar vacío',
+  comments_merge_hint: 'Los comentarios que solo se diferencian en mayúsculas o espacios se fusionan en uno.',
+
   // Home tag filter
   home_tag_all: 'Todos',
   home_tag_untagged: 'Sin etiqueta',

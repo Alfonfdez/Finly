@@ -22,6 +22,7 @@ export const MAX_ACCOUNT_NAME_LENGTH = 30;
 export const MAX_TAG_NAME_LENGTH = 20;
 export const MAX_NOTE_LENGTH = 200;
 export const MAX_COMMENT_LENGTH = 4096;
+export const MIN_COMMENT_SUGGESTION_LENGTH = 2;
 export const MAX_VISIBLE_TAGS = 3;
 export const MAX_SUGGESTIONS = 5;
 export const DECIMAL_PLACES = 2;
@@ -163,6 +164,8 @@ export type RootStackParamList = {
   Tags: undefined;
   CreateTag: undefined;
   ModifyTag: { tagId: number };
+  Comments: undefined;
+  ModifyComment: { comment: string };
 };
 
 export type NavigationProp<RouteName extends keyof RootStackParamList> =

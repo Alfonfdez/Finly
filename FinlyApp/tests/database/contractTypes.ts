@@ -1,6 +1,7 @@
 import type { Account, Category, Tag, Transaction } from '../../src/database/types';
 import type { TransactionType } from '../../src/constants/types';
 import type { Config } from '../../src/context/ConfigContext';
+import type { CommentUsage } from '../../src/database/repositories/transactionRepo';
 
 export type NewAccount = Omit<Account, 'id' | 'created_at'>;
 export type NewCategory = Omit<Category, 'id' | 'created_at'>;
@@ -80,6 +81,10 @@ export interface ContractTransactionRepo {
     endDate: string
   ): Promise<number>;
   searchComments(search: string): Promise<string[]>;
+  getDistinctComments(): Promise<CommentUsage[]>;
+  updateComment(oldComment: string, newComment: string): Promise<number>;
+  deleteComment(comment: string): Promise<number>;
+  countByDescription(comment: string): Promise<number>;
   breakdownByCategoriesAndTags(
     accountId: number | null,
     categoryIds: number[],

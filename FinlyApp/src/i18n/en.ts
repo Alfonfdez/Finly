@@ -370,6 +370,21 @@ export const en = {
   modify_tag_delete_confirm_cancel: 'Cancel',
   modify_tag_delete_confirm_delete: 'Delete',
 
+  // Comments
+  nav_comments: 'Comments',
+  comments_empty: 'No comments yet',
+  comments_search_placeholder: 'Search comments',
+  comments_used_in: (n: number) => `Used in ${n} transaction${n === 1 ? '' : 's'}`,
+  comments_modify_title: 'Edit comment',
+  comments_save: 'Save',
+  comments_delete: 'Delete comment',
+  comments_delete_confirm_title: 'Delete this comment?',
+  comments_delete_confirm_message: (n: number) => `This will remove the comment from ${n} transaction${n === 1 ? '' : 's'}. This cannot be undone.`,
+  comments_delete_confirm_delete: 'Delete',
+  comments_delete_confirm_cancel: 'Cancel',
+  comments_error_empty: 'Comment cannot be empty',
+  comments_merge_hint: 'Comments that differ only by capital letters or extra spaces are merged into one.',
+
   // Home tag filter
   home_tag_all: 'All',
   home_tag_untagged: 'Untagged',

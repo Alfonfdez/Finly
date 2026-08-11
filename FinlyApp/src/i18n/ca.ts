@@ -372,6 +372,21 @@ export const ca: Language = {
   modify_tag_delete_confirm_cancel: 'Cancel·lar',
   modify_tag_delete_confirm_delete: 'Eliminar',
 
+  // Comments
+  nav_comments: 'Comentaris',
+  comments_empty: 'No hi ha comentaris',
+  comments_search_placeholder: 'Cercar comentaris',
+  comments_used_in: (n: number) => `Usat en ${n} transacció${n === 1 ? '' : 'ns'}`,
+  comments_modify_title: 'Editar comentari',
+  comments_save: 'Desa',
+  comments_delete: 'Elimina comentari',
+  comments_delete_confirm_title: 'Vols eliminar aquest comentari?',
+  comments_delete_confirm_message: (n: number) => `S'eliminarà de ${n} transacció${n === 1 ? '' : 'ns'}. Aquesta acció no es pot desfer.`,
+  comments_delete_confirm_delete: 'Elimina',
+  comments_delete_confirm_cancel: 'Cancel·la',
+  comments_error_empty: 'El comentari no pot estar buit',
+  comments_merge_hint: 'Els comentaris que només es diferencien en majúscules o espais es fusionen en un.',
+
   // Home tag filter
   home_tag_all: 'Tots',
   home_tag_untagged: 'Sense etiqueta',

@@ -374,6 +374,19 @@ Optional starting balance for accounts on Create and Modify account screens:
 
 Spec: spec/features/026-account-initial-balance/.
 
+## 027-comments-management
+Status: completed.
+
+Bulk comment management for transactions:
+- New "Comments" Drawer screen (after Tags) listing every distinct comment grouped by its trimmed value with "Used in N transactions" counts, sorted case-insensitively, with a header search toggle (client-side substring filter) and empty state.
+- New ModifyComment screen (route param `{ comment }`): preloaded multiline input with 0/4096 counter, Save disabled when empty/unchanged, Delete with a confirmation modal showing the exact usage count; both actions bulk-update all matching transactions (matched by `TRIM(description)`) and return to the list, which reloads on focus.
+- Normalization: comments are trimmed on save (`description: comment.trim() || null`), whitespace-only comments stored as none; `getDistinctComments()`/`updateComment`/`deleteComment`/`countByDescription` operate on trimmed groups, so editing `food` → `Food` merges the two variants into one row (covered by a contract regression test).
+- Autocomplete: `searchComments()` returns distinct trimmed suggestions ranked prefix-first (NOCASE) capped at `MAX_SUGGESTIONS`; `CommentInput` only triggers from `MIN_COMMENT_SUGGESTION_LENGTH = 2` trimmed characters.
+- i18n keys `nav_comments` + `comments_*` (en/es/ca).
+- Tests: 6 new contract tests + 7 `CommentInput` component tests; `npm run test:all` green (typecheck + lint + 247 tests, 29 files).
+
+Spec: spec/features/027-comments-management/.
+
 ## 001-expo-sqlite-wal-cleanup (infrastructure)
 Status: completed.
 
