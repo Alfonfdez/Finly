@@ -2370,3 +2370,6 @@
 
 [2026-08-11] ~ | FinlyApp/src/components/CommentInput.tsx
 - Fix: with 5 suggestions, the last row of the autocomplete panel was cropped at its bottom. The panel had maxHeight: 180, but each suggestion row is ~38px (padding + scaled font line-height + bottom border), so 5 rows (~189px) exceeded the cap and RNW clipped the overflow without scroll. Removed maxHeight from suggestionsPanel so the panel auto-sizes to its content (safe: the list is capped at MAX_SUGGESTIONS = 5), giving every row full height at all text sizes. Also added suggestionItemLast: the last row drops its bottom border and gets 8px bottom radius to match the panel's rounded corners.
+
+[2026-08-11] ~ | FinlyApp/src/screens/AddCategoryScreen.tsx
+- Change: replaced the undocumented FAB on the Add category screen with the standard '+' 'Create' dashed tile in the last grid position, aligning it with the Categories screen and the TransactionForm when there are 7 or fewer categories. The tile was already wired (CategoryGrid onAddMore navigates to CreateCategory) but hidden (showAddMore={false}); now showAddMore + addMoreLabel=add_cat_create render it. Removed the Fab import/usage and reduced the bottom scroll padding (was 80px FAB clearance). This also fulfils the acceptance criteria of spec 005 S5 and 006 that the 'Create' button lives in the last grid position.
