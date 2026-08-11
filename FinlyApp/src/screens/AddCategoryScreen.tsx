@@ -8,7 +8,6 @@ import { useApp } from '../context/AppContext';
 import { t, getDisplayCategoryName } from '../i18n';
 import SearchBar from '../components/SearchBar';
 import CategoryGrid from '../components/CategoryGrid';
-import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
 import type { RootStackParamList, NavigationProp } from '../constants/types';
 import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
@@ -89,17 +88,13 @@ export default function AddCategoryScreen() {
               selectedCategory={null}
               onSelect={handleSelectCategory}
               onAddMore={() => navigation.navigate('CreateCategory', { type })}
-              showAddMore={false}
+              showAddMore
+              addMoreLabel={labels.add_cat_create}
               hideTitle
             />
           </ScrollView>
         )}
       </View>
-
-      <Fab
-        onPress={() => navigation.navigate('CreateCategory', { type })}
-        accessibilityLabel="+"
-      />
     </SafeAreaView>
   );
 }
@@ -117,7 +112,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 80,
+    paddingBottom: 16,
   },
   searchButton: {
     marginRight: 8,
