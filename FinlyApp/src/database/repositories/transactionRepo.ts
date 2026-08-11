@@ -36,6 +36,11 @@ interface CategoryUsageCount {
   count: number;
 }
 
+export interface CommentUsage {
+  description: string;
+  count: number;
+}
+
 export const transactionRepo = {
   async list(filters: TransactionFilters = {}): Promise<Transaction[]> {
     const db = await getDatabase();
@@ -149,13 +154,61 @@ export const transactionRepo = {
 
   async searchComments(search: string): Promise<string[]> {
     const db = await getDatabase();
+    const term = search.trim();
+    if (!term) return [];
     const results = await db.getAllAsync<{ description: string }>(
-      `SELECT DISTINCT description FROM transactions
-       WHERE description IS NOT NULL AND description LIKE ?
-       ORDER BY description COLLATE NOCASE LIMIT ${MAX_SUGGESTIONS}`,
-      `%${search}%`
+      `SELECT DISTINCT TRIM(description) AS description FROM transactions
+       WHERE description IS NOT NULL AND TRIM(description) <> '' AND TRIM(description) LIKE ?
+       ORDER BY CASE WHEN TRIM(description) LIKE ? COLLATE NOCASE THEN 0 ELSE 1 END,
+                description COLLATE NOCASE
+       LIMIT ${MAX_SUGGESTIONS}`,
+      `%${term}%`,
+      `${term}%`
     );
     return results.map(r => r.description);
+  },
+
+  async getDistinctComments(): Promise<CommentUsage[]> {
+    const db = await getDatabase();
+    return await db.getAllAsync<CommentUsage>(
+      `SELECT TRIM(description) AS description, COUNT(*) AS count
+       FROM transactions
+       WHERE description IS NOT NULL AND TRIM(description) <> ''
+       GROUP BY TRIM(description)
+       ORDER BY description COLLATE NOCASE`
+    );
+  },
+
+  async updateComment(oldComment: string, newComment: string): Promise<number> {
+    const db = await getDatabase();
+    const result = await db.runAsync(
+      `UPDATE transactions
+       SET description = ?, updated_at = datetime('now', 'localtime')
+       WHERE TRIM(description) = ?`,
+      newComment.trim(),
+      oldComment.trim()
+    );
+    return result.changes;
+  },
+
+  async deleteComment(comment: string): Promise<number> {
+    const db = await getDatabase();
+    const result = await db.runAsync(
+      `UPDATE transactions
+       SET description = NULL, updated_at = datetime('now', 'localtime')
+       WHERE TRIM(description) = ?`,
+      comment.trim()
+    );
+    return result.changes;
+  },
+
+  async countByDescription(comment: string): Promise<number> {
+    const db = await getDatabase();
+    const result = await db.getFirstAsync<{ count: number }>(
+      `SELECT COUNT(*) AS count FROM transactions WHERE TRIM(description) = ?`,
+      comment.trim()
+    );
+    return result?.count ?? 0;
   },
 
   async breakdownByCategoriesAndTags(

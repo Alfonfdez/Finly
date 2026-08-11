@@ -403,6 +403,92 @@ export function runContractSuite(
         expect(result).toHaveLength(MAX_SUGGESTIONS);
       });
 
+      it('searchComments trims and dedupes whitespace variants', async () => {
+        const acc = await backend.account.create(account('A'));
+        const salary = (await backend.category.list(USER, 'income')).find(c => c.name === 'Salary')!;
+        await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-03', description: 'coffee' }));
+        await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-04', description: '  coffee  ' }));
+        await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-05', description: 'coffee shop' }));
+        expect(await backend.transaction.searchComments('coffee')).toEqual(['coffee', 'coffee shop']);
+      });
+
+      it('getDistinctComments groups trimmed comments with counts, ignoring blanks', async () => {
+        const acc = await backend.account.create(account('A'));
+        const salary = (await backend.category.list(USER, 'income')).find(c => c.name === 'Salary')!;
+        await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-06', description: 'coffee' }));
+        await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-07', description: '  coffee  ' }));
+        await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-08', description: 'Lunch' }));
+        await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-09', description: '   ' }));
+        await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-10', description: null }));
+
+        const comments = await backend.transaction.getDistinctComments();
+        const normalized = comments.map(c => ({ description: c.description.toLowerCase(), count: c.count }));
+        expect(normalized).toEqual([
+          { description: 'coffee', count: 2 },
+          { description: 'lunch', count: 1 },
+        ]);
+      });
+
+      it('countByDescription counts matching trimmed comments', async () => {
+        const acc = await backend.account.create(account('A'));
+        const salary = (await backend.category.list(USER, 'income')).find(c => c.name === 'Salary')!;
+        await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-11', description: 'coffee' }));
+        await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-12', description: '  coffee  ' }));
+        await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-13', description: 'tea' }));
+
+        expect(await backend.transaction.countByDescription('coffee')).toBe(2);
+        expect(await backend.transaction.countByDescription(' tea ')).toBe(1);
+        expect(await backend.transaction.countByDescription('zzz')).toBe(0);
+      });
+
+      it('updateComment renames a comment across matching transactions and reports changed rows', async () => {
+        const acc = await backend.account.create(account('A'));
+        const salary = (await backend.category.list(USER, 'income')).find(c => c.name === 'Salary')!;
+        const t1 = await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-14', description: 'coffee' }));
+        const t2 = await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-15', description: '  coffee  ' }));
+        const t3 = await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-16', description: 'tea' }));
+
+        const changed = await backend.transaction.updateComment('coffee', 'cafe');
+        expect(changed).toBe(2);
+        expect((await backend.transaction.getById(t1.id))?.description).toBe('cafe');
+        expect((await backend.transaction.getById(t2.id))?.description).toBe('cafe');
+        expect((await backend.transaction.getById(t3.id))?.description).toBe('tea');
+        expect((await backend.transaction.getById(t1.id))?.updated_at).toBeTruthy();
+      });
+
+      it('updating a comment to another existing case-variant merges them into one', async () => {
+        const acc = await backend.account.create(account('A'));
+        const salary = (await backend.category.list(USER, 'income')).find(c => c.name === 'Salary')!;
+        await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-17', description: 'food' }));
+        await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-18', description: 'Food' }));
+        await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-19', description: 'rent' }));
+
+        const changed = await backend.transaction.updateComment('food', 'Food');
+        expect(changed).toBe(1);
+
+        const comments = await backend.transaction.getDistinctComments();
+        const normalized = comments.map(c => ({ description: c.description.toLowerCase(), count: c.count }));
+        expect(normalized).toEqual([
+          { description: 'food', count: 2 },
+          { description: 'rent', count: 1 },
+        ]);
+      });
+
+      it('deleteComment removes the comment from its transactions and reports the count', async () => {
+        const acc = await backend.account.create(account('A'));
+        const salary = (await backend.category.list(USER, 'income')).find(c => c.name === 'Salary')!;
+        const t1 = await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-20', description: 'coffee' }));
+        const t2 = await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-21', description: '  coffee  ' }));
+        const t3 = await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-22', description: 'tea' }));
+
+        const removed = await backend.transaction.deleteComment('coffee');
+        expect(removed).toBe(2);
+        expect((await backend.transaction.getById(t1.id))?.description).toBeNull();
+        expect((await backend.transaction.getById(t2.id))?.description).toBeNull();
+        expect((await backend.transaction.getById(t3.id))?.description).toBe('tea');
+        expect(await backend.transaction.getDistinctComments()).toEqual([{ description: 'tea', count: 1 }]);
+      });
+
       it('breakdownByCategoriesAndTags splits tagged and untagged sums per category', async () => {
         const acc = await backend.account.create(account('A'));
         const salary = (await backend.category.list(USER, 'income')).find(c => c.name === 'Salary')!;

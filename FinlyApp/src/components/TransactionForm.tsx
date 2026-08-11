@@ -203,7 +203,7 @@ export default function TransactionForm({
         category_id: categoryId,
         type,
         amount: numericAmount,
-        description: comment || null,
+        description: comment.trim() || null,
         photo: photos.length > 0 ? JSON.stringify(photos) : null,
         date: dateStr,
       }, selectedTags);

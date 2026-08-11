@@ -32,6 +32,8 @@ import DataScreen from '../screens/settings/DataScreen';
 import TagsScreen from '../screens/TagsScreen';
 import CreateTagScreen from '../screens/CreateTagScreen';
 import ModifyTagScreen from '../screens/ModifyTagScreen';
+import CommentsScreen from '../screens/CommentsScreen';
+import ModifyCommentScreen from '../screens/ModifyCommentScreen';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
@@ -50,7 +52,7 @@ type ScreenDef = {
 };
 
 type DrawerItemDef =
-  | { label: string; icon: keyof typeof Ionicons.glyphMap; screen: 'Home' | 'AllTransactions' | 'Accounts' | 'Categories' | 'Tags' | 'Settings' }
+  | { label: string; icon: keyof typeof Ionicons.glyphMap; screen: 'Home' | 'AllTransactions' | 'Accounts' | 'Categories' | 'Tags' | 'Comments' | 'Settings' }
   | { separator: true };
 
 function HeaderTitle({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; label: string }) {
@@ -114,6 +116,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
     { label: labels.nav_accounts, icon: 'wallet-outline', screen: 'Accounts' },
     { label: labels.nav_categories, icon: 'grid-outline', screen: 'Categories' },
     { label: labels.nav_tags, icon: 'pricetag-outline', screen: 'Tags' },
+    { label: labels.nav_comments, icon: 'chatbubble-outline', screen: 'Comments' },
     { separator: true },
     { label: labels.nav_settings, icon: 'settings-outline', screen: 'Settings' },
   ];
@@ -170,6 +173,8 @@ function HomeStack() {
     { name: 'Tags', component: TagsScreen, icon: 'pricetag-outline', label: labels.nav_tags, drawerMenu: true },
     { name: 'CreateTag', component: CreateTagScreen, icon: 'pricetag-outline', label: labels.create_tag_title },
     { name: 'ModifyTag', component: ModifyTagScreen, icon: 'pricetag-outline', label: labels.modify_tag_title },
+    { name: 'Comments', component: CommentsScreen, icon: 'chatbubble-outline', label: labels.nav_comments, drawerMenu: true },
+    { name: 'ModifyComment', component: ModifyCommentScreen, icon: 'chatbubble-outline', label: labels.comments_modify_title },
   ];
 
   return (

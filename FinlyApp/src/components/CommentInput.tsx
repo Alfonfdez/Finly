@@ -1,11 +1,11 @@
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
+import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
-import { DEBOUNCE_MS, MAX_COMMENT_LENGTH } from '../constants/types';
+import { DEBOUNCE_MS, MAX_COMMENT_LENGTH, MIN_COMMENT_SUGGESTION_LENGTH } from '../constants/types';
 
 interface Props {
   comment: string;
@@ -18,7 +18,9 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus 
   const fs = useFontSize();
   const labels = t();
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [focused, setFocused] = useState(false);
   const skipNextSearch = useRef(false);
+  const isPressingSuggestion = useRef(false);
 
   const searchComments = useCallback(async (value: string) => {
     const results = await transactionRepository.searchComments(value);
@@ -28,16 +30,20 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus 
   const debouncedSearch = useDebouncedCallback(searchComments, DEBOUNCE_MS);
 
   useEffect(() => {
+    if (!focused) {
+      setSuggestions([]);
+      return;
+    }
     if (skipNextSearch.current) {
       skipNextSearch.current = false;
       return;
     }
-    if (comment.length < 1) {
+    if (comment.trim().length < MIN_COMMENT_SUGGESTION_LENGTH) {
       setSuggestions([]);
       return;
     }
-    debouncedSearch(comment);
-  }, [comment, debouncedSearch]);
+    debouncedSearch(comment.trim());
+  }, [comment, debouncedSearch, focused]);
 
   const handleSelectSuggestion = (text: string) => {
     skipNextSearch.current = true;
@@ -50,15 +56,22 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus 
       {suggestions.length > 0 && (
         <View style={[styles.suggestionsPanel, { backgroundColor: c.surface, borderColor: c.border }]}>
           {suggestions.map((item, i) => (
-            <Pressable
+            <View
               key={i}
-              style={[styles.suggestionItem, { borderBottomColor: c.border }]}
-              onPress={() => handleSelectSuggestion(item)}
+              style={[
+                styles.suggestionItem,
+                { borderBottomColor: c.border },
+                i === suggestions.length - 1 && styles.suggestionItemLast,
+              ]}
+              onStartShouldSetResponder={() => true}
+              onResponderGrant={() => { isPressingSuggestion.current = true; }}
+              onResponderRelease={() => { isPressingSuggestion.current = false; handleSelectSuggestion(item); }}
+              onResponderTerminate={() => { isPressingSuggestion.current = false; }}
             >
               <Text style={[styles.suggestionText, { color: c.text, fontSize: fs(13) }]} numberOfLines={1}>
                 {item}
               </Text>
-            </Pressable>
+            </View>
           ))}
         </View>
       )}
@@ -73,7 +86,14 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus 
           placeholderTextColor={c.textSecondary}
           value={comment}
           onChangeText={onChange}
-          onFocus={onFocus}
+          onFocus={() => {
+            setFocused(true);
+            onFocus?.();
+          }}
+          onBlur={() => {
+            if (isPressingSuggestion.current) return;
+            setFocused(false);
+          }}
           multiline
           maxLength={MAX_COMMENT_LENGTH}
           textAlignVertical="top"
@@ -111,13 +131,18 @@ const styles = StyleSheet.create({
   suggestionsPanel: {
     borderWidth: 1,
     borderRadius: 8,
-    maxHeight: 180,
     marginBottom: 16,
   },
   suggestionItem: {
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,
+    cursor: 'pointer',
+  },
+  suggestionItemLast: {
+    borderBottomWidth: 0,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
   },
   suggestionText: {
     fontWeight: '500',
