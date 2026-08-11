@@ -1,4 +1,5 @@
-import { Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { useState, useMemo, useLayoutEffect } from 'react';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -9,6 +10,7 @@ import { useApp } from '../context/AppContext';
 import type { Tag } from '../database/types';
 import type { NavigationProp } from '../constants/types';
 import Fab from '../components/Fab';
+import SearchBar from '../components/SearchBar';
 import EmptyState from '../components/EmptyState';
 
 export default function TagsScreen() {
@@ -17,6 +19,32 @@ export default function TagsScreen() {
   const labels = t();
   const navigation = useNavigation<NavigationProp<'Tags'>>();
   const { tags } = useApp();
+
+  const [searchActive, setSearchActive] = useState(false);
+  const [searchText, setSearchText] = useState('');
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => {
+            setSearchActive(!searchActive);
+            setSearchText('');
+          }}
+          style={styles.searchButton}
+        >
+          <Ionicons name="search-outline" size={22} color={c.text} />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, searchActive, c.text]);
+
+  const filteredTags = useMemo(() => {
+    if (!searchText.trim()) return tags;
+    const term = searchText.toLowerCase();
+    return tags.filter((tag) => tag.name.toLowerCase().includes(term));
+  }, [tags, searchText]);
+
   const renderItem = ({ item }: { item: Tag }) => (
     <TouchableOpacity
       style={[styles.row, { backgroundColor: c.surface, borderBottomColor: c.border }]}
@@ -30,17 +58,35 @@ export default function TagsScreen() {
   );
 
   const renderEmpty = () => (
-    <EmptyState icon="pricetag-outline" message={labels.tags_empty} />
+    <EmptyState
+      icon={searchActive ? 'search-outline' : 'pricetag-outline'}
+      message={searchActive ? labels.filter_no_results : labels.tags_empty}
+    />
   );
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+      {searchActive && (
+        <View style={styles.searchWrap}>
+          <SearchBar
+            placeholder={labels.tags_search}
+            value={searchText}
+            onChangeText={setSearchText}
+            onClose={() => {
+              setSearchActive(false);
+              setSearchText('');
+            }}
+            autoFocus
+          />
+        </View>
+      )}
+
       <FlatList
-        data={tags}
+        data={filteredTags}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
         ListEmptyComponent={renderEmpty}
-        contentContainerStyle={tags.length === 0 ? styles.emptyList : styles.list}
+        contentContainerStyle={filteredTags.length === 0 ? styles.emptyList : styles.list}
       />
 
       <Fab
@@ -62,6 +108,10 @@ const styles = StyleSheet.create({
   emptyList: {
     flex: 1,
   },
+  searchWrap: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -72,5 +122,9 @@ const styles = StyleSheet.create({
   tagName: {
     fontWeight: '500',
     flex: 1,
+  },
+  searchButton: {
+    marginRight: 8,
+    padding: 4,
   },
 });

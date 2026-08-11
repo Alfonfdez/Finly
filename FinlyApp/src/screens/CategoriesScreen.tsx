@@ -1,12 +1,14 @@
-import { useState, useMemo } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import { useState, useMemo, useLayoutEffect } from 'react';
+import { View, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
-import { t } from '../i18n';
+import { t, getDisplayCategoryName } from '../i18n';
 import TabBar from '../components/TabBar';
 import CategoryGrid from '../components/CategoryGrid';
+import SearchBar from '../components/SearchBar';
 import EmptyState from '../components/EmptyState';
 import { TRANSACTION_TYPES, type TransactionType, type NavigationProp } from '../constants/types';
 import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
@@ -18,10 +20,39 @@ export default function CategoriesScreen() {
   const navigation = useNavigation<NavigationProp<'Categories'>>();
 
   const [activeType, setActiveType] = useState<TransactionType>(TRANSACTION_TYPES.expense);
+  const [searchActive, setSearchActive] = useState(false);
+  const [searchText, setSearchText] = useState('');
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => {
+            setSearchActive(!searchActive);
+            setSearchText('');
+          }}
+          style={styles.searchButton}
+        >
+          <Ionicons name="search-outline" size={22} color={c.text} />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, searchActive, c.text]);
+
   const categoriesByType = useMemo(() => {
     const filtered = categories.filter((cat) => cat.type === activeType);
     return sortCategoriesWithOthersLast(filtered);
   }, [categories, activeType]);
+
+  const filteredCategories = useMemo(() => {
+    if (!searchText.trim()) return categoriesByType;
+
+    const searchTerms = searchText.toLowerCase().split(/\s+/).filter(Boolean);
+    return categoriesByType.filter((cat) => {
+      const name = getDisplayCategoryName(cat).toLowerCase();
+      return searchTerms.every((term) => name.includes(term));
+    });
+  }, [categoriesByType, searchText]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
@@ -35,12 +66,28 @@ export default function CategoriesScreen() {
           onChange={setActiveType}
         />
 
-        {categoriesByType.length === 0 ? (
-          <EmptyState icon="grid-outline" message={labels.add_cat_no_results} />
+        {searchActive && (
+          <SearchBar
+            placeholder={labels.add_cat_search}
+            value={searchText}
+            onChangeText={setSearchText}
+            onClose={() => {
+              setSearchActive(false);
+              setSearchText('');
+            }}
+            autoFocus
+          />
+        )}
+
+        {filteredCategories.length === 0 ? (
+          <EmptyState
+            icon={searchActive ? 'search-outline' : 'grid-outline'}
+            message={labels.add_cat_no_results}
+          />
         ) : (
           <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
             <CategoryGrid
-              categories={categoriesByType}
+              categories={filteredCategories}
               selectedCategory={null}
               onSelect={(id) => navigation.navigate('ModifyCategory', { categoryId: id })}
               onAddMore={() => navigation.navigate('CreateCategory', { type: activeType })}
@@ -68,5 +115,9 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 80,
+  },
+  searchButton: {
+    marginRight: 8,
+    padding: 4,
   },
 });

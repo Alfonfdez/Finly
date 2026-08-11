@@ -360,6 +360,7 @@ export const ca: Language = {
   // Tags
   nav_tags: 'Etiquetes',
   tags_empty: 'No hi ha etiquetes',
+  tags_search: 'Cercar etiquetes',
   create_tag_title: 'Nova etiqueta',
   create_tag_name_placeholder: 'Nom de l\'etiqueta',
   create_tag_button: 'Crear',
