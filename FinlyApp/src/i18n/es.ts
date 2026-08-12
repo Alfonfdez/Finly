@@ -273,6 +273,7 @@ export const es: Language = {
   // Accounts
   accounts_total: 'Total',
   accounts_empty: 'No hay cuentas',
+  accounts_search: 'Buscar cuentas',
   modify_account_title: 'Modificar cuenta',
   modify_account_name: 'Nombre de la cuenta',
   modify_account_initial_balance: 'Saldo inicial',
