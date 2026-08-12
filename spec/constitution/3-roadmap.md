@@ -99,6 +99,7 @@ Screen for creating custom categories:
 - Color selection with 6 predefined colors + dynamic picker (reanimated-color-picker).
 - Name field with validation (not empty, not duplicate).
 - Category type (expense/income) inherited from the previous screen.
+- Maximum of 30 categories per type (Add button disabled + inline message when reached).
 - "Create" button that saves to the database and navigates back.
 
 Spec: spec/features/006-create-category-screen/.
@@ -261,6 +262,7 @@ Tag management with database persistence:
 - Tag repository CRUD (SQLite on both platforms).
 - Tags screen accessible from the Drawer with tag list, header search toggle and FAB.
 - Create tag screen with name validation (empty, duplicate, max 20 chars).
+- Maximum of 50 tags (Create button disabled + inline message when reached; "+" FAB on Tags screen and "+ Add tag" chip in the transaction form hidden at the cap).
 - Modify/delete tag screen with name edit and delete confirmation.
 
 Spec: spec/features/018-tag-management/.

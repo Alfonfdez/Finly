@@ -9,8 +9,9 @@ import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useColorSelection } from '../hooks/useColorSelection';
 import { t, getDefaultCategoryIdByName, getDefaultEnglishName } from '../i18n';
 import { categoryRepository } from '../database';
-import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, type TransactionType, USER_ID } from '../constants/types';
+import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, MAX_CATEGORIES_PER_TYPE, type TransactionType, USER_ID } from '../constants/types';
 import { setPendingCategory } from '../utils/pendingCategory';
+import { countAtLimit } from '../utils/limits';
 import { getIconColorHintText } from '../utils/formHints';
 import { CATEGORY_ICONS } from '../components/IconGrid';
 import IconColorSection from '../components/IconColorSection';
@@ -26,7 +27,7 @@ type CreateCategoryRouteProp = RouteProp<RootStackParamList, 'CreateCategory'>;
 
 export default function CreateCategoryScreen() {
   const { activeColors: c, config } = useConfig();
-  const { refreshCategories } = useApp();
+  const { refreshCategories, categories } = useApp();
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp<'CreateCategory'>>();
@@ -54,7 +55,10 @@ export default function CreateCategoryScreen() {
     debouncedCheck(value);
   };
 
-  const canCreate = name.trim().length > 0 && !nameError && !checkingName && selectedIcon !== null && selectedColor !== null;
+  const typeCount = categories.filter((category) => category.type === type).length;
+  const atCategoryLimit = countAtLimit(typeCount, MAX_CATEGORIES_PER_TYPE);
+
+  const canCreate = name.trim().length > 0 && !nameError && !checkingName && selectedIcon !== null && selectedColor !== null && !atCategoryLimit;
 
   const hintText = getIconColorHintText(
     name,
@@ -134,7 +138,11 @@ export default function CreateCategoryScreen() {
             onSelectColor={handleColorSelect}
           />
 
-          <FormError message={hintText} fontSize={fs(12)} style={styles.hint} />
+          {atCategoryLimit ? (
+            <FormError message={labels.create_cat_error_limit(MAX_CATEGORIES_PER_TYPE)} fontSize={fs(12)} style={styles.limit} />
+          ) : (
+            <FormError message={hintText} fontSize={fs(12)} style={styles.hint} />
+          )}
 
           <PrimaryButton
             label={labels.create_cat_add}
@@ -166,6 +174,10 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   hint: {
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  limit: {
     marginTop: 16,
     textAlign: 'center',
   },

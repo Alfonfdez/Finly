@@ -8,7 +8,8 @@ import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
-import { type NavigationProp, USER_ID, MAX_TAG_NAME_LENGTH } from '../constants/types';
+import { type NavigationProp, USER_ID, MAX_TAG_NAME_LENGTH, MAX_TAGS } from '../constants/types';
+import { countAtLimit } from '../utils/limits';
 import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormError from '../components/form/FormError';
@@ -18,7 +19,7 @@ export default function CreateTagScreen() {
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp<'CreateTag'>>();
-  const { refreshTags } = useApp();
+  const { refreshTags, tags } = useApp();
 
   const [name, setName] = useState('');
 
@@ -45,7 +46,8 @@ export default function CreateTagScreen() {
   };
 
   const isEmpty = !name.trim();
-  const isDisabled = isEmpty || !!nameError || checkingName;
+  const atTagLimit = countAtLimit(tags.length, MAX_TAGS);
+  const isDisabled = isEmpty || !!nameError || checkingName || atTagLimit;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
@@ -65,6 +67,10 @@ export default function CreateTagScreen() {
         />
 
         <FormError message={nameError} style={styles.error} />
+
+        {atTagLimit && (
+          <FormError message={labels.create_tag_error_limit(MAX_TAGS)} style={styles.error} />
+        )}
 
         <PrimaryButton
           label={labels.create_tag_button}

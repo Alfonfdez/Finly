@@ -43,6 +43,7 @@
 - Each row: tag name + chevron right.
 - Pressing a tag navigates to `ModifyTag` screen.
 - Floating "+" FAB centered at bottom that navigates to `CreateTag` screen.
+- When the 50-tag maximum (`MAX_TAGS`) is reached, the "+" FAB is hidden and the message "Maximum of 50 tags reached" is shown centered in its place.
 - Empty state with `pricetag-outline` icon and "No tags" message.
 
 ### 5. Create tag screen
@@ -53,6 +54,7 @@
 - Empty name error: "Enter a tag name".
 - Duplicate error: "A tag with this name already exists".
 - "Create" button: disabled if name is empty, too long, or duplicate. Calls `tagRepo.create()`, then `refreshTags()`, then navigates back.
+- Maximum of 50 tags (`MAX_TAGS` in `src/constants/types.ts`). When 50 tags already exist, the "Create" button is disabled and the message "Maximum of 50 tags reached" is shown in red. Enforced at the UI layer only, no database constraint.
 
 ### 6. Modify/delete tag screen
 
@@ -88,6 +90,7 @@
 - [ ] All tags are displayed in a list ordered by creation date (newest at the bottom).
 - [ ] Pressing a tag navigates to "Modify tag" with the tag id.
 - [ ] The "+" FAB navigates to "Create tag".
+- [ ] At the 50-tag maximum, the "+" FAB is hidden and "Maximum of 50 tags reached" is shown in its place.
 - [x] The header search button shows/hides a "Search tags" bar.
 - [x] Typing filters the tag list by name (case-insensitive substring).
 - [x] Closing the search restores the full list.
@@ -96,6 +99,7 @@
 - [ ] Creating a tag with a duplicate name (case-insensitive) shows an error.
 - [ ] Creating a tag with an empty name shows an error.
 - [ ] Creating a tag with more than 20 characters is prevented.
+- [ ] Creating a tag when the maximum of 50 tags has been reached is prevented (button disabled + "Maximum of 50 tags reached").
 - [ ] Modifying a tag name with a duplicate shows an error (excluding current).
 - [ ] Deleting a tag shows a confirmation modal with the tag name.
 - [ ] After deleting, the tag is removed and junction rows are cascade-deleted.
