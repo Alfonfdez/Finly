@@ -1,7 +1,7 @@
 # 015 — All transactions screen
 
 - **Objective**
-  Screen accessible from the hamburger menu (drawer) showing the user's full transaction list with advanced filtering: type tabs (All/Expenses/Income), multi-select category filter, period selector, account selector, tag filter, and sorting. All texts are multilingual (es/en/ca).
+  Screen accessible from the hamburger menu (drawer) showing the user's full transaction list with advanced filtering: type tabs (All/Expenses/Income), multi-select category filter, period selector, account selector, tag filter, free-text search, and sorting. All texts are multilingual (es/en/ca).
 
 ---
 
@@ -65,7 +65,21 @@
 - `TagFilterBar` below the period section, same as current implementation.
 - Local state (`localTagIds`), independent from HomeScreen.
 
-### 8. Transaction list
+### 8. Transaction search
+
+- The header has a search icon (search-outline) toggle, same as Tags/Categories management screens.
+- Pressing the icon toggles a `SearchBar` below the type tabs and clears any active search text.
+- Search is client-side, case-insensitive, multi-term (space-separated terms, all must match / AND).
+- A term matches a transaction if it appears (substring, any position) in any of:
+  - The transaction **comment/description** (`description` field).
+  - The **category display name** (current language, via `getDisplayCategoryName`).
+  - The **tag names** attached to the transaction.
+  - The **account name**.
+- Search composes with all other filters (account, type tab, categories, period, tags, sort) — it filters the already-filtered set.
+- Closing the search bar restores the full filtered list.
+- When a search yields no results, the empty state shows "No results found" (multilingual) with a search icon.
+
+### 9. Transaction list
 
 - FlatList with transactions filtered by **all active filters**:
   - Selected account.
@@ -73,10 +87,11 @@
   - Selected categories (from CategoryFilterModal).
   - Selected period (start/end dates).
   - Selected tags (from TagFilterBar).
+  - Search text (from the SearchBar).
 - **Grouping by date:** same as 014 (section 4).
 - If there are no transactions matching the filters, an empty state is shown: "No transactions" (multilingual).
 
-### 9. Floating "+" button
+### 10. Floating "+" button
 
 - Floating "+" button centered at the bottom (same style as in 014 and 011).
 - Background: `c.primary`. Icon: `Ionicons "add"` with color `c.background`.
@@ -87,7 +102,7 @@
 ## Non-functional requirements
 
 - **Screen:** `AllTransactionsScreen.tsx` (standalone screen).
-- **Layout structure:** `SafeAreaView > [AllTypeTabs, controls(AccountSelector+Balance+CategoryButton+SortToggle), PeriodTabs, CalendarPicker, TagFilterBar, SectionList, FAB(absolute)]`.
+- **Layout structure:** `SafeAreaView > [AllTypeTabs, SearchBar(conditional), controls(AccountSelector+Balance+CategoryButton+SortToggle), PeriodTabs, CalendarPicker, TagFilterBar, SectionList, FAB(absolute)]`.
 - **Shared components:** reuses `AccountModal`, `SortToggle`, `TransactionGroup`, `TagFilterBar`, `PeriodTabs`, `CalendarPicker`.
 - **New components:** `AllTypeTabs`, `CategoryFilterModal` (spec 021).
 - **Repository:** `transactionRepository.list()` extended with `category_ids` filter.
@@ -114,6 +129,12 @@
 - [ ] The transaction list filters by the selected period's date range.
 - [ ] The sort toggle works (date/amount, ASC/DESC).
 - [ ] TagFilterBar is shown and works with local state.
+- [ ] A search icon is shown in the header; pressing it toggles a SearchBar.
+- [ ] The search matches comment/description, category display name, tag names and account name, case-insensitive.
+- [ ] Multi-term searches require all terms to match (AND).
+- [ ] Search composes with the other filters (type, category, period, tags, account).
+- [ ] Closing the search bar clears it and restores the full filtered list.
+- [ ] An active search with no matches shows "No results found".
 - [ ] All filters combine (AND logic) to produce the final transaction list.
 - [ ] Transactions are grouped by day with a formatted date header.
 - [ ] If no transactions match, an empty state is shown.

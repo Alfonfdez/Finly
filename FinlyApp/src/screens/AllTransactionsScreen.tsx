@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useLayoutEffect } from 'react';
 import { View, Text, SectionList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,6 +24,7 @@ import Fab from '../components/Fab';
 import CategoryFilterModal from '../components/CategoryFilterModal';
 import PeriodTabs from '../components/PeriodTabs';
 import CalendarPicker from '../components/CalendarPicker';
+import SearchBar from '../components/SearchBar';
 
 export default function AllTransactionsScreen() {
   const navigation = useNavigation<NavigationProp<'AllTransactions'>>();
@@ -36,6 +37,24 @@ export default function AllTransactionsScreen() {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
   const [calendarVisible, setCalendarVisible] = useState(false);
+  const [searchActive, setSearchActive] = useState(false);
+  const [searchText, setSearchText] = useState('');
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => {
+            setSearchActive(!searchActive);
+            setSearchText('');
+          }}
+          style={styles.searchButton}
+        >
+          <Ionicons name="search-outline" size={22} color={c.text} />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, searchActive, c.text]);
 
   useEffect(() => {
     setSelectedCategoryIds([]);
@@ -53,6 +72,8 @@ export default function AllTransactionsScreen() {
     transactions: allTransactions,
     accounts,
     activeAccount,
+    categories,
+    searchTerm: searchText,
     typeTab,
     selectedCategoryIds,
     periodDates,
@@ -118,6 +139,21 @@ export default function AllTransactionsScreen() {
         onChange={setTypeTab}
       />
 
+      {searchActive && (
+        <View style={styles.searchWrap}>
+          <SearchBar
+            placeholder={labels.transactions_search}
+            value={searchText}
+            onChangeText={setSearchText}
+            onClose={() => {
+              setSearchActive(false);
+              setSearchText('');
+            }}
+            autoFocus
+          />
+        </View>
+      )}
+
       <View style={[styles.controls, { borderBottomColor: c.border }]}>
         <AccountTrigger
           accountId={filters.selectedAccountId}
@@ -179,7 +215,9 @@ export default function AllTransactionsScreen() {
         renderSectionHeader={renderSectionHeader}
         renderItem={renderItem}
         ListEmptyComponent={
-          <EmptyState message={labels.transactions_empty} />
+          searchActive && searchText.trim()
+            ? <EmptyState icon="search-outline" message={labels.filter_no_results} />
+            : <EmptyState message={labels.transactions_empty} />
         }
         stickySectionHeadersEnabled={false}
         initialNumToRender={12}
@@ -215,6 +253,14 @@ export default function AllTransactionsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  searchWrap: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  searchButton: {
+    marginRight: 8,
+    padding: 4,
+  },
   controls: {
     alignItems: 'center',
     paddingHorizontal: 16,
