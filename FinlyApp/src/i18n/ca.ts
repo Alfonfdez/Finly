@@ -273,6 +273,7 @@ export const ca: Language = {
   // Accounts
   accounts_total: 'Total',
   accounts_empty: 'No hi ha comptes',
+  accounts_search: 'Cercar comptes',
   modify_account_title: 'Modificar compte',
   modify_account_name: 'Nom del compte',
   modify_account_initial_balance: 'Saldo inicial',

@@ -271,6 +271,7 @@ export const en = {
   // Accounts
   accounts_total: 'Total',
   accounts_empty: 'No accounts',
+  accounts_search: 'Search accounts',
   modify_account_title: 'Modify account',
   modify_account_name: 'Account name',
   modify_account_initial_balance: 'Initial balance',

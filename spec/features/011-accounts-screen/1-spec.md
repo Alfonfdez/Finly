@@ -37,7 +37,19 @@
 - The translated values are: en `My Wallet`, es `Mi Cartera`, ca `La meva cartera`.
 
 
-### 4. Floating "+" button
+### 4. Search
+
+- The header has a search icon (search-outline) toggle, same as the Tags/Categories management screens.
+- Pressing the icon toggles a `SearchBar` below the total balance section and clears any active search text.
+- Search is client-side, case-insensitive, multi-term (space-separated terms, all must match / AND).
+- A term matches an account if it appears (substring, any position) in either:
+  - The **account display name** (current language, via `getDisplayAccountName` — defaults like "My Wallet" are translated).
+  - The **account description/note** (via `getDisplayAccountDescription`).
+- The **Total account row stays always visible** at the top; search filters only the real accounts below it.
+- Closing the search bar restores the full list.
+- When a search yields no results, the empty state shows "No results found" (multilingual) with a search icon.
+
+### 5. Floating "+" button
 
 - Floating button (FAB) centered at the bottom with `Ionicons "add"` icon.
 - When pressed, navigates to `CreateAccountScreen` (013) to create a new account.
@@ -45,7 +57,7 @@
 - Position: `position: absolute`, `bottom: 56`, `alignSelf: 'center'`.
 - It overlays on top of the account list.
 
-### 5. Persistence
+### 6. Persistence
 
 - Accounts are loaded from `accountRepository.list()` with the active user.
 - Balances are obtained with `accountRepository.getCurrentBalance()`.
@@ -75,6 +87,12 @@
 - [ ] If there are no accounts, an empty state is shown.
 - [ ] The default account "My Wallet" is displayed translated according to the active language (e.g. es "Mi Cartera", ca "La meva cartera") via `getDisplayAccountName`.
 - [ ] The Total account appears first in the accounts list with its icon and total balance.
+- [ ] A search icon is shown in the header; pressing it toggles a SearchBar.
+- [ ] The search matches account display name and description, case-insensitive.
+- [ ] Multi-term searches require all terms to match (AND).
+- [ ] The Total account row stays visible during a search.
+- [ ] Closing the search bar clears it and restores the full list.
+- [ ] An active search with no matches shows "No results found".
 - [ ] Tapping the Total account navigates to "Modify account" (012) with the Total account's id.
 - [ ] The floating "+" button navigates to "Create account" (013).
 - [ ] All texts change when switching language.

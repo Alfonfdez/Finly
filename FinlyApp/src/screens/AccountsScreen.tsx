@@ -1,8 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useMemo, useCallback, useLayoutEffect } from 'react';
 import {
-  View, Text, FlatList, StyleSheet,
+  View, Text, FlatList, TouchableOpacity, StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -14,11 +15,13 @@ import type { Account } from '../database/types';
 import { formatCurrency, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
 import { withAlpha } from '../utils/color';
 import { badgeShapeFor } from '../utils/badgeShape';
+import { matchesAccountSearch } from '../utils/accountSearch';
 import { type NavigationProp, USER_ID } from '../constants/types';
 import EyeToggle from '../components/EyeToggle';
 import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
 import ListItemRow from '../components/ListItemRow';
+import SearchBar from '../components/SearchBar';
 
 type AccountWithBalance = Account & { balance: number };
 
@@ -31,6 +34,24 @@ export default function AccountsScreen() {
   const [accounts, setAccounts] = useState<AccountWithBalance[]>([]);
   const [total, setTotal] = useState(0);
   const { isBalanceHidden, toggleReveal } = useBalanceVisibility(config.hideBalances);
+  const [searchActive, setSearchActive] = useState(false);
+  const [searchText, setSearchText] = useState('');
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => {
+            setSearchActive(!searchActive);
+            setSearchText('');
+          }}
+          style={styles.searchButton}
+        >
+          <Ionicons name="search-outline" size={22} color={c.text} />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, searchActive, c.text]);
 
   const loadData = useCallback(async (): Promise<{ accounts: AccountWithBalance[]; total: number }> => {
     const list = await accountRepository.list(USER_ID);
@@ -58,6 +79,11 @@ export default function AccountsScreen() {
       return () => { active = false; };
     }, [loadData])
   );
+
+  const filteredAccounts = useMemo(() => {
+    if (!searchText.trim()) return accounts;
+    return accounts.filter(a => isTotalAccount(a) || matchesAccountSearch(a, searchText));
+  }, [accounts, searchText]);
 
   const renderItem = useCallback(({ item }: { item: AccountWithBalance }) => {
     const isTotal = isTotalAccount(item);
@@ -105,6 +131,13 @@ export default function AccountsScreen() {
     <EmptyState icon="wallet-outline" message={labels.accounts_empty} />
   ), [labels.accounts_empty]);
 
+  const searchingNoResults = searchActive && searchText.trim()
+    && !filteredAccounts.some(a => !isTotalAccount(a));
+
+  const renderSearchFooter = useCallback(() => (
+    <EmptyState icon="search-outline" message={labels.filter_no_results} />
+  ), [labels.filter_no_results]);
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
       <View style={[styles.totalSection, { backgroundColor: c.surface, borderBottomColor: c.border }]}>
@@ -129,12 +162,28 @@ export default function AccountsScreen() {
         </View>
       </View>
 
+      {searchActive && (
+        <View style={styles.searchWrap}>
+          <SearchBar
+            placeholder={labels.accounts_search}
+            value={searchText}
+            onChangeText={setSearchText}
+            onClose={() => {
+              setSearchActive(false);
+              setSearchText('');
+            }}
+            autoFocus
+          />
+        </View>
+      )}
+
       <FlatList
-        data={accounts}
+        data={filteredAccounts}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
         ListEmptyComponent={renderEmpty}
-        contentContainerStyle={accounts.length === 0 ? styles.emptyList : styles.list}
+        ListFooterComponent={searchingNoResults ? renderSearchFooter : null}
+        contentContainerStyle={filteredAccounts.length === 0 ? styles.emptyList : styles.list}
       />
 
       <Fab
@@ -148,6 +197,14 @@ export default function AccountsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  searchWrap: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  searchButton: {
+    marginRight: 8,
+    padding: 4,
   },
   totalSection: {
     paddingHorizontal: 20,

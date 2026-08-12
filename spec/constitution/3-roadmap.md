@@ -156,6 +156,7 @@ Screen accessible from the Drawer that shows all accounts with their balance:
 - Header with hamburger menu + "Accounts" title (multilingual).
 - "Total:" section with total balance across all accounts (green/red).
 - Account list with icon + name + balance.
+- Header search toggle + SearchBar: client-side case-insensitive multi-term (AND) search over account display name (current language) and description; Total row always visible; "No results found" empty state.
 - Floating "+" button (FAB) that navigates to create account (013).
 - Tapping an account navigates to modify account (012).
 
