@@ -104,12 +104,14 @@ Screen accessible from the "Create" button in the last position of the grid in `
   - The name already exists (case-insensitive duplicate of the same type).
   - No icon has been selected.
   - No color has been selected.
+  - The maximum number of categories for the selected type (30) has been reached.
 - Dynamic red help text based on what is missing (only the first unmet requirement is shown, in priority order):
   1. "Enter a category name" (if name empty)
   2. "A category with this name already exists" (if name duplicate)
   3. "Select an icon" (if icon missing)
   4. "Select a color" (if color missing)
   5. "Select an icon and a color" (if both missing)
+  6. "Maximum of 30 categories per type reached" (if the per-type limit is reached)
 - When pressing "Add", the category is created in the database (native SQLite / web localStorage) and navigation returns to `AddCategoryScreen` with the newly created category selected.
 
 ### 7. Behavior on Creation
@@ -121,6 +123,14 @@ Screen accessible from the "Create" button in the last position of the grid in `
   - `color`: the selected color.
   - `type`: the selected type (expense/income).
 - After insertion, navigation goes to `AddCategoryScreen` with `{ type, categoryId }` so that the new category appears selected (using the same `setPendingCategory` pattern from `AddTransactionScreen`).
+
+### 8. Limit of categories per type
+
+- There is a maximum of 30 categories per type (expense/income), defined by `MAX_CATEGORIES_PER_TYPE` in `src/constants/types.ts`.
+- The limit counts the existing categories of the selected type only (the other type is independent). Default seed data ships 21 expense and 10 income categories, so a fresh install can add up to 9 more expense categories.
+- When the selected type already has 30 categories, the "Add" button is disabled and the message "Maximum of 30 categories per type reached" is shown in red.
+- The check is reactive: switching the type radio re-evaluates the limit for the other type.
+- No database constraint is added; the limit is enforced at the UI layer.
 
 ---
 
@@ -158,6 +168,8 @@ Screen accessible from the "Create" button in the last position of the grid in `
 - [ ] The "Add" button is disabled if name, icon or color is missing (or name is duplicate).
 - [ ] The red help text appears with the appropriate message based on what is missing (only the first unmet requirement).
 - [ ] When pressing "Add", the category is created and navigation returns with the category selected.
+- [ ] When the selected type already has 30 categories, the "Add" button is disabled and "Maximum of 30 categories per type reached" is shown in red.
+- [ ] Switching the type radio re-evaluates the limit (the other type can still add categories if below 30).
 - [ ] All texts change when changing the language in settings.
 - [ ] The screen respects the active theme (dark/light).
 - [ ] The screen respects the configured text size.

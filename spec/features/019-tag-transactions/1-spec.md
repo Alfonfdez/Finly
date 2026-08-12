@@ -13,6 +13,7 @@
 - Existing tags shown as chips (same visual: `primary` background when selected, `surface` when not).
 - Search icon toggles search input (same behavior as current).
 - "+" chip opens the inline create modal (same as current).
+- When the 50-tag maximum (`MAX_TAGS`) is reached, the "+ Add tag" chip is hidden (the form still allows selecting the existing 50 tags).
 - Selected tags passed as `tagIds: number[]` instead of local state.
 - Tags are displayed in creation order (oldest first, newest last), so newly created tags appear at the end just before the "+ Add tag" pill.
 
@@ -111,6 +112,7 @@ Tags       | [Urgent] [Recurring]
 - [ ] Empty tag names are rejected.
 - [ ] Tag names are limited to 20 characters.
 - [ ] New tags created inline are auto-selected after creation.
+- [ ] At the 50-tag maximum, the "+ Add tag" chip is hidden in the transaction form (existing tags remain selectable).
 - [ ] After adding/modifying, `refreshTags()` is called.
 - [ ] Transaction rows show tag chips below the description.
 - [ ] Transactions with no tags show no tag chips.

@@ -7,8 +7,9 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
-import type { Tag } from '../database/types';
-import type { NavigationProp } from '../constants/types';
+import { type Tag } from '../database/types';
+import { type NavigationProp, MAX_TAGS } from '../constants/types';
+import { countAtLimit } from '../utils/limits';
 import Fab from '../components/Fab';
 import SearchBar from '../components/SearchBar';
 import EmptyState from '../components/EmptyState';
@@ -44,6 +45,8 @@ export default function TagsScreen() {
     const term = searchText.toLowerCase();
     return tags.filter((tag) => tag.name.toLowerCase().includes(term));
   }, [tags, searchText]);
+
+  const atTagLimit = countAtLimit(tags.length, MAX_TAGS);
 
   const renderItem = ({ item }: { item: Tag }) => (
     <TouchableOpacity
@@ -89,10 +92,18 @@ export default function TagsScreen() {
         contentContainerStyle={filteredTags.length === 0 ? styles.emptyList : styles.list}
       />
 
-      <Fab
-        onPress={() => navigation.navigate('CreateTag')}
-        accessibilityLabel="+"
-      />
+      {atTagLimit ? (
+        <View style={styles.limitWrap}>
+          <Text style={[styles.limitText, { color: c.textSecondary, fontSize: fs(13) }]}>
+            {labels.create_tag_error_limit(MAX_TAGS)}
+          </Text>
+        </View>
+      ) : (
+        <Fab
+          onPress={() => navigation.navigate('CreateTag')}
+          accessibilityLabel="+"
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -126,5 +137,15 @@ const styles = StyleSheet.create({
   searchButton: {
     marginRight: 8,
     padding: 4,
+  },
+  limitWrap: {
+    position: 'absolute',
+    bottom: 56,
+    alignSelf: 'center',
+    paddingHorizontal: 16,
+  },
+  limitText: {
+    fontWeight: '500',
+    textAlign: 'center',
   },
 });

@@ -6,7 +6,8 @@ import { useFontSize } from '../hooks/useFontSize';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { t } from '../i18n';
 import type { Tag } from '../database/types';
-import { DEBOUNCE_MS, MAX_TAG_NAME_LENGTH } from '../constants/types';
+import { DEBOUNCE_MS, MAX_TAG_NAME_LENGTH, MAX_TAGS } from '../constants/types';
+import { countAtLimit } from '../utils/limits';
 import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
 import PrimaryButton from './form/PrimaryButton';
@@ -68,6 +69,7 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
   };
 
   const isDisabled = !newTag.trim() || !!error;
+  const atTagLimit = countAtLimit(tags.length, MAX_TAGS);
 
   return (
     <View style={styles.container}>
@@ -124,14 +126,16 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
             </Text>
           </TouchableOpacity>
         ))}
-        <TouchableOpacity
-          style={[styles.tag, { backgroundColor: c.surface }]}
-          onPress={() => setModalVisible(true)}
-        >
-          <Text style={[styles.tagText, { color: c.primary, fontSize: fs(13) }]}>
-            + {labels.add_tag_new}
-          </Text>
-        </TouchableOpacity>
+        {!atTagLimit && (
+          <TouchableOpacity
+            style={[styles.tag, { backgroundColor: c.surface }]}
+            onPress={() => setModalVisible(true)}
+          >
+            <Text style={[styles.tagText, { color: c.primary, fontSize: fs(13) }]}>
+              + {labels.add_tag_new}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <ModalShell
