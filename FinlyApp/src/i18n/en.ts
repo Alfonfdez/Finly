@@ -254,6 +254,7 @@ export const en = {
 
   // Transactions
   transactions_empty: 'No transactions',
+  transactions_search: 'Search transactions',
   transactions_cancel: 'Cancel',
   transactions_confirm: 'Select',
   transactions_sort_date: 'By date',

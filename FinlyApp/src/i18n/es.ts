@@ -256,6 +256,7 @@ export const es: Language = {
 
   // Transactions
   transactions_empty: 'No hay transacciones',
+  transactions_search: 'Buscar transacciones',
   transactions_cancel: 'Cancelar',
   transactions_confirm: 'Seleccionar',
   transactions_sort_date: 'Por fecha',

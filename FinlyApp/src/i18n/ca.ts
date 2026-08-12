@@ -256,6 +256,7 @@ export const ca: Language = {
 
   // Transactions
   transactions_empty: 'No hi ha transaccions',
+  transactions_search: 'Cercar transaccions',
   transactions_cancel: 'Cancel·lar',
   transactions_confirm: 'Seleccionar',
   transactions_sort_date: 'Per data',

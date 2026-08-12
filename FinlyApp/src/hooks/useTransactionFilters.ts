@@ -1,15 +1,18 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import type { Transaction, Account } from '../database/types';
+import type { Transaction, Account, Category } from '../database/types';
 import { SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, type SortBy, type SortDirection, type TransactionTypeFilter } from '../constants/types';
 import { transactionRepository } from '../database';
 import { isTotalAccount, UNTAGGED_ID } from '../database/helpers';
 import { formatDateForDB, parseDbDate } from '../utils/formatters';
 import { buildTagsByTransactionMap, type TagsByTransaction } from '../utils/transactionTags';
+import { matchesTransactionSearch } from '../utils/transactionSearch';
 
 interface UseTransactionFiltersOptions {
   transactions: Transaction[];
   accounts: Account[];
   activeAccount: Account | null;
+  categories?: Category[];
+  searchTerm?: string;
   initialTagIds?: number[];
   typeTab?: TransactionTypeFilter;
   selectedCategoryIds?: number[];
@@ -20,6 +23,8 @@ export function useTransactionFilters({
   transactions,
   accounts,
   activeAccount,
+  categories = [],
+  searchTerm = '',
   initialTagIds = [],
   typeTab,
   selectedCategoryIds = [],
@@ -114,6 +119,22 @@ export function useTransactionFilters({
       });
     }
 
+    if (searchTerm.trim()) {
+      const categoriesById = new Map(categories.map(cat => [cat.id, cat]));
+      const accountsById = new Map(accounts.map(acc => [acc.id, acc]));
+      list = list.filter(tx =>
+        matchesTransactionSearch(
+          tx,
+          {
+            category: categoriesById.get(tx.category_id),
+            tags: tagsByTransaction.get(tx.id),
+            accountName: accountsById.get(tx.account_id)?.name,
+          },
+          searchTerm
+        )
+      );
+    }
+
     const sorted = [...list].sort((a, b) => {
       if (sortBy === SORT_BY.date) {
         const diff = parseDbDate(a.date).getTime() - parseDbDate(b.date).getTime();
@@ -123,7 +144,7 @@ export function useTransactionFilters({
       return sortDirection === SORT_DIRECTIONS.desc ? -diff : diff;
     });
     return sorted;
-  }, [transactions, selectedAccountId, isTotal, typeTab, selectedCategoryIds, periodDates, sortBy, sortDirection, localTagIds, tagsByTransaction]);
+  }, [transactions, selectedAccountId, isTotal, typeTab, selectedCategoryIds, periodDates, sortBy, sortDirection, localTagIds, tagsByTransaction, searchTerm, categories, accounts]);
 
   const sections = useMemo(() => {
     const grouped = new Map<string, Transaction[]>();

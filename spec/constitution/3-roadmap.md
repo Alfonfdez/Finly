@@ -212,6 +212,7 @@ Independent `AllTransactionsScreen` accessible from the hamburger menu (drawer) 
 - Account selector with period total balance (green/red), updated by all active filters.
 - Sorting by date or amount with ASC/DESC toggle.
 - Tag filter bar with local state.
+- Header search toggle + SearchBar: client-side case-insensitive multi-term (AND) search over comment/description, category display name (current language), tag names and account name; composes with all other filters; "No results found" empty state.
 - List grouped by day with date header.
 - Centered "+" FAB to navigate to add transaction.
 - All filters combine (AND logic).
