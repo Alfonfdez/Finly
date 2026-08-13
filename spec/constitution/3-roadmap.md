@@ -283,7 +283,7 @@ Spec: spec/features/019-tag-transactions/.
 Status: completed.
 
 Tag filter on HomeScreen, TransactionsScreen, and AllTransactionsScreen:
-- Horizontal tag filter bar below PeriodTabs (All + tag chips).
+- Horizontal tag filter bar below PeriodTabs (All + tag chips; on web a visible horizontal scrollbar makes every chip reachable when the bar overflows).
 - Per-category expandable tag breakdown (3 visible + "View all (N)").
 - Tag filtering updates chart and category totals.
 - Tag breakdown queries (breakdownByCategoryAndTag).
