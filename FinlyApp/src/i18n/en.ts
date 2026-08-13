@@ -374,6 +374,11 @@ export const en = {
   modify_tag_delete_confirm_message: 'Transactions using this tag will not be deleted.',
   modify_tag_delete_confirm_cancel: 'Cancel',
   modify_tag_delete_confirm_delete: 'Delete',
+  tags_select: 'Select',
+  tags_select_done: 'Done',
+  tags_bulk_delete: (n: number) => `Delete (${n})`,
+  tags_bulk_delete_confirm_title: (n: number) => `Delete ${n} tag${n === 1 ? '' : 's'}?`,
+  tags_bulk_delete_confirm_message: 'The selected tags will be deleted and their links to transactions will be removed. This cannot be undone.',
 
   // Comments
   nav_comments: 'Comments',
@@ -387,6 +392,11 @@ export const en = {
   comments_delete_confirm_message: (n: number) => `This will remove the comment from ${n} transaction${n === 1 ? '' : 's'}. This cannot be undone.`,
   comments_delete_confirm_delete: 'Delete',
   comments_delete_confirm_cancel: 'Cancel',
+  comments_select: 'Select',
+  comments_select_done: 'Done',
+  comments_bulk_delete: (n: number) => `Delete (${n})`,
+  comments_bulk_delete_confirm_title: (n: number) => `Delete ${n} comment${n === 1 ? '' : 's'}?`,
+  comments_bulk_delete_confirm_message: 'The selected comments will be removed from their transactions. This cannot be undone.',
   comments_error_empty: 'Comment cannot be empty',
   comments_merge_hint: 'Comments that differ only by capital letters or extra spaces are merged into one.',
 

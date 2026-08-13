@@ -235,19 +235,25 @@ export function runContractSuite(
         expect(await backend.tag.existsByName(999, 'travel')).toBe(false);
       });
 
-      it('delete removes the tag and its transaction links', async () => {
-        const tag = await backend.tag.create({ user_id: USER, name: 'temp' });
+      it('deleteMany removes several tags and their transaction links', async () => {
+        const tagA = await backend.tag.create({ user_id: USER, name: 'a' });
+        const tagB = await backend.tag.create({ user_id: USER, name: 'b' });
+        const tagC = await backend.tag.create({ user_id: USER, name: 'c' });
         const acc = await backend.account.create(account('A'));
         const salary = (await backend.category.list(USER, 'income')).find(c => c.name === 'Salary')!;
-        const created = await backend.transaction.createWithTags(
-          tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 10, date: '2026-04-01' }),
-          [tag.id]
+        const t1 = await backend.transaction.createWithTags(
+          tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 10, date: '2026-04-02' }),
+          [tagA.id, tagB.id]
         );
-        expect(await backend.transaction.getTagsByTransactionId(created.id)).toEqual([tag.id]);
+        const t2 = await backend.transaction.createWithTags(
+          tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 10, date: '2026-04-03' }),
+          [tagC.id]
+        );
 
-        await backend.tag.delete(tag.id);
-        expect((await backend.tag.list(USER)).some(t => t.id === tag.id)).toBe(false);
-        expect(await backend.transaction.getTagsByTransactionId(created.id)).toEqual([]);
+        await backend.tag.deleteMany([tagA.id, tagB.id]);
+        expect((await backend.tag.list(USER)).map(t => t.id)).toEqual([tagC.id]);
+        expect(await backend.transaction.getTagsByTransactionId(t1.id)).toEqual([]);
+        expect(await backend.transaction.getTagsByTransactionId(t2.id)).toEqual([tagC.id]);
       });
     });
 
@@ -487,6 +493,23 @@ export function runContractSuite(
         expect((await backend.transaction.getById(t2.id))?.description).toBeNull();
         expect((await backend.transaction.getById(t3.id))?.description).toBe('tea');
         expect(await backend.transaction.getDistinctComments()).toEqual([{ description: 'tea', count: 1 }]);
+      });
+
+      it('deleteComments removes several comments at once and reports the total', async () => {
+        const acc = await backend.account.create(account('A'));
+        const salary = (await backend.category.list(USER, 'income')).find(c => c.name === 'Salary')!;
+        const t1 = await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-23', description: 'coffee' }));
+        const t2 = await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-24', description: '  tea  ' }));
+        const t3 = await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-25', description: 'juice' }));
+        const t4 = await backend.transaction.create(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-26', description: 'tea' }));
+
+        const removed = await backend.transaction.deleteComments(['coffee', ' tea ']);
+        expect(removed).toBe(3);
+        expect((await backend.transaction.getById(t1.id))?.description).toBeNull();
+        expect((await backend.transaction.getById(t2.id))?.description).toBeNull();
+        expect((await backend.transaction.getById(t4.id))?.description).toBeNull();
+        expect((await backend.transaction.getById(t3.id))?.description).toBe('juice');
+        expect(await backend.transaction.getDistinctComments()).toEqual([{ description: 'juice', count: 1 }]);
       });
 
       it('breakdownByCategoriesAndTags splits tagged and untagged sums per category', async () => {
