@@ -1,22 +1,25 @@
 import { useState, useMemo, useLayoutEffect } from 'react';
-import { View, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
+import { useFontSize } from '../hooks/useFontSize';
 import { useApp } from '../context/AppContext';
 import { t, getDisplayCategoryName } from '../i18n';
 import TabBar from '../components/TabBar';
 import CategoryGrid from '../components/CategoryGrid';
 import SearchBar from '../components/SearchBar';
 import EmptyState from '../components/EmptyState';
-import { TRANSACTION_TYPES, type TransactionType, type NavigationProp } from '../constants/types';
+import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, type TransactionType, type NavigationProp } from '../constants/types';
 import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
+import { countAtLimit } from '../utils/limits';
 
 export default function CategoriesScreen() {
   const { activeColors: c } = useConfig();
   const { categories } = useApp();
   const labels = t();
+  const fs = useFontSize();
   const navigation = useNavigation<NavigationProp<'Categories'>>();
 
   const [activeType, setActiveType] = useState<TransactionType>(TRANSACTION_TYPES.expense);
@@ -53,6 +56,9 @@ export default function CategoriesScreen() {
       return searchTerms.every((term) => name.includes(term));
     });
   }, [categoriesByType, searchText]);
+
+  const typeCount = categories.filter((cat) => cat.type === activeType).length;
+  const atCategoryLimit = countAtLimit(typeCount, MAX_CATEGORIES_PER_TYPE);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
@@ -91,9 +97,15 @@ export default function CategoriesScreen() {
               selectedCategory={null}
               onSelect={(id) => navigation.navigate('ModifyCategory', { categoryId: id })}
               onAddMore={() => navigation.navigate('CreateCategory', { type: activeType })}
+              showAddMore={!atCategoryLimit}
               addMoreLabel={labels.add_cat_create}
               hideTitle
             />
+            {atCategoryLimit && (
+              <Text style={[styles.limitText, { color: c.textSecondary, fontSize: fs(13) }]}>
+                {labels.create_cat_error_limit(MAX_CATEGORIES_PER_TYPE)}
+              </Text>
+            )}
           </ScrollView>
         )}
       </View>
@@ -115,6 +127,12 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 80,
+  },
+  limitText: {
+    fontWeight: '500',
+    textAlign: 'center',
+    marginTop: 16,
+    paddingHorizontal: 16,
   },
   searchButton: {
     marginRight: 8,

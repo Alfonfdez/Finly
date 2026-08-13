@@ -86,7 +86,7 @@ Screen for selecting an existing category:
 - 4×N grid of categories filtered by type (expense/income).
 - Search bar with substring filtering (case-insensitive).
 - Empty state when no results.
-- "Create" button at the end of the grid (navigates to 006).
+- "Create" button at the end of the grid (navigates to 006; hidden with a message at the 30-per-type cap).
 - Category selection and navigation back to Add Transaction.
 
 Spec: spec/features/005-add-category-screen/.
@@ -99,7 +99,7 @@ Screen for creating custom categories:
 - Color selection with 6 predefined colors + dynamic picker (reanimated-color-picker).
 - Name field with validation (not empty, not duplicate).
 - Category type (expense/income) inherited from the previous screen.
-- Maximum of 30 categories per type (Add button disabled + inline message when reached).
+- Maximum of 30 categories per type (Add button disabled + inline message when reached; "Create" tile on the Categories page and Add Category screen hidden at the cap).
 - "Create" button that saves to the database and navigates back.
 
 Spec: spec/features/006-create-category-screen/.

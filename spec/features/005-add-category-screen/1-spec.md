@@ -43,7 +43,9 @@ Screen accessible from the "More" button in the categories section of `AddTransa
 ### 5. "Create" Button
 
 - In the last position of the grid, a "Create" button (multilingual) with a "+" icon is displayed.
-- When pressing the "Create" button, navigation goes to a new "Create category" screen (TODO: future implementation).
+- When pressing the "Create" button, navigation goes to the "Create category" screen (006) with the active type as parameter.
+- When the type already has 30 categories (`MAX_CATEGORIES_PER_TYPE`), the "Create" button is hidden and the message "Maximum of 30 categories per type reached" (reuse `create_cat_error_limit`) is shown below the grid, so the user understands why the button is missing.
+- The "Create category" screen (006) keeps its own guard (Add button disabled + message) as a safety net for other entry points.
 
 ---
 
@@ -68,6 +70,7 @@ Screen accessible from the "More" button in the categories section of `AddTransa
 - [x] The "x" button on the input closes the search without selecting a category.
 - [x] Categories are displayed in a 4×N grid with icon and name.
 - [x] The "Create" button is in the last position of the grid.
+- [x] When the type has 30 categories, the "Create" button is hidden and "Maximum of 30 categories per type reached" is shown below the grid.
 - [x] When pressing a category, navigation returns to `AddTransactionScreen` with that category selected.
 - [x] All texts change when switching language in settings.
 - [x] The screen respects the active theme (dark/light).
