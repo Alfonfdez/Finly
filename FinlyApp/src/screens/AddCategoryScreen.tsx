@@ -1,16 +1,19 @@
 import { useState, useMemo, useLayoutEffect } from 'react';
-import { View, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
+import { useFontSize } from '../hooks/useFontSize';
 import { useApp } from '../context/AppContext';
 import { t, getDisplayCategoryName } from '../i18n';
 import SearchBar from '../components/SearchBar';
 import CategoryGrid from '../components/CategoryGrid';
 import EmptyState from '../components/EmptyState';
 import type { RootStackParamList, NavigationProp } from '../constants/types';
+import { MAX_CATEGORIES_PER_TYPE } from '../constants/types';
 import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
+import { countAtLimit } from '../utils/limits';
 import { setPendingCategory } from '../utils/pendingCategory';
 
 type AddCategoryRouteProp = RouteProp<RootStackParamList, 'AddCategory'>;
@@ -19,6 +22,7 @@ export default function AddCategoryScreen() {
   const { activeColors: c } = useConfig();
   const { categories } = useApp();
   const labels = t();
+  const fs = useFontSize();
   const navigation = useNavigation<NavigationProp<'AddCategory'>>();
   const route = useRoute<AddCategoryRouteProp>();
 
@@ -58,6 +62,9 @@ export default function AddCategoryScreen() {
     });
   }, [categoriesByType, searchText]);
 
+  const typeCount = categories.filter((cat) => cat.type === type).length;
+  const atCategoryLimit = countAtLimit(typeCount, MAX_CATEGORIES_PER_TYPE);
+
   const handleSelectCategory = (categoryId: number) => {
     setPendingCategory(categoryId, type);
     navigation.goBack();
@@ -88,10 +95,15 @@ export default function AddCategoryScreen() {
               selectedCategory={null}
               onSelect={handleSelectCategory}
               onAddMore={() => navigation.navigate('CreateCategory', { type })}
-              showAddMore
+              showAddMore={!atCategoryLimit}
               addMoreLabel={labels.add_cat_create}
               hideTitle
             />
+            {atCategoryLimit && (
+              <Text style={[styles.limitText, { color: c.textSecondary, fontSize: fs(13) }]}>
+                {labels.create_cat_error_limit(MAX_CATEGORIES_PER_TYPE)}
+              </Text>
+            )}
           </ScrollView>
         )}
       </View>
@@ -113,6 +125,12 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 16,
+  },
+  limitText: {
+    fontWeight: '500',
+    textAlign: 'center',
+    marginTop: 16,
+    paddingHorizontal: 16,
   },
   searchButton: {
     marginRight: 8,

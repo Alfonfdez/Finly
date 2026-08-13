@@ -131,6 +131,7 @@ Screen accessible from the "Create" button in the last position of the grid in `
 - When the selected type already has 30 categories, the "Add" button is disabled and the message "Maximum of 30 categories per type reached" is shown in red.
 - The check is reactive: switching the type radio re-evaluates the limit for the other type.
 - No database constraint is added; the limit is enforced at the UI layer.
+- As a complement, the entry points to this screen (the "Create" tile on the Categories page, spec 008, and on the Add Category screen, spec 005) are hidden when the type is at the cap, so the user never lands on a dead-end disabled form. This screen's guard remains as a safety net.
 
 ---
 

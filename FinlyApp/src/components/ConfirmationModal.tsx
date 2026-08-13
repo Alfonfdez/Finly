@@ -114,8 +114,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: BUTTON_BORDER_RADIUS,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonText: {
     fontWeight: '600',
+    textAlign: 'center',
   },
 });
