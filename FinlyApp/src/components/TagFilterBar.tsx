@@ -1,6 +1,7 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { isWeb } from '../utils/platform';
 import { t } from '../i18n';
 import type { Tag } from '../database/types';
 import { UNTAGGED_ID } from '../database/helpers';
@@ -53,8 +54,8 @@ export default function TagFilterBar({ tags, activeTagIds, onToggle, onClear, st
     <View style={[styles.container, style]}>
       <ScrollView
         horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        showsHorizontalScrollIndicator={isWeb}
+        contentContainerStyle={[styles.scrollContent, isWeb && styles.webScrollContent]}
       >
         {renderChip(labels.home_tag_all, -2, activeTagIds.length === 0, onClear, true)}
         {renderChip(labels.home_tag_untagged, UNTAGGED_ID, activeTagIds.includes(UNTAGGED_ID), undefined, true)}
@@ -73,6 +74,9 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
     gap: 8,
+  },
+  webScrollContent: {
+    paddingBottom: 16,
   },
   chip: {
     paddingHorizontal: 14,

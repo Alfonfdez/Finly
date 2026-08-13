@@ -90,6 +90,7 @@
 - **Text**: `useFontSize()` for scaling.
 - **Performance**: tag breakdown queries should be efficient (indexed).
 - **Layout**: tag chips use horizontal ScrollView, no wrapping.
+- **Layout (web)**: on web the horizontal scrollbar is visible (`showsHorizontalScrollIndicator` is only suppressed on native), so every chip is reachable when the bar overflows; a small web-only bottom padding keeps the scrollbar clear of the chip text. On native the indicator stays hidden and chips are reached by swiping.
 - **Tag chips in CategoryList**: small size (fs(11)), compact padding, no icon.
 
 ---
@@ -104,6 +105,7 @@
 - [ ] Tapping "All" clears all tag selections.
 - [ ] Tapping a tag chip filters the category breakdown and chart to show only transactions with that tag.
 - [ ] When no tags exist, the filter bar is hidden.
+- [x] On web, a visible horizontal scrollbar appears when the bar overflows, letting every tag chip be reached (including the last one).
 - [ ] Each category row in CategoryList shows up to 3 tags as small chips (including "Untagged" if applicable).
 - [ ] If a category has more than 3 tags, a "View all (N)" text is shown (count includes "Untagged").
 - [ ] Tapping "View all (N)" expands the tag section in-place to show all tags.
