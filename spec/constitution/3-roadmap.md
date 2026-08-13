@@ -405,6 +405,16 @@ Multi-select bulk delete on the Tags and Comments screens:
 
 Spec: spec/features/018-tag-management/ and spec/features/027-comments-management/.
 
+## 034-limit-indicators
+Status: completed.
+
+Usage counters against the limits on the Categories and Tags pages:
+- Tags screen: a caption above the list shows how many tags exist out of the 50-tag maximum (`MAX_TAGS`), e.g. "12 of 50 tags" (`tags_counter`), hidden during selection mode.
+- Categories screen: a caption below the Expense/Income tabs shows how many categories the active type has out of the 30-per-type maximum (`MAX_CATEGORIES_PER_TYPE`), e.g. "21 of 30 categories" (`categories_counter`), updating when switching tabs.
+- i18n keys `tags_counter` and `categories_counter` (en/es/ca).
+
+Spec: spec/features/018-tag-management/ and spec/features/008-categories-screen/.
+
 ## 001-expo-sqlite-wal-cleanup (infrastructure)
 Status: completed.
 
