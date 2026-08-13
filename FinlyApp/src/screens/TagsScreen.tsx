@@ -132,6 +132,12 @@ export default function TagsScreen() {
         </View>
       )}
 
+      {!selectMode && (
+        <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(13) }]}>
+          {labels.tags_counter(tags.length, MAX_TAGS)}
+        </Text>
+      )}
+
       <FlatList
         data={filteredTags}
         keyExtractor={(item) => String(item.id)}
@@ -191,6 +197,11 @@ const styles = StyleSheet.create({
   searchWrap: {
     paddingHorizontal: 16,
     paddingTop: 16,
+  },
+  counter: {
+    fontWeight: '500',
+    textAlign: 'center',
+    paddingTop: 12,
   },
   row: {
     flexDirection: 'row',

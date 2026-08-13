@@ -45,6 +45,7 @@
 - Pressing a tag navigates to `ModifyTag` screen.
 - Floating "+" FAB centered at bottom that navigates to `CreateTag` screen.
 - When the 50-tag maximum (`MAX_TAGS`) is reached, the "+" FAB is hidden and the message "Maximum of 50 tags reached" is shown centered in its place.
+- A counter above the list shows how many tags exist out of the maximum, e.g. "12 of 50 tags" (`tags_counter`), hidden during selection mode.
 - Empty state with `pricetag-outline` icon and "No tags" message.
 
 ### 5. Create tag screen
@@ -102,6 +103,7 @@
 - [ ] Pressing a tag navigates to "Modify tag" with the tag id.
 - [ ] The "+" FAB navigates to "Create tag".
 - [ ] At the 50-tag maximum, the "+" FAB is hidden and "Maximum of 50 tags reached" is shown in its place.
+- [ ] The screen shows a counter above the list with the current number of tags out of the maximum (e.g. "12 of 50 tags"), hidden during selection mode.
 - [x] The header search button shows/hides a "Search tags" bar.
 - [x] Typing filters the tag list by name (case-insensitive substring).
 - [x] Closing the search restores the full list.

@@ -85,6 +85,10 @@ export default function CategoriesScreen() {
           />
         )}
 
+        <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(13) }]}>
+          {labels.categories_counter(typeCount, MAX_CATEGORIES_PER_TYPE)}
+        </Text>
+
         {filteredCategories.length === 0 ? (
           <EmptyState
             icon={searchActive ? 'search-outline' : 'grid-outline'}
@@ -127,6 +131,12 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 80,
+  },
+  counter: {
+    fontWeight: '500',
+    textAlign: 'center',
+    paddingTop: 8,
+    paddingBottom: 12,
   },
   limitText: {
     fontWeight: '500',

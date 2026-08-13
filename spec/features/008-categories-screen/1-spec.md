@@ -35,6 +35,7 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 - The limit is per type (30, `MAX_CATEGORIES_PER_TYPE`): when the active tab's type already has 30 categories, the "Create" button is hidden and the message "Maximum of 30 categories per type reached" (reuse `create_cat_error_limit`) is shown centered below the grid, so the user understands why the button is missing.
 - The check is reactive: switching tabs re-evaluates the limit for the other type (if income is below 30, the "Create" button is shown on the Income tab even when expense is at the cap).
 - The "Create category" screen (006) keeps its own guard (Add button disabled + message) as a safety net for other entry points.
+- A counter below the tabs shows how many categories the active type has out of the maximum, e.g. "21 of 30 categories" (`categories_counter`), updating when switching tabs.
 
 ### 5. Search
 
@@ -69,6 +70,7 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 - [ ] Tapping "Create" navigates to "Create category" (006) with the active type.
 - [ ] When the active tab's type has 30 categories, the "Create" button is hidden and "Maximum of 30 categories per type reached" is shown below the grid.
 - [ ] Switching to a type below the cap restores the "Create" button.
+- [ ] A counter below the tabs shows how many categories the active type has out of the maximum and updates when switching tabs.
 - [ ] Tapping a category navigates to "Modify category" (009) with the selected category.
 - [x] The header shows a search button that opens/closes the "Search category" bar below the tabs.
 - [x] Typing filters the active type's categories by the current-language display name (case-insensitive, multi-term).
