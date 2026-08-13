@@ -7,38 +7,57 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
+import { tagRepository } from '../database';
 import { type Tag } from '../database/types';
 import { type NavigationProp, MAX_TAGS } from '../constants/types';
 import { countAtLimit } from '../utils/limits';
 import Fab from '../components/Fab';
 import SearchBar from '../components/SearchBar';
 import EmptyState from '../components/EmptyState';
+import SelectionActionBar from '../components/SelectionActionBar';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 export default function TagsScreen() {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp<'Tags'>>();
-  const { tags } = useApp();
+  const { tags, refreshTags } = useApp();
 
   const [searchActive, setSearchActive] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <TouchableOpacity
-          onPress={() => {
-            setSearchActive(!searchActive);
-            setSearchText('');
-          }}
-          style={styles.searchButton}
-        >
-          <Ionicons name="search-outline" size={22} color={c.text} />
-        </TouchableOpacity>
+        <View style={styles.headerButtons}>
+          <TouchableOpacity
+            onPress={() => {
+              if (selectMode) setSelectedIds(new Set());
+              setSelectMode(!selectMode);
+            }}
+            style={styles.headerButton}
+          >
+            <Text style={[styles.selectText, { color: c.primary, fontSize: fs(15) }]}>
+              {selectMode ? labels.tags_select_done : labels.tags_select}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setSearchActive(!searchActive);
+              setSearchText('');
+            }}
+            style={styles.headerButton}
+          >
+            <Ionicons name="search-outline" size={22} color={c.text} />
+          </TouchableOpacity>
+        </View>
       ),
     });
-  }, [navigation, searchActive, c.text]);
+  }, [navigation, selectMode, searchActive, c.text, c.primary, fs, labels]);
 
   const filteredTags = useMemo(() => {
     if (!searchText.trim()) return tags;
@@ -48,17 +67,46 @@ export default function TagsScreen() {
 
   const atTagLimit = countAtLimit(tags.length, MAX_TAGS);
 
-  const renderItem = ({ item }: { item: Tag }) => (
-    <TouchableOpacity
-      style={[styles.row, { backgroundColor: c.surface, borderBottomColor: c.border }]}
-      onPress={() => navigation.navigate('ModifyTag', { tagId: item.id })}
-    >
-      <Text style={[styles.tagName, { color: c.text, fontSize: fs(15) }]} numberOfLines={1}>
-        {item.name}
-      </Text>
-      <Ionicons name="chevron-forward" size={18} color={c.textSecondary} />
-    </TouchableOpacity>
-  );
+  const toggleItem = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    setDeleteModalVisible(false);
+    await tagRepository.deleteMany([...selectedIds]);
+    setSelectedIds(new Set());
+    setSelectMode(false);
+    await refreshTags();
+  };
+
+  const renderItem = ({ item }: { item: Tag }) => {
+    const selected = selectedIds.has(item.id);
+    return (
+      <TouchableOpacity
+        style={[styles.row, { backgroundColor: c.surface, borderBottomColor: c.border }]}
+        onPress={() => (selectMode ? toggleItem(item.id) : navigation.navigate('ModifyTag', { tagId: item.id }))}
+        accessibilityRole="button"
+      >
+        {selectMode && (
+          <Ionicons
+            name={selected ? 'checkbox' : 'checkbox-outline'}
+            size={22}
+            color={selected ? c.primary : c.textSecondary}
+            style={styles.checkbox}
+          />
+        )}
+        <Text style={[styles.tagName, { color: c.text, fontSize: fs(15) }]} numberOfLines={1}>
+          {item.name}
+        </Text>
+        {!selectMode && <Ionicons name="chevron-forward" size={18} color={c.textSecondary} />}
+      </TouchableOpacity>
+    );
+  };
 
   const renderEmpty = () => (
     <EmptyState
@@ -92,7 +140,18 @@ export default function TagsScreen() {
         contentContainerStyle={filteredTags.length === 0 ? styles.emptyList : styles.list}
       />
 
-      {atTagLimit ? (
+      {selectMode ? (
+        <SelectionActionBar
+          selectedCount={selectedIds.size}
+          deleteLabel={labels.tags_bulk_delete(selectedIds.size)}
+          cancelLabel={labels.modify_tag_delete_confirm_cancel}
+          onDelete={() => setDeleteModalVisible(true)}
+          onCancel={() => {
+            setSelectedIds(new Set());
+            setSelectMode(false);
+          }}
+        />
+      ) : atTagLimit ? (
         <View style={styles.limitWrap}>
           <Text style={[styles.limitText, { color: c.textSecondary, fontSize: fs(13) }]}>
             {labels.create_tag_error_limit(MAX_TAGS)}
@@ -104,6 +163,16 @@ export default function TagsScreen() {
           accessibilityLabel="+"
         />
       )}
+
+      <ConfirmationModal
+        visible={deleteModalVisible}
+        title={labels.tags_bulk_delete_confirm_title(selectedIds.size)}
+        message={labels.tags_bulk_delete_confirm_message}
+        confirmLabel={labels.modify_tag_delete_confirm_delete}
+        cancelLabel={labels.modify_tag_delete_confirm_cancel}
+        onConfirm={handleBulkDelete}
+        onCancel={() => setDeleteModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -134,9 +203,19 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     flex: 1,
   },
-  searchButton: {
+  checkbox: {
+    marginRight: 10,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerButton: {
     marginRight: 8,
     padding: 4,
+  },
+  selectText: {
+    fontWeight: '600',
   },
   limitWrap: {
     position: 'absolute',

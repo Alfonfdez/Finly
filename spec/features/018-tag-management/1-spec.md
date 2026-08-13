@@ -21,6 +21,7 @@
 - `tagRepo.create(data)`: inserts a tag (user_id, name). Returns the created tag.
 - `tagRepo.update(id, data)`: updates name. Case-insensitive duplicate check excluding current id.
 - `tagRepo.delete(id)`: deletes tag. Junction rows cascade via ON DELETE CASCADE.
+- `tagRepo.deleteMany(ids)`: deletes several tags in one query; junction rows cascade via ON DELETE CASCADE.
 - `tagRepo.existsByName(userId, name, excludeId?)`: case-insensitive duplicate check.
 - `tagRepo.getByTransactionIds(transactionIds)`: returns `{ transaction_id, tag_id, name }[]` for a batch of transaction IDs.
 
@@ -67,6 +68,16 @@
   - On confirm: `tagRepo.delete(id)`, `refreshTags()`, navigate back.
 - "Save" button: calls `tagRepo.update()`, `refreshTags()`, navigate back.
 
+### 7. Multi-select bulk delete (Tags screen)
+
+- The header shows a "Select" (`tags_select`) text button next to the search icon; pressing it toggles selection mode (label switches to "Done", `tags_select_done`).
+- In selection mode each row shows a leading checkbox (`checkbox-outline` unchecked / `checkbox` checked in primary color); tapping a row toggles its selection instead of navigating.
+- The header search and search filtering keep working during selection mode; selection applies to the filtered list.
+- In selection mode the "+" FAB (and the "Maximum of 50 tags reached" message) is replaced by a bottom action bar with "Cancel" and `Delete (N)` (`tags_bulk_delete(n)`), where N is the number of selected tags.
+- The delete button is disabled while no tags are selected; "Cancel" exits selection mode and clears the selection.
+- Deleting opens a single `ConfirmationModal`: `Delete N tags?` (`tags_bulk_delete_confirm_title(n)`) with message "The selected tags will be deleted and their links to transactions will be removed. This cannot be undone." (`tags_bulk_delete_confirm_message`) and Cancel / Delete buttons.
+- On confirm: `tagRepo.deleteMany(ids)` deletes all selected tags (junction rows cascade), selection and selection mode reset, and `refreshTags()` reloads the list.
+
 ---
 
 ## Non-functional requirements
@@ -103,6 +114,9 @@
 - [ ] Modifying a tag name with a duplicate shows an error (excluding current).
 - [ ] Deleting a tag shows a confirmation modal with the tag name.
 - [ ] After deleting, the tag is removed and junction rows are cascade-deleted.
+- [x] "Select" in the header enters selection mode; rows show checkboxes and tapping toggles selection instead of navigating.
+- [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
+- [x] Bulk delete confirms once for the whole batch and removes all selected tags at once.
 - [ ] After create/modify/delete, `refreshTags()` is called and the list updates.
 - [ ] All texts change when switching language.
 - [ ] The screen respects the active theme and text size.

@@ -376,6 +376,11 @@ export const ca: Language = {
   modify_tag_delete_confirm_message: 'Les transaccions que fan servir aquesta etiqueta no s\'eliminiran.',
   modify_tag_delete_confirm_cancel: 'Cancel·lar',
   modify_tag_delete_confirm_delete: 'Eliminar',
+  tags_select: 'Selecciona',
+  tags_select_done: 'Fet',
+  tags_bulk_delete: (n: number) => `Elimina (${n})`,
+  tags_bulk_delete_confirm_title: (n: number) => `Vols eliminar ${n} etiqueta${n === 1 ? '' : 's'}?`,
+  tags_bulk_delete_confirm_message: 'Les etiquetes seleccionades s\'eliminaran i els seus enllaços amb les transaccions es trauran. Aquesta acció no es pot desfer.',
 
   // Comments
   nav_comments: 'Comentaris',
@@ -389,6 +394,11 @@ export const ca: Language = {
   comments_delete_confirm_message: (n: number) => `S'eliminarà de ${n} transacció${n === 1 ? '' : 'ns'}. Aquesta acció no es pot desfer.`,
   comments_delete_confirm_delete: 'Elimina',
   comments_delete_confirm_cancel: 'Cancel·la',
+  comments_select: 'Selecciona',
+  comments_select_done: 'Fet',
+  comments_bulk_delete: (n: number) => `Elimina (${n})`,
+  comments_bulk_delete_confirm_title: (n: number) => `Vols eliminar ${n} comentari${n === 1 ? '' : 's'}?`,
+  comments_bulk_delete_confirm_message: 'Els comentaris seleccionats s\'eliminaran de les seves transaccions. Aquesta acció no es pot desfer.',
   comments_error_empty: 'El comentari no pot estar buit',
   comments_merge_hint: 'Els comentaris que només es diferencien en majúscules o espais es fusionen en un.',
 

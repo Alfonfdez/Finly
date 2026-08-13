@@ -392,6 +392,19 @@ Bulk comment management for transactions:
 
 Spec: spec/features/027-comments-management/.
 
+## 033-bulk-delete-tags-comments
+Status: completed.
+
+Multi-select bulk delete on the Tags and Comments screens:
+- Header "Select"/"Done" toggle on both screens enters selection mode (rows show checkboxes; tapping toggles selection instead of navigating; header search keeps filtering during selection).
+- Shared `SelectionActionBar` bottom bar with "Cancel" and `Delete (N)` (disabled when nothing selected).
+- Single `ConfirmationModal` per batch: `Delete N tags?` / `Delete N comments?` with Cancel / Delete.
+- `tagRepo.deleteMany(ids)` deletes tags in one query (junction rows cascade) + `transactionRepo.deleteComments(values)` clears `description` on every matching transaction; screens reload after delete (`refreshTags()` / `getDistinctComments()`).
+- i18n keys `tags_select*`/`tags_bulk_delete*` + `comments_select*`/`comments_bulk_delete*` (en/es/ca).
+- Tests: 2 new contract tests (tags `deleteMany`, comments `deleteComments`) on both native + sql.js backends.
+
+Spec: spec/features/018-tag-management/ and spec/features/027-comments-management/.
+
 ## 001-expo-sqlite-wal-cleanup (infrastructure)
 Status: completed.
 

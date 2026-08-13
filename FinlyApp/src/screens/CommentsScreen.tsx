@@ -11,6 +11,8 @@ import type { CommentUsage } from '../database/repositories/transactionRepo';
 import type { NavigationProp } from '../constants/types';
 import SearchBar from '../components/SearchBar';
 import EmptyState from '../components/EmptyState';
+import SelectionActionBar from '../components/SelectionActionBar';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 export default function CommentsScreen() {
   const { activeColors: c } = useConfig();
@@ -22,24 +24,11 @@ export default function CommentsScreen() {
   const [loading, setLoading] = useState(true);
   const [searchActive, setSearchActive] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedComments, setSelectedComments] = useState<Set<string>>(new Set());
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <TouchableOpacity
-          onPress={() => {
-            setSearchActive(!searchActive);
-            setSearchText('');
-          }}
-          style={styles.searchButton}
-        >
-          <Ionicons name="search-outline" size={22} color={c.text} />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation, searchActive, c.text]);
-
-  useFocusEffect(useCallback(() => {
+  const loadComments = useCallback(() => {
     let active = true;
     setLoading(true);
     transactionRepository.getDistinctComments()
@@ -52,7 +41,41 @@ export default function CommentsScreen() {
     return () => {
       active = false;
     };
-  }, []));
+  }, []);
+
+  useFocusEffect(useCallback(() => {
+    const cleanup = loadComments();
+    return cleanup;
+  }, [loadComments]));
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <View style={styles.headerButtons}>
+          <TouchableOpacity
+            onPress={() => {
+              if (selectMode) setSelectedComments(new Set());
+              setSelectMode(!selectMode);
+            }}
+            style={styles.headerButton}
+          >
+            <Text style={[styles.selectText, { color: c.primary, fontSize: fs(15) }]}>
+              {selectMode ? labels.comments_select_done : labels.comments_select}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setSearchActive(!searchActive);
+              setSearchText('');
+            }}
+            style={styles.headerButton}
+          >
+            <Ionicons name="search-outline" size={22} color={c.text} />
+          </TouchableOpacity>
+        </View>
+      ),
+    });
+  }, [navigation, selectMode, searchActive, c.text, c.primary, fs, labels]);
 
   const filteredComments = useMemo(() => {
     if (!searchText.trim()) return comments;
@@ -60,22 +83,51 @@ export default function CommentsScreen() {
     return comments.filter(c => c.description.toLowerCase().includes(term));
   }, [comments, searchText]);
 
-  const renderItem = ({ item }: { item: CommentUsage }) => (
-    <TouchableOpacity
-      style={[styles.row, { backgroundColor: c.surface, borderBottomColor: c.border }]}
-      onPress={() => navigation.navigate('ModifyComment', { comment: item.description })}
-    >
-      <View style={styles.rowText}>
-        <Text style={[styles.commentText, { color: c.text, fontSize: fs(15) }]} numberOfLines={1}>
-          {item.description}
-        </Text>
-        <Text style={[styles.commentCount, { color: c.textSecondary, fontSize: fs(12) }]}>
-          {labels.comments_used_in(item.count)}
-        </Text>
-      </View>
-      <Ionicons name="chevron-forward" size={18} color={c.textSecondary} />
-    </TouchableOpacity>
-  );
+  const toggleItem = (description: string) => {
+    setSelectedComments((prev) => {
+      const next = new Set(prev);
+      if (next.has(description)) next.delete(description);
+      else next.add(description);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    setDeleteModalVisible(false);
+    await transactionRepository.deleteComments([...selectedComments]);
+    setSelectedComments(new Set());
+    setSelectMode(false);
+    loadComments();
+  };
+
+  const renderItem = ({ item }: { item: CommentUsage }) => {
+    const selected = selectedComments.has(item.description);
+    return (
+      <TouchableOpacity
+        style={[styles.row, { backgroundColor: c.surface, borderBottomColor: c.border }]}
+        onPress={() => (selectMode ? toggleItem(item.description) : navigation.navigate('ModifyComment', { comment: item.description }))}
+        accessibilityRole="button"
+      >
+        {selectMode && (
+          <Ionicons
+            name={selected ? 'checkbox' : 'checkbox-outline'}
+            size={22}
+            color={selected ? c.primary : c.textSecondary}
+            style={styles.checkbox}
+          />
+        )}
+        <View style={styles.rowText}>
+          <Text style={[styles.commentText, { color: c.text, fontSize: fs(15) }]} numberOfLines={1}>
+            {item.description}
+          </Text>
+          <Text style={[styles.commentCount, { color: c.textSecondary, fontSize: fs(12) }]}>
+            {labels.comments_used_in(item.count)}
+          </Text>
+        </View>
+        {!selectMode && <Ionicons name="chevron-forward" size={18} color={c.textSecondary} />}
+      </TouchableOpacity>
+    );
+  };
 
   const renderEmpty = () => (
     <EmptyState
@@ -110,6 +162,29 @@ export default function CommentsScreen() {
           contentContainerStyle={filteredComments.length === 0 ? styles.emptyList : styles.list}
         />
       </View>
+
+      {selectMode && (
+        <SelectionActionBar
+          selectedCount={selectedComments.size}
+          deleteLabel={labels.comments_bulk_delete(selectedComments.size)}
+          cancelLabel={labels.comments_delete_confirm_cancel}
+          onDelete={() => setDeleteModalVisible(true)}
+          onCancel={() => {
+            setSelectedComments(new Set());
+            setSelectMode(false);
+          }}
+        />
+      )}
+
+      <ConfirmationModal
+        visible={deleteModalVisible}
+        title={labels.comments_bulk_delete_confirm_title(selectedComments.size)}
+        message={labels.comments_bulk_delete_confirm_message}
+        confirmLabel={labels.comments_delete_confirm_delete}
+        cancelLabel={labels.comments_delete_confirm_cancel}
+        onConfirm={handleBulkDelete}
+        onCancel={() => setDeleteModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -127,6 +202,7 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: 16,
+    paddingBottom: 24,
   },
   emptyList: {
     flex: 1,
@@ -148,8 +224,18 @@ const styles = StyleSheet.create({
   commentCount: {
     marginTop: 2,
   },
-  searchButton: {
+  checkbox: {
+    marginRight: 10,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerButton: {
     marginRight: 8,
     padding: 4,
+  },
+  selectText: {
+    fontWeight: '600',
   },
 });

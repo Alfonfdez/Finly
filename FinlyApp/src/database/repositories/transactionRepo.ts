@@ -202,6 +202,19 @@ export const transactionRepo = {
     return result.changes;
   },
 
+  async deleteComments(comments: string[]): Promise<number> {
+    if (comments.length === 0) return 0;
+    const db = await getDatabase();
+    const placeholders = comments.map(() => '?').join(',');
+    const result = await db.runAsync(
+      `UPDATE transactions
+       SET description = NULL, updated_at = datetime('now', 'localtime')
+       WHERE TRIM(description) IN (${placeholders})`,
+      ...comments.map(c => c.trim())
+    );
+    return result.changes;
+  },
+
   async countByDescription(comment: string): Promise<number> {
     const db = await getDatabase();
     const result = await db.getFirstAsync<{ count: number }>(

@@ -376,6 +376,11 @@ export const es: Language = {
   modify_tag_delete_confirm_message: 'Las transacciones que usan esta etiqueta no se eliminarán.',
   modify_tag_delete_confirm_cancel: 'Cancelar',
   modify_tag_delete_confirm_delete: 'Eliminar',
+  tags_select: 'Seleccionar',
+  tags_select_done: 'Listo',
+  tags_bulk_delete: (n: number) => `Eliminar (${n})`,
+  tags_bulk_delete_confirm_title: (n: number) => `¿Eliminar ${n} etiqueta${n === 1 ? '' : 's'}?`,
+  tags_bulk_delete_confirm_message: 'Las etiquetas seleccionadas se eliminarán y sus enlaces con las transacciones se quitarán. Esta acción no se puede deshacer.',
 
   // Comments
   nav_comments: 'Comentarios',
@@ -389,6 +394,11 @@ export const es: Language = {
   comments_delete_confirm_message: (n: number) => `Se eliminará de ${n} transacción${n === 1 ? '' : 'es'}. Esta acción no se puede deshacer.`,
   comments_delete_confirm_delete: 'Eliminar',
   comments_delete_confirm_cancel: 'Cancelar',
+  comments_select: 'Seleccionar',
+  comments_select_done: 'Listo',
+  comments_bulk_delete: (n: number) => `Eliminar (${n})`,
+  comments_bulk_delete_confirm_title: (n: number) => `¿Eliminar ${n} comentario${n === 1 ? '' : 's'}?`,
+  comments_bulk_delete_confirm_message: 'Los comentarios seleccionados se eliminarán de sus transacciones. Esta acción no se puede deshacer.',
   comments_error_empty: 'El comentario no puede estar vacío',
   comments_merge_hint: 'Los comentarios que solo se diferencian en mayúsculas o espacios se fusionan en uno.',
 

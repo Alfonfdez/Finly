@@ -36,6 +36,13 @@ export const tagRepo = {
     await db.runAsync(`DELETE FROM tags WHERE id = ?`, id);
   },
 
+  async deleteMany(ids: number[]): Promise<void> {
+    if (ids.length === 0) return;
+    const db = await getDatabase();
+    const placeholders = ids.map(() => '?').join(',');
+    await db.runAsync(`DELETE FROM tags WHERE id IN (${placeholders})`, ...ids);
+  },
+
   async deleteAll(): Promise<void> {
     const db = await getDatabase();
     await db.runAsync('DELETE FROM tags');

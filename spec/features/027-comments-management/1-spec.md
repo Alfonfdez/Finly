@@ -43,12 +43,21 @@
 - The search term is trimmed before querying.
 - Debounce (`DEBOUNCE_MS = 300`) and `MAX_SUGGESTIONS` behavior are unchanged.
 
+### 5. Multi-select bulk delete (Comments screen)
+
+- The header shows a "Select" (`comments_select`) text button next to the search icon; pressing it toggles selection mode (label switches to "Done", `comments_select_done`).
+- In selection mode each row shows a leading checkbox (`checkbox-outline` unchecked / `checkbox` checked in primary color); tapping a row toggles its selection instead of navigating.
+- The header search and search filtering keep working during selection mode; selection applies to the filtered list.
+- A bottom action bar with "Cancel" and `Delete (N)` (`comments_bulk_delete(n)`) appears; the delete button is disabled while no comments are selected.
+- Deleting opens a single `ConfirmationModal`: `Delete N comments?` (`comments_bulk_delete_confirm_title(n)`) with message "The selected comments will be removed from their transactions. This cannot be undone." (`comments_bulk_delete_confirm_message`) and Cancel / Delete buttons.
+- On confirm: `transactionRepository.deleteComments(values)` sets `description = NULL` on every matching transaction, the selection and selection mode reset, and the list reloads via `getDistinctComments()`.
+
 ---
 
 ## Non-functional requirements
 
 - **Multilingual**: all new texts go through `t()` (en/es/ca).
-- **Reuse**: `SearchBar`, `EmptyState`, `LabeledTextField`, `PrimaryButton`, `DeleteButton`, `FormError`, `ConfirmationModal`, `useFocusEffect`.
+- **Reuse**: `SearchBar`, `EmptyState`, `LabeledTextField`, `PrimaryButton`, `DeleteButton`, `FormError`, `ConfirmationModal`, `SelectionActionBar`, `useFocusEffect`.
 - **No schema/migration changes**: comments live in the existing `transactions.description` column.
 - **Theme/text size**: all screens/components use `useConfig().activeColors` and `useFontSize()`.
 - **Tests**: new Phase B contract tests for the four repo methods + merge regression; new component test for `CommentInput` min-length and suggestion flow.
@@ -66,6 +75,9 @@
 - [ ] Saving renames the comment on all transactions that use it and returns to the list (counts updated).
 - [ ] Editing a comment to another existing case-variant merges them into a single row with the summed count.
 - [ ] Deleting shows the confirmation with the exact usage count; confirming removes the comment from those transactions.
+- [x] "Select" in the header enters selection mode; rows show checkboxes and tapping toggles selection instead of navigating.
+- [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
+- [x] Bulk delete confirms once for the whole batch and removes all selected comments from their transactions.
 - [ ] In Add/Modify transaction, saving a comment trims it; whitespace-only comments are saved as none.
 - [ ] Autocomplete suggestions appear only from 2 trimmed characters, prefix matches first.
 - [ ] All texts are multilingual and respect theme + text size.

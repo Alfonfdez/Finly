@@ -63,6 +63,7 @@ export interface ContractTagRepo {
   create(data: NewTag): Promise<Tag>;
   update(id: number, data: UpdateTag): Promise<void>;
   delete(id: number): Promise<void>;
+  deleteMany(ids: number[]): Promise<void>;
   deleteAll(): Promise<void>;
   existsByName(userId: number, name: string, excludeId?: number): Promise<boolean>;
 }
@@ -84,6 +85,7 @@ export interface ContractTransactionRepo {
   getDistinctComments(): Promise<CommentUsage[]>;
   updateComment(oldComment: string, newComment: string): Promise<number>;
   deleteComment(comment: string): Promise<number>;
+  deleteComments(comments: string[]): Promise<number>;
   countByDescription(comment: string): Promise<number>;
   breakdownByCategoriesAndTags(
     accountId: number | null,
