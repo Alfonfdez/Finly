@@ -41,6 +41,13 @@ export function useNameDuplicateCheck(options: UseNameDuplicateCheckOptions) {
     }
   }, []);
 
+  const scheduleCheck = useUniqueNameCheck(checkNameDuplicate);
+
+  const debouncedCheck = useCallback((value: string) => {
+    setCheckingName(true);
+    scheduleCheck(value);
+  }, [scheduleCheck]);
+
   const clearNameError = useCallback(() => setNameError(null), []);
 
   return {
@@ -48,6 +55,6 @@ export function useNameDuplicateCheck(options: UseNameDuplicateCheckOptions) {
     checkingName,
     clearNameError,
     checkNameDuplicate,
-    debouncedCheck: useUniqueNameCheck(checkNameDuplicate),
+    debouncedCheck,
   };
 }
