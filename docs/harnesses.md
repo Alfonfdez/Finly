@@ -19,6 +19,24 @@ All commands run from the `FinlyApp/` directory.
 | Web E2E (spec criteria) | `npx expo start --web` then run the `verification-loop` skill (Playwright, 375px viewport) |
 | Mobile E2E (Maestro flows) | boot the emulator (`emulator -avd finly_test`), `adb reverse tcp:8081 tcp:8081`, `npx expo start`, then `maestro test .maestro/<flow>.yaml` |
 
+### Windows / PowerShell notes (host is win32, PowerShell 5.1)
+
+- **No ripgrep in the shell** — use the grep/glob/read tools for searching; do not rely on `rg` in a terminal command.
+- **Start the web dev server** (background, from `FinlyApp/`):
+  ```powershell
+  Start-Process cmd.exe -ArgumentList '/c','cd /d C:\path\to\FinlyApp && npx expo start --web --port 8081' -WindowStyle Hidden
+  ```
+  then poll `http://localhost:8081` with `Invoke-WebRequest` until it returns HTTP 200 (Metro bundling can be slow on first paint). Optionally save the PID to `C:\Users\<user>\AppData\Local\Temp\opencode\finly-expo.pid` for cleanup.
+- **Stop the dev server** — always when done:
+  ```powershell
+  Get-NetTCPConnection -LocalPort 8081 -State Listen | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
+  ```
+  and remove the PID file if one was written. Confirm the port is free afterwards. Never leave port 8081 occupied between verifications.
+
+### Current suite baseline
+
+Verified 2026-08-14: **32 test files / 269 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
+
 ## Verification loop (what "done" means)
 
 After every code change, the agent runs:
