@@ -144,7 +144,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     loadTransactions();
     return () => { active = false; };
-  }, [activeAccount, activePeriod, selectedDate, customDate]);
+  }, [activeAccount, activePeriod, selectedDate, customDate, transactionsVersion]);
   const filteredTransactions = useMemo(
     () => {
       let result = transactions.filter(t => {
