@@ -37,6 +37,17 @@ With this info, generate:
    - Description in English, imperative mood, lowercase, no period
    - Max 50 chars for subject line
 
+### Branch-name-only requests
+
+When the user asks only for **"the branch name"** (not a commit message), return just the
+branch name following the same convention (e.g., `fix/form-name-check-button-blink`). The
+developer creates and switches branches — opencode never runs `git checkout` / `git switch`
+/ `git branch -b`.
+
+If the developer explicitly says **"do not create a branch"** for a given task (a common
+one-off instruction), follow it: do not suggest branch creation, do not add a branch to the
+workflow for that task, and do not run any branch-related git command.
+
 ---
 
 ## Branch Cleanup

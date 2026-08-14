@@ -27,6 +27,12 @@ Expo web specifics:
 - First paint can be slow on web (Metro bundling). After navigating, wait for the UI element you assert on instead of relying on fixed sleeps.
 - The web build persists data in IndexedDB (sql.js engine), so a "fresh install" means a fresh browser context with the site's IndexedDB cleared before the run.
 
+### Windows (PowerShell) notes
+
+- Host is Windows / PowerShell 5.1. Start the server in the background from `FinlyApp/`:
+  `Start-Process cmd.exe -ArgumentList '/c','cd /d <abs path to FinlyApp> && npx expo start --web --port 8081' -WindowStyle Hidden`, then poll `http://localhost:8081` until it returns HTML. Optionally save the PID to `C:\Users\<user>\AppData\Local\Temp\opencode\finly-expo.pid`.
+- Cleanup: `Get-NetTCPConnection -LocalPort 8081 -State Listen | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }`, delete the PID file if written, and confirm the port is free. Full commands are also in `docs/harnesses.md`.
+
 ## Mobile mode (Android emulator via Maestro)
 
 For native-only criteria (camera/photo capture, native pickers, file system) and for

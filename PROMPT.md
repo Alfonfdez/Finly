@@ -11,5 +11,7 @@ This is the Finly project — a React Native/Expo personal finance app with SQLi
 7. Use Context7 MCP to look up up-to-date library documentation when working with external packages.
 8. After code changes, run `npm run test:all` from `FinlyApp/` (typecheck + lint + unit tests) and follow the harness rules in `docs/harnesses.md`.
 9. Any code update must be documented in `docs/changelog.md`.
-10. When asked for a commit message, follow the workflow in `docs/git-commands.md` (run `git status` + `git diff --stat`, then generate conventional commit + branch name).
-11. Always consult the developer before adding, modifying, or deleting code. Wait for verification.
+10. When asked for a commit message **or a branch name alone**, follow the workflow in `docs/git-commands.md` (run `git status` + `git diff --stat`, then generate a conventional commit + branch name). Never run `git commit`/`push`/`pull`/`fetch`/`checkout` — the developer performs all git write operations.
+11. Spec docs: a code change updates only `spec/features/<NNN>/1-spec.md` + `spec/constitution/3-roadmap.md` and flips acceptance criteria `[ ]` → `[x]` after verification. Never edit `2-plan.md` or `3-tasks.md` for feature updates.
+12. After web verification, close the browser and terminate the Expo dev server on port 8081 (see `docs/harnesses.md`). The host is Windows/PowerShell — no ripgrep in the shell; use the grep/glob/read tools.
+13. Always consult the developer before adding, modifying, or deleting code. Wait for verification.
