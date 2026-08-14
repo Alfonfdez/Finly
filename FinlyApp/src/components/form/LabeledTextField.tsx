@@ -48,6 +48,7 @@ export default function LabeledTextField({
         value={value}
         maxLength={maxLength}
         multiline={multiline}
+        placeholderTextColor={c.textSecondary}
         {...inputProps}
       />
       {showCounter && maxLength != null && (
