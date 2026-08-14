@@ -1,57 +1,63 @@
-import { getDatabase } from '../database';
+import { and, eq, inArray, ne, sql } from 'drizzle-orm';
+import { getDrizzle } from '../drizzle/engine';
+import { tags } from '../drizzle/schema';
+import { runResultOf } from '../drizzle/proxy';
 import type { Tag } from '../types';
 import { tagSchema } from '../schemas';
 import { parseRows } from '../validate';
-import { buildUpdateQuery, buildNameExistsQuery } from '../helpers';
 import { dbTimestamp } from '../../utils/formatters';
 
 export const tagRepo = {
   async list(userId: number): Promise<Tag[]> {
-    const db = await getDatabase();
-    const rows = await db.getAllAsync(
-      `SELECT * FROM tags WHERE user_id = ? ORDER BY id`,
-      userId
-    );
+    const db = await getDrizzle();
+    const rows = await db
+      .select()
+      .from(tags)
+      .where(eq(tags.user_id, userId))
+      .orderBy(tags.id)
+      .all();
     return parseRows(tagSchema, 'tags', rows);
   },
 
   async create(data: Omit<Tag, 'id' | 'created_at'>): Promise<Tag> {
-    const db = await getDatabase();
-    const result = await db.runAsync(
-      `INSERT INTO tags (user_id, name) VALUES (?, ?)`,
-      data.user_id, data.name
-    );
-    return { ...data, id: result.lastInsertRowId, created_at: dbTimestamp() };
+    const db = await getDrizzle();
+    const result = await db.insert(tags).values({ user_id: data.user_id, name: data.name }).run();
+    return { ...data, id: runResultOf(result).lastInsertRowId, created_at: dbTimestamp() };
   },
 
   async update(id: number, data: Partial<Omit<Tag, 'id' | 'created_at'>>): Promise<void> {
-    const db = await getDatabase();
-    const result = buildUpdateQuery(data, ['name']);
-    if (!result) return;
-    await db.runAsync(`UPDATE tags SET ${result.sets} WHERE id = ?`, ...result.values, id);
+    const db = await getDrizzle();
+    const set: Partial<typeof tags.$inferInsert> = {};
+    if (data.name !== undefined) set.name = data.name;
+    if (Object.keys(set).length === 0) return;
+    await db.update(tags).set(set).where(eq(tags.id, id)).run();
   },
 
   async delete(id: number): Promise<void> {
-    const db = await getDatabase();
-    await db.runAsync(`DELETE FROM tags WHERE id = ?`, id);
+    const db = await getDrizzle();
+    await db.delete(tags).where(eq(tags.id, id)).run();
   },
 
   async deleteMany(ids: number[]): Promise<void> {
     if (ids.length === 0) return;
-    const db = await getDatabase();
-    const placeholders = ids.map(() => '?').join(',');
-    await db.runAsync(`DELETE FROM tags WHERE id IN (${placeholders})`, ...ids);
+    const db = await getDrizzle();
+    await db.delete(tags).where(inArray(tags.id, ids)).run();
   },
 
   async deleteAll(): Promise<void> {
-    const db = await getDatabase();
-    await db.runAsync('DELETE FROM tags');
+    const db = await getDrizzle();
+    await db.delete(tags).run();
   },
 
   async existsByName(userId: number, name: string, excludeId?: number): Promise<boolean> {
-    const db = await getDatabase();
-    const { sql, params } = buildNameExistsQuery('tags', name, { userId, excludeId });
-    const result = await db.getFirstAsync<{ count: number }>(sql, ...params);
-    return (result?.count ?? 0) > 0;
+    const db = await getDrizzle();
+    const conditions: unknown[] = [sql`LOWER(${tags.name}) = LOWER(${name})`, eq(tags.user_id, userId)];
+    if (excludeId !== undefined) conditions.push(ne(tags.id, excludeId));
+    const rows = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(tags)
+      .where(and(...(conditions as Parameters<typeof and>[0][])))
+      .all();
+    return (rows[0]?.count ?? 0) > 0;
   },
 };

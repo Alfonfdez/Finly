@@ -1,4 +1,6 @@
-import { getDatabase } from '../database';
+import { sql } from 'drizzle-orm';
+import { getDrizzle } from '../drizzle/engine';
+import { config } from '../drizzle/schema';
 import type { Config } from '../types';
 import { FIRST_DAYS } from '../../constants/types';
 import { DEFAULT_CONFIG, DB_KEY_MAP, sanitizeConfig, toConfigRows } from '../configDefaults';
@@ -27,19 +29,19 @@ function parseConfig(rows: { key: string; value: string }[]): Config {
 
 export const configRepo = {
   async get(): Promise<Config> {
-    const db = await getDatabase();
-    const rows = await db.getAllAsync<{ key: string; value: string }>('SELECT key, value FROM config');
+    const db = await getDrizzle();
+    const rows = await db.select({ key: config.key, value: config.value }).from(config).all();
     return sanitizeConfig(rows.length > 0 ? parseConfig(rows) : DEFAULT_CONFIG);
   },
 
   async save(partial: Partial<Config>): Promise<void> {
-    const db = await getDatabase();
+    const db = await getDrizzle();
     for (const row of toConfigRows(partial)) {
-      await db.runAsync(
-        'INSERT INTO config (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
-        row.key,
-        row.value
-      );
+      await db
+        .insert(config)
+        .values(row)
+        .onConflictDoUpdate({ target: config.key, set: { value: sql`excluded.value` } })
+        .run();
     }
   },
 };

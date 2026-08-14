@@ -843,3 +843,30 @@ jobs:
 PR opened → CI check runs → green ✓ (mergeable) or red ✗ (blocked)
 ```
 
+
+
+# Databases / ORM
+
+## Drizzle ORM
+**Definition:** Lightweight, TypeScript-first SQL query builder and ORM.
+**Explanation:** Drizzle lets you write typed, composable database queries in TypeScript instead of raw SQL strings. You declare tables once in a schema module and then use `db.select().from(table)`, `db.insert(table).values(...)`, `db.update(table).set(...)` and `db.delete(table)`. Finly uses it as a query builder only: migrations stay on `PRAGMA user_version`, runtime validation stays on Zod, and there is no `drizzle-kit`/codegen. Drizzle runs on both native and web because Finly plugs in its own driver adapter (see 'sqlite-proxy adapter').
+**Example:**
+```ts
+const rows = await db
+  .select()
+  .from(accounts)
+  .where(eq(accounts.user_id, userId))
+  .orderBy(sql`is_total DESC, name COLLATE NOCASE`)
+  .all();
+```
+
+## sqlite-proxy adapter
+**Definition:** A Drizzle driver that executes every query through a custom callback instead of a specific database client.
+**Explanation:** The callback receives `(sql, params, method)` where `method` is `'run' | 'get' | 'all' | 'values'` and must return `{ rows }`. Drizzle expects **positional arrays** (it maps result columns by index, `row[columnIndex]`), not keyed objects. Finly's adapter (`src/database/drizzle/proxy.ts`) forwards the SQL to its shared `DatabaseHandle` (expo-sqlite on native, sql.js on web) and converts each result to positional rows. A `'get'` with no row must return `{ rows: null }`. Writes must go through `'run'`: on web, `'all'`/`'get'`/`'values'` read via `getAllAsync` and never persist, while `'run'` routes to `runAsync`, which triggers the IndexedDB write at commit.
+**Example:**
+```ts
+if (method === 'run') {
+  const result = await db.runAsync(sql, ...params);
+  return { rows: [{ lastInsertRowId: result.lastInsertRowId, changes: result.changes }] };
+}
+```
