@@ -47,6 +47,7 @@
 - When the 50-tag maximum (`MAX_TAGS`) is reached, the "+" FAB is hidden and the message "Maximum of 50 tags reached" is shown centered in its place.
 - A counter above the list shows how many tags exist out of the maximum, e.g. "12 of 50 tags" (`tags_counter`), hidden during selection mode.
 - Empty state with `pricetag-outline` icon and "No tags" message.
+- When there are no tags at all, the header Select button and search icon are hidden (nothing to select or search); they appear as soon as the first tag exists.
 
 ### 5. Create tag screen
 
@@ -109,6 +110,7 @@
 - [x] Closing the search restores the full list.
 - [x] A search with no matches shows "No results found".
 - [ ] If there are no tags, an empty state is shown.
+- [x] When there are no tags, the header Select and Search actions are hidden.
 - [ ] Creating a tag with a duplicate name (case-insensitive) shows an error.
 - [ ] Creating a tag with an empty name shows an error.
 - [ ] Creating a tag with more than 20 characters is prevented.

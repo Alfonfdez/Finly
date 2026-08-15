@@ -50,32 +50,33 @@ export default function CommentsScreen() {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerRight: () => (
-        <View style={styles.headerButtons}>
-          <TouchableOpacity
-            onPress={() => {
-              if (selectMode) setSelectedComments(new Set());
-              setSelectMode(!selectMode);
-            }}
-            style={styles.headerButton}
-          >
-            <Text style={[styles.selectText, { color: c.primary, fontSize: fs(15) }]}>
-              {selectMode ? labels.comments_select_done : labels.comments_select}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setSearchActive(!searchActive);
-              setSearchText('');
-            }}
-            style={styles.headerButton}
-          >
-            <Ionicons name="search-outline" size={22} color={c.text} />
-          </TouchableOpacity>
-        </View>
-      ),
+      headerRight: () =>
+        comments.length > 0 ? (
+          <View style={styles.headerButtons}>
+            <TouchableOpacity
+              onPress={() => {
+                if (selectMode) setSelectedComments(new Set());
+                setSelectMode(!selectMode);
+              }}
+              style={styles.headerButton}
+            >
+              <Text style={[styles.selectText, { color: c.primary, fontSize: fs(15) }]}>
+                {selectMode ? labels.comments_select_done : labels.comments_select}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setSearchActive(!searchActive);
+                setSearchText('');
+              }}
+              style={styles.headerButton}
+            >
+              <Ionicons name="search-outline" size={22} color={c.text} />
+            </TouchableOpacity>
+          </View>
+        ) : null,
     });
-  }, [navigation, selectMode, searchActive, c.text, c.primary, fs, labels]);
+  }, [navigation, selectMode, searchActive, comments.length, c.text, c.primary, fs, labels]);
 
   const filteredComments = useMemo(() => {
     if (!searchText.trim()) return comments;

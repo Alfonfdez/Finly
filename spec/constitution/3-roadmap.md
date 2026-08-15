@@ -461,3 +461,14 @@ Drizzle ORM data layer over the shared `DatabaseHandle`:
 - Phase B contract suite passes unchanged plus new `drizzleProxy.test.ts` and `drizzleDrift.test.ts` (34 files / 271 tests).
 
 Spec: spec/infrastructure/004-drizzle-orm/.
+
+## 035-hide-actions-on-empty-lists
+Status: completed.
+
+Hide the Select + Search header actions when there is nothing to manage:
+- Tags screen: the header Select button and search icon are hidden when the tag list is empty; they appear as soon as the first tag exists.
+- Comments screen: same for the comment list (comments derived from transaction descriptions).
+- Empty search results still keep the buttons — the actions only hide when the underlying list has zero items, not when a filter matches nothing.
+- Accounts and Categories screens left unchanged (Total account is always present; categories are seeded).
+
+Spec: spec/features/018-tag-management/ and spec/features/027-comments-management/.

@@ -32,32 +32,33 @@ export default function TagsScreen() {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerRight: () => (
-        <View style={styles.headerButtons}>
-          <TouchableOpacity
-            onPress={() => {
-              if (selectMode) setSelectedIds(new Set());
-              setSelectMode(!selectMode);
-            }}
-            style={styles.headerButton}
-          >
-            <Text style={[styles.selectText, { color: c.primary, fontSize: fs(15) }]}>
-              {selectMode ? labels.tags_select_done : labels.tags_select}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setSearchActive(!searchActive);
-              setSearchText('');
-            }}
-            style={styles.headerButton}
-          >
-            <Ionicons name="search-outline" size={22} color={c.text} />
-          </TouchableOpacity>
-        </View>
-      ),
+      headerRight: () =>
+        tags.length > 0 ? (
+          <View style={styles.headerButtons}>
+            <TouchableOpacity
+              onPress={() => {
+                if (selectMode) setSelectedIds(new Set());
+                setSelectMode(!selectMode);
+              }}
+              style={styles.headerButton}
+            >
+              <Text style={[styles.selectText, { color: c.primary, fontSize: fs(15) }]}>
+                {selectMode ? labels.tags_select_done : labels.tags_select}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setSearchActive(!searchActive);
+                setSearchText('');
+              }}
+              style={styles.headerButton}
+            >
+              <Ionicons name="search-outline" size={22} color={c.text} />
+            </TouchableOpacity>
+          </View>
+        ) : null,
     });
-  }, [navigation, selectMode, searchActive, c.text, c.primary, fs, labels]);
+  }, [navigation, selectMode, searchActive, tags.length, c.text, c.primary, fs, labels]);
 
   const filteredTags = useMemo(() => {
     if (!searchText.trim()) return tags;
