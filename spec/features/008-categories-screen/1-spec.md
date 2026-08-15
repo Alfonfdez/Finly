@@ -46,6 +46,19 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 - Matching is case-insensitive and by characters contained in the category's display name in the current language (via `getDisplayCategoryName`), so default categories are searchable by their translated name in the active language only. Multi-word terms must all be contained in the name.
 - When a search returns no results, the empty state shows a search icon + "No results found" (reuse `add_cat_no_results`).
 
+### 6. Multi-select bulk delete
+
+- The header shows a "Select" (`categories_select`) text button next to the search icon, only when the active type has at least one category; pressing it toggles selection mode (label switches to "Done", `categories_select_done`).
+- In selection mode each tile shows a checkmark and tapping toggles its selection instead of navigating to Modify category; the "Create" tile, the limit message and the counter are hidden; the header search keeps filtering during selection.
+- Selection is scoped to the active type: switching the Expense/Income tabs exits selection mode and clears the selection.
+- In selection mode a bottom action bar (reuse `SelectionActionBar`) shows "Cancel" and `Delete (N)` (`categories_bulk_delete(n)`), where N is the number of selected categories; the delete button is disabled while no categories are selected.
+- Deleting must keep at least one category per type so a transaction can still be created: selecting every category of the active type and pressing Delete blocks with the message "You cannot delete all the categories of a type. Keep at least one." (`categories_bulk_delete_min_one`).
+- If no selected category has transactions, pressing Delete opens a single `ConfirmationModal`: `Delete N categories?` (`categories_bulk_delete_confirm_title(n)`) with "The selected categories will be permanently deleted." (`categories_bulk_delete_confirm_message_empty`).
+- If any selected category has transactions, the modal message states how many of the selected categories have transactions (`categories_bulk_delete_confirm_message_tx(n, total)`) and offers two actions:
+  - "Move transactions first" (`categories_bulk_delete_confirm_move`) opens a resolution modal (`BulkCategoryTransferModal`, `categories_bulk_move_title`) listing each selected category with transactions (icon + name + transaction count, `categories_bulk_move_transactions(n)`). Each row opens a nested `CategoryTransferModal` with an extra destructive "Delete transactions" option (`categories_bulk_move_delete_option`); unresolved rows show "Choose…" (`categories_bulk_move_choose`). The confirm button "Move & delete" (`categories_bulk_move_confirm`) stays disabled until every listed category has a decision. On confirm, `categoryRepo.bulkDeleteWithTargets(items)` runs: categories with a numeric target have their transactions moved there, categories set to "Delete transactions" — and all selected categories without transactions — are deleted together in one transaction. A footer note (`categories_bulk_move_note`) states that categories without transactions are deleted directly.
+  - "Permanent delete" (`categories_bulk_delete_confirm_delete`) calls `categoryRepo.deleteMany(ids)` (transactions and their photos are removed too).
+- After any bulk delete, `refreshCategories()` and `refresh()` reload the lists and the screen exits selection mode.
+
 ---
 
 ## Non-functional requirements
@@ -60,22 +73,30 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 
 ## Acceptance criteria
 
-- [ ] The Drawer shows "Categories" and tapping it navigates to the categories screen.
-- [ ] The header shows the hamburger menu button and the title "Categories" in the active language.
-- [ ] Two tabs "Expenses"/"Income" are shown with "Expenses" selected by default.
-- [ ] When switching tabs, the categories of the corresponding type are displayed in a 4×N grid.
-- [ ] Each category shows an icon with a colored background + name below.
-- [ ] The grid is vertically scrollable if there are many categories.
-- [ ] The "Create" button (icon "+" + text) is in the last position of the grid.
-- [ ] Tapping "Create" navigates to "Create category" (006) with the active type.
-- [ ] When the active tab's type has 30 categories, the "Create" button is hidden and "Maximum of 30 categories per type reached" is shown below the grid.
-- [ ] Switching to a type below the cap restores the "Create" button.
-- [ ] A counter below the tabs shows how many categories the active type has out of the maximum and updates when switching tabs.
-- [ ] Tapping a category navigates to "Modify category" (009) with the selected category.
+- [x] The Drawer shows "Categories" and tapping it navigates to the categories screen.
+- [x] The header shows the hamburger menu button and the title "Categories" in the active language.
+- [x] Two tabs "Expenses"/"Income" are shown with "Expenses" selected by default.
+- [x] When switching tabs, the categories of the corresponding type are displayed in a 4×N grid.
+- [x] Each category shows an icon with a colored background + name below.
+- [x] The grid is vertically scrollable if there are many categories.
+- [x] The "Create" button (icon "+" + text) is in the last position of the grid.
+- [x] Tapping "Create" navigates to "Create category" (006) with the active type.
+- [x] When the active tab's type has 30 categories, the "Create" button is hidden and "Maximum of 30 categories per type reached" is shown below the grid.
+- [x] Switching to a type below the cap restores the "Create" button.
+- [x] A counter below the tabs shows how many categories the active type has out of the maximum and updates when switching tabs.
+- [x] Tapping a category navigates to "Modify category" (009) with the selected category.
 - [x] The header shows a search button that opens/closes the "Search category" bar below the tabs.
 - [x] Typing filters the active type's categories by the current-language display name (case-insensitive, multi-term).
 - [x] Closing the search restores the full grid.
 - [x] A search with no matches shows a search icon + "No results found".
+- [x] "Select" in the header enters selection mode (shown only when the active type has categories); tiles show checkmarks and tapping toggles selection instead of navigating.
+- [x] In selection mode the "Create" tile, the limit message and the counter are hidden; the action bar shows `Delete (N)` with the selected count and is disabled when nothing is selected.
+- [x] Switching the Expense/Income tabs exits selection mode and clears the selection.
+- [x] Selecting every category of the active type blocks deletion with the "keep at least one per type" message.
+- [x] Bulk delete of categories without transactions confirms once and removes them all.
+- [x] Bulk delete of categories with transactions offers "Move transactions first" (target limited to same-type categories not selected) or "Permanent delete".
+- [x] Bulk delete with transactions lets choosing a different destination per category ("Delete transactions" included) and confirms only once every category with transactions has a decision.
+- [x] After a bulk delete, the category grid and transaction data update.
 - [ ] All texts change when switching the language in settings.
 - [ ] The screen respects the active theme (dark/light).
 - [ ] The screen respects the configured text size.

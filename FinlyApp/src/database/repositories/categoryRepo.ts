@@ -1,4 +1,4 @@
-import { and, eq, ne, sql } from 'drizzle-orm';
+import { and, eq, inArray, ne, sql } from 'drizzle-orm';
 import { getDrizzle, withTransaction } from '../drizzle/engine';
 import { categories, transactions } from '../drizzle/schema';
 import { runResultOf } from '../drizzle/proxy';
@@ -68,6 +68,49 @@ export const categoryRepo = {
         .where(eq(transactions.category_id, oldCategoryId))
         .run();
       await db.delete(categories).where(eq(categories.id, oldCategoryId)).run();
+    });
+  },
+
+  async deleteMany(ids: number[]): Promise<void> {
+    if (ids.length === 0) return;
+    const placeholders = ids.map(() => '?').join(', ');
+    await deleteTransactionPhotos(`category_id IN (${placeholders})`, ...ids);
+    await withTransaction(async (db) => {
+      await db.delete(transactions).where(inArray(transactions.category_id, ids)).run();
+      await db.delete(categories).where(inArray(categories.id, ids)).run();
+    });
+  },
+
+  async reassignManyAndDelete(ids: number[], targetId: number): Promise<void> {
+    if (ids.length === 0) return;
+    await withTransaction(async (db) => {
+      await db
+        .update(transactions)
+        .set({ category_id: targetId })
+        .where(inArray(transactions.category_id, ids))
+        .run();
+      await db.delete(categories).where(inArray(categories.id, ids)).run();
+    });
+  },
+
+  async bulkDeleteWithTargets(items: { id: number; targetId: number | null }[]): Promise<void> {
+    if (items.length === 0) return;
+    const deleteIds = items.filter((item) => item.targetId === null).map((item) => item.id);
+    if (deleteIds.length > 0) {
+      const placeholders = deleteIds.map(() => '?').join(', ');
+      await deleteTransactionPhotos(`category_id IN (${placeholders})`, ...deleteIds);
+    }
+    await withTransaction(async (db) => {
+      for (const item of items) {
+        if (item.targetId !== null) {
+          await db
+            .update(transactions)
+            .set({ category_id: item.targetId })
+            .where(eq(transactions.category_id, item.id))
+            .run();
+        }
+      }
+      await db.delete(categories).where(inArray(categories.id, items.map((item) => item.id))).run();
     });
   },
 

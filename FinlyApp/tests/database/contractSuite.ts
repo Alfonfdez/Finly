@@ -207,6 +207,74 @@ export function runContractSuite(
         expect(moved?.category_id).toBe(newCat.id);
       });
 
+      it('deleteMany removes several categories and their transactions', async () => {
+        const catA = await backend.category.create(category('Bulk A'));
+        const catB = await backend.category.create(category('Bulk B'));
+        const catC = await backend.category.create(category('Bulk C'));
+        const acc = await backend.account.create(account('A'));
+        const t1 = await backend.transaction.create(tx({ account_id: acc.id, category_id: catA.id, amount: 5, date: '2026-03-03' }));
+        const t2 = await backend.transaction.create(tx({ account_id: acc.id, category_id: catB.id, amount: 7, date: '2026-03-04' }));
+        const t3 = await backend.transaction.create(tx({ account_id: acc.id, category_id: catC.id, amount: 9, date: '2026-03-05' }));
+
+        await backend.category.deleteMany([catA.id, catB.id]);
+        const remaining = await backend.category.list(USER);
+        expect(remaining.some(c => c.id === catA.id)).toBe(false);
+        expect(remaining.some(c => c.id === catB.id)).toBe(false);
+        expect(remaining.some(c => c.id === catC.id)).toBe(true);
+        expect(await backend.transaction.getById(t1.id)).toBeNull();
+        expect(await backend.transaction.getById(t2.id)).toBeNull();
+        expect(await backend.transaction.getById(t3.id)).not.toBeNull();
+      });
+
+      it('reassignManyAndDelete moves transactions of several categories to the target', async () => {
+        const catA = await backend.category.create(category('Move A'));
+        const catB = await backend.category.create(category('Move B'));
+        const target = await backend.category.create(category('Move Target'));
+        const acc = await backend.account.create(account('A'));
+        const t1 = await backend.transaction.create(tx({ account_id: acc.id, category_id: catA.id, amount: 5, date: '2026-03-06' }));
+        const t2 = await backend.transaction.create(tx({ account_id: acc.id, category_id: catB.id, amount: 7, date: '2026-03-07' }));
+
+        await backend.category.reassignManyAndDelete([catA.id, catB.id], target.id);
+        const remaining = await backend.category.list(USER);
+        expect(remaining.some(c => c.id === catA.id)).toBe(false);
+        expect(remaining.some(c => c.id === catB.id)).toBe(false);
+        expect(remaining.some(c => c.id === target.id)).toBe(true);
+        expect((await backend.transaction.getById(t1.id))?.category_id).toBe(target.id);
+        expect((await backend.transaction.getById(t2.id))?.category_id).toBe(target.id);
+      });
+
+      it('bulkDeleteWithTargets moves or deletes transactions per category', async () => {
+        const catA = await backend.category.create(category('Bulk A'));
+        const catB = await backend.category.create(category('Bulk B'));
+        const catC = await backend.category.create(category('Bulk C'));
+        const target = await backend.category.create(category('Bulk Target'));
+        const acc = await backend.account.create(account('A'));
+        const t1 = await backend.transaction.create(tx({ account_id: acc.id, category_id: catA.id, amount: 5, date: '2026-03-08' }));
+        const t2 = await backend.transaction.create(tx({ account_id: acc.id, category_id: catB.id, amount: 7, date: '2026-03-09' }));
+        const t3 = await backend.transaction.create(tx({ account_id: acc.id, category_id: catC.id, amount: 9, date: '2026-03-10' }));
+
+        await backend.category.bulkDeleteWithTargets([
+          { id: catA.id, targetId: target.id },
+          { id: catB.id, targetId: null },
+          { id: catC.id, targetId: null },
+        ]);
+
+        const remaining = await backend.category.list(USER);
+        expect(remaining.some(c => c.id === catA.id)).toBe(false);
+        expect(remaining.some(c => c.id === catB.id)).toBe(false);
+        expect(remaining.some(c => c.id === catC.id)).toBe(false);
+        expect(remaining.some(c => c.id === target.id)).toBe(true);
+        expect((await backend.transaction.getById(t1.id))?.category_id).toBe(target.id);
+        expect(await backend.transaction.getById(t2.id)).toBeNull();
+        expect(await backend.transaction.getById(t3.id)).toBeNull();
+      });
+
+      it('bulkDeleteWithTargets is a no-op for an empty batch', async () => {
+        const before = (await backend.category.list(USER)).length;
+        await backend.category.bulkDeleteWithTargets([]);
+        expect((await backend.category.list(USER)).length).toBe(before);
+      });
+
       it('sorts names case-insensitively', async () => {
         await backend.category.create(category('alpha', { type: 'income' }));
         await backend.category.create(category('Beta', { type: 'income' }));
@@ -305,6 +373,38 @@ export function runContractSuite(
         expect(sortedDescriptions(await backend.transaction.list({ type: 'income' }))).toEqual(['p1', 'p4']);
         expect(sortedDescriptions(await backend.transaction.list({ start_date: '2026-01-11', end_date: '2026-01-12' }))).toEqual(['p2', 'p3']);
         expect(await backend.transaction.list({ category_ids: [salary.id, grocery.id] })).toHaveLength(4);
+      });
+
+      it('countByCategoryIds counts transactions across the given categories', async () => {
+        const acc = await backend.account.create(account('A'));
+        const catA = await backend.category.create(category('Count A'));
+        const catB = await backend.category.create(category('Count B'));
+        for (let i = 0; i < 2; i++) {
+          await backend.transaction.create(tx({ account_id: acc.id, category_id: catA.id, amount: 5, date: `2026-04-0${i + 1}` }));
+        }
+        for (let i = 0; i < 3; i++) {
+          await backend.transaction.create(tx({ account_id: acc.id, category_id: catB.id, amount: 7, date: `2026-04-0${i + 3}` }));
+        }
+        expect(await backend.transaction.countByCategoryIds([catA.id])).toBe(2);
+        expect(await backend.transaction.countByCategoryIds([catA.id, catB.id])).toBe(5);
+        expect(await backend.transaction.countByCategoryIds([])).toBe(0);
+      });
+
+      it('countByCategoryIdsMap returns per-category counts', async () => {
+        const acc = await backend.account.create(account('A'));
+        const catA = await backend.category.create(category('Map A'));
+        const catB = await backend.category.create(category('Map B'));
+        const catC = await backend.category.create(category('Map C'));
+        for (let i = 0; i < 2; i++) {
+          await backend.transaction.create(tx({ account_id: acc.id, category_id: catA.id, amount: 5, date: `2026-04-0${i + 1}` }));
+        }
+        for (let i = 0; i < 3; i++) {
+          await backend.transaction.create(tx({ account_id: acc.id, category_id: catB.id, amount: 7, date: `2026-04-0${i + 3}` }));
+        }
+        const map = await backend.transaction.countByCategoryIdsMap([catA.id, catB.id, catC.id]);
+        expect(map[catA.id]).toBe(2);
+        expect(map[catB.id]).toBe(3);
+        expect(map[catC.id]).toBeUndefined();
       });
 
       it('filters by tags, untagged and combinations', async () => {

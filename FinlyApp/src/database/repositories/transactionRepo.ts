@@ -289,6 +289,31 @@ export const transactionRepo = {
     return row?.count ?? 0;
   },
 
+  async countByCategoryIds(ids: number[]): Promise<number> {
+    if (ids.length === 0) return 0;
+    const db = await getDrizzle();
+    const row = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(transactions)
+      .where(inArray(transactions.category_id, ids))
+      .get();
+    return row?.count ?? 0;
+  },
+
+  async countByCategoryIdsMap(ids: number[]): Promise<Record<number, number>> {
+    if (ids.length === 0) return {};
+    const db = await getDrizzle();
+    const rows = await db
+      .select({ category_id: transactions.category_id, count: sql<number>`COUNT(*)` })
+      .from(transactions)
+      .where(inArray(transactions.category_id, ids))
+      .groupBy(transactions.category_id)
+      .all();
+    const map: Record<number, number> = {};
+    for (const row of rows) map[row.category_id] = row.count;
+    return map;
+  },
+
   async breakdownByCategoriesAndTags(
     accountId: number | null,
     categoryIds: number[],
