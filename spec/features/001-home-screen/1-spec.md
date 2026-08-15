@@ -23,7 +23,7 @@ A main screen in the app that displays the current Account, the Total (income/ex
    - Year: year picker.
    - Period: date range picker.
 
-6. Donut chart (SVG) showing expenses/income for the selected period, broken down by categories with their color. Tapping the chart toggles it to a horizontal bar chart.
+6. Donut chart (SVG) showing expenses/income for the selected period, broken down by categories with their color. Tapping the chart toggles it to a horizontal bar chart. The total is centered inside the donut hole: the text is constrained to the hole's inner diameter and its font size auto-shrinks (`fitFontSize`) so the full formatted amount always stays inside the hole.
 
 7. "+" button (Floating Action Button) centered at the bottom. Background: primary color (`c.primary`). Icon: `Ionicons "add"` with color `c.background` (theme-adaptive). Position: `position: absolute`, `bottom: 56`, `alignSelf: 'center'`. Navigates to the "Add Expense/Income" screen.
 
@@ -50,6 +50,7 @@ Cloud sync, authentication, offline usage (AsyncStorage is already local).
 [ ] When selecting a period, a date can be chosen with the native picker.
 [ ] The date picker does not allow selecting future dates.
 [ ] The donut chart is displayed correctly with period data.
+[x] The total in the center of the donut stays fully visible inside the hole even for large amounts (font auto-shrinks to fit).
 [ ] Tapping the donut chart shows the bar chart, and vice versa.
 [ ] The "+" button navigates to the "Add Expense/Income" screen.
 [ ] The category list displays icon, name, percentage and total correctly.

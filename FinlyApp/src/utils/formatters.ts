@@ -27,6 +27,24 @@ export function formatSignedCurrency(amount: number, currency = DEFAULT_CURRENCY
   return `${sign}${formatCurrency(amount, currency, separator)}`;
 }
 
+export interface FitFontSizeOptions {
+  factor?: number;
+  safety?: number;
+  minSize?: number;
+}
+
+export function fitFontSize(
+  text: string,
+  baseSize: number,
+  maxWidth: number,
+  { factor = 0.6, safety = 0.95, minSize = 10 }: FitFontSizeOptions = {},
+): number {
+  const available = maxWidth * safety;
+  const estimated = text.length * baseSize * factor;
+  if (estimated <= available) return baseSize;
+  return Math.max(minSize, Math.floor(available / (text.length * factor)));
+}
+
 export function formatDate(date: Date): string {
   const day = date.getDate().toString().padStart(2, '0');
   const month = (date.getMonth() + 1).toString().padStart(2, '0');

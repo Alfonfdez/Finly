@@ -3,6 +3,7 @@ import {
   HIDDEN_BALANCE,
   formatCurrency,
   formatSignedCurrency,
+  fitFontSize,
   formatDate,
   getMonthName,
   startOfDay,
@@ -60,6 +61,35 @@ describe('formatSignedCurrency', () => {
 
   it('keeps the minus sign for negative amounts', () => {
     expect(formatSignedCurrency(-5)).toBe('-5,00 €');
+  });
+});
+
+describe('fitFontSize', () => {
+  it('keeps the base size when the text fits', () => {
+    expect(fitFontSize('1.234,56 €', 18, 119)).toBe(18);
+    expect(fitFontSize('0,00 €', 18, 119)).toBe(18);
+  });
+
+  it('shrinks long texts proportionally to fit the width', () => {
+    // "1.234.567,89 €" is 14 chars; at 18px it overflows a 119px box
+    const size = fitFontSize('1.234.567,89 €', 18, 119);
+    expect(size).toBeLessThan(18);
+    expect(size * 14 * 0.6).toBeLessThanOrEqual(119 * 0.95);
+  });
+
+  it('shrinks more for longer texts', () => {
+    const millions = fitFontSize('1.234.567,89 €', 18, 119);
+    const billions = fitFontSize('1.234.567.890,12 €', 18, 119);
+    expect(billions).toBeLessThan(millions);
+  });
+
+  it('never goes below the minimum size', () => {
+    expect(fitFontSize('1.234.567.890.123,45 €', 18, 119)).toBe(10);
+    expect(fitFontSize('1.234.567.890.123,45 €', 18, 119, { minSize: 8 })).toBe(8);
+  });
+
+  it('respects a custom factor and safety margin', () => {
+    expect(fitFontSize('abcdefgh', 18, 108, { factor: 0.9, safety: 1 })).toBeLessThan(18);
   });
 });
 
