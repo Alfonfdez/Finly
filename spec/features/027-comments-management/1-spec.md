@@ -15,6 +15,7 @@
 - Tapping a row navigates to `ModifyComment` with `{ comment }`.
 - Header has a search toggle button: opens a `SearchBar` that filters the list client-side (case-insensitive substring on the comment).
 - Empty state: `comments_empty` ("No comments yet").
+- When there are no comments, the header Select button and search icon are hidden; they appear as soon as a comment exists.
 - The list reloads on focus via `useFocusEffect` → `transactionRepository.getDistinctComments()`.
 - No FAB.
 
@@ -70,6 +71,7 @@
 - [ ] The Comments screen lists every distinct comment with its "Used in N transactions" count, sorted alphabetically.
 - [ ] Whitespace/case variants of the same comment collapse into one row with a summed count.
 - [ ] The search toggle filters the list client-side; empty state shows when there are no comments.
+- [x] When there are no comments, the header Select and Search actions are hidden.
 - [ ] Tapping a comment opens the modify screen with the comment preloaded and the counter showing `N/4096`.
 - [ ] Save is disabled when the comment is empty or unchanged.
 - [ ] Saving renames the comment on all transactions that use it and returns to the list (counts updated).
