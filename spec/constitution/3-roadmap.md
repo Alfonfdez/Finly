@@ -415,6 +415,18 @@ Usage counters against the limits on the Categories and Tags pages:
 
 Spec: spec/features/018-tag-management/ and spec/features/008-categories-screen/.
 
+## 036-donut-total-fit
+Status: completed.
+
+Keep the total amount centered in the donut chart always fully inside the hole:
+- The center text is now constrained to the donut's inner diameter (`HOLE_SIZE = (radius − strokeWidth / 2) × 2`) instead of floating unconstrained over the SVG, so wide amounts no longer spill out of the donut.
+- New pure util `fitFontSize(text, baseSize, maxWidth, { factor = 0.6, safety = 0.95, minSize = 10 })` in `src/utils/formatters.ts`: returns the largest font size whose estimated glyph width fits the box; short strings keep the base size, long ones shrink proportionally, never below the minimum, never truncated.
+- Donut proportions widened for more room: radius 60 → 66, strokeWidth 15 → 13 (hole 105 → 119px; outer ring 145px still inside the 160px viewBox).
+- Deterministic JS calculation (works identically on iOS/Android/web); RN `adjustsFontSizeToFit` was rejected because react-native-web does not implement it.
+- Tests: 5 new `fitFontSize` unit tests; `npm run test:all` green.
+
+Spec: spec/features/001-home-screen/.
+
 ## 001-expo-sqlite-wal-cleanup (infrastructure)
 Status: completed.
 
