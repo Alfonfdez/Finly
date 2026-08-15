@@ -12,7 +12,7 @@ interface Props {
   title: string;
   message?: string;
   confirmLabel: string;
-  cancelLabel: string;
+  cancelLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
   confirmDisabled?: boolean;
@@ -39,12 +39,14 @@ export default function ConfirmationModal({
       )}
       {children}
       <View style={[styles.buttons, hasMove && styles.buttonsStacked]}>
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: c.surface, borderColor: c.border }]}
-          onPress={onCancel}
-        >
-          <Text style={[styles.buttonText, { color: c.text, fontSize: fs(14) }]}>{cancelLabel}</Text>
-        </TouchableOpacity>
+        {cancelLabel ? (
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: c.surface, borderColor: c.border }]}
+            onPress={onCancel}
+          >
+            <Text style={[styles.buttonText, { color: c.text, fontSize: fs(14) }]}>{cancelLabel}</Text>
+          </TouchableOpacity>
+        ) : null}
         {hasMove ? (
           <View style={styles.actionRow}>
             <TouchableOpacity

@@ -103,8 +103,8 @@
 - [ ] All tags are displayed in a list ordered by creation date (newest at the bottom).
 - [ ] Pressing a tag navigates to "Modify tag" with the tag id.
 - [ ] The "+" FAB navigates to "Create tag".
-- [ ] At the 50-tag maximum, the "+" FAB is hidden and "Maximum of 50 tags reached" is shown in its place.
-- [ ] The screen shows a counter above the list with the current number of tags out of the maximum (e.g. "12 of 50 tags"), hidden during selection mode.
+- [x] At the 50-tag maximum, the "+" FAB is hidden and "Maximum of 50 tags reached" is shown in its place.
+- [x] The screen shows a counter above the list with the current number of tags out of the maximum (e.g. "12 of 50 tags"), hidden during selection mode.
 - [x] The header search button shows/hides a "Search tags" bar.
 - [x] Typing filters the tag list by name (case-insensitive substring).
 - [x] Closing the search restores the full list.

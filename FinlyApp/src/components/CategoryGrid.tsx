@@ -11,6 +11,7 @@ import CategoryTile from './CategoryTile';
 interface Props {
   categories: Category[];
   selectedCategory: number | null;
+  selectedIds?: ReadonlySet<number>;
   onSelect: (id: number) => void;
   onAddMore: () => void;
   showAddMore?: boolean;
@@ -18,13 +19,14 @@ interface Props {
   hideTitle?: boolean;
 }
 
-export default function CategoryGrid({ categories, selectedCategory, onSelect, onAddMore, showAddMore = true, addMoreLabel, hideTitle = false }: Props) {
+export default function CategoryGrid({ categories, selectedCategory, onSelect, onAddMore, showAddMore = true, addMoreLabel, hideTitle = false, selectedIds }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
 
   const renderCategory = useCallback((cat: Category) => {
     const categoryName = getDisplayCategoryName(cat);
+    const multiSelected = selectedIds?.has(cat.id) ?? false;
 
     return (
       <CategoryTile
@@ -33,12 +35,13 @@ export default function CategoryGrid({ categories, selectedCategory, onSelect, o
         color={cat.color}
         shape={badgeShapeFor(config, 'category')}
         label={categoryName}
-        selected={cat.id === selectedCategory}
+        selected={selectedIds ? multiSelected : cat.id === selectedCategory}
+        checkmark={!!selectedIds}
         onPress={() => onSelect(cat.id)}
         accessibilityLabel={`${labels.a11y_category} ${categoryName}`}
       />
     );
-  }, [config, selectedCategory, onSelect, labels]);
+  }, [config, selectedCategory, onSelect, labels, selectedIds]);
 
   const label = addMoreLabel ?? labels.add_more;
 

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, ScrollView,
+  View, Text, TextInput,
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,22 +14,17 @@ import { t, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdB
 import { categoryRepository, transactionRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
-import { WHITE, TRANSPARENT } from '../constants/themes';
 import { CATEGORY_ICONS } from '../components/IconGrid';
 import { QUICK_COLORS } from '../constants/colors';
 import IconBadge from '../components/IconBadge';
 import IconColorSection from '../components/IconColorSection';
 import ConfirmationModal from '../components/ConfirmationModal';
-import ModalShell from '../components/ModalShell';
-import ModalHeader from '../components/ModalHeader';
-import RadioButton from '../components/RadioButton';
-import ListItemRow from '../components/ListItemRow';
+import CategoryTransferModal from '../components/CategoryTransferModal';
 import SectionTitle from '../components/form/SectionTitle';
 import PrimaryButton from '../components/form/PrimaryButton';
 import DeleteButton from '../components/form/DeleteButton';
 import KeyboardSpacer from '../components/form/KeyboardSpacer';
 import FormScrollView from '../components/form/FormScrollView';
-import { BUTTON_BORDER_RADIUS } from '../components/componentStyles';
 
 type ModifyCategoryRouteProp = RouteProp<RootStackParamList, 'ModifyCategory'>;
 
@@ -255,58 +250,19 @@ export default function ModifyCategoryScreen() {
         onMove={deleteHasTransactions ? handleMoveTransactions : undefined}
       />
 
-      <ModalShell visible={selectModalVisible} onClose={() => setSelectModalVisible(false)}>
-        <ModalHeader title={labels.modify_cat_select_title} size={16} />
-        <ScrollView style={styles.selectList}>
-          {sameTypeCategories.length === 0 ? (
-            <Text style={[styles.emptySelect, { color: c.textSecondary, fontSize: fs(14) }]}>
-              {labels.add_cat_no_results}
-            </Text>
-          ) : (
-            sameTypeCategories.map((cat) => {
-              const isSelected = targetCategoryId === cat.id;
-              const radio = <RadioButton selected={isSelected} />;
-              return (
-                <ListItemRow
-                  key={cat.id}
-                  title={getDisplayCategoryName(cat)}
-                  leading={radio}
-                  icon={cat.icon}
-                  color={cat.color}
-                  shape={badgeShapeFor(config, 'category')}
-                  badgeSize={36}
-                  badgeIconSize={20}
-                  badgeRadius={8}
-                  badgeAlpha={20}
-                  badgeGap={12}
-                  style={[styles.selectItem, { backgroundColor: isSelected ? c.background : TRANSPARENT }]}
-                  onPress={() => setTargetCategoryId(cat.id)}
-                  accessibilityLabel={getDisplayCategoryName(cat)}
-                  accessibilityState={{ selected: isSelected }}
-                />
-              );
-            })
-          )}
-        </ScrollView>
-        <View style={styles.modalButtons}>
-          <TouchableOpacity
-            style={[styles.modalButton, { backgroundColor: c.surface, borderColor: c.border }]}
-            onPress={() => setSelectModalVisible(false)}
-          >
-            <Text style={[styles.modalButtonText, { color: c.text, fontSize: fs(14) }]}>
-              {labels.modify_cat_select_cancel}
-            </Text>
-          </TouchableOpacity>
-          <PrimaryButton
-            label={labels.modify_cat_select_confirm}
-            onPress={handleSelectTarget}
-            disabled={targetCategoryId === null}
-            disabledBg={c.textSecondary}
-            enabledTextColor={WHITE}
-            style={styles.modalButton}
-          />
-        </View>
-      </ModalShell>
+      <CategoryTransferModal
+        visible={selectModalVisible}
+        title={labels.modify_cat_select_title}
+        categories={sameTypeCategories}
+        selectedId={targetCategoryId}
+        confirmLabel={labels.modify_cat_select_confirm}
+        cancelLabel={labels.modify_cat_select_cancel}
+        onSelect={(id) => {
+          if (typeof id === 'number') setTargetCategoryId(id);
+        }}
+        onConfirm={handleSelectTarget}
+        onCancel={() => setSelectModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -356,37 +312,5 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     marginTop: 16,
-  },
-  modalButtons: {
-    flexDirection: 'column',
-    gap: 12,
-  },
-  modalButton: {
-    flex: 1,
-    minHeight: 44,
-    paddingVertical: 12,
-    borderRadius: BUTTON_BORDER_RADIUS,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  modalButtonText: {
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  selectList: {
-    maxHeight: 300,
-    marginBottom: 16,
-  },
-  selectItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    marginBottom: 4,
-  },
-  emptySelect: {
-    textAlign: 'center',
-    paddingVertical: 24,
   },
 });

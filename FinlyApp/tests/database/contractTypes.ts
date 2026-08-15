@@ -48,12 +48,20 @@ export interface ContractAccountRepo {
   existsByName(name: string, excludeId?: number): Promise<boolean>;
 }
 
+export interface CategoryDeleteItem {
+  id: number;
+  targetId: number | null;
+}
+
 export interface ContractCategoryRepo {
   list(userId: number, type?: TransactionType): Promise<Category[]>;
   create(data: NewCategory): Promise<Category>;
   update(id: number, data: UpdateCategory): Promise<void>;
   delete(id: number): Promise<void>;
   reassignAndDelete(oldCategoryId: number, newCategoryId: number): Promise<void>;
+  deleteMany(ids: number[]): Promise<void>;
+  reassignManyAndDelete(ids: number[], targetId: number): Promise<void>;
+  bulkDeleteWithTargets(items: CategoryDeleteItem[]): Promise<void>;
   deleteAll(): Promise<void>;
   existsByName(name: string, excludeId?: number): Promise<boolean>;
 }
@@ -87,6 +95,8 @@ export interface ContractTransactionRepo {
   deleteComment(comment: string): Promise<number>;
   deleteComments(comments: string[]): Promise<number>;
   countByDescription(comment: string): Promise<number>;
+  countByCategoryIds(ids: number[]): Promise<number>;
+  countByCategoryIdsMap(ids: number[]): Promise<Record<number, number>>;
   breakdownByCategoriesAndTags(
     accountId: number | null,
     categoryIds: number[],

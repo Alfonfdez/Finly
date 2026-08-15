@@ -427,6 +427,21 @@ Keep the total amount centered in the donut chart always fully inside the hole:
 
 Spec: spec/features/001-home-screen/.
 
+## 037-categories-bulk-delete
+Status: completed.
+
+Multi-select bulk delete on the Categories screen:
+- Header "Select"/"Done" toggle (shown only when the active type has categories) enters selection mode: tiles show checkmarks and tapping toggles selection instead of navigating to Modify category; the "Create" tile, the limit message and the counter are hidden; selection resets when switching Expense/Income tabs; header search keeps filtering during selection.
+- Shared `SelectionActionBar` bottom bar with "Cancel" and `Delete (N)` (disabled when nothing selected).
+- Deleting keeps at least one category per type: selecting every category of the active type blocks with "You cannot delete all the categories of a type. Keep at least one." (`categories_bulk_delete_min_one`).
+- If no selected category has transactions, a single `ConfirmationModal` confirms the deletion; if any does, the modal states how many of the selected categories have transactions (`categories_bulk_delete_confirm_message_tx(n, total)`) and offers "Move transactions first" or "Permanent delete" (`deleteMany`, removes transactions + photos).
+- "Move transactions first" opens a per-category resolution modal (`BulkCategoryTransferModal`): each selected category with transactions lists its count and opens a nested `CategoryTransferModal` with a destructive "Delete transactions" option (`categories_bulk_move_delete_option`); "Move & delete" is disabled until every listed category has a decision, and `categoryRepo.bulkDeleteWithTargets(items)` runs the moves/deletes in one transaction (categories without transactions are always deleted).
+- New repo methods `categoryRepo.deleteMany(ids)`, `categoryRepo.reassignManyAndDelete(ids, targetId)` and `categoryRepo.bulkDeleteWithTargets(items)` + `transactionRepo.countByCategoryIds(ids)` and `transactionRepo.countByCategoryIdsMap(ids)`; `ModifyCategoryScreen` refactored to reuse the extracted shared `CategoryTransferModal`.
+- i18n keys `categories_select*`, `categories_bulk_delete*`, `categories_bulk_move*` (en/es/ca).
+- Tests: 6 new contract tests (category `deleteMany`, `reassignManyAndDelete`, `bulkDeleteWithTargets` ×2, transaction `countByCategoryIds`, `countByCategoryIdsMap`); `npm run test:all` green (282 tests / 34 files).
+
+Spec: spec/features/008-categories-screen/.
+
 ## 001-expo-sqlite-wal-cleanup (infrastructure)
 Status: completed.
 
