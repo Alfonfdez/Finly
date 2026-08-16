@@ -9,14 +9,12 @@ import { ConfigProvider } from './src/context/ConfigContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import { initDatabase } from './src/database/database';
 
-const MIN_SPLASH_MS = 2000;
 const EXIT_DURATION = 400;
 const USE_NATIVE_DRIVER = Platform.OS !== 'web';
 
 function SplashScreen({ exiting }: { exiting: boolean }) {
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const logoScale = useRef(new Animated.Value(0.8)).current;
-  const lineWidth = useRef(new Animated.Value(0)).current;
   const exitOpacity = useRef(new Animated.Value(1)).current;
   const exitScale = useRef(new Animated.Value(1)).current;
 
@@ -26,12 +24,9 @@ function SplashScreen({ exiting }: { exiting: boolean }) {
       Animated.spring(logoScale, { toValue: 1, friction: 5, tension: 60, useNativeDriver: USE_NATIVE_DRIVER }),
     ]).start();
 
-    Animated.timing(lineWidth, { toValue: 1, duration: MIN_SPLASH_MS * 0.8, delay: 400, useNativeDriver: false }).start();
-
     return () => {
       logoOpacity.stopAnimation();
       logoScale.stopAnimation();
-      lineWidth.stopAnimation();
     };
   }, []);
 
@@ -48,28 +43,17 @@ function SplashScreen({ exiting }: { exiting: boolean }) {
       <Animated.View style={{ opacity: logoOpacity, transform: [{ scale: logoScale }] }}>
         <Image source={require('./assets/icon.png')} style={styles.splashLogo} />
       </Animated.View>
-      {!exiting && (
-        <View style={styles.lineTrack}>
-          <Animated.View style={[styles.lineFill, { width: lineWidth.interpolate({
-            inputRange: [0, 1],
-            outputRange: ['0%', '100%'],
-          }) }]} />
-        </View>
-      )}
     </Animated.View>
   );
 }
 
 export default function App() {
   const [dbReady, setDbReady] = useState(false);
-  const [splashTimerDone, setSplashTimerDone] = useState(false);
   const [exiting, setExiting] = useState(false);
   const [showApp, setShowApp] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => setSplashTimerDone(true), MIN_SPLASH_MS);
-
     async function setup() {
       try {
         await initDatabase();
@@ -79,16 +63,14 @@ export default function App() {
       }
     }
     setup();
-
-    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    if (dbReady && splashTimerDone && !exiting && !showApp) {
+    if (dbReady && !exiting && !showApp) {
       setExiting(true);
       setTimeout(() => setShowApp(true), EXIT_DURATION);
     }
-  }, [dbReady, splashTimerDone]);
+  }, [dbReady]);
 
   if (dbError) {
     return (
@@ -130,19 +112,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 20,
-  },
-  lineTrack: {
-    width: 120,
-    height: 2,
-    borderRadius: 1,
-    backgroundColor: '#1E293B',
-    marginTop: 8,
-    overflow: 'hidden',
-  },
-  lineFill: {
-    height: '100%',
-    backgroundColor: '#22D3EE',
-    borderRadius: 1,
   },
   error: {
     flex: 1,

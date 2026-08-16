@@ -417,15 +417,14 @@ Full spec audit of every implemented feature against its acceptance criteria, in
 
 - **003-settings-screen** (all 41 criteria pass, `[x]`). Spec-drift notes (not blockers): (1) Data modals' primary button on the first modal reads "Confirm", the spec says "Delete all"/"Reset"; (2) the spec mentions toast/snackbar confirmations but no toast system exists in the app; (3) an NFR mentions web `localStorage`, the implementation uses IndexedDB (sql.js).
 - **010-app-logo** findings:
-  - Web splash `SplashScreen` is missing the "Finly" text (spec §3b: primary #22D3EE, weight 800, size 28) — acceptance criterion "logo + 'Finly' + loader" fails.
-  - `MIN_SPLASH_MS = 2000` in `App.tsx`, spec requires 3000 (measured exit ~2000ms).
+  - Web splash: the spec was outdated. The "Finly" text was removed by design and the hold time changed from 3000ms to 2000ms; after the splash rework (Task 2b) the splash is duration-driven with no artificial minimum and no progress bar. Spec §3b and criterion #85 updated to match; #85 flipped `[x]`.
   - `favicon.png` is 1024×1024 (spec 48×48) and `splash-icon.png` is 1024×1024 (spec 1284×2778); both still work (Expo resizes the favicon at export; `contain` on the splash).
   - `android-icon-foreground.png` (1.36 MB) and `android-icon-monochrome.png` (1.26 MB) exceed the 1 MB NFR.
   - Native-only criteria (#79–#81, #83, #84) not checkable on web; config references verified.
   - Verified `[x]`: favicon in tab (#82/#88), all files referenced in app.json (#86), drawer header logo + "Finly" (#87).
 - Browser-verification notes: dev server does not inject the favicon `<link>` (production export does); `dist/` export generated the favicon.ico from `web.favicon`.
 
-Pending: feature fixes for the 010-app-logo findings (web splash "Finly" text + `MIN_SPLASH_MS`, asset dimensions/sizes), release-readiness (Task 3: version 2.0.0, package `com.finly.app`, `userInterfaceStyle: "automatic"`, production EAS profile), release (Task 4: GitHub release v2.0.0 + APK).
+Pending: feature fixes for the 010-app-logo findings (asset dimensions/sizes), release-readiness (Task 3: version 2.0.0, package `com.finly.app`, `userInterfaceStyle: "automatic"`, production EAS profile), release (Task 4: GitHub release v2.0.0 + APK).
 
 ## 2.0 nav header fix (Task 2)
 Status: completed.
@@ -435,6 +434,15 @@ Header-left button now follows navigation state instead of a static flag:
 - Drawer navigation for the hamburger-group items (Home, Accounts, Categories, Tags, Comments) resets the Main stack to root (`navigation.reset`), so opening them from the drawer always yields the hamburger (008/011/018) and the stack no longer accumulates hidden history. AllTransactions (015 #116) and Settings (003 §1) keep the push behavior and show a back arrow / native back button.
 - Browser-verified at 375px: hamburger on Home/Accounts/Categories/Tags/Comments (and it opens the drawer), back arrow on AllTransactions from both the drawer and the Home stats icon (back returns Home), native back "Home, back" on Settings and "Settings, back" on Appearance, Categories drill-down unaffected; 0 console errors.
 - Flipped `[x]`: 011 #82 (Accounts hamburger + title), 018 #102 (Tags hamburger + title), 015 #115/#116 (AllTransactions access + back arrow). 008 #77 re-verified (no regression).
+
+## 2.0 splash rework (Task 2b)
+Status: completed.
+
+Web splash is now duration-driven instead of timer-driven. The `SplashScreen` in `App.tsx` shows only while the database initializes and exits as soon as `initDatabase` resolves:
+- Removed `MIN_SPLASH_MS`, the `splashTimerDone` state/timer, and the fake progress bar (track + fill animated on a timer). A fake progress bar is an anti-pattern — it implies real progress that doesn't exist.
+- Kept the logo entrance (800ms fade + spring 0.8 → 1.0) and the 400ms exit fade/scale (1.0 → 1.1).
+- Docs updated to match the intended behavior (the spec was outdated): 010 §3b now specifies logo-only splash, no artificial minimum, no progress bar, no text (the "Finly" text was removed by design earlier); criterion #85 flipped `[x]` after browser verification.
+- Browser-verified (Playwright, 375px): splash shows the 80×80 rounded logo with entrance animation, no progress bar and no text, and exits promptly to Home once loaded; 0 console errors. test:all green (typecheck + lint + tests).
 
 
 
