@@ -18,8 +18,8 @@
 | `android-icon-foreground.png` | 1024 × 1024 | Foreground layer of the Android adaptive icon |
 | `android-icon-background.png` | 1024 × 1024 | Background layer of the Android adaptive icon (solid color) |
 | `android-icon-monochrome.png` | 1024 × 1024 | Monochrome version for Android themed icons (API 33+) |
-| `favicon.png` | 48 × 48 | Browser tab icon |
-| `splash-icon.png` | 1284 × 2778 | Central icon of the splash screen |
+| `favicon.png` | 1024 × 1024 | Browser tab icon (Expo downsizes to 16/32/48 px at export) |
+| `splash-icon.png` | 1024 × 1024 | Central icon of the splash screen (square; centered via `contain`) |
 
 > Note: `splash-icon.png` is automatically centered on a colored background. The background color is configured in `app.json`.
 

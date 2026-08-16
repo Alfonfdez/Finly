@@ -59,6 +59,8 @@ export const es: Language = {
   settings_delete_data_confirm_message2: 'Escribe DELETE para confirmar',
   settings_delete_data_confirm_placeholder: 'Escribe DELETE aquí',
   settings_delete_confirm: 'Confirmar',
+  settings_delete_all_data_confirm: 'Eliminar todo',
+  settings_factory_reset_confirm: 'Restablecer',
   settings_delete_transactions_error_title: 'Error',
   settings_delete_transactions_error_message: 'No se pudieron eliminar todas las transacciones.',
   settings_delete_data_error_title: 'Error',
