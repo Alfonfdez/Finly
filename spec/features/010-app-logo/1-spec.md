@@ -45,18 +45,14 @@
 
 ### 3b. Web splash screen
 
-- On web, the native Expo splash does not work. A `SplashScreen` component is implemented in `App.tsx` that is displayed while the database initializes.
+- On web, the native Expo splash does not work. A `SplashScreen` component is implemented in `App.tsx` that is displayed only while the database initializes.
 - The component shows:
   - Logo (`icon.png`) centered, 80×80 px, borderRadius 20.
-  - "Finly" text in primary color (#22D3EE), fontWeight 800, fontSize 28.
-  - Linear progress bar below the text (120px wide × 2px tall, gray track #1E293B, cyan fill #22D3EE) that fills from left to right during the splash.
 - **Animations**:
   - **Logo entrance**: fade-in (800ms) + spring scale-up (0.8 → 1.0, friction 5, tension 60).
-  - **Text entrance**: fade-in (600ms) with 500ms delay relative to the logo.
-  - **Progress bar**: fills to 100% at 80% of the minimum splash time, with an initial delay of 400ms.
   - **Exit**: fade-out + scale-up (1.0 → 1.1) in 400ms when the app is ready.
 - Background: #0F172A (same as the dark theme).
-- The splash remains visible for a minimum of 3 seconds (`MIN_SPLASH_MS = 3000`) even if the database loads earlier, so it is visually noticeable.
+- The splash is duration-driven: it exits as soon as the database is ready (`initDatabase` resolves). There is no artificial minimum hold time, no progress bar, and no text on the splash.
 
 ### 4. Drawer header
 
@@ -82,7 +78,7 @@
 - [x] `assets/favicon.png` is displayed in the browser tab when opening the app on web.
 - [ ] `assets/splash-icon.png` appears centered on the splash screen when launching the app.
 - [ ] The native splash screen (app.json) is displayed when launching the app natively (Expo Go).
-- [ ] On web, the SplashScreen component with logo + "Finly" + loader is displayed while the app loads.
+- [x] On web, the SplashScreen component with the logo is displayed while the app loads and exits as soon as the app is ready (no artificial delay, no progress bar).
 - [x] All files are correctly referenced in `app.json`.
 - [x] The drawer header displays the logo (icon.png) alongside the text "Finly".
 - [x] The favicon is displayed in the browser tab (may require clearing `dist/` and restarting the server).
