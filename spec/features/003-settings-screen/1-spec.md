@@ -314,56 +314,56 @@ An eye icon appears next to every masked balance. The icon represents the curren
 ## Acceptance Criteria
 
 ### Main Screen
-- [ ] The Drawer shows "Settings" and tapping it navigates to the settings screen.
-- [ ] 4 subsection rows are displayed: Appearance, Regional, Personalization, Data.
-- [ ] Each row has an icon, label, and chevron-right.
-- [ ] Tapping a row navigates to the corresponding detail screen.
+- [x] The Drawer shows "Settings" and tapping it navigates to the settings screen.
+- [x] 4 subsection rows are displayed: Appearance, Regional, Personalization, Data.
+- [x] Each row has an icon, label, and chevron-right.
+- [x] Tapping a row navigates to the corresponding detail screen.
 
 ### Appearance
-- [ ] Theme selector: Dark/Light/System with immediate app-wide effect.
-- [ ] System theme respects the device OS preference.
-- [ ] Text size selector: Small/Medium/Large with immediate scaling.
-- [ ] Account icon shape selector: Square/Circle with immediate effect.
-- [ ] Category icon shape selector: Square/Circle with immediate effect.
+- [x] Theme selector: Dark/Light/System with immediate app-wide effect.
+- [x] System theme respects the device OS preference.
+- [x] Text size selector: Small/Medium/Large with immediate scaling.
+- [x] Account icon shape selector: Square/Circle with immediate effect.
+- [x] Category icon shape selector: Square/Circle with immediate effect.
 
 ### Regional
-- [ ] Language selector: English/Spanish/Catalan with immediate label changes.
-- [ ] Currency selector: €/$/£/¥ with immediate amount formatting changes.
-- [ ] Decimal separator: Comma/Period with immediate format changes.
-- [ ] First day of week: Monday/Sunday with immediate calendar adjustment.
+- [x] Language selector: English/Spanish/Catalan with immediate label changes.
+- [x] Currency selector: €/$/£/¥ with immediate amount formatting changes.
+- [x] Decimal separator: Comma/Period with immediate format changes.
+- [x] First day of week: Monday/Sunday with immediate calendar adjustment.
 
 ### Personalization — Home Screen
-- [ ] Default account selector includes Total and all other accounts. Default is Total.
-- [ ] Changing default account and restarting the app shows the selected account on HomeScreen.
-- [ ] Default period selector: Day/Week/Month/Year. Default is Month.
-- [ ] Changing default period and restarting the app shows the selected period tab.
+- [x] Default account selector includes Total and all other accounts. Default is Total.
+- [x] Changing default account and restarting the app shows the selected account on HomeScreen.
+- [x] Default period selector: Day/Week/Month/Year. Default is Month.
+- [x] Changing default period and restarting the app shows the selected period tab.
 
 ### Personalization — Add Transaction
-- [ ] Default account selector excludes Total. Default is "Not selected".
-- [ ] "Not selected" preserves current behavior (inherit from HomeScreen; if Total, fallback to first non-Total).
-- [ ] Selecting a specific account always pre-selects it in AddTransactionScreen.
-- [ ] Optional fields: 3 checkboxes (Labels, Comments, Photo), all checked by default.
-- [ ] Unchecking a field hides the corresponding section in AddTransactionScreen and ModifyTransactionScreen.
+- [x] Default account selector excludes Total. Default is "Not selected".
+- [x] "Not selected" preserves current behavior (inherit from HomeScreen; if Total, fallback to first non-Total).
+- [x] Selecting a specific account always pre-selects it in AddTransactionScreen.
+- [x] Optional fields: 3 checkboxes (Labels, Comments, Photo), all checked by default.
+- [x] Unchecking a field hides the corresponding section in AddTransactionScreen and ModifyTransactionScreen.
 
 ### Personalization — Privacy
-- [ ] Hide account balances toggle (default: off).
-- [ ] When on, total balance, income subtotal, and expenses subtotal show `•••••` on HomeScreen.
-- [ ] When on, balances show `•••••` on AccountsScreen and AccountModal.
-- [ ] Hidden balances use gray (`textSecondary`) color with no `+`/`-` sign.
-- [ ] Eye icon appears next to masked balances.
-- [ ] Tapping eye temporarily reveals/hides ALL balances on screen.
-- [ ] Visibility resets to setting default when navigating away and coming back.
-- [ ] No timer — visibility persists until manual toggle or navigation.
+- [x] Hide account balances toggle (default: off).
+- [x] When on, total balance, income subtotal, and expenses subtotal show `•••••` on HomeScreen.
+- [x] When on, balances show `•••••` on AccountsScreen and AccountModal.
+- [x] Hidden balances use gray (`textSecondary`) color with no `+`/`-` sign.
+- [x] Eye icon appears next to masked balances.
+- [x] Tapping eye temporarily reveals/hides ALL balances on screen.
+- [x] Visibility resets to setting default when navigating away and coming back.
+- [x] No timer — visibility persists until manual toggle or navigation.
 
 ### Data
-- [ ] "Delete all transactions" row opens a single confirmation modal.
-- [ ] Confirming deletes all transactions and transaction_tags, not accounts/categories/tags.
-- [ ] After deletion, all screens (HomeScreen, AccountsScreen, etc.) reflect updated data immediately via `resetAll()`.
-- [ ] Each destructive row shows a short description of what it deletes/keeps.
-- [ ] "Delete all data" row opens a double confirmation modal (second requires typing "DELETE").
-- [ ] Confirming "Delete all data" deletes all data, re-seeds seed data, and keeps settings (language, theme, currency, and other config).
-- [ ] After "Delete all data", default-account settings fall back to Total/"Not selected" only when the referenced account no longer exists; defaults referencing surviving accounts (e.g. "My Wallet") are kept.
-- [ ] "Reset to factory state" row opens a double confirmation modal (second requires typing "DELETE").
-- [ ] Confirming "Reset to factory state" deletes all data and re-seeds config to defaults (language English, dark theme, etc.).
-- [ ] After reset, all screens reflect fresh seed state immediately via `resetAll()`.
-- [ ] Settings persist across app restarts.
+- [x] "Delete all transactions" row opens a single confirmation modal.
+- [x] Confirming deletes all transactions and transaction_tags, not accounts/categories/tags.
+- [x] After deletion, all screens (HomeScreen, AccountsScreen, etc.) reflect updated data immediately via `resetAll()`.
+- [x] Each destructive row shows a short description of what it deletes/keeps.
+- [x] "Delete all data" row opens a double confirmation modal (second requires typing "DELETE").
+- [x] Confirming "Delete all data" deletes all data, re-seeds seed data, and keeps settings (language, theme, currency, and other config).
+- [x] After "Delete all data", default-account settings fall back to Total/"Not selected" only when the referenced account no longer exists; defaults referencing surviving accounts (e.g. "My Wallet") are kept.
+- [x] "Reset to factory state" row opens a double confirmation modal (second requires typing "DELETE").
+- [x] Confirming "Reset to factory state" deletes all data and re-seeds config to defaults (language English, dark theme, etc.).
+- [x] After reset, all screens reflect fresh seed state immediately via `resetAll()`.
+- [x] Settings persist across app restarts.

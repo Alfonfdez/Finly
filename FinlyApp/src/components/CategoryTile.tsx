@@ -63,7 +63,7 @@ function CategoryTile({
           shape={shape}
           size={40}
           iconSize={24}
-          roundedRadius={20}
+          roundedRadius={12}
           backgroundAlpha={13}
         />
         {checkmark && selected && (
