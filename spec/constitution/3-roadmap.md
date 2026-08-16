@@ -405,6 +405,28 @@ Multi-select bulk delete on the Tags and Comments screens:
 
 Spec: spec/features/018-tag-management/ and spec/features/027-comments-management/.
 
+## 038-users-login (deferred to post-2.0)
+Status: not started.
+
+Multi-user support / login. Explicitly deferred after the 2.0 release. No code.
+
+## 2.0 QA audit (Task 1)
+Status: in progress.
+
+Full spec audit of every implemented feature against its acceptance criteria, in the browser (Playwright, viewport 375px) plus code review, before the 2.0 release. All 003-settings-screen criteria verified and flipped `[x]`. 010-app-logo partially verified (see findings). Audit findings so far:
+
+- **003-settings-screen** (all 41 criteria pass, `[x]`). Spec-drift notes (not blockers): (1) Data modals' primary button on the first modal reads "Confirm", the spec says "Delete all"/"Reset"; (2) the spec mentions toast/snackbar confirmations but no toast system exists in the app; (3) an NFR mentions web `localStorage`, the implementation uses IndexedDB (sql.js).
+- **010-app-logo** findings:
+  - Web splash `SplashScreen` is missing the "Finly" text (spec §3b: primary #22D3EE, weight 800, size 28) — acceptance criterion "logo + 'Finly' + loader" fails.
+  - `MIN_SPLASH_MS = 2000` in `App.tsx`, spec requires 3000 (measured exit ~2000ms).
+  - `favicon.png` is 1024×1024 (spec 48×48) and `splash-icon.png` is 1024×1024 (spec 1284×2778); both still work (Expo resizes the favicon at export; `contain` on the splash).
+  - `android-icon-foreground.png` (1.36 MB) and `android-icon-monochrome.png` (1.26 MB) exceed the 1 MB NFR.
+  - Native-only criteria (#79–#81, #83, #84) not checkable on web; config references verified.
+  - Verified `[x]`: favicon in tab (#82/#88), all files referenced in app.json (#86), drawer header logo + "Finly" (#87).
+- Browser-verification notes: dev server does not inject the favicon `<link>` (production export does); `dist/` export generated the favicon.ico from `web.favicon`.
+
+Pending: feature fixes for the findings above (Task 2: navigation bug — drawerMenu pushed screens show an unconditional hamburger), release-readiness (Task 3: version 2.0.0, package `com.finly.app`, `userInterfaceStyle: "automatic"`, production EAS profile), release (Task 4: GitHub release v2.0.0 + APK).
+
 ## 034-limit-indicators
 Status: completed.
 
