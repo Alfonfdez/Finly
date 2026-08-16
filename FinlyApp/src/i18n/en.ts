@@ -57,6 +57,8 @@ export const en = {
   settings_delete_data_confirm_message2: 'Type DELETE to confirm',
   settings_delete_data_confirm_placeholder: 'Type DELETE here',
   settings_delete_confirm: 'Confirm',
+  settings_delete_all_data_confirm: 'Delete all',
+  settings_factory_reset_confirm: 'Reset',
   settings_delete_transactions_error_title: 'Error',
   settings_delete_transactions_error_message: 'Failed to delete all transactions.',
   settings_delete_data_error_title: 'Error',

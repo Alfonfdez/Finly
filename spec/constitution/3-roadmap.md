@@ -415,16 +415,16 @@ Status: completed.
 
 Full spec audit of every implemented feature against its acceptance criteria, in the browser (Playwright, viewport 375px) plus code review, before the 2.0 release. All 003-settings-screen criteria verified and flipped `[x]`. 010-app-logo partially verified (see findings). Audit findings so far:
 
-- **003-settings-screen** (all 41 criteria pass, `[x]`). Spec-drift notes (not blockers): (1) Data modals' primary button on the first modal reads "Confirm", the spec says "Delete all"/"Reset"; (2) the spec mentions toast/snackbar confirmations but no toast system exists in the app; (3) an NFR mentions web `localStorage`, the implementation uses IndexedDB (sql.js).
+- **003-settings-screen** (all 41 criteria pass, `[x]`). Spec-drift notes recorded at audit time, all resolved in Task 2c: (1) Data modals' primary button on the first modal read "Confirm" instead of "Delete all"/"Reset" — button labels fixed; (2) the spec mentioned toast/snackbar confirmations but the app uses `Alert.alert` and has no toast system — spec reworded to "alert dialog"; (3) an NFR mentioned web `localStorage` but the implementation uses IndexedDB (sql.js) — spec reworded.
 - **010-app-logo** findings:
   - Web splash: the spec was outdated. The "Finly" text was removed by design and the hold time changed from 3000ms to 2000ms; after the splash rework (Task 2b) the splash is duration-driven with no artificial minimum and no progress bar. Spec §3b and criterion #85 updated to match; #85 flipped `[x]`.
-  - `favicon.png` is 1024×1024 (spec 48×48) and `splash-icon.png` is 1024×1024 (spec 1284×2778); both still work (Expo resizes the favicon at export; `contain` on the splash).
-  - `android-icon-foreground.png` (1.36 MB) and `android-icon-monochrome.png` (1.26 MB) exceed the 1 MB NFR.
+  - `favicon.png` is 1024×1024 (spec 48×48) and `splash-icon.png` is 1024×1024 (spec 1284×2778); both still work (Expo resizes the favicon at export; `contain` on the splash) — spec §1 table updated to the real dimensions (Task 2c).
+  - `android-icon-foreground.png` (1.36 MB) and `android-icon-monochrome.png` (1.26 MB) exceeded the 1 MB NFR — re-encoded with `sharp` (palette quantization, compressionLevel 9) in Task 2c: 397 KiB and 53 KiB, dimensions/transparency preserved (originals are 100% opaque, alpha channel carries no info).
   - Native-only criteria (#79–#81, #83, #84) not checkable on web; config references verified.
   - Verified `[x]`: favicon in tab (#82/#88), all files referenced in app.json (#86), drawer header logo + "Finly" (#87).
 - Browser-verification notes: dev server does not inject the favicon `<link>` (production export does); `dist/` export generated the favicon.ico from `web.favicon`.
 
-Pending: feature fixes for the 010-app-logo findings (asset dimensions/sizes), release-readiness (Task 3: version 2.0.0, package `com.finly.app`, `userInterfaceStyle: "automatic"`, production EAS profile), release (Task 4: GitHub release v2.0.0 + APK).
+Pending: release-readiness (Task 3: version 2.0.0, package `com.finly.app`, `userInterfaceStyle: "automatic"`, production EAS profile), release (Task 4: GitHub release v2.0.0 + APK).
 
 ## 2.0 nav header fix (Task 2)
 Status: completed.
@@ -443,6 +443,20 @@ Web splash is now duration-driven instead of timer-driven. The `SplashScreen` in
 - Kept the logo entrance (800ms fade + spring 0.8 → 1.0) and the 400ms exit fade/scale (1.0 → 1.1).
 - Docs updated to match the intended behavior (the spec was outdated): 010 §3b now specifies logo-only splash, no artificial minimum, no progress bar, no text (the "Finly" text was removed by design earlier); criterion #85 flipped `[x]` after browser verification.
 - Browser-verified (Playwright, 375px): splash shows the 80×80 rounded logo with entrance animation, no progress bar and no text, and exits promptly to Home once loaded; 0 console errors. test:all green (typecheck + lint + tests).
+
+## 2.0 polish fixes (Task 2c)
+Status: completed.
+
+Resolves the remaining Task-1 findings:
+
+**003-settings-screen drift:**
+- Data modals now label their primary buttons per spec: the first "Delete all data" modal shows "Delete all" and the first "Reset to factory state" modal shows "Reset" (new i18n keys `settings_delete_all_data_confirm`, `settings_factory_reset_confirm` in en/es/ca; `DataScreen.tsx` updated). The delete-transactions modal ("Delete"), the second confirmation modals ("Confirm", disabled until "DELETE" is typed) and the import modal ("Confirm") already matched the spec and are unchanged.
+- Spec reworded to match the implementation: §6.1/§6.2 "A toast/snackbar confirms" → "An alert dialog confirms" (the app uses `Alert.alert`; no toast system exists). NFR persistence wording updated from `localStorage` to IndexedDB via sql.js (web backend moved to sql.js/IndexedDB in infra 003).
+
+**010-app-logo assets:**
+- Both adaptive icons re-encoded with `sharp` (added as devDependency; `scripts/optimize-icons.mjs`, palette quantization + compressionLevel 9): `android-icon-foreground.png` 1333.5 → 396.7 KiB, `android-icon-monochrome.png` 1228.3 → 52.9 KiB — both under the 1 MB NFR, 1024×1024 preserved. Pixel-diff vs the originals: foreground avg 0.76/255, monochrome 2.11/255 (quantization noise only). The originals are 100% opaque (their alpha channel carried no transparency), so dropping it is a non-issue.
+- Spec §1 table updated to the real dimensions: `favicon.png` 1024×1024 (Expo downsizes to 16/32/48 at export), `splash-icon.png` 1024×1024 (centered via `contain`).
+- Browser-verified (Playwright, 375px): Data modals show "Delete all"/"Reset" on the first steps and "Confirm" on the second; delete-transactions and factory-reset flows still work; app renders with the re-encoded icons; 0 console errors. test:all green (typecheck + lint + 282 tests, 34 files).
 
 
 

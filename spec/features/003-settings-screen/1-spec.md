@@ -1,7 +1,7 @@
 # 003 — Settings page
 
 - **Objective**
-  A settings screen accessible from the hamburger menu (Drawer) that allows the user to customize the behavior, appearance, and defaults of the application. Settings are organized into subsections. All values have sensible defaults and are persisted locally (SQLite on native, localStorage on web).
+  A settings screen accessible from the hamburger menu (Drawer) that allows the user to customize the behavior, appearance, and defaults of the application. Settings are organized into subsections. All values have sensible defaults and are persisted locally (SQLite on native, IndexedDB via sql.js on web).
 
 ---
 
@@ -240,7 +240,7 @@ An eye icon appears next to every masked balance. The icon represents the curren
   2. All rows from `transaction_tags` junction table are deleted (cleanup).
   3. AppContext state is refreshed via `resetAll()` so all screens reflect changes immediately.
   4. Modal closes.
-  5. A toast/snackbar confirms: "All transactions deleted" (multilingual).
+  5. An alert dialog confirms: "All transactions deleted" (multilingual).
 
 #### 6.2 — Delete all data
 
@@ -268,7 +268,7 @@ An eye icon appears next to every masked balance. The icon represents the curren
   5. AppContext state is fully refreshed via `resetAll()`, re-applying home defaults from config.
   6. Both modals close.
   7. All screens reflect the fresh seed state immediately.
-  8. A toast/snackbar confirms: "All data deleted. App reset to factory state." (multilingual).
+  8. An alert dialog confirms: "All data deleted. App reset to factory state." (multilingual).
 
 #### 6.3 — Reset to factory state
 
@@ -300,7 +300,7 @@ An eye icon appears next to every masked balance. The icon represents the curren
 
 ## Non-Functional Requirements
 
-- **Persistence**: all settings are saved in the SQLite `configuracion` table (native) or `localStorage` (web).
+- **Persistence**: all settings are saved in the SQLite `configuracion` table (native) or IndexedDB via sql.js (web).
 - **Initialization**: on app startup, settings are read and applied before the first render (avoid incorrect theme flash).
 - **Performance**: theme changes must be instantaneous; no animated transitions.
 - **Multilingual**: all visible texts use `t()`.

@@ -196,7 +196,7 @@ export default function DataScreen() {
         visible={deleteAllModal1}
         title={labels.settings_delete_data_confirm_title}
         message={labels.settings_delete_data_confirm_message}
-        confirmLabel={labels.settings_delete_confirm}
+        confirmLabel={labels.settings_delete_all_data_confirm}
         cancelLabel={labels.cancel}
         onConfirm={() => setDeleteAllModal2(true)}
         onCancel={() => setDeleteAllModal1(false)}
@@ -227,7 +227,7 @@ export default function DataScreen() {
         visible={factoryResetModal1}
         title={labels.settings_factory_reset_confirm_title}
         message={labels.settings_factory_reset_confirm_message}
-        confirmLabel={labels.settings_delete_confirm}
+        confirmLabel={labels.settings_factory_reset_confirm}
         cancelLabel={labels.cancel}
         onConfirm={() => setFactoryResetModal2(true)}
         onCancel={() => setFactoryResetModal1(false)}
