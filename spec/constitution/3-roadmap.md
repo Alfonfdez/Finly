@@ -411,7 +411,7 @@ Status: not started.
 Multi-user support / login. Explicitly deferred after the 2.0 release. No code.
 
 ## 2.0 QA audit (Task 1)
-Status: in progress.
+Status: completed.
 
 Full spec audit of every implemented feature against its acceptance criteria, in the browser (Playwright, viewport 375px) plus code review, before the 2.0 release. All 003-settings-screen criteria verified and flipped `[x]`. 010-app-logo partially verified (see findings). Audit findings so far:
 
@@ -425,7 +425,18 @@ Full spec audit of every implemented feature against its acceptance criteria, in
   - Verified `[x]`: favicon in tab (#82/#88), all files referenced in app.json (#86), drawer header logo + "Finly" (#87).
 - Browser-verification notes: dev server does not inject the favicon `<link>` (production export does); `dist/` export generated the favicon.ico from `web.favicon`.
 
-Pending: feature fixes for the findings above (Task 2: navigation bug — drawerMenu pushed screens show an unconditional hamburger), release-readiness (Task 3: version 2.0.0, package `com.finly.app`, `userInterfaceStyle: "automatic"`, production EAS profile), release (Task 4: GitHub release v2.0.0 + APK).
+Pending: feature fixes for the 010-app-logo findings (web splash "Finly" text + `MIN_SPLASH_MS`, asset dimensions/sizes), release-readiness (Task 3: version 2.0.0, package `com.finly.app`, `userInterfaceStyle: "automatic"`, production EAS profile), release (Task 4: GitHub release v2.0.0 + APK).
+
+## 2.0 nav header fix (Task 2)
+Status: completed.
+
+Header-left button now follows navigation state instead of a static flag:
+- Shared `StackHeaderLeft` in `AppNavigator.tsx` (replaces `AllTransactionsHeaderLeft`): `navigation.canGoBack()` ? `HeaderBackButton` : `DrawerMenuButton`. Applied to every `drawerMenu` screen (Accounts, Categories, AllTransactions, Tags, Comments), so pushed screens show a back arrow and root screens a hamburger.
+- Drawer navigation for the hamburger-group items (Home, Accounts, Categories, Tags, Comments) resets the Main stack to root (`navigation.reset`), so opening them from the drawer always yields the hamburger (008/011/018) and the stack no longer accumulates hidden history. AllTransactions (015 #116) and Settings (003 §1) keep the push behavior and show a back arrow / native back button.
+- Browser-verified at 375px: hamburger on Home/Accounts/Categories/Tags/Comments (and it opens the drawer), back arrow on AllTransactions from both the drawer and the Home stats icon (back returns Home), native back "Home, back" on Settings and "Settings, back" on Appearance, Categories drill-down unaffected; 0 console errors.
+- Flipped `[x]`: 011 #82 (Accounts hamburger + title), 018 #102 (Tags hamburger + title), 015 #115/#116 (AllTransactions access + back arrow). 008 #77 re-verified (no regression).
+
+
 
 ## 034-limit-indicators
 Status: completed.

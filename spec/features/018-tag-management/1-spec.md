@@ -99,7 +99,7 @@
 
 - [ ] The database has a `tags` table and a `transaction_tags` junction table after migration.
 - [ ] The Drawer shows "Tags" and pressing it navigates to the tags screen.
-- [ ] The header shows a hamburger menu button and "Tags" title in the active language.
+- [x] The header shows a hamburger menu button and "Tags" title in the active language.
 - [ ] All tags are displayed in a list ordered by creation date (newest at the bottom).
 - [ ] Pressing a tag navigates to "Modify tag" with the tag id.
 - [ ] The "+" FAB navigates to "Create tag".

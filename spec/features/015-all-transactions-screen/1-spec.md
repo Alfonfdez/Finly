@@ -112,8 +112,8 @@
 
 ## Acceptance criteria
 
-- [ ] The screen is accessible from the hamburger menu and from the statistics icon on HomeScreen.
-- [ ] The header shows a back arrow and title "All transactions" in the active language.
+- [x] The screen is accessible from the hamburger menu and from the statistics icon on HomeScreen.
+- [x] The header shows a back arrow and title "All transactions" in the active language.
 - [ ] Three type tabs (All | Expenses | Income) are shown, with "All" selected by default.
 - [ ] Selecting "Expenses" shows only expense transactions; "Income" shows only income.
 - [ ] The selected account is shown with icon + name + chevron-down.

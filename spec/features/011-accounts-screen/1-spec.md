@@ -79,7 +79,7 @@
 ## Acceptance criteria
 
 - [ ] The Drawer shows "Accounts" and pressing it navigates to the accounts screen.
-- [ ] The header shows a hamburger menu button and the title "Accounts" in the active language.
+- [x] The header shows a hamburger menu button and the title "Accounts" in the active language.
 - [ ] "Total:" is displayed with the total balance of all accounts, green if >= 0, red if < 0, with a maximum of 2 decimals.
 - [ ] Each account shows an icon with background color + name + formatted balance.
 - [ ] If the account has a note (description), it is displayed below the name in a soft color and reduced size.

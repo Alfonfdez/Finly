@@ -51,8 +51,10 @@ type ScreenDef = {
   drawerMenu?: boolean;
 };
 
+type DrawerScreenName = 'Home' | 'AllTransactions' | 'Accounts' | 'Categories' | 'Tags' | 'Comments' | 'Settings';
+
 type DrawerItemDef =
-  | { label: string; icon: keyof typeof Ionicons.glyphMap; screen: 'Home' | 'AllTransactions' | 'Accounts' | 'Categories' | 'Tags' | 'Comments' | 'Settings' }
+  | { label: string; icon: keyof typeof Ionicons.glyphMap; screen: DrawerScreenName }
   | { separator: true };
 
 function HeaderTitle({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; label: string }) {
@@ -66,7 +68,7 @@ function HeaderTitle({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; la
   );
 }
 
-function AllTransactionsHeaderLeft() {
+function StackHeaderLeft() {
   const navigation = useNavigation();
   const { activeColors: c } = useConfig();
   const labels = t();
@@ -105,6 +107,22 @@ function DrawerNavItem({
   );
 }
 
+const ROOT_DRAWER_SCREENS: DrawerScreenName[] = [
+  'Home',
+  'Accounts',
+  'Categories',
+  'Tags',
+  'Comments',
+];
+
+function openDrawerScreen(navigation: DrawerContentComponentProps['navigation'], screen: DrawerScreenName) {
+  if (ROOT_DRAWER_SCREENS.includes(screen)) {
+    navigation.reset({ index: 0, routes: [{ name: 'Main', params: { screen } }] });
+    return;
+  }
+  navigation.navigate('Main', { screen });
+}
+
 function CustomDrawerContent(props: DrawerContentComponentProps) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
@@ -136,7 +154,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
               key={item.screen}
               label={item.label}
               icon={item.icon}
-              onPress={() => props.navigation.navigate('Main', { screen: item.screen })}
+              onPress={() => openDrawerScreen(props.navigation, item.screen)}
             />
           )
         )}
@@ -193,11 +211,9 @@ function HomeStack() {
           component={component}
           options={{
             headerTitle: () => <HeaderTitle icon={icon} label={label} />,
-            ...(name === 'AllTransactions'
-              ? { headerLeft: () => <AllTransactionsHeaderLeft /> }
-              : drawerMenu
-                ? { headerLeft: () => <DrawerMenuButton accessibilityLabel={labels.home_open_menu} /> }
-                : {}),
+            ...(drawerMenu
+              ? { headerLeft: () => <StackHeaderLeft /> }
+              : {}),
           }}
         />
       ))}
