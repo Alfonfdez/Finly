@@ -55,10 +55,25 @@ export default function AllTransactionsScreen() {
 
   const { data: allTransactions, setData: setAllTransactions, loading } = useFocusLoad(loadTransactions, [] as Transaction[]);
 
+  useEffect(() => {
+    setSelectedCategoryIds([]);
+  }, [typeTab]);
+
+  const filters = useTransactionFilters({
+    transactions: allTransactions,
+    accounts,
+    activeAccount,
+    categories,
+    searchTerm: searchText,
+    typeTab,
+    selectedCategoryIds,
+    periodDates,
+  });
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () =>
-        allTransactions.length > 0 ? (
+        filters.sections.length > 0 ? (
           <View style={HEADER_BUTTONS}>
             <SelectToggleButton
               active={selectMode}
@@ -80,22 +95,7 @@ export default function AllTransactionsScreen() {
           </View>
         ) : null,
     });
-  }, [navigation, selectMode, searchActive, allTransactions.length, c.text, c.primary]);
-
-  useEffect(() => {
-    setSelectedCategoryIds([]);
-  }, [typeTab]);
-
-  const filters = useTransactionFilters({
-    transactions: allTransactions,
-    accounts,
-    activeAccount,
-    categories,
-    searchTerm: searchText,
-    typeTab,
-    selectedCategoryIds,
-    periodDates,
-  });
+  }, [navigation, selectMode, searchActive, filters.sections, c.text, c.primary]);
 
   const toggleItem = useCallback((id: number) => {
     setSelectedIds((prev) => {
