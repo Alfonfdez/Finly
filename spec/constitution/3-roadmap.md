@@ -458,6 +458,15 @@ Resolves the remaining Task-1 findings:
 - Spec §1 table updated to the real dimensions: `favicon.png` 1024×1024 (Expo downsizes to 16/32/48 at export), `splash-icon.png` 1024×1024 (centered via `contain`).
 - Browser-verified (Playwright, 375px): Data modals show "Delete all"/"Reset" on the first steps and "Confirm" on the second; delete-transactions and factory-reset flows still work; app renders with the re-encoded icons; 0 console errors. test:all green (typecheck + lint + 282 tests, 34 files).
 
+## 2.0 comments counter
+Status: completed.
+
+Comments screen counter above the list:
+- A text caption shows the number of visible comments (e.g. "2 comments") above the FlatList, matching the Tags/Categories counter pattern (034-limit-indicators). Only visible when there is at least 1 comment and not in selection mode.
+- When a search filters the list, the counter updates to reflect the filtered count (e.g. "3 comments" when 3 matches).
+- i18n key `comments_counter(n)` (en/es/ca): pluralized "X comment(s)".
+- Browser-verified (Playwright, 375px): counter shows "2 comments" with 2 distinct comments; search "lun" updates to "1 comment" with only "lunch" visible; 0 console errors. 027 criterion flipped [x].
+
 
 
 ## 034-limit-indicators

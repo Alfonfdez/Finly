@@ -407,6 +407,7 @@ export const es: Language = {
   // Comments
   nav_comments: 'Comentarios',
   comments_empty: 'No hay comentarios',
+  comments_counter: (n: number) => `${n} comentario${n === 1 ? '' : 's'}`,
   comments_search_placeholder: 'Buscar comentarios',
   comments_used_in: (n: number) => `Usado en ${n} transacción${n === 1 ? '' : 'es'}`,
   comments_modify_title: 'Editar comentario',
