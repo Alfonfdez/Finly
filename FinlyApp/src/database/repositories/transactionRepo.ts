@@ -174,6 +174,16 @@ export const transactionRepo = {
     await db.delete(transactions).where(eq(transactions.id, id)).run();
   },
 
+  async deleteMany(ids: number[]): Promise<void> {
+    if (ids.length === 0) return;
+    const placeholders = ids.map(() => '?').join(',');
+    await deleteTransactionPhotos(`id IN (${placeholders})`, ...ids);
+    await withTransaction(async (db) => {
+      await db.delete(transactionTags).where(inArray(transactionTags.transaction_id, ids)).run();
+      await db.delete(transactions).where(inArray(transactions.id, ids)).run();
+    });
+  },
+
   async deleteAllTransactions(): Promise<void> {
     await deleteTransactionPhotos('photo IS NOT NULL');
     await withTransaction(async (db) => {

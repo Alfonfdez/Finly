@@ -281,6 +281,11 @@ export const en = {
   transactions_confirm: 'Select',
   transactions_sort_date: 'By date',
   transactions_sort_amount: 'By amount',
+  transactions_select: 'Select',
+  transactions_select_done: 'Done',
+  transactions_bulk_delete: (n: number) => `Delete (${n})`,
+  transactions_bulk_delete_confirm_title: (n: number) => `Delete ${n} transaction${n === 1 ? '' : 's'}?`,
+  transactions_bulk_delete_confirm_message: 'The selected transactions will be permanently deleted. This cannot be undone.',
 
   // Navigation (static — won't update live, but correct per language)
   nav_transactions: 'Transactions',

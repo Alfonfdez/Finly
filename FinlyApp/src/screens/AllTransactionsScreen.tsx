@@ -25,6 +25,8 @@ import CategoryFilterModal from '../components/CategoryFilterModal';
 import PeriodTabs from '../components/PeriodTabs';
 import CalendarPicker from '../components/CalendarPicker';
 import SearchBar from '../components/SearchBar';
+import SelectionActionBar from '../components/SelectionActionBar';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 export default function AllTransactionsScreen() {
   const navigation = useNavigation<NavigationProp<'AllTransactions'>>();
@@ -39,26 +41,9 @@ export default function AllTransactionsScreen() {
   const [calendarVisible, setCalendarVisible] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
   const [searchText, setSearchText] = useState('');
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <TouchableOpacity
-          onPress={() => {
-            setSearchActive(!searchActive);
-            setSearchText('');
-          }}
-          style={styles.searchButton}
-        >
-          <Ionicons name="search-outline" size={22} color={c.text} />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation, searchActive, c.text]);
-
-  useEffect(() => {
-    setSelectedCategoryIds([]);
-  }, [typeTab]);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   const periodDates = useMemo(() => resolvePeriodRange(activePeriod, selectedDate, customDate), [activePeriod, selectedDate, customDate]);
 
@@ -66,7 +51,41 @@ export default function AllTransactionsScreen() {
     return await transactionRepository.list({});
   }, []);
 
-  const { data: allTransactions, loading } = useFocusLoad(loadTransactions, [] as Transaction[]);
+  const { data: allTransactions, setData: setAllTransactions, loading } = useFocusLoad(loadTransactions, [] as Transaction[]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () =>
+        allTransactions.length > 0 ? (
+          <View style={styles.headerButtons}>
+            <TouchableOpacity
+              onPress={() => {
+                if (selectMode) setSelectedIds(new Set());
+                setSelectMode(!selectMode);
+              }}
+              style={styles.headerButton}
+            >
+              <Text style={[styles.selectText, { color: c.primary, fontSize: fs(15) }]}>
+                {selectMode ? labels.transactions_select_done : labels.transactions_select}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setSearchActive(!searchActive);
+                setSearchText('');
+              }}
+              style={styles.headerButton}
+            >
+              <Ionicons name="search-outline" size={22} color={c.text} />
+            </TouchableOpacity>
+          </View>
+        ) : null,
+    });
+  }, [navigation, selectMode, searchActive, allTransactions.length, c.text, c.primary, fs, labels]);
+
+  useEffect(() => {
+    setSelectedCategoryIds([]);
+  }, [typeTab]);
 
   const filters = useTransactionFilters({
     transactions: allTransactions,
@@ -79,9 +98,28 @@ export default function AllTransactionsScreen() {
     periodDates,
   });
 
+  const toggleItem = useCallback((id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
   const handleTransactionPress = useCallback((id: number) => {
+    if (selectMode) { toggleItem(id); return; }
     navigation.navigate('TransactionDetails', { transactionId: id });
-  }, [navigation]);
+  }, [navigation, selectMode, toggleItem]);
+
+  const handleBulkDelete = useCallback(async () => {
+    setDeleteModalVisible(false);
+    await transactionRepository.deleteMany([...selectedIds]);
+    setSelectedIds(new Set());
+    setSelectMode(false);
+    const updated = await transactionRepository.list({});
+    setAllTransactions(updated);
+  }, [selectedIds, setAllTransactions]);
 
   const categoriesById = useMemo(
     () => new Map(categories.map(cat => [cat.id, cat])),
@@ -100,8 +138,10 @@ export default function AllTransactionsScreen() {
       category={categoriesById.get(item.category_id)}
       tags={filters.tagsByTransaction.get(item.id)}
       onPress={handleTransactionPress}
+      selectMode={selectMode}
+      selected={selectedIds.has(item.id)}
     />
-  ), [categoriesById, filters.tagsByTransaction, handleTransactionPress]);
+  ), [categoriesById, filters.tagsByTransaction, handleTransactionPress, selectMode, selectedIds]);
 
   const accountBalance = useMemo(() => {
     return filters.filtered
@@ -243,9 +283,32 @@ export default function AllTransactionsScreen() {
         onClose={() => setCategoryModalVisible(false)}
       />
 
-      <Fab
-        onPress={() => navigation.navigate('AddTransaction')}
-        accessibilityLabel={labels.home_add}
+      {selectMode ? (
+        <SelectionActionBar
+          selectedCount={selectedIds.size}
+          deleteLabel={labels.transactions_bulk_delete(selectedIds.size)}
+          cancelLabel={labels.cancel}
+          onDelete={() => setDeleteModalVisible(true)}
+          onCancel={() => {
+            setSelectedIds(new Set());
+            setSelectMode(false);
+          }}
+        />
+      ) : (
+        <Fab
+          onPress={() => navigation.navigate('AddTransaction')}
+          accessibilityLabel={labels.home_add}
+        />
+      )}
+
+      <ConfirmationModal
+        visible={deleteModalVisible}
+        title={labels.transactions_bulk_delete_confirm_title(selectedIds.size)}
+        message={labels.transactions_bulk_delete_confirm_message}
+        confirmLabel={labels.delete}
+        cancelLabel={labels.cancel}
+        onConfirm={handleBulkDelete}
+        onCancel={() => setDeleteModalVisible(false)}
       />
     </SafeAreaView>
   );
@@ -257,9 +320,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
   },
-  searchButton: {
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerButton: {
     marginRight: 8,
     padding: 4,
+  },
+  selectText: {
+    fontWeight: '600',
   },
   controls: {
     alignItems: 'center',

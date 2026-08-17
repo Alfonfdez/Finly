@@ -97,6 +97,17 @@
 - Background: `c.primary`. Icon: `Ionicons "add"` with color `c.background`.
 - Position: `position: absolute`, `bottom: 56`, `alignSelf: 'center'`.
 
+### 11. Multi-select bulk delete
+
+- The header shows a "Select" (`transactions_select`) text button next to the search icon; pressing it toggles selection mode (label switches to "Done", `transactions_select_done`).
+- When there are 0 transactions, the header Select and Search buttons are both hidden.
+- In selection mode each transaction row shows a leading checkbox (`checkbox-outline` unchecked / `checkbox` checked in primary color); tapping a row toggles its selection instead of navigating to transaction details.
+- The header search and search filtering keep working during selection mode; selection applies to the filtered list. All other filters (type tab, account, categories, period, tags) also keep working; selection persists across filter changes.
+- The floating "+" button is hidden in selection mode.
+- A bottom `SelectionActionBar` with "Cancel" and `Delete (N)` (`transactions_bulk_delete(n)`) appears; the delete button is disabled while no transactions are selected.
+- Deleting opens a single `ConfirmationModal`: `Delete N transactions?` (`transactions_bulk_delete_confirm_title(n)`) with message "The selected transactions will be permanently deleted. This cannot be undone." (`transactions_bulk_delete_confirm_message`) and Cancel / Delete buttons.
+- On confirm: `transactionRepository.deleteMany(ids)` cleans up photos, removes junction rows, and deletes the transactions in a single database transaction; the selection and selection mode reset, and the list reloads.
+
 ---
 
 ## Non-functional requirements
@@ -141,3 +152,7 @@
 - [ ] The floating "+" button navigates to "Add transaction".
 - [ ] All texts change when changing the language.
 - [ ] The screen respects the active theme and text size.
+- [x] When there are no transactions, the header Select and Search actions are hidden.
+- [x] "Select" in the header enters selection mode; transaction rows show checkboxes and tapping toggles selection instead of navigating.
+- [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
+- [x] Bulk delete confirms once for the whole batch and permanently deletes the selected transactions (including photos and tag links).

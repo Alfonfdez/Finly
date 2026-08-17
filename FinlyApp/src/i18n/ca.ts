@@ -283,6 +283,11 @@ export const ca: Language = {
   transactions_confirm: 'Seleccionar',
   transactions_sort_date: 'Per data',
   transactions_sort_amount: 'Per quantitat',
+  transactions_select: 'Selecciona',
+  transactions_select_done: 'Fet',
+  transactions_bulk_delete: (n: number) => `Elimina (${n})`,
+  transactions_bulk_delete_confirm_title: (n: number) => `Vols eliminar ${n} transacció${n === 1 ? '' : 'ns'}?`,
+  transactions_bulk_delete_confirm_message: 'Les transaccions seleccionades s\'eliminan permanentment. Aquesta acció no es pot desfer.',
 
   // Navigation
   nav_transactions: 'Transaccions',

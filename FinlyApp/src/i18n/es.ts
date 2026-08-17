@@ -283,6 +283,11 @@ export const es: Language = {
   transactions_confirm: 'Seleccionar',
   transactions_sort_date: 'Por fecha',
   transactions_sort_amount: 'Por cantidad',
+  transactions_select: 'Seleccionar',
+  transactions_select_done: 'Listo',
+  transactions_bulk_delete: (n: number) => `Eliminar (${n})`,
+  transactions_bulk_delete_confirm_title: (n: number) => `¿Eliminar ${n} transacción${n === 1 ? '' : 'es'}?`,
+  transactions_bulk_delete_confirm_message: 'Las transacciones seleccionadas se eliminarán permanentemente. Esta acción no se puede deshacer.',
 
   // Navigation
   nav_transactions: 'Transacciones',
