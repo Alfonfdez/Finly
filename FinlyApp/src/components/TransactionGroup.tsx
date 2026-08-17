@@ -1,5 +1,6 @@
 import { memo, useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import type { Transaction, Category } from '../database/types';
 import { formatCurrency, getMonthName, parseDbDate } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
@@ -14,13 +15,24 @@ interface TransactionRowProps {
   category?: Category;
   tags?: { tag_id: number; name: string }[];
   onPress?: (transactionId: number) => void;
+  selectMode?: boolean;
+  selected?: boolean;
 }
 
-export const TransactionRow = memo(function TransactionRow({ tx, category, tags, onPress }: TransactionRowProps) {
+export const TransactionRow = memo(function TransactionRow({ tx, category, tags, onPress, selectMode, selected }: TransactionRowProps) {
   const { config, activeColors: c } = useConfig();
   const fs = useFontSize();
 
   const handlePress = useCallback(() => onPress?.(tx.id), [onPress, tx.id]);
+
+  const checkbox = selectMode ? (
+    <Ionicons
+      name={selected ? 'checkbox' : 'checkbox-outline'}
+      size={22}
+      color={selected ? c.primary : c.textSecondary}
+      style={styles.checkbox}
+    />
+  ) : undefined;
 
   return (
     <ListItemRow
@@ -32,6 +44,7 @@ export const TransactionRow = memo(function TransactionRow({ tx, category, tags,
       badgeSize={36}
       badgeIconSize={18}
       badgeAlpha={19}
+      leading={checkbox}
       middle={tags && tags.length > 0 ? (
         <View style={styles.tagsContainer}>
           {tags.map((tag) => (
@@ -85,6 +98,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 4,
     marginTop: 4,
+  },
+  checkbox: {
+    marginRight: 10,
   },
   amount: { fontWeight: '700' },
 });

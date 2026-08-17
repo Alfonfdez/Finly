@@ -467,6 +467,18 @@ Comments screen counter above the list:
 - i18n key `comments_counter(n)` (en/es/ca): pluralized "X comment(s)".
 - Browser-verified (Playwright, 375px): counter shows "2 comments" with 2 distinct comments; search "lun" updates to "1 comment" with only "lunch" visible; 0 console errors. 027 criterion flipped [x].
 
+## 2.0 all-transactions bulk delete
+Status: completed.
+
+Multi-select bulk delete on the AllTransactions screen:
+- Header "Select"/"Done" toggle enters selection mode (transaction rows show checkboxes; tapping toggles selection instead of navigating to details; header search keeps filtering during selection). When 0 transactions, both Select and Search are hidden.
+- Selection persists across all filter changes (type tab, account, categories, period, tags, search).
+- FAB hidden in selection mode; `SelectionActionBar` bottom bar with "Cancel" and `Delete (N)` (disabled when nothing selected).
+- Single `ConfirmationModal`: `Delete N transactions?` with Cancel / Delete. On confirm: `transactionRepo.deleteMany(ids)` cleans up photos, removes junction rows, and deletes transactions in a single database transaction; list reloads immediately.
+- `TransactionRow` extended with optional `selectMode`/`selected` props (checkbox via `ListItemRow` `leading`).
+- i18n keys `transactions_select*`/`transactions_bulk_delete*` (en/es/ca).
+- Browser-verified (Playwright, 375px): Select mode → checkboxes on 2 transactions → "Delete (2)" → confirmation "Delete 2 transactions?" → Confirm → both deleted, "No transactions" empty state, header hides Select/Search, balance 0,00 €; 0 console errors. 015 criteria flipped [x].
+
 
 
 ## 034-limit-indicators
