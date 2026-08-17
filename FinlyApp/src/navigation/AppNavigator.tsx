@@ -143,7 +143,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
 
   const drawerItems: DrawerItemDef[] = [
     { label: labels.nav_home, icon: 'home-outline', screen: 'Home' },
-    { label: labels.nav_all_transactions, icon: 'stats-chart-outline', screen: 'AllTransactions' },
+    { label: labels.nav_all_transactions, icon: 'receipt-outline', screen: 'AllTransactions' },
     { label: labels.nav_accounts, icon: 'wallet-outline', screen: 'Accounts' },
     { label: labels.nav_categories, icon: 'grid-outline', screen: 'Categories' },
     { label: labels.nav_tags, icon: 'pricetag-outline', screen: 'Tags' },
@@ -193,7 +193,7 @@ function HomeStack() {
     { name: 'ModifyAccount', component: ModifyAccountScreen, icon: 'wallet-outline', label: labels.modify_account_title },
     { name: 'CreateAccount', component: CreateAccountScreen, icon: 'wallet-outline', label: labels.create_account_title },
     { name: 'Transactions', component: TransactionsScreen, icon: 'stats-chart-outline', label: labels.nav_transactions },
-    { name: 'AllTransactions', component: AllTransactionsScreen, icon: 'stats-chart-outline', label: labels.nav_all_transactions, drawerMenu: true },
+    { name: 'AllTransactions', component: AllTransactionsScreen, icon: 'receipt-outline', label: labels.nav_all_transactions, drawerMenu: true },
     { name: 'Settings', component: SettingsScreen, icon: 'settings-outline', label: labels.nav_settings },
     { name: 'SettingsAppearance', component: AppearanceScreen, icon: 'color-palette-outline', label: labels.settings_appearance },
     { name: 'SettingsRegional', component: RegionalScreen, icon: 'globe-outline', label: labels.settings_regional },
