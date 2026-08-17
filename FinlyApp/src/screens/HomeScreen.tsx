@@ -202,7 +202,7 @@ export default function HomeScreen() {
             accessibilityLabel={labels.home_view_transactions}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="stats-chart-outline" size={24} color={c.text} />
+            <Ionicons name="receipt-outline" size={24} color={c.text} />
           </TouchableOpacity>
         </View>
 
