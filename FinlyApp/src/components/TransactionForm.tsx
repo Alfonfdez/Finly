@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, KeyboardAvoidingView, Keyboard } from 'react-native';
+import { Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect, type NavigationProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -153,14 +153,6 @@ export default function TransactionForm({
       setReorderedCategory(null);
     }
   }, [type]);
-
-  useEffect(() => {
-    const show = Keyboard.addListener('keyboardDidShow', () => {});
-    const hide = Keyboard.addListener('keyboardDidHide', () => {
-      scrollRef.current?.scrollToEnd({ animated: false });
-    });
-    return () => { show.remove(); hide.remove(); };
-  }, []);
 
   // Parsed numeric value (null if invalid or empty)
   const numericAmount = useMemo(() => parseAmountValue(amountRaw), [amountRaw]);

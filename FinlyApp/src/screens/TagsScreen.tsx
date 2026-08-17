@@ -2,6 +2,7 @@ import { useState, useMemo, useLayoutEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { HEADER_BUTTONS } from '../components/componentStyles';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -35,7 +36,7 @@ export default function TagsScreen() {
     navigation.setOptions({
       headerRight: () =>
         tags.length > 0 ? (
-          <View style={styles.headerButtons}>
+          <View style={HEADER_BUTTONS}>
             <SelectToggleButton
               active={selectMode}
               onToggle={() => {
@@ -49,7 +50,7 @@ export default function TagsScreen() {
                 setSearchActive(!searchActive);
                 setSearchText('');
               }}
-              style={styles.headerButtons}
+              style={HEADER_BUTTONS}
             >
               <Ionicons name="search-outline" size={22} color={c.text} />
             </TouchableOpacity>
@@ -215,11 +216,6 @@ const styles = StyleSheet.create({
   },
   checkbox: {
     marginRight: 10,
-  },
-  headerButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
   },
   limitWrap: {
     position: 'absolute',
