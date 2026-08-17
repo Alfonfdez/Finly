@@ -247,7 +247,7 @@ export default function AllTransactionsScreen() {
         </View>
       ) : (
       <SectionList
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={filters.sections.length === 0 ? styles.emptyList : styles.listContent}
         sections={filters.sections}
         keyExtractor={keyExtractor}
         renderSectionHeader={renderSectionHeader}
@@ -255,7 +255,7 @@ export default function AllTransactionsScreen() {
         ListEmptyComponent={
           searchActive && searchText.trim()
             ? <EmptyState icon="search-outline" message={labels.filter_no_results} />
-            : <EmptyState message={labels.transactions_empty} />
+            : <EmptyState icon="receipt-outline" message={labels.transactions_empty} />
         }
         stickySectionHeadersEnabled={false}
         initialNumToRender={12}
@@ -349,5 +349,6 @@ const styles = StyleSheet.create({
     maxWidth: 120,
   },
   listContent: { paddingBottom: 80 },
+  emptyList: { flex: 1 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });
