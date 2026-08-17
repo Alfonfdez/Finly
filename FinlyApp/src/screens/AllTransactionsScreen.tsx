@@ -27,6 +27,7 @@ import CalendarPicker from '../components/CalendarPicker';
 import SearchBar from '../components/SearchBar';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
+import SelectToggleButton from '../components/SelectToggleButton';
 
 export default function AllTransactionsScreen() {
   const navigation = useNavigation<NavigationProp<'AllTransactions'>>();
@@ -58,30 +59,27 @@ export default function AllTransactionsScreen() {
       headerRight: () =>
         allTransactions.length > 0 ? (
           <View style={styles.headerButtons}>
-            <TouchableOpacity
-              onPress={() => {
+            <SelectToggleButton
+              active={selectMode}
+              onToggle={() => {
                 if (selectMode) setSelectedIds(new Set());
                 setSelectMode(!selectMode);
               }}
-              style={styles.headerButton}
-            >
-              <Text style={[styles.selectText, { color: c.primary, fontSize: fs(15) }]}>
-                {selectMode ? labels.transactions_select_done : labels.transactions_select}
-              </Text>
-            </TouchableOpacity>
+              color={c.primary}
+            />
             <TouchableOpacity
               onPress={() => {
                 setSearchActive(!searchActive);
                 setSearchText('');
               }}
-              style={styles.headerButton}
+              style={styles.headerButtons}
             >
               <Ionicons name="search-outline" size={22} color={c.text} />
             </TouchableOpacity>
           </View>
         ) : null,
     });
-  }, [navigation, selectMode, searchActive, allTransactions.length, c.text, c.primary, fs, labels]);
+  }, [navigation, selectMode, searchActive, allTransactions.length, c.text, c.primary]);
 
   useEffect(() => {
     setSelectedCategoryIds([]);
@@ -323,13 +321,7 @@ const styles = StyleSheet.create({
   headerButtons: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  headerButton: {
-    marginRight: 8,
-    padding: 4,
-  },
-  selectText: {
-    fontWeight: '600',
+    gap: 8,
   },
   controls: {
     alignItems: 'center',

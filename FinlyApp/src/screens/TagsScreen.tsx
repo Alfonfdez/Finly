@@ -16,6 +16,7 @@ import SearchBar from '../components/SearchBar';
 import EmptyState from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
+import SelectToggleButton from '../components/SelectToggleButton';
 
 export default function TagsScreen() {
   const { activeColors: c } = useConfig();
@@ -35,30 +36,27 @@ export default function TagsScreen() {
       headerRight: () =>
         tags.length > 0 ? (
           <View style={styles.headerButtons}>
-            <TouchableOpacity
-              onPress={() => {
+            <SelectToggleButton
+              active={selectMode}
+              onToggle={() => {
                 if (selectMode) setSelectedIds(new Set());
                 setSelectMode(!selectMode);
               }}
-              style={styles.headerButton}
-            >
-              <Text style={[styles.selectText, { color: c.primary, fontSize: fs(15) }]}>
-                {selectMode ? labels.tags_select_done : labels.tags_select}
-              </Text>
-            </TouchableOpacity>
+              color={c.primary}
+            />
             <TouchableOpacity
               onPress={() => {
                 setSearchActive(!searchActive);
                 setSearchText('');
               }}
-              style={styles.headerButton}
+              style={styles.headerButtons}
             >
               <Ionicons name="search-outline" size={22} color={c.text} />
             </TouchableOpacity>
           </View>
         ) : null,
     });
-  }, [navigation, selectMode, searchActive, tags.length, c.text, c.primary, fs, labels]);
+  }, [navigation, selectMode, searchActive, tags.length, c.text, c.primary]);
 
   const filteredTags = useMemo(() => {
     if (!searchText.trim()) return tags;
@@ -221,13 +219,7 @@ const styles = StyleSheet.create({
   headerButtons: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  headerButton: {
-    marginRight: 8,
-    padding: 4,
-  },
-  selectText: {
-    fontWeight: '600',
+    gap: 8,
   },
   limitWrap: {
     position: 'absolute',
