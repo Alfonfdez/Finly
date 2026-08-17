@@ -14,6 +14,7 @@ import SearchBar from '../components/SearchBar';
 import EmptyState from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
+import SelectToggleButton from '../components/SelectToggleButton';
 import BulkCategoryTransferModal, { type BulkCategoryItem } from '../components/BulkCategoryTransferModal';
 import type { TransferTargetId } from '../components/CategoryTransferModal';
 import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, type TransactionType, type NavigationProp } from '../constants/types';
@@ -70,30 +71,27 @@ export default function CategoriesScreen() {
       headerRight: () =>
         categoriesByType.length > 0 ? (
           <View style={styles.headerButtons}>
-            <TouchableOpacity
-              onPress={() => {
+            <SelectToggleButton
+              active={selectMode}
+              onToggle={() => {
                 if (selectMode) setSelectedIds(new Set());
                 setSelectMode(!selectMode);
               }}
-              style={styles.headerButton}
-            >
-              <Text style={[styles.selectText, { color: c.primary, fontSize: fs(15) }]}>
-                {selectMode ? labels.categories_select_done : labels.categories_select}
-              </Text>
-            </TouchableOpacity>
+              color={c.primary}
+            />
             <TouchableOpacity
               onPress={() => {
                 setSearchActive(!searchActive);
                 setSearchText('');
               }}
-              style={styles.headerButton}
+              style={styles.headerButtons}
             >
               <Ionicons name="search-outline" size={22} color={c.text} />
             </TouchableOpacity>
           </View>
         ) : null,
     });
-  }, [navigation, selectMode, searchActive, categoriesByType.length, c.text, c.primary, fs, labels]);
+  }, [navigation, selectMode, searchActive, categoriesByType.length, c.text, c.primary]);
 
   const typeCount = categories.filter((cat) => cat.type === activeType).length;
   const atCategoryLimit = countAtLimit(typeCount, MAX_CATEGORIES_PER_TYPE);
@@ -309,12 +307,6 @@ const styles = StyleSheet.create({
   headerButtons: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  headerButton: {
-    marginRight: 8,
-    padding: 4,
-  },
-  selectText: {
-    fontWeight: '600',
+    gap: 8,
   },
 });

@@ -13,6 +13,7 @@ import SearchBar from '../components/SearchBar';
 import EmptyState from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
+import SelectToggleButton from '../components/SelectToggleButton';
 
 export default function CommentsScreen() {
   const { activeColors: c } = useConfig();
@@ -53,30 +54,27 @@ export default function CommentsScreen() {
       headerRight: () =>
         comments.length > 0 ? (
           <View style={styles.headerButtons}>
-            <TouchableOpacity
-              onPress={() => {
+            <SelectToggleButton
+              active={selectMode}
+              onToggle={() => {
                 if (selectMode) setSelectedComments(new Set());
                 setSelectMode(!selectMode);
               }}
-              style={styles.headerButton}
-            >
-              <Text style={[styles.selectText, { color: c.primary, fontSize: fs(15) }]}>
-                {selectMode ? labels.comments_select_done : labels.comments_select}
-              </Text>
-            </TouchableOpacity>
+              color={c.primary}
+            />
             <TouchableOpacity
               onPress={() => {
                 setSearchActive(!searchActive);
                 setSearchText('');
               }}
-              style={styles.headerButton}
+              style={styles.headerButtons}
             >
               <Ionicons name="search-outline" size={22} color={c.text} />
             </TouchableOpacity>
           </View>
         ) : null,
     });
-  }, [navigation, selectMode, searchActive, comments.length, c.text, c.primary, fs, labels]);
+  }, [navigation, selectMode, searchActive, comments.length, c.text, c.primary]);
 
   const filteredComments = useMemo(() => {
     if (!searchText.trim()) return comments;
@@ -237,13 +235,7 @@ const styles = StyleSheet.create({
   headerButtons: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  headerButton: {
-    marginRight: 8,
-    padding: 4,
-  },
-  selectText: {
-    fontWeight: '600',
+    gap: 8,
   },
   counter: {
     fontWeight: '500',
