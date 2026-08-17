@@ -1,4 +1,4 @@
-import { useState, useCallback, type Dispatch, type SetStateAction } from 'react';
+import { useState, useCallback, useRef, type Dispatch, type SetStateAction } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 
 export function useFocusLoad<T>(
@@ -7,19 +7,24 @@ export function useFocusLoad<T>(
 ): { data: T; setData: Dispatch<SetStateAction<T>>; loading: boolean } {
   const [data, setData] = useState<T>(initial);
   const [loading, setLoading] = useState(true);
+  const isInitialLoad = useRef(true);
 
   useFocusEffect(
     useCallback(() => {
       let active = true;
-      setLoading(true);
+      if (isInitialLoad.current) {
+        setLoading(true);
+      }
       loader().then((result) => {
         if (!active) return;
         setData(result);
         setLoading(false);
+        isInitialLoad.current = false;
       }).catch((error) => {
         if (!active) return;
         console.error('useFocusLoad failed:', error);
         setLoading(false);
+        isInitialLoad.current = false;
       });
       return () => { active = false; };
     }, [loader])

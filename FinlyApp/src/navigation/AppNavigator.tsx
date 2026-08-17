@@ -2,7 +2,7 @@ import { Text, View, Image, StyleSheet } from 'react-native';
 import type { ComponentType } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
-import { NavigationContainer, useNavigation } from '@react-navigation/native';
+import { NavigationContainer, useNavigation, CommonActions } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { HeaderBackButton } from '@react-navigation/elements';
 import {
@@ -11,6 +11,7 @@ import {
   DrawerItem,
   type DrawerContentComponentProps,
 } from '@react-navigation/drawer';
+import type { RootStackParamList } from '../constants/types';
 import HomeScreen from '../screens/HomeScreen';
 import AddTransactionScreen from '../screens/AddTransactionScreen';
 import AddCategoryScreen from '../screens/AddCategoryScreen';
@@ -37,7 +38,6 @@ import ModifyCommentScreen from '../screens/ModifyCommentScreen';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import type { RootStackParamList } from '../constants/types';
 import DrawerMenuButton from '../components/DrawerMenuButton';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -117,7 +117,20 @@ const ROOT_DRAWER_SCREENS: DrawerScreenName[] = [
 
 function openDrawerScreen(navigation: DrawerContentComponentProps['navigation'], screen: DrawerScreenName) {
   if (ROOT_DRAWER_SCREENS.includes(screen)) {
-    navigation.reset({ index: 0, routes: [{ name: 'Main', params: { screen } }] });
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{
+          name: 'Main',
+          state: {
+            index: 0,
+            routes: [
+              { name: screen as keyof RootStackParamList },
+            ],
+          },
+        }],
+      })
+    );
     return;
   }
   navigation.navigate('Main', { screen });
@@ -201,6 +214,7 @@ function HomeStack() {
         headerStyle: { backgroundColor: c.surface },
         headerTintColor: c.text,
         headerTitleAlign: 'center',
+        animationTypeForReplace: 'push',
       }}
     >
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
