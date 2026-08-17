@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
+import { Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, KeyboardAvoidingView, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect, type NavigationProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -154,6 +154,14 @@ export default function TransactionForm({
     }
   }, [type]);
 
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', () => {});
+    const hide = Keyboard.addListener('keyboardDidHide', () => {
+      scrollRef.current?.scrollToEnd({ animated: false });
+    });
+    return () => { show.remove(); hide.remove(); };
+  }, []);
+
   // Parsed numeric value (null if invalid or empty)
   const numericAmount = useMemo(() => parseAmountValue(amountRaw), [amountRaw]);
 
@@ -243,7 +251,11 @@ export default function TransactionForm({
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]}>
-      <ScrollView ref={scrollRef} style={[styles.container, { backgroundColor: c.background }]} keyboardShouldPersistTaps="handled">
+      <KeyboardAvoidingView
+        behavior="padding"
+        style={styles.keyboardAvoid}
+      >
+        <ScrollView ref={scrollRef} style={[styles.container, { backgroundColor: c.background }]} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <TabBar
           tabs={[
             { key: TRANSACTION_TYPES.expense, label: labels.tab_expenses },
@@ -343,8 +355,8 @@ export default function TransactionForm({
             {submitting ? '...' : submitLabel}
           </Text>
         </TouchableOpacity>
-        <View style={{ height: 200 }} />
       </ScrollView>
+      </KeyboardAvoidingView>
 
       <AccountModal
         visible={modalAccountVisible}
@@ -379,7 +391,9 @@ export default function TransactionForm({
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
+  keyboardAvoid: { flex: 1 },
   container: { flex: 1, padding: 16 },
+  scrollContent: { paddingBottom: 48 },
   accountContainer: {
     borderRadius: 12,
     padding: 16,
@@ -398,7 +412,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 8,
-    marginBottom: 32,
   },
   submitButtonText: {
     fontWeight: '700',
