@@ -155,6 +155,12 @@ export default function CommentsScreen() {
           </View>
         )}
 
+        {comments.length > 0 && !selectMode && (
+          <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(13) }]}>
+            {labels.comments_counter(filteredComments.length)}
+          </Text>
+        )}
+
         <FlatList
           data={filteredComments}
           keyExtractor={(item) => item.description}
@@ -238,5 +244,10 @@ const styles = StyleSheet.create({
   },
   selectText: {
     fontWeight: '600',
+  },
+  counter: {
+    fontWeight: '500',
+    textAlign: 'center',
+    paddingTop: 12,
   },
 });

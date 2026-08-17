@@ -405,6 +405,7 @@ export const en = {
   // Comments
   nav_comments: 'Comments',
   comments_empty: 'No comments yet',
+  comments_counter: (n: number) => `${n} comment${n === 1 ? '' : 's'}`,
   comments_search_placeholder: 'Search comments',
   comments_used_in: (n: number) => `Used in ${n} transaction${n === 1 ? '' : 's'}`,
   comments_modify_title: 'Edit comment',

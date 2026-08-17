@@ -71,6 +71,7 @@
 - [ ] The Comments screen lists every distinct comment with its "Used in N transactions" count, sorted alphabetically.
 - [ ] Whitespace/case variants of the same comment collapse into one row with a summed count.
 - [ ] The search toggle filters the list client-side; empty state shows when there are no comments.
+- [x] A counter above the list shows the number of visible comments (e.g., "2 comments"); it updates when a search filters the list.
 - [x] When there are no comments, the header Select and Search actions are hidden.
 - [ ] Tapping a comment opens the modify screen with the comment preloaded and the counter showing `N/4096`.
 - [ ] Save is disabled when the comment is empty or unchanged.
