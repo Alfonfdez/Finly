@@ -97,18 +97,18 @@ When the Total account (id=2) is loaded in ModifyAccountScreen:
 
 ## Acceptance Criteria
 
-- [ ] The Total account appears as the first option in the HomeScreen account selector.
-- [ ] When Total is selected, HomeScreen shows combined data from all accounts.
-- [ ] Total is not shown in the AddTransaction or ModifyTransaction account selectors.
-- [ ] When navigating to AddTransactionScreen from HomeScreen with Total selected, the first non-Total account is pre-selected.
-- [ ] Total is shown in the TransactionsScreen and AllTransactionsScreen account selectors.
-- [ ] When Total is selected in TransactionsScreen or AllTransactionsScreen, all transactions for the active filters are shown (not filtered by account).
-- [ ] When a specific account is selected in TransactionsScreen or AllTransactionsScreen, transactions are filtered by that account.
-- [ ] Total appears as the first card in the Accounts screen list.
-- [ ] Tapping Total navigates to ModifyAccountScreen with id=2.
-- [ ] In ModifyAccountScreen for Total: name is read-only, delete button is hidden, save updates icon/color/note only.
-- [ ] Tapping a transaction from any screen (including when Total is selected) opens TransactionDetailsScreen with the correct data.
-- [ ] The Total account name follows the active language (en "Total", es "Total", ca "Total").
-- [ ] Total's balance equals the sum of all non-total accounts.
-- [ ] All texts change when switching language.
-- [ ] The screen respects the active theme and text size.
+- [x] The Total account appears as the first option in the HomeScreen account selector.
+- [x] When Total is selected, HomeScreen shows combined data from all accounts.
+- [x] Total is not shown in the AddTransaction or ModifyTransaction account selectors.
+- [x] When navigating to AddTransactionScreen from HomeScreen with Total selected, the first non-Total account is pre-selected.
+- [x] Total is shown in the TransactionsScreen and AllTransactionsScreen account selectors.
+- [x] When Total is selected in TransactionsScreen or AllTransactionsScreen, all transactions for the active filters are shown (not filtered by account).
+- [x] When a specific account is selected in TransactionsScreen or AllTransactionsScreen, transactions are filtered by that account.
+- [x] Total appears as the first card in the Accounts screen list.
+- [x] Tapping Total navigates to ModifyAccountScreen with id=2.
+- [x] In ModifyAccountScreen for Total: name is read-only, delete button is hidden, save updates icon/color/note only.
+- [x] Tapping a transaction from any screen (including when Total is selected) opens TransactionDetailsScreen with the correct data.
+- [x] The Total account name follows the active language (en "Total", es "Total", ca "Total").
+- [x] Total's balance equals the sum of all non-total accounts.
+- [x] All texts change when switching language.
+- [x] The screen respects the active theme and text size.

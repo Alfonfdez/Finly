@@ -139,25 +139,25 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 
 ## Acceptance Criteria
 
-- [ ] The header shows a back arrow and title "Edit category" in the active language.
-- [ ] The current category icon with its background color + input with the current name is displayed.
-- [ ] The name input has a maximum of 30 characters with a "0/30" counter.
-- [ ] Duplicate validation excludes the current category (keeping the same name does not trigger an error).
-- [ ] If there is a duplicate, "A category with this name already exists" is shown in red.
-- [ ] If the name is empty, the "Save" button is disabled.
-- [ ] The category type is displayed (informational only, not editable).
-- [ ] ~40 icons are shown in a 4-column grid with the current icon pre-selected.
-- [ ] When selecting an icon, the icon background color changes to the selected color.
-- [ ] Colors are shown with the current color pre-selected.
-- [ ] The 7th color circle shows the custom color if the current one is not among the 6 predefined.
-- [ ] The "+" opens the existing `ColorPickerModal`.
-- [ ] The "Save" button is disabled if the name is empty or is a duplicate.
-- [ ] The red "Delete" button opens a confirmation modal with "Cancel", "Permanent delete", and (when the category has transactions AND another same-type category exists) "Move transactions first".
-- [ ] When the category has transactions and another same-type category exists, the modal message is "Deleting this category will also delete its transactions, unless you choose to move them to another category." and tapping "Move transactions first" opens the target category selection modal.
-- [ ] When the category has no transactions, or is the only category of its type, the modal message is "This category will be permanently deleted." and the "Move transactions first" button is not shown.
-- [ ] When tapping "Select" in the target modal, transactions are reassigned and the category is deleted.
-- [ ] Tapping "Permanent delete" deletes the category (and its transactions) and navigates back; transactions are reloaded via refresh().
-- [ ] When tapping "Save", the category is updated and navigation returns to CategoriesScreen.
-- [ ] All texts change when switching the language in settings.
-- [ ] The screen respects the active theme (dark/light).
-- [ ] The screen respects the configured text size.
+- [x] The header shows a back arrow and title "Edit category" in the active language.
+- [x] The current category icon with its background color + input with the current name is displayed.
+- [x] The name input has a maximum of 30 characters with a "0/30" counter.
+- [x] Duplicate validation excludes the current category (keeping the same name does not trigger an error).
+- [x] If there is a duplicate, "A category with this name already exists" is shown in red.
+- [x] If the name is empty, the "Save" button is disabled.
+- [x] The category type is displayed (informational only, not editable).
+- [x] ~40 icons are shown in a 4-column grid with the current icon pre-selected.
+- [x] When selecting an icon, the icon background color changes to the selected color.
+- [x] Colors are shown with the current color pre-selected.
+- [x] The 7th color circle shows the custom color if the current one is not among the 6 predefined.
+- [x] The "+" opens the existing `ColorPickerModal`.
+- [x] The "Save" button is disabled if the name is empty or is a duplicate.
+- [x] The red "Delete" button opens a confirmation modal with "Cancel", "Permanent delete", and (when the category has transactions AND another same-type category exists) "Move transactions first".
+- [x] When the category has transactions and another same-type category exists, the modal message is "Deleting this category will also delete its transactions, unless you choose to move them to another category." and tapping "Move transactions first" opens the target category selection modal.
+- [x] When the category has no transactions, or is the only category of its type, the modal message is "This category will be permanently deleted." and the "Move transactions first" button is not shown.
+- [x] When tapping "Select" in the target modal, transactions are reassigned and the category is deleted.
+- [x] Tapping "Permanent delete" deletes the category (and its transactions) and navigates back; transactions are reloaded via refresh().
+- [x] When tapping "Save", the category is updated and navigation returns to CategoriesScreen.
+- [x] All texts change when switching the language in settings.
+- [x] The screen respects the active theme (dark/light).
+- [x] The screen respects the configured text size.

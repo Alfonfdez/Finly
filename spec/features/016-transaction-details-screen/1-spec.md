@@ -98,12 +98,12 @@ Each field is displayed in a row with a label on the left (gray, `textSecondary`
 - [x] The "Category" section shows icon + category name.
 - [x] The "Date" section displays the date in long format according to the language.
 - [x] The "Comment" section is always shown; if empty, "No comment" appears in gray.
-- [ ] The "Photo" row shows a thumbnail when a photo exists (hidden on web, hidden when no photo).
-- [ ] Tapping the photo thumbnail opens a full-screen viewer with close button.
+- [x] The "Photo" row shows a thumbnail when a photo exists (hidden on web, hidden when no photo).
+- [x] Tapping the photo thumbnail opens a full-screen viewer with close button.
 - [x] The "Delete" button shows a confirmation modal with "No" and "Yes".
 - [x] Confirming "Yes" deletes the transaction and returns to the previous screen.
 - [x] The "Edit" button navigates to `ModifyTransaction` with `transactionId` (TODO).
 - [x] The footer shows "Created HH:mm dd MMM yyyy" in 24h with the active language (year always visible).
-- [ ] All texts change when switching the language in settings.
-- [ ] The screen respects the active theme (dark/light).
-- [ ] The screen respects the configured text size.
+- [x] All texts change when switching the language in settings.
+- [x] The screen respects the active theme (dark/light).
+- [x] The screen respects the configured text size.

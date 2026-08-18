@@ -130,28 +130,28 @@
 
 - [x] The "Edit" button of TransactionDetailsScreen navigates to ModifyTransaction with the `transactionId`.
 - [x] The header shows a back arrow and the title "Modify transaction" in the active language.
-- [ ] The "Expenses"/"Income" tabs show the current transaction type as selected.
-- [ ] When changing type, the selected category is reset and the grid is reloaded.
+- [x] The "Expenses"/"Income" tabs show the current transaction type as selected.
+- [x] When changing type, the selected category is reset and the grid is reloaded.
 - [x] The amount input is preloaded with the current value of the transaction.
-- [ ] The amount input validates max 9 integers and 2 decimals.
-- [ ] The calculator icon opens the CalculatorModal and pastes the result on confirm.
-- [ ] The displayed account is the current transaction's account.
-- [ ] The account modal allows changing the selected account.
-- [ ] The category grid shows the current category in the first position.
-- [ ] 7 categories + "More" button are shown in the grid.
-- [ ] The "More" button navigates to Add/Create category based on the number of categories.
-- [ ] The day selector is preloaded with the current transaction's day.
-- [ ] The 3 days show the correct dates and the initial selection matches.
-- [ ] The calendar button opens the day selection modal.
-- [ ] The tags section exists but pre-selected tags do not affect saving (TODO).
+- [x] The amount input validates max 9 integers and 2 decimals.
+- [x] The calculator icon opens the CalculatorModal and pastes the result on confirm.
+- [x] The displayed account is the current transaction's account.
+- [x] The account modal allows changing the selected account.
+- [x] The category grid shows the current category in the first position.
+- [x] 7 categories + "More" button are shown in the grid.
+- [x] The "More" button navigates to Add/Create category based on the number of categories.
+- [x] The day selector is preloaded with the current transaction's day.
+- [x] The 3 days show the correct dates and the initial selection matches.
+- [x] The calendar button opens the day selection modal.
+- [x] The tags section exists but pre-selected tags do not affect saving (TODO).
 - [x] The comment field is preloaded with the current transaction's comment.
-- [ ] The comment field allows up to 4096 characters with a counter.
-- [ ] The comment autocomplete works the same as in AddTransaction.
-- [ ] The photo section preloads existing photo and allows replacement/removal (full implementation in 023).
-- [ ] The "Save" button is disabled if category, valid amount, day, or account is missing.
-- [ ] The help text is shown when the button is disabled.
+- [x] The comment field allows up to 4096 characters with a counter.
+- [x] The comment autocomplete works the same as in AddTransaction.
+- [x] The photo section preloads existing photo and allows replacement/removal (full implementation in 023).
+- [x] The "Save" button is disabled if category, valid amount, day, or account is missing.
+- [x] The help text is shown when the button is disabled.
 - [x] Tapping "Save" updates the transaction and returns to the previous screen.
 - [x] Data refreshes when returning to the list (useFocusEffect).
-- [ ] All texts change when changing the language in settings.
-- [ ] The screen respects the active theme (dark/light).
-- [ ] The screen respects the configured text size.
+- [x] All texts change when changing the language in settings.
+- [x] The screen respects the active theme (dark/light).
+- [x] The screen respects the configured text size.

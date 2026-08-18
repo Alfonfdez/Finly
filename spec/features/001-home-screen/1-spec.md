@@ -41,17 +41,17 @@ Initial mock data (accounts, categories, sample transactions). Later, data will 
 Cloud sync, authentication, offline usage (AsyncStorage is already local).
 
 - **Acceptance criteria**
-[ ] The Drawer Navigator opens correctly with the options (initial mockups).
-[ ] Tapping "Total" opens a modal with the account list, showing icon, name and total.
-[ ] The Total balance displays in green if positive, red if negative, with € symbol.
-[ ] The transactions button navigates to the corresponding screen.
-[ ] Correct toggle between "Expenses" and "Income".
-[ ] The 5 period tabs are displayed correctly.
-[ ] When selecting a period, a date can be chosen with the native picker.
-[ ] The date picker does not allow selecting future dates.
-[ ] The donut chart is displayed correctly with period data.
+[x] The Drawer Navigator opens correctly with the options (initial mockups).
+[x] Tapping "Total" opens a modal with the account list, showing icon, name and total.
+[x] The Total balance displays in green if positive, red if negative, with € symbol.
+[x] The transactions button navigates to the corresponding screen.
+[x] Correct toggle between "Expenses" and "Income".
+[x] The 5 period tabs are displayed correctly.
+[x] When selecting a period, a date can be chosen with the native picker.
+[x] The date picker does not allow selecting future dates.
+[x] The donut chart is displayed correctly with period data.
 [x] The total in the center of the donut stays fully visible inside the hole even for large amounts (font auto-shrinks to fit).
-[ ] Tapping the donut chart shows the bar chart, and vice versa.
-[ ] The "+" button navigates to the "Add Expense/Income" screen.
-[ ] The category list displays icon, name, percentage and total correctly.
-[ ] Tapping a category navigates to "Transactions" with that filter.
+[x] Tapping the donut chart shows the bar chart, and vice versa.
+[x] The "+" button navigates to the "Add Expense/Income" screen.
+[x] The category list displays icon, name, percentage and total correctly.
+[x] Tapping a category navigates to "Transactions" with that filter.

@@ -97,6 +97,6 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 - [x] Bulk delete of categories with transactions offers "Move transactions first" (target limited to same-type categories not selected) or "Permanent delete".
 - [x] Bulk delete with transactions lets choosing a different destination per category ("Delete transactions" included) and confirms only once every category with transactions has a decision.
 - [x] After a bulk delete, the category grid and transaction data update.
-- [ ] All texts change when switching the language in settings.
-- [ ] The screen respects the active theme (dark/light).
-- [ ] The screen respects the configured text size.
+- [x] All texts change when switching the language in settings.
+- [x] The screen respects the active theme (dark/light).
+- [x] The screen respects the configured text size.

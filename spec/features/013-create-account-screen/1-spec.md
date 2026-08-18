@@ -131,27 +131,27 @@
 
 ## Acceptance criteria
 
-- [ ] The floating "+" button (FAB) in `AccountsScreen` (011) navigates to `CreateAccountScreen`.
-- [ ] The header shows a back arrow and title "Create account" in the active language.
-- [ ] The name input appears first below the header, with placeholder "Account name".
-- [ ] The input has a maximum of 30 characters with counter "0/30".
-- [ ] The "Create" button is disabled if the name is empty.
-- [ ] If the name is empty, "Enter an account name" is shown in red.
-- [ ] Duplicate validation checks case-insensitive against existing accounts.
-- [ ] Reserved default account names are blocked with the duplicate error only when the corresponding default account still exists in the DB (language-aware check via `getDefaultAccountIdByName`). Deleted default names can be reused.
-- [ ] If a duplicate exists, "An account with this name already exists" is shown in red and the button is disabled.
-- [ ] ~20 icons are shown in a 4-column grid with vertical scroll.
-- [ ] When an icon is pressed, it is selected and visually highlighted.
-- [ ] Only one icon can be selected at a time.
-- [ ] When selecting an icon, the icon's background color changes to the selected color.
-- [ ] 6 colors are shown in a 1×7 grid + "+" in the 7th position.
-- [ ] When a color is pressed, it is selected and highlighted with ring + checkmark.
-- [ ] The "+" opens a modal with color picker (reanimated-color-picker).
-- [ ] When a color is selected in the modal, it closes and the color is selected.
-- [ ] "Note" is shown with a multiline input, maximum 200 characters, counter 0/200.
-- [ ] The "Create" button is disabled if name, icon, or color is missing (or name is duplicate).
-- [ ] The red helper text appears with the appropriate message based on what is missing (only the first unmet requirement).
-- [ ] When "Create" is pressed, the account is created with `initial_balance: 0` and navigation goes back.
-- [ ] All texts change when the language is changed in settings.
-- [ ] The screen respects the active theme (dark/light).
-- [ ] The screen respects the configured text size.
+- [x] The floating "+" button (FAB) in `AccountsScreen` (011) navigates to `CreateAccountScreen`.
+- [x] The header shows a back arrow and title "Create account" in the active language.
+- [x] The name input appears first below the header, with placeholder "Account name".
+- [x] The input has a maximum of 30 characters with counter "0/30".
+- [x] The "Create" button is disabled if the name is empty.
+- [x] If the name is empty, "Enter an account name" is shown in red.
+- [x] Duplicate validation checks case-insensitive against existing accounts.
+- [x] Reserved default account names are blocked with the duplicate error only when the corresponding default account still exists in the DB (language-aware check via `getDefaultAccountIdByName`). Deleted default names can be reused.
+- [x] If a duplicate exists, "An account with this name already exists" is shown in red and the button is disabled.
+- [x] ~20 icons are shown in a 4-column grid with vertical scroll.
+- [x] When an icon is pressed, it is selected and visually highlighted.
+- [x] Only one icon can be selected at a time.
+- [x] When selecting an icon, the icon's background color changes to the selected color.
+- [x] 6 colors are shown in a 1×7 grid + "+" in the 7th position.
+- [x] When a color is pressed, it is selected and highlighted with ring + checkmark.
+- [x] The "+" opens a modal with color picker (reanimated-color-picker).
+- [x] When a color is selected in the modal, it closes and the color is selected.
+- [x] "Note" is shown with a multiline input, maximum 200 characters, counter 0/200.
+- [x] The "Create" button is disabled if name, icon, or color is missing (or name is duplicate).
+- [x] The red helper text appears with the appropriate message based on what is missing (only the first unmet requirement).
+- [x] When "Create" is pressed, the account is created with `initial_balance: 0` and navigation goes back.
+- [x] All texts change when the language is changed in settings.
+- [x] The screen respects the active theme (dark/light).
+- [x] The screen respects the configured text size.

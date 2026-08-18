@@ -97,30 +97,30 @@
 
 ## Acceptance criteria
 
-- [ ] The database has a `tags` table and a `transaction_tags` junction table after migration.
-- [ ] The Drawer shows "Tags" and pressing it navigates to the tags screen.
+- [x] The database has a `tags` table and a `transaction_tags` junction table after migration.
+- [x] The Drawer shows "Tags" and pressing it navigates to the tags screen.
 - [x] The header shows a hamburger menu button and "Tags" title in the active language.
-- [ ] All tags are displayed in a list ordered by creation date (newest at the bottom).
-- [ ] Pressing a tag navigates to "Modify tag" with the tag id.
-- [ ] The "+" FAB navigates to "Create tag".
+- [x] All tags are displayed in a list ordered by creation date (newest at the bottom).
+- [x] Pressing a tag navigates to "Modify tag" with the tag id.
+- [x] The "+" FAB navigates to "Create tag".
 - [x] At the 50-tag maximum, the "+" FAB is hidden and "Maximum of 50 tags reached" is shown in its place.
 - [x] The screen shows a counter above the list with the current number of tags out of the maximum (e.g. "12 of 50 tags"), hidden during selection mode.
 - [x] The header search button shows/hides a "Search tags" bar.
 - [x] Typing filters the tag list by name (case-insensitive substring).
 - [x] Closing the search restores the full list.
 - [x] A search with no matches shows "No results found".
-- [ ] If there are no tags, an empty state is shown.
+- [x] If there are no tags, an empty state is shown.
 - [x] When there are no tags, the header Select and Search actions are hidden.
-- [ ] Creating a tag with a duplicate name (case-insensitive) shows an error.
-- [ ] Creating a tag with an empty name shows an error.
-- [ ] Creating a tag with more than 20 characters is prevented.
-- [ ] Creating a tag when the maximum of 50 tags has been reached is prevented (button disabled + "Maximum of 50 tags reached").
-- [ ] Modifying a tag name with a duplicate shows an error (excluding current).
-- [ ] Deleting a tag shows a confirmation modal with the tag name.
-- [ ] After deleting, the tag is removed and junction rows are cascade-deleted.
+- [x] Creating a tag with a duplicate name (case-insensitive) shows an error.
+- [x] Creating a tag with an empty name shows an error.
+- [x] Creating a tag with more than 20 characters is prevented.
+- [x] Creating a tag when the maximum of 50 tags has been reached is prevented (button disabled + "Maximum of 50 tags reached").
+- [x] Modifying a tag name with a duplicate shows an error (excluding current).
+- [x] Deleting a tag shows a confirmation modal with the tag name.
+- [x] After deleting, the tag is removed and junction rows are cascade-deleted.
 - [x] "Select" in the header enters selection mode; rows show checkboxes and tapping toggles selection instead of navigating.
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
 - [x] Bulk delete confirms once for the whole batch and removes all selected tags at once.
-- [ ] After create/modify/delete, `refreshTags()` is called and the list updates.
-- [ ] All texts change when switching language.
-- [ ] The screen respects the active theme and text size.
+- [x] After create/modify/delete, `refreshTags()` is called and the list updates.
+- [x] All texts change when switching language.
+- [x] The screen respects the active theme and text size.

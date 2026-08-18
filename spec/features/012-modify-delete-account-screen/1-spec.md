@@ -151,23 +151,23 @@
 
 ## Acceptance Criteria
 
-- [ ] The header shows a back arrow and title "Modify account" in the active language.
-- [ ] "Account name" is shown with an editable input, counter 0/30.
-- [ ] If the name is empty, a red error is shown and "Save" is disabled.
-- [ ] Duplicate validation excludes the current account (keeping the same name does not cause an error).
-- [ ] Renaming to a reserved default name is blocked with the duplicate error only when the corresponding default account still exists in the DB (language-aware check via `getDefaultAccountIdByName`), including for the default account (id 1) itself. Deleted default names can be reused.
-- [ ] If there is a duplicate, "An account with this name already exists" is shown in red and "Save" is disabled.
-- [ ] ~20 icons are shown in a 4-column grid with the current icon preselected.
-- [ ] When selecting an icon, the icon background color changes to the selected color.
-- [ ] 6 predefined colors + custom circle (if current color is not predefined) + "+" in the 8th position are shown.
-- [ ] If the current color matches one of the 6 predefined, that circle appears selected.
-- [ ] The "+" opens `ColorPickerModal` (reanimated-color-picker).
-- [ ] "Note" is shown with a multiline input, maximum 200 characters, counter 0/200.
-- [ ] The "Save" button is disabled if the name is empty or is a duplicate.
-- [ ] When tapping "Save", the account is updated and navigation returns.
-- [ ] The red "Delete" button opens a confirmation modal with "Cancel" and "Delete".
-- [ ] When tapping "Delete" in the modal, the account transactions are deleted, the account is deleted, the list is refreshed, and navigation returns.
-- [ ] When the account is the last one remaining, the "Delete" button is disabled (secondary color, reduced opacity, not tappable) and a hint explaining it cannot be deleted is shown.
-- [ ] When the account is the Total account (id=2, `is_total=1`), the name field is read-only, the "Delete" button is hidden, and save updates only icon/color/note.
-- [ ] All texts change when switching language.
-- [ ] The screen respects the active theme and text size.
+- [x] The header shows a back arrow and title "Modify account" in the active language.
+- [x] "Account name" is shown with an editable input, counter 0/30.
+- [x] If the name is empty, a red error is shown and "Save" is disabled.
+- [x] Duplicate validation excludes the current account (keeping the same name does not cause an error).
+- [x] Renaming to a reserved default name is blocked with the duplicate error only when the corresponding default account still exists in the DB (language-aware check via `getDefaultAccountIdByName`), including for the default account (id 1) itself. Deleted default names can be reused.
+- [x] If there is a duplicate, "An account with this name already exists" is shown in red and "Save" is disabled.
+- [x] ~20 icons are shown in a 4-column grid with the current icon preselected.
+- [x] When selecting an icon, the icon background color changes to the selected color.
+- [x] 6 predefined colors + custom circle (if current color is not predefined) + "+" in the 8th position are shown.
+- [x] If the current color matches one of the 6 predefined, that circle appears selected.
+- [x] The "+" opens `ColorPickerModal` (reanimated-color-picker).
+- [x] "Note" is shown with a multiline input, maximum 200 characters, counter 0/200.
+- [x] The "Save" button is disabled if the name is empty or is a duplicate.
+- [x] When tapping "Save", the account is updated and navigation returns.
+- [x] The red "Delete" button opens a confirmation modal with "Cancel" and "Delete".
+- [x] When tapping "Delete" in the modal, the account transactions are deleted, the account is deleted, the list is refreshed, and navigation returns.
+- [x] When the account is the last one remaining, the "Delete" button is disabled (secondary color, reduced opacity, not tappable) and a hint explaining it cannot be deleted is shown.
+- [x] When the account is the Total account (id=2, `is_total=1`), the name field is read-only, the "Delete" button is hidden, and save updates only icon/color/note.
+- [x] All texts change when switching language.
+- [x] The screen respects the active theme and text size.

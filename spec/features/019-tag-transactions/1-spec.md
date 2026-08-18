@@ -103,26 +103,26 @@ Tags       | [Urgent] [Recurring]
 
 ## Acceptance criteria
 
-- [ ] TagSection loads tags from the database instead of hardcoded values.
-- [ ] Creating a tag inline persists it to the database.
-- [ ] Selecting tags when adding a transaction saves them to the junction table.
-- [ ] When modifying a transaction, existing tags are pre-selected.
-- [ ] Saving a modified transaction replaces the old tag associations.
-- [ ] Duplicate tag names (case-insensitive) are rejected in the create modal.
-- [ ] Empty tag names are rejected.
-- [ ] Tag names are limited to 20 characters.
-- [ ] New tags created inline are auto-selected after creation.
-- [ ] At the 50-tag maximum, the "+ Add tag" chip is hidden in the transaction form (existing tags remain selectable).
-- [ ] After adding/modifying, `refreshTags()` is called.
-- [ ] Transaction rows show tag chips below the description.
-- [ ] Transactions with no tags show no tag chips.
-- [ ] Tags are loaded via batch query for all visible transactions.
-- [ ] TransactionsScreen accepts optional `tagIds` navigation parameter.
-- [ ] When `tagIds` is provided, transactions are filtered by those tags (OR logic).
-- [ ] When `tagIds` contains -1, untagged transactions are included.
-- [ ] Tags are displayed in both TransactionsScreen and AllTransactionsScreen.
-- [ ] TransactionDetailsScreen shows tags after Comment.
-- [ ] Tags on details load via `getTagsByTransactionId()`.
-- [ ] Transactions with no tags show a `—` placeholder on the details screen.
-- [ ] All texts change when switching language.
-- [ ] The screen respects the active theme and text size.
+- [x] TagSection loads tags from the database instead of hardcoded values.
+- [x] Creating a tag inline persists it to the database.
+- [x] Selecting tags when adding a transaction saves them to the junction table.
+- [x] When modifying a transaction, existing tags are pre-selected.
+- [x] Saving a modified transaction replaces the old tag associations.
+- [x] Duplicate tag names (case-insensitive) are rejected in the create modal.
+- [x] Empty tag names are rejected.
+- [x] Tag names are limited to 20 characters.
+- [x] New tags created inline are auto-selected after creation.
+- [x] At the 50-tag maximum, the "+ Add tag" chip is hidden in the transaction form (existing tags remain selectable).
+- [x] After adding/modifying, `refreshTags()` is called.
+- [x] Transaction rows show tag chips below the description.
+- [x] Transactions with no tags show no tag chips.
+- [x] Tags are loaded via batch query for all visible transactions.
+- [x] TransactionsScreen accepts optional `tagIds` navigation parameter.
+- [x] When `tagIds` is provided, transactions are filtered by those tags (OR logic).
+- [x] When `tagIds` contains -1, untagged transactions are included.
+- [x] Tags are displayed in both TransactionsScreen and AllTransactionsScreen.
+- [x] TransactionDetailsScreen shows tags after Comment.
+- [x] Tags on details load via `getTagsByTransactionId()`.
+- [x] Transactions with no tags show a `—` placeholder on the details screen.
+- [x] All texts change when switching language.
+- [x] The screen respects the active theme and text size.

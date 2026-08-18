@@ -48,12 +48,12 @@
 
 ## Acceptance criteria
 
-- [ ] "Initial balance" appears on the Create account screen between the color section and the Note field.
-- [ ] "Initial balance" appears on the Modify account screen between the color section and the Note field.
-- [ ] The field is empty by default on Create and stores `initial_balance = 0` when left empty.
-- [ ] On Modify, the field is preloaded with the current initial balance.
-- [ ] A non-empty invalid value shows the amount error and disables Create/Save.
-- [ ] Creating an account with initial balance 100 shows 100 in the Accounts list and Total.
-- [ ] Modifying an account's initial balance updates the account and Total balances.
-- [ ] The Total account does not show the field.
-- [ ] All texts are multilingual and respect theme + text size.
+- [x] "Initial balance" appears on the Create account screen between the color section and the Note field.
+- [x] "Initial balance" appears on the Modify account screen between the color section and the Note field.
+- [x] The field is empty by default on Create and stores `initial_balance = 0` when left empty.
+- [x] On Modify, the field is preloaded with the current initial balance.
+- [x] A non-empty invalid value shows the amount error and disables Create/Save.
+- [x] Creating an account with initial balance 100 shows 100 in the Accounts list and Total.
+- [x] Modifying an account's initial balance updates the account and Total balances.
+- [x] The Total account does not show the field.
+- [x] All texts are multilingual and respect theme + text size.
