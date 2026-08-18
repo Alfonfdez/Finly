@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import type { Category } from '../database/types';
 import { useConfig } from '../context/ConfigContext';
@@ -19,7 +19,7 @@ interface Props {
   hideTitle?: boolean;
 }
 
-export default function CategoryGrid({ categories, selectedCategory, onSelect, onAddMore, showAddMore = true, addMoreLabel, hideTitle = false, selectedIds }: Props) {
+function CategoryGridInner({ categories, selectedCategory, onSelect, onAddMore, showAddMore = true, addMoreLabel, hideTitle = false, selectedIds }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -86,3 +86,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
 });
+
+const CategoryGrid = memo(CategoryGridInner);
+export default CategoryGrid;

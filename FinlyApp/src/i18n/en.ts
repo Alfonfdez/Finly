@@ -174,6 +174,8 @@ export const en = {
   add_tag_error_duplicate: 'Tag already exists',
   add_error_title: 'Error',
   add_error_message: 'Failed to save transaction',
+  error_title: 'Error',
+  error_generic: 'Something went wrong. Please try again.',
 
   // Add category
   add_cat_title: 'Add category',

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, memo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { type CategoryWithTotal, MAX_VISIBLE_TAGS } from '../constants/types';
 import { UNTAGGED_ID } from '../database/helpers';
@@ -24,7 +24,7 @@ interface Props {
   onToggleExpand?: (id: number) => void;
 }
 
-export default function CategoryList({
+function CategoryListInner({
   categories, onPress,
   tagBreakdowns, expandedCategoryIds, onToggleExpand,
 }: Props) {
@@ -129,3 +129,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
+
+const CategoryList = memo(CategoryListInner);
+export default CategoryList;

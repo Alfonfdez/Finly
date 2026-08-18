@@ -176,6 +176,8 @@ export const es: Language = {
   add_tag_error_duplicate: 'La etiqueta ya existe',
   add_error_title: 'Error',
   add_error_message: 'No se ha podido guardar la transacción',
+  error_title: 'Error',
+  error_generic: 'Algo salió mal. Por favor, inténtalo de nuevo.',
 
   // Add category
   add_cat_title: 'Añadir categoría',

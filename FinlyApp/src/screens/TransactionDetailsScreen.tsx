@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Image } from 'react-native';
+import { Alert, View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Image } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
@@ -100,7 +100,9 @@ export default function TransactionDetailsScreen() {
       await transactionRepository.delete(transactionId);
       await refresh();
       navigation.goBack();
-    } catch {
+    } catch (err) {
+      console.error('Failed to delete transaction:', err);
+      Alert.alert(labels.error_title, labels.error_generic);
       setDeleting(false);
       setDeleteModalVisible(false);
     }

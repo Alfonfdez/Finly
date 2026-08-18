@@ -176,6 +176,8 @@ export const ca: Language = {
   add_tag_error_duplicate: 'L\'etiqueta ja existeix',
   add_error_title: 'Error',
   add_error_message: 'No s\'ha pogut guardar la transacció',
+  error_title: 'Error',
+  error_generic: 'Alguna cosa ha anat malament. Si us plau, torna-ho a provar.',
 
   // Add category
   add_cat_title: 'Afegir categoria',

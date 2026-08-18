@@ -28,9 +28,11 @@ export function useSelectAndSearch<T extends number | string = number>({
   }, []);
 
   const toggleSelectMode = useCallback(() => {
-    if (selectMode) setSelectedIds(new Set());
-    setSelectMode(!selectMode);
-  }, [selectMode]);
+    setSelectMode(prev => {
+      if (prev) setSelectedIds(new Set());
+      return !prev;
+    });
+  }, []);
 
   const toggleSearch = useCallback(() => {
     setSearchActive((prev) => !prev);

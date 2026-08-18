@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useLayoutEffect } from 'react';
-import { View, Text, SectionList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, SectionList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { HEADER_BUTTONS } from '../components/componentStyles';
@@ -101,11 +101,15 @@ export default function AllTransactionsScreen() {
 
   const handleBulkDelete = useCallback(async () => {
     setDeleteModalVisible(false);
-    await transactionRepository.deleteMany([...selectedIds]);
-    exitSelectMode();
-    const updated = await transactionRepository.list({});
-    setAllTransactions(updated);
-  }, [selectedIds, setAllTransactions, exitSelectMode]);
+    try {
+      await transactionRepository.deleteMany([...selectedIds]);
+      exitSelectMode();
+      const updated = await transactionRepository.list({});
+      setAllTransactions(updated);
+    } catch {
+      Alert.alert(labels.error_title, labels.error_generic);
+    }
+  }, [selectedIds, setAllTransactions, exitSelectMode, labels]);
 
   const keyExtractor = useCallback((item: Transaction) => item.id.toString(), []);
 

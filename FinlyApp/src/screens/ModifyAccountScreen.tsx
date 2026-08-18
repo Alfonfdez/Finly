@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { Alert, View, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig, type Config } from '../context/ConfigContext';
@@ -103,6 +103,7 @@ export default function ModifyAccountScreen() {
       navigation.goBack();
     } catch (err) {
       console.error('Failed to update account:', err);
+      Alert.alert(labels.error_title, labels.error_generic);
     }
   };
 
@@ -126,6 +127,7 @@ export default function ModifyAccountScreen() {
       navigation.goBack();
     } catch (err) {
       console.error('Failed to delete account:', err);
+      Alert.alert(labels.error_title, labels.error_generic);
     }
   };
 
