@@ -67,20 +67,20 @@
 
 ## Acceptance criteria
 
-- [ ] "Comments" appears in the Drawer between "Tags" and the separator, with a chat bubble icon.
-- [ ] The Comments screen lists every distinct comment with its "Used in N transactions" count, sorted alphabetically.
-- [ ] Whitespace/case variants of the same comment collapse into one row with a summed count.
-- [ ] The search toggle filters the list client-side; empty state shows when there are no comments.
+- [x] "Comments" appears in the Drawer between "Tags" and the separator, with a chat bubble icon.
+- [x] The Comments screen lists every distinct comment with its "Used in N transactions" count, sorted alphabetically.
+- [x] Whitespace/case variants of the same comment collapse into one row with a summed count.
+- [x] The search toggle filters the list client-side; empty state shows when there are no comments.
 - [x] A counter above the list shows the number of visible comments (e.g., "2 comments"); it updates when a search filters the list.
 - [x] When there are no comments, the header Select and Search actions are hidden.
-- [ ] Tapping a comment opens the modify screen with the comment preloaded and the counter showing `N/4096`.
-- [ ] Save is disabled when the comment is empty or unchanged.
-- [ ] Saving renames the comment on all transactions that use it and returns to the list (counts updated).
-- [ ] Editing a comment to another existing case-variant merges them into a single row with the summed count.
-- [ ] Deleting shows the confirmation with the exact usage count; confirming removes the comment from those transactions.
+- [x] Tapping a comment opens the modify screen with the comment preloaded and the counter showing `N/4096`.
+- [x] Save is disabled when the comment is empty or unchanged.
+- [x] Saving renames the comment on all transactions that use it and returns to the list (counts updated).
+- [x] Editing a comment to another existing case-variant merges them into a single row with the summed count.
+- [x] Deleting shows the confirmation with the exact usage count; confirming removes the comment from those transactions.
 - [x] "Select" in the header enters selection mode; rows show checkboxes and tapping toggles selection instead of navigating.
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
 - [x] Bulk delete confirms once for the whole batch and removes all selected comments from their transactions.
-- [ ] In Add/Modify transaction, saving a comment trims it; whitespace-only comments are saved as none.
-- [ ] Autocomplete suggestions appear only from 2 trimmed characters, prefix matches first.
-- [ ] All texts are multilingual and respect theme + text size.
+- [x] In Add/Modify transaction, saving a comment trims it; whitespace-only comments are saved as none.
+- [x] Autocomplete suggestions appear only from 2 trimmed characters, prefix matches first.
+- [x] All texts are multilingual and respect theme + text size.

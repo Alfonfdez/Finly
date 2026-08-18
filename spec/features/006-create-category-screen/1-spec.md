@@ -149,28 +149,28 @@ Screen accessible from the "Create" button in the last position of the grid in `
 
 ## Acceptance Criteria
 
-- [ ] The "Create" button on `AddCategoryScreen` navigates to `CreateCategoryScreen`.
-- [ ] The header shows a back arrow and title "Create category" in the active language.
-- [ ] The name input appears first below the header, with placeholder "Category name".
-- [ ] The input has a maximum of 30 characters with counter "0/30".
-- [ ] The "Add" button is disabled if the name is empty.
-- [ ] If the name is empty, "Enter a category name" is shown in red.
-- [ ] Duplicate validation checks case-insensitive against existing categories (regardless of type).
-- [ ] If there is a duplicate, "A category with this name already exists" is shown in red and the button is disabled.
-- [ ] When changing the type, the name duplicate validation re-runs.
-- [ ] The "Expenses"/"Incomes" radios work correctly, "Expenses" selected by default.
-- [ ] ~40 icons are shown in a 4-column grid with vertical scroll.
-- [ ] When tapping an icon, it is selected and visually highlighted.
-- [ ] Only one icon can be selected at a time.
-- [ ] 7 colors are shown in a 1×8 grid + "+" in the 8th position.
-- [ ] When tapping a color, it is selected and highlighted with a ring + checkmark.
-- [ ] The "+" opens a modal with ~20 expanded colors in a 4×5 grid.
-- [ ] When selecting a color in the modal, it closes and the color remains selected.
-- [ ] The "Add" button is disabled if name, icon or color is missing (or name is duplicate).
-- [ ] The red help text appears with the appropriate message based on what is missing (only the first unmet requirement).
-- [ ] When pressing "Add", the category is created and navigation returns with the category selected.
-- [ ] When the selected type already has 30 categories, the "Add" button is disabled and "Maximum of 30 categories per type reached" is shown in red.
-- [ ] Switching the type radio re-evaluates the limit (the other type can still add categories if below 30).
-- [ ] All texts change when changing the language in settings.
-- [ ] The screen respects the active theme (dark/light).
-- [ ] The screen respects the configured text size.
+- [x] The "Create" button on `AddCategoryScreen` navigates to `CreateCategoryScreen`.
+- [x] The header shows a back arrow and title "Create category" in the active language.
+- [x] The name input appears first below the header, with placeholder "Category name".
+- [x] The input has a maximum of 30 characters with counter "0/30".
+- [x] The "Add" button is disabled if the name is empty.
+- [x] If the name is empty, "Enter a category name" is shown in red.
+- [x] Duplicate validation checks case-insensitive against existing categories (regardless of type).
+- [x] If there is a duplicate, "A category with this name already exists" is shown in red and the button is disabled.
+- [x] When changing the type, the name duplicate validation re-runs.
+- [x] The "Expenses"/"Incomes" radios work correctly, "Expenses" selected by default.
+- [x] ~40 icons are shown in a 4-column grid with vertical scroll.
+- [x] When tapping an icon, it is selected and visually highlighted.
+- [x] Only one icon can be selected at a time.
+- [x] 7 colors are shown in a 1×8 grid + "+" in the 8th position.
+- [x] When tapping a color, it is selected and highlighted with a ring + checkmark.
+- [x] The "+" opens a modal with ~20 expanded colors in a 4×5 grid.
+- [x] When selecting a color in the modal, it closes and the color remains selected.
+- [x] The "Add" button is disabled if name, icon or color is missing (or name is duplicate).
+- [x] The red help text appears with the appropriate message based on what is missing (only the first unmet requirement).
+- [x] When pressing "Add", the category is created and navigation returns with the category selected.
+- [x] When the selected type already has 30 categories, the "Add" button is disabled and "Maximum of 30 categories per type reached" is shown in red.
+- [x] Switching the type radio re-evaluates the limit (the other type can still add categories if below 30).
+- [x] All texts change when changing the language in settings.
+- [x] The screen respects the active theme (dark/light).
+- [x] The screen respects the configured text size.

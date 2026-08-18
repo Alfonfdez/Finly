@@ -88,23 +88,23 @@
 
 ## Acceptance criteria
 
-- [ ] The Stack header shows a back button and title "Transactions".
-- [ ] Below the header, the category icon + category name is displayed.
-- [ ] Below the category name, the formatted total with color (green/red) and prefix (+/-) is displayed.
-- [ ] The selected account is shown with icon + name + chevron-down.
-- [ ] On tapping the account, the modal opens with the account list (radio + icon + name + balance).
-- [ ] The modal allows canceling or selecting a different account.
-- [ ] The sort toggle is displayed with "By date" and "By amount".
-- [ ] The active option has primary color and a direction arrow.
-- [ ] On tapping the arrow, the direction is inverted (ASC ↔ DESC).
-- [ ] On tapping the other option, the sort criterion changes.
-- [ ] By default, transactions are sorted by date descending.
-- [ ] Transactions are grouped by day with a formatted date header.
-- [ ] Each transaction shows category icon + name + description + amount with color.
-- [ ] The list is filtered by account, category, and period.
-- [ ] The Total account is shown in the account selector modal.
-- [ ] When the active account is Total (is_total=1), the account filter is skipped and all transactions for the category and period are shown.
-- [ ] If there are no transactions, the empty state is displayed.
-- [ ] The centered floating "+" button navigates to "Add transaction" (004).
-- [ ] All texts change when the language is changed.
-- [ ] The screen respects the active theme and text size.
+- [x] The Stack header shows a back button and title "Transactions".
+- [x] Below the header, the category icon + category name is displayed.
+- [x] Below the category name, the formatted total with color (green/red) and prefix (+/-) is displayed.
+- [x] The selected account is shown with icon + name + chevron-down.
+- [x] On tapping the account, the modal opens with the account list (radio + icon + name + balance).
+- [x] The modal allows canceling or selecting a different account.
+- [x] The sort toggle is displayed with "By date" and "By amount".
+- [x] The active option has primary color and a direction arrow.
+- [x] On tapping the arrow, the direction is inverted (ASC ↔ DESC).
+- [x] On tapping the other option, the sort criterion changes.
+- [x] By default, transactions are sorted by date descending.
+- [x] Transactions are grouped by day with a formatted date header.
+- [x] Each transaction shows category icon + name + description + amount with color.
+- [x] The list is filtered by account, category, and period.
+- [x] The Total account is shown in the account selector modal.
+- [x] When the active account is Total (is_total=1), the account filter is skipped and all transactions for the category and period are shown.
+- [x] If there are no transactions, the empty state is displayed.
+- [x] The centered floating "+" button navigates to "Add transaction" (004).
+- [x] All texts change when the language is changed.
+- [x] The screen respects the active theme and text size.

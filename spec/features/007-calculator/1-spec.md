@@ -58,15 +58,15 @@ Modal with a basic calculator that allows the user to perform simple mathematica
 
 ## Acceptance Criteria
 
-- [ ] The calculator button opens a modal with the calculator.
-- [ ] Numeric and operation buttons build the expression correctly.
-- [ ] The `=` button evaluates the expression and displays the result.
-- [ ] The `C` button clears the expression and result.
-- [ ] The `⌫` button removes the last character.
-- [ ] The "Accept" button pastes the result into the amount field.
-- [ ] The "Cancel" button closes without modifying the field.
-- [ ] The calculator respects the dark/light theme.
-- [ ] Works on iOS, Android and Web.
+- [x] The calculator button opens a modal with the calculator.
+- [x] Numeric and operation buttons build the expression correctly.
+- [x] The `=` button evaluates the expression and displays the result.
+- [x] The `C` button clears the expression and result.
+- [x] The `⌫` button removes the last character.
+- [x] The "Accept" button pastes the result into the amount field.
+- [x] The "Cancel" button closes without modifying the field.
+- [x] The calculator respects the dark/light theme.
+- [x] Works on iOS, Android and Web.
 
 ---
 

@@ -125,33 +125,33 @@
 
 - [x] The screen is accessible from the hamburger menu and from the statistics icon on HomeScreen.
 - [x] The header shows a back arrow and title "All transactions" in the active language.
-- [ ] Three type tabs (All | Expenses | Income) are shown, with "All" selected by default.
-- [ ] Selecting "Expenses" shows only expense transactions; "Income" shows only income.
-- [ ] The selected account is shown with icon + name + chevron-down.
-- [ ] Pressing the account opens the modal with the account list.
-- [ ] The Total account is shown in the account selector modal.
-- [ ] When the active account is Total, the account filter is skipped and all transactions matching other filters are shown.
-- [ ] The balance updates dynamically based on all active filters (type, category, period, tags).
-- [ ] A category filter button shows "All categories" by default or "N categories" when filtered.
-- [ ] Tapping the category button opens the CategoryFilterModal (021).
-- [ ] Selecting categories in the modal filters the transaction list.
-- [ ] PeriodTabs (Day/Week/Month/Year/Period) are shown with "Year" selected by default.
-- [ ] CalendarPicker updates when the period changes.
-- [ ] The transaction list filters by the selected period's date range.
-- [ ] The sort toggle works (date/amount, ASC/DESC).
-- [ ] TagFilterBar is shown and works with local state.
-- [ ] A search icon is shown in the header; pressing it toggles a SearchBar.
-- [ ] The search matches comment/description, category display name, tag names and account name, case-insensitive.
-- [ ] Multi-term searches require all terms to match (AND).
-- [ ] Search composes with the other filters (type, category, period, tags, account).
-- [ ] Closing the search bar clears it and restores the full filtered list.
-- [ ] An active search with no matches shows "No results found".
-- [ ] All filters combine (AND logic) to produce the final transaction list.
-- [ ] Transactions are grouped by day with a formatted date header.
-- [ ] If no transactions match, an empty state is shown.
-- [ ] The floating "+" button navigates to "Add transaction".
-- [ ] All texts change when changing the language.
-- [ ] The screen respects the active theme and text size.
+- [x] Three type tabs (All | Expenses | Income) are shown, with "All" selected by default.
+- [x] Selecting "Expenses" shows only expense transactions; "Income" shows only income.
+- [x] The selected account is shown with icon + name + chevron-down.
+- [x] Pressing the account opens the modal with the account list.
+- [x] The Total account is shown in the account selector modal.
+- [x] When the active account is Total, the account filter is skipped and all transactions matching other filters are shown.
+- [x] The balance updates dynamically based on all active filters (type, category, period, tags).
+- [x] A category filter button shows "All categories" by default or "N categories" when filtered.
+- [x] Tapping the category button opens the CategoryFilterModal (021).
+- [x] Selecting categories in the modal filters the transaction list.
+- [x] PeriodTabs (Day/Week/Month/Year/Period) are shown with "Year" selected by default.
+- [x] CalendarPicker updates when the period changes.
+- [x] The transaction list filters by the selected period's date range.
+- [x] The sort toggle works (date/amount, ASC/DESC).
+- [x] TagFilterBar is shown and works with local state.
+- [x] A search icon is shown in the header; pressing it toggles a SearchBar.
+- [x] The search matches comment/description, category display name, tag names and account name, case-insensitive.
+- [x] Multi-term searches require all terms to match (AND).
+- [x] Search composes with the other filters (type, category, period, tags, account).
+- [x] Closing the search bar clears it and restores the full filtered list.
+- [x] An active search with no matches shows "No results found".
+- [x] All filters combine (AND logic) to produce the final transaction list.
+- [x] Transactions are grouped by day with a formatted date header.
+- [x] If no transactions match, an empty state is shown.
+- [x] The floating "+" button navigates to "Add transaction".
+- [x] All texts change when changing the language.
+- [x] The screen respects the active theme and text size.
 - [x] When there are no transactions, the header Select and Search actions are hidden.
 - [x] "Select" in the header enters selection mode; transaction rows show checkboxes and tapping toggles selection instead of navigating.
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.

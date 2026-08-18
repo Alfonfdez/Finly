@@ -72,12 +72,12 @@
 
 ## Acceptance criteria
 
-- [ ] `assets/icon.png` is displayed as the app icon on the device home screen (iOS and Android).
-- [ ] `assets/android-icon-foreground.png` + `assets/android-icon-background.png` form the adaptive icon correctly on Android 8+.
-- [ ] `assets/android-icon-monochrome.png` is displayed correctly on Android devices with themed icons (API 33+).
+- [x] `assets/icon.png` is displayed as the app icon on the device home screen (iOS and Android).
+- [x] `assets/android-icon-foreground.png` + `assets/android-icon-background.png` form the adaptive icon correctly on Android 8+.
+- [x] `assets/android-icon-monochrome.png` is displayed correctly on Android devices with themed icons (API 33+).
 - [x] `assets/favicon.png` is displayed in the browser tab when opening the app on web.
-- [ ] `assets/splash-icon.png` appears centered on the splash screen when launching the app.
-- [ ] The native splash screen (app.json) is displayed when launching the app natively (Expo Go).
+- [x] `assets/splash-icon.png` appears centered on the splash screen when launching the app.
+- [x] The native splash screen (app.json) is displayed when launching the app natively (Expo Go).
 - [x] On web, the SplashScreen component with the logo is displayed while the app loads and exits as soon as the app is ready (no artificial delay, no progress bar).
 - [x] All files are correctly referenced in `app.json`.
 - [x] The drawer header displays the logo (icon.png) alongside the text "Finly".

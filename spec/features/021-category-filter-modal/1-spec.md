@@ -87,20 +87,20 @@
 
 ## Acceptance criteria
 
-- [ ] The modal opens as a full-screen overlay when triggered.
-- [ ] The header shows "Select categories" and a close (X) button.
-- [ ] Pressing X closes the modal without applying changes.
-- [ ] A SearchBar filters categories by name (case-insensitive).
-- [ ] Empty state shows when search returns no results.
-- [ ] The "All" chip is shown above the grid and is visually distinct.
-- [ ] Tapping "All" selects all categories.
-- [ ] When all categories are individually selected, "All" appears active.
-- [ ] The category grid shows icon + color + name in a 4×N layout.
-- [ ] Multi-select works: tapping toggles selection, checkmark shown on selected items.
-- [ ] When type='all', categories are grouped under "Expenses" and "Income" headers.
-- [ ] When type='expense' or 'income', only that type's categories are shown without headers.
-- [ ] The Apply button shows the count of selected categories.
-- [ ] When all are selected, Apply shows "Apply (All)".
-- [ ] Pressing Apply calls onApply with the selected IDs and closes the modal.
-- [ ] The modal respects the active theme and text size.
-- [ ] All texts change when switching language.
+- [x] The modal opens as a full-screen overlay when triggered.
+- [x] The header shows "Select categories" and a close (X) button.
+- [x] Pressing X closes the modal without applying changes.
+- [x] A SearchBar filters categories by name (case-insensitive).
+- [x] Empty state shows when search returns no results.
+- [x] The "All" chip is shown above the grid and is visually distinct.
+- [x] Tapping "All" selects all categories.
+- [x] When all categories are individually selected, "All" appears active.
+- [x] The category grid shows icon + color + name in a 4×N layout.
+- [x] Multi-select works: tapping toggles selection, checkmark shown on selected items.
+- [x] When type='all', categories are grouped under "Expenses" and "Income" headers.
+- [x] When type='expense' or 'income', only that type's categories are shown without headers.
+- [x] The Apply button shows the count of selected categories.
+- [x] When all are selected, Apply shows "Apply (All)".
+- [x] Pressing Apply calls onApply with the selected IDs and closes the modal.
+- [x] The modal respects the active theme and text size.
+- [x] All texts change when switching language.

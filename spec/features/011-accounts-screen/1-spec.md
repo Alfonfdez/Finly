@@ -78,22 +78,22 @@
 
 ## Acceptance criteria
 
-- [ ] The Drawer shows "Accounts" and pressing it navigates to the accounts screen.
+- [x] The Drawer shows "Accounts" and pressing it navigates to the accounts screen.
 - [x] The header shows a hamburger menu button and the title "Accounts" in the active language.
-- [ ] "Total:" is displayed with the total balance of all accounts, green if >= 0, red if < 0, with a maximum of 2 decimals.
-- [ ] Each account shows an icon with background color + name + formatted balance.
-- [ ] If the account has a note (description), it is displayed below the name in a soft color and reduced size.
-- [ ] Pressing an account navigates to "Modify account" (012) with the `accountId`.
-- [ ] If there are no accounts, an empty state is shown.
-- [ ] The default account "My Wallet" is displayed translated according to the active language (e.g. es "Mi Cartera", ca "La meva cartera") via `getDisplayAccountName`.
-- [ ] The Total account appears first in the accounts list with its icon and total balance.
-- [ ] A search icon is shown in the header; pressing it toggles a SearchBar.
-- [ ] The search matches account display name and description, case-insensitive.
-- [ ] Multi-term searches require all terms to match (AND).
-- [ ] The Total account row stays visible during a search.
-- [ ] Closing the search bar clears it and restores the full list.
-- [ ] An active search with no matches shows "No results found".
-- [ ] Tapping the Total account navigates to "Modify account" (012) with the Total account's id.
-- [ ] The floating "+" button navigates to "Create account" (013).
-- [ ] All texts change when switching language.
-- [ ] The screen respects the active theme and text size.
+- [x] "Total:" is displayed with the total balance of all accounts, green if >= 0, red if < 0, with a maximum of 2 decimals.
+- [x] Each account shows an icon with background color + name + formatted balance.
+- [x] If the account has a note (description), it is displayed below the name in a soft color and reduced size.
+- [x] Pressing an account navigates to "Modify account" (012) with the `accountId`.
+- [x] If there are no accounts, an empty state is shown.
+- [x] The default account "My Wallet" is displayed translated according to the active language (e.g. es "Mi Cartera", ca "La meva cartera") via `getDisplayAccountName`.
+- [x] The Total account appears first in the accounts list with its icon and total balance.
+- [x] A search icon is shown in the header; pressing it toggles a SearchBar.
+- [x] The search matches account display name and description, case-insensitive.
+- [x] Multi-term searches require all terms to match (AND).
+- [x] The Total account row stays visible during a search.
+- [x] Closing the search bar clears it and restores the full list.
+- [x] An active search with no matches shows "No results found".
+- [x] Tapping the Total account navigates to "Modify account" (012) with the Total account's id.
+- [x] The floating "+" button navigates to "Create account" (013).
+- [x] All texts change when switching language.
+- [x] The screen respects the active theme and text size.

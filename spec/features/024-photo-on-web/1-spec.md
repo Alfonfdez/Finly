@@ -70,17 +70,17 @@
 
 ## Acceptance criteria
 
-- [ ] `PhotoSection` is visible on web when `config.addShowPhoto` is true.
-- [ ] "Show photo" checkbox is visible in `PersonalizationScreen` on web.
-- [ ] On web, "Add from gallery" opens the file picker and adds a thumbnail that renders.
-- [ ] Web photos persist across a full page reload (re-rendered thumbnails in Add/Modify and Details).
-- [ ] Up to 3 photos can be added per transaction on web.
-- [ ] The "Take photo" (camera) option is not shown on web.
-- [ ] Removing a photo on web (× + confirm) removes it without error.
-- [ ] `TransactionDetailsScreen` shows photo thumbnails on web and the full-screen viewer opens/works.
-- [ ] `ModifyTransactionScreen` preloads web photos and allows adding/removing.
-- [ ] Deleting a transaction with web photos deletes the row cleanly (photos gone).
-- [ ] `deletePhotoFile` no-ops on `data:` URIs without throwing.
-- [ ] `parsePhotos` round-trips data-URI JSON arrays and single data URIs.
-- [ ] All texts are multilingual (en/es/ca), theme and text size are respected.
-- [ ] `npm run test:all` is green (typecheck + lint + tests).
+- [x] `PhotoSection` is visible on web when `config.addShowPhoto` is true.
+- [x] "Show photo" checkbox is visible in `PersonalizationScreen` on web.
+- [x] On web, "Add from gallery" opens the file picker and adds a thumbnail that renders.
+- [x] Web photos persist across a full page reload (re-rendered thumbnails in Add/Modify and Details).
+- [x] Up to 3 photos can be added per transaction on web.
+- [x] The "Take photo" (camera) option is not shown on web.
+- [x] Removing a photo on web (× + confirm) removes it without error.
+- [x] `TransactionDetailsScreen` shows photo thumbnails on web and the full-screen viewer opens/works.
+- [x] `ModifyTransactionScreen` preloads web photos and allows adding/removing.
+- [x] Deleting a transaction with web photos deletes the row cleanly (photos gone).
+- [x] `deletePhotoFile` no-ops on `data:` URIs without throwing.
+- [x] `parsePhotos` round-trips data-URI JSON arrays and single data URIs.
+- [x] All texts are multilingual (en/es/ca), theme and text size are respected.
+- [x] `npm run test:all` is green (typecheck + lint + tests).

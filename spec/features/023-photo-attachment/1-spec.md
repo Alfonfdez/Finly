@@ -118,24 +118,24 @@ Allow users to attach up to 3 photos (receipts, invoices, etc.) to a transaction
 
 ## Acceptance criteria
 
-- [ ] `PhotoSection` is visible on iOS/Android when `config.addShowPhoto` is true.
-- [ ] `PhotoSection` is hidden on web regardless of config.
-- [ ] "Show photo" checkbox is hidden in `PersonalizationScreen` on web.
-- [ ] Up to 3 photos can be added per transaction.
-- [ ] "Take photo" opens the device camera after permission is granted.
-- [ ] "Add from gallery" opens the device gallery/file picker.
-- [ ] Each photo is displayed as a thumbnail in the `PhotoSection` (80×80, rounded corners).
-- [ ] "+" button appears when fewer than 3 photos exist.
-- [ ] "×" button on each photo opens a delete confirmation modal.
-- [ ] Confirmation modal has Cancel and Delete buttons.
-- [ ] Deleting a photo removes it from the array and deletes the file.
-- [ ] Photo files are copied from cache to `documentDirectory` (persists across app restarts).
-- [ ] Photos are stored as JSON array string in `transactions.photo` column.
-- [ ] `TransactionDetailsScreen` shows multiple photo thumbnails when photos exist (not on web).
-- [ ] Tapping a thumbnail in details opens a full-screen viewer with close button.
-- [ ] `ModifyTransactionScreen` preloads existing photos and allows adding/removing.
-- [ ] Deleting a transaction deletes all its photo files from `documentDirectory`.
-- [ ] All texts are multilingual (en/es/ca).
-- [ ] The screen respects the active theme (dark/light).
-- [ ] The screen respects the configured text size.
-- [ ] Existing single-photo transactions are parsed correctly (backwards compatible).
+- [x] `PhotoSection` is visible on iOS/Android when `config.addShowPhoto` is true.
+- [x] `PhotoSection` is hidden on web regardless of config.
+- [x] "Show photo" checkbox is hidden in `PersonalizationScreen` on web.
+- [x] Up to 3 photos can be added per transaction.
+- [x] "Take photo" opens the device camera after permission is granted.
+- [x] "Add from gallery" opens the device gallery/file picker.
+- [x] Each photo is displayed as a thumbnail in the `PhotoSection` (80×80, rounded corners).
+- [x] "+" button appears when fewer than 3 photos exist.
+- [x] "×" button on each photo opens a delete confirmation modal.
+- [x] Confirmation modal has Cancel and Delete buttons.
+- [x] Deleting a photo removes it from the array and deletes the file.
+- [x] Photo files are copied from cache to `documentDirectory` (persists across app restarts).
+- [x] Photos are stored as JSON array string in `transactions.photo` column.
+- [x] `TransactionDetailsScreen` shows multiple photo thumbnails when photos exist (not on web).
+- [x] Tapping a thumbnail in details opens a full-screen viewer with close button.
+- [x] `ModifyTransactionScreen` preloads existing photos and allows adding/removing.
+- [x] Deleting a transaction deletes all its photo files from `documentDirectory`.
+- [x] All texts are multilingual (en/es/ca).
+- [x] The screen respects the active theme (dark/light).
+- [x] The screen respects the configured text size.
+- [x] Existing single-photo transactions are parsed correctly (backwards compatible).

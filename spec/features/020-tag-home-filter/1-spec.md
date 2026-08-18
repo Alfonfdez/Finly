@@ -97,29 +97,29 @@
 
 ## Acceptance criteria
 
-- [ ] A horizontal tag filter bar appears below PeriodTabs on HomeScreen.
-- [ ] The "All" chip is always first and selected by default (when no tags are selected).
-- [ ] The "Untagged" chip is always second after "All".
-- [ ] Multiple tag chips can be selected simultaneously (OR logic).
-- [ ] Selecting [Untagged] deselects all regular tags, and vice versa.
-- [ ] Tapping "All" clears all tag selections.
-- [ ] Tapping a tag chip filters the category breakdown and chart to show only transactions with that tag.
-- [ ] When no tags exist, the filter bar is hidden.
+- [x] A horizontal tag filter bar appears below PeriodTabs on HomeScreen.
+- [x] The "All" chip is always first and selected by default (when no tags are selected).
+- [x] The "Untagged" chip is always second after "All".
+- [x] Multiple tag chips can be selected simultaneously (OR logic).
+- [x] Selecting [Untagged] deselects all regular tags, and vice versa.
+- [x] Tapping "All" clears all tag selections.
+- [x] Tapping a tag chip filters the category breakdown and chart to show only transactions with that tag.
+- [x] When no tags exist, the filter bar is hidden.
 - [x] On web, a visible horizontal scrollbar appears when the bar overflows, letting every tag chip be reached (including the last one).
-- [ ] Each category row in CategoryList shows up to 3 tags as small chips (including "Untagged" if applicable).
-- [ ] If a category has more than 3 tags, a "View all (N)" text is shown (count includes "Untagged").
-- [ ] Tapping "View all (N)" expands the tag section in-place to show all tags.
-- [ ] The tag breakdown is per-category and per-period.
-- [ ] Tag filtering works with all period types (day, week, month, year, custom).
-- [ ] Tag filtering works with both expense and income types.
-- [ ] Tapping a category passes `tagIds` to TransactionsScreen.
-- [ ] TransactionsScreen displays a TagFilterBar initialized with inherited tags.
-- [ ] TransactionsScreen tag filter is independent from HomeScreen (toggle/clear doesn't affect Home).
-- [ ] TransactionsScreen filters transactions by selected tags (OR logic).
-- [ ] When navigating without tagIds, TagFilterBar shows "All" selected (unfiltered).
-- [ ] AllTransactionsScreen displays a TagFilterBar below controls, initialized with "All" selected.
-- [ ] AllTransactionsScreen tag filter is independent from HomeScreen and TransactionsScreen.
-- [ ] AllTransactionsScreen filters transactions by selected tags (OR logic).
-- [ ] AllTransactionsScreen balance updates dynamically to reflect tag-filtered transactions.
-- [ ] All texts change when switching language.
-- [ ] The screen respects the active theme and text size.
+- [x] Each category row in CategoryList shows up to 3 tags as small chips (including "Untagged" if applicable).
+- [x] If a category has more than 3 tags, a "View all (N)" text is shown (count includes "Untagged").
+- [x] Tapping "View all (N)" expands the tag section in-place to show all tags.
+- [x] The tag breakdown is per-category and per-period.
+- [x] Tag filtering works with all period types (day, week, month, year, custom).
+- [x] Tag filtering works with both expense and income types.
+- [x] Tapping a category passes `tagIds` to TransactionsScreen.
+- [x] TransactionsScreen displays a TagFilterBar initialized with inherited tags.
+- [x] TransactionsScreen tag filter is independent from HomeScreen (toggle/clear doesn't affect Home).
+- [x] TransactionsScreen filters transactions by selected tags (OR logic).
+- [x] When navigating without tagIds, TagFilterBar shows "All" selected (unfiltered).
+- [x] AllTransactionsScreen displays a TagFilterBar below controls, initialized with "All" selected.
+- [x] AllTransactionsScreen tag filter is independent from HomeScreen and TransactionsScreen.
+- [x] AllTransactionsScreen filters transactions by selected tags (OR logic).
+- [x] AllTransactionsScreen balance updates dynamically to reflect tag-filtered transactions.
+- [x] All texts change when switching language.
+- [x] The screen respects the active theme and text size.
