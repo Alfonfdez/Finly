@@ -165,32 +165,32 @@ export default function TransactionForm({
     return true;
   }, [categoryId, numericAmount, day, accountId]);
 
-  const handleToggleTag = (id: number) => {
+  const handleToggleTag = useCallback((id: number) => {
     setSelectedTags(prev =>
       prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id]
     );
-  };
+  }, []);
 
-  const handleCreateTag = async (name: string) => {
+  const handleCreateTag = useCallback(async (name: string) => {
     const existing = tags.some(t => t.name.toLowerCase() === name.toLowerCase());
     if (existing) return false;
     const created = await tagRepository.create({ user_id: USER_ID, name });
     await refreshTags();
     setSelectedTags(prev => prev.includes(created.id) ? prev : [...prev, created.id]);
     return true;
-  };
+  }, [tags, refreshTags]);
 
-  const handleSelectAccount = (id: number) => {
+  const handleSelectAccount = useCallback((id: number) => {
     setAccountId(id);
     setModalAccountVisible(false);
-  };
+  }, []);
 
-  const handleSelectDate = (date: Date) => {
+  const handleSelectDate = useCallback((date: Date) => {
     setDay(date);
     setModalCalendarVisible(false);
-  };
+  }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!canSubmit || submitting) return;
     if (categoryId === null || numericAmount === null || accountId === undefined) return;
     setSubmitting(true);
@@ -215,7 +215,7 @@ export default function TransactionForm({
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, onSubmit, refresh, navigation, errorTitle, errorMessage]);
 
   const categoriesByType = useMemo(() => {
     const byType = categories.filter(c => c.type === type);

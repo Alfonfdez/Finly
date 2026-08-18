@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import type { CategoryWithTotal } from '../constants/types';
 import { formatCurrency } from '../utils/formatters';
@@ -10,7 +11,7 @@ interface Props {
   total?: number;
 }
 
-export default function BarChart({ data, total = 0 }: Props) {
+function BarChartInner({ data, total = 0 }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const isEmpty = data.length === 0;
@@ -65,3 +66,5 @@ const styles = StyleSheet.create({
   legendColor: { width: 10, height: 10, borderRadius: 5 },
   emptyText: { textAlign: 'center', marginBottom: 12 },
 });
+
+export default memo(BarChartInner);

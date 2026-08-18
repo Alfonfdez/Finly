@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import {
-  View, Text, TextInput,
+  Alert, View, Text, TextInput,
   StyleSheet,
 } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
@@ -100,6 +100,7 @@ export default function ModifyCategoryScreen() {
       navigation.goBack();
     } catch (err) {
       console.error('Failed to update category:', err);
+      Alert.alert(labels.error_title, labels.error_generic);
     }
   };
 
@@ -131,6 +132,7 @@ export default function ModifyCategoryScreen() {
       navigation.goBack();
     } catch (err) {
       console.error('Failed to delete category:', err);
+      Alert.alert(labels.error_title, labels.error_generic);
     }
   };
 
@@ -144,6 +146,7 @@ export default function ModifyCategoryScreen() {
       navigation.goBack();
     } catch (err) {
       console.error('Failed to delete category:', err);
+      Alert.alert(labels.error_title, labels.error_generic);
     }
   };
 

@@ -7,6 +7,7 @@ import { StyleSheet, View, Text, Image } from 'react-native';
 import { AppProvider } from './src/context/AppContext';
 import { ConfigProvider } from './src/context/ConfigContext';
 import AppNavigator from './src/navigation/AppNavigator';
+import ErrorBoundary from './src/components/ErrorBoundary';
 import { initDatabase } from './src/database/database';
 
 const EXIT_DURATION = 400;
@@ -89,7 +90,9 @@ export default function App() {
     <GestureHandlerRootView style={styles.root}>
       <ConfigProvider>
         <AppProvider>
-          <AppNavigator />
+          <ErrorBoundary>
+            <AppNavigator />
+          </ErrorBoundary>
           <StatusBar style="light" />
         </AppProvider>
       </ConfigProvider>

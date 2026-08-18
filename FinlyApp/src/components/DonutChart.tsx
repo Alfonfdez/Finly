@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { G, Circle } from 'react-native-svg';
 import type { CategoryWithTotal } from '../constants/types';
@@ -14,7 +15,7 @@ const RADIUS = 66;
 const STROKE_WIDTH = 13;
 const HOLE_SIZE = (RADIUS - STROKE_WIDTH / 2) * 2;
 
-export default function DonutChart({ data, total }: Props) {
+function DonutChartInner({ data, total }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const radius = RADIUS;
@@ -77,3 +78,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
+const DonutChart = memo(DonutChartInner);
+export default DonutChart;

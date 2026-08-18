@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { Alert, View, Text, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -83,6 +83,7 @@ export default function CreateCategoryScreen() {
       navigation.goBack();
     } catch (err) {
       console.error('Failed to create category:', err);
+      Alert.alert(labels.error_title, labels.error_generic);
     }
   };
 

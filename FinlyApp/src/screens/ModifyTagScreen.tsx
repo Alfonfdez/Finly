@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { View, StyleSheet, Keyboard } from 'react-native';
+import { View, StyleSheet, Keyboard, Alert } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -59,15 +59,23 @@ export default function ModifyTagScreen() {
     const trimmed = name.trim();
     if (!trimmed || nameError || checkingName) return;
 
-    await tagRepository.update(tagId, { name: trimmed });
-    await refreshTags();
-    navigation.goBack();
+    try {
+      await tagRepository.update(tagId, { name: trimmed });
+      await refreshTags();
+      navigation.goBack();
+    } catch {
+      Alert.alert(labels.error_title, labels.error_generic);
+    }
   };
 
   const handleDelete = async () => {
-    await tagRepository.delete(tagId);
-    await refreshTags();
-    navigation.goBack();
+    try {
+      await tagRepository.delete(tagId);
+      await refreshTags();
+      navigation.goBack();
+    } catch {
+      Alert.alert(labels.error_title, labels.error_generic);
+    }
   };
 
   const isEmpty = !name.trim();

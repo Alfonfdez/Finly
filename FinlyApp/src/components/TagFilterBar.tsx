@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -16,7 +17,7 @@ interface Props {
   style?: object;
 }
 
-export default function TagFilterBar({ tags, activeTagIds, onToggle, onClear, style }: Props) {
+function TagFilterBarInner({ tags, activeTagIds, onToggle, onClear, style }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -87,3 +88,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
+
+const TagFilterBar = memo(TagFilterBarInner);
+export default TagFilterBar;

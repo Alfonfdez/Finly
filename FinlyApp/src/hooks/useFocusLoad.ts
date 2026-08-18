@@ -8,6 +8,8 @@ export function useFocusLoad<T>(
   const [data, setData] = useState<T>(initial);
   const [loading, setLoading] = useState(true);
   const isInitialLoad = useRef(true);
+  const loaderRef = useRef(loader);
+  loaderRef.current = loader;
 
   useFocusEffect(
     useCallback(() => {
@@ -15,7 +17,7 @@ export function useFocusLoad<T>(
       if (isInitialLoad.current) {
         setLoading(true);
       }
-      loader().then((result) => {
+      loaderRef.current().then((result) => {
         if (!active) return;
         setData(result);
         setLoading(false);
@@ -27,7 +29,7 @@ export function useFocusLoad<T>(
         isInitialLoad.current = false;
       });
       return () => { active = false; };
-    }, [loader])
+    }, [])
   );
 
   return { data, setData, loading };

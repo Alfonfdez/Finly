@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { formatDate, formatWeekRange } from '../utils/formatters';
 import CalendarModal from './CalendarModal';
@@ -23,7 +24,7 @@ export default function CalendarPicker({
   period, date, onDateChange, onRangeChange,
   rangeStart, rangeEnd, visible = false, onOpen, onClose,
 }: Props) {
-  const today = new Date();
+  const today = useMemo(() => new Date(), []);
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
