@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig, type Config } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
+import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useColorSelection } from '../hooks/useColorSelection';
 import { t, getDisplayAccountName, getDefaultEnglishAccountName, getAccountName, getDefaultAccountIdByName, getDisplayAccountDescription, getDefaultEnglishAccountDescription, getAccountDescription } from '../i18n';
@@ -29,7 +30,10 @@ export default function ModifyAccountScreen() {
   const route = useRoute<ModifyAccountRouteProp>();
   const { accountId } = route.params;
 
-  const [account, setAccount] = useState<Account | null>(null);
+  const { data: account } = useFocusLoad(
+    () => accountRepository.getById(accountId),
+    null as Account | null,
+  );
 
   const [name, setName] = useState('');
   const [nameTouched, setNameTouched] = useState(false);
@@ -40,23 +44,18 @@ export default function ModifyAccountScreen() {
   const { selectedColor, customColor, setSelectedColor, setCustomColor, handleColorSelect } = useColorSelection();
 
   useEffect(() => {
-    let active = true;
-    accountRepository.getById(accountId).then((found) => {
-      if (!active || !found) return;
-      setAccount(found);
-      setName(getDisplayAccountName(found));
-      setSelectedIcon(found.icon);
-      setSelectedColor(found.color);
-      setDescription(getDisplayAccountDescription(found));
-      setInitialBalanceRaw(String(found.initial_balance ?? 0));
-      if (!QUICK_COLORS.includes(found.color)) {
-        setCustomColor(found.color);
-      }
-    });
-    return () => { active = false; };
-  }, [accountId, setCustomColor, setSelectedColor]);
+    if (!account) return;
+    setName(getDisplayAccountName(account));
+    setSelectedIcon(account.icon);
+    setSelectedColor(account.color);
+    setDescription(getDisplayAccountDescription(account));
+    setInitialBalanceRaw(String(account.initial_balance ?? 0));
+    if (!QUICK_COLORS.includes(account.color)) {
+      setCustomColor(account.color);
+    }
+  }, [account, setCustomColor, setSelectedColor]);
 
-  const { nameError, checkingName, clearNameError, debouncedCheck } = useNameDuplicateCheck({
+  const { nameError, checkingName, handleNameChange } = useNameDuplicateCheck({
     existsByName: (value, excludeId) => accountRepository.existsByName(value, excludeId),
     resolveDefaultEnglishName: (value) => {
       const defaultId = getDefaultAccountIdByName(value);
@@ -66,11 +65,9 @@ export default function ModifyAccountScreen() {
     excludeId: accountId,
   });
 
-  const handleNameChange = (value: string) => {
-    setName(value);
+  const handleNameChangeLocal = (value: string) => {
     setNameTouched(true);
-    clearNameError();
-    debouncedCheck(value);
+    handleNameChange(value, setName);
   };
 
   const isTotal = account ? isTotalAccount(account) : false;
@@ -151,7 +148,7 @@ export default function ModifyAccountScreen() {
             showNameField
             nameDisabled={isTotal}
             name={name}
-            onNameChange={handleNameChange}
+            onNameChange={handleNameChangeLocal}
             nameErrorDisplay={(nameError || (nameTouched && name.trim().length === 0)) ? (nameError ?? ' ') : null}
             icons={ACCOUNT_ICONS}
             iconShape={config.accountIconShape}

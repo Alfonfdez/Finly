@@ -6,6 +6,7 @@ import { HEADER_BUTTONS } from '../components/componentStyles';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import type { CommentUsage } from '../database/repositories/transactionRepo';
@@ -24,11 +25,13 @@ export default function CommentsScreen() {
 
   const [comments, setComments] = useState<CommentUsage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchActive, setSearchActive] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [selectMode, setSelectMode] = useState(false);
-  const [selectedComments, setSelectedComments] = useState<Set<string>>(new Set());
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
+  const {
+    searchActive, setSearchActive, searchText, setSearchText,
+    selectMode, selectedIds: selectedComments,
+    deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
+    toggleSelectMode, toggleSearch,
+  } = useSelectAndSearch<string>({ hasItems: comments.length > 0 });
 
   const loadComments = useCallback(() => {
     let active = true;
@@ -57,17 +60,11 @@ export default function CommentsScreen() {
           <View style={HEADER_BUTTONS}>
             <SelectToggleButton
               active={selectMode}
-              onToggle={() => {
-                if (selectMode) setSelectedComments(new Set());
-                setSelectMode(!selectMode);
-              }}
+              onToggle={toggleSelectMode}
               color={c.primary}
             />
             <TouchableOpacity
-              onPress={() => {
-                setSearchActive(!searchActive);
-                setSearchText('');
-              }}
+              onPress={toggleSearch}
               style={HEADER_BUTTONS}
             >
               <Ionicons name="search-outline" size={22} color={c.text} />
@@ -75,7 +72,7 @@ export default function CommentsScreen() {
           </View>
         ) : null,
     });
-  }, [navigation, selectMode, searchActive, comments.length, c.text, c.primary]);
+  }, [navigation, selectMode, comments.length, c.text, c.primary, toggleSelectMode, toggleSearch]);
 
   const filteredComments = useMemo(() => {
     if (!searchText.trim()) return comments;
@@ -83,20 +80,10 @@ export default function CommentsScreen() {
     return comments.filter(c => c.description.toLowerCase().includes(term));
   }, [comments, searchText]);
 
-  const toggleItem = (description: string) => {
-    setSelectedComments((prev) => {
-      const next = new Set(prev);
-      if (next.has(description)) next.delete(description);
-      else next.add(description);
-      return next;
-    });
-  };
-
   const handleBulkDelete = async () => {
     setDeleteModalVisible(false);
     await transactionRepository.deleteComments([...selectedComments]);
-    setSelectedComments(new Set());
-    setSelectMode(false);
+    exitSelectMode();
     loadComments();
   };
 
@@ -175,10 +162,7 @@ export default function CommentsScreen() {
           deleteLabel={labels.comments_bulk_delete(selectedComments.size)}
           cancelLabel={labels.comments_delete_confirm_cancel}
           onDelete={() => setDeleteModalVisible(true)}
-          onCancel={() => {
-            setSelectedComments(new Set());
-            setSelectMode(false);
-          }}
+          onCancel={exitSelectMode}
         />
       )}
 

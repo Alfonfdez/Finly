@@ -7,6 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
 import { TRANSACTION_TYPES, TYPE_FILTERS, type NavigationProp, type TransactionTypeFilter } from '../constants/types';
@@ -41,11 +42,6 @@ export default function AllTransactionsScreen() {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
   const [calendarVisible, setCalendarVisible] = useState(false);
-  const [searchActive, setSearchActive] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [selectMode, setSelectMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   const periodDates = useMemo(() => resolvePeriodRange(activePeriod, selectedDate, customDate), [activePeriod, selectedDate, customDate]);
 
@@ -58,6 +54,13 @@ export default function AllTransactionsScreen() {
   useEffect(() => {
     setSelectedCategoryIds([]);
   }, [typeTab]);
+
+  const {
+    searchActive, setSearchActive, searchText, setSearchText,
+    selectMode, selectedIds,
+    deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
+    toggleSelectMode, toggleSearch,
+  } = useSelectAndSearch({ hasItems: true });
 
   const filters = useTransactionFilters({
     transactions: allTransactions,
@@ -77,17 +80,11 @@ export default function AllTransactionsScreen() {
           <View style={HEADER_BUTTONS}>
             <SelectToggleButton
               active={selectMode}
-              onToggle={() => {
-                if (selectMode) setSelectedIds(new Set());
-                setSelectMode(!selectMode);
-              }}
+              onToggle={toggleSelectMode}
               color={c.primary}
             />
             <TouchableOpacity
-              onPress={() => {
-                setSearchActive(!searchActive);
-                setSearchText('');
-              }}
+              onPress={toggleSearch}
               style={HEADER_BUTTONS}
             >
               <Ionicons name="search-outline" size={22} color={c.text} />
@@ -95,16 +92,7 @@ export default function AllTransactionsScreen() {
           </View>
         ) : null,
     });
-  }, [navigation, selectMode, searchActive, filters.sections, c.text, c.primary]);
-
-  const toggleItem = useCallback((id: number) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
+  }, [navigation, selectMode, filters.sections, c.text, c.primary, toggleSelectMode, toggleSearch]);
 
   const handleTransactionPress = useCallback((id: number) => {
     if (selectMode) { toggleItem(id); return; }
@@ -114,11 +102,10 @@ export default function AllTransactionsScreen() {
   const handleBulkDelete = useCallback(async () => {
     setDeleteModalVisible(false);
     await transactionRepository.deleteMany([...selectedIds]);
-    setSelectedIds(new Set());
-    setSelectMode(false);
+    exitSelectMode();
     const updated = await transactionRepository.list({});
     setAllTransactions(updated);
-  }, [selectedIds, setAllTransactions]);
+  }, [selectedIds, setAllTransactions, exitSelectMode]);
 
   const categoriesById = useMemo(
     () => new Map(categories.map(cat => [cat.id, cat])),
@@ -288,10 +275,7 @@ export default function AllTransactionsScreen() {
           deleteLabel={labels.transactions_bulk_delete(selectedIds.size)}
           cancelLabel={labels.cancel}
           onDelete={() => setDeleteModalVisible(true)}
-          onCancel={() => {
-            setSelectedIds(new Set());
-            setSelectMode(false);
-          }}
+          onCancel={exitSelectMode}
         />
       ) : (
         <Fab

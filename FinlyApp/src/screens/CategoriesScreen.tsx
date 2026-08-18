@@ -1,4 +1,4 @@
-import { useState, useMemo, useLayoutEffect, useCallback } from 'react';
+import { useState, useMemo, useLayoutEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,6 +6,7 @@ import { HEADER_BUTTONS } from '../components/componentStyles';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useApp } from '../context/AppContext';
 import { t, getDisplayCategoryName } from '../i18n';
 import { categoryRepository, transactionRepository } from '../database';
@@ -30,11 +31,6 @@ export default function CategoriesScreen() {
   const navigation = useNavigation<NavigationProp<'Categories'>>();
 
   const [activeType, setActiveType] = useState<TransactionType>(TRANSACTION_TYPES.expense);
-  const [searchActive, setSearchActive] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [selectMode, setSelectMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [resolutionVisible, setResolutionVisible] = useState(false);
   const [guardVisible, setGuardVisible] = useState(false);
   const [inUseCategories, setInUseCategories] = useState<BulkCategoryItem[]>([]);
@@ -46,6 +42,13 @@ export default function CategoriesScreen() {
     const filtered = categories.filter((cat) => cat.type === activeType);
     return sortCategoriesWithOthersLast(filtered);
   }, [categories, activeType]);
+
+  const {
+    searchActive, setSearchActive, searchText, setSearchText,
+    selectMode, selectedIds,
+    deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
+    toggleSelectMode, toggleSearch,
+  } = useSelectAndSearch({ hasItems: categoriesByType.length > 0 });
 
   const filteredCategories = useMemo(() => {
     if (!searchText.trim()) return categoriesByType;
@@ -62,11 +65,6 @@ export default function CategoriesScreen() {
     [categoriesByType, selectedIds]
   );
 
-  const exitSelectMode = useCallback(() => {
-    setSelectedIds(new Set());
-    setSelectMode(false);
-  }, []);
-
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () =>
@@ -74,17 +72,11 @@ export default function CategoriesScreen() {
           <View style={HEADER_BUTTONS}>
             <SelectToggleButton
               active={selectMode}
-              onToggle={() => {
-                if (selectMode) setSelectedIds(new Set());
-                setSelectMode(!selectMode);
-              }}
+              onToggle={toggleSelectMode}
               color={c.primary}
             />
             <TouchableOpacity
-              onPress={() => {
-                setSearchActive(!searchActive);
-                setSearchText('');
-              }}
+              onPress={toggleSearch}
               style={HEADER_BUTTONS}
             >
               <Ionicons name="search-outline" size={22} color={c.text} />
@@ -92,19 +84,10 @@ export default function CategoriesScreen() {
           </View>
         ) : null,
     });
-  }, [navigation, selectMode, searchActive, categoriesByType.length, c.text, c.primary]);
+  }, [navigation, selectMode, categoriesByType.length, c.text, c.primary, toggleSelectMode, toggleSearch]);
 
   const typeCount = categories.filter((cat) => cat.type === activeType).length;
   const atCategoryLimit = countAtLimit(typeCount, MAX_CATEGORIES_PER_TYPE);
-
-  const toggleItem = (id: number) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
 
   const handleDeletePress = async () => {
     if (selectedIds.size >= typeCount) {

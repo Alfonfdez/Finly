@@ -40,7 +40,7 @@ export default function CreateCategoryScreen() {
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const { selectedColor, customColor, handleColorSelect } = useColorSelection();
 
-  const { nameError, checkingName, clearNameError, debouncedCheck } = useNameDuplicateCheck({
+  const { nameError, checkingName, handleNameChange } = useNameDuplicateCheck({
     existsByName: (value, excludeId) => categoryRepository.existsByName(value, excludeId),
     resolveDefaultEnglishName: (value) => {
       const defaultId = getDefaultCategoryIdByName(value);
@@ -49,11 +49,6 @@ export default function CreateCategoryScreen() {
     duplicateErrorKey: labels.create_cat_error_name_duplicate,
   });
 
-  const handleNameChange = (value: string) => {
-    setName(value);
-    clearNameError();
-    debouncedCheck(value);
-  };
 
   const typeCount = categories.filter((category) => category.type === type).length;
   const atCategoryLimit = countAtLimit(typeCount, MAX_CATEGORIES_PER_TYPE);
@@ -99,7 +94,7 @@ export default function CreateCategoryScreen() {
             label={labels.create_cat_name}
             placeholder={labels.create_cat_name_placeholder}
             value={name}
-            onChangeText={handleNameChange}
+            onChangeText={(v) => handleNameChange(v, setName)}
             maxLength={MAX_CATEGORY_NAME_LENGTH}
             autoCapitalize="words"
             autoCorrect={false}
