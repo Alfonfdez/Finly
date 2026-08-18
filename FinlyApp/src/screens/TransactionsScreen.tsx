@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from 'react';
 import { View, Text, SectionList, StyleSheet, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
@@ -27,7 +27,7 @@ type TransactionsRouteProp = RouteProp<RootStackParamList, 'Transactions'>;
 export default function TransactionsScreen() {
   const navigation = useNavigation<NavigationProp<'Transactions'>>();
   const route = useRoute<TransactionsRouteProp>();
-  const { categories, accounts, activeAccount, accountsWithBalance, tags } = useApp();
+  const { categories, categoriesById, accounts, activeAccount, accountsWithBalance, tags } = useApp();
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -65,11 +65,6 @@ export default function TransactionsScreen() {
     navigation.navigate('TransactionDetails', { transactionId: id });
   }, [navigation]);
 
-  const categoriesById = useMemo(
-    () => new Map(categories.map(cat => [cat.id, cat])),
-    [categories]
-  );
-
   const keyExtractor = useCallback((item: Transaction) => item.id.toString(), []);
 
   const renderSectionHeader = useCallback(({ section }: { section: { date: string } }) => (
@@ -86,7 +81,7 @@ export default function TransactionsScreen() {
   ), [categoriesById, filters.tagsByTransaction, handleTransactionPress]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <ScreenShell>
       {category && (
         <View style={[styles.categoryInfo, { borderBottomColor: c.border }]}>
           <View style={styles.categoryRow}>
@@ -153,7 +148,7 @@ export default function TransactionsScreen() {
         onSelect={filters.selectAccount}
         onClose={filters.closeAccountModal}
       />
-    </SafeAreaView>
+    </ScreenShell>
   );
 }
 

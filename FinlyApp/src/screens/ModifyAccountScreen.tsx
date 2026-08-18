@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig, type Config } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
@@ -23,7 +23,7 @@ import { parseAmountValue } from '../utils/amountInput';
 type ModifyAccountRouteProp = RouteProp<RootStackParamList, 'ModifyAccount'>;
 
 export default function ModifyAccountScreen() {
-  const { activeColors: c, config, updateConfig } = useConfig();
+  const { config, updateConfig } = useConfig();
   const { accounts, refreshAccounts } = useApp();
   const labels = t();
   const navigation = useNavigation<NavigationProp<'ModifyAccount'>>();
@@ -131,9 +131,9 @@ export default function ModifyAccountScreen() {
 
   if (!account) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+      <ScreenShell>
         <EmptyState message={labels.accounts_empty} />
-      </SafeAreaView>
+      </ScreenShell>
     );
   }
 
@@ -141,7 +141,7 @@ export default function ModifyAccountScreen() {
 
   return (
     <>
-      <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+      <ScreenShell>
         <View style={styles.content}>
           <AccountForm
             nameLabel={labels.modify_account_name}
@@ -177,7 +177,7 @@ export default function ModifyAccountScreen() {
             deleteLastHint={isLastAccount ? labels.modify_account_delete_last : null}
           />
         </View>
-      </SafeAreaView>
+      </ScreenShell>
 
       <ConfirmationModal
         visible={deleteModalVisible}

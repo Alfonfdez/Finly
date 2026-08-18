@@ -1,6 +1,6 @@
 import { useState, useMemo, useLayoutEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { HEADER_BUTTONS } from '../components/componentStyles';
 import { useNavigation } from '@react-navigation/native';
@@ -44,10 +44,10 @@ export default function CategoriesScreen() {
   }, [categories, activeType]);
 
   const {
-    searchActive, setSearchActive, searchText, setSearchText,
+    searchActive, searchText, setSearchText,
     selectMode, selectedIds,
     deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
-    toggleSelectMode, toggleSearch,
+    toggleSelectMode, toggleSearch, closeSearch,
   } = useSelectAndSearch({ hasItems: categoriesByType.length > 0 });
 
   const filteredCategories = useMemo(() => {
@@ -152,7 +152,7 @@ export default function CategoriesScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <ScreenShell>
       <View style={styles.content}>
         <TabBar
           tabs={[
@@ -171,10 +171,7 @@ export default function CategoriesScreen() {
             placeholder={labels.add_cat_search}
             value={searchText}
             onChangeText={setSearchText}
-            onClose={() => {
-              setSearchActive(false);
-              setSearchText('');
-            }}
+            onClose={closeSearch}
             autoFocus
           />
         )}
@@ -257,7 +254,7 @@ export default function CategoriesScreen() {
         onConfirm={handleConfirmResolution}
         onCancel={() => setResolutionVisible(false)}
       />
-    </SafeAreaView>
+    </ScreenShell>
   );
 }
 

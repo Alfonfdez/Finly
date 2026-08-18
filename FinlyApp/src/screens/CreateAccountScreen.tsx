@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenShell from '../components/ScreenShell';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
@@ -15,7 +15,7 @@ import { parseAmountValue } from '../utils/amountInput';
 import AccountForm from '../components/AccountForm';
 
 export default function CreateAccountScreen() {
-  const { activeColors: c, config } = useConfig();
+  const { config } = useConfig();
   const { refreshAccounts } = useApp();
   const labels = t();
   const navigation = useNavigation<NavigationProp<'CreateAccount'>>();
@@ -71,7 +71,7 @@ export default function CreateAccountScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <ScreenShell>
       <View style={styles.content}>
         <AccountForm
           nameLabel={labels.create_account_name}
@@ -102,7 +102,7 @@ export default function CreateAccountScreen() {
           onSubmit={handleCreate}
         />
       </View>
-    </SafeAreaView>
+    </ScreenShell>
   );
 }
 

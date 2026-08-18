@@ -1,6 +1,6 @@
 import { useMemo, useLayoutEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { HEADER_BUTTONS } from '../components/componentStyles';
 import { useNavigation } from '@react-navigation/native';
@@ -28,10 +28,10 @@ export default function TagsScreen() {
   const { tags, refreshTags } = useApp();
 
   const {
-    searchActive, setSearchActive, searchText, setSearchText,
+    searchActive, searchText, setSearchText,
     selectMode, selectedIds,
     deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
-    toggleSelectMode, toggleSearch,
+    toggleSelectMode, toggleSearch, closeSearch,
   } = useSelectAndSearch({ hasItems: tags.length > 0 });
 
   useLayoutEffect(() => {
@@ -102,17 +102,14 @@ export default function TagsScreen() {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <ScreenShell>
       {searchActive && (
         <View style={styles.searchWrap}>
           <SearchBar
             placeholder={labels.tags_search}
             value={searchText}
             onChangeText={setSearchText}
-            onClose={() => {
-              setSearchActive(false);
-              setSearchText('');
-            }}
+            onClose={closeSearch}
             autoFocus
           />
         </View>
@@ -162,7 +159,7 @@ export default function TagsScreen() {
         onConfirm={handleBulkDelete}
         onCancel={() => setDeleteModalVisible(false)}
       />
-    </SafeAreaView>
+    </ScreenShell>
   );
 }
 

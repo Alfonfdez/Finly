@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useLayoutEffect } from 'react';
 import { View, Text, SectionList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { HEADER_BUTTONS } from '../components/componentStyles';
 import { useNavigation } from '@react-navigation/native';
@@ -33,7 +33,7 @@ import SelectToggleButton from '../components/SelectToggleButton';
 
 export default function AllTransactionsScreen() {
   const navigation = useNavigation<NavigationProp<'AllTransactions'>>();
-  const { categories, accounts, activeAccount, accountsWithBalance, tags, activePeriod, selectedDate, customDate, changePeriod, setSelectedDate, setCustomDate } = useApp();
+  const { categories, categoriesById, accounts, activeAccount, accountsWithBalance, tags, activePeriod, selectedDate, customDate, changePeriod, setSelectedDate, setCustomDate } = useApp();
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -56,17 +56,17 @@ export default function AllTransactionsScreen() {
   }, [typeTab]);
 
   const {
-    searchActive, setSearchActive, searchText, setSearchText,
+    searchActive, searchText, setSearchText,
     selectMode, selectedIds,
     deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
-    toggleSelectMode, toggleSearch,
+    toggleSelectMode, toggleSearch, closeSearch,
   } = useSelectAndSearch({ hasItems: true });
 
   const filters = useTransactionFilters({
     transactions: allTransactions,
     accounts,
     activeAccount,
-    categories,
+    categoriesById,
     searchTerm: searchText,
     typeTab,
     selectedCategoryIds,
@@ -106,11 +106,6 @@ export default function AllTransactionsScreen() {
     const updated = await transactionRepository.list({});
     setAllTransactions(updated);
   }, [selectedIds, setAllTransactions, exitSelectMode]);
-
-  const categoriesById = useMemo(
-    () => new Map(categories.map(cat => [cat.id, cat])),
-    [categories]
-  );
 
   const keyExtractor = useCallback((item: Transaction) => item.id.toString(), []);
 
@@ -154,7 +149,7 @@ export default function AllTransactionsScreen() {
   }, [setCustomDate]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <ScreenShell>
       <TabBar
         tabs={[
           { key: TYPE_FILTERS.all, label: labels.tab_all },
@@ -171,10 +166,7 @@ export default function AllTransactionsScreen() {
             placeholder={labels.transactions_search}
             value={searchText}
             onChangeText={setSearchText}
-            onClose={() => {
-              setSearchActive(false);
-              setSearchText('');
-            }}
+            onClose={closeSearch}
             autoFocus
           />
         </View>
@@ -293,7 +285,7 @@ export default function AllTransactionsScreen() {
         onConfirm={handleBulkDelete}
         onCancel={() => setDeleteModalVisible(false)}
       />
-    </SafeAreaView>
+    </ScreenShell>
   );
 }
 

@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useLayoutEffect } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -139,7 +139,7 @@ export default function AccountsScreen() {
   ), [labels.filter_no_results]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <ScreenShell>
       <View style={[styles.totalSection, { backgroundColor: c.surface, borderBottomColor: c.border }]}>
         <Text style={[styles.totalLabel, { color: c.textSecondary, fontSize: fs(14) }]}>
           {labels.accounts_total}:
@@ -190,7 +190,7 @@ export default function AccountsScreen() {
         onPress={() => navigation.navigate('CreateAccount')}
         accessibilityLabel="+"
       />
-    </SafeAreaView>
+    </ScreenShell>
   );
 }
 
