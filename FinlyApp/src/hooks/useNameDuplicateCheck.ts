@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
-import { useUniqueNameCheck } from './useUniqueNameCheck';
+import { useDebouncedCallback } from './useDebouncedCallback';
+import { DEBOUNCE_MS } from '../constants/types';
 
 interface UseNameDuplicateCheckOptions {
   existsByName: (name: string, excludeId?: number) => Promise<boolean>;
@@ -41,7 +42,7 @@ export function useNameDuplicateCheck(options: UseNameDuplicateCheckOptions) {
     }
   }, []);
 
-  const scheduleCheck = useUniqueNameCheck(checkNameDuplicate);
+  const scheduleCheck = useDebouncedCallback(checkNameDuplicate, DEBOUNCE_MS);
 
   const debouncedCheck = useCallback((value: string) => {
     setCheckingName(true);
@@ -50,11 +51,19 @@ export function useNameDuplicateCheck(options: UseNameDuplicateCheckOptions) {
 
   const clearNameError = useCallback(() => setNameError(null), []);
 
+  const handleNameChange = useCallback((value: string, setName: (v: string) => void) => {
+    setName(value);
+    setNameError(null);
+    setCheckingName(true);
+    scheduleCheck(value);
+  }, [scheduleCheck]);
+
   return {
     nameError,
     checkingName,
     clearNameError,
     checkNameDuplicate,
     debouncedCheck,
+    handleNameChange,
   };
 }

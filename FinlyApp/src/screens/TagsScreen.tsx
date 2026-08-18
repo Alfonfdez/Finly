@@ -1,4 +1,4 @@
-import { useState, useMemo, useLayoutEffect } from 'react';
+import { useMemo, useLayoutEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,6 +6,7 @@ import { HEADER_BUTTONS } from '../components/componentStyles';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
@@ -26,11 +27,12 @@ export default function TagsScreen() {
   const navigation = useNavigation<NavigationProp<'Tags'>>();
   const { tags, refreshTags } = useApp();
 
-  const [searchActive, setSearchActive] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [selectMode, setSelectMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const {
+    searchActive, setSearchActive, searchText, setSearchText,
+    selectMode, selectedIds,
+    deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
+    toggleSelectMode, toggleSearch,
+  } = useSelectAndSearch({ hasItems: tags.length > 0 });
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -39,17 +41,11 @@ export default function TagsScreen() {
           <View style={HEADER_BUTTONS}>
             <SelectToggleButton
               active={selectMode}
-              onToggle={() => {
-                if (selectMode) setSelectedIds(new Set());
-                setSelectMode(!selectMode);
-              }}
+              onToggle={toggleSelectMode}
               color={c.primary}
             />
             <TouchableOpacity
-              onPress={() => {
-                setSearchActive(!searchActive);
-                setSearchText('');
-              }}
+              onPress={toggleSearch}
               style={HEADER_BUTTONS}
             >
               <Ionicons name="search-outline" size={22} color={c.text} />
@@ -57,7 +53,7 @@ export default function TagsScreen() {
           </View>
         ) : null,
     });
-  }, [navigation, selectMode, searchActive, tags.length, c.text, c.primary]);
+  }, [navigation, selectMode, tags.length, c.text, c.primary, toggleSelectMode, toggleSearch]);
 
   const filteredTags = useMemo(() => {
     if (!searchText.trim()) return tags;
@@ -67,20 +63,10 @@ export default function TagsScreen() {
 
   const atTagLimit = countAtLimit(tags.length, MAX_TAGS);
 
-  const toggleItem = (id: number) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
   const handleBulkDelete = async () => {
     setDeleteModalVisible(false);
     await tagRepository.deleteMany([...selectedIds]);
-    setSelectedIds(new Set());
-    setSelectMode(false);
+    exitSelectMode();
     await refreshTags();
   };
 
@@ -152,10 +138,7 @@ export default function TagsScreen() {
           deleteLabel={labels.tags_bulk_delete(selectedIds.size)}
           cancelLabel={labels.modify_tag_delete_confirm_cancel}
           onDelete={() => setDeleteModalVisible(true)}
-          onCancel={() => {
-            setSelectedIds(new Set());
-            setSelectMode(false);
-          }}
+          onCancel={exitSelectMode}
         />
       ) : atTagLimit ? (
         <View style={styles.limitWrap}>

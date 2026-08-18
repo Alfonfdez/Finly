@@ -23,17 +23,11 @@ export default function CreateTagScreen() {
 
   const [name, setName] = useState('');
 
-  const { nameError, checkingName, clearNameError, debouncedCheck } = useNameDuplicateCheck({
+  const { nameError, checkingName, handleNameChange } = useNameDuplicateCheck({
     existsByName: (value, excludeId) => tagRepository.existsByName(USER_ID, value, excludeId),
     resolveDefaultEnglishName: () => null,
     duplicateErrorKey: labels.create_tag_error_duplicate,
   });
-
-  const handleNameChange = (text: string) => {
-    setName(text);
-    clearNameError();
-    debouncedCheck(text);
-  };
 
   const handleCreate = async () => {
     Keyboard.dismiss();
@@ -55,7 +49,7 @@ export default function CreateTagScreen() {
         <LabeledTextField
           placeholder={labels.create_tag_name_placeholder}
           value={name}
-          onChangeText={handleNameChange}
+          onChangeText={(v) => handleNameChange(v, setName)}
           autoFocus
           maxLength={MAX_TAG_NAME_LENGTH}
           returnKeyType="done"

@@ -62,7 +62,7 @@ export default function ModifyCategoryScreen() {
     }
   }, [category, setCustomColor, setSelectedColor]);
 
-  const { nameError, checkingName, clearNameError, debouncedCheck } = useNameDuplicateCheck({
+  const { nameError, checkingName, handleNameChange } = useNameDuplicateCheck({
     existsByName: (value, excludeId) => categoryRepository.existsByName(value, excludeId),
     resolveDefaultEnglishName: (value) => {
       const defaultId = getDefaultCategoryIdByName(value);
@@ -72,11 +72,9 @@ export default function ModifyCategoryScreen() {
     excludeId: categoryId,
   });
 
-  const handleNameChange = (value: string) => {
+  const handleNameChangeLocal = (value: string) => {
     userEditedRef.current = true;
-    setName(value);
-    clearNameError();
-    debouncedCheck(value);
+    handleNameChange(value, setName);
   };
 
   const validationError = name.trim().length === 0 ? labels.create_cat_error_name_empty : nameError;
@@ -190,7 +188,7 @@ export default function ModifyCategoryScreen() {
                 placeholder={labels.create_cat_name_placeholder}
                 placeholderTextColor={c.textSecondary}
                 value={name}
-                onChangeText={handleNameChange}
+                onChangeText={handleNameChangeLocal}
                 maxLength={MAX_CATEGORY_NAME_LENGTH}
                 autoCapitalize="words"
                 autoCorrect={false}

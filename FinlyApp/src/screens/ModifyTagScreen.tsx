@@ -35,7 +35,7 @@ export default function ModifyTagScreen() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const userEditedRef = useRef(false);
 
-  const { nameError, checkingName, clearNameError, debouncedCheck } = useNameDuplicateCheck({
+  const { nameError, checkingName, clearNameError, handleNameChange } = useNameDuplicateCheck({
     existsByName: (value, excludeId) => tagRepository.existsByName(USER_ID, value, excludeId),
     resolveDefaultEnglishName: () => null,
     duplicateErrorKey: labels.create_tag_error_duplicate,
@@ -49,11 +49,9 @@ export default function ModifyTagScreen() {
     }
   }, [tag, clearNameError]);
 
-  const handleNameChange = (text: string) => {
+  const handleNameChangeLocal = (text: string) => {
     userEditedRef.current = true;
-    setName(text);
-    clearNameError();
-    debouncedCheck(text);
+    handleNameChange(text, setName);
   };
 
   const handleSave = async () => {
@@ -81,7 +79,7 @@ export default function ModifyTagScreen() {
         <LabeledTextField
           placeholder={labels.create_tag_name_placeholder}
           value={name}
-          onChangeText={handleNameChange}
+          onChangeText={handleNameChangeLocal}
           maxLength={MAX_TAG_NAME_LENGTH}
           returnKeyType="done"
           error={nameError}

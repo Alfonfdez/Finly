@@ -26,7 +26,7 @@ export default function CreateAccountScreen() {
   const [initialBalanceRaw, setInitialBalanceRaw] = useState('');
   const { selectedColor, customColor, handleColorSelect } = useColorSelection();
 
-  const { nameError, checkingName, clearNameError, debouncedCheck } = useNameDuplicateCheck({
+  const { nameError, checkingName, handleNameChange } = useNameDuplicateCheck({
     existsByName: (value, excludeId) => accountRepository.existsByName(value, excludeId),
     resolveDefaultEnglishName: (value) => {
       const defaultId = getDefaultAccountIdByName(value);
@@ -34,12 +34,6 @@ export default function CreateAccountScreen() {
     },
     duplicateErrorKey: labels.create_account_error_duplicate,
   });
-
-  const handleNameChange = (value: string) => {
-    setName(value);
-    clearNameError();
-    debouncedCheck(value);
-  };
 
   const initialBalanceError = initialBalanceRaw.length > 0 && parseAmountValue(initialBalanceRaw) === null;
 
@@ -83,7 +77,7 @@ export default function CreateAccountScreen() {
           nameLabel={labels.create_account_name}
           showNameField
           name={name}
-          onNameChange={handleNameChange}
+          onNameChange={(v) => handleNameChange(v, setName)}
           nameErrorDisplay={nameError}
           icons={ACCOUNT_ICONS}
           iconShape={config.accountIconShape}
