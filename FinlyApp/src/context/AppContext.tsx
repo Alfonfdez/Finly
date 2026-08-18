@@ -3,6 +3,7 @@ import type { Account, Category, Transaction, Tag } from '../database/types';
 import { PERIODS, TRANSACTION_TYPES, type Period, type TransactionType, type CategoryWithTotal, DATE_MIN, DATE_MAX, USER_ID } from '../constants/types';
 import { accountRepository as accountRepo, categoryRepository as categoryRepo, transactionRepository as transactionRepo, tagRepository as tagRepo } from '../database';
 import { isTotalAccount, UNTAGGED_ID } from '../database/helpers';
+import { toggleTagInArray } from '../utils/tagFilter';
 import { useConfig } from './ConfigContext';
 import { formatDateForDB, resolvePeriodRange } from '../utils/formatters';
 
@@ -17,6 +18,7 @@ interface AppState {
   transactions: Transaction[];
   tags: Tag[];
   loading: boolean;
+  categoriesById: Map<number, Category>;
 }
 
 interface AppContextType extends AppState {
@@ -93,6 +95,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [activeTagIds, setActiveTagIds] = useState<number[]>([]);
   const [tagsByTransaction, setTagsByTransaction] = useState<Map<number, number[]>>(new Map());
   const [transactionsVersion, setTransactionsVersion] = useState(0);
+
+  const categoriesById = useMemo(
+    () => new Map(categories.map(cat => [cat.id, cat])),
+    [categories]
+  );
 
   const applyHomeDefaults = useCallback((accountsData: Account[]) => {
     if (accountsData.length > 0) {
@@ -305,18 +312,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [applyHomeDefaults]);
 
   const toggleTagId = useCallback((id: number) => {
-    setActiveTagIds(prev => {
-      if (id === UNTAGGED_ID) {
-        return prev.includes(UNTAGGED_ID) ? [] : [UNTAGGED_ID];
-      }
-      if (prev.includes(UNTAGGED_ID)) {
-        return [id];
-      }
-      if (prev.includes(id)) {
-        return prev.filter(i => i !== id);
-      }
-      return [...prev, id];
-    });
+    setActiveTagIds(prev => toggleTagInArray(prev, id));
   }, []);
 
   const clearTagFilter = useCallback(() => {
@@ -355,9 +351,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     toggleTagId,
     clearTagFilter,
     tagsByTransaction,
+    categoriesById,
   }), [
     activeAccount, activeType, activePeriod, selectedDate, customDate,
-    accounts, categories, transactions, tags, loading,
+    accounts, categories, transactions, tags, loading, categoriesById,
     filteredTransactions, activeCategories, accountsWithBalance,
     totalIncome, totalExpenses, totalIncomeAll, totalExpensesAll,
     refresh, refreshAccounts, refreshCategories, refreshTags, resetAll,

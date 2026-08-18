@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { View, StyleSheet, Keyboard } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -74,7 +74,7 @@ export default function ModifyTagScreen() {
   const isDisabled = isEmpty || !!nameError || checkingName;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <ScreenShell>
       <View style={styles.content}>
         <LabeledTextField
           placeholder={labels.create_tag_name_placeholder}
@@ -120,7 +120,7 @@ export default function ModifyTagScreen() {
         }}
         onCancel={() => setDeleteModalVisible(false)}
       />
-    </SafeAreaView>
+    </ScreenShell>
   );
 }
 

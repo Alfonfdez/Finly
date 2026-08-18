@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Keyboard } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -56,7 +56,7 @@ export default function ModifyCommentScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <ScreenShell>
       <View style={styles.content}>
         <LabeledTextField
           label={labels.add_comment}
@@ -105,7 +105,7 @@ export default function ModifyCommentScreen() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteModalVisible(false)}
       />
-    </SafeAreaView>
+    </ScreenShell>
   );
 }
 

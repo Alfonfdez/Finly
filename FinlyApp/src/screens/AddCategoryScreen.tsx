@@ -1,6 +1,6 @@
 import { useState, useMemo, useLayoutEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -71,7 +71,7 @@ export default function AddCategoryScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <ScreenShell>
       <View style={styles.content}>
         {searchActive && (
           <SearchBar
@@ -107,7 +107,7 @@ export default function AddCategoryScreen() {
           </ScrollView>
         )}
       </View>
-    </SafeAreaView>
+    </ScreenShell>
   );
 }
 

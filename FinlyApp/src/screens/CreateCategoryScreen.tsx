@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
@@ -87,7 +87,7 @@ export default function CreateCategoryScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <ScreenShell>
       <View style={styles.content}>
         <FormScrollView>
           <LabeledTextField
@@ -149,7 +149,7 @@ export default function CreateCategoryScreen() {
           <KeyboardSpacer />
         </FormScrollView>
       </View>
-    </SafeAreaView>
+    </ScreenShell>
   );
 }
 

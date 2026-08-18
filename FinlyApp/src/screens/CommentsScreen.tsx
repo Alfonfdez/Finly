@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useLayoutEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { HEADER_BUTTONS } from '../components/componentStyles';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -27,10 +27,10 @@ export default function CommentsScreen() {
   const [loading, setLoading] = useState(true);
 
   const {
-    searchActive, setSearchActive, searchText, setSearchText,
+    searchActive, searchText, setSearchText,
     selectMode, selectedIds: selectedComments,
     deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
-    toggleSelectMode, toggleSearch,
+    toggleSelectMode, toggleSearch, closeSearch,
   } = useSelectAndSearch<string>({ hasItems: comments.length > 0 });
 
   const loadComments = useCallback(() => {
@@ -124,7 +124,7 @@ export default function CommentsScreen() {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <ScreenShell>
       <View style={styles.content}>
         {searchActive && (
           <View style={styles.searchWrap}>
@@ -132,10 +132,7 @@ export default function CommentsScreen() {
               placeholder={labels.comments_search_placeholder}
               value={searchText}
               onChangeText={setSearchText}
-              onClose={() => {
-                setSearchActive(false);
-                setSearchText('');
-              }}
+              onClose={closeSearch}
               autoFocus
             />
           </View>
@@ -175,7 +172,7 @@ export default function CommentsScreen() {
         onConfirm={handleBulkDelete}
         onCancel={() => setDeleteModalVisible(false)}
       />
-    </SafeAreaView>
+    </ScreenShell>
   );
 }
 

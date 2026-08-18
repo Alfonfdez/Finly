@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
@@ -108,11 +108,11 @@ export default function TransactionDetailsScreen() {
 
   if (!transaction) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+      <ScreenShell>
         <View style={styles.content}>
           <EmptyState message={labels.transactions_empty} />
         </View>
-      </SafeAreaView>
+      </ScreenShell>
     );
   }
 
@@ -121,7 +121,7 @@ export default function TransactionDetailsScreen() {
   const catName = category ? getDisplayCategoryName(category) : '';
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <ScreenShell>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.dataSection}>
           <DataRow label={labels.details_amount} c={c} fs={fs}>
@@ -254,7 +254,7 @@ export default function TransactionDetailsScreen() {
           )}
         </View>
       </Modal>
-    </SafeAreaView>
+    </ScreenShell>
   );
 }
 

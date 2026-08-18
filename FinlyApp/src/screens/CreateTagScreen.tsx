@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, StyleSheet, Keyboard } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenShell from '../components/ScreenShell';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -44,7 +44,7 @@ export default function CreateTagScreen() {
   const isDisabled = isEmpty || !!nameError || checkingName || atTagLimit;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <ScreenShell>
       <View style={styles.content}>
         <LabeledTextField
           placeholder={labels.create_tag_name_placeholder}
@@ -76,7 +76,7 @@ export default function CreateTagScreen() {
           style={styles.button}
         />
       </View>
-    </SafeAreaView>
+    </ScreenShell>
   );
 }
 

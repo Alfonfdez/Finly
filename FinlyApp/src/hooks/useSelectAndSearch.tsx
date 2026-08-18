@@ -37,9 +37,13 @@ export function useSelectAndSearch<T extends number | string = number>({
     setSearchText('');
   }, []);
 
+  const closeSearch = useCallback(() => {
+    setSearchActive(false);
+    setSearchText('');
+  }, []);
+
   return {
     searchActive,
-    setSearchActive,
     searchText,
     setSearchText,
     selectMode,
@@ -52,6 +56,7 @@ export function useSelectAndSearch<T extends number | string = number>({
     exitSelectMode,
     toggleSelectMode,
     toggleSearch,
+    closeSearch,
     hasItems,
   };
 }

@@ -6,12 +6,13 @@ import { isTotalAccount, UNTAGGED_ID } from '../database/helpers';
 import { formatDateForDB, parseDbDate } from '../utils/formatters';
 import { buildTagsByTransactionMap, type TagsByTransaction } from '../utils/transactionTags';
 import { matchesTransactionSearch } from '../utils/transactionSearch';
+import { toggleTagInArray } from '../utils/tagFilter';
 
 interface UseTransactionFiltersOptions {
   transactions: Transaction[];
   accounts: Account[];
   activeAccount: Account | null;
-  categories?: Category[];
+  categoriesById?: Map<number, Category>;
   searchTerm?: string;
   initialTagIds?: number[];
   typeTab?: TransactionTypeFilter;
@@ -23,7 +24,7 @@ export function useTransactionFilters({
   transactions,
   accounts,
   activeAccount,
-  categories = [],
+  categoriesById = new Map(),
   searchTerm = '',
   initialTagIds = [],
   typeTab,
@@ -70,18 +71,7 @@ export function useTransactionFilters({
   }, [transactions]);
 
   const handleToggleTag = useCallback((id: number) => {
-    setLocalTagIds(prev => {
-      if (id === UNTAGGED_ID) {
-        return prev.includes(UNTAGGED_ID) ? [] : [UNTAGGED_ID];
-      }
-      if (prev.includes(UNTAGGED_ID)) {
-        return [id];
-      }
-      if (prev.includes(id)) {
-        return prev.filter(i => i !== id);
-      }
-      return [...prev, id];
-    });
+    setLocalTagIds(prev => toggleTagInArray(prev, id));
   }, []);
 
   const handleClearTagFilter = useCallback(() => {
@@ -120,7 +110,6 @@ export function useTransactionFilters({
     }
 
     if (searchTerm.trim()) {
-      const categoriesById = new Map(categories.map(cat => [cat.id, cat]));
       const accountsById = new Map(accounts.map(acc => [acc.id, acc]));
       list = list.filter(tx =>
         matchesTransactionSearch(
@@ -144,7 +133,7 @@ export function useTransactionFilters({
       return sortDirection === SORT_DIRECTIONS.desc ? -diff : diff;
     });
     return sorted;
-  }, [transactions, selectedAccountId, isTotal, typeTab, selectedCategoryIds, periodDates, sortBy, sortDirection, localTagIds, tagsByTransaction, searchTerm, categories, accounts]);
+  }, [transactions, selectedAccountId, isTotal, typeTab, selectedCategoryIds, periodDates, sortBy, sortDirection, localTagIds, tagsByTransaction, searchTerm, categoriesById, accounts]);
 
   const sections = useMemo(() => {
     const grouped = new Map<string, Transaction[]>();

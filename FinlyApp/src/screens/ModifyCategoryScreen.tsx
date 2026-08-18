@@ -3,7 +3,7 @@ import {
   View, Text, TextInput,
   StyleSheet,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
@@ -149,18 +149,18 @@ export default function ModifyCategoryScreen() {
 
   if (!category) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+      <ScreenShell>
         <View style={[styles.content, { justifyContent: 'center', alignItems: 'center' }]}>
           <Text style={{ color: c.textSecondary, fontSize: fs(16) }}>
             {labels.add_cat_no_results}
           </Text>
         </View>
-      </SafeAreaView>
+      </ScreenShell>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <ScreenShell>
       <View style={styles.content}>
         <FormScrollView>
           <View style={styles.nameRow}>
@@ -261,7 +261,7 @@ export default function ModifyCategoryScreen() {
         onConfirm={handleSelectTarget}
         onCancel={() => setSelectModalVisible(false)}
       />
-    </SafeAreaView>
+    </ScreenShell>
   );
 }
 
