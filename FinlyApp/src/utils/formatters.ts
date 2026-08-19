@@ -161,6 +161,15 @@ export function formatDateForDB(date: Date): string {
   return `${y}-${m}-${d} ${h}:${min}:${s}`;
 }
 
+export function formatDateTimeShort(date: Date, shortMonths: string[]): string {
+  const h = String(date.getHours()).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
+  const day = date.getDate();
+  const month = shortMonths[date.getMonth()];
+  const year = date.getFullYear();
+  return `${h}:${min} - ${day} ${month.toLowerCase()} ${year}`;
+}
+
 export function parseDbDate(value: string): Date {
   const [datePart, timePart] = value.split(' ');
   const [year, month, day] = datePart.split('-').map(Number);
