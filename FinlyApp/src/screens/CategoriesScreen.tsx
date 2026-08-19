@@ -1,4 +1,4 @@
-import { useState, useMemo, useLayoutEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,7 +6,7 @@ import { HEADER_BUTTONS } from '../components/componentStyles';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
+import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useApp } from '../context/AppContext';
 import { t, getDisplayCategoryName } from '../i18n';
 import { categoryRepository, transactionRepository } from '../database';
@@ -48,7 +48,14 @@ export default function CategoriesScreen() {
     selectMode, selectedIds,
     deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
-  } = useSelectAndSearch({ hasItems: categoriesByType.length > 0 });
+  } = useSelectableScreen({ navigation, hasItems: categoriesByType.length > 0, showHeader: categoriesByType.length > 0, headerRight: () => (
+    <View style={HEADER_BUTTONS}>
+      <SelectToggleButton active={selectMode} onToggle={toggleSelectMode} color={c.primary} />
+      <TouchableOpacity onPress={toggleSearch} style={HEADER_BUTTONS}>
+        <Ionicons name="search-outline" size={22} color={c.text} />
+      </TouchableOpacity>
+    </View>
+  )});
 
   const filteredCategories = useMemo(() => {
     if (!searchText.trim()) return categoriesByType;
@@ -64,27 +71,6 @@ export default function CategoriesScreen() {
     () => categoriesByType.filter((cat) => !selectedIds.has(cat.id)),
     [categoriesByType, selectedIds]
   );
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () =>
-        categoriesByType.length > 0 ? (
-          <View style={HEADER_BUTTONS}>
-            <SelectToggleButton
-              active={selectMode}
-              onToggle={toggleSelectMode}
-              color={c.primary}
-            />
-            <TouchableOpacity
-              onPress={toggleSearch}
-              style={HEADER_BUTTONS}
-            >
-              <Ionicons name="search-outline" size={22} color={c.text} />
-            </TouchableOpacity>
-          </View>
-        ) : null,
-    });
-  }, [navigation, selectMode, categoriesByType.length, c.text, c.primary, toggleSelectMode, toggleSearch]);
 
   const typeCount = categories.filter((cat) => cat.type === activeType).length;
   const atCategoryLimit = countAtLimit(typeCount, MAX_CATEGORIES_PER_TYPE);

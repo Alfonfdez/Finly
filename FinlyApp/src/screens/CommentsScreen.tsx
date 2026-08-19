@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useLayoutEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,7 +6,7 @@ import { HEADER_BUTTONS } from '../components/componentStyles';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
+import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import type { CommentUsage } from '../database/repositories/transactionRepo';
@@ -31,7 +31,14 @@ export default function CommentsScreen() {
     selectMode, selectedIds: selectedComments,
     deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
-  } = useSelectAndSearch<string>({ hasItems: comments.length > 0 });
+  } = useSelectableScreen<string>({ navigation, hasItems: comments.length > 0, showHeader: comments.length > 0, headerRight: () => (
+    <View style={HEADER_BUTTONS}>
+      <SelectToggleButton active={selectMode} onToggle={toggleSelectMode} color={c.primary} />
+      <TouchableOpacity onPress={toggleSearch} style={HEADER_BUTTONS}>
+        <Ionicons name="search-outline" size={22} color={c.text} />
+      </TouchableOpacity>
+    </View>
+  )});
 
   const loadComments = useCallback(() => {
     let active = true;
@@ -52,27 +59,6 @@ export default function CommentsScreen() {
     const cleanup = loadComments();
     return cleanup;
   }, [loadComments]));
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () =>
-        comments.length > 0 ? (
-          <View style={HEADER_BUTTONS}>
-            <SelectToggleButton
-              active={selectMode}
-              onToggle={toggleSelectMode}
-              color={c.primary}
-            />
-            <TouchableOpacity
-              onPress={toggleSearch}
-              style={HEADER_BUTTONS}
-            >
-              <Ionicons name="search-outline" size={22} color={c.text} />
-            </TouchableOpacity>
-          </View>
-        ) : null,
-    });
-  }, [navigation, selectMode, comments.length, c.text, c.primary, toggleSelectMode, toggleSearch]);
 
   const filteredComments = useMemo(() => {
     if (!searchText.trim()) return comments;

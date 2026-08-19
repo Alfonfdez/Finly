@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useLayoutEffect } from 'react';
+import { useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,7 +6,7 @@ import { HEADER_BUTTONS } from '../components/componentStyles';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
+import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
@@ -32,28 +32,14 @@ export default function TagsScreen() {
     selectMode, selectedIds,
     deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
-  } = useSelectAndSearch({ hasItems: tags.length > 0 });
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () =>
-        tags.length > 0 ? (
-          <View style={HEADER_BUTTONS}>
-            <SelectToggleButton
-              active={selectMode}
-              onToggle={toggleSelectMode}
-              color={c.primary}
-            />
-            <TouchableOpacity
-              onPress={toggleSearch}
-              style={HEADER_BUTTONS}
-            >
-              <Ionicons name="search-outline" size={22} color={c.text} />
-            </TouchableOpacity>
-          </View>
-        ) : null,
-    });
-  }, [navigation, selectMode, tags.length, c.text, c.primary, toggleSelectMode, toggleSearch]);
+  } = useSelectableScreen({ navigation, hasItems: tags.length > 0, showHeader: tags.length > 0, headerRight: () => (
+    <View style={HEADER_BUTTONS}>
+      <SelectToggleButton active={selectMode} onToggle={toggleSelectMode} color={c.primary} />
+      <TouchableOpacity onPress={toggleSearch} style={HEADER_BUTTONS}>
+        <Ionicons name="search-outline" size={22} color={c.text} />
+      </TouchableOpacity>
+    </View>
+  )});
 
   const filteredTags = useMemo(() => {
     if (!searchText.trim()) return tags;

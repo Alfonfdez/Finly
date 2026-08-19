@@ -73,27 +73,6 @@ export default function AllTransactionsScreen() {
     periodDates,
   });
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () =>
-        filters.sections.length > 0 ? (
-          <View style={HEADER_BUTTONS}>
-            <SelectToggleButton
-              active={selectMode}
-              onToggle={toggleSelectMode}
-              color={c.primary}
-            />
-            <TouchableOpacity
-              onPress={toggleSearch}
-              style={HEADER_BUTTONS}
-            >
-              <Ionicons name="search-outline" size={22} color={c.text} />
-            </TouchableOpacity>
-          </View>
-        ) : null,
-    });
-  }, [navigation, selectMode, filters.sections, c.text, c.primary, toggleSelectMode, toggleSearch]);
-
   const handleTransactionPress = useCallback((id: number) => {
     if (selectMode) { toggleItem(id); return; }
     navigation.navigate('TransactionDetails', { transactionId: id });
@@ -147,6 +126,27 @@ export default function AllTransactionsScreen() {
     }
     return labels.filter_categories_count(selectedCategoryIds.length);
   }, [selectedCategoryIds, typeTab, categories, labels]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () =>
+        filters.sections.length > 0 ? (
+          <View style={HEADER_BUTTONS}>
+            <SelectToggleButton
+              active={selectMode}
+              onToggle={toggleSelectMode}
+              color={c.primary}
+            />
+            <TouchableOpacity
+              onPress={toggleSearch}
+              style={HEADER_BUTTONS}
+            >
+              <Ionicons name="search-outline" size={22} color={c.text} />
+            </TouchableOpacity>
+          </View>
+        ) : null,
+    });
+  }, [navigation, selectMode, filters.sections, c.text, c.primary, toggleSelectMode, toggleSearch]);
 
   const handleRangeChange = useCallback((start: Date, end: Date) => {
     setCustomDate({ start: startOfDay(start), end: endOfDay(end) });
