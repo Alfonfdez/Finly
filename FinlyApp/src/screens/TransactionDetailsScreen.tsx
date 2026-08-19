@@ -7,7 +7,7 @@ import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
-import { formatCurrency, formatDateLong, parseDbDate } from '../utils/formatters';
+import { formatCurrency, formatDateLong, formatDateTimeShort, parseDbDate } from '../utils/formatters';
 import { deletePhotoFile, parsePhotos } from '../utils/photoUtils';
 import { showErrorAlert } from '../utils/errors';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
@@ -64,24 +64,12 @@ export default function TransactionDetailsScreen() {
 
   const createdDate = useMemo(() => {
     if (!transaction) return '';
-    const d = parseDbDate(transaction.date);
-    const h = String(d.getHours()).padStart(2, '0');
-    const min = String(d.getMinutes()).padStart(2, '0');
-    const day = d.getDate();
-    const month = labels.months_short[d.getMonth()];
-    const year = d.getFullYear();
-    return `${labels.details_created}: ${h}:${min} - ${day} ${month.toLowerCase()} ${year}`;
+    return `${labels.details_created}: ${formatDateTimeShort(parseDbDate(transaction.date), labels.months_short)}`;
   }, [transaction, labels]);
 
   const updatedDate = useMemo(() => {
     if (!transaction?.updated_at) return null;
-    const d = parseDbDate(transaction.updated_at);
-    const h = String(d.getHours()).padStart(2, '0');
-    const min = String(d.getMinutes()).padStart(2, '0');
-    const day = d.getDate();
-    const month = labels.months_short[d.getMonth()];
-    const year = d.getFullYear();
-    return `${labels.details_updated}: ${h}:${min} - ${day} ${month.toLowerCase()} ${year}`;
+    return `${labels.details_updated}: ${formatDateTimeShort(parseDbDate(transaction.updated_at), labels.months_short)}`;
   }, [transaction, labels]);
 
   const loadTags = useCallback(async () => {
