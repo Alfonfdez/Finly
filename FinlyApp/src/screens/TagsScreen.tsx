@@ -1,4 +1,4 @@
-import { useMemo, useLayoutEffect } from 'react';
+import { useMemo, useCallback, useLayoutEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
@@ -70,7 +70,7 @@ export default function TagsScreen() {
     await refreshTags();
   };
 
-  const renderItem = ({ item }: { item: Tag }) => {
+  const renderItem = useCallback(({ item }: { item: Tag }) => {
     const selected = selectedIds.has(item.id);
     return (
       <TouchableOpacity
@@ -92,7 +92,7 @@ export default function TagsScreen() {
         {!selectMode && <Ionicons name="chevron-forward" size={18} color={c.textSecondary} />}
       </TouchableOpacity>
     );
-  };
+  }, [selectedIds, selectMode, toggleItem, navigation, c, fs]);
 
   const renderEmpty = () => (
     <EmptyState
@@ -164,9 +164,6 @@ export default function TagsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   list: {
     padding: 16,
     paddingBottom: 80,

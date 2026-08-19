@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import type { Account } from '../database/types';
 import { formatCurrency, HIDDEN_BALANCE } from '../utils/formatters';
@@ -40,6 +40,31 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
 
   const isBalanceHidden = config.hideBalances !== isRevealed;
 
+  const renderItem = useCallback(({ item }: { item: AccountWithBalance }) => {
+    const isSelected = item.id === tempId;
+    const radio = (
+      <View style={[styles.radio, { borderColor: isSelected ? c.primary : c.textSecondary }]}>
+        {isSelected && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
+      </View>
+    );
+    return (
+      <ListItemRow
+        title={getDisplayAccountName(item)}
+        subtitle={isBalanceHidden ? HIDDEN_BALANCE : formatCurrency(item.balance, config.currency, config.decimalSeparator)}
+        leading={radio}
+        icon={item.icon}
+        color={item.color}
+        shape={badgeShapeFor(config, 'account')}
+        badgeSize={36}
+        badgeIconSize={20}
+        badgeRadius={8}
+        divider
+        style={styles.row}
+        onPress={() => setTempId(item.id)}
+      />
+    );
+  }, [tempId, isBalanceHidden, c, config]);
+
   return (
     <ModalShell visible={visible} onClose={onClose}>
       <View style={styles.titleRow}>
@@ -49,30 +74,7 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
       <FlatList
             data={accounts}
             keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => {
-              const isSelected = item.id === tempId;
-              const radio = (
-                <View style={[styles.radio, { borderColor: isSelected ? c.primary : c.textSecondary }]}>
-                  {isSelected && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
-                </View>
-              );
-              return (
-                <ListItemRow
-                  title={getDisplayAccountName(item)}
-                  subtitle={isBalanceHidden ? HIDDEN_BALANCE : formatCurrency(item.balance, config.currency, config.decimalSeparator)}
-                  leading={radio}
-                  icon={item.icon}
-                  color={item.color}
-                  shape={badgeShapeFor(config, 'account')}
-                  badgeSize={36}
-                  badgeIconSize={20}
-                  badgeRadius={8}
-                  divider
-                  style={styles.row}
-                  onPress={() => setTempId(item.id)}
-                />
-              );
-            }}
+            renderItem={renderItem}
           />
           <View style={styles.buttons}>
             <TouchableOpacity

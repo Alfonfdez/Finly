@@ -153,7 +153,6 @@ export default function TransactionsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   categoryInfo: {
     alignItems: 'center',
     paddingVertical: 12,
