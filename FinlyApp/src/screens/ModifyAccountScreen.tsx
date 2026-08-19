@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Alert, View, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig, type Config } from '../context/ConfigContext';
@@ -18,6 +18,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import EmptyState from '../components/EmptyState';
 import AccountForm from '../components/AccountForm';
 import { getNameHintText } from '../utils/formHints';
+import { showErrorAlert } from '../utils/errors';
 import { parseAmountValue } from '../utils/amountInput';
 
 type ModifyAccountRouteProp = RouteProp<RootStackParamList, 'ModifyAccount'>;
@@ -103,7 +104,7 @@ export default function ModifyAccountScreen() {
       navigation.goBack();
     } catch (err) {
       console.error('Failed to update account:', err);
-      Alert.alert(labels.error_title, labels.error_generic);
+      showErrorAlert(labels);
     }
   };
 
@@ -127,7 +128,7 @@ export default function ModifyAccountScreen() {
       navigation.goBack();
     } catch (err) {
       console.error('Failed to delete account:', err);
-      Alert.alert(labels.error_title, labels.error_generic);
+      showErrorAlert(labels);
     }
   };
 

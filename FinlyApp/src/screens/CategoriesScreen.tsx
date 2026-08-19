@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { HEADER_BUTTONS } from '../components/componentStyles';
@@ -22,6 +22,7 @@ import type { TransferTargetId } from '../components/CategoryTransferModal';
 import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, type TransactionType, type NavigationProp } from '../constants/types';
 import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
 import { countAtLimit } from '../utils/limits';
+import { showErrorAlert } from '../utils/errors';
 
 export default function CategoriesScreen() {
   const { activeColors: c } = useConfig();
@@ -104,7 +105,7 @@ export default function CategoriesScreen() {
       await refresh();
     } catch (err) {
       console.error('Failed to delete categories:', err);
-      Alert.alert(labels.error_title, labels.error_generic);
+      showErrorAlert(labels);
     }
     exitSelectMode();
   };
@@ -134,7 +135,7 @@ export default function CategoriesScreen() {
       await refresh();
     } catch (err) {
       console.error('Failed to delete categories:', err);
-      Alert.alert(labels.error_title, labels.error_generic);
+      showErrorAlert(labels);
     }
     exitSelectMode();
   };

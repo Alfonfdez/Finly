@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -12,6 +12,7 @@ import { categoryRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, MAX_CATEGORIES_PER_TYPE, type TransactionType, USER_ID } from '../constants/types';
 import { setPendingCategory } from '../utils/pendingCategory';
 import { countAtLimit } from '../utils/limits';
+import { showErrorAlert } from '../utils/errors';
 import { getIconColorHintText } from '../utils/formHints';
 import { CATEGORY_ICONS } from '../components/IconGrid';
 import IconColorSection from '../components/IconColorSection';
@@ -83,7 +84,7 @@ export default function CreateCategoryScreen() {
       navigation.goBack();
     } catch (err) {
       console.error('Failed to create category:', err);
-      Alert.alert(labels.error_title, labels.error_generic);
+      showErrorAlert(labels);
     }
   };
 

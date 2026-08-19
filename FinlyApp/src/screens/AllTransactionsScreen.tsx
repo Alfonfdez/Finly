@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useLayoutEffect } from 'react';
-import { View, Text, SectionList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, SectionList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { HEADER_BUTTONS } from '../components/componentStyles';
@@ -14,6 +14,7 @@ import { TRANSACTION_TYPES, TYPE_FILTERS, type NavigationProp, type TransactionT
 import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatCurrency, resolvePeriodRange, endOfDay, startOfDay } from '../utils/formatters';
+import { showErrorAlert } from '../utils/errors';
 import { t } from '../i18n';
 import AccountModal from '../components/AccountModal';
 import AccountTrigger from '../components/AccountTrigger';
@@ -86,7 +87,7 @@ export default function AllTransactionsScreen() {
       const updated = await transactionRepository.list({});
       setAllTransactions(updated);
     } catch {
-      Alert.alert(labels.error_title, labels.error_generic);
+      showErrorAlert(labels);
     }
   }, [selectedIds, setAllTransactions, exitSelectMode, labels]);
 

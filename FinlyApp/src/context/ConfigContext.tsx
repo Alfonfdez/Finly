@@ -1,8 +1,9 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo, type ReactNode } from 'react';
-import { Appearance, Alert } from 'react-native';
+import { Appearance } from 'react-native';
 import { type ColorPalette, darkColors, lightColors } from '../constants/themes';
 import { configRepository } from '../database';
-import { setLanguage, t } from '../i18n';
+import { setLanguage } from '../i18n';
+import { showErrorAlert } from '../utils/errors';
 import { isWeb } from '../utils/platform';
 import { withAlpha } from '../utils/color';
 import { THEMES, type Theme } from '../constants/types';
@@ -93,8 +94,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     if (partial.language) setLanguage(partial.language);
     configRepository.save(partial).catch((error) => {
       console.error('Failed to save config:', error);
-      const labels = t();
-      Alert.alert(labels.error_title, labels.error_generic);
+      showErrorAlert();
     });
     setConfig(updated);
     if (partial.theme) setActiveColors(resolveColors(partial.theme));
