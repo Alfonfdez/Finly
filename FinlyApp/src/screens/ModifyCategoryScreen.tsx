@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import {
-  Alert, View, Text, TextInput,
+  View, Text, TextInput,
   StyleSheet,
 } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
@@ -14,6 +14,7 @@ import { t, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdB
 import { categoryRepository, transactionRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
+import { showErrorAlert } from '../utils/errors';
 import { CATEGORY_ICONS } from '../components/IconGrid';
 import { QUICK_COLORS } from '../constants/colors';
 import IconBadge from '../components/IconBadge';
@@ -100,7 +101,7 @@ export default function ModifyCategoryScreen() {
       navigation.goBack();
     } catch (err) {
       console.error('Failed to update category:', err);
-      Alert.alert(labels.error_title, labels.error_generic);
+      showErrorAlert(labels);
     }
   };
 
@@ -132,7 +133,7 @@ export default function ModifyCategoryScreen() {
       navigation.goBack();
     } catch (err) {
       console.error('Failed to delete category:', err);
-      Alert.alert(labels.error_title, labels.error_generic);
+      showErrorAlert(labels);
     }
   };
 
@@ -146,7 +147,7 @@ export default function ModifyCategoryScreen() {
       navigation.goBack();
     } catch (err) {
       console.error('Failed to delete category:', err);
-      Alert.alert(labels.error_title, labels.error_generic);
+      showErrorAlert(labels);
     }
   };
 

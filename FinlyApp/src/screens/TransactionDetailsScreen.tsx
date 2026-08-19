@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Alert, View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Image } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
@@ -9,6 +9,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { formatCurrency, formatDateLong, parseDbDate } from '../utils/formatters';
 import { deletePhotoFile, parsePhotos } from '../utils/photoUtils';
+import { showErrorAlert } from '../utils/errors';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
 import { transactionRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES } from '../constants/types';
@@ -102,7 +103,7 @@ export default function TransactionDetailsScreen() {
       navigation.goBack();
     } catch (err) {
       console.error('Failed to delete transaction:', err);
-      Alert.alert(labels.error_title, labels.error_generic);
+      showErrorAlert(labels);
       setDeleting(false);
       setDeleteModalVisible(false);
     }

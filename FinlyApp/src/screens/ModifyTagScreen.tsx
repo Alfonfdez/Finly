@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { View, StyleSheet, Keyboard, Alert } from 'react-native';
+import { View, StyleSheet, Keyboard } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -13,6 +13,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormError from '../components/form/FormError';
+import { showErrorAlert } from '../utils/errors';
 import DeleteButton from '../components/form/DeleteButton';
 
 type ModifyTagRouteProp = RouteProp<RootStackParamList, 'ModifyTag'>;
@@ -64,7 +65,7 @@ export default function ModifyTagScreen() {
       await refreshTags();
       navigation.goBack();
     } catch {
-      Alert.alert(labels.error_title, labels.error_generic);
+      showErrorAlert(labels);
     }
   };
 
@@ -74,7 +75,7 @@ export default function ModifyTagScreen() {
       await refreshTags();
       navigation.goBack();
     } catch {
-      Alert.alert(labels.error_title, labels.error_generic);
+      showErrorAlert(labels);
     }
   };
 

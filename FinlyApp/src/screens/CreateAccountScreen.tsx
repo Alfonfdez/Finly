@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, View, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -12,6 +12,7 @@ import { type NavigationProp, USER_ID } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
 import { getIconColorHintText } from '../utils/formHints';
 import { parseAmountValue } from '../utils/amountInput';
+import { showErrorAlert } from '../utils/errors';
 import AccountForm from '../components/AccountForm';
 
 export default function CreateAccountScreen() {
@@ -67,7 +68,7 @@ export default function CreateAccountScreen() {
       navigation.goBack();
     } catch (err) {
       console.error('Failed to create account:', err);
-      Alert.alert(labels.error_title, labels.error_generic);
+      showErrorAlert(labels);
     }
   };
 
