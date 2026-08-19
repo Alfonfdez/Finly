@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
@@ -14,11 +14,12 @@ import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
 import { transactionRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
-import { WHITE } from '../constants/themes';
 import ConfirmationModal from '../components/ConfirmationModal';
 import EmptyState from '../components/EmptyState';
 import IconBadge from '../components/IconBadge';
 import TagChip from '../components/TagChip';
+import DataRow from '../components/DataRow';
+import PhotoViewer from '../components/PhotoViewer';
 
 type DetailsRouteProp = RouteProp<RootStackParamList, 'TransactionDetails'>;
 
@@ -247,39 +248,17 @@ export default function TransactionDetailsScreen() {
         onCancel={() => setDeleteModalVisible(false)}
       />
 
-      <Modal visible={photoViewerVisible} transparent animationType="fade" onRequestClose={() => setPhotoViewerVisible(false)}>
-        <View style={styles.viewerOverlay}>
-          <TouchableOpacity style={styles.viewerClose} onPress={() => setPhotoViewerVisible(false)}>
-            <Ionicons name="close" size={28} color={WHITE} />
-          </TouchableOpacity>
-          {parsedPhotos.length > 0 && (
-            <Image source={{ uri: parsedPhotos[selectedPhotoIndex] || parsedPhotos[0] }} resizeMode="contain" style={styles.viewerImage} />
-          )}
-        </View>
-      </Modal>
+      <PhotoViewer
+        photos={parsedPhotos}
+        visible={photoViewerVisible}
+        selectedIndex={selectedPhotoIndex}
+        onClose={() => setPhotoViewerVisible(false)}
+      />
     </ScreenShell>
   );
 }
 
-function DataRow({
-  label, children, c, fs, noBorder,
-}: {
-  label: string;
-  children: React.ReactNode;
-  c: ReturnType<typeof useConfig>['activeColors'];
-  fs: (s: number) => number;
-  noBorder?: boolean;
-}) {
-  return (
-    <View style={[styles.dataRow, noBorder ? null : { borderBottomWidth: 1, borderBottomColor: c.border }]}>
-      <Text style={[styles.dataLabel, { color: c.textSecondary, fontSize: fs(13) }]}>{label}</Text>
-      {children}
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   content: { flex: 1 },
   scrollContent: { paddingBottom: 32 },
   dataSection: {
@@ -288,14 +267,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
   },
-  dataRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-  dataLabel: { fontWeight: '500', flex: 1 },
   dataValue: { fontWeight: '600', flex: 2, textAlign: 'right' },
   nameValue: { fontWeight: '600' },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 2, justifyContent: 'flex-end' },
@@ -330,23 +301,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 8,
-  },
-  viewerOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.95)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  viewerClose: {
-    position: 'absolute',
-    top: 48,
-    right: 24,
-    zIndex: 1,
-    padding: 8,
-  },
-  viewerImage: {
-    width: '90%',
-    height: '80%',
   },
   timestamps: {
     marginHorizontal: 16,
