@@ -294,7 +294,6 @@ export default function AllTransactionsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   searchWrap: {
     paddingHorizontal: 16,
     paddingTop: 16,

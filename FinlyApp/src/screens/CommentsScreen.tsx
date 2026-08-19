@@ -87,7 +87,7 @@ export default function CommentsScreen() {
     loadComments();
   };
 
-  const renderItem = ({ item }: { item: CommentUsage }) => {
+  const renderItem = useCallback(({ item }: { item: CommentUsage }) => {
     const selected = selectedComments.has(item.description);
     return (
       <TouchableOpacity
@@ -114,7 +114,7 @@ export default function CommentsScreen() {
         {!selectMode && <Ionicons name="chevron-forward" size={18} color={c.textSecondary} />}
       </TouchableOpacity>
     );
-  };
+  }, [selectedComments, selectMode, toggleItem, navigation, c, fs, labels]);
 
   const renderEmpty = () => (
     <EmptyState
@@ -177,9 +177,6 @@ export default function CommentsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   content: {
     flex: 1,
   },

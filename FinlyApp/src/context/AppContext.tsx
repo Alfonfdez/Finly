@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useMemo, useEffect, useCallback, type ReactNode } from 'react';
+import { Alert } from 'react-native';
 import type { Account, Category, Transaction, Tag } from '../database/types';
 import { PERIODS, TRANSACTION_TYPES, type Period, type TransactionType, type CategoryWithTotal, DATE_MIN, DATE_MAX, USER_ID } from '../constants/types';
 import { accountRepository as accountRepo, categoryRepository as categoryRepo, transactionRepository as transactionRepo, tagRepository as tagRepo } from '../database';
@@ -6,6 +7,7 @@ import { isTotalAccount, UNTAGGED_ID } from '../database/helpers';
 import { toggleTagInArray } from '../utils/tagFilter';
 import { useConfig } from './ConfigContext';
 import { formatDateForDB, resolvePeriodRange } from '../utils/formatters';
+import { t } from '../i18n';
 
 interface AppState {
   activeAccount: Account | null;
@@ -130,6 +132,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         applyHomeDefaults(accountsData);
       } catch (error) {
         console.error('Failed to load initial data:', error);
+        const labels = t();
+        Alert.alert(labels.error_title, labels.error_generic);
       } finally {
         setLoading(false);
       }
@@ -308,6 +312,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setTransactionsVersion(v => v + 1);
     } catch (error) {
       console.error('Failed to reset all data:', error);
+      const labels = t();
+      Alert.alert(labels.error_title, labels.error_generic);
     }
   }, [applyHomeDefaults]);
 

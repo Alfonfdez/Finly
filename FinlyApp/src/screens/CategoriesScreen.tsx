@@ -1,5 +1,5 @@
 import { useState, useMemo, useLayoutEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { HEADER_BUTTONS } from '../components/componentStyles';
@@ -118,6 +118,7 @@ export default function CategoriesScreen() {
       await refresh();
     } catch (err) {
       console.error('Failed to delete categories:', err);
+      Alert.alert(labels.error_title, labels.error_generic);
     }
     exitSelectMode();
   };
@@ -147,6 +148,7 @@ export default function CategoriesScreen() {
       await refresh();
     } catch (err) {
       console.error('Failed to delete categories:', err);
+      Alert.alert(labels.error_title, labels.error_generic);
     }
     exitSelectMode();
   };
