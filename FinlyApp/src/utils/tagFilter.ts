@@ -1,4 +1,4 @@
-const UNTAGGED_ID = -1;
+import { UNTAGGED_ID } from '../constants/types';
 
 export function toggleTagInArray(prev: number[], id: number): number[] {
   if (id === UNTAGGED_ID) {

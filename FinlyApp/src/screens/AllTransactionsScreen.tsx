@@ -89,7 +89,7 @@ export default function AllTransactionsScreen() {
     } catch {
       showErrorAlert(labels);
     }
-  }, [selectedIds, setAllTransactions, exitSelectMode, labels]);
+  }, [selectedIds, setAllTransactions, setDeleteModalVisible, exitSelectMode, labels]);
 
   const keyExtractor = useCallback((item: Transaction) => item.id.toString(), []);
 

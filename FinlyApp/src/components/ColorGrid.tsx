@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { WHITE, TRANSPARENT } from '../constants/themes';
 import { QUICK_COLORS } from '../constants/colors';
 import { useConfig } from '../context/ConfigContext';
+import { t } from '../i18n';
 
 interface Props {
   selectedColor: string | null;
@@ -13,6 +14,7 @@ interface Props {
 
 export default function ColorGrid({ selectedColor, customColor, onSelect, onOpenPicker }: Props) {
   const { activeColors: c } = useConfig();
+  const labels = t();
 
   return (
     <View style={styles.row}>
@@ -55,7 +57,7 @@ export default function ColorGrid({ selectedColor, customColor, onSelect, onOpen
       <TouchableOpacity
         style={[styles.circle, { backgroundColor: c.textSecondary }]}
         onPress={onOpenPicker}
-        accessibilityLabel="More colors"
+        accessibilityLabel={labels.color_grid_more}
       >
         <Ionicons name="add" size={18} color={WHITE} />
       </TouchableOpacity>

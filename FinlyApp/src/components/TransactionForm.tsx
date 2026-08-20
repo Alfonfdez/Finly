@@ -1,3 +1,4 @@
+import { useRef, useEffect, useMemo, useCallback } from 'react';
 import { Text, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, type NavigationProp } from '@react-navigation/native';
@@ -62,6 +63,28 @@ export default function TransactionForm(props: TransactionFormProps) {
     config, tags,
   } = useTransactionForm(props);
 
+  const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => { if (scrollTimer.current != null) clearTimeout(scrollTimer.current); };
+  }, []);
+
+  const tabs = useMemo(() => [
+    { key: TRANSACTION_TYPES.expense, label: labels.tab_expenses },
+    { key: TRANSACTION_TYPES.income, label: labels.tab_income },
+  ], [labels.tab_expenses, labels.tab_income]);
+
+  const handleAccountClose = useCallback(() => setModalAccountVisible(false), [setModalAccountVisible]);
+  const handleCalendarClose = useCallback(() => setModalCalendarVisible(false), [setModalCalendarVisible]);
+  const handleCalculatorAccept = useCallback((result: string) => {
+    const clean = parseAmountInput(result);
+    if (clean !== null && clean !== '') {
+      setAmountRaw(clean);
+    }
+    setCalculatorVisible(false);
+  }, [setAmountRaw, setCalculatorVisible]);
+  const handleCalculatorCancel = useCallback(() => setCalculatorVisible(false), [setCalculatorVisible]);
+
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]}>
       <KeyboardAvoidingView
@@ -70,10 +93,7 @@ export default function TransactionForm(props: TransactionFormProps) {
       >
         <ScrollView ref={scrollRef} style={[styles.container, { backgroundColor: c.background }]} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <TabBar
-          tabs={[
-            { key: TRANSACTION_TYPES.expense, label: labels.tab_expenses },
-            { key: TRANSACTION_TYPES.income, label: labels.tab_income },
-          ]}
+          tabs={tabs}
           active={type}
           onChange={setType}
         />
@@ -129,7 +149,8 @@ export default function TransactionForm(props: TransactionFormProps) {
             comment={comment}
             onChange={setComment}
             onFocus={() => {
-              setTimeout(() => {
+              if (scrollTimer.current != null) clearTimeout(scrollTimer.current);
+              scrollTimer.current = setTimeout(() => {
                 scrollRef.current?.scrollToEnd({ animated: true });
               }, 300);
             }}
@@ -176,7 +197,7 @@ export default function TransactionForm(props: TransactionFormProps) {
         accounts={selectableAccounts}
         selectedId={props.initialAccountId}
         onSelect={handleSelectAccount}
-        onClose={() => setModalAccountVisible(false)}
+        onClose={handleAccountClose}
       />
 
       <CalendarModal
@@ -184,19 +205,13 @@ export default function TransactionForm(props: TransactionFormProps) {
         period="day"
         date={day}
         onSelectDate={handleSelectDate}
-        onClose={() => setModalCalendarVisible(false)}
+        onClose={handleCalendarClose}
       />
 
       <CalculatorModal
         visible={calculatorVisible}
-        onAccept={(result) => {
-          const clean = parseAmountInput(result);
-          if (clean !== null && clean !== '') {
-            setAmountRaw(clean);
-          }
-          setCalculatorVisible(false);
-        }}
-        onCancel={() => setCalculatorVisible(false)}
+        onAccept={handleCalculatorAccept}
+        onCancel={handleCalculatorCancel}
       />
     </SafeAreaView>
   );

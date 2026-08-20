@@ -31,7 +31,7 @@ export default function CalendarPicker({
   const months = labels.months;
   const shortMonths = labels.months_short;
 
-  const dateText = () => {
+  const dateText = useMemo(() => {
     switch (period) {
       case PERIODS.day: return formatDate(date);
       case PERIODS.week: return formatWeekRange(date, shortMonths);
@@ -43,16 +43,16 @@ export default function CalendarPicker({
         return `${labels.cal_from} ${startDate.getDate()} ${shortMonths[startDate.getMonth()]} ${labels.cal_to} ${endDate.getDate()} ${shortMonths[endDate.getMonth()]} ${endDate.getFullYear()}`;
       }
     }
-  };
+  }, [period, date, shortMonths, months, today, rangeStart, rangeEnd, labels.cal_from, labels.cal_to]);
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={[styles.button, { backgroundColor: c.surface }]}
         onPress={onOpen}
-        accessibilityLabel={`${dateText()}`}
+        accessibilityLabel={dateText}
       >
-        <Text style={[styles.text, { color: c.primary, fontSize: fs(14) }]}>{dateText()}</Text>
+        <Text style={[styles.text, { color: c.primary, fontSize: fs(14) }]}>{dateText}</Text>
       </TouchableOpacity>
       <CalendarModal
         visible={visible}

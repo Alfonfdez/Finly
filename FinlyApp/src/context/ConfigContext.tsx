@@ -90,14 +90,20 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   }, [activeColors]);
 
   const updateConfig = useCallback(async (partial: Partial<Config>) => {
-    const updated = { ...configRef.current, ...partial };
+    const previous = configRef.current;
+    const updated = { ...previous, ...partial };
     if (partial.language) setLanguage(partial.language);
-    configRepository.save(partial).catch((error) => {
-      console.error('Failed to save config:', error);
-      showErrorAlert();
-    });
     setConfig(updated);
     if (partial.theme) setActiveColors(resolveColors(partial.theme));
+    try {
+      await configRepository.save(partial);
+    } catch (error) {
+      console.error('Failed to save config:', error);
+      setConfig(previous);
+      setActiveColors(resolveColors(previous.theme));
+      if (previous.language) setLanguage(previous.language);
+      showErrorAlert();
+    }
   }, []);
 
   const value = useMemo(

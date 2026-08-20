@@ -35,6 +35,7 @@ export class SqlJsDatabase implements DatabaseHandle {
   constructor(db: Database, storage: DatabaseStorage | null = null) {
     this.db = db;
     this.storage = storage;
+    this.db.exec('PRAGMA foreign_keys = ON;');
   }
 
   async execAsync(source: string): Promise<void> {

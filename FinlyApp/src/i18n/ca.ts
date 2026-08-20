@@ -255,7 +255,7 @@ export const ca: Language = {
   cat_others: 'Altres',
   cat_entertainment: 'Entreteniment',
   cat_gift: 'Regal',
-  cat_other: 'Altres',
+  cat_other: 'Altre',
   cat_restaurants: 'Restaurants',
   cat_rent: 'Lloguer',
   cat_games: 'Videojocs',
@@ -429,4 +429,7 @@ export const ca: Language = {
   home_tag_untagged: 'Sense etiqueta',
   home_tag_view_all: (n: number) => `Veure tots (${n})`,
   home_tag_show_less: 'Mostrar menys',
+
+  // Color grid
+  color_grid_more: 'Més colors',
 };

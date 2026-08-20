@@ -16,7 +16,9 @@ export function t(): Language {
   return currentLanguage;
 }
 
-// Map category IDs to i18n keys for default categories
+// Map category IDs to i18n keys for default categories.
+// IMPORTANT: These IDs must stay in sync with 002_seed.sql.
+// If you add/remove/reorder seed categories, update this map accordingly.
 const CATEGORY_I18N_KEYS: Record<number, StringKeyOf<Language>> = {
   1: 'cat_salary',
   2: 'cat_freelance',
@@ -51,13 +53,15 @@ const CATEGORY_I18N_KEYS: Record<number, StringKeyOf<Language>> = {
   31: 'cat_allowance',
 };
 
-// Map account IDs to i18n keys for default accounts
+// Map account IDs to i18n keys for default accounts.
+// IMPORTANT: Must stay in sync with 002_seed.sql.
 const ACCOUNT_I18N_KEYS: Record<number, StringKeyOf<Language>> = {
   1: 'account_my_wallet',
   2: 'account_total',
 };
 
-// Map account IDs to i18n keys for default account descriptions
+// Map account IDs to i18n keys for default account descriptions.
+// IMPORTANT: Must stay in sync with 002_seed.sql.
 const ACCOUNT_DESCRIPTION_I18N_KEYS: Record<number, StringKeyOf<Language>> = {
   1: 'account_my_wallet_description',
   2: 'account_total_description',

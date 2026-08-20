@@ -34,7 +34,7 @@ export default function SortToggle({ sortBy, direction, onToggleSort, onToggleDi
           {labels.transactions_sort_date}
         </Text>
         {sortBy === SORT_BY.date && (
-          <TouchableOpacity onPress={onToggleDirection} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <TouchableOpacity onPress={(e) => { e.stopPropagation(); onToggleDirection(); }} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Ionicons name={arrowIcon} size={14} color={c.primary} />
           </TouchableOpacity>
         )}
@@ -52,7 +52,7 @@ export default function SortToggle({ sortBy, direction, onToggleSort, onToggleDi
           {labels.transactions_sort_amount}
         </Text>
         {sortBy === SORT_BY.amount && (
-          <TouchableOpacity onPress={onToggleDirection} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <TouchableOpacity onPress={(e) => { e.stopPropagation(); onToggleDirection(); }} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Ionicons name={arrowIcon} size={14} color={c.primary} />
           </TouchableOpacity>
         )}

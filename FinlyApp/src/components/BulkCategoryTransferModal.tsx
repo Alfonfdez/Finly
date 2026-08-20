@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
@@ -43,8 +43,11 @@ export default function BulkCategoryTransferModal({
   const labels = t();
   const [pickerFor, setPickerFor] = useState<number | null>(null);
 
-  const targetById = new Map<number, Category>();
-  for (const target of targets) targetById.set(target.id, target);
+  const targetById = useMemo(() => {
+    const map = new Map<number, Category>();
+    for (const target of targets) map.set(target.id, target);
+    return map;
+  }, [targets]);
 
   const decisionLabel = (categoryId: number): string => {
     const decision = decisions[categoryId];
