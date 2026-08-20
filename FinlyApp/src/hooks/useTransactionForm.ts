@@ -92,7 +92,7 @@ export function useTransactionForm({
     let active = true;
     transactionRepository.getTagsByTransactionId(transactionId).then(ids => {
       if (active) setSelectedTags(ids);
-    });
+    }).catch(() => {});
     return () => { active = false; };
   }, [transactionId]);
 
@@ -120,7 +120,7 @@ export function useTransactionForm({
       const counts = await transactionRepository.getCategoryUsageCounts(USER_ID, type, formatDateForDB(startDate), accountId);
       if (active) setCategoryUsage(new Map(counts.map(c => [c.id, c.count])));
     };
-    loadUsage();
+    loadUsage().catch(() => {});
     return () => { active = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- categories intentionally excluded to avoid redundant loadUsage queries
   }, [type, accountId, resetTagsOnFirstFocus]));
@@ -152,10 +152,14 @@ export function useTransactionForm({
   const handleCreateTag = useCallback(async (name: string) => {
     const existing = tags.some(t => t.name.toLowerCase() === name.toLowerCase());
     if (existing) return false;
-    const created = await tagRepository.create({ user_id: USER_ID, name });
-    await refreshTags();
-    setSelectedTags(prev => prev.includes(created.id) ? prev : [...prev, created.id]);
-    return true;
+    try {
+      const created = await tagRepository.create({ user_id: USER_ID, name });
+      await refreshTags();
+      setSelectedTags(prev => prev.includes(created.id) ? prev : [...prev, created.id]);
+      return true;
+    } catch {
+      return false;
+    }
   }, [tags, refreshTags]);
 
   const handleSelectAccount = useCallback((id: number) => {

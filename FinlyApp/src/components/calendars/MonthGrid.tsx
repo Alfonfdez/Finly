@@ -35,6 +35,7 @@ export default function MonthGrid({ date, onSelect }: CalendarBaseProps) {
               style={[calendarStyles.gridItem, isFuture && { opacity: FUTURE_OPACITY }]}
               onPress={() => !isFuture && onSelect(monthDate)}
               disabled={isFuture}
+              accessibilityLabel={getMonthName(m)}
             >
               <View style={[calendarStyles.gridItemInner, { backgroundColor: c.surface }, isActive && { backgroundColor: c.primary }]}>
                 <Text style={[calendarStyles.gridItemText, { color: c.text, fontSize: fs(14) }, isActive && { color: c.background, fontWeight: '700' }, isFuture && { color: c.textSecondary }]}>

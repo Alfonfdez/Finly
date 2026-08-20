@@ -443,4 +443,10 @@ export const es: Language = {
   a11y_next_month: 'Mes siguiente',
   backup_dialog_title: 'Copia de seguridad Finly',
   a11y_add: 'Añadir',
+  a11y_toggle_on: 'Activar',
+  a11y_toggle_off: 'Desactivar',
+  a11y_select_account: 'Seleccionar cuenta',
+  a11y_confirm: 'Confirmar',
+  a11y_cancel: 'Cancelar',
+  a11y_menu: 'Abrir menú',
 };

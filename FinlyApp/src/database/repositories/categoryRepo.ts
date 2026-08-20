@@ -53,7 +53,7 @@ export const categoryRepo = {
   },
 
   async delete(id: number): Promise<void> {
-    await deleteTransactionPhotos('category_id = ?', id);
+    await deleteTransactionPhotos('category_id', id);
     await withTransaction(async (db) => {
       await db.delete(transactions).where(eq(transactions.category_id, id)).run();
       await db.delete(categories).where(eq(categories.id, id)).run();
@@ -73,8 +73,7 @@ export const categoryRepo = {
 
   async deleteMany(ids: number[]): Promise<void> {
     if (ids.length === 0) return;
-    const placeholders = ids.map(() => '?').join(', ');
-    await deleteTransactionPhotos(`category_id IN (${placeholders})`, ...ids);
+    await deleteTransactionPhotos('category_id', ...ids);
     await withTransaction(async (db) => {
       await db.delete(transactions).where(inArray(transactions.category_id, ids)).run();
       await db.delete(categories).where(inArray(categories.id, ids)).run();
@@ -97,8 +96,7 @@ export const categoryRepo = {
     if (items.length === 0) return;
     const deleteIds = items.filter((item) => item.targetId === null).map((item) => item.id);
     if (deleteIds.length > 0) {
-      const placeholders = deleteIds.map(() => '?').join(', ');
-      await deleteTransactionPhotos(`category_id IN (${placeholders})`, ...deleteIds);
+      await deleteTransactionPhotos('category_id', ...deleteIds);
     }
     await withTransaction(async (db) => {
       for (const item of items) {

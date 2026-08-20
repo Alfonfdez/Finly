@@ -13,7 +13,13 @@ export default function ToggleRow({ checked, onToggle, label }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   return (
-    <TouchableOpacity style={styles.row} onPress={onToggle}>
+    <TouchableOpacity
+      style={styles.row}
+      onPress={onToggle}
+      accessibilityRole="switch"
+      accessibilityState={{ checked }}
+      accessibilityLabel={label}
+    >
       <Text style={[styles.label, { color: c.text, fontSize: fs(14) }]}>{label}</Text>
       <Ionicons
         name={checked ? 'toggle' : 'toggle-outline'}

@@ -441,6 +441,12 @@ export const en = {
   a11y_next_month: 'Next month',
   backup_dialog_title: 'Finly backup',
   a11y_add: 'Add',
+  a11y_toggle_on: 'Toggle on',
+  a11y_toggle_off: 'Toggle off',
+  a11y_select_account: 'Select account',
+  a11y_confirm: 'Confirm',
+  a11y_cancel: 'Cancel',
+  a11y_menu: 'Open menu',
 };
 
 export type Language = typeof en;

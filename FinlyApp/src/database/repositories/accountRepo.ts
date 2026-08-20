@@ -56,7 +56,7 @@ export const accountRepo = {
   },
 
   async delete(id: number): Promise<void> {
-    await deleteTransactionPhotos('account_id = ?', id);
+    await deleteTransactionPhotos('account_id', id);
     await withTransaction(async (db) => {
       await db.delete(transactions).where(eq(transactions.account_id, id)).run();
       await db.delete(accounts).where(and(eq(accounts.id, id), eq(accounts.is_total, 0))).run();

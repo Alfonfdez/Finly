@@ -19,6 +19,7 @@ export default function DrawerMenuButton({ size = 24, accessibilityLabel, hitSlo
     <TouchableOpacity
       onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
       style={[styles.button, style]}
+      accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       hitSlop={hitSlop}
     >

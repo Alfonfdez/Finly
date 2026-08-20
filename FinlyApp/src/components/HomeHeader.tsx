@@ -47,7 +47,7 @@ export default function HomeHeader({
       />
 
       <View style={styles.totalButton}>
-        <TouchableOpacity style={styles.accountRow} onPress={onOpenAccountModal}>
+        <TouchableOpacity style={styles.accountRow} onPress={onOpenAccountModal} accessibilityLabel={getDisplayAccountName(activeAccount)}>
           <IconBadge
             icon={activeAccount.icon}
             color={activeAccount.color}

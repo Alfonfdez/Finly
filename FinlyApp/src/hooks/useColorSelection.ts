@@ -16,14 +16,5 @@ export function useColorSelection(initialColor?: string | null) {
     }
   }, []);
 
-  const setSelectedColorStable = useCallback(
-    (color: string | null) => setSelectedColor(color),
-    []
-  );
-  const setCustomColorStable = useCallback(
-    (color: string | null) => setCustomColor(color),
-    []
-  );
-
-  return { selectedColor, customColor, setSelectedColor: setSelectedColorStable, setCustomColor: setCustomColorStable, handleColorSelect };
+  return { selectedColor, customColor, setSelectedColor, setCustomColor, handleColorSelect };
 }
