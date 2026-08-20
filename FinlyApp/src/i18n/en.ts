@@ -430,6 +430,17 @@ export const en = {
 
   // Color grid
   color_grid_more: 'More colors',
+
+  // Accessibility labels
+  a11y_show_balances: 'Show balances',
+  a11y_hide_balances: 'Hide balances',
+  a11y_select_mode: 'Enter select mode',
+  a11y_exit_select_mode: 'Exit select mode',
+  a11y_close_search: 'Close search',
+  a11y_previous_month: 'Previous month',
+  a11y_next_month: 'Next month',
+  backup_dialog_title: 'Finly backup',
+  a11y_add: 'Add',
 };
 
 export type Language = typeof en;

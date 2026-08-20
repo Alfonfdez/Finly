@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -28,7 +29,7 @@ export default function SelectorInline<T extends string>({ options, selected, on
             {op.label}
           </Text>
           {selected === op.value && (
-            <Text style={[styles.check, { color: c.primary, fontSize: fs(14) }]}>✓</Text>
+            <Ionicons name="checkmark" size={16} color={c.primary} style={styles.check} />
           )}
         </TouchableOpacity>
       ))}

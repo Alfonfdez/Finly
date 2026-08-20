@@ -11,7 +11,7 @@ import ModalHeader from './ModalHeader';
 import ListItemRow from './ListItemRow';
 import CategoryTransferModal, { type TransferTargetId } from './CategoryTransferModal';
 import PrimaryButton from './form/PrimaryButton';
-import { WHITE } from '../constants/themes';
+import { WHITE, TRANSPARENT } from '../constants/themes';
 import { BUTTON_BORDER_RADIUS } from './componentStyles';
 
 export interface BulkCategoryItem {
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'transparent',
+    borderColor: TRANSPARENT,
   },
   buttonText: {
     fontWeight: '600',

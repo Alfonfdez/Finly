@@ -1,11 +1,8 @@
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
-
-function backupFileName(): string {
-  const stamp = new Date().toISOString().slice(0, 10);
-  return `finly-backup-${stamp}.json`;
-}
+import { backupFileName } from './formatters';
+import { t } from '../i18n';
 
 export async function saveBackupFile(json: string): Promise<void> {
   const file = new File(Paths.document, backupFileName());
@@ -13,7 +10,7 @@ export async function saveBackupFile(json: string): Promise<void> {
   if (await Sharing.isAvailableAsync()) {
     await Sharing.shareAsync(file.uri, {
       mimeType: 'application/json',
-      dialogTitle: 'Finly backup',
+      dialogTitle: t().backup_dialog_title,
     });
   }
 }

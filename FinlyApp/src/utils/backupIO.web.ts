@@ -1,7 +1,4 @@
-function backupFileName(): string {
-  const stamp = new Date().toISOString().slice(0, 10);
-  return `finly-backup-${stamp}.json`;
-}
+import { backupFileName } from './formatters';
 
 export async function saveBackupFile(json: string): Promise<void> {
   if (typeof document === 'undefined') return;
@@ -43,7 +40,7 @@ export async function pickBackupFile(): Promise<string | null> {
         return;
       }
       const reader = new FileReader();
-      reader.onload = () => finish(reader.result as string);
+      reader.onload = () => finish(typeof reader.result === 'string' ? reader.result : null);
       reader.onerror = () => finish(null);
       reader.readAsText(file);
     };

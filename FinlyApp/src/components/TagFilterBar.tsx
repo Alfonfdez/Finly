@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { isWeb } from '../utils/platform';
@@ -14,7 +14,7 @@ interface Props {
   activeTagIds: number[];
   onToggle: (id: number) => void;
   onClear: () => void;
-  style?: object;
+  style?: StyleProp<ViewStyle>;
 }
 
 function TagFilterBarInner({ tags, activeTagIds, onToggle, onClear, style }: Props) {

@@ -36,7 +36,6 @@ type UseTransactionFormProps = {
   initialComment: string;
   initialPhotos: string[];
   initialAmount?: string;
-  submitLabel: string;
   errorTitle: string;
   errorMessage: string;
   onSubmit: (data: TransactionDraft, tagIds: number[]) => Promise<void>;
@@ -53,7 +52,6 @@ export function useTransactionForm({
   initialComment,
   initialPhotos,
   initialAmount,
-  submitLabel: _submitLabel,
   errorTitle,
   errorMessage,
   onSubmit,

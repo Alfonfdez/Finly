@@ -13,7 +13,7 @@ export default function CheckboxRow({ checked, onToggle, label }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   return (
-    <TouchableOpacity style={styles.row} onPress={onToggle}>
+    <TouchableOpacity style={styles.row} onPress={onToggle} accessibilityRole="checkbox" accessibilityState={{ checked }}>
       <Ionicons
         name={checked ? 'checkbox' : 'square-outline'}
         size={22}

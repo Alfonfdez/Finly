@@ -89,6 +89,7 @@ export default function TransactionDetailsScreen() {
       }
       await transactionRepository.delete(transactionId);
       await refresh();
+      setDeleting(false);
       navigation.goBack();
     } catch (err) {
       console.error('Failed to delete transaction:', err);

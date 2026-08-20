@@ -92,7 +92,7 @@ function ListItemRow({
         ) : null}
         {middle}
       </View>
-      {right != null && <View style={styles.right}>{right}</View>}
+      {right != null && <View>{right}</View>}
     </>
   );
 
@@ -131,5 +131,4 @@ const styles = StyleSheet.create({
   info: { flex: 1 },
   title: { fontWeight: '500' },
   subtitle: { marginTop: 2 },
-  right: {},
 });

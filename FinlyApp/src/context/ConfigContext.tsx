@@ -44,6 +44,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   configRef.current = config;
   const [loading, setLoading] = useState(true);
   const [activeColors, setActiveColors] = useState<ColorPalette>(darkColors);
+  const saveGeneration = useRef(0);
 
   useEffect(() => {
     (async () => {
@@ -87,11 +88,13 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       ::-webkit-scrollbar-thumb:hover { background: ${withAlpha(activeColors.primary, 50)}; }
       * { scrollbar-width: thin; scrollbar-color: ${withAlpha(activeColors.primary, 25)} ${activeColors.background}; }
     `;
+    return () => { style?.remove(); };
   }, [activeColors]);
 
   const updateConfig = useCallback(async (partial: Partial<Config>) => {
     const previous = configRef.current;
     const updated = { ...previous, ...partial };
+    const gen = ++saveGeneration.current;
     if (partial.language) setLanguage(partial.language);
     setConfig(updated);
     if (partial.theme) setActiveColors(resolveColors(partial.theme));
@@ -99,6 +102,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       await configRepository.save(partial);
     } catch (error) {
       console.error('Failed to save config:', error);
+      if (gen !== saveGeneration.current) return;
       setConfig(previous);
       setActiveColors(resolveColors(previous.theme));
       if (previous.language) setLanguage(previous.language);

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { PERIODS, type Period } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
@@ -14,13 +15,13 @@ export default function PeriodTabs({ active, onChange }: Props) {
   const fs = useFontSize();
   const labels = t();
 
-  const periods: { key: Period; label: string }[] = [
+  const periods = useMemo<{ key: Period; label: string }[]>(() => [
     { key: PERIODS.day, label: labels.period_day },
     { key: PERIODS.week, label: labels.period_week },
     { key: PERIODS.month, label: labels.period_month },
     { key: PERIODS.year, label: labels.period_year },
     { key: PERIODS.custom, label: labels.period_period },
-  ];
+  ], [labels]);
 
   return (
     <View style={styles.container}>
