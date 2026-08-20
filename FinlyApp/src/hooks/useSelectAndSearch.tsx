@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- T is used for caller type inference
 interface UseSelectAndSearchOptions<T extends number | string> {
   hasItems: boolean;
 }

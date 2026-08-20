@@ -35,7 +35,8 @@ export function useNameDuplicateCheck(options: UseNameDuplicateCheckOptions) {
       }
       const exists = await existsByName(value.trim(), excludeId);
       setNameError(exists ? duplicateErrorKey : null);
-    } catch {
+    } catch (error) {
+      console.error('Failed to check name duplicate:', error);
       setNameError(null);
     } finally {
       setCheckingName(false);

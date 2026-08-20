@@ -124,7 +124,8 @@ export function useTransactionForm({
     };
     loadUsage();
     return () => { active = false; };
-  }, [categories, type, accountId, resetTagsOnFirstFocus]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- categories intentionally excluded to avoid redundant loadUsage queries
+  }, [type, accountId, resetTagsOnFirstFocus]));
 
   useEffect(() => {
     if (prevType.current !== type) {
@@ -217,7 +218,7 @@ export function useTransactionForm({
     return categoriesByType.slice(0, MAX_VISIBLE_CATEGORIES);
   }, [categoriesByType, reorderedCategory]);
 
-  const selectedAccount = accounts.find(c => c.id === accountId);
+  const selectedAccount = useMemo(() => accounts.find(a => a.id === accountId), [accounts, accountId]);
 
   return {
     type, setType,

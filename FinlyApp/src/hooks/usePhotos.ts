@@ -3,6 +3,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { File, Paths } from 'expo-file-system';
 import { isWeb } from '../utils/platform';
 import { deletePhotoFile } from '../utils/photoUtils';
+import { t } from '../i18n';
+import { showErrorAlert } from '../utils/errors';
+
+let photoCounter = 0;
 
 function readAsDataUrl(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -28,11 +32,16 @@ export function usePhotos(initialPhotos: string[] = []) {
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.7 });
     if (!result.canceled && result.assets[0]) {
       const src = result.assets[0].uri;
-      const dest = Paths.document.uri + `photo_${Date.now()}.jpg`;
-      const srcFile = new File(src);
-      const destFile = new File(dest);
-      srcFile.copy(destFile);
-      setPhotos(prev => [...prev, dest]);
+      const dest = Paths.document.uri + `photo_${Date.now()}_${photoCounter++}.jpg`;
+      try {
+        const srcFile = new File(src);
+        const destFile = new File(dest);
+        srcFile.copy(destFile);
+        setPhotos(prev => [...prev, dest]);
+      } catch (err) {
+        console.error('Failed to copy photo:', err);
+        showErrorAlert(t());
+      }
     }
   }, []);
 
@@ -48,16 +57,25 @@ export function usePhotos(initialPhotos: string[] = []) {
         return;
       }
       const src = asset.uri;
-      const dest = Paths.document.uri + `photo_${Date.now()}.jpg`;
-      const srcFile = new File(src);
-      const destFile = new File(dest);
-      srcFile.copy(destFile);
-      setPhotos(prev => [...prev, dest]);
+      const dest = Paths.document.uri + `photo_${Date.now()}_${photoCounter++}.jpg`;
+      try {
+        const srcFile = new File(src);
+        const destFile = new File(dest);
+        srcFile.copy(destFile);
+        setPhotos(prev => [...prev, dest]);
+      } catch (err) {
+        console.error('Failed to copy photo:', err);
+        showErrorAlert(t());
+      }
     }
   }, []);
 
   const handleRemovePhoto = useCallback(async (uri: string) => {
-    await deletePhotoFile(uri);
+    try {
+      await deletePhotoFile(uri);
+    } catch (err) {
+      console.error('Failed to delete photo:', err);
+    }
     setPhotos(prev => prev.filter(p => p !== uri));
   }, []);
 

@@ -16,10 +16,10 @@ export async function getDrizzle(): Promise<DrizzleDb> {
 
 export async function withTransaction<T>(task: (db: DrizzleDb) => Promise<T>): Promise<T> {
   const handle = await getDatabase();
-  let result: T;
+  let result!: T;
   await handle.withTransactionAsync(async () => {
     const db = await getDrizzle();
     result = await task(db);
   });
-  return result!;
+  return result;
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Platform, Animated } from 'react-native';
+import { Platform, Animated, Appearance } from 'react-native';
 import 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -9,6 +9,7 @@ import { ConfigProvider } from './src/context/ConfigContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import ErrorBoundary from './src/components/ErrorBoundary';
 import { initDatabase } from './src/database/database';
+import { darkColors } from './src/constants/themes';
 
 const EXIT_DURATION = 400;
 const USE_NATIVE_DRIVER = Platform.OS !== 'web';
@@ -46,6 +47,16 @@ function SplashScreen({ exiting }: { exiting: boolean }) {
       </Animated.View>
     </Animated.View>
   );
+}
+
+import { useConfig } from './src/context/ConfigContext';
+import { THEMES } from './src/constants/types';
+
+function ThemeStatusBar() {
+  const { config } = useConfig();
+  const isDark = config.theme === THEMES.dark
+    || (config.theme === THEMES.system && Appearance.getColorScheme() === THEMES.dark);
+  return <StatusBar style={isDark ? 'light' : 'dark'} />;
 }
 
 export default function App() {
@@ -93,7 +104,7 @@ export default function App() {
           <ErrorBoundary>
             <AppNavigator />
           </ErrorBoundary>
-          <StatusBar style="light" />
+          <ThemeStatusBar />
         </AppProvider>
       </ConfigProvider>
     </GestureHandlerRootView>
@@ -108,7 +119,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0F172A',
+    backgroundColor: darkColors.background,
     gap: 16,
   },
   splashLogo: {
@@ -118,6 +129,6 @@ const styles = StyleSheet.create({
   },
   error: {
     flex: 1,
-    backgroundColor: '#0F172A',
+    backgroundColor: darkColors.background,
   },
 });

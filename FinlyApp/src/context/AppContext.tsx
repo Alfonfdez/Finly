@@ -35,7 +35,7 @@ interface AppContextType extends AppState {
   totalExpenses: number;
   totalIncomeAll: number;
   totalExpensesAll: number;
-  refresh: () => Promise<void>;
+  refresh: () => void;
   refreshAccounts: () => Promise<void>;
   refreshCategories: () => Promise<void>;
   refreshTags: () => Promise<void>;
@@ -144,12 +144,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const account = activeAccount;
     let active = true;
     async function loadTransactions() {
-      const { data, tagMap } = await fetchTransactionsAndTags(
-        account, activePeriod, selectedDate, customDate,
-      );
-      if (!active) return;
-      setTransactions(data);
-      setTagsByTransaction(tagMap);
+      try {
+        const { data, tagMap } = await fetchTransactionsAndTags(
+          account, activePeriod, selectedDate, customDate,
+        );
+        if (!active) return;
+        setTransactions(data);
+        setTagsByTransaction(tagMap);
+      } catch (error) {
+        console.error('Failed to load transactions:', error);
+      }
     }
     loadTransactions();
     return () => { active = false; };
@@ -197,15 +201,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const account = activeAccount;
     let active = true;
     async function loadAllTotals() {
-      const isTotal = isTotalAccount(account);
-      const accountId = isTotal ? null : account.id;
-      const [income, expenses] = await Promise.all([
-        transactionRepo.totalByPeriod(accountId, TRANSACTION_TYPES.income, DATE_MIN, DATE_MAX),
-        transactionRepo.totalByPeriod(accountId, TRANSACTION_TYPES.expense, DATE_MIN, DATE_MAX),
-      ]);
-      if (!active) return;
-      setTotalIncomeAll(income);
-      setTotalExpensesAll(expenses);
+      try {
+        const isTotal = isTotalAccount(account);
+        const accountId = isTotal ? null : account.id;
+        const [income, expenses] = await Promise.all([
+          transactionRepo.totalByPeriod(accountId, TRANSACTION_TYPES.income, DATE_MIN, DATE_MAX),
+          transactionRepo.totalByPeriod(accountId, TRANSACTION_TYPES.expense, DATE_MIN, DATE_MAX),
+        ]);
+        if (!active) return;
+        setTotalIncomeAll(income);
+        setTotalExpensesAll(expenses);
+      } catch (error) {
+        console.error('Failed to load totals:', error);
+      }
     }
     loadAllTotals();
     return () => { active = false; };
@@ -216,20 +224,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true;
     async function calculateBalances() {
-      const nonTotal = accounts.filter(a => !isTotalAccount(a));
-      const balanceById = new Map(
-        (await accountRepo.getBalances()).map(b => [b.account_id, b.balance])
-      );
-      const totalBalance = nonTotal.reduce((sum, a) => sum + (balanceById.get(a.id) ?? 0), 0);
+      try {
+        const nonTotal = accounts.filter(a => !isTotalAccount(a));
+        const balanceById = new Map(
+          (await accountRepo.getBalances()).map(b => [b.account_id, b.balance])
+        );
+        const totalBalance = nonTotal.reduce((sum, a) => sum + (balanceById.get(a.id) ?? 0), 0);
 
-      const results = accounts.map((account) => {
-        if (isTotalAccount(account)) {
-          return { ...account, balance: totalBalance };
-        }
-        return { ...account, balance: balanceById.get(account.id) ?? 0 };
-      });
-      if (!active) return;
-      setAccountsWithBalance(results);
+        const results = accounts.map((account) => {
+          if (isTotalAccount(account)) {
+            return { ...account, balance: totalBalance };
+          }
+          return { ...account, balance: balanceById.get(account.id) ?? 0 };
+        });
+        if (!active) return;
+        setAccountsWithBalance(results);
+      } catch (error) {
+        console.error('Failed to calculate balances:', error);
+      }
     }
     if (accounts.length > 0) {
       calculateBalances();
@@ -257,39 +269,48 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }));
   }, [categories, activeType, filteredTransactions]);
 
-  const refresh = useCallback(async () => {
-    if (!activeAccount) return;
-    const { data, tagMap } = await fetchTransactionsAndTags(
-      activeAccount, activePeriod, selectedDate, customDate,
-    );
-    setTransactions(data);
-    setTagsByTransaction(tagMap);
+  const refresh = useCallback(() => {
     setTransactionsVersion(v => v + 1);
-  }, [activeAccount, activePeriod, selectedDate, customDate]);
+  }, []);
 
   const refreshCategories = useCallback(async () => {
-    const categoriesData = await categoryRepo.list(USER_ID);
-    setCategories(categoriesData);
+    try {
+      const categoriesData = await categoryRepo.list(USER_ID);
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error('Failed to refresh categories:', error);
+      showErrorAlert();
+    }
   }, []);
 
   const refreshAccounts = useCallback(async () => {
-    const accountsData = await accountRepo.list(USER_ID);
-    setAccounts(accountsData);
-    setActiveAccount(prev => {
-      if (prev && accountsData.some(a => a.id === prev.id)) return prev;
-      if (accountsData.length === 0) return null;
-      if (appConfig.homeDefaultAccountId !== null) {
-        const found = accountsData.find(a => a.id === appConfig.homeDefaultAccountId);
-        if (found) return found;
-      }
-      return accountsData[0];
-    });
-    setTransactionsVersion(v => v + 1);
+    try {
+      const accountsData = await accountRepo.list(USER_ID);
+      setAccounts(accountsData);
+      setActiveAccount(prev => {
+        if (prev && accountsData.some(a => a.id === prev.id)) return prev;
+        if (accountsData.length === 0) return null;
+        if (appConfig.homeDefaultAccountId !== null) {
+          const found = accountsData.find(a => a.id === appConfig.homeDefaultAccountId);
+          if (found) return found;
+        }
+        return accountsData[0];
+      });
+      setTransactionsVersion(v => v + 1);
+    } catch (error) {
+      console.error('Failed to refresh accounts:', error);
+      showErrorAlert();
+    }
   }, [appConfig.homeDefaultAccountId]);
 
   const refreshTags = useCallback(async () => {
-    const tagsData = await tagRepo.list(USER_ID);
-    setTags(tagsData);
+    try {
+      const tagsData = await tagRepo.list(USER_ID);
+      setTags(tagsData);
+    } catch (error) {
+      console.error('Failed to refresh tags:', error);
+      showErrorAlert();
+    }
   }, []);
 
   const resetAll = useCallback(async () => {

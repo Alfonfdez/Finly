@@ -427,6 +427,9 @@ export const en = {
   home_tag_untagged: 'Untagged',
   home_tag_view_all: (n: number) => `View all (${n})`,
   home_tag_show_less: 'Show less',
+
+  // Color grid
+  color_grid_more: 'More colors',
 };
 
 export type Language = typeof en;

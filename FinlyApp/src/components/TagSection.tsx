@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
@@ -29,9 +29,9 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
   const fs = useFontSize();
   const labels = t();
 
-  const filteredTags = tags.filter(tag =>
+  const filteredTags = useMemo(() => tags.filter(tag =>
     tag.name.toLowerCase().includes(search.toLowerCase())
-  );
+  ), [tags, search]);
 
   const checkDuplicate = useCallback((value: string) => {
     const trimmed = value.trim();

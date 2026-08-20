@@ -56,7 +56,7 @@ export default function HomeHeader({
             iconSize={18}
             roundedRadius={4}
           />
-          <Text style={[styles.accountLabel, { color: c.textSecondary, fontSize: fs(14) }]}>{getDisplayAccountName(activeAccount)}</Text>
+          <Text style={[{ color: c.textSecondary, fontSize: fs(14) }]}>{getDisplayAccountName(activeAccount)}</Text>
           <Ionicons name="chevron-down-outline" size={14} color={c.textSecondary} />
         </TouchableOpacity>
         <View style={styles.balanceRow}>
@@ -115,7 +115,6 @@ const styles = StyleSheet.create({
   totalButton: { alignItems: 'center', flex: 1 },
   accountRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   balanceRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  accountLabel: {},
   summaryRow: { flexDirection: 'row', gap: 12 },
   summaryItem: {},
   summaryLabel: {},

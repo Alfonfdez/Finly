@@ -429,4 +429,7 @@ export const es: Language = {
   home_tag_untagged: 'Sin etiqueta',
   home_tag_view_all: (n: number) => `Ver todos (${n})`,
   home_tag_show_less: 'Mostrar menos',
+
+  // Color grid
+  color_grid_more: 'Más colores',
 };

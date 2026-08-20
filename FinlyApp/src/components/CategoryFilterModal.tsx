@@ -80,8 +80,8 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
     if (type !== TYPE_FILTERS.all) {
       return [{ label: null, data: sortCategoriesWithOthersLast(displayedCategories) }];
     }
-    const expenses = sortCategoriesWithOthersLast(displayedCategories.filter(c => c.type === TRANSACTION_TYPES.expense));
-    const income = sortCategoriesWithOthersLast(displayedCategories.filter(c => c.type === TRANSACTION_TYPES.income));
+    const expenses = sortCategoriesWithOthersLast(displayedCategories.filter(cat => cat.type === TRANSACTION_TYPES.expense));
+    const income = sortCategoriesWithOthersLast(displayedCategories.filter(cat => cat.type === TRANSACTION_TYPES.income));
     const result: { label: string | null; data: Category[] }[] = [];
     if (expenses.length > 0) result.push({ label: labels.filter_expenses, data: expenses });
     if (income.length > 0) result.push({ label: labels.filter_income, data: income });
