@@ -35,6 +35,7 @@ export default function YearGrid({ date, onSelect }: CalendarBaseProps) {
               style={[calendarStyles.gridItem, isFuture && { opacity: FUTURE_OPACITY }]}
               onPress={() => !isFuture && onSelect(new Date(y, 0, 1))}
               disabled={isFuture}
+              accessibilityLabel={String(y)}
             >
               <View style={[calendarStyles.gridItemInner, { backgroundColor: c.surface }, isActive && { backgroundColor: c.primary }]}>
                 <Text style={[calendarStyles.gridItemText, { color: c.text, fontSize: fs(14) }, isActive && { color: c.background, fontWeight: '700' }, isFuture && { color: c.textSecondary }]}>

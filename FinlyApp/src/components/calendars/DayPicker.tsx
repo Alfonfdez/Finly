@@ -64,6 +64,7 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
               style={[styles.day, isFuture && { opacity: FUTURE_OPACITY }]}
               onPress={() => !isFuture && onSelect(dayDate)}
               disabled={isFuture}
+              accessibilityLabel={`${day} ${labels.months[month - 1]}${isToday ? ', today' : ''}${isSelected ? ', selected' : ''}`}
             >
               <View style={styles.dayWrap}>
                 <View style={[

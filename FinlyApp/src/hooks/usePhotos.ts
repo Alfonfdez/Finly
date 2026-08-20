@@ -19,7 +19,9 @@ function readAsDataUrl(blob: Blob): Promise<string> {
 
 async function webPhotoUri(asset: ImagePicker.ImagePickerAsset): Promise<string> {
   if (asset.file) return readAsDataUrl(asset.file);
-  const blob = await fetch(asset.uri).then((r) => r.blob());
+  const response = await fetch(asset.uri);
+  if (!response.ok) throw new Error(`Failed to fetch photo: ${response.status}`);
+  const blob = await response.blob();
   return readAsDataUrl(blob);
 }
 

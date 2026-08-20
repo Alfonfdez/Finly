@@ -19,7 +19,11 @@ export default function AccountTrigger({ accountId, accounts, onPress }: Props) 
   const account = accounts.find(x => x.id === accountId);
 
   return (
-    <TouchableOpacity style={styles.accountTrigger} onPress={onPress}>
+    <TouchableOpacity
+      style={styles.accountTrigger}
+      onPress={onPress}
+      accessibilityLabel={account ? getDisplayAccountName(account) : undefined}
+    >
       {account && (
         <IconBadge
           icon={account.icon}

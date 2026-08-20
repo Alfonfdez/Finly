@@ -43,6 +43,8 @@ export default function ConfirmationModal({
           <TouchableOpacity
             style={[styles.button, { backgroundColor: c.surface, borderColor: c.border }]}
             onPress={onCancel}
+            accessibilityRole="button"
+            accessibilityLabel={cancelLabel}
           >
             <Text style={[styles.buttonText, { color: c.text, fontSize: fs(14) }]}>{cancelLabel}</Text>
           </TouchableOpacity>
@@ -52,6 +54,8 @@ export default function ConfirmationModal({
             <TouchableOpacity
               style={[styles.button, { backgroundColor: c.primary }]}
               onPress={onMove}
+              accessibilityRole="button"
+              accessibilityLabel={moveLabel}
             >
               <Text style={[styles.buttonText, { color: c.background, fontSize: fs(14) }]}>{moveLabel}</Text>
             </TouchableOpacity>
@@ -78,6 +82,8 @@ export default function ConfirmationModal({
             ]}
             onPress={onConfirm}
             disabled={confirmDisabled}
+            accessibilityRole="button"
+            accessibilityLabel={confirmLabel}
           >
             <Text
               style={[
