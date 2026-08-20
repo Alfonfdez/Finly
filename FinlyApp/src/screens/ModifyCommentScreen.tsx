@@ -12,6 +12,7 @@ import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormError from '../components/form/FormError';
 import DeleteButton from '../components/form/DeleteButton';
+import { showErrorAlert } from '../utils/errors';
 
 type ModifyCommentRouteProp = RouteProp<RootStackParamList, 'ModifyComment'>;
 
@@ -45,14 +46,24 @@ export default function ModifyCommentScreen() {
   const handleSave = async () => {
     Keyboard.dismiss();
     if (isDisabled) return;
-    await transactionRepository.updateComment(originalComment, trimmed);
-    navigation.goBack();
+    try {
+      await transactionRepository.updateComment(originalComment, trimmed);
+      navigation.goBack();
+    } catch (err) {
+      console.error('Failed to update comment:', err);
+      showErrorAlert(labels);
+    }
   };
 
   const handleDelete = async () => {
     setDeleteModalVisible(false);
-    await transactionRepository.deleteComment(originalComment);
-    navigation.goBack();
+    try {
+      await transactionRepository.deleteComment(originalComment);
+      navigation.goBack();
+    } catch (err) {
+      console.error('Failed to delete comment:', err);
+      showErrorAlert(labels);
+    }
   };
 
   return (
@@ -110,9 +121,6 @@ export default function ModifyCommentScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   content: {
     flex: 1,
     paddingHorizontal: 16,

@@ -68,24 +68,24 @@ export default function HomeHeader({
         <View style={styles.summaryRow}>
           {isBalanceHidden ? (
             <>
-              <Text style={[styles.summaryItem, { fontSize: fs(14) }]}>
+              <Text style={{ fontSize: fs(14) }}>
                 <Text style={{ color: c.textSecondary, fontWeight: '700' }}>{HIDDEN_BALANCE}</Text>
-                <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(12) }]}> {labels.home_income}</Text>
+                <Text style={{ color: c.textSecondary, fontSize: fs(12) }}> {labels.home_income}</Text>
               </Text>
-              <Text style={[styles.summaryItem, { fontSize: fs(14) }]}>
+              <Text style={{ fontSize: fs(14) }}>
                 <Text style={{ color: c.textSecondary, fontWeight: '700' }}>{HIDDEN_BALANCE}</Text>
-                <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(12) }]}> {labels.home_expenses}</Text>
+                <Text style={{ color: c.textSecondary, fontSize: fs(12) }}> {labels.home_expenses}</Text>
               </Text>
             </>
           ) : (
             <>
-              <Text style={[styles.summaryItem, { fontSize: fs(14) }]}>
+              <Text style={{ fontSize: fs(14) }}>
                 <Text style={{ color: c.green, fontWeight: '700' }}>+{formatCurrency(totalIncomeAll, config.currency, config.decimalSeparator)}</Text>
-                <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(12) }]}> {labels.home_income}</Text>
+                <Text style={{ color: c.textSecondary, fontSize: fs(12) }}> {labels.home_income}</Text>
               </Text>
-              <Text style={[styles.summaryItem, { fontSize: fs(14) }]}>
+              <Text style={{ fontSize: fs(14) }}>
                 <Text style={{ color: c.red, fontWeight: '700' }}>-{formatCurrency(totalExpensesAll, config.currency, config.decimalSeparator)}</Text>
-                <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(12) }]}> {labels.home_expenses}</Text>
+                <Text style={{ color: c.textSecondary, fontSize: fs(12) }}> {labels.home_expenses}</Text>
               </Text>
             </>
           )}
@@ -116,7 +116,5 @@ const styles = StyleSheet.create({
   accountRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   balanceRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   summaryRow: { flexDirection: 'row', gap: 12 },
-  summaryItem: {},
-  summaryLabel: {},
   totalText: { fontWeight: '700', marginVertical: 2 },
 });

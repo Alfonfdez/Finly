@@ -2,6 +2,7 @@ import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { t } from '../i18n';
 
 interface Props {
   placeholder: string;
@@ -14,6 +15,7 @@ interface Props {
 export default function SearchBar({ placeholder, value, onChangeText, onClose, autoFocus = false }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
+  const labels = t();
 
   return (
     <View style={[styles.container, { backgroundColor: c.surface, borderColor: c.border }]}>
@@ -26,7 +28,7 @@ export default function SearchBar({ placeholder, value, onChangeText, onClose, a
         onChangeText={onChangeText}
         autoFocus={autoFocus}
       />
-      <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+      <TouchableOpacity onPress={onClose} style={styles.closeButton} accessibilityLabel={labels.a11y_close_search}>
         <Ionicons name="close-circle" size={20} color={c.textSecondary} />
       </TouchableOpacity>
     </View>

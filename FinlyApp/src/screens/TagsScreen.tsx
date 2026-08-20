@@ -13,6 +13,7 @@ import { tagRepository } from '../database';
 import { type Tag } from '../database/types';
 import { type NavigationProp, MAX_TAGS } from '../constants/types';
 import { countAtLimit } from '../utils/limits';
+import { showErrorAlert } from '../utils/errors';
 import Fab from '../components/Fab';
 import SearchBar from '../components/SearchBar';
 import EmptyState from '../components/EmptyState';
@@ -51,9 +52,14 @@ export default function TagsScreen() {
 
   const handleBulkDelete = async () => {
     setDeleteModalVisible(false);
-    await tagRepository.deleteMany([...selectedIds]);
-    exitSelectMode();
-    await refreshTags();
+    try {
+      await tagRepository.deleteMany([...selectedIds]);
+      exitSelectMode();
+      await refreshTags();
+    } catch (err) {
+      console.error('Failed to delete tags:', err);
+      showErrorAlert(labels);
+    }
   };
 
   const renderItem = useCallback(({ item }: { item: Tag }) => {
@@ -132,7 +138,7 @@ export default function TagsScreen() {
       ) : (
         <Fab
           onPress={() => navigation.navigate('CreateTag')}
-          accessibilityLabel="+"
+          accessibilityLabel={labels.a11y_add}
         />
       )}
 

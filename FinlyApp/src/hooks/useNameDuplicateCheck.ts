@@ -45,11 +45,6 @@ export function useNameDuplicateCheck(options: UseNameDuplicateCheckOptions) {
 
   const scheduleCheck = useDebouncedCallback(checkNameDuplicate, DEBOUNCE_MS);
 
-  const debouncedCheck = useCallback((value: string) => {
-    setCheckingName(true);
-    scheduleCheck(value);
-  }, [scheduleCheck]);
-
   const clearNameError = useCallback(() => setNameError(null), []);
 
   const handleNameChange = useCallback((value: string, setName: (v: string) => void) => {
@@ -63,8 +58,6 @@ export function useNameDuplicateCheck(options: UseNameDuplicateCheckOptions) {
     nameError,
     checkingName,
     clearNameError,
-    checkNameDuplicate,
-    debouncedCheck,
     handleNameChange,
   };
 }

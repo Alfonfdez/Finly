@@ -18,6 +18,7 @@ import { type TransactionType, MAX_SUGGESTIONS, UNTAGGED_LABEL } from '../../con
 import { UNTAGGED_ID } from '../helpers';
 import { transactionSchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
+import { escapeLikePattern } from '../../utils/formatters';
 
 export interface TransactionFilters {
   account_id?: number;
@@ -157,6 +158,7 @@ export const transactionReads = {
     const db = await getDrizzle();
     const term = search.trim();
     if (!term) return [];
+    const escaped = escapeLikePattern(term);
     const results = await db
       .selectDistinct({
         description: sql<string>`TRIM(${transactions.description})`,
@@ -166,11 +168,11 @@ export const transactionReads = {
         and(
           isNotNull(transactions.description),
           sql`TRIM(${transactions.description}) <> ''`,
-          sql`TRIM(${transactions.description}) LIKE ${`%${term}%`}`
+          sql`TRIM(${transactions.description}) LIKE ${`%${escaped}%`} ESCAPE '\\'`
         )
       )
       .orderBy(
-        sql`CASE WHEN TRIM(${transactions.description}) LIKE ${`${term}%`} COLLATE NOCASE THEN 0 ELSE 1 END`,
+        sql`CASE WHEN TRIM(${transactions.description}) LIKE ${`${escaped}%`} ESCAPE '\\' COLLATE NOCASE THEN 0 ELSE 1 END`,
         sql`${transactions.description} COLLATE NOCASE`
       )
       .limit(MAX_SUGGESTIONS)

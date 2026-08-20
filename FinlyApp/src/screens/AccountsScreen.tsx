@@ -188,7 +188,7 @@ export default function AccountsScreen() {
 
       <Fab
         onPress={() => navigation.navigate('CreateAccount')}
-        accessibilityLabel="+"
+        accessibilityLabel={labels.a11y_add}
       />
     </ScreenShell>
   );

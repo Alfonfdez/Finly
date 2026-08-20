@@ -4,7 +4,7 @@ import { transactionTags, transactions } from '../drizzle/schema';
 import { runResultOf } from '../drizzle/proxy';
 import type { Transaction } from '../types';
 import { dbTimestamp } from '../../utils/formatters';
-import { deleteTransactionPhotos } from '../photoCleanup';
+import { deleteTransactionPhotos, deleteAllTransactionPhotos } from '../photoCleanup';
 
 export const transactionWrites = {
   async create(data: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>): Promise<Transaction> {
@@ -43,14 +43,14 @@ export const transactionWrites = {
   },
 
   async delete(id: number): Promise<void> {
+    await deleteTransactionPhotos('id', id);
     const db = await getDrizzle();
     await db.delete(transactions).where(eq(transactions.id, id)).run();
   },
 
   async deleteMany(ids: number[]): Promise<void> {
     if (ids.length === 0) return;
-    const placeholders = ids.map(() => '?').join(',');
-    await deleteTransactionPhotos(`id IN (${placeholders})`, ...ids);
+    await deleteTransactionPhotos('id', ...ids);
     await withTransaction(async (db) => {
       await db.delete(transactionTags).where(inArray(transactionTags.transaction_id, ids)).run();
       await db.delete(transactions).where(inArray(transactions.id, ids)).run();
@@ -58,7 +58,7 @@ export const transactionWrites = {
   },
 
   async deleteAllTransactions(): Promise<void> {
-    await deleteTransactionPhotos('photo IS NOT NULL');
+    await deleteAllTransactionPhotos();
     await withTransaction(async (db) => {
       await db.delete(transactions).run();
       await db.delete(transactionTags).run();

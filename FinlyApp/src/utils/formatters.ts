@@ -171,8 +171,10 @@ export function formatDateTimeShort(date: Date, shortMonths: string[]): string {
 }
 
 export function parseDbDate(value: string): Date {
+  if (!/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2})?$/.test(value)) return new Date();
   const [datePart, timePart] = value.split(' ');
   const [year, month, day] = datePart.split('-').map(Number);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return new Date();
   if (timePart) {
     const [hours, minutes, seconds] = timePart.split(':').map(Number);
     return new Date(year, month - 1, day, hours, minutes, seconds);
@@ -210,7 +212,7 @@ export function formatWeekRange(date: Date, shortMonths: string[], includeYear =
   return `${startDay} ${startMonth} – ${endDay} ${endMonth}${year}`;
 }
 
-export function formatPeriodText(period: string, date: Date, months: string[], shortMonths: string[]): string {
+export function formatPeriodText(period: Period, date: Date, months: string[], shortMonths: string[]): string {
   const m = months[date.getMonth()];
   switch (period) {
     case PERIODS.day: return `${date.getDate()} ${m} ${date.getFullYear()}`;
@@ -219,4 +221,13 @@ export function formatPeriodText(period: string, date: Date, months: string[], s
     case PERIODS.year: return date.getFullYear().toString();
     default: return '';
   }
+}
+
+export function escapeLikePattern(term: string): string {
+  return term.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+}
+
+export function backupFileName(): string {
+  const stamp = new Date().toISOString().slice(0, 10);
+  return `finly-backup-${stamp}.json`;
 }

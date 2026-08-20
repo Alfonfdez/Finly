@@ -17,7 +17,7 @@ export default function PhotoViewer({
           <Ionicons name="close" size={28} color={WHITE} />
         </TouchableOpacity>
         {photos.length > 0 && (
-          <Image source={{ uri: photos[selectedIndex] || photos[0] }} resizeMode="contain" style={styles.viewerImage} />
+          <Image source={{ uri: photos[selectedIndex] ?? photos[0] }} resizeMode="contain" style={styles.viewerImage} />
         )}
       </View>
     </Modal>

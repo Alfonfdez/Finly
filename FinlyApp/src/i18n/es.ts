@@ -432,4 +432,15 @@ export const es: Language = {
 
   // Color grid
   color_grid_more: 'Más colores',
+
+  // Accessibility labels
+  a11y_show_balances: 'Mostrar saldos',
+  a11y_hide_balances: 'Ocultar saldos',
+  a11y_select_mode: 'Entrar en modo selección',
+  a11y_exit_select_mode: 'Salir del modo selección',
+  a11y_close_search: 'Cerrar búsqueda',
+  a11y_previous_month: 'Mes anterior',
+  a11y_next_month: 'Mes siguiente',
+  backup_dialog_title: 'Copia de seguridad Finly',
+  a11y_add: 'Añadir',
 };

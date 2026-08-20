@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { getDrizzle } from '../drizzle/engine';
+import { getDrizzle, withTransaction } from '../drizzle/engine';
 import { config } from '../drizzle/schema';
 import type { Config } from '../types';
 import { FIRST_DAYS } from '../../constants/types';
@@ -35,13 +35,16 @@ export const configRepo = {
   },
 
   async save(partial: Partial<Config>): Promise<void> {
-    const db = await getDrizzle();
-    for (const row of toConfigRows(partial)) {
-      await db
-        .insert(config)
-        .values(row)
-        .onConflictDoUpdate({ target: config.key, set: { value: sql`excluded.value` } })
-        .run();
-    }
+    const rows = toConfigRows(partial);
+    if (rows.length === 0) return;
+    await withTransaction(async (db) => {
+      for (const row of rows) {
+        await db
+          .insert(config)
+          .values(row)
+          .onConflictDoUpdate({ target: config.key, set: { value: sql`excluded.value` } })
+          .run();
+      }
+    });
   },
 };
