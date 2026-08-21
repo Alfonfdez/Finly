@@ -47,7 +47,7 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
 
   const handleNameChange = (text: string) => {
     setNewTag(text);
-    setError(text.trim() ? '' : '');
+    setError('');
     debouncedCheck(text);
   };
 

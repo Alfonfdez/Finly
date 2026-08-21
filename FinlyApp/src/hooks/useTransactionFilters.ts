@@ -66,7 +66,7 @@ export function useTransactionFilters({
       const tagLinks = await transactionRepository.getTagsByTransactionIds(txIds);
       if (!active) return;
       setTagsByTransaction(buildTagsByTransactionMap(tagLinks));
-    })().catch(() => {});
+    })().catch(console.error);
     return () => { active = false; };
   }, [transactions]);
 
