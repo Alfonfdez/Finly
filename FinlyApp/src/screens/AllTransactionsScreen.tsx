@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useLayoutEffect } from 'react';
-import { View, Text, SectionList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, SectionList, TouchableOpacity, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { HEADER_BUTTONS } from '../components/componentStyles';
@@ -226,21 +226,22 @@ export default function AllTransactionsScreen() {
         style={{ marginTop: 12 }}
       />
 
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={c.primary} />
+      {!loading && filters.sections.length === 0 ? (
+        <View style={styles.emptyList}>
+          {searchActive && searchText.trim()
+            ? <EmptyState icon="search-outline" message={labels.filter_no_results} />
+            : <EmptyState icon="receipt-outline" message={labels.transactions_empty} />
+          }
         </View>
       ) : (
       <SectionList
-        contentContainerStyle={filters.sections.length === 0 ? styles.emptyList : styles.listContent}
+        contentContainerStyle={styles.listContent}
         sections={filters.sections}
         keyExtractor={keyExtractor}
         renderSectionHeader={renderSectionHeader}
         renderItem={renderItem}
         ListEmptyComponent={
-          searchActive && searchText.trim()
-            ? <EmptyState icon="search-outline" message={labels.filter_no_results} />
-            : <EmptyState icon="receipt-outline" message={labels.transactions_empty} />
+          <EmptyState icon="receipt-outline" message={labels.transactions_empty} />
         }
         stickySectionHeadersEnabled={false}
         initialNumToRender={12}

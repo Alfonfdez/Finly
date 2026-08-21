@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
 import { View, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
@@ -20,6 +19,7 @@ import CategoryList from '../components/CategoryList';
 import TagFilterBar from '../components/TagFilterBar';
 import Fab from '../components/Fab';
 import HomeHeader from '../components/HomeHeader';
+import ScreenShell from '../components/ScreenShell';
 
 export default function HomeScreen() {
   const navigation = useNavigation<NavigationProp<'Home'>>();
@@ -126,28 +126,26 @@ export default function HomeScreen() {
 
   if (loading || !activeAccount) {
     return (
-      <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]}>
+      <ScreenShell>
         <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', backgroundColor: c.background }]}>
           <ActivityIndicator size="large" color={c.primary} />
         </View>
-      </SafeAreaView>
+      </ScreenShell>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]}>
-      <View style={[styles.container, { backgroundColor: c.background }]}>
-        <HomeHeader
-          activeAccount={activeAccount}
-          isBalanceHidden={isBalanceHidden}
-          onToggleReveal={toggleReveal}
-          total={total}
-          totalColor={totalColor}
-          totalIncomeAll={totalIncomeAll}
-          totalExpensesAll={totalExpensesAll}
-          onOpenAccountModal={() => setModalVisible(true)}
-          onViewTransactions={() => navigation.navigate('AllTransactions')}
-        />
+    <ScreenShell>
+      <HomeHeader
+        activeAccount={activeAccount}
+        isBalanceHidden={isBalanceHidden}
+        onToggleReveal={toggleReveal}
+        total={total}
+        totalColor={totalColor}
+        totalIncomeAll={totalIncomeAll}
+        totalExpensesAll={totalExpensesAll}
+        onOpenAccountModal={() => setModalVisible(true)}
+      />
 
         <TabBar
           tabs={[
@@ -209,13 +207,11 @@ export default function HomeScreen() {
           onSelect={handleAccountSelect}
           onClose={() => setModalVisible(false)}
         />
-      </View>
-    </SafeAreaView>
-  );
-}
+      </ScreenShell>
+    );
+  }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
   container: { flex: 1 },
   chartContainer: { alignItems: 'center', marginVertical: 8 },
 });

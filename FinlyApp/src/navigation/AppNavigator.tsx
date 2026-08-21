@@ -1,10 +1,10 @@
 import { Text, View, Image, StyleSheet } from 'react-native';
 import type { ComponentType } from 'react';
+import { useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { NavigationContainer, useNavigation, CommonActions } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { HeaderBackButton } from '@react-navigation/elements';
+import { createNativeStackNavigator, type NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   createDrawerNavigator,
   DrawerContentScrollView,
@@ -43,6 +43,8 @@ import DrawerMenuButton from '../components/DrawerMenuButton';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator();
 
+let _stackNav: NativeStackNavigationProp<RootStackParamList> | null = null;
+
 type ScreenDef = {
   name: keyof RootStackParamList;
   component: ComponentType<any>;
@@ -69,19 +71,7 @@ function HeaderTitle({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; la
 }
 
 function StackHeaderLeft() {
-  const navigation = useNavigation();
-  const { activeColors: c } = useConfig();
   const labels = t();
-  if (navigation.canGoBack()) {
-    return (
-      <HeaderBackButton
-        displayMode="minimal"
-        tintColor={c.text}
-        onPress={() => navigation.goBack()}
-        accessibilityLabel={labels.common_back}
-      />
-    );
-  }
   return <DrawerMenuButton accessibilityLabel={labels.home_open_menu} />;
 }
 
@@ -117,20 +107,15 @@ const ROOT_DRAWER_SCREENS: DrawerScreenName[] = [
 
 function openDrawerScreen(navigation: DrawerContentComponentProps['navigation'], screen: DrawerScreenName) {
   if (ROOT_DRAWER_SCREENS.includes(screen)) {
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{
-          name: 'Main',
-          state: {
-            index: 0,
-            routes: [
-              { name: screen as keyof RootStackParamList },
-            ],
-          },
-        }],
-      })
-    );
+    if (_stackNav) {
+      _stackNav.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: screen as keyof RootStackParamList }],
+        })
+      );
+    }
+    navigation.closeDrawer();
     return;
   }
   navigation.navigate('Main', { screen });
@@ -179,11 +164,18 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
   );
 }
 
+function HomeNavCapture() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  useEffect(() => { _stackNav = navigation; }, [navigation]);
+  return <HomeScreen />;
+}
+
 function HomeStack() {
   const { activeColors: c } = useConfig();
   const labels = t();
 
   const screens: ScreenDef[] = [
+    { name: 'Home', component: HomeNavCapture, icon: 'home-outline', label: labels.nav_home, drawerMenu: true },
     { name: 'AddTransaction', component: AddTransactionScreen, icon: 'add-circle-outline', label: labels.add_title },
     { name: 'AddCategory', component: AddCategoryScreen, icon: 'grid-outline', label: labels.add_cat_title },
     { name: 'CreateCategory', component: CreateCategoryScreen, icon: 'grid-outline', label: labels.create_cat_title },
@@ -192,7 +184,7 @@ function HomeStack() {
     { name: 'Accounts', component: AccountsScreen, icon: 'wallet-outline', label: labels.nav_accounts, drawerMenu: true },
     { name: 'ModifyAccount', component: ModifyAccountScreen, icon: 'wallet-outline', label: labels.modify_account_title },
     { name: 'CreateAccount', component: CreateAccountScreen, icon: 'wallet-outline', label: labels.create_account_title },
-    { name: 'Transactions', component: TransactionsScreen, icon: 'stats-chart-outline', label: labels.nav_transactions },
+    { name: 'Transactions', component: TransactionsScreen, icon: 'document-text-outline', label: labels.nav_transactions },
     { name: 'AllTransactions', component: AllTransactionsScreen, icon: 'receipt-outline', label: labels.nav_all_transactions, drawerMenu: true },
     { name: 'Settings', component: SettingsScreen, icon: 'settings-outline', label: labels.nav_settings },
     { name: 'SettingsAppearance', component: AppearanceScreen, icon: 'color-palette-outline', label: labels.settings_appearance },
@@ -217,7 +209,6 @@ function HomeStack() {
         animationTypeForReplace: 'push',
       }}
     >
-      <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
       {screens.map(({ name, component, icon, label, drawerMenu }) => (
         <Stack.Screen
           key={name}

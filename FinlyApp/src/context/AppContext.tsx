@@ -143,21 +143,43 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!activeAccount) return;
     const account = activeAccount;
     let active = true;
-    async function loadTransactions() {
+    async function refreshAll() {
       try {
-        const { data, tagMap } = await fetchTransactionsAndTags(
-          account, activePeriod, selectedDate, customDate,
-        );
+        const isTotal = isTotalAccount(account);
+        const accountId = isTotal ? null : account.id;
+        const nonTotal = accounts.filter(a => !isTotalAccount(a));
+
+        const [{ data, tagMap }, [income, expenses], balancesResult] = await Promise.all([
+          fetchTransactionsAndTags(account, activePeriod, selectedDate, customDate),
+          Promise.all([
+            transactionRepo.totalByPeriod(accountId, TRANSACTION_TYPES.income, DATE_MIN, DATE_MAX),
+            transactionRepo.totalByPeriod(accountId, TRANSACTION_TYPES.expense, DATE_MIN, DATE_MAX),
+          ]),
+          accountRepo.getBalances(),
+        ]);
         if (!active) return;
+
         setTransactions(data);
         setTagsByTransaction(tagMap);
+        setTotalIncomeAll(income);
+        setTotalExpensesAll(expenses);
+
+        const balanceById = new Map(balancesResult.map(b => [b.account_id, b.balance]));
+        const totalBalance = nonTotal.reduce((sum, a) => sum + (balanceById.get(a.id) ?? 0), 0);
+        setAccountsWithBalance(
+          accounts.map((a) =>
+            isTotalAccount(a)
+              ? { ...a, balance: totalBalance }
+              : { ...a, balance: balanceById.get(a.id) ?? 0 }
+          )
+        );
       } catch (error) {
-        console.error('Failed to load transactions:', error);
+        console.error('Failed to refresh data:', error);
       }
     }
-    loadTransactions();
+    refreshAll();
     return () => { active = false; };
-  }, [activeAccount, activePeriod, selectedDate, customDate, transactionsVersion]);
+  }, [activeAccount, activePeriod, selectedDate, customDate, accounts, transactionsVersion]);
   const filteredTransactions = useMemo(
     () => {
       let result = transactions.filter(t => {
@@ -196,58 +218,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [totalIncomeAll, setTotalIncomeAll] = useState(0);
   const [totalExpensesAll, setTotalExpensesAll] = useState(0);
 
-  useEffect(() => {
-    if (!activeAccount) return;
-    const account = activeAccount;
-    let active = true;
-    async function loadAllTotals() {
-      try {
-        const isTotal = isTotalAccount(account);
-        const accountId = isTotal ? null : account.id;
-        const [income, expenses] = await Promise.all([
-          transactionRepo.totalByPeriod(accountId, TRANSACTION_TYPES.income, DATE_MIN, DATE_MAX),
-          transactionRepo.totalByPeriod(accountId, TRANSACTION_TYPES.expense, DATE_MIN, DATE_MAX),
-        ]);
-        if (!active) return;
-        setTotalIncomeAll(income);
-        setTotalExpensesAll(expenses);
-      } catch (error) {
-        console.error('Failed to load totals:', error);
-      }
-    }
-    loadAllTotals();
-    return () => { active = false; };
-  }, [activeAccount, transactionsVersion]);
-
   const [accountsWithBalance, setAccountsWithBalance] = useState<(Account & { balance: number })[]>([]);
-
-  useEffect(() => {
-    let active = true;
-    async function calculateBalances() {
-      try {
-        const nonTotal = accounts.filter(a => !isTotalAccount(a));
-        const balanceById = new Map(
-          (await accountRepo.getBalances()).map(b => [b.account_id, b.balance])
-        );
-        const totalBalance = nonTotal.reduce((sum, a) => sum + (balanceById.get(a.id) ?? 0), 0);
-
-        const results = accounts.map((account) => {
-          if (isTotalAccount(account)) {
-            return { ...account, balance: totalBalance };
-          }
-          return { ...account, balance: balanceById.get(account.id) ?? 0 };
-        });
-        if (!active) return;
-        setAccountsWithBalance(results);
-      } catch (error) {
-        console.error('Failed to calculate balances:', error);
-      }
-    }
-    if (accounts.length > 0) {
-      calculateBalances();
-    }
-    return () => { active = false; };
-  }, [accounts, transactionsVersion]);
 
   const activeCategories = useMemo(() => {
     const categoriesByType = categories.filter(c => c.type === activeType);
