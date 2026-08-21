@@ -92,7 +92,7 @@ export function useTransactionForm({
     let active = true;
     transactionRepository.getTagsByTransactionId(transactionId).then(ids => {
       if (active) setSelectedTags(ids);
-    }).catch(() => {});
+    }).catch(console.error);
     return () => { active = false; };
   }, [transactionId]);
 
@@ -120,7 +120,7 @@ export function useTransactionForm({
       const counts = await transactionRepository.getCategoryUsageCounts(USER_ID, type, formatDateForDB(startDate), accountId);
       if (active) setCategoryUsage(new Map(counts.map(c => [c.id, c.count])));
     };
-    loadUsage().catch(() => {});
+    loadUsage().catch(console.error);
     return () => { active = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- categories intentionally excluded to avoid redundant loadUsage queries
   }, [type, accountId, resetTagsOnFirstFocus]));

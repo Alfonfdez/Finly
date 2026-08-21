@@ -75,7 +75,7 @@ export default function AccountsScreen() {
         if (!active) return;
         setAccounts(accounts);
         setTotal(total);
-      });
+      }).catch(console.error);
       return () => { active = false; };
     }, [loadData])
   );

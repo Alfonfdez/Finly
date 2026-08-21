@@ -32,7 +32,7 @@ export default function ModifyCommentScreen() {
     let active = true;
     transactionRepository.countByDescription(originalComment).then(n => {
       if (active) setCount(n);
-    });
+    }).catch(console.error);
     return () => {
       active = false;
     };
