@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from 'react';
-import { View, Text, SectionList, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, SectionList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -120,10 +120,8 @@ export default function TransactionsScreen() {
         style={{ marginTop: 12 }}
       />
 
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={c.primary} />
-        </View>
+      {!loading && filters.sections.length === 0 ? (
+        <EmptyState message={labels.transactions_empty} />
       ) : (
       <SectionList
         contentContainerStyle={styles.listContent}

@@ -190,7 +190,7 @@ export function useTransactionForm({
         date: dateStr,
       }, selectedTags);
 
-      await refresh();
+      refresh();
       navigation.goBack();
     } catch {
       Alert.alert(errorTitle, errorMessage);

@@ -86,7 +86,7 @@ export default function TransactionForm(props: TransactionFormProps) {
   const handleCalculatorCancel = useCallback(() => setCalculatorVisible(false), [setCalculatorVisible]);
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]}>
+    <SafeAreaView edges={['bottom']} style={[styles.safe, { backgroundColor: c.background }]}>
       <KeyboardAvoidingView
         behavior="padding"
         style={styles.keyboardAvoid}
@@ -220,7 +220,7 @@ export default function TransactionForm(props: TransactionFormProps) {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   keyboardAvoid: { flex: 1 },
-  container: { flex: 1, padding: 16 },
+  container: { flex: 1, paddingHorizontal: 16 },
   scrollContent: { paddingBottom: 48 },
   accountContainer: {
     borderRadius: 12,

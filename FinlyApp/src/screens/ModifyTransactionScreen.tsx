@@ -26,11 +26,21 @@ export default function ModifyTransactionScreen() {
 
   const { data: transaction, loading } = useFocusLoad(loadTransaction, null);
 
-  if (loading || !transaction) {
+  if (loading && !transaction) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: c.background }} edges={['bottom']}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          {loading ? <ActivityIndicator size="large" color={c.primary} /> : <EmptyState message={labels.transactions_empty} />}
+          <ActivityIndicator size="large" color={c.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!transaction) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.background }} edges={['bottom']}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <EmptyState message={labels.transactions_empty} />
         </View>
       </SafeAreaView>
     );
