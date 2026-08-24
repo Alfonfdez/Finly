@@ -14,6 +14,9 @@ A main screen in the app that displays the current Account, the Total (income/ex
 3. On the right side of the header, a button that navigates to the "Transactions" screen (transaction list filterable by type and period).
 
 4. "Expenses" / "Income" tabs to toggle the displayed type.
+   After adding or modifying a transaction, the tab automatically
+   switches to the type of that transaction (e.g. adding an Income
+   while on Expenses switches to Income automatically).
 
 5. Period tabs: "Day", "Week", "Month", "Year", "Period".
    When selecting a period, a native date picker can be opened:
@@ -46,6 +49,7 @@ Cloud sync, authentication, offline usage (AsyncStorage is already local).
 [x] The Total balance displays in green if positive, red if negative, with € symbol.
 [x] The transactions button navigates to the corresponding screen.
 [x] Correct toggle between "Expenses" and "Income".
+[x] After adding or modifying a transaction, the type tab switches to the transaction's type automatically.
 [x] The 5 period tabs are displayed correctly.
 [x] When selecting a period, a date can be chosen with the native picker.
 [x] The date picker does not allow selecting future dates.

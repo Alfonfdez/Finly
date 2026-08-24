@@ -1,16 +1,21 @@
 import { useMemo } from 'react';
+import { useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { t } from '../i18n';
-import { PERIODS } from '../constants/types';
+import { PERIODS, type RootStackParamList } from '../constants/types';
 import { isSameDay } from '../utils/formatters';
 import { transactionRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
 import TransactionForm from '../components/TransactionForm';
 
+type AddTransactionRouteProp = RouteProp<RootStackParamList, 'AddTransaction'>;
+
 export default function AddTransactionScreen() {
+  const route = useRoute<AddTransactionRouteProp>();
+  const routeType = route.params?.type;
   const { config } = useConfig();
-  const { activeType, activePeriod, customDate, selectedDate, accounts, accountsWithBalance, activeAccount } = useApp();
+  const { activeType, activePeriod, customDate, selectedDate, accounts, accountsWithBalance, activeAccount, changeType } = useApp();
   const labels = t();
 
   const initialAccountId = useMemo(() => {
@@ -32,7 +37,7 @@ export default function AddTransactionScreen() {
 
   return (
     <TransactionForm
-      initialType={activeType}
+      initialType={routeType ?? activeType}
       initialAccountId={initialAccountId}
       initialCategoryId={null}
       initialReorderedCategory={null}
@@ -42,7 +47,10 @@ export default function AddTransactionScreen() {
       submitLabel={labels.add_submit}
       errorTitle={labels.add_error_title}
       errorMessage={labels.add_error_message}
-      onSubmit={async (data, tagIds) => { await transactionRepository.createWithTags(data, tagIds); }}
+      onSubmit={async (data, tagIds) => {
+        await transactionRepository.createWithTags(data, tagIds);
+        changeType(data.type);
+      }}
       resetTagsOnFirstFocus
     />
   );

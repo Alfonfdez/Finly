@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { formatPeriodText } from '../utils/formatters';
 import type { Period } from './calendars/types';
 import { PERIODS } from '../constants/types';
@@ -78,31 +78,34 @@ export default function CalendarModal({
       maxWidth={380}
       padding={16}
       overlayPadding={24}
+      maxHeight={'85%'}
       backgroundColor={c.background}
       shadow
     >
-      <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>{labels[TITLE_KEYS[period]]}</Text>
-      {period !== PERIODS.custom && <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(13) }]}>{formatPeriodText(period, tempDate, labels.months, labels.months_short)}</Text>}
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>{labels[TITLE_KEYS[period]]}</Text>
+        {period !== PERIODS.custom && <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(13) }]}>{formatPeriodText(period, tempDate, labels.months, labels.months_short)}</Text>}
 
-      {period === PERIODS.day && (
-        <DayPicker date={tempDate} onSelect={handleSelect} />
-      )}
-      {period === PERIODS.week && (
-        <WeekPicker date={tempDate} onSelect={handleSelect} />
-      )}
-      {period === PERIODS.month && (
-        <MonthGrid date={tempDate} onSelect={handleSelect} />
-      )}
-      {period === PERIODS.year && (
-        <YearGrid date={tempDate} onSelect={handleSelect} />
-      )}
-      {period === PERIODS.custom && (
-        <PeriodPicker
-          tempStart={tempRangeStart}
-          tempEnd={tempRangeEnd}
-          onTempRangeChange={handleRangeChange}
-        />
-      )}
+        {period === PERIODS.day && (
+          <DayPicker date={tempDate} onSelect={handleSelect} />
+        )}
+        {period === PERIODS.week && (
+          <WeekPicker date={tempDate} onSelect={handleSelect} />
+        )}
+        {period === PERIODS.month && (
+          <MonthGrid date={tempDate} onSelect={handleSelect} />
+        )}
+        {period === PERIODS.year && (
+          <YearGrid date={tempDate} onSelect={handleSelect} />
+        )}
+        {period === PERIODS.custom && (
+          <PeriodPicker
+            tempStart={tempRangeStart}
+            tempEnd={tempRangeEnd}
+            onTempRangeChange={handleRangeChange}
+          />
+        )}
+      </ScrollView>
 
       <View style={[styles.buttons, { borderTopColor: c.border }]}>
         <TouchableOpacity style={[styles.cancelButton, { backgroundColor: c.surface }]} onPress={handleCancel}>
@@ -117,6 +120,7 @@ export default function CalendarModal({
 }
 
 const styles = StyleSheet.create({
+  scrollContent: { flexGrow: 1 },
   title: { fontWeight: '700', marginBottom: 2 },
   subtitle: { marginBottom: 12 },
   buttons: {

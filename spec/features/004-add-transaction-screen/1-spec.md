@@ -10,13 +10,16 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 ### 1. Access and navigation
 
 - The "+" button (FAB) on the HomeScreen navigates to `AddTransactionScreen`.
+- The AllTransactionsScreen FAB also navigates here, passing a `type` route param matching its selected type tab ("All" defaults to "expense").
 - The screen has a back button (left arrow) in the header to return to Home.
 - The header title is "Add transaction" (multilingual).
 
 ### 2. Type selector (tabs)
 
 - Two tabs: "Expenses" / "Income" (multilingual).
-- The default selected tab matches the last type used on the main screen (HomeScreen).
+- The default selected tab is determined by:
+  1. If a `type` route param was passed (from AllTransactions), use it.
+  2. Otherwise, fall back to the last type used on the main screen (activeType from AppContext).
 - When changing tabs, the transaction type to create is updated.
 
 ### 3. Amount field
@@ -147,7 +150,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 
 - [x] The Home "+" button navigates to the add transaction screen.
 - [x] The header shows a back arrow and "Add transaction" title in the active language.
-- [x] The "Expenses"/"Income" tabs show the type inherited from Home.
+- [x] The "Expenses"/"Income" tabs show the type inherited from the route param (AllTransactions) or from Home (AppContext).
 - [x] The amount input validates a maximum of 2 decimals and shows a red error if not valid.
 - [x] The calculator icon is visible but not functional (TODO).
 - [x] The displayed account matches the one selected in Home.

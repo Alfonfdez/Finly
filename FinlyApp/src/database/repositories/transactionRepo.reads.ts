@@ -234,6 +234,20 @@ export const transactionReads = {
     return map;
   },
 
+  async countByAccountIdsMap(ids: number[]): Promise<Record<number, number>> {
+    if (ids.length === 0) return {};
+    const db = await getDrizzle();
+    const rows = await db
+      .select({ account_id: transactions.account_id, count: sql<number>`COUNT(*)` })
+      .from(transactions)
+      .where(inArray(transactions.account_id, ids))
+      .groupBy(transactions.account_id)
+      .all();
+    const map: Record<number, number> = {};
+    for (const row of rows) map[row.account_id] = row.count;
+    return map;
+  },
+
   async breakdownByCategoriesAndTags(
     accountId: number | null,
     categoryIds: number[],
