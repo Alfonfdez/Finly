@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useLayoutEffect } from 'react';
+import { useState, useMemo, useCallback, useLayoutEffect, useRef, type ReactNode } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
 } from 'react-native';
@@ -37,21 +37,24 @@ export default function AccountsScreen() {
   const [searchActive, setSearchActive] = useState(false);
   const [searchText, setSearchText] = useState('');
 
+  const headerRightRef = useRef<() => ReactNode>(null);
+  headerRightRef.current = () => (
+    <TouchableOpacity
+      onPress={() => {
+        setSearchActive(!searchActive);
+        setSearchText('');
+      }}
+      style={styles.searchButton}
+    >
+      <Ionicons name="search-outline" size={22} color={c.text} />
+    </TouchableOpacity>
+  );
+
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerRight: () => (
-        <TouchableOpacity
-          onPress={() => {
-            setSearchActive(!searchActive);
-            setSearchText('');
-          }}
-          style={styles.searchButton}
-        >
-          <Ionicons name="search-outline" size={22} color={c.text} />
-        </TouchableOpacity>
-      ),
+      headerRight: () => headerRightRef.current?.(),
     });
-  }, [navigation, searchActive, c.text]);
+  }, [navigation, searchActive]);
 
   const loadData = useCallback(async (): Promise<{ accounts: AccountWithBalance[]; total: number }> => {
     const list = await accountRepository.list(USER_ID);

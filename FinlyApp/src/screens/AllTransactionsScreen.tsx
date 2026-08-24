@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useLayoutEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { View, Text, SectionList, TouchableOpacity, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
@@ -34,7 +34,7 @@ import SelectToggleButton from '../components/SelectToggleButton';
 
 export default function AllTransactionsScreen() {
   const navigation = useNavigation<NavigationProp<'AllTransactions'>>();
-  const { categories, categoriesById, accounts, activeAccount, accountsWithBalance, tags, activePeriod, selectedDate, customDate, changePeriod, setSelectedDate, setCustomDate } = useApp();
+  const { categories, categoriesById, accounts, activeAccount, accountsWithBalance, tags, activePeriod, selectedDate, customDate, changePeriod, setSelectedDate, setCustomDate, refresh, selectAccount } = useApp();
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -86,10 +86,11 @@ export default function AllTransactionsScreen() {
       exitSelectMode();
       const updated = await transactionRepository.list({});
       setAllTransactions(updated);
+      refresh();
     } catch {
       showErrorAlert(labels);
     }
-  }, [selectedIds, setAllTransactions, setDeleteModalVisible, exitSelectMode, labels]);
+  }, [selectedIds, setAllTransactions, setDeleteModalVisible, exitSelectMode, labels, refresh]);
 
   const keyExtractor = useCallback((item: Transaction) => item.id.toString(), []);
 
@@ -128,26 +129,30 @@ export default function AllTransactionsScreen() {
     return labels.filter_categories_count(selectedCategoryIds.length);
   }, [selectedCategoryIds, typeTab, categories, labels]);
 
+  const hasSections = filters.sections.length > 0;
+
+  const headerRightRef = useRef<() => ReactNode>(null);
+  headerRightRef.current = hasSections ? () => (
+    <View style={HEADER_BUTTONS}>
+      <SelectToggleButton
+        active={selectMode}
+        onToggle={toggleSelectMode}
+        color={c.primary}
+      />
+      <TouchableOpacity
+        onPress={toggleSearch}
+        style={HEADER_BUTTONS}
+      >
+        <Ionicons name="search-outline" size={22} color={c.text} />
+      </TouchableOpacity>
+    </View>
+  ) : null;
+
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerRight: () =>
-        filters.sections.length > 0 ? (
-          <View style={HEADER_BUTTONS}>
-            <SelectToggleButton
-              active={selectMode}
-              onToggle={toggleSelectMode}
-              color={c.primary}
-            />
-            <TouchableOpacity
-              onPress={toggleSearch}
-              style={HEADER_BUTTONS}
-            >
-              <Ionicons name="search-outline" size={22} color={c.text} />
-            </TouchableOpacity>
-          </View>
-        ) : null,
+      headerRight: () => headerRightRef.current?.(),
     });
-  }, [navigation, selectMode, filters.sections, c.text, c.primary, toggleSelectMode, toggleSearch]);
+  }, [navigation, selectMode, hasSections, c.text, c.primary, toggleSelectMode, toggleSearch]);
 
   const handleRangeChange = useCallback((start: Date, end: Date) => {
     setCustomDate({ start: startOfDay(start), end: endOfDay(end) });
@@ -254,7 +259,11 @@ export default function AllTransactionsScreen() {
         visible={filters.accountModalVisible}
         accounts={accountsWithBalance}
         selectedId={filters.selectedAccountId}
-        onSelect={filters.selectAccount}
+        onSelect={(id) => {
+          filters.selectAccount(id);
+          const account = accountsWithBalance.find(a => a.id === id);
+          if (account) selectAccount(account);
+        }}
         onClose={filters.closeAccountModal}
       />
 

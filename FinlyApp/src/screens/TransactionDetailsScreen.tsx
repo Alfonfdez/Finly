@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
+import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
 import { formatCurrency, formatDateLong, formatDateTimeShort, parseDbDate } from '../utils/formatters';
 import { deletePhotoFile, parsePhotos } from '../utils/photoUtils';
 import { showErrorAlert } from '../utils/errors';
@@ -31,6 +32,8 @@ export default function TransactionDetailsScreen() {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
+
+  const deferredRefresh = useDeferredRefresh(refresh);
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -88,9 +91,9 @@ export default function TransactionDetailsScreen() {
         await deletePhotoFile(uri);
       }
       await transactionRepository.delete(transactionId);
-      await refresh();
       setDeleting(false);
       navigation.goBack();
+      deferredRefresh();
     } catch (err) {
       console.error('Failed to delete transaction:', err);
       showErrorAlert(labels);

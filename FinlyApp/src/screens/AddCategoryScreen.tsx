@@ -1,4 +1,4 @@
-import { useState, useMemo, useLayoutEffect } from 'react';
+import { useState, useMemo, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,21 +31,24 @@ export default function AddCategoryScreen() {
   const [searchActive, setSearchActive] = useState(false);
   const [searchText, setSearchText] = useState('');
 
+  const headerRightRef = useRef<() => ReactNode>(null);
+  headerRightRef.current = () => (
+    <TouchableOpacity
+      onPress={() => {
+        setSearchActive(!searchActive);
+        setSearchText('');
+      }}
+      style={styles.searchButton}
+    >
+      <Ionicons name="search-outline" size={22} color={c.text} />
+    </TouchableOpacity>
+  );
+
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerRight: () => (
-        <TouchableOpacity
-          onPress={() => {
-            setSearchActive(!searchActive);
-            setSearchText('');
-          }}
-          style={styles.searchButton}
-        >
-          <Ionicons name="search-outline" size={22} color={c.text} />
-        </TouchableOpacity>
-      ),
+      headerRight: () => headerRightRef.current?.(),
     });
-  }, [navigation, searchActive, c.text]);
+  }, [navigation, searchActive]);
 
   const categoriesByType = useMemo(() => {
     const filtered = categories.filter((cat) => cat.type === type);
