@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
@@ -11,7 +12,7 @@ interface Props {
   style?: StyleProp<ViewStyle>;
 }
 
-export default function DrawerMenuButton({ size = 24, accessibilityLabel, hitSlop, style }: Props) {
+export default memo(function DrawerMenuButton({ size = 24, accessibilityLabel, hitSlop, style }: Props) {
   const navigation = useNavigation();
   const { activeColors: c } = useConfig();
 
@@ -26,7 +27,7 @@ export default function DrawerMenuButton({ size = 24, accessibilityLabel, hitSlo
       <Ionicons name="menu-outline" size={size} color={c.text} />
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   button: {

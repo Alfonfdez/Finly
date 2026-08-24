@@ -5,6 +5,7 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import { useConfig, type Config } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFocusLoad } from '../hooks/useFocusLoad';
+import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useColorSelection } from '../hooks/useColorSelection';
 import { t, getDisplayAccountName, getDefaultEnglishAccountName, getAccountName, getDefaultAccountIdByName, getDisplayAccountDescription, getDefaultEnglishAccountDescription, getAccountDescription } from '../i18n';
@@ -30,6 +31,8 @@ export default function ModifyAccountScreen() {
   const navigation = useNavigation<NavigationProp<'ModifyAccount'>>();
   const route = useRoute<ModifyAccountRouteProp>();
   const { accountId } = route.params;
+
+  const deferredRefreshAccounts = useDeferredRefresh(refreshAccounts);
 
   const { data: account } = useFocusLoad(
     () => accountRepository.getById(accountId),
@@ -100,8 +103,8 @@ export default function ModifyAccountScreen() {
     }
     try {
       await accountRepository.update(accountId, updateData);
-      await refreshAccounts();
       navigation.goBack();
+      deferredRefreshAccounts();
     } catch (err) {
       console.error('Failed to update account:', err);
       showErrorAlert(labels);
@@ -111,7 +114,6 @@ export default function ModifyAccountScreen() {
   const handleDeleteConfirm = async () => {
     try {
       await accountRepository.delete(accountId);
-      await refreshAccounts();
 
       const updates: Partial<Config> = {};
       if (config.homeDefaultAccountId === accountId) {
@@ -126,6 +128,7 @@ export default function ModifyAccountScreen() {
       }
 
       navigation.goBack();
+      deferredRefreshAccounts();
     } catch (err) {
       console.error('Failed to delete account:', err);
       showErrorAlert(labels);

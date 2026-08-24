@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
+import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
@@ -22,6 +23,8 @@ export default function CreateTagScreen() {
   const navigation = useNavigation<NavigationProp<'CreateTag'>>();
   const { refreshTags, tags } = useApp();
 
+  const deferredRefreshTags = useDeferredRefresh(refreshTags);
+
   const [name, setName] = useState('');
 
   const { nameError, checkingName, handleNameChange } = useNameDuplicateCheck({
@@ -36,8 +39,8 @@ export default function CreateTagScreen() {
     if (!trimmed || nameError || checkingName) return;
     try {
       await tagRepository.create({ user_id: USER_ID, name: trimmed });
-      await refreshTags();
       navigation.goBack();
+      deferredRefreshTags();
     } catch (err) {
       console.error('Failed to create tag:', err);
       showErrorAlert(labels);

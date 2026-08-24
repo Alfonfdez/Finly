@@ -8,6 +8,7 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
 import { useColorSelection } from '../hooks/useColorSelection';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { t, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdByName } from '../i18n';
@@ -73,6 +74,9 @@ export default function ModifyCategoryScreen() {
     excludeId: categoryId,
   });
 
+  const deferredRefreshCategories = useDeferredRefresh(refreshCategories);
+  const deferredRefresh = useDeferredRefresh(refresh);
+
   const handleNameChangeLocal = (value: string) => {
     userEditedRef.current = true;
     handleNameChange(value, setName);
@@ -97,8 +101,8 @@ export default function ModifyCategoryScreen() {
         icon: selectedIcon,
         color: selectedColor,
       });
-      await refreshCategories();
       navigation.goBack();
+      deferredRefreshCategories();
     } catch (err) {
       console.error('Failed to update category:', err);
       showErrorAlert(labels);
@@ -128,9 +132,9 @@ export default function ModifyCategoryScreen() {
     setDeleteModalVisible(false);
     try {
       await categoryRepository.delete(category.id);
-      await refreshCategories();
-      await refresh();
       navigation.goBack();
+      deferredRefreshCategories();
+      deferredRefresh();
     } catch (err) {
       console.error('Failed to delete category:', err);
       showErrorAlert(labels);
@@ -141,10 +145,10 @@ export default function ModifyCategoryScreen() {
     if (targetCategoryId === null || !category) return;
     try {
       await categoryRepository.reassignAndDelete(categoryId, targetCategoryId);
-      await refreshCategories();
-      await refresh();
       setSelectModalVisible(false);
       navigation.goBack();
+      deferredRefreshCategories();
+      deferredRefresh();
     } catch (err) {
       console.error('Failed to delete category:', err);
       showErrorAlert(labels);

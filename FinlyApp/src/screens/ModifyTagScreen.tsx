@@ -5,6 +5,7 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
+import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
@@ -26,6 +27,8 @@ export default function ModifyTagScreen() {
   const route = useRoute<ModifyTagRouteProp>();
   const { tags, refreshTags } = useApp();
   const { tagId } = route.params;
+
+  const deferredRefreshTags = useDeferredRefresh(refreshTags);
 
   const tag = useMemo(
     () => tags.find(t => t.id === tagId),
@@ -62,8 +65,8 @@ export default function ModifyTagScreen() {
 
     try {
       await tagRepository.update(tagId, { name: trimmed });
-      await refreshTags();
       navigation.goBack();
+      deferredRefreshTags();
     } catch {
       showErrorAlert(labels);
     }
@@ -72,8 +75,8 @@ export default function ModifyTagScreen() {
   const handleDelete = async () => {
     try {
       await tagRepository.delete(tagId);
-      await refreshTags();
       navigation.goBack();
+      deferredRefreshTags();
     } catch {
       showErrorAlert(labels);
     }

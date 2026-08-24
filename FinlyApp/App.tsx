@@ -1,6 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { Platform, Animated, Appearance } from 'react-native';
+import { enableFreeze } from 'react-native-screens';
 import 'react-native-gesture-handler';
+
+enableFreeze(true);
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet, View, Text, Image } from 'react-native';

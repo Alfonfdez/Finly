@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useColorSelection } from '../hooks/useColorSelection';
+import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
 import { t, getDefaultCategoryIdByName, getDefaultEnglishName } from '../i18n';
 import { categoryRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, MAX_CATEGORIES_PER_TYPE, type TransactionType, USER_ID } from '../constants/types';
@@ -40,6 +41,8 @@ export default function CreateCategoryScreen() {
   const [type, setType] = useState<TransactionType>(initialType);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const { selectedColor, customColor, handleColorSelect } = useColorSelection();
+
+  const deferredRefreshCategories = useDeferredRefresh(refreshCategories);
 
   const { nameError, checkingName, handleNameChange } = useNameDuplicateCheck({
     existsByName: (value, excludeId) => categoryRepository.existsByName(value, excludeId),
@@ -79,9 +82,9 @@ export default function CreateCategoryScreen() {
         color: selectedColor,
         type,
       });
-      await refreshCategories();
       setPendingCategory(created.id, type);
       navigation.goBack();
+      deferredRefreshCategories();
     } catch (err) {
       console.error('Failed to create category:', err);
       showErrorAlert(labels);

@@ -4,6 +4,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { usePhotos } from './usePhotos';
+import { useDeferredRefresh } from './useDeferredRefresh';
 import {
   type TransactionType,
   CATEGORY_USAGE_WINDOW_DAYS,
@@ -58,7 +59,8 @@ export function useTransactionForm({
   resetTagsOnFirstFocus = false,
 }: UseTransactionFormProps) {
   const { config } = useConfig();
-  const { accounts, categories, accountsWithBalance, tags, refresh, refreshTags } = useApp();
+  const { accounts, categories, accountsWithBalance, tags, refresh: refreshAll, refreshTags } = useApp();
+  const deferredRefresh = useDeferredRefresh(refreshAll);
   const navigation = useNavigation();
 
   const selectableAccounts = useMemo(
@@ -190,14 +192,14 @@ export function useTransactionForm({
         date: dateStr,
       }, selectedTags);
 
-      refresh();
       navigation.goBack();
+      deferredRefresh();
     } catch {
       Alert.alert(errorTitle, errorMessage);
     } finally {
       setSubmitting(false);
     }
-  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, onSubmit, refresh, navigation, errorTitle, errorMessage]);
+  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, onSubmit, deferredRefresh, navigation, errorTitle, errorMessage]);
 
   const categoriesByType = useMemo(() => {
     const byType = categories.filter(c => c.type === type);
