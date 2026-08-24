@@ -10,7 +10,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
-import { TRANSACTION_TYPES, TYPE_FILTERS, type NavigationProp, type TransactionTypeFilter } from '../constants/types';
+import { TRANSACTION_TYPES, TYPE_FILTERS, PERIODS, type NavigationProp, type TransactionTypeFilter } from '../constants/types';
 import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatCurrency, resolvePeriodRange, endOfDay, startOfDay } from '../utils/formatters';
@@ -34,7 +34,7 @@ import SelectToggleButton from '../components/SelectToggleButton';
 
 export default function AllTransactionsScreen() {
   const navigation = useNavigation<NavigationProp<'AllTransactions'>>();
-  const { categories, categoriesById, accounts, activeAccount, accountsWithBalance, tags, activePeriod, selectedDate, customDate, changePeriod, setSelectedDate, setCustomDate, refresh, selectAccount } = useApp();
+  const { categories, categoriesById, accounts, activeAccount, activeType, accountsWithBalance, tags, activePeriod, selectedDate, customDate, changePeriod, setSelectedDate, setCustomDate, refresh, selectAccount } = useApp();
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -55,6 +55,14 @@ export default function AllTransactionsScreen() {
   useEffect(() => {
     setSelectedCategoryIds([]);
   }, [typeTab]);
+
+  /* eslint-disable react-hooks/exhaustive-deps -- typeTab intentionally excluded: including it causes infinite loop since this effect sets typeTab */
+  useEffect(() => {
+    if (typeTab !== TYPE_FILTERS.all) {
+      setTypeTab(activeType);
+    }
+  }, [activeType]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   const {
     searchActive, searchText, setSearchText,
@@ -93,6 +101,11 @@ export default function AllTransactionsScreen() {
   }, [selectedIds, setAllTransactions, setDeleteModalVisible, exitSelectMode, labels, refresh]);
 
   const keyExtractor = useCallback((item: Transaction) => item.id.toString(), []);
+
+  const handlePeriodChange = useCallback((period: typeof PERIODS[keyof typeof PERIODS]) => {
+    changePeriod(period);
+    if (period === PERIODS.custom) setCalendarVisible(true);
+  }, [changePeriod]);
 
   const renderSectionHeader = useCallback(({ section }: { section: { date: string } }) => (
     <TransactionDateHeader date={section.date} />
@@ -210,7 +223,7 @@ export default function AllTransactionsScreen() {
         </View>
       </View>
 
-      <PeriodTabs active={activePeriod} onChange={changePeriod} />
+      <PeriodTabs active={activePeriod} onChange={handlePeriodChange} />
       <CalendarPicker
         period={activePeriod}
         date={selectedDate}
@@ -286,7 +299,7 @@ export default function AllTransactionsScreen() {
         />
       ) : (
         <Fab
-          onPress={() => navigation.navigate('AddTransaction')}
+          onPress={() => navigation.navigate('AddTransaction', { type: typeTab === TYPE_FILTERS.all ? TRANSACTION_TYPES.expense : typeTab })}
           accessibilityLabel={labels.home_add}
         />
       )}

@@ -1,4 +1,4 @@
-import { and, eq, ne, sql } from 'drizzle-orm';
+import { and, eq, inArray, ne, sql } from 'drizzle-orm';
 import { getDrizzle, withTransaction } from '../drizzle/engine';
 import { accounts, transactions } from '../drizzle/schema';
 import { runResultOf } from '../drizzle/proxy';
@@ -60,6 +60,15 @@ export const accountRepo = {
     await withTransaction(async (db) => {
       await db.delete(transactions).where(eq(transactions.account_id, id)).run();
       await db.delete(accounts).where(and(eq(accounts.id, id), eq(accounts.is_total, 0))).run();
+    });
+  },
+
+  async deleteMany(ids: number[]): Promise<void> {
+    if (ids.length === 0) return;
+    await deleteTransactionPhotos('account_id', ...ids);
+    await withTransaction(async (db) => {
+      await db.delete(transactions).where(inArray(transactions.account_id, ids)).run();
+      await db.delete(accounts).where(and(inArray(accounts.id, ids), eq(accounts.is_total, 0))).run();
     });
   },
 

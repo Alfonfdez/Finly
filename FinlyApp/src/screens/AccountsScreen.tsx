@@ -1,13 +1,16 @@
-import { useState, useMemo, useCallback, useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
 } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
+import { HEADER_BUTTONS } from '../components/componentStyles';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { useConfig } from '../context/ConfigContext';
+import { useConfig, type Config } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useBalanceVisibility } from '../hooks/useBalanceVisibility';
+import { useSelectableScreen } from '../hooks/useSelectableScreen';
+import { useApp } from '../context/AppContext';
 import { t, getDisplayAccountName, getDisplayAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
@@ -22,39 +25,48 @@ import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
 import ListItemRow from '../components/ListItemRow';
 import SearchBar from '../components/SearchBar';
+import SelectToggleButton from '../components/SelectToggleButton';
+import SelectionActionBar from '../components/SelectionActionBar';
+import ConfirmationModal from '../components/ConfirmationModal';
+import { showErrorAlert } from '../utils/errors';
 
 type AccountWithBalance = Account & { balance: number };
 
 export default function AccountsScreen() {
-  const { activeColors: c, config } = useConfig();
+  const { activeColors: c, config, updateConfig } = useConfig();
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp<'Accounts'>>();
+  const { refreshAccounts, refresh } = useApp();
 
   const [accounts, setAccounts] = useState<AccountWithBalance[]>([]);
   const [total, setTotal] = useState(0);
+  const [guardVisible, setGuardVisible] = useState(false);
   const { isBalanceHidden, toggleReveal } = useBalanceVisibility(config.hideBalances);
-  const [searchActive, setSearchActive] = useState(false);
-  const [searchText, setSearchText] = useState('');
 
-  const headerRightRef = useRef<() => ReactNode>(null);
-  headerRightRef.current = () => (
-    <TouchableOpacity
-      onPress={() => {
-        setSearchActive(!searchActive);
-        setSearchText('');
-      }}
-      style={styles.searchButton}
-    >
-      <Ionicons name="search-outline" size={22} color={c.text} />
-    </TouchableOpacity>
+  const nonTotalCount = useMemo(
+    () => accounts.filter(a => !isTotalAccount(a)).length,
+    [accounts]
   );
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => headerRightRef.current?.(),
-    });
-  }, [navigation, searchActive]);
+  const {
+    searchActive, searchText, setSearchText,
+    selectMode, selectedIds,
+    deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
+    toggleSelectMode, toggleSearch, closeSearch,
+  } = useSelectableScreen({
+    navigation,
+    hasItems: nonTotalCount > 1,
+    showHeader: nonTotalCount > 1,
+    headerRight: () => (
+      <View style={HEADER_BUTTONS}>
+        <SelectToggleButton active={selectMode} onToggle={toggleSelectMode} color={c.primary} />
+        <TouchableOpacity onPress={toggleSearch} style={HEADER_BUTTONS}>
+          <Ionicons name="search-outline" size={22} color={c.text} />
+        </TouchableOpacity>
+      </View>
+    ),
+  });
 
   const loadData = useCallback(async (): Promise<{ accounts: AccountWithBalance[]; total: number }> => {
     const list = await accountRepository.list(USER_ID);
@@ -88,8 +100,47 @@ export default function AccountsScreen() {
     return accounts.filter(a => isTotalAccount(a) || matchesAccountSearch(a, searchText));
   }, [accounts, searchText]);
 
+  const handleDeletePress = useCallback(() => {
+    if (selectedIds.size >= nonTotalCount) {
+      setGuardVisible(true);
+      return;
+    }
+    setDeleteModalVisible(true);
+  }, [selectedIds.size, nonTotalCount, setDeleteModalVisible]);
+
+  const handleBulkDelete = useCallback(async () => {
+    setDeleteModalVisible(false);
+    try {
+      await accountRepository.deleteMany([...selectedIds]);
+
+      const updates: Partial<Config> = {};
+      if (config.homeDefaultAccountId !== null && selectedIds.has(config.homeDefaultAccountId)) {
+        updates.homeDefaultAccountId = null;
+      }
+      if (config.addDefaultAccountId !== null && selectedIds.has(config.addDefaultAccountId)) {
+        const remaining = accounts.filter(a => !selectedIds.has(a.id) && !isTotalAccount(a));
+        updates.addDefaultAccountId = remaining.length > 0 ? remaining[0].id : null;
+      }
+      if (Object.keys(updates).length > 0) {
+        updateConfig(updates);
+      }
+
+      exitSelectMode();
+      const { accounts: updated, total: newTotal } = await loadData();
+      setAccounts(updated);
+      setTotal(newTotal);
+      await refreshAccounts();
+      refresh();
+    } catch (err) {
+      console.error('Failed to delete accounts:', err);
+      showErrorAlert(labels);
+    }
+  }, [selectedIds, config, accounts, exitSelectMode, loadData, refreshAccounts, refresh, updateConfig, labels, setDeleteModalVisible]);
+
   const renderItem = useCallback(({ item }: { item: AccountWithBalance }) => {
     const isTotal = isTotalAccount(item);
+    const selectable = !isTotal;
+    const selected = selectMode && selectedIds.has(item.id);
     return (
       <>
         <ListItemRow
@@ -104,31 +155,45 @@ export default function AccountsScreen() {
           badgeRadius={12}
           badgeAlpha={13}
           right={
-            <Text
-              style={[
-                styles.accountBalance,
-                {
-                  color: isBalanceHidden ? c.textSecondary : (item.balance >= 0 ? c.green : c.red),
-                  fontSize: fs(15),
-                },
-              ]}
-            >
-              {isBalanceHidden
-                ? HIDDEN_BALANCE
-                : formatSignedCurrency(item.balance, config.currency, config.decimalSeparator)}
-            </Text>
+            selectMode && selectable ? (
+              <Ionicons
+                name={selected ? 'checkbox' : 'square-outline'}
+                size={24}
+                color={selected ? c.primary : c.textSecondary}
+              />
+            ) : (
+              <Text
+                style={[
+                  styles.accountBalance,
+                  {
+                    color: isBalanceHidden ? c.textSecondary : (item.balance >= 0 ? c.green : c.red),
+                    fontSize: fs(15),
+                  },
+                ]}
+              >
+                {isBalanceHidden
+                  ? HIDDEN_BALANCE
+                  : formatSignedCurrency(item.balance, config.currency, config.decimalSeparator)}
+              </Text>
+            )
           }
           style={[
             styles.accountRow,
             { backgroundColor: isTotal ? withAlpha(c.primary, 8) : c.surface },
           ]}
-          onPress={() => navigation.navigate('ModifyAccount', { accountId: item.id })}
+          onPress={() => {
+            if (selectMode) {
+              if (selectable) toggleItem(item.id);
+              return;
+            }
+            navigation.navigate('ModifyAccount', { accountId: item.id });
+          }}
           accessibilityLabel={`${getDisplayAccountName(item)} ${isBalanceHidden ? HIDDEN_BALANCE : formatCurrency(item.balance, config.currency, config.decimalSeparator)}`}
         />
         {isTotal && <View style={[styles.separator, { backgroundColor: withAlpha(c.primary, 25) }]} />}
       </>
     );
-  }, [c, config, navigation, isBalanceHidden, fs]);
+  }, [c, config, navigation, isBalanceHidden, fs, selectMode, selectedIds, toggleItem]);
 
   const renderEmpty = useCallback(() => (
     <EmptyState icon="wallet-outline" message={labels.accounts_empty} />
@@ -143,27 +208,29 @@ export default function AccountsScreen() {
 
   return (
     <ScreenShell>
-      <View style={[styles.totalSection, { backgroundColor: c.surface, borderBottomColor: c.border }]}>
-        <Text style={[styles.totalLabel, { color: c.textSecondary, fontSize: fs(14) }]}>
-          {labels.accounts_total}:
-        </Text>
-        <View style={styles.totalRow}>
-          <Text
-            style={[
-              styles.totalValue,
-              {
-                color: isBalanceHidden ? c.textSecondary : (total >= 0 ? c.green : c.red),
-                fontSize: fs(22),
-              },
-            ]}
-          >
-            {isBalanceHidden
-              ? HIDDEN_BALANCE
-              : formatSignedCurrency(total, config.currency, config.decimalSeparator)}
+      {!selectMode && (
+        <View style={[styles.totalSection, { backgroundColor: c.surface, borderBottomColor: c.border }]}>
+          <Text style={[styles.totalLabel, { color: c.textSecondary, fontSize: fs(14) }]}>
+            {labels.accounts_total}:
           </Text>
-          <EyeToggle isHidden={isBalanceHidden} onToggle={toggleReveal} color={c.textSecondary} />
+          <View style={styles.totalRow}>
+            <Text
+              style={[
+                styles.totalValue,
+                {
+                  color: isBalanceHidden ? c.textSecondary : (total >= 0 ? c.green : c.red),
+                  fontSize: fs(22),
+                },
+              ]}
+            >
+              {isBalanceHidden
+                ? HIDDEN_BALANCE
+                : formatSignedCurrency(total, config.currency, config.decimalSeparator)}
+            </Text>
+            <EyeToggle isHidden={isBalanceHidden} onToggle={toggleReveal} color={c.textSecondary} />
+          </View>
         </View>
-      </View>
+      )}
 
       {searchActive && (
         <View style={styles.searchWrap}>
@@ -171,10 +238,7 @@ export default function AccountsScreen() {
             placeholder={labels.accounts_search}
             value={searchText}
             onChangeText={setSearchText}
-            onClose={() => {
-              setSearchActive(false);
-              setSearchText('');
-            }}
+            onClose={closeSearch}
             autoFocus
           />
         </View>
@@ -189,9 +253,39 @@ export default function AccountsScreen() {
         contentContainerStyle={filteredAccounts.length === 0 ? styles.emptyList : styles.list}
       />
 
-      <Fab
-        onPress={() => navigation.navigate('CreateAccount')}
-        accessibilityLabel={labels.a11y_add}
+      {selectMode ? (
+        <SelectionActionBar
+          selectedCount={selectedIds.size}
+          deleteLabel={labels.accounts_bulk_delete(selectedIds.size)}
+          cancelLabel={labels.cancel}
+          onDelete={handleDeletePress}
+          onCancel={exitSelectMode}
+        />
+      ) : (
+        <Fab
+          onPress={() => navigation.navigate('CreateAccount')}
+          accessibilityLabel={labels.a11y_add}
+        />
+      )}
+
+      <ConfirmationModal
+        visible={deleteModalVisible}
+        title={labels.accounts_bulk_delete_confirm_title(selectedIds.size)}
+        message={labels.accounts_bulk_delete_confirm_message}
+        confirmLabel={labels.delete}
+        cancelLabel={labels.cancel}
+        onConfirm={handleBulkDelete}
+        onCancel={() => setDeleteModalVisible(false)}
+      />
+
+      <ConfirmationModal
+        visible={guardVisible}
+        title={labels.accounts_bulk_delete_confirm_title(selectedIds.size)}
+        message={labels.accounts_bulk_delete_min_one}
+        confirmLabel={labels.common_close}
+        destructive={false}
+        onConfirm={() => setGuardVisible(false)}
+        onCancel={() => setGuardVisible(false)}
       />
     </ScreenShell>
   );
@@ -201,10 +295,6 @@ const styles = StyleSheet.create({
   searchWrap: {
     paddingHorizontal: 16,
     paddingTop: 16,
-  },
-  searchButton: {
-    marginRight: 8,
-    padding: 4,
   },
   totalSection: {
     paddingHorizontal: 20,

@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, ActivityIndicator } from 'react-native';
 import { useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
+import { useApp } from '../context/AppContext';
 import { t } from '../i18n';
 import type { RootStackParamList } from '../constants/types';
 import { parseDbDate } from '../utils/formatters';
@@ -18,6 +19,7 @@ export default function ModifyTransactionScreen() {
   const route = useRoute<ModifyRouteProp>();
   const { transactionId } = route.params;
   const { activeColors: c } = useConfig();
+  const { changeType } = useApp();
   const labels = t();
 
   const loadTransaction = useCallback(async () => {
@@ -60,7 +62,10 @@ export default function ModifyTransactionScreen() {
       submitLabel={labels.modify_save}
       errorTitle={labels.modify_error_title}
       errorMessage={labels.modify_error_message}
-      onSubmit={async (data, tagIds) => { await transactionRepository.updateWithTags(transactionId, data, tagIds); }}
+      onSubmit={async (data, tagIds) => {
+        await transactionRepository.updateWithTags(transactionId, data, tagIds);
+        changeType(data.type);
+      }}
     />
   );
 }

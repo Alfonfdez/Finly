@@ -52,6 +52,7 @@
 
 - `PeriodTabs` component with 5 options: Day | Week | Month | Year | Period.
 - Default: **Year** (current year).
+- Selecting "Period" auto-opens the calendar picker, matching HomeScreen behavior.
 - `CalendarPicker` shown below the period tabs, same as HomeScreen.
 - Period date ranges computed the same way as HomeScreen (day/week/month/year/custom).
 - The transaction list filters by the selected period's start/end dates.
@@ -96,6 +97,7 @@
 - Floating "+" button centered at the bottom (same style as in 014 and 011).
 - Background: `c.primary`. Icon: `Ionicons "add"` with color `c.background`.
 - Position: `position: absolute`, `bottom: 56`, `alignSelf: 'center'`.
+- The FAB passes a `type` route param to AddTransaction matching the selected type tab. When "All" is selected, it defaults to "expense".
 
 ### 11. Multi-select bulk delete
 
@@ -107,6 +109,14 @@
 - A bottom `SelectionActionBar` with "Cancel" and `Delete (N)` (`transactions_bulk_delete(n)`) appears; the delete button is disabled while no transactions are selected.
 - Deleting opens a single `ConfirmationModal`: `Delete N transactions?` (`transactions_bulk_delete_confirm_title(n)`) with message "The selected transactions will be permanently deleted. This cannot be undone." (`transactions_bulk_delete_confirm_message`) and Cancel / Delete buttons.
 - On confirm: `transactionRepository.deleteMany(ids)` cleans up photos, removes junction rows, and deletes the transactions in a single database transaction; the selection and selection mode reset, and the list reloads.
+
+---
+
+### 12. Type tab sync after adding a transaction
+
+- When the user returns from AddTransaction, the type tab updates to reflect the type of the just-added transaction — but only when the tab was set to a specific type ("Expenses" or "Income").
+- When the tab is "All", it remains unchanged after returning.
+- This sync works via AppContext's `activeType`, which AddTransaction updates on submit via `changeType(data.type)`.
 
 ---
 
@@ -150,9 +160,11 @@
 - [x] Transactions are grouped by day with a formatted date header.
 - [x] If no transactions match, an empty state is shown.
 - [x] The floating "+" button navigates to "Add transaction".
+- [x] The "+" button passes a `type` param to AddTransaction matching the selected tab ("All" defaults to "expense").
 - [x] All texts change when changing the language.
 - [x] The screen respects the active theme and text size.
 - [x] When there are no transactions, the header Select and Search actions are hidden.
 - [x] "Select" in the header enters selection mode; transaction rows show checkboxes and tapping toggles selection instead of navigating.
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
 - [x] Bulk delete confirms once for the whole batch and permanently deletes the selected transactions (including photos and tag links).
+- [x] After returning from AddTransaction, the type tab matches the added transaction's type (except when "All" was selected, which stays "All").

@@ -110,7 +110,8 @@
   1. Collects all form data.
   2. Calls `transactionRepository.update(transactionId, data)` with the modified fields.
   3. Calls `refresh()` from AppContext to reload transactions.
-  4. Navigates back to the previous screen (`navigation.goBack()`).
+  4. Calls `changeType(data.type)` from AppContext to sync the active type tab in HomeScreen/AllTransactionsScreen.
+  5. Navigates back to the previous screen (`navigation.goBack()`).
 
 ---
 
@@ -150,7 +151,7 @@
 - [x] The photo section preloads existing photo and allows replacement/removal (full implementation in 023).
 - [x] The "Save" button is disabled if category, valid amount, day, or account is missing.
 - [x] The help text is shown when the button is disabled.
-- [x] Tapping "Save" updates the transaction and returns to the previous screen.
+- [x] Tapping "Save" updates the transaction, syncs the active type tab via `changeType(data.type)`, and returns to the previous screen.
 - [x] Data refreshes when returning to the list (useFocusEffect).
 - [x] All texts change when changing the language in settings.
 - [x] The screen respects the active theme (dark/light).

@@ -155,10 +155,10 @@ useEffect(() => {
 - Overlay: `rgba(0,0,0,0.6)`.
 - Content: title (`fs(16)`, `'700'`), message (`fs(14)`, `textSecondary`).
 - Buttons (three styles):
-  - **Cancel**: surface bg, `c.border` border, `c.text` text. Neutral/dismiss action.
+  - **Cancel**: background bg, `c.border` border, `c.text` text. Neutral/dismiss action.
   - **Primary action**: `c.primary` bg, `c.background` text. Used for the safe/recommended alternative (e.g. "Move transactions first" when deleting a category that has transactions).
   - **Destructive/Confirm**: red bg (`#F87171`), white text. Used for the irreversible action (delete, permanent delete).
-- When more than two buttons are needed, lay them out as a column: Cancel on its own full-width row, then a two-button row with the remaining actions below it.
+- When more than two buttons are needed, lay them out as a column: a two-button row with the remaining actions, then Cancel on its own full-width row below.
 - Max width: `360`, border radius: `16`, padding: `24`.
 
 ## Accessibility

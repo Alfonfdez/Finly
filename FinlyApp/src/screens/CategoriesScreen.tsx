@@ -49,7 +49,7 @@ export default function CategoriesScreen() {
     selectMode, selectedIds,
     deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
-  } = useSelectableScreen({ navigation, hasItems: categoriesByType.length > 0, showHeader: categoriesByType.length > 0, headerRight: () => (
+  } = useSelectableScreen({ navigation, hasItems: categoriesByType.length > 1, showHeader: categoriesByType.length > 1, headerRight: () => (
     <View style={HEADER_BUTTONS}>
       <SelectToggleButton active={selectMode} onToggle={toggleSelectMode} color={c.primary} />
       <TouchableOpacity onPress={toggleSearch} style={HEADER_BUTTONS}>

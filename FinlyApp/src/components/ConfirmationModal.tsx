@@ -39,9 +39,9 @@ export default function ConfirmationModal({
       )}
       {children}
       <View style={[styles.buttons, hasMove && styles.buttonsStacked]}>
-        {cancelLabel ? (
+        {cancelLabel && !hasMove ? (
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: c.surface, borderColor: c.border }]}
+            style={[styles.button, { backgroundColor: c.background, borderColor: c.border }]}
             onPress={onCancel}
             accessibilityRole="button"
             accessibilityLabel={cancelLabel}
@@ -95,6 +95,16 @@ export default function ConfirmationModal({
             </Text>
           </TouchableOpacity>
         )}
+        {hasMove && cancelLabel ? (
+          <TouchableOpacity
+            style={[styles.button, { flex: 0 }, { backgroundColor: c.background, borderColor: c.border }]}
+            onPress={onCancel}
+            accessibilityRole="button"
+            accessibilityLabel={cancelLabel}
+          >
+            <Text style={[styles.buttonText, { color: c.text, fontSize: fs(14) }]}>{cancelLabel}</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
     </ModalShell>
   );
