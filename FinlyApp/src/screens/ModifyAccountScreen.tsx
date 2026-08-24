@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import { useConfig, type Config } from '../context/ConfigContext';
+import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
@@ -10,6 +10,7 @@ import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useColorSelection } from '../hooks/useColorSelection';
 import { t, getDisplayAccountName, getDefaultEnglishAccountName, getAccountName, getDefaultAccountIdByName, getDisplayAccountDescription, getDefaultEnglishAccountDescription, getAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
+import { sanitizeDefaultAccounts } from '../database/configDefaults';
 import { isTotalAccount } from '../database/helpers';
 import type { Account } from '../database/types';
 import type { RootStackParamList, NavigationProp } from '../constants/types';
@@ -115,14 +116,8 @@ export default function ModifyAccountScreen() {
     try {
       await accountRepository.delete(accountId);
 
-      const updates: Partial<Config> = {};
-      if (config.homeDefaultAccountId === accountId) {
-        updates.homeDefaultAccountId = null;
-      }
-      if (config.addDefaultAccountId === accountId) {
-        const remaining = accounts.filter(a => a.id !== accountId && !isTotalAccount(a));
-        updates.addDefaultAccountId = remaining.length > 0 ? remaining[0].id : null;
-      }
+      const remaining = accounts.filter(a => a.id !== accountId);
+      const updates = sanitizeDefaultAccounts(config, remaining);
       if (Object.keys(updates).length > 0) {
         updateConfig(updates);
       }

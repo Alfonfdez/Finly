@@ -93,8 +93,9 @@ When changing the theme, the entire app re-renders in real time (no restart requ
 
 | Option | Type | Default | Values |
 |--------|------|---------|--------|
-| Currency | Selector (radio) | Euro € | Euro €, Dollar $, Pound £, Yen ¥ |
+| Currency | Picker modal (searchable) | Euro € | Euro €, Dollar $, Pound £, Yen ¥ |
 
+- Opens a scrollable modal with radio selection and a search bar.
 - Affects: `formatCurrency()` across all screens.
 
 #### 4.3 — Decimal separator
@@ -127,9 +128,9 @@ Subtitle: "Home screen" (multilingual).
 
 | Option | Type | Default | Values |
 |--------|------|---------|--------|
-| Default account | Selector (radio) | Total | Total, My Wallet, [other accounts...] |
+| Default account | Picker modal | Total | Total, My Wallet, [other accounts...] |
 
-- The selector lists ALL accounts (including Total), sorted with Total first.
+- Opens a scrollable modal with radio selection. Total is listed first, then all other accounts sorted alphabetically.
 - This determines which account is selected when the app starts.
 - When "Total" is selected, the HomeScreen shows aggregated data from all accounts.
 - **Acceptance:** changing this setting and restarting the app shows the selected account as active on HomeScreen.
@@ -152,9 +153,9 @@ Subtitle: "Add transaction" (multilingual).
 
 | Option | Type | Default | Values |
 |--------|------|---------|--------|
-| Default account | Selector (radio) | Not selected | Not selected, My Wallet, [other accounts...] |
+| Default account | Picker modal | Not selected | Not selected, My Wallet, [other accounts...] |
 
-- The selector lists accounts EXCLUDING Total, sorted alphabetically.
+- Opens a scrollable modal with radio selection. Excludes Total, sorted alphabetically.
 - **"Not selected" (default):** preserves current behavior — the account selected in AddTransactionScreen is the one that was active on HomeScreen. If the HomeScreen account is Total, the first non-Total account is selected instead.
 - **Specific account selected (e.g., "My Wallet"):** always pre-selects that account in AddTransactionScreen, regardless of what's selected on HomeScreen.
 - **Acceptance:** setting "My Wallet" here → go to HomeScreen with "Test" selected → tap "+" → AddTransactionScreen opens with "My Wallet" selected.
@@ -335,6 +336,7 @@ An eye icon appears next to every masked balance. The icon represents the curren
 ### Personalization — Home Screen
 - [x] Default account selector includes Total and all other accounts. Default is Total.
 - [x] Changing default account and restarting the app shows the selected account on HomeScreen.
+- [x] Deleting the account set as Home default resets to Total.
 - [x] Default period selector: Day/Week/Month/Year. Default is Month.
 - [x] Changing default period and restarting the app shows the selected period tab.
 
@@ -342,6 +344,7 @@ An eye icon appears next to every masked balance. The icon represents the curren
 - [x] Default account selector excludes Total. Default is "Not selected".
 - [x] "Not selected" preserves current behavior (inherit from HomeScreen; if Total, fallback to first non-Total).
 - [x] Selecting a specific account always pre-selects it in AddTransactionScreen.
+- [x] Deleting the account set as Add Transaction default resets to "Not selected".
 - [x] Optional fields: 3 checkboxes (Labels, Comments, Photo), all checked by default.
 - [x] Unchecking a field hides the corresponding section in AddTransactionScreen and ModifyTransactionScreen.
 

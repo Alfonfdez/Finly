@@ -6,13 +6,14 @@ import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { HEADER_BUTTONS } from '../components/componentStyles';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { useConfig, type Config } from '../context/ConfigContext';
+import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useBalanceVisibility } from '../hooks/useBalanceVisibility';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useApp } from '../context/AppContext';
 import { t, getDisplayAccountName, getDisplayAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
+import { sanitizeDefaultAccounts } from '../database/configDefaults';
 import { isTotalAccount } from '../database/helpers';
 import type { Account } from '../database/types';
 import { formatCurrency, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
@@ -113,14 +114,8 @@ export default function AccountsScreen() {
     try {
       await accountRepository.deleteMany([...selectedIds]);
 
-      const updates: Partial<Config> = {};
-      if (config.homeDefaultAccountId !== null && selectedIds.has(config.homeDefaultAccountId)) {
-        updates.homeDefaultAccountId = null;
-      }
-      if (config.addDefaultAccountId !== null && selectedIds.has(config.addDefaultAccountId)) {
-        const remaining = accounts.filter(a => !selectedIds.has(a.id) && !isTotalAccount(a));
-        updates.addDefaultAccountId = remaining.length > 0 ? remaining[0].id : null;
-      }
+      const remaining = accounts.filter(a => !selectedIds.has(a.id));
+      const updates = sanitizeDefaultAccounts(config, remaining);
       if (Object.keys(updates).length > 0) {
         updateConfig(updates);
       }

@@ -10,6 +10,7 @@ import { CURRENCY_OPTIONS } from '../../constants/currencies';
 import { DECIMAL_SEPARATORS, FIRST_DAYS, type FirstDay } from '../../constants/types';
 import SelectorInline, { type Option } from '../../components/SelectorInline';
 import SettingsSelectRow from '../../components/settings/SettingsSelectRow';
+import SettingsPickerRow from '../../components/settings/SettingsPickerRow';
 import { settingsStyles } from '../../components/settings/settingsStyles';
 
 function SenyeraIcon({ size = 16 }: { size?: number }) {
@@ -124,11 +125,13 @@ export default function RegionalScreen() {
       </View>
 
       <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_money}</Text>
-      <SettingsSelectRow
+      <SettingsPickerRow
         label={labels.settings_currency}
         options={CURRENCIES}
         selected={config.currency}
         onSelect={(v) => updateConfig({ currency: v })}
+        title={labels.settings_currency}
+        searchable
       />
       <SettingsSelectRow
         label={labels.settings_decimal_sep}

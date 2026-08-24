@@ -5,9 +5,12 @@ import { useFontSize } from '../../hooks/useFontSize';
 import { t, getDisplayAccountName } from '../../i18n';
 import { isTotalAccount } from '../../database/helpers';
 import { type Option } from '../../components/SelectorInline';
+import IconBadge from '../../components/IconBadge';
+import { badgeShapeFor } from '../../utils/badgeShape';
 import CheckboxRow from '../../components/settings/CheckboxRow';
 import ToggleRow from '../../components/settings/ToggleRow';
 import SettingsSelectRow from '../../components/settings/SettingsSelectRow';
+import SettingsPickerRow from '../../components/settings/SettingsPickerRow';
 import { settingsStyles } from '../../components/settings/settingsStyles';
 import type { Period } from '../../constants/types';
 
@@ -23,12 +26,20 @@ export default function PersonalizationScreen() {
 
   const homeAccounts: Option<string>[] = [
     { label: labels.account_total, value: 'total' },
-    ...allAccounts.filter(a => !isTotalAccount(a)).map(a => ({ label: getDisplayAccountName(a), value: String(a.id) })),
+    ...allAccounts.filter(a => !isTotalAccount(a)).map(a => ({
+      label: getDisplayAccountName(a),
+      value: String(a.id),
+      icon: <IconBadge icon={a.icon} color={a.color} shape={badgeShapeFor(config, 'account')} size={24} iconSize={14} />,
+    })),
   ];
 
   const addAccounts: Option<string>[] = [
     { label: labels.settings_not_selected, value: 'null' },
-    ...allAccounts.filter(a => !isTotalAccount(a)).sort((a, b) => a.name.localeCompare(b.name)).map(a => ({ label: getDisplayAccountName(a), value: String(a.id) })),
+    ...allAccounts.filter(a => !isTotalAccount(a)).sort((a, b) => a.name.localeCompare(b.name)).map(a => ({
+      label: getDisplayAccountName(a),
+      value: String(a.id),
+      icon: <IconBadge icon={a.icon} color={a.color} shape={badgeShapeFor(config, 'account')} size={24} iconSize={14} />,
+    })),
   ];
 
   const homeSelected =
@@ -51,11 +62,12 @@ export default function PersonalizationScreen() {
   return (
     <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
       <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_home_screen}</Text>
-      <SettingsSelectRow
+      <SettingsPickerRow
         label={labels.settings_default_account}
         options={homeAccounts}
         selected={homeSelected}
         onSelect={(v) => updateConfig({ homeDefaultAccountId: v === 'total' ? null : Number(v) })}
+        title={labels.settings_default_account}
       />
       <SettingsSelectRow
         label={labels.settings_default_period}
@@ -65,11 +77,12 @@ export default function PersonalizationScreen() {
       />
 
       <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_add_transaction}</Text>
-      <SettingsSelectRow
+      <SettingsPickerRow
         label={labels.settings_default_account}
         options={addAccounts}
         selected={addSelected}
         onSelect={(v) => updateConfig({ addDefaultAccountId: v === 'null' ? null : Number(v) })}
+        title={labels.settings_default_account}
       />
       <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
         <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_optional_fields}</Text>
