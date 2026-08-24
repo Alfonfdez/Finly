@@ -26,6 +26,8 @@ export const en = {
   settings_default_account: 'Default account',
   settings_default_period: 'Default period',
   settings_not_selected: 'Not selected',
+  settings_picker_search: 'Search...',
+  settings_picker_no_results: 'No results found',
   settings_optional_fields: 'Optional fields',
   settings_labels: 'Labels',
   settings_comments: 'Comments',

@@ -28,6 +28,8 @@ export const ca: Language = {
   settings_default_account: 'Compte predeterminat',
   settings_default_period: 'Període predeterminat',
   settings_not_selected: 'No seleccionat',
+  settings_picker_search: 'Cercar...',
+  settings_picker_no_results: 'Sense resultats',
   settings_optional_fields: 'Camps opcionals',
   settings_labels: 'Etiquetes',
   settings_comments: 'Comentaris',

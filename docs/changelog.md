@@ -2598,3 +2598,12 @@
 [2026-08-24] Docs | spec/constitution/5-validations.md, spec/features/015-all-transactions-screen/1-spec.md
 - Spec sync: updated ConfirmationModal Cancel button color in 5-validations.md from `surface bg` to `background bg` to match code; corrected stacked button layout order (two-button row first, Cancel full-width below); added explicit note in 015 spec §5 that selecting "Period" tab auto-opens the calendar picker (matching HomeScreen behavior).
 
+[2026-08-24] Feat | FinlyApp/src/components/OptionPickerModal.tsx, FinlyApp/src/components/settings/SettingsPickerRow.tsx, FinlyApp/src/screens/settings/RegionalScreen.tsx, FinlyApp/src/screens/settings/PersonalizationScreen.tsx
+- Feat: replace inline chip selectors with modal picker for Currency and Default Account settings — new `OptionPickerModal` (reusable searchable picker modal with `ModalShell` + `ListItemRow` + radio selection + Cancel/Confirm) and `SettingsPickerRow` (trigger card with label + selected value + chevron-down that opens the modal). Currency picker is searchable; both default account pickers (Home and Add Transaction) use scrollable modal. Inline `SelectorInline` chips remain for small fixed lists (Theme, Language, Text Size, Icon Shapes, Decimal Sep, First Day, Period). net +160 lines. test:all green (typecheck + lint + 282 tests, 34 files).
+
+[2026-08-24] Fix | FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/screens/AccountsScreen.tsx
+- Fix: deleting an account now correctly resets default account config — both `homeDefaultAccountId` and `addDefaultAccountId` reset to null (Total / Not selected) when the referenced account is deleted. Previously `addDefaultAccountId` was incorrectly reassigned to the first remaining account. Replaced duplicated inline logic with existing `sanitizeDefaultAccounts` helper from `configDefaults.ts` (was dead code in production). test:all green (typecheck + lint + 282 tests, 34 files).
+
+[2026-08-24] Fix | FinlyApp/src/components/OptionPickerModal.tsx, FinlyApp/src/screens/settings/PersonalizationScreen.tsx
+- Fix: OptionPickerModal radio buttons now always on the left side (consistent with AccountModal pattern) — icon (if any) renders between radio and label instead of pushing radio to the right. Account picker options now show account icon (`IconBadge`) next to the account name for visual identification. net +4 lines. test:all green (typecheck + lint + 282 tests, 34 files).
+

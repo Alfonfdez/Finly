@@ -28,6 +28,8 @@ export const es: Language = {
   settings_default_account: 'Cuenta predeterminada',
   settings_default_period: 'Período predeterminado',
   settings_not_selected: 'No seleccionado',
+  settings_picker_search: 'Buscar...',
+  settings_picker_no_results: 'Sin resultados',
   settings_optional_fields: 'Campos opcionales',
   settings_labels: 'Etiquetas',
   settings_comments: 'Comentarios',
