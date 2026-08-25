@@ -2,7 +2,7 @@ import { t } from '../i18n';
 import { PERIODS, TEXT_SIZES, DECIMAL_SEPARATORS, FIRST_DAYS, type DecimalSeparator, type FirstDay, type Period, type TextSize } from '../constants/types';
 import { DAYS_PER_WEEK } from '../constants/calendar';
 import { LANGUAGES, type Language } from './language';
-import { DEFAULT_CURRENCY } from '../constants/currencies';
+import { DEFAULT_CURRENCY, getCurrencySymbol } from '../constants/currencies';
 
 export const HIDDEN_BALANCE = '•••••';
 
@@ -19,7 +19,7 @@ export function formatCurrency(amount: number, currency = DEFAULT_CURRENCY, sepa
   const integerFmt = integerStr.replace(/\B(?=(\d{3})+(?!\d))/g, thousandsSep);
   const decStr = String(dec).padStart(2, '0');
 
-  return `${sign}${integerFmt}${decSep}${decStr} ${currency}`;
+  return `${sign}${integerFmt}${decSep}${decStr} ${getCurrencySymbol(currency)}`;
 }
 
 export function formatSignedCurrency(amount: number, currency = DEFAULT_CURRENCY, separator: DecimalSeparator = DECIMAL_SEPARATORS.comma): string {

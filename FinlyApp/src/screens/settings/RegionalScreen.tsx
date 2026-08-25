@@ -101,10 +101,10 @@ export default function RegionalScreen() {
     { label: labels.lang_ca, value: LANGUAGES.ca, icon: <FlagIcon code={LANGUAGES.ca} size={16} /> },
   ];
 
-  const CURRENCIES: Option[] = CURRENCY_OPTIONS.map(option => ({
+  const CURRENCIES: Option<Config['currency']>[] = CURRENCY_OPTIONS.map(option => ({
     label: labels[option.labelKey],
-    value: option.value,
-    icon: <Text style={[styles.currencyIcon, { color: c.text, fontSize: fs(16) }]}>{option.value}</Text>,
+    value: option.labelKey as Config['currency'],
+    icon: <Text style={[styles.currencyIcon, { color: c.text, fontSize: fs(16) }]}>{option.symbol}</Text>,
   }));
 
   const SEPARATORS: Option<Config['decimalSeparator']>[] = [
