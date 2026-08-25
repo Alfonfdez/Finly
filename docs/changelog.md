@@ -2607,3 +2607,12 @@
 [2026-08-24] Fix | FinlyApp/src/components/OptionPickerModal.tsx, FinlyApp/src/screens/settings/PersonalizationScreen.tsx
 - Fix: OptionPickerModal radio buttons now always on the left side (consistent with AccountModal pattern) — icon (if any) renders between radio and label instead of pushing radio to the right. Account picker options now show account icon (`IconBadge`) next to the account name for visual identification. net +4 lines. test:all green (typecheck + lint + 282 tests, 34 files).
 
+[2026-08-24] Feat | FinlyApp/src/constants/currencies.ts, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts
+- Feat: expand currency list from 4 to 30 curated currencies — added CHF, CAD, AUD, NZD, SEK, NOK, DKK, PLN, CZK, HUF, RON, TRY, BRL, INR, KRW, CNY, THB, SGD, MYR, PHP, IDR, VND, ZAR, ILS, AED, SAR. Renamed old i18n keys (`currency_dollar` → `currency_usd`, `currency_pound` → `currency_gbp`, `currency_yen` → `currency_jpy`). Searchable picker in Settings > Regional handles 30 items well. test:all green (typecheck + lint + 282 tests, 34 files).
+
+[2026-08-24] Fix | FinlyApp/src/components/OptionPickerModal.tsx
+- Fix: OptionPickerModal FlatList duplicate key crash — currencies with the same symbol (SEK/NOK/DKK all `kr`, JPY/CNY both `¥`) caused "two children with the same key" errors. Changed `keyExtractor` from `item.value` to `item.label` since labels are always unique. test:all green (typecheck + lint + 282 tests, 34 files).
+
+[2026-08-24] Fix | FinlyApp/src/constants/currencies.ts, FinlyApp/src/utils/formatters.ts, FinlyApp/src/screens/settings/RegionalScreen.tsx
+- Fix: currency picker radio selection — currencies with the same symbol (e.g. SEK/NOK/DKK all `kr`) caused all matching radios to highlight when one was tapped. Root cause: config stored raw symbol (`kr`) which wasn't unique. Solution: config now stores `labelKey` (e.g. `currency_nok`) which is always unique. Added `getCurrencySymbol()` helper in `currencies.ts` that maps `labelKey` → symbol for display in `formatCurrency()`. Added `symbol` field to `CurrencyOption` type. `DEFAULT_CURRENCY` changed from `'€'` to `'currency_euro'`. Initial seed (`003_config`) uses the new format automatically — requires fresh database. Fixed `AmountInput.tsx` to wrap `config.currency` with `getCurrencySymbol()` so the Add Transaction screen shows the symbol instead of the raw key. test:all green (typecheck + lint + 282 tests, 34 files).
+

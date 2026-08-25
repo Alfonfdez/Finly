@@ -33,17 +33,18 @@ export default function OptionPickerModal<T extends string>({
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const [tempValue, setTempValue] = useState(selected);
+  const [tempLabel, setTempLabel] = useState('');
   const [search, setSearch] = useState('');
 
   const isSearchable = searchable ?? options.length > 10;
 
   useEffect(() => {
     if (visible) {
-      setTempValue(selected);
+      const match = options.find(op => op.value === selected);
+      setTempLabel(match?.label ?? '');
       setSearch('');
     }
-  }, [visible, selected]);
+  }, [visible, selected, options]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return options;
@@ -51,8 +52,14 @@ export default function OptionPickerModal<T extends string>({
     return options.filter(op => op.label.toLowerCase().includes(lower));
   }, [options, search]);
 
+  const handleConfirm = useCallback(() => {
+    const match = options.find(op => op.label === tempLabel);
+    if (match) onSelect(match.value);
+    onClose();
+  }, [options, tempLabel, onSelect, onClose]);
+
   const renderItem = useCallback(({ item }: { item: Option<T> }) => {
-    const isSelected = item.value === tempValue;
+    const isSelected = item.label === tempLabel;
     const radio = (
       <View style={[styles.radio, { borderColor: isSelected ? c.primary : c.textSecondary }]}>
         {isSelected && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
@@ -69,12 +76,12 @@ export default function OptionPickerModal<T extends string>({
         }
         divider
         style={styles.row}
-        onPress={() => setTempValue(item.value)}
+        onPress={() => setTempLabel(item.label)}
       />
     );
-  }, [tempValue, c]);
+  }, [tempLabel, c]);
 
-  const keyExtractor = useCallback((item: Option<T>) => String(item.value), []);
+  const keyExtractor = useCallback((item: Option<T>) => item.label, []);
 
   return (
     <ModalShell visible={visible} onClose={onClose} maxHeight="85%">
@@ -108,7 +115,7 @@ export default function OptionPickerModal<T extends string>({
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.btn, { backgroundColor: c.primary }]}
-          onPress={() => { onSelect(tempValue); onClose(); }}
+          onPress={handleConfirm}
         >
           <Text style={[styles.btnText, { color: WHITE, fontSize: fs(14) }]}>{labels.transactions_confirm}</Text>
         </TouchableOpacity>

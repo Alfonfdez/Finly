@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { TRANSPARENT } from '../constants/themes';
+import { getCurrencySymbol } from '../constants/currencies';
 import { t } from '../i18n';
 import { parseAmountInput, formatAmountDisplay, parseAmountValue } from '../utils/amountInput';
 
@@ -56,7 +57,7 @@ export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label,
           accessibilityLabel={accessibilityLabel ?? labels.a11y_amount}
         />
         <Text style={[styles.currencySymbol, { color: c.textSecondary, fontSize: fs(18) }]}>
-          {config.currency}
+          {getCurrencySymbol(config.currency)}
         </Text>
         {onOpenCalculator && (
           <TouchableOpacity
