@@ -51,7 +51,7 @@
 ### 5. Period selector
 
 - `PeriodTabs` component with 5 options: Day | Week | Month | Year | Period.
-- Default: **Year** (current year).
+- Default: **Month** (from `config.homeDefaultPeriod`, same as HomeScreen).
 - Selecting "Period" auto-opens the calendar picker, matching HomeScreen behavior.
 - `CalendarPicker` shown below the period tabs, same as HomeScreen.
 - Period date ranges computed the same way as HomeScreen (day/week/month/year/custom).
@@ -145,7 +145,7 @@
 - [x] A category filter button shows "All categories" by default or "N categories" when filtered.
 - [x] Tapping the category button opens the CategoryFilterModal (021).
 - [x] Selecting categories in the modal filters the transaction list.
-- [x] PeriodTabs (Day/Week/Month/Year/Period) are shown with "Year" selected by default.
+- [x] PeriodTabs (Day/Week/Month/Year/Period) are shown with "Month" selected by default (from config).
 - [x] CalendarPicker updates when the period changes.
 - [x] The transaction list filters by the selected period's date range.
 - [x] The sort toggle works (date/amount, ASC/DESC).

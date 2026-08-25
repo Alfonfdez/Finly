@@ -63,6 +63,19 @@
 - Balances are obtained with `accountRepository.getCurrentBalance()`.
 - **Refresh after mutations**: after creating or modifying an account (013 and 012), `refreshAccounts()` from `AppContext` must be invoked so the account list in HomeScreen (AccountModal) updates immediately.
 
+### 7. Multi-select bulk delete
+
+- The header shows a "Select" (`accounts_select`) text button next to the search icon; pressing it toggles selection mode (label switches to "Done", `accounts_select_done`).
+- When there are 0 accounts (excluding Total), the header Select button is hidden.
+- In selection mode each account row shows a leading checkbox (`checkbox-outline` unchecked / `checkbox` checked in primary color); tapping a row toggles its selection instead of navigating to ModifyAccountScreen.
+- The Total account row cannot be selected (no checkbox shown).
+- The header search and search filtering keep working during selection mode; selection applies to the filtered list.
+- The floating "+" button is hidden in selection mode.
+- A bottom `SelectionActionBar` with "Cancel" and "Delete (N)" (`accounts_bulk_delete(n)`) appears; the delete button is disabled while no accounts are selected.
+- A guard prevents deleting ALL non-Total accounts: if the selection includes every non-Total account, a modal warns the user and the delete is blocked (at least one non-Total account must remain).
+- Deleting opens a single `ConfirmationModal`: `Delete N accounts?` (`accounts_bulk_delete_confirm_title(n)`) with message "All transactions linked to the selected accounts will also be deleted. This cannot be undone." (`accounts_bulk_delete_confirm_message`) and Cancel / Delete buttons.
+- On confirm: for each selected account, `transactionRepository.deleteByAccountId(id)` deletes linked transactions, then `accountRepository.deleteMany(ids)` deletes the accounts; selection and selection mode reset, and the list reloads.
+
 ---
 
 ## Non-functional requirements
@@ -95,5 +108,11 @@
 - [x] An active search with no matches shows "No results found".
 - [x] Tapping the Total account navigates to "Modify account" (012) with the Total account's id.
 - [x] The floating "+" button navigates to "Create account" (013).
+- [x] When there are no accounts (excluding Total), the header Select button is hidden.
+- [x] "Select" in the header enters selection mode; account rows show checkboxes and tapping toggles selection instead of navigating.
+- [x] The Total account row cannot be selected in selection mode.
+- [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
+- [x] A guard prevents deleting all non-Total accounts.
+- [x] Bulk delete confirms once for the whole batch, deletes linked transactions and the accounts, and the list reloads.
 - [x] All texts change when switching language.
 - [x] The screen respects the active theme and text size.

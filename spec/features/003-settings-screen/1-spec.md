@@ -93,9 +93,11 @@ When changing the theme, the entire app re-renders in real time (no restart requ
 
 | Option | Type | Default | Values |
 |--------|------|---------|--------|
-| Currency | Picker modal (searchable) | Euro € | Euro €, Dollar $, Pound £, Yen ¥ |
+| Currency | Picker modal (searchable) | Euro (currency_euro) | 30 curated currencies (Euro, Dollar, Pound, Yen, Swiss Franc, Canadian Dollar, Australian Dollar, New Zealand Dollar, Swedish Krona, Norwegian Krone, Danish Krone, Polish Zloty, Czech Koruna, Hungarian Forint, Romanian Leu, Turkish Lira, Brazilian Real, Indian Rupee, South Korean Won, Chinese Yuan, Thai Baht, Singapore Dollar, Malaysian Ringgit, Philippine Peso, Indonesian Rupiah, Vietnamese Dong, South African Rand, Israeli Shekel, UAE Dirham, Saudi Riyal) |
 
-- Opens a scrollable modal with radio selection and a search bar.
+- Opens a scrollable modal with radio selection and a search bar (auto-enabled when > 10 options).
+- Config stores a unique `labelKey` (e.g. `currency_nok`) instead of the raw symbol, to prevent selection conflicts when multiple currencies share the same symbol (e.g. SEK/NOK/DKK all `kr`).
+- `getCurrencySymbol()` resolves the `labelKey` to the display symbol for `formatCurrency()` across all screens.
 - Affects: `formatCurrency()` across all screens.
 
 #### 4.3 — Decimal separator
@@ -128,9 +130,10 @@ Subtitle: "Home screen" (multilingual).
 
 | Option | Type | Default | Values |
 |--------|------|---------|--------|
-| Default account | Picker modal | Total | Total, My Wallet, [other accounts...] |
+| Default account | Picker modal (SettingsPickerRow + OptionPickerModal) | Total | Total, My Wallet, [other accounts...] |
 
-- Opens a scrollable modal with radio selection. Total is listed first, then all other accounts sorted alphabetically.
+- Opens a scrollable modal with radio selection via `OptionPickerModal`. Total is listed first, then all other accounts sorted alphabetically.
+- Each option shows an `IconBadge` icon (account icon + color) alongside the account name.
 - This determines which account is selected when the app starts.
 - When "Total" is selected, the HomeScreen shows aggregated data from all accounts.
 - **Acceptance:** changing this setting and restarting the app shows the selected account as active on HomeScreen.
@@ -153,9 +156,10 @@ Subtitle: "Add transaction" (multilingual).
 
 | Option | Type | Default | Values |
 |--------|------|---------|--------|
-| Default account | Picker modal | Not selected | Not selected, My Wallet, [other accounts...] |
+| Default account | Picker modal (SettingsPickerRow + OptionPickerModal) | Not selected | Not selected, My Wallet, [other accounts...] |
 
-- Opens a scrollable modal with radio selection. Excludes Total, sorted alphabetically.
+- Opens a scrollable modal with radio selection via `OptionPickerModal`. Excludes Total, sorted alphabetically.
+- Each option shows an `IconBadge` icon (account icon + color) alongside the account name.
 - **"Not selected" (default):** preserves current behavior — the account selected in AddTransactionScreen is the one that was active on HomeScreen. If the HomeScreen account is Total, the first non-Total account is selected instead.
 - **Specific account selected (e.g., "My Wallet"):** always pre-selects that account in AddTransactionScreen, regardless of what's selected on HomeScreen.
 - **Acceptance:** setting "My Wallet" here → go to HomeScreen with "Test" selected → tap "+" → AddTransactionScreen opens with "My Wallet" selected.
@@ -241,7 +245,7 @@ An eye icon appears next to every masked balance. The icon represents the curren
   2. All rows from `transaction_tags` junction table are deleted (cleanup).
   3. AppContext state is refreshed via `resetAll()` so all screens reflect changes immediately.
   4. Modal closes.
-  5. An alert dialog confirms: "All transactions deleted" (multilingual).
+  5. An error alert is shown only if deletion fails.
 
 #### 6.2 — Delete all data
 
@@ -329,7 +333,7 @@ An eye icon appears next to every masked balance. The icon represents the curren
 
 ### Regional
 - [x] Language selector: English/Spanish/Catalan with immediate label changes.
-- [x] Currency selector: €/$/£/¥ with immediate amount formatting changes.
+- [x] Currency selector: 30 curated currencies with searchable picker and immediate amount formatting changes.
 - [x] Decimal separator: Comma/Period with immediate format changes.
 - [x] First day of week: Monday/Sunday with immediate calendar adjustment.
 
