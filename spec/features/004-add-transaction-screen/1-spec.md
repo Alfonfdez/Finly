@@ -32,15 +32,17 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - If the user enters more than 2 decimals:
   - The input border is displayed in red.
   - The error text is shown: "The amount entered is not valid" (multilingual).
-- To the right of the input, the symbol of the currency selected in settings is displayed (e.g.: €, $, £, ¥).
+- To the right of the input, the currency symbol selected in settings is displayed (resolved dynamically from the configured currency).
 - To the right of the currency symbol, a calculator icon that opens a "Calculator" screen (TODO: future implementation).
 
 ### 4. Account selection
 
 - Title: "Account" (multilingual).
 - Below it shows the name of the selected account.
-- The default account is the account selected on the main screen (HomeScreen).
-- **Fallback**: if the active account is the Total account (`is_total=1`), the first non-Total account is pre-selected instead.
+- The default account is determined by a 3-tier priority:
+  1. If `config.addDefaultAccountId` is set (from Settings > Personalization), that account is pre-selected.
+  2. Otherwise, the account selected on the main screen (HomeScreen) is used.
+  3. **Fallback**: if the active account is the Total account (`is_total=1`), the first non-Total account is pre-selected instead.
 - When tapping on the account name, a modal (`AccountModal`) opens to select another account. The Total account is excluded from the modal.
 
 ### 5. Category selection
@@ -153,7 +155,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - [x] The "Expenses"/"Income" tabs show the type inherited from the route param (AllTransactions) or from Home (AppContext).
 - [x] The amount input validates a maximum of 2 decimals and shows a red error if not valid.
 - [x] The calculator icon is visible but not functional (TODO).
-- [x] The displayed account matches the one selected in Home.
+- [x] The displayed account matches the one from the config default (Settings > Personalization) or the one selected in Home.
 - [x] The account modal allows changing the selected account.
 - [x] 7 categories sorted by usage frequency (last 90 days, per-account) are displayed in a 4×2 grid + "More" button.
 - [x] Categories with 0 transactions for the selected account appear after used ones, alphabetically sorted.

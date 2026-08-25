@@ -29,7 +29,7 @@
 - Validation: max 9 integer digits and 2 decimals (max 999,999,999.99).
 - Same logic as `parseAmountInput()` and `formatAmountDisplay()` in `AddTransactionScreen`.
 - If the user enters invalid format (both separators at once), the input is ignored.
-- To the right of the input, the currency symbol selected in settings is displayed (€, $, £, ¥).
+- To the right of the input, the currency symbol selected in settings is displayed (resolved dynamically from the configured currency).
 - To the right of the currency symbol, a calculator icon (`calculator-outline`) that opens `CalculatorModal` (reuse existing component).
 
 ### 4. Account selection
