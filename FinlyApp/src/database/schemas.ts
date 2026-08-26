@@ -14,7 +14,7 @@ import { LANGUAGES } from '../constants/languages';
 const transactionTypeSchema = z.enum([TRANSACTION_TYPES.expense, TRANSACTION_TYPES.income]);
 const themeSchema = z.enum([THEMES.dark, THEMES.light, THEMES.system]);
 const textSizeSchema = z.enum([TEXT_SIZES.small, TEXT_SIZES.medium, TEXT_SIZES.large]);
-const languageSchema = z.enum([LANGUAGES.es, LANGUAGES.en, LANGUAGES.ca]);
+const languageSchema = z.enum([LANGUAGES.es, LANGUAGES.en, LANGUAGES.ca, LANGUAGES.fr, LANGUAGES.de, LANGUAGES.pt, LANGUAGES.it]);
 const iconShapeSchema = z.enum([CONFIG_ICON_SHAPES.square, CONFIG_ICON_SHAPES.circle]);
 const firstDaySchema = z.union([z.literal(FIRST_DAYS.monday), z.literal(FIRST_DAYS.sunday)]);
 const decimalSeparatorSchema = z.union([z.literal(DECIMAL_SEPARATORS.comma), z.literal(DECIMAL_SEPARATORS.dot)]);

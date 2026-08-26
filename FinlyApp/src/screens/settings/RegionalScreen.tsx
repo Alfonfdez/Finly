@@ -9,7 +9,7 @@ import { LANGUAGES, isCatalan, type Language } from '../../utils/language';
 import { flagColors } from '../../constants/flagColors';
 import { CURRENCY_OPTIONS } from '../../constants/currencies';
 import { DECIMAL_SEPARATORS, FIRST_DAYS, type FirstDay } from '../../constants/types';
-import SelectorInline, { type Option } from '../../components/SelectorInline';
+import type { Option } from '../../components/SelectorInline';
 import SettingsSelectRow from '../../components/settings/SettingsSelectRow';
 import SettingsPickerRow from '../../components/settings/SettingsPickerRow';
 import { settingsStyles } from '../../components/settings/settingsStyles';
@@ -69,6 +69,10 @@ const FLAG_EMOJI: Record<string, string> = {
   [LANGUAGES.en]: '\u{1F1EC}\u{1F1E7}',
   [LANGUAGES.es]: '\u{1F1EA}\u{1F1F8}',
   [LANGUAGES.ca]: '\u{1F1F5}\u{1F1F8}',
+  [LANGUAGES.fr]: '\u{1F1EB}\u{1F1F7}',
+  [LANGUAGES.de]: '\u{1F1E9}\u{1F1EA}',
+  [LANGUAGES.pt]: '\u{1F1F5}\u{1F1F9}',
+  [LANGUAGES.it]: '\u{1F1EE}\u{1F1F9}',
 };
 
 function FlagIcon({ code, size = 16 }: { code: Language; size?: number }) {
@@ -100,6 +104,10 @@ export default function RegionalScreen() {
     { label: labels.lang_en, value: LANGUAGES.en, icon: <FlagIcon code={LANGUAGES.en} size={16} /> },
     { label: labels.lang_es, value: LANGUAGES.es, icon: <FlagIcon code={LANGUAGES.es} size={16} /> },
     { label: labels.lang_ca, value: LANGUAGES.ca, icon: <FlagIcon code={LANGUAGES.ca} size={16} /> },
+    { label: labels.lang_fr, value: LANGUAGES.fr, icon: <FlagIcon code={LANGUAGES.fr} size={16} /> },
+    { label: labels.lang_de, value: LANGUAGES.de, icon: <FlagIcon code={LANGUAGES.de} size={16} /> },
+    { label: labels.lang_pt, value: LANGUAGES.pt, icon: <FlagIcon code={LANGUAGES.pt} size={16} /> },
+    { label: labels.lang_it, value: LANGUAGES.it, icon: <FlagIcon code={LANGUAGES.it} size={16} /> },
   ];
 
   const CURRENCIES: Option<Config['currency']>[] = CURRENCY_OPTIONS.map(option => ({
@@ -121,9 +129,13 @@ export default function RegionalScreen() {
   return (
     <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
       <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_language}</Text>
-      <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
-        <SelectorInline options={LANGUAGE_OPTIONS} selected={config.language} onSelect={(v) => updateConfig({ language: v })} />
-      </View>
+      <SettingsPickerRow
+        label={labels.settings_language}
+        options={LANGUAGE_OPTIONS}
+        selected={config.language}
+        onSelect={(v) => updateConfig({ language: v })}
+        title={labels.settings_language}
+      />
 
       <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_money}</Text>
       <SettingsPickerRow
