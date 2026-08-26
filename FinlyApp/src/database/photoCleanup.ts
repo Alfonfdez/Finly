@@ -1,5 +1,13 @@
-import { getDatabase } from './database';
+import { sql, type Column } from 'drizzle-orm';
+import { getDrizzle } from './drizzle/engine';
+import { transactions } from './drizzle/schema';
 import { parsePhotos, deletePhotoFile } from '../utils/photoUtils';
+
+const COLUMN_MAP: Record<string, Column> = {
+  id: transactions.id,
+  account_id: transactions.account_id,
+  category_id: transactions.category_id,
+};
 
 async function cleanupPhotos(rows: { photo: string | null }[]): Promise<void> {
   for (const row of rows) {
@@ -14,12 +22,14 @@ async function cleanupPhotos(rows: { photo: string | null }[]): Promise<void> {
 export async function deleteTransactionPhotos(column: string, ...values: (string | number)[]): Promise<void> {
   if (values.length === 0) return;
   try {
-    const db = await getDatabase();
-    const placeholders = values.map(() => '?').join(',');
-    const rows = await db.getAllAsync<{ photo: string | null }>(
-      `SELECT photo FROM transactions WHERE ${column} IN (${placeholders})`,
-      ...values
-    );
+    const db = await getDrizzle();
+    const col = COLUMN_MAP[column];
+    if (!col) throw new Error(`Unknown column: ${column}`);
+    const rows = await db
+      .select({ photo: transactions.photo })
+      .from(transactions)
+      .where(sql`${col} IN (${sql.join(values.map(v => sql`${v}`), sql`, `)})`)
+      .all();
     await cleanupPhotos(rows);
   } catch (error) {
     console.error('Failed to delete transaction photos:', error);
@@ -28,10 +38,12 @@ export async function deleteTransactionPhotos(column: string, ...values: (string
 
 export async function deleteAllTransactionPhotos(): Promise<void> {
   try {
-    const db = await getDatabase();
-    const rows = await db.getAllAsync<{ photo: string | null }>(
-      'SELECT photo FROM transactions WHERE photo IS NOT NULL'
-    );
+    const db = await getDrizzle();
+    const rows = await db
+      .select({ photo: transactions.photo })
+      .from(transactions)
+      .where(sql`${transactions.photo} IS NOT NULL`)
+      .all();
     await cleanupPhotos(rows);
   } catch (error) {
     console.error('Failed to delete transaction photos:', error);
