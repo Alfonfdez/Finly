@@ -369,6 +369,10 @@ export const ca: Language = {
   lang_en: 'English',
   lang_es: 'Español',
   lang_ca: 'Català',
+  lang_fr: 'Français',
+  lang_de: 'Deutsch',
+  lang_pt: 'Português',
+  lang_it: 'Italiano',
 
   // Accessibility
   a11y_show_expenses: 'Mostrar despeses',

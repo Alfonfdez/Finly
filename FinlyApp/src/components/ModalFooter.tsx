@@ -19,7 +19,7 @@ export default function ModalFooter({
   onCancel,
   onConfirm,
   confirmDisabled = false,
-  destructive = true,
+  destructive = false,
 }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();

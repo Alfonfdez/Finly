@@ -1,10 +1,14 @@
 import { en, type Language } from './en';
 import { es } from './es';
 import { ca } from './ca';
+import { fr } from './fr';
+import { de } from './de';
+import { pt } from './pt';
+import { it } from './it';
 import type { Language as LanguageType } from '../constants/languages';
 import type { StringKeyOf } from '../constants/types';
 
-const languages: Record<string, Language> = { en, es, ca };
+const languages: Record<string, Language> = { en, es, ca, fr, de, pt, it };
 
 let currentLanguage: Language = en;
 
