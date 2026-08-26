@@ -1,8 +1,6 @@
 import { useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
-import { Ionicons } from '@expo/vector-icons';
-import { HEADER_BUTTONS } from '../components/componentStyles';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -16,13 +14,14 @@ import SearchBar from '../components/SearchBar';
 import EmptyState from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
-import SelectToggleButton from '../components/SelectToggleButton';
 import BulkCategoryTransferModal, { type BulkCategoryItem } from '../components/BulkCategoryTransferModal';
 import type { TransferTargetId } from '../components/CategoryTransferModal';
 import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, type TransactionType, type NavigationProp } from '../constants/types';
 import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
 import { countAtLimit } from '../utils/limits';
 import { showErrorAlert } from '../utils/errors';
+import SelectSearchHeader from '../components/SelectSearchHeader';
+import GuardModal from '../components/GuardModal';
 
 export default function CategoriesScreen() {
   const { activeColors: c } = useConfig();
@@ -50,12 +49,11 @@ export default function CategoriesScreen() {
     deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
   } = useSelectableScreen({ navigation, hasItems: categoriesByType.length > 1, showHeader: categoriesByType.length > 1, headerRight: () => (
-    <View style={HEADER_BUTTONS}>
-      <SelectToggleButton active={selectMode} onToggle={toggleSelectMode} color={c.primary} />
-      <TouchableOpacity onPress={toggleSearch} style={HEADER_BUTTONS}>
-        <Ionicons name="search-outline" size={22} color={c.text} />
-      </TouchableOpacity>
-    </View>
+    <SelectSearchHeader
+      selectMode={selectMode}
+      onToggleSelect={toggleSelectMode}
+      onToggleSearch={toggleSearch}
+    />
   )});
 
   const filteredCategories = useMemo(() => {
@@ -224,14 +222,11 @@ export default function CategoriesScreen() {
         onMove={deleteHasTransactions ? handleMoveTransactions : undefined}
       />
 
-      <ConfirmationModal
+      <GuardModal
         visible={guardVisible}
         title={labels.categories_bulk_delete_confirm_title(selectedIds.size)}
         message={labels.categories_bulk_delete_min_one}
-        confirmLabel={labels.common_close}
-        destructive={false}
-        onConfirm={() => setGuardVisible(false)}
-        onCancel={() => setGuardVisible(false)}
+        onClose={() => setGuardVisible(false)}
       />
 
       <BulkCategoryTransferModal

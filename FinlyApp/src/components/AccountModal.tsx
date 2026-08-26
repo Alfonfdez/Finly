@@ -1,16 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
 import type { Account } from '../database/types';
 import { formatCurrency, HIDDEN_BALANCE } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayAccountName } from '../i18n';
-import { WHITE, TRANSPARENT } from '../constants/themes';
 import { badgeShapeFor } from '../utils/badgeShape';
 import EyeToggle from './EyeToggle';
-import { BUTTON_BORDER_RADIUS } from './componentStyles';
 import ModalShell from './ModalShell';
 import ListItemRow from './ListItemRow';
+import ModalFooter from './ModalFooter';
 
 interface AccountWithBalance extends Account {
   balance: number;
@@ -76,17 +75,12 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
             keyExtractor={(item) => item.id.toString()}
             renderItem={renderItem}
           />
-          <View style={styles.buttons}>
-            <TouchableOpacity
-              style={[styles.btn, { backgroundColor: c.surface, borderColor: c.border }]}
-              onPress={onClose}
-            >
-              <Text style={[styles.btnText, { color: c.text, fontSize: fs(14) }]}>{labels.transactions_cancel}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.btn, { backgroundColor: c.primary }]} onPress={() => { if (tempId != null) onSelect(tempId); }}>
-              <Text style={[styles.btnText, { color: WHITE, fontSize: fs(14) }]}>{labels.transactions_confirm}</Text>
-            </TouchableOpacity>
-          </View>
+          <ModalFooter
+            cancelLabel={labels.transactions_cancel}
+            confirmLabel={labels.transactions_confirm}
+            onCancel={onClose}
+            onConfirm={() => { if (tempId != null) onSelect(tempId); }}
+          />
     </ModalShell>
   );
 }
@@ -110,18 +104,4 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
   },
-  buttons: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 16,
-  },
-  btn: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: BUTTON_BORDER_RADIUS,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: TRANSPARENT,
-  },
-  btnText: { fontWeight: '600' },
 });

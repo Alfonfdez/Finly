@@ -13,6 +13,7 @@ import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatCurrency } from '../utils/formatters';
 import { withAlpha } from '../utils/color';
+import { showErrorAlert } from '../utils/errors';
 import { getDisplayCategoryName, t } from '../i18n';
 import AccountModal from '../components/AccountModal';
 import AccountTrigger from '../components/AccountTrigger';
@@ -52,6 +53,7 @@ export default function TransactionsScreen() {
     accounts,
     activeAccount,
     initialTagIds: tagIds ?? [],
+    onError: () => showErrorAlert(labels),
   });
 
   const category = categories.find(ct => ct.id === categoryId);

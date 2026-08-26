@@ -2,7 +2,6 @@ import { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
-import { HEADER_BUTTONS } from '../components/componentStyles';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -11,12 +10,12 @@ import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import type { CommentUsage } from '../database/repositories/transactionRepo';
 import type { NavigationProp } from '../constants/types';
-import SearchBar from '../components/SearchBar';
 import EmptyState from '../components/EmptyState';
 import { showErrorAlert } from '../utils/errors';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
-import SelectToggleButton from '../components/SelectToggleButton';
+import SelectSearchHeader from '../components/SelectSearchHeader';
+import ScreenSearchBar from '../components/ScreenSearchBar';
 
 export default function CommentsScreen() {
   const { activeColors: c } = useConfig();
@@ -33,12 +32,11 @@ export default function CommentsScreen() {
     deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
   } = useSelectableScreen<string>({ navigation, hasItems: comments.length > 0, showHeader: comments.length > 0, headerRight: () => (
-    <View style={HEADER_BUTTONS}>
-      <SelectToggleButton active={selectMode} onToggle={toggleSelectMode} color={c.primary} />
-      <TouchableOpacity onPress={toggleSearch} style={HEADER_BUTTONS}>
-        <Ionicons name="search-outline" size={22} color={c.text} />
-      </TouchableOpacity>
-    </View>
+    <SelectSearchHeader
+      selectMode={selectMode}
+      onToggleSelect={toggleSelectMode}
+      onToggleSearch={toggleSearch}
+    />
   )});
 
   const loadComments = useCallback(() => {
@@ -118,17 +116,13 @@ export default function CommentsScreen() {
   return (
     <ScreenShell>
       <View style={styles.content}>
-        {searchActive && (
-          <View style={styles.searchWrap}>
-            <SearchBar
-              placeholder={labels.comments_search_placeholder}
-              value={searchText}
-              onChangeText={setSearchText}
-              onClose={closeSearch}
-              autoFocus
-            />
-          </View>
-        )}
+        <ScreenSearchBar
+          visible={searchActive}
+          placeholder={labels.comments_search_placeholder}
+          value={searchText}
+          onChangeText={setSearchText}
+          onClose={closeSearch}
+        />
 
         {comments.length > 0 && !selectMode && (
           <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(13) }]}>
@@ -171,10 +165,6 @@ export default function CommentsScreen() {
 const styles = StyleSheet.create({
   content: {
     flex: 1,
-  },
-  searchWrap: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
   },
   list: {
     padding: 16,

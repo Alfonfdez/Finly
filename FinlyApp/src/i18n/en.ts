@@ -2,7 +2,6 @@ export const en = {
   // Generic
   cancel: 'Cancel',
   delete: 'Delete',
-  common_back: 'Back',
   common_close: 'Close',
 
   // Settings
@@ -142,7 +141,6 @@ export const en = {
   home_income: 'Income',
   home_expenses: 'Expenses',
   home_open_menu: 'Open menu',
-  home_view_transactions: 'View transactions',
   home_add: 'Add expense or income',
 
   // Account modal
@@ -473,12 +471,6 @@ export const en = {
   a11y_next_month: 'Next month',
   backup_dialog_title: 'Finly backup',
   a11y_add: 'Add',
-  a11y_toggle_on: 'Toggle on',
-  a11y_toggle_off: 'Toggle off',
-  a11y_select_account: 'Select account',
-  a11y_confirm: 'Confirm',
-  a11y_cancel: 'Cancel',
-  a11y_menu: 'Open menu',
 };
 
 export type Language = typeof en;

@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { G, Circle } from 'react-native-svg';
 import type { CategoryWithTotal } from '../constants/types';
@@ -25,31 +25,39 @@ function DonutChartInner({ data, total }: Props) {
   const formatted = formatCurrency(total, config.currency, config.decimalSeparator);
   const totalFontSize = fitFontSize(formatted, fs(18), HOLE_SIZE);
 
-  let accumulatedOffset = 0;
+  const segments = useMemo(() => {
+    let offset = 0;
+    return data.map((item) => {
+      const arcLength = (item.percentage / 100) * circumference;
+      const segment = {
+        id: item.id,
+        color: item.color,
+        arcLength,
+        offset,
+      };
+      offset += arcLength;
+      return segment;
+    });
+  }, [data, circumference]);
 
   return (
     <View style={styles.container}>
       <Svg width={160} height={160} viewBox="0 0 160 160">
         <G transform="rotate(-90, 80, 80)">
           <Circle cx="80" cy="80" r={radius} stroke={c.surface} strokeWidth={strokeWidth} fill="none" />
-          {data.map((item) => {
-            const arcLength = (item.percentage / 100) * circumference;
-            const segment = (
-              <Circle
-                key={item.id}
-                cx="80"
-                cy="80"
-                r={radius}
-                stroke={item.color}
-                strokeWidth={strokeWidth}
-                fill="none"
-                strokeDasharray={`${arcLength} ${circumference - arcLength}`}
-                strokeDashoffset={-accumulatedOffset}
-              />
-            );
-            accumulatedOffset += arcLength;
-            return segment;
-          })}
+          {segments.map((seg) => (
+            <Circle
+              key={seg.id}
+              cx="80"
+              cy="80"
+              r={radius}
+              stroke={seg.color}
+              strokeWidth={strokeWidth}
+              fill="none"
+              strokeDasharray={`${seg.arcLength} ${circumference - seg.arcLength}`}
+              strokeDashoffset={-seg.offset}
+            />
+          ))}
         </G>
       </Svg>
       <View style={styles.totalContainer}>
