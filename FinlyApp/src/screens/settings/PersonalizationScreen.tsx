@@ -52,7 +52,7 @@ export default function PersonalizationScreen() {
       ? String(config.addDefaultAccountId)
       : 'null';
 
-  const PERIODS: Option<Period>[] = [
+  const PERIOD_OPTIONS: Option<Period>[] = [
     { label: labels.settings_home_default_period_day, value: 'day' },
     { label: labels.settings_home_default_period_week, value: 'week' },
     { label: labels.settings_home_default_period_month, value: 'month' },
@@ -71,7 +71,7 @@ export default function PersonalizationScreen() {
       />
       <SettingsSelectRow
         label={labels.settings_default_period}
-        options={PERIODS}
+        options={PERIOD_OPTIONS}
         selected={config.homeDefaultPeriod}
         onSelect={(v) => updateConfig({ homeDefaultPeriod: v as Config['homeDefaultPeriod'] })}
       />

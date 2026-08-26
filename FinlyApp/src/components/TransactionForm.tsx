@@ -1,7 +1,8 @@
 import { useRef, useEffect, useMemo, useCallback } from 'react';
 import { Text, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, type NavigationProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useTransactionForm, type TransactionDraft } from '../hooks/useTransactionForm';
@@ -45,7 +46,7 @@ export default function TransactionForm(props: TransactionFormProps) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const {
     type, setType,

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
@@ -17,11 +18,14 @@ export default function DaySelector({ selectedDate, onSelect, onOpenCalendar }: 
   const fs = useFontSize();
   const labels = t();
 
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  const dayBeforeYesterday = new Date(today);
-  dayBeforeYesterday.setDate(today.getDate() - 2);
+  const { today, yesterday, dayBeforeYesterday } = useMemo(() => {
+    const t = new Date();
+    const y = new Date(t);
+    y.setDate(t.getDate() - 1);
+    const d = new Date(t);
+    d.setDate(t.getDate() - 2);
+    return { today: t, yesterday: y, dayBeforeYesterday: d };
+  }, []);
 
   const isToday = isSameDay(selectedDate, today);
   const isYesterday = isSameDay(selectedDate, yesterday);
