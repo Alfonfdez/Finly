@@ -1,10 +1,9 @@
 import { ScrollView } from 'react-native';
 import { useConfig } from '../../context/ConfigContext';
 import { t } from '../../i18n';
-import type { IconName } from '../../components/IconGrid';
 import SettingsRow from '../../components/settings/SettingsRow';
 import { settingsStyles } from '../../components/settings/settingsStyles';
-import type { NavigationProp } from '../../constants/types';
+import type { NavigationProp, IconName } from '../../constants/types';
 
 type Props = {
   navigation: NavigationProp<'Settings'>;

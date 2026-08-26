@@ -5,7 +5,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { settingsStyles } from './settingsStyles';
-import type { IconName } from '../IconGrid';
+import type { IconName } from '../../constants/types';
 
 interface Props {
   label: string;

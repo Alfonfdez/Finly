@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import type { IconName } from './IconGrid';
+import type { IconName } from '../constants/types';
 
 interface Props {
   icon?: IconName;

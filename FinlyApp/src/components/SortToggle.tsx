@@ -3,8 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import type { IconName } from './IconGrid';
-import { SORT_BY, SORT_DIRECTIONS, type SortBy, type SortDirection } from '../constants/types';
+import { SORT_BY, SORT_DIRECTIONS, type SortBy, type SortDirection, type IconName } from '../constants/types';
 
 interface Props {
   sortBy: SortBy;

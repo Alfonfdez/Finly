@@ -8,7 +8,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
-import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES } from '../constants/types';
+import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, type IconName } from '../constants/types';
 import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatCurrency } from '../utils/formatters';
@@ -21,7 +21,6 @@ import SortToggle from '../components/SortToggle';
 import TagFilterBar from '../components/TagFilterBar';
 import { TransactionRow, TransactionDateHeader } from '../components/TransactionGroup';
 import EmptyState from '../components/EmptyState';
-import type { IconName } from '../components/IconGrid';
 
 type TransactionsRouteProp = RouteProp<RootStackParamList, 'Transactions'>;
 

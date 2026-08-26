@@ -1,8 +1,7 @@
 import { View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { StyleProp, ViewStyle } from 'react-native';
-import type { IconName } from './IconGrid';
-import { BADGE_SHAPES, type BadgeShape } from '../constants/types';
+import { BADGE_SHAPES, type BadgeShape, type IconName } from '../constants/types';
 import { withAlpha } from '../utils/color';
 
 interface Props {
