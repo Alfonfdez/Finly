@@ -1,15 +1,16 @@
 import { View, Text, StyleSheet } from 'react-native';
-import type { ColorPalette } from '../constants/themes';
+import { useConfig } from '../context/ConfigContext';
+import { useFontSize } from '../hooks/useFontSize';
 
 export default function DataRow({
-  label, children, c, fs, noBorder,
+  label, children, noBorder,
 }: {
   label: string;
   children: React.ReactNode;
-  c: ColorPalette;
-  fs: (s: number) => number;
   noBorder?: boolean;
 }) {
+  const { activeColors: c } = useConfig();
+  const fs = useFontSize();
   return (
     <View style={[styles.dataRow, noBorder ? null : { borderBottomWidth: 1, borderBottomColor: c.border }]}>
       <Text style={[styles.dataLabel, { color: c.textSecondary, fontSize: fs(13) }]}>{label}</Text>

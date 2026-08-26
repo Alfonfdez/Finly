@@ -120,13 +120,13 @@ export default function TransactionDetailsScreen() {
     <ScreenShell>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.dataSection}>
-          <DataRow label={labels.details_amount} c={c} fs={fs}>
+          <DataRow label={labels.details_amount}>
             <Text style={[styles.dataValue, { color: typeColor, fontSize: fs(15) }]}>
               {isExpense ? '-' : '+'}{formatCurrency(transaction.amount, config.currency, config.decimalSeparator)}
             </Text>
           </DataRow>
 
-          <DataRow label={labels.details_account} c={c} fs={fs}>
+          <DataRow label={labels.details_account}>
             <View style={styles.iconRow}>
               {account && (
                 <IconBadge
@@ -142,7 +142,7 @@ export default function TransactionDetailsScreen() {
             </View>
           </DataRow>
 
-          <DataRow label={labels.details_category} c={c} fs={fs}>
+          <DataRow label={labels.details_category}>
             <View style={styles.iconRow}>
               {category && (
                 <IconBadge
@@ -158,19 +158,19 @@ export default function TransactionDetailsScreen() {
             </View>
           </DataRow>
 
-          <DataRow label={labels.details_date} c={c} fs={fs}>
+          <DataRow label={labels.details_date}>
             <Text style={[styles.dataValue, { color: c.text, fontSize: fs(15) }]}>
               {transactionDate ? formatDateLong(transactionDate, config.language) : ''}
             </Text>
           </DataRow>
 
-          <DataRow label={labels.details_comment} c={c} fs={fs}>
+          <DataRow label={labels.details_comment}>
             <Text style={[styles.dataValue, { color: transaction.description ? c.text : c.textSecondary, fontSize: fs(15) }]}>
               {transaction.description || labels.details_no_comment}
             </Text>
           </DataRow>
 
-          <DataRow label={labels.details_tags} c={c} fs={fs} noBorder>
+          <DataRow label={labels.details_tags} noBorder>
             {tagNames.length > 0 ? (
               <View style={styles.tagsContainer}>
                 {tagNames.map(tag => (
@@ -185,7 +185,7 @@ export default function TransactionDetailsScreen() {
           </DataRow>
 
           {parsedPhotos.length > 0 && (
-            <DataRow label={labels.details_photo} c={c} fs={fs} noBorder>
+            <DataRow label={labels.details_photo} noBorder>
               <View style={styles.photoGrid}>
                 {parsedPhotos.map((uri, index) => (
                   <TouchableOpacity key={`${uri}-${index}`} onPress={() => { setSelectedPhotoIndex(index); setPhotoViewerVisible(true); }}>
