@@ -1,4 +1,4 @@
-import { and, eq, inArray, ne, sql } from 'drizzle-orm';
+import { and, eq, inArray, ne, sql, type SQL } from 'drizzle-orm';
 import { getDrizzle } from '../drizzle/engine';
 import { tags } from '../drizzle/schema';
 import { runResultOf } from '../drizzle/proxy';
@@ -51,12 +51,12 @@ export const tagRepo = {
 
   async existsByName(userId: number, name: string, excludeId?: number): Promise<boolean> {
     const db = await getDrizzle();
-    const conditions: unknown[] = [sql`LOWER(${tags.name}) = LOWER(${name})`, eq(tags.user_id, userId)];
+    const conditions: SQL[] = [sql`LOWER(${tags.name}) = LOWER(${name})`, eq(tags.user_id, userId)];
     if (excludeId !== undefined) conditions.push(ne(tags.id, excludeId));
     const rows = await db
       .select({ count: sql<number>`COUNT(*)` })
       .from(tags)
-      .where(and(...(conditions as Parameters<typeof and>[0][])))
+      .where(and(...conditions))
       .all();
     return (rows[0]?.count ?? 0) > 0;
   },

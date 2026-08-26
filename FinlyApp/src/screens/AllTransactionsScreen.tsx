@@ -1,8 +1,7 @@
 import { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { View, Text, SectionList, TouchableOpacity, StyleSheet } from 'react-native';
-import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
-import { HEADER_BUTTONS } from '../components/componentStyles';
+import ScreenShell from '../components/ScreenShell';
 import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
@@ -27,10 +26,10 @@ import Fab from '../components/Fab';
 import CategoryFilterModal from '../components/CategoryFilterModal';
 import PeriodTabs from '../components/PeriodTabs';
 import CalendarPicker from '../components/CalendarPicker';
-import SearchBar from '../components/SearchBar';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
-import SelectToggleButton from '../components/SelectToggleButton';
+import SelectSearchHeader from '../components/SelectSearchHeader';
+import ScreenSearchBar from '../components/ScreenSearchBar';
 
 export default function AllTransactionsScreen() {
   const navigation = useNavigation<NavigationProp<'AllTransactions'>>();
@@ -80,6 +79,7 @@ export default function AllTransactionsScreen() {
     typeTab,
     selectedCategoryIds,
     periodDates,
+    onError: () => showErrorAlert(labels),
   });
 
   const handleTransactionPress = useCallback((id: number) => {
@@ -146,19 +146,11 @@ export default function AllTransactionsScreen() {
 
   const headerRightRef = useRef<() => ReactNode>(null);
   headerRightRef.current = hasSections ? () => (
-    <View style={HEADER_BUTTONS}>
-      <SelectToggleButton
-        active={selectMode}
-        onToggle={toggleSelectMode}
-        color={c.primary}
-      />
-      <TouchableOpacity
-        onPress={toggleSearch}
-        style={HEADER_BUTTONS}
-      >
-        <Ionicons name="search-outline" size={22} color={c.text} />
-      </TouchableOpacity>
-    </View>
+    <SelectSearchHeader
+      selectMode={selectMode}
+      onToggleSelect={toggleSelectMode}
+      onToggleSearch={toggleSearch}
+    />
   ) : null;
 
   useLayoutEffect(() => {
@@ -183,17 +175,13 @@ export default function AllTransactionsScreen() {
         onChange={setTypeTab}
       />
 
-      {searchActive && (
-        <View style={styles.searchWrap}>
-          <SearchBar
-            placeholder={labels.transactions_search}
-            value={searchText}
-            onChangeText={setSearchText}
-            onClose={closeSearch}
-            autoFocus
-          />
-        </View>
-      )}
+      <ScreenSearchBar
+        visible={searchActive}
+        placeholder={labels.transactions_search}
+        value={searchText}
+        onChangeText={setSearchText}
+        onClose={closeSearch}
+      />
 
       <View style={[styles.controls, { borderBottomColor: c.border }]}>
         <AccountTrigger
@@ -318,10 +306,6 @@ export default function AllTransactionsScreen() {
 }
 
 const styles = StyleSheet.create({
-  searchWrap: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
   controls: {
     alignItems: 'center',
     paddingHorizontal: 16,

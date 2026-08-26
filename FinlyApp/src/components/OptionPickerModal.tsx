@@ -1,14 +1,13 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import { WHITE, TRANSPARENT } from '../constants/themes';
-import { BUTTON_BORDER_RADIUS } from './componentStyles';
 import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
 import ListItemRow from './ListItemRow';
 import SearchBar from './SearchBar';
+import ModalFooter from './ModalFooter';
 import type { Option } from './SelectorInline';
 
 interface Props<T extends string> {
@@ -106,20 +105,12 @@ export default function OptionPickerModal<T extends string>({
           renderItem={renderItem}
         />
       )}
-      <View style={styles.buttons}>
-        <TouchableOpacity
-          style={[styles.btn, { backgroundColor: c.surface, borderColor: c.border }]}
-          onPress={onClose}
-        >
-          <Text style={[styles.btnText, { color: c.text, fontSize: fs(14) }]}>{labels.transactions_cancel}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.btn, { backgroundColor: c.primary }]}
-          onPress={handleConfirm}
-        >
-          <Text style={[styles.btnText, { color: WHITE, fontSize: fs(14) }]}>{labels.transactions_confirm}</Text>
-        </TouchableOpacity>
-      </View>
+      <ModalFooter
+        cancelLabel={labels.transactions_cancel}
+        confirmLabel={labels.transactions_confirm}
+        onCancel={onClose}
+        onConfirm={handleConfirm}
+      />
     </ModalShell>
   );
 }
@@ -142,18 +133,4 @@ const styles = StyleSheet.create({
   },
   iconWrap: { justifyContent: 'center', alignItems: 'center' },
   empty: { textAlign: 'center', paddingVertical: 24 },
-  buttons: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 16,
-  },
-  btn: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: BUTTON_BORDER_RADIUS,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: TRANSPARENT,
-  },
-  btnText: { fontWeight: '600' },
 });

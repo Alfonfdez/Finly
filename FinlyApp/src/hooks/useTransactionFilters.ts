@@ -18,6 +18,7 @@ interface UseTransactionFiltersOptions {
   typeTab?: TransactionTypeFilter;
   selectedCategoryIds?: number[];
   periodDates?: { start: Date; end: Date } | null;
+  onError?: () => void;
 }
 
 export function useTransactionFilters({
@@ -30,6 +31,7 @@ export function useTransactionFilters({
   typeTab,
   selectedCategoryIds = [],
   periodDates,
+  onError,
 }: UseTransactionFiltersOptions) {
   const [selectedAccountId, setSelectedAccountId] = useState(
     () => activeAccount?.id ?? accounts.find(a => !isTotalAccount(a))?.id
@@ -66,8 +68,9 @@ export function useTransactionFilters({
       const tagLinks = await transactionRepository.getTagsByTransactionIds(txIds);
       if (!active) return;
       setTagsByTransaction(buildTagsByTransactionMap(tagLinks));
-    })().catch(console.error);
+    })().catch(onError ?? (() => {}));
     return () => { active = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onError is stable
   }, [transactions]);
 
   const handleToggleTag = useCallback((id: number) => {

@@ -4,7 +4,6 @@ export const es: Language = {
   // Generic
   cancel: 'Cancelar',
   delete: 'Eliminar',
-  common_back: 'Atrás',
   common_close: 'Cerrar',
 
   // Settings
@@ -144,7 +143,6 @@ export const es: Language = {
   home_income: 'Ingresos',
   home_expenses: 'Gastos',
   home_open_menu: 'Abrir menú',
-  home_view_transactions: 'Ver transacciones',
   home_add: 'Añadir gasto o ingreso',
 
   // Account modal
@@ -475,10 +473,4 @@ export const es: Language = {
   a11y_next_month: 'Mes siguiente',
   backup_dialog_title: 'Copia de seguridad Finly',
   a11y_add: 'Añadir',
-  a11y_toggle_on: 'Activar',
-  a11y_toggle_off: 'Desactivar',
-  a11y_select_account: 'Seleccionar cuenta',
-  a11y_confirm: 'Confirmar',
-  a11y_cancel: 'Cancelar',
-  a11y_menu: 'Abrir menú',
 };

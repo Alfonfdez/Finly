@@ -41,6 +41,7 @@ type UseTransactionFormProps = {
   errorMessage: string;
   onSubmit: (data: TransactionDraft, tagIds: number[]) => Promise<void>;
   resetTagsOnFirstFocus?: boolean;
+  onError?: () => void;
 };
 
 export function useTransactionForm({
@@ -57,6 +58,7 @@ export function useTransactionForm({
   errorMessage,
   onSubmit,
   resetTagsOnFirstFocus = false,
+  onError,
 }: UseTransactionFormProps) {
   const { config } = useConfig();
   const { accounts, categories, accountsWithBalance, tags, refresh: refreshAll, refreshTags } = useApp();
@@ -94,8 +96,9 @@ export function useTransactionForm({
     let active = true;
     transactionRepository.getTagsByTransactionId(transactionId).then(ids => {
       if (active) setSelectedTags(ids);
-    }).catch(console.error);
+    }).catch(onError ?? (() => {}));
     return () => { active = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onError is stable
   }, [transactionId]);
 
   useFocusEffect(useCallback(() => {
@@ -122,7 +125,7 @@ export function useTransactionForm({
       const counts = await transactionRepository.getCategoryUsageCounts(USER_ID, type, formatDateForDB(startDate), accountId);
       if (active) setCategoryUsage(new Map(counts.map(c => [c.id, c.count])));
     };
-    loadUsage().catch(console.error);
+    loadUsage().catch(onError ?? (() => {}));
     return () => { active = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- categories intentionally excluded to avoid redundant loadUsage queries
   }, [type, accountId, resetTagsOnFirstFocus]));

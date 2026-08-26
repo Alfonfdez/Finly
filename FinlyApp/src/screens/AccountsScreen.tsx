@@ -1,10 +1,9 @@
 import { useState, useMemo, useCallback } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity, StyleSheet,
+  View, Text, FlatList, StyleSheet,
 } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
-import { HEADER_BUTTONS } from '../components/componentStyles';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -14,6 +13,7 @@ import { useApp } from '../context/AppContext';
 import { t, getDisplayAccountName, getDisplayAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
 import { sanitizeDefaultAccounts } from '../database/configDefaults';
+import { showErrorAlert } from '../utils/errors';
 import { isTotalAccount } from '../database/helpers';
 import type { Account } from '../database/types';
 import { formatCurrency, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
@@ -25,11 +25,11 @@ import EyeToggle from '../components/EyeToggle';
 import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
 import ListItemRow from '../components/ListItemRow';
-import SearchBar from '../components/SearchBar';
-import SelectToggleButton from '../components/SelectToggleButton';
+import SelectSearchHeader from '../components/SelectSearchHeader';
+import ScreenSearchBar from '../components/ScreenSearchBar';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
-import { showErrorAlert } from '../utils/errors';
+import GuardModal from '../components/GuardModal';
 
 type AccountWithBalance = Account & { balance: number };
 
@@ -60,12 +60,11 @@ export default function AccountsScreen() {
     hasItems: nonTotalCount > 1,
     showHeader: nonTotalCount > 1,
     headerRight: () => (
-      <View style={HEADER_BUTTONS}>
-        <SelectToggleButton active={selectMode} onToggle={toggleSelectMode} color={c.primary} />
-        <TouchableOpacity onPress={toggleSearch} style={HEADER_BUTTONS}>
-          <Ionicons name="search-outline" size={22} color={c.text} />
-        </TouchableOpacity>
-      </View>
+      <SelectSearchHeader
+        selectMode={selectMode}
+        onToggleSelect={toggleSelectMode}
+        onToggleSearch={toggleSearch}
+      />
     ),
   });
 
@@ -91,7 +90,7 @@ export default function AccountsScreen() {
         if (!active) return;
         setAccounts(accounts);
         setTotal(total);
-      }).catch(console.error);
+      }).catch(() => showErrorAlert());
       return () => { active = false; };
     }, [loadData])
   );
@@ -227,17 +226,13 @@ export default function AccountsScreen() {
         </View>
       )}
 
-      {searchActive && (
-        <View style={styles.searchWrap}>
-          <SearchBar
-            placeholder={labels.accounts_search}
-            value={searchText}
-            onChangeText={setSearchText}
-            onClose={closeSearch}
-            autoFocus
-          />
-        </View>
-      )}
+      <ScreenSearchBar
+        visible={searchActive}
+        placeholder={labels.accounts_search}
+        value={searchText}
+        onChangeText={setSearchText}
+        onClose={closeSearch}
+      />
 
       <FlatList
         data={filteredAccounts}
@@ -273,24 +268,17 @@ export default function AccountsScreen() {
         onCancel={() => setDeleteModalVisible(false)}
       />
 
-      <ConfirmationModal
+      <GuardModal
         visible={guardVisible}
         title={labels.accounts_bulk_delete_confirm_title(selectedIds.size)}
         message={labels.accounts_bulk_delete_min_one}
-        confirmLabel={labels.common_close}
-        destructive={false}
-        onConfirm={() => setGuardVisible(false)}
-        onCancel={() => setGuardVisible(false)}
+        onClose={() => setGuardVisible(false)}
       />
     </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  searchWrap: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
   totalSection: {
     paddingHorizontal: 20,
     paddingVertical: 16,

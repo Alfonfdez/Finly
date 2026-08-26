@@ -2,7 +2,6 @@ import { useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
-import { HEADER_BUTTONS } from '../components/componentStyles';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -15,11 +14,11 @@ import { type NavigationProp, MAX_TAGS } from '../constants/types';
 import { countAtLimit } from '../utils/limits';
 import { showErrorAlert } from '../utils/errors';
 import Fab from '../components/Fab';
-import SearchBar from '../components/SearchBar';
 import EmptyState from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
-import SelectToggleButton from '../components/SelectToggleButton';
+import SelectSearchHeader from '../components/SelectSearchHeader';
+import ScreenSearchBar from '../components/ScreenSearchBar';
 
 export default function TagsScreen() {
   const { activeColors: c } = useConfig();
@@ -34,12 +33,11 @@ export default function TagsScreen() {
     deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
   } = useSelectableScreen({ navigation, hasItems: tags.length > 0, showHeader: tags.length > 0, headerRight: () => (
-    <View style={HEADER_BUTTONS}>
-      <SelectToggleButton active={selectMode} onToggle={toggleSelectMode} color={c.primary} />
-      <TouchableOpacity onPress={toggleSearch} style={HEADER_BUTTONS}>
-        <Ionicons name="search-outline" size={22} color={c.text} />
-      </TouchableOpacity>
-    </View>
+    <SelectSearchHeader
+      selectMode={selectMode}
+      onToggleSelect={toggleSelectMode}
+      onToggleSearch={toggleSearch}
+    />
   )});
 
   const filteredTags = useMemo(() => {
@@ -95,17 +93,13 @@ export default function TagsScreen() {
 
   return (
     <ScreenShell>
-      {searchActive && (
-        <View style={styles.searchWrap}>
-          <SearchBar
-            placeholder={labels.tags_search}
-            value={searchText}
-            onChangeText={setSearchText}
-            onClose={closeSearch}
-            autoFocus
-          />
-        </View>
-      )}
+      <ScreenSearchBar
+        visible={searchActive}
+        placeholder={labels.tags_search}
+        value={searchText}
+        onChangeText={setSearchText}
+        onClose={closeSearch}
+      />
 
       {!selectMode && (
         <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(13) }]}>
@@ -162,10 +156,6 @@ const styles = StyleSheet.create({
   },
   emptyList: {
     flex: 1,
-  },
-  searchWrap: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
   },
   counter: {
     fontWeight: '500',

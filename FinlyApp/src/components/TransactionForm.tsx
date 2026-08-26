@@ -19,6 +19,7 @@ import CalculatorModal from './CalculatorModal';
 import { TRANSACTION_TYPES, type TransactionType, type RootStackParamList } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
+import { showErrorAlert } from '../utils/errors';
 
 export type { TransactionDraft };
 
@@ -37,6 +38,7 @@ interface TransactionFormProps {
   errorMessage: string;
   onSubmit: (data: TransactionDraft, tagIds: number[]) => Promise<void>;
   resetTagsOnFirstFocus?: boolean;
+  onError?: () => void;
 }
 
 export default function TransactionForm(props: TransactionFormProps) {
@@ -61,7 +63,7 @@ export default function TransactionForm(props: TransactionFormProps) {
     canSubmit, visibleCategories, hasMore, selectedAccount, selectableAccounts, numericAmount,
     inputRef, scrollRef,
     config, tags,
-  } = useTransactionForm(props);
+  } = useTransactionForm({ ...props, onError: props.onError ?? (() => showErrorAlert(labels)) });
 
   const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
