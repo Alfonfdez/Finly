@@ -7,8 +7,6 @@ import { withAlpha } from '../utils/color';
 import { TRANSPARENT } from '../constants/themes';
 import { PILL_RADIUS } from './componentStyles';
 
-export type { IconName };
-
 export const CATEGORY_ICONS: IconName[] = [
   'wallet-outline', 'cart-outline', 'bus-outline', 'home-outline',
   'musical-notes-outline', 'game-controller-outline', 'bag-outline', 'film-outline',

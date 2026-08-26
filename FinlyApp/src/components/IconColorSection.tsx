@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { ConfigIconShape } from '../constants/types';
-import IconGrid, { type IconName } from './IconGrid';
+import type { ConfigIconShape, IconName } from '../constants/types';
+import IconGrid from './IconGrid';
 import ColorGrid from './ColorGrid';
 import ColorPickerModal from './ColorPickerModal';
 import SectionTitle from './form/SectionTitle';

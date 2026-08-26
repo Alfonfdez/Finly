@@ -1,9 +1,8 @@
 import { Text, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { MAX_ACCOUNT_NAME_LENGTH, MAX_NOTE_LENGTH, type ConfigIconShape } from '../constants/types';
+import { MAX_ACCOUNT_NAME_LENGTH, MAX_NOTE_LENGTH, type ConfigIconShape, type IconName } from '../constants/types';
 import IconColorSection from './IconColorSection';
-import type { IconName } from './IconGrid';
 import LabeledTextField from './form/LabeledTextField';
 import PrimaryButton from './form/PrimaryButton';
 import FormError from './form/FormError';

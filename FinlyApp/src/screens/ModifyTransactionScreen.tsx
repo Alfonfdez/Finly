@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, ActivityIndicator } from 'react-native';
+import ScreenShell from '../components/ScreenShell';
 import { useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
@@ -30,21 +30,21 @@ export default function ModifyTransactionScreen() {
 
   if (loading && !transaction) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: c.background }} edges={['bottom']}>
+      <ScreenShell>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color={c.primary} />
         </View>
-      </SafeAreaView>
+      </ScreenShell>
     );
   }
 
   if (!transaction) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: c.background }} edges={['bottom']}>
+      <ScreenShell>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <EmptyState message={labels.transactions_empty} />
         </View>
-      </SafeAreaView>
+      </ScreenShell>
     );
   }
 

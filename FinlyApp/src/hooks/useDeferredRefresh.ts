@@ -8,8 +8,12 @@ export function useDeferredRefresh<T extends AnyAsyncFn>(fn: T): T {
 
   return useCallback((...args: Parameters<T>) => {
     return new Promise<void>((resolve) => {
-      requestAnimationFrame(() => {
-        fnRef.current(...args);
+      requestAnimationFrame(async () => {
+        try {
+          await fnRef.current(...args);
+        } catch (err) {
+          console.error('useDeferredRefresh error:', err);
+        }
         resolve();
       });
     });
