@@ -20,13 +20,13 @@ export default function ColorPickerModal({ visible, selectedColor, onSelect, onC
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const [tempColor, setTempColor] = useState(selectedColor ?? '#22D3EE');
+  const [tempColor, setTempColor] = useState(selectedColor ?? c.primary);
 
   useEffect(() => {
     if (visible) {
-      setTempColor(selectedColor ?? '#22D3EE');
+      setTempColor(selectedColor ?? c.primary);
     }
-  }, [visible, selectedColor]);
+  }, [visible, selectedColor, c.primary]);
 
   const handleConfirm = () => {
     onSelect(tempColor);

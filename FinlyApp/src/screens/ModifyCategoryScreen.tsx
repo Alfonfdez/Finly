@@ -302,11 +302,6 @@ const styles = StyleSheet.create({
   errorText: {
     marginTop: 2,
   },
-  sectionTitle: {
-    fontWeight: '600',
-    marginBottom: 4,
-    marginTop: 16,
-  },
   typeText: {
     marginLeft: 4,
   },

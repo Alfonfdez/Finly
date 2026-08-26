@@ -1,4 +1,5 @@
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import type { ReactNode } from 'react';
 import Svg, { Rect, Line } from 'react-native-svg';
 import { useConfig, type Config } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
@@ -58,7 +59,7 @@ function SpainFlagWeb({ size = 16 }: { size?: number }) {
   );
 }
 
-const FLAG_WEB: Record<string, React.ReactNode> = {
+const FLAG_WEB: Record<string, ReactNode> = {
   [LANGUAGES.en]: <UKFlagWeb size={16} />,
   [LANGUAGES.es]: <SpainFlagWeb size={16} />,
   [LANGUAGES.ca]: <SenyeraIcon size={16} />,

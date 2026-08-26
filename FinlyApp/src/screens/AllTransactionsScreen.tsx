@@ -229,7 +229,7 @@ export default function AllTransactionsScreen() {
         activeTagIds={filters.localTagIds}
         onToggle={filters.handleToggleTag}
         onClear={filters.handleClearTagFilter}
-        style={{ marginTop: 12 }}
+        style={styles.tagFilter}
       />
 
       {!loading && filters.sections.length === 0 ? (
@@ -333,5 +333,5 @@ const styles = StyleSheet.create({
   },
   listContent: { paddingBottom: 80 },
   emptyList: { flex: 1 },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  tagFilter: { marginTop: 12 },
 });

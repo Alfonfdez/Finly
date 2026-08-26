@@ -52,7 +52,7 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
     <View style={calendarStyles.container}>
       <Text style={[styles.title, { color: c.textSecondary, fontSize: fs(13) }]}>{rangeText}</Text>
 
-      <TouchableOpacity style={styles.allTimeRow} onPress={handleAllTime}>
+      <TouchableOpacity style={styles.allTimeRow} onPress={handleAllTime} accessibilityRole="checkbox" accessibilityState={{ checked: allTime }}>
         <View style={[styles.checkbox, { borderColor: c.textSecondary }, allTime && { backgroundColor: c.primary, borderColor: c.primary }]} />
         <Text style={[styles.allTimeText, { color: c.text, fontSize: fs(14) }]}>{labels.cal_all}</Text>
       </TouchableOpacity>
