@@ -45,6 +45,8 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
   const [expression, setExpression] = useState('');
   const [hasError, setHasError] = useState(false);
 
+  const displayHeight = fs(16) * 1.4 * 2 + fs(28) * 1.4 + 32;
+
   const resultDisplay = useMemo(() => {
     if (!expression) return null;
     const { result, error } = evaluate(expression);
@@ -144,7 +146,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
         </Text>
       </View>
 
-      <View style={styles.displayArea}>
+      <View style={[styles.displayArea, { height: displayHeight }]}>
         <Text
           style={[styles.expression, { color: c.textSecondary, fontSize: fs(16) }]}
           numberOfLines={2}

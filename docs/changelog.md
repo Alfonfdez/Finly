@@ -2660,3 +2660,6 @@
 - Added `accessibilityRole="button"` to all cancel/confirm touchables for consistency.
 - test:all green (typecheck + lint + 282 tests, 34 files).
 
+[2026-08-26] Fix | CalculatorModal.tsx
+- Fixed calculator modal height changing while typing/calculating. The display area now has a fixed height (computed from the current font-size setting) that always reserves 2 expression lines + 1 result line with comfortable line-height (1.4), so the modal no longer grows when the expression wraps to a second line, and the error/result text is not cropped at the bottom. test:all green (typecheck + lint + 282 tests, 34 files).
+
