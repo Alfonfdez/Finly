@@ -5,7 +5,6 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { BUTTON_BORDER_RADIUS } from './componentStyles';
-import { WHITE } from '../constants/themes';
 import ModalShell from './ModalShell';
 
 
@@ -61,8 +60,10 @@ export default function ColorPickerModal({ visible, selectedColor, onSelect, onC
 
       <View style={[styles.footer, { borderTopColor: c.border }]}>
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: c.surface, borderColor: c.border }]}
+          style={[styles.button, { backgroundColor: c.background, borderColor: c.border }]}
           onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel={labels.create_cat_color_picker_cancel}
         >
           <Text style={[styles.buttonText, { color: c.text, fontSize: fs(14) }]}>
             {labels.create_cat_color_picker_cancel}
@@ -71,8 +72,10 @@ export default function ColorPickerModal({ visible, selectedColor, onSelect, onC
         <TouchableOpacity
           style={[styles.button, { backgroundColor: c.primary }]}
           onPress={handleConfirm}
+          accessibilityRole="button"
+          accessibilityLabel={labels.create_cat_color_picker_ok}
         >
-          <Text style={[styles.buttonText, { color: WHITE, fontSize: fs(14) }]}>
+          <Text style={[styles.buttonText, { color: c.background, fontSize: fs(14) }]}>
             {labels.create_cat_color_picker_ok}
           </Text>
         </TouchableOpacity>

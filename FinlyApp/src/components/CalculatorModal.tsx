@@ -179,8 +179,9 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
 
       <View style={[styles.actions, { borderTopColor: c.border }]}>
         <TouchableOpacity
-          style={[styles.actionBtn, { backgroundColor: c.surface }]}
+          style={[styles.actionBtn, { backgroundColor: c.background, borderColor: c.border, borderWidth: 1 }]}
           onPress={onCancel}
+          accessibilityRole="button"
           accessibilityLabel={labels.calc_cancel}
         >
           <Text style={[styles.actionText, { color: c.text, fontSize: fs(16) }]}>
@@ -196,13 +197,14 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
           ]}
           onPress={handleAccept}
           disabled={resultDisplay === null || hasError}
+          accessibilityRole="button"
           accessibilityLabel={labels.calc_accept}
         >
           <Text
             style={[
               styles.actionText,
               {
-                color: resultDisplay !== null && !hasError ? WHITE : c.textSecondary,
+                color: resultDisplay !== null && !hasError ? c.background : c.textSecondary,
                 fontSize: fs(16),
               },
             ]}

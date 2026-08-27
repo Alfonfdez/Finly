@@ -101,8 +101,10 @@ export default function CategoryTransferModal({
       <View style={styles.buttons}>
         <View style={styles.buttonRow}>
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: c.surface, borderColor: c.border }]}
+            style={[styles.button, { backgroundColor: c.background, borderColor: c.border }]}
             onPress={onCancel}
+            accessibilityRole="button"
+            accessibilityLabel={cancelLabel}
           >
             <Text style={[styles.buttonText, { color: c.text, fontSize: fs(14) }]}>{cancelLabel}</Text>
           </TouchableOpacity>
@@ -111,7 +113,7 @@ export default function CategoryTransferModal({
             onPress={onConfirm}
             disabled={selectedId === null}
             disabledBg={c.textSecondary}
-            enabledTextColor={WHITE}
+            enabledTextColor={c.background}
             style={styles.button}
           />
         </View>

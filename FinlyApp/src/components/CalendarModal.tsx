@@ -116,8 +116,8 @@ export default function CalendarModal({
       </ScrollView>
 
       <View style={[styles.buttons, { borderTopColor: c.border }]}>
-        <TouchableOpacity style={[styles.cancelButton, { backgroundColor: c.surface }]} onPress={handleCancel}>
-          <Text style={[styles.cancelButtonText, { color: c.textSecondary, fontSize: fs(14) }]}>{labels.cal_cancel}</Text>
+        <TouchableOpacity style={[styles.cancelButton, { backgroundColor: c.background, borderColor: c.border }]} onPress={handleCancel} accessibilityRole="button" accessibilityLabel={labels.cal_cancel}>
+          <Text style={[styles.cancelButtonText, { color: c.text, fontSize: fs(14) }]}>{labels.cal_cancel}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.okButton, { backgroundColor: c.primary }]} onPress={handleOk}>
           <Text style={[styles.okButtonText, { color: c.background, fontSize: fs(14) }]}>{labels.cal_ok}</Text>
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
   },
-  cancelButton: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 },
+  cancelButton: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8, borderWidth: 1 },
   cancelButtonText: { fontWeight: '600' },
   okButton: { paddingHorizontal: 28, paddingVertical: 10, borderRadius: 8 },
   okButtonText: { fontWeight: '700' },
