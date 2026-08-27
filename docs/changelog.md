@@ -2663,3 +2663,6 @@
 [2026-08-26] Fix | CalculatorModal.tsx
 - Fixed calculator modal height changing while typing/calculating. The display area now has a fixed height (computed from the current font-size setting) that always reserves 2 expression lines + 1 result line with comfortable line-height (1.4), so the modal no longer grows when the expression wraps to a second line, and the error/result text is not cropped at the bottom. test:all green (typecheck + lint + 282 tests, 34 files).
 
+[2026-08-26] Fix | DonutChart.tsx
+- Rewrote donut chart segment rendering to fix tiny slices (e.g. 4€ vs 99€) drawing as distorted triangles/"weird lines". Segments are now drawn as explicit SVG arc `<Path>` elements computed from each category's percentage/angles instead of `<Circle strokeDasharray>` (which renders small dashes incorrectly). Single 100% segments fall back to a plain full circle. Same dimensions, colors, rotation and flush segment caps preserved. test:all green (typecheck + lint + 282 tests, 34 files).
+
