@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Svg, { G, Circle } from 'react-native-svg';
+import Svg, { G, Circle, Path } from 'react-native-svg';
 import type { CategoryWithTotal } from '../constants/types';
 import { formatCurrency, fitFontSize } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
@@ -12,52 +12,62 @@ interface Props {
 }
 
 const RADIUS = 66;
+const CENTER = 80;
 const STROKE_WIDTH = 13;
 const HOLE_SIZE = (RADIUS - STROKE_WIDTH / 2) * 2;
+
+function describeArc(startAngle: number, endAngle: number): string {
+  const startX = CENTER + RADIUS * Math.cos(startAngle);
+  const startY = CENTER + RADIUS * Math.sin(startAngle);
+  const endX = CENTER + RADIUS * Math.cos(endAngle);
+  const endY = CENTER + RADIUS * Math.sin(endAngle);
+  const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
+  return `M ${startX} ${startY} A ${RADIUS} ${RADIUS} 0 ${largeArcFlag} 1 ${endX} ${endY}`;
+}
 
 function DonutChartInner({ data, total }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
-  const radius = RADIUS;
-  const circumference = 2 * Math.PI * radius;
-  const strokeWidth = STROKE_WIDTH;
 
   const formatted = formatCurrency(total, config.currency, config.decimalSeparator);
   const totalFontSize = fitFontSize(formatted, fs(18), HOLE_SIZE);
 
   const segments = useMemo(() => {
-    let offset = 0;
+    let startAngle = 0;
     return data.map((item) => {
-      const arcLength = (item.percentage / 100) * circumference;
+      const sweep = (item.percentage / 100) * Math.PI * 2;
+      const endAngle = startAngle + sweep;
       const segment = {
         id: item.id,
         color: item.color,
-        arcLength,
-        offset,
+        startAngle,
+        endAngle,
       };
-      offset += arcLength;
+      startAngle = endAngle;
       return segment;
     });
-  }, [data, circumference]);
+  }, [data]);
+
+  const isSingleSegment = data.length === 1;
 
   return (
     <View style={styles.container}>
       <Svg width={160} height={160} viewBox="0 0 160 160">
         <G transform="rotate(-90, 80, 80)">
-          <Circle cx="80" cy="80" r={radius} stroke={c.surface} strokeWidth={strokeWidth} fill="none" />
-          {segments.map((seg) => (
-            <Circle
-              key={seg.id}
-              cx="80"
-              cy="80"
-              r={radius}
-              stroke={seg.color}
-              strokeWidth={strokeWidth}
-              fill="none"
-              strokeDasharray={`${seg.arcLength} ${circumference - seg.arcLength}`}
-              strokeDashoffset={-seg.offset}
-            />
-          ))}
+          <Circle cx={CENTER} cy={CENTER} r={RADIUS} stroke={c.surface} strokeWidth={STROKE_WIDTH} fill="none" />
+          {isSingleSegment ? (
+            <Circle cx={CENTER} cy={CENTER} r={RADIUS} stroke={segments[0]?.color} strokeWidth={STROKE_WIDTH} fill="none" />
+          ) : (
+            segments.map((seg) => (
+              <Path
+                key={seg.id}
+                d={describeArc(seg.startAngle, seg.endAngle)}
+                stroke={seg.color}
+                strokeWidth={STROKE_WIDTH}
+                fill="none"
+              />
+            ))
+          )}
         </G>
       </Svg>
       <View style={styles.totalContainer}>
