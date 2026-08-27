@@ -2636,3 +2636,16 @@
 [2026-08-26] Fix | ModalFooter.tsx
 - Changed `ModalFooter` default `destructive` from `true` to `false`. This fixes `AccountModal` and `OptionPickerModal` (languages, currencies, default accounts) showing red confirm buttons — they now correctly show blue (`c.primary`). `ConfirmationModal` usages are unaffected (they use their own inline buttons). test:all green (typecheck + lint + 282 tests, 34 files).
 
+[2026-08-26] Fix | fr.ts, de.ts, pt.ts, it.ts, formatters.ts, RegionalScreen.tsx, CalendarModal.tsx, SortToggle.tsx, PeriodPicker.tsx, AccountForm.tsx, CreateAccountScreen.tsx, ModifyAccountScreen.tsx, CreateCategoryScreen.tsx, ModifyCategoryScreen.tsx
+- Added `Language` type annotations to `fr.ts`, `de.ts`, `pt.ts` so missing/extra keys are caught at compile time.
+- Corrected French `settings_delete_data_confirm_placeholder` from English "Type DELETE here" to "Tapez DELETE ici".
+- Fixed Italian `settings_import_success_message` typo "stati" (states) → "dati" (data).
+- Added web flag icons (France, Germany, Portugal, Italy) to `FLAG_WEB` in `RegionalScreen` — previously fr/de/pt/it showed no flag on web.
+- Fixed stale temp state in `CalendarModal` — added `useEffect` to reset `tempDate`/`tempRangeStart`/`tempRangeEnd` when the modal reopens.
+- Fixed `SortToggle` — removed `stopPropagation` (a no-op in React Native) by restructuring the arrow icon as a sibling touchable, so pressing the arrow no longer also fires the sort toggle.
+- Fixed `PeriodPicker` — reset `allTime`/`selecting` when the range changes (modal reopen).
+- Fixed `AccountForm` — `inputStyle` no longer receives `false` (now ternary `nameDisabled ? {...} : undefined`).
+- Changed `parseDbDate` to return epoch sentinel `new Date(0)` for invalid input instead of current date, preventing corrupt dates from sorting as "today".
+- Added `Keyboard.dismiss()` before submit in `CreateAccountScreen`, `ModifyAccountScreen`, `CreateCategoryScreen`, `ModifyCategoryScreen` for consistency with tag/comment screens.
+- test:all green (typecheck + lint + 282 tests, 34 files).
+

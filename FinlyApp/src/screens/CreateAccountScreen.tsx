@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Keyboard } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -57,6 +57,7 @@ export default function CreateAccountScreen() {
   );
 
   const handleCreate = async () => {
+    Keyboard.dismiss();
     if (!canCreate || selectedIcon === null || selectedColor === null) return;
     try {
       await accountRepository.create({

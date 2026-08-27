@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { formatPeriodText } from '../utils/formatters';
 import type { Period } from './calendars/types';
@@ -45,6 +45,14 @@ export default function CalendarModal({
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
+
+  useEffect(() => {
+    if (visible) {
+      setTempDate(date);
+      setTempRangeStart(rangeStart ?? MIN_DATE);
+      setTempRangeEnd(rangeEnd ?? new Date());
+    }
+  }, [visible, date, rangeStart, rangeEnd]);
 
   const handleSelect = useCallback((d: Date) => {
     setTempDate(d);

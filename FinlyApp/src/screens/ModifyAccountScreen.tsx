@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Keyboard } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -85,6 +85,7 @@ export default function ModifyAccountScreen() {
   const hintText = getNameHintText(name, nameError, labels.modify_account_error_empty);
 
   const handleSave = async () => {
+    Keyboard.dismiss();
     if (!canSave || !account) return;
     if (selectedIcon === null || selectedColor === null) return;
     const trimmedDescription = description.trim();

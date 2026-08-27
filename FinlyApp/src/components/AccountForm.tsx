@@ -95,7 +95,7 @@ export default function AccountForm({
           error={nameErrorDisplay}
           showCounter
           editable={!nameDisabled}
-          inputStyle={nameDisabled && { color: c.textSecondary }}
+          inputStyle={nameDisabled ? { color: c.textSecondary } : undefined}
         />
       )}
 

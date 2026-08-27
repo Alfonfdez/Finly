@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   View, Text, TextInput,
-  StyleSheet,
+  StyleSheet, Keyboard,
 } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
@@ -91,6 +91,7 @@ export default function ModifyCategoryScreen() {
   }, [categories, category]);
 
   const handleSave = async () => {
+    Keyboard.dismiss();
     if (!canSave || !category) return;
     if (selectedIcon === null || selectedColor === null) return;
     const defaultName = getDefaultEnglishName(category.id);

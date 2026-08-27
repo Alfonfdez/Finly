@@ -171,10 +171,10 @@ export function formatDateTimeShort(date: Date, shortMonths: string[]): string {
 }
 
 export function parseDbDate(value: string): Date {
-  if (!/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2})?$/.test(value)) return new Date();
+  if (!/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2})?$/.test(value)) return new Date(0);
   const [datePart, timePart] = value.split(' ');
   const [year, month, day] = datePart.split('-').map(Number);
-  if (month < 1 || month > 12 || day < 1 || day > 31) return new Date();
+  if (month < 1 || month > 12 || day < 1 || day > 31) return new Date(0);
   if (timePart) {
     const [hours, minutes, seconds] = timePart.split(':').map(Number);
     return new Date(year, month - 1, day, hours, minutes, seconds);
