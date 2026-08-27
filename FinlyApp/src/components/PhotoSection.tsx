@@ -109,10 +109,12 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.modalCancelButton, { backgroundColor: c.surface }]}
+          style={[styles.modalCancelButton, { backgroundColor: c.background, borderColor: c.border, borderWidth: 1 }]}
           onPress={() => setSourceModalVisible(false)}
+          accessibilityRole="button"
+          accessibilityLabel={labels.cal_cancel}
         >
-          <Text style={[styles.modalCancelText, { color: c.textSecondary, fontSize: fs(14) }]}>
+          <Text style={[styles.modalCancelText, { color: c.text, fontSize: fs(14) }]}>
             {labels.cal_cancel}
           </Text>
         </TouchableOpacity>
@@ -190,6 +192,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 8,
+    width: '100%',
   },
   modalCancelText: {
     fontWeight: '600',

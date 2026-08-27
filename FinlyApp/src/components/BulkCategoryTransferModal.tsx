@@ -11,7 +11,7 @@ import ModalHeader from './ModalHeader';
 import ListItemRow from './ListItemRow';
 import CategoryTransferModal, { type TransferTargetId } from './CategoryTransferModal';
 import PrimaryButton from './form/PrimaryButton';
-import { WHITE, TRANSPARENT } from '../constants/themes';
+import { TRANSPARENT } from '../constants/themes';
 import { BUTTON_BORDER_RADIUS } from './componentStyles';
 
 export interface BulkCategoryItem {
@@ -111,8 +111,10 @@ export default function BulkCategoryTransferModal({
       <View style={styles.buttons}>
         <View style={styles.buttonRow}>
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: c.surface, borderColor: c.border }]}
+            style={[styles.button, { backgroundColor: c.background, borderColor: c.border }]}
             onPress={onCancel}
+            accessibilityRole="button"
+            accessibilityLabel={labels.modify_cat_select_cancel}
           >
             <Text style={[styles.buttonText, { color: c.text, fontSize: fs(14) }]}>
               {labels.modify_cat_select_cancel}
@@ -123,7 +125,7 @@ export default function BulkCategoryTransferModal({
             onPress={onConfirm}
             disabled={!allResolved}
             disabledBg={c.textSecondary}
-            enabledTextColor={WHITE}
+            enabledTextColor={c.background}
             style={styles.button}
           />
         </View>

@@ -165,10 +165,12 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
         ) : null}
         <View style={styles.modalButtons}>
           <TouchableOpacity
-            style={[styles.modalButton, { backgroundColor: c.surface }]}
+            style={[styles.modalButton, { backgroundColor: c.background, borderColor: c.border, borderWidth: 1 }]}
             onPress={handleCancel}
+            accessibilityRole="button"
+            accessibilityLabel={labels.cal_cancel}
           >
-            <Text style={[styles.modalButtonText, { color: c.textSecondary, fontSize: fs(14) }]}>
+            <Text style={[styles.modalButtonText, { color: c.text, fontSize: fs(14) }]}>
               {labels.cal_cancel}
             </Text>
           </TouchableOpacity>

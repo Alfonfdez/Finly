@@ -2649,3 +2649,14 @@
 - Added `Keyboard.dismiss()` before submit in `CreateAccountScreen`, `ModifyAccountScreen`, `CreateCategoryScreen`, `ModifyCategoryScreen` for consistency with tag/comment screens.
 - test:all green (typecheck + lint + 282 tests, 34 files).
 
+[2026-08-26] Fix | TagSection.tsx, PhotoSection.tsx, CategoryTransferModal.tsx, BulkCategoryTransferModal.tsx, ColorPickerModal.tsx, CalendarModal.tsx, CalculatorModal.tsx
+- Unified modal button colors across all modals to match the standard pattern (`ConfirmationModal`/`ModalFooter`): Cancel is now a ghost/outline button (`c.background` fill + `c.border` border + `c.text`), confirm buttons use `c.primary` with `c.background` text (destructive stays `c.red` + `WHITE`).
+- `TagSection` (Add tag): Cancel changed from `c.surface` fill to ghost outline.
+- `PhotoSection` (Add photo): Cancel changed from `c.surface` fill to full-width ghost outline.
+- `CategoryTransferModal` / `BulkCategoryTransferModal`: Cancel changed from `c.surface`+`c.border` fill to ghost outline; confirm text `WHITE` → `c.background` (removed unused `WHITE` import in Bulk).
+- `ColorPickerModal`: Cancel changed from `c.surface`+`c.border` to ghost outline; OK text `WHITE` → `c.background` (removed unused `WHITE` import).
+- `CalendarModal`: Cancel changed from `c.surface` fill to ghost outline (added `borderWidth`).
+- `CalculatorModal`: Cancel changed from `c.surface` fill to ghost outline; Accept text `WHITE` → `c.background`.
+- Added `accessibilityRole="button"` to all cancel/confirm touchables for consistency.
+- test:all green (typecheck + lint + 282 tests, 34 files).
+
