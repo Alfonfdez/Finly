@@ -1,4 +1,6 @@
-export const pt = {
+import type { Language } from './en';
+
+export const pt: Language = {
   // Generic
   cancel: 'Cancelar',
   delete: 'Excluir',

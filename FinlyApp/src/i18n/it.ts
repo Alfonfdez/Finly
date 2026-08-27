@@ -43,7 +43,7 @@ export const it: Language = {
   settings_import_confirm_title: 'Importare i dati?',
   settings_import_confirm_message: 'Questo sostituirà tutti i conti, le categorie, le etichette, le transazioni e le impostazioni attuali con il contenuto del backup. Questa azione non può essere annullata.',
   settings_import_success_title: 'Importazione completata',
-  settings_import_success_message: 'I tuoi stati sono stati ripristinati dal backup.',
+  settings_import_success_message: 'I tuoi dati sono stati ripristinati dal backup.',
   settings_import_error_title: 'Errore nell\'importazione',
   settings_import_error_message: 'Impossibile importare il file di backup. I tuoi dati non sono stati modificati.',
   settings_import_invalid_title: 'Backup non valido',

@@ -59,10 +59,52 @@ function SpainFlagWeb({ size = 16 }: { size?: number }) {
   );
 }
 
+function VerticalTricolorWeb({ size = 16, colors }: { size?: number; colors: string[] }) {
+  const h = size * 0.75;
+  return (
+    <View style={{ width: size, height: h, borderRadius: 2, overflow: 'hidden', flexDirection: 'row' }}>
+      {colors.map((color, i) => (
+        <View key={i} style={{ flex: 1, backgroundColor: color }} />
+      ))}
+    </View>
+  );
+}
+
+function HorizontalTricolorWeb({ size = 16, colors }: { size?: number; colors: string[] }) {
+  const h = size * 0.75;
+  return (
+    <View style={{ width: size, height: h, borderRadius: 2, overflow: 'hidden' }}>
+      {colors.map((color, i) => (
+        <View key={i} style={{ flex: 1, backgroundColor: color }} />
+      ))}
+    </View>
+  );
+}
+
+function FranceFlagWeb({ size = 16 }: { size?: number }) {
+  return <VerticalTricolorWeb size={size} colors={['#0055A4', '#FFFFFF', '#EF4135']} />;
+}
+
+function ItalyFlagWeb({ size = 16 }: { size?: number }) {
+  return <VerticalTricolorWeb size={size} colors={['#009246', '#FFFFFF', '#CE2B37']} />;
+}
+
+function GermanyFlagWeb({ size = 16 }: { size?: number }) {
+  return <HorizontalTricolorWeb size={size} colors={['#000000', '#DD0000', '#FFCE00']} />;
+}
+
+function PortugalFlagWeb({ size = 16 }: { size?: number }) {
+  return <VerticalTricolorWeb size={size} colors={['#046A38', '#DA291C']} />;
+}
+
 const FLAG_WEB: Record<string, ReactNode> = {
   [LANGUAGES.en]: <UKFlagWeb size={16} />,
   [LANGUAGES.es]: <SpainFlagWeb size={16} />,
   [LANGUAGES.ca]: <SenyeraIcon size={16} />,
+  [LANGUAGES.fr]: <FranceFlagWeb size={16} />,
+  [LANGUAGES.de]: <GermanyFlagWeb size={16} />,
+  [LANGUAGES.pt]: <PortugalFlagWeb size={16} />,
+  [LANGUAGES.it]: <ItalyFlagWeb size={16} />,
 };
 
 const FLAG_EMOJI: Record<string, string> = {

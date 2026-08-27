@@ -1,4 +1,6 @@
-export const de = {
+import type { Language } from './en';
+
+export const de: Language = {
   cancel: 'Abbrechen',
   delete: 'Löschen',
   common_close: 'Schließen',

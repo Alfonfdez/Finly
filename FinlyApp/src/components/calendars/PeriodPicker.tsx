@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import DayPicker from './DayPicker';
 import { useConfig } from '../../context/ConfigContext';
@@ -21,6 +21,11 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
   const shortMonths = labels.months_short;
 
   const today = useMemo(() => new Date(), []);
+
+  useEffect(() => {
+    setAllTime(false);
+    setSelecting('start');
+  }, [tempStart, tempEnd]);
 
   const handleAllTime = useCallback(() => {
     const nextAllTime = !allTime;

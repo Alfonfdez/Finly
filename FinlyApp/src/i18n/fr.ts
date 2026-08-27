@@ -1,4 +1,6 @@
-export const fr = {
+import type { Language } from './en';
+
+export const fr: Language = {
   // Generic
   cancel: 'Annuler',
   delete: 'Supprimer',
@@ -56,7 +58,7 @@ export const fr = {
   settings_delete_data_confirm_message: 'Tous les comptes, catégories, étiquettes et transactions seront définitivement supprimés. Vos paramètres (langue, thème, devise et valeurs par défaut) sont conservés. Cette action est irréversible.',
   settings_delete_data_confirm_title2: 'Êtes-vous sûr ?',
   settings_delete_data_confirm_message2: 'Tapez DELETE pour confirmer',
-  settings_delete_data_confirm_placeholder: 'Type DELETE here',
+  settings_delete_data_confirm_placeholder: 'Tapez DELETE ici',
   settings_delete_confirm: 'Confirmer',
   settings_delete_all_data_confirm: 'Tout supprimer',
   settings_factory_reset_confirm: 'Réinitialiser',
