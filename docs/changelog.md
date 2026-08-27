@@ -2666,3 +2666,9 @@
 [2026-08-26] Fix | DonutChart.tsx
 - Rewrote donut chart segment rendering to fix tiny slices (e.g. 4€ vs 99€) drawing as distorted triangles/"weird lines". Segments are now drawn as explicit SVG arc `<Path>` elements computed from each category's percentage/angles instead of `<Circle strokeDasharray>` (which renders small dashes incorrectly). Single 100% segments fall back to a plain full circle. Same dimensions, colors, rotation and flush segment caps preserved. test:all green (typecheck + lint + 282 tests, 34 files).
 
+[2026-08-26] Fix | formatters.ts, usePhotos.ts, TransactionDetailsScreen.tsx
+- Fixed `formatDateLong` producing Spanish-style dates for fr/de/it (e.g. "3 de mars de 2024"). Now each language renders its own format: fr "3 août 2026", de "3. August 2026" (month casing preserved), it "3 agosto 2026", ca "3 d'agost de 2026" (with `d'` elision before vowel-initial months, e.g. "3 de març de 2026" otherwise); es/ca/pt keep "3 de agosto/agost/agosto de 2026" and en "August 3, 2026". Added per-language unit tests.
+- Extracted duplicated photo copy-to-storage logic in `usePhotos.ts` into a shared `copyPhotoToStorage` helper (both camera take and gallery pick paths).
+- Removed a redundant first `getTagsByTransactionId` DB query in `TransactionDetailsScreen.loadTags` (result was discarded; the follow-up `getTagsByTransactionIds` already returns `[]` when empty).
+- Wrapped `TransactionDetailsScreen.handleDelete` in `useCallback` to avoid recreating it on every render. test:all green (typecheck + lint + 283 tests, 34 files).
+

@@ -29,6 +29,7 @@ import {
   FIRST_DAYS,
 } from '../../src/constants/types';
 import { LANGUAGES } from '../../src/utils/language';
+import { setLanguage } from '../../src/i18n';
 
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const shortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -162,6 +163,28 @@ describe('date helpers', () => {
 
   it('formats a long date in English', () => {
     expect(formatDateLong(new Date(2026, 7, 3), LANGUAGES.en)).toBe('August 3, 2026');
+  });
+
+  it('formats a long date per non-English language', () => {
+    const date = new Date(2026, 7, 3);
+    try {
+      setLanguage('es');
+      expect(formatDateLong(date, LANGUAGES.es)).toBe('3 de agosto de 2026');
+      setLanguage('ca');
+      expect(formatDateLong(date, LANGUAGES.ca)).toBe('3 d\'agost de 2026');
+      setLanguage('ca');
+      expect(formatDateLong(new Date(2026, 2, 3), LANGUAGES.ca)).toBe('3 de març de 2026');
+      setLanguage('pt');
+      expect(formatDateLong(date, LANGUAGES.pt)).toBe('3 de agosto de 2026');
+      setLanguage('fr');
+      expect(formatDateLong(date, LANGUAGES.fr)).toBe('3 août 2026');
+      setLanguage('it');
+      expect(formatDateLong(date, LANGUAGES.it)).toBe('3 agosto 2026');
+      setLanguage('de');
+      expect(formatDateLong(date, LANGUAGES.de)).toBe('3. August 2026');
+    } finally {
+      setLanguage('en');
+    }
   });
 });
 
