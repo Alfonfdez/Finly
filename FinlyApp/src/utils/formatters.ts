@@ -141,12 +141,22 @@ export function isSameDay(a: Date, b: Date): boolean {
 
 export function formatDateLong(date: Date, language: Language): string {
   const day = date.getDate();
-  const month = (date.getMonth() + 1);
   const year = date.getFullYear();
-  const monthName = getMonthName(month);
+  const monthName = getMonthName(date.getMonth() + 1);
 
   if (language === LANGUAGES.en) {
     return `${monthName} ${day}, ${year}`;
+  }
+  if (language === LANGUAGES.fr || language === LANGUAGES.it) {
+    return `${day} ${monthName.toLowerCase()} ${year}`;
+  }
+  if (language === LANGUAGES.de) {
+    return `${day}. ${monthName} ${year}`;
+  }
+  if (language === LANGUAGES.ca) {
+    const m = monthName.toLowerCase();
+    const elided = /^[aeiouàèéíìòóúù]/.test(m) ? `d'${m}` : `de ${m}`;
+    return `${day} ${elided} de ${year}`;
   }
   return `${day} de ${monthName.toLowerCase()} de ${year}`;
 }

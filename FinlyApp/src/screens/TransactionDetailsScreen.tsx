@@ -76,14 +76,12 @@ export default function TransactionDetailsScreen() {
   }, [transaction, labels]);
 
   const loadTags = useCallback(async () => {
-    const tagIds = await transactionRepository.getTagsByTransactionId(transactionId);
-    if (tagIds.length === 0) return [] as { tag_id: number; name: string }[];
     return await transactionRepository.getTagsByTransactionIds([transactionId]);
   }, [transactionId]);
 
   const { data: tagNames } = useFocusLoad(loadTags, [] as { tag_id: number; name: string }[]);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (deleting) return;
     setDeleting(true);
     try {
@@ -100,7 +98,7 @@ export default function TransactionDetailsScreen() {
       setDeleting(false);
       setDeleteModalVisible(false);
     }
-  };
+  }, [deleting, parsedPhotos, transactionId, navigation, deferredRefresh, labels]);
 
   if (!transaction) {
     return (

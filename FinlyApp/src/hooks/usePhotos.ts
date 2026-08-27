@@ -25,6 +25,14 @@ async function webPhotoUri(asset: ImagePicker.ImagePickerAsset): Promise<string>
   return readAsDataUrl(blob);
 }
 
+function copyPhotoToStorage(src: string): string {
+  const dest = Paths.document.uri + `photo_${Date.now()}_${photoCounter++}.jpg`;
+  const srcFile = new File(src);
+  const destFile = new File(dest);
+  srcFile.copy(destFile);
+  return dest;
+}
+
 export function usePhotos(initialPhotos: string[] = []) {
   const [photos, setPhotos] = useState<string[]>(initialPhotos);
 
@@ -34,11 +42,8 @@ export function usePhotos(initialPhotos: string[] = []) {
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.7 });
     if (!result.canceled && result.assets[0]) {
       const src = result.assets[0].uri;
-      const dest = Paths.document.uri + `photo_${Date.now()}_${photoCounter++}.jpg`;
       try {
-        const srcFile = new File(src);
-        const destFile = new File(dest);
-        srcFile.copy(destFile);
+        const dest = copyPhotoToStorage(src);
         setPhotos(prev => [...prev, dest]);
       } catch (err) {
         console.error('Failed to copy photo:', err);
@@ -59,11 +64,8 @@ export function usePhotos(initialPhotos: string[] = []) {
         return;
       }
       const src = asset.uri;
-      const dest = Paths.document.uri + `photo_${Date.now()}_${photoCounter++}.jpg`;
       try {
-        const srcFile = new File(src);
-        const destFile = new File(dest);
-        srcFile.copy(destFile);
+        const dest = copyPhotoToStorage(src);
         setPhotos(prev => [...prev, dest]);
       } catch (err) {
         console.error('Failed to copy photo:', err);
