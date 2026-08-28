@@ -9,10 +9,11 @@ import { useFontSize } from '../hooks/useFontSize';
 import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
-import { TRANSACTION_TYPES, TYPE_FILTERS, PERIODS, type NavigationProp, type TransactionTypeFilter } from '../constants/types';
+import { usePeriodNavigation } from '../hooks/usePeriodNavigation';
+import { TRANSACTION_TYPES, TYPE_FILTERS, type NavigationProp, type TransactionTypeFilter } from '../constants/types';
 import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
-import { formatCurrency, resolvePeriodRange, endOfDay, startOfDay } from '../utils/formatters';
+import { formatCurrency, resolvePeriodRange } from '../utils/formatters';
 import { showErrorAlert } from '../utils/errors';
 import { t } from '../i18n';
 import AccountModal from '../components/AccountModal';
@@ -33,7 +34,7 @@ import ScreenSearchBar from '../components/ScreenSearchBar';
 
 export default function AllTransactionsScreen() {
   const navigation = useNavigation<NavigationProp<'AllTransactions'>>();
-  const { categories, categoriesById, accounts, activeAccount, activeType, accountsWithBalance, tags, activePeriod, selectedDate, customDate, changePeriod, setSelectedDate, setCustomDate, refresh, selectAccount } = useApp();
+  const { categories, categoriesById, accounts, activeAccount, activeType, accountsWithBalance, tags, activePeriod, selectedDate, customDate, setSelectedDate, refresh, selectAccount } = useApp();
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -102,10 +103,7 @@ export default function AllTransactionsScreen() {
 
   const keyExtractor = useCallback((item: Transaction) => item.id.toString(), []);
 
-  const handlePeriodChange = useCallback((period: typeof PERIODS[keyof typeof PERIODS]) => {
-    changePeriod(period);
-    if (period === PERIODS.custom) setCalendarVisible(true);
-  }, [changePeriod]);
+  const { handlePeriodChange, handleRangeChange } = usePeriodNavigation(() => setCalendarVisible(true));
 
   const renderSectionHeader = useCallback(({ section }: { section: { date: string } }) => (
     <TransactionDateHeader date={section.date} />
@@ -158,10 +156,6 @@ export default function AllTransactionsScreen() {
       headerRight: () => headerRightRef.current?.(),
     });
   }, [navigation, selectMode, hasSections, c.text, c.primary, toggleSelectMode, toggleSearch]);
-
-  const handleRangeChange = useCallback((start: Date, end: Date) => {
-    setCustomDate({ start: startOfDay(start), end: endOfDay(end) });
-  }, [setCustomDate]);
 
   return (
     <ScreenShell>

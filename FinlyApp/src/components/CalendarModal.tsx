@@ -35,6 +35,11 @@ const TITLE_KEYS: Record<Period, StringKeyOf<Language>> = {
   [PERIODS.custom]: 'cal_select_period',
 };
 
+const PICKER_KEY = {
+  open: 'open',
+  closed: 'closed',
+} as const;
+
 export default function CalendarModal({
   visible, period, date, rangeStart, rangeEnd,
   onSelectDate, onSelectRange, onClose,
@@ -108,6 +113,7 @@ export default function CalendarModal({
         )}
         {period === PERIODS.custom && (
           <PeriodPicker
+            key={visible ? PICKER_KEY.open : PICKER_KEY.closed}
             tempStart={tempRangeStart}
             tempEnd={tempRangeEnd}
             onTempRangeChange={handleRangeChange}

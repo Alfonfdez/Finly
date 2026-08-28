@@ -2672,3 +2672,10 @@
 - Removed a redundant first `getTagsByTransactionId` DB query in `TransactionDetailsScreen.loadTags` (result was discarded; the follow-up `getTagsByTransactionIds` already returns `[]` when empty).
 - Wrapped `TransactionDetailsScreen.handleDelete` in `useCallback` to avoid recreating it on every render. test:all green (typecheck + lint + 283 tests, 34 files).
 
+[2026-08-26] Refactor | usePeriodNavigation.ts, HomeScreen.tsx, AllTransactionsScreen.tsx, CalculatorModal.tsx
+- Extracted the duplicated `handlePeriodChange`/`handleRangeChange` period-navigation logic (previously verbatim in `HomeScreen` and `AllTransactionsScreen`) into a new shared `usePeriodNavigation(openCalendar)` hook; screens now call the hook and keep only their local `calendarVisible` state.
+- Fixed the misleading `handleButton` `useCallback` in `CalculatorModal.tsx`, which depended on `expression` but only the `equals` branch used it (recreating the handler on every keystroke). Added an `expressionRef` so the handler now has stable `[]` deps with identical behavior. test:all green (typecheck + lint + 283 tests, 34 files).
+
+[2026-08-28] Fix | PeriodPicker.tsx, CalendarModal.tsx
+- Fixed custom period (start day → end day) range selection collapsing: the `useEffect` in `PeriodPicker` reset `selecting` back to `'start'` on every `tempStart`/`tempEnd` update, so after picking a start day the next tap was treated as a new start instead of the end day, collapsing the range to the last tap. Removed that effect (timing/behavior is now driven only by taps) and reset the phase to `'start'` when toggling the All checkbox; `CalendarModal` now remounts `PeriodPicker` on each open (`key={visible ? 'open' : 'closed'}`) so a fresh open always starts in the start-date phase. Verified in the browser (selected "1 Aug" → "10 Aug", applied range "from 1 Aug to 10 Aug 2026"; All toggle still resets cleanly). test:all green (typecheck + lint + 283 tests, 34 files).
+
