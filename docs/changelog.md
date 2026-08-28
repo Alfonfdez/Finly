@@ -2679,3 +2679,10 @@
 [2026-08-28] Fix | PeriodPicker.tsx, CalendarModal.tsx
 - Fixed custom period (start day → end day) range selection collapsing: the `useEffect` in `PeriodPicker` reset `selecting` back to `'start'` on every `tempStart`/`tempEnd` update, so after picking a start day the next tap was treated as a new start instead of the end day, collapsing the range to the last tap. Removed that effect (timing/behavior is now driven only by taps) and reset the phase to `'start'` when toggling the All checkbox; `CalendarModal` now remounts `PeriodPicker` on each open (`key={visible ? 'open' : 'closed'}`) so a fresh open always starts in the start-date phase. Verified in the browser (selected "1 Aug" → "10 Aug", applied range "from 1 Aug to 10 Aug 2026"; All toggle still resets cleanly). test:all green (typecheck + lint + 283 tests, 34 files).
 
+[2026-08-28] Refactor | DaySelector.tsx, ErrorBoundary.tsx, it.ts, pt.ts
+- `DaySelector`: renamed the `useMemo` local `const t = new Date()` to `now` so it no longer shadows the imported `t()` translator (3 references updated).
+- `ErrorBoundary`: guarded the `componentDidCatch` `console.error` with `if (__DEV__)` so the caught-stack trace is only logged in development, not production.
+- `it.ts`: replaced angular imperative "Ne conserva almeno una." with the natural Italian "Conservane almeno una." in `categories_bulk_delete_min_one`.
+- `it.ts` / `pt.ts`: added the missing prepositions in the settings section headings — pt "FORMA ÍCONE CATEGORIA/CONTA" → "FORMA DE ÍCONE DE CATEGORIA/CONTA"; it "FORMATO MONETA" → "FORMATO VALUTA" and "FORMA ICONA CATEGORIA/CONTO" → "FORMA DELL'ICONA DELLA CATEGORIA/DEL CONTO".
+- Note: audit candidate "remove `PRAGMA foreign_keys = ON;` in `sqliteWeb.ts`" was investigated and *rejected* — a test (`sqliteWebEngine.test.ts`) proves `db.export()` resets `foreign_keys` to OFF, so that line re-enables it after each persist and is required. test:all green (typecheck + lint + 283 tests, 34 files).
+
