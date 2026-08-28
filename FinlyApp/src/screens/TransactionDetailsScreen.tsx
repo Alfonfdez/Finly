@@ -8,7 +8,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
-import { formatCurrency, formatDateLong, formatDateTimeShort, parseDbDate } from '../utils/formatters';
+import { formatCurrency, formatDateLong, formatDateTimeShort, parseDbDate, AMOUNT_SIGNS } from '../utils/formatters';
 import { deletePhotoFile, parsePhotos } from '../utils/photoUtils';
 import { showErrorAlert } from '../utils/errors';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
@@ -66,9 +66,9 @@ export default function TransactionDetailsScreen() {
   );
 
   const createdDate = useMemo(() => {
-    if (!transaction) return '';
-    return `${labels.details_created}: ${formatDateTimeShort(parseDbDate(transaction.date), labels.months_short)}`;
-  }, [transaction, labels]);
+    if (!transactionDate) return '';
+    return `${labels.details_created}: ${formatDateTimeShort(transactionDate, labels.months_short)}`;
+  }, [transactionDate, labels]);
 
   const updatedDate = useMemo(() => {
     if (!transaction?.updated_at) return null;
@@ -120,7 +120,7 @@ export default function TransactionDetailsScreen() {
         <View style={styles.dataSection}>
           <DataRow label={labels.details_amount}>
             <Text style={[styles.dataValue, { color: typeColor, fontSize: fs(15) }]}>
-              {isExpense ? '-' : '+'}{formatCurrency(transaction.amount, config.currency, config.decimalSeparator)}
+              {`${isExpense ? AMOUNT_SIGNS.negative : AMOUNT_SIGNS.positive}${formatCurrency(transaction.amount, config.currency, config.decimalSeparator)}`}
             </Text>
           </DataRow>
 

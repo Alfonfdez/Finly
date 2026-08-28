@@ -40,15 +40,27 @@ export const DB_KEY_MAP: Record<string, keyof Config> = {
   hide_balances: 'hideBalances',
 };
 
-export function toConfigRows(partial: Partial<Config>): { key: string; value: string }[] {
-  const reverseMap: Record<string, string> = {};
-  for (const [dbKey, configKey] of Object.entries(DB_KEY_MAP)) {
-    reverseMap[configKey] = dbKey;
+export const CONFIG_NULL_SENTINEL = 'null';
+
+const DB_KEY_OF: Record<string, string> = Object.fromEntries(
+  Object.entries(DB_KEY_MAP).map(([dbKey, configKey]) => [configKey, dbKey])
+);
+
+const DB_KEY_RE = /^[a-z_]+$/;
+
+function dbKeyFor(configKey: keyof Config): string {
+  const key = DB_KEY_OF[configKey];
+  if (!key || !DB_KEY_RE.test(key)) {
+    throw new Error(`Invalid config DB key for '${configKey}'`);
   }
+  return key;
+}
+
+export function toConfigRows(partial: Partial<Config>): { key: string; value: string }[] {
   const rows: { key: string; value: string }[] = [];
   for (const [key, value] of Object.entries(partial)) {
     if (value === undefined) continue;
-    rows.push({ key: reverseMap[key] ?? key, value: String(value) });
+    rows.push({ key: DB_KEY_OF[key] ?? key, value: String(value) });
   }
   return rows;
 }
@@ -74,10 +86,13 @@ export function sanitizeDefaultAccounts(
 }
 
 export async function sanitizeDefaultAccountConfig(database: DatabaseHandle): Promise<void> {
+  const homeKey = dbKeyFor('homeDefaultAccountId');
+  const addKey = dbKeyFor('addDefaultAccountId');
+  const v = CONFIG_NULL_SENTINEL;
   await database.runAsync(`
-    UPDATE config SET value = 'null'
-    WHERE key IN ('home_default_account_id', 'add_default_account_id')
-      AND value != 'null'
+    UPDATE config SET value = '${v}'
+    WHERE key IN ('${homeKey}', '${addKey}')
+      AND value != '${v}'
       AND value NOT IN (SELECT CAST(id AS TEXT) FROM accounts WHERE is_total = 0)
   `);
 }

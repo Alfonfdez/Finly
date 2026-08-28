@@ -4,6 +4,7 @@ import { useApp } from '../../context/AppContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t, getDisplayAccountName } from '../../i18n';
 import { isTotalAccount } from '../../database/helpers';
+import { CONFIG_NULL_SENTINEL } from '../../database/configDefaults';
 import { type Option } from '../../components/SelectorInline';
 import IconBadge from '../../components/IconBadge';
 import { badgeShapeFor } from '../../utils/badgeShape';
@@ -34,7 +35,7 @@ export default function PersonalizationScreen() {
   ];
 
   const addAccounts: Option<string>[] = [
-    { label: labels.settings_not_selected, value: 'null' },
+    { label: labels.settings_not_selected, value: CONFIG_NULL_SENTINEL },
     ...allAccounts.filter(a => !isTotalAccount(a)).sort((a, b) => a.name.localeCompare(b.name)).map(a => ({
       label: getDisplayAccountName(a),
       value: String(a.id),
@@ -50,7 +51,7 @@ export default function PersonalizationScreen() {
   const addSelected =
     config.addDefaultAccountId !== null && addAccounts.some(o => o.value === String(config.addDefaultAccountId))
       ? String(config.addDefaultAccountId)
-      : 'null';
+      : CONFIG_NULL_SENTINEL;
 
   const PERIOD_OPTIONS: Option<Period>[] = [
     { label: labels.settings_home_default_period_day, value: 'day' },
@@ -81,7 +82,7 @@ export default function PersonalizationScreen() {
         label={labels.settings_default_account}
         options={addAccounts}
         selected={addSelected}
-        onSelect={(v) => updateConfig({ addDefaultAccountId: v === 'null' ? null : Number(v) })}
+        onSelect={(v) => updateConfig({ addDefaultAccountId: v === CONFIG_NULL_SENTINEL ? null : Number(v) })}
         title={labels.settings_default_account}
       />
       <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>

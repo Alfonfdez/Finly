@@ -6,8 +6,14 @@ import { DEFAULT_CURRENCY, getCurrencySymbol } from '../constants/currencies';
 
 export const HIDDEN_BALANCE = '•••••';
 
+export const AMOUNT_SIGNS = {
+  positive: '+',
+  negative: '-',
+} as const;
+export type AmountSign = (typeof AMOUNT_SIGNS)[keyof typeof AMOUNT_SIGNS];
+
 export function formatCurrency(amount: number, currency = DEFAULT_CURRENCY, separator: DecimalSeparator = DECIMAL_SEPARATORS.comma): string {
-  const sign = amount < 0 ? '-' : '';
+  const sign = amount < 0 ? AMOUNT_SIGNS.negative : '';
   const abs = Math.round(Math.abs(amount) * 100) / 100;
   const integer = Math.floor(abs);
   const dec = Math.round((abs - integer) * 100);
@@ -23,7 +29,7 @@ export function formatCurrency(amount: number, currency = DEFAULT_CURRENCY, sepa
 }
 
 export function formatSignedCurrency(amount: number, currency = DEFAULT_CURRENCY, separator: DecimalSeparator = DECIMAL_SEPARATORS.comma): string {
-  const sign = amount >= 0 ? '+' : '';
+  const sign = amount >= 0 ? AMOUNT_SIGNS.positive : '';
   return `${sign}${formatCurrency(amount, currency, separator)}`;
 }
 
