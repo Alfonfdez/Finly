@@ -19,12 +19,12 @@ export default function DaySelector({ selectedDate, onSelect, onOpenCalendar }: 
   const labels = t();
 
   const { today, yesterday, dayBeforeYesterday } = useMemo(() => {
-    const t = new Date();
-    const y = new Date(t);
-    y.setDate(t.getDate() - 1);
-    const d = new Date(t);
-    d.setDate(t.getDate() - 2);
-    return { today: t, yesterday: y, dayBeforeYesterday: d };
+    const now = new Date();
+    const y = new Date(now);
+    y.setDate(now.getDate() - 1);
+    const d = new Date(now);
+    d.setDate(now.getDate() - 2);
+    return { today: now, yesterday: y, dayBeforeYesterday: d };
   }, []);
 
   const isToday = isSameDay(selectedDate, today);
