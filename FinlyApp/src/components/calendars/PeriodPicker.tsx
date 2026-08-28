@@ -1,10 +1,17 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import DayPicker from './DayPicker';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
 import { calendarStyles, MIN_DATE } from './calendarStyles';
+
+export const PICKING_PHASE = {
+  start: 'start',
+  end: 'end',
+} as const;
+
+export type PickingPhase = (typeof PICKING_PHASE)[keyof typeof PICKING_PHASE];
 
 interface Props {
   tempStart: Date;
@@ -14,7 +21,7 @@ interface Props {
 
 export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: Props) {
   const [allTime, setAllTime] = useState(false);
-  const [selecting, setSelecting] = useState<'start' | 'end'>('start');
+  const [selecting, setSelecting] = useState<PickingPhase>(PICKING_PHASE.start);
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -22,14 +29,10 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
 
   const today = useMemo(() => new Date(), []);
 
-  useEffect(() => {
-    setAllTime(false);
-    setSelecting('start');
-  }, [tempStart, tempEnd]);
-
   const handleAllTime = useCallback(() => {
     const nextAllTime = !allTime;
     setAllTime(nextAllTime);
+    setSelecting(PICKING_PHASE.start);
     if (nextAllTime) {
       onTempRangeChange(MIN_DATE, today);
     }
@@ -37,9 +40,9 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
 
   const handleDayPress = useCallback((d: Date) => {
     if (allTime) return;
-    if (selecting === 'start') {
+    if (selecting === PICKING_PHASE.start) {
       onTempRangeChange(d, d);
-      setSelecting('end');
+      setSelecting(PICKING_PHASE.end);
     } else {
       const start = tempStart < d ? tempStart : d;
       const end = tempStart < d ? d : tempStart;
@@ -49,7 +52,7 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
 
   const rangeText = allTime
     ? labels.cal_all
-    : selecting === 'end' && tempStart.getTime() === tempEnd.getTime()
+    : selecting === PICKING_PHASE.end && tempStart.getTime() === tempEnd.getTime()
       ? `${labels.cal_from} ${tempStart.getDate()} ${shortMonths[tempStart.getMonth()]} — ${labels.cal_period_to_hint}`
       : `${labels.cal_from} ${tempStart.getDate()} ${shortMonths[tempStart.getMonth()]} ${labels.cal_to} ${tempEnd.getDate()} ${shortMonths[tempEnd.getMonth()]} ${tempEnd.getFullYear()}`;
 
@@ -65,14 +68,14 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
       {!allTime && (
         <View style={[styles.indicator, { backgroundColor: c.surface }]}>
           <Text style={[styles.indicatorText, { color: c.primary, fontSize: fs(13) }]}>
-            {selecting === 'start' ? labels.cal_select_start : labels.cal_select_end}
+            {selecting === PICKING_PHASE.start ? labels.cal_select_start : labels.cal_select_end}
           </Text>
         </View>
       )}
 
       {!allTime && (
         <DayPicker
-          date={selecting === 'start' ? tempStart : tempEnd}
+          date={selecting === PICKING_PHASE.start ? tempStart : tempEnd}
           onSelect={handleDayPress}
           rangeStart={tempStart}
           rangeEnd={tempEnd}

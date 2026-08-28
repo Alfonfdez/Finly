@@ -4,8 +4,9 @@ import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useBalanceVisibility } from '../hooks/useBalanceVisibility';
-import { formatDateForDB, resolvePeriodRange, endOfDay, startOfDay } from '../utils/formatters';
-import { type NavigationProp, PERIODS, TRANSACTION_TYPES, type Period, CHART_TYPES, type ChartType } from '../constants/types';
+import { usePeriodNavigation } from '../hooks/usePeriodNavigation';
+import { formatDateForDB, resolvePeriodRange } from '../utils/formatters';
+import { type NavigationProp, TRANSACTION_TYPES, CHART_TYPES, type ChartType } from '../constants/types';
 import { t } from '../i18n';
 import { transactionRepository as transactionRepo } from '../database';
 import { UNTAGGED_ID, isTotalAccount } from '../database/helpers';
@@ -26,7 +27,7 @@ export default function HomeScreen() {
   const {
     activeAccount, activeType, activePeriod, selectedDate, customDate, accountsWithBalance, activeCategories,
     totalIncome, totalExpenses, totalIncomeAll, totalExpensesAll, selectAccount, changeType,
-    changePeriod, setSelectedDate, setCustomDate, loading, tags, activeTagIds, toggleTagId, clearTagFilter,
+    setSelectedDate, loading, tags, activeTagIds, toggleTagId, clearTagFilter,
   } = useApp();
   const { config, activeColors: c } = useConfig();
   const labels = t();
@@ -104,10 +105,7 @@ export default function HomeScreen() {
     });
   }, []);
 
-  const handlePeriodChange = useCallback((period: Period) => {
-    changePeriod(period);
-    if (period === PERIODS.custom) setCalendarVisible(true);
-  }, [changePeriod]);
+  const { handlePeriodChange, handleRangeChange } = usePeriodNavigation(() => setCalendarVisible(true));
 
   const handleDateChange = useCallback((date: Date) => {
     setSelectedDate(date);
@@ -119,10 +117,6 @@ export default function HomeScreen() {
     if (account) selectAccount(account);
     setModalVisible(false);
   }, [selectAccount, accountsWithBalance]);
-
-  const handleRangeChange = useCallback((start: Date, end: Date) => {
-    setCustomDate({ start: startOfDay(start), end: endOfDay(end) });
-  }, [setCustomDate]);
 
   if (loading || !activeAccount) {
     return (

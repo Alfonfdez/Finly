@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import {
   Modal,
   View,
@@ -45,6 +45,9 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
   const [expression, setExpression] = useState('');
   const [hasError, setHasError] = useState(false);
 
+  const expressionRef = useRef('');
+  expressionRef.current = expression;
+
   const displayHeight = fs(16) * 1.4 * 2 + fs(28) * 1.4 + 32;
 
   const resultDisplay = useMemo(() => {
@@ -66,7 +69,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
       return;
     }
     if (btn === CALC_KEYS.equals) {
-      const { error } = evaluate(expression);
+      const { error } = evaluate(expressionRef.current);
       setHasError(error);
       return;
     }
@@ -86,7 +89,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
       }
       return prev + btn;
     });
-  }, [expression]);
+  }, []);
 
   const handleAccept = useCallback(() => {
     if (resultDisplay !== null && !hasError) {
