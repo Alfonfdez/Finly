@@ -2698,3 +2698,8 @@
 [2026-08-28] Refactor | formatters.ts, TransactionGroup.tsx, TransactionDetailsScreen.tsx
 - Added `AMOUNT_SIGNS` (`positive: '+'`, `negative: '-'`) in `utils/formatters.ts` and re-used it everywhere a currency amount's sign is rendered: `formatCurrency`, `formatSignedCurrency`, `TransactionGroup` (income `+` / expense `-`) and `TransactionDetailsScreen` (expense `-` / income `+`). Removes the duplicated `'+'`/`'-'` literals (the `add`/`subtract` MathOp symbols in `constants/types.ts` are a separate concern and were left untouched). test:all green (typecheck + lint + 283 tests, 34 files).
 
+[2026-08-28] Refactor | PersonalizationScreen.tsx
+- Extracted the "Total account" picker sentinel as `HOME_TOTAL_OPTION` (`'total'`), used in the 3 spots of the home-default-account picker; it is distinct from `CONFIG_NULL_SENTINEL` (`'null'`, means "not selected" for the add-account field) so the two are not merged.
+- `PERIOD_OPTIONS` now reference the shared `PERIODS.day/week/month/year` constants instead of re-declaring `'day'`/`'week'`/`'month'`/`'year'` literals.
+- Note: the `seedData.ts` type strings (`'income'`/`'expense'`, 31×) and the migration CHECK constraints were intentionally left as literals — they are DB-boundary data written once at seed/migration time, consistent with the project's "immutable schema/default strings stay as snapshots" boundary. test:all green (typecheck + lint + 283 tests, 34 files).
+

@@ -13,7 +13,9 @@ import ToggleRow from '../../components/settings/ToggleRow';
 import SettingsSelectRow from '../../components/settings/SettingsSelectRow';
 import SettingsPickerRow from '../../components/settings/SettingsPickerRow';
 import { settingsStyles } from '../../components/settings/settingsStyles';
-import type { Period } from '../../constants/types';
+import { PERIODS, type Period } from '../../constants/types';
+
+const HOME_TOTAL_OPTION = 'total' as const;
 
 export default function PersonalizationScreen() {
   const { config, activeColors: c, updateConfig } = useConfig();
@@ -26,7 +28,7 @@ export default function PersonalizationScreen() {
   );
 
   const homeAccounts: Option<string>[] = [
-    { label: labels.account_total, value: 'total' },
+    { label: labels.account_total, value: HOME_TOTAL_OPTION },
     ...allAccounts.filter(a => !isTotalAccount(a)).map(a => ({
       label: getDisplayAccountName(a),
       value: String(a.id),
@@ -46,7 +48,7 @@ export default function PersonalizationScreen() {
   const homeSelected =
     config.homeDefaultAccountId !== null && homeAccounts.some(o => o.value === String(config.homeDefaultAccountId))
       ? String(config.homeDefaultAccountId)
-      : 'total';
+      : HOME_TOTAL_OPTION;
 
   const addSelected =
     config.addDefaultAccountId !== null && addAccounts.some(o => o.value === String(config.addDefaultAccountId))
@@ -54,10 +56,10 @@ export default function PersonalizationScreen() {
       : CONFIG_NULL_SENTINEL;
 
   const PERIOD_OPTIONS: Option<Period>[] = [
-    { label: labels.settings_home_default_period_day, value: 'day' },
-    { label: labels.settings_home_default_period_week, value: 'week' },
-    { label: labels.settings_home_default_period_month, value: 'month' },
-    { label: labels.settings_home_default_period_year, value: 'year' },
+    { label: labels.settings_home_default_period_day, value: PERIODS.day },
+    { label: labels.settings_home_default_period_week, value: PERIODS.week },
+    { label: labels.settings_home_default_period_month, value: PERIODS.month },
+    { label: labels.settings_home_default_period_year, value: PERIODS.year },
   ];
 
   return (
@@ -67,7 +69,7 @@ export default function PersonalizationScreen() {
         label={labels.settings_default_account}
         options={homeAccounts}
         selected={homeSelected}
-        onSelect={(v) => updateConfig({ homeDefaultAccountId: v === 'total' ? null : Number(v) })}
+        onSelect={(v) => updateConfig({ homeDefaultAccountId: v === HOME_TOTAL_OPTION ? null : Number(v) })}
         title={labels.settings_default_account}
       />
       <SettingsSelectRow
