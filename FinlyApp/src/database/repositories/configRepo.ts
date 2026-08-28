@@ -3,7 +3,7 @@ import { getDrizzle, withTransaction } from '../drizzle/engine';
 import { config } from '../drizzle/schema';
 import type { Config } from '../types';
 import { FIRST_DAYS } from '../../constants/types';
-import { DEFAULT_CONFIG, DB_KEY_MAP, sanitizeConfig, toConfigRows } from '../configDefaults';
+import { DEFAULT_CONFIG, DB_KEY_MAP, CONFIG_NULL_SENTINEL, sanitizeConfig, toConfigRows } from '../configDefaults';
 
 const BOOLEAN_KEYS: (keyof Config)[] = ['addShowLabels', 'addShowComments', 'addShowPhoto', 'hideBalances'];
 const INT_OR_NULL_KEYS: (keyof Config)[] = ['homeDefaultAccountId', 'addDefaultAccountId'];
@@ -19,7 +19,7 @@ function parseConfig(rows: { key: string; value: string }[]): Config {
     } else if (BOOLEAN_KEYS.includes(configKey)) {
       parsed[configKey] = raw === 'true';
     } else if (INT_OR_NULL_KEYS.includes(configKey)) {
-      parsed[configKey] = raw === 'null' ? null : Number(raw);
+      parsed[configKey] = raw === CONFIG_NULL_SENTINEL ? null : Number(raw);
     } else {
       parsed[configKey] = raw;
     }

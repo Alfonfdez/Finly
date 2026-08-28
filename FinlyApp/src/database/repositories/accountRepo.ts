@@ -7,6 +7,7 @@ import { accountSchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
 import { deleteTransactionPhotos } from '../photoCleanup';
 import { dbTimestamp } from '../../utils/formatters';
+import { TRANSACTION_TYPES } from '../../constants/types';
 
 export const accountRepo = {
   async list(userId: number): Promise<Account[]> {
@@ -82,7 +83,7 @@ export const accountRepo = {
     return await db
       .select({
         account_id: accounts.id,
-        balance: sql<number>`${accounts.initial_balance} + COALESCE(SUM(CASE WHEN ${transactions.type} = 'income' THEN ${transactions.amount} ELSE -${transactions.amount} END), 0)`,
+        balance: sql<number>`${accounts.initial_balance} + COALESCE(SUM(CASE WHEN ${transactions.type} = ${TRANSACTION_TYPES.income} THEN ${transactions.amount} ELSE -${transactions.amount} END), 0)`,
       })
       .from(accounts)
       .leftJoin(transactions, eq(transactions.account_id, accounts.id))

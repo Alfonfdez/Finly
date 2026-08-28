@@ -11,7 +11,7 @@ import { useTransactionFilters } from '../hooks/useTransactionFilters';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, type IconName } from '../constants/types';
 import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
-import { formatCurrency } from '../utils/formatters';
+import { formatSignedCurrency } from '../utils/formatters';
 import { withAlpha } from '../utils/color';
 import { showErrorAlert } from '../utils/errors';
 import { getDisplayCategoryName, t } from '../i18n';
@@ -94,7 +94,7 @@ export default function TransactionsScreen() {
             </Text>
           </View>
           <Text style={[styles.categoryTotal, { color: categoryTotal >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
-            {categoryTotal >= 0 ? '+' : ''}{formatCurrency(categoryTotal, config.currency, config.decimalSeparator)}
+            {formatSignedCurrency(categoryTotal, config.currency, config.decimalSeparator)}
           </Text>
         </View>
       )}

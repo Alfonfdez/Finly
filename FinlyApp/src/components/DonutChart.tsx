@@ -11,8 +11,9 @@ interface Props {
   total: number;
 }
 
+const SIZE = 160;
+const CENTER = SIZE / 2;
 const RADIUS = 66;
-const CENTER = 80;
 const STROKE_WIDTH = 13;
 const HOLE_SIZE = (RADIUS - STROKE_WIDTH / 2) * 2;
 
@@ -52,8 +53,8 @@ function DonutChartInner({ data, total }: Props) {
 
   return (
     <View style={styles.container}>
-      <Svg width={160} height={160} viewBox="0 0 160 160">
-        <G transform="rotate(-90, 80, 80)">
+      <Svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
+        <G transform={`rotate(-90, ${CENTER}, ${CENTER})`}>
           <Circle cx={CENTER} cy={CENTER} r={RADIUS} stroke={c.surface} strokeWidth={STROKE_WIDTH} fill="none" />
           {isSingleSegment ? (
             <Circle cx={CENTER} cy={CENTER} r={RADIUS} stroke={segments[0]?.color} strokeWidth={STROKE_WIDTH} fill="none" />

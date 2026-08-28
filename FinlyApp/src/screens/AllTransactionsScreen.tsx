@@ -13,7 +13,7 @@ import { usePeriodNavigation } from '../hooks/usePeriodNavigation';
 import { TRANSACTION_TYPES, TYPE_FILTERS, type NavigationProp, type TransactionTypeFilter } from '../constants/types';
 import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
-import { formatCurrency, resolvePeriodRange } from '../utils/formatters';
+import { formatSignedCurrency, resolvePeriodRange } from '../utils/formatters';
 import { showErrorAlert } from '../utils/errors';
 import { t } from '../i18n';
 import AccountModal from '../components/AccountModal';
@@ -184,7 +184,7 @@ export default function AllTransactionsScreen() {
           onPress={filters.openAccountModal}
         />
         <Text style={[styles.accountBalance, { color: accountBalance >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
-          {accountBalance >= 0 ? '+' : ''}{formatCurrency(accountBalance, config.currency, config.decimalSeparator)}
+          {formatSignedCurrency(accountBalance, config.currency, config.decimalSeparator)}
         </Text>
         <View style={styles.controlsRow}>
           <TouchableOpacity

@@ -1,6 +1,4 @@
-import { DECIMAL_PLACES, type DecimalSeparator } from '../constants/types';
-
-const MAX_AMOUNT_INTEGER_DIGITS = 9; // up to 999,999,999.99
+import { DECIMAL_PLACES, MAX_AMOUNT_INTEGER_DIGITS, type DecimalSeparator } from '../constants/types';
 
 /**
  * Parse user input into a clean raw amount string (digits + optional '.' separator).

@@ -31,6 +31,9 @@ export const MAX_VISIBLE_TAGS = 3;
 export const MAX_SUGGESTIONS = 5;
 export const DECIMAL_PLACES = 2;
 
+export const MAX_AMOUNT = 999999999.99;
+export const MAX_AMOUNT_INTEGER_DIGITS = String(Math.trunc(MAX_AMOUNT)).length;
+
 export const UNTAGGED_LABEL = 'Untagged';
 export const DELETE_ALL_CONFIRMATION = 'DELETE';
 
