@@ -4,6 +4,7 @@ import { PERIODS, TRANSACTION_TYPES, type Period, type TransactionType, type Cat
 import { accountRepository as accountRepo, categoryRepository as categoryRepo, transactionRepository as transactionRepo, tagRepository as tagRepo } from '../database';
 import { isTotalAccount, UNTAGGED_ID } from '../database/helpers';
 import { toggleTagInArray } from '../utils/tagFilter';
+import { categoriesOfType } from '../utils/categoryUtils';
 import { useConfig } from './ConfigContext';
 import { formatDateForDB, resolvePeriodRange } from '../utils/formatters';
 import { showErrorAlert } from '../utils/errors';
@@ -221,7 +222,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [accountsWithBalance, setAccountsWithBalance] = useState<(Account & { balance: number })[]>([]);
 
   const activeCategories = useMemo(() => {
-    const categoriesByType = categories.filter(c => c.type === activeType);
+    const categoriesByType = categoriesOfType(categories, activeType);
     const totalByType = filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
     const categoryTotals: Record<number, number> = {};
     for (const t of filteredTransactions) {

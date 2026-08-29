@@ -8,7 +8,8 @@ import { t, getDisplayCategoryName } from '../i18n';
 import SearchBar from './SearchBar';
 import EmptyState from './EmptyState';
 import { TRANSACTION_TYPES, TYPE_FILTERS, type TransactionTypeFilter } from '../constants/types';
-import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
+import { sortCategoriesWithOthersLast, categoriesOfType } from '../utils/categoryUtils';
+import { matchesAllTerms } from '../utils/search';
 import type { Category } from '../database/types';
 import { badgeShapeFor } from '../utils/badgeShape';
 import CategoryTile from './CategoryTile';
@@ -40,7 +41,7 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
   const allCategoryIds = useMemo(() => categories.map(cat => cat.id), [categories]);
   const visibleCategoryIds = useMemo(() => {
     if (type === TYPE_FILTERS.all) return allCategoryIds;
-    return categories.filter(cat => cat.type === type).map(cat => cat.id);
+    return categoriesOfType(categories, type).map(cat => cat.id);
   }, [categories, type, allCategoryIds]);
   const allSelected = visibleCategoryIds.length > 0 && visibleCategoryIds.every(id => localSelectedIds.includes(id));
 
@@ -64,14 +65,10 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
   const displayedCategories = useMemo(() => {
     let filtered = categories;
     if (type !== TYPE_FILTERS.all) {
-      filtered = categories.filter(cat => cat.type === type);
+      filtered = categoriesOfType(categories, type);
     }
     if (searchText.trim()) {
-      const terms = searchText.toLowerCase().split(/\s+/).filter(Boolean);
-      filtered = filtered.filter(cat => {
-        const name = getDisplayCategoryName(cat).toLowerCase();
-        return terms.every(term => name.includes(term));
-      });
+      filtered = filtered.filter(cat => matchesAllTerms(searchText, getDisplayCategoryName(cat).toLowerCase()));
     }
     return filtered;
   }, [categories, type, searchText]);
@@ -80,8 +77,8 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
     if (type !== TYPE_FILTERS.all) {
       return [{ label: null, data: sortCategoriesWithOthersLast(displayedCategories) }];
     }
-    const expenses = sortCategoriesWithOthersLast(displayedCategories.filter(cat => cat.type === TRANSACTION_TYPES.expense));
-    const income = sortCategoriesWithOthersLast(displayedCategories.filter(cat => cat.type === TRANSACTION_TYPES.income));
+  const expenses = sortCategoriesWithOthersLast(categoriesOfType(displayedCategories, TRANSACTION_TYPES.expense));
+  const income = sortCategoriesWithOthersLast(categoriesOfType(displayedCategories, TRANSACTION_TYPES.income));
     const result: { label: string | null; data: Category[] }[] = [];
     if (expenses.length > 0) result.push({ label: labels.filter_expenses, data: expenses });
     if (income.length > 0) result.push({ label: labels.filter_income, data: income });

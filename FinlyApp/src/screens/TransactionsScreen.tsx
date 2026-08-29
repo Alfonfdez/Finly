@@ -8,10 +8,11 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
-import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, type IconName } from '../constants/types';
+import { type RootStackParamList, type NavigationProp, type IconName } from '../constants/types';
 import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatSignedCurrency } from '../utils/formatters';
+import { netTransactionTotal } from '../utils/calculator';
 import { withAlpha } from '../utils/color';
 import { showErrorAlert } from '../utils/errors';
 import { getDisplayCategoryName, t } from '../i18n';
@@ -58,8 +59,7 @@ export default function TransactionsScreen() {
   const category = categories.find(ct => ct.id === categoryId);
 
   const categoryTotal = useMemo(() => {
-    return filters.filtered
-      .reduce((sum, t) => sum + (t.type === TRANSACTION_TYPES.expense ? -t.amount : t.amount), 0);
+    return netTransactionTotal(filters.filtered);
   }, [filters.filtered]);
 
   const handleTransactionPress = useCallback((id: number) => {

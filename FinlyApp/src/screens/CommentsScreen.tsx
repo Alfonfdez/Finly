@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,6 +6,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
+import { useSearchFilter } from '../hooks/useSearchFilter';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import type { CommentUsage } from '../database/repositories/transactionRepo';
@@ -59,11 +60,7 @@ export default function CommentsScreen() {
     return cleanup;
   }, [loadComments]));
 
-  const filteredComments = useMemo(() => {
-    if (!searchText.trim()) return comments;
-    const term = searchText.toLowerCase();
-    return comments.filter(c => c.description.toLowerCase().includes(term));
-  }, [comments, searchText]);
+  const filteredComments = useSearchFilter(comments, searchText, (c) => [c.description]);
 
   const handleBulkDelete = async () => {
     setDeleteModalVisible(false);

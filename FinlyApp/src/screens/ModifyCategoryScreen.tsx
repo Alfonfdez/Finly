@@ -25,7 +25,6 @@ import CategoryTransferModal from '../components/CategoryTransferModal';
 import SectionTitle from '../components/form/SectionTitle';
 import PrimaryButton from '../components/form/PrimaryButton';
 import DeleteButton from '../components/form/DeleteButton';
-import KeyboardSpacer from '../components/form/KeyboardSpacer';
 import FormScrollView from '../components/form/FormScrollView';
 
 type ModifyCategoryRouteProp = RouteProp<RootStackParamList, 'ModifyCategory'>;
@@ -238,8 +237,6 @@ export default function ModifyCategoryScreen() {
             disabled={!canSave}
             style={styles.button}
           />
-
-          <KeyboardSpacer />
         </FormScrollView>
       </View>
 

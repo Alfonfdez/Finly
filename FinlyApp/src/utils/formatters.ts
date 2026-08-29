@@ -1,4 +1,5 @@
 import { t } from '../i18n';
+import { roundTo2 } from './calculator';
 import { PERIODS, TEXT_SIZES, DECIMAL_SEPARATORS, FIRST_DAYS, type DecimalSeparator, type FirstDay, type Period, type TextSize } from '../constants/types';
 import { DAYS_PER_WEEK } from '../constants/calendar';
 import { LANGUAGES, type Language } from './language';
@@ -14,7 +15,7 @@ export type AmountSign = (typeof AMOUNT_SIGNS)[keyof typeof AMOUNT_SIGNS];
 
 export function formatCurrency(amount: number, currency = DEFAULT_CURRENCY, separator: DecimalSeparator = DECIMAL_SEPARATORS.comma): string {
   const sign = amount < 0 ? AMOUNT_SIGNS.negative : '';
-  const abs = Math.round(Math.abs(amount) * 100) / 100;
+  const abs = roundTo2(Math.abs(amount));
   const integer = Math.floor(abs);
   const dec = Math.round((abs - integer) * 100);
 

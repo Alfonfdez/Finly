@@ -6,13 +6,14 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useApp } from '../context/AppContext';
+import { useSearchFilter } from '../hooks/useSearchFilter';
 import { t, getDisplayCategoryName } from '../i18n';
 import SearchBar from '../components/SearchBar';
 import CategoryGrid from '../components/CategoryGrid';
 import EmptyState from '../components/EmptyState';
 import type { RootStackParamList, NavigationProp } from '../constants/types';
 import { MAX_CATEGORIES_PER_TYPE } from '../constants/types';
-import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
+import { sortCategoriesWithOthersLast, categoriesOfType, countCategoriesOfType } from '../utils/categoryUtils';
 import { countAtLimit } from '../utils/limits';
 import { setPendingCategory } from '../utils/pendingCategory';
 
@@ -51,21 +52,12 @@ export default function AddCategoryScreen() {
   }, [navigation, searchActive]);
 
   const categoriesByType = useMemo(() => {
-    const filtered = categories.filter((cat) => cat.type === type);
-    return sortCategoriesWithOthersLast(filtered);
+    return sortCategoriesWithOthersLast(categoriesOfType(categories, type));
   }, [categories, type]);
 
-  const filteredCategories = useMemo(() => {
-    if (!searchText.trim()) return categoriesByType;
+  const filteredCategories = useSearchFilter(categoriesByType, searchText, (cat) => [getDisplayCategoryName(cat)]);
 
-    const searchTerms = searchText.toLowerCase().split(/\s+/).filter(Boolean);
-    return categoriesByType.filter((cat) => {
-      const name = getDisplayCategoryName(cat).toLowerCase();
-      return searchTerms.every((term) => name.includes(term));
-    });
-  }, [categoriesByType, searchText]);
-
-  const typeCount = categories.filter((cat) => cat.type === type).length;
+  const typeCount = countCategoriesOfType(categories, type);
   const atCategoryLimit = countAtLimit(typeCount, MAX_CATEGORIES_PER_TYPE);
 
   const handleSelectCategory = (categoryId: number) => {

@@ -8,6 +8,7 @@ import ModalHeader from './ModalHeader';
 import ListItemRow from './ListItemRow';
 import SearchBar from './SearchBar';
 import ModalFooter from './ModalFooter';
+import RadioButton from './RadioButton';
 import type { Option } from './SelectorInline';
 
 interface Props<T extends string> {
@@ -59,17 +60,12 @@ export default function OptionPickerModal<T extends string>({
 
   const renderItem = useCallback(({ item }: { item: Option<T> }) => {
     const isSelected = item.label === tempLabel;
-    const radio = (
-      <View style={[styles.radio, { borderColor: isSelected ? c.primary : c.textSecondary }]}>
-        {isSelected && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
-      </View>
-    );
     return (
       <ListItemRow
         title={item.label}
         leading={
           <View style={styles.leadingRow}>
-            {radio}
+            <RadioButton selected={isSelected} size={20} borderColor={c.textSecondary} />
             {item.icon && <View style={styles.iconWrap}>{item.icon}</View>}
           </View>
         }
@@ -118,19 +114,6 @@ export default function OptionPickerModal<T extends string>({
 const styles = StyleSheet.create({
   row: { paddingHorizontal: 0 },
   leadingRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  radio: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
   iconWrap: { justifyContent: 'center', alignItems: 'center' },
   empty: { textAlign: 'center', paddingVertical: 24 },
 });

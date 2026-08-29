@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
+import { useSearchFilter } from '../hooks/useSearchFilter';
 import { useApp } from '../context/AppContext';
 import { t, getDisplayCategoryName } from '../i18n';
 import { categoryRepository, transactionRepository } from '../database';
@@ -17,7 +18,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import BulkCategoryTransferModal, { type BulkCategoryItem } from '../components/BulkCategoryTransferModal';
 import type { TransferTargetId } from '../components/CategoryTransferModal';
 import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, type TransactionType, type NavigationProp } from '../constants/types';
-import { sortCategoriesWithOthersLast } from '../utils/categoryUtils';
+import { sortCategoriesWithOthersLast, categoriesOfType, countCategoriesOfType } from '../utils/categoryUtils';
 import { countAtLimit } from '../utils/limits';
 import { showErrorAlert } from '../utils/errors';
 import SelectSearchHeader from '../components/SelectSearchHeader';
@@ -39,8 +40,7 @@ export default function CategoriesScreen() {
   const [decisions, setDecisions] = useState<Record<number, TransferTargetId | null>>({});
 
   const categoriesByType = useMemo(() => {
-    const filtered = categories.filter((cat) => cat.type === activeType);
-    return sortCategoriesWithOthersLast(filtered);
+    return sortCategoriesWithOthersLast(categoriesOfType(categories, activeType));
   }, [categories, activeType]);
 
   const {
@@ -56,22 +56,14 @@ export default function CategoriesScreen() {
     />
   )});
 
-  const filteredCategories = useMemo(() => {
-    if (!searchText.trim()) return categoriesByType;
-
-    const searchTerms = searchText.toLowerCase().split(/\s+/).filter(Boolean);
-    return categoriesByType.filter((cat) => {
-      const name = getDisplayCategoryName(cat).toLowerCase();
-      return searchTerms.every((term) => name.includes(term));
-    });
-  }, [categoriesByType, searchText]);
+  const filteredCategories = useSearchFilter(categoriesByType, searchText, (cat) => [getDisplayCategoryName(cat)]);
 
   const transferTargets = useMemo(
     () => categoriesByType.filter((cat) => !selectedIds.has(cat.id)),
     [categoriesByType, selectedIds]
   );
 
-  const typeCount = categories.filter((cat) => cat.type === activeType).length;
+  const typeCount = countCategoriesOfType(categories, activeType);
   const atCategoryLimit = countAtLimit(typeCount, MAX_CATEGORIES_PER_TYPE);
 
   const handleDeletePress = async () => {

@@ -1,4 +1,5 @@
-import { CALC_KEYS, MAX_AMOUNT } from '../constants/types';
+import { CALC_KEYS, MAX_AMOUNT, TRANSACTION_TYPES } from '../constants/types';
+import type { Transaction } from '../database/types';
 
 type CalcResult = {
   result: number | null;
@@ -94,9 +95,20 @@ export function evaluate(expression: string): CalcResult {
     const raw = evalTokens(tokens);
     if (isNaN(raw) || !isFinite(raw)) return { result: null, error: true };
     if (Math.abs(raw) > MAX_AMOUNT) return { result: null, error: true };
-    const result = Math.round(raw * 100) / 100;
+    const result = roundTo2(raw);
     return { result, error: false };
   } catch {
     return { result: null, error: true };
   }
+}
+
+export function roundTo2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+export function netTransactionTotal(transactions: Transaction[]): number {
+  return transactions.reduce(
+    (sum, t) => sum + (t.type === TRANSACTION_TYPES.expense ? -t.amount : t.amount),
+    0
+  );
 }

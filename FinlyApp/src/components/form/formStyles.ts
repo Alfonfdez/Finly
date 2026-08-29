@@ -7,7 +7,6 @@ export const formStyles = StyleSheet.create({
   counter: { textAlign: 'right', marginTop: 4, marginBottom: 4 },
   button: { paddingVertical: 14, borderRadius: 10, alignItems: 'center' },
   buttonText: { fontWeight: '600' },
-  keyboardSpacer: { height: 200 },
   scrollView: { flex: 1 },
   scrollContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 },
 });

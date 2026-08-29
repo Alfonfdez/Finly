@@ -12,6 +12,7 @@ import { t, getDefaultCategoryIdByName, getDefaultEnglishName } from '../i18n';
 import { categoryRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, MAX_CATEGORIES_PER_TYPE, type TransactionType, USER_ID } from '../constants/types';
 import { setPendingCategory } from '../utils/pendingCategory';
+import { countCategoriesOfType } from '../utils/categoryUtils';
 import { countAtLimit } from '../utils/limits';
 import { showErrorAlert } from '../utils/errors';
 import { getIconColorHintText } from '../utils/formHints';
@@ -22,7 +23,6 @@ import LabeledTextField from '../components/form/LabeledTextField';
 import SectionTitle from '../components/form/SectionTitle';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormError from '../components/form/FormError';
-import KeyboardSpacer from '../components/form/KeyboardSpacer';
 import FormScrollView from '../components/form/FormScrollView';
 
 type CreateCategoryRouteProp = RouteProp<RootStackParamList, 'CreateCategory'>;
@@ -54,7 +54,7 @@ export default function CreateCategoryScreen() {
   });
 
 
-  const typeCount = categories.filter((category) => category.type === type).length;
+  const typeCount = countCategoriesOfType(categories, type);
   const atCategoryLimit = countAtLimit(typeCount, MAX_CATEGORIES_PER_TYPE);
 
   const canCreate = name.trim().length > 0 && !nameError && !checkingName && selectedIcon !== null && selectedColor !== null && !atCategoryLimit;
@@ -151,8 +151,6 @@ export default function CreateCategoryScreen() {
             disabled={!canCreate}
             style={styles.button}
           />
-
-          <KeyboardSpacer />
         </FormScrollView>
       </View>
     </ScreenShell>
