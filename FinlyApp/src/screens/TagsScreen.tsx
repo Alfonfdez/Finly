@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useCallback } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
+import { useSearchFilter } from '../hooks/useSearchFilter';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
@@ -40,11 +41,7 @@ export default function TagsScreen() {
     />
   )});
 
-  const filteredTags = useMemo(() => {
-    if (!searchText.trim()) return tags;
-    const term = searchText.toLowerCase();
-    return tags.filter((tag) => tag.name.toLowerCase().includes(term));
-  }, [tags, searchText]);
+  const filteredTags = useSearchFilter(tags, searchText, (tag) => [tag.name]);
 
   const atTagLimit = countAtLimit(tags.length, MAX_TAGS);
 

@@ -7,7 +7,6 @@ import LabeledTextField from './form/LabeledTextField';
 import PrimaryButton from './form/PrimaryButton';
 import FormError from './form/FormError';
 import DeleteButton from './form/DeleteButton';
-import KeyboardSpacer from './form/KeyboardSpacer';
 import FormScrollView from './form/FormScrollView';
 import AmountInput from './AmountInput';
 
@@ -156,8 +155,6 @@ export default function AccountForm({
         disabled={isSubmitDisabled}
         style={styles.button}
       />
-
-      <KeyboardSpacer />
     </FormScrollView>
   );
 }

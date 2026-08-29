@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react';
-import { Modal, View, StyleSheet, type DimensionValue } from 'react-native';
+import { Modal, View, StyleSheet, useWindowDimensions, type DimensionValue } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { isWeb } from '../utils/platform';
 import { OVERLAY_BG, MODAL_BORDER_RADIUS } from './componentStyles';
@@ -28,6 +28,11 @@ export default function ModalShell({
   shadow = false,
 }: Props) {
   const { activeColors: c } = useConfig();
+  const { height: windowHeight } = useWindowDimensions();
+  const boundedMaxHeight =
+    typeof maxHeight === 'number'
+      ? maxHeight
+      : Math.round(windowHeight * (parseFloat(String(maxHeight)) / 100));
   const shadowStyle = isWeb
     ? { boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }
     : { elevation: 10 };
@@ -38,7 +43,7 @@ export default function ModalShell({
         <View
           style={[
             styles.modal,
-            { backgroundColor: backgroundColor ?? c.surface, maxWidth, padding, maxHeight },
+            { backgroundColor: backgroundColor ?? c.surface, maxWidth, padding, maxHeight: boundedMaxHeight },
             shadow && shadowStyle,
           ]}
         >

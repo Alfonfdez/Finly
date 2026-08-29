@@ -12,6 +12,7 @@ import {
   MAX_VISIBLE_CATEGORIES,
 } from '../constants/types';
 import { formatDateForDB } from '../utils/formatters';
+import { categoriesOfType } from '../utils/categoryUtils';
 import { parseAmountValue } from '../utils/amountInput';
 import { transactionRepository, tagRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
@@ -111,7 +112,7 @@ export function useTransactionForm({
     if (pending) {
       if (pending.type !== type) setType(pending.type);
       setCategoryId(pending.categoryId);
-      const allByType = categories.filter(c => c.type === pending.type);
+      const allByType = categoriesOfType(categories, pending.type);
       const isVisible = allByType.slice(0, MAX_VISIBLE_CATEGORIES).some(c => c.id === pending.categoryId);
       setReorderedCategory(isVisible ? null : pending.categoryId);
       setTimeout(() => {
@@ -205,7 +206,7 @@ export function useTransactionForm({
   }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, onSubmit, deferredRefresh, navigation, errorTitle, errorMessage]);
 
   const categoriesByType = useMemo(() => {
-    const byType = categories.filter(c => c.type === type);
+    const byType = categoriesOfType(categories, type);
     return [...byType].sort((a, b) => {
       const countA = categoryUsage.get(a.id) ?? 0;
       const countB = categoryUsage.get(b.id) ?? 0;

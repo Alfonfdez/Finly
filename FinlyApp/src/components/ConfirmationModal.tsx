@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 import type { ReactNode } from 'react';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -29,16 +29,31 @@ export default function ConfirmationModal({
 }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
+  const { height: windowHeight } = useWindowDimensions();
   const hasMove = !!moveLabel && !!onMove;
+
+  const headerBudget = Math.round(fs(16) * 1.6) * 3 + 12 + 8;
+  const footerHeight = hasMove ? 56 + 12 + 56 : 56;
+  const footerClearance = footerHeight + 12;
+  const scrollMaxHeight = Math.max(
+    0,
+    Math.round(windowHeight * 0.7) - 24 - headerBudget - 4,
+  );
 
   return (
     <ModalShell visible={visible} onClose={onCancel}>
       <ModalHeader title={title} size={16} />
-      {message && (
-        <Text style={[styles.message, { color: c.textSecondary, fontSize: fs(14) }]}>{message}</Text>
-      )}
-      {children}
-      <View style={[styles.buttons, hasMove && styles.buttonsStacked]}>
+      <ScrollView
+        style={[styles.scroll, { maxHeight: scrollMaxHeight }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: footerClearance }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {message && (
+          <Text style={[styles.message, { color: c.textSecondary, fontSize: fs(14) }]}>{message}</Text>
+        )}
+        {children}
+      </ScrollView>
+      <View style={[styles.buttons, hasMove && styles.buttonsStacked, styles.buttonsFooter]}>
         {cancelLabel && !hasMove ? (
           <TouchableOpacity
             style={[styles.button, { backgroundColor: c.background, borderColor: c.border }]}
@@ -52,19 +67,20 @@ export default function ConfirmationModal({
         {hasMove ? (
           <View style={styles.actionRow}>
             <TouchableOpacity
-              style={[styles.button, { backgroundColor: c.primary }]}
+              style={[styles.button, styles.stackedButton, { backgroundColor: c.primary }]}
               onPress={onMove}
               accessibilityRole="button"
               accessibilityLabel={moveLabel}
             >
-              <Text style={[styles.buttonText, { color: c.background, fontSize: fs(14) }]}>{moveLabel}</Text>
+              <Text numberOfLines={2} style={[styles.buttonText, { color: c.background, fontSize: fs(14) }]}>{moveLabel}</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.button, { backgroundColor: destructive ? c.red : c.primary }]}
+              style={[styles.button, styles.stackedButton, { backgroundColor: destructive ? c.red : c.primary }]}
               onPress={onConfirm}
               disabled={confirmDisabled}
             >
               <Text
+                numberOfLines={2}
                 style={[
                   styles.buttonText,
                   { color: destructive ? WHITE : (confirmDisabled ? c.textSecondary : c.background), fontSize: fs(14) },
@@ -97,7 +113,7 @@ export default function ConfirmationModal({
         )}
         {hasMove && cancelLabel ? (
           <TouchableOpacity
-            style={[styles.button, { flex: 0 }, { backgroundColor: c.background, borderColor: c.border }]}
+            style={[styles.button, styles.stackedButton, { alignSelf: 'stretch' }, { backgroundColor: c.background, borderColor: c.border }]}
             onPress={onCancel}
             accessibilityRole="button"
             accessibilityLabel={cancelLabel}
@@ -116,9 +132,25 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
+  scroll: {
+    flexGrow: 0,
+    flexShrink: 1,
+  },
+  scrollContent: {
+    paddingTop: 0,
+  },
   buttons: {
     flexDirection: 'row',
     gap: 12,
+    flexShrink: 0,
+  },
+  buttonsFooter: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 24,
+    paddingBottom: 24,
   },
   buttonsStacked: {
     flexDirection: 'column',
@@ -126,6 +158,12 @@ const styles = StyleSheet.create({
   actionRow: {
     flexDirection: 'row',
     gap: 12,
+    height: 56,
+  },
+  stackedButton: {
+    height: 56,
+    minHeight: 56,
+    paddingVertical: 0,
   },
   button: {
     flex: 1,
@@ -133,6 +171,8 @@ const styles = StyleSheet.create({
     borderRadius: BUTTON_BORDER_RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   buttonText: {
     fontWeight: '600',

@@ -125,35 +125,29 @@ export default function TransactionDetailsScreen() {
           </DataRow>
 
           <DataRow label={labels.details_account}>
-            <View style={styles.iconRow}>
-              {account && (
-                <IconBadge
-                  icon={account.icon}
-                  color={account.color}
-                  shape={badgeShapeFor(config, 'account')}
-                  size={28}
-                  iconSize={18}
-                  roundedRadius={4}
-                />
-              )}
-              <Text style={[styles.nameValue, { color: c.text, fontSize: fs(15) }]}>{account ? getDisplayAccountName(account) : ''}</Text>
-            </View>
+            {account && (
+              <NamedEntityBadge
+                icon={account.icon}
+                color={account.color}
+                shape={badgeShapeFor(config, 'account')}
+                name={getDisplayAccountName(account)}
+                c={c}
+                fs={fs}
+              />
+            )}
           </DataRow>
 
           <DataRow label={labels.details_category}>
-            <View style={styles.iconRow}>
-              {category && (
-                <IconBadge
-                  icon={category.icon}
-                  color={category.color}
-                  shape={badgeShapeFor(config, 'category')}
-                  size={28}
-                  iconSize={18}
-                  roundedRadius={4}
-                />
-              )}
-              <Text style={[styles.nameValue, { color: c.text, fontSize: fs(15) }]}>{catName}</Text>
-            </View>
+            {category && (
+              <NamedEntityBadge
+                icon={category.icon}
+                color={category.color}
+                shape={badgeShapeFor(config, 'category')}
+                name={catName}
+                c={c}
+                fs={fs}
+              />
+            )}
           </DataRow>
 
           <DataRow label={labels.details_date}>
@@ -299,3 +293,21 @@ const styles = StyleSheet.create({
   },
   timestampText: {},
 });
+
+interface NamedEntityBadgeProps {
+  icon: string;
+  color: string;
+  shape: ReturnType<typeof badgeShapeFor>;
+  name: string;
+  c: ReturnType<typeof useConfig>['activeColors'];
+  fs: (size: number) => number;
+}
+
+function NamedEntityBadge({ icon, color, shape, name, c, fs }: NamedEntityBadgeProps) {
+  return (
+    <View style={styles.iconRow}>
+      <IconBadge icon={icon} color={color} shape={shape} size={28} iconSize={18} roundedRadius={4} />
+      <Text style={[styles.nameValue, { color: c.text, fontSize: fs(15) }]}>{name}</Text>
+    </View>
+  );
+}

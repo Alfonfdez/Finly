@@ -10,6 +10,7 @@ import EyeToggle from './EyeToggle';
 import ModalShell from './ModalShell';
 import ListItemRow from './ListItemRow';
 import ModalFooter from './ModalFooter';
+import RadioButton from './RadioButton';
 
 interface AccountWithBalance extends Account {
   balance: number;
@@ -41,16 +42,11 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
 
   const renderItem = useCallback(({ item }: { item: AccountWithBalance }) => {
     const isSelected = item.id === tempId;
-    const radio = (
-      <View style={[styles.radio, { borderColor: isSelected ? c.primary : c.textSecondary }]}>
-        {isSelected && <View style={[styles.radioInner, { backgroundColor: c.primary }]} />}
-      </View>
-    );
     return (
       <ListItemRow
         title={getDisplayAccountName(item)}
         subtitle={isBalanceHidden ? HIDDEN_BALANCE : formatCurrency(item.balance, config.currency, config.decimalSeparator)}
-        leading={radio}
+        leading={<RadioButton selected={isSelected} size={20} borderColor={c.textSecondary} />}
         icon={item.icon}
         color={item.color}
         shape={badgeShapeFor(config, 'account')}
@@ -90,18 +86,5 @@ const styles = StyleSheet.create({
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
   row: {
     paddingHorizontal: 0,
-  },
-  radio: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
   },
 });

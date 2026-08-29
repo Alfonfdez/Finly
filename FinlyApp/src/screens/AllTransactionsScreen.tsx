@@ -14,7 +14,9 @@ import { TRANSACTION_TYPES, TYPE_FILTERS, type NavigationProp, type TransactionT
 import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatSignedCurrency, resolvePeriodRange } from '../utils/formatters';
+import { netTransactionTotal } from '../utils/calculator';
 import { showErrorAlert } from '../utils/errors';
+import { categoriesOfType } from '../utils/categoryUtils';
 import { t } from '../i18n';
 import AccountModal from '../components/AccountModal';
 import AccountTrigger from '../components/AccountTrigger';
@@ -121,16 +123,13 @@ export default function AllTransactionsScreen() {
   ), [categoriesById, filters.tagsByTransaction, handleTransactionPress, selectMode, selectedIds]);
 
   const accountBalance = useMemo(() => {
-    return filters.filtered
-      .reduce(
-        (sum, t) => sum + (t.type === TRANSACTION_TYPES.expense ? -t.amount : t.amount), 0
-      );
+    return netTransactionTotal(filters.filtered);
   }, [filters.filtered]);
 
   const categoryButtonLabel = useMemo(() => {
     const visibleCategories = typeTab === TYPE_FILTERS.all
       ? categories
-      : categories.filter(cat => cat.type === typeTab);
+      : categoriesOfType(categories, typeTab);
     const allVisibleSelected = visibleCategories.length > 0 && visibleCategories.every(cat => selectedCategoryIds.includes(cat.id));
     if (selectedCategoryIds.length === 0 || allVisibleSelected) {
       if (typeTab === TRANSACTION_TYPES.expense) return labels.filter_all_expense_categories;
