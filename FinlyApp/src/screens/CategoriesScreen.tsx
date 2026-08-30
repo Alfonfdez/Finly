@@ -11,8 +11,8 @@ import { t, getDisplayCategoryName } from '../i18n';
 import { categoryRepository, transactionRepository } from '../database';
 import TabBar from '../components/TabBar';
 import CategoryGrid from '../components/CategoryGrid';
-import SearchBar from '../components/SearchBar';
-import EmptyState from '../components/EmptyState';
+import ScreenSearchBar from '../components/ScreenSearchBar';
+import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
 import BulkCategoryTransferModal, { type BulkCategoryItem } from '../components/BulkCategoryTransferModal';
@@ -145,15 +145,14 @@ export default function CategoriesScreen() {
           }}
         />
 
-        {searchActive && (
-          <SearchBar
-            placeholder={labels.add_cat_search}
-            value={searchText}
-            onChangeText={setSearchText}
-            onClose={closeSearch}
-            autoFocus
-          />
-        )}
+        <ScreenSearchBar
+          visible={searchActive}
+          placeholder={labels.add_cat_search}
+          value={searchText}
+          onChangeText={setSearchText}
+          onClose={closeSearch}
+          style={styles.searchBarWrap}
+        />
 
         {!selectMode && (
           <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(13) }]}>
@@ -162,10 +161,7 @@ export default function CategoriesScreen() {
         )}
 
         {filteredCategories.length === 0 ? (
-          <EmptyState
-            icon={searchActive ? 'search-outline' : 'grid-outline'}
-            message={labels.add_cat_no_results}
-          />
+          <EmptyState {...emptyStateProps(searchActive, 'grid-outline', labels.add_cat_no_results)} />
         ) : (
           <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
             <CategoryGrid
@@ -238,6 +234,10 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 16,
+  },
+  searchBarWrap: {
+    paddingHorizontal: 0,
+    paddingTop: 0,
   },
   scrollView: {
     flex: 1,

@@ -1,4 +1,4 @@
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import SearchBar from './SearchBar';
 
 interface Props {
@@ -7,13 +7,14 @@ interface Props {
   value: string;
   onChangeText: (text: string) => void;
   onClose: () => void;
+  style?: StyleProp<ViewStyle>;
 }
 
-export default function ScreenSearchBar({ visible, placeholder, value, onChangeText, onClose }: Props) {
+export default function ScreenSearchBar({ visible, placeholder, value, onChangeText, onClose, style }: Props) {
   if (!visible) return null;
 
   return (
-    <View style={styles.wrap}>
+    <View style={[styles.wrap, style]}>
       <SearchBar
         placeholder={placeholder}
         value={value}

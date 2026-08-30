@@ -24,7 +24,7 @@ export function useSelectableScreen<T extends number | string = number>({
     navigation.setOptions({
       headerRight: showHeader ? () => headerRightRef.current() : null,
     });
-  }, [navigation, showHeader]);
+  }, [navigation, showHeader, select.selectMode]);
 
   return select;
 }

@@ -2,11 +2,18 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { t } from '../i18n';
 import type { IconName } from '../constants/types';
 
 interface Props {
   icon?: IconName;
   message: string;
+}
+
+export function emptyStateProps(searchActive: boolean, idleIcon: IconName, idleMessage: string) {
+  return searchActive
+    ? { icon: 'search-outline' as IconName, message: t().filter_no_results }
+    : { icon: idleIcon, message: idleMessage };
 }
 
 export default function EmptyState({ icon, message }: Props) {

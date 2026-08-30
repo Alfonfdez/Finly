@@ -11,7 +11,7 @@ import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import type { CommentUsage } from '../database/repositories/transactionRepo';
 import type { NavigationProp } from '../constants/types';
-import EmptyState from '../components/EmptyState';
+import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import { showErrorAlert } from '../utils/errors';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -104,10 +104,7 @@ export default function CommentsScreen() {
   }, [selectedComments, selectMode, toggleItem, navigation, c, fs, labels]);
 
   const renderEmpty = () => (
-    <EmptyState
-      icon={searchActive ? 'search-outline' : 'chatbubble-outline'}
-      message={labels.comments_empty}
-    />
+    <EmptyState {...emptyStateProps(searchActive, 'chatbubble-outline', labels.comments_empty)} />
   );
 
   return (
