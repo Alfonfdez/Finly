@@ -15,7 +15,7 @@ import { type NavigationProp, MAX_TAGS } from '../constants/types';
 import { countAtLimit } from '../utils/limits';
 import { showErrorAlert } from '../utils/errors';
 import Fab from '../components/Fab';
-import EmptyState from '../components/EmptyState';
+import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
@@ -82,10 +82,7 @@ export default function TagsScreen() {
   }, [selectedIds, selectMode, toggleItem, navigation, c, fs]);
 
   const renderEmpty = () => (
-    <EmptyState
-      icon={searchActive ? 'search-outline' : 'pricetag-outline'}
-      message={searchActive ? labels.filter_no_results : labels.tags_empty}
-    />
+    <EmptyState {...emptyStateProps(searchActive, 'pricetag-outline', labels.tags_empty)} />
   );
 
   return (

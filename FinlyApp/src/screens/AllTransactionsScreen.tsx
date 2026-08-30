@@ -24,7 +24,7 @@ import SortToggle from '../components/SortToggle';
 import TagFilterBar from '../components/TagFilterBar';
 import { TransactionRow, TransactionDateHeader } from '../components/TransactionGroup';
 import TabBar from '../components/TabBar';
-import EmptyState from '../components/EmptyState';
+import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import Fab from '../components/Fab';
 import CategoryFilterModal from '../components/CategoryFilterModal';
 import PeriodTabs from '../components/PeriodTabs';
@@ -154,7 +154,7 @@ export default function AllTransactionsScreen() {
     navigation.setOptions({
       headerRight: () => headerRightRef.current?.(),
     });
-  }, [navigation, selectMode, hasSections, c.text, c.primary, toggleSelectMode, toggleSearch]);
+  }, [navigation, selectMode, hasSections, toggleSelectMode, toggleSearch]);
 
   return (
     <ScreenShell>
@@ -227,10 +227,7 @@ export default function AllTransactionsScreen() {
 
       {!loading && filters.sections.length === 0 ? (
         <View style={styles.emptyList}>
-          {searchActive && searchText.trim()
-            ? <EmptyState icon="search-outline" message={labels.filter_no_results} />
-            : <EmptyState icon="receipt-outline" message={labels.transactions_empty} />
-          }
+          <EmptyState {...emptyStateProps(searchActive && !!searchText.trim(), 'receipt-outline', labels.transactions_empty)} />
         </View>
       ) : (
       <SectionList
