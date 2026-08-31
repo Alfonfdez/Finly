@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { TextInput, ScrollView, StyleSheet, Alert } from 'react-native';
+import { TextInput, ScrollView, StyleSheet, Alert, type TextStyle } from 'react-native';
 import { useConfig } from '../../context/ConfigContext';
 import { useApp } from '../../context/AppContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
+import { isWeb } from '../../utils/platform';
 import {
   transactionRepository,
   configRepository,
@@ -213,7 +214,7 @@ export default function DataScreen() {
         confirmDisabled={!canDeleteAll}
       >
         <TextInput
-          style={[styles.input, { backgroundColor: c.background, color: c.text, borderColor: c.border, fontSize: fs(14) }]}
+          style={[styles.input, { backgroundColor: c.background, color: c.text, borderColor: c.border, fontSize: fs(14) }, webInputFocusReset]}
           placeholder={labels.settings_delete_data_confirm_placeholder}
           placeholderTextColor={c.textSecondary}
           value={deleteAllText}
@@ -244,7 +245,7 @@ export default function DataScreen() {
         confirmDisabled={!canFactoryReset}
       >
         <TextInput
-          style={[styles.input, { backgroundColor: c.background, color: c.text, borderColor: c.border, fontSize: fs(14) }]}
+          style={[styles.input, { backgroundColor: c.background, color: c.text, borderColor: c.border, fontSize: fs(14) }, webInputFocusReset]}
           placeholder={labels.settings_delete_data_confirm_placeholder}
           placeholderTextColor={c.textSecondary}
           value={factoryResetText}
@@ -256,6 +257,8 @@ export default function DataScreen() {
     </ScrollView>
   );
 }
+
+const webInputFocusReset = isWeb ? ({ outlineStyle: 'none' } as unknown as TextStyle) : null;
 
 const styles = StyleSheet.create({
   input: {
