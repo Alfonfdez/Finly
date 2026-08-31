@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
+import { useBulkDelete } from '../hooks/useBulkDelete';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
 import { usePeriodNavigation } from '../hooks/usePeriodNavigation';
@@ -69,9 +70,23 @@ export default function AllTransactionsScreen() {
   const {
     searchActive, searchText, setSearchText,
     selectMode, selectedIds,
-    deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
+    toggleItem, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
   } = useSelectAndSearch({ hasItems: true });
+
+  const {
+    deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
+  } = useBulkDelete({
+    selectedIds,
+    exitSelectMode,
+    deleteFn: (ids) => transactionRepository.deleteMany(ids),
+    afterDelete: async () => {
+      const updated = await transactionRepository.list({});
+      setAllTransactions(updated);
+      refresh();
+    },
+    errorPrefix: 'Failed to delete transactions',
+  });
 
   const filters = useTransactionFilters({
     transactions: allTransactions,
@@ -89,19 +104,6 @@ export default function AllTransactionsScreen() {
     if (selectMode) { toggleItem(id); return; }
     navigation.navigate('TransactionDetails', { transactionId: id });
   }, [navigation, selectMode, toggleItem]);
-
-  const handleBulkDelete = useCallback(async () => {
-    setDeleteModalVisible(false);
-    try {
-      await transactionRepository.deleteMany([...selectedIds]);
-      exitSelectMode();
-      const updated = await transactionRepository.list({});
-      setAllTransactions(updated);
-      refresh();
-    } catch {
-      showErrorAlert(labels);
-    }
-  }, [selectedIds, setAllTransactions, setDeleteModalVisible, exitSelectMode, labels, refresh]);
 
   const keyExtractor = useCallback((item: Transaction) => item.id.toString(), []);
 
@@ -272,7 +274,7 @@ export default function AllTransactionsScreen() {
           selectedCount={selectedIds.size}
           deleteLabel={labels.transactions_bulk_delete(selectedIds.size)}
           cancelLabel={labels.cancel}
-          onDelete={() => setDeleteModalVisible(true)}
+          onDelete={openDeleteModal}
           onCancel={exitSelectMode}
         />
       ) : (
@@ -288,8 +290,8 @@ export default function AllTransactionsScreen() {
         message={labels.transactions_bulk_delete_confirm_message}
         confirmLabel={labels.delete}
         cancelLabel={labels.cancel}
-        onConfirm={handleBulkDelete}
-        onCancel={() => setDeleteModalVisible(false)}
+        onConfirm={confirmBulkDelete}
+        onCancel={closeDeleteModal}
       />
     </ScreenShell>
   );

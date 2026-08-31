@@ -13,7 +13,7 @@ import { tagRepository } from '../database';
 import { type Tag } from '../database/types';
 import { type NavigationProp, MAX_TAGS } from '../constants/types';
 import { countAtLimit } from '../utils/limits';
-import { runWithErrorAlert } from '../utils/errors';
+import { useBulkDelete } from '../hooks/useBulkDelete';
 import Fab from '../components/Fab';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
@@ -31,7 +31,7 @@ export default function TagsScreen() {
   const {
     searchActive, searchText, setSearchText,
     selectMode, selectedIds,
-    deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
+    toggleItem, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
   } = useSelectableScreen({ navigation, hasItems: tags.length > 0, showHeader: tags.length > 0, headerRight: () => (
     <SelectSearchHeader
@@ -45,14 +45,15 @@ export default function TagsScreen() {
 
   const atTagLimit = countAtLimit(tags.length, MAX_TAGS);
 
-  const handleBulkDelete = async () => {
-    setDeleteModalVisible(false);
-    await runWithErrorAlert(async () => {
-      await tagRepository.deleteMany([...selectedIds]);
-      exitSelectMode();
-      await refreshTags();
-    }, 'Failed to delete tags');
-  };
+  const {
+    deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
+  } = useBulkDelete({
+    selectedIds,
+    exitSelectMode,
+    deleteFn: (ids) => tagRepository.deleteMany(ids),
+    afterDelete: refreshTags,
+    errorPrefix: 'Failed to delete tags',
+  });
 
   const renderItem = useCallback(({ item }: { item: Tag }) => {
     const selected = selectedIds.has(item.id);
@@ -111,7 +112,7 @@ export default function TagsScreen() {
           selectedCount={selectedIds.size}
           deleteLabel={labels.tags_bulk_delete(selectedIds.size)}
           cancelLabel={labels.modify_tag_delete_confirm_cancel}
-          onDelete={() => setDeleteModalVisible(true)}
+          onDelete={openDeleteModal}
           onCancel={exitSelectMode}
         />
       ) : atTagLimit ? (
@@ -133,8 +134,8 @@ export default function TagsScreen() {
         message={labels.tags_bulk_delete_confirm_message}
         confirmLabel={labels.modify_tag_delete_confirm_delete}
         cancelLabel={labels.modify_tag_delete_confirm_cancel}
-        onConfirm={handleBulkDelete}
-        onCancel={() => setDeleteModalVisible(false)}
+        onConfirm={confirmBulkDelete}
+        onCancel={closeDeleteModal}
       />
     </ScreenShell>
   );
