@@ -22,8 +22,6 @@ import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
 import { showErrorAlert } from '../utils/errors';
 
-export type { TransactionDraft };
-
 interface TransactionFormProps {
   initialType: TransactionType;
   initialAccountId: number | undefined;

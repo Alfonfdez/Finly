@@ -6,12 +6,12 @@ import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
 import { calendarStyles, MIN_DATE } from './calendarStyles';
 
-export const PICKING_PHASE = {
+const PICKING_PHASE = {
   start: 'start',
   end: 'end',
 } as const;
 
-export type PickingPhase = (typeof PICKING_PHASE)[keyof typeof PICKING_PHASE];
+type PickingPhase = (typeof PICKING_PHASE)[keyof typeof PICKING_PHASE];
 
 interface Props {
   tempStart: Date;

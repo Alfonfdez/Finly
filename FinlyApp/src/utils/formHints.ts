@@ -1,4 +1,4 @@
-export interface IconColorHintKeys {
+interface IconColorHintKeys {
   empty: string;
   iconColor: string;
   icon: string;
