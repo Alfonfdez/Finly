@@ -12,7 +12,7 @@ import { transactionRepository } from '../database';
 import type { CommentUsage } from '../database/repositories/transactionRepo';
 import type { NavigationProp } from '../constants/types';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
-import { runWithErrorAlert } from '../utils/errors';
+import { useBulkDelete } from '../hooks/useBulkDelete';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
@@ -30,7 +30,7 @@ export default function CommentsScreen() {
   const {
     searchActive, searchText, setSearchText,
     selectMode, selectedIds: selectedComments,
-    deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
+    toggleItem, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
   } = useSelectableScreen<string>({ navigation, hasItems: comments.length > 0, showHeader: comments.length > 0, headerRight: () => (
     <SelectSearchHeader
@@ -62,14 +62,15 @@ export default function CommentsScreen() {
 
   const filteredComments = useSearchFilter(comments, searchText, (c) => [c.description]);
 
-  const handleBulkDelete = async () => {
-    setDeleteModalVisible(false);
-    await runWithErrorAlert(async () => {
-      await transactionRepository.deleteComments([...selectedComments]);
-      exitSelectMode();
-      loadComments();
-    }, 'Failed to delete comments');
-  };
+  const {
+    deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
+  } = useBulkDelete({
+    selectedIds: selectedComments,
+    exitSelectMode,
+    deleteFn: (ids) => transactionRepository.deleteComments(ids),
+    afterDelete: () => { loadComments(); },
+    errorPrefix: 'Failed to delete comments',
+  });
 
   const renderItem = useCallback(({ item }: { item: CommentUsage }) => {
     const selected = selectedComments.has(item.description);
@@ -135,7 +136,7 @@ export default function CommentsScreen() {
           selectedCount={selectedComments.size}
           deleteLabel={labels.comments_bulk_delete(selectedComments.size)}
           cancelLabel={labels.comments_delete_confirm_cancel}
-          onDelete={() => setDeleteModalVisible(true)}
+          onDelete={openDeleteModal}
           onCancel={exitSelectMode}
         />
       )}
@@ -146,8 +147,8 @@ export default function CommentsScreen() {
         message={labels.comments_bulk_delete_confirm_message}
         confirmLabel={labels.comments_delete_confirm_delete}
         cancelLabel={labels.comments_delete_confirm_cancel}
-        onConfirm={handleBulkDelete}
-        onCancel={() => setDeleteModalVisible(false)}
+        onConfirm={confirmBulkDelete}
+        onCancel={closeDeleteModal}
       />
     </ScreenShell>
   );
