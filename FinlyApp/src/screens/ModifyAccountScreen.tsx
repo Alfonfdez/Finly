@@ -20,7 +20,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import EmptyState from '../components/EmptyState';
 import AccountForm from '../components/AccountForm';
 import { getNameHintText } from '../utils/formHints';
-import { showErrorAlert } from '../utils/errors';
+import { runWithErrorAlert } from '../utils/errors';
 import { parseAmountValue } from '../utils/amountInput';
 
 type ModifyAccountRouteProp = RouteProp<RootStackParamList, 'ModifyAccount'>;
@@ -103,18 +103,15 @@ export default function ModifyAccountScreen() {
       updateData.name = englishDefault && trimmedName === displayDefault ? englishDefault : trimmedName;
       updateData.initial_balance = parseAmountValue(initialBalanceRaw) ?? 0;
     }
-    try {
+    await runWithErrorAlert(async () => {
       await accountRepository.update(accountId, updateData);
       navigation.goBack();
       deferredRefreshAccounts();
-    } catch (err) {
-      console.error('Failed to update account:', err);
-      showErrorAlert(labels);
-    }
+    }, 'Failed to update account');
   };
 
   const handleDeleteConfirm = async () => {
-    try {
+    await runWithErrorAlert(async () => {
       await accountRepository.delete(accountId);
 
       const remaining = accounts.filter(a => a.id !== accountId);
@@ -125,10 +122,7 @@ export default function ModifyAccountScreen() {
 
       navigation.goBack();
       deferredRefreshAccounts();
-    } catch (err) {
-      console.error('Failed to delete account:', err);
-      showErrorAlert(labels);
-    }
+    }, 'Failed to delete account');
   };
 
   if (!account) {

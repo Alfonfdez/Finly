@@ -14,7 +14,7 @@ import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CA
 import { setPendingCategory } from '../utils/pendingCategory';
 import { countCategoriesOfType } from '../utils/categoryUtils';
 import { countAtLimit } from '../utils/limits';
-import { showErrorAlert } from '../utils/errors';
+import { runWithErrorAlert } from '../utils/errors';
 import { getIconColorHintText } from '../utils/formHints';
 import { CATEGORY_ICONS } from '../components/IconGrid';
 import IconColorSection from '../components/IconColorSection';
@@ -75,7 +75,7 @@ export default function CreateCategoryScreen() {
   const handleCreate = async () => {
     Keyboard.dismiss();
     if (!canCreate || selectedIcon === null || selectedColor === null) return;
-    try {
+    await runWithErrorAlert(async () => {
       const created = await categoryRepository.create({
         user_id: USER_ID,
         name: name.trim(),
@@ -86,10 +86,7 @@ export default function CreateCategoryScreen() {
       setPendingCategory(created.id, type);
       navigation.goBack();
       deferredRefreshCategories();
-    } catch (err) {
-      console.error('Failed to create category:', err);
-      showErrorAlert(labels);
-    }
+    }, 'Failed to create category');
   };
 
   return (

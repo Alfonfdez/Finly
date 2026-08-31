@@ -13,7 +13,7 @@ import { tagRepository } from '../database';
 import { type Tag } from '../database/types';
 import { type NavigationProp, MAX_TAGS } from '../constants/types';
 import { countAtLimit } from '../utils/limits';
-import { showErrorAlert } from '../utils/errors';
+import { runWithErrorAlert } from '../utils/errors';
 import Fab from '../components/Fab';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
@@ -47,14 +47,11 @@ export default function TagsScreen() {
 
   const handleBulkDelete = async () => {
     setDeleteModalVisible(false);
-    try {
+    await runWithErrorAlert(async () => {
       await tagRepository.deleteMany([...selectedIds]);
       exitSelectMode();
       await refreshTags();
-    } catch (err) {
-      console.error('Failed to delete tags:', err);
-      showErrorAlert(labels);
-    }
+    }, 'Failed to delete tags');
   };
 
   const renderItem = useCallback(({ item }: { item: Tag }) => {

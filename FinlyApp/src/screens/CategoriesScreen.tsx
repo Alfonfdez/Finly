@@ -20,7 +20,7 @@ import type { TransferTargetId } from '../components/CategoryTransferModal';
 import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, type TransactionType, type NavigationProp } from '../constants/types';
 import { sortCategoriesWithOthersLast, categoriesOfType, countCategoriesOfType } from '../utils/categoryUtils';
 import { countAtLimit } from '../utils/limits';
-import { showErrorAlert } from '../utils/errors';
+import { runWithErrorAlert } from '../utils/errors';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import GuardModal from '../components/GuardModal';
 
@@ -89,14 +89,11 @@ export default function CategoriesScreen() {
 
   const handlePermanentDelete = async () => {
     setDeleteModalVisible(false);
-    try {
+    await runWithErrorAlert(async () => {
       await categoryRepository.deleteMany([...selectedIds]);
       await refreshCategories();
       await refresh();
-    } catch (err) {
-      console.error('Failed to delete categories:', err);
-      showErrorAlert(labels);
-    }
+    }, 'Failed to delete categories');
     exitSelectMode();
   };
 
@@ -119,14 +116,11 @@ export default function CategoriesScreen() {
         decision === undefined || decision === null || decision === 'delete' ? null : decision;
       return { id, targetId };
     });
-    try {
+    await runWithErrorAlert(async () => {
       await categoryRepository.bulkDeleteWithTargets(items);
       await refreshCategories();
       await refresh();
-    } catch (err) {
-      console.error('Failed to delete categories:', err);
-      showErrorAlert(labels);
-    }
+    }, 'Failed to delete categories');
     exitSelectMode();
   };
 
