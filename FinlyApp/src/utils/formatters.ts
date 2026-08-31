@@ -11,7 +11,6 @@ export const AMOUNT_SIGNS = {
   positive: '+',
   negative: '-',
 } as const;
-export type AmountSign = (typeof AMOUNT_SIGNS)[keyof typeof AMOUNT_SIGNS];
 
 export function formatCurrency(amount: number, currency = DEFAULT_CURRENCY, separator: DecimalSeparator = DECIMAL_SEPARATORS.comma): string {
   const sign = amount < 0 ? AMOUNT_SIGNS.negative : '';
@@ -34,7 +33,7 @@ export function formatSignedCurrency(amount: number, currency = DEFAULT_CURRENCY
   return `${sign}${formatCurrency(amount, currency, separator)}`;
 }
 
-export interface FitFontSizeOptions {
+interface FitFontSizeOptions {
   factor?: number;
   safety?: number;
   minSize?: number;

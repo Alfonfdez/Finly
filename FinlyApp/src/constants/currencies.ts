@@ -1,6 +1,6 @@
 export const DEFAULT_CURRENCY = 'currency_euro';
 
-export type CurrencyLabelKey =
+type CurrencyLabelKey =
   | 'currency_euro' | 'currency_usd' | 'currency_gbp' | 'currency_jpy' | 'currency_chf'
   | 'currency_cad' | 'currency_aud' | 'currency_nzd' | 'currency_sek' | 'currency_nok'
   | 'currency_dkk' | 'currency_pln' | 'currency_czk' | 'currency_huf' | 'currency_ron'
