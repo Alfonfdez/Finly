@@ -15,7 +15,7 @@ import { t, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdB
 import { categoryRepository, transactionRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
-import { showErrorAlert } from '../utils/errors';
+import { runWithErrorAlert } from '../utils/errors';
 import { CATEGORY_ICONS } from '../components/IconGrid';
 import { QUICK_COLORS } from '../constants/colors';
 import IconBadge from '../components/IconBadge';
@@ -95,7 +95,7 @@ export default function ModifyCategoryScreen() {
     if (selectedIcon === null || selectedColor === null) return;
     const defaultName = getDefaultEnglishName(category.id);
     const finalName = !userEditedRef.current && defaultName ? defaultName : name.trim();
-    try {
+    await runWithErrorAlert(async () => {
       await categoryRepository.update(categoryId, {
         name: finalName,
         icon: selectedIcon,
@@ -103,10 +103,7 @@ export default function ModifyCategoryScreen() {
       });
       navigation.goBack();
       deferredRefreshCategories();
-    } catch (err) {
-      console.error('Failed to update category:', err);
-      showErrorAlert(labels);
-    }
+    }, 'Failed to update category');
   };
 
   const handleDeletePress = async () => {
@@ -130,29 +127,23 @@ export default function ModifyCategoryScreen() {
   const handlePermanentDelete = async () => {
     if (!category) return;
     setDeleteModalVisible(false);
-    try {
+    await runWithErrorAlert(async () => {
       await categoryRepository.delete(category.id);
       navigation.goBack();
       deferredRefreshCategories();
       deferredRefresh();
-    } catch (err) {
-      console.error('Failed to delete category:', err);
-      showErrorAlert(labels);
-    }
+    }, 'Failed to delete category');
   };
 
   const handleSelectTarget = async () => {
     if (targetCategoryId === null || !category) return;
-    try {
+    await runWithErrorAlert(async () => {
       await categoryRepository.reassignAndDelete(categoryId, targetCategoryId);
       setSelectModalVisible(false);
       navigation.goBack();
       deferredRefreshCategories();
       deferredRefresh();
-    } catch (err) {
-      console.error('Failed to delete category:', err);
-      showErrorAlert(labels);
-    }
+    }, 'Failed to delete category');
   };
 
   if (!category) {

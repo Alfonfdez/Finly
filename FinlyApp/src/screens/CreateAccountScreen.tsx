@@ -13,7 +13,7 @@ import { type NavigationProp, USER_ID } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
 import { getIconColorHintText } from '../utils/formHints';
 import { parseAmountValue } from '../utils/amountInput';
-import { showErrorAlert } from '../utils/errors';
+import { runWithErrorAlert } from '../utils/errors';
 import AccountForm from '../components/AccountForm';
 
 export default function CreateAccountScreen() {
@@ -59,7 +59,7 @@ export default function CreateAccountScreen() {
   const handleCreate = async () => {
     Keyboard.dismiss();
     if (!canCreate || selectedIcon === null || selectedColor === null) return;
-    try {
+    await runWithErrorAlert(async () => {
       await accountRepository.create({
         user_id: USER_ID,
         name: name.trim(),
@@ -70,10 +70,7 @@ export default function CreateAccountScreen() {
       });
       navigation.goBack();
       deferredRefreshAccounts();
-    } catch (err) {
-      console.error('Failed to create account:', err);
-      showErrorAlert(labels);
-    }
+    }, 'Failed to create account');
   };
 
   return (

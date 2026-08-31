@@ -13,7 +13,7 @@ import { useApp } from '../context/AppContext';
 import { t, getDisplayAccountName, getDisplayAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
 import { sanitizeDefaultAccounts } from '../database/configDefaults';
-import { showErrorAlert } from '../utils/errors';
+import { runWithErrorAlert, showErrorAlert } from '../utils/errors';
 import { isTotalAccount } from '../database/helpers';
 import type { Account } from '../database/types';
 import { formatCurrency, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
@@ -110,7 +110,7 @@ export default function AccountsScreen() {
 
   const handleBulkDelete = useCallback(async () => {
     setDeleteModalVisible(false);
-    try {
+    await runWithErrorAlert(async () => {
       await accountRepository.deleteMany([...selectedIds]);
 
       const remaining = accounts.filter(a => !selectedIds.has(a.id));
@@ -125,11 +125,8 @@ export default function AccountsScreen() {
       setTotal(newTotal);
       await refreshAccounts();
       refresh();
-    } catch (err) {
-      console.error('Failed to delete accounts:', err);
-      showErrorAlert(labels);
-    }
-  }, [selectedIds, config, accounts, exitSelectMode, loadData, refreshAccounts, refresh, updateConfig, labels, setDeleteModalVisible]);
+    }, 'Failed to delete accounts');
+  }, [selectedIds, config, accounts, exitSelectMode, loadData, refreshAccounts, refresh, updateConfig, setDeleteModalVisible]);
 
   const renderItem = useCallback(({ item }: { item: AccountWithBalance }) => {
     const isTotal = isTotalAccount(item);

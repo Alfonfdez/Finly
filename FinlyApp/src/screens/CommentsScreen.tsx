@@ -12,7 +12,7 @@ import { transactionRepository } from '../database';
 import type { CommentUsage } from '../database/repositories/transactionRepo';
 import type { NavigationProp } from '../constants/types';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
-import { showErrorAlert } from '../utils/errors';
+import { runWithErrorAlert } from '../utils/errors';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
@@ -64,14 +64,11 @@ export default function CommentsScreen() {
 
   const handleBulkDelete = async () => {
     setDeleteModalVisible(false);
-    try {
+    await runWithErrorAlert(async () => {
       await transactionRepository.deleteComments([...selectedComments]);
       exitSelectMode();
       loadComments();
-    } catch (err) {
-      console.error('Failed to delete comments:', err);
-      showErrorAlert(labels);
-    }
+    }, 'Failed to delete comments');
   };
 
   const renderItem = useCallback(({ item }: { item: CommentUsage }) => {
