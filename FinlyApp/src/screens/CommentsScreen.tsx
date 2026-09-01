@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -12,6 +12,7 @@ import { transactionRepository } from '../database';
 import type { CommentUsage } from '../database/repositories/transactionRepo';
 import type { NavigationProp } from '../constants/types';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
+import ListItemRow from '../components/ListItemRow';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -75,31 +76,24 @@ export default function CommentsScreen() {
   const renderItem = useCallback(({ item }: { item: CommentUsage }) => {
     const selected = selectedComments.has(item.description);
     return (
-      <TouchableOpacity
-        style={[styles.row, { backgroundColor: c.surface, borderBottomColor: c.border }]}
-        onPress={() => (selectMode ? toggleItem(item.description) : navigation.navigate('ModifyComment', { comment: item.description }))}
-        accessibilityRole="button"
-      >
-        {selectMode && (
+      <ListItemRow
+        title={item.description}
+        titleSize={15}
+        subtitle={labels.comments_used_in(item.count)}
+        leading={selectMode ? (
           <Ionicons
             name={selected ? 'checkbox' : 'checkbox-outline'}
             size={22}
             color={selected ? c.primary : c.textSecondary}
-            style={styles.checkbox}
           />
-        )}
-        <View style={styles.rowText}>
-          <Text style={[styles.commentText, { color: c.text, fontSize: fs(15) }]} numberOfLines={1}>
-            {item.description}
-          </Text>
-          <Text style={[styles.commentCount, { color: c.textSecondary, fontSize: fs(12) }]}>
-            {labels.comments_used_in(item.count)}
-          </Text>
-        </View>
-        {!selectMode && <Ionicons name="chevron-forward" size={18} color={c.textSecondary} />}
-      </TouchableOpacity>
+        ) : undefined}
+        right={!selectMode ? <Ionicons name="chevron-forward" size={18} color={c.textSecondary} /> : undefined}
+        divider
+        style={[styles.row, { backgroundColor: c.surface }]}
+        onPress={() => (selectMode ? toggleItem(item.description) : navigation.navigate('ModifyComment', { comment: item.description }))}
+      />
     );
-  }, [selectedComments, selectMode, toggleItem, navigation, c, fs, labels]);
+  }, [selectedComments, selectMode, toggleItem, navigation, c, labels]);
 
   const renderEmpty = () => (
     <EmptyState {...emptyStateProps(searchActive, 'chatbubble-outline', labels.comments_empty)} />
@@ -166,24 +160,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     padding: 14,
-    borderBottomWidth: 1,
-  },
-  rowText: {
-    flex: 1,
-    marginRight: 12,
-  },
-  commentText: {
-    fontWeight: '500',
-  },
-  commentCount: {
-    marginTop: 2,
-  },
-  checkbox: {
-    marginRight: 10,
   },
   counter: {
     fontWeight: '500',
