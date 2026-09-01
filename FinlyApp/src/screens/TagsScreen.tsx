@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -15,6 +15,7 @@ import { type NavigationProp, MAX_TAGS } from '../constants/types';
 import { countAtLimit } from '../utils/limits';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import Fab from '../components/Fab';
+import ListItemRow from '../components/ListItemRow';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -58,26 +59,23 @@ export default function TagsScreen() {
   const renderItem = useCallback(({ item }: { item: Tag }) => {
     const selected = selectedIds.has(item.id);
     return (
-      <TouchableOpacity
-        style={[styles.row, { backgroundColor: c.surface, borderBottomColor: c.border }]}
-        onPress={() => (selectMode ? toggleItem(item.id) : navigation.navigate('ModifyTag', { tagId: item.id }))}
-        accessibilityRole="button"
-      >
-        {selectMode && (
+      <ListItemRow
+        title={item.name}
+        titleSize={15}
+        leading={selectMode ? (
           <Ionicons
             name={selected ? 'checkbox' : 'checkbox-outline'}
             size={22}
             color={selected ? c.primary : c.textSecondary}
-            style={styles.checkbox}
           />
-        )}
-        <Text style={[styles.tagName, { color: c.text, fontSize: fs(15) }]} numberOfLines={1}>
-          {item.name}
-        </Text>
-        {!selectMode && <Ionicons name="chevron-forward" size={18} color={c.textSecondary} />}
-      </TouchableOpacity>
+        ) : undefined}
+        right={!selectMode ? <Ionicons name="chevron-forward" size={18} color={c.textSecondary} /> : undefined}
+        divider
+        style={[styles.row, { backgroundColor: c.surface }]}
+        onPress={() => (selectMode ? toggleItem(item.id) : navigation.navigate('ModifyTag', { tagId: item.id }))}
+      />
     );
-  }, [selectedIds, selectMode, toggleItem, navigation, c, fs]);
+  }, [selectedIds, selectMode, toggleItem, navigation, c]);
 
   const renderEmpty = () => (
     <EmptyState {...emptyStateProps(searchActive, 'pricetag-outline', labels.tags_empty)} />
@@ -155,18 +153,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     padding: 14,
-    borderBottomWidth: 1,
-  },
-  tagName: {
-    fontWeight: '500',
-    flex: 1,
-  },
-  checkbox: {
-    marginRight: 10,
   },
   limitWrap: {
     position: 'absolute',
