@@ -14,6 +14,7 @@ import type { NavigationProp } from '../constants/types';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import ListItemRow from '../components/ListItemRow';
 import { useBulkDelete } from '../hooks/useBulkDelete';
+import { ERROR_PREFIXES } from '../utils/errors';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
@@ -70,7 +71,7 @@ export default function CommentsScreen() {
     exitSelectMode,
     deleteFn: (ids) => transactionRepository.deleteComments(ids),
     afterDelete: () => { loadComments(); },
-    errorPrefix: 'Failed to delete comments',
+    errorPrefix: ERROR_PREFIXES.commentsDelete,
   });
 
   const renderItem = useCallback(({ item }: { item: CommentUsage }) => {

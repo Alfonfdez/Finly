@@ -15,7 +15,7 @@ import { t, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdB
 import { categoryRepository, transactionRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
-import { runWithErrorAlert } from '../utils/errors';
+import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import { CATEGORY_ICONS } from '../components/IconGrid';
 import { QUICK_COLORS } from '../constants/colors';
 import IconBadge from '../components/IconBadge';
@@ -103,7 +103,7 @@ export default function ModifyCategoryScreen() {
       });
       navigation.goBack();
       deferredRefreshCategories();
-    }, 'Failed to update category');
+    }, ERROR_PREFIXES.categoryUpdate);
   };
 
   const handleDeletePress = async () => {
@@ -132,7 +132,7 @@ export default function ModifyCategoryScreen() {
       navigation.goBack();
       deferredRefreshCategories();
       deferredRefresh();
-    }, 'Failed to delete category');
+    }, ERROR_PREFIXES.categoryDelete);
   };
 
   const handleSelectTarget = async () => {
@@ -143,7 +143,7 @@ export default function ModifyCategoryScreen() {
       navigation.goBack();
       deferredRefreshCategories();
       deferredRefresh();
-    }, 'Failed to delete category');
+    }, ERROR_PREFIXES.categoryDelete);
   };
 
   if (!category) {

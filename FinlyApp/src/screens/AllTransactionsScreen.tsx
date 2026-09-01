@@ -16,7 +16,7 @@ import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatSignedCurrency, resolvePeriodRange } from '../utils/formatters';
 import { netTransactionTotal } from '../utils/calculator';
-import { showErrorAlert } from '../utils/errors';
+import { showErrorAlert, ERROR_PREFIXES } from '../utils/errors';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { t } from '../i18n';
 import AccountModal from '../components/AccountModal';
@@ -85,7 +85,7 @@ export default function AllTransactionsScreen() {
       setAllTransactions(updated);
       refresh();
     },
-    errorPrefix: 'Failed to delete transactions',
+    errorPrefix: ERROR_PREFIXES.transactionsDelete,
   });
 
   const filters = useTransactionFilters({

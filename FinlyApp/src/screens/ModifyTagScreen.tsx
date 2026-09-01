@@ -14,7 +14,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormError from '../components/form/FormError';
-import { showErrorAlert } from '../utils/errors';
+import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import DeleteButton from '../components/form/DeleteButton';
 
 type ModifyTagRouteProp = RouteProp<RootStackParamList, 'ModifyTag'>;
@@ -63,23 +63,19 @@ export default function ModifyTagScreen() {
     const trimmed = name.trim();
     if (!trimmed || nameError || checkingName) return;
 
-    try {
+    await runWithErrorAlert(async () => {
       await tagRepository.update(tagId, { name: trimmed });
       navigation.goBack();
       deferredRefreshTags();
-    } catch {
-      showErrorAlert(labels);
-    }
+    }, ERROR_PREFIXES.tagUpdate);
   };
 
   const handleDelete = async () => {
-    try {
+    await runWithErrorAlert(async () => {
       await tagRepository.delete(tagId);
       navigation.goBack();
       deferredRefreshTags();
-    } catch {
-      showErrorAlert(labels);
-    }
+    }, ERROR_PREFIXES.tagDelete);
   };
 
   const isEmpty = !name.trim();

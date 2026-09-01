@@ -20,7 +20,7 @@ import type { TransferTargetId } from '../components/CategoryTransferModal';
 import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, type TransactionType, type NavigationProp } from '../constants/types';
 import { sortCategoriesWithOthersLast, categoriesOfType, countCategoriesOfType } from '../utils/categoryUtils';
 import { countAtLimit } from '../utils/limits';
-import { runWithErrorAlert } from '../utils/errors';
+import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import GuardModal from '../components/GuardModal';
 
@@ -93,7 +93,7 @@ export default function CategoriesScreen() {
       await categoryRepository.deleteMany([...selectedIds]);
       await refreshCategories();
       await refresh();
-    }, 'Failed to delete categories');
+    }, ERROR_PREFIXES.categoriesDelete);
     exitSelectMode();
   };
 
@@ -120,7 +120,7 @@ export default function CategoriesScreen() {
       await categoryRepository.bulkDeleteWithTargets(items);
       await refreshCategories();
       await refresh();
-    }, 'Failed to delete categories');
+    }, ERROR_PREFIXES.categoriesDelete);
     exitSelectMode();
   };
 
