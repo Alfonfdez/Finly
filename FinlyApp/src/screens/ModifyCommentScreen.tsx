@@ -12,7 +12,7 @@ import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormError from '../components/form/FormError';
 import DeleteButton from '../components/form/DeleteButton';
-import { runWithErrorAlert, showErrorAlert } from '../utils/errors';
+import { ERROR_PREFIXES, runWithErrorAlert, showErrorAlert } from '../utils/errors';
 
 type ModifyCommentRouteProp = RouteProp<RootStackParamList, 'ModifyComment'>;
 
@@ -50,7 +50,7 @@ export default function ModifyCommentScreen() {
     await runWithErrorAlert(async () => {
       await transactionRepository.updateComment(originalComment, trimmed);
       navigation.goBack();
-    }, 'Failed to update comment');
+    }, ERROR_PREFIXES.commentUpdate);
   };
 
   const handleDelete = async () => {
@@ -58,7 +58,7 @@ export default function ModifyCommentScreen() {
     await runWithErrorAlert(async () => {
       await transactionRepository.deleteComment(originalComment);
       navigation.goBack();
-    }, 'Failed to delete comment');
+    }, ERROR_PREFIXES.commentDelete);
   };
 
   return (

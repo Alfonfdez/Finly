@@ -19,3 +19,22 @@ export async function runWithErrorAlert<T>(
     return undefined;
   }
 }
+
+export const ERROR_PREFIXES = {
+  accountCreate: 'Failed to create account',
+  accountUpdate: 'Failed to update account',
+  accountDelete: 'Failed to delete account',
+  accountsDelete: 'Failed to delete accounts',
+  categoryCreate: 'Failed to create category',
+  categoryUpdate: 'Failed to update category',
+  categoryDelete: 'Failed to delete category',
+  categoriesDelete: 'Failed to delete categories',
+  tagCreate: 'Failed to create tag',
+  tagUpdate: 'Failed to update tag',
+  tagDelete: 'Failed to delete tag',
+  tagsDelete: 'Failed to delete tags',
+  commentUpdate: 'Failed to update comment',
+  commentDelete: 'Failed to delete comment',
+  commentsDelete: 'Failed to delete comments',
+  transactionsDelete: 'Failed to delete transactions',
+} as const;

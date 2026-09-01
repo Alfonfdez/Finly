@@ -14,7 +14,7 @@ import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CA
 import { setPendingCategory } from '../utils/pendingCategory';
 import { countCategoriesOfType } from '../utils/categoryUtils';
 import { countAtLimit } from '../utils/limits';
-import { runWithErrorAlert } from '../utils/errors';
+import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import { getIconColorHintText } from '../utils/formHints';
 import { CATEGORY_ICONS } from '../components/IconGrid';
 import IconColorSection from '../components/IconColorSection';
@@ -86,7 +86,7 @@ export default function CreateCategoryScreen() {
       setPendingCategory(created.id, type);
       navigation.goBack();
       deferredRefreshCategories();
-    }, 'Failed to create category');
+    }, ERROR_PREFIXES.categoryCreate);
   };
 
   return (

@@ -13,7 +13,7 @@ import { type NavigationProp, USER_ID } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
 import { getIconColorHintText } from '../utils/formHints';
 import { parseAmountValue } from '../utils/amountInput';
-import { runWithErrorAlert } from '../utils/errors';
+import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import AccountForm from '../components/AccountForm';
 
 export default function CreateAccountScreen() {
@@ -70,7 +70,7 @@ export default function CreateAccountScreen() {
       });
       navigation.goBack();
       deferredRefreshAccounts();
-    }, 'Failed to create account');
+    }, ERROR_PREFIXES.accountCreate);
   };
 
   return (

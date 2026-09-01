@@ -13,7 +13,7 @@ import { useApp } from '../context/AppContext';
 import { t, getDisplayAccountName, getDisplayAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
 import { sanitizeDefaultAccounts } from '../database/configDefaults';
-import { runWithErrorAlert, showErrorAlert } from '../utils/errors';
+import { ERROR_PREFIXES, runWithErrorAlert, showErrorAlert } from '../utils/errors';
 import { isTotalAccount } from '../database/helpers';
 import type { Account } from '../database/types';
 import { formatCurrency, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
@@ -125,7 +125,7 @@ export default function AccountsScreen() {
       setTotal(newTotal);
       await refreshAccounts();
       refresh();
-    }, 'Failed to delete accounts');
+    }, ERROR_PREFIXES.accountsDelete);
   }, [selectedIds, config, accounts, exitSelectMode, loadData, refreshAccounts, refresh, updateConfig, setDeleteModalVisible]);
 
   const renderItem = useCallback(({ item }: { item: AccountWithBalance }) => {

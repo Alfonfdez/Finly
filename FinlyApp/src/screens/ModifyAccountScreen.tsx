@@ -20,7 +20,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import EmptyState from '../components/EmptyState';
 import AccountForm from '../components/AccountForm';
 import { getNameHintText } from '../utils/formHints';
-import { runWithErrorAlert } from '../utils/errors';
+import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import { parseAmountValue } from '../utils/amountInput';
 
 type ModifyAccountRouteProp = RouteProp<RootStackParamList, 'ModifyAccount'>;
@@ -107,7 +107,7 @@ export default function ModifyAccountScreen() {
       await accountRepository.update(accountId, updateData);
       navigation.goBack();
       deferredRefreshAccounts();
-    }, 'Failed to update account');
+    }, ERROR_PREFIXES.accountUpdate);
   };
 
   const handleDeleteConfirm = async () => {
@@ -122,7 +122,7 @@ export default function ModifyAccountScreen() {
 
       navigation.goBack();
       deferredRefreshAccounts();
-    }, 'Failed to delete account');
+    }, ERROR_PREFIXES.accountDelete);
   };
 
   if (!account) {

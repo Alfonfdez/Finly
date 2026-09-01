@@ -14,7 +14,7 @@ import { countAtLimit } from '../utils/limits';
 import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormError from '../components/form/FormError';
-import { runWithErrorAlert } from '../utils/errors';
+import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 
 export default function CreateTagScreen() {
   const { activeColors: c } = useConfig();
@@ -41,7 +41,7 @@ export default function CreateTagScreen() {
       await tagRepository.create({ user_id: USER_ID, name: trimmed });
       navigation.goBack();
       deferredRefreshTags();
-    }, 'Failed to create tag');
+    }, ERROR_PREFIXES.tagCreate);
   };
 
   const isEmpty = !name.trim();

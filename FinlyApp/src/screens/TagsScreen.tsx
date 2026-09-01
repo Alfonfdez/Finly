@@ -14,6 +14,7 @@ import { type Tag } from '../database/types';
 import { type NavigationProp, MAX_TAGS } from '../constants/types';
 import { countAtLimit } from '../utils/limits';
 import { useBulkDelete } from '../hooks/useBulkDelete';
+import { ERROR_PREFIXES } from '../utils/errors';
 import Fab from '../components/Fab';
 import ListItemRow from '../components/ListItemRow';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
@@ -53,7 +54,7 @@ export default function TagsScreen() {
     exitSelectMode,
     deleteFn: (ids) => tagRepository.deleteMany(ids),
     afterDelete: refreshTags,
-    errorPrefix: 'Failed to delete tags',
+    errorPrefix: ERROR_PREFIXES.tagsDelete,
   });
 
   const renderItem = useCallback(({ item }: { item: Tag }) => {
