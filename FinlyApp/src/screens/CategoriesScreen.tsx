@@ -9,7 +9,7 @@ import { useSearchFilter } from '../hooks/useSearchFilter';
 import { useApp } from '../context/AppContext';
 import { t, getDisplayCategoryName } from '../i18n';
 import { categoryRepository, transactionRepository } from '../database';
-import TabBar from '../components/TabBar';
+import TabBar, { typeTabs } from '../components/TabBar';
 import CategoryGrid from '../components/CategoryGrid';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
@@ -128,10 +128,7 @@ export default function CategoriesScreen() {
     <ScreenShell>
       <View style={styles.content}>
         <TabBar
-          tabs={[
-            { key: TRANSACTION_TYPES.expense, label: labels.tab_expenses },
-            { key: TRANSACTION_TYPES.income, label: labels.tab_income },
-          ]}
+          tabs={typeTabs(labels)}
           active={activeType}
           onChange={(type) => {
             setActiveType(type);
