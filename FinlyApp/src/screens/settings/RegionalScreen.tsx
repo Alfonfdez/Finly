@@ -12,6 +12,7 @@ import { DECIMAL_SEPARATORS, FIRST_DAYS, type FirstDay } from '../../constants/t
 import type { Option } from '../../components/SelectorInline';
 import SettingsSelectRow from '../../components/settings/SettingsSelectRow';
 import SettingsPickerRow from '../../components/settings/SettingsPickerRow';
+import SettingsSection from '../../components/settings/SettingsSection';
 import { settingsStyles } from '../../components/settings/settingsStyles';
 
 function SenyeraIcon({ size = 16 }: { size?: number }) {
@@ -170,38 +171,41 @@ export default function RegionalScreen() {
 
   return (
     <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
-      <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_language}</Text>
-      <SettingsPickerRow
-        label={labels.settings_language}
-        options={LANGUAGE_OPTIONS}
-        selected={config.language}
-        onSelect={(v) => updateConfig({ language: v })}
-        title={labels.settings_language}
-      />
+      <SettingsSection title={labels.settings_language} card={false}>
+        <SettingsPickerRow
+          label={labels.settings_language}
+          options={LANGUAGE_OPTIONS}
+          selected={config.language}
+          onSelect={(v) => updateConfig({ language: v })}
+          title={labels.settings_language}
+        />
+      </SettingsSection>
 
-      <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_money}</Text>
-      <SettingsPickerRow
-        label={labels.settings_currency}
-        options={CURRENCIES}
-        selected={config.currency}
-        onSelect={(v) => updateConfig({ currency: v })}
-        title={labels.settings_currency}
-        searchable
-      />
-      <SettingsSelectRow
-        label={labels.settings_decimal_sep}
-        options={SEPARATORS}
-        selected={config.decimalSeparator}
-        onSelect={(v) => updateConfig({ decimalSeparator: v })}
-      />
+      <SettingsSection title={labels.settings_money} card={false}>
+        <SettingsPickerRow
+          label={labels.settings_currency}
+          options={CURRENCIES}
+          selected={config.currency}
+          onSelect={(v) => updateConfig({ currency: v })}
+          title={labels.settings_currency}
+          searchable
+        />
+        <SettingsSelectRow
+          label={labels.settings_decimal_sep}
+          options={SEPARATORS}
+          selected={config.decimalSeparator}
+          onSelect={(v) => updateConfig({ decimalSeparator: v })}
+        />
+      </SettingsSection>
 
-      <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_calendar}</Text>
-      <SettingsSelectRow
-        label={labels.settings_first_day}
-        options={FIRST_DAY_OPTIONS}
-        selected={String(config.firstDayOfWeek)}
-        onSelect={(v) => updateConfig({ firstDayOfWeek: Number(v) as FirstDay })}
-      />
+      <SettingsSection title={labels.settings_calendar} card={false}>
+        <SettingsSelectRow
+          label={labels.settings_first_day}
+          options={FIRST_DAY_OPTIONS}
+          selected={String(config.firstDayOfWeek)}
+          onSelect={(v) => updateConfig({ firstDayOfWeek: Number(v) as FirstDay })}
+        />
+      </SettingsSection>
     </ScrollView>
   );
 }

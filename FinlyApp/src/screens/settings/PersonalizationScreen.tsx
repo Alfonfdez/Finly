@@ -12,6 +12,7 @@ import CheckboxRow from '../../components/settings/CheckboxRow';
 import ToggleRow from '../../components/settings/ToggleRow';
 import SettingsSelectRow from '../../components/settings/SettingsSelectRow';
 import SettingsPickerRow from '../../components/settings/SettingsPickerRow';
+import SettingsSection from '../../components/settings/SettingsSection';
 import { settingsStyles } from '../../components/settings/settingsStyles';
 import { PERIODS, type Period } from '../../constants/types';
 
@@ -64,56 +65,59 @@ export default function PersonalizationScreen() {
 
   return (
     <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
-      <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_home_screen}</Text>
-      <SettingsPickerRow
-        label={labels.settings_default_account}
-        options={homeAccounts}
-        selected={homeSelected}
-        onSelect={(v) => updateConfig({ homeDefaultAccountId: v === HOME_TOTAL_OPTION ? null : Number(v) })}
-        title={labels.settings_default_account}
-      />
-      <SettingsSelectRow
-        label={labels.settings_default_period}
-        options={PERIOD_OPTIONS}
-        selected={config.homeDefaultPeriod}
-        onSelect={(v) => updateConfig({ homeDefaultPeriod: v as Config['homeDefaultPeriod'] })}
-      />
+      <SettingsSection title={labels.settings_home_screen} card={false}>
+        <SettingsPickerRow
+          label={labels.settings_default_account}
+          options={homeAccounts}
+          selected={homeSelected}
+          onSelect={(v) => updateConfig({ homeDefaultAccountId: v === HOME_TOTAL_OPTION ? null : Number(v) })}
+          title={labels.settings_default_account}
+        />
+        <SettingsSelectRow
+          label={labels.settings_default_period}
+          options={PERIOD_OPTIONS}
+          selected={config.homeDefaultPeriod}
+          onSelect={(v) => updateConfig({ homeDefaultPeriod: v as Config['homeDefaultPeriod'] })}
+        />
+      </SettingsSection>
 
-      <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_add_transaction}</Text>
-      <SettingsPickerRow
-        label={labels.settings_default_account}
-        options={addAccounts}
-        selected={addSelected}
-        onSelect={(v) => updateConfig({ addDefaultAccountId: v === CONFIG_NULL_SENTINEL ? null : Number(v) })}
-        title={labels.settings_default_account}
-      />
-      <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
-        <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_optional_fields}</Text>
-        <CheckboxRow
-          checked={config.addShowLabels}
-          onToggle={() => updateConfig({ addShowLabels: !config.addShowLabels })}
-          label={labels.settings_labels}
+      <SettingsSection title={labels.settings_add_transaction} card={false}>
+        <SettingsPickerRow
+          label={labels.settings_default_account}
+          options={addAccounts}
+          selected={addSelected}
+          onSelect={(v) => updateConfig({ addDefaultAccountId: v === CONFIG_NULL_SENTINEL ? null : Number(v) })}
+          title={labels.settings_default_account}
         />
-        <CheckboxRow
-          checked={config.addShowComments}
-          onToggle={() => updateConfig({ addShowComments: !config.addShowComments })}
-          label={labels.settings_comments}
-        />
-        <CheckboxRow
-          checked={config.addShowPhoto}
-          onToggle={() => updateConfig({ addShowPhoto: !config.addShowPhoto })}
-          label={labels.settings_photo}
-        />
-      </View>
+        <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
+          <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_optional_fields}</Text>
+          <CheckboxRow
+            checked={config.addShowLabels}
+            onToggle={() => updateConfig({ addShowLabels: !config.addShowLabels })}
+            label={labels.settings_labels}
+          />
+          <CheckboxRow
+            checked={config.addShowComments}
+            onToggle={() => updateConfig({ addShowComments: !config.addShowComments })}
+            label={labels.settings_comments}
+          />
+          <CheckboxRow
+            checked={config.addShowPhoto}
+            onToggle={() => updateConfig({ addShowPhoto: !config.addShowPhoto })}
+            label={labels.settings_photo}
+          />
+        </View>
+      </SettingsSection>
 
-      <Text style={[settingsStyles.section, { color: c.textSecondary, fontSize: fs(12) }]}>{labels.settings_privacy}</Text>
-      <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
-        <ToggleRow
-          checked={config.hideBalances}
-          onToggle={() => updateConfig({ hideBalances: !config.hideBalances })}
-          label={labels.settings_hide_balances}
-        />
-      </View>
+      <SettingsSection title={labels.settings_privacy} card={false}>
+        <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
+          <ToggleRow
+            checked={config.hideBalances}
+            onToggle={() => updateConfig({ hideBalances: !config.hideBalances })}
+            label={labels.settings_hide_balances}
+          />
+        </View>
+      </SettingsSection>
     </ScrollView>
   );
 }
