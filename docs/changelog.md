@@ -2796,3 +2796,9 @@
 - These are log-only strings (never surfaced to the user), so they deliberately do NOT use the i18n system. Values are typed via `as const`; strict TS now fails on any typo at a call site.
 - Explicitly out of scope: the inline `console.error('Failed to ...:', error)` strings in contexts, DataScreen, photo utils/cleanup and database layer (Scope B), which follow a different pattern; and the i18n user-facing messages that share similar wording.
 - No runtime behavior change. test:all green (typecheck + lint + 293 tests, 35 files).
+
+[2026-09-01] Refactor | Tabs - extract shared typeTabs helper
+- Added a `typeTabs` factory (plus its `TypeTab` type) to src/components/TabBar.tsx that returns the expense/income tab array from the i18n labels, removing the 4 duplicated inline arrays across the codebase.
+- Migrated all TabBar consumers: TransactionForm (inline useMemo -> `typeTabs(labels)`, dropping its now-unused TRANSACTION_TYPES import), CategoriesScreen, HomeScreen, and AllTransactionsScreen (which now builds `[{ key: TYPE_FILTERS.all, ... }, ...typeTabs(labels)]`).
+- Accessibility improvement: the factory sets a11y labels (a11y_show_expenses / a11y_show_income) on every tab. Home already supplied them; AllTransactions, Categories and TransactionForm previously rendered their tabs without an accessibilityLabel, so they now expose the same labeled buttons.
+- Homed in TabBar.tsx rather than constants/types.ts to avoid an i18n <-> constants import cycle. No runtime/visual change; verified in the browser at 375px across all 4 screens (Home, Add Transaction, Categories, All Transactions): tabs render and switch with 0 console errors. test:all green (typecheck + lint + 293 tests, 35 files).

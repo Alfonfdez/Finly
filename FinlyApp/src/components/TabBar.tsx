@@ -1,6 +1,25 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { TRANSACTION_TYPES, type TransactionType } from '../constants/types';
+
+export interface TypeTab {
+  key: TransactionType;
+  label: string;
+  accessibilityLabel: string;
+}
+
+export function typeTabs(labels: {
+  tab_expenses: string;
+  tab_income: string;
+  a11y_show_expenses: string;
+  a11y_show_income: string;
+}): TypeTab[] {
+  return [
+    { key: TRANSACTION_TYPES.expense, label: labels.tab_expenses, accessibilityLabel: labels.a11y_show_expenses },
+    { key: TRANSACTION_TYPES.income, label: labels.tab_income, accessibilityLabel: labels.a11y_show_income },
+  ];
+}
 
 interface Tab<T extends string> {
   key: T;

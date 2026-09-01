@@ -24,7 +24,7 @@ import AccountTrigger from '../components/AccountTrigger';
 import SortToggle from '../components/SortToggle';
 import TagFilterBar from '../components/TagFilterBar';
 import { TransactionRow, TransactionDateHeader } from '../components/TransactionGroup';
-import TabBar from '../components/TabBar';
+import TabBar, { typeTabs } from '../components/TabBar';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import Fab from '../components/Fab';
 import CategoryFilterModal from '../components/CategoryFilterModal';
@@ -163,8 +163,7 @@ export default function AllTransactionsScreen() {
       <TabBar
         tabs={[
           { key: TYPE_FILTERS.all, label: labels.tab_all },
-          { key: TRANSACTION_TYPES.expense, label: labels.tab_expenses },
-          { key: TRANSACTION_TYPES.income, label: labels.tab_income },
+          ...typeTabs(labels),
         ]}
         active={typeTab}
         onChange={setTypeTab}

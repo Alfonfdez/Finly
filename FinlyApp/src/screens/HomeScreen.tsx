@@ -11,7 +11,7 @@ import { t } from '../i18n';
 import { transactionRepository as transactionRepo } from '../database';
 import { UNTAGGED_ID, isTotalAccount } from '../database/helpers';
 import AccountModal from '../components/AccountModal';
-import TabBar from '../components/TabBar';
+import TabBar, { typeTabs } from '../components/TabBar';
 import PeriodTabs from '../components/PeriodTabs';
 import CalendarPicker from '../components/CalendarPicker';
 import DonutChart from '../components/DonutChart';
@@ -142,10 +142,7 @@ export default function HomeScreen() {
       />
 
         <TabBar
-          tabs={[
-            { key: TRANSACTION_TYPES.expense, label: labels.tab_expenses, accessibilityLabel: labels.a11y_show_expenses },
-            { key: TRANSACTION_TYPES.income, label: labels.tab_income, accessibilityLabel: labels.a11y_show_income },
-          ]}
+          tabs={typeTabs(labels)}
           active={activeType}
           onChange={changeType}
         />

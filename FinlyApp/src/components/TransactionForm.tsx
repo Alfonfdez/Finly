@@ -7,7 +7,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useTransactionForm, type TransactionDraft } from '../hooks/useTransactionForm';
 import { t, getDisplayAccountName } from '../i18n';
-import TabBar from './TabBar';
+import TabBar, { typeTabs } from './TabBar';
 import AmountInput from './AmountInput';
 import AccountModal from './AccountModal';
 import CategoryGrid from './CategoryGrid';
@@ -17,7 +17,7 @@ import CommentInput from './CommentInput';
 import PhotoSection from './PhotoSection';
 import CalendarModal from './CalendarModal';
 import CalculatorModal from './CalculatorModal';
-import { TRANSACTION_TYPES, type TransactionType, type RootStackParamList } from '../constants/types';
+import { type TransactionType, type RootStackParamList } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
 import { showErrorAlert } from '../utils/errors';
@@ -70,10 +70,7 @@ export default function TransactionForm(props: TransactionFormProps) {
     return () => { if (scrollTimer.current != null) clearTimeout(scrollTimer.current); };
   }, []);
 
-  const tabs = useMemo(() => [
-    { key: TRANSACTION_TYPES.expense, label: labels.tab_expenses },
-    { key: TRANSACTION_TYPES.income, label: labels.tab_income },
-  ], [labels.tab_expenses, labels.tab_income]);
+  const tabs = useMemo(() => typeTabs(labels), [labels]);
 
   const handleAccountClose = useCallback(() => setModalAccountVisible(false), [setModalAccountVisible]);
   const handleCalendarClose = useCallback(() => setModalCalendarVisible(false), [setModalCalendarVisible]);
