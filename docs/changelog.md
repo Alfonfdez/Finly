@@ -2802,3 +2802,23 @@
 - Migrated all TabBar consumers: TransactionForm (inline useMemo -> `typeTabs(labels)`, dropping its now-unused TRANSACTION_TYPES import), CategoriesScreen, HomeScreen, and AllTransactionsScreen (which now builds `[{ key: TYPE_FILTERS.all, ... }, ...typeTabs(labels)]`).
 - Accessibility improvement: the factory sets a11y labels (a11y_show_expenses / a11y_show_income) on every tab. Home already supplied them; AllTransactions, Categories and TransactionForm previously rendered their tabs without an accessibilityLabel, so they now expose the same labeled buttons.
 - Homed in TabBar.tsx rather than constants/types.ts to avoid an i18n <-> constants import cycle. No runtime/visual change; verified in the browser at 375px across all 4 screens (Home, Add Transaction, Categories, All Transactions): tabs render and switch with 0 console errors. test:all green (typecheck + lint + 293 tests, 35 files).
+
+[2026-09-01] Test | Hooks - cover useBulkDelete and useSelectAndSearch
+- Added the first hook unit tests under the new tests/hooks/ directory (auto-discovered by vitest include glob), using @testing-library/react-native v14 renderHook/act (async API).
+- tests/hooks/useBulkDelete.test.tsx (6 tests): delete modal starts hidden; open/close; confirmBulkDelete calls deleteFn with the exact selected ids then exitSelectMode + afterDelete and closes the modal; when deleteFn rejects, exitSelectMode/afterDelete are NOT invoked (runWithErrorAlert swallows); afterDelete optional; confirm routed through runWithErrorAlert (module-mocked) with the error prefix.
+- tests/hooks/useSelectAndSearch.test.tsx (8 tests): default state + hasItems passthrough; toggleItem add/remove; multiple independent ids; toggling select mode on preserves the existing selection; turning select mode off clears the selection; exitSelectMode clears selection and leaves select mode; toggleSearch/closeSearch manage searchActive and reset searchText.
+- No prod code changed. test:all green (typecheck + lint + 307 tests across 37 files).
+
+[2026-09-01] Test | Hooks - cover useNameDuplicateCheck
+- Added tests/hooks/useNameDuplicateCheck.test.tsx (9 tests) using vi.useFakeTimers + advanceTimersByTimeAsync to drive the 300ms debounce in useDebouncedCallback.
+- Covers: initial clean state; handleNameChange sets the local value + enters checking and clears prior error; non-duplicate resolves to no error; duplicate resolves to the duplicateErrorKey; resolves the default English name first and checks it; rejection is treated as no-duplicate (clears error); clearNameError; excludeId is forwarded to existsByName; blank input settles without a check.
+- No prod code changed. test:all green.
+
+[2026-09-01] Test | Hooks - cover useTransactionFilters filtering
+- Added tests/hooks/useTransactionFilters.test.tsx (15 tests) mocking src/database so the tag-link effect resolves via a controllable getTagsByTransactionIds stub.
+- Covers the core filter/sort pipeline: default selected account (first non-total) and isTotal; selecting an activeAccount incl. total; selectAccount + modal open/close; account filter vs all-accounts; type filter (expense/income/all); category filter; period range; tag filter incl. UNTAGGED_ID; search with category context; date desc default sort; handleToggleSort field + direction toggle; handleClearTagFilter; section grouping by date.
+- No prod code changed. test:all green.
+
+[2026-09-01] Test | Tabs - cover the typeTabs factory
+- Added tests/component/typeTabs.test.ts (3 tests) asserting typeTabs returns exactly two tabs (expense then income), maps labels + accessibility labels from a translations object, and that runtime keys stay 'expense'/'income'.
+- Guards the shared TabBar helper shipped earlier. No prod code changed. test:all green (typecheck + lint + 334 tests across 40 files).
