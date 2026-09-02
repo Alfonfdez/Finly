@@ -51,7 +51,7 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
   }, [selecting, tempStart, allTime, onTempRangeChange]);
 
   const rangeText = allTime
-    ? labels.cal_all
+    ? `${labels.cal_all} (${labels.cal_from} ${MIN_DATE.getDate()} ${shortMonths[MIN_DATE.getMonth()]} ${labels.cal_to} ${today.getDate()} ${shortMonths[today.getMonth()]} ${today.getFullYear()})`
     : selecting === PICKING_PHASE.end && tempStart.getTime() === tempEnd.getTime()
       ? `${labels.cal_from} ${tempStart.getDate()} ${shortMonths[tempStart.getMonth()]} — ${labels.cal_period_to_hint}`
       : `${labels.cal_from} ${tempStart.getDate()} ${shortMonths[tempStart.getMonth()]} ${labels.cal_to} ${tempEnd.getDate()} ${shortMonths[tempEnd.getMonth()]} ${tempEnd.getFullYear()}`;

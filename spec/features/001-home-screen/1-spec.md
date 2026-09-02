@@ -25,6 +25,9 @@ A main screen in the app that displays the current Account, the Total (income/ex
    - Month: month picker.
    - Year: year picker.
    - Period: date range picker.
+     - The period range text above the picker shows the concrete range being set, e.g. `from 1 Jan to 2 Sep 2026`.
+     - An "All" checkbox selects the whole current year so far — from January 1 of the current year (`MIN_DATE`) to today.
+     - When "All" is checked, the range text explains the resolved period explicitly, e.g. `All (from 1 Jan to 2 Sep 2026)`, instead of showing only the word "All".
 
 6. Donut chart (SVG) showing expenses/income for the selected period, broken down by categories with their color. Tapping the chart toggles it to a horizontal bar chart. The total is centered inside the donut hole: the text is constrained to the hole's inner diameter and its font size auto-shrinks (`fitFontSize`) so the full formatted amount always stays inside the hole.
 
@@ -53,6 +56,7 @@ Cloud sync, authentication, offline usage (AsyncStorage is already local).
 [x] The 5 period tabs are displayed correctly.
 [x] When selecting a period, a date can be chosen with the native picker.
 [x] The date picker does not allow selecting future dates.
+[x] The Period picker's "All" checkbox explains its resolved range (e.g. `All (from 1 Jan to 2 Sep 2026)`).
 [x] The donut chart is displayed correctly with period data.
 [x] The total in the center of the donut stays fully visible inside the hole even for large amounts (font auto-shrinks to fit).
 [x] Tapping the donut chart shows the bar chart, and vice versa.

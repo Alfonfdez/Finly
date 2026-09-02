@@ -21,6 +21,8 @@ b) Bottom section:
     - Month: month picker.
     - Year: year picker.
     - Period: date range picker.
+      - "All" checkbox = whole current year so far (Jan 1 of current year to today).
+      - When "All" is checked, the range text explains the resolved period, e.g. `All (from 1 Jan to 2 Sep 2026)` (localized).
 
 c) Chart section:
   - Donut chart (SVG) with expenses/income by category.
