@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { View, Text, SectionList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ScreenShell from '../components/ScreenShell';
@@ -6,10 +6,9 @@ import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
-import { useBulkDelete } from '../hooks/useBulkDelete';
 import { useFocusLoad } from '../hooks/useFocusLoad';
-import { useTransactionFilters } from '../hooks/useTransactionFilters';
+import { useSelectableScreen } from '../hooks/useSelectableScreen';
+import { useTransactionListScreen } from '../hooks/useTransactionListScreen';
 import { usePeriodNavigation } from '../hooks/usePeriodNavigation';
 import { TRANSACTION_TYPES, TYPE_FILTERS, type NavigationProp, type TransactionTypeFilter } from '../constants/types';
 import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
@@ -17,7 +16,7 @@ import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatSignedCurrency, resolvePeriodRange } from '../utils/formatters';
 import { netTransactionTotal } from '../utils/calculator';
-import { showErrorAlert, ERROR_PREFIXES } from '../utils/errors';
+import { showErrorAlert } from '../utils/errors';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { t } from '../i18n';
 import AccountModal from '../components/AccountModal';
@@ -73,42 +72,46 @@ export default function AllTransactionsScreen() {
     selectMode, selectedIds,
     toggleItem, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
-  } = useSelectAndSearch({ hasItems: true });
+  } = useSelectableScreen({
+    navigation,
+    hasItems: allTransactions.length > 0,
+    showHeader: allTransactions.length > 0,
+    headerRight: () => (
+      <SelectSearchHeader
+        selectMode={selectMode}
+        onToggleSelect={toggleSelectMode}
+        onToggleSearch={toggleSearch}
+      />
+    ),
+  });
 
   const {
     deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
-  } = useBulkDelete({
+    filters,
+    handleTransactionPress,
+    keyExtractor,
+  } = useTransactionListScreen({
+    navigation,
+    selectMode,
+    toggleItem,
     selectedIds,
     exitSelectMode,
-    deleteFn: (ids) => transactionRepository.deleteMany(ids),
-    afterDelete: async () => {
-      const updated = await transactionRepository.list({});
-      setAllTransactions(updated);
-      refresh();
+    searchText,
+    loadTransactions,
+    setTransactions: setAllTransactions,
+    filters: {
+      transactions: allTransactions,
+      accounts,
+      activeAccount,
+      categoriesById,
+      typeTab,
+      selectedCategoryIds,
+      periodDates,
+      onError: () => showErrorAlert(),
     },
-    errorPrefix: ERROR_PREFIXES.transactionsDelete,
+    deleteFn: (ids) => transactionRepository.deleteMany(ids),
+    onAfterDelete: refresh,
   });
-
-  const filters = useTransactionFilters({
-    transactions: allTransactions,
-    accounts,
-    activeAccount,
-    categoriesById,
-    searchTerm: searchText,
-    typeTab,
-    selectedCategoryIds,
-    periodDates,
-    onError: () => showErrorAlert(),
-  });
-
-  const handleTransactionPress = useCallback((id: number) => {
-    if (selectMode) { toggleItem(id); return; }
-    navigation.navigate('TransactionDetails', { transactionId: id });
-  }, [navigation, selectMode, toggleItem]);
-
-  const keyExtractor = useCallback((item: Transaction) => item.id.toString(), []);
-
-  const { handlePeriodChange, handleRangeChange } = usePeriodNavigation(() => setCalendarVisible(true));
 
   const renderSectionHeader = useCallback(({ section }: { section: { date: string } }) => (
     <TransactionDateHeader date={section.date} />
@@ -142,22 +145,7 @@ export default function AllTransactionsScreen() {
     return labels.filter_categories_count(selectedCategoryIds.length);
   }, [selectedCategoryIds, typeTab, categories, labels]);
 
-  const hasSections = filters.sections.length > 0;
-
-  const headerRightRef = useRef<() => ReactNode>(null);
-  headerRightRef.current = hasSections ? () => (
-    <SelectSearchHeader
-      selectMode={selectMode}
-      onToggleSelect={toggleSelectMode}
-      onToggleSearch={toggleSearch}
-    />
-  ) : null;
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => headerRightRef.current?.(),
-    });
-  }, [navigation, selectMode, hasSections, toggleSelectMode, toggleSearch]);
+  const { handlePeriodChange, handleRangeChange } = usePeriodNavigation(() => setCalendarVisible(true));
 
   return (
     <ScreenShell>

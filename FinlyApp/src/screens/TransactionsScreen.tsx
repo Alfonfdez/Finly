@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useMemo, useCallback } from 'react';
 import { View, Text, SectionList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
@@ -7,9 +7,8 @@ import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
-import { useTransactionFilters } from '../hooks/useTransactionFilters';
-import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
-import { useBulkDelete } from '../hooks/useBulkDelete';
+import { useSelectableScreen } from '../hooks/useSelectableScreen';
+import { useTransactionListScreen } from '../hooks/useTransactionListScreen';
 import { PERIODS, type RootStackParamList, type NavigationProp, type IconName } from '../constants/types';
 import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import type { Transaction } from '../database/types';
@@ -17,7 +16,7 @@ import { transactionRepository } from '../database';
 import { formatSignedCurrency, formatDateLong, parseDbDate, getMonthName } from '../utils/formatters';
 import { netTransactionTotal } from '../utils/calculator';
 import { withAlpha } from '../utils/color';
-import { showErrorAlert, ERROR_PREFIXES } from '../utils/errors';
+import { showErrorAlert } from '../utils/errors';
 import { getDisplayCategoryName, t } from '../i18n';
 import AccountModal from '../components/AccountModal';
 import AccountTrigger from '../components/AccountTrigger';
@@ -61,31 +60,59 @@ export default function TransactionsScreen() {
     selectMode, selectedIds,
     toggleItem, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
-  } = useSelectAndSearch<number>({ hasItems: true });
+  } = useSelectableScreen({
+    navigation,
+    hasItems: allTransactions.length > 0,
+    showHeader: allTransactions.length > 0,
+    headerRight: () => (
+      <SelectSearchHeader
+        selectMode={selectMode}
+        onToggleSelect={toggleSelectMode}
+        onToggleSearch={toggleSearch}
+      />
+    ),
+  });
 
   const {
     deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
-  } = useBulkDelete({
+    filters,
+    handleTransactionPress,
+    keyExtractor,
+  } = useTransactionListScreen({
+    navigation,
+    selectMode,
+    toggleItem,
     selectedIds,
     exitSelectMode,
-    deleteFn: (ids) => transactionRepository.deleteMany(ids),
-    afterDelete: async () => {
-      const updated = await loadTransactions();
-      setData(updated);
-      refresh();
+    searchText,
+    loadTransactions,
+    setTransactions: setData,
+    filters: {
+      transactions: allTransactions,
+      accounts,
+      activeAccount,
+      categoriesById,
+      initialTagIds: tagIds ?? [],
+      onError: () => showErrorAlert(),
     },
-    errorPrefix: ERROR_PREFIXES.transactionsDelete,
+    deleteFn: (ids) => transactionRepository.deleteMany(ids),
+    onAfterDelete: refresh,
   });
 
-  const filters = useTransactionFilters({
-    transactions: allTransactions,
-    accounts,
-    activeAccount,
-    categoriesById,
-    searchTerm: searchText,
-    initialTagIds: tagIds ?? [],
-    onError: () => showErrorAlert(),
-  });
+  const renderSectionHeader = useCallback(({ section }: { section: { date: string } }) => (
+    <TransactionDateHeader date={section.date} />
+  ), []);
+
+  const renderItem = useCallback(({ item }: { item: Transaction }) => (
+    <TransactionRow
+      tx={item}
+      category={categoriesById.get(item.category_id)}
+      tags={filters.tagsByTransaction.get(item.id)}
+      onPress={handleTransactionPress}
+      selectMode={selectMode}
+      selected={selectedIds.has(item.id)}
+    />
+  ), [categoriesById, filters.tagsByTransaction, handleTransactionPress, selectMode, selectedIds]);
 
   const category = categories.find(ct => ct.id === categoryId);
 
@@ -115,45 +142,6 @@ export default function TransactionsScreen() {
     }
     return `${typeLabel} · ${formatDateLong(start, lang)}`;
   }, [route.params?.period, startDate, endDate, config.language, labels]);
-
-  const handleTransactionPress = useCallback((id: number) => {
-    if (selectMode) { toggleItem(id); return; }
-    navigation.navigate('TransactionDetails', { transactionId: id });
-  }, [navigation, selectMode, toggleItem]);
-
-  const keyExtractor = useCallback((item: Transaction) => item.id.toString(), []);
-
-  const renderSectionHeader = useCallback(({ section }: { section: { date: string } }) => (
-    <TransactionDateHeader date={section.date} />
-  ), []);
-
-  const renderItem = useCallback(({ item }: { item: Transaction }) => (
-    <TransactionRow
-      tx={item}
-      category={categoriesById.get(item.category_id)}
-      tags={filters.tagsByTransaction.get(item.id)}
-      onPress={handleTransactionPress}
-      selectMode={selectMode}
-      selected={selectedIds.has(item.id)}
-    />
-  ), [categoriesById, filters.tagsByTransaction, handleTransactionPress, selectMode, selectedIds]);
-
-  const hasSections = filters.sections.length > 0;
-
-  const headerRightRef = useRef<() => ReactNode>(null);
-  headerRightRef.current = hasSections ? () => (
-    <SelectSearchHeader
-      selectMode={selectMode}
-      onToggleSelect={toggleSelectMode}
-      onToggleSearch={toggleSearch}
-    />
-  ) : null;
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => headerRightRef.current?.(),
-    });
-  }, [navigation, selectMode, hasSections, toggleSelectMode, toggleSearch]);
 
   return (
     <ScreenShell>

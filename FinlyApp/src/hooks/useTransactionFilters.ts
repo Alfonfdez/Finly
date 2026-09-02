@@ -8,7 +8,7 @@ import { buildTagsByTransactionMap, type TagsByTransaction } from '../utils/tran
 import { matchesTransactionSearch } from '../utils/transactionSearch';
 import { toggleTagInArray } from '../utils/tagFilter';
 
-interface UseTransactionFiltersOptions {
+export interface UseTransactionFiltersOptions {
   transactions: Transaction[];
   accounts: Account[];
   activeAccount: Account | null;
