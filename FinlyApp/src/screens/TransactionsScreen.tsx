@@ -9,6 +9,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
 import { type RootStackParamList, type NavigationProp, type IconName } from '../constants/types';
+import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatSignedCurrency } from '../utils/formatters';
@@ -53,7 +54,7 @@ export default function TransactionsScreen() {
     accounts,
     activeAccount,
     initialTagIds: tagIds ?? [],
-    onError: () => showErrorAlert(labels),
+    onError: () => showErrorAlert(),
   });
 
   const category = categories.find(ct => ct.id === categoryId);
@@ -180,6 +181,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     gap: 8,
   },
-  listContent: { paddingBottom: 80 },
+  listContent: { ...LIST_BOTTOM_FAB_PADDING },
   tagFilter: { marginTop: 12 },
 });

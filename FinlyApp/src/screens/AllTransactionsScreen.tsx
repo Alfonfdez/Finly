@@ -12,6 +12,7 @@ import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
 import { usePeriodNavigation } from '../hooks/usePeriodNavigation';
 import { TRANSACTION_TYPES, TYPE_FILTERS, type NavigationProp, type TransactionTypeFilter } from '../constants/types';
+import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatSignedCurrency, resolvePeriodRange } from '../utils/formatters';
@@ -97,7 +98,7 @@ export default function AllTransactionsScreen() {
     typeTab,
     selectedCategoryIds,
     periodDates,
-    onError: () => showErrorAlert(labels),
+    onError: () => showErrorAlert(),
   });
 
   const handleTransactionPress = useCallback((id: number) => {
@@ -322,7 +323,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     maxWidth: 120,
   },
-  listContent: { paddingBottom: 80 },
+  listContent: { ...LIST_BOTTOM_FAB_PADDING },
   emptyList: { flex: 1 },
   tagFilter: { marginTop: 12 },
 });

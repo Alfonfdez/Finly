@@ -21,6 +21,7 @@ import { withAlpha } from '../utils/color';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { matchesAccountSearch } from '../utils/accountSearch';
 import { type NavigationProp, USER_ID } from '../constants/types';
+import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import EyeToggle from '../components/EyeToggle';
 import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
@@ -296,7 +297,7 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: 16,
-    paddingBottom: 80,
+    ...LIST_BOTTOM_FAB_PADDING,
   },
   emptyList: {
     flex: 1,

@@ -62,7 +62,7 @@ export default function TransactionForm(props: TransactionFormProps) {
     canSubmit, visibleCategories, hasMore, selectedAccount, selectableAccounts, numericAmount,
     inputRef, scrollRef,
     config, tags,
-  } = useTransactionForm({ ...props, onError: props.onError ?? (() => showErrorAlert(labels)) });
+  } = useTransactionForm({ ...props, onError: props.onError ?? (() => showErrorAlert()) });
 
   const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
