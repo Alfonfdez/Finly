@@ -14,6 +14,13 @@
 - Category section below the header:
   - **Row 1:** category icon (with background color) + category name.
   - **Row 2:** formatted category total (`formatCurrency`), green with "+" prefix if positive, red with "-" prefix if negative.
+  - **Row 3:** period indicator line (secondary color), `<period label> · <date/range>`, built from the navigation `period` + `startDate`/`endDate` params so the user always knows which period the list is showing:
+    - **Day:** `Day · September 2, 2026` (via `formatDateLong`).
+    - **Week:** `Week · September 1, 2026 – September 7, 2026` (start–end range).
+    - **Month:** `Month · September 2026` (localized month + year).
+    - **Year:** `Year · 2026`.
+    - **Custom (Period):** `Period · January 1, 2026 – September 2, 2026` (start–end range).
+  - Period labels use the existing multilingual keys (`period_day`/`period_week`/`period_month`/`period_year`/`period_period`); dates are localized per active language via `formatDateLong`/`getMonthName`.
 - Navigation parameters passed: `categoryId` (optional), `type` (expense/income), `period`, `startDate`, `endDate`.
 
 ### 2. Account selector
@@ -145,3 +152,4 @@
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
 - [x] Bulk delete confirms once for the whole batch and permanently deletes the selected transactions (including photos and tag links).
 - [x] The floating "+" button navigates to "Add transaction" and is hidden in selection mode.
+- [x] The category header shows the active period (label + date/range) built from the navigation params, localized per language.

@@ -10,11 +10,11 @@ import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
 import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useBulkDelete } from '../hooks/useBulkDelete';
-import { type RootStackParamList, type NavigationProp, type IconName } from '../constants/types';
+import { PERIODS, type RootStackParamList, type NavigationProp, type IconName } from '../constants/types';
 import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
-import { formatSignedCurrency } from '../utils/formatters';
+import { formatSignedCurrency, formatDateLong, parseDbDate, getMonthName } from '../utils/formatters';
 import { netTransactionTotal } from '../utils/calculator';
 import { withAlpha } from '../utils/color';
 import { showErrorAlert, ERROR_PREFIXES } from '../utils/errors';
@@ -93,6 +93,29 @@ export default function TransactionsScreen() {
     return netTransactionTotal(filters.filtered);
   }, [filters.filtered]);
 
+  const periodLabel = useMemo(() => {
+    const period = route.params?.period ?? PERIODS.day;
+    const lang = config.language;
+    const start = startDate ? parseDbDate(startDate) : null;
+    const end = endDate ? parseDbDate(endDate) : null;
+    if (!start) return null;
+    const typeLabel = period === PERIODS.custom ? labels.period_period : labels[`period_${period}`];
+
+    if (period === PERIODS.year) {
+      return `${typeLabel} · ${start.getFullYear()}`;
+    }
+    if (period === PERIODS.month) {
+      return `${typeLabel} · ${getMonthName(start.getMonth() + 1)} ${start.getFullYear()}`;
+    }
+    if (period === PERIODS.custom && end) {
+      return `${typeLabel} · ${formatDateLong(start, lang)} – ${formatDateLong(end, lang)}`;
+    }
+    if (period === PERIODS.week && end) {
+      return `${typeLabel} · ${formatDateLong(start, lang)} – ${formatDateLong(end, lang)}`;
+    }
+    return `${typeLabel} · ${formatDateLong(start, lang)}`;
+  }, [route.params?.period, startDate, endDate, config.language, labels]);
+
   const handleTransactionPress = useCallback((id: number) => {
     if (selectMode) { toggleItem(id); return; }
     navigation.navigate('TransactionDetails', { transactionId: id });
@@ -147,6 +170,11 @@ export default function TransactionsScreen() {
           <Text style={[styles.categoryTotal, { color: categoryTotal >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
             {formatSignedCurrency(categoryTotal, config.currency, config.decimalSeparator)}
           </Text>
+          {periodLabel ? (
+            <Text style={[styles.categoryPeriod, { color: c.textSecondary, fontSize: fs(13) }]}>
+              {periodLabel}
+            </Text>
+          ) : null}
         </View>
       )}
 
@@ -262,6 +290,7 @@ const styles = StyleSheet.create({
   },
   categoryName: { fontWeight: '600' },
   categoryTotal: { fontWeight: '700' },
+  categoryPeriod: { marginTop: 2, textAlign: 'center' },
   controls: {
     alignItems: 'center',
     paddingHorizontal: 16,
