@@ -12,6 +12,7 @@ import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
 import { type Tag } from '../database/types';
 import { type NavigationProp, MAX_TAGS } from '../constants/types';
+import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import { countAtLimit } from '../utils/limits';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { ERROR_PREFIXES } from '../utils/errors';
@@ -143,7 +144,7 @@ export default function TagsScreen() {
 const styles = StyleSheet.create({
   list: {
     padding: 16,
-    paddingBottom: 80,
+    ...LIST_BOTTOM_FAB_PADDING,
   },
   emptyList: {
     flex: 1,

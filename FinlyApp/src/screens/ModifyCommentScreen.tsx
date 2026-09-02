@@ -32,11 +32,10 @@ export default function ModifyCommentScreen() {
     let active = true;
     transactionRepository.countByDescription(originalComment).then(n => {
       if (active) setCount(n);
-    }).catch(() => showErrorAlert(labels));
+    }).catch(() => showErrorAlert());
     return () => {
       active = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- labels is stable
   }, [originalComment]);
 
   const trimmed = comment.trim();

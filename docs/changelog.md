@@ -2822,3 +2822,9 @@
 [2026-09-01] Test | Tabs - cover the typeTabs factory
 - Added tests/component/typeTabs.test.ts (3 tests) asserting typeTabs returns exactly two tabs (expense then income), maps labels + accessibility labels from a translations object, and that runtime keys stay 'expense'/'income'.
 - Guards the shared TabBar helper shipped earlier. No prod code changed. test:all green (typecheck + lint + 334 tests across 40 files).
+
+[2026-09-02] Refactor | UI - drop redundant showErrorAlert labels and centralize FAB padding
+- Dropped the redundant `labels` argument at the 5 remaining `showErrorAlert(labels)` call sites (AllTransactionsScreen, TransactionsScreen, TransactionForm default onError, ModifyCommentScreen, TransactionDetailsScreen). `showErrorAlert` already falls back to `t()` internally, and every site passed `labels = t()`.
+- Added src/constants/layout.ts exporting `LIST_BOTTOM_FAB_PADDING: ViewStyle = { paddingBottom: 80 }` (single source for the list bottom clearance behind the FAB) and applied it via spread to the 5 list/scroll styles that previously hardcoded `paddingBottom: 80` (AllTransactionsScreen, TransactionsScreen, CategoriesScreen, AccountsScreen, TagsScreen).
+- Removed a now-unused eslint-disable directive in ModifyCommentScreen and an unnecessary `labels` dependency in TransactionDetailsScreen's delete handler (lint side effects of dropping the arg).
+- No behavior change. test:all green (typecheck + lint + 334 tests), browser smoke of the 4 FAB screens at 375px with 0 console errors.

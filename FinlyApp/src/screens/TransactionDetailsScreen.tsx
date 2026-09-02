@@ -94,11 +94,11 @@ export default function TransactionDetailsScreen() {
       deferredRefresh();
     } catch (err) {
       console.error('Failed to delete transaction:', err);
-      showErrorAlert(labels);
+      showErrorAlert();
       setDeleting(false);
       setDeleteModalVisible(false);
     }
-  }, [deleting, parsedPhotos, transactionId, navigation, deferredRefresh, labels]);
+  }, [deleting, parsedPhotos, transactionId, navigation, deferredRefresh]);
 
   if (!transaction) {
     return (

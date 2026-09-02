@@ -18,6 +18,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import BulkCategoryTransferModal, { type BulkCategoryItem } from '../components/BulkCategoryTransferModal';
 import type { TransferTargetId } from '../components/CategoryTransferModal';
 import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, type TransactionType, type NavigationProp } from '../constants/types';
+import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import { sortCategoriesWithOthersLast, categoriesOfType, countCategoriesOfType } from '../utils/categoryUtils';
 import { countAtLimit } from '../utils/limits';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
@@ -234,7 +235,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 80,
+    ...LIST_BOTTOM_FAB_PADDING,
   },
   counter: {
     fontWeight: '500',
