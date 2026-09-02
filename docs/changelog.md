@@ -2859,3 +2859,8 @@
 - Exported `UseTransactionFiltersOptions` from `useTransactionFilters.ts` so the new hook can type its `filters` input.
 - Behavior is unchanged; no spec criteria changed. Added `tests/hooks/useTransactionListScreen.test.tsx` (6 cases: filters/bulk-delete modal state, modal open/close, confirmBulkDelete → deleteFn/reload/setTransactions/onAfterDelete, navigation vs selection in handleTransactionPress, keyExtractor).
 - test:all green (typecheck + lint + 340 tests, 41 files). Browser-verified (Playwright, 375px): AllTransactionsTabBar/selection-mode checkbox/bulk-delete ConfirmationModal/search toggle/empty state/restore, and Transactions category banner + period indicator + selection-mode all render correctly after the refactor; 0 console errors.
+
+[2026-09-02] Style | Center the category grids in the "Select categories" filter modal
+- The `CategoryFilterModal` (opened from All Transactions → "All categories") rendered its category grids left-aligned, unlike the already-centered grids used in the category-picking screens (`CategoryGrid` has `justifyContent: 'center'`).
+- Added `justifyContent: 'center'` to the `grid` style in `CategoryFilterModal.tsx` so the Expenses and Income grids in the "Select categories" modal are centered, matching the previous grid-centering work.
+- Browser-verified (Playwright, 375px): both the Expenses (21 items) and Income (10 items) grids in the modal report `justify-content: center`. test:all green (typecheck + lint + 340 tests, 41 files). 0 console errors.
