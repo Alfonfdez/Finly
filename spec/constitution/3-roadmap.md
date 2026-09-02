@@ -479,6 +479,16 @@ Multi-select bulk delete on the AllTransactions screen:
 - i18n keys `transactions_select*`/`transactions_bulk_delete*` (en/es/ca).
 - Browser-verified (Playwright, 375px): Select mode → checkboxes on 2 transactions → "Delete (2)" → confirmation "Delete 2 transactions?" → Confirm → both deleted, "No transactions" empty state, header hides Select/Search, balance 0,00 €; 0 console errors. 015 criteria flipped [x].
 
+## 2.1 transactions screen search and select
+Status: completed.
+
+Header search + multi-select bulk delete on the TransactionsScreen (014), matching the AllTransactions implementation:
+- Top-right `SelectSearchHeader` (selection toggle + search icon) registered via `navigation.setOptions` in a `useLayoutEffect`; both buttons hidden when the screen has 0 transactions.
+- Search: `ScreenSearchBar` toggle below the category section; client-side case-insensitive multi-term (AND) over comment/description, category display name, tag names and account name via `useTransactionFilters({ searchTerm, categoriesById })`; composes with the account selector + tag filter (route category/period already applied at load); "No results found" empty state.
+- Select: `useSelectAndSearch` + `useBulkDelete`; row checkboxes toggle selection instead of navigating; `SelectionActionBar` (Cancel / `Delete (N)`) swaps the FAB; single `ConfirmationModal`; `transactionRepository.deleteMany` cleans photos + junction rows, list reloads via `setData` and AppContext `refresh`.
+- FAB restored on this screen (spec §5) and navigates to AddTransaction with the route `type`.
+- Browser-verified (Playwright, 375px): created 3 transactions (Groceries x2, Transport x1) → Home category tap → Transactions; search "Groceries" narrowed list to 2 and category total updated; Select mode showed checkboxes; selected 2 → Delete (2) → confirmed → rows removed and category total refreshed; header Select/Search hidden at 0 rows; 0 console errors. 014 criteria flipped [x].
+
 ## 2.0 navigation jank fix
 Status: completed.
 

@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { View, Text, SectionList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
@@ -8,6 +8,8 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useTransactionFilters } from '../hooks/useTransactionFilters';
+import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
+import { useBulkDelete } from '../hooks/useBulkDelete';
 import { type RootStackParamList, type NavigationProp, type IconName } from '../constants/types';
 import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import type { Transaction } from '../database/types';
@@ -15,7 +17,7 @@ import { transactionRepository } from '../database';
 import { formatSignedCurrency } from '../utils/formatters';
 import { netTransactionTotal } from '../utils/calculator';
 import { withAlpha } from '../utils/color';
-import { showErrorAlert } from '../utils/errors';
+import { showErrorAlert, ERROR_PREFIXES } from '../utils/errors';
 import { getDisplayCategoryName, t } from '../i18n';
 import AccountModal from '../components/AccountModal';
 import AccountTrigger from '../components/AccountTrigger';
@@ -23,13 +25,18 @@ import SortToggle from '../components/SortToggle';
 import TagFilterBar from '../components/TagFilterBar';
 import { TransactionRow, TransactionDateHeader } from '../components/TransactionGroup';
 import EmptyState from '../components/EmptyState';
+import Fab from '../components/Fab';
+import SelectionActionBar from '../components/SelectionActionBar';
+import ConfirmationModal from '../components/ConfirmationModal';
+import SelectSearchHeader from '../components/SelectSearchHeader';
+import ScreenSearchBar from '../components/ScreenSearchBar';
 
 type TransactionsRouteProp = RouteProp<RootStackParamList, 'Transactions'>;
 
 export default function TransactionsScreen() {
   const navigation = useNavigation<NavigationProp<'Transactions'>>();
   const route = useRoute<TransactionsRouteProp>();
-  const { categories, categoriesById, accounts, activeAccount, accountsWithBalance, tags } = useApp();
+  const { categories, categoriesById, accounts, activeAccount, accountsWithBalance, tags, refresh } = useApp();
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -47,12 +54,35 @@ export default function TransactionsScreen() {
     return await transactionRepository.list(query);
   }, [categoryId, startDate, endDate]);
 
-  const { data: allTransactions, loading } = useFocusLoad(loadTransactions, [] as Transaction[]);
+  const { data: allTransactions, setData, loading } = useFocusLoad(loadTransactions, [] as Transaction[]);
+
+  const {
+    searchActive, searchText, setSearchText,
+    selectMode, selectedIds,
+    toggleItem, exitSelectMode,
+    toggleSelectMode, toggleSearch, closeSearch,
+  } = useSelectAndSearch<number>({ hasItems: true });
+
+  const {
+    deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
+  } = useBulkDelete({
+    selectedIds,
+    exitSelectMode,
+    deleteFn: (ids) => transactionRepository.deleteMany(ids),
+    afterDelete: async () => {
+      const updated = await loadTransactions();
+      setData(updated);
+      refresh();
+    },
+    errorPrefix: ERROR_PREFIXES.transactionsDelete,
+  });
 
   const filters = useTransactionFilters({
     transactions: allTransactions,
     accounts,
     activeAccount,
+    categoriesById,
+    searchTerm: searchText,
     initialTagIds: tagIds ?? [],
     onError: () => showErrorAlert(),
   });
@@ -64,8 +94,9 @@ export default function TransactionsScreen() {
   }, [filters.filtered]);
 
   const handleTransactionPress = useCallback((id: number) => {
+    if (selectMode) { toggleItem(id); return; }
     navigation.navigate('TransactionDetails', { transactionId: id });
-  }, [navigation]);
+  }, [navigation, selectMode, toggleItem]);
 
   const keyExtractor = useCallback((item: Transaction) => item.id.toString(), []);
 
@@ -79,8 +110,27 @@ export default function TransactionsScreen() {
       category={categoriesById.get(item.category_id)}
       tags={filters.tagsByTransaction.get(item.id)}
       onPress={handleTransactionPress}
+      selectMode={selectMode}
+      selected={selectedIds.has(item.id)}
     />
-  ), [categoriesById, filters.tagsByTransaction, handleTransactionPress]);
+  ), [categoriesById, filters.tagsByTransaction, handleTransactionPress, selectMode, selectedIds]);
+
+  const hasSections = filters.sections.length > 0;
+
+  const headerRightRef = useRef<() => ReactNode>(null);
+  headerRightRef.current = hasSections ? () => (
+    <SelectSearchHeader
+      selectMode={selectMode}
+      onToggleSelect={toggleSelectMode}
+      onToggleSearch={toggleSearch}
+    />
+  ) : null;
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => headerRightRef.current?.(),
+    });
+  }, [navigation, selectMode, hasSections, toggleSelectMode, toggleSearch]);
 
   return (
     <ScreenShell>
@@ -99,6 +149,14 @@ export default function TransactionsScreen() {
           </Text>
         </View>
       )}
+
+      <ScreenSearchBar
+        visible={searchActive}
+        placeholder={labels.transactions_search}
+        value={searchText}
+        onChangeText={setSearchText}
+        onClose={closeSearch}
+      />
 
       <View style={[styles.controls, { borderBottomColor: c.border }]}>
         <AccountTrigger
@@ -123,7 +181,12 @@ export default function TransactionsScreen() {
       />
 
       {!loading && filters.sections.length === 0 ? (
-        <EmptyState message={labels.transactions_empty} />
+        <View style={styles.emptyList}>
+          <EmptyState
+            icon={searchActive && !!searchText.trim() ? 'search-outline' : 'document-text-outline'}
+            message={searchActive && !!searchText.trim() ? labels.filter_no_results : labels.transactions_empty}
+          />
+        </View>
       ) : (
       <SectionList
         contentContainerStyle={styles.listContent}
@@ -147,6 +210,31 @@ export default function TransactionsScreen() {
         selectedId={filters.selectedAccountId}
         onSelect={filters.selectAccount}
         onClose={filters.closeAccountModal}
+      />
+
+      {selectMode ? (
+        <SelectionActionBar
+          selectedCount={selectedIds.size}
+          deleteLabel={labels.transactions_bulk_delete(selectedIds.size)}
+          cancelLabel={labels.cancel}
+          onDelete={openDeleteModal}
+          onCancel={exitSelectMode}
+        />
+      ) : (
+        <Fab
+          onPress={() => navigation.navigate('AddTransaction', { type: route.params?.type })}
+          accessibilityLabel={labels.home_add}
+        />
+      )}
+
+      <ConfirmationModal
+        visible={deleteModalVisible}
+        title={labels.transactions_bulk_delete_confirm_title(selectedIds.size)}
+        message={labels.transactions_bulk_delete_confirm_message}
+        confirmLabel={labels.delete}
+        cancelLabel={labels.cancel}
+        onConfirm={confirmBulkDelete}
+        onCancel={closeDeleteModal}
       />
     </ScreenShell>
   );
@@ -182,5 +270,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   listContent: { ...LIST_BOTTOM_FAB_PADDING },
+  emptyList: { flex: 1 },
   tagFilter: { marginTop: 12 },
 });
