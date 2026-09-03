@@ -369,7 +369,7 @@ export const transactionReads = {
         icon: categories.icon,
         color: categories.color,
         type: categories.type,
-        count: sql<number>`COUNT(${transactions.id})`,
+        count: sql<number>`COALESCE(COUNT(${transactions.id}), 0)`,
       })
       .from(categories)
       .leftJoin(
@@ -384,6 +384,6 @@ export const transactionReads = {
       .where(and(eq(categories.user_id, userId), eq(categories.type, type)))
       .groupBy(categories.id)
       .orderBy(sql`COUNT(${transactions.id}) DESC, ${categories.name} COLLATE NOCASE ASC`)
-      .all()) as unknown as CategoryUsageCount[];
+      .all()) as CategoryUsageCount[];
   },
 };

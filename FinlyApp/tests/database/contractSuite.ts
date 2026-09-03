@@ -115,11 +115,11 @@ export function runContractSuite(
 
       it('existsByName is case-insensitive and respects excludeId', async () => {
         const created = await backend.account.create(account('Savings'));
-        expect(await backend.account.existsByName('savings')).toBe(true);
-        expect(await backend.account.existsByName('SAVINGS')).toBe(true);
-        expect(await backend.account.existsByName('savings', created.id)).toBe(false);
-        expect(await backend.account.existsByName('my wallet')).toBe(true);
-        expect(await backend.account.existsByName('unknown')).toBe(false);
+        expect(await backend.account.existsByName(USER, 'savings')).toBe(true);
+        expect(await backend.account.existsByName(USER, 'SAVINGS')).toBe(true);
+        expect(await backend.account.existsByName(USER, 'savings', created.id)).toBe(false);
+        expect(await backend.account.existsByName(USER, 'my wallet')).toBe(true);
+        expect(await backend.account.existsByName(USER, 'unknown')).toBe(false);
       });
 
       it('computes balances from initial balance and transactions', async () => {
@@ -180,9 +180,9 @@ export function runContractSuite(
 
       it('existsByName is case-insensitive and respects excludeId', async () => {
         const created = await backend.category.create(category('Hobbies'));
-        expect(await backend.category.existsByName('hobbies')).toBe(true);
-        expect(await backend.category.existsByName('hobbies', created.id)).toBe(false);
-        expect(await backend.category.existsByName('unknown')).toBe(false);
+        expect(await backend.category.existsByName(USER, 'hobbies')).toBe(true);
+        expect(await backend.category.existsByName(USER, 'hobbies', created.id)).toBe(false);
+        expect(await backend.category.existsByName(USER, 'unknown')).toBe(false);
       });
 
       it('delete removes the category and its transactions', async () => {

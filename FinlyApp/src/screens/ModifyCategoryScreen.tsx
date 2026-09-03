@@ -13,7 +13,7 @@ import { useColorSelection } from '../hooks/useColorSelection';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { t, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdByName } from '../i18n';
 import { categoryRepository, transactionRepository } from '../database';
-import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH } from '../constants/types';
+import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, USER_ID } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import { CATEGORY_ICONS } from '../components/IconGrid';
@@ -64,7 +64,7 @@ export default function ModifyCategoryScreen() {
   }, [category, setCustomColor, setSelectedColor]);
 
   const { nameError, checkingName, handleNameChange } = useNameDuplicateCheck({
-    existsByName: (value, excludeId) => categoryRepository.existsByName(value, excludeId),
+    existsByName: (value, excludeId) => categoryRepository.existsByName(USER_ID, value, excludeId),
     resolveDefaultEnglishName: (value) => {
       const defaultId = getDefaultCategoryIdByName(value);
       return defaultId !== null ? getDefaultEnglishName(defaultId) : null;

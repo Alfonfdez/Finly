@@ -45,7 +45,7 @@ export interface ContractAccountRepo {
   delete(id: number): Promise<void>;
   deleteAll(): Promise<void>;
   getBalances(): Promise<{ account_id: number; balance: number }[]>;
-  existsByName(name: string, excludeId?: number): Promise<boolean>;
+  existsByName(userId: number, name: string, excludeId?: number): Promise<boolean>;
 }
 
 export interface CategoryDeleteItem {
@@ -63,7 +63,7 @@ export interface ContractCategoryRepo {
   reassignManyAndDelete(ids: number[], targetId: number): Promise<void>;
   bulkDeleteWithTargets(items: CategoryDeleteItem[]): Promise<void>;
   deleteAll(): Promise<void>;
-  existsByName(name: string, excludeId?: number): Promise<boolean>;
+  existsByName(userId: number, name: string, excludeId?: number): Promise<boolean>;
 }
 
 export interface ContractTagRepo {

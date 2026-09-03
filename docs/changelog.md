@@ -2864,3 +2864,11 @@
 - The `CategoryFilterModal` (opened from All Transactions → "All categories") rendered its category grids left-aligned, unlike the already-centered grids used in the category-picking screens (`CategoryGrid` has `justifyContent: 'center'`).
 - Added `justifyContent: 'center'` to the `grid` style in `CategoryFilterModal.tsx` so the Expenses and Income grids in the "Select categories" modal are centered, matching the previous grid-centering work.
 - Browser-verified (Playwright, 375px): both the Expenses (21 items) and Income (10 items) grids in the modal report `justify-content: center`. test:all green (typecheck + lint + 340 tests, 41 files). 0 console errors.
+
+[2026-09-03] Refactor | Tier-2 cleanup: unify existsByName, drop redundant cascade cleanup, remove dead flag, fix double-cast
+- `existsByName` signature now uniform across account/category/tag as `(userId, name, excludeId?)`, and account/category now filter by `user_id` (previously they matched by name without user scoping). All six screen call sites (`CreateAccount/CreateCategory/ModifyAccount/ModifyCategory/CreateTag/ModifyTag`) bind `USER_ID`; the `useNameDuplicateCheck` hook passes the name straight through (screens own the user binding), so no hook change was needed. Updated `contractTypes` + account/category `existsByName` contract tests to pass `USER`.
+- `transactionRepo.deleteMany` no longer explicitly deletes `transaction_tags` rows (writes.ts) — the junction relies on `REFERENCES transactions(id) ON DELETE CASCADE` (defined in migration `001_initial`, with `PRAGMA foreign_keys = ON` on both native and sql.js web engines), matching the single `delete()` path.
+- `getCategoryUsageCounts` now wraps `COUNT(...)` in `COALESCE(..., 0)` (reads.ts), making Drizzle infer `count: number` and removing the `as unknown as CategoryUsageCount[]` double-cast in favor of a plain cast.
+- Removed the never-read `drawerMenu` flag from the `ScreenDef` type and its 6 screen entries in `AppNavigator.tsx`; drawer/hamburger-vs-back behavior is driven by navigation state, not this flag.
+- photoCleanup (item 6) left unchanged by design: DB delete must succeed even if a photo file fails to remove, so failures stay log-only (`console.error`).
+- No spec criteria changed (refactor only). test:all green (typecheck + lint + 340 tests, 41 files).

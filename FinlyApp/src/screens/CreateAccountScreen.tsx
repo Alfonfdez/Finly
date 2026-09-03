@@ -31,7 +31,7 @@ export default function CreateAccountScreen() {
   const { selectedColor, customColor, handleColorSelect } = useColorSelection();
 
   const { nameError, checkingName, handleNameChange } = useNameDuplicateCheck({
-    existsByName: (value, excludeId) => accountRepository.existsByName(value, excludeId),
+    existsByName: (value, excludeId) => accountRepository.existsByName(USER_ID, value, excludeId),
     resolveDefaultEnglishName: (value) => {
       const defaultId = getDefaultAccountIdByName(value);
       return defaultId !== null ? getDefaultEnglishAccountName(defaultId) : null;

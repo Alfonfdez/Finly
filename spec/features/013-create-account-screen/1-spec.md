@@ -125,7 +125,7 @@
 - **Navigation**: the screen is added to the `HomeStack` in `AppNavigator.tsx`.
 - **Persistence**: the account is saved in the `accountRepository` (native SQLite or web localStorage).
 - **Icons**: use `@expo/vector-icons` (Ionicons) as in the rest of the app.
-- **Duplicate validation**: a function `existsByName(name: string, excludeId?: number)` must be added to `accountRepo` and `webAccountRepo` that returns `true` if an account with that name already exists (case-insensitive) for the user. The `excludeId` parameter is used in 012 to exclude the current account from the check.
+- **Duplicate validation**: a function `existsByName(userId: number, name: string, excludeId?: number)` must be added to `accountRepo` and `webAccountRepo` that returns `true` if an account with that name already exists (case-insensitive) for the given user. The `excludeId` parameter is used in 012 to exclude the current account from the check.
 
 ---
 

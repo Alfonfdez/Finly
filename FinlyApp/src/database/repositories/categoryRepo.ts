@@ -117,9 +117,9 @@ export const categoryRepo = {
     await db.delete(categories).run();
   },
 
-  async existsByName(name: string, excludeId?: number): Promise<boolean> {
+  async existsByName(userId: number, name: string, excludeId?: number): Promise<boolean> {
     const db = await getDrizzle();
-    const conditions: SQL[] = [sql`LOWER(${categories.name}) = LOWER(${name})`];
+    const conditions: SQL[] = [sql`LOWER(${categories.name}) = LOWER(${name})`, eq(categories.user_id, userId)];
     if (excludeId !== undefined) conditions.push(ne(categories.id, excludeId));
     const rows = await db
       .select({ count: sql<number>`COUNT(*)` })

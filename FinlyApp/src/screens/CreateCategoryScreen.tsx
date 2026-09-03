@@ -45,7 +45,7 @@ export default function CreateCategoryScreen() {
   const deferredRefreshCategories = useDeferredRefresh(refreshCategories);
 
   const { nameError, checkingName, handleNameChange } = useNameDuplicateCheck({
-    existsByName: (value, excludeId) => categoryRepository.existsByName(value, excludeId),
+    existsByName: (value, excludeId) => categoryRepository.existsByName(USER_ID, value, excludeId),
     resolveDefaultEnglishName: (value) => {
       const defaultId = getDefaultCategoryIdByName(value);
       return defaultId !== null ? getDefaultEnglishName(defaultId) : null;
