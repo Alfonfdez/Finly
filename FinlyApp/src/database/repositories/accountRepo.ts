@@ -93,9 +93,9 @@ export const accountRepo = {
       .all();
   },
 
-  async existsByName(name: string, excludeId?: number): Promise<boolean> {
+  async existsByName(userId: number, name: string, excludeId?: number): Promise<boolean> {
     const db = await getDrizzle();
-    const conditions: SQL[] = [sql`LOWER(${accounts.name}) = LOWER(${name})`];
+    const conditions: SQL[] = [sql`LOWER(${accounts.name}) = LOWER(${name})`, eq(accounts.user_id, userId)];
     if (excludeId !== undefined) conditions.push(ne(accounts.id, excludeId));
     const rows = await db
       .select({ count: sql<number>`COUNT(*)` })

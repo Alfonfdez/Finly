@@ -97,7 +97,7 @@ Default categories and accounts are stored in English in the DB and translated a
 1. Map the entered name → default entity ID using the **current language** (`getDefaultCategoryIdByName` / `getDefaultAccountIdByName`).
 2. If a default ID is found, get the **English name** for that ID (`getDefaultEnglishName` / `getDefaultEnglishAccountName`).
 3. Check if a category/account with that English name exists in the DB (`existsByName`).
-4. Also check for regular duplicates via `existsByName(name)`.
+4. Also check for regular duplicates via `existsByName(USER_ID, name)`.
 
 This allows reusing deleted default names while preventing duplicates with existing defaults in any language.
 
@@ -106,14 +106,14 @@ const defaultId = getDefaultCategoryIdByName(value.trim());
 if (defaultId !== null) {
   const englishName = getDefaultEnglishName(defaultId);
   if (englishName) {
-    const defaultExists = await categoryRepository.existsByName(englishName, excludeId);
+    const defaultExists = await categoryRepository.existsByName(USER_ID, englishName, excludeId);
     if (defaultExists) {
       setNameError(labels.create_cat_error_name_duplicate);
       return;
     }
   }
 }
-const exists = await categoryRepository.existsByName(value.trim(), excludeId);
+const exists = await categoryRepository.existsByName(USER_ID, value.trim(), excludeId);
 setNameError(exists ? labels.create_cat_error_name_duplicate : null);
 ```
 

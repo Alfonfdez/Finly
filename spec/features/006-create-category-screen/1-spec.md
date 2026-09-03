@@ -143,7 +143,7 @@ Screen accessible from the "Create" button in the last position of the grid in `
 - **Navigation**: the screen is added to the `HomeStack` in `AppNavigator.tsx`.
 - **Persistence**: the category is saved in the `categoryRepository` (native SQLite or web localStorage).
 - **Icons**: use `@expo/vector-icons` (Ionicons) as in the rest of the app.
-- **Duplicate validation**: an `existsByName(name: string, type: TransactionType)` function must be added to `categoryRepo` and `webCategoryRepo` that returns `true` if a category with that name (case-insensitive) already exists for the same type and user.
+- **Duplicate validation**: an `existsByName(userId: number, name: string, excludeId?: number)` function must be added to `categoryRepo` and `webCategoryRepo` that returns `true` if a category with that name (case-insensitive) already exists for the same type and user.
 
 ---
 

@@ -14,6 +14,7 @@ import { sanitizeDefaultAccounts } from '../database/configDefaults';
 import { isTotalAccount } from '../database/helpers';
 import type { Account } from '../database/types';
 import type { RootStackParamList, NavigationProp } from '../constants/types';
+import { USER_ID } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
 import { QUICK_COLORS } from '../constants/colors';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -61,7 +62,7 @@ export default function ModifyAccountScreen() {
   }, [account, setCustomColor, setSelectedColor]);
 
   const { nameError, checkingName, handleNameChange } = useNameDuplicateCheck({
-    existsByName: (value, excludeId) => accountRepository.existsByName(value, excludeId),
+    existsByName: (value, excludeId) => accountRepository.existsByName(USER_ID, value, excludeId),
     resolveDefaultEnglishName: (value) => {
       const defaultId = getDefaultAccountIdByName(value);
       return defaultId !== null ? getDefaultEnglishAccountName(defaultId) : null;

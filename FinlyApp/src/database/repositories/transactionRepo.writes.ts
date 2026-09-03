@@ -52,7 +52,6 @@ export const transactionWrites = {
     if (ids.length === 0) return;
     await deleteTransactionPhotos('id', ...ids);
     await withTransaction(async (db) => {
-      await db.delete(transactionTags).where(inArray(transactionTags.transaction_id, ids)).run();
       await db.delete(transactions).where(inArray(transactions.id, ids)).run();
     });
   },
