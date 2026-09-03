@@ -178,6 +178,16 @@ export function runContractSuite(
         expect(after?.name).toBe('Hobbies 2');
       });
 
+      it('getById reads back a category or returns null', async () => {
+        const created = await backend.category.create(category('Hobbies'));
+        expect(await backend.category.getById(created.id)).toMatchObject({
+          name: 'Hobbies',
+          type: 'expense',
+          user_id: USER,
+        });
+        expect(await backend.category.getById(999999)).toBeNull();
+      });
+
       it('existsByName is case-insensitive and respects excludeId', async () => {
         const created = await backend.category.create(category('Hobbies'));
         expect(await backend.category.existsByName(USER, 'hobbies')).toBe(true);
@@ -294,6 +304,15 @@ export function runContractSuite(
 
         await backend.tag.update(t1.id, { name: 'vacation' });
         expect((await backend.tag.list(USER)).find(t => t.id === t1.id)?.name).toBe('vacation');
+      });
+
+      it('getById reads back a tag or returns null', async () => {
+        const created = await backend.tag.create({ user_id: USER, name: 'travel' });
+        expect(await backend.tag.getById(created.id)).toMatchObject({
+          name: 'travel',
+          user_id: USER,
+        });
+        expect(await backend.tag.getById(999999)).toBeNull();
       });
 
       it('existsByName is user-scoped and excludeId aware', async () => {

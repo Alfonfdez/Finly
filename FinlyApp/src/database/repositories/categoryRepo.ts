@@ -5,7 +5,7 @@ import { runResultOf } from '../drizzle/proxy';
 import type { Category } from '../types';
 import type { TransactionType } from '../../constants/types';
 import { categorySchema } from '../schemas';
-import { parseRows } from '../validate';
+import { parseRowOrNull, parseRows } from '../validate';
 import { deleteTransactionPhotos } from '../photoCleanup';
 import { dbTimestamp } from '../../utils/formatters';
 
@@ -24,6 +24,12 @@ export const categoryRepo = {
       .orderBy(sql`name COLLATE NOCASE`)
       .all();
     return parseRows(categorySchema, 'categories', rows);
+  },
+
+  async getById(id: number): Promise<Category | null> {
+    const db = await getDrizzle();
+    const row = await db.select().from(categories).where(eq(categories.id, id)).get();
+    return parseRowOrNull(categorySchema, 'categories', row);
   },
 
   async create(data: Omit<Category, 'id' | 'created_at'>): Promise<Category> {
