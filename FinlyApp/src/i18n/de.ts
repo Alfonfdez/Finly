@@ -1,9 +1,12 @@
 import type { Language } from './en';
 
 export const de: Language = {
+  // Generic
   cancel: 'Abbrechen',
   delete: 'Löschen',
   common_close: 'Schließen',
+
+  // Settings
   settings_appearance: 'Erscheinungsbild',
   settings_regional: 'Region',
   settings_personalization: 'Personalisierung',
@@ -83,9 +86,13 @@ export const de: Language = {
   size_small: 'Klein',
   size_medium: 'Mittel',
   size_large: 'Groß',
+
+  // Tabs
   tab_all: 'Alle',
   tab_expenses: 'Ausgaben',
   tab_income: 'Einnahmen',
+
+  // Category filter
   filter_categories: 'Kategorien auswählen',
   filter_categories_count: (n: number) => (n === 1 ? '1 Kategorie' : `${n} Kategorien`),
   filter_all_categories: 'Alle Kategorien',
@@ -98,11 +105,15 @@ export const de: Language = {
   filter_no_results: 'Keine Ergebnisse gefunden',
   filter_expenses: 'Ausgaben',
   filter_income: 'Einnahmen',
+
+  // Periods
   period_day: 'Tag',
   period_week: 'Woche',
   period_month: 'Monat',
   period_year: 'Jahr',
   period_period: 'Zeitraum',
+
+  // Calendar modal
   cal_select_day: 'Tag auswählen',
   cal_select_week: 'Woche auswählen',
   cal_select_month: 'Monat auswählen',
@@ -115,16 +126,29 @@ export const de: Language = {
   cal_select_end: 'Enddatum auswählen',
   cal_from: 'ab',
   cal_to: 'bis',
+
+  // Calendar picker display
   cal_period_to_hint: 'Ende wählen',
+
+  // Day abbreviations (Sunday-first)
   days_short_sun: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+  // Day abbreviations (Monday-first)
   days_short_mon: ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'],
+
+  // Month names
   months: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
   months_short: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+
+  // Home
   home_income: 'Einnahmen',
   home_expenses: 'Ausgaben',
   home_open_menu: 'Menü öffnen',
   home_add: 'Ausgabe oder Einnahme hinzufügen',
+
+  // Account modal
   account_select: 'Konto auswählen',
+
+  // Add transaction
   add_title: 'Transaktion hinzufügen',
   add_amount_error: 'Der eingegebene Betrag ist nicht gültig',
   add_account: 'Konto',
@@ -154,10 +178,14 @@ export const de: Language = {
   add_error_message: 'Transaktion konnte nicht gespeichert werden',
   error_title: 'Fehler',
   error_generic: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
+
+  // Add category
   add_cat_title: 'Kategorie hinzufügen',
   add_cat_search: 'Kategorie suchen',
   add_cat_no_results: 'Keine Ergebnisse gefunden',
   add_cat_create: 'Erstellen',
+
+  // Modify category
   modify_cat_title: 'Kategorie bearbeiten',
   modify_cat_type: 'Typ',
   modify_cat_delete: 'Löschen',
@@ -171,6 +199,8 @@ export const de: Language = {
   modify_cat_select_title: 'Kategorie auswählen',
   modify_cat_select_cancel: 'Abbrechen',
   modify_cat_select_confirm: 'Auswählen',
+
+  // Create category
   create_cat_title: 'Kategorie erstellen',
   create_cat_name: 'Kategoriename',
   create_cat_name_placeholder: 'Kategoriename',
@@ -206,6 +236,8 @@ export const de: Language = {
   create_cat_color_picker_title: 'Farbe auswählen',
   create_cat_color_picker_ok: 'Ok',
   create_cat_color_picker_cancel: 'Abbrechen',
+
+  // Categories (default - multilingual)
   cat_salary: 'Gehalt',
   cat_freelance: 'Freiberuflich',
   cat_groceries: 'Lebensmittel',
@@ -237,10 +269,14 @@ export const de: Language = {
   cat_refund: 'Erstattung',
   cat_bonus: 'Bonus',
   cat_allowance: 'Taschengeld',
+
+  // Accounts (default - multilingual)
   account_my_wallet: 'Mein Geldbeutel',
   account_total: 'Gesamt',
   account_my_wallet_description: 'Ihr Standardkonto für alltägliche Transaktionen',
   account_total_description: 'Kombinierter Kontostand und Transaktionen aller Ihrer Konten',
+
+  // Transactions
   transactions_empty: 'Keine Transaktionen',
   transactions_search: 'Transaktionen suchen',
   transactions_cancel: 'Abbrechen',
@@ -250,12 +286,16 @@ export const de: Language = {
   transactions_bulk_delete: (n: number) => `Löschen (${n})`,
   transactions_bulk_delete_confirm_title: (n: number) => `${n} Transaktion${n === 1 ? '' : 'en'} löschen?`,
   transactions_bulk_delete_confirm_message: 'Die ausgewählten Transaktionen werden dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.',
+
+  // Navigation (static — won't update live, but correct per language)
   nav_transactions: 'Transaktionen',
   nav_all_transactions: 'Alle Transaktionen',
   nav_settings: 'Einstellungen',
   nav_home: 'Startseite',
   nav_accounts: 'Konten',
   nav_categories: 'Kategorien',
+
+  // Accounts
   accounts_total: 'Gesamt',
   accounts_empty: 'Keine Konten',
   accounts_search: 'Konten suchen',
@@ -288,8 +328,12 @@ export const de: Language = {
   create_account_error_icon: 'Wählen Sie ein Symbol',
   create_account_error_color: 'Wählen Sie eine Farbe',
   create_account_error_icon_color: 'Wählen Sie ein Symbol und eine Farbe',
+
+  // Day letters (for circle icons)
   day_mon_letter: 'M',
   day_sun_letter: 'S',
+
+  // Currencies
   currency_euro: 'Euro',
   currency_usd: 'US-Dollar',
   currency_gbp: 'Britisches Pfund',
@@ -320,6 +364,8 @@ export const de: Language = {
   currency_ils: 'Israelischer Schekel',
   currency_aed: 'VAE-Dirham',
   currency_sar: 'Saudi-Riyal',
+
+  // Languages
   lang_en: 'English',
   lang_es: 'Español',
   lang_ca: 'Català',
@@ -327,6 +373,8 @@ export const de: Language = {
   lang_de: 'Deutsch',
   lang_pt: 'Português',
   lang_it: 'Italiano',
+
+  // Accessibility
   a11y_show_expenses: 'Ausgaben anzeigen',
   a11y_show_income: 'Einnahmen anzeigen',
   a11y_category: 'Kategorie',
@@ -335,10 +383,14 @@ export const de: Language = {
   a11y_initial_balance: 'Anfangsguthaben-Eingabe',
   a11y_calculator: 'Taschenrechner öffnen',
   a11y_comment: 'Kommentareingabe',
+
+  // Calculator
   calc_title: 'Taschenrechner',
   calc_accept: 'Akzeptieren',
   calc_cancel: 'Abbrechen',
   calc_error: 'Fehler',
+
+  // Transaction details
   details_title: 'Transaktionsdetails',
   details_amount: 'Betrag',
   details_account: 'Konto',
@@ -359,10 +411,14 @@ export const de: Language = {
   photo_remove: 'Foto entfernen',
   photo_delete_title: 'Foto löschen',
   photo_delete_message: 'Sind Sie sicher, dass Sie dieses Foto löschen möchten?',
+
+  // Modify transaction
   modify_title: 'Transaktion bearbeiten',
   modify_save: 'Speichern',
   modify_error_title: 'Fehler',
   modify_error_message: 'Transaktion konnte nicht gespeichert werden',
+
+  // Tags
   nav_tags: 'Tags',
   tags_empty: 'Noch keine Tags',
   tags_search: 'Tags suchen',
@@ -382,6 +438,8 @@ export const de: Language = {
   tags_bulk_delete: (n: number) => `Löschen (${n})`,
   tags_bulk_delete_confirm_title: (n: number) => `${n} Tag${n === 1 ? '' : 's'} löschen?`,
   tags_bulk_delete_confirm_message: 'Die ausgewählten Tags werden gelöscht und deren Verknüpfungen zu Transaktionen werden entfernt. Dies kann nicht rückgängig gemacht werden.',
+
+  // Comments
   nav_comments: 'Kommentare',
   comments_empty: 'Noch keine Kommentare',
   comments_counter: (n: number) => `${n} Kommentar${n === 1 ? '' : 'e'}`,
@@ -399,11 +457,17 @@ export const de: Language = {
   comments_bulk_delete_confirm_message: 'Die ausgewählten Kommentare werden aus ihren Transaktionen entfernt. Dies kann nicht rückgängig gemacht werden.',
   comments_error_empty: 'Kommentar darf nicht leer sein',
   comments_merge_hint: 'Kommentare, die sich nur durch Groß-/Kleinschreibung oder zusätzliche Leerzeichen unterscheiden, werden zusammengeführt.',
+
+  // Home tag filter
   home_tag_all: 'Alle',
   home_tag_untagged: 'Ohne Tag',
   home_tag_view_all: (n: number) => `Alle anzeigen (${n})`,
   home_tag_show_less: 'Weniger anzeigen',
+
+  // Color grid
   color_grid_more: 'Weitere Farben',
+
+  // Accessibility labels
   a11y_show_balances: 'Kontostände anzeigen',
   a11y_hide_balances: 'Kontostände ausblenden',
   a11y_select_mode: 'Auswahlmodus aktivieren',
