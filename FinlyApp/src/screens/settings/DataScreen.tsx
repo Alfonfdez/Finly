@@ -19,10 +19,59 @@ import SettingsRow from '../../components/settings/SettingsRow';
 import { settingsStyles } from '../../components/settings/settingsStyles';
 import { DELETE_ALL_CONFIRMATION } from '../../constants/types';
 
+interface ConfirmWithTextModalProps {
+  visible: boolean;
+  title: string;
+  message: string;
+  confirmLabel: string;
+  cancelLabel: string;
+  text: string;
+  onTextChange: (value: string) => void;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+function ConfirmWithTextModal({
+  visible,
+  title,
+  message,
+  confirmLabel,
+  cancelLabel,
+  text,
+  onTextChange,
+  onConfirm,
+  onCancel,
+}: ConfirmWithTextModalProps) {
+  const { activeColors: c } = useConfig();
+  const fs = useFontSize();
+  const labels = t();
+  return (
+    <ConfirmationModal
+      visible={visible}
+      title={title}
+      message={message}
+      confirmLabel={confirmLabel}
+      cancelLabel={cancelLabel}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+      confirmDisabled={text.toUpperCase() !== DELETE_ALL_CONFIRMATION}
+    >
+      <TextInput
+        style={[styles.input, { backgroundColor: c.background, color: c.text, borderColor: c.border, fontSize: fs(14) }, webInputFocusReset]}
+        placeholder={labels.settings_delete_data_confirm_placeholder}
+        placeholderTextColor={c.textSecondary}
+        value={text}
+        onChangeText={onTextChange}
+        autoCapitalize="characters"
+        autoCorrect={false}
+      />
+    </ConfirmationModal>
+  );
+}
+
 export default function DataScreen() {
   const { activeColors: c, updateConfig } = useConfig();
   const { resetAll } = useApp();
-  const fs = useFontSize();
   const labels = t();
 
   const [deleteTransactionsModal, setDeleteTransactionsModal] = useState(false);
@@ -124,9 +173,6 @@ export default function DataScreen() {
     closeFactoryReset();
   };
 
-  const canDeleteAll = deleteAllText.toUpperCase() === DELETE_ALL_CONFIRMATION;
-  const canFactoryReset = factoryResetText.toUpperCase() === DELETE_ALL_CONFIRMATION;
-
   return (
     <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
       <SettingsRow
@@ -203,26 +249,17 @@ export default function DataScreen() {
         onCancel={() => setDeleteAllModal1(false)}
       />
 
-      <ConfirmationModal
+      <ConfirmWithTextModal
         visible={deleteAllModal2}
         title={labels.settings_delete_data_confirm_title2}
         message={labels.settings_delete_data_confirm_message2}
         confirmLabel={labels.settings_delete_confirm}
         cancelLabel={labels.cancel}
+        text={deleteAllText}
+        onTextChange={setDeleteAllText}
         onConfirm={handleDeleteAll}
         onCancel={closeDeleteAll}
-        confirmDisabled={!canDeleteAll}
-      >
-        <TextInput
-          style={[styles.input, { backgroundColor: c.background, color: c.text, borderColor: c.border, fontSize: fs(14) }, webInputFocusReset]}
-          placeholder={labels.settings_delete_data_confirm_placeholder}
-          placeholderTextColor={c.textSecondary}
-          value={deleteAllText}
-          onChangeText={setDeleteAllText}
-          autoCapitalize="characters"
-          autoCorrect={false}
-        />
-      </ConfirmationModal>
+      />
 
       <ConfirmationModal
         visible={factoryResetModal1}
@@ -234,26 +271,17 @@ export default function DataScreen() {
         onCancel={() => setFactoryResetModal1(false)}
       />
 
-      <ConfirmationModal
+      <ConfirmWithTextModal
         visible={factoryResetModal2}
         title={labels.settings_delete_data_confirm_title2}
         message={labels.settings_delete_data_confirm_message2}
         confirmLabel={labels.settings_delete_confirm}
         cancelLabel={labels.cancel}
+        text={factoryResetText}
+        onTextChange={setFactoryResetText}
         onConfirm={handleFactoryReset}
         onCancel={closeFactoryReset}
-        confirmDisabled={!canFactoryReset}
-      >
-        <TextInput
-          style={[styles.input, { backgroundColor: c.background, color: c.text, borderColor: c.border, fontSize: fs(14) }, webInputFocusReset]}
-          placeholder={labels.settings_delete_data_confirm_placeholder}
-          placeholderTextColor={c.textSecondary}
-          value={factoryResetText}
-          onChangeText={setFactoryResetText}
-          autoCapitalize="characters"
-          autoCorrect={false}
-        />
-      </ConfirmationModal>
+      />
     </ScrollView>
   );
 }
