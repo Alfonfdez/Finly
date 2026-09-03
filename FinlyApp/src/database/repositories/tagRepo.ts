@@ -4,7 +4,7 @@ import { tags } from '../drizzle/schema';
 import { runResultOf } from '../drizzle/proxy';
 import type { Tag } from '../types';
 import { tagSchema } from '../schemas';
-import { parseRows } from '../validate';
+import { parseRowOrNull, parseRows } from '../validate';
 import { dbTimestamp } from '../../utils/formatters';
 
 export const tagRepo = {
@@ -17,6 +17,12 @@ export const tagRepo = {
       .orderBy(tags.id)
       .all();
     return parseRows(tagSchema, 'tags', rows);
+  },
+
+  async getById(id: number): Promise<Tag | null> {
+    const db = await getDrizzle();
+    const row = await db.select().from(tags).where(eq(tags.id, id)).get();
+    return parseRowOrNull(tagSchema, 'tags', row);
   },
 
   async create(data: Omit<Tag, 'id' | 'created_at'>): Promise<Tag> {

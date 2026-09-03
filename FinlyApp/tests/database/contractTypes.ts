@@ -56,6 +56,7 @@ export interface CategoryDeleteItem {
 export interface ContractCategoryRepo {
   list(userId: number, type?: TransactionType): Promise<Category[]>;
   create(data: NewCategory): Promise<Category>;
+  getById(id: number): Promise<Category | null>;
   update(id: number, data: UpdateCategory): Promise<void>;
   delete(id: number): Promise<void>;
   reassignAndDelete(oldCategoryId: number, newCategoryId: number): Promise<void>;
@@ -69,6 +70,7 @@ export interface ContractCategoryRepo {
 export interface ContractTagRepo {
   list(userId: number): Promise<Tag[]>;
   create(data: NewTag): Promise<Tag>;
+  getById(id: number): Promise<Tag | null>;
   update(id: number, data: UpdateTag): Promise<void>;
   delete(id: number): Promise<void>;
   deleteMany(ids: number[]): Promise<void>;

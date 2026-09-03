@@ -60,7 +60,6 @@ export const transactionWrites = {
     await deleteAllTransactionPhotos();
     await withTransaction(async (db) => {
       await db.delete(transactions).run();
-      await db.delete(transactionTags).run();
     });
   },
 
