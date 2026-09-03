@@ -2872,3 +2872,10 @@
 - Removed the never-read `drawerMenu` flag from the `ScreenDef` type and its 6 screen entries in `AppNavigator.tsx`; drawer/hamburger-vs-back behavior is driven by navigation state, not this flag.
 - photoCleanup (item 6) left unchanged by design: DB delete must succeed even if a photo file fails to remove, so failures stay log-only (`console.error`).
 - No spec criteria changed (refactor only). test:all green (typecheck + lint + 340 tests, 41 files).
+
+[2026-09-03] Tests | Tier-3 coverage pass 1: 9 hooks + first 2 screen smoke tests
+- New helper `tests/component/helpers/appStub.ts`: per-file AppContext mock (`useApp`/`AppProvider`) with a `vi.mock` factory plus `buildAppMock`, `getAppStub`, `setAppData`, `setAppState`, `resetAppStub` and re-exported repository types. Used via `vi.mock('../../src/context/AppContext', () => ({ useApp: () => buildAppMock(), AppProvider: ... }))`; the lazy `useApp` closure keeps the hoisted mock free of top-level module references. (Not added to global setupFiles; imported per test file, as chosen.)
+- New leaf-hook suites: `useFontSize` (size factors 0.85/1.0/1.15 via configStub), `useDebouncedCallback` (fake-timer debounce + clear-on-unmount), `useBalanceVisibility` (toggle), `useSearchFilter` (blank passthrough, multi-term, keep predicate, recompute on change), `useColorSelection` (quick vs custom + setters), `useDeferredRefresh` (rAF resolution, error-log path, latest-fn-ref).
+- New navigation/hook suites: `usePeriodNavigation` (appStub changePeriod / custom opens calendar / range clamped to day boundaries), `useFocusLoad` (loader success, areEqual replace-vs-keep, error-log path, setData), `usePhotos` (image-picker + file-system mocked; permission/cancel/copy/error/remove paths).
+- New screen smoke tests `tests/screens/TransactionsScreen` and `AllTransactionsScreen` (mock `@react-navigation/native` + `../database` + appStub; assert account trigger, empty state, row rendering, repository list load). `useTransactionForm` deferred (heaviest, per plan).
+- Verification: `test:all` green — typecheck + lint + 52 files / 389 tests (was 41 / 340). No source code or spec criteria changed (tests only).
