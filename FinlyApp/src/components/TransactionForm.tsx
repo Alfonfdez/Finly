@@ -17,6 +17,7 @@ import CommentInput from './CommentInput';
 import PhotoSection from './PhotoSection';
 import CalendarModal from './CalendarModal';
 import CalculatorModal from './CalculatorModal';
+import { CARD_BORDER_RADIUS } from './componentStyles';
 import { type TransactionType, type RootStackParamList } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
@@ -221,7 +222,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 16 },
   scrollContent: { paddingBottom: 48 },
   accountContainer: {
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     padding: 16,
     marginTop: 16,
     marginBottom: 16,
@@ -234,7 +235,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   submitButton: {
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 8,

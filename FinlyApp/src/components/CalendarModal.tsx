@@ -10,6 +10,7 @@ import type { Language } from '../i18n/en';
 import type { StringKeyOf } from '../constants/types';
 import DayPicker from './calendars/DayPicker';
 import WeekPicker from './calendars/WeekPicker';
+import { CONTROL_BORDER_RADIUS } from './componentStyles';
 import MonthGrid from './calendars/MonthGrid';
 import YearGrid from './calendars/YearGrid';
 import PeriodPicker from './calendars/PeriodPicker';
@@ -145,8 +146,8 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
   },
-  cancelButton: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8, borderWidth: 1 },
+  cancelButton: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: CONTROL_BORDER_RADIUS, borderWidth: 1 },
   cancelButtonText: { fontWeight: '600' },
-  okButton: { paddingHorizontal: 28, paddingVertical: 10, borderRadius: 8 },
+  okButton: { paddingHorizontal: 28, paddingVertical: 10, borderRadius: CONTROL_BORDER_RADIUS },
   okButtonText: { fontWeight: '700' },
 });

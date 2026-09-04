@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { withAlpha } from '../utils/color';
+import { CONTROL_BORDER_RADIUS } from './componentStyles';
 
 export type Option<T extends string = string> = { label: string; value: T; icon?: ReactNode };
 
@@ -39,7 +40,7 @@ export default function SelectorInline<T extends string>({ options, selected, on
 
 const styles = StyleSheet.create({
   options: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  option: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, gap: 6 },
+  option: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: CONTROL_BORDER_RADIUS, gap: 6 },
   optionText: { fontWeight: '500' },
   check: { fontWeight: '700' },
   iconWrap: { justifyContent: 'center', alignItems: 'center' },

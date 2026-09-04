@@ -16,6 +16,7 @@ import { clearDataKeepSettings, resetDatabase } from '../../database/database';
 import { saveBackupFile, pickBackupFile } from '../../utils/backupIO';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import SettingsRow from '../../components/settings/SettingsRow';
+import { BUTTON_BORDER_RADIUS } from '../../components/componentStyles';
 import { settingsStyles } from '../../components/settings/settingsStyles';
 import { DELETE_ALL_CONFIRMATION } from '../../constants/types';
 
@@ -291,7 +292,7 @@ const webInputFocusReset = isWeb ? ({ outlineStyle: 'none' } as unknown as TextS
 const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: BUTTON_BORDER_RADIUS,
     padding: 12,
     marginBottom: 16,
   },

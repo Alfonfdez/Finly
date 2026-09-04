@@ -4,7 +4,7 @@ import ColorPicker, { Panel1, HueSlider, OpacitySlider, Preview } from 'reanimat
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import { BUTTON_BORDER_RADIUS } from './componentStyles';
+import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS } from './componentStyles';
 import ModalShell from './ModalShell';
 
 
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   panel: {
     width: '100%',
     height: 200,
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     marginBottom: 12,
   },
   slider: {

@@ -22,6 +22,7 @@ import IconBadge from '../components/IconBadge';
 import TagChip from '../components/TagChip';
 import DataRow from '../components/DataRow';
 import PhotoViewer from '../components/PhotoViewer';
+import { CARD_BORDER_RADIUS, CONTROL_BORDER_RADIUS } from '../components/componentStyles';
 
 type DetailsRouteProp = RouteProp<RootStackParamList, 'TransactionDetails'>;
 
@@ -242,7 +243,7 @@ const styles = StyleSheet.create({
   dataSection: {
     marginHorizontal: 16,
     marginTop: 16,
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     overflow: 'hidden',
   },
   dataValue: { fontWeight: '600', flex: 2, textAlign: 'right' },
@@ -261,7 +262,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     borderWidth: 1,
   },
   actionButtonText: { fontWeight: '600' },
@@ -278,7 +279,7 @@ const styles = StyleSheet.create({
   photoThumbnail: {
     width: 48,
     height: 48,
-    borderRadius: 8,
+    borderRadius: CONTROL_BORDER_RADIUS,
   },
   timestamps: {
     marginHorizontal: 16,

@@ -6,6 +6,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { isSameDay } from '../utils/formatters';
 import { withAlpha } from '../utils/color';
+import { CARD_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
   selectedDate: Date;
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
   },
   date: {
     fontWeight: '700',

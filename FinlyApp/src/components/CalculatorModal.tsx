@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   actionBtn: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 10,
+    borderRadius: BUTTON_BORDER_RADIUS,
     alignItems: 'center',
   },
   actionText: {
@@ -299,7 +299,7 @@ const mobileStyles = StyleSheet.create({
   button: {
     flex: 1,
     aspectRatio: 1.4,
-    borderRadius: 10,
+    borderRadius: BUTTON_BORDER_RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 4,

@@ -6,6 +6,7 @@ import { useFontSize } from '../../hooks/useFontSize';
 import OptionPickerModal from '../OptionPickerModal';
 import type { Option } from '../SelectorInline';
 import { settingsStyles } from './settingsStyles';
+import { CONTROL_BORDER_RADIUS } from '../componentStyles';
 
 interface SettingsPickerRowProps<T extends string> {
   label: string;
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: CONTROL_BORDER_RADIUS,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },

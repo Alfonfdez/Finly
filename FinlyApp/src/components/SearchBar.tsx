@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
+import { BUTTON_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
   placeholder: string;
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: BUTTON_BORDER_RADIUS,
     paddingHorizontal: 12,
     marginBottom: 16,
   },

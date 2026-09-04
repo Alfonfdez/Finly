@@ -4,6 +4,7 @@ import { PERIODS, type Period } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
+import { CONTROL_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
   active: Period;
@@ -51,6 +52,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: CONTROL_BORDER_RADIUS,
   },
 });

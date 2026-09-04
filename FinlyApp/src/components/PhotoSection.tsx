@@ -10,6 +10,7 @@ import { isNative } from '../utils/platform';
 import ConfirmationModal from './ConfirmationModal';
 import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
+import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, CONTROL_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
   photos: string[];
@@ -151,7 +152,7 @@ const styles = StyleSheet.create({
   photoButton: {
     width: 80,
     height: 80,
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
   photoThumbnail: {
     width: '100%',
     height: '100%',
-    borderRadius: 10,
+    borderRadius: BUTTON_BORDER_RADIUS,
   },
   removeButton: {
     position: 'absolute',
@@ -180,7 +181,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: CONTROL_BORDER_RADIUS,
     marginBottom: 8,
     gap: 12,
   },
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
   },
   modalCancelButton: {
     padding: 12,
-    borderRadius: 8,
+    borderRadius: CONTROL_BORDER_RADIUS,
     alignItems: 'center',
     marginTop: 8,
     width: '100%',

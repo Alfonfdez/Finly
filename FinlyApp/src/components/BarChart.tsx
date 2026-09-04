@@ -5,6 +5,7 @@ import { formatCurrency } from '../utils/formatters';
 import { getDisplayCategoryName } from '../i18n';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { CARD_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
   data: CategoryWithTotal[];
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
   },
   barBackground: {
     height: 24,
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     overflow: 'hidden',
     flexDirection: 'row',
     marginBottom: 12,

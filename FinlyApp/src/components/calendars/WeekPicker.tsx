@@ -9,6 +9,7 @@ import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
 import { calendarStyles, FUTURE_OPACITY } from './calendarStyles';
 import { type FirstDay } from '../../constants/types';
+import { CONTROL_BORDER_RADIUS } from '../componentStyles';
 import { DAYS_PER_WEEK, CALENDAR_GRID_CELLS } from '../../constants/calendar';
 
 function sameWeek(a: Date, b: Date, firstDay: FirstDay): boolean {
@@ -76,5 +77,5 @@ export default function WeekPicker({ date, onSelect }: CalendarBaseProps) {
 }
 
 const styles = StyleSheet.create({
-  weekRow: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8, marginBottom: 4 },
+  weekRow: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: CONTROL_BORDER_RADIUS, marginBottom: 4 },
 });

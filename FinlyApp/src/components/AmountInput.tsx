@@ -7,6 +7,7 @@ import { TRANSPARENT } from '../constants/themes';
 import { getCurrencySymbol } from '../constants/currencies';
 import { t } from '../i18n';
 import { parseAmountInput, formatAmountDisplay, parseAmountValue } from '../utils/amountInput';
+import { CARD_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
   raw: string;
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 16,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     borderWidth: 1,
     fontWeight: '700',
   },

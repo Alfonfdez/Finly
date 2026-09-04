@@ -10,6 +10,7 @@ import { DEBOUNCE_MS, MAX_TAG_NAME_LENGTH, MAX_TAGS } from '../constants/types';
 import { countAtLimit } from '../utils/limits';
 import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
+import { CONTROL_BORDER_RADIUS } from './componentStyles';
 import PrimaryButton from './form/PrimaryButton';
 
 interface Props {
@@ -211,7 +212,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: CONTROL_BORDER_RADIUS,
   },
   searchClose: {
     padding: 8,
@@ -233,7 +234,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: CONTROL_BORDER_RADIUS,
     marginBottom: 4,
   },
   modalCounter: {
@@ -251,7 +252,7 @@ const styles = StyleSheet.create({
   modalButton: {
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: CONTROL_BORDER_RADIUS,
   },
   modalButtonText: {
     fontWeight: '600',
