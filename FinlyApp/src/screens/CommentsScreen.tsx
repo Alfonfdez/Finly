@@ -16,7 +16,7 @@ import ListItemRow from '../components/ListItemRow';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { ERROR_PREFIXES } from '../utils/errors';
 import SelectionActionBar from '../components/SelectionActionBar';
-import ConfirmationModal from '../components/ConfirmationModal';
+import BulkDeleteConfirmationModal from '../components/BulkDeleteConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 
@@ -136,7 +136,7 @@ export default function CommentsScreen() {
         />
       )}
 
-      <ConfirmationModal
+      <BulkDeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.comments_bulk_delete_confirm_title(selectedComments.size)}
         message={labels.comments_bulk_delete_confirm_message}

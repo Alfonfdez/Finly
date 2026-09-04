@@ -6,6 +6,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
+import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
@@ -36,7 +37,6 @@ export default function ModifyTagScreen() {
   );
 
   const [name, setName] = useState('');
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const userEditedRef = useRef(false);
 
   const { nameError, checkingName, clearNameError, handleNameChange } = useNameDuplicateCheck({
@@ -70,13 +70,14 @@ export default function ModifyTagScreen() {
     }, ERROR_PREFIXES.tagUpdate);
   };
 
-  const handleDelete = async () => {
-    await runWithErrorAlert(async () => {
-      await tagRepository.delete(tagId);
+  const { visible: deleteModalVisible, open: openDeleteModal, close: closeDeleteModal, confirm: confirmDelete } = useDeleteConfirmation({
+    deleteFn: () => tagRepository.delete(tagId),
+    onSuccess: async () => {
       navigation.goBack();
       deferredRefreshTags();
-    }, ERROR_PREFIXES.tagDelete);
-  };
+    },
+    errorPrefix: ERROR_PREFIXES.tagDelete,
+  });
 
   const isEmpty = !name.trim();
   const isDisabled = isEmpty || !!nameError || checkingName;
@@ -101,7 +102,7 @@ export default function ModifyTagScreen() {
 
         <DeleteButton
           label={labels.modify_tag_delete}
-          onPress={() => setDeleteModalVisible(true)}
+          onPress={openDeleteModal}
           style={styles.deleteButton}
         />
 
@@ -122,11 +123,8 @@ export default function ModifyTagScreen() {
         message={labels.modify_tag_delete_confirm_message}
         confirmLabel={labels.modify_tag_delete_confirm_delete}
         cancelLabel={labels.modify_tag_delete_confirm_cancel}
-        onConfirm={() => {
-          setDeleteModalVisible(false);
-          handleDelete();
-        }}
-        onCancel={() => setDeleteModalVisible(false)}
+        onConfirm={confirmDelete}
+        onCancel={closeDeleteModal}
       />
     </ScreenShell>
   );

@@ -31,7 +31,7 @@ import CategoryFilterModal from '../components/CategoryFilterModal';
 import PeriodTabs from '../components/PeriodTabs';
 import CalendarPicker from '../components/CalendarPicker';
 import SelectionActionBar from '../components/SelectionActionBar';
-import ConfirmationModal from '../components/ConfirmationModal';
+import BulkDeleteConfirmationModal from '../components/BulkDeleteConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 
@@ -272,7 +272,7 @@ export default function AllTransactionsScreen() {
         />
       )}
 
-      <ConfirmationModal
+      <BulkDeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.transactions_bulk_delete_confirm_title(selectedIds.size)}
         message={labels.transactions_bulk_delete_confirm_message}

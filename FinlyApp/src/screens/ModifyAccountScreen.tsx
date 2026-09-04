@@ -8,6 +8,7 @@ import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useColorSelection } from '../hooks/useColorSelection';
+import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
 import { t, getDisplayAccountName, getDefaultEnglishAccountName, getAccountName, getDefaultAccountIdByName, getDisplayAccountDescription, getDefaultEnglishAccountDescription, getAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
 import { sanitizeDefaultAccounts } from '../database/configDefaults';
@@ -46,7 +47,6 @@ export default function ModifyAccountScreen() {
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [initialBalanceRaw, setInitialBalanceRaw] = useState('');
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const { selectedColor, customColor, setSelectedColor, setCustomColor, handleColorSelect } = useColorSelection();
 
   useEffect(() => {
@@ -111,8 +111,8 @@ export default function ModifyAccountScreen() {
     }, ERROR_PREFIXES.accountUpdate);
   };
 
-  const handleDeleteConfirm = async () => {
-    await runWithErrorAlert(async () => {
+  const { visible: deleteModalVisible, open: openDeleteModal, close: closeDeleteModal, confirm: confirmDelete } = useDeleteConfirmation({
+    deleteFn: async () => {
       await accountRepository.delete(accountId);
 
       const remaining = accounts.filter(a => a.id !== accountId);
@@ -120,11 +120,13 @@ export default function ModifyAccountScreen() {
       if (Object.keys(updates).length > 0) {
         updateConfig(updates);
       }
-
+    },
+    onSuccess: async () => {
       navigation.goBack();
       deferredRefreshAccounts();
-    }, ERROR_PREFIXES.accountDelete);
-  };
+    },
+    errorPrefix: ERROR_PREFIXES.accountDelete,
+  });
 
   if (!account) {
     return (
@@ -169,7 +171,7 @@ export default function ModifyAccountScreen() {
             isSubmitDisabled={!canSave}
             onSubmit={handleSave}
             deleteLabel={isTotal ? undefined : labels.modify_account_delete}
-            onDeletePress={isTotal ? undefined : () => setDeleteModalVisible(true)}
+            onDeletePress={isTotal ? undefined : openDeleteModal}
             deleteDisabled={isLastAccount}
             deleteLastHint={isLastAccount ? labels.modify_account_delete_last : null}
           />
@@ -182,8 +184,8 @@ export default function ModifyAccountScreen() {
         message={labels.modify_account_delete_confirm_message}
         confirmLabel={labels.modify_account_delete_confirm_delete}
         cancelLabel={labels.modify_account_delete_confirm_cancel}
-        onConfirm={handleDeleteConfirm}
-        onCancel={() => setDeleteModalVisible(false)}
+        onConfirm={confirmDelete}
+        onCancel={closeDeleteModal}
       />
     </>
   );

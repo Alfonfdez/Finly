@@ -20,7 +20,7 @@ import Fab from '../components/Fab';
 import ListItemRow from '../components/ListItemRow';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
-import ConfirmationModal from '../components/ConfirmationModal';
+import BulkDeleteConfirmationModal from '../components/BulkDeleteConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 
@@ -128,7 +128,7 @@ export default function TagsScreen() {
         />
       )}
 
-      <ConfirmationModal
+      <BulkDeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.tags_bulk_delete_confirm_title(selectedIds.size)}
         message={labels.tags_bulk_delete_confirm_message}

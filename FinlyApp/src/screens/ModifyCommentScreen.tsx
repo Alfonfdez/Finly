@@ -4,6 +4,7 @@ import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, MAX_COMMENT_LENGTH } from '../constants/types';
@@ -26,7 +27,6 @@ export default function ModifyCommentScreen() {
   const originalComment = route.params.comment;
   const [comment, setComment] = useState(originalComment);
   const [count, setCount] = useState(0);
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -52,13 +52,11 @@ export default function ModifyCommentScreen() {
     }, ERROR_PREFIXES.commentUpdate);
   };
 
-  const handleDelete = async () => {
-    setDeleteModalVisible(false);
-    await runWithErrorAlert(async () => {
-      await transactionRepository.deleteComment(originalComment);
-      navigation.goBack();
-    }, ERROR_PREFIXES.commentDelete);
-  };
+  const { visible: deleteModalVisible, open: openDeleteModal, close: closeDeleteModal, confirm: confirmDelete } = useDeleteConfirmation({
+    deleteFn: () => transactionRepository.deleteComment(originalComment),
+    onSuccess: () => navigation.goBack(),
+    errorPrefix: ERROR_PREFIXES.commentDelete,
+  });
 
   return (
     <ScreenShell>
@@ -82,7 +80,7 @@ export default function ModifyCommentScreen() {
 
         <DeleteButton
           label={labels.comments_delete}
-          onPress={() => setDeleteModalVisible(true)}
+          onPress={openDeleteModal}
           style={styles.deleteButton}
         />
 
@@ -107,8 +105,8 @@ export default function ModifyCommentScreen() {
         message={labels.comments_delete_confirm_message(count)}
         confirmLabel={labels.comments_delete_confirm_delete}
         cancelLabel={labels.comments_delete_confirm_cancel}
-        onConfirm={handleDelete}
-        onCancel={() => setDeleteModalVisible(false)}
+        onConfirm={confirmDelete}
+        onCancel={closeDeleteModal}
       />
     </ScreenShell>
   );
