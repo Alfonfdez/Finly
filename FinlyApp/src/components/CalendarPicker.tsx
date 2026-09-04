@@ -7,6 +7,7 @@ import { PERIODS } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
+import { BUTTON_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
   period: Period;
@@ -70,6 +71,6 @@ export default function CalendarPicker({
 
 const styles = StyleSheet.create({
   container: { alignItems: 'center', marginVertical: 4 },
-  button: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 },
+  button: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: BUTTON_BORDER_RADIUS },
   text: { fontWeight: '600' },
 });

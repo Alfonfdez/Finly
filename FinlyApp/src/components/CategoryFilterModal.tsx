@@ -7,6 +7,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
 import SearchBar from './SearchBar';
 import EmptyState from './EmptyState';
+import { CARD_BORDER_RADIUS } from './componentStyles';
 import { TRANSACTION_TYPES, TYPE_FILTERS, type TransactionTypeFilter } from '../constants/types';
 import { sortCategoriesWithOthersLast, categoriesOfType } from '../utils/categoryUtils';
 import { matchesAllTerms } from '../utils/search';
@@ -232,7 +233,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 12,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     alignItems: 'center',
   },
   applyText: {

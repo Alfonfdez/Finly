@@ -1,17 +1,26 @@
 import { Component, type ReactNode } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { darkColors } from '../constants/themes';
+import { useConfig } from '../context/ConfigContext';
+import { BUTTON_BORDER_RADIUS } from './componentStyles';
 
-interface Props {
+interface ThemeColors {
+  background: string;
+  text: string;
+  textSecondary: string;
+  primary: string;
+}
+
+interface BaseProps {
   children: ReactNode;
   onRetry?: () => void;
+  colors: ThemeColors;
 }
 
 interface State {
   hasError: boolean;
 }
 
-export default class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundaryBase extends Component<BaseProps, State> {
   state: State = { hasError: false };
 
   static getDerivedStateFromError(): State {
@@ -26,13 +35,17 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      const { background, text, textSecondary, primary } = this.props.colors;
       return (
-        <View style={styles.container}>
-          <Text style={styles.title}>Something went wrong</Text>
-          <Text style={styles.message}>An unexpected error occurred.</Text>
+        <View style={[styles.container, { backgroundColor: background }]}>
+          <Text style={[styles.title, { color: text }]}>Something went wrong</Text>
+          <Text style={[styles.message, { color: textSecondary }]}>An unexpected error occurred.</Text>
           {this.props.onRetry && (
-            <TouchableOpacity style={styles.button} onPress={this.props.onRetry}>
-              <Text style={styles.buttonText}>Try again</Text>
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: primary }]}
+              onPress={this.props.onRetry}
+            >
+              <Text style={[styles.buttonText, { color: background }]}>Try again</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -42,34 +55,46 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 }
 
+export default function ErrorBoundary({ children, onRetry }: Omit<BaseProps, 'colors'>) {
+  const { activeColors: c } = useConfig();
+  return (
+    <ErrorBoundaryBase
+      onRetry={onRetry}
+      colors={{
+        background: c.background,
+        text: c.text,
+        textSecondary: c.textSecondary,
+        primary: c.primary,
+      }}
+    >
+      {children}
+    </ErrorBoundaryBase>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: darkColors.background,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
   },
   title: {
-    color: darkColors.text,
     fontSize: 20,
     fontWeight: '700',
     marginBottom: 8,
   },
   message: {
-    color: darkColors.textSecondary,
     fontSize: 15,
     textAlign: 'center',
     marginBottom: 24,
   },
   button: {
-    backgroundColor: darkColors.primary,
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: BUTTON_BORDER_RADIUS,
   },
   buttonText: {
-    color: darkColors.background,
     fontSize: 15,
     fontWeight: '600',
   },

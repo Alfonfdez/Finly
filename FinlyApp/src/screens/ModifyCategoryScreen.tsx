@@ -16,6 +16,7 @@ import { categoryRepository, transactionRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, USER_ID } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
+import { BUTTON_BORDER_RADIUS } from '../components/componentStyles';
 import { CATEGORY_ICONS } from '../components/IconGrid';
 import { QUICK_COLORS } from '../constants/colors';
 import IconBadge from '../components/IconBadge';
@@ -280,7 +281,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: BUTTON_BORDER_RADIUS,
     padding: 12,
   },
   counter: {

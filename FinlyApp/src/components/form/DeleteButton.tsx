@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
+import { CARD_BORDER_RADIUS } from '../componentStyles';
 
 interface Props {
   label: string;
@@ -50,7 +51,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     paddingVertical: 14,
   },
   text: { fontWeight: '600' },

@@ -11,7 +11,7 @@ import RadioButton from './RadioButton';
 import ListItemRow from './ListItemRow';
 import PrimaryButton from './form/PrimaryButton';
 import { WHITE, TRANSPARENT } from '../constants/themes';
-import { BUTTON_BORDER_RADIUS } from './componentStyles';
+import { BUTTON_BORDER_RADIUS, CONTROL_BORDER_RADIUS } from './componentStyles';
 
 export type TransferTargetId = number | 'delete';
 
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   item: {
     paddingVertical: 12,
     paddingHorizontal: 8,
-    borderRadius: 8,
+    borderRadius: CONTROL_BORDER_RADIUS,
     marginBottom: 4,
   },
   divider: {
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   deleteIcon: {
     width: 36,
     height: 36,
-    borderRadius: 8,
+    borderRadius: CONTROL_BORDER_RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
   },

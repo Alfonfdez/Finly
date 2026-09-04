@@ -5,6 +5,7 @@ import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
 import { calendarStyles, MIN_DATE } from './calendarStyles';
+import { CONTROL_BORDER_RADIUS } from '../componentStyles';
 
 const PICKING_PHASE = {
   start: 'start',
@@ -91,6 +92,6 @@ const styles = StyleSheet.create({
   allTimeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, marginRight: 8 },
   allTimeText: { fontWeight: '600' },
-  indicator: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, marginBottom: 8, alignItems: 'center' },
+  indicator: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: CONTROL_BORDER_RADIUS, marginBottom: 8, alignItems: 'center' },
   indicatorText: { fontWeight: '600' },
 });

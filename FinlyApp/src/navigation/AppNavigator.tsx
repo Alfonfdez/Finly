@@ -12,6 +12,7 @@ import {
   type DrawerContentComponentProps,
 } from '@react-navigation/drawer';
 import type { RootStackParamList } from '../constants/types';
+import { BUTTON_BORDER_RADIUS } from '../components/componentStyles';
 import HomeScreen from '../screens/HomeScreen';
 import AddTransactionScreen from '../screens/AddTransactionScreen';
 import AddCategoryScreen from '../screens/AddCategoryScreen';
@@ -292,7 +293,7 @@ const styles = StyleSheet.create({
   drawerLogo: {
     width: 36,
     height: 36,
-    borderRadius: 10,
+    borderRadius: BUTTON_BORDER_RADIUS,
   },
   drawerTitle: {
     fontWeight: '700',

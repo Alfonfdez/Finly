@@ -31,6 +31,7 @@ import ScreenSearchBar from '../components/ScreenSearchBar';
 import SelectionActionBar from '../components/SelectionActionBar';
 import ConfirmationModal from '../components/ConfirmationModal';
 import GuardModal from '../components/GuardModal';
+import { CARD_BORDER_RADIUS } from '../components/componentStyles';
 
 type AccountWithBalance = Account & { balance: number };
 
@@ -303,7 +304,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   accountRow: {
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     marginBottom: 10,
     padding: 14,
   },

@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { CARD_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
   selectedCount: number;
@@ -63,7 +64,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     paddingVertical: 14,
   },
   cancelText: {
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     paddingVertical: 14,
   },
   deleteText: {

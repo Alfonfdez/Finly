@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { TRANSACTION_TYPES, type TransactionType } from '../constants/types';
+import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS } from './componentStyles';
 
 export interface TypeTab {
   key: TransactionType;
@@ -63,7 +64,7 @@ export default function TabBar<T extends string>({ tabs, active, onChange }: Pro
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     padding: 4,
     marginHorizontal: 16,
     marginVertical: 8,
@@ -72,7 +73,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: BUTTON_BORDER_RADIUS,
   },
   text: {
     fontWeight: '600',

@@ -6,6 +6,7 @@ import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import { DEBOUNCE_MS, MAX_COMMENT_LENGTH, MIN_COMMENT_SUGGESTION_LENGTH } from '../constants/types';
+import { CONTROL_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
   comment: string;
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
   input: {
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: CONTROL_BORDER_RADIUS,
     minHeight: 80,
   },
   counter: {
@@ -130,7 +131,7 @@ const styles = StyleSheet.create({
   },
   suggestionsPanel: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: CONTROL_BORDER_RADIUS,
     marginBottom: 16,
   },
   suggestionItem: {
@@ -141,8 +142,8 @@ const styles = StyleSheet.create({
   },
   suggestionItemLast: {
     borderBottomWidth: 0,
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
+    borderBottomLeftRadius: CONTROL_BORDER_RADIUS,
+    borderBottomRightRadius: CONTROL_BORDER_RADIUS,
   },
   suggestionText: {
     fontWeight: '500',

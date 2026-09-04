@@ -14,6 +14,7 @@ import { countAtLimit } from '../utils/limits';
 import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormError from '../components/form/FormError';
+import { CARD_BORDER_RADIUS } from '../components/componentStyles';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 
 export default function CreateTagScreen() {
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   input: {
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     paddingHorizontal: 14,
     paddingVertical: 14,
     fontWeight: '500',
@@ -106,6 +107,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   button: {
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
   },
 });

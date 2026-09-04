@@ -13,6 +13,7 @@ import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormError from '../components/form/FormError';
 import DeleteButton from '../components/form/DeleteButton';
+import { CARD_BORDER_RADIUS } from '../components/componentStyles';
 import { ERROR_PREFIXES, runWithErrorAlert, showErrorAlert } from '../utils/errors';
 
 type ModifyCommentRouteProp = RouteProp<RootStackParamList, 'ModifyComment'>;
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   input: {
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     paddingHorizontal: 14,
     paddingVertical: 14,
     fontWeight: '500',
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   button: {
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
   },
   mergeHint: {
     marginTop: 12,

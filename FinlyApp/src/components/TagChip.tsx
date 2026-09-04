@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { withAlpha } from '../utils/color';
+import { MODAL_BORDER_RADIUS } from './componentStyles';
 
 interface TagChipProps {
   label: string;
@@ -27,7 +28,7 @@ const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 8,
+    borderRadius: MODAL_BORDER_RADIUS,
   },
   text: {
     fontWeight: '500',
