@@ -26,7 +26,7 @@ import { TransactionRow, TransactionDateHeader } from '../components/Transaction
 import EmptyState from '../components/EmptyState';
 import Fab from '../components/Fab';
 import SelectionActionBar from '../components/SelectionActionBar';
-import ConfirmationModal from '../components/ConfirmationModal';
+import BulkDeleteConfirmationModal from '../components/BulkDeleteConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 
@@ -243,7 +243,7 @@ export default function TransactionsScreen() {
         />
       )}
 
-      <ConfirmationModal
+      <BulkDeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.transactions_bulk_delete_confirm_title(selectedIds.size)}
         message={labels.transactions_bulk_delete_confirm_message}

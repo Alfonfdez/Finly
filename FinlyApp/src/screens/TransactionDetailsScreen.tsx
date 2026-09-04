@@ -8,9 +8,10 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
+import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
 import { formatCurrency, formatDateLong, formatDateTimeShort, parseDbDate, AMOUNT_SIGNS } from '../utils/formatters';
 import { deletePhotoFile, parsePhotos } from '../utils/photoUtils';
-import { showErrorAlert } from '../utils/errors';
+import { ERROR_PREFIXES } from '../utils/errors';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
 import { transactionRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES } from '../constants/types';
@@ -35,8 +36,6 @@ export default function TransactionDetailsScreen() {
 
   const deferredRefresh = useDeferredRefresh(refresh);
 
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
 
@@ -81,24 +80,19 @@ export default function TransactionDetailsScreen() {
 
   const { data: tagNames } = useFocusLoad(loadTags, [] as { tag_id: number; name: string }[]);
 
-  const handleDelete = useCallback(async () => {
-    if (deleting) return;
-    setDeleting(true);
-    try {
+  const { visible: deleteModalVisible, open: openDeleteModal, close: closeDeleteModal, confirm: confirmDelete } = useDeleteConfirmation({
+    deleteFn: async () => {
       for (const uri of parsedPhotos) {
         await deletePhotoFile(uri);
       }
       await transactionRepository.delete(transactionId);
-      setDeleting(false);
+    },
+    onSuccess: async () => {
       navigation.goBack();
       deferredRefresh();
-    } catch (err) {
-      console.error('Failed to delete transaction:', err);
-      showErrorAlert();
-      setDeleting(false);
-      setDeleteModalVisible(false);
-    }
-  }, [deleting, parsedPhotos, transactionId, navigation, deferredRefresh]);
+    },
+    errorPrefix: ERROR_PREFIXES.transactionsDelete,
+  });
 
   if (!transaction) {
     return (
@@ -192,7 +186,7 @@ export default function TransactionDetailsScreen() {
         <View style={styles.actionSection}>
           <TouchableOpacity
             style={[styles.actionButton, { borderColor: c.red }]}
-            onPress={() => setDeleteModalVisible(true)}
+            onPress={openDeleteModal}
           >
             <Ionicons name="trash-outline" size={18} color={c.red} />
             <Text style={[styles.actionButtonText, { color: c.red, fontSize: fs(15) }]}>
@@ -228,8 +222,8 @@ export default function TransactionDetailsScreen() {
         title={labels.details_delete_title}
         confirmLabel={labels.details_delete_yes}
         cancelLabel={labels.details_delete_no}
-        onConfirm={handleDelete}
-        onCancel={() => setDeleteModalVisible(false)}
+        onConfirm={confirmDelete}
+        onCancel={closeDeleteModal}
       />
 
       <PhotoViewer
