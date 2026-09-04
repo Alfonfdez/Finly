@@ -94,6 +94,15 @@ function createStub(): AppStubState {
 const g = globalThis as GlobalWithAppStub;
 g.__finlyAppStub__ = createStub();
 
+// Stable empty array so that buildAppMock() keeps reference identity across
+// renders. A fresh `[]` on every call would retrigger effects that depend on
+// `activeCategories` (e.g. HomeScreen's tag-breakdown loader), causing an
+// infinite render loop in tests.
+const EMPTY_ACTIVE_CATEGORIES: CategoryWithTotal[] = [];
+const EMPTY_TAG_IDS: number[] = [];
+const EMPTY_FILTERED: Transaction[] = [];
+const EMPTY_TAGS_BY_TX = new Map<number, number[]>();
+
 // Returns the value of useApp(). Referenced lazily inside a vi.mock factory
 // (e.g. `useApp: () => buildAppMock()`) so the factory has no top-level
 // references that could be touched before this module initializes.
@@ -125,10 +134,10 @@ export function buildAppMock() {
     toggleTagId: s.toggleTagId,
     clearTagFilter: s.clearTagFilter,
     accountsWithBalance: accountsWithBalance as (Account & { balance: number })[],
-    tagsByTransaction: new Map<number, number[]>(),
-    activeCategories: [] as CategoryWithTotal[],
-    activeTagIds: [] as number[],
-    filteredTransactions: [] as Transaction[],
+    tagsByTransaction: EMPTY_TAGS_BY_TX,
+    activeCategories: EMPTY_ACTIVE_CATEGORIES,
+    activeTagIds: EMPTY_TAG_IDS,
+    filteredTransactions: EMPTY_FILTERED,
     totalIncome: 0,
     totalExpenses: 0,
     totalIncomeAll: 0,
