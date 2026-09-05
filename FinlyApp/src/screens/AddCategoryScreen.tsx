@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
+import { LIMIT_TEXT_STYLE } from '../components/componentStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -87,7 +88,7 @@ export default function AddCategoryScreen() {
               hideTitle
             />
             {atCategoryLimit && (
-              <Text style={[styles.limitText, { color: c.textSecondary, fontSize: fs(13) }]}>
+              <Text style={[LIMIT_TEXT_STYLE, { color: c.textSecondary, fontSize: fs(13) }]}>
                 {labels.create_cat_error_limit(MAX_CATEGORIES_PER_TYPE)}
               </Text>
             )}
@@ -113,12 +114,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 16,
-  },
-  limitText: {
-    fontWeight: '500',
-    textAlign: 'center',
-    marginTop: 16,
-    paddingHorizontal: 16,
   },
   searchButton: {
     marginRight: 8,

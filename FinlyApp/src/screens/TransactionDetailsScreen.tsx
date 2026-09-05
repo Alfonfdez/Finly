@@ -9,7 +9,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
 import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
-import { formatCurrency, formatDateLong, formatDateTimeShort, parseDbDate, AMOUNT_SIGNS } from '../utils/formatters';
+import { formatAmount, formatDateLong, formatDateTimeShort, parseDbDate, AMOUNT_SIGNS } from '../utils/formatters';
 import { deletePhotoFile, parsePhotos } from '../utils/photoUtils';
 import { ERROR_PREFIXES } from '../utils/errors';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
@@ -115,7 +115,7 @@ export default function TransactionDetailsScreen() {
         <View style={styles.dataSection}>
           <DataRow label={labels.details_amount}>
             <Text style={[styles.dataValue, { color: typeColor, fontSize: fs(15) }]}>
-              {`${isExpense ? AMOUNT_SIGNS.negative : AMOUNT_SIGNS.positive}${formatCurrency(transaction.amount, config.currency, config.decimalSeparator)}`}
+              {`${isExpense ? AMOUNT_SIGNS.negative : AMOUNT_SIGNS.positive}${formatAmount(transaction.amount, config)}`}
             </Text>
           </DataRow>
 

@@ -1,4 +1,4 @@
-import { and, eq, inArray, ne, sql, type SQL } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import { getDrizzle, withTransaction } from '../drizzle/engine';
 import { categories, transactions } from '../drizzle/schema';
 import { runResultOf } from '../drizzle/proxy';
@@ -8,6 +8,7 @@ import { categorySchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
 import { deleteTransactionPhotos } from '../photoCleanup';
 import { dbTimestamp } from '../../utils/formatters';
+import { existsByName } from './repoHelpers';
 
 export const categoryRepo = {
   async list(userId: number, type?: TransactionType): Promise<Category[]> {
@@ -124,14 +125,12 @@ export const categoryRepo = {
   },
 
   async existsByName(userId: number, name: string, excludeId?: number): Promise<boolean> {
-    const db = await getDrizzle();
-    const conditions: SQL[] = [sql`LOWER(${categories.name}) = LOWER(${name})`, eq(categories.user_id, userId)];
-    if (excludeId !== undefined) conditions.push(ne(categories.id, excludeId));
-    const rows = await db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(categories)
-      .where(and(...conditions))
-      .all();
-    return (rows[0]?.count ?? 0) > 0;
+    return existsByName(
+      categories,
+      { name: categories.name, userId: categories.user_id, id: categories.id },
+      userId,
+      name,
+      excludeId
+    );
   },
 };

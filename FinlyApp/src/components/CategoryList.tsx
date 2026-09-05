@@ -2,7 +2,7 @@ import { useCallback, memo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { type CategoryWithTotal, MAX_VISIBLE_TAGS } from '../constants/types';
 import { UNTAGGED_ID } from '../database/helpers';
-import { formatCurrency } from '../utils/formatters';
+import { formatAmount } from '../utils/formatters';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -84,7 +84,7 @@ function CategoryListInner({
           }
           right={
             <View style={styles.amounts}>
-              <Text style={[styles.total, { color: c.text, fontSize: fs(14) }]}>{formatCurrency(item.total, config.currency, config.decimalSeparator)}</Text>
+              <Text style={[styles.total, { color: c.text, fontSize: fs(14) }]}>{formatAmount(item.total, config)}</Text>
               <Text style={[styles.percentage, { color: c.textSecondary, fontSize: fs(12) }]}>{item.percentage.toFixed(1)}%</Text>
             </View>
           }

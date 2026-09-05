@@ -3,6 +3,7 @@ import {
   HIDDEN_BALANCE,
   formatCurrency,
   formatSignedCurrency,
+  formatAmount,
   fitFontSize,
   formatDate,
   getMonthName,
@@ -62,6 +63,23 @@ describe('formatSignedCurrency', () => {
 
   it('keeps the minus sign for negative amounts', () => {
     expect(formatSignedCurrency(-5)).toBe('-5,00 €');
+  });
+});
+
+describe('formatAmount', () => {
+  it('formats using the currency and separator from the config', () => {
+    const config = { currency: '$', decimalSeparator: DECIMAL_SEPARATORS.dot };
+    expect(formatAmount(1234.5, config)).toBe('1,234.50 $');
+  });
+
+  it('uses the config decimal separator for grouping and decimals', () => {
+    const config = { currency: '€', decimalSeparator: DECIMAL_SEPARATORS.comma };
+    expect(formatAmount(1234567.891, config)).toBe('1.234.567,89 €');
+  });
+
+  it('keeps the minus sign for negative amounts', () => {
+    const config = { currency: '€', decimalSeparator: DECIMAL_SEPARATORS.comma };
+    expect(formatAmount(-50, config)).toBe('-50,00 €');
   });
 });
 

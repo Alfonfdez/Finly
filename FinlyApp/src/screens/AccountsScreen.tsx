@@ -16,7 +16,7 @@ import { sanitizeDefaultAccounts } from '../database/configDefaults';
 import { ERROR_PREFIXES, runWithErrorAlert, showErrorAlert } from '../utils/errors';
 import { isTotalAccount } from '../database/helpers';
 import type { Account } from '../database/types';
-import { formatCurrency, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
+import { formatAmount, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
 import { withAlpha } from '../utils/color';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { matchesAccountSearch } from '../utils/accountSearch';
@@ -181,7 +181,7 @@ export default function AccountsScreen() {
             }
             navigation.navigate('ModifyAccount', { accountId: item.id });
           }}
-          accessibilityLabel={`${getDisplayAccountName(item)} ${isBalanceHidden ? HIDDEN_BALANCE : formatCurrency(item.balance, config.currency, config.decimalSeparator)}`}
+          accessibilityLabel={`${getDisplayAccountName(item)} ${isBalanceHidden ? HIDDEN_BALANCE : formatAmount(item.balance, config)}`}
         />
         {isTotal && <View style={[styles.separator, { backgroundColor: withAlpha(c.primary, 25) }]} />}
       </>

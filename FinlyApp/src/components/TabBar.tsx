@@ -4,7 +4,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { TRANSACTION_TYPES, type TransactionType } from '../constants/types';
 import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS } from './componentStyles';
 
-export interface TypeTab {
+interface TypeTab {
   key: TransactionType;
   label: string;
   accessibilityLabel: string;

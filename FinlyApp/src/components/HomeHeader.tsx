@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { formatCurrency, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
+import { formatAmount, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { t, getDisplayAccountName } from '../i18n';
 import type { Account } from '../database/types';
@@ -69,11 +69,11 @@ export default function HomeHeader({
         ) : (
           <>
             <Text style={{ fontSize: fs(14) }}>
-              <Text style={{ color: c.green, fontWeight: '700' }}>+{formatCurrency(totalIncomeAll, config.currency, config.decimalSeparator)}</Text>
+              <Text style={{ color: c.green, fontWeight: '700' }}>+{formatAmount(totalIncomeAll, config)}</Text>
               <Text style={{ color: c.textSecondary, fontSize: fs(12) }}> {labels.home_income}</Text>
             </Text>
             <Text style={{ fontSize: fs(14) }}>
-              <Text style={{ color: c.red, fontWeight: '700' }}>-{formatCurrency(totalExpensesAll, config.currency, config.decimalSeparator)}</Text>
+              <Text style={{ color: c.red, fontWeight: '700' }}>-{formatAmount(totalExpensesAll, config)}</Text>
               <Text style={{ color: c.textSecondary, fontSize: fs(12) }}> {labels.home_expenses}</Text>
             </Text>
           </>

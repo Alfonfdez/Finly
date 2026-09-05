@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import ColorPicker, { Panel1, HueSlider, OpacitySlider, Preview } from 'reanimated-color-picker';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useResetOnOpen } from '../hooks/useResetOnOpen';
 import { t } from '../i18n';
 import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS } from './componentStyles';
 import ModalShell from './ModalShell';
@@ -21,11 +22,10 @@ export default function ColorPickerModal({ visible, selectedColor, onSelect, onC
   const labels = t();
   const [tempColor, setTempColor] = useState(selectedColor ?? c.primary);
 
-  useEffect(() => {
-    if (visible) {
-      setTempColor(selectedColor ?? c.primary);
-    }
-  }, [visible, selectedColor, c.primary]);
+  const resetOnOpen = useCallback(() => {
+    setTempColor(selectedColor ?? c.primary);
+  }, [selectedColor, c.primary]);
+  useResetOnOpen(visible, resetOnOpen);
 
   const handleConfirm = () => {
     onSelect(tempColor);

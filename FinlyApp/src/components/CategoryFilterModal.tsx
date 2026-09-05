@@ -1,9 +1,10 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useResetOnOpen } from '../hooks/useResetOnOpen';
 import { t, getDisplayCategoryName } from '../i18n';
 import SearchBar from './SearchBar';
 import EmptyState from './EmptyState';
@@ -32,12 +33,11 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
   const [localSelectedIds, setLocalSelectedIds] = useState<number[]>(selectedIds);
   const [searchText, setSearchText] = useState('');
 
-  useEffect(() => {
-    if (visible) {
-      setLocalSelectedIds(selectedIds);
-      setSearchText('');
-    }
-  }, [visible, selectedIds]);
+  const resetOnOpen = useCallback(() => {
+    setLocalSelectedIds(selectedIds);
+    setSearchText('');
+  }, [selectedIds]);
+  useResetOnOpen(visible, resetOnOpen);
 
   const allCategoryIds = useMemo(() => categories.map(cat => cat.id), [categories]);
   const visibleCategoryIds = useMemo(() => {

@@ -19,8 +19,9 @@ import { UNTAGGED_ID } from '../helpers';
 import { transactionSchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
 import { escapeLikePattern } from '../../utils/formatters';
+import type { AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
 
-export interface TransactionFilters {
+interface TransactionFilters {
   account_id?: number;
   category_id?: number;
   category_ids?: number[];
@@ -30,13 +31,13 @@ export interface TransactionFilters {
   tagIds?: number[];
 }
 
-export interface CategoryTagBreakdown {
+interface CategoryTagBreakdown {
   tag_id: number;
   name: string;
   total: number;
 }
 
-export interface CategoryUsageCount {
+interface CategoryUsageCount {
   id: number;
   name: string;
   icon: string;
@@ -48,6 +49,20 @@ export interface CategoryUsageCount {
 export interface CommentUsage {
   description: string;
   count: number;
+}
+
+async function countByGroup(column: AnySQLiteColumn, ids: number[]): Promise<Record<number, number>> {
+  if (ids.length === 0) return {};
+  const db = await getDrizzle();
+  const rows = await db
+    .select({ groupId: column, count: sql<number>`COUNT(*)` })
+    .from(transactions)
+    .where(inArray(column, ids))
+    .groupBy(column)
+    .all();
+  const map: Record<number, number> = {};
+  for (const row of rows) map[Number(row.groupId)] = row.count;
+  return map;
 }
 
 export const transactionReads = {
@@ -210,42 +225,16 @@ export const transactionReads = {
   },
 
   async countByCategoryIds(ids: number[]): Promise<number> {
-    if (ids.length === 0) return 0;
-    const db = await getDrizzle();
-    const row = await db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(transactions)
-      .where(inArray(transactions.category_id, ids))
-      .get();
-    return row?.count ?? 0;
+    const map = await countByGroup(transactions.category_id, ids);
+    return Object.values(map).reduce((sum, count) => sum + count, 0);
   },
 
   async countByCategoryIdsMap(ids: number[]): Promise<Record<number, number>> {
-    if (ids.length === 0) return {};
-    const db = await getDrizzle();
-    const rows = await db
-      .select({ category_id: transactions.category_id, count: sql<number>`COUNT(*)` })
-      .from(transactions)
-      .where(inArray(transactions.category_id, ids))
-      .groupBy(transactions.category_id)
-      .all();
-    const map: Record<number, number> = {};
-    for (const row of rows) map[row.category_id] = row.count;
-    return map;
+    return countByGroup(transactions.category_id, ids);
   },
 
   async countByAccountIdsMap(ids: number[]): Promise<Record<number, number>> {
-    if (ids.length === 0) return {};
-    const db = await getDrizzle();
-    const rows = await db
-      .select({ account_id: transactions.account_id, count: sql<number>`COUNT(*)` })
-      .from(transactions)
-      .where(inArray(transactions.account_id, ids))
-      .groupBy(transactions.account_id)
-      .all();
-    const map: Record<number, number> = {};
-    for (const row of rows) map[row.account_id] = row.count;
-    return map;
+    return countByGroup(transactions.account_id, ids);
   },
 
   async breakdownByCategoriesAndTags(

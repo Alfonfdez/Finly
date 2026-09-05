@@ -597,3 +597,18 @@ Hide the Select + Search header actions when there is nothing to manage:
 - Accounts and Categories screens left unchanged (Total account is always present; categories are seeded).
 
 Spec: spec/features/018-tag-management/ and spec/features/027-comments-management/.
+
+## Tier-5 codebase cleanup audit (Option D, Feature 1)
+Status: completed.
+
+First pass of the Tier-5 cleanup audit (duplicated code, dead exports, unused i18n keys) covering only low-risk, behavior-preserving changes:
+- 10 dead exports removed (each kept local to its module): `parseRow`, `BackupSnapshot`, `ProxyMethod`, `DrizzleRunResult`, `DrizzleDb`, `TransactionFilters`, `CategoryTagBreakdown`, `CategoryUsageCount`, `TypeTab`, `UseTransactionListScreenOptions`.
+- New `repoHelpers.ts` with a single `existsByName()` shared by the account/category/tag repositories (was triplicated); a shared `patchUpdate` was deliberately skipped (per-entity field lists differ).
+- New `formatAmount(amount, config)` in `utils/formatters.ts`, replacing the 9 `formatCurrency(x, config.currency, config.decimalSeparator)` call sites.
+- Private `countByGroup(column, ids)` in `transactionRepo.reads.ts` collapsing the three count-by-group queries.
+- `LIMIT_TEXT_STYLE` and `COUNTER_STYLE` hoisted into `componentStyles.ts` where the styles were exactly identical (TagsScreen `limitText` and CategoriesScreen `counter` kept local - they genuinely differ).
+- New `useResetOnOpen(visible, reset)` hook applied to the 5 modals with the open-time reset pattern.
+- Skipped + documented (would break behavior preservation): routing the three active-flag async loads through `useFocusLoad` (HomeScreen refetches on filter-dep changes + conditional early-return; ModifyCommentScreen runs on mount/prop-change + `showErrorAlert`; CommentsScreen needs a reload-after-delete that `useFocusLoad` doesn't expose).
+- Audit results: i18n fully clean (all 409 `en.ts` keys used, es/ca/fr/de/pt/it parity exact, no missing-key usages); second audit pass scoped out (Transactions vs AllTransactions ~200 lines, modal footer ×5, Tags vs Comments, etc.).
+
+Spec: see `docs/changelog.md` (2026-09-04, "Tier-5 codebase cleanup audit").
