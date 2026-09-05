@@ -1,4 +1,4 @@
-import { and, eq, inArray, ne, sql, type SQL } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { getDrizzle } from '../drizzle/engine';
 import { tags } from '../drizzle/schema';
 import { runResultOf } from '../drizzle/proxy';
@@ -6,6 +6,7 @@ import type { Tag } from '../types';
 import { tagSchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
 import { dbTimestamp } from '../../utils/formatters';
+import { existsByName } from './repoHelpers';
 
 export const tagRepo = {
   async list(userId: number): Promise<Tag[]> {
@@ -56,14 +57,12 @@ export const tagRepo = {
   },
 
   async existsByName(userId: number, name: string, excludeId?: number): Promise<boolean> {
-    const db = await getDrizzle();
-    const conditions: SQL[] = [sql`LOWER(${tags.name}) = LOWER(${name})`, eq(tags.user_id, userId)];
-    if (excludeId !== undefined) conditions.push(ne(tags.id, excludeId));
-    const rows = await db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(tags)
-      .where(and(...conditions))
-      .all();
-    return (rows[0]?.count ?? 0) > 0;
+    return existsByName(
+      tags,
+      { name: tags.name, userId: tags.user_id, id: tags.id },
+      userId,
+      name,
+      excludeId
+    );
   },
 };

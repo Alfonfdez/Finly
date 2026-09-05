@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
+import { COUNTER_STYLE } from '../components/componentStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -94,7 +95,7 @@ export default function TagsScreen() {
       />
 
       {!selectMode && (
-        <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(13) }]}>
+        <Text style={[COUNTER_STYLE, { color: c.textSecondary, fontSize: fs(13) }]}>
           {labels.tags_counter(tags.length, MAX_TAGS)}
         </Text>
       )}
@@ -148,11 +149,6 @@ const styles = StyleSheet.create({
   },
   emptyList: {
     flex: 1,
-  },
-  counter: {
-    fontWeight: '500',
-    textAlign: 'center',
-    paddingTop: 12,
   },
   row: {
     padding: 14,

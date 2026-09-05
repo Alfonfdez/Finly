@@ -4,6 +4,7 @@ import { PERIODS, TEXT_SIZES, DECIMAL_SEPARATORS, FIRST_DAYS, type DecimalSepara
 import { DAYS_PER_WEEK } from '../constants/calendar';
 import { LANGUAGES, type Language } from './language';
 import { DEFAULT_CURRENCY, getCurrencySymbol } from '../constants/currencies';
+import type { Config } from '../database/types';
 
 export const HIDDEN_BALANCE = '•••••';
 
@@ -26,6 +27,10 @@ export function formatCurrency(amount: number, currency = DEFAULT_CURRENCY, sepa
   const decStr = String(dec).padStart(2, '0');
 
   return `${sign}${integerFmt}${decSep}${decStr} ${getCurrencySymbol(currency)}`;
+}
+
+export function formatAmount(amount: number, config: Pick<Config, 'currency' | 'decimalSeparator'>): string {
+  return formatCurrency(amount, config.currency, config.decimalSeparator);
 }
 
 export function formatSignedCurrency(amount: number, currency = DEFAULT_CURRENCY, separator: DecimalSeparator = DECIMAL_SEPARATORS.comma): string {

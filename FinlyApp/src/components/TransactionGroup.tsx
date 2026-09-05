@@ -2,7 +2,7 @@ import { memo, useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { Transaction, Category } from '../database/types';
-import { formatCurrency, getMonthName, parseDbDate, AMOUNT_SIGNS } from '../utils/formatters';
+import { formatAmount, getMonthName, parseDbDate, AMOUNT_SIGNS } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { getDisplayCategoryName } from '../i18n';
@@ -54,7 +54,7 @@ export const TransactionRow = memo(function TransactionRow({ tx, category, tags,
       ) : undefined}
       right={
         <Text style={[styles.amount, { color: tx.type === TRANSACTION_TYPES.income ? c.green : c.red, fontSize: fs(15) }]}>
-          {tx.type === TRANSACTION_TYPES.income ? AMOUNT_SIGNS.positive : AMOUNT_SIGNS.negative}{formatCurrency(tx.amount, config.currency, config.decimalSeparator)}
+          {tx.type === TRANSACTION_TYPES.income ? AMOUNT_SIGNS.positive : AMOUNT_SIGNS.negative}{formatAmount(tx.amount, config)}
         </Text>
       }
       divider

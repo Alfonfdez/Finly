@@ -3,7 +3,7 @@ import { getDatabase } from '../database';
 import { createSqliteProxyCallback } from './proxy';
 import * as schema from './schema';
 
-export type DrizzleDb = ReturnType<typeof drizzle>;
+type DrizzleDb = ReturnType<typeof drizzle>;
 
 let drizzleDb: DrizzleDb | null = null;
 

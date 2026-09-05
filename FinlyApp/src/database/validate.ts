@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 
-export function parseRow<T>(schema: z.ZodType<T>, table: string, row: unknown): T {
+function parseRow<T>(schema: z.ZodType<T>, table: string, row: unknown): T {
   const result = schema.safeParse(row);
   if (!result.success) {
     throw new Error(`Data validation failed for ${table}: ${result.error.message}`);

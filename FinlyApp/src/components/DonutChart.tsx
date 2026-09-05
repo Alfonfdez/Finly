@@ -2,7 +2,7 @@ import { memo, useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { G, Circle, Path } from 'react-native-svg';
 import type { CategoryWithTotal } from '../constants/types';
-import { formatCurrency, fitFontSize } from '../utils/formatters';
+import { formatAmount, fitFontSize } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 
@@ -30,7 +30,7 @@ function DonutChartInner({ data, total }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
 
-  const formatted = formatCurrency(total, config.currency, config.decimalSeparator);
+  const formatted = formatAmount(total, config);
   const totalFontSize = fitFontSize(formatted, fs(18), HOLE_SIZE);
 
   const segments = useMemo(() => {

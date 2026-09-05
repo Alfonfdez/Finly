@@ -48,7 +48,7 @@ const snapshotSchema = z.object({
   }),
 });
 
-export type BackupSnapshot = z.infer<typeof snapshotSchema>;
+type BackupSnapshot = z.infer<typeof snapshotSchema>;
 
 export class BackupValidationError extends Error {
   constructor(message: string) {

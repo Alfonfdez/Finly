@@ -1,10 +1,11 @@
-import { and, eq, inArray, ne, sql, type SQL } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import { getDrizzle, withTransaction } from '../drizzle/engine';
 import { accounts, transactions } from '../drizzle/schema';
 import { runResultOf } from '../drizzle/proxy';
 import type { Account } from '../types';
 import { accountSchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
+import { existsByName } from './repoHelpers';
 import { deleteTransactionPhotos } from '../photoCleanup';
 import { dbTimestamp } from '../../utils/formatters';
 import { TRANSACTION_TYPES } from '../../constants/types';
@@ -94,14 +95,12 @@ export const accountRepo = {
   },
 
   async existsByName(userId: number, name: string, excludeId?: number): Promise<boolean> {
-    const db = await getDrizzle();
-    const conditions: SQL[] = [sql`LOWER(${accounts.name}) = LOWER(${name})`, eq(accounts.user_id, userId)];
-    if (excludeId !== undefined) conditions.push(ne(accounts.id, excludeId));
-    const rows = await db
-      .select({ count: sql<number>`COUNT(*)` })
-      .from(accounts)
-      .where(and(...conditions))
-      .all();
-    return (rows[0]?.count ?? 0) > 0;
+    return existsByName(
+      accounts,
+      { name: accounts.name, userId: accounts.user_id, id: accounts.id },
+      userId,
+      name,
+      excludeId
+    );
   },
 };

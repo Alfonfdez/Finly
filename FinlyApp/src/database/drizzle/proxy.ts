@@ -1,8 +1,8 @@
 import type { DatabaseBindValue, DatabaseHandle } from '../types';
 
-export type ProxyMethod = 'run' | 'all' | 'values' | 'get';
+type ProxyMethod = 'run' | 'all' | 'values' | 'get';
 
-export interface DrizzleRunResult {
+interface DrizzleRunResult {
   lastInsertRowId: number;
   changes: number;
 }

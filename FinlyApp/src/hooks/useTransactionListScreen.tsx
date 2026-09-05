@@ -6,7 +6,7 @@ import { useBulkDelete } from './useBulkDelete';
 import { useTransactionFilters, type UseTransactionFiltersOptions } from './useTransactionFilters';
 import { ERROR_PREFIXES } from '../utils/errors';
 
-export interface UseTransactionListScreenOptions {
+interface UseTransactionListScreenOptions {
   navigation: NavigationProp<'Transactions'> | NavigationProp<'AllTransactions'>;
   selectMode: boolean;
   toggleItem: (id: number) => void;

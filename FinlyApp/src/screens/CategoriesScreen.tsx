@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
+import { LIMIT_TEXT_STYLE } from '../components/componentStyles';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -170,7 +171,7 @@ export default function CategoriesScreen() {
               hideTitle
             />
             {atCategoryLimit && !selectMode && (
-              <Text style={[styles.limitText, { color: c.textSecondary, fontSize: fs(13) }]}>
+              <Text style={[LIMIT_TEXT_STYLE, { color: c.textSecondary, fontSize: fs(13) }]}>
                 {labels.create_cat_error_limit(MAX_CATEGORIES_PER_TYPE)}
               </Text>
             )}
@@ -242,11 +243,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingTop: 8,
     paddingBottom: 12,
-  },
-  limitText: {
-    fontWeight: '500',
-    textAlign: 'center',
-    marginTop: 16,
-    paddingHorizontal: 16,
   },
 });

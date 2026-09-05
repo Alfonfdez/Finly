@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useResetOnOpen } from '../hooks/useResetOnOpen';
 import { t } from '../i18n';
 import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
@@ -38,13 +39,12 @@ export default function OptionPickerModal<T extends string>({
 
   const isSearchable = searchable ?? options.length > 10;
 
-  useEffect(() => {
-    if (visible) {
-      const match = options.find(op => op.value === selected);
-      setTempLabel(match?.label ?? '');
-      setSearch('');
-    }
-  }, [visible, selected, options]);
+  const resetOnOpen = useCallback(() => {
+    const match = options.find(op => op.value === selected);
+    setTempLabel(match?.label ?? '');
+    setSearch('');
+  }, [selected, options]);
+  useResetOnOpen(visible, resetOnOpen);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return options;

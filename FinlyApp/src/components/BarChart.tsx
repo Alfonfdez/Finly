@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import type { CategoryWithTotal } from '../constants/types';
-import { formatCurrency } from '../utils/formatters';
+import { formatAmount } from '../utils/formatters';
 import { getDisplayCategoryName } from '../i18n';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -32,7 +32,7 @@ function BarChartInner({ data, total = 0 }: Props) {
       </View>
 
       {isEmpty && (
-        <Text style={[styles.emptyText, { color: c.textSecondary, fontSize: fs(14) }]}>{formatCurrency(total, config.currency, config.decimalSeparator)}</Text>
+        <Text style={[styles.emptyText, { color: c.textSecondary, fontSize: fs(14) }]}>{formatAmount(total, config)}</Text>
       )}
 
       <View style={styles.legend}>

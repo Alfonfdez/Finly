@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
+import { COUNTER_STYLE } from '../components/componentStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -112,7 +113,7 @@ export default function CommentsScreen() {
         />
 
         {comments.length > 0 && !selectMode && (
-          <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(13) }]}>
+          <Text style={[COUNTER_STYLE, { color: c.textSecondary, fontSize: fs(13) }]}>
             {labels.comments_counter(filteredComments.length)}
           </Text>
         )}
@@ -162,10 +163,5 @@ const styles = StyleSheet.create({
   },
   row: {
     padding: 14,
-  },
-  counter: {
-    fontWeight: '500',
-    textAlign: 'center',
-    paddingTop: 12,
   },
 });

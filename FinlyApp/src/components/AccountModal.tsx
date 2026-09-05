@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import type { Account } from '../database/types';
-import { formatCurrency, HIDDEN_BALANCE } from '../utils/formatters';
+import { formatAmount, HIDDEN_BALANCE } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useResetOnOpen } from '../hooks/useResetOnOpen';
 import { t, getDisplayAccountName } from '../i18n';
 import { badgeShapeFor } from '../utils/badgeShape';
 import EyeToggle from './EyeToggle';
@@ -31,12 +32,11 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
   const [tempId, setTempId] = useState(selectedId);
   const [isRevealed, setIsRevealed] = useState(false);
 
-  useEffect(() => {
-    if (visible) {
-      setTempId(selectedId);
-      setIsRevealed(false);
-    }
-  }, [visible, selectedId]);
+  const resetOnOpen = useCallback(() => {
+    setTempId(selectedId);
+    setIsRevealed(false);
+  }, [selectedId]);
+  useResetOnOpen(visible, resetOnOpen);
 
   const isBalanceHidden = config.hideBalances !== isRevealed;
 
@@ -45,7 +45,7 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
     return (
       <ListItemRow
         title={getDisplayAccountName(item)}
-        subtitle={isBalanceHidden ? HIDDEN_BALANCE : formatCurrency(item.balance, config.currency, config.decimalSeparator)}
+        subtitle={isBalanceHidden ? HIDDEN_BALANCE : formatAmount(item.balance, config)}
         leading={<RadioButton selected={isSelected} size={20} borderColor={c.textSecondary} />}
         icon={item.icon}
         color={item.color}
