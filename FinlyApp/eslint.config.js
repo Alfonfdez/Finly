@@ -9,6 +9,14 @@ module.exports = defineConfig([
     ignores: ["dist/*"],
   },
   {
+    rules: {
+      "react-hooks/refs": "off",
+      "react-hooks/immutability": "off",
+      "react-hooks/preserve-manual-memoization": "off",
+      "react-hooks/set-state-in-effect": "off",
+    },
+  },
+  {
     plugins: { boundaries },
     settings: {
       "boundaries/elements": [

@@ -4,8 +4,16 @@ import IconBadge from '../../src/components/IconBadge';
 import { BADGE_SHAPES } from '../../src/constants/types';
 
 function flattenStyle(style: unknown): Record<string, unknown> {
-  const arr = Array.isArray(style) ? style : [style];
-  return Object.assign({}, ...arr.filter(Boolean)) as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  const walk = (value: unknown) => {
+    if (Array.isArray(value)) {
+      value.forEach(walk);
+    } else if (value && typeof value === 'object') {
+      Object.assign(out, value);
+    }
+  };
+  walk(style);
+  return out;
 }
 
 describe('IconBadge', () => {

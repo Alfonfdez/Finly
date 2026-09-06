@@ -11,8 +11,8 @@
 - If asked for a commit message, the agent only returns the summary in standard git format. Never executes commit, push, pull, or fetch — the developer does it manually.
 
 ## TECH STACK
-- React Native 0.81.5 + Expo SDK 54
-- TypeScript 5.9
+- React Native 0.86.3 + Expo SDK 57
+- TypeScript 6.0.3
 - React Navigation 7 (Drawer + Native Stack)
 - SQLite (native) / sql.js WASM (web)
 - react-native-svg, reanimated-color-picker

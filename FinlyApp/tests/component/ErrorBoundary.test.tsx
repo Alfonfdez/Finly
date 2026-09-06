@@ -5,8 +5,16 @@ import { resetStub, setColors } from './helpers/configStub';
 import ErrorBoundary from '../../src/components/ErrorBoundary';
 
 function flattenStyle(style: unknown): Record<string, unknown> {
-  const arr = Array.isArray(style) ? style : [style];
-  return Object.assign({}, ...arr.filter(Boolean)) as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  const walk = (value: unknown) => {
+    if (Array.isArray(value)) {
+      value.forEach(walk);
+    } else if (value && typeof value === 'object') {
+      Object.assign(out, value);
+    }
+  };
+  walk(style);
+  return out;
 }
 
 function ThrowingChild(): ReactNode {

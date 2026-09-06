@@ -1,3 +1,5 @@
+import './src/utils/devWarningSuppressions';
+
 import { registerRootComponent } from 'expo';
 
 import App from './App';
