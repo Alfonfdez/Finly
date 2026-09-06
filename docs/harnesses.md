@@ -35,7 +35,7 @@ All commands run from the `FinlyApp/` directory.
 
 ### Current suite baseline
 
-Verified 2026-09-06: **74 test files / 464 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
+Verified 2026-09-06: **76 test files / 474 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
 
 ## Verification loop (what "done" means)
 

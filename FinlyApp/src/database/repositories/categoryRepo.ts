@@ -6,7 +6,7 @@ import type { Category } from '../types';
 import type { TransactionType } from '../../constants/types';
 import { categorySchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
-import { deleteTransactionPhotos } from '../photoCleanup';
+import { collectTransactionPhotos, deletePhotoUris } from '../photoCleanup';
 import { dbTimestamp } from '../../utils/formatters';
 import { existsByName } from './repoHelpers';
 
@@ -60,11 +60,12 @@ export const categoryRepo = {
   },
 
   async delete(id: number): Promise<void> {
-    await deleteTransactionPhotos('category_id', id);
+    const uris = await collectTransactionPhotos('category_id', id);
     await withTransaction(async (db) => {
       await db.delete(transactions).where(eq(transactions.category_id, id)).run();
       await db.delete(categories).where(eq(categories.id, id)).run();
     });
+    await deletePhotoUris(uris);
   },
 
   async reassignAndDelete(oldCategoryId: number, newCategoryId: number): Promise<void> {
@@ -80,11 +81,12 @@ export const categoryRepo = {
 
   async deleteMany(ids: number[]): Promise<void> {
     if (ids.length === 0) return;
-    await deleteTransactionPhotos('category_id', ...ids);
+    const uris = await collectTransactionPhotos('category_id', ...ids);
     await withTransaction(async (db) => {
       await db.delete(transactions).where(inArray(transactions.category_id, ids)).run();
       await db.delete(categories).where(inArray(categories.id, ids)).run();
     });
+    await deletePhotoUris(uris);
   },
 
   async reassignManyAndDelete(ids: number[], targetId: number): Promise<void> {
@@ -102,8 +104,9 @@ export const categoryRepo = {
   async bulkDeleteWithTargets(items: { id: number; targetId: number | null }[]): Promise<void> {
     if (items.length === 0) return;
     const deleteIds = items.filter((item) => item.targetId === null).map((item) => item.id);
+    let uris: string[] = [];
     if (deleteIds.length > 0) {
-      await deleteTransactionPhotos('category_id', ...deleteIds);
+      uris = await collectTransactionPhotos('category_id', ...deleteIds);
     }
     await withTransaction(async (db) => {
       for (const item of items) {
@@ -117,6 +120,7 @@ export const categoryRepo = {
       }
       await db.delete(categories).where(inArray(categories.id, items.map((item) => item.id))).run();
     });
+    await deletePhotoUris(uris);
   },
 
   async deleteAll(): Promise<void> {

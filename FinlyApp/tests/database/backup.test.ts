@@ -15,7 +15,6 @@ import {
 import {
   exportBackup,
   importBackup,
-  BackupValidationError as BackupServiceError,
 } from '../../src/database/backupService';
 
 const dbHolder = vi.hoisted(() => ({ db: null as SqlJsDatabase | null }));
@@ -170,14 +169,26 @@ describe('backup round-trip', () => {
 });
 
 describe('backup validation', () => {
-  it('rejects malformed JSON', () => {
-    expect(() => parseBackup('{not json')).toThrow(BackupValidationError);
+  it('rejects malformed JSON with the invalid_json code', () => {
+    try {
+      parseBackup('{not json');
+      throw new Error('expected to throw');
+    } catch (error) {
+      expect(error).toBeInstanceOf(BackupValidationError);
+      expect((error as BackupValidationError).code).toBe('invalid_json');
+    }
   });
 
-  it('rejects a wrong app/kind/formatVersion', () => {
-    expect(() => parseBackup(snapshotWith({ app: 'Other' }))).toThrow(BackupValidationError);
-    expect(() => parseBackup(snapshotWith({ kind: 'dump' }))).toThrow(BackupValidationError);
-    expect(() => parseBackup(snapshotWith({ formatVersion: 2 }))).toThrow(BackupValidationError);
+  it('rejects a wrong app/kind/formatVersion with the invalid_format code', () => {
+    for (const overrides of [{ app: 'Other' }, { kind: 'dump' }, { formatVersion: 2 }]) {
+      try {
+        parseBackup(snapshotWith(overrides));
+        throw new Error('expected to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(BackupValidationError);
+        expect((error as BackupValidationError).code).toBe('invalid_format');
+      }
+    }
   });
 
   it('rejects rows that violate the row schemas', () => {
@@ -270,10 +281,13 @@ describe('backup facades', () => {
     dbHolder.db = await boot();
   });
 
-  it('rejects backups from a newer app version without touching data', async () => {
+  it('rejects backups from a newer app version with the newer_version code without touching data', async () => {
     const db = dbHolder.db as SqlJsDatabase;
     const before = await countRows(db, 'accounts');
-    await expect(importBackup(snapshotWith({ schema: 99 }))).rejects.toBeInstanceOf(BackupServiceError);
+    await expect(importBackup(snapshotWith({ schema: 99 }))).rejects.toMatchObject({
+      name: 'BackupValidationError',
+      code: 'newer_version',
+    });
     expect(await countRows(db, 'accounts')).toBe(before);
   });
 

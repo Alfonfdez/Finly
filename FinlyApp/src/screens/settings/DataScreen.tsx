@@ -118,7 +118,11 @@ export default function DataScreen() {
     } catch (error) {
       console.error('Failed to import data:', error);
       if (error instanceof BackupValidationError) {
-        Alert.alert(labels.settings_import_invalid_title, labels.settings_import_invalid_message);
+        if (error.code === 'newer_version') {
+          Alert.alert(labels.settings_import_newer_title, labels.settings_import_newer_message);
+        } else {
+          Alert.alert(labels.settings_import_invalid_title, labels.settings_import_invalid_message);
+        }
       } else {
         Alert.alert(labels.settings_import_error_title, labels.settings_import_error_message);
       }

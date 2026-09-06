@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { isWeb } from '../utils/platform';
 
 export const OVERLAY_BG = 'rgba(0,0,0,0.6)';
 export const MODAL_BORDER_RADIUS = 16;
@@ -21,5 +21,5 @@ export const HEADER_BUTTONS = {
   flexDirection: 'row' as const,
   alignItems: 'center' as const,
   gap: 8,
-  paddingRight: Platform.OS === 'web' ? 16 : 0,
+  paddingRight: isWeb ? 16 : 0,
 };

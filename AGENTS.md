@@ -68,7 +68,7 @@ npx expo lint
 - 5 repositories: account, category, tag, transaction, config
 
 ## I18N
-- Languages: English, Spanish, Catalan
+- Languages: English, Spanish, Catalan, French, German, Portuguese, Italian
 - `t()` returns full language object
 - All UI strings go through `src/i18n/`
 
@@ -81,7 +81,7 @@ FinlyApp/
     context/       — AppContext, ConfigContext (global state)
     database/      — SQLite/sql.js repos, migrations, types
     hooks/         — Custom hooks (useFontSize, useTransactionFilters)
-    i18n/          — Translations (en, es, ca)
+    i18n/          — Translations (en, es, ca, fr, de, pt, it)
     navigation/    — AppNavigator (Drawer + Stack)
     screens/       — Screen components (PascalCase)
     utils/         — Formatters, calculator, platform.ts, language.ts

@@ -6,7 +6,7 @@ import type { Account } from '../types';
 import { accountSchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
 import { existsByName } from './repoHelpers';
-import { deleteTransactionPhotos } from '../photoCleanup';
+import { collectTransactionPhotos, deletePhotoUris } from '../photoCleanup';
 import { dbTimestamp } from '../../utils/formatters';
 import { TRANSACTION_TYPES } from '../../constants/types';
 
@@ -58,20 +58,22 @@ export const accountRepo = {
   },
 
   async delete(id: number): Promise<void> {
-    await deleteTransactionPhotos('account_id', id);
+    const uris = await collectTransactionPhotos('account_id', id);
     await withTransaction(async (db) => {
       await db.delete(transactions).where(eq(transactions.account_id, id)).run();
       await db.delete(accounts).where(and(eq(accounts.id, id), eq(accounts.is_total, 0))).run();
     });
+    await deletePhotoUris(uris);
   },
 
   async deleteMany(ids: number[]): Promise<void> {
     if (ids.length === 0) return;
-    await deleteTransactionPhotos('account_id', ...ids);
+    const uris = await collectTransactionPhotos('account_id', ...ids);
     await withTransaction(async (db) => {
       await db.delete(transactions).where(inArray(transactions.account_id, ids)).run();
       await db.delete(accounts).where(and(inArray(accounts.id, ids), eq(accounts.is_total, 0))).run();
     });
+    await deletePhotoUris(uris);
   },
 
   async deleteAll(): Promise<void> {
