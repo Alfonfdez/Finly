@@ -2971,3 +2971,12 @@
 - `componentStyles.ts`: raw `Platform.OS === 'web'` replaced with the centralized `isWeb` — no raw `Platform.OS` gates remain in `src/` outside `utils/platform.ts`.
 - docs: AGENTS.md I18N + project-structure lines now list all 7 languages (were en/es/ca).
 - Verification: `test:all` green - typecheck + lint + 76 files / 474 tests (was 74 files / 464 tests).
+
+[2026-09-06] Refactor | phase B1: shared ModalFooter (row/single/stacked) consumed by all 5 modals + ACTION_BUTTON_HEIGHT
+- `src/constants/types.ts`: new `FOOTER_LAYOUTS` (`row`/`single`/`stacked`, `as const`) + `FooterLayout` type, following the existing `as const` string-enum convention (CALC_KEYS, SORT_BY, ...). No magic layout strings at call sites.
+- `src/components/componentStyles.ts`: new `ACTION_BUTTON_HEIGHT = 56` (shared footer-button height constant).
+- `src/components/ModalFooter.tsx` extended (defaults keep current Account/OptionPicker output): optional `cancelLabel`/`onCancel`, `layout` (`row`/`single`/`stacked`), `borderTop` (themed hairline + 16 top padding), `verticalPadding`, `minHeight`, `textSize`, `disabledBg`, `disabledTextColor`, `horizontalInset`, `containerPaddingBottom`, and `moveLabel`/`onMove` for the stacked variant. Stacked confirm now also gets `accessibilityRole="button"`/`accessibilityLabel` (they were missing inline).
+- Consumers now use it and their inline footers are gone: `ColorPickerModal` (row + borderTop), `CalculatorModal` (row + borderTop + fs16 + disabled `c.border` + horizontal inset 16 + bottom padding), `CategoryTransferModal`/`BulkCategoryTransferModal` (row + minHeight 44 + `disabledBg c.textSecondary`/WHITE, replacing the local `PrimaryButton` confirm), `ConfirmationModal` (layout chosen from `hasMove`/`cancelLabel`; absolute wrapper + scroll clearance preserved and now sized from `ACTION_BUTTON_HEIGHT`).
+- Micro-unifications (accepted): transfer-modals confirm text fs 15→14; Calculator hairline top padding 16 vs 12. Everything else (colors, radii, disabled/destructive states, 56px stacked buttons) preserved.
+- `Fab`/`TagsScreen` `56`s left untouched (different semantics: FAB geometry / list clearance).
+- Verification: `test:all` green - typecheck + lint + 76 files / 474 tests (unchanged).

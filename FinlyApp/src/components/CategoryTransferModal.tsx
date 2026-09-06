@@ -9,9 +9,9 @@ import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
 import RadioButton from './RadioButton';
 import ListItemRow from './ListItemRow';
-import PrimaryButton from './form/PrimaryButton';
+import ModalFooter from './ModalFooter';
 import { WHITE, TRANSPARENT } from '../constants/themes';
-import { BUTTON_BORDER_RADIUS, CONTROL_BORDER_RADIUS } from './componentStyles';
+import { CONTROL_BORDER_RADIUS } from './componentStyles';
 
 export type TransferTargetId = number | 'delete';
 
@@ -98,26 +98,16 @@ export default function CategoryTransferModal({
           </TouchableOpacity>
         ) : null}
       </ScrollView>
-      <View style={styles.buttons}>
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: c.background, borderColor: c.border }]}
-            onPress={onCancel}
-            accessibilityRole="button"
-            accessibilityLabel={cancelLabel}
-          >
-            <Text style={[styles.buttonText, { color: c.text, fontSize: fs(14) }]}>{cancelLabel}</Text>
-          </TouchableOpacity>
-          <PrimaryButton
-            label={confirmLabel}
-            onPress={onConfirm}
-            disabled={selectedId === null}
-            disabledBg={c.textSecondary}
-            enabledTextColor={c.background}
-            style={styles.button}
-          />
-        </View>
-      </View>
+      <ModalFooter
+        cancelLabel={cancelLabel}
+        confirmLabel={confirmLabel}
+        onCancel={onCancel}
+        onConfirm={onConfirm}
+        confirmDisabled={selectedId === null}
+        minHeight={44}
+        disabledBg={c.textSecondary}
+        disabledTextColor={WHITE}
+      />
     </ModalShell>
   );
 }
@@ -155,27 +145,5 @@ const styles = StyleSheet.create({
   empty: {
     textAlign: 'center',
     paddingVertical: 24,
-  },
-  buttons: {
-    flexDirection: 'column',
-    gap: 12,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  button: {
-    flex: 1,
-    minHeight: 44,
-    paddingVertical: 12,
-    borderRadius: BUTTON_BORDER_RADIUS,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: TRANSPARENT,
-  },
-  buttonText: {
-    fontWeight: '600',
-    textAlign: 'center',
   },
 });
