@@ -1,12 +1,13 @@
 import { useState, useCallback } from 'react';
-import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import ColorPicker, { Panel1, HueSlider, OpacitySlider, Preview } from 'reanimated-color-picker';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useResetOnOpen } from '../hooks/useResetOnOpen';
 import { t } from '../i18n';
-import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS } from './componentStyles';
+import { CARD_BORDER_RADIUS } from './componentStyles';
 import ModalShell from './ModalShell';
+import ModalFooter from './ModalFooter';
 
 
 interface Props {
@@ -58,28 +59,13 @@ export default function ColorPickerModal({ visible, selectedColor, onSelect, onC
         </ColorPicker>
       </View>
 
-      <View style={[styles.footer, { borderTopColor: c.border }]}>
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: c.background, borderColor: c.border }]}
-          onPress={onClose}
-          accessibilityRole="button"
-          accessibilityLabel={labels.create_cat_color_picker_cancel}
-        >
-          <Text style={[styles.buttonText, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_cat_color_picker_cancel}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: c.primary }]}
-          onPress={handleConfirm}
-          accessibilityRole="button"
-          accessibilityLabel={labels.create_cat_color_picker_ok}
-        >
-          <Text style={[styles.buttonText, { color: c.background, fontSize: fs(14) }]}>
-            {labels.create_cat_color_picker_ok}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <ModalFooter
+        cancelLabel={labels.create_cat_color_picker_cancel}
+        confirmLabel={labels.create_cat_color_picker_ok}
+        onCancel={onClose}
+        onConfirm={handleConfirm}
+        borderTop
+      />
     </ModalShell>
   );
 }
@@ -113,24 +99,5 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: 15,
     marginBottom: 12,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    paddingTop: 16,
-    gap: 12,
-  },
-  button: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: BUTTON_BORDER_RADIUS,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-  },
-  buttonText: {
-    fontWeight: '600',
-    textAlign: 'center',
   },
 });

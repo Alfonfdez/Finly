@@ -139,6 +139,14 @@ export const CHART_TYPES = {
 
 export type ChartType = (typeof CHART_TYPES)[keyof typeof CHART_TYPES];
 
+export const FOOTER_LAYOUTS = {
+  row: 'row',
+  single: 'single',
+  stacked: 'stacked',
+} as const;
+
+export type FooterLayout = (typeof FOOTER_LAYOUTS)[keyof typeof FOOTER_LAYOUTS];
+
 export interface CategoryWithTotal {
   id: number;
   name: string;

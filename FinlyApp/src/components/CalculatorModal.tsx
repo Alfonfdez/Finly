@@ -16,6 +16,7 @@ import { BUTTON_BORDER_RADIUS } from './componentStyles';
 import { CALC_KEYS } from '../constants/types';
 import { WHITE } from '../constants/themes';
 import ModalShell from './ModalShell';
+import ModalFooter from './ModalFooter';
 
 
 interface Props {
@@ -182,42 +183,19 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
         ))}
       </View>
 
-      <View style={[styles.actions, { borderTopColor: c.border }]}>
-        <TouchableOpacity
-          style={[styles.actionBtn, { backgroundColor: c.background, borderColor: c.border, borderWidth: 1 }]}
-          onPress={onCancel}
-          accessibilityRole="button"
-          accessibilityLabel={labels.calc_cancel}
-        >
-          <Text style={[styles.actionText, { color: c.text, fontSize: fs(16) }]}>
-            {labels.calc_cancel}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.actionBtn,
-            {
-              backgroundColor: resultDisplay !== null && !hasError ? c.primary : c.border,
-            },
-          ]}
-          onPress={handleAccept}
-          disabled={resultDisplay === null || hasError}
-          accessibilityRole="button"
-          accessibilityLabel={labels.calc_accept}
-        >
-          <Text
-            style={[
-              styles.actionText,
-              {
-                color: resultDisplay !== null && !hasError ? c.background : c.textSecondary,
-                fontSize: fs(16),
-              },
-            ]}
-          >
-            {labels.calc_accept}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <ModalFooter
+        cancelLabel={labels.calc_cancel}
+        confirmLabel={labels.calc_accept}
+        onCancel={onCancel}
+        onConfirm={handleAccept}
+        confirmDisabled={resultDisplay === null || hasError}
+        borderTop
+        horizontalInset={16}
+        containerPaddingBottom={12}
+        verticalPadding={14}
+        textSize={16}
+        disabledBg={c.border}
+      />
     </>
   );
 
@@ -267,22 +245,6 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: {
     opacity: 0.4,
-  },
-  actions: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
-    borderTopWidth: 1,
-  },
-  actionBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: BUTTON_BORDER_RADIUS,
-    alignItems: 'center',
-  },
-  actionText: {
-    fontWeight: '600',
   },
 });
 

@@ -1,11 +1,12 @@
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 import type { ReactNode } from 'react';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { BUTTON_BORDER_RADIUS } from './componentStyles';
-import { WHITE } from '../constants/themes';
+import { ACTION_BUTTON_HEIGHT } from './componentStyles';
 import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
+import ModalFooter from './ModalFooter';
+import { FOOTER_LAYOUTS } from '../constants/types';
 
 interface Props {
   visible: boolean;
@@ -33,7 +34,9 @@ export default function ConfirmationModal({
   const hasMove = !!moveLabel && !!onMove;
 
   const headerBudget = Math.round(fs(16) * 1.6) * 3 + 12 + 8;
-  const footerHeight = hasMove ? 56 + 12 + 56 : 56;
+  const footerHeight = hasMove
+    ? ACTION_BUTTON_HEIGHT + 12 + ACTION_BUTTON_HEIGHT
+    : ACTION_BUTTON_HEIGHT;
   const footerClearance = footerHeight + 12;
   const scrollMaxHeight = Math.max(
     0,
@@ -53,74 +56,24 @@ export default function ConfirmationModal({
         )}
         {children}
       </ScrollView>
-      <View style={[styles.buttons, hasMove && styles.buttonsStacked, styles.buttonsFooter]}>
-        {cancelLabel && !hasMove ? (
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: c.background, borderColor: c.border }]}
-            onPress={onCancel}
-            accessibilityRole="button"
-            accessibilityLabel={cancelLabel}
-          >
-            <Text style={[styles.buttonText, { color: c.text, fontSize: fs(14) }]}>{cancelLabel}</Text>
-          </TouchableOpacity>
-        ) : null}
-        {hasMove ? (
-          <View style={styles.actionRow}>
-            <TouchableOpacity
-              style={[styles.button, styles.stackedButton, { backgroundColor: c.primary }]}
-              onPress={onMove}
-              accessibilityRole="button"
-              accessibilityLabel={moveLabel}
-            >
-              <Text numberOfLines={2} style={[styles.buttonText, { color: c.background, fontSize: fs(14) }]}>{moveLabel}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.button, styles.stackedButton, { backgroundColor: destructive ? c.red : c.primary }]}
-              onPress={onConfirm}
-              disabled={confirmDisabled}
-            >
-              <Text
-                numberOfLines={2}
-                style={[
-                  styles.buttonText,
-                  { color: destructive ? WHITE : (confirmDisabled ? c.textSecondary : c.background), fontSize: fs(14) },
-                ]}
-              >
-                {confirmLabel}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { backgroundColor: destructive ? c.red : (confirmDisabled ? c.surface : c.primary) },
-            ]}
-            onPress={onConfirm}
-            disabled={confirmDisabled}
-            accessibilityRole="button"
-            accessibilityLabel={confirmLabel}
-          >
-            <Text
-              style={[
-                styles.buttonText,
-                { color: destructive ? WHITE : (confirmDisabled ? c.textSecondary : c.background), fontSize: fs(14) },
-              ]}
-            >
-              {confirmLabel}
-            </Text>
-          </TouchableOpacity>
-        )}
-        {hasMove && cancelLabel ? (
-          <TouchableOpacity
-            style={[styles.button, styles.stackedButton, { alignSelf: 'stretch' }, { backgroundColor: c.background, borderColor: c.border }]}
-            onPress={onCancel}
-            accessibilityRole="button"
-            accessibilityLabel={cancelLabel}
-          >
-            <Text style={[styles.buttonText, { color: c.text, fontSize: fs(14) }]}>{cancelLabel}</Text>
-          </TouchableOpacity>
-        ) : null}
+      <View style={styles.buttonsFooter}>
+        <ModalFooter
+          layout={
+            hasMove
+              ? FOOTER_LAYOUTS.stacked
+              : cancelLabel
+                ? FOOTER_LAYOUTS.row
+                : FOOTER_LAYOUTS.single
+          }
+          cancelLabel={cancelLabel}
+          confirmLabel={confirmLabel}
+          onCancel={onCancel}
+          onConfirm={onConfirm}
+          confirmDisabled={confirmDisabled}
+          destructive={destructive}
+          moveLabel={moveLabel}
+          onMove={onMove}
+        />
       </View>
     </ModalShell>
   );
@@ -139,11 +92,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingTop: 0,
   },
-  buttons: {
-    flexDirection: 'row',
-    gap: 12,
-    flexShrink: 0,
-  },
   buttonsFooter: {
     position: 'absolute',
     left: 0,
@@ -151,31 +99,5 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: 24,
     paddingBottom: 24,
-  },
-  buttonsStacked: {
-    flexDirection: 'column',
-  },
-  actionRow: {
-    flexDirection: 'row',
-    gap: 12,
-    height: 56,
-  },
-  stackedButton: {
-    height: 56,
-    minHeight: 56,
-    paddingVertical: 0,
-  },
-  button: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: BUTTON_BORDER_RADIUS,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  buttonText: {
-    fontWeight: '600',
-    textAlign: 'center',
   },
 });

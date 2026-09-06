@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -10,9 +10,8 @@ import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
 import ListItemRow from './ListItemRow';
 import CategoryTransferModal, { type TransferTargetId } from './CategoryTransferModal';
-import PrimaryButton from './form/PrimaryButton';
-import { TRANSPARENT } from '../constants/themes';
-import { BUTTON_BORDER_RADIUS } from './componentStyles';
+import ModalFooter from './ModalFooter';
+import { WHITE } from '../constants/themes';
 
 export interface BulkCategoryItem {
   category: Category;
@@ -108,28 +107,16 @@ export default function BulkCategoryTransferModal({
           {labels.categories_bulk_move_note}
         </Text>
       </ScrollView>
-      <View style={styles.buttons}>
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: c.background, borderColor: c.border }]}
-            onPress={onCancel}
-            accessibilityRole="button"
-            accessibilityLabel={labels.modify_cat_select_cancel}
-          >
-            <Text style={[styles.buttonText, { color: c.text, fontSize: fs(14) }]}>
-              {labels.modify_cat_select_cancel}
-            </Text>
-          </TouchableOpacity>
-          <PrimaryButton
-            label={labels.categories_bulk_move_confirm}
-            onPress={onConfirm}
-            disabled={!allResolved}
-            disabledBg={c.textSecondary}
-            enabledTextColor={c.background}
-            style={styles.button}
-          />
-        </View>
-      </View>
+      <ModalFooter
+        cancelLabel={labels.modify_cat_select_cancel}
+        confirmLabel={labels.categories_bulk_move_confirm}
+        onCancel={onCancel}
+        onConfirm={onConfirm}
+        confirmDisabled={!allResolved}
+        minHeight={44}
+        disabledBg={c.textSecondary}
+        disabledTextColor={WHITE}
+      />
 
       <CategoryTransferModal
         visible={pickerFor !== null}
@@ -173,27 +160,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 8,
     lineHeight: 18,
-  },
-  buttons: {
-    flexDirection: 'column',
-    gap: 12,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  button: {
-    flex: 1,
-    minHeight: 44,
-    paddingVertical: 12,
-    borderRadius: BUTTON_BORDER_RADIUS,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: TRANSPARENT,
-  },
-  buttonText: {
-    fontWeight: '600',
-    textAlign: 'center',
   },
 });
