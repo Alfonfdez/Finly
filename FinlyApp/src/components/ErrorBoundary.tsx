@@ -2,6 +2,7 @@ import { Component, type ReactNode } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { BUTTON_BORDER_RADIUS } from './componentStyles';
+import { t } from '../i18n';
 
 interface ThemeColors {
   background: string;
@@ -36,16 +37,17 @@ class ErrorBoundaryBase extends Component<BaseProps, State> {
   render() {
     if (this.state.hasError) {
       const { background, text, textSecondary, primary } = this.props.colors;
+      const labels = t();
       return (
         <View style={[styles.container, { backgroundColor: background }]}>
-          <Text style={[styles.title, { color: text }]}>Something went wrong</Text>
-          <Text style={[styles.message, { color: textSecondary }]}>An unexpected error occurred.</Text>
+          <Text style={[styles.title, { color: text }]}>{labels.error_boundary_title}</Text>
+          <Text style={[styles.message, { color: textSecondary }]}>{labels.error_boundary_message}</Text>
           {this.props.onRetry && (
             <TouchableOpacity
               style={[styles.button, { backgroundColor: primary }]}
               onPress={this.props.onRetry}
             >
-              <Text style={[styles.buttonText, { color: background }]}>Try again</Text>
+              <Text style={[styles.buttonText, { color: background }]}>{labels.error_boundary_retry}</Text>
             </TouchableOpacity>
           )}
         </View>

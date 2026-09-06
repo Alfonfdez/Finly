@@ -12,7 +12,7 @@ export async function exportBackup(): Promise<string> {
 export async function importBackup(json: string): Promise<void> {
   const snapshot = parseBackup(json);
   if (snapshot.schema > SCHEMA_VERSION) {
-    throw new BackupValidationError('Backup comes from a newer app version');
+    throw new BackupValidationError('newer_version', 'Backup comes from a newer app version');
   }
   const db = await getDatabase();
   await applyBackup(db, snapshot);

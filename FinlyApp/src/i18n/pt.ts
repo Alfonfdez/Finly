@@ -48,6 +48,8 @@ export const pt: Language = {
   settings_import_error_message: 'Não foi possível importar o arquivo de backup. Seus dados não foram alterados.',
   settings_import_invalid_title: 'Backup inválido',
   settings_import_invalid_message: 'O arquivo selecionado não é um backup válido do Finly.',
+  settings_import_newer_title: 'Backup mais recente',
+  settings_import_newer_message: 'Este backup foi criado com uma versão mais recente do Finly. Atualize o aplicativo para importá-lo.',
   settings_delete_all_transactions: 'Excluir todas as transações',
   settings_delete_all_transactions_description: 'Remove todas as transações. Contas, categorias e etiquetas são mantidas.',
   settings_delete_all_data: 'Excluir todos os dados',
@@ -178,6 +180,9 @@ export const pt: Language = {
   add_error_message: 'Falha ao salvar a transação',
   error_title: 'Erro',
   error_generic: 'Algo deu errado. Por favor, tente novamente.',
+  error_boundary_title: 'Algo deu errado',
+  error_boundary_message: 'Ocorreu um erro inesperado.',
+  error_boundary_retry: 'Tentar novamente',
 
   // Add category
   add_cat_title: 'Adicionar categoria',
@@ -383,6 +388,7 @@ export const pt: Language = {
   a11y_initial_balance: 'Campo de saldo inicial',
   a11y_calculator: 'Abrir calculadora',
   a11y_comment: 'Campo de comentário',
+  a11y_search: 'Pesquisar',
 
   // Calculator
   calc_title: 'Calculadora',

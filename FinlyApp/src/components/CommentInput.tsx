@@ -59,6 +59,9 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus 
           {suggestions.map((item, i) => (
             <View
               key={i}
+              role="button"
+              accessibilityLabel={item}
+              onAccessibilityTap={() => handleSelectSuggestion(item)}
               style={[
                 styles.suggestionItem,
                 { borderBottomColor: c.border },

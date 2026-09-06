@@ -5,8 +5,9 @@ import type { ContractBackend } from './contractTypes';
 import { runContractSuite } from './contractSuite';
 
 vi.mock('../../src/database/photoCleanup', () => ({
-  deleteTransactionPhotos: vi.fn(async () => {}),
-  deleteAllTransactionPhotos: vi.fn(async () => {}),
+  collectTransactionPhotos: vi.fn(async () => []),
+  collectAllTransactionPhotos: vi.fn(async () => []),
+  deletePhotoUris: vi.fn(async () => {}),
 }));
 
 vi.mock('expo-sqlite', async () => {

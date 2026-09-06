@@ -46,6 +46,8 @@ export const en = {
   settings_import_error_message: 'The backup file could not be imported. Your data is unchanged.',
   settings_import_invalid_title: 'Invalid backup',
   settings_import_invalid_message: 'The selected file is not a valid Finly backup.',
+  settings_import_newer_title: 'Newer backup',
+  settings_import_newer_message: 'This backup was created with a newer version of Finly. Update the app to import it.',
   settings_delete_all_transactions: 'Delete all transactions',
   settings_delete_all_transactions_description: 'Removes all transactions. Accounts, categories, and tags are kept.',
   settings_delete_all_data: 'Delete all data',
@@ -176,6 +178,9 @@ export const en = {
   add_error_message: 'Failed to save transaction',
   error_title: 'Error',
   error_generic: 'Something went wrong. Please try again.',
+  error_boundary_title: 'Something went wrong',
+  error_boundary_message: 'An unexpected error occurred.',
+  error_boundary_retry: 'Try again',
 
   // Add category
   add_cat_title: 'Add category',
@@ -381,6 +386,7 @@ export const en = {
   a11y_initial_balance: 'Initial balance input',
   a11y_calculator: 'Open calculator',
   a11y_comment: 'Comment input',
+  a11y_search: 'Search',
 
   // Calculator
   calc_title: 'Calculator',

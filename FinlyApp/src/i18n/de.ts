@@ -48,6 +48,8 @@ export const de: Language = {
   settings_import_error_message: 'Die Sicherungsdatei konnte nicht importiert werden. Ihre Daten bleiben unverändert.',
   settings_import_invalid_title: 'Ungültige Sicherung',
   settings_import_invalid_message: 'Die ausgewählte Datei ist keine gültige Finly-Sicherung.',
+  settings_import_newer_title: 'Neuere Sicherung',
+  settings_import_newer_message: 'Diese Sicherung wurde mit einer neueren Version von Finly erstellt. Aktualisieren Sie die App, um sie zu importieren.',
   settings_delete_all_transactions: 'Alle Transaktionen löschen',
   settings_delete_all_transactions_description: 'Entfernt alle Transaktionen. Konten, Kategorien und Tags bleiben erhalten.',
   settings_delete_all_data: 'Alle Daten löschen',
@@ -178,6 +180,9 @@ export const de: Language = {
   add_error_message: 'Transaktion konnte nicht gespeichert werden',
   error_title: 'Fehler',
   error_generic: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
+  error_boundary_title: 'Etwas ist schiefgelaufen',
+  error_boundary_message: 'Ein unerwarteter Fehler ist aufgetreten.',
+  error_boundary_retry: 'Erneut versuchen',
 
   // Add category
   add_cat_title: 'Kategorie hinzufügen',
@@ -383,6 +388,7 @@ export const de: Language = {
   a11y_initial_balance: 'Anfangsguthaben-Eingabe',
   a11y_calculator: 'Taschenrechner öffnen',
   a11y_comment: 'Kommentareingabe',
+  a11y_search: 'Suchen',
 
   // Calculator
   calc_title: 'Taschenrechner',

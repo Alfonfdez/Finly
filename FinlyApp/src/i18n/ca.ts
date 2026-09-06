@@ -48,6 +48,8 @@ export const ca: Language = {
   settings_import_error_message: 'No s\'ha pogut importar el fitxer de còpia de seguretat. Les teves dades no han canviat.',
   settings_import_invalid_title: 'Còpia de seguretat no vàlida',
   settings_import_invalid_message: 'El fitxer seleccionat no és una còpia de seguretat vàlida de Finly.',
+  settings_import_newer_title: 'Còpia més recent',
+  settings_import_newer_message: 'Aquesta còpia es va crear amb una versió més recent de Finly. Actualitza l\'app per importar-la.',
   settings_delete_all_transactions: 'Eliminar totes les transaccions',
   settings_delete_all_transactions_description: 'Elimina totes les transaccions. Els comptes, categories i etiquetes es conserven.',
   settings_delete_all_data: 'Eliminar totes les dades',
@@ -178,6 +180,9 @@ export const ca: Language = {
   add_error_message: 'No s\'ha pogut guardar la transacció',
   error_title: 'Error',
   error_generic: 'Alguna cosa ha anat malament. Si us plau, torna-ho a provar.',
+  error_boundary_title: 'Alguna cosa ha anat malament',
+  error_boundary_message: 'S\'ha produït un error inesperat.',
+  error_boundary_retry: 'Torna-ho a provar',
 
   // Add category
   add_cat_title: 'Afegir categoria',
@@ -383,6 +388,7 @@ export const ca: Language = {
   a11y_initial_balance: 'Camp de saldo inicial',
   a11y_calculator: 'Obrir calculadora',
   a11y_comment: 'Camp de comentari',
+  a11y_search: 'Cerca',
 
   // Calculator
   calc_title: 'Calculadora',
