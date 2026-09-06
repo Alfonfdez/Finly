@@ -35,7 +35,7 @@ All commands run from the `FinlyApp/` directory.
 
 ### Current suite baseline
 
-Verified 2026-09-06: **76 test files / 474 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
+Verified 2026-09-06: **92 test files / 568 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
 
 ## Verification loop (what "done" means)
 
@@ -55,7 +55,7 @@ acceptance criteria in a real browser.
 | Harness | Tooling | Status | Covers |
 |---------|---------|--------|--------|
 | Pure-logic unit tests | Vitest + happy-dom | ✅ Implemented (Phase A) | Calculator, formatters, amount input, category sorting, tag maps, color utils, DB query builders |
-| Component unit tests | Vitest + vitest-native + RNTL 14 | ✅ Implemented (Phase D) | 12 presentational components (79 tests) with ConfigContext stubbed |
+| Component unit tests | Vitest + vitest-native + RNTL 14 | ✅ Implemented (Phase D) | Presentational components + context/hooks/screens suites with ConfigContext stubbed |
 | Type-checking | `tsc --noEmit` (strict) | ✅ Implemented | Whole codebase types, `verbatimModuleSyntax` enforced |
 | Linting | `npx expo lint` (eslint-config-expo) | ✅ Implemented | Code style, unused imports, React hooks rules |
 | Module-boundary linting | `eslint-plugin-boundaries` | ✅ Implemented (Phase E) | `src/` layer DAG — inverted/cyclic imports are lint errors |
@@ -84,6 +84,13 @@ Regression seeds come from real bugs previously fixed in this project.
 | `tests/utils/transactionTags.test.ts` | `src/utils/transactionTags.ts` — tag grouping by transaction |
 | `tests/utils/color.test.ts` | `src/utils/color.ts` — `withAlpha` clamping and rounding |
 | `tests/database/helpers.test.ts` | `src/database/helpers.ts` — `isTotalAccount`, `buildUpdateQuery`, `buildNameExistsQuery` |
+| `tests/utils/badgeShape.test.ts` | `src/utils/badgeShape.ts` — `BADGE_SHAPES`-derived shape resolution/color lookup |
+| `tests/utils/tagFilter.test.ts` | `src/utils/tagFilter.ts` — tags-by-query filtering |
+| `tests/utils/language.test.ts` | `src/utils/language.ts` — `Language` checks, `isSpanish`/`isEnglish`/`isCatalan`/`isLanguage` |
+| `tests/utils/platform.test.ts` | `src/utils/platform.ts` — `isWeb`/`isNative`/`isIOS`/`isAndroid` gates |
+| `tests/utils/formHints.test.ts` | `src/utils/formHints.ts` — comment/description hint selection |
+| `tests/utils/errors.test.ts` | `src/utils/errors.ts` — `showErrorAlert` + `runWithErrorAlert` |
+| `tests/utils/pendingCategory.test.ts` | `src/utils/pendingCategory.ts` — pending-category consume/clear |
 
 ## Phase B — Unified SQLite engine + contract suite (implemented)
 
@@ -286,6 +293,20 @@ and each suite calls `resetStub()` in `beforeEach`. i18n is NOT stubbed — the 
 | `tests/component/EyeToggle.test.tsx` | `EyeToggle` — eye/eye-off toggle, hitSlop |
 | `tests/component/EmptyState.test.tsx` | `EmptyState` — icon, title, message |
 | `tests/component/Fab.test.tsx` | `Fab` — icon, onPress, a11y label |
+| `tests/component/CalculatorModal.test.tsx` | `CalculatorModal` — keypad input, expression evaluation, clear/backspace, trailing-operator rejection, accept/cancel |
+| `tests/component/CategoryFilterModal.test.tsx` | `CategoryFilterModal` — type tabs, search, All/category multi-select, `Apply (N)`/`Apply (All)` labels, disabled Apply at 0 selected, close |
+| `tests/component/TransactionForm.test.tsx` | `TransactionForm` — type tabs, amount input, account picker, category grid + create tile, day selector, form submit/cancel |
+
+Context, hooks, and screens are covered by additional RNTL suites (same mock stack — configStub, `@expo/vector-icons` alias, `@react-navigation/native` mocked per file). Coverage added in the Phase C test-expansion pass:
+
+| Test file | Module under test |
+|-----------|-------------------|
+| `tests/context/ConfigContext.test.tsx` | `ConfigContext` — provider, `updateConfig`, theme/appearance-listener, language/currency defaults |
+| `tests/context/AppContext.test.tsx` | `AppContext` — provider, active account/type/period/tags, refresh + filter actions |
+| `tests/hooks/useSelectableScreen.test.tsx` | `useSelectableScreen` — select-mode toggle, header button, grid-to-list switch |
+| `tests/screens/CategoriesScreen.test.tsx` | `CategoriesScreen` — expense/income tabs, category list + counter, add tile |
+| `tests/screens/AddCategoryScreen.test.tsx` | `AddCategoryScreen` — name search, duplicate check, icon/color pick, create flow |
+| `tests/screens/ModifyCommentScreen.test.tsx` | `ModifyCommentScreen` — preload, edit, Save, Delete with confirmation |
 
 ## Phase E — Module-boundary linting (implemented)
 

@@ -2980,3 +2980,13 @@
 - Micro-unifications (accepted): transfer-modals confirm text fs 15→14; Calculator hairline top padding 16 vs 12. Everything else (colors, radii, disabled/destructive states, 56px stacked buttons) preserved.
 - `Fab`/`TagsScreen` `56`s left untouched (different semantics: FAB geometry / list clearance).
 - Verification: `test:all` green - typecheck + lint + 76 files / 474 tests (unchanged).
+
+
+[2026-09-06] Tests | Phase C test expansion: utils, hooks, contexts, screens and components
+- New util suites in tests/utils/ (7): badgeShape (shape resolution/color lookup from BADGE_SHAPES), tagFilter (tags-by-query filtering), language (Language checks/isSpanish/isEnglish/isCatalan/isLanguage), platform (isWeb/isNative/isIOS/isAndroid gates), formHints (comment/description hint selection), errors (showErrorAlert + runWithErrorAlert), pendingCategory (consume/clear).
+- New hook suite tests/hooks/useSelectableScreen.test.tsx: select-mode toggle, header button re-emission, grid/list switch.
+- New context suites (2): tests/context/ConfigContext.test.tsx (provider, updateConfig, theme appearance-listener synced to OS 'system', language/currency defaults, clamp of firstDayOfWeek) and tests/context/AppContext.test.tsx (provider, active account/type/period/tags, refresh + type/tag filter actions).
+- New screen suites (3): CategoriesScreen (expense/income tabs, list + counter, add tile), AddCategoryScreen (name search, duplicate check, icon/color pick, create), ModifyCommentScreen (preload, edit, Save, Delete with confirmation).
+- New component suites (3): CalculatorModal (keypad, expression build, evaluate, clear/backspace, trailing-operator rejection, accept/cancel), CategoryFilterModal (type tabs, search, All/category multi-select, 'Apply (N)'/'Apply (All)' labels, disabled Apply at 0 selected, Close without applying), TransactionForm (type tabs, amount input, account picker, category grid + create tile, day selector, submit/cancel) - mocks expo-image-picker/expo-file-system per the existing transaction-form suite pattern.
+- Infra/tooling notes: ConfigContext tests pin vi.importActual to 'react-native' and an async act for the appearance-listener effect; AppContext fixture accounts carry the full Account schema (initial_balance/icon/color); modal suites await fireEvent.press for state flush; the TransactionForm vi.mock factory uses only mock-prefixed outer references (vitest hoisting rule, unblocks the suite) and drops useRef in favor of { current: null } refs (factory evaluated outside a component).
+- Verification: test:all green - typecheck + lint + 92 files / 568 tests (was 76 files / 474 tests).
