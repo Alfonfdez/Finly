@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   day: { width: DAY_WIDTH_PERCENT, aspectRatio: 1 },
   emptyDay: { width: DAY_WIDTH_PERCENT, aspectRatio: 1 },
   dayWrap: { flex: 1 },
-  dayBg: { ...StyleSheet.absoluteFillObject, borderRadius: 20, overflow: 'hidden' },
+  dayBg: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, borderRadius: 20, overflow: 'hidden' },
   dayCenter: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   todayBorder: { borderWidth: 1 },
   dayText: { textAlign: 'center' },

@@ -53,6 +53,16 @@ vi.mock('expo-file-system', () => ({
   },
 }));
 
+vi.mock('expo-sharing', () => ({
+  isAvailableAsync: vi.fn(async () => true),
+  shareAsync: vi.fn(),
+  Sharing: {},
+}));
+
+vi.mock('expo-document-picker', () => ({
+  getDocumentAsync: vi.fn(),
+}));
+
 describe('DataScreen', () => {
   beforeEach(() => {
     deleteAllTransactions.mockReset().mockResolvedValue(undefined);
