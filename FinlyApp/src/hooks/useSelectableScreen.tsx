@@ -1,22 +1,19 @@
 import type { ReactNode } from 'react';
 import { useRef, useLayoutEffect } from 'react';
-import { useSelectAndSearch } from './useSelectAndSearch';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- T is used for caller type inference
-interface UseSelectableScreenOptions<T extends number | string> {
+interface UseSelectableScreenOptions {
   navigation: { setOptions: (opts: Record<string, unknown>) => void };
-  hasItems: boolean;
   showHeader: boolean;
+  selectMode: boolean;
   headerRight: () => ReactNode;
 }
 
-export function useSelectableScreen<T extends number | string = number>({
+export function useSelectableScreen({
   navigation,
-  hasItems,
   showHeader,
+  selectMode,
   headerRight,
-}: UseSelectableScreenOptions<T>) {
-  const select = useSelectAndSearch<T>({ hasItems });
+}: UseSelectableScreenOptions) {
   const headerRightRef = useRef(headerRight);
   headerRightRef.current = headerRight;
 
@@ -24,7 +21,7 @@ export function useSelectableScreen<T extends number | string = number>({
     navigation.setOptions({
       headerRight: showHeader ? () => headerRightRef.current() : null,
     });
-  }, [navigation, showHeader, select.selectMode]);
+  }, [navigation, showHeader, selectMode]);
 
-  return select;
+  return undefined;
 }

@@ -8,6 +8,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useBalanceVisibility } from '../hooks/useBalanceVisibility';
+import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useApp } from '../context/AppContext';
 import { t, getDisplayAccountName, getDisplayAccountDescription } from '../i18n';
@@ -52,15 +53,19 @@ export default function AccountsScreen() {
     [accounts]
   );
 
+  const select = useSelectAndSearch({ hasItems: nonTotalCount > 1 });
+
   const {
     searchActive, searchText, setSearchText,
     selectMode, selectedIds,
     deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
-  } = useSelectableScreen({
+  } = select;
+
+  useSelectableScreen({
     navigation,
-    hasItems: nonTotalCount > 1,
     showHeader: nonTotalCount > 1,
+    selectMode,
     headerRight: () => (
       <SelectSearchHeader
         selectMode={selectMode}

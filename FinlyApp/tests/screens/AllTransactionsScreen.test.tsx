@@ -101,4 +101,24 @@ describe('AllTransactionsScreen', () => {
     const view = await render(<AllTransactionsScreen />);
     expect(view.getByText('Rent')).toBeTruthy();
   });
+
+  it('hides the header search/select actions when no transaction matches the filters', async () => {
+    list.mockResolvedValue([tx(1, { date: '2026-01-15 10:00:00' })]);
+    setAppData({ categoriesById: new Map([[1, category]]) });
+    const view = await render(<AllTransactionsScreen />);
+    expect(view.getByText('No transactions')).toBeTruthy();
+    expect(nav.setOptions).toHaveBeenCalledWith({ headerRight: null });
+  });
+
+  it('shows the header search/select actions when transactions are visible', async () => {
+    list.mockResolvedValue([tx(1, { description: 'Rent' })]);
+    setAppData({
+      categoriesById: new Map([[1, category]]),
+      activePeriod: PERIODS.custom,
+      customDate: { start: new Date(2026, 0, 1), end: new Date(2026, 0, 31) },
+    });
+    await render(<AllTransactionsScreen />);
+    const lastOptions = nav.setOptions.mock.calls[nav.setOptions.mock.calls.length - 1][0] as { headerRight: unknown };
+    expect(lastOptions.headerRight).toEqual(expect.any(Function));
+  });
 });

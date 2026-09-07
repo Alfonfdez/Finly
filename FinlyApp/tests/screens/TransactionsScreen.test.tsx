@@ -55,6 +55,7 @@ function tx(id: number, overrides: Partial<Transaction> = {}): Transaction {
 }
 
 const account: Account = { id: 1, user_id: 1, name: 'Wallet', is_total: 0 } as Account;
+const savings: Account = { id: 2, user_id: 1, name: 'Savings', is_total: 0 } as Account;
 const category: Category = { id: 1, user_id: 1, name: 'Food', type: 'expense' } as Category;
 
 describe('TransactionsScreen', () => {
@@ -102,5 +103,27 @@ describe('TransactionsScreen', () => {
     });
     const view = await render(<TransactionsScreen />);
     expect(view.getByText('Coffee')).toBeTruthy();
+  });
+
+  it('hides the header search/select actions when no transaction matches the account filter', async () => {
+    list.mockResolvedValue([tx(1, { account_id: 2 })]);
+    setAppData({
+      accounts: [account, savings],
+      categoriesById: new Map([[1, category]]),
+    });
+    const view = await render(<TransactionsScreen />);
+    expect(view.getByText('No transactions')).toBeTruthy();
+    expect(nav.setOptions).toHaveBeenCalledWith({ headerRight: null });
+  });
+
+  it('shows the header search/select actions when transactions are visible', async () => {
+    list.mockResolvedValue([tx(1, { description: 'Coffee', account_id: 1 })]);
+    setAppData({
+      accounts: [account, savings],
+      categoriesById: new Map([[1, category]]),
+    });
+    await render(<TransactionsScreen />);
+    const lastOptions = nav.setOptions.mock.calls[nav.setOptions.mock.calls.length - 1][0] as { headerRight: unknown };
+    expect(lastOptions.headerRight).toEqual(expect.any(Function));
   });
 });

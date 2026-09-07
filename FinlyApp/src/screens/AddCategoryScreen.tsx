@@ -7,6 +7,7 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useApp } from '../context/AppContext';
+import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
 import { t, getDisplayCategoryName } from '../i18n';
@@ -35,13 +36,17 @@ export default function AddCategoryScreen() {
     return sortCategoriesWithOthersLast(categoriesOfType(categories, type));
   }, [categories, type]);
 
+  const select = useSelectAndSearch({ hasItems: categoriesByType.length > 0 });
+
   const {
     searchActive, searchText, setSearchText,
     toggleSearch, closeSearch,
-  } = useSelectableScreen({
+  } = select;
+
+  useSelectableScreen({
     navigation,
-    hasItems: categoriesByType.length > 0,
     showHeader: true,
+    selectMode: select.selectMode,
     headerRight: () => (
       <TouchableOpacity
         onPress={toggleSearch}

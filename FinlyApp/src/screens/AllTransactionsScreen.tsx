@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
+import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useTransactionListScreen } from '../hooks/useTransactionListScreen';
 import { usePeriodNavigation } from '../hooks/usePeriodNavigation';
@@ -67,23 +68,14 @@ export default function AllTransactionsScreen() {
   }, [activeType]);
   /* eslint-enable react-hooks/exhaustive-deps */
 
+  const select = useSelectAndSearch<number>({ hasItems: allTransactions.length > 0 });
+
   const {
     searchActive, searchText, setSearchText,
     selectMode, selectedIds,
     toggleItem, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
-  } = useSelectableScreen({
-    navigation,
-    hasItems: allTransactions.length > 0,
-    showHeader: allTransactions.length > 0,
-    headerRight: () => (
-      <SelectSearchHeader
-        selectMode={selectMode}
-        onToggleSelect={toggleSelectMode}
-        onToggleSearch={toggleSearch}
-      />
-    ),
-  });
+  } = select;
 
   const {
     deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
@@ -111,6 +103,19 @@ export default function AllTransactionsScreen() {
     },
     deleteFn: (ids) => transactionRepository.deleteMany(ids),
     onAfterDelete: refresh,
+  });
+
+  useSelectableScreen({
+    navigation,
+    showHeader: !loading && filters.sections.length > 0,
+    selectMode,
+    headerRight: () => (
+      <SelectSearchHeader
+        selectMode={selectMode}
+        onToggleSelect={toggleSelectMode}
+        onToggleSearch={toggleSearch}
+      />
+    ),
   });
 
   const renderSectionHeader = useCallback(({ section }: { section: { date: string } }) => (

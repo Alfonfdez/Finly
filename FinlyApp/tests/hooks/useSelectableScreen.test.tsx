@@ -5,21 +5,21 @@ import { useSelectableScreen } from '../../src/hooks/useSelectableScreen';
 const mockSetOptions = vi.fn();
 const headerRight = vi.fn(() => null);
 
-interface SetupOptions {
-  hasItems?: boolean;
-  showHeader?: boolean;
+interface Props {
+  showHeader: boolean;
+  selectMode: boolean;
 }
 
-function setup(overrides: SetupOptions = {}) {
-  return renderHook(() =>
-    useSelectableScreen<number>({
-      navigation: { setOptions: mockSetOptions },
-      hasItems: overrides.hasItems ?? true,
-      showHeader: overrides.showHeader ?? true,
-      headerRight,
-    })
-  );
+function useHook({ showHeader, selectMode }: Props) {
+  useSelectableScreen({
+    navigation: { setOptions: mockSetOptions },
+    showHeader,
+    selectMode,
+    headerRight,
+  });
 }
+
+const DEFAULT_PROPS: Props = { showHeader: true, selectMode: false };
 
 describe('useSelectableScreen', () => {
   beforeEach(() => {
@@ -27,22 +27,13 @@ describe('useSelectableScreen', () => {
     headerRight.mockClear();
   });
 
-  it('delegates the select and search state to useSelectAndSearch', async () => {
-    const { result } = await setup({ hasItems: false });
-    expect(result.current.searchActive).toBe(false);
-    expect(result.current.searchText).toBe('');
-    expect(result.current.selectMode).toBe(false);
-    expect(result.current.selectedIds.size).toBe(0);
-    expect(result.current.hasItems).toBe(false);
-  });
-
   it('registers no header right when showHeader is false', async () => {
-    await setup({ showHeader: false });
+    await renderHook(useHook, { initialProps: { ...DEFAULT_PROPS, showHeader: false } });
     expect(mockSetOptions).toHaveBeenCalledWith({ headerRight: null });
   });
 
   it('registers the header right renderer when showHeader is true', async () => {
-    const { result } = await setup({ showHeader: true });
+    await renderHook(useHook, { initialProps: DEFAULT_PROPS });
     expect(mockSetOptions).toHaveBeenCalledWith(
       expect.objectContaining({ headerRight: expect.any(Function) })
     );
@@ -50,31 +41,26 @@ describe('useSelectableScreen', () => {
     const opts = mockSetOptions.mock.calls[0][0] as { headerRight: () => unknown };
     expect(opts.headerRight()).toBeNull();
     expect(headerRight).toHaveBeenCalled();
-    expect(result.current.selectMode).toBe(false);
   });
 
-  it('re-registers the header right when select mode toggles', async () => {
-    const { result } = await setup();
+  it('re-registers the header when select mode toggles', async () => {
+    const { rerender } = await renderHook(useHook, { initialProps: DEFAULT_PROPS });
     expect(mockSetOptions).toHaveBeenCalledTimes(1);
 
-    await act(() => result.current.toggleSelectMode());
+    await act(async () => {
+      rerender({ showHeader: true, selectMode: true });
+    });
     expect(mockSetOptions).toHaveBeenCalledTimes(2);
-
-    await act(() => result.current.toggleSelectMode());
-    expect(mockSetOptions).toHaveBeenCalledTimes(3);
   });
 
-  it('forwards select and search actions to the underlying hook', async () => {
-    const { result } = await setup();
+  it('clears the header right when showHeader flips to false', async () => {
+    const { rerender } = await renderHook(useHook, { initialProps: DEFAULT_PROPS });
+    expect(mockSetOptions).toHaveBeenCalledTimes(1);
 
-    await act(() => result.current.toggleItem(5));
-    await act(() => result.current.toggleItem(5));
-    expect(result.current.selectedIds.size).toBe(0);
-
-    await act(() => result.current.toggleSearch());
-    expect(result.current.searchActive).toBe(true);
-
-    await act(() => result.current.toggleSelectMode());
-    expect(result.current.selectMode).toBe(true);
+    await act(async () => {
+      rerender({ showHeader: false, selectMode: false });
+    });
+    expect(mockSetOptions).toHaveBeenCalledTimes(2);
+    expect(mockSetOptions).toHaveBeenLastCalledWith({ headerRight: null });
   });
 });
