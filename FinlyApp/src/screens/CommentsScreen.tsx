@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
 import { t } from '../i18n';
@@ -30,18 +31,27 @@ export default function CommentsScreen() {
   const [comments, setComments] = useState<CommentUsage[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const select = useSelectAndSearch<string>({ hasItems: comments.length > 0 });
+
   const {
     searchActive, searchText, setSearchText,
     selectMode, selectedIds: selectedComments,
     toggleItem, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
-  } = useSelectableScreen<string>({ navigation, hasItems: comments.length > 0, showHeader: comments.length > 0, headerRight: () => (
-    <SelectSearchHeader
-      selectMode={selectMode}
-      onToggleSelect={toggleSelectMode}
-      onToggleSearch={toggleSearch}
-    />
-  )});
+  } = select;
+
+  useSelectableScreen({
+    navigation,
+    showHeader: comments.length > 0,
+    selectMode,
+    headerRight: () => (
+      <SelectSearchHeader
+        selectMode={selectMode}
+        onToggleSelect={toggleSelectMode}
+        onToggleSearch={toggleSearch}
+      />
+    ),
+  });
 
   const loadComments = useCallback(() => {
     let active = true;

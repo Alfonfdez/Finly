@@ -5,6 +5,7 @@ import { LIMIT_TEXT_STYLE } from '../components/componentStyles';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
 import { useApp } from '../context/AppContext';
@@ -45,18 +46,27 @@ export default function CategoriesScreen() {
     return sortCategoriesWithOthersLast(categoriesOfType(categories, activeType));
   }, [categories, activeType]);
 
+  const select = useSelectAndSearch({ hasItems: categoriesByType.length > 1 });
+
   const {
     searchActive, searchText, setSearchText,
     selectMode, selectedIds,
     deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
-  } = useSelectableScreen({ navigation, hasItems: categoriesByType.length > 1, showHeader: categoriesByType.length > 1, headerRight: () => (
-    <SelectSearchHeader
-      selectMode={selectMode}
-      onToggleSelect={toggleSelectMode}
-      onToggleSearch={toggleSearch}
-    />
-  )});
+  } = select;
+
+  useSelectableScreen({
+    navigation,
+    showHeader: categoriesByType.length > 1,
+    selectMode,
+    headerRight: () => (
+      <SelectSearchHeader
+        selectMode={selectMode}
+        onToggleSelect={toggleSelectMode}
+        onToggleSearch={toggleSearch}
+      />
+    ),
+  });
 
   const filteredCategories = useSearchFilter(categoriesByType, searchText, (cat) => [getDisplayCategoryName(cat)]);
 

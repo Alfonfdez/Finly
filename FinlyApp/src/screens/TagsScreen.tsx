@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
 import { t } from '../i18n';
@@ -32,18 +33,27 @@ export default function TagsScreen() {
   const navigation = useNavigation<NavigationProp<'Tags'>>();
   const { tags, refreshTags } = useApp();
 
+  const select = useSelectAndSearch({ hasItems: tags.length > 0 });
+
   const {
     searchActive, searchText, setSearchText,
     selectMode, selectedIds,
     toggleItem, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
-  } = useSelectableScreen({ navigation, hasItems: tags.length > 0, showHeader: tags.length > 0, headerRight: () => (
-    <SelectSearchHeader
-      selectMode={selectMode}
-      onToggleSelect={toggleSelectMode}
-      onToggleSearch={toggleSearch}
-    />
-  )});
+  } = select;
+
+  useSelectableScreen({
+    navigation,
+    showHeader: tags.length > 0,
+    selectMode,
+    headerRight: () => (
+      <SelectSearchHeader
+        selectMode={selectMode}
+        onToggleSelect={toggleSelectMode}
+        onToggleSearch={toggleSearch}
+      />
+    ),
+  });
 
   const filteredTags = useSearchFilter(tags, searchText, (tag) => [tag.name]);
 
