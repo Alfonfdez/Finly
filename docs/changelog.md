@@ -2993,9 +2993,35 @@
 
 
 [2026-09-06] Fix | All/Transactions header Search/Select shown when no transactions are visible
-- Root cause: both transaction list screens gated the header Search/Select actions on the raw repository list (allTransactions.length > 0) instead of the filtered visible list. When the DB has transactions but none survive the active filters (e.g. the seeded rows fall outside the default Month period, or a different account is selected), the list shows the empty state while the Search/Select icons stayed in the header. Violated 015 §11 + acceptance c166 and 014 §7 + c150 ('When there are no transactions, the header Select and Search actions are hidden').
+- Root cause: both transaction list screens gated the header Search/Select actions on the raw repository list (allTransactions.length > 0) instead of the filtered visible list. When the DB has transactions but none survive the active filters (e.g. the seeded rows fall outside the default Month period, or a different account is selected), the list shows the empty state while the Search/Select icons stayed in the header. Violated 015 ï¿½11 + acceptance c166 and 014 ï¿½7 + c150 ('When there are no transactions, the header Select and Search actions are hidden').
 - Refactor: split src/hooks/useSelectableScreen.tsx into header-wiring only (new signature { navigation, showHeader, selectMode, headerRight }; the old internal state now comes from the existing useSelectAndSearch hook, which callers invoke directly). useLayoutEffect deps [navigation, showHeader, selectMode] preserve the Select<->Done header re-registration on selection-mode toggle.
 - AllTransactionsScreen + TransactionsScreen now call useSelectAndSearch first (state), then useTransactionListScreen (which computes filters), then useSelectableScreen with showHeader: !loading && filters.sections.length > 0 - so the actions hide whenever the visible list is empty, not just when the DB is empty.
 - Other 5 consumers (CommentsScreen, TagsScreen, AccountsScreen, CategoriesScreen, AddCategoryScreen) mechanically moved onto the same split API; their showHeader conditions are unchanged (raw-count based, no downstream filter).
 - Tests: tests/hooks/useSelectableScreen.test.tsx rewritten for the new API (state coverage already lives in useSelectAndSearch.test.tsx); new regression cases assert the header is hidden when no transaction matches the filters (Month default / different account) and shown when the filtered list has sections, in both AllTransactionsScreen.test.tsx and TransactionsScreen.test.tsx.
 - Verification: test:all green - typecheck + lint + 92 files / 571 tests (was 92 files / 568 tests).
+
+[2026-09-08] ~ | FinlyApp/src/components/DaySelector.tsx
+- Day selector chips: added textAlign: 'center' to the date and label chip texts so labels stay centered even when they wrap to two lines. React Native Text defaulted to left alignment for wrapped lines, so the long English label "Day before yesterday" rendered as two left-aligned lines at 375px chip width (single-line labels only looked centered because the text box was narrow). Verified in browser (375px): the label wraps to 2 lines (offsetHeight 32 at fs 12) with computed text-align center on both lines; other languages (e.g. ES "Anteayer") never wrap. test:all green (typecheck + lint + 92 files / 571 tests).
+
+[2026-09-08] ~ | FinlyApp/src/components/AmountInput.tsx
+- Amount row no longer overflows on narrow screens: the amount input's default `min-width: auto` (react-native-web maps missing minWidth to the HTML input's intrinsic width) kept the flex input from shrinking, so at 375px the currency symbol and calculator button were pushed past the right viewport edge (row scrollWidth 422 vs 343 available; the calculator icon rendered at x 398..438, off-screen). Added `minWidth: 0` to the input style so it shrinks and the whole row fits. Verified in browser (375px): input 269px, currency, and calculator (x 319..359) fully inside the row with scrollWidth == clientWidth. test:all green (typecheck + lint + 92 files / 571 tests).
+- Tests: test:all green (typecheck + lint + 92 files / 571 tests).
+- Screenshots: re-captured v2-01-home-empty.png, v2-04-add-transaction.png and v2-11-regional-en.png at the standard 375x667 viewport (they were previously 1280x720 / out-of-date), restoring a consistent 375x667 set.
+
+[2026-09-08] ~ | images/screenshots/ (v2-* set)
+- Regenerated the entire v2-* screenshot set at a taller 375x812 viewport (was 375x667) so the bottom FABs no longer crowd the content, and with a richer, populated app state (transactions with comments/tags, user-created tags "commute"+"food", per-category breakdown).
+- Replaced the duplicate/byte-identical v2-00-hamburger.png (was identical to v2-01-home-empty.png, 22063 bytes) and the mixed 1280x720 captures (v2-01-home-empty, v2-04-add-transaction, v2-11-regional-en) with fresh 375x812 shots.
+- New captures: v2-03-accounts.png, v2-05-categories.png, v2-06-tags.png, v2-08-settings-appearance/data/personalization.png, v2-09-calendar-period.png, v2-10-date-picker.png, v2-11-regional-en.png, v2-12-details-income.png, v2-13-details-expense.png.
+- All 18 v2-*.png verified 375x812 via System.Drawing; browser checks confirmed no FAB/element overlap at the taller viewport.
+
+[2026-09-08] ~ | FinlyApp/src/components/calendars/calendarStyles.ts
+- Month-grid centering fix: the Select-month dialog grid (flexDirection row + flexWrap wrap + gap 8, 23%-wide items) left its 3 columns of month tiles hugging the container's left edge, leaving empty space on the right, so the 4x3 grid did not look centered in the dialog. Added justifyContent: 'center' to the grid style. Verified in browser (375px): the 3 columns of tiles now sit centered (items at x 83-147 / 155-220 / 228-292, container centered on the 375px viewport). No calendar-period screenshot is kept in the set (the Select-month modal duplicates the day-picker modal view, so v2-15-calendar-period.png was later removed). test:all green (typecheck + lint + 92 files / 571 tests).
+
+[2026-09-08] ~ | images/screenshots/ (v2-* rename)
+- Reordered and renamed the v2-* screenshot set into a logical app-flow order with a/b/c suffixes for screen variants. Same-screen variants share a number and differ by letter; each distinct screen gets the next number.
+  - v2-01-a-home-empty.png, v2-01-b-home.png, v2-02-hamburger.png, v2-03-add-transaction.png, v2-04-date-picker.png, v2-05-categories.png, v2-06-tags.png
+  - v2-07-a-all-transactions-empty-state.png, v2-07-b-all-transactions.png, v2-08-accounts.png
+  - v2-09-a-details-income.png, v2-09-b-details-expense.png
+  - v2-10-settings.png, v2-11-regional-en.png, v2-12-settings-appearance.png, v2-13-settings-personalization.png, v2-14-settings-data.png
+- No image content changed; pure rename of the 18 files (all still 375x812).
+  - Later removed v2-15-calendar-period.png (17 files remain): the Select-month modal is redundant with the day-picker date-picker modal, so it was dropped to keep the set clean.

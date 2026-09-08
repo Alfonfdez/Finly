@@ -94,6 +94,7 @@ const styles = StyleSheet.create({
   },
   amountInput: {
     flex: 1,
+    minWidth: 0,
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderRadius: CARD_BORDER_RADIUS,
