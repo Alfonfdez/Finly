@@ -9,9 +9,7 @@
 
 ### 1. Access and navigation
 
-- The screen is accessible from two points:
-  - **Hamburger menu (drawer):** pressing "Transactions".
-  - **HomeScreen:** pressing the statistics icon (stats-chart-outline) at the top right.
+- The screen is accessible from the **hamburger menu (drawer):** pressing "Transactions".
 - The screen has a back button (left arrow) in the header to return to the previous screen.
 - The header title is "All transactions" (multilingual).
 - **No navigation parameters are passed** (no `categoryId`, `type`, `period`, `startDate`, `endDate`).
@@ -133,7 +131,7 @@
 
 ## Acceptance criteria
 
-- [x] The screen is accessible from the hamburger menu and from the statistics icon on HomeScreen.
+- [x] The screen is accessible from the hamburger menu (drawer) under "Transactions".
 - [x] The header shows a back arrow and title "All transactions" in the active language.
 - [x] Three type tabs (All | Expenses | Income) are shown, with "All" selected by default.
 - [x] Selecting "Expenses" shows only expense transactions; "Income" shows only income.

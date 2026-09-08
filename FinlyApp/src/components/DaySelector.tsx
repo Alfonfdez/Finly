@@ -125,8 +125,10 @@ const styles = StyleSheet.create({
   date: {
     fontWeight: '700',
     marginBottom: 2,
+    textAlign: 'center',
   },
   label: {
     fontWeight: '500',
+    textAlign: 'center',
   },
 });

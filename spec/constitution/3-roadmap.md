@@ -209,7 +209,7 @@ Spec: spec/features/014-transactions-screen-from-home/.
 ## 015-all-transactions-screen
 Status: completed.
 
-Independent `AllTransactionsScreen` accessible from the hamburger menu (drawer) or the stats icon on HomeScreen, with advanced filtering:
+Independent `AllTransactionsScreen` accessible from the hamburger menu (drawer) — "Transactions" — with advanced filtering:
 - **Type tabs** (All | Expenses | Income) — default "All", filters by transaction type.
 - **Category filter** — multi-select category modal (021) with search, "All" chip, type-aware sections.
 - **Period selector** — PeriodTabs + CalendarPicker, shared with HomeScreen via AppContext. Default "Year" (current year). Custom range: Jan 1 → today.
