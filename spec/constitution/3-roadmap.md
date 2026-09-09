@@ -426,7 +426,7 @@ Full spec audit of every implemented feature against its acceptance criteria, in
   - Verified `[x]`: favicon in tab (#82/#88), all files referenced in app.json (#86), drawer header logo + "Finly" (#87).
 - Browser-verification notes: dev server does not inject the favicon `<link>` (production export does); `dist/` export generated the favicon.ico from `web.favicon`.
 
-Pending: release (Task 4: GitHub release v2.0.0 + APK).
+- [x] **Released:** Finly 2.0.0 published as a GitHub Release (tag `v2.0.0`) with the EAS-signed preview APK attached — https://github.com/Alfonfdez/Finly/releases/tag/v2.0.0.
 
 ## 2.0 release-readiness (Task 3)
 Status: completed.
