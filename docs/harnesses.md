@@ -37,6 +37,8 @@ All commands run from the `FinlyApp/` directory.
 
 Verified 2026-09-06: **92 test files / 571 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
 
+Native E2E baseline (2026-09-09, SDK 57 re-run): all 10 Maestro flows PASS on the `finly_test` emulator after `expo prebuild` + `assembleDebug`.
+
 ## Verification loop (what "done" means)
 
 After every code change, the agent runs:
@@ -196,9 +198,11 @@ on web, so Finly added a **Maestro** harness for the Android emulator:
   2026-08-06 for flow-015-all-transactions and flow-021-category-filter,
   2026-08-07 for flow-004-add-transaction, flow-007-amount-calculator,
   flow-016-transaction-details and flow-017-modify-transaction).
-- `flow-015-all-transactions` covers 015's drawer entry, back arrow + title, type and
-  period tabs, the "N categories" pill, empty state, account modal, FAB to Add
-  Transaction, and the stats-icon entry path. `flow-021-category-filter` covers the
+- `flow-015-all-transactions` covers 015's drawer entry, hamburger (Open menu) + title,
+  type and period tabs, the "N categories" pill, empty state, account modal, FAB to Add
+  Transaction, and the return-to-Home path via the drawer. The old stats-icon entry path
+  and the back-arrow header were removed when 015 became drawer-only (see 2026-09-08/09
+  entries below). `flow-021-category-filter` covers the
   full-screen modal (header + Close X, All chip, category grid, multi-select Apply
   count, Close without applying) and the type='expense' variant.
 - Android note found while writing the 021 flow: on a freshly-opened `Modal` the first
@@ -234,8 +238,9 @@ Android / Maestro notes found and fixed while writing them:
   `inputText` lets the keyboard settle so the next tap (modal "Add", submit "Add"/"Save")
   is reachable.
 - **016 c2 back arrow**: the details screen's native-stack back button is exposed to the
-  accessibility tree as "Navigate up", not "Back" (the All transactions screen uses a
-  custom `HeaderBackButton` labelled "Back"). The flow asserts "Navigate up" on details.
+  accessibility tree as "Navigate up", not "Back" (All transactions is a drawer screen and
+  shows the "Open menu" hamburger, not a back arrow — see the SDK 57 re-run below). The
+  flow asserts "Navigate up" on details.
 - **017 c5 amount preload**: the amount is stored as a numeric DB value (42.5), so the
   preloaded formatted input shows "42,5" (not "42,50"); the flow asserts the formatted
   current value.
@@ -246,6 +251,31 @@ Android / Maestro notes found and fixed while writing them:
   create: `tagRepo.create()` → `refreshTags()` → auto-select the new tag → close modal").
   The tag-modal flows only passed on the list screen before because its tag-filter chip
   shows every tag regardless of link.
+
+### Phase D+ — Native E2E re-run on Expo SDK 57 (2026-09-09)
+
+After the upgrade to Expo SDK 57 / RN 0.86.3 (merged via PR #163) the native build and all
+ten Maestro flows were re-validated from scratch:
+
+- `npx expo prebuild --platform android` regenerated the CNG `android/` folder on SDK 57
+  (package stays `com.anonymous.FinlyApp`, matching the flows' `appId`); the folder remains
+  gitignored.
+- `gradlew app:assembleDebug` (5m52s first build — compiles reanimated/screens/
+  gesture-handler/expo-modules-core C++ for all 4 ABIs) → `adb install -r` → launched on
+  the `finly_test` emulator with Metro over `adb reverse tcp:8081 tcp:8081`.
+- **All 10 flows PASS** on the SDK 57 build: flow-smoke, flow-004, flow-007, flow-008,
+  flow-015, flow-016, flow-017, flow-021, flow-022, flow-023 (plus the 3 helpers
+  state-reset / open-drawer / dismiss-dev-menu).
+- **Flow fixes aligned to the current UI (spec 015 is drawer-only):**
+  - `flow-015`: removed the stale stats-icon (`c1b` "View transactions") entry that the 015
+    spec removed; the header assertion changed from the removed back arrow to the "Open
+    menu" hamburger; returning Home now goes via the drawer instead of the back arrow.
+  - `flow-004`: end assertion changed from `"Back"` to `"Open menu"` on All transactions.
+  - Spec 015 line 13 + acceptance criteria now state the hamburger header (matching the
+    other drawer screens, per product decision); the `canGoBack()`-based back-arrow variant
+    from the earlier header refactor is reverted in docs.
+- Camera capture and gallery picking stay **"not automatable on emulator"**; flow-023 is
+  re-verified at the modal/UI level only, as before.
 
 ### CI pipeline — GitHub Actions (2026-08-05)
 
