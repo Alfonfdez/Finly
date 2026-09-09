@@ -1,6 +1,6 @@
 # Finly
 
-[Español](README.es.md) · [Català](README.ca.md)
+[Español](README.es.md) · [Català](README.ca.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt.md) · [Italiano](README.it.md)
 
 **Finly** is a personal finance app for tracking income and expenses. Record what you earn and spend on the days it happens, organize it across multiple accounts and custom categories, and understand your money through charts, period filters, tags, and comments.
 
@@ -41,7 +41,7 @@ Everything runs **on-device**: your data lives in a local SQLite database (sql.j
 ![All transactions empty state](images/screenshots/v2-07-a-all-transactions-empty-state.png)<br>*All Transactions empty state.*<br><br>
 ![All transactions](images/screenshots/v2-07-b-all-transactions.png)<br>*All Transactions with type, category, period, and tag filters plus sorting and search.*<br><br>
 ![Accounts](images/screenshots/v2-08-accounts.png)<br>*Accounts screen with balances and the aggregate Total account.*<br><br>
-![Income details](images/screenshots/v2-09-a-details-income.png)<br>*Income transaction details with photo.*<br><br>
+![Income details](images/screenshots/v2-09-a-details-income.png)<br>*Income transaction details with edit and delete.*<br><br>
 ![Expense details](images/screenshots/v2-09-b-details-expense.png)<br>*Expense transaction details with edit and delete.*<br><br>
 ![Settings](images/screenshots/v2-10-settings.png)<br>*Settings: Appearance, Regional, Personalization, and Data.*<br><br>
 ![Regional settings](images/screenshots/v2-11-regional-en.png)<br>*Regional settings: language, currency, decimal separator, and first day of week.*<br><br>
