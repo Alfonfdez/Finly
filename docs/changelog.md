@@ -3075,3 +3075,18 @@
 
 [2026-09-09] ~ | docs/programming-concepts.md
 - Added a new "Release and Distribution" section (9 concept entries): AAB (Android App Bundle), APK (Android Package), Distribution channel, EAS Build, EAS build profiles, Git tag, GitHub Release, Release notes, and Semantic versioning (semver). Documented for the 2.0.0 release workflow (GitHub-only APK distribution).
+
+[2026-09-09] ~ | .agents/skills/verification-loop/SKILL.md, docs/harnesses.md
+- Updated the stale dev-client package id from com.anonymous.FinlyApp to com.finly.app (SKILL.md and the duplicate reference inside the Phase D harnesses section, which now agrees with the section intro).
+
+[2026-09-09] ~ | docs/assets.md
+- Fixed stale asset facts for 2.0: favicon.png is 1024x1024 (Expo downsizes at export, not 48x48), the app.json mapping now shows the expo-splash-screen config plugin instead of the deprecated top-level splash field, and the web splash section reflects the rework in App.tsx (logo fade-in + 400 ms exit; progress bar and 2-second minimum removed).
+
+[2026-09-09] ~ | docs/programming-concepts.md
+- Updated stale SDK examples: worklets example uses SDK 57 / react-native-worklets 0.10.1, the "Centralized language checks" section reflects the real 7-language constants/languages.ts + language.ts (only isCatalan helper), the splash screen example uses the expo-splash-screen config plugin (SDK 57+) instead of the deprecated expo.splash field, and the favicon note says Expo downsizes the 1024x1024 source.
+
+[2026-09-09] ~ | spec/constitution/1-mission.md, spec/constitution/2-tech-stack.md, spec/constitution/6-screens.md
+- Updated constitution docs for 2.0: mission lists all 7 languages (EN, ES, CA, FR, DE, PT, IT); tech-stack says Expo SDK 57, describes PRAGMA user_version versioned migrations (SCHEMA_VERSION 3) instead of "no versioned migrations", and the i18n tree lists all 7 language files; the drawer version footer example shows v2.0.0.
+
+[2026-09-09] ~ | spec/constitution/2-tech-stack.md
+- Rewrote the "File structure" tree to match the current src/ layout: full screen list incl. settings/ (Appearance, Regional, Personalization, Data) and tags/comments screens; accurate components (renamed AccountSelector -> AccountTrigger, TypeTabs -> TabBar, removed duplicate CalendarModal/CalendarPicker under calendars/, added form/ and settings/ subfolders); database section now shows Drizzle (drizzle/, schemas.ts, seedData.ts, configDefaults.ts, backup.ts, backupService.ts) and the split transaction repositories; hooks, constants and utils sections list the real current files.

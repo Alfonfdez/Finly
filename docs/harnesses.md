@@ -185,7 +185,7 @@ on web, so Finly added a **Maestro** harness for the Android emulator:
   `flow-021-category-filter`, `flow-022-total-account`, `flow-023-photo-attachment`)
   plus `helpers/`
   (`state-reset.yaml`, `open-drawer.yaml`, `dismiss-dev-menu.yaml`).
-- The app is verified on the **dev-client debug build** (`com.anonymous.FinlyApp`, built
+- The app is verified on the **dev-client debug build** (`com.finly.app`, built
   with `npx expo run:android`), not Expo Go — the dev-client does not register the
   `exp://` scheme, so every flow starts with `helpers/state-reset.yaml`
   (`launchApp` + `clearState`) to reset the SQLite DB to the seeded state, then drives the
@@ -265,7 +265,7 @@ application id changed to `com.finly.app` (v2.0.0), so `android/` was regenerate
 in `.maestro/` were updated, and **all 10 flows re-run PASS on `com.finly.app`**.
 
 - `npx expo prebuild --platform android` regenerated the CNG `android/` folder on SDK 57
-  (package stays `com.anonymous.FinlyApp`, matching the flows' `appId`); the folder remains
+  (package stays `com.finly.app`, matching the flows' `appId`); the folder remains
   gitignored.
 - `gradlew app:assembleDebug` (5m52s first build — compiles reanimated/screens/
   gesture-handler/expo-modules-core C++ for all 4 ABIs) → `adb install -r` → launched on

@@ -131,7 +131,7 @@ The drawer is a custom `DrawerContentScrollView` in `AppNavigator.tsx` with this
 │─────────────────────────│  ← Separator
 │  ⚙️ Settings            │
 │                         │
-│       v1.0.0            │  ← Version footer (expo-constants)
+│       v2.0.0            │  ← Version footer (expo-constants)
 └─────────────────────────┘
 ```
 
@@ -149,7 +149,7 @@ The drawer is a custom `DrawerContentScrollView` in `AppNavigator.tsx` with this
 **Version footer:**
 - Reads version from `Constants.expoConfig?.version` (expo-constants, sourced from `app.json`).
 - Style: `fs(11)`, `c.textSecondary`, centered, pushed to bottom of scroll view.
-- Format: `v{version}` (e.g., `v1.0.0`).
+- Format: `v{version}` (e.g., `v2.0.0`).
 
 ### Sub-screens (Create, Modify, Detail)
 
