@@ -1,0 +1,40 @@
+# Finly EAS ignore. EAS resolves ignore from the git root.
+# Keep in sync with FinlyApp/.gitignore + build artifacts exclusion.
+
+# local env files
+.env*.local
+
+# tooling / dev-only dirs
+opencode.jsonc
+.playwright-mcp/
+*.log
+
+# macOS
+.DS_Store
+*.pem
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native (prebuild regenerates these on EAS; never upload local build dirs)
+android/
+ios/
+.kotlin/
+node_modules/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro / debug
+.metro-health-check*
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# typescript
+*.tsbuildinfo
