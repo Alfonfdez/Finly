@@ -843,7 +843,93 @@ jobs:
 PR opened → CI check runs → green ✓ (mergeable) or red ✗ (blocked)
 ```
 
+# Release and Distribution
 
+## AAB (Android App Bundle)
+**Definition:** Android publishing format that contains the app's code and resources, from which the store generates device-specific APKs.
+**Explanation:** An AAB is what you upload to Google Play. Play then builds and signs an optimized APK per device configuration, so users download smaller files. An AAB cannot be installed directly on a phone — only APKs can be sideloaded. Finly produces an AAB with the `production` EAS profile (`android.buildType: "app-bundle"`).
+**Example:**
+```bash
+eas build --platform android --profile production   # → output .aab (store submission)
+```
+
+## APK (Android Package)
+**Definition:** The installable file format for Android apps.
+**Explanation:** An APK is what taps open on a phone ("Install from unknown sources"). It is the right artifact for a GitHub Release because testers can download and install it directly. Finly produces an APK with the `preview` EAS profile (internal distribution).
+**Example:**
+```bash
+eas build --platform android --profile preview   # → output .apk (installable, sideload)
+```
+
+## Distribution channel
+**Definition:** The route through which users receive the built app (GitHub, app store, etc.).
+**Explanation:** Each channel serves a different audience and expects a different artifact. A GitHub Release carries a sideloadable APK; the Google Play Store expects an AAB and handles per-device APKs itself; iOS stores use IPA files. Finly uses GitHub as its distribution channel for 2.0.
+**Example:**
+```text
+GitHub Release → APK (sideloadable)   ·   Google Play → AAB → per-device APKs
+```
+
+## EAS Build
+**Definition:** Expo's cloud build service that compiles the React Native project into native binaries (APK, AAB, IPA).
+**Explanation:** EAS Build runs `expo prebuild` + Gradle/Xcode on Expo's servers and returns a signed, installable binary — no local Android Studio or signing keystore required. The `--profile` flag selects which artifact type and signing to use from `eas.json`.
+**Example:**
+```bash
+npm install -g eas-cli
+eas login
+eas build --platform android --profile preview   # cloud build, download the result
+```
+
+## EAS build profiles
+**Definition:** Named build configurations in `eas.json` that define the artifact type and distribution for a build.
+**Explanation:** Each profile maps a build to a purpose. Finly defines three: `development` (dev-client, internal), `preview` (internal APK), and `production` (store AAB). Choosing `--profile` on the command line picks the schema and, for Android, the `android.buildType` (`apk` vs `app-bundle`).
+**Example:**
+```json
+{
+  "build": {
+    "development": { "developmentClient": true, "distribution": "internal" },
+    "preview":      { "distribution": "internal" },
+    "production":   { "distribution": "store", "android": { "buildType": "app-bundle" } }
+  }
+}
+```
+
+## Git tag
+**Definition:** An immutable named pointer to a specific commit, used to mark release points.
+**Explanation:** A tag (e.g. `v2.0.0`) permanently labels the exact commit that was released, so the code can be reproduced later. In Finly's git flow the tag is created on the `main` merge commit AFTER `develop` is merged, so the released code matches what ships.
+**Example:**
+```bash
+git tag -a v2.0.0 -m "Finly 2.0.0 release"
+git push origin v2.0.0
+```
+
+## GitHub Release
+**Definition:** A publication tied to a tag that groups release notes and downloadable assets (APK, source) in one page.
+**Explanation:** Releases are how open-source/project apps hand installable builds to users. You point a Release at a tag, write the notes, and attach binaries. GitHub also archives the source at that tag so the release is fully reproducible.
+**Example:**
+```text
+Tag v2.0.0 → GitHub Release "Finly 2.0.0" → notes + attached app-debug.apk
+```
+
+## Release notes
+**Definition:** Human-readable text attached to a Release that explains what changed in that version.
+**Explanation:** Release notes summarize new features, fixes, and assets for users comparing against the previous release. They are the description field on the GitHub Release page (not a file in the repo), and are written from the roadmap/changelog highlights.
+**Example:**
+```markdown
+## Finly 2.0.0
+- Version 2.0.0 — new identifiers (com.finly.app, versionCode 1)
+- Theme: Dark / Light / Automatic · 7 languages
+- Photos, tags, comments, bulk actions, data backup
+- Attached: Android APK (sideload)
+```
+
+## Semantic versioning (semver)
+**Definition:** Versioning scheme `MAJOR.MINOR.PATCH` where each bump has a meaning.
+**Explanation:** MAJOR changes break compatibility (2.0 → new major), MINOR adds features backwards-compatibly, PATCH fixes bugs. The version also maps to Android identifiers (`versionName "2.0.0"`, `versionCode 1`) — `versionCode` is the unique integer Play uses to detect upgrades, while `versionName` is what users see.
+**Example:**
+```json
+// app.json / android/app/build.gradle
+"version": "2.0.0"      →   versionName "2.0.0", versionCode 1
+```
 
 # Databases / ORM
 
