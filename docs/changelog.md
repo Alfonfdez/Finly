@@ -3072,3 +3072,6 @@
 
 [2026-09-09] + | README.fr.md, README.de.md, README.pt.md, README.it.md
 - Created full French, German, Portuguese and Italian translations of the English README.md, each linking back to the original and to the other 5 translations.
+
+[2026-09-09] ~ | docs/programming-concepts.md
+- Added a new "Release and Distribution" section (9 concept entries): AAB (Android App Bundle), APK (Android Package), Distribution channel, EAS Build, EAS build profiles, Git tag, GitHub Release, Release notes, and Semantic versioning (semver). Documented for the 2.0.0 release workflow (GitHub-only APK distribution).
