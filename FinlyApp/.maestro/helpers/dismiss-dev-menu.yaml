@@ -1,4 +1,4 @@
-appId: com.anonymous.FinlyApp
+appId: com.finly.app
 ---
 # Wait for the app to be interactive, then dismiss the first-launch
 # developer-menu overlay if present. Its scrim intercepts taps, so the

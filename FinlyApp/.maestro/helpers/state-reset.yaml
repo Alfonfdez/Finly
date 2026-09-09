@@ -1,4 +1,4 @@
-appId: com.anonymous.FinlyApp
+appId: com.finly.app
 ---
 # Reset app to a clean state: stop, clear data (SQLite DB + config), relaunch.
 # Note: the dev-client build does not register the exp:// scheme, so we launch
