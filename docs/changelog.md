@@ -3036,4 +3036,9 @@
 - No code change: AppNavigator.tsx was unchanged; only flows, specs and harness docs were aligned to the existing hamburger behavior.
 
 [2026-09-09] ~ | docs/harnesses.md
-- Added "Phase D+ � Native E2E re-run on Expo SDK 57 (2026-09-09)" section: prebuild/assembleDebug/reinstall/launch steps, all 10 flows PASS, the flow fixes (drawer-only 015, hamburger header), and the camera/gallery "not automatable on emulator" exclusion kept.
+- Added "Phase D+ — Native E2E re-run on Expo SDK 57 (2026-09-09)" section: prebuild/assembleDebug/reinstall/launch steps, all 10 flows PASS, the flow fixes (drawer-only 015, hamburger header), and the camera/gallery "not automatable on emulator" exclusion kept.
+
+[2026-09-09] ~ | FinlyApp/package.json, package-lock.json
+- Bumped `expo` from ^57.0.20 to ~57.0.21 (SDK 57 patch, per `npx expo install --check`: the only package out of range; expected version ~57.0.21). Tilde pinned to match the other `expo-*` module deps. Applied 2026-09-09.
+- JS-level patch within SDK 57: no native code change, so no `expo prebuild`/native rebuild/maestro re-run was required. `npm run test:all` green (typecheck + lint + 92 files / 571 tests).
+- docs/harnesses.md "Phase D+ — Native E2E re-run on Expo SDK 57" section updated with the current SDK patch. Historical note in the SDK 57 upgrade entry (2026-09-06) still records expo ^57.0.20 as of that date.
