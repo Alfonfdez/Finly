@@ -43,8 +43,8 @@ const styles = StyleSheet.create({
 **Explanation:** react-native-reanimated uses it internally for smooth animations on the UI thread. Each Expo SDK version requires a specific version. If there is a mismatch, it throws the error `TurboModule method "installTurboModule" called with 1 arguments`.
 **Example:**
 ```bash
-# SDK 54 requires worklets 0.5.1
-npx expo install react-native-worklets@0.5.1
+# SDK 57 requires worklets 0.10.1
+npx expo install react-native-worklets@0.10.1
 ```
 
 # TypeScript
@@ -292,15 +292,20 @@ import { isNative } from '../utils/platform';
 
 ## Centralized language checks
 **Definition:** Centralized utility module that exports language type and helper functions, avoiding repeated string comparisons across the codebase.
-**Explanation:** Instead of writing `language === 'ca'` or `language === 'es'` in every file, a single utility file (`src/utils/language.ts`) exports the `Language` type and helper functions (`isSpanish()`, `isEnglish()`, `isCatalan()`). All files import from this utility, ensuring consistency and making language-related changes easier. The type definition is also reused by ConfigContext, i18n, and formatters.
+**Explanation:** Instead of writing `language === 'ca'` or `language === 'es'` in every file, a single constants module (`src/constants/languages.ts`) exports the `LANGUAGES` map and the `Language` type (`'es' | 'en' | 'ca' | 'fr' | 'de' | 'pt' | 'it'`). `src/utils/language.ts` re-exports them and provides the helper function (`isCatalan()`). All files import from this utility, ensuring consistency and making language-related changes easier. The type definition is also reused by ConfigContext, i18n, and formatters.
 **Example:**
 ```tsx
+// src/constants/languages.ts
+export const LANGUAGES = {
+  es: 'es', en: 'en', ca: 'ca', fr: 'fr', de: 'de', pt: 'pt', it: 'it',
+} as const;
+export type Language = keyof typeof LANGUAGES;
+
 // src/utils/language.ts
-export type Language = 'es' | 'en' | 'ca';
-export const LANGUAGES: Language[] = ['en', 'es', 'ca'];
-export const isSpanish = (lang: Language) => lang === 'es';
-export const isEnglish = (lang: Language) => lang === 'en';
-export const isCatalan = (lang: Language) => lang === 'ca';
+import { LANGUAGES, type Language } from '../constants/languages';
+export { LANGUAGES };
+export type { Language };
+export const isCatalan = (lang: Language) => lang === LANGUAGES.ca;
 
 // Usage in any screen
 import { isCatalan } from '../utils/language';
@@ -673,23 +678,28 @@ if (row.user_version < 1) {
 
 ## Splash screen
 **Definition:** Loading screen that briefly appears while the app starts.
-**Explanation:** Expo shows a native splash screen while loading the JavaScript bundle. It is configured with a centered PNG image and a background color. In Expo SDK 54+, it is recommended to configure it in `expo.splash` in `app.json` (not via the legacy `expo-splash-screen` plugin).
+**Explanation:** Expo shows a native splash screen while loading the JavaScript bundle. It is configured with a centered PNG image and a background color. In Expo SDK 57+, it is configured via the `expo-splash-screen` config plugin in the `plugins` array of `app.json` (the legacy `expo.splash` field is deprecated).
 **Example:**
 ```json
 {
   "expo": {
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0F172A"
-    }
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#0F172A"
+        }
+      ]
+    ]
   }
 }
 ```
 
 ## Favicon
 **Definition:** Icon that appears in the browser tab when opening the app on web.
-**Explanation:** Expo uses `favicon.png` (48×48) for web. It is referenced in `expo.web.favicon`. Only applies to the web platform.
+**Explanation:** Expo uses `favicon.png` for web (the 1024×1024 source is downsized at export). It is referenced in `expo.web.favicon`. Only applies to the web platform.
 **Example:**
 ```json
 {

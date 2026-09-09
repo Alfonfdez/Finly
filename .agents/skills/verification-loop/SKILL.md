@@ -43,7 +43,7 @@ addition to) the web loop:
    `adb shell getprop sys.boot_completed` to return `1`.
 2. Build/install the dev-client APK if needed: `cd FinlyApp && npx expo run:android`
    (or install the existing `android/app/build/outputs/apk/debug/app-debug.apk` with
-   `adb install -r`). The dev-client package id is `com.anonymous.FinlyApp`.
+   `adb install -r`). The dev-client package id is `com.finly.app`.
 3. Start the dev server: `npx expo start` (port 8081). Set up the tunnel:
    `adb reverse tcp:8081 tcp:8081`.
 4. The dev-client does NOT register the `exp://` scheme, so flows launch the activity
