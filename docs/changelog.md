@@ -3063,3 +3063,12 @@
 
 [2026-09-09] ~ | images/screenshots/
 - Removed the 10 old screenshots (000-Splash_animation .. 009-calendar_period_selection) and app-flow.gif; the folder now contains only the 17 v2-* screenshots (375x812) referenced by README.md.
+
+[2026-09-09] ~ | README.md
+- Updated the language links line to point to all 6 translations: es, ca, fr, de, pt, it.
+
+[2026-09-09] ~ | README.es.md, README.ca.md
+- Rewritten to match the new English 2.0 README (features, 17 v2-* screenshots, tech stack, development section); stale references to the old 000-009 screenshots and excalidraw hero were removed.
+
+[2026-09-09] + | README.fr.md, README.de.md, README.pt.md, README.it.md
+- Created full French, German, Portuguese and Italian translations of the English README.md, each linking back to the original and to the other 5 translations.

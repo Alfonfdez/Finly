@@ -1,39 +1,82 @@
 # Finly
 
-[English](README.md) · [Català](README.ca.md)
+[English](README.md) · [Español](README.es.md) · [Català](README.ca.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt.md) · [Italiano](README.it.md)
 
-App para gestionar ingresos y gastos personales con múltiples cuentas, categorías personalizables, filtros por período y gráficos visuales.
+**Finly** es una app de finanzas personales para controlar ingresos y gastos. Anota lo que ganas y gastas cada día, organízalo en varias cuentas y categorías personalizadas, y entiende tu dinero con gráficos, filtros por período, etiquetas y comentarios.
 
-![Vista previa de la app](images/excalidraw/Finly_v2.png)
+Todo funciona **en el dispositivo**: tus datos viven en una base de datos SQLite local (sql.js + IndexedDB en la web), nada sale de tu teléfono y no necesitas cuenta ni suscripción.
 
-## Metodología
+| | |
+|---|---|
+| **Plataformas** | iOS, Android y Web |
+| **Versión** | 2.0.0 |
+| **Idiomas** | Inglés, Español, Catalán, Francés, Alemán, Portugués e Italiano |
+| **Datos** | 100 % locales (SQLite en nativo, sql.js + IndexedDB en web) |
+| **Temas** | Oscuro, Claro y Automático (sigue el sistema) |
 
-**Specification-Driven Development (SDD).** Las especificaciones están en `spec/` y son la única fuente de verdad. Primero se define qué construir, luego se implementa.
+## Funciones
 
-## Stack
+- **Varias cuentas** — crea, edita y elimina cuentas, cada una con su propio icono, color y saldo inicial opcional. Una cuenta especial **Total** agrega todo.
+- **Control de ingresos y gastos** — añade transacciones en un día concreto con importe, cuenta, categoría, etiquetas, comentario y una foto opcional.
+- **Categorías personalizadas** — elige entre una biblioteca de iconos y colores, y crea tus propias categorías de gastos e ingresos.
+- **Gráficos** — gráfico de donut con el total en el centro y gráfico de barras apiladas horizontal, con desglose por categorías que muestra porcentajes.
+- **Filtros por período** — Día, Semana, Mes, Año y rangos personalizados con selector de calendario.
+- **Todas las transacciones** — filtros combinados: tipo, categorías (multiselección), período, cuenta, etiquetas y búsqueda con ordenación por fecha o importe.
+- **Etiquetas y comentarios** — etiqueta transacciones y filtra por etiqueta; gestiona todos los comentarios de la app y aplica ediciones o borrados masivos a varias transacciones a la vez.
+- **Fotos** — adjunta una foto a una transacción desde la galería en todas las plataformas (cámara en iOS y Android).
+- **Acciones masivas** — multiselecciona y elimina transacciones, etiquetas, comentarios y categorías de una vez.
+- **Copia de seguridad** — exporta toda tu base de datos como instantánea JSON e impórtala cuando quieras.
+- **Ajustes** — tema, tamaño de texto, moneda, separador decimal, idioma, primer día de la semana, formas de iconos, valores predeterminados de inicio y de añadir transacción, y opciones de privacidad para ocultar saldos.
+- **Calculadora integrada** — una pequeña calculadora en la pantalla de añadir transacción para calcular importes.
+
+## Capturas de pantalla
+
+![Pantalla de inicio](images/screenshots/v2-01-a-home-empty.png)<br>*Pantalla de inicio antes de configurar ninguna cuenta.*<br><br>
+![Pantalla de inicio](images/screenshots/v2-01-b-home.png)<br>*Pantalla de inicio con cuentas, gráfico de donut y desglose por categorías.*<br><br>
+![Menú hamburguesa](images/screenshots/v2-02-hamburger.png)<br>*Menú lateral con Inicio, Cuentas, Categorías, Etiquetas, Comentarios, Todas las transacciones y Ajustes.*<br><br>
+![Añadir transacción](images/screenshots/v2-03-add-transaction.png)<br>*Añade un gasto o ingreso con importe, cuenta, categoría, día, etiquetas, comentario y foto.*<br><br>
+![Selector de fecha](images/screenshots/v2-04-date-picker.png)<br>*Selector de calendario para elegir un día, semana, mes, año o rango de período personalizado.*<br><br>
+![Categorías](images/screenshots/v2-05-categories.png)<br>*Categorías organizadas por tipo (gastos/ingresos) en una cuadrícula de 4×N.*<br><br>
+![Etiquetas](images/screenshots/v2-06-tags.png)<br>*Pantalla de etiquetas con búsqueda y selección masiva.*<br><br>
+![Todas las transacciones, vacío](images/screenshots/v2-07-a-all-transactions-empty-state.png)<br>*Todas las transacciones en estado vacío.*<br><br>
+![Todas las transacciones](images/screenshots/v2-07-b-all-transactions.png)<br>*Todas las transacciones con filtros de tipo, categoría, período y etiquetas, además de ordenación y búsqueda.*<br><br>
+![Cuentas](images/screenshots/v2-08-accounts.png)<br>*Pantalla de cuentas con saldos y la cuenta Total agregada.*<br><br>
+![Detalles de ingreso](images/screenshots/v2-09-a-details-income.png)<br>*Detalles de una transacción de ingreso con edición y eliminación.*<br><br>
+![Detalles de gasto](images/screenshots/v2-09-b-details-expense.png)<br>*Detalles de una transacción de gasto con edición y eliminación.*<br><br>
+![Ajustes](images/screenshots/v2-10-settings.png)<br>*Ajustes: Apariencia, Regional, Personalización y Datos.*<br><br>
+![Ajustes regionales](images/screenshots/v2-11-regional-en.png)<br>*Ajustes regionales: idioma, moneda, separador decimal y primer día de la semana.*<br><br>
+![Ajustes de apariencia](images/screenshots/v2-12-settings-appearance.png)<br>*Apariencia: tema, tamaño de texto y formas de iconos.*<br><br>
+![Ajustes de personalización](images/screenshots/v2-13-settings-personalization.png)<br>*Personalización: valores predeterminados de inicio y de añadir transacción, y privacidad.*<br><br>
+![Ajustes de datos](images/screenshots/v2-14-settings-data.png)<br>*Datos: exportación/importación de copia de seguridad y acciones de borrado/reinicio.*<br><br>
+
+## Stack tecnológico
 
 | Capa | Tecnología |
 |---|---|
-| Framework | React Native con Expo (SDK 54) |
+| Framework | React Native con Expo (SDK 57) |
 | Lenguaje | TypeScript |
 | Navegación | React Navigation (Stack + Drawer) |
 | Iconos | @expo/vector-icons (Ionicons) |
 | Gráficos | react-native-svg |
-| Color picker | reanimated-color-picker |
+| Selector de color | reanimated-color-picker |
 | Persistencia | SQLite (expo-sqlite) en nativo, sql.js (WASM) + IndexedDB en web |
+| ORM | Drizzle ORM (sqlite-proxy sobre un DatabaseHandle compartido) |
+| Validación | Esquemas Zod como única fuente de verdad para las filas almacenadas |
 | Web | react-native-web |
 | Estado | Context API (AppContext + ConfigContext) |
-| i18n | Sistema propio (español, inglés, catalán) |
+| i18n | Sistema propio (en, es, ca, fr, de, pt, it) |
 
-## Cómo empezar
+## Desarrollo
+
+Esta sección es para quienes contribuyen y para cualquiera que quiera ejecutar, hacer un fork o ampliar la app.
 
 ### Requisitos
 
-- Node.js 18+
+- Node.js 20+ (se recomienda Node 24)
 - npm
-- Expo Go (app móvil gratuita) para verlo en el móvil
+- Un emulador de Android opcional (la carpeta `android/` la genera CNG — ver abajo)
 
-### Primera vez al clonar
+### Primera vez después de clonar
 
 ```bash
 cd FinlyApp
@@ -41,158 +84,79 @@ npm install
 npx expo start
 ```
 
-Esto arranca Metro Bundler. A partir de ahí:
+Esto inicia Metro Bundler. Después:
 
 | Para ver en… | Haz esto |
 |---|---|
-| **Navegador** | Abre [http://localhost:8081](http://localhost:8081) o ejecuta `npx expo start --web` |
-| **Móvil (Expo Go)** | Pulsa la tecla **`s`** en la terminal y escanéa el QR con Expo Go |
+| **Navegador** | Abre http://localhost:8081 o ejecuta `npx expo start --web` |
+| **Android (emulador)** | Ejecuta `npx expo run:android` |
+| **iOS (simulador)** | Ejecuta `npx expo run:ios` (solo macOS) |
 
-> Si `expo` no se reconoce como comando, usa `npx expo ...` o `npm run web`.
-
-### Notas importantes
-
-- Este proyecto usa **Expo SDK 54** por compatibilidad con Expo Go. No actualices el SDK ni ejecutes `npm audit fix --force` (rompe las versiones).
-- Si al escanear el QR en Expo Go no pasa nada, asegúrate de haber pulsado **`s`** para cambiar a modo Expo Go (el mensaje debe poner "Scan the QR code to open in Expo Go").
-- Si da error `TurboModule method "installTurboModule"`, ejecuta:
-  ```bash
-  npx expo install react-native-worklets@0.5.1
-  ```
-
-### Otros comandos
+### Comandos
 
 | Comando | Descripción |
 |---|---|
-| `npm start` | Arranca Expo en modo desarrollo |
-| `npm run web` | Arranca y abre en navegador |
-| `npm run android` | Arranca en emulador Android |
-| `npm run ios` | Arranca en simulador iOS (solo macOS) |
+| `npm start` | Inicia Expo en modo desarrollo |
+| `npm run web` | Inicia y abre en el navegador |
+| `npm run android` | Inicia en el emulador de Android |
+| `npm run ios` | Inicia en el simulador de iOS (solo macOS) |
+| `npm run typecheck` | Comprobación de TypeScript (`tsc --noEmit`) |
+| `npm run lint` | ESLint mediante `expo lint` |
+| `npm test` | Ejecuta la suite de Vitest |
+| `npm run test:watch` | Ejecuta Vitest en modo watch |
+| `npm run test:all` | typecheck + lint + tests (la verificación local completa) |
 
-### Desarrollo por USB (sin red compartida)
+### Pruebas
 
-Útil cuando el PC y el móvil no están en la misma red (ej. en clase).
+- **Unitarias / integración** — Vitest. La suite cubre los repositorios de base de datos en ambos backends SQLite (nativo + sql.js), los round-trips de copia de seguridad y los componentes renderizados con `@testing-library/react-native`.
+- **E2E nativas** — los flujos de Maestro en `FinlyApp/.maestro/` (10 flujos + helpers) se ejecutan contra el APK de depuración en un emulador de Android; ver `docs/harnesses.md`.
+- **Verificación web** — los criterios de aceptación de cada función se verifican en un navegador real a 375px con Playwright.
+- El pipeline de CI (`.github/workflows/ci.yml`) ejecuta el gate completo `npm run test:all` en cada push y pull request de `develop` y `main`.
 
-**Requisitos previos:**
-- Habilitar depuración USB en el móvil: Ajustes → Acerca del teléfono → tocar "Número de compilación" 7 veces → Ajustes → Opciones del desarrollador → activar "Depuración USB"
-- Descargar `adb` (Android Debug Bridge):
-  ```bash
-  Invoke-WebRequest -Uri "https://dl.google.com/android/repository/platform-tools-latest-windows.zip" -OutFile "$env:TEMP\platform-tools.zip"
-  Expand-Archive -Path "$env:TEMP\platform-tools.zip" -DestinationPath "C:\platform-tools" -Force
-  ```
-- Para que `adb` esté disponible globalmente, reiniciar la terminal después de la instalación.
+> **Gate local:** un cambio solo está hecho cuando `npm run test:all` pasa.
 
-**Pasos:**
-1. Conectar el móvil al PC con cable USB
-2. Reenviar el puerto con adb:
-   ```bash
-   C:\platform-tools\adb.exe reverse tcp:8081 tcp:8081
-   ```
-3. Arrancar Expo:
-   ```bash
-   npx expo start
-   ```
-4. En Expo Go: agitar el móvil → "Introducir URL manualmente" → escribir:
-   ```
-   exp://localhost:8081
-   ```
+### Estructura del proyecto
 
-### Desarrollo por USB Tethering (sin ADB, sin red compartida)
-
-Alternativa cuando ADB no detecta el móvil (ej. drivers no instalados, cable sin datos).
-
-**Requisito:** Datos móviles activos en el teléfono.
-
-**Pasos:**
-1. Conectar el móvil al PC con cable USB
-2. En el móvil: **Ajustes → Conexiones → Zona WiFi compartida / USB tethering → activar "USB tethering"**
-3. En el PC, arrancar Expo:
-   ```bash
-   npx expo start
-   ```
-4. Pulsar **`s`** para cambiar a modo Expo Go y escanear el QR
-
-El PC navega a través de los datos del móvil, por lo que ambos dispositivos están en la misma red virtual. No requiere ADB ni `adb reverse`.
-
-### Desarrollo por Tunnel (sin red compartida, sin cable)
-
-```bash
-npx expo start --tunnel
 ```
-Requiere `@expo/ngrok` instalado globalmente (`npm install -g @expo/ngrok`). Funciona desde cualquier red pero es más lento.
+FinlyApp/
+  src/
+    components/    — componentes de UI reutilizables
+    constants/     — temas, tipos, colores, iconos
+    context/       — AppContext, ConfigContext (estado global)
+    database/      — motores SQLite/sql.js, repositorios, migraciones, esquema Drizzle
+    hooks/         — hooks personalizados
+    i18n/          — traducciones (en, es, ca, fr, de, pt, it)
+    navigation/    — AppNavigator (Drawer + Stack)
+    screens/       — componentes de pantalla (PascalCase)
+    utils/         — formateadores, calculadora, plataforma, idioma
+  .maestro/        — flujos y helpers E2E nativos
+```
 
-## Generar APK Android
+### Base de datos
 
-Para compilar una APK instalable en un teléfono sin Expo Go, se usa **EAS Build** (Expo Application Services).
+- Una única interfaz de motor (`DatabaseHandle`) en todas las plataformas: expo-sqlite en nativo, sql.js (WASM) con persistencia en IndexedDB en web.
+- Las migraciones se versionan con `PRAGMA user_version` (`001_initial`, `002_seed`, `003_config`) y se aplican una sola vez, dentro de una transacción.
+- Los repositorios están escritos con Drizzle ORM sobre el manejo compartido; las filas almacenadas se validan con esquemas Zod.
+- En web, los bytes SQLite exportados se persisten en IndexedDB, así que los mismos datos sobreviven a las recargas.
 
-### Requisitos
+### Generar un APK / AAB de Android (EAS Build)
 
-- Cuenta gratuita en [expo.dev](https://expo.dev)
-- Instalar EAS CLI:
-  ```bash
-  npm install -g eas-cli
-  ```
-- Iniciar sesión:
-  ```bash
-  eas login
-  ```
-
-### Generar la APK
+Requiere una cuenta de Expo y el CLI de EAS:
 
 ```bash
+npm install -g eas-cli
+eas login
 cd FinlyApp
-eas build --platform android --profile preview
 ```
 
-El perfil `preview` en `eas.json` está configurado con `"distribution": "internal"`, lo que genera una **APK** (en lugar de AAB). El proceso tarda unos minutos en la nube.
+| Perfil | Comando | Resultado |
+|---|---|---|
+| Development | `eas build --profile development` | build de dev-client (interno) |
+| Preview | `eas build --platform android --profile preview` | APK instalable (interno) |
+| Production | `eas build --platform android --profile production --no-wait` | AAB publicable (tienda) |
 
-Cuando termine, EAS devolverá un **enlace de descarga**. Ábrelo desde el teléfono para descargar la APK.
+El perfil `production` de `eas.json` usa `"distribution": "store"` y `"buildType": "app-bundle"`, produciendo un AAB para su envío a la tienda. Ten en cuenta que la carpeta nativa `android/` la genera Expo CNG (`expo prebuild`); normalmente no necesitas confirmarla en el repositorio.
 
-### Instalar la APK en el teléfono
+### Metodología
 
-1. Descargar el archivo `.apk` desde el enlace de EAS
-2. Abrirlo desde el gestor de archivos del teléfono
-3. Si el sistema lo solicita, activar **"Instalar de fuentes desconocidas"** en Ajustes → Seguridad
-4. Abrir la app desde el cajón de aplicaciones
-
-### Notas
-
-- La APK de `preview` es para **testing interno**, no para publicar en Google Play.
-- Para publicar en Google Play se necesita un perfil `production` con AAB: `eas build --platform android --profile production`.
-- La app usa **SQLite nativo** en Android. Los datos no se comparten entre la APK y Expo Go (cada una tiene su propia base de datos).
-- Si la APK muestra pantalla negra al abrir, revisa que las migraciones de la base de datos no fallen. Los errores se muestran en pantalla durante el desarrollo.
-
-## Funcionalidades
-
-- Gestión de múltiples cuentas (crear, editar, eliminar)
-- Registro de ingresos y gastos por categorías
-- Listado y edición de categorías personalizadas con icono y color
-- Filtros por período: Día, Semana, Mes, Año, Período personalizado
-- Selector de fecha interactivo (DateTimePicker)
-- Gráfico de anillos (donut) y barra horizontal apilada
-- Desglose por categorías con porcentajes
-- Selector de cuenta reutilizable con cálculo de saldos
-- Ordenación de transacciones por fecha o cantidad
-- Pantalla de todas las transacciones con filtros combinados
-- Pantalla de detalles de transacción con eliminar y editar
-- Pantalla de modificar transacción con datos precargados
-- Pantalla de ajustes: tema, divisa, idioma, calendario, tamaño de texto
-- Tema oscuro y claro con cambio en tiempo real
-- Soporte multilingüe: español, inglés, catalán
-- Escalado de texto según preferencias del usuario
-- Navegación con menú lateral (Drawer)
-- Calculadora básica integrada
-
-## Screenshots
-
-![App flow](images/screenshots/app-flow.gif)<br>*Recorrido completo por la aplicación: pantalla principal, menú lateral, transacciones, ajustes y más.*<br><br>
-
-![Splash animation](images/screenshots/000-Splash_animation.png)<br>*Animación de carga con el logotipo de Finly y barra de progreso.*<br><br>
-![Home screen](images/screenshots/001-Home_screen.png)<br>*Pantalla principal con selector de cuenta, saldo total, gráfico de anillos y desglose por categorías.*<br><br>
-![Hamburger menu](images/screenshots/002-Hamburguer-menu.png)<br>*Menú lateral (Drawer) con acceso a Inicio, Ajustes, Transacciones, Categorías y Cuentas.*<br><br>
-![Account selector modal](images/screenshots/003-Choose_accounts.png)<br>*Modal de selección de cuenta con icono, nombre y saldo disponible.*<br><br>
-![Add transaction](images/screenshots/004-Add_transaction.png)<br>*Formulario para añadir un gasto o ingreso con cantidad, cuenta, categorías, día, etiquetas y comentario.*<br><br>
-![Create category](images/screenshots/005-Create_category.png)<br>*Pantalla para crear una categoría personalizada con icono, color y nombre.*<br><br>
-![Categories list](images/screenshots/006-Categories.png)<br>*Listado de categorías organizadas por tipo (gastos/ingresos) en un grid 4×N.*<br><br>
-![All transactions](images/screenshots/007-All_transactions.png)<br>*Listado completo de todas las transacciones con selector de cuenta, ordenación y agrupación por día.*<br><br>
-![Settings](images/screenshots/008-Settings.png)<br>*Pantalla de ajustes con configuración de tema, divisa, idioma, tamaño de texto y forma de iconos.*<br><br>
-![Calendar period selection](images/screenshots/009-calendar_period_selection.png)<br>*Selector de período personalizado con calendario para elegir un rango de fechas.*
+Este proyecto usa **Desarrollo guiado por especificaciones (SDD).** Las especificaciones viven en `spec/` y son la única fuente de verdad — primero se define qué construir en los documentos `1-spec.md`, luego se implementa y después se verifica contra los criterios de aceptación. La hoja de ruta se sigue en `spec/constitution/3-roadmap.md`.
