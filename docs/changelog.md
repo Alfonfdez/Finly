@@ -3091,6 +3091,9 @@
 [2026-09-09] ~ | spec/constitution/2-tech-stack.md
 - Rewrote the "File structure" tree to match the current src/ layout: full screen list incl. settings/ (Appearance, Regional, Personalization, Data) and tags/comments screens; accurate components (renamed AccountSelector -> AccountTrigger, TypeTabs -> TabBar, removed duplicate CalendarModal/CalendarPicker under calendars/, added form/ and settings/ subfolders); database section now shows Drizzle (drizzle/, schemas.ts, seedData.ts, configDefaults.ts, backup.ts, backupService.ts) and the split transaction repositories; hooks, constants and utils sections list the real current files.
 
+[2026-09-09] ~ | spec/constitution/3-roadmap.md
+- Marked Task 4 done: Finly 2.0.0 released as a GitHub Release (tag v2.0.0) with the EAS-signed preview APK attached — https://github.com/Alfonfdez/Finly/releases/tag/v2.0.0.
+
 [2026-09-09] ~ | FinlyApp/eas.json
 - EAS build config for the 2.0.0 Android APK: added root cli.appVersionSource "local" (version code derived from app.json, kept at 1) and node "24.18.0" in the development, preview and production profiles (full semver required; "24" fails EAS validation).
 
