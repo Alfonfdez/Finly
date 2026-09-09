@@ -1,93 +1,90 @@
-import { ComponentProps } from 'react';
-import { Modal, View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Account } from '../database/types';
-import { formatCurrency } from '../utils/formatters';
+import { useState, useCallback } from 'react';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
+import type { Account } from '../database/types';
+import { formatAmount, HIDDEN_BALANCE } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t } from '../i18n';
+import { useResetOnOpen } from '../hooks/useResetOnOpen';
+import { t, getDisplayAccountName } from '../i18n';
+import { badgeShapeFor } from '../utils/badgeShape';
+import EyeToggle from './EyeToggle';
+import ModalShell from './ModalShell';
+import ListItemRow from './ListItemRow';
+import ModalFooter from './ModalFooter';
+import RadioButton from './RadioButton';
 
 interface AccountWithBalance extends Account {
-  saldo: number;
+  balance: number;
 }
 
 interface Props {
   visible: boolean;
   accounts: AccountWithBalance[];
-  onSelect: (account: AccountWithBalance) => void;
+  selectedId?: number;
+  onSelect: (id: number) => void;
   onClose: () => void;
 }
 
-export default function AccountModal({ visible, accounts, onSelect, onClose }: Props) {
+export default function AccountModal({ visible, accounts, selectedId, onSelect, onClose }: Props) {
   const { config, activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const round = config.accountIconShape === 'circle';
+  const [tempId, setTempId] = useState(selectedId);
+  const [isRevealed, setIsRevealed] = useState(false);
+
+  const resetOnOpen = useCallback(() => {
+    setTempId(selectedId);
+    setIsRevealed(false);
+  }, [selectedId]);
+  useResetOnOpen(visible, resetOnOpen);
+
+  const isBalanceHidden = config.hideBalances !== isRevealed;
+
+  const renderItem = useCallback(({ item }: { item: AccountWithBalance }) => {
+    const isSelected = item.id === tempId;
+    return (
+      <ListItemRow
+        title={getDisplayAccountName(item)}
+        subtitle={isBalanceHidden ? HIDDEN_BALANCE : formatAmount(item.balance, config)}
+        leading={<RadioButton selected={isSelected} size={20} borderColor={c.textSecondary} />}
+        icon={item.icon}
+        color={item.color}
+        shape={badgeShapeFor(config, 'account')}
+        badgeSize={36}
+        badgeIconSize={20}
+        badgeRadius={8}
+        divider
+        style={styles.row}
+        onPress={() => setTempId(item.id)}
+      />
+    );
+  }, [tempId, isBalanceHidden, c, config]);
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <View style={[styles.container, { backgroundColor: c.surface }]}>
-          <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>{labels.account_select}</Text>
-          <FlatList
+    <ModalShell visible={visible} onClose={onClose}>
+      <View style={styles.titleRow}>
+        <Text style={[styles.title, { color: c.text, fontSize: fs(16) }]}>{labels.account_select}</Text>
+        <EyeToggle isHidden={isBalanceHidden} onToggle={() => setIsRevealed(prev => !prev)} color={c.textSecondary} />
+      </View>
+      <FlatList
             data={accounts}
             keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[styles.item, { borderBottomColor: c.border }]}
-                onPress={() => onSelect(item)}
-                accessibilityLabel={`${labels.a11y_select_account} ${item.name}`}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <View style={[styles.icon, { backgroundColor: item.color + '30', borderRadius: round ? 22 : 10 }]}>
-                  <Ionicons name={item.icon as ComponentProps<typeof Ionicons>['name']} size={22} color={item.color} />
-                </View>
-                <View style={styles.info}>
-                  <Text style={[styles.name, { color: c.text, fontSize: fs(16) }]}>{item.name}</Text>
-                  <Text style={[styles.balance, { color: c.textSecondary, fontSize: fs(14) }]}>{formatCurrency(item.saldo, config.currency, config.decimalSeparator)}</Text>
-                </View>
-              </TouchableOpacity>
-            )}
+            renderItem={renderItem}
           />
-          <TouchableOpacity style={styles.close} onPress={onClose}>
-            <Text style={[styles.closeText, { color: c.primary, fontSize: fs(16) }]}>{labels.account_close}</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
+          <ModalFooter
+            cancelLabel={labels.transactions_cancel}
+            confirmLabel={labels.transactions_confirm}
+            onCancel={onClose}
+            onConfirm={() => { if (tempId != null) onSelect(tempId); }}
+          />
+    </ModalShell>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'flex-end',
+  title: { fontWeight: '700', marginBottom: 16, textAlign: 'center' },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
+  row: {
+    paddingHorizontal: 0,
   },
-  container: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    maxHeight: '60%',
-  },
-  title: { fontWeight: '700', marginBottom: 16 },
-  item: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-  },
-  icon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  info: { flex: 1 },
-  name: {},
-  balance: { marginTop: 2 },
-  close: { alignItems: 'center', paddingVertical: 14, marginTop: 8 },
-  closeText: { fontWeight: '600' },
 });

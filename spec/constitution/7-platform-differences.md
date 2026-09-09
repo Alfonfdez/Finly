@@ -1,0 +1,103 @@
+# 7 — Platform differences
+
+Defines which features behave differently across **iOS**, **Android**, and **Web**, and the rationale behind each decision.
+
+---
+
+## Storage layer
+
+| Platform | Engine | File |
+|----------|--------|------|
+| iOS / Android | `expo-sqlite` (async) | `src/database/repositories/*.ts` |
+| Web | sql.js WASM (async API, `DatabaseHandle`) persisted to IndexedDB | `src/database/repositories/*.ts` (same set) |
+
+Both platforms run the **same** migrations, repositories, and `DatabaseHandle` interface.
+The engine is resolved by platform in `src/database/engine.ts` (native → `openDatabaseSync`)
+and `src/database/engine.web.ts` (web → `SqlJsDatabase` + IndexedDB storage); there is no
+platform fork of the repository layer.
+
+### IndexedDB limits
+
+- **Typical quota**: ~50 MB+ per origin (browser-dependent, far above the old 5 MB
+  `localStorage` ceiling).
+- **Persistence**: the engine writes the exported SQLite bytes once per committed
+  transaction.
+- **Impact**: photos are viable on web (feature 024). Picked images are stored as base64
+  data URIs in the `transactions.photo` column, which the engine persists to IndexedDB —
+  no separate blob store needed at the app's scale (max 3 photos, `quality: 0.7`).
+
+---
+
+## Feature availability matrix
+
+| Feature | iOS / Android | Web | Rationale |
+|---------|--------------|-----|-----------|
+| SQLite storage | ✅ | ✅ | Native: `expo-sqlite`; web: sql.js WASM persisted to IndexedDB (same schema, migrations and repos) |
+| Camera / gallery (photo) | ✅ | ⚠️ gallery only | `expo-image-picker` web opens a file picker; camera capture (`capture="camera"`) is native-only |
+| Photo section in Add/Modify | ✅ | ✅ | Rendered on all platforms when `config.addShowPhoto` is true |
+| Photo setting checkbox | ✅ | ✅ | Visible in PersonalizationScreen on all platforms |
+| Photo row in Transaction Details | ✅ | ✅ | Rendered on all platforms; base64 data URIs render in react-native-web |
+| Photo persistence | ✅ file URI | ✅ data URI in DB | Native: copied to `documentDirectory`; web: base64 in `transactions.photo` column (survives reloads via sql.js/IndexedDB) |
+| File system (copy/cache) | ✅ | ❌ | `expo-file-system` for URI persistence |
+| Flag icons (emoji) | ✅ | ❌ | Web uses SVG flags (`FLAG_WEB`) instead of emoji |
+| Keyboard spacer (Android) | ✅ (Android) | ❌ | Android-specific `keyboardVerticalOffset` spacer |
+| Theme picker (system) | ✅ | ❌ (system option hidden) | Web has no "system" theme concept |
+| Data reset (full reseed) | ✅ | ✅ | Single path: `resetDatabase()` reseeds on all platforms |
+| Data export / import (backup) | ✅ | ✅ | Same JSON snapshot format on all platforms. Native: written to `documentDirectory` + `expo-sharing` share sheet; import via `expo-document-picker`. Web: browser download (`Blob` + `<a download>`) and file-input import (`FileReader`) |
+| Notifications / haptics | Planned | ❌ | Native-only APIs, not yet implemented |
+
+---
+
+## Platform guard conventions
+
+### Pattern
+
+```tsx
+import { Platform } from 'react-native';
+
+// Hide camera capture on web (native-only)
+{Platform.OS !== 'web' && <CameraButton />}
+
+// Web-specific fallback (e.g., flag icons use SVG on web instead of emoji)
+if (Platform.OS === 'web') {
+  // FLAG_WEB SVG rendering
+} else {
+  // emoji rendering
+}
+
+// Android-only spacer
+{Platform.OS === 'android' && <View style={styles.keyboardSpacer} />}
+```
+
+### Rules
+
+1. **Use `Platform.OS !== 'web'`** to hide native-only UI (camera capture, notifications).
+2. **Use `Platform.OS === 'web'`** to render web-specific fallbacks (e.g., SVG flags). Storage logic no longer branches by platform — both use the same `DatabaseHandle`.
+3. **Use `Platform.OS === 'android'`** only for Android-specific layout adjustments (keyboard spacer).
+4. **Never assume a feature is web-available** without checking the quota/storage implications.
+5. **Document every guard** in this file when adding a new platform-dependent feature.
+
+---
+
+## Photo feature decision (Features 023 + 024)
+
+| Aspect | Decision |
+|--------|----------|
+| **Native (023)** | Camera or gallery via `expo-image-picker`; file copied to `documentDirectory` via `expo-file-system` for persistence |
+| **Web (024)** | Gallery/file-picker only (camera stays native-only). Picked image read as a base64 data URI (`FileReader`) and stored in `transactions.photo`; persisted via the sql.js/IndexedDB engine, so it survives reloads |
+| **Storage** | Native: file URI in `transactions.photo` (TEXT, nullable, JSON array). Web: data URIs in the same column |
+| **Cleanup** | Native: file deleted from disk. Web: `deletePhotoFile` no-ops on `data:` URIs — removal happens by deleting the string/row |
+| **Setting** | `add_show_photo` config key controls section visibility on all platforms |
+| **Camera on web** | Out of scope: `capture="camera"` only works on mobile browsers and cannot be verified in a desktop browser at 375px |
+
+---
+
+## Adding a new platform-dependent feature
+
+Before merging any feature with platform guards:
+
+1. **Check this file** — is the API available on all target platforms?
+2. **Update the matrix** — add a row with status and rationale.
+3. **Add the guard** — use the conventions above.
+4. **Update the spec** — the feature's `1-spec.md` must state platform scope explicitly.
+5. **Test both paths** — verify on native AND web (even if just confirming the element is hidden).

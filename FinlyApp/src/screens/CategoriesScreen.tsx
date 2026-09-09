@@ -1,159 +1,257 @@
-import { useState, useMemo, useLayoutEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, DrawerActions } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useState, useMemo } from 'react';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import ScreenShell from '../components/ScreenShell';
+import { LIMIT_TEXT_STYLE } from '../components/componentStyles';
+import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
-import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
+import { useSelectableScreen } from '../hooks/useSelectableScreen';
+import { useSearchFilter } from '../hooks/useSearchFilter';
+import { useApp } from '../context/AppContext';
 import { t, getDisplayCategoryName } from '../i18n';
-import TypeTabs from '../components/TypeTabs';
-import { TransactionType, RootStackParamList } from '../constants/types';
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Categories'>;
+import { categoryRepository, transactionRepository } from '../database';
+import TabBar, { typeTabs } from '../components/TabBar';
+import CategoryGrid from '../components/CategoryGrid';
+import ScreenSearchBar from '../components/ScreenSearchBar';
+import EmptyState, { emptyStateProps } from '../components/EmptyState';
+import SelectionActionBar from '../components/SelectionActionBar';
+import ConfirmationModal from '../components/ConfirmationModal';
+import BulkCategoryTransferModal, { type BulkCategoryItem } from '../components/BulkCategoryTransferModal';
+import type { TransferTargetId } from '../components/CategoryTransferModal';
+import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, type TransactionType, type NavigationProp } from '../constants/types';
+import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
+import { sortCategoriesWithOthersLast, categoriesOfType, countCategoriesOfType } from '../utils/categoryUtils';
+import { countAtLimit } from '../utils/limits';
+import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
+import SelectSearchHeader from '../components/SelectSearchHeader';
+import GuardModal from '../components/GuardModal';
 
 export default function CategoriesScreen() {
-  const { activeColors: c, config } = useConfig();
-  const { categories } = useApp();
-  const fs = useFontSize();
+  const { activeColors: c } = useConfig();
+  const { categories, refreshCategories, refresh } = useApp();
   const labels = t();
-  const navigation = useNavigation<NavigationProp>();
+  const fs = useFontSize();
+  const navigation = useNavigation<NavigationProp<'Categories'>>();
 
-  const [activeType, setActiveType] = useState<TransactionType>('expense');
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity
-          onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-          style={{ marginLeft: 8, padding: 4 }}
-          accessibilityLabel={labels.home_open_menu}
-        >
-          <Ionicons name="menu-outline" size={24} color={c.text} />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation, c.text, labels.home_open_menu]);
+  const [activeType, setActiveType] = useState<TransactionType>(TRANSACTION_TYPES.expense);
+  const [resolutionVisible, setResolutionVisible] = useState(false);
+  const [guardVisible, setGuardVisible] = useState(false);
+  const [inUseCategories, setInUseCategories] = useState<BulkCategoryItem[]>([]);
+  const [withTxCount, setWithTxCount] = useState(0);
+  const [deleteHasTransactions, setDeleteHasTransactions] = useState(false);
+  const [decisions, setDecisions] = useState<Record<number, TransferTargetId | null>>({});
 
   const categoriesByType = useMemo(() => {
-    return categories.filter((cat) => cat.type === activeType);
+    return sortCategoriesWithOthersLast(categoriesOfType(categories, activeType));
   }, [categories, activeType]);
 
-  const round = config.categoryIconShape === 'circle';
+  const select = useSelectAndSearch({ hasItems: categoriesByType.length > 1 });
 
-  const renderCategory = (cat: typeof categories[0]) => {
-    const name = getDisplayCategoryName(cat);
+  const {
+    searchActive, searchText, setSearchText,
+    selectMode, selectedIds,
+    deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
+    toggleSelectMode, toggleSearch, closeSearch,
+  } = select;
 
-    return (
-      <TouchableOpacity
-        key={cat.id}
-        style={[styles.item, { backgroundColor: c.surface, borderRadius: round ? 999 : 12 }]}
-        onPress={() => navigation.navigate('ModifyCategory', { categoryId: cat.id })}
-        accessibilityLabel={`${labels.a11y_category} ${name}`}
-      >
-        <View style={[styles.iconContainer, { backgroundColor: cat.color + '22', borderRadius: round ? 999 : 20 }]}>
-          <Ionicons name={cat.icon as any} size={24} color={cat.color} />
-        </View>
-        <Text
-          style={[styles.name, { color: c.text, fontSize: fs(11) }]}
-          numberOfLines={1}
-        >
-          {name}
-        </Text>
-      </TouchableOpacity>
-    );
-  };
+  useSelectableScreen({
+    navigation,
+    showHeader: categoriesByType.length > 1,
+    selectMode,
+    headerRight: () => (
+      <SelectSearchHeader
+        selectMode={selectMode}
+        onToggleSelect={toggleSelectMode}
+        onToggleSearch={toggleSearch}
+      />
+    ),
+  });
 
-  const renderCreateButton = () => (
-    <TouchableOpacity
-      key="create"
-      style={[styles.item, { backgroundColor: c.surface, borderRadius: round ? 999 : 12 }]}
-      onPress={() => navigation.navigate('CreateCategory', { type: activeType })}
-      accessibilityLabel={labels.add_cat_create}
-    >
-      <View style={[styles.iconContainer, { backgroundColor: c.textSecondary + '22', borderRadius: round ? 999 : 20 }]}>
-        <Ionicons name="add" size={24} color={c.textSecondary} />
-      </View>
-      <Text
-        style={[styles.name, { color: c.textSecondary, fontSize: fs(11) }]}
-        numberOfLines={1}
-      >
-        {labels.add_cat_create}
-      </Text>
-    </TouchableOpacity>
+  const filteredCategories = useSearchFilter(categoriesByType, searchText, (cat) => [getDisplayCategoryName(cat)]);
+
+  const transferTargets = useMemo(
+    () => categoriesByType.filter((cat) => !selectedIds.has(cat.id)),
+    [categoriesByType, selectedIds]
   );
 
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
-      <View style={styles.content}>
-        <TypeTabs active={activeType} onChange={setActiveType} />
+  const typeCount = countCategoriesOfType(categories, activeType);
+  const atCategoryLimit = countAtLimit(typeCount, MAX_CATEGORIES_PER_TYPE);
 
-        {categoriesByType.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Ionicons name="pricetag-outline" size={64} color={c.textSecondary} />
-            <Text style={[styles.emptyText, { color: c.textSecondary, fontSize: fs(16) }]}>
-              {labels.add_cat_no_results}
-            </Text>
-          </View>
+  const handleDeletePress = async () => {
+    if (selectedIds.size >= typeCount) {
+      setGuardVisible(true);
+      return;
+    }
+    try {
+      const counts = await transactionRepository.countByCategoryIdsMap([...selectedIds]);
+      const inUse = categoriesByType
+        .filter((cat) => selectedIds.has(cat.id) && (counts[cat.id] ?? 0) > 0)
+        .map((cat) => ({ category: cat, count: counts[cat.id] ?? 0 }));
+      setInUseCategories(inUse);
+      setWithTxCount(inUse.length);
+      setDeleteHasTransactions(inUse.length > 0);
+    } catch {
+      setInUseCategories(categoriesByType.filter((cat) => selectedIds.has(cat.id)).map((cat) => ({ category: cat, count: 0 })));
+      setWithTxCount(selectedIds.size);
+      setDeleteHasTransactions(true);
+    }
+    setDeleteModalVisible(true);
+  };
+
+  const handlePermanentDelete = async () => {
+    setDeleteModalVisible(false);
+    await runWithErrorAlert(async () => {
+      await categoryRepository.deleteMany([...selectedIds]);
+      await refreshCategories();
+      await refresh();
+    }, ERROR_PREFIXES.categoriesDelete);
+    exitSelectMode();
+  };
+
+  const handleMoveTransactions = () => {
+    setDeleteModalVisible(false);
+    setDecisions({});
+    setResolutionVisible(true);
+  };
+
+  const handleDecide = (categoryId: number, decision: TransferTargetId | null) => {
+    setDecisions((prev) => ({ ...prev, [categoryId]: decision }));
+  };
+
+  const handleConfirmResolution = async () => {
+    if (inUseCategories.length === 0) return;
+    setResolutionVisible(false);
+    const items = [...selectedIds].map((id) => {
+      const decision = decisions[id];
+      const targetId =
+        decision === undefined || decision === null || decision === 'delete' ? null : decision;
+      return { id, targetId };
+    });
+    await runWithErrorAlert(async () => {
+      await categoryRepository.bulkDeleteWithTargets(items);
+      await refreshCategories();
+      await refresh();
+    }, ERROR_PREFIXES.categoriesDelete);
+    exitSelectMode();
+  };
+
+  return (
+    <ScreenShell>
+      <View style={styles.content}>
+        <TabBar
+          tabs={typeTabs(labels)}
+          active={activeType}
+          onChange={(type) => {
+            setActiveType(type);
+            exitSelectMode();
+          }}
+        />
+
+        <ScreenSearchBar
+          visible={searchActive}
+          placeholder={labels.add_cat_search}
+          value={searchText}
+          onChangeText={setSearchText}
+          onClose={closeSearch}
+          style={styles.searchBarWrap}
+        />
+
+        {!selectMode && (
+          <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(13) }]}>
+            {labels.categories_counter(typeCount, MAX_CATEGORIES_PER_TYPE)}
+          </Text>
+        )}
+
+        {filteredCategories.length === 0 ? (
+          <EmptyState {...emptyStateProps(searchActive, 'grid-outline', labels.add_cat_no_results)} />
         ) : (
           <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-            <View style={styles.grid}>
-              {categoriesByType.map(renderCategory)}
-              {renderCreateButton()}
-            </View>
+            <CategoryGrid
+              categories={filteredCategories}
+              selectedCategory={null}
+              selectedIds={selectMode ? selectedIds : undefined}
+              onSelect={(id) => {
+                if (selectMode) toggleItem(id);
+                else navigation.navigate('ModifyCategory', { categoryId: id });
+              }}
+              onAddMore={() => navigation.navigate('CreateCategory', { type: activeType })}
+              showAddMore={!selectMode && !atCategoryLimit}
+              addMoreLabel={labels.add_cat_create}
+              hideTitle
+            />
+            {atCategoryLimit && !selectMode && (
+              <Text style={[LIMIT_TEXT_STYLE, { color: c.textSecondary, fontSize: fs(13) }]}>
+                {labels.create_cat_error_limit(MAX_CATEGORIES_PER_TYPE)}
+              </Text>
+            )}
           </ScrollView>
         )}
       </View>
-    </SafeAreaView>
+
+      {selectMode && (
+        <SelectionActionBar
+          selectedCount={selectedIds.size}
+          deleteLabel={labels.categories_bulk_delete(selectedIds.size)}
+          cancelLabel={labels.modify_cat_delete_confirm_cancel}
+          onDelete={handleDeletePress}
+          onCancel={exitSelectMode}
+        />
+      )}
+
+      <ConfirmationModal
+        visible={deleteModalVisible}
+        title={labels.categories_bulk_delete_confirm_title(selectedIds.size)}
+        message={deleteHasTransactions
+          ? labels.categories_bulk_delete_confirm_message_tx(withTxCount, selectedIds.size)
+          : labels.categories_bulk_delete_confirm_message_empty}
+        confirmLabel={labels.categories_bulk_delete_confirm_delete}
+        cancelLabel={labels.modify_cat_delete_confirm_cancel}
+        onConfirm={handlePermanentDelete}
+        onCancel={() => setDeleteModalVisible(false)}
+        moveLabel={deleteHasTransactions ? labels.categories_bulk_delete_confirm_move : undefined}
+        onMove={deleteHasTransactions ? handleMoveTransactions : undefined}
+      />
+
+      <GuardModal
+        visible={guardVisible}
+        title={labels.categories_bulk_delete_confirm_title(selectedIds.size)}
+        message={labels.categories_bulk_delete_min_one}
+        onClose={() => setGuardVisible(false)}
+      />
+
+      <BulkCategoryTransferModal
+        visible={resolutionVisible}
+        categories={inUseCategories}
+        targets={transferTargets}
+        decisions={decisions}
+        onDecide={handleDecide}
+        onConfirm={handleConfirmResolution}
+        onCancel={() => setResolutionVisible(false)}
+      />
+    </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   content: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 16,
+  },
+  searchBarWrap: {
+    paddingHorizontal: 0,
+    paddingTop: 0,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 16,
+    ...LIST_BOTTOM_FAB_PADDING,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  item: {
-    width: '22%',
-    aspectRatio: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 8,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  name: {
+  counter: {
     fontWeight: '500',
     textAlign: 'center',
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-  },
-  emptyText: {
-    fontWeight: '500',
+    paddingTop: 8,
+    paddingBottom: 12,
   },
 });

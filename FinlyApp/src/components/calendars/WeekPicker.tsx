@@ -1,45 +1,41 @@
 import { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { getMonthName, weekStart } from '../../utils/formatters';
-import { CalendarBaseProps } from './types';
+import { weekStart, formatWeekRange } from '../../utils/formatters';
+import type { CalendarBaseProps } from './types';
 import MonthNav from './MonthNav';
 import YearNav from './YearNav';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
+import { t } from '../../i18n';
+import { calendarStyles, FUTURE_OPACITY } from './calendarStyles';
+import { type FirstDay } from '../../constants/types';
+import { CONTROL_BORDER_RADIUS } from '../componentStyles';
+import { DAYS_PER_WEEK, CALENDAR_GRID_CELLS } from '../../constants/calendar';
 
-interface Props extends CalendarBaseProps {
-  firstDay?: 0 | 1;
-}
-
-function formatShortWeek(start: Date, end: Date): string {
-  const startDay = start.getDate();
-  const monthAbrev = (m: number) => getMonthName(m + 1).slice(0, 3).toLowerCase();
-  const endDay = end.getDate();
-  return `${startDay} ${monthAbrev(start.getMonth())} - ${endDay} ${monthAbrev(end.getMonth())}`;
-}
-
-function sameWeek(a: Date, b: Date, firstDay: 0 | 1): boolean {
+function sameWeek(a: Date, b: Date, firstDay: FirstDay): boolean {
   const ia = weekStart(a, firstDay);
   const ib = weekStart(b, firstDay);
   return ia.getTime() === ib.getTime();
 }
 
-export default function WeekPicker({ date, onSelect, firstDay = 1 }: Props) {
-  const today = new Date();
+export default function WeekPicker({ date, onSelect }: CalendarBaseProps) {
+  const today = useMemo(() => new Date(), []);
   const [year, setYear] = useState(date.getFullYear());
   const [activeMonth, setActiveMonth] = useState(date.getMonth() + 1);
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
+  const labels = t();
+  const firstDay = config.firstDayOfWeek;
 
   const weeks = useMemo(() => {
     const result: { start: Date; end: Date }[] = [];
     const firstMonthDay = new Date(year, activeMonth - 1, 1);
     let cursor = weekStart(firstMonthDay, firstDay);
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < CALENDAR_GRID_CELLS / DAYS_PER_WEEK; i++) {
       const end = new Date(cursor);
-      end.setDate(end.getDate() + 6);
+      end.setDate(end.getDate() + DAYS_PER_WEEK - 1);
       result.push({ start: new Date(cursor), end });
-      cursor.setDate(cursor.getDate() + 7);
+      cursor.setDate(cursor.getDate() + DAYS_PER_WEEK);
     }
     return result;
   }, [year, activeMonth, firstDay]);
@@ -53,7 +49,7 @@ export default function WeekPicker({ date, onSelect, firstDay = 1 }: Props) {
   }, [today, activeMonth]);
 
   return (
-    <View style={styles.container}>
+    <View style={calendarStyles.container}>
       <YearNav year={year} onChange={changeYear} />
 
       <MonthNav year={year} month={activeMonth} onChange={(a, m) => { setYear(a); setActiveMonth(m); }} />
@@ -65,12 +61,12 @@ export default function WeekPicker({ date, onSelect, firstDay = 1 }: Props) {
           return (
             <TouchableOpacity
               key={i}
-              style={[styles.weekRow, { backgroundColor: c.surface }, isSelected && { backgroundColor: c.primary }, isFuture && styles.futureWeek]}
+              style={[styles.weekRow, { backgroundColor: c.surface }, isSelected && { backgroundColor: c.primary }, isFuture && { opacity: FUTURE_OPACITY }]}
               onPress={() => !isFuture && onSelect(week.start)}
               disabled={isFuture}
             >
               <Text style={{ color: isSelected ? c.background : c.text, fontWeight: isSelected ? '700' : '400', fontSize: fs(14) }}>
-                {formatShortWeek(week.start, week.end)}
+                {formatWeekRange(week.start, labels.months_short, false, firstDay)}
               </Text>
             </TouchableOpacity>
           );
@@ -81,7 +77,5 @@ export default function WeekPicker({ date, onSelect, firstDay = 1 }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 8 },
-  weekRow: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8, marginBottom: 4 },
-  futureWeek: { opacity: 0.3 },
+  weekRow: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: CONTROL_BORDER_RADIUS, marginBottom: 4 },
 });

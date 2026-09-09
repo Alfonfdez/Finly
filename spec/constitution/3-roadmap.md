@@ -1,245 +1,627 @@
 # Roadmap
 
-App móvil (React Native / Expo) con múltiples pantallas.
+Mobile app (React Native / Expo) with multiple screens.
 
-## 001-pagina-inicial
-Estado: completado.
+## 001-home-screen
+Status: completed.
 
-Pantalla principal con:
-a) Cabecera con:
-  - Menú hamburguesa (Drawer Navigator) a la izquierda con: Inicio, Ajustes, Transacciones, y placeholder para Cuentas/Categorías (próximamente).
-  - En el centro, selector de "Cuenta" que abre un modal con la lista de cuentas.
-  - Debajo de la cuenta, el "Total" (diferencia entre gastos e ingresos).
-  - A la derecha, botón para abrir pantalla "Transacciones".
+Home screen with:
+a) Header with:
+  - Hamburger menu (Drawer Navigator) on the left with: Home, Settings, Transactions, and placeholder for Accounts/Categories (coming soon).
+  - In the center, an "Account" selector that opens a modal with the account list.
+  - Below the account, the "Total" (difference between expenses and income).
+  - On the right, a button to open the "Transactions" screen.
 
-b) Bloque inferior:
-  - Tabs "Gastos" / "Ingresos".
-  - Tabs de período: "Día", "Semana", "Mes", "Año", "Período".
-  - Cada período muestra un selector de fecha nativo (DateTimePicker).
-    - Día: selector de día (sin fecha futura).
-    - Semana: selector de semana.
-    - Mes: selector de mes.
-    - Año: selector de año.
-    - Período: selector de rango de fechas.
+b) Bottom section:
+  - "Expenses" / "Income" tabs.
+  - Period tabs: "Day", "Week", "Month", "Year", "Period".
+  - Each period shows a native date picker (DateTimePicker).
+    - Day: day picker (no future dates).
+    - Week: week picker.
+    - Month: month picker.
+    - Year: year picker.
+    - Period: date range picker.
+      - "All" checkbox = whole current year so far (Jan 1 of current year to today).
+      - When "All" is checked, the range text explains the resolved period, e.g. `All (from 1 Jan to 2 Sep 2026)` (localized).
 
-c) Bloque gráfico:
-  - Gráfico de anillos (SVG) con gastos/ingresos por categoría.
-  - Se puede cambiar a gráfico de barras horizontal al pulsar sobre él.
+c) Chart section:
+  - Donut chart (SVG) with expenses/income by category.
+  - Can switch to horizontal bar chart by tapping on it.
 
-d) Botón "+" flotante (FAB) que navega a la pantalla "Añadir Gasto/Ingreso".
+d) Floating "+" button (FAB) that navigates to the "Add Expense/Income" screen.
 
-e) Lista de desglose por categorías (icono, nombre, porcentaje, total).
+e) Category breakdown list (icon, name, percentage, total).
 
-f) Las transacciones se almacenan en SQLite (nativo) o localStorage (web) y se cargan al iniciar la app.
+f) Transactions are stored in SQLite on both platforms and loaded on app startup.
 
-Especificación: spec/features/001-pagina-inicial/.
+Spec: spec/features/001-home-screen/.
 
-## 002-diseño-DB
-Estado: completado.
+## 002-db-design
+Status: completed.
 
-Diseño de la base de datos local con 4 tablas principales:
-- `users`: usuario con nombre, email, avatar, divisa.
-- `accounts`: cuentas con saldo inicial, icono, color.
-- `categories`: categorías con nombre, icono, color, tipo (expense/income).
-- `transactions`: transacciones con cuenta, categoría, tipo, cantidad, descripción, fecha.
-- `config`: tabla de configuración clave-valor.
+Local database design with 7 tables:
+- `users`: user with name, email, avatar, currency.
+- `accounts`: accounts with initial balance, icon, color, description.
+- `categories`: categories with name, icon, color, type (expense/income).
+- `transactions`: transactions with account, category, type, amount, description, date, updated_at.
+- `tags`: global tags (name).
+- `transaction_tags`: many-to-many junction between transactions and tags.
+- `config`: key-value configuration table.
 
-Incluye: 5 migraciones versionadas, índices en columnas frecuentemente consultadas, foreign keys con ON DELETE CASCADE, y datos seed de prueba.
+Schema created in a single pass (`createSchema` → `seedData` → `seedConfig`) with indexes on frequently queried columns and foreign keys with ON DELETE CASCADE. One SQLite engine on all platforms (expo-sqlite native, sql.js + IndexedDB web). Versioned migrations were introduced later in infrastructure 003-web-sqlite-engine.
 
-Especificación: spec/features/002-diseño-DB/.
+Spec: spec/features/002-db-design/.
 
-## 003-pagina-configuracion
-Estado: completado.
+## 003-settings-screen
+Status: completed.
 
-Pantalla de ajustes con 5 secciones:
-- Apariencia: tema Oscuro / Claro / Sistema con cambio en tiempo real.
-- Calendario: primer día de la semana (Lunes / Domingo).
-- Formato monetario: divisa (Euro / Dólar / Libra / Yen) y separador decimal (coma / punto).
-- Idioma: English / Español / Català con iconos de bandera.
-- Tamaño de texto: Pequeño / Mediano / Grande.
+Restructured Settings screen with 4 subsections:
+- Appearance: Theme, Text size, Account icon shape, Category icon shape.
+- Regional: Language, Currency, Decimal separator, First day of week.
+- Personalization: Home screen defaults (account, period), Add transaction defaults (account, optional fields), Privacy (hide account balances with eye icon).
+- Data: Delete all transactions, Delete all data (settings kept), Reset to factory state (all double-confirmation flows).
 
-Config persistente en SQLite (nativo) o localStorage (web).
+Persistent config in SQLite on both platforms. 7 new config fields.
 
-Especificación: spec/features/003-pagina-configuracion/.
+Spec: spec/features/003-settings-screen/.
 
-## 004-pagina-anadir-transaccion
-Estado: completado.
+## 004-add-transaction-screen
+Status: completed.
 
-Pantalla para añadir gasto/ingreso con:
-- Tabs Gastos/Ingresos.
-- Input de cantidad con validación y símbolo de divisa.
-- Selector de cuenta.
-- Grid de categorías (7 ítems + botón "Más").
-- Selector de día con 3 modos (Hoy / Ayer / Dinámico) + calendario.
-- Sección de etiquetas con búsqueda y creación.
-- Input de comentario con contador de caracteres (4096 máx.) y autocompletado.
-- Sección de foto (cámara/galería) — UI preparada, funcionalidad pendiente.
-- Botón "Añadir" con validación y texto de ayuda.
+Screen for adding expense/income with:
+- Expense/Income tabs.
+- Amount input with validation and currency symbol.
+- Account selector.
+- Category grid (7 items + "More" button).
+- Day selector with 3 modes (Today / Yesterday / Dynamic) + calendar.
+- Tags section with search and creation.
+- Comment input with character counter (4096 max) and autocomplete.
+- Photo section (camera/gallery) — UI ready, functionality pending.
+- "Add" button with validation and help text.
 
-Especificación: spec/features/004-pagina-anadir-transaccion/.
+Spec: spec/features/004-add-transaction-screen/.
 
-## 005-pagina-anadir-categoria
-Estado: completado.
+## 005-add-category-screen
+Status: completed.
 
-Pantalla para seleccionar categoría existente:
-- Grid 4×N de categorías filtradas por tipo (gasto/ingreso).
-- Barra de búsqueda con filtrado por caracteres contenidos (case-insensitive).
-- Estado vacío cuando no hay resultados.
-- Botón "Crear" al final del grid (navega a 006).
-- Selección de categoría y navegación de vuelta a Añadir Transacción.
+Screen for selecting an existing category:
+- 4×N grid of categories filtered by type (expense/income).
+- Search bar with substring filtering (case-insensitive).
+- Empty state when no results.
+- "Create" button at the end of the grid (navigates to 006; hidden with a message at the 30-per-type cap).
+- Category selection and navigation back to Add Transaction.
 
-Especificación: spec/features/005-pagina-anadir-categoria/.
+Spec: spec/features/005-add-category-screen/.
 
-## 006-pagina-crear-categoria
-Estado: completado.
+## 006-create-category-screen
+Status: completed.
 
-Pantalla para crear categorías personalizadas:
-- Selección de icono de una rejilla de iconos disponibles.
-- Selección de color con 6 colores predefinidos + selector dinámico (reanimated-color-picker).
-- Campo de nombre con validación (no vacío, no duplicado).
-- Tipo de categoría (gasto/ingreso) heredado de la pantalla anterior.
-- Botón "Crear" que guarda en la base de datos y navega de vuelta.
+Screen for creating custom categories:
+- Icon selection from a grid of available icons.
+- Color selection with 6 predefined colors + dynamic picker (reanimated-color-picker).
+- Name field with validation (not empty, not duplicate).
+- Category type (expense/income) inherited from the previous screen.
+- Maximum of 30 categories per type (Add button disabled + inline message when reached; "Create" tile on the Categories page and Add Category screen hidden at the cap).
+- "Create" button that saves to the database and navigates back.
 
-Especificación: spec/features/006-pagina-crear-categoria/.
+Spec: spec/features/006-create-category-screen/.
 
-## 007-calculadora
-Estado: completado.
+## 007-calculator
+Status: completed.
 
-Modal con calculadora básica para la pantalla de añadir transacción:
-- Teclado numérico con operaciones básicas (+, -, *, /).
-- Botón "=" para evaluar la expresión y mostrar el resultado.
-- Botones "Aceptar" y "Cancelar".
-- Al aceptar, pega el resultado en el campo de cantidad.
-- Componente reutilizable que puede usarse en otras pantallas.
+Basic calculator modal for the add transaction screen:
+- Numeric keypad with basic operations (+, -, *, /).
+- "=" button to evaluate the expression and show the result.
+- "Accept" and "Cancel" buttons.
+- On accept, pastes the result into the amount field.
+- Reusable component that can be used on other screens.
 
-Especificación: spec/features/007-calculadora/.
+Spec: spec/features/007-calculator/.
 
-## 008-pagina-categorias
-Estado: completado.
+## 008-categories-screen
+Status: completed.
 
-Pantalla accesible desde el Drawer que muestra todas las categorías existentes organizadas por tipo (gasto/ingreso) en un grid 4×N:
-- Tabs Gastos/Ingresos para filtrar por tipo.
-- Grid 4×N con icono + color + nombre por categoría.
-- Botón "Crear" en la última posición del grid (navega a 006).
-- Al pulsar una categoría, navega a modificar categoría (009).
+Screen accessible from the Drawer that shows all existing categories organized by type (expense/income) in a 4×N grid:
+- Expense/Income tabs to filter by type.
+- 4×N grid with icon + color + name per category.
+- "Create" button in the last grid position (navigates to 006).
+- Header search that filters the active type's categories by the current-language display name.
+- Tapping a category navigates to modify category (009).
 
-Especificación: spec/features/008-pagina-categorias/.
+Spec: spec/features/008-categories-screen/.
 
-## 009-pagina-modificar-eliminar-categoria
-Estado: completado.
+## 009-modify-delete-category-screen
+Status: completed.
 
-Pantalla para modificar o eliminar una categoría existente:
-- Icono actual con color + input editable de nombre (validación de duplicados excluyendo la actual).
-- Grid de iconos con el actual preseleccionado.
-- Grid de colores con el actual preseleccionado + selector dinámico.
-- Botón "Eliminar" con doble modal: confirmación + selección de categoría de destino para reasignar transacciones.
-- Botón "Guardar" que persiste los cambios.
+Screen for modifying or deleting an existing category:
+- Current icon with color + editable name input (duplicate validation excluding the current one).
+- Icon grid with the current one preselected.
+- Color grid with the current one preselected + dynamic picker.
+- "Delete" button with double modal: confirmation + destination category selection to reassign transactions.
+- "Save" button that persists the changes.
 
-Especificación: spec/features/009-pagina-modificar-eliminar-categoria/.
+Spec: spec/features/009-modify-delete-category-screen/.
 
 ## 010-app-logo
-Estado: completado.
+Status: completed.
 
-Sustituir los iconos genéricos de Expo por el logotipo personalizado de Finly:
-- 6 archivos PNG en `assets/` para app icon, Android adaptive icon, favicon y splash screen.
-- Configuración en `app.json` con sección `expo.splash` (nativo) y referencias a assets.
-- Logo visible en el header del Drawer junto al texto "Finly".
+Replace generic Expo icons with the custom Finly logo:
+- 6 PNG files in `assets/` for app icon, Android adaptive icon, favicon, and splash screen.
+- Configuration in `app.json` with `expo.splash` section (native) and asset references.
+- Logo visible in the Drawer header next to the "Finly" text.
 
-Especificación: spec/features/010-app-logo/.
+Spec: spec/features/010-app-logo/.
 
-## 011-pagina-cuentas
-Estado: completado.
+## 011-accounts-screen
+Status: completed.
 
-Pantalla accesible desde el Drawer que muestra todas las cuentas con su saldo:
-- Header con menú hamburguesa + título "Cuentas" (multilingual).
-- Sección "Total:" con saldo total de todas las cuentas (verde/rojo).
-- Lista de cuentas con icono + nombre + saldo.
-- Botón flotante "+" (FAB) que navega a crear cuenta (013).
-- Al pulsar una cuenta, navega a modificar cuenta (012).
+Screen accessible from the Drawer that shows all accounts with their balance:
+- Header with hamburger menu + "Accounts" title (multilingual).
+- "Total:" section with total balance across all accounts (green/red).
+- Account list with icon + name + balance.
+- Header search toggle + SearchBar: client-side case-insensitive multi-term (AND) search over account display name (current language) and description; Total row always visible; "No results found" empty state.
+- Floating "+" button (FAB) that navigates to create account (013).
+- Tapping an account navigates to modify account (012).
 
-Especificación: spec/features/011-pagina-cuentas/.
+Spec: spec/features/011-accounts-screen/.
 
-## 012-pagina-modificar-eliminar-cuenta
-Estado: completado.
+## 012-modify-delete-account-screen
+Status: completed.
 
-Pantalla para modificar o eliminar una cuenta existente:
-- Nombre editable con contador 0/30 y validación de vacío + duplicados.
-- Grid de iconos (~20 iconos financieros) con el actual preseleccionado.
-- Grid de colores con el actual preseleccionado + selector dinámico.
-- Campo "Nota" multilínea con límite 200 caracteres.
-- Botón "Eliminar" con borrado en cascada de transacciones.
-- Botón "Guardar" que persiste los cambios.
+Screen for modifying or deleting an existing account:
+- Editable name with 0/30 counter and empty + duplicate validation.
+- Icon grid (~20 financial icons) with the current one preselected.
+- Color grid with the current one preselected + dynamic picker.
+- "Note" multiline field with 200 character limit.
+- "Delete" button with cascading transaction deletion.
+- "Save" button that persists the changes.
 
-Especificación: spec/features/012-pagina-modificar-eliminar-cuenta/.
+Spec: spec/features/012-modify-delete-account-screen/.
 
-## 013-pagina-crear-cuenta
-Estado: completado.
+## 013-create-account-screen
+Status: completed.
 
-Pantalla para crear una nueva cuenta:
-- Nombre con validación (no vacío, no duplicado) y contador 0/30.
-- Grid de iconos (~20 iconos financieros) con fondo gris que cambia al color seleccionado.
-- Grid de colores con 6 predefinidos + selector dinámico.
-- Campo "Nota" multilínea opcional con límite 200 caracteres.
-- Botón "Crear" con validación (nombre + icono + color).
-- Al crear, `initial_balance` se establece a 0.
+Screen for creating a new account:
+- Name with validation (not empty, not duplicate) and 0/30 counter.
+- Icon grid (~20 financial icons) with gray background that changes to the selected color.
+- Color grid with 6 predefined colors + dynamic picker.
+- Optional "Note" multiline field with 200 character limit.
+- "Create" button with validation (name + icon + color).
+- On creation, `initial_balance` is set to 0.
 
-Especificación: spec/features/013-pagina-crear-cuenta/.
+Spec: spec/features/013-create-account-screen/.
 
-## 014-pagina-transacciones-por-pagina-inicial
-Estado: completado.
+## 014-transactions-screen-from-home
+Status: completed.
 
-Pantalla de lista de transacciones filtrada por categoría, cuenta y período, accesible desde la pantalla principal (HomeScreen) al pulsar una categoría del desglose:
-- Header del Stack navigator con título "Transacciones" (multilingual).
-- Sección de categoría: icono + nombre + total con color (verde/rojo) y prefijo (+/-).
-- Selector de cuenta con modal de selección (radio + icono + nombre + saldo).
-- Ordenación por fecha o cantidad con toggle ASC/DESC.
-- Lista agrupada por día con encabezado de fecha.
-- FAB "+" centrado para navegar a añadir transacción.
-- Se pasa categoryId, type, period, startDate, endDate como parámetros de navegación.
+Filtered transaction list screen by category, account, and period, accessible from the home screen (HomeScreen) by tapping a category in the breakdown:
+- Stack navigator header with "Transactions" title (multilingual).
+- Category section: icon + name + total with color (green/red) and prefix (+/-).
+- Account selector with selection modal (radio + icon + name + balance).
+- Sorting by date or amount with ASC/DESC toggle.
+- List grouped by day with date header.
+- Centered "+" FAB to navigate to add transaction.
+- Passes categoryId, type, period, startDate, endDate as navigation parameters.
 - Layout: SafeAreaView > View.container(flex:1) > [categoryInfo, controls, SectionList, FAB].
 
-Especificación: spec/features/014-pagina-transacciones-por-pagina-inicial/.
+Spec: spec/features/014-transactions-screen-from-home/.
 
-## 015-pagina-transacciones-por-menu-hamburguesa
-Estado: completado.
+## 015-all-transactions-screen
+Status: completed.
 
-Pantalla independiente `AllTransactionsScreen` accesible desde el menú hamburguesa (drawer) o el icono de estadísticas del HomeScreen, sin filtros de categoría ni período:
-- Header del Stack navigator con título "Todas las transacciones" (multilingual) e icono `list-outline`.
-- Selector de cuenta con saldo total del período (verde/rojo).
-- Ordenación por fecha o cantidad con toggle ASC/DESC.
-- Lista agrupada por día con encabezado de fecha.
-- FAB "+" centrado para navegar a añadir transacción.
-- Carga todas las transacciones desde `transactionRepository.list()` sin filtro de `account_id`.
-- Layout: SafeAreaView > View.container(flex:1) > [controls, SectionList, FAB].
+Independent `AllTransactionsScreen` accessible from the hamburger menu (drawer) — "Transactions" — with advanced filtering:
+- **Type tabs** (All | Expenses | Income) — default "All", filters by transaction type.
+- **Category filter** — multi-select category modal (021) with search, "All" chip, type-aware sections.
+- **Period selector** — PeriodTabs + CalendarPicker, shared with HomeScreen via AppContext. Default "Year" (current year). Custom range: Jan 1 → today.
+- Account selector with period total balance (green/red), updated by all active filters.
+- Sorting by date or amount with ASC/DESC toggle.
+- Tag filter bar with local state.
+- Header search toggle + SearchBar: client-side case-insensitive multi-term (AND) search over comment/description, category display name (current language), tag names and account name; composes with all other filters; "No results found" empty state.
+- List grouped by day with date header.
+- Centered "+" FAB to navigate to add transaction.
+- All filters combine (AND logic).
+- Category selection resets on type tab switch.
+- Type-aware button labels ("All categories" / "All expense categories" / "All income categories").
+- Apply button disabled when 0 categories selected.
 
-Especificación: spec/features/015-pagina-transacciones-por-menu-hamburguesa/.
+Spec: spec/features/015-all-transactions-screen/.
 
-## 016-pagina-detalles-transaccion
-Estado: completado.
+## 016-transaction-details-screen
+Status: completed.
 
-Pantalla de detalles de una transacción individual, accesible al pulsar cualquier transacción en los listados (TransactionsScreen, AllTransactionsScreen):
-- Header con título "Detalles de la transacción" y botón de retroceso.
-- Ficha de datos con 5 filas: Cantidad (con color del tipo), Cuenta (icono + nombre), Categoría (icono + nombre), Fecha (formato largo multilingüe), Comentario (o "Sin comentario").
-- Botón "Eliminar" con modal de confirmación ("No" / "Sí") que borra y refresca el listado.
-- Botón "Editar" que navega a ModifyTransaction (017) para modificar la transacción.
-- Pie "Creado HH:mm dd MMM aaaa" con formato 24h y año siempre visible.
-- Refresco automático del listado al volver (useFocusEffect + refreshTrigger).
+Transaction details screen for an individual transaction, accessible by tapping any transaction in the lists (TransactionsScreen, AllTransactionsScreen):
+- Header with "Transaction details" title and back button.
+- Data card with 5 rows: Amount (with type color), Account (icon + name), Category (icon + name), Date (multilingual long format), Comment (or "No comment").
+- "Delete" button with confirmation modal ("No" / "Yes") that deletes and refreshes the list.
+- "Edit" button that navigates to ModifyTransaction (017) to edit the transaction.
+- Footer "Created HH:mm dd MMM yyyy" with 24h format and year always visible.
+- Automatic list refresh on return (useFocusEffect + refreshTrigger).
 
-Especificación: spec/features/016-pagina-detalles-transaccion/.
+Spec: spec/features/016-transaction-details-screen/.
 
-## 017-pagina-modificar-transaccion
-Estado: completado.
+## 017-modify-transaction-screen
+Status: completed.
 
-Pantalla para modificar una transacción existente, accesible desde el botón "Editar" de TransactionDetailsScreen:
-- Tabs Gastos/Ingresos precargados con el tipo actual.
-- Input de cantidad precargado con el valor actual, con validación y calculadora.
-- Selector de cuenta precargado.
-- Grid de categorías con la categoría actual en la primera posición + botón "Más".
-- Selector de día precargado con la fecha de la transacción.
-- Sección de etiquetas (TODO persistencia).
-- Input de comentario precargado con el texto actual y autocompletado.
-- Sección de foto (UI únicamente, TODO).
-- Botón "Guardar" con validación que actualiza la transacción.
-- Refresco automático del listado al volver.
+Screen for modifying an existing transaction, accessible from the "Edit" button on TransactionDetailsScreen:
+- Expense/Income tabs preloaded with the current type.
+- Amount input preloaded with the current value, with validation and calculator.
+- Account selector preloaded.
+- Category grid with the current category in the first position + "More" button.
+- Day selector preloaded with the transaction date.
+- Tags section (TODO persistence).
+- Comment input preloaded with the current text and autocomplete.
+- Photo section (UI only, TODO).
+- "Save" button with validation that updates the transaction.
+- Automatic list refresh on return.
 
-Especificación: spec/features/017-pagina-modificar-transaccion/.
+Spec: spec/features/017-modify-transaction-screen/.
+
+## 018-tag-management
+Status: completed.
+
+Tag management with database persistence:
+- `tags` table and `transaction_tags` junction table (migration 004).
+- Tag repository CRUD (SQLite on both platforms).
+- Tags screen accessible from the Drawer with tag list, header search toggle and FAB.
+- Create tag screen with name validation (empty, duplicate, max 20 chars).
+- Maximum of 50 tags (Create button disabled + inline message when reached; "+" FAB on Tags screen and "+ Add tag" chip in the transaction form hidden at the cap).
+- Modify/delete tag screen with name edit and delete confirmation.
+
+Spec: spec/features/018-tag-management/.
+
+## 019-tag-transactions
+Status: completed.
+
+Persistent tags in Add/ModifyTransaction screens:
+- Replace hardcoded tag UI with tags from the database.
+- TagSection loads tags from AppContext, supports inline creation.
+- Selected tags saved to `transaction_tags` junction table.
+- ModifyTransaction pre-loads existing tags for the transaction.
+- createWithTags, updateWithTags, getTagsByTransactionId repository methods.
+
+Spec: spec/features/019-tag-transactions/.
+
+## 020-tag-home-filter
+Status: completed.
+
+Tag filter on HomeScreen, TransactionsScreen, and AllTransactionsScreen:
+- Horizontal tag filter bar below PeriodTabs (All + tag chips; on web a visible horizontal scrollbar makes every chip reachable when the bar overflows).
+- Per-category expandable tag breakdown (3 visible + "View all (N)").
+- Tag filtering updates chart and category totals.
+- Tag breakdown queries (breakdownByCategoryAndTag).
+- Works across all periods and both expense/income types.
+- TransactionsScreen: tag filter bar with inherited tags from HomeScreen.
+- AllTransactionsScreen: tag filter bar with local state and dynamic balance.
+
+Spec: spec/features/020-tag-home-filter/.
+
+## 021-category-filter-modal
+Status: completed.
+
+Full-screen modal component for multi-select category filtering on the AllTransactionsScreen:
+- SearchBar with substring filtering.
+- "All" chip — toggles all visible-type categories on/off. Active when all of current type are selected.
+- 4×N category grid with icon + color + name, multi-select with checkmarks.
+- Type-aware sections: when type='all', grouped under "Expenses"/"Income" headers.
+- Apply button with count ("Apply (N)" / "Apply (All expenses)" / "Apply (All income)").
+- Apply button disabled when 0 categories selected (grayed out).
+- Internal state synced on modal open; search reset on open.
+- Uses React Native `<Modal>` wrapper for proper overlay presentation.
+
+Spec: spec/features/021-category-filter-modal/.
+
+## 022-total-account
+Status: completed.
+
+Special "Total" account that aggregates data from all existing accounts:
+- Real DB account with `is_total = 1` flag, seeded as id=2.
+- HomeScreen: Total is selectable in the account selector. Shows combined transactions from all accounts.
+- AccountsScreen: Total appears as the first card in the account list.
+- ModifyAccountScreen: Total has read-only name, editable icon/color/note, no delete.
+- Balance: dynamically computed as sum of all non-total accounts.
+- TransactionsScreen / AllTransactionsScreen: Total is selectable in the account selector. When selected, shows all transactions across accounts.
+- AddTransactionScreen / ModifyTransactionScreen: Total is hidden from the account selector.
+- Name: not editable (fixed concept), multilingual via `account_total` i18n key.
+- `transactionRepo.totalByPeriod()`: supports `null` accountId for "all accounts" mode.
+
+Spec: spec/features/022-total-account/.
+
+## 023-photo-attachment
+Status: completed.
+
+Photo attachment for transactions (camera + gallery) on iOS and Android:
+- PhotoSection component with camera and gallery options (expo-image-picker).
+- Photo file persistence via expo-file-system (cache → documentDirectory).
+- Photo display in TransactionDetailsScreen with full-screen viewer.
+- Photo preloading and replacement in ModifyTransactionScreen.
+- File cleanup on transaction delete, photo replace, and photo remove.
+- Hidden on web (native camera + file system; not checkable on web).
+- "Show photo" checkbox hidden in Settings on web.
+- Photo column added directly to 001_initial.ts (no migration — app not in production).
+
+Spec: spec/features/023-photo-attachment/.
+
+## 024-photo-on-web
+Status: completed.
+
+Photo attachment extended to web, closing the last platform gap from 023:
+- Web picks via `expo-image-picker` file picker; image read as a base64 data URI (`FileReader`) and stored in the existing `transactions.photo` JSON array.
+- Data URIs survive full page reloads (column persisted by the sql.js/IndexedDB engine); `<Image source={{uri: dataUri}}>` renders in react-native-web.
+- Removed the three 023 `isNative` gates: PhotoSection in Add/Modify, the details photo row, and the Settings "Show photo" checkbox (now available on all platforms).
+- Camera stays native-only: PhotoSection hides "Take photo" on web; web offers gallery only.
+- `deletePhotoFile` no-ops on `data:` URIs (web photos live in the DB row, not the file system).
+- Tests: photoUtils data-URI parse/no-op; PhotoSection camera-option visibility per platform.
+
+Spec: spec/features/024-photo-on-web/.
+
+## 025-data-backup
+Status: completed.
+
+Data export / import (backup) on iOS, Android, and web:
+- Export the whole database (users, accounts, categories, transactions incl. photos, tags, tag links, config) as a versioned JSON snapshot; import restores it.
+- One shared code path through the unified `DatabaseHandle` (`src/database/backup.ts` + `backupService.ts`); import is transactional (FK-safe delete/insert order, rollback on any violation).
+- Import reuses the row Zod schemas for validation and is gated by an explicit confirmation modal (replaces all current data).
+- Web: `Blob` + `<a download>` for export, programmatic `<input type="file">` + `FileReader` for import. Native: file written to `documentDirectory` and shared via `expo-sharing`; import via `expo-document-picker`.
+- Post-import reload: `resetAll()` (AppContext) + `updateConfig(configRepository.get())`.
+- UI: "Export data" / "Import data" rows in DataScreen above the delete rows (SettingsRow, theme + text-size aware, multilingual en/es/ca).
+- Tests: snapshot build/parse/apply round-trips on a real sql.js DB, empty-DB export, invalid/FK/version rejection with rollback, facade round-trip and newer-version guard.
+
+Spec: spec/features/025-data-backup/.
+
+## 026-account-initial-balance
+Status: completed.
+
+Optional starting balance for accounts on Create and Modify account screens:
+- New "Initial balance" field between the icon/color section and the Note field, reusing the `AmountInput` component (currency symbol, decimal-separator aware, localized parsing, no calculator).
+- `AmountInput` gained optional `label` and `accessibilityLabel` props; `AccountForm` gained `showInitialBalance`/`initialBalanceLabel`/`initialBalanceRaw`/`onInitialBalanceChange`.
+- Empty field stores `0`; non-empty invalid values disable Create/Save with the existing amount error.
+- Modify preloads the current value; the Total aggregate account never shows the field.
+- No schema/migration/DB changes: `initial_balance` already existed and was already included in `getBalances()` and Total (AppContext), so account/Total balances update automatically.
+- i18n keys `create_account_initial_balance`, `modify_account_initial_balance`, `a11y_initial_balance` (en/es/ca).
+
+Spec: spec/features/026-account-initial-balance/.
+
+## 027-comments-management
+Status: completed.
+
+Bulk comment management for transactions:
+- New "Comments" Drawer screen (after Tags) listing every distinct comment grouped by its trimmed value with "Used in N transactions" counts, sorted case-insensitively, with a header search toggle (client-side substring filter) and empty state.
+- New ModifyComment screen (route param `{ comment }`): preloaded multiline input with 0/4096 counter, Save disabled when empty/unchanged, Delete with a confirmation modal showing the exact usage count; both actions bulk-update all matching transactions (matched by `TRIM(description)`) and return to the list, which reloads on focus.
+- Normalization: comments are trimmed on save (`description: comment.trim() || null`), whitespace-only comments stored as none; `getDistinctComments()`/`updateComment`/`deleteComment`/`countByDescription` operate on trimmed groups, so editing `food` → `Food` merges the two variants into one row (covered by a contract regression test).
+- Autocomplete: `searchComments()` returns distinct trimmed suggestions ranked prefix-first (NOCASE) capped at `MAX_SUGGESTIONS`; `CommentInput` only triggers from `MIN_COMMENT_SUGGESTION_LENGTH = 2` trimmed characters.
+- i18n keys `nav_comments` + `comments_*` (en/es/ca).
+- Tests: 6 new contract tests + 7 `CommentInput` component tests; `npm run test:all` green (typecheck + lint + 247 tests, 29 files).
+
+Spec: spec/features/027-comments-management/.
+
+## 033-bulk-delete-tags-comments
+Status: completed.
+
+Multi-select bulk delete on the Tags and Comments screens:
+- Header "Select"/"Done" toggle on both screens enters selection mode (rows show checkboxes; tapping toggles selection instead of navigating; header search keeps filtering during selection).
+- Shared `SelectionActionBar` bottom bar with "Cancel" and `Delete (N)` (disabled when nothing selected).
+- Single `ConfirmationModal` per batch: `Delete N tags?` / `Delete N comments?` with Cancel / Delete.
+- `tagRepo.deleteMany(ids)` deletes tags in one query (junction rows cascade) + `transactionRepo.deleteComments(values)` clears `description` on every matching transaction; screens reload after delete (`refreshTags()` / `getDistinctComments()`).
+- i18n keys `tags_select*`/`tags_bulk_delete*` + `comments_select*`/`comments_bulk_delete*` (en/es/ca).
+- Tests: 2 new contract tests (tags `deleteMany`, comments `deleteComments`) on both native + sql.js backends.
+
+Spec: spec/features/018-tag-management/ and spec/features/027-comments-management/.
+
+## 038-users-login (deferred to post-2.0)
+Status: not started.
+
+Multi-user support / login. Explicitly deferred after the 2.0 release. No code.
+
+## 2.0 QA audit (Task 1)
+Status: completed.
+
+Full spec audit of every implemented feature against its acceptance criteria, in the browser (Playwright, viewport 375px) plus code review, before the 2.0 release. All 003-settings-screen criteria verified and flipped `[x]`. 010-app-logo partially verified (see findings). Audit findings so far:
+
+- **003-settings-screen** (all 41 criteria pass, `[x]`). Spec-drift notes recorded at audit time, all resolved in Task 2c: (1) Data modals' primary button on the first modal read "Confirm" instead of "Delete all"/"Reset" — button labels fixed; (2) the spec mentioned toast/snackbar confirmations but the app uses `Alert.alert` and has no toast system — spec reworded to "alert dialog"; (3) an NFR mentioned web `localStorage` but the implementation uses IndexedDB (sql.js) — spec reworded.
+- **010-app-logo** findings:
+  - Web splash: the spec was outdated. The "Finly" text was removed by design and the hold time changed from 3000ms to 2000ms; after the splash rework (Task 2b) the splash is duration-driven with no artificial minimum and no progress bar. Spec §3b and criterion #85 updated to match; #85 flipped `[x]`.
+  - `favicon.png` is 1024×1024 (spec 48×48) and `splash-icon.png` is 1024×1024 (spec 1284×2778); both still work (Expo resizes the favicon at export; `contain` on the splash) — spec §1 table updated to the real dimensions (Task 2c).
+  - `android-icon-foreground.png` (1.36 MB) and `android-icon-monochrome.png` (1.26 MB) exceeded the 1 MB NFR — re-encoded with `sharp` (palette quantization, compressionLevel 9) in Task 2c: 397 KiB and 53 KiB, dimensions/transparency preserved (originals are 100% opaque, alpha channel carries no info).
+  - Native-only criteria (#79–#81, #83, #84) not checkable on web; config references verified.
+  - Verified `[x]`: favicon in tab (#82/#88), all files referenced in app.json (#86), drawer header logo + "Finly" (#87).
+- Browser-verification notes: dev server does not inject the favicon `<link>` (production export does); `dist/` export generated the favicon.ico from `web.favicon`.
+
+Pending: release (Task 4: GitHub release v2.0.0 + APK).
+
+## 2.0 release-readiness (Task 3)
+Status: completed.
+
+Release configuration for 2.0.0, applied and verified 2026-09-09:
+
+- **Version** 2.0.0 in both `app.json` and `package.json`.
+- **Theme** `userInterfaceStyle: "automatic"` (was `"dark"`), matching the in-app theme setting (Dark / Light / Automatic). Required adding `expo-system-ui ~57.0.3` (native side) — prebuild no longer warns after the install.
+- **Android package** `com.finly.app` (was `com.anonymous.FinlyApp`). `ios.bundleIdentifier` set to `com.finly.app` for future iOS builds.
+- **EAS production profile** added to `eas.json`: `"distribution": "store"` + `android.buildType: "app-bundle"` (AAB for store submission). `preview` (internal APK) and `development` (dev-client) profiles unchanged.
+- **Native re-validation** after the package change: `expo prebuild` regenerated `android/`, debug APK rebuilt (`com.finly.app`, versionName 2.0.0), all 14 Maestro `appId` entries updated, and all 10 flows re-run on the emulator — **10/10 PASS**.
+- **README.md** rewritten product-first (2.0 feature highlights, 7 languages, tech stack) and the old `000–009` screenshots + `app-flow.gif` replaced by the 17 `v2-*` screenshots. Development/run/test/fork instructions moved to the end. `images/excalidraw/Finly_v2.png` removed from the README (folder kept as design artifact).
+- Gate: `npm run test:all` green on the 2.0.0 tree.
+
+## 2.0 nav header fix (Task 2)
+Status: completed.
+
+Header-left button follows navigation state:
+- Shared `StackHeaderLeft` in `AppNavigator.tsx` renders `DrawerMenuButton` (hamburger) for every drawer-accessed screen (Home, Accounts, Categories, AllTransactions, Tags, Comments). AllTransactions keeps the hamburger like the other drawer screens; the earlier "back arrow from `canGoBack()`" variant was reverted.
+- Drawer navigation for the hamburger-group items (Home, Accounts, Categories, Tags, Comments) resets the Main stack to root (`navigation.reset`), so opening them from the drawer always yields the hamburger (008/011/018) and the stack no longer accumulates hidden history. AllTransactions (015) keeps the hamburger header; Settings (003 §1) keeps the push behavior and shows the native back button.
+- Verified on web at 375px and natively on SDK 57 (Maestro flows 004/015 assert the "Open menu" hamburger on AllTransactions).
+- Flipped `[x]`: 011 #82 (Accounts hamburger + title), 018 #102 (Tags hamburger + title), 015 #115/#116 (AllTransactions access + hamburger header). 008 #77 re-verified (no regression).
+
+## 2.0 splash rework (Task 2b)
+Status: completed.
+
+Web splash is now duration-driven instead of timer-driven. The `SplashScreen` in `App.tsx` shows only while the database initializes and exits as soon as `initDatabase` resolves:
+- Removed `MIN_SPLASH_MS`, the `splashTimerDone` state/timer, and the fake progress bar (track + fill animated on a timer). A fake progress bar is an anti-pattern — it implies real progress that doesn't exist.
+- Kept the logo entrance (800ms fade + spring 0.8 → 1.0) and the 400ms exit fade/scale (1.0 → 1.1).
+- Docs updated to match the intended behavior (the spec was outdated): 010 §3b now specifies logo-only splash, no artificial minimum, no progress bar, no text (the "Finly" text was removed by design earlier); criterion #85 flipped `[x]` after browser verification.
+- Browser-verified (Playwright, 375px): splash shows the 80×80 rounded logo with entrance animation, no progress bar and no text, and exits promptly to Home once loaded; 0 console errors. test:all green (typecheck + lint + tests).
+
+## 2.0 polish fixes (Task 2c)
+Status: completed.
+
+Resolves the remaining Task-1 findings:
+
+**003-settings-screen drift:**
+- Data modals now label their primary buttons per spec: the first "Delete all data" modal shows "Delete all" and the first "Reset to factory state" modal shows "Reset" (new i18n keys `settings_delete_all_data_confirm`, `settings_factory_reset_confirm` in en/es/ca; `DataScreen.tsx` updated). The delete-transactions modal ("Delete"), the second confirmation modals ("Confirm", disabled until "DELETE" is typed) and the import modal ("Confirm") already matched the spec and are unchanged.
+- Spec reworded to match the implementation: §6.1/§6.2 "A toast/snackbar confirms" → "An alert dialog confirms" (the app uses `Alert.alert`; no toast system exists). NFR persistence wording updated from `localStorage` to IndexedDB via sql.js (web backend moved to sql.js/IndexedDB in infra 003).
+
+**010-app-logo assets:**
+- Both adaptive icons re-encoded with `sharp` (added as devDependency; `scripts/optimize-icons.mjs`, palette quantization + compressionLevel 9): `android-icon-foreground.png` 1333.5 → 396.7 KiB, `android-icon-monochrome.png` 1228.3 → 52.9 KiB — both under the 1 MB NFR, 1024×1024 preserved. Pixel-diff vs the originals: foreground avg 0.76/255, monochrome 2.11/255 (quantization noise only). The originals are 100% opaque (their alpha channel carried no transparency), so dropping it is a non-issue.
+- Spec §1 table updated to the real dimensions: `favicon.png` 1024×1024 (Expo downsizes to 16/32/48 at export), `splash-icon.png` 1024×1024 (centered via `contain`).
+- Browser-verified (Playwright, 375px): Data modals show "Delete all"/"Reset" on the first steps and "Confirm" on the second; delete-transactions and factory-reset flows still work; app renders with the re-encoded icons; 0 console errors. test:all green (typecheck + lint + 282 tests, 34 files).
+
+## 2.0 comments counter
+Status: completed.
+
+Comments screen counter above the list:
+- A text caption shows the number of visible comments (e.g. "2 comments") above the FlatList, matching the Tags/Categories counter pattern (034-limit-indicators). Only visible when there is at least 1 comment and not in selection mode.
+- When a search filters the list, the counter updates to reflect the filtered count (e.g. "3 comments" when 3 matches).
+- i18n key `comments_counter(n)` (en/es/ca): pluralized "X comment(s)".
+- Browser-verified (Playwright, 375px): counter shows "2 comments" with 2 distinct comments; search "lun" updates to "1 comment" with only "lunch" visible; 0 console errors. 027 criterion flipped [x].
+
+## 2.0 all-transactions bulk delete
+Status: completed.
+
+Multi-select bulk delete on the AllTransactions screen:
+- Header "Select"/"Done" toggle enters selection mode (transaction rows show checkboxes; tapping toggles selection instead of navigating to details; header search keeps filtering during selection). When 0 transactions, both Select and Search are hidden.
+- Selection persists across all filter changes (type tab, account, categories, period, tags, search).
+- FAB hidden in selection mode; `SelectionActionBar` bottom bar with "Cancel" and "Delete (N)" (disabled when nothing selected).
+- Single `ConfirmationModal`: `Delete N transactions?` with Cancel / Delete. On confirm: `transactionRepo.deleteMany(ids)` cleans up photos, removes junction rows, and deletes transactions in a single database transaction; list reloads immediately.
+- `TransactionRow` extended with optional `selectMode`/`selected` props (checkbox via `ListItemRow` `leading`).
+- i18n keys `transactions_select*`/`transactions_bulk_delete*` (en/es/ca).
+- Browser-verified (Playwright, 375px): Select mode → checkboxes on 2 transactions → "Delete (2)" → confirmation "Delete 2 transactions?" → Confirm → both deleted, "No transactions" empty state, header hides Select/Search, balance 0,00 €; 0 console errors. 015 criteria flipped [x].
+
+## 2.1 transactions screen search and select
+Status: completed.
+
+Header search + multi-select bulk delete on the TransactionsScreen (014), matching the AllTransactions implementation:
+- Top-right `SelectSearchHeader` (selection toggle + search icon) registered via `navigation.setOptions` in a `useLayoutEffect`; both buttons hidden when the screen has 0 transactions.
+- Search: `ScreenSearchBar` toggle below the category section; client-side case-insensitive multi-term (AND) over comment/description, category display name, tag names and account name via `useTransactionFilters({ searchTerm, categoriesById })`; composes with the account selector + tag filter (route category/period already applied at load); "No results found" empty state.
+- Select: `useSelectAndSearch` + `useBulkDelete`; row checkboxes toggle selection instead of navigating; `SelectionActionBar` (Cancel / `Delete (N)`) swaps the FAB; single `ConfirmationModal`; `transactionRepository.deleteMany` cleans photos + junction rows, list reloads via `setData` and AppContext `refresh`.
+- FAB restored on this screen (spec §5) and navigates to AddTransaction with the route `type`.
+- Period indicator: the category header now has a Row 3 sub-line showing the active period (label + date/range) built from the `period`/`startDate`/`endDate` route params — `Day · September 2, 2026`, `Week · <start> – <end>`, `Month · September 2026`, `Year · 2026`, `Custom · <start> – <end>` — using existing `period_*` i18n keys + `formatDateLong`/`getMonthName` (localized). Makes it clear when an out-of-period transaction won't appear.
+- Browser-verified (Playwright, 375px): period line renders correctly for Day ("Day · September 2, 2026"), Month ("Month · September 2026") and Custom range ("Period · January 1, 2026 – September 2, 2026") on the Transactions header, localized per language; 0 console errors. test:all green (typecheck + lint + 334 tests, 40 files). 014 criteria flipped [x].
+
+## 2.0 navigation jank fix
+Status: completed.
+
+Fixes the header-left button mismatch and navigation jank when switching between drawer screens:
+- **Fix A (header-left):** replaced `navigation.reset()` with nested `CommonActions.reset()` dispatched via Drawer's own navigation, setting the Stack state directly. Root drawer screens (Home, Accounts, Categories, Tags, Comments) reset the Stack to `[{name: screen}]` only — no Home in the route array — so `canGoBack()` returns false and the hamburger shows. Non-root screens (AllTransactions, Settings) keep `navigation.navigate()` push behavior with a back arrow. Added `animationTypeForReplace: 'push'` to Stack screenOptions.
+- **Fix B (useFocusLoad):** `useFocusEffect` no longer sets `loading=true` on every focus; only the initial load shows the spinner. Subsequent focuses refresh data silently without flashing the skeleton.
+- **Fix C (useBalanceVisibility):** removed `useFocusEffect` that reset `isRevealed=false` on every focus; eye-toggle state now persists across navigation.
+- Browser-verified (Playwright, 375px): Home→Categories (hamburger ✓), Categories→Back (no back, hamburger only ✓), Categories→AllTransactions (back arrow ✓), AllTransactions→Back→Categories (correct ✓), Categories→Home (correct ✓), Home→Settings (native back ✓), Categories→ModifyCategory (back arrow ✓), 0 console errors.
+
+
+
+## 034-limit-indicators
+Status: completed.
+
+Usage counters against the limits on the Categories and Tags pages:
+- Tags screen: a caption above the list shows how many tags exist out of the 50-tag maximum (`MAX_TAGS`), e.g. "12 of 50 tags" (`tags_counter`), hidden during selection mode.
+- Categories screen: a caption below the Expense/Income tabs shows how many categories the active type has out of the 30-per-type maximum (`MAX_CATEGORIES_PER_TYPE`), e.g. "21 of 30 categories" (`categories_counter`), updating when switching tabs.
+- i18n keys `tags_counter` and `categories_counter` (en/es/ca).
+
+Spec: spec/features/018-tag-management/ and spec/features/008-categories-screen/.
+
+## 036-donut-total-fit
+Status: completed.
+
+Keep the total amount centered in the donut chart always fully inside the hole:
+- The center text is now constrained to the donut's inner diameter (`HOLE_SIZE = (radius − strokeWidth / 2) × 2`) instead of floating unconstrained over the SVG, so wide amounts no longer spill out of the donut.
+- New pure util `fitFontSize(text, baseSize, maxWidth, { factor = 0.6, safety = 0.95, minSize = 10 })` in `src/utils/formatters.ts`: returns the largest font size whose estimated glyph width fits the box; short strings keep the base size, long ones shrink proportionally, never below the minimum, never truncated.
+- Donut proportions widened for more room: radius 60 → 66, strokeWidth 15 → 13 (hole 105 → 119px; outer ring 145px still inside the 160px viewBox).
+- Deterministic JS calculation (works identically on iOS/Android/web); RN `adjustsFontSizeToFit` was rejected because react-native-web does not implement it.
+- Tests: 5 new `fitFontSize` unit tests; `npm run test:all` green.
+
+Spec: spec/features/001-home-screen/.
+
+## 037-categories-bulk-delete
+Status: completed.
+
+Multi-select bulk delete on the Categories screen:
+- Header "Select"/"Done" toggle (shown only when the active type has categories) enters selection mode: tiles show checkmarks and tapping toggles selection instead of navigating to Modify category; the "Create" tile, the limit message and the counter are hidden; selection resets when switching Expense/Income tabs; header search keeps filtering during selection.
+- Shared `SelectionActionBar` bottom bar with "Cancel" and `Delete (N)` (disabled when nothing selected).
+- Deleting keeps at least one category per type: selecting every category of the active type blocks with "You cannot delete all the categories of a type. Keep at least one." (`categories_bulk_delete_min_one`).
+- If no selected category has transactions, a single `ConfirmationModal` confirms the deletion; if any does, the modal states how many of the selected categories have transactions (`categories_bulk_delete_confirm_message_tx(n, total)`) and offers "Move transactions first" or "Permanent delete" (`deleteMany`, removes transactions + photos).
+- "Move transactions first" opens a per-category resolution modal (`BulkCategoryTransferModal`): each selected category with transactions lists its count and opens a nested `CategoryTransferModal` with a destructive "Delete transactions" option (`categories_bulk_move_delete_option`); "Move & delete" is disabled until every listed category has a decision, and `categoryRepo.bulkDeleteWithTargets(items)` runs the moves/deletes in one transaction (categories without transactions are always deleted).
+- New repo methods `categoryRepo.deleteMany(ids)`, `categoryRepo.reassignManyAndDelete(ids, targetId)` and `categoryRepo.bulkDeleteWithTargets(items)` + `transactionRepo.countByCategoryIds(ids)` and `transactionRepo.countByCategoryIdsMap(ids)`; `ModifyCategoryScreen` refactored to reuse the extracted shared `CategoryTransferModal`.
+- i18n keys `categories_select*`, `categories_bulk_delete*`, `categories_bulk_move*` (en/es/ca).
+- Tests: 6 new contract tests (category `deleteMany`, `reassignManyAndDelete`, `bulkDeleteWithTargets` ×2, transaction `countByCategoryIds`, `countByCategoryIdsMap`); `npm run test:all` green (282 tests / 34 files).
+
+Spec: spec/features/008-categories-screen/.
+
+## 001-expo-sqlite-wal-cleanup (infrastructure)
+Status: completed.
+
+Self-healing recovery for the expo-sqlite WAL sidecar bug:
+- `initDatabase()` detects stale state (version present but `tags` table missing in `sqlite_master`).
+- On detection, deletes the database file (`.db`, `-wal`, `-shm`), reopens, and reruns all migrations (001-005).
+- Silent recovery during splash screen; healthy databases are never affected.
+- Web platform is unaffected (it never used expo-sqlite WAL files).
+
+Spec: spec/infrastructure/001-expo-sqlite-wal-cleanup/.
+
+## 002-database-schemas (infrastructure)
+Status: completed.
+
+Zod schema layer — single source of truth for stored row shapes + runtime validation:
+- `src/database/schemas.ts` defines one Zod schema per table (users, accounts, categories, transactions, tags, transaction_tags) plus `configSchema`, with enums built from the existing constant sets.
+- `src/database/types.ts` derives all row types via `z.infer` (same exported names; no import-site changes).
+- Native repos validate full-row reads; web `getStore` validates entity reads; both config backends fall back to `DEFAULT_CONFIG` on invalid values.
+- `dbDrift` asserts Zod schema keys exactly match migration columns.
+- Drizzle remains deferred (its `expo-sqlite` driver expects a native connection; driving the custom `DatabaseHandle` engines — including sql.js on web — would need a custom adapter).
+
+Spec: spec/infrastructure/002-database-schemas/.
+
+## 003-web-sqlite-engine (infrastructure)
+Status: completed.
+
+Unified web data layer on real SQLite (sql.js):
+- `src/database/sqliteWeb.ts` provides `SqlJsDatabase`, a `DatabaseHandle` implementation over sql.js (WASM) with IndexedDB persistence (one write per committed transaction; never while a transaction is open).
+- Web now runs the exact same migrations and repositories as native through a platform-resolved `openEngine` (`engine.ts` native / `engine.web.ts` web); `src/database/webStorage.ts` and the localStorage web repos are deleted.
+- `App.tsx` and `DataScreen` init/reset via `database.ts` on all platforms.
+- Phase B contract suite exercises the single repo set over the single engine; `sqliteWebEngine.test.ts` covers engine semantics (persistence round-trip, transaction batching, rollback).
+- Drizzle's `expo-sqlite` driver still cannot drive the web's custom `DatabaseHandle`, so Drizzle remains deferred.
+
+Spec: spec/infrastructure/003-web-sqlite-engine/.
+
+## 004-drizzle-orm (infrastructure)
+Status: completed.
+
+Drizzle ORM data layer over the shared `DatabaseHandle`:
+- `src/database/drizzle/schema.ts` declares the seven tables mirroring `001_initial`; `src/database/drizzle/proxy.ts` adapts `drizzle-orm/sqlite-proxy` onto `DatabaseHandle` (positional rows, `run` → `lastInsertRowId`/`changes`, `get` → `{ rows: null }` when absent); `src/database/drizzle/engine.ts` provides the lazy `getDrizzle()` singleton and `withTransaction(task)` (Drizzle's own `db.transaction()` is unused to keep web's persist-on-commit batching).
+- All five repositories are rewritten with the Drizzle query builder (behavior-preserving); writes use `.run()` (never `.returning()`, which would skip web persistence); collations/functions stay as parameterized `sql` fragments.
+- `buildUpdateQuery`/`buildNameExistsQuery` helpers and their tests removed; `UNTAGGED_ID`/`isTotalAccount` kept.
+- Same migration runner (`PRAGMA user_version`), Zod validation and backup tooling remain; no `drizzle-kit`; only `drizzle-orm@^0.45.2` added.
+- Phase B contract suite passes unchanged plus new `drizzleProxy.test.ts` and `drizzleDrift.test.ts` (34 files / 271 tests).
+
+Spec: spec/infrastructure/004-drizzle-orm/.
+
+## 035-hide-actions-on-empty-lists
+Status: completed.
+
+Hide the Select + Search header actions when there is nothing to manage:
+- Tags screen: the header Select button and search icon are hidden when the tag list is empty; they appear as soon as the first tag exists.
+- Comments screen: same for the comment list (comments derived from transaction descriptions).
+- Empty search results still keep the buttons — the actions only hide when the underlying list has zero items, not when a filter matches nothing.
+- Accounts and Categories screens left unchanged (Total account is always present; categories are seeded).
+
+Spec: spec/features/018-tag-management/ and spec/features/027-comments-management/.
+
+## Tier-5 codebase cleanup audit (Option D, Feature 1)
+Status: completed.
+
+First pass of the Tier-5 cleanup audit (duplicated code, dead exports, unused i18n keys) covering only low-risk, behavior-preserving changes:
+- 10 dead exports removed (each kept local to its module): `parseRow`, `BackupSnapshot`, `ProxyMethod`, `DrizzleRunResult`, `DrizzleDb`, `TransactionFilters`, `CategoryTagBreakdown`, `CategoryUsageCount`, `TypeTab`, `UseTransactionListScreenOptions`.
+- New `repoHelpers.ts` with a single `existsByName()` shared by the account/category/tag repositories (was triplicated); a shared `patchUpdate` was deliberately skipped (per-entity field lists differ).
+- New `formatAmount(amount, config)` in `utils/formatters.ts`, replacing the 9 `formatCurrency(x, config.currency, config.decimalSeparator)` call sites.
+- Private `countByGroup(column, ids)` in `transactionRepo.reads.ts` collapsing the three count-by-group queries.
+- `LIMIT_TEXT_STYLE` and `COUNTER_STYLE` hoisted into `componentStyles.ts` where the styles were exactly identical (TagsScreen `limitText` and CategoriesScreen `counter` kept local - they genuinely differ).
+- New `useResetOnOpen(visible, reset)` hook applied to the 5 modals with the open-time reset pattern.
+- Skipped + documented (would break behavior preservation): routing the three active-flag async loads through `useFocusLoad` (HomeScreen refetches on filter-dep changes + conditional early-return; ModifyCommentScreen runs on mount/prop-change + `showErrorAlert`; CommentsScreen needs a reload-after-delete that `useFocusLoad` doesn't expose).
+- Audit results: i18n fully clean (all 409 `en.ts` keys used, es/ca/fr/de/pt/it parity exact, no missing-key usages); second audit pass scoped out (Transactions vs AllTransactions ~200 lines, modal footer ×5, Tags vs Comments, etc.).
+
+Spec: see `docs/changelog.md` (2026-09-04, "Tier-5 codebase cleanup audit").

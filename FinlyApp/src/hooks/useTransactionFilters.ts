@@ -1,61 +1,142 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Transaction } from '../database/types';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import type { Transaction, Account, Category } from '../database/types';
+import { SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, type SortBy, type SortDirection, type TransactionTypeFilter } from '../constants/types';
 import { transactionRepository } from '../database';
-import { SortBy, SortDirection } from '../components/SortToggle';
+import { isTotalAccount, UNTAGGED_ID } from '../database/helpers';
+import { formatDateForDB, parseDbDate } from '../utils/formatters';
+import { buildTagsByTransactionMap, type TagsByTransaction } from '../utils/transactionTags';
+import { matchesTransactionSearch } from '../utils/transactionSearch';
+import { toggleTagInArray } from '../utils/tagFilter';
 
-interface UseTransactionFiltersOptions {
-  categoryId?: number;
-  startDate?: string;
-  endDate?: string;
-  selectedAccountId: number;
-  sortBy: SortBy;
-  sortDirection: SortDirection;
-  refreshTrigger?: number;
-}
-
-interface UseTransactionFiltersResult {
-  allTransactions: Transaction[];
-  filtered: Transaction[];
-  sections: { date: string; data: Transaction[] }[];
+export interface UseTransactionFiltersOptions {
+  transactions: Transaction[];
+  accounts: Account[];
+  activeAccount: Account | null;
+  categoriesById?: Map<number, Category>;
+  searchTerm?: string;
+  initialTagIds?: number[];
+  typeTab?: TransactionTypeFilter;
+  selectedCategoryIds?: number[];
+  periodDates?: { start: Date; end: Date } | null;
+  onError?: () => void;
 }
 
 export function useTransactionFilters({
-  categoryId,
-  startDate,
-  endDate,
-  selectedAccountId,
-  sortBy,
-  sortDirection,
-  refreshTrigger,
-}: UseTransactionFiltersOptions): UseTransactionFiltersResult {
-  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+  transactions,
+  accounts,
+  activeAccount,
+  categoriesById = new Map(),
+  searchTerm = '',
+  initialTagIds = [],
+  typeTab,
+  selectedCategoryIds = [],
+  periodDates,
+  onError,
+}: UseTransactionFiltersOptions) {
+  const [selectedAccountId, setSelectedAccountId] = useState(
+    () => activeAccount?.id ?? accounts.find(a => !isTotalAccount(a))?.id
+  );
+
+  const activeAccountId = activeAccount?.id;
+  useEffect(() => {
+    if (activeAccountId !== undefined) {
+      setSelectedAccountId(activeAccountId);
+    }
+  }, [activeAccountId]);
+  const [accountModalVisible, setAccountModalVisible] = useState(false);
+  const [sortBy, setSortBy] = useState<SortBy>(SORT_BY.date);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(SORT_DIRECTIONS.desc);
+  const [tagsByTransaction, setTagsByTransaction] = useState<TagsByTransaction>(new Map());
+  const [localTagIds, setLocalTagIds] = useState<number[]>(initialTagIds);
+
+  const isTotal = useMemo(
+    () => {
+      const account = accounts.find(a => a.id === selectedAccountId);
+      return account ? isTotalAccount(account) : false;
+    },
+    [accounts, selectedAccountId]
+  );
 
   useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      const filters: { category_id?: number; start_date?: string; end_date?: string } = {};
-      if (categoryId) filters.category_id = categoryId;
-      if (startDate) filters.start_date = startDate;
-      if (endDate) filters.end_date = endDate;
-      const data = await transactionRepository.list(filters);
-      if (!cancelled) setAllTransactions(data);
+    if (transactions.length === 0) {
+      setTagsByTransaction(new Map());
+      return;
     }
-    load();
-    return () => { cancelled = true; };
-  }, [categoryId, startDate, endDate, refreshTrigger]);
+    let active = true;
+    (async () => {
+      const txIds = transactions.map(t => t.id);
+      const tagLinks = await transactionRepository.getTagsByTransactionIds(txIds);
+      if (!active) return;
+      setTagsByTransaction(buildTagsByTransactionMap(tagLinks));
+    })().catch(onError ?? (() => {}));
+    return () => { active = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onError is stable
+  }, [transactions]);
+
+  const handleToggleTag = useCallback((id: number) => {
+    setLocalTagIds(prev => toggleTagInArray(prev, id));
+  }, []);
+
+  const handleClearTagFilter = useCallback(() => {
+    setLocalTagIds([]);
+  }, []);
 
   const filtered = useMemo(() => {
-    let list = allTransactions.filter(t => t.account_id === selectedAccountId);
+    let list = isTotal
+      ? [...transactions]
+      : transactions.filter(t => t.account_id === selectedAccountId);
+
+    if (typeTab && typeTab !== TYPE_FILTERS.all) {
+      list = list.filter(t => t.type === typeTab);
+    }
+
+    if (selectedCategoryIds.length > 0) {
+      const catSet = new Set(selectedCategoryIds);
+      list = list.filter(t => catSet.has(t.category_id));
+    }
+
+    if (periodDates) {
+      const startStr = formatDateForDB(periodDates.start);
+      const endStr = formatDateForDB(periodDates.end);
+      list = list.filter(t => t.date >= startStr && t.date <= endStr);
+    }
+
+    if (localTagIds.length > 0) {
+      const hasUntagged = localTagIds.includes(UNTAGGED_ID);
+      const regularIds = localTagIds.filter(id => id !== UNTAGGED_ID);
+      list = list.filter(tx => {
+        const txTags = tagsByTransaction.get(tx.id) ?? [];
+        if (hasUntagged && txTags.length === 0) return true;
+        if (regularIds.length > 0 && regularIds.some(id => txTags.some(t => t.tag_id === id))) return true;
+        return false;
+      });
+    }
+
+    if (searchTerm.trim()) {
+      const accountsById = new Map(accounts.map(acc => [acc.id, acc]));
+      list = list.filter(tx =>
+        matchesTransactionSearch(
+          tx,
+          {
+            category: categoriesById.get(tx.category_id),
+            tags: tagsByTransaction.get(tx.id),
+            accountName: accountsById.get(tx.account_id)?.name,
+          },
+          searchTerm
+        )
+      );
+    }
+
     const sorted = [...list].sort((a, b) => {
-      if (sortBy === 'date') {
-        const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
-        return sortDirection === 'desc' ? -diff : diff;
+      if (sortBy === SORT_BY.date) {
+        const diff = parseDbDate(a.date).getTime() - parseDbDate(b.date).getTime();
+        return sortDirection === SORT_DIRECTIONS.desc ? -diff : diff;
       }
       const diff = a.amount - b.amount;
-      return sortDirection === 'desc' ? -diff : diff;
+      return sortDirection === SORT_DIRECTIONS.desc ? -diff : diff;
     });
     return sorted;
-  }, [allTransactions, selectedAccountId, sortBy, sortDirection]);
+  }, [transactions, selectedAccountId, isTotal, typeTab, selectedCategoryIds, periodDates, sortBy, sortDirection, localTagIds, tagsByTransaction, searchTerm, categoriesById, accounts]);
 
   const sections = useMemo(() => {
     const grouped = new Map<string, Transaction[]>();
@@ -71,5 +152,42 @@ export function useTransactionFilters({
     return Array.from(grouped.entries()).map(([date, data]) => ({ date, data }));
   }, [filtered]);
 
-  return { allTransactions, filtered, sections };
+  const handleToggleSort = useCallback((field: SortBy) => {
+    if (field === sortBy) {
+      setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
+    } else {
+      setSortBy(field);
+      setSortDirection(SORT_DIRECTIONS.desc);
+    }
+  }, [sortBy]);
+
+  const handleToggleDirection = useCallback(() => {
+    setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
+  }, []);
+
+  const openAccountModal = useCallback(() => setAccountModalVisible(true), []);
+  const closeAccountModal = useCallback(() => setAccountModalVisible(false), []);
+  const selectAccount = useCallback((id: number) => {
+    setSelectedAccountId(id);
+    setAccountModalVisible(false);
+  }, []);
+
+  return {
+    selectedAccountId,
+    isTotal,
+    accountModalVisible,
+    openAccountModal,
+    closeAccountModal,
+    selectAccount,
+    sortBy,
+    sortDirection,
+    handleToggleSort,
+    handleToggleDirection,
+    tagsByTransaction,
+    localTagIds,
+    handleToggleTag,
+    handleClearTagFilter,
+    filtered,
+    sections,
+  };
 }

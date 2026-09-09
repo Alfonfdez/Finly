@@ -1,8 +1,10 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { useMemo } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { getMonthName } from '../../utils/formatters';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
+import NavArrows from './NavArrows';
+import { MONTHS_PER_YEAR } from '../../constants/calendar';
 
 interface Props {
   year: number;
@@ -11,7 +13,7 @@ interface Props {
 }
 
 export default function MonthNav({ year, month, onChange }: Props) {
-  const today = new Date();
+  const today = useMemo(() => new Date(), []);
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const isLast = year === today.getFullYear() && month >= today.getMonth() + 1;
@@ -19,25 +21,21 @@ export default function MonthNav({ year, month, onChange }: Props) {
   const goToMonth = (delta: number) => {
     let newMonth = month + delta;
     let newYear = year;
-    if (newMonth > 12) { newMonth = 1; newYear++; }
-    if (newMonth < 1) { newMonth = 12; newYear--; }
+    if (newMonth > MONTHS_PER_YEAR) { newMonth = 1; newYear++; }
+    if (newMonth < 1) { newMonth = MONTHS_PER_YEAR; newYear--; }
     if (newYear > today.getFullYear() || (newYear === today.getFullYear() && newMonth > today.getMonth() + 1)) return;
     onChange(newYear, newMonth);
   };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => goToMonth(-1)}>
-        <Ionicons name="chevron-back-outline" size={22} color={c.text} />
-      </TouchableOpacity>
+      <NavArrows
+        color={c.text}
+        onPrev={() => goToMonth(-1)}
+        onNext={() => goToMonth(1)}
+        nextDisabled={isLast}
+      />
       <Text style={{ color: c.text, fontSize: fs(16), fontWeight: '700' }}>{getMonthName(month)} {year}</Text>
-      <TouchableOpacity
-        onPress={() => goToMonth(1)}
-        style={{ opacity: isLast ? 0.3 : 1 }}
-        disabled={isLast}
-      >
-        <Ionicons name="chevron-forward-outline" size={22} color={c.text} />
-      </TouchableOpacity>
     </View>
   );
 }

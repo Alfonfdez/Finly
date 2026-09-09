@@ -1,447 +1,198 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  View, Text, TextInput, TouchableOpacity, ScrollView,
-  StyleSheet, Keyboard, Platform, LayoutChangeEvent, Modal,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useState, useEffect } from 'react';
+import { View, StyleSheet, Keyboard } from 'react-native';
+import ScreenShell from '../components/ScreenShell';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
-import { useFontSize } from '../hooks/useFontSize';
-import { t } from '../i18n';
-import { accountRepository, transactionRepository } from '../database';
-import { Account } from '../database/types';
-import { RootStackParamList } from '../constants/types';
+import { useFocusLoad } from '../hooks/useFocusLoad';
+import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
+import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
+import { useColorSelection } from '../hooks/useColorSelection';
+import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
+import { t, getDisplayAccountName, getDefaultEnglishAccountName, getAccountName, getDefaultAccountIdByName, getDisplayAccountDescription, getDefaultEnglishAccountDescription, getAccountDescription } from '../i18n';
+import { accountRepository } from '../database';
+import { sanitizeDefaultAccounts } from '../database/configDefaults';
+import { isTotalAccount } from '../database/helpers';
+import type { Account } from '../database/types';
+import type { RootStackParamList, NavigationProp } from '../constants/types';
+import { USER_ID } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
-import ColorGrid, { QUICK_COLORS } from '../components/ColorGrid';
-import ColorPickerModal from '../components/ColorPickerModal';
+import { QUICK_COLORS } from '../constants/colors';
+import ConfirmationModal from '../components/ConfirmationModal';
+import EmptyState from '../components/EmptyState';
+import AccountForm from '../components/AccountForm';
+import { getNameHintText } from '../utils/formHints';
+import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
+import { parseAmountValue } from '../utils/amountInput';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ModifyAccount'>;
 type ModifyAccountRouteProp = RouteProp<RootStackParamList, 'ModifyAccount'>;
 
-const MAX_NAME_LENGTH = 30;
-const MAX_NOTE_LENGTH = 200;
-const GRID_COLS = 4;
-const GRID_GAP = 12;
-
 export default function ModifyAccountScreen() {
-  const { activeColors: c, config } = useConfig();
-  const { refreshAccounts } = useApp();
-  const fs = useFontSize();
+  const { config, updateConfig } = useConfig();
+  const { accounts, refreshAccounts } = useApp();
   const labels = t();
-  const navigation = useNavigation<NavigationProp>();
-  const round = config.accountIconShape === 'circle';
+  const navigation = useNavigation<NavigationProp<'ModifyAccount'>>();
   const route = useRoute<ModifyAccountRouteProp>();
   const { accountId } = route.params;
 
-  const [account, setAccount] = useState<Account | null>(null);
-  const [cellSize, setCellSize] = useState(0);
+  const deferredRefreshAccounts = useDeferredRefresh(refreshAccounts);
 
-  const onGridLayout = (e: LayoutChangeEvent) => {
-    const gridWidth = e.nativeEvent.layout.width;
-    setCellSize(Math.floor((gridWidth - (GRID_COLS - 1) * GRID_GAP) / GRID_COLS));
-  };
+  const { data: account } = useFocusLoad(
+    () => accountRepository.getById(accountId),
+    null as Account | null,
+  );
 
   const [name, setName] = useState('');
   const [nameTouched, setNameTouched] = useState(false);
-  const [nameError, setNameError] = useState<string | null>(null);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [customColor, setCustomColor] = useState<string | null>(null);
   const [description, setDescription] = useState('');
-  const [checkingName, setCheckingName] = useState(false);
-  const [colorPickerVisible, setColorPickerVisible] = useState(false);
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [initialBalanceRaw, setInitialBalanceRaw] = useState('');
+  const { selectedColor, customColor, setSelectedColor, setCustomColor, handleColorSelect } = useColorSelection();
 
   useEffect(() => {
-    accountRepository.list(1).then((list) => {
-      const found = list.find(a => a.id === accountId);
-      if (found) {
-        setAccount(found);
-        setName(found.name);
-        setSelectedIcon(found.icon);
-        setSelectedColor(found.color);
-        setDescription(found.description ?? '');
-        if (!QUICK_COLORS.includes(found.color)) {
-          setCustomColor(found.color);
-        }
-      }
-    });
-  }, [accountId]);
-
-  const checkNameDuplicate = useCallback(async (value: string) => {
-    if (!value.trim()) {
-      setNameError(null);
-      setCheckingName(false);
-      return;
+    if (!account) return;
+    setName(getDisplayAccountName(account));
+    setSelectedIcon(account.icon);
+    setSelectedColor(account.color);
+    setDescription(getDisplayAccountDescription(account));
+    setInitialBalanceRaw(String(account.initial_balance ?? 0));
+    if (!QUICK_COLORS.includes(account.color)) {
+      setCustomColor(account.color);
     }
-    setCheckingName(true);
-    try {
-      const exists = await accountRepository.existsByName(value.trim(), accountId);
-      setNameError(exists ? labels.modify_account_error_duplicate : null);
-    } catch {
-      setNameError(null);
-    } finally {
-      setCheckingName(false);
-    }
-  }, [accountId, labels.modify_account_error_duplicate]);
+  }, [account, setCustomColor, setSelectedColor]);
 
-  const handleNameChange = (value: string) => {
-    setName(value);
+  const { nameError, checkingName, handleNameChange } = useNameDuplicateCheck({
+    existsByName: (value, excludeId) => accountRepository.existsByName(USER_ID, value, excludeId),
+    resolveDefaultEnglishName: (value) => {
+      const defaultId = getDefaultAccountIdByName(value);
+      return defaultId !== null ? getDefaultEnglishAccountName(defaultId) : null;
+    },
+    duplicateErrorKey: labels.modify_account_error_duplicate,
+    excludeId: accountId,
+  });
+
+  const handleNameChangeLocal = (value: string) => {
     setNameTouched(true);
-    setNameError(null);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => checkNameDuplicate(value), 300);
+    handleNameChange(value, setName);
   };
 
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
+  const isTotal = account ? isTotalAccount(account) : false;
+  const initialBalanceError = initialBalanceRaw.length > 0 && parseAmountValue(initialBalanceRaw) === null;
 
-  const canSave = name.trim().length > 0 && !nameError && !checkingName;
+  const canSave = isTotal
+    ? !checkingName
+    : name.trim().length > 0 && !nameError && !checkingName && initialBalanceError === false;
 
-  const getHintText = (): string | null => {
-    if (name.trim().length === 0) return labels.modify_account_error_empty;
-    if (nameError) return nameError;
-    return null;
-  };
+  const hintText = getNameHintText(name, nameError, labels.modify_account_error_empty);
 
   const handleSave = async () => {
+    Keyboard.dismiss();
     if (!canSave || !account) return;
-    try {
-      await accountRepository.update(accountId, {
-        name: name.trim(),
-        icon: selectedIcon!,
-        color: selectedColor!,
-        description: description.trim(),
-      });
-      await refreshAccounts();
+    if (selectedIcon === null || selectedColor === null) return;
+    const trimmedDescription = description.trim();
+    const englishDescDefault = getDefaultEnglishAccountDescription(account.id);
+    const displayDescDefault = getAccountDescription(account.id);
+    const updateData: { icon: string; color: string; description: string; name?: string; initial_balance?: number } = {
+      icon: selectedIcon,
+      color: selectedColor,
+      description: englishDescDefault && trimmedDescription === displayDescDefault ? englishDescDefault : trimmedDescription,
+    };
+    if (!isTotal) {
+      const trimmedName = name.trim();
+      const englishDefault = getDefaultEnglishAccountName(account.id);
+      const displayDefault = getAccountName(account.id);
+      updateData.name = englishDefault && trimmedName === displayDefault ? englishDefault : trimmedName;
+      updateData.initial_balance = parseAmountValue(initialBalanceRaw) ?? 0;
+    }
+    await runWithErrorAlert(async () => {
+      await accountRepository.update(accountId, updateData);
       navigation.goBack();
-    } catch (err) {
-      console.error('Failed to update account:', err);
-    }
+      deferredRefreshAccounts();
+    }, ERROR_PREFIXES.accountUpdate);
   };
 
-  const handleColorSelect = (color: string) => {
-    setSelectedColor(color);
-    if (!QUICK_COLORS.includes(color)) {
-      setCustomColor(color);
-    }
-  };
-
-  const handleDeleteConfirm = async () => {
-    try {
-      await transactionRepository.deleteByAccountId(accountId);
+  const { visible: deleteModalVisible, open: openDeleteModal, close: closeDeleteModal, confirm: confirmDelete } = useDeleteConfirmation({
+    deleteFn: async () => {
       await accountRepository.delete(accountId);
-      await refreshAccounts();
+
+      const remaining = accounts.filter(a => a.id !== accountId);
+      const updates = sanitizeDefaultAccounts(config, remaining);
+      if (Object.keys(updates).length > 0) {
+        updateConfig(updates);
+      }
+    },
+    onSuccess: async () => {
       navigation.goBack();
-    } catch (err) {
-      console.error('Failed to delete account:', err);
-    }
-  };
+      deferredRefreshAccounts();
+    },
+    errorPrefix: ERROR_PREFIXES.accountDelete,
+  });
 
   if (!account) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
-        <View style={[styles.content, { justifyContent: 'center', alignItems: 'center' }]}>
-          <Text style={{ color: c.textSecondary, fontSize: fs(16) }}>
-            {labels.accounts_empty}
-          </Text>
-        </View>
-      </SafeAreaView>
+      <ScreenShell>
+        <EmptyState message={labels.accounts_empty} />
+      </ScreenShell>
     );
   }
 
-  const hintText = getHintText();
+  const isLastAccount = accounts.filter(a => !isTotalAccount(a)).length <= 1;
 
   return (
     <>
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
-      <View style={styles.content}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          onScrollBeginDrag={() => Keyboard.dismiss()}
-        >
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.modify_account_name}
-          </Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: c.surface,
-                color: c.text,
-                borderColor: nameError || (nameTouched && name.trim().length === 0) ? '#F87171' : c.border,
-                fontSize: fs(14),
-              },
-            ]}
-            value={name}
-            onChangeText={handleNameChange}
-            maxLength={MAX_NAME_LENGTH}
-            autoCapitalize="words"
-            autoCorrect={false}
-          />
-          <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
-            {name.length}/{MAX_NAME_LENGTH}
-          </Text>
-
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_account_symbols}
-          </Text>
-          <View style={styles.grid} onLayout={onGridLayout}>
-            {cellSize > 0 && ACCOUNT_ICONS.map((icon) => {
-              const isSelected = selectedIcon === icon;
-              const iconColor = isSelected && selectedColor ? selectedColor : (isSelected ? c.primary : '#94A3B8');
-              const bgColor = isSelected && selectedColor ? selectedColor + '33' : (isSelected ? c.primary + '33' : c.surface);
-              const borderColor = isSelected ? (selectedColor || c.primary) : 'transparent';
-              return (
-                <TouchableOpacity
-                  key={icon}
-                  style={[
-                    styles.gridItem,
-                    { width: cellSize, height: cellSize, borderRadius: round ? 999 : 12 },
-                    { backgroundColor: bgColor },
-                    isSelected && { borderWidth: 2, borderColor },
-                  ]}
-                  onPress={() => setSelectedIcon(icon)}
-                  accessibilityLabel={icon}
-                  accessibilityState={{ selected: isSelected }}
-                >
-                  <Ionicons name={icon as any} size={24} color={iconColor} />
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_account_color}
-          </Text>
-          <ColorGrid
+      <ScreenShell>
+        <View style={styles.content}>
+          <AccountForm
+            nameLabel={labels.modify_account_name}
+            showNameField
+            nameDisabled={isTotal}
+            name={name}
+            onNameChange={handleNameChangeLocal}
+            nameErrorDisplay={(nameError || (nameTouched && name.trim().length === 0)) ? (nameError ?? ' ') : null}
+            icons={ACCOUNT_ICONS}
+            iconShape={config.accountIconShape}
+            symbolTitle={labels.create_account_symbols}
+            colorTitle={labels.create_account_color}
+            selectedIcon={selectedIcon}
+            onSelectIcon={setSelectedIcon}
             selectedColor={selectedColor}
             customColor={customColor}
-            onSelect={handleColorSelect}
-            onOpenPicker={() => setColorPickerVisible(true)}
+            onSelectColor={handleColorSelect}
+            showInitialBalance={!isTotal}
+            initialBalanceLabel={labels.modify_account_initial_balance}
+            initialBalanceA11yLabel={labels.a11y_initial_balance}
+            initialBalanceRaw={initialBalanceRaw}
+            onInitialBalanceChange={setInitialBalanceRaw}
+            noteLabel={labels.modify_account_note}
+            description={description}
+            onDescriptionChange={setDescription}
+            hintText={hintText}
+            submitLabel={labels.modify_account_save}
+            isSubmitDisabled={!canSave}
+            onSubmit={handleSave}
+            deleteLabel={isTotal ? undefined : labels.modify_account_delete}
+            onDeletePress={isTotal ? undefined : openDeleteModal}
+            deleteDisabled={isLastAccount}
+            deleteLastHint={isLastAccount ? labels.modify_account_delete_last : null}
           />
-
-          <ColorPickerModal
-            visible={colorPickerVisible}
-            selectedColor={selectedColor}
-            onSelect={(color) => {
-              handleColorSelect(color);
-            }}
-            onClose={() => setColorPickerVisible(false)}
-          />
-
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.modify_account_note}
-          </Text>
-          <TextInput
-            style={[
-              styles.input,
-              styles.textArea,
-              {
-                backgroundColor: c.surface,
-                color: c.text,
-                borderColor: c.border,
-                fontSize: fs(14),
-              },
-            ]}
-            value={description}
-            onChangeText={(value) => {
-              if (value.length <= MAX_NOTE_LENGTH) setDescription(value);
-            }}
-            multiline
-            numberOfLines={3}
-            textAlignVertical="top"
-          />
-          <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
-            {description.length}/{MAX_NOTE_LENGTH}
-          </Text>
-
-          {hintText && (
-            <Text style={[styles.hint, { color: '#F87171', fontSize: fs(12) }]}>
-              {hintText}
-            </Text>
-          )}
-
-          <TouchableOpacity
-            style={[styles.deleteButton, { borderColor: '#F87171' }]}
-            onPress={() => setDeleteModalVisible(true)}
-          >
-            <Ionicons name="trash-outline" size={18} color="#F87171" />
-            <Text style={[styles.deleteButtonText, { color: '#F87171', fontSize: fs(15) }]}>
-              {labels.modify_account_delete}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { backgroundColor: canSave ? c.primary : '#475569' },
-            ]}
-            onPress={handleSave}
-            disabled={!canSave}
-          >
-            <Text style={[styles.buttonText, { color: '#FFFFFF', fontSize: fs(15) }]}>
-              {labels.modify_account_save}
-            </Text>
-          </TouchableOpacity>
-
-          {Platform.OS === 'android' && <View style={styles.keyboardSpacer} />}
-        </ScrollView>
-      </View>
-    </SafeAreaView>
-
-      <Modal visible={deleteModalVisible} transparent animationType="fade" onRequestClose={() => setDeleteModalVisible(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: c.surface }]}>
-            <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(16) }]}>
-              {account && labels.modify_account_delete_confirm_title(account.name)}
-            </Text>
-            <Text style={[styles.modalMessage, { color: c.textSecondary, fontSize: fs(14) }]}>
-              {labels.modify_account_delete_confirm_message}
-            </Text>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: c.surface, borderColor: c.border }]}
-                onPress={() => setDeleteModalVisible(false)}
-              >
-                <Text style={[styles.modalButtonText, { color: c.text, fontSize: fs(14) }]}>
-                  {labels.modify_account_delete_confirm_cancel}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: '#F87171' }]}
-                onPress={handleDeleteConfirm}
-              >
-                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
-                  {labels.modify_account_delete_confirm_delete}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
         </View>
-      </Modal>
+      </ScreenShell>
+
+      <ConfirmationModal
+        visible={deleteModalVisible}
+        title={labels.modify_account_delete_confirm_title(getDisplayAccountName(account))}
+        message={labels.modify_account_delete_confirm_message}
+        confirmLabel={labels.modify_account_delete_confirm_delete}
+        cancelLabel={labels.modify_account_delete_confirm_cancel}
+        onConfirm={confirmDelete}
+        onCancel={closeDeleteModal}
+      />
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   content: {
     flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 32,
-  },
-  sectionTitle: {
-    fontWeight: '600',
-    marginBottom: 4,
-    marginTop: 10,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
-  },
-  textArea: {
-    minHeight: 80,
-  },
-  counter: {
-    textAlign: 'right',
-    marginTop: 4,
-    marginBottom: 4,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  gridItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 8,
-  },
-  hint: {
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  deleteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 24,
-    paddingVertical: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  deleteButtonText: {
-    fontWeight: '600',
-  },
-  button: {
-    marginTop: 12,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontWeight: '600',
-  },
-  keyboardSpacer: {
-    height: 200,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-  },
-  modalContent: {
-    width: '100%',
-    maxWidth: 360,
-    borderRadius: 16,
-    padding: 24,
-  },
-  modalTitle: {
-    fontWeight: '700',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  modalMessage: {
-    marginBottom: 20,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  modalButtonText: {
-    fontWeight: '600',
   },
 });

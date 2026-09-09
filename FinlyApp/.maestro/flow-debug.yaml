@@ -1,0 +1,4 @@
+appId: com.finly.app
+---
+- tapOn: "Open menu"
+- assertVisible: "Close drawer"

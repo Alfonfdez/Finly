@@ -1,192 +1,189 @@
 ﻿# Tech Stack
 
-## Lenguajes y herramientas
-- **React Native** (Expo managed workflow, SDK 54) — framework principal para iOS y Android.
-- **TypeScript** — tipado estático para el código.
-- **React Navigation** (native-stack + drawer) — navegación entre pantallas.
-- **SQLite** (expo-sqlite) — persistencia local en nativo. `DATABASE_VERSION = 6`.
-- **localStorage** — persistencia local en web (mismas interfaces que SQLite).
-- **@expo/vector-icons** (Ionicons) — librería de iconos usada en toda la app.
-- **react-native-svg** — gráfico de anillos (donut) y barras personalizado.
-- **reanimated-color-picker** — selector de colores dinámico (CreateCategoryScreen).
-- **@react-native-community/datetimepicker** — selector de fecha nativo.
-- **React Context** — estado global de la app (AppContext + ConfigContext).
-- **react-native-reanimated** — animaciones y worklets.
-- **react-native-gesture-handler** — soporte de gestos (requerido por navegación y drawer).
-- **react-native-screens** — optimización de pantallas nativas.
-- **react-native-safe-area-context** — gestión de safe area.
+## Languages and tools
+- **React Native** (Expo managed workflow, SDK 57) — main framework for iOS and Android.
+- **TypeScript** — static typing for the codebase.
+- **React Navigation** (native-stack + drawer) — screen navigation.
+- **SQLite** (expo-sqlite) — local persistence on native. Versioned migrations (`PRAGMA user_version`, SCHEMA_VERSION 3): initial schema (`001_initial`), seed (`002_seed`), and config defaults (`003_config`), each applied once inside a transaction.
+- **@expo/vector-icons** (Ionicons) — icon library used throughout the app.
+- **react-native-svg** — custom donut chart and bar chart.
+- **reanimated-color-picker** — dynamic color picker (CreateCategoryScreen).
+- **@react-native-community/datetimepicker** — native date picker.
+- **React Context** — global app state (AppContext + ConfigContext).
+- **react-native-reanimated** — animations and worklets.
+- **react-native-gesture-handler** — gesture support (required by navigation and drawer).
+- **react-native-screens** — native screen optimization.
+- **react-native-safe-area-context** — safe area management.
 
-## Estructura de archivos (proyecto React Native con Expo)
+## File structure (React Native with Expo project)
 
 ```
 FinlyApp/
-+-- app.json
-+-- App.tsx                         <- entrada principal
++-- app.json                          <- Expo config (name, version 2.0.0, package com.finly.app)
++-- App.tsx                           <- main entry: DB init + splash + providers
 +-- tsconfig.json
 +-- package.json
 |
 +-- src/
 |   +-- navigation/
-|   |   +-- AppNavigator.tsx        <- Stack + Drawer navigator
+|   |   +-- AppNavigator.tsx          <- Stack + Drawer navigator
 |   |
 |   +-- screens/
-|   |   +-- HomeScreen.tsx          <- pantalla principal (panel)
-|   |   +-- AddTransactionScreen.tsx <- anadir gasto/ingreso
-|   |   +-- AddCategoryScreen.tsx   <- seleccionar categoria
-|   |   +-- CreateCategoryScreen.tsx <- crear categoria
-|   |   +-- ModifyCategoryScreen.tsx <- editar categoria
-|   |   +-- CategoriesScreen.tsx    <- lista de categorias
-|   |   +-- TransactionsScreen.tsx  <- transacciones por categoria (014)
-|   |   +-- AllTransactionsScreen.tsx <- todas las transacciones (015)
-|   |   +-- TransactionDetailsScreen.tsx <- detalles de transaccion (016)
-|   |   +-- ModifyTransactionScreen.tsx <- modificar transaccion (017)
-|   |   +-- AccountsScreen.tsx      <- lista de cuentas
-|   |   +-- CreateAccountScreen.tsx <- crear cuenta
-|   |   +-- ModifyAccountScreen.tsx <- editar cuenta
-|   |   +-- SettingsScreen.tsx      <- configuracion de la app
+|   |   +-- HomeScreen.tsx            <- home screen (dashboard)
+|   |   +-- AllTransactionsScreen.tsx <- all transactions (015)
+|   |   +-- TransactionsScreen.tsx    <- transactions by category (014)
+|   |   +-- TransactionDetailsScreen.tsx <- transaction details (016)
+|   |   +-- AddTransactionScreen.tsx  <- add expense/income
+|   |   +-- ModifyTransactionScreen.tsx <- modify transaction (017)
+|   |   +-- CommentsScreen.tsx        <- comments list (024)
+|   |   +-- ModifyCommentScreen.tsx   <- edit/delete comment
+|   |   +-- AccountsScreen.tsx        <- account list
+|   |   +-- CreateAccountScreen.tsx   <- create account
+|   |   +-- ModifyAccountScreen.tsx   <- edit account
+|   |   +-- CategoriesScreen.tsx      <- category list
+|   |   +-- AddCategoryScreen.tsx     <- category section of the transaction form
+|   |   +-- CreateCategoryScreen.tsx  <- create category
+|   |   +-- ModifyCategoryScreen.tsx  <- edit category
+|   |   +-- TagsScreen.tsx            <- tags list
+|   |   +-- CreateTagScreen.tsx       <- create tag
+|   |   +-- ModifyTagScreen.tsx       <- edit tag
+|   |   +-- settings/                 <- settings sub-screens
+|   |       +-- SettingsScreen.tsx    <- settings root
+|   |       +-- AppearanceScreen.tsx  <- theme, text size, icon shapes
+|   |       +-- RegionalScreen.tsx    <- language, currency, calendar
+|   |       +-- PersonalizationScreen.tsx <- home + add-transaction defaults, hide balances
+|   |       +-- DataScreen.tsx        <- backup / restore / delete all
 |   |
 |   +-- components/
-|   |   +-- AccountModal.tsx        <- modal de seleccion de cuentas
-|   |   +-- AccountSelector.tsx     <- trigger de seleccion de cuenta
-|   |   +-- BarChart.tsx            <- barra horizontal apilada
-|   |   +-- CalculatorModal.tsx     <- calculadora emergente
-|   |   +-- CalendarModal.tsx       <- modal contenedor de calendarios
-|   |   +-- CalendarPicker.tsx      <- selector de fecha textual
-|   |   +-- CategoryGrid.tsx        <- grid 4xN de categorias
-|   |   +-- CategoryList.tsx        <- lista de desglose por categorias
-|   |   +-- ColorGrid.tsx           <- grid de colores para categorias
-|   |   +-- ColorPickerModal.tsx    <- modal de selector de color
-|   |   +-- CommentInput.tsx        <- input de comentario con contador
-|   |   +-- DaySelector.tsx         <- selector de dia (Hoy/Ayer/Dinamico)
-|   |   +-- DonutChart.tsx          <- grafico de anillos SVG
-|   |   +-- IconGrid.tsx            <- grid de iconos para categorias
-|   |   +-- PeriodTabs.tsx          <- tabs Dia/Semana/Mes/Ano/Periodo
-|   |   +-- PhotoSection.tsx        <- seccion de foto (camara/galeria)
-|   |   +-- SearchBar.tsx           <- barra de busqueda reutilizable
-|   |   +-- SortToggle.tsx          <- toggle de ordenacion fecha/cantidad
-|   |   +-- TagSection.tsx          <- seccion de etiquetas
-|   |   +-- TransactionGroup.tsx    <- grupo de transacciones por fecha
-|   |   +-- TypeTabs.tsx            <- tabs Gastos/Ingresos
-|   |   +-- calendars/              <- selectores de fecha
-|   |       +-- DayPicker.tsx       <- rejilla mensual de dias
-|   |       +-- MonthGrid.tsx       <- rejilla de 12 meses
-|   |       +-- MonthNav.tsx        <- navegacion mes anterior/siguiente
-|   |       +-- PeriodPicker.tsx    <- selector de rango de fechas
-|   |       +-- WeekPicker.tsx      <- selector de semana
-|   |       +-- YearGrid.tsx        <- rejilla de 12 anos
-|   |       +-- YearNav.tsx         <- navegacion de anos
-|   |       +-- types.ts            <- tipos compartidos de calendarios
-|   |       +-- CalendarModal.tsx   <- modal contenedor de calendarios
-|   |       +-- CalendarPicker.tsx  <- selector de fecha textual
+|   |   +-- AccountModal.tsx          <- account selection modal
+|   |   +-- AccountTrigger.tsx        <- account selection trigger
+|   |   +-- AmountInput.tsx           <- amount field with currency
+|   |   +-- BarChart.tsx              <- horizontal stacked bar chart
+|   |   +-- CalculatorModal.tsx       <- calculator popup
+|   |   +-- CalendarModal.tsx         <- calendar container modal
+|   |   +-- CalendarPicker.tsx        <- text-based date selector
+|   |   +-- CategoryGrid.tsx          <- 4xN category grid
+|   |   +-- CategoryList.tsx          <- category breakdown list
+|   |   +-- ColorGrid.tsx             <- color grid for categories
+|   |   +-- ColorPickerModal.tsx      <- color picker modal
+|   |   +-- CommentInput.tsx          <- comment input with counter
+|   |   +-- DaySelector.tsx           <- day selector (Today / Yesterday / Dynamic)
+|   |   +-- DonutChart.tsx            <- SVG donut chart
+|   |   +-- Fab.tsx                   <- floating action button
+|   |   +-- IconGrid.tsx              <- icon grid for categories
+|   |   +-- PeriodTabs.tsx            <- Day / Week / Month / Year / Period tabs
+|   |   +-- PhotoSection.tsx          <- photo section (camera / gallery)
+|   |   +-- SearchBar.tsx             <- reusable search bar
+|   |   +-- SortToggle.tsx            <- date / amount sort toggle
+|   |   +-- TabBar.tsx                <- expense / income segmented control
+|   |   +-- TagChip.tsx               <- tag chip
+|   |   +-- TagSection.tsx            <- tags section
+|   |   +-- TransactionForm.tsx       <- shared expense/income form (047)
+|   |   +-- TransactionGroup.tsx      <- transactions grouped by date
+|   |   +-- form/                     <- form building blocks (048)
+|   |   |   +-- DeleteButton.tsx      <- destructive action row
+|   |   |   +-- FormError.tsx         <- inline validation error
+|   |   |   +-- FormScrollView.tsx    <- scrollable form wrapper
+|   |   |   +-- LabeledTextField.tsx  <- label + TextInput + counter
+|   |   |   +-- PrimaryButton.tsx     <- primary CTA
+|   |   |   +-- SectionTitle.tsx      <- form section heading
+|   |   +-- calendars/                <- date pickers
+|   |   |   +-- DayPicker.tsx         <- monthly day grid
+|   |   |   +-- MonthGrid.tsx         <- 12-month grid
+|   |   |   +-- MonthNav.tsx          <- previous/next month navigation
+|   |   |   +-- PeriodPicker.tsx      <- date range selector
+|   |   |   +-- WeekPicker.tsx        <- week selector
+|   |   |   +-- YearGrid.tsx          <- 12-year grid
+|   |   |   +-- YearNav.tsx           <- year navigation
+|   |   +-- settings/                 <- settings rows and toggles
+|   |       +-- SettingsRow.tsx       <- labelled row
+|   |       +-- SettingsSelectRow.tsx <- selector row
+|   |       +-- ToggleRow.tsx         <- switch row
 |   |
 |   +-- context/
-|   |   +-- AppContext.tsx           <- estado de negocio (cuentas, categorias, transacciones)
-|   |   +-- ConfigContext.tsx        <- preferencias del usuario (tema, divisa, idioma)
+|   |   +-- AppContext.tsx            <- business state (accounts, categories, transactions)
+|   |   +-- ConfigContext.tsx         <- user preferences (theme, currency, language)
 |   |
 |   +-- database/
-|   |   +-- database.ts             <- inicializacion SQLite + migraciones (DATABASE_VERSION = 6)
-|   |   +-- types.ts                <- interfaces TypeScript de entidades
-|   |   +-- index.ts                <- switching por plataforma (SQLite vs localStorage)
-|   |   +-- webStorage.ts           <- fallback con localStorage para web
+|   |   +-- database.ts               <- shared init: applies migrations (PRAGMA user_version, SCHEMA_VERSION 3)
+|   |   +-- engine.ts                 <- native engine: opens the expo-sqlite database
+|   |   +-- engine.web.ts             <- web engine: sql.js (WASM) + IndexedDB persistence
+|   |   +-- sqliteWeb.ts              <- sql.js engine with autocommit + export/import
+|   |   +-- storage/indexedDb.ts      <- IndexedDB persistence for the exported SQLite bytes
+|   |   +-- types.ts                  <- TypeScript entity interfaces
+|   |   +-- index.ts                  <- exports repositories for all platforms (single DatabaseHandle)
+|   |   +-- schemas.ts                <- Drizzle table definitions
+|   |   +-- seedData.ts               <- seed entities (accounts, categories, tags)
+|   |   +-- configDefaults.ts         <- default config values
+|   |   +-- backup.ts + backupService.ts <- backup / restore logic
+|   |   +-- drizzle/
+|   |   |   +-- schema.ts             <- Drizzle schema over DatabaseHandle
+|   |   |   +-- proxy.ts              <- sqlite-proxy adapter
+|   |   |   +-- engine.ts             <- Drizzle engine
 |   |   +-- migrations/
-|   |   |   +-- 001_initial.ts      <- CREATE TABLE + indices
-|   |   |   +-- 002_seed.ts         <- datos de prueba iniciales
-|   |   |   +-- 003_config.ts       <- tabla config + valores por defecto
-|   |   |   +-- 004_new_categories.ts <- categorias adicionales
-|   |   |   +-- 005_english_schema.ts <- migracion a nombres en ingles
-|   |   |   +-- 006_account_description.ts <- campo descripcion en cuentas
+|   |   |   +-- 001_initial.ts        <- CREATE TABLE (users, accounts, categories, transactions, tags, transaction_tags, config) + indexes
+|   |   |   +-- 002_seed.ts           <- default user, 1 account, 31 categories
+|   |   |   +-- 003_config.ts         <- config default values (table created in 001)
 |   |   +-- repositories/
-|   |       +-- userRepo.ts         <- CRUD usuarios
-|   |       +-- accountRepo.ts      <- CRUD cuentas + calculo de saldo
-|   |       +-- categoryRepo.ts     <- CRUD categorias
-|   |       +-- transactionRepo.ts  <- CRUD transacciones + agregaciones
-|   |       +-- configRepo.ts       <- persistencia de configuracion
+|   |       +-- accountRepo.ts        <- account CRUD + balance calculation + deleteAll()
+|   |       +-- categoryRepo.ts       <- category CRUD + deleteAll()
+|   |       +-- tagRepo.ts            <- tag CRUD + deleteAll()
+|   |       +-- configRepo.ts         <- config persistence
+|   |       +-- transactionRepo.ts (+ .reads.ts / .writes.ts) <- transaction CRUD + aggregations + deleteAll()
 |   |
 |   +-- i18n/
-|   |   +-- index.ts                <- selector de idioma + helper getCategoryName
-|   |   +-- en.ts                   <- traducciones en ingles
-|   |   +-- es.ts                   <- traducciones en espanol
-|   |   +-- ca.ts                   <- traducciones en catalan
+|   |   +-- index.ts                 <- language selector + getCategoryName helper
+|   |   +-- en.ts                    <- English translations
+|   |   +-- es.ts                    <- Spanish translations
+|   |   +-- ca.ts                    <- Catalan translations
+|   |   +-- fr.ts                    <- French translations
+|   |   +-- de.ts                    <- German translations
+|   |   +-- pt.ts                    <- Portuguese translations
+|   |   +-- it.ts                    <- Italian translations
 |   |
 |   +-- hooks/
-|   |   +-- useFontSize.ts          <- hook de escalado de texto
-|   |   +-- useTransactionFilters.ts <- filtrado, ordenacion y agrupacion de transacciones
+|   |   +-- useFontSize.ts           <- text scaling hook
+|   |   +-- useTransactionFilters.ts <- transaction filtering, sorting, and grouping
+|   |   +-- useFocusLoad.ts          <- load-on-focus data hook
+|   |   +-- useTransactionListScreen.tsx <- shared list-screen logic
+|   |   +-- useTransactionForm.ts    <- shared transaction form logic
+|   |   +-- usePhotos.ts             <- camera / gallery photo handling
+|   |   +-- useNameDuplicateCheck.ts <- debounced duplicate-name guard
+|   |   +-- useBalanceVisibility.ts  <- balance show/hide
+|   |   +-- useBulkDelete.ts         <- bulk delete state
+|   |   +-- usePeriodNavigation.ts   <- period navigation (Week / Month / Year)
 |   |
 |   +-- constants/
-|   |   +-- themes.ts               <- paletas dark + light (ColorPalette)
-|   |   +-- colors.ts               <- paleta legacy (solo oscuro)
-|   |   +-- types.ts                <- tipos compartidos (Period, TransactionType, RootStackParamList)
-|   |   +-- platformStyles.ts       <- estilos especificos por plataforma
-|   |   +-- accountIcons.ts         <- lista de iconos disponibles para cuentas
-|   |
-|   +-- data/
-|   |   +-- mockData.ts             <- datos mock (legacy, no usado en runtime)
+|   |   +-- themes.ts                <- dark + light palettes (ColorPalette)
+|   |   +-- colors.ts                <- legacy palette (dark only)
+|   |   +-- types.ts                 <- shared types (Period, TransactionType, RootStackParamList)
+|   |   +-- accountIcons.ts          <- available account icons list
+|   |   +-- languages.ts             <- language map + type (7 languages)
+|   |   +-- currencies.ts            <- currency list + symbols
+|   |   +-- calendar.ts              <- calendar / period helpers
+|   |   +-- layout.ts                <- layout constants
 |   |
 |   +-- utils/
-|       +-- formatters.ts           <- formatear moneda, fechas, etc.
-|       +-- calculator.ts           <- logica de calculadora
+|       +-- formatters.ts            <- format currency, dates, etc.
+|       +-- calculator.ts            <- calculator logic
+|       +-- platform.ts              <- centralized platform checks
+|       +-- language.ts              <- language re-exports + isCatalan()
+|       +-- amountInput.ts           <- amount input parsing / formatting
+|       +-- search.ts                <- generic search helpers
+|       +-- photoUtils.ts            <- photo helpers (web)
+|       +-- backupIO.ts (+ .web.ts)  <- platform backup import/export
 |
 +-- assets/
-    +-- (iconos, fuentes, etc.)
+    +-- (icons, fonts, etc.)
 ```
 
-## Diseno visual
-- Paletas oscura y clara definidas en `constants/themes.ts` con interfaz `ColorPalette`.
-- Tokens: `background`, `surface`, `text`, `textSecondary`, `primary`, `accent`, `green`, `red`, `border`.
-- Tema seleccionable desde Settings (Oscuro / Claro / Sistema) con cambio en tiempo real.
-- Sin libreria de UI externa; estilos con `StyleSheet.create()` de React Native.
-- Iconos: `@expo/vector-icons` (Ionicons) — se usa `Ionicons` en toda la app.
-- Tipografia: sistema nativa (SF Pro en iOS, Roboto en Android) con escalado configurable.
+## Design
+See **`4-design-system.md`** for colors, typography, icons, and layout conventions.
 
-## Tipografia
-
-### Sistema de escalado
-- Hook `useFontSize()` devuelve `fs(size)` que escala segun la preferencia del usuario.
-- Factores: Pequenio = x0.85, Mediano = x1.0, Grande = x1.15.
-- Todos los tamanios de fuente en la app deben usar `fs()` — nunca valores hardcoded.
-- La funcion redondea al entero mas cercano para evitar sub-pixeles.
-
-### Tamanios de fuente por elemento
-
-| fs(N) | Uso | Ejemplos |
-|-------|-----|----------|
-| `fs(11)` | Textos auxiliares, labels de grafico | CategoryGrid names, BarChart labels |
-| `fs(12)` | Badges, metadata, secondary labels, breakdown | AccountSelector balance, TransactionGroup date |
-| `fs(13)` | Period tabs, sort labels, tag chips | PeriodTabs, SortToggle, TagSection |
-| `fs(14)` | **Estandar** — cuerpo de texto, nombres, botones | AccountSelector trigger, CategoryList, modals |
-| `fs(15)` | Nombres de items en listas, search input | AccountScreen names, SearchBar, TypeTabs |
-| `fs(16)` | Titulos de pantalla, titulos de modal | Modal titles, TransactionsScreen header |
-| `fs(17)` | Titulos de header del Stack navigator | Todos los `headerTitle` en AppNavigator.tsx |
-| `fs(18)` | Totales en modales, chart center text | DonutChart total, CalculatorModal display |
-| `fs(20)` | Display de calculadora (resultado) | CalculatorModal result |
-| `fs(22)` | Totales de pantalla (saldo, total categoria) | AccountsScreen total, TransactionsScreen categoryTotal |
-| `fs(24)` | Titulos grandes de pantalla | AddTransactionScreen title |
-| `fs(28)` | Total principal del HomeScreen | HomeScreen total balance |
-
-### Pesos de fuente
-
-| fontWeight | Uso | Ejemplos |
-|------------|-----|----------|
-| `'500'` | Texto de cuerpo normal, nombres de items | AccountSelector modal names, CategoryList |
-| `'600'` | **Mas usado** — nombres, botones, trigger text, headers | AccountSelector trigger, SortToggle, TypeTabs, headerTitle |
-| `'700'` | Totales monetarios, titulos de modal, labels activos | Modal titles, categoryTotal, DayPicker selected |
-| `'800'` | Total principal del HomeScreen (unico uso) | HomeScreen totalText |
-
-### Convenciones de formato monetario
-- Todos los totales y saldos muestran prefijo `+` (positivo) o `-` (negativo).
-- Color: verde (`c.green`) para positivo, rojo (`c.red`) para negativo.
-- Formato: `formatCurrency()` con maximo 2 decimales.
-- Excepcion: importes individuales de transacciones usan tipo (`income` -> `+`, `expense` -> `-`) en lugar del signo del valor.
-
-### Convenciones de nombre de cuenta
-- **HomeScreen header:** `fs(14)`, `'600'`, color `textSecondary`, icono circular 24x24 + chevron-down.
-- **AccountSelector trigger:** `fs(14)`, `'600'`, color `text`, icono circular 28x28 + chevron-down.
-- **AccountScreen list:** `fs(15)`, `'600'`, color `text`, icono circular 44x44.
-
-## Convenciones de codigo
-- Contenido en castellano.
-- Nomenclatura: camelCase para variables y funciones, PascalCase para componentes y tipos.
-- Mobile-first: todos los componentes disenados para pantalla tactil.
-- Codigo limpio y componentes con una sola responsabilidad.
-- i18n: todas las cadenas visibles al usuario pasan por el sistema de traduccion (i18n/).
-- Persistencia: switching por Platform.OS — SQLite en nativo, localStorage en web.
+## Code conventions
+- English content, English code.
+- Naming: camelCase for variables and functions, PascalCase for components and types.
+- Mobile-first: all components designed for touch screens.
+- Clean code with single-responsibility components.
+- i18n: all user-facing strings go through the translation system (i18n/).
+- Persistence: one SQLite engine on all platforms — expo-sqlite on native, sql.js (WASM) + IndexedDB on web — selected per platform by `engine.ts` / `engine.web.ts`.

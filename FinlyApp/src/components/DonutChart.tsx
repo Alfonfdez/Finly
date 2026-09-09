@@ -1,53 +1,80 @@
+import { memo, useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Svg, { G, Circle } from 'react-native-svg';
-import { ChartData } from '../constants/types';
-import { formatCurrency } from '../utils/formatters';
+import Svg, { G, Circle, Path } from 'react-native-svg';
+import type { CategoryWithTotal } from '../constants/types';
+import { formatAmount, fitFontSize } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 
 interface Props {
-  data: ChartData[];
+  data: CategoryWithTotal[];
   total: number;
-  currency?: string;
-  separator?: ',' | '.';
 }
 
-export default function DonutChart({ data, total, currency = '€', separator = ',' }: Props) {
-  const { activeColors: c } = useConfig();
-  const fs = useFontSize();
-  const radio = 60;
-  const circunferencia = 2 * Math.PI * radio;
-  const grosor = 15;
+const SIZE = 160;
+const CENTER = SIZE / 2;
+const RADIUS = 66;
+const STROKE_WIDTH = 13;
+const HOLE_SIZE = (RADIUS - STROKE_WIDTH / 2) * 2;
 
-  let accumulatedOffset = 0;
+function describeArc(startAngle: number, endAngle: number): string {
+  const startX = CENTER + RADIUS * Math.cos(startAngle);
+  const startY = CENTER + RADIUS * Math.sin(startAngle);
+  const endX = CENTER + RADIUS * Math.cos(endAngle);
+  const endY = CENTER + RADIUS * Math.sin(endAngle);
+  const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
+  return `M ${startX} ${startY} A ${RADIUS} ${RADIUS} 0 ${largeArcFlag} 1 ${endX} ${endY}`;
+}
+
+function DonutChartInner({ data, total }: Props) {
+  const { activeColors: c, config } = useConfig();
+  const fs = useFontSize();
+
+  const formatted = formatAmount(total, config);
+  const totalFontSize = fitFontSize(formatted, fs(18), HOLE_SIZE);
+
+  const segments = useMemo(() => {
+    let startAngle = 0;
+    return data.map((item) => {
+      const sweep = (item.percentage / 100) * Math.PI * 2;
+      const endAngle = startAngle + sweep;
+      const segment = {
+        id: item.id,
+        color: item.color,
+        startAngle,
+        endAngle,
+      };
+      startAngle = endAngle;
+      return segment;
+    });
+  }, [data]);
+
+  const isSingleSegment = data.length === 1;
 
   return (
     <View style={styles.container}>
-      <Svg width={160} height={160} viewBox="0 0 160 160">
-        <G transform="rotate(-90, 80, 80)">
-          <Circle cx="80" cy="80" r={radio} stroke={c.surface} strokeWidth={grosor} fill="none" />
-          {data.map((item) => {
-            const longitud = (item.percentage / 100) * circunferencia;
-            const segmento = (
-              <Circle
-                key={item.name}
-                cx="80"
-                cy="80"
-                r={radio}
-                stroke={item.color}
-                strokeWidth={grosor}
+      <Svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
+        <G transform={`rotate(-90, ${CENTER}, ${CENTER})`}>
+          <Circle cx={CENTER} cy={CENTER} r={RADIUS} stroke={c.surface} strokeWidth={STROKE_WIDTH} fill="none" />
+          {isSingleSegment ? (
+            <Circle cx={CENTER} cy={CENTER} r={RADIUS} stroke={segments[0]?.color} strokeWidth={STROKE_WIDTH} fill="none" />
+          ) : (
+            segments.map((seg) => (
+              <Path
+                key={seg.id}
+                d={describeArc(seg.startAngle, seg.endAngle)}
+                stroke={seg.color}
+                strokeWidth={STROKE_WIDTH}
                 fill="none"
-                strokeDasharray={`${longitud} ${circunferencia - longitud}`}
-                strokeDashoffset={-accumulatedOffset}
               />
-            );
-            accumulatedOffset += longitud;
-            return segmento;
-          })}
+            ))
+          )}
         </G>
       </Svg>
       <View style={styles.totalContainer}>
-        <Text style={[styles.total, { color: c.text, fontSize: fs(18) }]}>{formatCurrency(total, currency, separator)}</Text>
+        <Text style={[styles.total, { color: c.text, fontSize: totalFontSize }]} numberOfLines={1}>
+          {formatted}
+        </Text>
       </View>
     </View>
   );
@@ -63,8 +90,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
+    width: HOLE_SIZE,
+    height: HOLE_SIZE,
   },
   total: {
     fontWeight: '700',
   },
 });
+
+const DonutChart = memo(DonutChartInner);
+export default DonutChart;

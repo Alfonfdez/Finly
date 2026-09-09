@@ -3,9 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-
-export type SortBy = 'date' | 'amount';
-export type SortDirection = 'asc' | 'desc';
+import { SORT_BY, SORT_DIRECTIONS, type SortBy, type SortDirection, type IconName } from '../constants/types';
 
 interface Props {
   sortBy: SortBy;
@@ -19,45 +17,47 @@ export default function SortToggle({ sortBy, direction, onToggleSort, onToggleDi
   const fs = useFontSize();
   const labels = t();
 
-  const arrowIcon = direction === 'desc' ? 'arrow-down' : 'arrow-up';
+  const arrowIcon: IconName = direction === SORT_DIRECTIONS.desc ? 'arrow-down' : 'arrow-up';
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        style={styles.option}
-        onPress={() => onToggleSort('date')}
-        accessibilityLabel={labels.transactions_sort_date}
-      >
-        <Text style={[
-          styles.label,
-          { color: sortBy === 'date' ? c.primary : c.textSecondary, fontSize: fs(13) },
-        ]}>
-          {labels.transactions_sort_date}
-        </Text>
-        {sortBy === 'date' && (
-          <TouchableOpacity onPress={onToggleDirection} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Ionicons name={arrowIcon as any} size={14} color={c.primary} />
+      <View style={styles.option}>
+        <TouchableOpacity
+          onPress={() => onToggleSort(SORT_BY.date)}
+          accessibilityLabel={labels.transactions_sort_date}
+        >
+          <Text style={[
+            styles.label,
+            { color: sortBy === SORT_BY.date ? c.primary : c.textSecondary, fontSize: fs(13) },
+          ]}>
+            {labels.transactions_sort_date}
+          </Text>
+        </TouchableOpacity>
+        {sortBy === SORT_BY.date && (
+          <TouchableOpacity onPress={onToggleDirection} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} accessibilityRole="button" accessibilityLabel={labels.transactions_sort_date}>
+            <Ionicons name={arrowIcon} size={14} color={c.primary} />
           </TouchableOpacity>
         )}
-      </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity
-        style={styles.option}
-        onPress={() => onToggleSort('amount')}
-        accessibilityLabel={labels.transactions_sort_amount}
-      >
-        <Text style={[
-          styles.label,
-          { color: sortBy === 'amount' ? c.primary : c.textSecondary, fontSize: fs(13) },
-        ]}>
-          {labels.transactions_sort_amount}
-        </Text>
-        {sortBy === 'amount' && (
-          <TouchableOpacity onPress={onToggleDirection} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Ionicons name={arrowIcon as any} size={14} color={c.primary} />
+      <View style={styles.option}>
+        <TouchableOpacity
+          onPress={() => onToggleSort(SORT_BY.amount)}
+          accessibilityLabel={labels.transactions_sort_amount}
+        >
+          <Text style={[
+            styles.label,
+            { color: sortBy === SORT_BY.amount ? c.primary : c.textSecondary, fontSize: fs(13) },
+          ]}>
+            {labels.transactions_sort_amount}
+          </Text>
+        </TouchableOpacity>
+        {sortBy === SORT_BY.amount && (
+          <TouchableOpacity onPress={onToggleDirection} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} accessibilityRole="button" accessibilityLabel={labels.transactions_sort_amount}>
+            <Ionicons name={arrowIcon} size={14} color={c.primary} />
           </TouchableOpacity>
         )}
-      </TouchableOpacity>
+      </View>
     </View>
   );
 }

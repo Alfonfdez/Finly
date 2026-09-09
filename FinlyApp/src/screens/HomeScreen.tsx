@@ -1,163 +1,151 @@
-import { useState, useCallback, ComponentProps } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, DrawerActions } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useState, useCallback, useEffect } from 'react';
+import { View, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
-import { useFontSize } from '../hooks/useFontSize';
-import { Account } from '../database/types';
-import { formatCurrency, formatDateForDB } from '../utils/formatters';
-import { RootStackParamList, Period } from '../constants/types';
+import { useBalanceVisibility } from '../hooks/useBalanceVisibility';
+import { usePeriodNavigation } from '../hooks/usePeriodNavigation';
+import { formatDateForDB, resolvePeriodRange } from '../utils/formatters';
+import { type NavigationProp, TRANSACTION_TYPES, CHART_TYPES, type ChartType } from '../constants/types';
 import { t } from '../i18n';
+import { transactionRepository as transactionRepo } from '../database';
+import { UNTAGGED_ID, isTotalAccount } from '../database/helpers';
 import AccountModal from '../components/AccountModal';
-import TypeTabs from '../components/TypeTabs';
+import TabBar, { typeTabs } from '../components/TabBar';
 import PeriodTabs from '../components/PeriodTabs';
 import CalendarPicker from '../components/CalendarPicker';
 import DonutChart from '../components/DonutChart';
 import BarChart from '../components/BarChart';
 import CategoryList from '../components/CategoryList';
-
-type ChartType = 'donut' | 'bar';
-type Navigation = NativeStackNavigationProp<RootStackParamList, 'Home'>;
+import TagFilterBar from '../components/TagFilterBar';
+import Fab from '../components/Fab';
+import HomeHeader from '../components/HomeHeader';
+import ScreenShell from '../components/ScreenShell';
 
 export default function HomeScreen() {
-  const navigation = useNavigation<Navigation>();
+  const navigation = useNavigation<NavigationProp<'Home'>>();
   const {
     activeAccount, activeType, activePeriod, selectedDate, customDate, accountsWithBalance, activeCategories,
     totalIncome, totalExpenses, totalIncomeAll, totalExpensesAll, selectAccount, changeType,
-    changePeriod, setSelectedDate, setCustomDate, loading,
+    setSelectedDate, loading, tags, activeTagIds, toggleTagId, clearTagFilter,
   } = useApp();
   const { config, activeColors: c } = useConfig();
-  const fs = useFontSize();
   const labels = t();
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [chartType, setChartType] = useState<ChartType>('donut');
+  const [chartType, setChartType] = useState<ChartType>(CHART_TYPES.donut);
   const [calendarVisible, setCalendarVisible] = useState(false);
+  const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<number>>(new Set());
+  const [tagBreakdowns, setTagBreakdowns] = useState<Map<number, { tag_id: number; name: string; total: number }[]>>(new Map());
+  const { isBalanceHidden, toggleReveal } = useBalanceVisibility(config.hideBalances);
 
   const total = totalIncomeAll - totalExpensesAll;
-  const activeTotal = activeType === 'expense' ? totalExpenses : totalIncome;
+  const activeTotal = activeType === TRANSACTION_TYPES.expense ? totalExpenses : totalIncome;
   const totalColor = total >= 0 ? c.green : c.red;
 
+  useEffect(() => {
+    if (!activeAccount || activeCategories.length === 0) {
+      setTagBreakdowns(new Map());
+      return;
+    }
+    const currentAccount = activeAccount;
+    let active = true;
+
+    async function loadTagBreakdowns() {
+      const dates = resolvePeriodRange(activePeriod, selectedDate, customDate);
+
+      try {
+        const data = await transactionRepo.breakdownByCategoriesAndTags(
+          isTotalAccount(currentAccount) ? null : currentAccount.id,
+          activeCategories.map(cat => cat.id),
+          activeType,
+          formatDateForDB(dates.start),
+          formatDateForDB(dates.end),
+          activeTagIds.length > 0 ? activeTagIds : undefined
+        );
+
+        if (!active) return;
+        const breakdowns = new Map<number, { tag_id: number; name: string; total: number }[]>();
+        for (const [catId, rows] of data) {
+          const filtered = tags.length > 0 ? rows : rows.filter(d => d.tag_id !== UNTAGGED_ID);
+          if (filtered.length > 0) breakdowns.set(catId, filtered);
+        }
+        setTagBreakdowns(breakdowns);
+      } catch (error) {
+        console.error('Failed to load tag breakdowns:', error);
+        if (active) setTagBreakdowns(new Map());
+      }
+    }
+
+    loadTagBreakdowns();
+    return () => { active = false; };
+  }, [activeAccount, activeCategories, activeType, activePeriod, selectedDate, customDate, activeTagIds, tags]);
+
   const handleCategoryPress = useCallback((category: { id: number }) => {
-    const { start, end } = activePeriod === 'custom'
-      ? customDate
-      : (() => {
-          const now = selectedDate;
-          switch (activePeriod) {
-            case 'day': {
-              const s = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-              const e = new Date(s); e.setHours(23, 59, 59, 999);
-              return { start: s, end: e };
-            }
-            case 'week': {
-              const wd = now.getDay();
-              const diff = wd === 0 ? 6 : wd - 1;
-              const s = new Date(now); s.setDate(now.getDate() - diff); s.setHours(0, 0, 0, 0);
-              const e = new Date(s); e.setDate(e.getDate() + 6); e.setHours(23, 59, 59, 999);
-              return { start: s, end: e };
-            }
-            case 'month': {
-              const s = new Date(now.getFullYear(), now.getMonth(), 1);
-              const e = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-              return { start: s, end: e };
-            }
-            case 'year': {
-              const s = new Date(now.getFullYear(), 0, 1);
-              const e = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
-              return { start: s, end: e };
-            }
-          }
-        })();
+    const { start, end } = resolvePeriodRange(activePeriod, selectedDate, customDate);
     navigation.navigate('Transactions', {
       categoryId: category.id,
       type: activeType,
       period: activePeriod,
       startDate: formatDateForDB(start),
       endDate: formatDateForDB(end),
+      tagIds: activeTagIds.length > 0 ? activeTagIds : undefined,
     });
-  }, [navigation, activeType, activePeriod, customDate, selectedDate]);
+  }, [navigation, activeType, activePeriod, customDate, selectedDate, activeTagIds]);
 
-  const handlePeriodChange = useCallback((period: Period) => {
-    changePeriod(period);
-    if (period === 'custom') setCalendarVisible(true);
-  }, [changePeriod]);
+  const handleToggleExpand = useCallback((categoryId: number) => {
+    setExpandedCategoryIds(prev => {
+      const next = new Set(prev);
+      if (next.has(categoryId)) {
+        next.delete(categoryId);
+      } else {
+        next.add(categoryId);
+      }
+      return next;
+    });
+  }, []);
+
+  const { handlePeriodChange, handleRangeChange } = usePeriodNavigation(() => setCalendarVisible(true));
 
   const handleDateChange = useCallback((date: Date) => {
     setSelectedDate(date);
     setCalendarVisible(false);
   }, [setSelectedDate]);
 
-  const handleAccountSelect = useCallback((account: Account) => {
-    selectAccount(account);
+  const handleAccountSelect = useCallback((id: number) => {
+    const account = accountsWithBalance.find(a => a.id === id);
+    if (account) selectAccount(account);
     setModalVisible(false);
-  }, [selectAccount]);
-
-  const handleRangeChange = useCallback((start: Date, end: Date) => {
-    const endDay = new Date(end);
-    endDay.setHours(23, 59, 59, 999);
-    const startDay = new Date(start);
-    startDay.setHours(0, 0, 0, 0);
-    setCustomDate({ start: startDay, end: endDay });
-  }, [setCustomDate]);
+  }, [selectAccount, accountsWithBalance]);
 
   if (loading || !activeAccount) {
     return (
-      <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]}>
+      <ScreenShell>
         <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', backgroundColor: c.background }]}>
           <ActivityIndicator size="large" color={c.primary} />
         </View>
-      </SafeAreaView>
+      </ScreenShell>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]}>
-      <View style={[styles.container, { backgroundColor: c.background }]}>
-        <View style={[styles.header, { backgroundColor: c.surface }]}>
-          <TouchableOpacity
-            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-            accessibilityLabel={labels.home_open_menu}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="menu-outline" size={26} color={c.text} />
-          </TouchableOpacity>
+    <ScreenShell>
+      <HomeHeader
+        activeAccount={activeAccount}
+        isBalanceHidden={isBalanceHidden}
+        onToggleReveal={toggleReveal}
+        total={total}
+        totalColor={totalColor}
+        totalIncomeAll={totalIncomeAll}
+        totalExpensesAll={totalExpensesAll}
+        onOpenAccountModal={() => setModalVisible(true)}
+      />
 
-          <TouchableOpacity style={styles.totalButton} onPress={() => setModalVisible(true)}>
-            <View style={styles.accountRow}>
-               <View style={[styles.accountIcon, { backgroundColor: activeAccount.color + '30', borderRadius: config.accountIconShape === 'circle' ? 12 : 4 }]}>
-                <Ionicons name={activeAccount.icon as ComponentProps<typeof Ionicons>['name']} size={18} color={activeAccount.color} />
-              </View>
-              <Text style={[styles.accountLabel, { color: c.textSecondary, fontSize: fs(14) }]}>{activeAccount.name}</Text>
-              <Ionicons name="chevron-down-outline" size={14} color={c.textSecondary} />
-            </View>
-            <Text style={[styles.totalText, { color: totalColor, fontSize: fs(28) }]}>
-              {total >= 0 ? '+' : ''}{formatCurrency(total, config.currency, config.decimalSeparator)}
-            </Text>
-            <View style={styles.summaryRow}>
-              <Text style={[styles.summaryItem, { fontSize: fs(12) }]}>
-                <Text style={{ color: c.green }}>+{formatCurrency(totalIncomeAll, config.currency, config.decimalSeparator)}</Text>
-                <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(11) }]}> {labels.home_income}</Text>
-              </Text>
-              <Text style={[styles.summaryItem, { fontSize: fs(12) }]}>
-                <Text style={{ color: c.red }}>-{formatCurrency(totalExpensesAll, config.currency, config.decimalSeparator)}</Text>
-                <Text style={[styles.summaryLabel, { color: c.textSecondary, fontSize: fs(11) }]}> {labels.home_expenses}</Text>
-              </Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('AllTransactions')}
-            accessibilityLabel={labels.home_view_transactions}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="stats-chart-outline" size={24} color={c.text} />
-          </TouchableOpacity>
-        </View>
-
-        <TypeTabs active={activeType} onChange={changeType} />
+        <TabBar
+          tabs={typeTabs(labels)}
+          active={activeType}
+          onChange={changeType}
+        />
         <PeriodTabs active={activePeriod} onChange={handlePeriodChange} />
         <CalendarPicker
           period={activePeriod}
@@ -169,86 +157,52 @@ export default function HomeScreen() {
           visible={calendarVisible}
           onOpen={() => setCalendarVisible(true)}
           onClose={() => setCalendarVisible(false)}
-          firstDay={config.firstDayOfWeek}
         />
 
         <TouchableOpacity
           style={styles.chartContainer}
-          onPress={() => setChartType(chartType === 'donut' ? 'bar' : 'donut')}
+          onPress={() => setChartType(chartType === CHART_TYPES.donut ? CHART_TYPES.bar : CHART_TYPES.donut)}
           activeOpacity={0.7}
         >
-          {chartType === 'donut' ? (
-            <DonutChart data={activeCategories} total={activeTotal} currency={config.currency} separator={config.decimalSeparator} />
+          {chartType === CHART_TYPES.donut ? (
+            <DonutChart data={activeCategories} total={activeTotal} />
           ) : (
-            <BarChart data={activeCategories} total={activeTotal} currency={config.currency} separator={config.decimalSeparator} />
+            <BarChart data={activeCategories} total={activeTotal} />
           )}
         </TouchableOpacity>
 
-        <CategoryList
-          categories={activeCategories}
-          total={activeTotal}
-          currency={config.currency}
-          separator={config.decimalSeparator}
-          onPress={handleCategoryPress}
+        <TagFilterBar
+          tags={tags}
+          activeTagIds={activeTagIds}
+          onToggle={toggleTagId}
+          onClear={clearTagFilter}
         />
 
-        <TouchableOpacity
-          style={[styles.fab, { backgroundColor: c.primary }]}
+        <CategoryList
+          categories={activeCategories}
+          onPress={handleCategoryPress}
+          tagBreakdowns={tagBreakdowns}
+          expandedCategoryIds={expandedCategoryIds}
+          onToggleExpand={handleToggleExpand}
+        />
+
+        <Fab
           onPress={() => navigation.navigate('AddTransaction')}
           accessibilityLabel={labels.home_add}
-        >
-          <Ionicons name="add" size={28} color={c.background} />
-        </TouchableOpacity>
+        />
 
         <AccountModal
           visible={modalVisible}
           accounts={accountsWithBalance}
+          selectedId={activeAccount.id}
           onSelect={handleAccountSelect}
           onClose={() => setModalVisible(false)}
         />
-      </View>
-    </SafeAreaView>
-  );
-}
+      </ScreenShell>
+    );
+  }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  totalButton: { alignItems: 'center', flex: 1 },
-  accountRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  accountIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  accountLabel: {},
-  summaryRow: { flexDirection: 'row', gap: 12 },
-  summaryItem: {},
-  summaryLabel: {},
-  totalText: { fontWeight: '800', marginVertical: 2 },
   chartContainer: { alignItems: 'center', marginVertical: 8 },
-  fab: {
-    position: 'absolute',
-    bottom: 56,
-    alignSelf: 'center',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
 });

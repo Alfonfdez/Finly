@@ -1,20 +1,23 @@
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import { useState, useCallback, useMemo } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { t } from '../i18n';
-
-interface Tag {
-  id: number;
-  name: string;
-}
+import type { Tag } from '../database/types';
+import { DEBOUNCE_MS, MAX_TAG_NAME_LENGTH, MAX_TAGS } from '../constants/types';
+import { countAtLimit } from '../utils/limits';
+import ModalShell from './ModalShell';
+import ModalHeader from './ModalHeader';
+import { CONTROL_BORDER_RADIUS } from './componentStyles';
+import PrimaryButton from './form/PrimaryButton';
 
 interface Props {
   tags: Tag[];
   selectedTags: number[];
   onToggle: (id: number) => void;
-  onCreate: (nombre: string) => void;
+  onCreate: (name: string) => Promise<boolean>;
 }
 
 export default function TagSection({ tags, selectedTags, onToggle, onCreate }: Props) {
@@ -22,26 +25,52 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
   const [showSearch, setShowSearch] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [newTag, setNewTag] = useState('');
+  const [error, setError] = useState('');
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
 
-  const filteredTags = tags.filter(tag =>
+  const filteredTags = useMemo(() => tags.filter(tag =>
     tag.name.toLowerCase().includes(search.toLowerCase())
-  );
+  ), [tags, search]);
 
-  const handleCreate = () => {
-    if (newTag.trim().length > 0) {
-      onCreate(newTag.trim());
+  const checkDuplicate = useCallback((value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      setError('');
+      return;
+    }
+    const exists = tags.some(t => t.name.toLowerCase() === trimmed.toLowerCase());
+    setError(exists ? labels.add_tag_error_duplicate : '');
+  }, [tags, labels.add_tag_error_duplicate]);
+
+  const debouncedCheck = useDebouncedCallback(checkDuplicate, DEBOUNCE_MS);
+
+  const handleNameChange = (text: string) => {
+    setNewTag(text);
+    setError('');
+    debouncedCheck(text);
+  };
+
+  const handleCreate = async () => {
+    const name = newTag.trim();
+    if (!name || error) return;
+    const success = await onCreate(name);
+    if (success) {
       setNewTag('');
+      setError('');
       setModalVisible(false);
     }
   };
 
   const handleCancel = () => {
     setNewTag('');
+    setError('');
     setModalVisible(false);
   };
+
+  const isDisabled = !newTag.trim() || !!error;
+  const atTagLimit = countAtLimit(tags.length, MAX_TAGS);
 
   return (
     <View style={styles.container}>
@@ -98,54 +127,65 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
             </Text>
           </TouchableOpacity>
         ))}
-        <TouchableOpacity
-          style={[styles.tag, { backgroundColor: c.surface }]}
-          onPress={() => setModalVisible(true)}
-        >
-          <Text style={[styles.tagText, { color: c.primary, fontSize: fs(13) }]}>
-            + {labels.add_tag_new}
-          </Text>
-        </TouchableOpacity>
+        {!atTagLimit && (
+          <TouchableOpacity
+            style={[styles.tag, { backgroundColor: c.surface }]}
+            onPress={() => setModalVisible(true)}
+          >
+            <Text style={[styles.tagText, { color: c.primary, fontSize: fs(13) }]}>
+              + {labels.add_tag_new}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
-      <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={handleCancel}>
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modal, { backgroundColor: c.background }]}>
-            <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(18) }]}>
-              {labels.add_tag_modal_title}
+      <ModalShell
+        visible={modalVisible}
+        onClose={handleCancel}
+        maxWidth={380}
+        padding={16}
+        overlayPadding={24}
+        backgroundColor={c.background}
+      >
+        <ModalHeader title={labels.add_tag_modal_title} />
+        <TextInput
+          style={[styles.modalInput, { backgroundColor: c.surface, color: c.text, fontSize: fs(14), borderColor: error ? c.red : c.border }]}
+          placeholder={labels.add_tag_name_placeholder}
+          placeholderTextColor={c.textSecondary}
+          value={newTag}
+          onChangeText={handleNameChange}
+          maxLength={MAX_TAG_NAME_LENGTH}
+        />
+        <Text style={[styles.modalCounter, { color: c.textSecondary, fontSize: fs(12) }]}>
+          {newTag.length}/{MAX_TAG_NAME_LENGTH}
+        </Text>
+        {error ? (
+          <Text style={[styles.modalError, { color: c.red, fontSize: fs(13) }]}>
+            {error}
+          </Text>
+        ) : null}
+        <View style={styles.modalButtons}>
+          <TouchableOpacity
+            style={[styles.modalButton, { backgroundColor: c.background, borderColor: c.border, borderWidth: 1 }]}
+            onPress={handleCancel}
+            accessibilityRole="button"
+            accessibilityLabel={labels.cal_cancel}
+          >
+            <Text style={[styles.modalButtonText, { color: c.text, fontSize: fs(14) }]}>
+              {labels.cal_cancel}
             </Text>
-            <TextInput
-              style={[styles.modalInput, { backgroundColor: c.surface, color: c.text, fontSize: fs(14) }]}
-              placeholder={labels.add_tag_name_placeholder}
-              placeholderTextColor={c.textSecondary}
-              value={newTag}
-              onChangeText={setNewTag}
-              maxLength={20}
-            />
-            <Text style={[styles.modalCounter, { color: c.textSecondary, fontSize: fs(12) }]}>
-              {newTag.length}/20
-            </Text>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: c.surface }]}
-                onPress={handleCancel}
-              >
-                <Text style={[styles.modalButtonText, { color: c.textSecondary, fontSize: fs(14) }]}>
-                  {labels.cal_cancel}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: c.primary }]}
-                onPress={handleCreate}
-              >
-                <Text style={[styles.modalButtonText, { color: c.background, fontSize: fs(14) }]}>
-                  {labels.add_submit}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          </TouchableOpacity>
+          <PrimaryButton
+            label={labels.add_submit}
+            onPress={handleCreate}
+            disabled={isDisabled}
+            enabledTextColor={c.background}
+            disabledBg={c.surface}
+            disabledTextColor={c.textSecondary}
+            style={styles.modalButton}
+          />
         </View>
-      </Modal>
+      </ModalShell>
     </View>
   );
 }
@@ -172,7 +212,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: CONTROL_BORDER_RADIUS,
   },
   searchClose: {
     padding: 8,
@@ -190,31 +230,19 @@ const styles = StyleSheet.create({
   tagText: {
     fontWeight: '500',
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  modal: {
-    borderRadius: 16,
-    width: '100%',
-    maxWidth: 380,
-    padding: 16,
-  },
-  modalTitle: {
-    fontWeight: '700',
-    marginBottom: 12,
-  },
   modalInput: {
+    borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: CONTROL_BORDER_RADIUS,
     marginBottom: 4,
   },
   modalCounter: {
+    marginBottom: 4,
+  },
+  modalError: {
     marginBottom: 12,
+    fontWeight: '500',
   },
   modalButtons: {
     flexDirection: 'row',
@@ -224,7 +252,7 @@ const styles = StyleSheet.create({
   modalButton: {
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: CONTROL_BORDER_RADIUS,
   },
   modalButtonText: {
     fontWeight: '600',

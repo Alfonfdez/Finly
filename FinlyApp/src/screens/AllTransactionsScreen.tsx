@@ -1,170 +1,296 @@
-import { useState, useMemo, useCallback } from 'react';
-import { View, Text, SectionList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useFocusEffect, DrawerActions } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { View, Text, SectionList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { scrollbarFlatList } from '../constants/platformStyles';
+import ScreenShell from '../components/ScreenShell';
+import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { RootStackParamList } from '../constants/types';
-import { Transaction } from '../database/types';
+import { useFocusLoad } from '../hooks/useFocusLoad';
+import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
+import { useSelectableScreen } from '../hooks/useSelectableScreen';
+import { useTransactionListScreen } from '../hooks/useTransactionListScreen';
+import { usePeriodNavigation } from '../hooks/usePeriodNavigation';
+import { TRANSACTION_TYPES, TYPE_FILTERS, type NavigationProp, type TransactionTypeFilter } from '../constants/types';
+import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
+import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
-import { formatCurrency } from '../utils/formatters';
+import { formatSignedCurrency, resolvePeriodRange } from '../utils/formatters';
+import { netTransactionTotal } from '../utils/calculator';
+import { showErrorAlert } from '../utils/errors';
+import { categoriesOfType } from '../utils/categoryUtils';
 import { t } from '../i18n';
-import AccountSelector from '../components/AccountSelector';
-import SortToggle, { SortBy, SortDirection } from '../components/SortToggle';
-import TransactionGroup from '../components/TransactionGroup';
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'AllTransactions'>;
+import AccountModal from '../components/AccountModal';
+import AccountTrigger from '../components/AccountTrigger';
+import SortToggle from '../components/SortToggle';
+import TagFilterBar from '../components/TagFilterBar';
+import { TransactionRow, TransactionDateHeader } from '../components/TransactionGroup';
+import TabBar, { typeTabs } from '../components/TabBar';
+import EmptyState, { emptyStateProps } from '../components/EmptyState';
+import Fab from '../components/Fab';
+import CategoryFilterModal from '../components/CategoryFilterModal';
+import PeriodTabs from '../components/PeriodTabs';
+import CalendarPicker from '../components/CalendarPicker';
+import SelectionActionBar from '../components/SelectionActionBar';
+import BulkDeleteConfirmationModal from '../components/BulkDeleteConfirmationModal';
+import SelectSearchHeader from '../components/SelectSearchHeader';
+import ScreenSearchBar from '../components/ScreenSearchBar';
 
 export default function AllTransactionsScreen() {
-  const navigation = useNavigation<NavigationProp>();
-  const { categories, accounts, activeAccount, accountsWithBalance } = useApp();
+  const navigation = useNavigation<NavigationProp<'AllTransactions'>>();
+  const { categories, categoriesById, accounts, activeAccount, activeType, accountsWithBalance, tags, activePeriod, selectedDate, customDate, setSelectedDate, refresh, selectAccount } = useApp();
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
 
-  const [selectedAccountId, setSelectedAccountId] = useState(activeAccount?.id ?? accounts[0]?.id ?? 1);
-  const [sortBy, setSortBy] = useState<SortBy>('date');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [typeTab, setTypeTab] = useState<TransactionTypeFilter>(TYPE_FILTERS.all);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+  const [calendarVisible, setCalendarVisible] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-      (async () => {
-        setLoading(true);
-        const data = await transactionRepository.list({});
-        if (active) {
-          setAllTransactions(data);
-          setLoading(false);
-        }
-      })();
-      return () => { active = false; };
-    }, [])
-  );
+  const periodDates = useMemo(() => resolvePeriodRange(activePeriod, selectedDate, customDate), [activePeriod, selectedDate, customDate]);
 
-  useFocusEffect(
-    useCallback(() => {
-      navigation.setOptions({
-        headerLeft: () => (
-          <TouchableOpacity
-            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-            style={{ marginLeft: 8, padding: 4 }}
-            accessibilityLabel={labels.home_open_menu}
-          >
-            <Ionicons name="menu-outline" size={24} color={c.text} />
-          </TouchableOpacity>
-        ),
-      });
-    }, [navigation, c.text, labels.home_open_menu])
-  );
+  const loadTransactions = useCallback(async () => {
+    return await transactionRepository.list({});
+  }, []);
 
-  const filtered = useMemo(() => {
-    let list = allTransactions.filter(t => t.account_id === selectedAccountId);
-    const sorted = [...list].sort((a, b) => {
-      if (sortBy === 'date') {
-        const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
-        return sortDirection === 'desc' ? -diff : diff;
-      }
-      const diff = a.amount - b.amount;
-      return sortDirection === 'desc' ? -diff : diff;
-    });
-    return sorted;
-  }, [allTransactions, selectedAccountId, sortBy, sortDirection]);
+  const { data: allTransactions, setData: setAllTransactions, loading } = useFocusLoad(loadTransactions, [] as Transaction[]);
 
-  const sections = useMemo(() => {
-    const grouped = new Map<string, Transaction[]>();
-    for (const tx of filtered) {
-      const dateKey = tx.date.split(' ')[0];
-      const existing = grouped.get(dateKey);
-      if (existing) {
-        existing.push(tx);
-      } else {
-        grouped.set(dateKey, [tx]);
-      }
+  useEffect(() => {
+    setSelectedCategoryIds([]);
+  }, [typeTab]);
+
+  /* eslint-disable react-hooks/exhaustive-deps -- typeTab intentionally excluded: including it causes infinite loop since this effect sets typeTab */
+  useEffect(() => {
+    if (typeTab !== TYPE_FILTERS.all) {
+      setTypeTab(activeType);
     }
-    return Array.from(grouped.entries()).map(([date, data]) => ({ date, data }));
-  }, [filtered]);
+  }, [activeType]);
+  /* eslint-enable react-hooks/exhaustive-deps */
+
+  const select = useSelectAndSearch<number>({ hasItems: allTransactions.length > 0 });
+
+  const {
+    searchActive, searchText, setSearchText,
+    selectMode, selectedIds,
+    toggleItem, exitSelectMode,
+    toggleSelectMode, toggleSearch, closeSearch,
+  } = select;
+
+  const {
+    deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
+    filters,
+    handleTransactionPress,
+    keyExtractor,
+  } = useTransactionListScreen({
+    navigation,
+    selectMode,
+    toggleItem,
+    selectedIds,
+    exitSelectMode,
+    searchText,
+    loadTransactions,
+    setTransactions: setAllTransactions,
+    filters: {
+      transactions: allTransactions,
+      accounts,
+      activeAccount,
+      categoriesById,
+      typeTab,
+      selectedCategoryIds,
+      periodDates,
+      onError: () => showErrorAlert(),
+    },
+    deleteFn: (ids) => transactionRepository.deleteMany(ids),
+    onAfterDelete: refresh,
+  });
+
+  useSelectableScreen({
+    navigation,
+    showHeader: !loading && filters.sections.length > 0,
+    selectMode,
+    headerRight: () => (
+      <SelectSearchHeader
+        selectMode={selectMode}
+        onToggleSelect={toggleSelectMode}
+        onToggleSearch={toggleSearch}
+      />
+    ),
+  });
+
+  const renderSectionHeader = useCallback(({ section }: { section: { date: string } }) => (
+    <TransactionDateHeader date={section.date} />
+  ), []);
+
+  const renderItem = useCallback(({ item }: { item: Transaction }) => (
+    <TransactionRow
+      tx={item}
+      category={categoriesById.get(item.category_id)}
+      tags={filters.tagsByTransaction.get(item.id)}
+      onPress={handleTransactionPress}
+      selectMode={selectMode}
+      selected={selectedIds.has(item.id)}
+    />
+  ), [categoriesById, filters.tagsByTransaction, handleTransactionPress, selectMode, selectedIds]);
 
   const accountBalance = useMemo(() => {
-    return allTransactions
-      .filter(t => t.account_id === selectedAccountId)
-      .reduce(
-        (sum, t) => sum + (t.type === 'expense' ? -t.amount : t.amount), 0
-      );
-  }, [allTransactions, selectedAccountId]);
+    return netTransactionTotal(filters.filtered);
+  }, [filters.filtered]);
 
-  const handleToggleSort = (field: SortBy) => {
-    if (field === sortBy) {
-      setSortDirection(d => d === 'desc' ? 'asc' : 'desc');
-    } else {
-      setSortBy(field);
-      setSortDirection('desc');
+  const categoryButtonLabel = useMemo(() => {
+    const visibleCategories = typeTab === TYPE_FILTERS.all
+      ? categories
+      : categoriesOfType(categories, typeTab);
+    const allVisibleSelected = visibleCategories.length > 0 && visibleCategories.every(cat => selectedCategoryIds.includes(cat.id));
+    if (selectedCategoryIds.length === 0 || allVisibleSelected) {
+      if (typeTab === TRANSACTION_TYPES.expense) return labels.filter_all_expense_categories;
+      if (typeTab === TRANSACTION_TYPES.income) return labels.filter_all_income_categories;
+      return labels.filter_all_categories;
     }
-  };
+    return labels.filter_categories_count(selectedCategoryIds.length);
+  }, [selectedCategoryIds, typeTab, categories, labels]);
+
+  const { handlePeriodChange, handleRangeChange } = usePeriodNavigation(() => setCalendarVisible(true));
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <ScreenShell>
+      <TabBar
+        tabs={[
+          { key: TYPE_FILTERS.all, label: labels.tab_all },
+          ...typeTabs(labels),
+        ]}
+        active={typeTab}
+        onChange={setTypeTab}
+      />
+
+      <ScreenSearchBar
+        visible={searchActive}
+        placeholder={labels.transactions_search}
+        value={searchText}
+        onChangeText={setSearchText}
+        onClose={closeSearch}
+      />
+
       <View style={[styles.controls, { borderBottomColor: c.border }]}>
-        <AccountSelector
+        <AccountTrigger
+          accountId={filters.selectedAccountId}
           accounts={accountsWithBalance}
-          selectedId={selectedAccountId}
-          onSelect={setSelectedAccountId}
+          onPress={filters.openAccountModal}
         />
         <Text style={[styles.accountBalance, { color: accountBalance >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
-          {accountBalance >= 0 ? '+' : ''}{formatCurrency(accountBalance, config.currency, config.decimalSeparator)}
+          {formatSignedCurrency(accountBalance, config.currency, config.decimalSeparator)}
         </Text>
-        <SortToggle
-          sortBy={sortBy}
-          direction={sortDirection}
-          onToggleSort={handleToggleSort}
-          onToggleDirection={() => setSortDirection(d => d === 'desc' ? 'asc' : 'desc')}
-        />
+        <View style={styles.controlsRow}>
+          <TouchableOpacity
+            style={[styles.categoryButton, { backgroundColor: c.surface }]}
+            onPress={() => setCategoryModalVisible(true)}
+          >
+            <Ionicons name="grid-outline" size={14} color={c.primary} />
+            <Text style={[styles.categoryButtonText, { color: c.text, fontSize: fs(13) }]} numberOfLines={1}>
+              {categoryButtonLabel}
+            </Text>
+          </TouchableOpacity>
+          <SortToggle
+            sortBy={filters.sortBy}
+            direction={filters.sortDirection}
+            onToggleSort={filters.handleToggleSort}
+            onToggleDirection={filters.handleToggleDirection}
+          />
+        </View>
       </View>
 
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={c.primary} />
+      <PeriodTabs active={activePeriod} onChange={handlePeriodChange} />
+      <CalendarPicker
+        period={activePeriod}
+        date={selectedDate}
+        onDateChange={setSelectedDate}
+        onRangeChange={handleRangeChange}
+        rangeStart={customDate.start}
+        rangeEnd={customDate.end}
+        visible={calendarVisible}
+        onOpen={() => setCalendarVisible(true)}
+        onClose={() => setCalendarVisible(false)}
+      />
+
+      <TagFilterBar
+        tags={tags}
+        activeTagIds={filters.localTagIds}
+        onToggle={filters.handleToggleTag}
+        onClear={filters.handleClearTagFilter}
+        style={styles.tagFilter}
+      />
+
+      {!loading && filters.sections.length === 0 ? (
+        <View style={styles.emptyList}>
+          <EmptyState {...emptyStateProps(searchActive && !!searchText.trim(), 'receipt-outline', labels.transactions_empty)} />
         </View>
       ) : (
       <SectionList
-        style={scrollbarFlatList}
         contentContainerStyle={styles.listContent}
-        sections={sections}
-        keyExtractor={(item) => item.id.toString()}
-        renderSectionHeader={({ section }) => (
-          <TransactionGroup
-            date={section.date}
-            transactions={section.data}
-            categories={categories}
-            onTransactionPress={(id) => navigation.navigate('TransactionDetails', { transactionId: id })}
-          />
-        )}
-        renderItem={({ item }) => null}
+        sections={filters.sections}
+        keyExtractor={keyExtractor}
+        renderSectionHeader={renderSectionHeader}
+        renderItem={renderItem}
         ListEmptyComponent={
-          <Text style={[styles.empty, { color: c.textSecondary, fontSize: fs(14) }]}>{labels.transactions_empty}</Text>
+          <EmptyState icon="receipt-outline" message={labels.transactions_empty} />
         }
         stickySectionHeadersEnabled={false}
+        initialNumToRender={12}
+        windowSize={7}
+        removeClippedSubviews
       />
       )}
 
-      <TouchableOpacity
-        style={[styles.fab, { backgroundColor: c.primary }]}
-        onPress={() => navigation.navigate('AddTransaction')}
-        accessibilityLabel="+"
-      >
-        <Ionicons name="add" size={28} color={c.background} />
-      </TouchableOpacity>
-    </SafeAreaView>
+      <AccountModal
+        visible={filters.accountModalVisible}
+        accounts={accountsWithBalance}
+        selectedId={filters.selectedAccountId}
+        onSelect={(id) => {
+          filters.selectAccount(id);
+          const account = accountsWithBalance.find(a => a.id === id);
+          if (account) selectAccount(account);
+        }}
+        onClose={filters.closeAccountModal}
+      />
+
+      <CategoryFilterModal
+        visible={categoryModalVisible}
+        categories={categories}
+        selectedIds={selectedCategoryIds}
+        type={typeTab}
+        onApply={(ids) => { setSelectedCategoryIds(ids); setCategoryModalVisible(false); }}
+        onClose={() => setCategoryModalVisible(false)}
+      />
+
+      {selectMode ? (
+        <SelectionActionBar
+          selectedCount={selectedIds.size}
+          deleteLabel={labels.transactions_bulk_delete(selectedIds.size)}
+          cancelLabel={labels.cancel}
+          onDelete={openDeleteModal}
+          onCancel={exitSelectMode}
+        />
+      ) : (
+        <Fab
+          onPress={() => navigation.navigate('AddTransaction', { type: typeTab === TYPE_FILTERS.all ? TRANSACTION_TYPES.expense : typeTab })}
+          accessibilityLabel={labels.home_add}
+        />
+      )}
+
+      <BulkDeleteConfirmationModal
+        visible={deleteModalVisible}
+        title={labels.transactions_bulk_delete_confirm_title(selectedIds.size)}
+        message={labels.transactions_bulk_delete_confirm_message}
+        confirmLabel={labels.delete}
+        cancelLabel={labels.cancel}
+        onConfirm={confirmBulkDelete}
+        onCancel={closeDeleteModal}
+      />
+    </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   controls: {
     alignItems: 'center',
     paddingHorizontal: 16,
@@ -173,22 +299,24 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   accountBalance: { fontWeight: '700' },
-  listContent: { paddingBottom: 80 },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  empty: { textAlign: 'center', marginTop: 40 },
-  fab: {
-    position: 'absolute',
-    bottom: 56,
-    alignSelf: 'center',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+  controlsRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    gap: 8,
   },
+  categoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  categoryButtonText: {
+    fontWeight: '500',
+    maxWidth: 120,
+  },
+  listContent: { ...LIST_BOTTOM_FAB_PADDING },
+  emptyList: { flex: 1 },
+  tagFilter: { marginTop: 12 },
 });

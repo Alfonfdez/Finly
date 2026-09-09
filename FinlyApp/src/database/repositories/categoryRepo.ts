@@ -1,64 +1,140 @@
-import { getDatabase } from '../database';
-import { Category } from '../types';
-import { TransactionType } from '../../constants/types';
+import { and, eq, inArray, sql } from 'drizzle-orm';
+import { getDrizzle, withTransaction } from '../drizzle/engine';
+import { categories, transactions } from '../drizzle/schema';
+import { runResultOf } from '../drizzle/proxy';
+import type { Category } from '../types';
+import type { TransactionType } from '../../constants/types';
+import { categorySchema } from '../schemas';
+import { parseRowOrNull, parseRows } from '../validate';
+import { collectTransactionPhotos, deletePhotoUris } from '../photoCleanup';
+import { dbTimestamp } from '../../utils/formatters';
+import { existsByName } from './repoHelpers';
 
 export const categoryRepo = {
   async list(userId: number, type?: TransactionType): Promise<Category[]> {
-    const db = getDatabase();
-    if (type) {
-      return await db.getAllAsync<Category>(
-        `SELECT * FROM categories WHERE user_id = ? AND type = ? ORDER BY name`,
-        userId, type
-      );
-    }
-    return await db.getAllAsync<Category>(
-      `SELECT * FROM categories WHERE user_id = ? ORDER BY name`,
-      userId
-    );
+    const db = await getDrizzle();
+    const rows = await db
+      .select()
+      .from(categories)
+      .where(
+        and(
+          eq(categories.user_id, userId),
+          type !== undefined ? eq(categories.type, type) : undefined
+        )
+      )
+      .orderBy(sql`name COLLATE NOCASE`)
+      .all();
+    return parseRows(categorySchema, 'categories', rows);
+  },
+
+  async getById(id: number): Promise<Category | null> {
+    const db = await getDrizzle();
+    const row = await db.select().from(categories).where(eq(categories.id, id)).get();
+    return parseRowOrNull(categorySchema, 'categories', row);
   },
 
   async create(data: Omit<Category, 'id' | 'created_at'>): Promise<Category> {
-    const db = getDatabase();
-    const result = await db.runAsync(
-      `INSERT INTO categories (user_id, name, icon, color, type) VALUES (?, ?, ?, ?, ?)`,
-      data.user_id, data.name, data.icon, data.color, data.type
-    );
-    return { ...data, id: result.lastInsertRowId, created_at: new Date().toISOString() };
+    const db = await getDrizzle();
+    const result = await db
+      .insert(categories)
+      .values({
+        user_id: data.user_id,
+        name: data.name,
+        icon: data.icon,
+        color: data.color,
+        type: data.type,
+      })
+      .run();
+    return { ...data, id: runResultOf(result).lastInsertRowId, created_at: dbTimestamp() };
   },
 
   async update(id: number, data: Partial<Omit<Category, 'id' | 'created_at'>>): Promise<void> {
-    const db = getDatabase();
-    const fields: string[] = [];
-    const values: (string | number)[] = [];
-
-    if (data.name !== undefined) { fields.push('name = ?'); values.push(data.name); }
-    if (data.icon !== undefined) { fields.push('icon = ?'); values.push(data.icon); }
-    if (data.color !== undefined) { fields.push('color = ?'); values.push(data.color); }
-    if (data.type !== undefined) { fields.push('type = ?'); values.push(data.type); }
-
-    if (fields.length === 0) return;
-
-    values.push(id);
-    await db.runAsync(
-      `UPDATE categories SET ${fields.join(', ')} WHERE id = ?`,
-      ...values
-    );
+    const db = await getDrizzle();
+    const set: Partial<typeof categories.$inferInsert> = {};
+    if (data.name !== undefined) set.name = data.name;
+    if (data.icon !== undefined) set.icon = data.icon;
+    if (data.color !== undefined) set.color = data.color;
+    if (data.type !== undefined) set.type = data.type;
+    if (Object.keys(set).length === 0) return;
+    await db.update(categories).set(set).where(eq(categories.id, id)).run();
   },
 
   async delete(id: number): Promise<void> {
-    const db = getDatabase();
-    await db.runAsync(`DELETE FROM categories WHERE id = ?`, id);
+    const uris = await collectTransactionPhotos('category_id', id);
+    await withTransaction(async (db) => {
+      await db.delete(transactions).where(eq(transactions.category_id, id)).run();
+      await db.delete(categories).where(eq(categories.id, id)).run();
+    });
+    await deletePhotoUris(uris);
   },
 
-  async existsByName(name: string, excludeId?: number): Promise<boolean> {
-    const db = getDatabase();
-    let sql = `SELECT COUNT(*) as count FROM categories WHERE name = ?`;
-    const params: (string | number)[] = [name];
-    if (excludeId !== undefined) {
-      sql += ` AND id != ?`;
-      params.push(excludeId);
+  async reassignAndDelete(oldCategoryId: number, newCategoryId: number): Promise<void> {
+    await withTransaction(async (db) => {
+      await db
+        .update(transactions)
+        .set({ category_id: newCategoryId })
+        .where(eq(transactions.category_id, oldCategoryId))
+        .run();
+      await db.delete(categories).where(eq(categories.id, oldCategoryId)).run();
+    });
+  },
+
+  async deleteMany(ids: number[]): Promise<void> {
+    if (ids.length === 0) return;
+    const uris = await collectTransactionPhotos('category_id', ...ids);
+    await withTransaction(async (db) => {
+      await db.delete(transactions).where(inArray(transactions.category_id, ids)).run();
+      await db.delete(categories).where(inArray(categories.id, ids)).run();
+    });
+    await deletePhotoUris(uris);
+  },
+
+  async reassignManyAndDelete(ids: number[], targetId: number): Promise<void> {
+    if (ids.length === 0) return;
+    await withTransaction(async (db) => {
+      await db
+        .update(transactions)
+        .set({ category_id: targetId })
+        .where(inArray(transactions.category_id, ids))
+        .run();
+      await db.delete(categories).where(inArray(categories.id, ids)).run();
+    });
+  },
+
+  async bulkDeleteWithTargets(items: { id: number; targetId: number | null }[]): Promise<void> {
+    if (items.length === 0) return;
+    const deleteIds = items.filter((item) => item.targetId === null).map((item) => item.id);
+    let uris: string[] = [];
+    if (deleteIds.length > 0) {
+      uris = await collectTransactionPhotos('category_id', ...deleteIds);
     }
-    const result = await db.getFirstAsync<{ count: number }>(sql, ...params);
-    return (result?.count ?? 0) > 0;
+    await withTransaction(async (db) => {
+      for (const item of items) {
+        if (item.targetId !== null) {
+          await db
+            .update(transactions)
+            .set({ category_id: item.targetId })
+            .where(eq(transactions.category_id, item.id))
+            .run();
+        }
+      }
+      await db.delete(categories).where(inArray(categories.id, items.map((item) => item.id))).run();
+    });
+    await deletePhotoUris(uris);
+  },
+
+  async deleteAll(): Promise<void> {
+    const db = await getDrizzle();
+    await db.delete(categories).run();
+  },
+
+  async existsByName(userId: number, name: string, excludeId?: number): Promise<boolean> {
+    return existsByName(
+      categories,
+      { name: categories.name, userId: categories.user_id, id: categories.id },
+      userId,
+      name,
+      excludeId
+    );
   },
 };

@@ -1,16 +1,28 @@
+import { CALC_KEYS, MAX_AMOUNT, TRANSACTION_TYPES } from '../constants/types';
+import type { Transaction } from '../database/types';
+
 type CalcResult = {
   result: number | null;
   error: boolean;
 };
 
-const MAX_VALUE = 999999999.99;
+const OP_CHARS = [
+  CALC_KEYS.add,
+  CALC_KEYS.subtract,
+  CALC_KEYS.multiply,
+  CALC_KEYS.divide,
+].join('');
+
+const precedence = (op: string) => (
+  op === CALC_KEYS.add || op === CALC_KEYS.subtract ? 1 : 2
+);
 
 function tokenize(expr: string): (number | string)[] {
   const tokens: (number | string)[] = [];
   let num = '';
   for (const ch of expr) {
     if (ch === ' ') continue;
-    if ('+-*/'.includes(ch)) {
+    if (OP_CHARS.includes(ch)) {
       if (num) {
         tokens.push(parseFloat(num));
         num = '';
@@ -26,10 +38,10 @@ function tokenize(expr: string): (number | string)[] {
 
 function applyOp(a: number, b: number, op: string): number {
   switch (op) {
-    case '+': return a + b;
-    case '-': return a - b;
-    case '*': return a * b;
-    case '/': return b === 0 ? NaN : a / b;
+    case CALC_KEYS.add: return a + b;
+    case CALC_KEYS.subtract: return a - b;
+    case CALC_KEYS.multiply: return a * b;
+    case CALC_KEYS.divide: return b === 0 ? NaN : a / b;
     default: return 0;
   }
 }
@@ -38,12 +50,11 @@ function evalTokens(tokens: (number | string)[]): number {
   const nums: number[] = [];
   const ops: string[] = [];
 
-  const precedence = (op: string) => (op === '+' || op === '-') ? 1 : 2;
-
   const calcTop = () => {
-    const b = nums.pop()!;
-    const a = nums.pop()!;
-    const op = ops.pop()!;
+    const b = nums.pop();
+    const a = nums.pop();
+    const op = ops.pop();
+    if (a === undefined || b === undefined || op === undefined) return;
     nums.push(applyOp(a, b, op));
   };
 
@@ -74,7 +85,7 @@ export function evaluate(expression: string): CalcResult {
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i];
     if (typeof t === 'string') {
-      if (i === 0 && t !== '-') return { result: null, error: true };
+      if (i === 0 && t !== CALC_KEYS.subtract) return { result: null, error: true };
       if (i === tokens.length - 1) return { result: null, error: true };
       if (i > 0 && typeof tokens[i - 1] === 'string') return { result: null, error: true };
     }
@@ -83,10 +94,21 @@ export function evaluate(expression: string): CalcResult {
   try {
     const raw = evalTokens(tokens);
     if (isNaN(raw) || !isFinite(raw)) return { result: null, error: true };
-    if (Math.abs(raw) > MAX_VALUE) return { result: null, error: true };
-    const result = Math.round(raw * 100) / 100;
+    if (Math.abs(raw) > MAX_AMOUNT) return { result: null, error: true };
+    const result = roundTo2(raw);
     return { result, error: false };
   } catch {
     return { result: null, error: true };
   }
+}
+
+export function roundTo2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+export function netTransactionTotal(transactions: Transaction[]): number {
+  return transactions.reduce(
+    (sum, t) => sum + (t.type === TRANSACTION_TYPES.expense ? -t.amount : t.amount),
+    0
+  );
 }

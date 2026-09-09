@@ -1,18 +1,23 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import {
   Modal,
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { evaluate } from '../utils/calculator';
+import { isWeb } from '../utils/platform';
+import { BUTTON_BORDER_RADIUS } from './componentStyles';
+import { CALC_KEYS } from '../constants/types';
+import { WHITE } from '../constants/themes';
+import ModalShell from './ModalShell';
+import ModalFooter from './ModalFooter';
+
 
 interface Props {
   visible: boolean;
@@ -21,21 +26,30 @@ interface Props {
 }
 
 const BUTTONS = [
-  ['7', '8', '9', '/'],
-  ['4', '5', '6', '*'],
-  ['1', '2', '3', '-'],
-  ['C', '0', '.', '+'],
-  ['⌫', '', '', '='],
+  ['7', '8', '9', CALC_KEYS.divide],
+  ['4', '5', '6', CALC_KEYS.multiply],
+  ['1', '2', '3', CALC_KEYS.subtract],
+  [CALC_KEYS.clear, '0', CALC_KEYS.decimal, CALC_KEYS.add],
+  [CALC_KEYS.backspace, '', '', CALC_KEYS.equals],
 ];
 
-const OP_keys = new Set(['+', '-', '*', '/']);
-const isWeb = Platform.OS === 'web';
+const OP_KEYS = new Set<string>([
+  CALC_KEYS.add,
+  CALC_KEYS.subtract,
+  CALC_KEYS.multiply,
+  CALC_KEYS.divide,
+]);
 
 export default function CalculatorModal({ visible, onAccept, onCancel }: Props) {
-  const { activeColors } = useConfig();
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const [expression, setExpression] = useState('');
   const [hasError, setHasError] = useState(false);
+
+  const expressionRef = useRef('');
+  expressionRef.current = expression;
+
+  const displayHeight = fs(16) * 1.4 * 2 + fs(28) * 1.4 + 32;
 
   const resultDisplay = useMemo(() => {
     if (!expression) return null;
@@ -45,18 +59,18 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
   }, [expression]);
 
   const handleButton = useCallback((btn: string) => {
-    if (btn === 'C') {
+    if (btn === CALC_KEYS.clear) {
       setExpression('');
       setHasError(false);
       return;
     }
-    if (btn === '⌫') {
+    if (btn === CALC_KEYS.backspace) {
       setExpression(prev => prev.slice(0, -1));
       setHasError(false);
       return;
     }
-    if (btn === '=') {
-      const { result, error } = evaluate(expression);
+    if (btn === CALC_KEYS.equals) {
+      const { error } = evaluate(expressionRef.current);
       setHasError(error);
       return;
     }
@@ -64,19 +78,19 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
     setHasError(false);
     setExpression(prev => {
       const lastChar = prev.slice(-1);
-      if (OP_keys.has(btn)) {
-        if (!prev) return btn === '-' ? prev + btn : prev;
-        if (OP_keys.has(lastChar)) {
+      if (OP_KEYS.has(btn)) {
+        if (!prev) return btn === CALC_KEYS.subtract ? prev + btn : prev;
+        if (OP_KEYS.has(lastChar)) {
           return prev.slice(0, -1) + btn;
         }
       }
-      if (btn === '.') {
+      if (btn === CALC_KEYS.decimal) {
         const lastNumber = prev.split(/[+\-*/]/).pop() || '';
         if (lastNumber.includes('.')) return prev;
       }
       return prev + btn;
     });
-  }, [expression]);
+  }, []);
 
   const handleAccept = useCallback(() => {
     if (resultDisplay !== null && !hasError) {
@@ -87,16 +101,16 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
   const labels = t();
 
   const getButtonBg = (btn: string) => {
-    if (OP_keys.has(btn)) return activeColors.primary;
-    if (btn === '=') return activeColors.green;
-    if (btn === 'C') return activeColors.red;
-    if (btn === '⌫') return activeColors.border;
-    return activeColors.surface;
+    if (OP_KEYS.has(btn)) return c.primary;
+    if (btn === CALC_KEYS.equals) return c.green;
+    if (btn === CALC_KEYS.clear) return c.red;
+    if (btn === CALC_KEYS.backspace) return c.border;
+    return c.surface;
   };
 
   const getButtonFg = (btn: string) => {
-    if (OP_keys.has(btn) || btn === '=' || btn === 'C') return '#fff';
-    return activeColors.text;
+    if (OP_KEYS.has(btn) || btn === CALC_KEYS.equals || btn === CALC_KEYS.clear) return WHITE;
+    return c.text;
   };
 
   const renderButton = (btn: string, rowIdx: number, colIdx: number) => {
@@ -104,8 +118,8 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
       return <View key={`${rowIdx}-${colIdx}`} style={isWeb ? webStyles.emptyCell : mobileStyles.emptyCell} />;
     }
 
-    const disabled = btn === '=' && (!expression || hasError);
-    const label = btn === '*' ? '×' : btn === '/' ? '÷' : btn;
+    const disabled = btn === CALC_KEYS.equals && (!expression || hasError);
+    const label = btn === CALC_KEYS.multiply ? '×' : btn === CALC_KEYS.divide ? '÷' : btn;
     const btnStyle = isWeb ? webStyles.button : mobileStyles.button;
 
     return (
@@ -130,15 +144,15 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
 
   const content = (
     <>
-      <View style={[styles.header, { borderBottomColor: activeColors.border }]}>
-        <Text style={[styles.title, { color: activeColors.text, fontSize: fs(18) }]}>
+      <View style={[styles.header, { borderBottomColor: c.border }]}>
+        <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>
           {labels.calc_title}
         </Text>
       </View>
 
-      <View style={styles.displayArea}>
+      <View style={[styles.displayArea, { height: displayHeight }]}>
         <Text
-          style={[styles.expression, { color: activeColors.textSecondary, fontSize: fs(16) }]}
+          style={[styles.expression, { color: c.textSecondary, fontSize: fs(16) }]}
           numberOfLines={2}
         >
           {expression || ' '}
@@ -147,7 +161,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
           style={[
             styles.result,
             {
-              color: hasError ? activeColors.red : activeColors.text,
+              color: hasError ? c.red : c.text,
               fontSize: fs(28),
             },
           ]}
@@ -169,58 +183,33 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
         ))}
       </View>
 
-      <View style={[styles.actions, { borderTopColor: activeColors.border }]}>
-        <TouchableOpacity
-          style={[styles.actionBtn, { backgroundColor: activeColors.surface }]}
-          onPress={onCancel}
-          accessibilityLabel={labels.calc_cancel}
-        >
-          <Text style={[styles.actionText, { color: activeColors.text, fontSize: fs(16) }]}>
-            {labels.calc_cancel}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.actionBtn,
-            {
-              backgroundColor: resultDisplay !== null && !hasError ? activeColors.primary : activeColors.border,
-            },
-          ]}
-          onPress={handleAccept}
-          disabled={resultDisplay === null || hasError}
-          accessibilityLabel={labels.calc_accept}
-        >
-          <Text
-            style={[
-              styles.actionText,
-              {
-                color: resultDisplay !== null && !hasError ? '#fff' : activeColors.textSecondary,
-                fontSize: fs(16),
-              },
-            ]}
-          >
-            {labels.calc_accept}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <ModalFooter
+        cancelLabel={labels.calc_cancel}
+        confirmLabel={labels.calc_accept}
+        onCancel={onCancel}
+        onConfirm={handleAccept}
+        confirmDisabled={resultDisplay === null || hasError}
+        borderTop
+        horizontalInset={16}
+        containerPaddingBottom={12}
+        verticalPadding={14}
+        textSize={16}
+        disabledBg={c.border}
+      />
     </>
   );
 
   if (isWeb) {
     return (
-      <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
-        <View style={webStyles.overlay}>
-          <View style={[webStyles.modal, { backgroundColor: activeColors.background }]}>
-            {content}
-          </View>
-        </View>
-      </Modal>
+      <ModalShell visible={visible} onClose={onCancel} padding={0} overlayPadding={0} backgroundColor={c.background} maxHeight={undefined}>
+        {content}
+      </ModalShell>
     );
   }
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <SafeAreaView style={[mobileStyles.container, { backgroundColor: activeColors.background }]}>
+      <SafeAreaView style={[mobileStyles.container, { backgroundColor: c.background }]}>
         {content}
       </SafeAreaView>
     </Modal>
@@ -257,22 +246,6 @@ const styles = StyleSheet.create({
   buttonDisabled: {
     opacity: 0.4,
   },
-  actions: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
-    borderTopWidth: 1,
-  },
-  actionBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  actionText: {
-    fontWeight: '600',
-  },
 });
 
 const mobileStyles = StyleSheet.create({
@@ -288,7 +261,7 @@ const mobileStyles = StyleSheet.create({
   button: {
     flex: 1,
     aspectRatio: 1.4,
-    borderRadius: 10,
+    borderRadius: BUTTON_BORDER_RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 4,
@@ -300,17 +273,6 @@ const mobileStyles = StyleSheet.create({
 });
 
 const webStyles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modal: {
-    width: 360,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
   keyboard: {
     paddingHorizontal: 16,
     paddingBottom: 8,
@@ -323,7 +285,7 @@ const webStyles = StyleSheet.create({
   button: {
     width: 72,
     height: 52,
-    borderRadius: 10,
+    borderRadius: BUTTON_BORDER_RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 4,

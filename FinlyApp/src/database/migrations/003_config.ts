@@ -1,27 +1,18 @@
-import { type SQLiteDatabase } from 'expo-sqlite';
+import type { DatabaseHandle } from '../types';
+import { DEFAULT_CONFIG, toConfigRows } from '../configDefaults';
 
-export async function migrate003(db: SQLiteDatabase): Promise<void> {
-  await db.execAsync(`
-    CREATE TABLE IF NOT EXISTS config (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL
-    );
-  `);
+export async function seedConfig(db: DatabaseHandle): Promise<void> {
+  await db.withTransactionAsync(async () => {
+    await seedConfigInner(db);
+  });
+}
 
-  const defaults: [string, string][] = [
-    ['theme', 'dark'],
-    ['first_day_of_week', '1'],
-    ['currency', '€'],
-    ['decimal_separator', ','],
-    ['language', 'es'],
-    ['text_size', 'medium'],
-  ];
-
-  for (const [key, value] of defaults) {
+export async function seedConfigInner(db: DatabaseHandle): Promise<void> {
+  for (const row of toConfigRows(DEFAULT_CONFIG)) {
     await db.runAsync(
       'INSERT OR IGNORE INTO config (key, value) VALUES (?, ?)',
-      key,
-      value
+      row.key,
+      row.value
     );
   }
 }

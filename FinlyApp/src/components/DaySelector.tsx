@@ -1,9 +1,12 @@
+import { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { isSameDay } from '../utils/formatters';
+import { withAlpha } from '../utils/color';
+import { CARD_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
   selectedDate: Date;
@@ -16,11 +19,14 @@ export default function DaySelector({ selectedDate, onSelect, onOpenCalendar }: 
   const fs = useFontSize();
   const labels = t();
 
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  const dayBeforeYesterday = new Date(today);
-  dayBeforeYesterday.setDate(today.getDate() - 2);
+  const { today, yesterday, dayBeforeYesterday } = useMemo(() => {
+    const now = new Date();
+    const y = new Date(now);
+    y.setDate(now.getDate() - 1);
+    const d = new Date(now);
+    d.setDate(now.getDate() - 2);
+    return { today: now, yesterday: y, dayBeforeYesterday: d };
+  }, []);
 
   const isToday = isSameDay(selectedDate, today);
   const isYesterday = isSameDay(selectedDate, yesterday);
@@ -47,7 +53,7 @@ export default function DaySelector({ selectedDate, onSelect, onOpenCalendar }: 
     <TouchableOpacity
       style={[
         styles.option,
-        { backgroundColor: isSelected ? c.primary + '22' : c.surface },
+        { backgroundColor: isSelected ? withAlpha(c.primary, 14) : c.surface },
         isSelected && { borderWidth: 2, borderColor: c.primary },
       ]}
       onPress={() => onSelect(date)}
@@ -114,13 +120,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
   },
   date: {
     fontWeight: '700',
     marginBottom: 2,
+    textAlign: 'center',
   },
   label: {
     fontWeight: '500',
+    textAlign: 'center',
   },
 });

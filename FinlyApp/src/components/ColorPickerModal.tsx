@@ -1,9 +1,14 @@
-import { useState, useEffect } from 'react';
-import { View, TouchableOpacity, Modal, Text, StyleSheet } from 'react-native';
+import { useState, useCallback } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import ColorPicker, { Panel1, HueSlider, OpacitySlider, Preview } from 'reanimated-color-picker';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useResetOnOpen } from '../hooks/useResetOnOpen';
 import { t } from '../i18n';
+import { CARD_BORDER_RADIUS } from './componentStyles';
+import ModalShell from './ModalShell';
+import ModalFooter from './ModalFooter';
+
 
 interface Props {
   visible: boolean;
@@ -16,13 +21,12 @@ export default function ColorPickerModal({ visible, selectedColor, onSelect, onC
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const [tempColor, setTempColor] = useState(selectedColor ?? '#22D3EE');
+  const [tempColor, setTempColor] = useState(selectedColor ?? c.primary);
 
-  useEffect(() => {
-    if (visible) {
-      setTempColor(selectedColor ?? '#22D3EE');
-    }
-  }, [visible, selectedColor]);
+  const resetOnOpen = useCallback(() => {
+    setTempColor(selectedColor ?? c.primary);
+  }, [selectedColor, c.primary]);
+  useResetOnOpen(visible, resetOnOpen);
 
   const handleConfirm = () => {
     onSelect(tempColor);
@@ -34,66 +38,39 @@ export default function ColorPickerModal({ visible, selectedColor, onSelect, onC
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <View style={[styles.modal, { backgroundColor: c.surface }]}>
-          <View style={[styles.header, { borderBottomColor: c.border }]}>
-            <Text style={[styles.title, { color: c.text, fontSize: fs(16) }]}>
-              {labels.create_cat_color_picker_title}
-            </Text>
-          </View>
-
-          <View style={styles.pickerContainer}>
-            <ColorPicker
-              value={tempColor}
-              onChangeJS={handleChange}
-              style={styles.picker}
-              boundedThumb
-            >
-              <Panel1 style={styles.panel} />
-              <HueSlider style={styles.slider} />
-              <OpacitySlider style={styles.slider} />
-              <Preview hideInitialColor />
-            </ColorPicker>
-          </View>
-
-          <View style={[styles.footer, { borderTopColor: c.border }]}>
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: c.surface, borderColor: c.border }]}
-              onPress={onClose}
-            >
-              <Text style={[styles.buttonText, { color: c.text, fontSize: fs(14) }]}>
-                {labels.create_cat_color_picker_cancel}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: c.primary }]}
-              onPress={handleConfirm}
-            >
-              <Text style={[styles.buttonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
-                {labels.create_cat_color_picker_ok}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+    <ModalShell visible={visible} onClose={onClose} padding={20} overlayPadding={0}>
+      <View style={[styles.header, { borderBottomColor: c.border }]}>
+        <Text style={[styles.title, { color: c.text, fontSize: fs(16) }]}>
+          {labels.create_cat_color_picker_title}
+        </Text>
       </View>
-    </Modal>
+
+      <View style={styles.pickerContainer}>
+        <ColorPicker
+          value={tempColor}
+          onChangeJS={handleChange}
+          style={styles.picker}
+          boundedThumb
+        >
+          <Panel1 style={styles.panel} />
+          <HueSlider style={styles.slider} />
+          <OpacitySlider style={styles.slider} />
+          <Preview hideInitialColor />
+        </ColorPicker>
+      </View>
+
+      <ModalFooter
+        cancelLabel={labels.create_cat_color_picker_cancel}
+        confirmLabel={labels.create_cat_color_picker_ok}
+        onCancel={onClose}
+        onConfirm={handleConfirm}
+        borderTop
+      />
+    </ModalShell>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modal: {
-    width: '90%',
-    maxWidth: 360,
-    borderRadius: 16,
-    padding: 20,
-  },
   header: {
     borderBottomWidth: 1,
     paddingBottom: 12,
@@ -114,7 +91,7 @@ const styles = StyleSheet.create({
   panel: {
     width: '100%',
     height: 200,
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     marginBottom: 12,
   },
   slider: {
@@ -122,22 +99,5 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: 15,
     marginBottom: 12,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    paddingTop: 16,
-    gap: 12,
-  },
-  button: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    borderWidth: 1,
-  },
-  buttonText: {
-    fontWeight: '600',
   },
 });

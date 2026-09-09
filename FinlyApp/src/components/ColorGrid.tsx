@@ -1,11 +1,9 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { WHITE, TRANSPARENT } from '../constants/themes';
+import { QUICK_COLORS } from '../constants/colors';
 import { useConfig } from '../context/ConfigContext';
-
-export const QUICK_COLORS = [
-  '#22D3EE', '#F87171', '#34D399', '#FBBF24',
-  '#F472B6', '#60A5FA',
-];
+import { t } from '../i18n';
 
 interface Props {
   selectedColor: string | null;
@@ -16,6 +14,7 @@ interface Props {
 
 export default function ColorGrid({ selectedColor, customColor, onSelect, onOpenPicker }: Props) {
   const { activeColors: c } = useConfig();
+  const labels = t();
 
   return (
     <View style={styles.row}>
@@ -34,7 +33,7 @@ export default function ColorGrid({ selectedColor, customColor, onSelect, onOpen
             accessibilityState={{ selected: isSelected }}
           >
             {isSelected && (
-              <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+              <Ionicons name="checkmark" size={14} color={WHITE} />
             )}
           </TouchableOpacity>
         );
@@ -51,16 +50,16 @@ export default function ColorGrid({ selectedColor, customColor, onSelect, onOpen
           accessibilityState={{ selected: selectedColor === customColor }}
         >
           {selectedColor === customColor && (
-            <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+            <Ionicons name="checkmark" size={14} color={WHITE} />
           )}
         </TouchableOpacity>
       )}
       <TouchableOpacity
-        style={[styles.circle, { backgroundColor: '#94A3B8' }]}
+        style={[styles.circle, { backgroundColor: c.textSecondary }]}
         onPress={onOpenPicker}
-        accessibilityLabel="More colors"
+        accessibilityLabel={labels.color_grid_more}
       >
-        <Ionicons name="add" size={18} color="#FFFFFF" />
+        <Ionicons name="add" size={18} color={WHITE} />
       </TouchableOpacity>
     </View>
   );
@@ -79,6 +78,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: TRANSPARENT,
   },
 });

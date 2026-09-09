@@ -1,313 +1,116 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  View, Text, TextInput, TouchableOpacity, ScrollView,
-  StyleSheet, Keyboard, Platform, LayoutChangeEvent,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
+import { View, StyleSheet, Keyboard } from 'react-native';
+import ScreenShell from '../components/ScreenShell';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
-import { useFontSize } from '../hooks/useFontSize';
-import { t } from '../i18n';
+import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
+import { useColorSelection } from '../hooks/useColorSelection';
+import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
+import { t, getDefaultAccountIdByName, getDefaultEnglishAccountName } from '../i18n';
 import { accountRepository } from '../database';
-import { RootStackParamList } from '../constants/types';
+import { type NavigationProp, USER_ID } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
-import ColorGrid, { QUICK_COLORS } from '../components/ColorGrid';
-import ColorPickerModal from '../components/ColorPickerModal';
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateAccount'>;
-
-const MAX_NAME_LENGTH = 30;
-const MAX_NOTE_LENGTH = 200;
-const GRID_COLS = 4;
-const GRID_GAP = 12;
+import { getIconColorHintText } from '../utils/formHints';
+import { parseAmountValue } from '../utils/amountInput';
+import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
+import AccountForm from '../components/AccountForm';
 
 export default function CreateAccountScreen() {
-  const { activeColors: c, config } = useConfig();
+  const { config } = useConfig();
   const { refreshAccounts } = useApp();
-  const fs = useFontSize();
   const labels = t();
-  const navigation = useNavigation<NavigationProp>();
-  const round = config.accountIconShape === 'circle';
+  const navigation = useNavigation<NavigationProp<'CreateAccount'>>();
 
-  const [cellSize, setCellSize] = useState(0);
-
-  const onGridLayout = (e: LayoutChangeEvent) => {
-    const gridWidth = e.nativeEvent.layout.width;
-    setCellSize(Math.floor((gridWidth - (GRID_COLS - 1) * GRID_GAP) / GRID_COLS));
-  };
+  const deferredRefreshAccounts = useDeferredRefresh(refreshAccounts);
 
   const [name, setName] = useState('');
-  const [nameError, setNameError] = useState<string | null>(null);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [customColor, setCustomColor] = useState<string | null>(null);
   const [description, setDescription] = useState('');
-  const [checkingName, setCheckingName] = useState(false);
-  const [colorPickerVisible, setColorPickerVisible] = useState(false);
+  const [initialBalanceRaw, setInitialBalanceRaw] = useState('');
+  const { selectedColor, customColor, handleColorSelect } = useColorSelection();
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { nameError, checkingName, handleNameChange } = useNameDuplicateCheck({
+    existsByName: (value, excludeId) => accountRepository.existsByName(USER_ID, value, excludeId),
+    resolveDefaultEnglishName: (value) => {
+      const defaultId = getDefaultAccountIdByName(value);
+      return defaultId !== null ? getDefaultEnglishAccountName(defaultId) : null;
+    },
+    duplicateErrorKey: labels.create_account_error_duplicate,
+  });
 
-  const checkNameDuplicate = useCallback(async (value: string) => {
-    if (!value.trim()) {
-      setNameError(null);
-      setCheckingName(false);
-      return;
+  const initialBalanceError = initialBalanceRaw.length > 0 && parseAmountValue(initialBalanceRaw) === null;
+
+  const canCreate = name.trim().length > 0 && !nameError && !checkingName && selectedIcon !== null && selectedColor !== null && initialBalanceError === false;
+
+  const hintText = getIconColorHintText(
+    name,
+    nameError,
+    selectedIcon,
+    selectedColor,
+    {
+      empty: labels.create_account_error_empty,
+      iconColor: labels.create_account_error_icon_color,
+      icon: labels.create_account_error_icon,
+      color: labels.create_account_error_color,
     }
-    setCheckingName(true);
-    try {
-      const exists = await accountRepository.existsByName(value.trim());
-      setNameError(exists ? labels.create_account_error_duplicate : null);
-    } catch {
-      setNameError(null);
-    } finally {
-      setCheckingName(false);
-    }
-  }, [labels.create_account_error_duplicate]);
-
-  const handleNameChange = (value: string) => {
-    setName(value);
-    setNameError(null);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => checkNameDuplicate(value), 300);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
-
-  const canCreate = name.trim().length > 0 && !nameError && !checkingName && selectedIcon !== null && selectedColor !== null;
-
-  const getHintText = (): string | null => {
-    if (name.trim().length === 0) return labels.create_account_error_empty;
-    if (nameError) return nameError;
-    if (!selectedIcon && !selectedColor) return labels.create_account_error_icon_color;
-    if (!selectedIcon) return labels.create_account_error_icon;
-    if (!selectedColor) return labels.create_account_error_color;
-    return null;
-  };
+  );
 
   const handleCreate = async () => {
-    if (!canCreate) return;
-    try {
+    Keyboard.dismiss();
+    if (!canCreate || selectedIcon === null || selectedColor === null) return;
+    await runWithErrorAlert(async () => {
       await accountRepository.create({
-        user_id: 1,
+        user_id: USER_ID,
         name: name.trim(),
-        icon: selectedIcon!,
-        color: selectedColor!,
-        initial_balance: 0,
+        icon: selectedIcon,
+        color: selectedColor,
+        initial_balance: parseAmountValue(initialBalanceRaw) ?? 0,
         description: description.trim(),
       });
-      await refreshAccounts();
       navigation.goBack();
-    } catch (err) {
-      console.error('Failed to create account:', err);
-    }
+      deferredRefreshAccounts();
+    }, ERROR_PREFIXES.accountCreate);
   };
-
-  const handleColorSelect = (color: string) => {
-    setSelectedColor(color);
-    if (!QUICK_COLORS.includes(color)) {
-      setCustomColor(color);
-    }
-  };
-
-  const hintText = getHintText();
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <ScreenShell>
       <View style={styles.content}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          onScrollBeginDrag={() => Keyboard.dismiss()}
-        >
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_account_name}
-          </Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: c.surface,
-                color: c.text,
-                borderColor: nameError ? '#F87171' : c.border,
-                fontSize: fs(14),
-              },
-            ]}
-            placeholder={labels.create_account_name}
-            placeholderTextColor={c.textSecondary}
-            value={name}
-            onChangeText={handleNameChange}
-            maxLength={MAX_NAME_LENGTH}
-            autoCapitalize="words"
-            autoCorrect={false}
-          />
-          <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
-            {name.length}/{MAX_NAME_LENGTH}
-          </Text>
-
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_account_symbols}
-          </Text>
-          <View style={styles.grid} onLayout={onGridLayout}>
-            {cellSize > 0 && ACCOUNT_ICONS.map((icon) => {
-              const isSelected = selectedIcon === icon;
-              const iconColor = isSelected && selectedColor ? selectedColor : (isSelected ? c.primary : '#94A3B8');
-              const bgColor = isSelected && selectedColor ? selectedColor + '33' : (isSelected ? c.primary + '33' : c.surface);
-              const borderColor = isSelected ? (selectedColor || c.primary) : 'transparent';
-              return (
-                <TouchableOpacity
-                  key={icon}
-                  style={[
-                    styles.gridItem,
-                    { width: cellSize, height: cellSize, borderRadius: round ? 999 : 12 },
-                    { backgroundColor: bgColor },
-                    isSelected && { borderWidth: 2, borderColor },
-                  ]}
-                  onPress={() => setSelectedIcon(icon)}
-                  accessibilityLabel={icon}
-                  accessibilityState={{ selected: isSelected }}
-                >
-                  <Ionicons name={icon as any} size={24} color={iconColor} />
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_account_color}
-          </Text>
-          <ColorGrid
-            selectedColor={selectedColor}
-            customColor={customColor}
-            onSelect={handleColorSelect}
-            onOpenPicker={() => setColorPickerVisible(true)}
-          />
-
-          <ColorPickerModal
-            visible={colorPickerVisible}
-            selectedColor={selectedColor}
-            onSelect={(color) => {
-              handleColorSelect(color);
-            }}
-            onClose={() => setColorPickerVisible(false)}
-          />
-
-          <Text style={[styles.sectionTitle, { color: c.text, fontSize: fs(14) }]}>
-            {labels.create_account_note}
-          </Text>
-          <TextInput
-            style={[
-              styles.input,
-              styles.textArea,
-              {
-                backgroundColor: c.surface,
-                color: c.text,
-                borderColor: c.border,
-                fontSize: fs(14),
-              },
-            ]}
-            value={description}
-            onChangeText={(value) => {
-              if (value.length <= MAX_NOTE_LENGTH) setDescription(value);
-            }}
-            multiline
-            numberOfLines={3}
-            textAlignVertical="top"
-          />
-          <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
-            {description.length}/{MAX_NOTE_LENGTH}
-          </Text>
-
-          {hintText && (
-            <Text style={[styles.hint, { color: '#F87171', fontSize: fs(12) }]}>
-              {hintText}
-            </Text>
-          )}
-
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { backgroundColor: canCreate ? c.primary : '#475569' },
-            ]}
-            onPress={handleCreate}
-            disabled={!canCreate}
-          >
-            <Text style={[styles.buttonText, { color: '#FFFFFF', fontSize: fs(15) }]}>
-              {labels.create_account_button}
-            </Text>
-          </TouchableOpacity>
-
-          {Platform.OS === 'android' && <View style={styles.keyboardSpacer} />}
-        </ScrollView>
+        <AccountForm
+          nameLabel={labels.create_account_name}
+          showNameField
+          name={name}
+          onNameChange={(v) => handleNameChange(v, setName)}
+          nameErrorDisplay={nameError}
+          icons={ACCOUNT_ICONS}
+          iconShape={config.accountIconShape}
+          symbolTitle={labels.create_account_symbols}
+          colorTitle={labels.create_account_color}
+          selectedIcon={selectedIcon}
+          onSelectIcon={setSelectedIcon}
+          selectedColor={selectedColor}
+          customColor={customColor}
+          onSelectColor={handleColorSelect}
+          showInitialBalance
+          initialBalanceLabel={labels.create_account_initial_balance}
+          initialBalanceA11yLabel={labels.a11y_initial_balance}
+          initialBalanceRaw={initialBalanceRaw}
+          onInitialBalanceChange={setInitialBalanceRaw}
+          noteLabel={labels.create_account_note}
+          description={description}
+          onDescriptionChange={setDescription}
+          hintText={hintText}
+          submitLabel={labels.create_account_button}
+          isSubmitDisabled={!canCreate}
+          onSubmit={handleCreate}
+        />
       </View>
-    </SafeAreaView>
+    </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   content: {
     flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 32,
-  },
-  sectionTitle: {
-    fontWeight: '600',
-    marginBottom: 4,
-    marginTop: 10,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
-  },
-  textArea: {
-    minHeight: 80,
-  },
-  counter: {
-    textAlign: 'right',
-    marginTop: 4,
-    marginBottom: 4,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  gridItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 8,
-  },
-  hint: {
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  button: {
-    marginTop: 16,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontWeight: '600',
-  },
-  keyboardSpacer: {
-    height: 200,
   },
 });

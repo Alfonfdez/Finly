@@ -1,10 +1,13 @@
+import { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { formatDate } from '../utils/formatters';
+import { formatDate, formatWeekRange } from '../utils/formatters';
 import CalendarModal from './CalendarModal';
-import { Period } from './calendars/types';
+import type { Period } from './calendars/types';
+import { PERIODS } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
+import { BUTTON_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
   period: Period;
@@ -16,49 +19,41 @@ interface Props {
   visible?: boolean;
   onOpen?: () => void;
   onClose?: () => void;
-  firstDay?: 0 | 1;
 }
 
 export default function CalendarPicker({
   period, date, onDateChange, onRangeChange,
-  rangeStart, rangeEnd, visible = false, onOpen, onClose, firstDay = 1,
+  rangeStart, rangeEnd, visible = false, onOpen, onClose,
 }: Props) {
-  const today = new Date();
-  const { config, activeColors: c } = useConfig();
+  const today = useMemo(() => new Date(), []);
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
   const months = labels.months;
   const shortMonths = labels.months_short;
 
-  const dateText = () => {
+  const dateText = useMemo(() => {
     switch (period) {
-      case 'day': return formatDate(date);
-      case 'week': {
-        const start = new Date(date);
-        const dayOfWeek = start.getDay();
-        start.setDate(start.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-        const end = new Date(start);
-        end.setDate(end.getDate() + 6);
-        return `${start.getDate()} ${shortMonths[start.getMonth()]} – ${end.getDate()} ${shortMonths[end.getMonth()]}`;
-      }
-      case 'month': return `${months[date.getMonth()]} ${date.getFullYear()}`;
-      case 'year': return date.getFullYear().toString();
-      case 'custom': {
+      case PERIODS.day: return formatDate(date);
+      case PERIODS.week: return formatWeekRange(date, shortMonths);
+      case PERIODS.month: return `${months[date.getMonth()]} ${date.getFullYear()}`;
+      case PERIODS.year: return date.getFullYear().toString();
+      case PERIODS.custom: {
         const startDate = rangeStart ?? new Date(today.getFullYear(), 0, 1);
         const endDate = rangeEnd ?? today;
         return `${labels.cal_from} ${startDate.getDate()} ${shortMonths[startDate.getMonth()]} ${labels.cal_to} ${endDate.getDate()} ${shortMonths[endDate.getMonth()]} ${endDate.getFullYear()}`;
       }
     }
-  };
+  }, [period, date, shortMonths, months, today, rangeStart, rangeEnd, labels.cal_from, labels.cal_to]);
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={[styles.button, { backgroundColor: c.surface }]}
         onPress={onOpen}
-        accessibilityLabel={`${dateText()}`}
+        accessibilityLabel={dateText}
       >
-        <Text style={[styles.text, { color: c.primary, fontSize: fs(14) }]}>{dateText()}</Text>
+        <Text style={[styles.text, { color: c.primary, fontSize: fs(14) }]}>{dateText}</Text>
       </TouchableOpacity>
       <CalendarModal
         visible={visible}
@@ -69,7 +64,6 @@ export default function CalendarPicker({
         onSelectDate={onDateChange}
         onSelectRange={onRangeChange}
         onClose={() => onClose?.()}
-        firstDay={firstDay}
       />
     </View>
   );
@@ -77,6 +71,6 @@ export default function CalendarPicker({
 
 const styles = StyleSheet.create({
   container: { alignItems: 'center', marginVertical: 4 },
-  button: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 },
+  button: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: BUTTON_BORDER_RADIUS },
   text: { fontWeight: '600' },
 });

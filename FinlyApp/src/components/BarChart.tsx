@@ -1,18 +1,19 @@
+import { memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { ChartData } from '../constants/types';
-import { formatCurrency } from '../utils/formatters';
+import type { CategoryWithTotal } from '../constants/types';
+import { formatAmount } from '../utils/formatters';
+import { getDisplayCategoryName } from '../i18n';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { CARD_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
-  data: ChartData[];
+  data: CategoryWithTotal[];
   total?: number;
-  currency?: string;
-  separator?: ',' | '.';
 }
 
-export default function BarChart({ data, total = 0, currency = '€', separator = ',' }: Props) {
-  const { activeColors: c } = useConfig();
+function BarChartInner({ data, total = 0 }: Props) {
+  const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const isEmpty = data.length === 0;
 
@@ -21,7 +22,7 @@ export default function BarChart({ data, total = 0, currency = '€', separator 
       <View style={[styles.barBackground, { backgroundColor: c.surface }]}>
         {data.map((item) => (
           <View
-            key={item.name}
+            key={item.id}
             style={[
               styles.segment,
               { width: `${Math.max(item.percentage, 0.5)}%`, backgroundColor: item.color },
@@ -31,14 +32,14 @@ export default function BarChart({ data, total = 0, currency = '€', separator 
       </View>
 
       {isEmpty && (
-        <Text style={[styles.emptyText, { color: c.textSecondary, fontSize: fs(14) }]}>{formatCurrency(total, currency, separator)}</Text>
+        <Text style={[styles.emptyText, { color: c.textSecondary, fontSize: fs(14) }]}>{formatAmount(total, config)}</Text>
       )}
 
       <View style={styles.legend}>
         {data.map((item) => (
-          <View key={item.name} style={styles.legendItem}>
+          <View key={item.id} style={styles.legendItem}>
             <View style={[styles.legendColor, { backgroundColor: item.color }]} />
-            <Text style={{ color: c.text, fontSize: fs(12) }}>{item.name}</Text>
+            <Text style={{ color: c.text, fontSize: fs(12) }}>{getDisplayCategoryName(item)}</Text>
             <Text style={{ color: c.textSecondary, fontSize: fs(11) }}>{item.percentage.toFixed(1)}%</Text>
           </View>
         ))}
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
   },
   barBackground: {
     height: 24,
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     overflow: 'hidden',
     flexDirection: 'row',
     marginBottom: 12,
@@ -66,3 +67,5 @@ const styles = StyleSheet.create({
   legendColor: { width: 10, height: 10, borderRadius: 5 },
   emptyText: { textAlign: 'center', marginBottom: 12 },
 });
+
+export default memo(BarChartInner);

@@ -1,86 +1,71 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { useCallback, memo } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import type { Category } from '../database/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
-
-interface Category {
-  id: number;
-  name: string;
-  icon: string;
-  color: string;
-}
+import { BADGE_SHAPES } from '../constants/types';
+import { badgeShapeFor } from '../utils/badgeShape';
+import CategoryTile from './CategoryTile';
 
 interface Props {
   categories: Category[];
   selectedCategory: number | null;
+  selectedIds?: ReadonlySet<number>;
   onSelect: (id: number) => void;
   onAddMore: () => void;
   showAddMore?: boolean;
   addMoreLabel?: string;
+  hideTitle?: boolean;
 }
 
-export default function CategoryGrid({ categories, selectedCategory, onSelect, onAddMore, showAddMore = true, addMoreLabel }: Props) {
+function CategoryGridInner({ categories, selectedCategory, onSelect, onAddMore, showAddMore = true, addMoreLabel, hideTitle = false, selectedIds }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const round = config.categoryIconShape === 'circle';
 
-  const renderCategory = (cat: Category, index: number) => {
-    const isSelected = cat.id === selectedCategory;
-    const nombre = getDisplayCategoryName(cat);
+  const renderCategory = useCallback((cat: Category) => {
+    const categoryName = getDisplayCategoryName(cat);
+    const multiSelected = selectedIds?.has(cat.id) ?? false;
 
     return (
-      <TouchableOpacity
+      <CategoryTile
         key={cat.id}
-        style={[
-          styles.item,
-          { backgroundColor: isSelected ? cat.color + '33' : c.surface, borderRadius: round ? 999 : 12 },
-          isSelected && { borderWidth: 2, borderColor: cat.color },
-        ]}
+        icon={cat.icon}
+        color={cat.color}
+        shape={badgeShapeFor(config, 'category')}
+        label={categoryName}
+        selected={selectedIds ? multiSelected : cat.id === selectedCategory}
+        checkmark={!!selectedIds}
         onPress={() => onSelect(cat.id)}
-        accessibilityLabel={`${labels.a11y_category} ${nombre}`}
-      >
-        <View style={[styles.iconContainer, { backgroundColor: cat.color + '22', borderRadius: round ? 999 : 20 }]}>
-          <Ionicons name={cat.icon as any} size={24} color={cat.color} />
-        </View>
-        <Text
-          style={[styles.name, { color: c.text, fontSize: fs(11) }]}
-          numberOfLines={1}
-        >
-          {nombre}
-        </Text>
-      </TouchableOpacity>
+        accessibilityLabel={`${labels.a11y_category} ${categoryName}`}
+      />
     );
-  };
+  }, [config, selectedCategory, onSelect, labels, selectedIds]);
 
   const label = addMoreLabel ?? labels.add_more;
 
-  const renderAddMore = () => (
-    <TouchableOpacity
-      style={[styles.item, { backgroundColor: c.surface, borderRadius: round ? 999 : 12 }]}
+  const renderAddMore = useCallback(() => (
+    <CategoryTile
+      icon="add"
+      color={c.textSecondary}
+      shape={BADGE_SHAPES.rounded}
+      label={label}
+      dashed
       onPress={onAddMore}
       accessibilityLabel={label}
-    >
-      <View style={[styles.iconContainer, { backgroundColor: c.textSecondary + '22', borderRadius: round ? 999 : 20 }]}>
-        <Ionicons name="add" size={24} color={c.textSecondary} />
-      </View>
-      <Text
-        style={[styles.name, { color: c.textSecondary, fontSize: fs(11) }]}
-        numberOfLines={1}
-      >
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
+    />
+  ), [c.textSecondary, label, onAddMore]);
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>
-        {labels.add_categories}
-      </Text>
+      {!hideTitle && (
+        <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>
+          {labels.add_categories}
+        </Text>
+      )}
       <View style={styles.grid}>
-        {categories.map((cat, index) => renderCategory(cat, index))}
+        {categories.map((cat) => renderCategory(cat))}
         {showAddMore && renderAddMore()}
       </View>
     </View>
@@ -98,26 +83,10 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'center',
     gap: 8,
   },
-  item: {
-    width: '22%',
-    aspectRatio: 1,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 8,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  name: {
-    fontWeight: '500',
-    textAlign: 'center',
-  },
 });
+
+const CategoryGrid = memo(CategoryGridInner);
+export default CategoryGrid;

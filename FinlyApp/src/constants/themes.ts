@@ -1,3 +1,9 @@
+import { PRIMARY, ACCENT, GREEN, RED } from './colors';
+
+export const WHITE = '#FFFFFF';
+export const BLACK = '#000000';
+export const TRANSPARENT = 'transparent';
+
 export interface ColorPalette {
   background: string;
   surface: string;
@@ -15,15 +21,15 @@ export const darkColors: ColorPalette = {
   surface: '#1E293B',
   text: '#E2E8F0',
   textSecondary: '#94A3B8',
-  primary: '#22D3EE',
-  accent: '#A78BFA',
-  green: '#34D399',
-  red: '#F87171',
+  primary: PRIMARY,
+  accent: ACCENT,
+  green: GREEN,
+  red: RED,
   border: '#334155',
 };
 
 export const lightColors: ColorPalette = {
-  background: '#FFFFFF',
+  background: WHITE,
   surface: '#F1F5F9',
   text: '#1E293B',
   textSecondary: '#64748B',

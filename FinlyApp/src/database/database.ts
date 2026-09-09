@@ -1,66 +1,92 @@
-import { type SQLiteDatabase, openDatabaseSync } from 'expo-sqlite';
-import { migrate001 } from './migrations/001_initial';
-import { seed002 } from './migrations/002_seed';
-import { migrate003 } from './migrations/003_config';
-import { seed004 } from './migrations/004_new_categories';
-import { migrate005 } from './migrations/005_english_schema';
-import { migrate006 } from './migrations/006_account_description';
+import type { DatabaseHandle } from './types';
+import { openEngine } from './engine';
+import { createSchema } from './migrations/001_initial';
+import { seedData, seedDataInner } from './migrations/002_seed';
+import { seedConfig, seedConfigInner } from './migrations/003_config';
+import { sanitizeDefaultAccountConfig } from './configDefaults';
 
 const DATABASE_NAME = 'Finly.db';
-const DATABASE_VERSION = 6;
+export const SCHEMA_VERSION = 3;
 
-let db: SQLiteDatabase | null = null;
+let dbPromise: Promise<DatabaseHandle> | null = null;
 
-export function getDatabase(): SQLiteDatabase {
-  if (!db) {
-    db = openDatabaseSync(DATABASE_NAME);
+export function getDatabase(): Promise<DatabaseHandle> {
+  if (!dbPromise) {
+    dbPromise = openEngine(DATABASE_NAME);
   }
-  return db;
+  return dbPromise;
 }
 
-export async function initDatabase(): Promise<SQLiteDatabase> {
-  const database = getDatabase();
+async function migrate(database: DatabaseHandle): Promise<void> {
+  const row = await database.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
+  const currentVersion = row?.user_version ?? 0;
 
-  let { user_version: currentVersion } = await database.getFirstAsync<{ user_version: number }>(
-    'PRAGMA user_version'
-  ) ?? { user_version: 0 };
+  if (currentVersion >= SCHEMA_VERSION) return;
 
-  if (currentVersion < 1) {
-    await migrate001(database);
-    currentVersion = 1;
+  await database.withTransactionAsync(async () => {
+    if (currentVersion < 1) {
+      await createSchema(database);
+      await database.execAsync('PRAGMA user_version = 1');
+    }
+    if (currentVersion < 2) {
+      const user = await database.getFirstAsync<{ count: number }>('SELECT COUNT(*) AS count FROM users');
+      if ((user?.count ?? 0) === 0) {
+        await seedDataInner(database);
+      }
+      await database.execAsync('PRAGMA user_version = 2');
+    }
+    if (currentVersion < 3) {
+      const config = await database.getFirstAsync<{ count: number }>('SELECT COUNT(*) AS count FROM config');
+      if ((config?.count ?? 0) === 0) {
+        await seedConfigInner(database);
+      }
+      await database.execAsync('PRAGMA user_version = 3');
+    }
+  });
+}
+
+let initPromise: Promise<DatabaseHandle> | null = null;
+
+export function initDatabase(): Promise<DatabaseHandle> {
+  if (!initPromise) {
+    initPromise = (async () => {
+      const database = await getDatabase();
+      await database.execAsync('PRAGMA foreign_keys = ON;');
+      await migrate(database);
+      const user = await database.getFirstAsync<{ count: number }>('SELECT COUNT(*) AS count FROM users');
+      if ((user?.count ?? 0) === 0) {
+        await seedData(database);
+        await seedConfig(database);
+      }
+      return database;
+    })();
   }
+  return initPromise;
+}
 
-  if (currentVersion < 2) {
-    await seed002(database);
-    currentVersion = 2;
-  }
+export async function resetDatabase(): Promise<void> {
+  const database = await getDatabase();
+  await database.withTransactionAsync(async () => {
+    await database.runAsync('DELETE FROM transactions');
+    await database.runAsync('DELETE FROM transaction_tags');
+    await database.runAsync('DELETE FROM accounts');
+    await database.runAsync('DELETE FROM categories');
+    await database.runAsync('DELETE FROM tags');
+    await database.runAsync('DELETE FROM config');
+    await seedDataInner(database);
+    await seedConfigInner(database);
+  });
+}
 
-  if (currentVersion < 3) {
-    await migrate003(database);
-    currentVersion = 3;
-  }
-
-  if (currentVersion < 4) {
-    await seed004(database);
-    currentVersion = 4;
-  }
-
-  if (currentVersion < 5) {
-    await migrate005(database);
-    currentVersion = 5;
-  }
-
-  if (currentVersion < 6) {
-    await migrate006(database);
-    currentVersion = 6;
-  }
-
-  await database.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
-
-  // Data fixups for icon renames (run every startup)
-  await database.runAsync(`UPDATE categories SET icon = 'musical-notes-outline' WHERE id = 5`);
-  await database.runAsync(`UPDATE categories SET icon = 'game-controller-outline' WHERE id = 10`);
-  await database.runAsync(`UPDATE categories SET icon = 'wallet-outline' WHERE id = 23`);
-
-  return database;
+export async function clearDataKeepSettings(): Promise<void> {
+  const database = await getDatabase();
+  await database.withTransactionAsync(async () => {
+    await database.runAsync('DELETE FROM transactions');
+    await database.runAsync('DELETE FROM transaction_tags');
+    await database.runAsync('DELETE FROM accounts');
+    await database.runAsync('DELETE FROM categories');
+    await database.runAsync('DELETE FROM tags');
+    await seedDataInner(database);
+    await sanitizeDefaultAccountConfig(database);
+  });
 }

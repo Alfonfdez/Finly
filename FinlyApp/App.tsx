@@ -1,49 +1,45 @@
 import { useEffect, useState, useRef } from 'react';
-import { Platform, Animated } from 'react-native';
+import { Platform, Animated, Appearance } from 'react-native';
+import { enableFreeze } from 'react-native-screens';
 import 'react-native-gesture-handler';
+
+enableFreeze(true);
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet, View, Text, Image } from 'react-native';
 import { AppProvider } from './src/context/AppContext';
 import { ConfigProvider } from './src/context/ConfigContext';
 import AppNavigator from './src/navigation/AppNavigator';
+import ErrorBoundary from './src/components/ErrorBoundary';
 import { initDatabase } from './src/database/database';
-import { initWebStorage } from './src/database/webStorage';
+import { darkColors } from './src/constants/themes';
 
-const MIN_SPLASH_MS = 3000;
 const EXIT_DURATION = 400;
+const USE_NATIVE_DRIVER = Platform.OS !== 'web';
 
 function SplashScreen({ exiting }: { exiting: boolean }) {
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const logoScale = useRef(new Animated.Value(0.8)).current;
-  const textOpacity = useRef(new Animated.Value(0)).current;
-  const lineWidth = useRef(new Animated.Value(0)).current;
   const exitOpacity = useRef(new Animated.Value(1)).current;
   const exitScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(logoOpacity, { toValue: 1, duration: 800, useNativeDriver: true }),
-      Animated.spring(logoScale, { toValue: 1, friction: 5, tension: 60, useNativeDriver: true }),
+      Animated.timing(logoOpacity, { toValue: 1, duration: 800, useNativeDriver: USE_NATIVE_DRIVER }),
+      Animated.spring(logoScale, { toValue: 1, friction: 5, tension: 60, useNativeDriver: USE_NATIVE_DRIVER }),
     ]).start();
-
-    Animated.timing(textOpacity, { toValue: 1, duration: 600, delay: 500, useNativeDriver: true }).start();
-
-    Animated.timing(lineWidth, { toValue: 1, duration: MIN_SPLASH_MS * 0.8, delay: 400, useNativeDriver: false }).start();
 
     return () => {
       logoOpacity.stopAnimation();
       logoScale.stopAnimation();
-      textOpacity.stopAnimation();
-      lineWidth.stopAnimation();
     };
   }, []);
 
   useEffect(() => {
     if (!exiting) return;
     Animated.parallel([
-      Animated.timing(exitOpacity, { toValue: 0, duration: EXIT_DURATION, useNativeDriver: true }),
-      Animated.timing(exitScale, { toValue: 1.1, duration: EXIT_DURATION, useNativeDriver: true }),
+      Animated.timing(exitOpacity, { toValue: 0, duration: EXIT_DURATION, useNativeDriver: USE_NATIVE_DRIVER }),
+      Animated.timing(exitScale, { toValue: 1.1, duration: EXIT_DURATION, useNativeDriver: USE_NATIVE_DRIVER }),
     ]).start();
   }, [exiting]);
 
@@ -52,52 +48,44 @@ function SplashScreen({ exiting }: { exiting: boolean }) {
       <Animated.View style={{ opacity: logoOpacity, transform: [{ scale: logoScale }] }}>
         <Image source={require('./assets/icon.png')} style={styles.splashLogo} />
       </Animated.View>
-      <Animated.Text style={[styles.splashTitle, { opacity: textOpacity }]}>Finly</Animated.Text>
-      {!exiting && (
-        <View style={styles.lineTrack}>
-          <Animated.View style={[styles.lineFill, { width: lineWidth.interpolate({
-            inputRange: [0, 1],
-            outputRange: ['0%', '100%'],
-          }) }]} />
-        </View>
-      )}
     </Animated.View>
   );
 }
 
+import { useConfig } from './src/context/ConfigContext';
+import { THEMES } from './src/constants/types';
+
+function ThemeStatusBar() {
+  const { config } = useConfig();
+  const isDark = config.theme === THEMES.dark
+    || (config.theme === THEMES.system && Appearance.getColorScheme() === THEMES.dark);
+  return <StatusBar style={isDark ? 'light' : 'dark'} />;
+}
+
 export default function App() {
   const [dbReady, setDbReady] = useState(false);
-  const [splashTimerDone, setSplashTimerDone] = useState(false);
   const [exiting, setExiting] = useState(false);
   const [showApp, setShowApp] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => setSplashTimerDone(true), MIN_SPLASH_MS);
-
     async function setup() {
       try {
-        if (Platform.OS === 'web') {
-          await initWebStorage();
-        } else {
-          await initDatabase();
-        }
+        await initDatabase();
         setDbReady(true);
       } catch (error) {
         setDbError(String(error));
       }
     }
     setup();
-
-    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    if (dbReady && splashTimerDone && !exiting && !showApp) {
+    if (dbReady && !exiting && !showApp) {
       setExiting(true);
       setTimeout(() => setShowApp(true), EXIT_DURATION);
     }
-  }, [dbReady, splashTimerDone]);
+  }, [dbReady]);
 
   if (dbError) {
     return (
@@ -116,8 +104,10 @@ export default function App() {
     <GestureHandlerRootView style={styles.root}>
       <ConfigProvider>
         <AppProvider>
-          <AppNavigator />
-          <StatusBar style="light" />
+          <ErrorBoundary>
+            <AppNavigator />
+          </ErrorBoundary>
+          <ThemeStatusBar />
         </AppProvider>
       </ConfigProvider>
     </GestureHandlerRootView>
@@ -132,7 +122,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0F172A',
+    backgroundColor: darkColors.background,
     gap: 16,
   },
   splashLogo: {
@@ -140,26 +130,8 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 20,
   },
-  splashTitle: {
-    color: '#22D3EE',
-    fontSize: 28,
-    fontWeight: '800',
-  },
-  lineTrack: {
-    width: 120,
-    height: 2,
-    borderRadius: 1,
-    backgroundColor: '#1E293B',
-    marginTop: 8,
-    overflow: 'hidden',
-  },
-  lineFill: {
-    height: '100%',
-    backgroundColor: '#22D3EE',
-    borderRadius: 1,
-  },
   error: {
     flex: 1,
-    backgroundColor: '#0F172A',
+    backgroundColor: darkColors.background,
   },
 });

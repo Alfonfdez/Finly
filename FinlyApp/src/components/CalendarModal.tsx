@@ -1,14 +1,22 @@
 import { useState, useCallback } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { Period } from './calendars/types';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { formatPeriodText } from '../utils/formatters';
+import type { Period } from './calendars/types';
+import { PERIODS } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useResetOnOpen } from '../hooks/useResetOnOpen';
 import { t } from '../i18n';
+import type { Language } from '../i18n/en';
+import type { StringKeyOf } from '../constants/types';
 import DayPicker from './calendars/DayPicker';
 import WeekPicker from './calendars/WeekPicker';
+import { CONTROL_BORDER_RADIUS } from './componentStyles';
 import MonthGrid from './calendars/MonthGrid';
 import YearGrid from './calendars/YearGrid';
 import PeriodPicker from './calendars/PeriodPicker';
+import { MIN_DATE } from './calendars/calendarStyles';
+import ModalShell from './ModalShell';
 
 interface Props {
   visible: boolean;
@@ -19,56 +27,38 @@ interface Props {
   onSelectDate: (date: Date) => void;
   onSelectRange?: (start: Date, end: Date) => void;
   onClose: () => void;
-  firstDay?: 0 | 1;
 }
 
-const TITLE_KEYS: Record<Period, keyof ReturnType<typeof t>> = {
-  day: 'cal_select_day',
-  week: 'cal_select_week',
-  month: 'cal_select_month',
-  year: 'cal_select_year',
-  custom: 'cal_select_period',
+const TITLE_KEYS: Record<Period, StringKeyOf<Language>> = {
+  [PERIODS.day]: 'cal_select_day',
+  [PERIODS.week]: 'cal_select_week',
+  [PERIODS.month]: 'cal_select_month',
+  [PERIODS.year]: 'cal_select_year',
+  [PERIODS.custom]: 'cal_select_period',
 };
 
-function subtitleText(period: Period, date: Date): string {
-  const labels = t();
-  const months = labels.months;
-  const shortMonths = labels.months_short;
-  const m = months[date.getMonth()];
-  const mc = shortMonths[date.getMonth()];
-
-  switch (period) {
-    case 'day': {
-      return `${date.getDate()} ${m} ${date.getFullYear()}`;
-    }
-    case 'week': {
-      const start = new Date(date);
-      const weekDay = start.getDay();
-      start.setDate(start.getDate() - (weekDay === 0 ? 6 : weekDay - 1));
-      const end = new Date(start);
-      end.setDate(end.getDate() + 6);
-      const startDay = start.getDate();
-      const startMonth = shortMonths[start.getMonth()];
-      const endDay = end.getDate();
-      const endMonth = shortMonths[end.getMonth()];
-      return `${startDay} ${startMonth} – ${endDay} ${endMonth} ${date.getFullYear()}`;
-    }
-    case 'month': return `${m} ${date.getFullYear()}`;
-    case 'year': return date.getFullYear().toString();
-    default: return '';
-  }
-}
+const PICKER_KEY = {
+  open: 'open',
+  closed: 'closed',
+} as const;
 
 export default function CalendarModal({
   visible, period, date, rangeStart, rangeEnd,
-  onSelectDate, onSelectRange, onClose, firstDay = 1,
+  onSelectDate, onSelectRange, onClose,
 }: Props) {
   const [tempDate, setTempDate] = useState(date);
-  const [tempRangeStart, setTempRangeStart] = useState(rangeStart ?? new Date(new Date().getFullYear(), 0, 1));
+  const [tempRangeStart, setTempRangeStart] = useState(rangeStart ?? MIN_DATE);
   const [tempRangeEnd, setTempRangeEnd] = useState(rangeEnd ?? new Date());
-  const { config, activeColors: c } = useConfig();
+  const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
+
+  const resetOnOpen = useCallback(() => {
+    setTempDate(date);
+    setTempRangeStart(rangeStart ?? MIN_DATE);
+    setTempRangeEnd(rangeEnd ?? new Date());
+  }, [date, rangeStart, rangeEnd]);
+  useResetOnOpen(visible, resetOnOpen);
 
   const handleSelect = useCallback((d: Date) => {
     setTempDate(d);
@@ -80,7 +70,7 @@ export default function CalendarModal({
   }, []);
 
   const handleOk = useCallback(() => {
-    if (period === 'custom') {
+    if (period === PERIODS.custom) {
       onSelectRange?.(tempRangeStart, tempRangeEnd);
     } else {
       onSelectDate(tempDate);
@@ -90,71 +80,62 @@ export default function CalendarModal({
 
   const handleCancel = useCallback(() => {
     setTempDate(date);
-    setTempRangeStart(rangeStart ?? new Date(new Date().getFullYear(), 0, 1));
+    setTempRangeStart(rangeStart ?? MIN_DATE);
     setTempRangeEnd(rangeEnd ?? new Date());
     onClose();
   }, [date, rangeStart, rangeEnd, onClose]);
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleCancel}>
-      <View style={styles.overlay}>
-        <View style={[styles.modal, { backgroundColor: c.background }]}>
-          <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>{labels[TITLE_KEYS[period]] as string}</Text>
-          {period !== 'custom' && <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(13) }]}>{subtitleText(period, tempDate)}</Text>}
+    <ModalShell
+      visible={visible}
+      onClose={handleCancel}
+      maxWidth={380}
+      padding={16}
+      overlayPadding={24}
+      maxHeight={'85%'}
+      backgroundColor={c.background}
+      shadow
+    >
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>{labels[TITLE_KEYS[period]]}</Text>
+        {period !== PERIODS.custom && <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(13) }]}>{formatPeriodText(period, tempDate, labels.months, labels.months_short)}</Text>}
 
-          {period === 'day' && (
-            <DayPicker date={tempDate} onSelect={handleSelect} firstDay={firstDay} />
-          )}
-          {period === 'week' && (
-            <WeekPicker date={tempDate} onSelect={handleSelect} firstDay={firstDay} />
-          )}
-          {period === 'month' && (
-            <MonthGrid date={tempDate} onSelect={handleSelect} />
-          )}
-          {period === 'year' && (
-            <YearGrid date={tempDate} onSelect={handleSelect} />
-          )}
-          {period === 'custom' && (
-            <PeriodPicker
-              tempStart={tempRangeStart}
-              tempEnd={tempRangeEnd}
-              onTempRangeChange={handleRangeChange}
-              firstDay={firstDay}
-            />
-          )}
+        {period === PERIODS.day && (
+          <DayPicker date={tempDate} onSelect={handleSelect} />
+        )}
+        {period === PERIODS.week && (
+          <WeekPicker date={tempDate} onSelect={handleSelect} />
+        )}
+        {period === PERIODS.month && (
+          <MonthGrid date={tempDate} onSelect={handleSelect} />
+        )}
+        {period === PERIODS.year && (
+          <YearGrid date={tempDate} onSelect={handleSelect} />
+        )}
+        {period === PERIODS.custom && (
+          <PeriodPicker
+            key={visible ? PICKER_KEY.open : PICKER_KEY.closed}
+            tempStart={tempRangeStart}
+            tempEnd={tempRangeEnd}
+            onTempRangeChange={handleRangeChange}
+          />
+        )}
+      </ScrollView>
 
-          <View style={[styles.buttons, { borderTopColor: c.border }]}>
-            <TouchableOpacity style={[styles.cancelButton, { backgroundColor: c.surface }]} onPress={handleCancel}>
-              <Text style={[styles.cancelButtonText, { color: c.textSecondary, fontSize: fs(14) }]}>{labels.cal_cancel}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.okButton, { backgroundColor: c.primary }]} onPress={handleOk}>
-              <Text style={[styles.okButtonText, { color: c.background, fontSize: fs(14) }]}>{labels.cal_ok}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+      <View style={[styles.buttons, { borderTopColor: c.border }]}>
+        <TouchableOpacity style={[styles.cancelButton, { backgroundColor: c.background, borderColor: c.border }]} onPress={handleCancel} accessibilityRole="button" accessibilityLabel={labels.cal_cancel}>
+          <Text style={[styles.cancelButtonText, { color: c.text, fontSize: fs(14) }]}>{labels.cal_cancel}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.okButton, { backgroundColor: c.primary }]} onPress={handleOk}>
+          <Text style={[styles.okButtonText, { color: c.background, fontSize: fs(14) }]}>{labels.cal_ok}</Text>
+        </TouchableOpacity>
       </View>
-    </Modal>
+    </ModalShell>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  modal: {
-    borderRadius: 16,
-    width: '100%',
-    maxWidth: 380,
-    padding: 16,
-    ...Platform.select({
-      web: { boxShadow: '0 8px 32px rgba(0,0,0,0.5)' },
-      default: { elevation: 10 },
-    }),
-  },
+  scrollContent: { flexGrow: 1 },
   title: { fontWeight: '700', marginBottom: 2 },
   subtitle: { marginBottom: 12 },
   buttons: {
@@ -165,8 +146,8 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
   },
-  cancelButton: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 },
+  cancelButton: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: CONTROL_BORDER_RADIUS, borderWidth: 1 },
   cancelButtonText: { fontWeight: '600' },
-  okButton: { paddingHorizontal: 28, paddingVertical: 10, borderRadius: 8 },
+  okButton: { paddingHorizontal: 28, paddingVertical: 10, borderRadius: CONTROL_BORDER_RADIUS },
   okButtonText: { fontWeight: '700' },
 });

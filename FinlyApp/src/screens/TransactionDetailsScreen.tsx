@@ -1,36 +1,54 @@
-import { useState, useEffect, useMemo, ComponentProps } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState, useMemo, useCallback } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image } from 'react-native';
+import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { formatCurrency, formatDateLong } from '../utils/formatters';
-import { t, getDisplayCategoryName } from '../i18n';
+import { useFocusLoad } from '../hooks/useFocusLoad';
+import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
+import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
+import { formatAmount, formatDateLong, formatDateTimeShort, parseDbDate, AMOUNT_SIGNS } from '../utils/formatters';
+import { deletePhotoFile, parsePhotos } from '../utils/photoUtils';
+import { ERROR_PREFIXES } from '../utils/errors';
+import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
 import { transactionRepository } from '../database';
-import { RootStackParamList } from '../constants/types';
+import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES } from '../constants/types';
+import { badgeShapeFor } from '../utils/badgeShape';
+import ConfirmationModal from '../components/ConfirmationModal';
+import EmptyState from '../components/EmptyState';
+import IconBadge from '../components/IconBadge';
+import TagChip from '../components/TagChip';
+import DataRow from '../components/DataRow';
+import PhotoViewer from '../components/PhotoViewer';
+import { CARD_BORDER_RADIUS, CONTROL_BORDER_RADIUS } from '../components/componentStyles';
 
 type DetailsRouteProp = RouteProp<RootStackParamList, 'TransactionDetails'>;
-type DetailsNavProp = NativeStackNavigationProp<RootStackParamList, 'TransactionDetails'>;
 
 export default function TransactionDetailsScreen() {
-  const navigation = useNavigation<DetailsNavProp>();
+  const navigation = useNavigation<NavigationProp<'TransactionDetails'>>();
   const route = useRoute<DetailsRouteProp>();
   const { transactionId } = route.params;
-  const { transactions, categories, accounts, refresh } = useApp();
+  const { categories, accounts, refresh } = useApp();
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
 
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const deferredRefresh = useDeferredRefresh(refresh);
 
-  const transaction = useMemo(
-    () => transactions.find(tx => tx.id === transactionId),
-    [transactions, transactionId]
-  );
+  const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+
+  // Refresh transaction data when screen gains focus (after editing)
+  const loadTransaction = useCallback(async () => {
+    return await transactionRepository.getById(transactionId);
+  }, [transactionId]);
+
+  const { data: transaction } = useFocusLoad(loadTransaction, null);
+
+  // Parse photos from DB (supports both old single URI and new JSON array)
+  const parsedPhotos = useMemo(() => parsePhotos(transaction?.photo), [transaction?.photo]);
 
   const category = useMemo(
     () => categories.find(cat => cat.id === transaction?.category_id),
@@ -43,102 +61,136 @@ export default function TransactionDetailsScreen() {
   );
 
   const transactionDate = useMemo(
-    () => transaction ? new Date(transaction.date) : null,
+    () => transaction ? parseDbDate(transaction.date) : null,
     [transaction]
   );
 
   const createdDate = useMemo(() => {
-    if (!transaction) return '';
-    const d = new Date(transaction.date);
-    const h = String(d.getHours()).padStart(2, '0');
-    const min = String(d.getMinutes()).padStart(2, '0');
-    const day = d.getDate();
-    const month = labels.months_short[d.getMonth()];
-    const year = d.getFullYear();
-    return `${labels.details_created} ${h}:${min} ${day} ${month.toLowerCase()} ${year}`;
+    if (!transactionDate) return '';
+    return `${labels.details_created}: ${formatDateTimeShort(transactionDate, labels.months_short)}`;
+  }, [transactionDate, labels]);
+
+  const updatedDate = useMemo(() => {
+    if (!transaction?.updated_at) return null;
+    return `${labels.details_updated}: ${formatDateTimeShort(parseDbDate(transaction.updated_at), labels.months_short)}`;
   }, [transaction, labels]);
 
-  const handleDelete = async () => {
-    if (deleting) return;
-    setDeleting(true);
-    try {
+  const loadTags = useCallback(async () => {
+    return await transactionRepository.getTagsByTransactionIds([transactionId]);
+  }, [transactionId]);
+
+  const { data: tagNames } = useFocusLoad(loadTags, [] as { tag_id: number; name: string }[]);
+
+  const { visible: deleteModalVisible, open: openDeleteModal, close: closeDeleteModal, confirm: confirmDelete } = useDeleteConfirmation({
+    deleteFn: async () => {
+      for (const uri of parsedPhotos) {
+        await deletePhotoFile(uri);
+      }
       await transactionRepository.delete(transactionId);
-      await refresh();
+    },
+    onSuccess: async () => {
       navigation.goBack();
-    } catch {
-      setDeleting(false);
-      setDeleteModalVisible(false);
-    }
-  };
+      deferredRefresh();
+    },
+    errorPrefix: ERROR_PREFIXES.transactionsDelete,
+  });
 
   if (!transaction) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
-        <View style={[styles.content, { justifyContent: 'center', alignItems: 'center' }]}>
-          <Text style={{ color: c.textSecondary, fontSize: fs(16) }}>
-            {labels.transactions_empty}
-          </Text>
+      <ScreenShell>
+        <View style={styles.content}>
+          <EmptyState message={labels.transactions_empty} />
         </View>
-      </SafeAreaView>
+      </ScreenShell>
     );
   }
 
-  const isExpense = transaction.type === 'expense';
+  const isExpense = transaction.type === TRANSACTION_TYPES.expense;
   const typeColor = isExpense ? c.red : c.green;
   const catName = category ? getDisplayCategoryName(category) : '';
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
+    <ScreenShell>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.dataSection}>
-          <DataRow label={labels.details_amount} c={c} fs={fs}>
+          <DataRow label={labels.details_amount}>
             <Text style={[styles.dataValue, { color: typeColor, fontSize: fs(15) }]}>
-              {isExpense ? '-' : '+'}{formatCurrency(transaction.amount, config.currency, config.decimalSeparator)}
+              {`${isExpense ? AMOUNT_SIGNS.negative : AMOUNT_SIGNS.positive}${formatAmount(transaction.amount, config)}`}
             </Text>
           </DataRow>
 
-          <DataRow label={labels.details_account} c={c} fs={fs}>
-            <View style={styles.iconRow}>
-              {account && (
-                <View style={[styles.rowIcon, { backgroundColor: account.color + '30', borderRadius: config.accountIconShape === 'circle' ? 14 : 4 }]}>
-                  <Ionicons name={account.icon as ComponentProps<typeof Ionicons>['name']} size={18} color={account.color} />
-                </View>
-              )}
-              <Text style={[styles.nameValue, { color: c.text, fontSize: fs(15) }]}>{account?.name ?? ''}</Text>
-            </View>
+          <DataRow label={labels.details_account}>
+            {account && (
+              <NamedEntityBadge
+                icon={account.icon}
+                color={account.color}
+                shape={badgeShapeFor(config, 'account')}
+                name={getDisplayAccountName(account)}
+                c={c}
+                fs={fs}
+              />
+            )}
           </DataRow>
 
-          <DataRow label={labels.details_category} c={c} fs={fs}>
-            <View style={styles.iconRow}>
-              {category && (
-                <View style={[styles.rowIcon, { backgroundColor: category.color + '30', borderRadius: config.categoryIconShape === 'circle' ? 14 : 4 }]}>
-                  <Ionicons name={category.icon as ComponentProps<typeof Ionicons>['name']} size={18} color={category.color} />
-                </View>
-              )}
-              <Text style={[styles.nameValue, { color: c.text, fontSize: fs(15) }]}>{catName}</Text>
-            </View>
+          <DataRow label={labels.details_category}>
+            {category && (
+              <NamedEntityBadge
+                icon={category.icon}
+                color={category.color}
+                shape={badgeShapeFor(config, 'category')}
+                name={catName}
+                c={c}
+                fs={fs}
+              />
+            )}
           </DataRow>
 
-          <DataRow label={labels.details_date} c={c} fs={fs}>
+          <DataRow label={labels.details_date}>
             <Text style={[styles.dataValue, { color: c.text, fontSize: fs(15) }]}>
               {transactionDate ? formatDateLong(transactionDate, config.language) : ''}
             </Text>
           </DataRow>
 
-          <DataRow label={labels.details_comment} c={c} fs={fs} noBorder>
+          <DataRow label={labels.details_comment}>
             <Text style={[styles.dataValue, { color: transaction.description ? c.text : c.textSecondary, fontSize: fs(15) }]}>
               {transaction.description || labels.details_no_comment}
             </Text>
           </DataRow>
+
+          <DataRow label={labels.details_tags} noBorder>
+            {tagNames.length > 0 ? (
+              <View style={styles.tagsContainer}>
+                {tagNames.map(tag => (
+                  <TagChip key={tag.tag_id} label={tag.name} size={13} />
+                ))}
+              </View>
+            ) : (
+              <Text style={[styles.dataValue, { color: c.textSecondary, fontSize: fs(15) }]}>
+                {labels.details_no_tags}
+              </Text>
+            )}
+          </DataRow>
+
+          {parsedPhotos.length > 0 && (
+            <DataRow label={labels.details_photo} noBorder>
+              <View style={styles.photoGrid}>
+                {parsedPhotos.map((uri, index) => (
+                  <TouchableOpacity key={`${uri}-${index}`} onPress={() => { setSelectedPhotoIndex(index); setPhotoViewerVisible(true); }}>
+                    <Image source={{ uri }} style={styles.photoThumbnail} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </DataRow>
+          )}
         </View>
 
         <View style={styles.actionSection}>
           <TouchableOpacity
-            style={[styles.actionButton, { borderColor: '#F87171' }]}
-            onPress={() => setDeleteModalVisible(true)}
+            style={[styles.actionButton, { borderColor: c.red }]}
+            onPress={openDeleteModal}
           >
-            <Ionicons name="trash-outline" size={18} color="#F87171" />
-            <Text style={[styles.actionButtonText, { color: '#F87171', fontSize: fs(15) }]}>
+            <Ionicons name="trash-outline" size={18} color={c.red} />
+            <Text style={[styles.actionButtonText, { color: c.red, fontSize: fs(15) }]}>
               {labels.details_delete}
             </Text>
           </TouchableOpacity>
@@ -154,86 +206,49 @@ export default function TransactionDetailsScreen() {
           </TouchableOpacity>
         </View>
 
-        <Text style={[styles.createdText, { color: c.textSecondary, fontSize: fs(11) }]}>
-          {createdDate}
-        </Text>
+        <View style={styles.timestamps}>
+          <Text style={[styles.timestampText, { color: c.textSecondary, fontSize: fs(11) }]}>
+            {createdDate}
+          </Text>
+          {updatedDate && (
+            <Text style={[styles.timestampText, { color: c.textSecondary, fontSize: fs(11) }]}>
+              {updatedDate}
+            </Text>
+          )}
+        </View>
       </ScrollView>
 
-      <Modal visible={deleteModalVisible} transparent animationType="fade" onRequestClose={() => setDeleteModalVisible(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: c.surface }]}>
-            <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(16) }]}>
-              {labels.details_delete_title}
-            </Text>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: c.surface, borderColor: c.border }]}
-                onPress={() => setDeleteModalVisible(false)}
-              >
-                <Text style={[styles.modalButtonText, { color: c.text, fontSize: fs(14) }]}>
-                  {labels.details_delete_no}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: '#F87171' }]}
-                onPress={handleDelete}
-              >
-                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontSize: fs(14) }]}>
-                  {labels.details_delete_yes}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-    </SafeAreaView>
-  );
-}
+      <ConfirmationModal
+        visible={deleteModalVisible}
+        title={labels.details_delete_title}
+        confirmLabel={labels.details_delete_yes}
+        cancelLabel={labels.details_delete_no}
+        onConfirm={confirmDelete}
+        onCancel={closeDeleteModal}
+      />
 
-function DataRow({
-  label, children, c, fs, noBorder,
-}: {
-  label: string;
-  children: React.ReactNode;
-  c: ReturnType<typeof useConfig>['activeColors'];
-  fs: (s: number) => number;
-  noBorder?: boolean;
-}) {
-  return (
-    <View style={[styles.dataRow, noBorder ? null : { borderBottomWidth: 1, borderBottomColor: c.border }]}>
-      <Text style={[styles.dataLabel, { color: c.textSecondary, fontSize: fs(13) }]}>{label}</Text>
-      {children}
-    </View>
+      <PhotoViewer
+        photos={parsedPhotos}
+        visible={photoViewerVisible}
+        selectedIndex={selectedPhotoIndex}
+        onClose={() => setPhotoViewerVisible(false)}
+      />
+    </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   content: { flex: 1 },
   scrollContent: { paddingBottom: 32 },
   dataSection: {
     marginHorizontal: 16,
     marginTop: 16,
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     overflow: 'hidden',
   },
-  dataRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-  dataLabel: { fontWeight: '500', flex: 1 },
   dataValue: { fontWeight: '600', flex: 2, textAlign: 'right' },
   nameValue: { fontWeight: '600' },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 2, justifyContent: 'flex-end' },
-  rowIcon: {
-    width: 28,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   actionSection: {
     flexDirection: 'row',
     gap: 12,
@@ -247,43 +262,47 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: CARD_BORDER_RADIUS,
     borderWidth: 1,
   },
   actionButtonText: { fontWeight: '600' },
-  createdText: {
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    justifyContent: 'flex-end',
+  },
+  photoGrid: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  photoThumbnail: {
+    width: 48,
+    height: 48,
+    borderRadius: CONTROL_BORDER_RADIUS,
+  },
+  timestamps: {
     marginHorizontal: 16,
     marginTop: 24,
+    gap: 2,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-  },
-  modalContent: {
-    width: '100%',
-    maxWidth: 320,
-    borderRadius: 16,
-    padding: 24,
-  },
-  modalTitle: {
-    fontWeight: '700',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  modalButtonText: { fontWeight: '600' },
+  timestampText: {},
 });
+
+interface NamedEntityBadgeProps {
+  icon: string;
+  color: string;
+  shape: ReturnType<typeof badgeShapeFor>;
+  name: string;
+  c: ReturnType<typeof useConfig>['activeColors'];
+  fs: (size: number) => number;
+}
+
+function NamedEntityBadge({ icon, color, shape, name, c, fs }: NamedEntityBadgeProps) {
+  return (
+    <View style={styles.iconRow}>
+      <IconBadge icon={icon} color={color} shape={shape} size={28} iconSize={18} roundedRadius={4} />
+      <Text style={[styles.nameValue, { color: c.text, fontSize: fs(15) }]}>{name}</Text>
+    </View>
+  );
+}

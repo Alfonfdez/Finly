@@ -1,64 +1,50 @@
-import { getDatabase } from '../database';
-import { Config } from '../../context/ConfigContext';
+import { sql } from 'drizzle-orm';
+import { getDrizzle, withTransaction } from '../drizzle/engine';
+import { config } from '../drizzle/schema';
+import type { Config } from '../types';
+import { FIRST_DAYS } from '../../constants/types';
+import { DEFAULT_CONFIG, DB_KEY_MAP, CONFIG_NULL_SENTINEL, sanitizeConfig, toConfigRows } from '../configDefaults';
 
-const CONFIG_DEFAULTS: Config = {
-  theme: 'dark',
-  firstDayOfWeek: 1,
-  currency: '€',
-  decimalSeparator: ',',
-  language: 'es',
-  textSize: 'medium',
-  categoryIconShape: 'square',
-  accountIconShape: 'square',
-};
-
-const DB_KEY_MAP: Record<string, keyof Config> = {
-  theme: 'theme',
-  first_day_of_week: 'firstDayOfWeek',
-  currency: 'currency',
-  decimal_separator: 'decimalSeparator',
-  language: 'language',
-  text_size: 'textSize',
-  category_icon_shape: 'categoryIconShape',
-  account_icon_shape: 'accountIconShape',
-};
+const BOOLEAN_KEYS: (keyof Config)[] = ['addShowLabels', 'addShowComments', 'addShowPhoto', 'hideBalances'];
+const INT_OR_NULL_KEYS: (keyof Config)[] = ['homeDefaultAccountId', 'addDefaultAccountId'];
 
 function parseConfig(rows: { key: string; value: string }[]): Config {
   const map = Object.fromEntries(rows.map(r => [r.key, r.value]));
-  return {
-    theme: (map.theme as Config['theme']) ?? CONFIG_DEFAULTS.theme,
-    firstDayOfWeek: map.first_day_of_week === '0' ? 0 : 1,
-    currency: map.currency ?? CONFIG_DEFAULTS.currency,
-    decimalSeparator: (map.decimal_separator as Config['decimalSeparator']) ?? CONFIG_DEFAULTS.decimalSeparator,
-    language: (map.language as Config['language']) ?? CONFIG_DEFAULTS.language,
-    textSize: (map.text_size as Config['textSize']) ?? CONFIG_DEFAULTS.textSize,
-    categoryIconShape: (map.category_icon_shape as Config['categoryIconShape']) ?? CONFIG_DEFAULTS.categoryIconShape,
-    accountIconShape: (map.account_icon_shape as Config['accountIconShape']) ?? CONFIG_DEFAULTS.accountIconShape,
-  };
+  const parsed: Record<string, unknown> = {};
+  for (const [dbKey, configKey] of Object.entries(DB_KEY_MAP)) {
+    const raw = map[dbKey];
+    if (raw === undefined) continue;
+    if (configKey === 'firstDayOfWeek') {
+      parsed[configKey] = raw === String(FIRST_DAYS.sunday) ? FIRST_DAYS.sunday : FIRST_DAYS.monday;
+    } else if (BOOLEAN_KEYS.includes(configKey)) {
+      parsed[configKey] = raw === 'true';
+    } else if (INT_OR_NULL_KEYS.includes(configKey)) {
+      parsed[configKey] = raw === CONFIG_NULL_SENTINEL ? null : Number(raw);
+    } else {
+      parsed[configKey] = raw;
+    }
+  }
+  return { ...DEFAULT_CONFIG, ...(parsed as Partial<Config>) };
 }
 
 export const configRepo = {
   async get(): Promise<Config> {
-    const db = getDatabase();
-    const rows = await db.getAllAsync<{ key: string; value: string }>('SELECT key, value FROM config');
-    return rows.length > 0 ? parseConfig(rows) : CONFIG_DEFAULTS;
+    const db = await getDrizzle();
+    const rows = await db.select({ key: config.key, value: config.value }).from(config).all();
+    return sanitizeConfig(rows.length > 0 ? parseConfig(rows) : DEFAULT_CONFIG);
   },
 
   async save(partial: Partial<Config>): Promise<void> {
-    const db = getDatabase();
-    const reverseMap: Record<string, string> = {};
-    for (const [dbKey, configKey] of Object.entries(DB_KEY_MAP)) {
-      reverseMap[configKey] = dbKey;
-    }
-    for (const [key, value] of Object.entries(partial)) {
-      if (value === undefined) continue;
-      const dbKey = reverseMap[key] ?? key;
-      const val = String(value);
-      await db.runAsync(
-        'INSERT INTO config (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
-        dbKey,
-        val
-      );
-    }
+    const rows = toConfigRows(partial);
+    if (rows.length === 0) return;
+    await withTransaction(async (db) => {
+      for (const row of rows) {
+        await db
+          .insert(config)
+          .values(row)
+          .onConflictDoUpdate({ target: config.key, set: { value: sql`excluded.value` } })
+          .run();
+      }
+    });
   },
 };

@@ -1,151 +1,288 @@
-import { useState, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
-  View, Text, TouchableOpacity, FlatList, StyleSheet,
+  View, Text, FlatList, StyleSheet,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, DrawerActions, useFocusEffect } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t } from '../i18n';
+import { useBalanceVisibility } from '../hooks/useBalanceVisibility';
+import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
+import { useSelectableScreen } from '../hooks/useSelectableScreen';
+import { useApp } from '../context/AppContext';
+import { t, getDisplayAccountName, getDisplayAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
-import { Account } from '../database/types';
-import { formatCurrency } from '../utils/formatters';
-import { RootStackParamList } from '../constants/types';
+import { sanitizeDefaultAccounts } from '../database/configDefaults';
+import { ERROR_PREFIXES, runWithErrorAlert, showErrorAlert } from '../utils/errors';
+import { isTotalAccount } from '../database/helpers';
+import type { Account } from '../database/types';
+import { formatAmount, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
+import { withAlpha } from '../utils/color';
+import { badgeShapeFor } from '../utils/badgeShape';
+import { matchesAccountSearch } from '../utils/accountSearch';
+import { type NavigationProp, USER_ID } from '../constants/types';
+import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
+import EyeToggle from '../components/EyeToggle';
+import Fab from '../components/Fab';
+import EmptyState from '../components/EmptyState';
+import ListItemRow from '../components/ListItemRow';
+import SelectSearchHeader from '../components/SelectSearchHeader';
+import ScreenSearchBar from '../components/ScreenSearchBar';
+import SelectionActionBar from '../components/SelectionActionBar';
+import ConfirmationModal from '../components/ConfirmationModal';
+import GuardModal from '../components/GuardModal';
+import { CARD_BORDER_RADIUS } from '../components/componentStyles';
 
-const USER_ID = 1;
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Accounts'>;
-
-type AccountWithBalance = Account & { saldo: number };
+type AccountWithBalance = Account & { balance: number };
 
 export default function AccountsScreen() {
-  const { activeColors: c, config } = useConfig();
+  const { activeColors: c, config, updateConfig } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const navigation = useNavigation<NavigationProp>();
-  const round = config.accountIconShape === 'circle';
+  const navigation = useNavigation<NavigationProp<'Accounts'>>();
+  const { refreshAccounts, refresh } = useApp();
 
   const [accounts, setAccounts] = useState<AccountWithBalance[]>([]);
   const [total, setTotal] = useState(0);
+  const [guardVisible, setGuardVisible] = useState(false);
+  const { isBalanceHidden, toggleReveal } = useBalanceVisibility(config.hideBalances);
 
-  const loadData = useCallback(async () => {
+  const nonTotalCount = useMemo(
+    () => accounts.filter(a => !isTotalAccount(a)).length,
+    [accounts]
+  );
+
+  const select = useSelectAndSearch({ hasItems: nonTotalCount > 1 });
+
+  const {
+    searchActive, searchText, setSearchText,
+    selectMode, selectedIds,
+    deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
+    toggleSelectMode, toggleSearch, closeSearch,
+  } = select;
+
+  useSelectableScreen({
+    navigation,
+    showHeader: nonTotalCount > 1,
+    selectMode,
+    headerRight: () => (
+      <SelectSearchHeader
+        selectMode={selectMode}
+        onToggleSelect={toggleSelectMode}
+        onToggleSearch={toggleSearch}
+      />
+    ),
+  });
+
+  const loadData = useCallback(async (): Promise<{ accounts: AccountWithBalance[]; total: number }> => {
     const list = await accountRepository.list(USER_ID);
-    const withBalance = await Promise.all(
-      list.map(async (account) => {
-        const saldo = await accountRepository.getCurrentBalance(account.id);
-        return { ...account, saldo };
-      })
+    const balanceById = new Map(
+      (await accountRepository.getBalances()).map(b => [b.account_id, b.balance])
     );
-    setAccounts(withBalance);
-    setTotal(withBalance.reduce((sum, a) => sum + a.saldo, 0));
+    const withBalance = list.map((account) => {
+      if (isTotalAccount(account)) return { ...account, balance: 0 };
+      return { ...account, balance: balanceById.get(account.id) ?? 0 };
+    });
+    const nonTotal = withBalance.filter(a => !isTotalAccount(a));
+    const totalSum = nonTotal.reduce((sum, a) => sum + a.balance, 0);
+    const result = withBalance.map(a => isTotalAccount(a) ? { ...a, balance: totalSum } : a);
+    return { accounts: result, total: totalSum };
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      navigation.setOptions({
-        headerLeft: () => (
-          <TouchableOpacity
-            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-            style={{ marginLeft: 8, padding: 4 }}
-            accessibilityLabel={labels.home_open_menu}
-          >
-            <Ionicons name="menu-outline" size={24} color={c.text} />
-          </TouchableOpacity>
-        ),
-      });
-      loadData();
-    }, [navigation, c.text, labels.home_open_menu, loadData])
+      let active = true;
+      loadData().then(({ accounts, total }) => {
+        if (!active) return;
+        setAccounts(accounts);
+        setTotal(total);
+      }).catch(() => showErrorAlert());
+      return () => { active = false; };
+    }, [loadData])
   );
 
-  const renderItem = ({ item }: { item: AccountWithBalance }) => (
-    <TouchableOpacity
-      style={[styles.accountRow, { backgroundColor: c.surface }]}
-      onPress={() => navigation.navigate('ModifyAccount', { accountId: item.id })}
-      accessibilityLabel={`${item.name} ${formatCurrency(item.saldo, config.currency, config.decimalSeparator)}`}
-    >
-      <View style={[styles.iconBubble, { backgroundColor: item.color + '22', borderRadius: round ? 22 : 12 }]}>
-        <Ionicons name={item.icon as any} size={24} color={item.color} />
-      </View>
-      <View style={styles.accountInfo}>
-        <Text style={[styles.accountName, { color: c.text, fontSize: fs(15) }]} numberOfLines={1}>
-          {item.name}
-        </Text>
-        {item.description ? (
-          <Text
-            style={[styles.accountNote, { color: c.textSecondary, fontSize: fs(12) }]}
-            numberOfLines={1}
-          >
-            {item.description}
-          </Text>
-        ) : null}
-      </View>
-      <Text
-        style={[
-          styles.accountBalance,
-          {
-            color: item.saldo >= 0 ? c.green : c.red,
-            fontSize: fs(15),
-          },
-        ]}
-      >
-        {item.saldo >= 0 ? '+' : ''}{formatCurrency(item.saldo, config.currency, config.decimalSeparator)}
-      </Text>
-    </TouchableOpacity>
-  );
+  const filteredAccounts = useMemo(() => {
+    if (!searchText.trim()) return accounts;
+    return accounts.filter(a => isTotalAccount(a) || matchesAccountSearch(a, searchText));
+  }, [accounts, searchText]);
 
-  const renderEmpty = () => (
-    <View style={styles.emptyContainer}>
-      <Ionicons name="wallet-outline" size={64} color={c.textSecondary} />
-      <Text style={[styles.emptyText, { color: c.textSecondary, fontSize: fs(16) }]}>
-        {labels.accounts_empty}
-      </Text>
-    </View>
-  );
+  const handleDeletePress = useCallback(() => {
+    if (selectedIds.size >= nonTotalCount) {
+      setGuardVisible(true);
+      return;
+    }
+    setDeleteModalVisible(true);
+  }, [selectedIds.size, nonTotalCount, setDeleteModalVisible]);
+
+  const handleBulkDelete = useCallback(async () => {
+    setDeleteModalVisible(false);
+    await runWithErrorAlert(async () => {
+      await accountRepository.deleteMany([...selectedIds]);
+
+      const remaining = accounts.filter(a => !selectedIds.has(a.id));
+      const updates = sanitizeDefaultAccounts(config, remaining);
+      if (Object.keys(updates).length > 0) {
+        updateConfig(updates);
+      }
+
+      exitSelectMode();
+      const { accounts: updated, total: newTotal } = await loadData();
+      setAccounts(updated);
+      setTotal(newTotal);
+      await refreshAccounts();
+      refresh();
+    }, ERROR_PREFIXES.accountsDelete);
+  }, [selectedIds, config, accounts, exitSelectMode, loadData, refreshAccounts, refresh, updateConfig, setDeleteModalVisible]);
+
+  const renderItem = useCallback(({ item }: { item: AccountWithBalance }) => {
+    const isTotal = isTotalAccount(item);
+    const selectable = !isTotal;
+    const selected = selectMode && selectedIds.has(item.id);
+    return (
+      <>
+        <ListItemRow
+          title={getDisplayAccountName(item)}
+          titleSize={15}
+          subtitle={item.description ? getDisplayAccountDescription(item) : undefined}
+          icon={item.icon}
+          color={item.color}
+          shape={badgeShapeFor(config, 'account')}
+          badgeSize={44}
+          badgeIconSize={24}
+          badgeRadius={12}
+          badgeAlpha={13}
+          right={
+            selectMode && selectable ? (
+              <Ionicons
+                name={selected ? 'checkbox' : 'square-outline'}
+                size={24}
+                color={selected ? c.primary : c.textSecondary}
+              />
+            ) : (
+              <Text
+                style={[
+                  styles.accountBalance,
+                  {
+                    color: isBalanceHidden ? c.textSecondary : (item.balance >= 0 ? c.green : c.red),
+                    fontSize: fs(15),
+                  },
+                ]}
+              >
+                {isBalanceHidden
+                  ? HIDDEN_BALANCE
+                  : formatSignedCurrency(item.balance, config.currency, config.decimalSeparator)}
+              </Text>
+            )
+          }
+          style={[
+            styles.accountRow,
+            { backgroundColor: isTotal ? withAlpha(c.primary, 8) : c.surface },
+          ]}
+          onPress={() => {
+            if (selectMode) {
+              if (selectable) toggleItem(item.id);
+              return;
+            }
+            navigation.navigate('ModifyAccount', { accountId: item.id });
+          }}
+          accessibilityLabel={`${getDisplayAccountName(item)} ${isBalanceHidden ? HIDDEN_BALANCE : formatAmount(item.balance, config)}`}
+        />
+        {isTotal && <View style={[styles.separator, { backgroundColor: withAlpha(c.primary, 25) }]} />}
+      </>
+    );
+  }, [c, config, navigation, isBalanceHidden, fs, selectMode, selectedIds, toggleItem]);
+
+  const renderEmpty = useCallback(() => (
+    <EmptyState icon="wallet-outline" message={labels.accounts_empty} />
+  ), [labels.accounts_empty]);
+
+  const searchingNoResults = searchActive && searchText.trim()
+    && !filteredAccounts.some(a => !isTotalAccount(a));
+
+  const renderSearchFooter = useCallback(() => (
+    <EmptyState icon="search-outline" message={labels.filter_no_results} />
+  ), [labels.filter_no_results]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['bottom']}>
-      <View style={[styles.totalSection, { backgroundColor: c.surface, borderBottomColor: c.border }]}>
-        <Text style={[styles.totalLabel, { color: c.textSecondary, fontSize: fs(14) }]}>
-          {labels.accounts_total}:
-        </Text>
-        <Text
-          style={[
-            styles.totalValue,
-            {
-              color: total >= 0 ? c.green : c.red,
-              fontSize: fs(22),
-            },
-          ]}
-        >
-          {total >= 0 ? '+' : ''}{formatCurrency(total, config.currency, config.decimalSeparator)}
-        </Text>
-      </View>
+    <ScreenShell>
+      {!selectMode && (
+        <View style={[styles.totalSection, { backgroundColor: c.surface, borderBottomColor: c.border }]}>
+          <Text style={[styles.totalLabel, { color: c.textSecondary, fontSize: fs(14) }]}>
+            {labels.accounts_total}:
+          </Text>
+          <View style={styles.totalRow}>
+            <Text
+              style={[
+                styles.totalValue,
+                {
+                  color: isBalanceHidden ? c.textSecondary : (total >= 0 ? c.green : c.red),
+                  fontSize: fs(22),
+                },
+              ]}
+            >
+              {isBalanceHidden
+                ? HIDDEN_BALANCE
+                : formatSignedCurrency(total, config.currency, config.decimalSeparator)}
+            </Text>
+            <EyeToggle isHidden={isBalanceHidden} onToggle={toggleReveal} color={c.textSecondary} />
+          </View>
+        </View>
+      )}
+
+      <ScreenSearchBar
+        visible={searchActive}
+        placeholder={labels.accounts_search}
+        value={searchText}
+        onChangeText={setSearchText}
+        onClose={closeSearch}
+      />
 
       <FlatList
-        data={accounts}
+        data={filteredAccounts}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
         ListEmptyComponent={renderEmpty}
-        contentContainerStyle={accounts.length === 0 ? styles.emptyList : styles.list}
+        ListFooterComponent={searchingNoResults ? renderSearchFooter : null}
+        contentContainerStyle={filteredAccounts.length === 0 ? styles.emptyList : styles.list}
       />
 
-      <TouchableOpacity
-        style={[styles.fab, { backgroundColor: c.primary }]}
-        onPress={() => navigation.navigate('CreateAccount')}
-        accessibilityLabel="+"
-      >
-        <Ionicons name="add" size={28} color={c.background} />
-      </TouchableOpacity>
-    </SafeAreaView>
+      {selectMode ? (
+        <SelectionActionBar
+          selectedCount={selectedIds.size}
+          deleteLabel={labels.accounts_bulk_delete(selectedIds.size)}
+          cancelLabel={labels.cancel}
+          onDelete={handleDeletePress}
+          onCancel={exitSelectMode}
+        />
+      ) : (
+        <Fab
+          onPress={() => navigation.navigate('CreateAccount')}
+          accessibilityLabel={labels.a11y_add}
+        />
+      )}
+
+      <ConfirmationModal
+        visible={deleteModalVisible}
+        title={labels.accounts_bulk_delete_confirm_title(selectedIds.size)}
+        message={labels.accounts_bulk_delete_confirm_message}
+        confirmLabel={labels.delete}
+        cancelLabel={labels.cancel}
+        onConfirm={handleBulkDelete}
+        onCancel={() => setDeleteModalVisible(false)}
+      />
+
+      <GuardModal
+        visible={guardVisible}
+        title={labels.accounts_bulk_delete_confirm_title(selectedIds.size)}
+        message={labels.accounts_bulk_delete_min_one}
+        onClose={() => setGuardVisible(false)}
+      />
+    </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   totalSection: {
     paddingHorizontal: 20,
     paddingVertical: 16,
@@ -156,66 +293,32 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 2,
   },
+  totalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   totalValue: {
     fontWeight: '700',
   },
   list: {
     padding: 16,
-    paddingBottom: 80,
+    ...LIST_BOTTOM_FAB_PADDING,
   },
   emptyList: {
     flex: 1,
   },
   accountRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    borderRadius: CARD_BORDER_RADIUS,
+    marginBottom: 10,
     padding: 14,
-    borderRadius: 12,
+  },
+  separator: {
+    height: 1,
+    marginHorizontal: 16,
     marginBottom: 10,
   },
-  iconBubble: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  accountInfo: {
-    flex: 1,
-  },
-  accountName: {
-    fontWeight: '600',
-  },
-  accountNote: {
-    marginTop: 2,
-  },
   accountBalance: {
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-  },
-  emptyText: {
-    fontWeight: '500',
-  },
-  fab: {
-    position: 'absolute',
-    bottom: 56,
-    alignSelf: 'center',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    fontWeight: '700',
   },
 });
