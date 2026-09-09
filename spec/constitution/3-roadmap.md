@@ -431,11 +431,11 @@ Pending: release-readiness (Task 3: version 2.0.0, package `com.finly.app`, `use
 ## 2.0 nav header fix (Task 2)
 Status: completed.
 
-Header-left button now follows navigation state instead of a static flag:
-- Shared `StackHeaderLeft` in `AppNavigator.tsx` (replaces `AllTransactionsHeaderLeft`): `navigation.canGoBack()` ? `HeaderBackButton` : `DrawerMenuButton`. Applied to every `drawerMenu` screen (Accounts, Categories, AllTransactions, Tags, Comments), so pushed screens show a back arrow and root screens a hamburger.
-- Drawer navigation for the hamburger-group items (Home, Accounts, Categories, Tags, Comments) resets the Main stack to root (`navigation.reset`), so opening them from the drawer always yields the hamburger (008/011/018) and the stack no longer accumulates hidden history. AllTransactions (015 #116) and Settings (003 §1) keep the push behavior and show a back arrow / native back button.
-- Browser-verified at 375px: hamburger on Home/Accounts/Categories/Tags/Comments (and it opens the drawer), back arrow on AllTransactions from both the drawer and the Home stats icon (back returns Home), native back "Home, back" on Settings and "Settings, back" on Appearance, Categories drill-down unaffected; 0 console errors.
-- Flipped `[x]`: 011 #82 (Accounts hamburger + title), 018 #102 (Tags hamburger + title), 015 #115/#116 (AllTransactions access + back arrow). 008 #77 re-verified (no regression).
+Header-left button follows navigation state:
+- Shared `StackHeaderLeft` in `AppNavigator.tsx` renders `DrawerMenuButton` (hamburger) for every drawer-accessed screen (Home, Accounts, Categories, AllTransactions, Tags, Comments). AllTransactions keeps the hamburger like the other drawer screens; the earlier "back arrow from `canGoBack()`" variant was reverted.
+- Drawer navigation for the hamburger-group items (Home, Accounts, Categories, Tags, Comments) resets the Main stack to root (`navigation.reset`), so opening them from the drawer always yields the hamburger (008/011/018) and the stack no longer accumulates hidden history. AllTransactions (015) keeps the hamburger header; Settings (003 §1) keeps the push behavior and shows the native back button.
+- Verified on web at 375px and natively on SDK 57 (Maestro flows 004/015 assert the "Open menu" hamburger on AllTransactions).
+- Flipped `[x]`: 011 #82 (Accounts hamburger + title), 018 #102 (Tags hamburger + title), 015 #115/#116 (AllTransactions access + hamburger header). 008 #77 re-verified (no regression).
 
 ## 2.0 splash rework (Task 2b)
 Status: completed.

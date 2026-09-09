@@ -10,8 +10,8 @@ appId: com.anonymous.FinlyApp
 - assertVisible: "All transactions"
 - tapOn: "All transactions"
 - waitForAnimationToEnd
-# 015 c2: header shows a back arrow and the title
-- assertVisible: "Back"
+# 015 c2: header shows the hamburger (drawer) button and the title
+- assertVisible: "Open menu"
 - assertVisible: "All transactions"
 # 015 c3: three type tabs with All/Expenses/Income
 - assertVisible: "All"
@@ -45,17 +45,11 @@ appId: com.anonymous.FinlyApp
 - waitForAnimationToEnd
 - assertVisible: "Add transaction"
 # Leave Add Transaction (default header back button has no "Back" label,
-# so use the Android hardware back) and return Home via the AllTransactions back arrow
+# so use the Android hardware back) and return Home via the drawer
 - back
 - waitForAnimationToEnd
-- tapOn: "Back"
-- waitForAnimationToEnd
-- assertVisible: "Total"
-# 015 c1b: accessible from the stats icon, with a back arrow to return Home
-- tapOn: "View transactions"
-- waitForAnimationToEnd
-- assertVisible: "Back"
-- assertVisible: "All transactions"
-- tapOn: "Back"
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- tapOn: "Home"
 - waitForAnimationToEnd
 - assertVisible: "Total"

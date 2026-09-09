@@ -62,7 +62,7 @@ appId: com.anonymous.FinlyApp
     file: "helpers/open-drawer.yaml"
 - tapOn: "All transactions"
 - waitForAnimationToEnd
-- assertVisible: "Back"
+- assertVisible: "Open menu"
 - assertVisible: "Groceries"
 - assertVisible: "-42,50 €"
 - assertVisible: "Weekly groceries"

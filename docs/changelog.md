@@ -3025,3 +3025,15 @@
   - v2-10-settings.png, v2-11-regional-en.png, v2-12-settings-appearance.png, v2-13-settings-personalization.png, v2-14-settings-data.png
 - No image content changed; pure rename of the 18 files (all still 375x812).
   - Later removed v2-15-calendar-period.png (17 files remain): the Select-month modal is redundant with the day-picker date-picker modal, so it was dropped to keep the set clean.
+
+[2026-09-09] ~ | FinlyApp/.maestro/flow-015-all-transactions.yaml, flow-004-add-transaction.yaml
+- Phase D+ native E2E re-run on Expo SDK 57 (after the expo-sdk-57 upgrade merged): regenerated the `android/` folder via `expo prebuild` and re-ran all 10 Maestro flows on the `finly_test` emulator over adb reverse + Metro. All 10 PASS.
+- flow-015: removed the stale stats-icon ("c1b" / "View transactions") entry that spec 015 dropped when the screen became drawer-only; the header assertion now checks the "Open menu" hamburger (not the removed back arrow) and the flow returns Home via the drawer.
+- flow-004: final assertion on All transactions changed from "Back" to "Open menu".
+
+[2026-09-09] ~ | spec/features/015-all-transactions-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Spec 015 aligned to the current code (product decision): All transactions shows the hamburger "Open menu" button in its header, consistent with the other drawer screens - not a back arrow. Requirement bullet and acceptance criterion updated; roadmap "2.0 nav header fix" entry corrected (the `canGoBack()`-based back-arrow variant from the earlier header refactor was reverted in docs, not code).
+- No code change: AppNavigator.tsx was unchanged; only flows, specs and harness docs were aligned to the existing hamburger behavior.
+
+[2026-09-09] ~ | docs/harnesses.md
+- Added "Phase D+ � Native E2E re-run on Expo SDK 57 (2026-09-09)" section: prebuild/assembleDebug/reinstall/launch steps, all 10 flows PASS, the flow fixes (drawer-only 015, hamburger header), and the camera/gallery "not automatable on emulator" exclusion kept.

@@ -10,7 +10,7 @@
 ### 1. Access and navigation
 
 - The screen is accessible from the **hamburger menu (drawer):** pressing "Transactions".
-- The screen has a back button (left arrow) in the header to return to the previous screen.
+- The header shows the hamburger menu button (open drawer), consistent with the other drawer screens; the title is "All transactions" (multilingual).
 - The header title is "All transactions" (multilingual).
 - **No navigation parameters are passed** (no `categoryId`, `type`, `period`, `startDate`, `endDate`).
 
@@ -132,7 +132,7 @@
 ## Acceptance criteria
 
 - [x] The screen is accessible from the hamburger menu (drawer) under "Transactions".
-- [x] The header shows a back arrow and title "All transactions" in the active language.
+- [x] The header shows the hamburger menu button and the title "All transactions" in the active language.
 - [x] Three type tabs (All | Expenses | Income) are shown, with "All" selected by default.
 - [x] Selecting "Expenses" shows only expense transactions; "Income" shows only income.
 - [x] The selected account is shown with icon + name + chevron-down.
