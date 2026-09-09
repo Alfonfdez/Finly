@@ -3042,3 +3042,24 @@
 - Bumped `expo` from ^57.0.20 to ~57.0.21 (SDK 57 patch, per `npx expo install --check`: the only package out of range; expected version ~57.0.21). Tilde pinned to match the other `expo-*` module deps. Applied 2026-09-09.
 - JS-level patch within SDK 57: no native code change, so no `expo prebuild`/native rebuild/maestro re-run was required. `npm run test:all` green (typecheck + lint + 92 files / 571 tests).
 - docs/harnesses.md "Phase D+ — Native E2E re-run on Expo SDK 57" section updated with the current SDK patch. Historical note in the SDK 57 upgrade entry (2026-09-06) still records expo ^57.0.20 as of that date.
+
+[2026-09-09] ~ | FinlyApp/app.json
+- 2.0.0 release config: version 1.0.0 -> 2.0.0, userInterfaceStyle "dark" -> "automatic", android.package com.anonymous.FinlyApp -> com.finly.app, and new ios.bundleIdentifier com.finly.app (future iOS builds). app.json also bumped with the installed expo-system-ui ~57.0.3 (required by "automatic" on native).
+
+[2026-09-09] ~ | FinlyApp/package.json, package-lock.json
+- Version 1.0.0 -> 2.0.0; added direct dependency expo-system-ui ~57.0.3 (native support for userInterfaceStyle automatic, added via npx expo install).
+
+[2026-09-09] ~ | FinlyApp/eas.json
+- Added "production" build profile (distribution store, android buildType app-bundle -> AAB for store submission). "preview" (internal APK) and "development" (dev-client) unchanged.
+
+[2026-09-09] ~ | FinlyApp/.maestro/ (all 14 yaml)
+- Changed appId from com.anonymous.FinlyApp to com.finly.app in the 10 flows + flow-debug + 3 helpers, matching the new Android package. Required by the 2.0.0 release pass.
+
+[2026-09-09] ~ | FinlyApp/android/ (CNG generated, gitignored)
+- Regenerated via npx expo prebuild after the package/version change: applicationId com.finly.app, versionName 2.0.0. Debug APK rebuilt (assembleDebug, 2m41s) and reinstalled on the finly_test emulator.
+
+[2026-09-09] ~ | README.md
+- Rewritten product-first for 2.0: app pitch (local-only data, 7 languages, iOS/Android/web, version 2.0.0), feature highlights (accounts/Total, transactions+photos, categories, charts, periods, All-Transactions filters, tags, comments, bulk actions, backup, settings, calculator), 17 v2-* screenshots with new captions (old 000-009 set + app-flow.gif removed), updated tech stack (SDK 57, Drizzle, Zod, 7-language i18n), and the development/run/test/fork section moved to the end. The images/excalidraw Finly_v2.png hero was dropped from the README; the excalidraw folder is kept as a design artifact.
+
+[2026-09-09] ~ | images/screenshots/
+- Removed the 10 old screenshots (000-Splash_animation .. 009-calendar_period_selection) and app-flow.gif; the folder now contains only the 17 v2-* screenshots (375x812) referenced by README.md.

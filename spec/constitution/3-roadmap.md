@@ -426,7 +426,20 @@ Full spec audit of every implemented feature against its acceptance criteria, in
   - Verified `[x]`: favicon in tab (#82/#88), all files referenced in app.json (#86), drawer header logo + "Finly" (#87).
 - Browser-verification notes: dev server does not inject the favicon `<link>` (production export does); `dist/` export generated the favicon.ico from `web.favicon`.
 
-Pending: release-readiness (Task 3: version 2.0.0, package `com.finly.app`, `userInterfaceStyle: "automatic"`, production EAS profile), release (Task 4: GitHub release v2.0.0 + APK).
+Pending: release (Task 4: GitHub release v2.0.0 + APK).
+
+## 2.0 release-readiness (Task 3)
+Status: completed.
+
+Release configuration for 2.0.0, applied and verified 2026-09-09:
+
+- **Version** 2.0.0 in both `app.json` and `package.json`.
+- **Theme** `userInterfaceStyle: "automatic"` (was `"dark"`), matching the in-app theme setting (Dark / Light / Automatic). Required adding `expo-system-ui ~57.0.3` (native side) — prebuild no longer warns after the install.
+- **Android package** `com.finly.app` (was `com.anonymous.FinlyApp`). `ios.bundleIdentifier` set to `com.finly.app` for future iOS builds.
+- **EAS production profile** added to `eas.json`: `"distribution": "store"` + `android.buildType: "app-bundle"` (AAB for store submission). `preview` (internal APK) and `development` (dev-client) profiles unchanged.
+- **Native re-validation** after the package change: `expo prebuild` regenerated `android/`, debug APK rebuilt (`com.finly.app`, versionName 2.0.0), all 14 Maestro `appId` entries updated, and all 10 flows re-run on the emulator — **10/10 PASS**.
+- **README.md** rewritten product-first (2.0 feature highlights, 7 languages, tech stack) and the old `000–009` screenshots + `app-flow.gif` replaced by the 17 `v2-*` screenshots. Development/run/test/fork instructions moved to the end. `images/excalidraw/Finly_v2.png` removed from the README (folder kept as design artifact).
+- Gate: `npm run test:all` green on the 2.0.0 tree.
 
 ## 2.0 nav header fix (Task 2)
 Status: completed.

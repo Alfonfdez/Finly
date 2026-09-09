@@ -1,4 +1,4 @@
-appId: com.anonymous.FinlyApp
+appId: com.finly.app
 ---
 # 023 Photo Attachment — mobile flow
 # Targets the native dev-client build (native modules required: expo-image-picker,

@@ -1,4 +1,4 @@
-appId: com.anonymous.FinlyApp
+appId: com.finly.app
 ---
 - runFlow:
     file: "helpers/state-reset.yaml"
