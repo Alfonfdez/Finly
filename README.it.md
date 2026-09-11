@@ -160,3 +160,7 @@ Il profilo `production` in `eas.json` usa `"distribution": "store"` e `"buildTyp
 ### Metodologia
 
 Questo progetto usa lo **sviluppo guidato dalle specifiche (SDD).** Le specifiche vivono in `spec/` e sono l'unica fonte di verità — prima si definisce cosa costruire nei documenti `1-spec.md`, poi si implementa e infine si verifica contro i criteri di accettazione. La roadmap è tracciata in `spec/constitution/3-roadmap.md`.
+
+## Licenza
+
+Finly è rilasciato sotto licenza MIT — consulta il file [LICENSE](LICENSE).

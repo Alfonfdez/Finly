@@ -160,3 +160,7 @@ The `production` profile in `eas.json` uses `"distribution": "store"` and `"buil
 ### Methodology
 
 This project uses **Specification-Driven Development (SDD).** Specs live in `spec/` and are the single source of truth — what to build is defined first in `1-spec.md` docs, then implemented, then verified against the acceptance criteria. The roadmap is tracked in `spec/constitution/3-roadmap.md`.
+
+## License
+
+Finly is licensed under the MIT License — see the [LICENSE](LICENSE) file.
