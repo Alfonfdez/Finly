@@ -3099,3 +3099,6 @@
 
 [2026-09-09] + | Finly/.easignore
 - Added ignore file at the git root (where EAS CLI resolves it for the shallow project archive) listing android/, ios/, node_modules/, .expo/, dist/, web-build/ and logs, cutting the uploaded build archive from ~1019 MB to ~9.8 MB (profiles no longer package the 4 GB android/ native build directory into the archive). Anchored /android matched only Finly/android and did not work; unanchored patterns are required. A copy at FinlyApp/.easignore was created and later deleted (EAS ignores it there).
+
+[2026-09-09] + | LICENSE, FinlyApp/package.json, README.md, README.es.md, README.ca.md, README.fr.md, README.de.md, README.pt.md, README.it.md
+- Added the MIT License (LICENSE file, copyright Alfonso Fernandez 2026), declared "license": "MIT" in package.json, and added a License section (in each of the 7 languages) linking back to the LICENSE file.

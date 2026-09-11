@@ -160,3 +160,7 @@ O perfil `production` no `eas.json` usa `"distribution": "store"` e `"buildType"
 ### Metodologia
 
 Este projeto usa **Desenvolvimento orientado a especificações (SDD).** As especificações vivem em `spec/` e são a única fonte de verdade — primeiro define-se o que construir nos documentos `1-spec.md`, depois implementa-se e, por fim, verifica-se contra os critérios de aceitação. O roadmap é acompanhado em `spec/constitution/3-roadmap.md`.
+
+## Licença
+
+O Finly está licenciado sob a licença MIT — consulte o arquivo [LICENSE](LICENSE).
