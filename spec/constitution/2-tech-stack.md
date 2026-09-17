@@ -158,7 +158,7 @@ FinlyApp/
 |   |   +-- colors.ts                <- legacy palette (dark only)
 |   |   +-- types.ts                 <- shared types (Period, TransactionType, RootStackParamList)
 |   |   +-- accountIcons.ts          <- available account icons list
-|   |   +-- languages.ts             <- language map + type (7 languages)
+|   |   +-- languages.ts             <- language map + type (9 languages)
 |   |   +-- currencies.ts            <- currency list + symbols
 |   |   +-- calendar.ts              <- calendar / period helpers
 |   |   +-- layout.ts                <- layout constants

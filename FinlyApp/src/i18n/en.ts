@@ -376,6 +376,8 @@ export const en = {
   lang_de: 'Deutsch',
   lang_pt: 'Português',
   lang_it: 'Italiano',
+  lang_gl: 'Galego',
+  lang_eu: 'Euskara',
 
   // Accessibility
   a11y_show_expenses: 'Show expenses',

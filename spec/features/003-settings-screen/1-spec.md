@@ -84,10 +84,10 @@ When changing the theme, the entire app re-renders in real time (no restart requ
 
 | Option | Type | Default | Values |
 |--------|------|---------|--------|
-| Language | Selector (radio) | English | English, Spanish, Catalan |
+| Language | Selector (radio) | English | English, Spanish, Catalan, Galego, Euskara, French, German, Portuguese, Italian |
 
 - Affects: all UI labels via `t()`, month names, day names.
-- Flags: UK (EN), Spain (ES), Senyera (CA).
+- Flags: UK (EN), Spain (ES), Senyera (CA), France (FR), Germany (DE), Portugal (PT), Italy (IT), Galego flag (GL), Basque ikurriña (EU). CA, GL and EU have no Unicode flag emoji, so they render as custom-drawn SVGs on every platform (`SenyeraIcon`, `GalicianFlag`, `BasqueFlag`).
 
 #### 4.2 — Currency
 
@@ -332,7 +332,8 @@ An eye icon appears next to every masked balance. The icon represents the curren
 - [x] Category icon shape selector: Square/Circle with immediate effect.
 
 ### Regional
-- [x] Language selector: English/Spanish/Catalan with immediate label changes.
+- [x] Language selector: English/Spanish/Catalan/French/German/Portuguese/Italian with immediate label changes.
+- [x] Language selector shows Galician (GL) and Basque (EU) with their custom-drawn SVG flags (Galego flag, ikurriña), and switching to either relabels the UI immediately.
 - [x] Currency selector: 30 curated currencies with searchable picker and immediate amount formatting changes.
 - [x] Decimal separator: Comma/Period with immediate format changes.
 - [x] First day of week: Monday/Sunday with immediate calendar adjustment.

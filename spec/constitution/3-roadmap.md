@@ -625,3 +625,13 @@ First pass of the Tier-5 cleanup audit (duplicated code, dead exports, unused i1
 - Audit results: i18n fully clean (all 409 `en.ts` keys used, es/ca/fr/de/pt/it parity exact, no missing-key usages); second audit pass scoped out (Transactions vs AllTransactions ~200 lines, modal footer ×5, Tags vs Comments, etc.).
 
 Spec: see `docs/changelog.md` (2026-09-04, "Tier-5 codebase cleanup audit").
+
+## Galego and Euskera languages
+Status: completed.
+
+Full UI support for Galician (`gl`) and Basque (`eu`), expanding the app from 7 to 9 languages:
+- `src/i18n/gl.ts` and `src/i18n/eu.ts` added with full key parity (enforced by the `Language` type derived from `en.ts`); `lang_gl`/`lang_eu` labels added to all language files, the i18n registry, the `LANGUAGES` map, and the Zod config enum.
+- Both options appear in the Regional language dropdown directly under Catalan; they have no Unicode flag emoji, so they render as custom-drawn SVGs (`GalicianFlag` white + blue diagonal; `BasqueFlag` ikurriña red/green/white) on every platform like the existing Catalan `SenyeraIcon`, resolved via `isGalician`/`isBasque`.
+- Basque dates use a year-first format (e.g. `2026ko abuztuak 3`); Galician uses the standard `day de month de year` pattern.
+
+Spec: spec/features/003-settings-screen/.
