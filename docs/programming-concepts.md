@@ -927,7 +927,7 @@ Tag v2.0.0 → GitHub Release "Finly 2.0.0" → notes + attached app-debug.apk
 ```markdown
 ## Finly 2.0.0
 - Version 2.0.0 — new identifiers (com.finly.app, versionCode 1)
-- Theme: Dark / Light / Automatic · 7 languages
+- Theme: Dark / Light / Automatic · 9 languages
 - Photos, tags, comments, bulk actions, data backup
 - Attached: Android APK (sideload)
 ```

@@ -2,6 +2,8 @@ export const LANGUAGES = {
   es: 'es',
   en: 'en',
   ca: 'ca',
+  gl: 'gl',
+  eu: 'eu',
   fr: 'fr',
   de: 'de',
   pt: 'pt',

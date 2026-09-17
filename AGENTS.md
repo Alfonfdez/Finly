@@ -68,7 +68,7 @@ npx expo lint
 - 5 repositories: account, category, tag, transaction, config
 
 ## I18N
-- Languages: English, Spanish, Catalan, French, German, Portuguese, Italian
+- Languages: English, Spanish, Catalan, Galician, Basque, French, German, Portuguese, Italian
 - `t()` returns full language object
 - All UI strings go through `src/i18n/`
 

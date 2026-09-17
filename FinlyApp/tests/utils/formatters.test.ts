@@ -200,6 +200,10 @@ describe('date helpers', () => {
       expect(formatDateLong(date, LANGUAGES.it)).toBe('3 agosto 2026');
       setLanguage('de');
       expect(formatDateLong(date, LANGUAGES.de)).toBe('3. August 2026');
+      setLanguage('gl');
+      expect(formatDateLong(date, LANGUAGES.gl)).toBe('3 de agosto de 2026');
+      setLanguage('eu');
+      expect(formatDateLong(date, LANGUAGES.eu)).toBe('2026ko abuztuak 3');
     } finally {
       setLanguage('en');
     }

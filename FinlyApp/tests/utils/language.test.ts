@@ -3,8 +3,8 @@ import { isCatalan, LANGUAGES } from '../../src/utils/language';
 import type { Language } from '../../src/constants/languages';
 
 describe('language helpers', () => {
-  it('exposes all seven supported languages', () => {
-    expect(Object.keys(LANGUAGES).sort()).toEqual(['ca', 'de', 'en', 'es', 'fr', 'it', 'pt']);
+  it('exposes all nine supported languages', () => {
+    expect(Object.keys(LANGUAGES).sort()).toEqual(['ca', 'de', 'en', 'es', 'eu', 'fr', 'gl', 'it', 'pt']);
   });
 
   it('returns true for Catalan', () => {
