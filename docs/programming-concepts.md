@@ -292,12 +292,12 @@ import { isNative } from '../utils/platform';
 
 ## Centralized language checks
 **Definition:** Centralized utility module that exports language type and helper functions, avoiding repeated string comparisons across the codebase.
-**Explanation:** Instead of writing `language === 'ca'` or `language === 'es'` in every file, a single constants module (`src/constants/languages.ts`) exports the `LANGUAGES` map and the `Language` type (`'es' | 'en' | 'ca' | 'fr' | 'de' | 'pt' | 'it'`). `src/utils/language.ts` re-exports them and provides the helper function (`isCatalan()`). All files import from this utility, ensuring consistency and making language-related changes easier. The type definition is also reused by ConfigContext, i18n, and formatters.
+**Explanation:** Instead of writing `language === 'ca'` or `language === 'es'` in every file, a single constants module (`src/constants/languages.ts`) exports the `LANGUAGES` map and the `Language` type (`'es' | 'en' | 'ca' | 'gl' | 'eu' | 'fr' | 'de' | 'pt' | 'it'`). `src/utils/language.ts` re-exports them and provides the helper functions (`isCatalan()`, `isGalician()`, `isBasque()`). All files import from this utility, ensuring consistency and making language-related changes easier. The type definition is also reused by ConfigContext, i18n, and formatters.
 **Example:**
 ```tsx
 // src/constants/languages.ts
 export const LANGUAGES = {
-  es: 'es', en: 'en', ca: 'ca', fr: 'fr', de: 'de', pt: 'pt', it: 'it',
+  es: 'es', en: 'en', ca: 'ca', gl: 'gl', eu: 'eu', fr: 'fr', de: 'de', pt: 'pt', it: 'it',
 } as const;
 export type Language = keyof typeof LANGUAGES;
 
@@ -306,6 +306,8 @@ import { LANGUAGES, type Language } from '../constants/languages';
 export { LANGUAGES };
 export type { Language };
 export const isCatalan = (lang: Language) => lang === LANGUAGES.ca;
+export const isGalician = (lang: Language) => lang === LANGUAGES.gl;
+export const isBasque = (lang: Language) => lang === LANGUAGES.eu;
 
 // Usage in any screen
 import { isCatalan } from '../utils/language';

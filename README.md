@@ -1,6 +1,6 @@
 # Finly
 
-[Español](README.es.md) · [Català](README.ca.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt.md) · [Italiano](README.it.md)
+[Español](README.es.md) · [Català](README.ca.md) · [Galego](README.gl.md) · [Euskara](README.eu.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt.md) · [Italiano](README.it.md)
 
 **Finly** is a personal finance app for tracking income and expenses. Record what you earn and spend on the days it happens, organize it across multiple accounts and custom categories, and understand your money through charts, period filters, tags, and comments.
 
@@ -10,7 +10,7 @@ Everything runs **on-device**: your data lives in a local SQLite database (sql.j
 |---|---|
 | **Platforms** | iOS, Android, and Web |
 | **Version** | 2.0.0 |
-| **Languages** | English, Spanish, Catalan, French, German, Portuguese, Italian |
+| **Languages** | English, Spanish, Catalan, Galician, Basque, French, German, Portuguese, Italian |
 | **Data** | 100 % local (SQLite on native, sql.js + IndexedDB on web) |
 | **Themes** | Dark, Light, and Automatic (follows the system) |
 
@@ -64,7 +64,7 @@ Everything runs **on-device**: your data lives in a local SQLite database (sql.j
 | Validation | Zod schemas as single source of truth for stored rows |
 | Web | react-native-web |
 | State | Context API (AppContext + ConfigContext) |
-| i18n | Custom system (en, es, ca, fr, de, pt, it) |
+| i18n | Custom system (en, es, ca, gl, eu, fr, de, pt, it) |
 
 ## Development
 
@@ -125,7 +125,7 @@ FinlyApp/
     context/       — AppContext, ConfigContext (global state)
     database/      — SQLite/sql.js engines, repositories, migrations, Drizzle schema
     hooks/         — custom hooks
-    i18n/          — translations (en, es, ca, fr, de, pt, it)
+    i18n/          — translations (en, es, ca, gl, eu, fr, de, pt, it)
     navigation/    — AppNavigator (Drawer + Stack)
     screens/       — screen components (PascalCase)
     utils/         — formatters, calculator, platform, language

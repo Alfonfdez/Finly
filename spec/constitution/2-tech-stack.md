@@ -167,7 +167,7 @@ FinlyApp/
 |       +-- formatters.ts            <- format currency, dates, etc.
 |       +-- calculator.ts            <- calculator logic
 |       +-- platform.ts              <- centralized platform checks
-|       +-- language.ts              <- language re-exports + isCatalan()
+|       +-- language.ts              <- language re-exports + isCatalan() / isGalician() / isBasque()
 |       +-- amountInput.ts           <- amount input parsing / formatting
 |       +-- search.ts                <- generic search helpers
 |       +-- photoUtils.ts            <- photo helpers (web)

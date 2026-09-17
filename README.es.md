@@ -1,6 +1,6 @@
 # Finly
 
-[English](README.md) · [Español](README.es.md) · [Català](README.ca.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt.md) · [Italiano](README.it.md)
+[English](README.md) · [Español](README.es.md) · [Català](README.ca.md) · [Galego](README.gl.md) · [Euskara](README.eu.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt.md) · [Italiano](README.it.md)
 
 **Finly** es una app de finanzas personales para controlar ingresos y gastos. Anota lo que ganas y gastas cada día, organízalo en varias cuentas y categorías personalizadas, y entiende tu dinero con gráficos, filtros por período, etiquetas y comentarios.
 
@@ -10,7 +10,7 @@ Todo funciona **en el dispositivo**: tus datos viven en una base de datos SQLite
 |---|---|
 | **Plataformas** | iOS, Android y Web |
 | **Versión** | 2.0.0 |
-| **Idiomas** | Inglés, Español, Catalán, Francés, Alemán, Portugués e Italiano |
+| **Idiomas** | Inglés, Español, Catalán, Gallego, Euskera, Francés, Alemán, Portugués e Italiano |
 | **Datos** | 100 % locales (SQLite en nativo, sql.js + IndexedDB en web) |
 | **Temas** | Oscuro, Claro y Automático (sigue el sistema) |
 
@@ -64,7 +64,7 @@ Todo funciona **en el dispositivo**: tus datos viven en una base de datos SQLite
 | Validación | Esquemas Zod como única fuente de verdad para las filas almacenadas |
 | Web | react-native-web |
 | Estado | Context API (AppContext + ConfigContext) |
-| i18n | Sistema propio (en, es, ca, fr, de, pt, it) |
+| i18n | Sistema propio (en, es, ca, gl, eu, fr, de, pt, it) |
 
 ## Desarrollo
 
@@ -125,7 +125,7 @@ FinlyApp/
     context/       — AppContext, ConfigContext (estado global)
     database/      — motores SQLite/sql.js, repositorios, migraciones, esquema Drizzle
     hooks/         — hooks personalizados
-    i18n/          — traducciones (en, es, ca, fr, de, pt, it)
+    i18n/          — traducciones (en, es, ca, gl, eu, fr, de, pt, it)
     navigation/    — AppNavigator (Drawer + Stack)
     screens/       — componentes de pantalla (PascalCase)
     utils/         — formateadores, calculadora, plataforma, idioma

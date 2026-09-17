@@ -4,7 +4,7 @@
 - All user-facing validation messages use the translation system (`i18n/`).
 - Validation errors are displayed **inline** below the input field — never via `Alert.alert()`.
 - Use **theme tokens** (`c.red`, `c.surface`, `c.textSecondary`) — never hardcoded colors.
-- Every validation rule must have a corresponding i18n key in `en.ts`, `es.ts`, and `ca.ts`.
+- Every validation rule must have a corresponding i18n key in all translation files (`en.ts`, `es.ts`, `ca.ts`, `gl.ts`, `eu.ts`, `fr.ts`, `de.ts`, `pt.ts`, `it.ts`).
 
 ## Error Display Pattern
 
