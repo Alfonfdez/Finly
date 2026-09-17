@@ -1,6 +1,6 @@
 # Finly
 
-[English](README.md) · [Español](README.es.md) · [Català](README.ca.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt.md) · [Italiano](README.it.md)
+[English](README.md) · [Español](README.es.md) · [Català](README.ca.md) · [Galego](README.gl.md) · [Euskara](README.eu.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt.md) · [Italiano](README.it.md)
 
 **Finly** és una app de finances personals per controlar ingressos i despeses. Anota el que guanyes i gastes cada dia, organitza-ho en diversos comptes i categories personalitzades, i entén els teus diners amb gràfics, filtres per període, etiquetes i comentaris.
 
@@ -10,7 +10,7 @@ Tot funciona **al dispositiu**: les teves dades viuen en una base de dades SQLit
 |---|---|
 | **Plataformes** | iOS, Android i Web |
 | **Versió** | 2.0.0 |
-| **Idiomes** | Anglès, Castellà, Català, Francès, Alemany, Portuguès i Italià |
+| **Idiomes** | Anglès, Castellà, Català, Gallec, Basc, Francès, Alemany, Portuguès i Italià |
 | **Dades** | 100 % locals (SQLite al nadiu, sql.js + IndexedDB al web) |
 | **Temes** | Fosc, Clar i Automàtic (segueix el sistema) |
 
@@ -64,7 +64,7 @@ Tot funciona **al dispositiu**: les teves dades viuen en una base de dades SQLit
 | Validació | Esquemes Zod com a única font de veritat per a les files emmagatzemades |
 | Web | react-native-web |
 | Estat | Context API (AppContext + ConfigContext) |
-| i18n | Sistema propi (en, es, ca, fr, de, pt, it) |
+| i18n | Sistema propi (en, es, ca, gl, eu, fr, de, pt, it) |
 
 ## Desenvolupament
 
@@ -125,7 +125,7 @@ FinlyApp/
     context/       — AppContext, ConfigContext (estat global)
     database/      — motors SQLite/sql.js, repositoris, migracions, esquema Drizzle
     hooks/         — hooks personalitzats
-    i18n/          — traduccions (en, es, ca, fr, de, pt, it)
+    i18n/          — traduccions (en, es, ca, gl, eu, fr, de, pt, it)
     navigation/    — AppNavigator (Drawer + Stack)
     screens/       — components de pantalla (PascalCase)
     utils/         — formatadors, calculadora, plataforma, idioma

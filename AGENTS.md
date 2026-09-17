@@ -81,7 +81,7 @@ FinlyApp/
     context/       — AppContext, ConfigContext (global state)
     database/      — SQLite/sql.js repos, migrations, types
     hooks/         — Custom hooks (useFontSize, useTransactionFilters)
-    i18n/          — Translations (en, es, ca, fr, de, pt, it)
+    i18n/          — Translations (en, es, ca, gl, eu, fr, de, pt, it)
     navigation/    — AppNavigator (Drawer + Stack)
     screens/       — Screen components (PascalCase)
     utils/         — Formatters, calculator, platform.ts, language.ts

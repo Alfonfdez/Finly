@@ -1,6 +1,6 @@
 # Finly
 
-[English](README.md) · [Español](README.es.md) · [Català](README.ca.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt.md) · [Italiano](README.it.md)
+[English](README.md) · [Español](README.es.md) · [Català](README.ca.md) · [Galego](README.gl.md) · [Euskara](README.eu.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt.md) · [Italiano](README.it.md)
 
 **Finly** é um app de finanças pessoais para acompanhar receitas e despesas. Anote o que você ganha e gasta dia a dia, organize em várias contas e categorias personalizadas, e entenda seu dinheiro com gráficos, filtros por período, etiquetas e comentários.
 
@@ -10,7 +10,7 @@ Tudo funciona **no dispositivo**: seus dados vivem em um banco de dados SQLite l
 |---|---|
 | **Plataformas** | iOS, Android e Web |
 | **Versão** | 2.0.0 |
-| **Idiomas** | Inglês, Espanhol, Catalão, Francês, Alemão, Português e Italiano |
+| **Idiomas** | Inglês, Espanhol, Catalão, Galego, Basco, Francês, Alemão, Português e Italiano |
 | **Dados** | 100 % locais (SQLite no nativo, sql.js + IndexedDB na web) |
 | **Temas** | Escuro, Claro e Automático (segue o sistema) |
 
@@ -64,7 +64,7 @@ Tudo funciona **no dispositivo**: seus dados vivem em um banco de dados SQLite l
 | Validação | Esquemas Zod como única fonte de verdade para as linhas armazenadas |
 | Web | react-native-web |
 | Estado | Context API (AppContext + ConfigContext) |
-| i18n | Sistema próprio (en, es, ca, fr, de, pt, it) |
+| i18n | Sistema próprio (en, es, ca, gl, eu, fr, de, pt, it) |
 
 ## Desenvolvimento
 
@@ -125,7 +125,7 @@ FinlyApp/
     context/       — AppContext, ConfigContext (estado global)
     database/      — engines SQLite/sql.js, repositórios, migrações, schema Drizzle
     hooks/         — hooks personalizados
-    i18n/          — traduções (en, es, ca, fr, de, pt, it)
+    i18n/          — traduções (en, es, ca, gl, eu, fr, de, pt, it)
     navigation/    — AppNavigator (Drawer + Stack)
     screens/       — componentes de tela (PascalCase)
     utils/         — formatadores, calculadora, plataforma, idioma
