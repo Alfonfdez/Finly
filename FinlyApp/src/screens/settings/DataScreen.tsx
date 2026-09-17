@@ -181,14 +181,14 @@ export default function DataScreen() {
   return (
     <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
       <SettingsRow
-        icon="download-outline"
+        icon="share-outline"
         iconColor={c.primary}
         label={labels.settings_export_data}
         onPress={handleExport}
       />
 
       <SettingsRow
-        icon="cloud-upload-outline"
+        icon="download-outline"
         iconColor={c.primary}
         label={labels.settings_import_data}
         onPress={handlePickImport}
