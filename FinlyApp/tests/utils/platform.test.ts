@@ -18,20 +18,26 @@ describe('platform helpers', () => {
   });
 
   it('detects web as the web platform', async () => {
-    const { isWeb, isNative } = await loadPlatform('web');
+    const { isWeb, isNative, isAndroid, isAndroidPlatform } = await loadPlatform('web');
     expect(isWeb).toBe(true);
     expect(isNative).toBe(false);
+    expect(isAndroid).toBe(false);
+    expect(isAndroidPlatform()).toBe(false);
   });
 
   it('detects ios as native', async () => {
-    const { isWeb, isNative } = await loadPlatform('ios');
+    const { isWeb, isNative, isAndroid, isAndroidPlatform } = await loadPlatform('ios');
     expect(isWeb).toBe(false);
     expect(isNative).toBe(true);
+    expect(isAndroid).toBe(false);
+    expect(isAndroidPlatform()).toBe(false);
   });
 
   it('detects android as native', async () => {
-    const { isWeb, isNative } = await loadPlatform('android');
+    const { isWeb, isNative, isAndroid, isAndroidPlatform } = await loadPlatform('android');
     expect(isWeb).toBe(false);
     expect(isNative).toBe(true);
+    expect(isAndroid).toBe(true);
+    expect(isAndroidPlatform()).toBe(true);
   });
 });

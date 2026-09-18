@@ -365,6 +365,9 @@ Data export / import (backup) on iOS, Android, and web:
 - Post-import reload: `resetAll()` (AppContext) + `updateConfig(configRepository.get())`.
 - UI: "Export data" / "Import data" rows in DataScreen above the delete rows (SettingsRow, theme + text-size aware, multilingual en/es/ca).
 - Tests: snapshot build/parse/apply round-trips on a real sql.js DB, empty-DB export, invalid/FK/version rejection with rollback, facade round-trip and newer-version guard.
+- Fix (2026-09-18): native export now reports the real share-sheet outcome via a local `finly-share` module (`saved`/`dismissed`) — success alert only when the share completed, none on dismiss, error alert on failure; `ShareResult` constants added; DataScreen tests cover export success/dismissed/error and import cancel/success.
+- Fix (2026-09-18, follow-up): Android share targets return no reliable result (a completed Gmail share reported `RESULT_CANCELED`), so on Android the module reports `saved` whenever the share sheet ran and the success alert always appears after Export; iOS keeps truthful detection (dismissal still shows no alert); web unchanged. `FinlyApp/.gitignore` ignores `modules/**/android/build/`.
+- Fix (2026-09-18, hybrid): Android Export now writes the backup to the **public Downloads folder** (`finly-share.saveToDownloadsAsync`, `MediaStore.Downloads`, Android 10+; older Android falls back to the share flow). The "Backup saved" alert is shown only after the write succeeds and offers optional **Share** / **Done** — sharing is fire-and-forget and its outcome is never reported, so no modal can be false. New i18n keys (9 languages); `isAndroid`/`isAndroidPlatform` in `src/utils/platform.ts`; DataScreen Android-flow tests + platform tests added.
 
 Spec: spec/features/025-data-backup/.
 
