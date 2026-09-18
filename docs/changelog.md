@@ -3128,3 +3128,6 @@
 - Fixed the Regional Language row label casing: the `settings_language` i18n value is now Title case in all 9 languages (Language/Idioma/Hizkuntza/Langue/Sprache/Lingua…), so the picker row and the modal title no longer render in caps; the section header keeps its uppercase style. Updated the RegionalScreen test assertion accordingly.
 - Fixed the Basque ikurriña SVG to the official design: red field, green diagonal saltire, white vertical + horizontal cross drawn on top; band width = 8.6% of the flag width (was a white saltire offset by green with no cross). Row aspect ratio kept at 0.75 to match the other flag icons.
 - Spec/doc sync: 003-settings-screen spec notes for the Appearance selector design and the Regional ikurriña; roadmap entry "Settings UI polish" (completed).
+
+[2026-09-18] ~ | FinlyApp/package.json, FinlyApp/package-lock.json
+- Follow-up Expo SDK 57 patch bump after the in-app update notification: expo `~57.0.23` -> `~57.0.24`, expo-image-picker `~57.0.18` -> `~57.0.19`, expo-sharing `~57.0.20` -> `~57.0.21` via `npx expo install --fix` (expo-constants installed to 57.0.19 without a range change — the existing `~57.0.17` already allows it). `app.json` untouched. Verified: `npx expo install --check` reports "Dependencies are up to date", `npm run test:all` green (92 files / 571 tests), `expo-doctor` 21/21.
