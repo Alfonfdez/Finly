@@ -274,7 +274,7 @@ const accounts = await accountRepository.list(userId);
 
 ## Centralized platform checks
 **Definition:** Centralized utility module that exports platform detection constants, avoiding repeated `Platform.OS` checks across the codebase.
-**Explanation:** Instead of writing `Platform.OS === 'web'` or `Platform.OS !== 'web'` in every file, a single utility file (`src/utils/platform.ts`) exports named constants (`isWeb`, `isNative`, `isIOS`, `isAndroid`). All files import from this utility, making the code more readable and maintainable. If the platform detection logic ever changes, it only needs to be updated in one place.
+**Explanation:** Instead of writing `Platform.OS === 'web'` or `Platform.OS !== 'web'` in every file, a single utility file (`src/utils/platform.ts`) exports named constants (`isWeb`, `isNative`, `isAndroid`) and a value-by-reference check (`isAndroidPlatform()`). All files import from this utility, making the code more readable and maintainable. If the platform detection logic ever changes, it only needs to be updated in one place. The call-time `isAndroidPlatform()` function is needed when a test switches `Platform.OS` at runtime: static constants are evaluated on import, so they cannot react to per-test overrides.
 **Example:**
 ```tsx
 // src/utils/platform.ts
@@ -282,22 +282,25 @@ import { Platform } from 'react-native';
 
 export const isWeb = Platform.OS === 'web';
 export const isNative = Platform.OS !== 'web';
-export const isIOS = Platform.OS === 'ios';
 export const isAndroid = Platform.OS === 'android';
+export const isAndroidPlatform = (): boolean => Platform.OS === 'android';
 
 // Usage in any screen
-import { isNative } from '../utils/platform';
-{config.addShowPhoto && isNative && <PhotoSection />}
+import { isAndroidPlatform } from '../utils/platform';
+
+if (isAndroidPlatform()) {
+  saveBackupToDownloads(json);
+}
 ```
 
 ## Centralized language checks
 **Definition:** Centralized utility module that exports language type and helper functions, avoiding repeated string comparisons across the codebase.
-**Explanation:** Instead of writing `language === 'ca'` or `language === 'es'` in every file, a single constants module (`src/constants/languages.ts`) exports the `LANGUAGES` map and the `Language` type (`'es' | 'en' | 'ca' | 'fr' | 'de' | 'pt' | 'it'`). `src/utils/language.ts` re-exports them and provides the helper function (`isCatalan()`). All files import from this utility, ensuring consistency and making language-related changes easier. The type definition is also reused by ConfigContext, i18n, and formatters.
+**Explanation:** Instead of writing `language === 'ca'` or `language === 'es'` in every file, a single constants module (`src/constants/languages.ts`) exports the `LANGUAGES` map and the `Language` type (`'es' | 'en' | 'ca' | 'gl' | 'eu' | 'fr' | 'de' | 'pt' | 'it'`). `src/utils/language.ts` re-exports them and provides the helper functions (`isCatalan()`, `isGalician()`, `isBasque()`). All files import from this utility, ensuring consistency and making language-related changes easier. The type definition is also reused by ConfigContext, i18n, and formatters.
 **Example:**
 ```tsx
 // src/constants/languages.ts
 export const LANGUAGES = {
-  es: 'es', en: 'en', ca: 'ca', fr: 'fr', de: 'de', pt: 'pt', it: 'it',
+  es: 'es', en: 'en', ca: 'ca', gl: 'gl', eu: 'eu', fr: 'fr', de: 'de', pt: 'pt', it: 'it',
 } as const;
 export type Language = keyof typeof LANGUAGES;
 
@@ -306,6 +309,8 @@ import { LANGUAGES, type Language } from '../constants/languages';
 export { LANGUAGES };
 export type { Language };
 export const isCatalan = (lang: Language) => lang === LANGUAGES.ca;
+export const isGalician = (lang: Language) => lang === LANGUAGES.gl;
+export const isBasque = (lang: Language) => lang === LANGUAGES.eu;
 
 // Usage in any screen
 import { isCatalan } from '../utils/language';
@@ -873,7 +878,7 @@ eas build --platform android --profile preview   # → output .apk (installable,
 
 ## Distribution channel
 **Definition:** The route through which users receive the built app (GitHub, app store, etc.).
-**Explanation:** Each channel serves a different audience and expects a different artifact. A GitHub Release carries a sideloadable APK; the Google Play Store expects an AAB and handles per-device APKs itself; iOS stores use IPA files. Finly uses GitHub as its distribution channel for 2.0.
+**Explanation:** Each channel serves a different audience and expects a different artifact. A GitHub Release carries a sideloadable APK; the Google Play Store expects an AAB and handles per-device APKs itself; iOS stores use IPA files. Finly uses GitHub as its distribution channel for 2.1.
 **Example:**
 ```text
 GitHub Release → APK (sideloadable)   ·   Google Play → AAB → per-device APKs
@@ -905,11 +910,11 @@ eas build --platform android --profile preview   # cloud build, download the res
 
 ## Git tag
 **Definition:** An immutable named pointer to a specific commit, used to mark release points.
-**Explanation:** A tag (e.g. `v2.0.0`) permanently labels the exact commit that was released, so the code can be reproduced later. In Finly's git flow the tag is created on the `main` merge commit AFTER `develop` is merged, so the released code matches what ships.
+**Explanation:** A tag (e.g. `v2.1.0`) permanently labels the exact commit that was released, so the code can be reproduced later. In Finly's git flow the tag is created on the `main` merge commit AFTER `develop` is merged, so the released code matches what ships.
 **Example:**
 ```bash
-git tag -a v2.0.0 -m "Finly 2.0.0 release"
-git push origin v2.0.0
+git tag -a v2.1.0 -m "Finly 2.1.0 release"
+git push origin v2.1.0
 ```
 
 ## GitHub Release
@@ -917,7 +922,7 @@ git push origin v2.0.0
 **Explanation:** Releases are how open-source/project apps hand installable builds to users. You point a Release at a tag, write the notes, and attach binaries. GitHub also archives the source at that tag so the release is fully reproducible.
 **Example:**
 ```text
-Tag v2.0.0 → GitHub Release "Finly 2.0.0" → notes + attached app-debug.apk
+Tag v2.1.0 → GitHub Release "Finly 2.1.0" → notes + attached Finly-preview-2.1.0.apk
 ```
 
 ## Release notes
@@ -925,20 +930,21 @@ Tag v2.0.0 → GitHub Release "Finly 2.0.0" → notes + attached app-debug.apk
 **Explanation:** Release notes summarize new features, fixes, and assets for users comparing against the previous release. They are the description field on the GitHub Release page (not a file in the repo), and are written from the roadmap/changelog highlights.
 **Example:**
 ```markdown
-## Finly 2.0.0
-- Version 2.0.0 — new identifiers (com.finly.app, versionCode 1)
-- Theme: Dark / Light / Automatic · 7 languages
-- Photos, tags, comments, bulk actions, data backup
-- Attached: Android APK (sideload)
+## Finly 2.1.0
+- Version 2.1.0 — android.versionCode 2 (updates 2.0.0 in place)
+- Android export: backup saved to Downloads with an optional Share action
+- New languages: Galician and Basque (9 total)
+- Settings UI polish, new data icons, regenerated icons and splash
+- Attached: Finly-preview-2.1.0.apk (sideload)
 ```
 
 ## Semantic versioning (semver)
 **Definition:** Versioning scheme `MAJOR.MINOR.PATCH` where each bump has a meaning.
-**Explanation:** MAJOR changes break compatibility (2.0 → new major), MINOR adds features backwards-compatibly, PATCH fixes bugs. The version also maps to Android identifiers (`versionName "2.0.0"`, `versionCode 1`) — `versionCode` is the unique integer Play uses to detect upgrades, while `versionName` is what users see.
+**Explanation:** MAJOR changes break compatibility (2.0 → new major), MINOR adds features backwards-compatibly, PATCH fixes bugs. The version also maps to Android identifiers (`versionName "2.1.0"`, `versionCode 2`) — `versionCode` is the unique integer Play uses to detect upgrades, while `versionName` is what users see.
 **Example:**
 ```json
 // app.json / android/app/build.gradle
-"version": "2.0.0"      →   versionName "2.0.0", versionCode 1
+"version": "2.1.0"      →   versionName "2.1.0", versionCode 2
 ```
 
 # Databases / ORM

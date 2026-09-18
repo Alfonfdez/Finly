@@ -365,6 +365,9 @@ Data export / import (backup) on iOS, Android, and web:
 - Post-import reload: `resetAll()` (AppContext) + `updateConfig(configRepository.get())`.
 - UI: "Export data" / "Import data" rows in DataScreen above the delete rows (SettingsRow, theme + text-size aware, multilingual en/es/ca).
 - Tests: snapshot build/parse/apply round-trips on a real sql.js DB, empty-DB export, invalid/FK/version rejection with rollback, facade round-trip and newer-version guard.
+- Fix (2026-09-18): native export now reports the real share-sheet outcome via a local `finly-share` module (`saved`/`dismissed`) — success alert only when the share completed, none on dismiss, error alert on failure; `ShareResult` constants added; DataScreen tests cover export success/dismissed/error and import cancel/success.
+- Fix (2026-09-18, follow-up): Android share targets return no reliable result (a completed Gmail share reported `RESULT_CANCELED`), so on Android the module reports `saved` whenever the share sheet ran and the success alert always appears after Export; iOS keeps truthful detection (dismissal still shows no alert); web unchanged. `FinlyApp/.gitignore` ignores `modules/**/android/build/`.
+- Fix (2026-09-18, hybrid): Android Export now writes the backup to the **public Downloads folder** (`finly-share.saveToDownloadsAsync`, `MediaStore.Downloads`, Android 10+; older Android falls back to the share flow). The "Backup saved" alert is shown only after the write succeeds and offers optional **Share** / **Done** — sharing is fire-and-forget and its outcome is never reported, so no modal can be false. New i18n keys (9 languages); `isAndroid`/`isAndroidPlatform` in `src/utils/platform.ts`; DataScreen Android-flow tests + platform tests added.
 
 Spec: spec/features/025-data-backup/.
 
@@ -426,7 +429,7 @@ Full spec audit of every implemented feature against its acceptance criteria, in
   - Verified `[x]`: favicon in tab (#82/#88), all files referenced in app.json (#86), drawer header logo + "Finly" (#87).
 - Browser-verification notes: dev server does not inject the favicon `<link>` (production export does); `dist/` export generated the favicon.ico from `web.favicon`.
 
-Pending: release (Task 4: GitHub release v2.0.0 + APK).
+- [x] **Released:** Finly 2.0.0 published as a GitHub Release (tag `v2.0.0`) with the EAS-signed preview APK attached — https://github.com/Alfonfdez/Finly/releases/tag/v2.0.0.
 
 ## 2.0 release-readiness (Task 3)
 Status: completed.
@@ -625,3 +628,33 @@ First pass of the Tier-5 cleanup audit (duplicated code, dead exports, unused i1
 - Audit results: i18n fully clean (all 409 `en.ts` keys used, es/ca/fr/de/pt/it parity exact, no missing-key usages); second audit pass scoped out (Transactions vs AllTransactions ~200 lines, modal footer ×5, Tags vs Comments, etc.).
 
 Spec: see `docs/changelog.md` (2026-09-04, "Tier-5 codebase cleanup audit").
+
+## Galego and Euskera languages
+Status: completed.
+
+Full UI support for Galician (`gl`) and Basque (`eu`), expanding the app from 7 to 9 languages:
+- `src/i18n/gl.ts` and `src/i18n/eu.ts` added with full key parity (enforced by the `Language` type derived from `en.ts`); `lang_gl`/`lang_eu` labels added to all language files, the i18n registry, the `LANGUAGES` map, and the Zod config enum.
+- Both options appear in the Regional language dropdown directly under Catalan; they have no Unicode flag emoji, so they render as custom-drawn SVGs (`GalicianFlag` white + blue diagonal; `BasqueFlag` ikurriña red/green/white) on every platform like the existing Catalan `SenyeraIcon`, resolved via `isGalician`/`isBasque`.
+Spec: spec/features/003-settings-screen/.
+
+## Settings UI polish
+Status: completed.
+
+Settings appearance and flag polish, applied 2026-09-18:
+- **Option buttons** (`SelectorInline`, shared by Appearance and the Regional/Personalization selectors): now flexible (fill the row width), centered, bordered (primary border + faint tint when selected, neutral otherwise, radius 10), equal height everywhere via a fixed icon box and label line height; selected checkmark removed (selection reads via border + tint).
+- **Language row label**: the `settings_language` i18n value is Title case in all 9 languages (Language/Idioma/Hizkuntza/Langue/Sprache/Lingua…), so the picker row and modal title render in normal case (section header stays uppercased by style).
+- **Basque ikurriña SVG**: corrected to the official design — red field, green diagonal saltire, white cross on top (band = 8.6% of flag width); row aspect ratio kept at 0.75 for picker consistency.
+
+Spec: spec/features/003-settings-screen/.
+
+## 2.1 release-readiness
+Status: completed.
+
+Release preparation for 2.1.0, applied and verified 2026-09-18:
+- Version 2.1.0 in app.json, package.json and package-lock.json; android.versionCode 2 (was unset, i.e. 1) and ios.buildNumber 2.1.0. The Drawer footer (Constants.expoConfig?.version) picks it up automatically.
+- .easignore fix: the unanchored `android/` + `ios/` patterns matched at any depth (gitignore semantics) and silently dropped `modules/finly-share/{android,ios}` from EAS archives -> anchored to `/FinlyApp/android` and `/FinlyApp/ios` so the local native module is included in EAS builds.
+- EAS preview APK (build df11f8fa-4651-4903-a3da-295f07c9b420) verified: com.finly.app versionCode 2 / versionName 2.1.0, `FinlyShareModule` + `saveToDownloadsAsync` in classes2.dex, `finlyshare.fileprovider` in manifest; installs in-place over the v2.0.0 release APK (device-tested).
+- Version references updated in the 9 READMEs, tech-stack and screens constitution docs, plus a 2.1.0 changelog entry.
+- Gate: `npm run test:all` green (92 files / 579 tests).
+
+`[ ]` Released: Finly 2.1.0 published as a GitHub Release (tag `v2.1.0`) — to be ticked after going live, mirroring the 2.0.0 entry.

@@ -1,6 +1,6 @@
 # Finly
 
-[English](README.md) · [Español](README.es.md) · [Català](README.ca.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt.md) · [Italiano](README.it.md)
+[English](README.md) · [Español](README.es.md) · [Català](README.ca.md) · [Galego](README.gl.md) · [Euskara](README.eu.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt.md) · [Italiano](README.it.md)
 
 **Finly** ist eine App für persönliche Finanzen, um Einnahmen und Ausgaben im Blick zu behalten. Erfassen Sie, was Sie Tag für Tag verdienen und ausgeben, organisieren Sie es in mehreren Konten und eigenen Kategorien, und verstehen Sie Ihr Geld dank Diagrammen, Zeitraum-Filtern, Tags und Kommentaren.
 
@@ -9,8 +9,8 @@ Alles läuft **auf dem Gerät**: Ihre Daten leben in einer lokalen SQLite-Datenb
 | | |
 |---|---|
 | **Plattformen** | iOS, Android und Web |
-| **Version** | 2.0.0 |
-| **Sprachen** | Englisch, Spanisch, Katalanisch, Französisch, Deutsch, Portugiesisch und Italienisch |
+| **Version** | 2.1.0 |
+| **Sprachen** | Englisch, Spanisch, Katalanisch, Galicisch, Baskisch, Französisch, Deutsch, Portugiesisch und Italienisch |
 | **Daten** | 100 % lokal (SQLite nativ, sql.js + IndexedDB im Web) |
 | **Designs** | Dunkel, Hell und Automatisch (folgt dem System) |
 
@@ -64,7 +64,7 @@ Alles läuft **auf dem Gerät**: Ihre Daten leben in einer lokalen SQLite-Datenb
 | Validierung | Zod-Schemas als einzige Quelle der Wahrheit für gespeicherte Zeilen |
 | Web | react-native-web |
 | State | Context API (AppContext + ConfigContext) |
-| i18n | Eigenes System (en, es, ca, fr, de, pt, it) |
+| i18n | Eigenes System (en, es, ca, gl, eu, fr, de, pt, it) |
 
 ## Entwicklung
 
@@ -125,7 +125,7 @@ FinlyApp/
     context/       — AppContext, ConfigContext (globaler State)
     database/      — SQLite/sql.js-Engines, Repositories, Migrationen, Drizzle-Schema
     hooks/         — Eigene Hooks
-    i18n/          — Übersetzungen (en, es, ca, fr, de, pt, it)
+    i18n/          — Übersetzungen (en, es, ca, gl, eu, fr, de, pt, it)
     navigation/    — AppNavigator (Drawer + Stack)
     screens/       — Screens-Komponenten (PascalCase)
     utils/         — Formatter, Taschenrechner, Plattform, Sprache
@@ -160,3 +160,7 @@ Das Profil `production` in `eas.json` verwendet `"distribution": "store"` und `"
 ### Methodik
 
 Dieses Projekt verwendet **Specification-Driven Development (SDD).** Die Spezifikationen leben in `spec/` und sind die einzige Quelle der Wahrheit — zuerst wird in den `1-spec.md`-Dokumenten definiert, was gebaut werden soll, dann wird es implementiert und schließlich gegen die Akzeptanzkriterien verifiziert. Die Roadmap wird in `spec/constitution/3-roadmap.md` verfolgt.
+
+## Lizenz
+
+Finly ist unter der MIT-Lizenz lizenziert — siehe [LICENSE](LICENSE)-Datei.

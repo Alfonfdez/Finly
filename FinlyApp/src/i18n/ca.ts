@@ -13,7 +13,7 @@ export const ca: Language = {
   settings_data: 'Dades',
   settings_calendar: 'CALENDARI',
   settings_money: 'FORMAT DE DINERS',
-  settings_language: 'IDIOMA',
+  settings_language: 'Idioma',
   settings_theme: 'Tema',
   settings_first_day: 'Primer dia de la setmana',
   settings_currency: 'Divisa',
@@ -40,6 +40,10 @@ export const ca: Language = {
   settings_export_success_message: 'Les teves dades s\'han desat en un fitxer de còpia de seguretat.',
   settings_export_error_title: 'Error en exportar',
   settings_export_error_message: 'No s\'han pogut exportar les teves dades.',
+  settings_export_downloaded_title: 'Còpia desada',
+  settings_export_downloaded_message: 'La teva còpia de seguretat s\'ha desat a la carpeta Baixades.',
+  settings_export_share_action: 'Comparteix',
+  settings_export_done_action: 'Fet',
   settings_import_confirm_title: 'Importar dades?',
   settings_import_confirm_message: 'Això reemplaçarà tots els comptes, categories, etiquetes, transaccions i configuració actuals amb el contingut de la còpia de seguretat. Això no es pot desfer.',
   settings_import_success_title: 'Importació completada',
@@ -378,6 +382,8 @@ export const ca: Language = {
   lang_de: 'Deutsch',
   lang_pt: 'Português',
   lang_it: 'Italiano',
+  lang_gl: 'Galego',
+  lang_eu: 'Euskara',
 
   // Accessibility
   a11y_show_expenses: 'Mostrar despeses',

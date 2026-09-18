@@ -13,7 +13,7 @@ export const fr: Language = {
   settings_data: 'Données',
   settings_calendar: 'CALENDRIER',
   settings_money: 'FORMAT MONÉTAIRE',
-  settings_language: 'LANGUE',
+  settings_language: 'Langue',
   settings_theme: 'Thème',
   settings_first_day: 'Premier jour de la semaine',
   settings_currency: 'Devise',
@@ -40,6 +40,10 @@ export const fr: Language = {
   settings_export_success_message: 'Vos données ont été enregistrées dans un fichier de sauvegarde.',
   settings_export_error_title: 'Échec de l\'exportation',
   settings_export_error_message: 'Impossible d\'exporter vos données.',
+  settings_export_downloaded_title: 'Sauvegarde enregistrée',
+  settings_export_downloaded_message: 'Votre sauvegarde a été enregistrée dans le dossier Téléchargements.',
+  settings_export_share_action: 'Partager',
+  settings_export_done_action: 'Terminé',
   settings_import_confirm_title: 'Importer les données ?',
   settings_import_confirm_message: 'Cela remplacera tous les comptes, catégories, étiquettes, transactions et paramètres actuels par le contenu de la sauvegarde. Cette action est irréversible.',
   settings_import_success_title: 'Importation terminée',
@@ -378,6 +382,8 @@ export const fr: Language = {
   lang_de: 'Deutsch',
   lang_pt: 'Português',
   lang_it: 'Italiano',
+  lang_gl: 'Galego',
+  lang_eu: 'Euskara',
 
   // Accessibility
   a11y_show_expenses: 'Afficher les dépenses',

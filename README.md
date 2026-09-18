@@ -1,6 +1,6 @@
 # Finly
 
-[Español](README.es.md) · [Català](README.ca.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt.md) · [Italiano](README.it.md)
+[Español](README.es.md) · [Català](README.ca.md) · [Galego](README.gl.md) · [Euskara](README.eu.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt.md) · [Italiano](README.it.md)
 
 **Finly** is a personal finance app for tracking income and expenses. Record what you earn and spend on the days it happens, organize it across multiple accounts and custom categories, and understand your money through charts, period filters, tags, and comments.
 
@@ -9,8 +9,8 @@ Everything runs **on-device**: your data lives in a local SQLite database (sql.j
 | | |
 |---|---|
 | **Platforms** | iOS, Android, and Web |
-| **Version** | 2.0.0 |
-| **Languages** | English, Spanish, Catalan, French, German, Portuguese, Italian |
+| **Version** | 2.1.0 |
+| **Languages** | English, Spanish, Catalan, Galician, Basque, French, German, Portuguese, Italian |
 | **Data** | 100 % local (SQLite on native, sql.js + IndexedDB on web) |
 | **Themes** | Dark, Light, and Automatic (follows the system) |
 
@@ -25,7 +25,7 @@ Everything runs **on-device**: your data lives in a local SQLite database (sql.j
 - **Tags & comments** — tag transactions, then filter by tag; manage every comment across the app and apply edits or bulk deletes to many transactions at once.
 - **Photos** — attach a photo to a transaction from the gallery on every platform (camera on iOS and Android).
 - **Bulk actions** — multi-select and delete transactions, tags, comments, and categories in one go.
-- **Data backup** — export your whole database as a JSON snapshot and import it back at any time.
+- **Data backup** — export your whole database as a JSON snapshot and import it back at any time (saved straight to Downloads on Android, with an optional share).
 - **Settings** — theme, text size, currency, decimal separator, language, first day of week, icon shapes, home and add-transaction defaults, and privacy options to hide balances.
 - **Built-in calculator** — a small calculator on the add-transaction screen to compute amounts.
 
@@ -64,7 +64,7 @@ Everything runs **on-device**: your data lives in a local SQLite database (sql.j
 | Validation | Zod schemas as single source of truth for stored rows |
 | Web | react-native-web |
 | State | Context API (AppContext + ConfigContext) |
-| i18n | Custom system (en, es, ca, fr, de, pt, it) |
+| i18n | Custom system (en, es, ca, gl, eu, fr, de, pt, it) |
 
 ## Development
 
@@ -125,7 +125,7 @@ FinlyApp/
     context/       — AppContext, ConfigContext (global state)
     database/      — SQLite/sql.js engines, repositories, migrations, Drizzle schema
     hooks/         — custom hooks
-    i18n/          — translations (en, es, ca, fr, de, pt, it)
+    i18n/          — translations (en, es, ca, gl, eu, fr, de, pt, it)
     navigation/    — AppNavigator (Drawer + Stack)
     screens/       — screen components (PascalCase)
     utils/         — formatters, calculator, platform, language
@@ -160,3 +160,7 @@ The `production` profile in `eas.json` uses `"distribution": "store"` and `"buil
 ### Methodology
 
 This project uses **Specification-Driven Development (SDD).** Specs live in `spec/` and are the single source of truth — what to build is defined first in `1-spec.md` docs, then implemented, then verified against the acceptance criteria. The roadmap is tracked in `spec/constitution/3-roadmap.md`.
+
+## License
+
+Finly is licensed under the MIT License — see the [LICENSE](LICENSE) file.

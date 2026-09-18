@@ -11,7 +11,7 @@ export const en = {
   settings_data: 'Data',
   settings_calendar: 'CALENDAR',
   settings_money: 'MONEY FORMAT',
-  settings_language: 'LANGUAGE',
+  settings_language: 'Language',
   settings_theme: 'Theme',
   settings_first_day: 'First day of week',
   settings_currency: 'Currency',
@@ -38,6 +38,10 @@ export const en = {
   settings_export_success_message: 'Your data has been saved to a backup file.',
   settings_export_error_title: 'Export failed',
   settings_export_error_message: 'Could not export your data.',
+  settings_export_downloaded_title: 'Backup saved',
+  settings_export_downloaded_message: 'Your backup has been saved to the Downloads folder.',
+  settings_export_share_action: 'Share',
+  settings_export_done_action: 'Done',
   settings_import_confirm_title: 'Import data?',
   settings_import_confirm_message: 'This will replace all current accounts, categories, tags, transactions, and settings with the contents of the backup. This cannot be undone.',
   settings_import_success_title: 'Import complete',
@@ -376,6 +380,8 @@ export const en = {
   lang_de: 'Deutsch',
   lang_pt: 'Português',
   lang_it: 'Italiano',
+  lang_gl: 'Galego',
+  lang_eu: 'Euskara',
 
   // Accessibility
   a11y_show_expenses: 'Show expenses',

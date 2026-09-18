@@ -13,7 +13,7 @@ export const es: Language = {
   settings_data: 'Datos',
   settings_calendar: 'CALENDARIO',
   settings_money: 'FORMATO DE DINERO',
-  settings_language: 'IDIOMA',
+  settings_language: 'Idioma',
   settings_theme: 'Tema',
   settings_first_day: 'Primer día de semana',
   settings_currency: 'Divisa',
@@ -40,6 +40,10 @@ export const es: Language = {
   settings_export_success_message: 'Tus datos se han guardado en un archivo de copia de seguridad.',
   settings_export_error_title: 'Error al exportar',
   settings_export_error_message: 'No se pudieron exportar tus datos.',
+  settings_export_downloaded_title: 'Copia guardada',
+  settings_export_downloaded_message: 'Tu copia de seguridad se ha guardado en la carpeta Descargas.',
+  settings_export_share_action: 'Compartir',
+  settings_export_done_action: 'Listo',
   settings_import_confirm_title: '¿Importar datos?',
   settings_import_confirm_message: 'Esto reemplazará todas las cuentas, categorías, etiquetas, transacciones y configuración actuales con el contenido de la copia de seguridad. Esto no se puede deshacer.',
   settings_import_success_title: 'Importación completada',
@@ -378,6 +382,8 @@ export const es: Language = {
   lang_de: 'Deutsch',
   lang_pt: 'Português',
   lang_it: 'Italiano',
+  lang_gl: 'Galego',
+  lang_eu: 'Euskara',
 
   // Accessibility
   a11y_show_expenses: 'Mostrar gastos',

@@ -2,13 +2,14 @@
   "expo": {
     "name": "FinlyApp",
     "slug": "FinlyApp",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.finly.app"
+      "bundleIdentifier": "com.finly.app",
+      "buildNumber": "2.1.0"
     },
     "android": {
       "adaptiveIcon": {
@@ -18,7 +19,8 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.finly.app"
+      "package": "com.finly.app",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -33,7 +35,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#0F172A"
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "extra": {
       "eas": {

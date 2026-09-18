@@ -169,6 +169,11 @@ export function formatDateLong(date: Date, language: Language): string {
     const elided = /^[aeiouàèéíìòóúù]/.test(m) ? `d'${m}` : `de ${m}`;
     return `${day} ${elided} de ${year}`;
   }
+  if (language === LANGUAGES.eu) {
+    const m = monthName.toLowerCase();
+    const monthPlural = m.endsWith('a') ? `${m}k` : m;
+    return `${year}ko ${monthPlural} ${day}`;
+  }
   return `${day} de ${monthName.toLowerCase()} de ${year}`;
 }
 

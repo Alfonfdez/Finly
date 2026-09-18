@@ -5,7 +5,7 @@ import { useConfig, type Config } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
 import { isWeb } from '../../utils/platform';
-import { LANGUAGES, isCatalan, type Language } from '../../utils/language';
+import { LANGUAGES, isCatalan, isGalician, isBasque, type Language } from '../../utils/language';
 import { flagColors } from '../../constants/flagColors';
 import { CURRENCY_OPTIONS } from '../../constants/currencies';
 import { DECIMAL_SEPARATORS, FIRST_DAYS, type FirstDay } from '../../constants/types';
@@ -26,6 +26,32 @@ function SenyeraIcon({ size = 16 }: { size?: number }) {
       <View style={{ height: 1, backgroundColor: flagColors.senyeraRed }} />
       <View style={{ flex: 1, backgroundColor: flagColors.senyeraYellow }} />
     </View>
+  );
+}
+
+function GalicianFlag({ size = 16 }: { size?: number }) {
+  const w = size;
+  const h = size * 0.75;
+  return (
+    <Svg width={w} height={h} viewBox={'0 0 ' + w + ' ' + h}>
+      <Rect width={w} height={h} fill={flagColors.galicianWhite} />
+      <Line x1={0} y1={0} x2={w} y2={h} stroke={flagColors.galicianBlue} strokeWidth={h * 0.28} />
+    </Svg>
+  );
+}
+
+function BasqueFlag({ size = 16 }: { size?: number }) {
+  const w = size;
+  const h = size * 0.75;
+  const band = w * 0.086;
+  return (
+    <Svg width={w} height={h} viewBox={'0 0 ' + w + ' ' + h}>
+      <Rect width={w} height={h} fill={flagColors.basqueRed} />
+      <Line x1={0} y1={0} x2={w} y2={h} stroke={flagColors.basqueGreen} strokeWidth={band} strokeLinecap="square" />
+      <Line x1={w} y1={0} x2={0} y2={h} stroke={flagColors.basqueGreen} strokeWidth={band} strokeLinecap="square" />
+      <Line x1={w / 2} y1={0} x2={w / 2} y2={h} stroke={flagColors.basqueWhite} strokeWidth={band} strokeLinecap="square" />
+      <Line x1={0} y1={h / 2} x2={w} y2={h / 2} stroke={flagColors.basqueWhite} strokeWidth={band} strokeLinecap="square" />
+    </Svg>
   );
 }
 
@@ -102,6 +128,8 @@ const FLAG_WEB: Record<string, ReactNode> = {
   [LANGUAGES.en]: <UKFlagWeb size={16} />,
   [LANGUAGES.es]: <SpainFlagWeb size={16} />,
   [LANGUAGES.ca]: <SenyeraIcon size={16} />,
+  [LANGUAGES.gl]: <GalicianFlag size={16} />,
+  [LANGUAGES.eu]: <BasqueFlag size={16} />,
   [LANGUAGES.fr]: <FranceFlagWeb size={16} />,
   [LANGUAGES.de]: <GermanyFlagWeb size={16} />,
   [LANGUAGES.pt]: <PortugalFlagWeb size={16} />,
@@ -121,6 +149,12 @@ const FLAG_EMOJI: Record<string, string> = {
 function FlagIcon({ code, size = 16 }: { code: Language; size?: number }) {
   if (isCatalan(code)) {
     return <SenyeraIcon size={size} />;
+  }
+  if (isGalician(code)) {
+    return <GalicianFlag size={size} />;
+  }
+  if (isBasque(code)) {
+    return <BasqueFlag size={size} />;
   }
   if (isWeb) {
     return <>{FLAG_WEB[code] ?? null}</>;
@@ -147,6 +181,8 @@ export default function RegionalScreen() {
     { label: labels.lang_en, value: LANGUAGES.en, icon: <FlagIcon code={LANGUAGES.en} size={16} /> },
     { label: labels.lang_es, value: LANGUAGES.es, icon: <FlagIcon code={LANGUAGES.es} size={16} /> },
     { label: labels.lang_ca, value: LANGUAGES.ca, icon: <FlagIcon code={LANGUAGES.ca} size={16} /> },
+    { label: labels.lang_gl, value: LANGUAGES.gl, icon: <FlagIcon code={LANGUAGES.gl} size={16} /> },
+    { label: labels.lang_eu, value: LANGUAGES.eu, icon: <FlagIcon code={LANGUAGES.eu} size={16} /> },
     { label: labels.lang_fr, value: LANGUAGES.fr, icon: <FlagIcon code={LANGUAGES.fr} size={16} /> },
     { label: labels.lang_de, value: LANGUAGES.de, icon: <FlagIcon code={LANGUAGES.de} size={16} /> },
     { label: labels.lang_pt, value: LANGUAGES.pt, icon: <FlagIcon code={LANGUAGES.pt} size={16} /> },

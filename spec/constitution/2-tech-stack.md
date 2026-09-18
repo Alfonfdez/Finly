@@ -19,7 +19,7 @@
 
 ```
 FinlyApp/
-+-- app.json                          <- Expo config (name, version 2.0.0, package com.finly.app)
++-- app.json                          <- Expo config (name, version 2.1.0, package com.finly.app)
 +-- App.tsx                           <- main entry: DB init + splash + providers
 +-- tsconfig.json
 +-- package.json
@@ -158,7 +158,7 @@ FinlyApp/
 |   |   +-- colors.ts                <- legacy palette (dark only)
 |   |   +-- types.ts                 <- shared types (Period, TransactionType, RootStackParamList)
 |   |   +-- accountIcons.ts          <- available account icons list
-|   |   +-- languages.ts             <- language map + type (7 languages)
+|   |   +-- languages.ts             <- language map + type (9 languages)
 |   |   +-- currencies.ts            <- currency list + symbols
 |   |   +-- calendar.ts              <- calendar / period helpers
 |   |   +-- layout.ts                <- layout constants
@@ -167,7 +167,7 @@ FinlyApp/
 |       +-- formatters.ts            <- format currency, dates, etc.
 |       +-- calculator.ts            <- calculator logic
 |       +-- platform.ts              <- centralized platform checks
-|       +-- language.ts              <- language re-exports + isCatalan()
+|       +-- language.ts              <- language re-exports + isCatalan() / isGalician() / isBasque()
 |       +-- amountInput.ts           <- amount input parsing / formatting
 |       +-- search.ts                <- generic search helpers
 |       +-- photoUtils.ts            <- photo helpers (web)

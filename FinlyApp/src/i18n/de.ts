@@ -13,7 +13,7 @@ export const de: Language = {
   settings_data: 'Daten',
   settings_calendar: 'KALENDER',
   settings_money: 'GELDFORMAT',
-  settings_language: 'SPRACHE',
+  settings_language: 'Sprache',
   settings_theme: 'Design',
   settings_first_day: 'Erster Tag der Woche',
   settings_currency: 'Währung',
@@ -40,6 +40,10 @@ export const de: Language = {
   settings_export_success_message: 'Ihre Daten wurden in eine Sicherungsdatei gespeichert.',
   settings_export_error_title: 'Export fehlgeschlagen',
   settings_export_error_message: 'Ihre Daten konnten nicht exportiert werden.',
+  settings_export_downloaded_title: 'Sicherung gespeichert',
+  settings_export_downloaded_message: 'Ihre Sicherung wurde im Ordner Downloads gespeichert.',
+  settings_export_share_action: 'Teilen',
+  settings_export_done_action: 'Fertig',
   settings_import_confirm_title: 'Daten importieren?',
   settings_import_confirm_message: 'Dies wird alle aktuellen Konten, Kategorien, Tags, Transaktionen und Einstellungen durch den Inhalt der Sicherung ersetzen. Dies kann nicht rückgängig gemacht werden.',
   settings_import_success_title: 'Import abgeschlossen',
@@ -378,6 +382,8 @@ export const de: Language = {
   lang_de: 'Deutsch',
   lang_pt: 'Português',
   lang_it: 'Italiano',
+  lang_gl: 'Galego',
+  lang_eu: 'Euskara',
 
   // Accessibility
   a11y_show_expenses: 'Ausgaben anzeigen',

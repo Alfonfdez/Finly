@@ -255,8 +255,8 @@ Android / Maestro notes found and fixed while writing them:
 ### Phase D+ — Native E2E re-run on Expo SDK 57 (2026-09-09)
 
 After the upgrade to Expo SDK 57 / RN 0.86.3 (merged via PR #163) the native build and all
-ten Maestro flows were re-validated from scratch. Current SDK patch: `expo ~57.0.21`
-(applied 2026-09-09, JS-level patch within SDK 57 — no native regeneration needed;
+ten Maestro flows were re-validated from scratch. Current SDK patch: `expo ~57.0.24`
+(applied 2026-09-18; JS-level patches within SDK 57 — no native regeneration needed;
 `npx expo install --check` reports no other packages out of date).
 
 Re-run on the release package (2026-09-09, required by the Task-3 release pass): the

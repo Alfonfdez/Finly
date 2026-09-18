@@ -11,6 +11,6 @@ Manage personal income and expenses in a simple way, allowing the user to record
 ## Principles
 - Clean and direct tone.
 - Looks the same on iOS and Android.
-- Multilingual support in 7 languages (English, Spanish, Catalan, French, German, Portuguese, Italian).
+- Multilingual support in 9 languages (English, Spanish, Catalan, Galician, Basque, French, German, Portuguese, Italian).
 - Dark and light theme with real-time switching.
 - Accessibility: text scaling based on user preferences.
