@@ -11,7 +11,8 @@
 
 - Export and import are available on **iOS, Android, and web**.
 - The backup is a single **JSON snapshot** (not a raw `.db` file): one shared code path through the unified `DatabaseHandle`, so behavior is identical on every platform.
-- **Native:** the exported file is written to `documentDirectory` via `expo-file-system` and shared through the system share sheet (`expo-sharing`). Import picks a `.json` file via `expo-document-picker`.
+- **Android:** the exported file is written to the **public Downloads folder** via `MediaStore.Downloads` (the `finly-share` module, Android 10+; on older Android it falls back to the share sheet). A system alert confirms the local save and offers a **Share** action that opens the system share sheet only on demand — the file's save never depends on a share outcome. `expo-sharing` is unused on Android.
+- **iOS:** the exported file is written to `documentDirectory` via `expo-file-system` and shared through the system share sheet (the `finly-share` module resolves the outcome truthfully via `completionWithItemsHandler.completed`). Import picks a `.json` file via `expo-document-picker` on both.
 - **Web:** the exported file is downloaded via a `Blob` + `<a download>` click; import uses a programmatic `<input type="file" accept="application/json">` read with `FileReader.readAsText` (same pattern as the photo gallery picker).
 
 ### 2. Snapshot format
@@ -47,6 +48,7 @@
 - The file is named `finly-backup-YYYY-MM-DD.json`.
 - Exporting with zero rows is valid (produces a snapshot with empty collections).
 - The user is informed of success or failure with an alert.
+- **Feedback by platform:** On Android the export writes the file to Downloads and shows the alert "Backup saved — Your backup has been saved to the Downloads folder." with **[Share]** and **[Done]** actions; sharing is a separate on-demand step (`saveBackupFile`, fire-and-forget) whose outcome (complete vs cancel) is never reported, because Android share targets return no reliable result — so no modal can ever be false. On iOS the feedback reflects the real share-sheet outcome (`saved`/`dismissed` from `finly-share`): a completed share shows the success alert and cancelling shows none. On web the file downloads and no alert is shown (Alert is a no-op on react-native-web). A failure shows the error alert on all platforms.
 
 ### 4. Import
 
@@ -63,7 +65,7 @@
 ### 5. UI (DataScreen)
 
 - Two rows are added above the existing delete rows:
-  - **Export data** (`download-outline`, primary color) — runs the export and reports success/failure.
+  - **Export data** (`share-outline`, primary color) — Android: saves the backup to Downloads and alerts with optional **Share**; iOS: runs the share and reports truthfully; web: downloads the file. Failures show the error alert.
   - **Import data** (`cloud-upload-outline`) — opens the file picker, then a `ConfirmationModal` warning that all current data will be replaced, then imports.
 - The rows reuse `SettingsRow` and follow the existing DataScreen styling, theme (`useConfig().activeColors`) and text size (`useFontSize()`).
 
@@ -74,7 +76,7 @@
 - **Multilingual:** all visible texts use `t()` (en/es/ca).
 - **Theme / text size:** `useConfig().activeColors` and `useFontSize()`.
 - **No platform fork of business logic:** the snapshot build/apply code is pure DB logic (`src/database/backup.ts`, no React Native / Expo imports) so it is unit-testable in Node; only the file I/O is platform-split (`backupIO.ts` / `backupIO.web.ts`, same pattern as `engine.ts` / `engine.web.ts`).
-- **New dependencies:** `expo-sharing` (native share sheet) and `expo-document-picker` (native file picking). Web uses built-in browser APIs only.
+- **New dependencies:** `expo-sharing` (iOS share sheet) and `expo-document-picker` (native file picking). Android's Downloads write uses the `finly-share` module's `saveToDownloadsAsync` (`MediaStore.Downloads`). Web uses built-in browser APIs only.
 - **Backwards compatibility:** import requires `formatVersion === 1`; a backup exported by this version imports cleanly. No migration paths across format versions (out of scope).
 
 ---
@@ -90,4 +92,6 @@
 - [x] An invalid / corrupt / wrong-version / future-schema backup is rejected with an error and existing data is unchanged (transaction rollback).
 - [x] After a successful import, app state and config (theme, language, currency, balances) reflect the backup.
 - [x] All texts are multilingual (en/es/ca) and the screen respects theme and text size.
+- [x] Export feedback is never false (unit-tested): Android saves to Downloads (`MediaStore` via `finly-share`) and alerts; the Share action is optional and its outcome is not reported; iOS reports the real share-sheet outcome (success vs cancel); failures show the error alert; Import shows no modal when the file picker is cancelled.
+- [ ] On a real device, Export on Android saves the file to the Downloads folder and shows the "Backup saved" alert with Share/Done (device-only check via the Downloads folder, not checkable on web).
 - [x] `npm run test:all` is green (typecheck + lint + tests).

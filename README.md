@@ -25,7 +25,7 @@ Everything runs **on-device**: your data lives in a local SQLite database (sql.j
 - **Tags & comments** — tag transactions, then filter by tag; manage every comment across the app and apply edits or bulk deletes to many transactions at once.
 - **Photos** — attach a photo to a transaction from the gallery on every platform (camera on iOS and Android).
 - **Bulk actions** — multi-select and delete transactions, tags, comments, and categories in one go.
-- **Data backup** — export your whole database as a JSON snapshot and import it back at any time.
+- **Data backup** — export your whole database as a JSON snapshot and import it back at any time (saved straight to Downloads on Android, with an optional share).
 - **Settings** — theme, text size, currency, decimal separator, language, first day of week, icon shapes, home and add-transaction defaults, and privacy options to hide balances.
 - **Built-in calculator** — a small calculator on the add-transaction screen to compute amounts.
 

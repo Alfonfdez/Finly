@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["FinlyShareModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.finlyshare.FinlyShareModule"]
+  }
+}

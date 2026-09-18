@@ -274,7 +274,7 @@ const accounts = await accountRepository.list(userId);
 
 ## Centralized platform checks
 **Definition:** Centralized utility module that exports platform detection constants, avoiding repeated `Platform.OS` checks across the codebase.
-**Explanation:** Instead of writing `Platform.OS === 'web'` or `Platform.OS !== 'web'` in every file, a single utility file (`src/utils/platform.ts`) exports named constants (`isWeb`, `isNative`, `isIOS`, `isAndroid`). All files import from this utility, making the code more readable and maintainable. If the platform detection logic ever changes, it only needs to be updated in one place.
+**Explanation:** Instead of writing `Platform.OS === 'web'` or `Platform.OS !== 'web'` in every file, a single utility file (`src/utils/platform.ts`) exports named constants (`isWeb`, `isNative`, `isAndroid`) and a value-by-reference check (`isAndroidPlatform()`). All files import from this utility, making the code more readable and maintainable. If the platform detection logic ever changes, it only needs to be updated in one place. The call-time `isAndroidPlatform()` function is needed when a test switches `Platform.OS` at runtime: static constants are evaluated on import, so they cannot react to per-test overrides.
 **Example:**
 ```tsx
 // src/utils/platform.ts
@@ -282,12 +282,15 @@ import { Platform } from 'react-native';
 
 export const isWeb = Platform.OS === 'web';
 export const isNative = Platform.OS !== 'web';
-export const isIOS = Platform.OS === 'ios';
 export const isAndroid = Platform.OS === 'android';
+export const isAndroidPlatform = (): boolean => Platform.OS === 'android';
 
 // Usage in any screen
-import { isNative } from '../utils/platform';
-{config.addShowPhoto && isNative && <PhotoSection />}
+import { isAndroidPlatform } from '../utils/platform';
+
+if (isAndroidPlatform()) {
+  saveBackupToDownloads(json);
+}
 ```
 
 ## Centralized language checks

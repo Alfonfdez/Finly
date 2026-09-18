@@ -4,7 +4,7 @@ import { useConfig } from '../../context/ConfigContext';
 import { useApp } from '../../context/AppContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
-import { isWeb } from '../../utils/platform';
+import { isAndroidPlatform, isWeb } from '../../utils/platform';
 import {
   transactionRepository,
   configRepository,
@@ -13,7 +13,8 @@ import {
   BackupValidationError,
 } from '../../database';
 import { clearDataKeepSettings, resetDatabase } from '../../database/database';
-import { saveBackupFile, pickBackupFile } from '../../utils/backupIO';
+import { saveBackupFile, pickBackupFile, saveBackupToDownloads } from '../../utils/backupIO';
+import { ShareResult } from '../../constants/shareResult';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import SettingsRow from '../../components/settings/SettingsRow';
 import { BUTTON_BORDER_RADIUS } from '../../components/componentStyles';
@@ -88,11 +89,37 @@ export default function DataScreen() {
   const handleExport = async () => {
     try {
       const json = await exportBackup();
-      await saveBackupFile(json);
-      Alert.alert(labels.settings_export_success_title, labels.settings_export_success_message);
+      if (isAndroidPlatform()) {
+        const savedToDownloads = await saveBackupToDownloads(json);
+        if (!savedToDownloads) {
+          await runShareFlow(json);
+          return;
+        }
+        Alert.alert(labels.settings_export_downloaded_title, labels.settings_export_downloaded_message, [
+          {
+            text: labels.settings_export_share_action,
+            onPress: () => {
+              runShareFlow(json).catch((error) => {
+                console.error('Failed to share data:', error);
+                Alert.alert(labels.settings_export_error_title, labels.settings_export_error_message);
+              });
+            },
+          },
+          { text: labels.settings_export_done_action },
+        ]);
+        return;
+      }
+      await runShareFlow(json);
     } catch (error) {
       console.error('Failed to export data:', error);
       Alert.alert(labels.settings_export_error_title, labels.settings_export_error_message);
+    }
+  };
+
+  const runShareFlow = async (json: string) => {
+    const result = await saveBackupFile(json);
+    if (result === ShareResult.SAVED) {
+      Alert.alert(labels.settings_export_success_title, labels.settings_export_success_message);
     }
   };
 
