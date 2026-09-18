@@ -9,7 +9,7 @@ Tot funciona **al dispositiu**: les teves dades viuen en una base de dades SQLit
 | | |
 |---|---|
 | **Plataformes** | iOS, Android i Web |
-| **Versió** | 2.0.0 |
+| **Versió** | 2.1.0 |
 | **Idiomes** | Anglès, Castellà, Català, Gallec, Basc, Francès, Alemany, Portuguès i Italià |
 | **Dades** | 100 % locals (SQLite al nadiu, sql.js + IndexedDB al web) |
 | **Temes** | Fosc, Clar i Automàtic (segueix el sistema) |

@@ -9,7 +9,7 @@ Tout fonctionne **sur l'appareil** : vos données vivent dans une base de donné
 | | |
 |---|---|
 | **Plateformes** | iOS, Android et Web |
-| **Version** | 2.0.0 |
+| **Version** | 2.1.0 |
 | **Langues** | Anglais, Espagnol, Catalan, Galicien, Basque, Français, Allemand, Portugais et Italien |
 | **Données** | 100 % locales (SQLite sur natif, sql.js + IndexedDB sur web) |
 | **Thèmes** | Sombre, Clair et Automatique (suit le système) |

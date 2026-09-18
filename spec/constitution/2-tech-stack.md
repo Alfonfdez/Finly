@@ -19,7 +19,7 @@
 
 ```
 FinlyApp/
-+-- app.json                          <- Expo config (name, version 2.0.0, package com.finly.app)
++-- app.json                          <- Expo config (name, version 2.1.0, package com.finly.app)
 +-- App.tsx                           <- main entry: DB init + splash + providers
 +-- tsconfig.json
 +-- package.json

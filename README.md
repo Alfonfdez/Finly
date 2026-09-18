@@ -9,7 +9,7 @@ Everything runs **on-device**: your data lives in a local SQLite database (sql.j
 | | |
 |---|---|
 | **Platforms** | iOS, Android, and Web |
-| **Version** | 2.0.0 |
+| **Version** | 2.1.0 |
 | **Languages** | English, Spanish, Catalan, Galician, Basque, French, German, Portuguese, Italian |
 | **Data** | 100 % local (SQLite on native, sql.js + IndexedDB on web) |
 | **Themes** | Dark, Light, and Automatic (follows the system) |

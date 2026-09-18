@@ -19,9 +19,12 @@ dist/
 web-build/
 expo-env.d.ts
 
-# Native (prebuild regenerates these on EAS; never upload local build dirs)
-android/
-ios/
+# Native (prebuild regenerates these on EAS; never upload local build dirs).
+# Anchored to the Expo project root: an unanchored "android/" would also match
+# modules/finly-share/android|ios and silently drop the local native module
+# from EAS archives.
+/FinlyApp/android/
+/FinlyApp/ios/
 .kotlin/
 node_modules/
 *.jks

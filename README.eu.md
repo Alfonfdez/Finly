@@ -9,7 +9,7 @@ Dena **gailuan** exekutatzen da: zure datuak tokiko SQLite datu-base batean bizi
 | | |
 |---|---|
 | **Plataformak** | iOS, Android eta Web |
-| **Bertsioa** | 2.0.0 |
+| **Bertsioa** | 2.1.0 |
 | **Hizkuntzak** | Ingelesa, Gaztelania, Katalana, Galiziera, Euskara, Frantsesa, Alemana, Portugesa eta Italiera |
 | **Datuak** | % 100 tokikoak (SQLite natiboan, sql.js + IndexedDB webgunean) |
 | **Gaiak** | Iluna, Argia eta Automatikoa (sistemari jarraitzen dio) |
