@@ -13,7 +13,7 @@ export const eu: Language = {
   settings_data: 'Datuak',
   settings_calendar: 'EGUTEGIA',
   settings_money: 'DIRU FORMATOA',
-  settings_language: 'HIZKUNTZA',
+  settings_language: 'Hizkuntza',
   settings_theme: 'Gaia',
   settings_first_day: 'Asteko lehen eguna',
   settings_currency: 'Moneta',

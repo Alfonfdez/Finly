@@ -13,7 +13,7 @@ export const gl: Language = {
   settings_data: 'Datos',
   settings_calendar: 'CALENDARIO',
   settings_money: 'FORMATO DE DIñeiro',
-  settings_language: 'IDIOMA',
+  settings_language: 'Idioma',
   settings_theme: 'Tema',
   settings_first_day: 'Primeiro día da semana',
   settings_currency: 'Moeda',

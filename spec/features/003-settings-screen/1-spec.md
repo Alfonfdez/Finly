@@ -46,6 +46,8 @@ The main screen displays 4 subsection rows:
 
 When changing the theme, the entire app re-renders in real time (no restart required).
 
+All option selectors in Appearance (and the shared `SelectorInline` reused throughout Settings) render as bordered, centered, equal-height buttons that fill the row width; the selected option is indicated by a primary-colored border plus a faint primary tint (no checkmark). Option-row labels are Title case (the section headers are uppercased by style).
+
 #### 3.2 — Text size
 
 | Option | Type | Default | Values |
@@ -87,7 +89,7 @@ When changing the theme, the entire app re-renders in real time (no restart requ
 | Language | Selector (radio) | English | English, Spanish, Catalan, Galego, Euskara, French, German, Portuguese, Italian |
 
 - Affects: all UI labels via `t()`, month names, day names.
-- Flags: UK (EN), Spain (ES), Senyera (CA), France (FR), Germany (DE), Portugal (PT), Italy (IT), Galego flag (GL), Basque ikurriña (EU). CA, GL and EU have no Unicode flag emoji, so they render as custom-drawn SVGs on every platform (`SenyeraIcon`, `GalicianFlag`, `BasqueFlag`).
+- Flags: UK (EN), Spain (ES), Senyera (CA), France (FR), Germany (DE), Portugal (PT), Italy (IT), Galego flag (GL), Basque ikurriña (EU). CA, GL and EU have no Unicode flag emoji, so they render as custom-drawn SVGs on every platform (`SenyeraIcon`, `GalicianFlag`, `BasqueFlag`). The ikurriña follows the official design — red field, green saltire, white cross on top (band 8.6% of the base width) — rendered as SVG `Rect` + `Line`s.
 
 #### 4.2 — Currency
 

@@ -13,7 +13,7 @@ export const ca: Language = {
   settings_data: 'Dades',
   settings_calendar: 'CALENDARI',
   settings_money: 'FORMAT DE DINERS',
-  settings_language: 'IDIOMA',
+  settings_language: 'Idioma',
   settings_theme: 'Tema',
   settings_first_day: 'Primer dia de la setmana',
   settings_currency: 'Divisa',
