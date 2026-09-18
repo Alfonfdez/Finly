@@ -1,10 +1,9 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { withAlpha } from '../utils/color';
-import { CONTROL_BORDER_RADIUS } from './componentStyles';
+import { BUTTON_BORDER_RADIUS, PRESSED_OPACITY } from './componentStyles';
 
 export type Option<T extends string = string> = { label: string; value: T; icon?: ReactNode };
 
@@ -19,29 +18,47 @@ export default function SelectorInline<T extends string>({ options, selected, on
   const fs = useFontSize();
   return (
     <View style={styles.options}>
-      {options.map(op => (
-        <TouchableOpacity
-          key={String(op.value)}
-          style={[styles.option, { backgroundColor: selected === op.value ? withAlpha(c.primary, 13) : c.surface }]}
-          onPress={() => onSelect(op.value)}
-        >
-          {op.icon && <View style={styles.iconWrap}>{op.icon}</View>}
-          <Text style={[styles.optionText, { color: selected === op.value ? c.primary : c.text, fontSize: fs(14) }]}>
-            {op.label}
-          </Text>
-          {selected === op.value && (
-            <Ionicons name="checkmark" size={16} color={c.primary} style={styles.check} />
-          )}
-        </TouchableOpacity>
-      ))}
+      {options.map(op => {
+        const isSelected = op.value === selected;
+        return (
+          <TouchableOpacity
+            key={String(op.value)}
+            style={[
+              styles.option,
+              {
+                borderColor: isSelected ? c.primary : c.border,
+                backgroundColor: isSelected ? withAlpha(c.primary, 15) : 'transparent',
+              },
+            ]}
+            onPress={() => onSelect(op.value)}
+            activeOpacity={PRESSED_OPACITY}
+            accessibilityRole="button"
+            accessibilityState={{ selected: isSelected }}
+          >
+            {op.icon && <View style={styles.iconWrap}>{op.icon}</View>}
+            <Text style={[styles.optionText, { color: isSelected ? c.primary : c.text, fontSize: fs(14) }]} numberOfLines={1}>
+              {op.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  options: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  option: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: CONTROL_BORDER_RADIUS, gap: 6 },
-  optionText: { fontWeight: '500' },
-  check: { fontWeight: '700' },
-  iconWrap: { justifyContent: 'center', alignItems: 'center' },
+  options: { flexDirection: 'row', gap: 8 },
+  option: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderRadius: BUTTON_BORDER_RADIUS,
+  },
+  optionText: { fontWeight: '600' },
+  iconWrap: { height: 20, justifyContent: 'center', alignItems: 'center' },
 });

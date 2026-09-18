@@ -43,15 +43,14 @@ function GalicianFlag({ size = 16 }: { size?: number }) {
 function BasqueFlag({ size = 16 }: { size?: number }) {
   const w = size;
   const h = size * 0.75;
-  const sw = h * 0.22;
-  const d = sw * 0.55;
+  const band = w * 0.086;
   return (
     <Svg width={w} height={h} viewBox={'0 0 ' + w + ' ' + h}>
       <Rect width={w} height={h} fill={flagColors.basqueRed} />
-      <Line x1={0} y1={0} x2={w} y2={h} stroke={flagColors.basqueWhite} strokeWidth={sw} />
-      <Line x1={w} y1={0} x2={0} y2={h} stroke={flagColors.basqueWhite} strokeWidth={sw} />
-      <Line x1={-d} y1={d} x2={w - d} y2={h + d} stroke={flagColors.basqueGreen} strokeWidth={sw} />
-      <Line x1={w + d} y1={d} x2={d} y2={h + d} stroke={flagColors.basqueGreen} strokeWidth={sw} />
+      <Line x1={0} y1={0} x2={w} y2={h} stroke={flagColors.basqueGreen} strokeWidth={band} strokeLinecap="square" />
+      <Line x1={w} y1={0} x2={0} y2={h} stroke={flagColors.basqueGreen} strokeWidth={band} strokeLinecap="square" />
+      <Line x1={w / 2} y1={0} x2={w / 2} y2={h} stroke={flagColors.basqueWhite} strokeWidth={band} strokeLinecap="square" />
+      <Line x1={0} y1={h / 2} x2={w} y2={h / 2} stroke={flagColors.basqueWhite} strokeWidth={band} strokeLinecap="square" />
     </Svg>
   );
 }

@@ -21,7 +21,7 @@ describe('RegionalScreen', () => {
 
   it('renders the language, currency and format options', async () => {
     const view = await render(<RegionalScreen />);
-    expect(view.getAllByText('LANGUAGE').length).toBeGreaterThan(0);
+    expect(view.getAllByText('Language').length).toBeGreaterThan(0);
     expect(view.getByText('MONEY FORMAT')).toBeTruthy();
     expect(view.getByText('English')).toBeTruthy();
     expect(view.getByText('Currency')).toBeTruthy();

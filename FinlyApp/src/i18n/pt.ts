@@ -13,7 +13,7 @@ export const pt: Language = {
   settings_data: 'Dados',
   settings_calendar: 'CALENDÁRIO',
   settings_money: 'FORMATO MOEDA',
-  settings_language: 'IDIOMA',
+  settings_language: 'Idioma',
   settings_theme: 'Tema',
   settings_first_day: 'Primeiro dia da semana',
   settings_currency: 'Moeda',

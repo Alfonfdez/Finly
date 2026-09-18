@@ -632,6 +632,14 @@ Status: completed.
 Full UI support for Galician (`gl`) and Basque (`eu`), expanding the app from 7 to 9 languages:
 - `src/i18n/gl.ts` and `src/i18n/eu.ts` added with full key parity (enforced by the `Language` type derived from `en.ts`); `lang_gl`/`lang_eu` labels added to all language files, the i18n registry, the `LANGUAGES` map, and the Zod config enum.
 - Both options appear in the Regional language dropdown directly under Catalan; they have no Unicode flag emoji, so they render as custom-drawn SVGs (`GalicianFlag` white + blue diagonal; `BasqueFlag` ikurriña red/green/white) on every platform like the existing Catalan `SenyeraIcon`, resolved via `isGalician`/`isBasque`.
-- Basque dates use a year-first format (e.g. `2026ko abuztuak 3`); Galician uses the standard `day de month de year` pattern.
+Spec: spec/features/003-settings-screen/.
+
+## Settings UI polish
+Status: completed.
+
+Settings appearance and flag polish, applied 2026-09-18:
+- **Option buttons** (`SelectorInline`, shared by Appearance and the Regional/Personalization selectors): now flexible (fill the row width), centered, bordered (primary border + faint tint when selected, neutral otherwise, radius 10), equal height everywhere via a fixed icon box and label line height; selected checkmark removed (selection reads via border + tint).
+- **Language row label**: the `settings_language` i18n value is Title case in all 9 languages (Language/Idioma/Hizkuntza/Langue/Sprache/Lingua…), so the picker row and modal title render in normal case (section header stays uppercased by style).
+- **Basque ikurriña SVG**: corrected to the official design — red field, green diagonal saltire, white cross on top (band = 8.6% of flag width); row aspect ratio kept at 0.75 for picker consistency.
 
 Spec: spec/features/003-settings-screen/.

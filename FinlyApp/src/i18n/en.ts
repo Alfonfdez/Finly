@@ -11,7 +11,7 @@ export const en = {
   settings_data: 'Data',
   settings_calendar: 'CALENDAR',
   settings_money: 'MONEY FORMAT',
-  settings_language: 'LANGUAGE',
+  settings_language: 'Language',
   settings_theme: 'Theme',
   settings_first_day: 'First day of week',
   settings_currency: 'Currency',

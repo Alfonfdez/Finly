@@ -50,5 +50,5 @@ export default function AppearanceScreen() {
 }
 
 const styles = StyleSheet.create({
-  sizeIcon: { fontWeight: '700' },
+  sizeIcon: { fontWeight: '700', lineHeight: 20 },
 });
