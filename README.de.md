@@ -9,7 +9,7 @@ Alles läuft **auf dem Gerät**: Ihre Daten leben in einer lokalen SQLite-Datenb
 | | |
 |---|---|
 | **Plattformen** | iOS, Android und Web |
-| **Version** | 2.0.0 |
+| **Version** | 2.1.0 |
 | **Sprachen** | Englisch, Spanisch, Katalanisch, Galicisch, Baskisch, Französisch, Deutsch, Portugiesisch und Italienisch |
 | **Daten** | 100 % lokal (SQLite nativ, sql.js + IndexedDB im Web) |
 | **Designs** | Dunkel, Hell und Automatisch (folgt dem System) |

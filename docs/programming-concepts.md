@@ -878,7 +878,7 @@ eas build --platform android --profile preview   # → output .apk (installable,
 
 ## Distribution channel
 **Definition:** The route through which users receive the built app (GitHub, app store, etc.).
-**Explanation:** Each channel serves a different audience and expects a different artifact. A GitHub Release carries a sideloadable APK; the Google Play Store expects an AAB and handles per-device APKs itself; iOS stores use IPA files. Finly uses GitHub as its distribution channel for 2.0.
+**Explanation:** Each channel serves a different audience and expects a different artifact. A GitHub Release carries a sideloadable APK; the Google Play Store expects an AAB and handles per-device APKs itself; iOS stores use IPA files. Finly uses GitHub as its distribution channel for 2.1.
 **Example:**
 ```text
 GitHub Release → APK (sideloadable)   ·   Google Play → AAB → per-device APKs
@@ -910,11 +910,11 @@ eas build --platform android --profile preview   # cloud build, download the res
 
 ## Git tag
 **Definition:** An immutable named pointer to a specific commit, used to mark release points.
-**Explanation:** A tag (e.g. `v2.0.0`) permanently labels the exact commit that was released, so the code can be reproduced later. In Finly's git flow the tag is created on the `main` merge commit AFTER `develop` is merged, so the released code matches what ships.
+**Explanation:** A tag (e.g. `v2.1.0`) permanently labels the exact commit that was released, so the code can be reproduced later. In Finly's git flow the tag is created on the `main` merge commit AFTER `develop` is merged, so the released code matches what ships.
 **Example:**
 ```bash
-git tag -a v2.0.0 -m "Finly 2.0.0 release"
-git push origin v2.0.0
+git tag -a v2.1.0 -m "Finly 2.1.0 release"
+git push origin v2.1.0
 ```
 
 ## GitHub Release
@@ -922,7 +922,7 @@ git push origin v2.0.0
 **Explanation:** Releases are how open-source/project apps hand installable builds to users. You point a Release at a tag, write the notes, and attach binaries. GitHub also archives the source at that tag so the release is fully reproducible.
 **Example:**
 ```text
-Tag v2.0.0 → GitHub Release "Finly 2.0.0" → notes + attached app-debug.apk
+Tag v2.1.0 → GitHub Release "Finly 2.1.0" → notes + attached Finly-preview-2.1.0.apk
 ```
 
 ## Release notes
@@ -930,20 +930,21 @@ Tag v2.0.0 → GitHub Release "Finly 2.0.0" → notes + attached app-debug.apk
 **Explanation:** Release notes summarize new features, fixes, and assets for users comparing against the previous release. They are the description field on the GitHub Release page (not a file in the repo), and are written from the roadmap/changelog highlights.
 **Example:**
 ```markdown
-## Finly 2.0.0
-- Version 2.0.0 — new identifiers (com.finly.app, versionCode 1)
-- Theme: Dark / Light / Automatic · 9 languages
-- Photos, tags, comments, bulk actions, data backup
-- Attached: Android APK (sideload)
+## Finly 2.1.0
+- Version 2.1.0 — android.versionCode 2 (updates 2.0.0 in place)
+- Android export: backup saved to Downloads with an optional Share action
+- New languages: Galician and Basque (9 total)
+- Settings UI polish, new data icons, regenerated icons and splash
+- Attached: Finly-preview-2.1.0.apk (sideload)
 ```
 
 ## Semantic versioning (semver)
 **Definition:** Versioning scheme `MAJOR.MINOR.PATCH` where each bump has a meaning.
-**Explanation:** MAJOR changes break compatibility (2.0 → new major), MINOR adds features backwards-compatibly, PATCH fixes bugs. The version also maps to Android identifiers (`versionName "2.0.0"`, `versionCode 1`) — `versionCode` is the unique integer Play uses to detect upgrades, while `versionName` is what users see.
+**Explanation:** MAJOR changes break compatibility (2.0 → new major), MINOR adds features backwards-compatibly, PATCH fixes bugs. The version also maps to Android identifiers (`versionName "2.1.0"`, `versionCode 2`) — `versionCode` is the unique integer Play uses to detect upgrades, while `versionName` is what users see.
 **Example:**
 ```json
 // app.json / android/app/build.gradle
-"version": "2.0.0"      →   versionName "2.0.0", versionCode 1
+"version": "2.1.0"      →   versionName "2.1.0", versionCode 2
 ```
 
 # Databases / ORM

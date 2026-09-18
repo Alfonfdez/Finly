@@ -646,3 +646,15 @@ Settings appearance and flag polish, applied 2026-09-18:
 - **Basque ikurriña SVG**: corrected to the official design — red field, green diagonal saltire, white cross on top (band = 8.6% of flag width); row aspect ratio kept at 0.75 for picker consistency.
 
 Spec: spec/features/003-settings-screen/.
+
+## 2.1 release-readiness
+Status: completed.
+
+Release preparation for 2.1.0, applied and verified 2026-09-18:
+- Version 2.1.0 in app.json, package.json and package-lock.json; android.versionCode 2 (was unset, i.e. 1) and ios.buildNumber 2.1.0. The Drawer footer (Constants.expoConfig?.version) picks it up automatically.
+- .easignore fix: the unanchored `android/` + `ios/` patterns matched at any depth (gitignore semantics) and silently dropped `modules/finly-share/{android,ios}` from EAS archives -> anchored to `/FinlyApp/android` and `/FinlyApp/ios` so the local native module is included in EAS builds.
+- EAS preview APK (build df11f8fa-4651-4903-a3da-295f07c9b420) verified: com.finly.app versionCode 2 / versionName 2.1.0, `FinlyShareModule` + `saveToDownloadsAsync` in classes2.dex, `finlyshare.fileprovider` in manifest; installs in-place over the v2.0.0 release APK (device-tested).
+- Version references updated in the 9 READMEs, tech-stack and screens constitution docs, plus a 2.1.0 changelog entry.
+- Gate: `npm run test:all` green (92 files / 579 tests).
+
+`[ ]` Released: Finly 2.1.0 published as a GitHub Release (tag `v2.1.0`) — to be ticked after going live, mirroring the 2.0.0 entry.
