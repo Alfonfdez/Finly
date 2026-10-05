@@ -3165,3 +3165,46 @@
 - .easignore fix: the unanchored `android/` and `ios/` patterns matched at any depth (gitignore semantics), so EAS archives silently dropped `FinlyApp/modules/finly-share/android` and `.../ios`. Anchored to `/FinlyApp/android/` and `/FinlyApp/ios/` so the local finly-share native module is included in EAS builds.
 - All 9 README version rows bumped to 2.1.0 (en/de/fr/it + es, ca, gl, eu, pt) and the current-version references updated in `spec/constitution/2-tech-stack.md` (app.json comment) and `spec/constitution/6-screens.md` (drawer footer diagram/format example). Added a "2.1 release-readiness" entry to `spec/constitution/3-roadmap.md` and moved the "Release and Distribution" worked examples in `docs/programming-concepts.md` (git tag, GitHub Release asset name, release-notes skeleton, semver mapping) from 2.0.0/versionCode 1 to 2.1.0/versionCode 2.
 - What's new since 2.0.0: Android export saves the backup straight to the Downloads folder with an optional Share action (finly-share, hybrid flow, truthful feedback); new Galician (galego) and Basque (euskera) languages; settings UI polish (flexible SelectorInline options, Basque ikurrina flag fix, Title-case language labels); new export/import data icons; regenerated transparent icons and splash; Expo SDK 57 patch sets (~57.0.24); docs for galego/euskara and MIT license.
+
+[2026-10-05] + | scripts/append-changelog.mjs, .agents/skills/changelog/SKILL.md, AGENTS.md, FinlyApp/scripts/gen-finly-assets.mjs, FinlyApp/tests/i18n/parity.test.ts, opencode.example.jsonc, docs/assets.md
+- Added `scripts/append-changelog.mjs`, a deterministic changelog appender (one blank line between entries, strips only trailing newlines, refuses to write if the tail looks truncated, CRLF output) ported from the Listly project; supports `--dry-run`, `--stdin` and `--bullets-file` for PowerShell-safe input.
+- `.agents/skills/changelog/SKILL.md` and `AGENTS.md` now mandate using the script instead of hand-editing `docs/changelog.md`; added a `## CHANGELOG` section to `AGENTS.md`.
+- Added `FinlyApp/scripts/gen-finly-assets.mjs` (consolidating `regenerate-icons.mjs` + `optimize-icons.mjs`): derives `favicon.png`, `splash-icon.png`, `android-icon-foreground.png` and `android-icon-monochrome.png` from the canonical `assets/icon.png` (chroma-key glyph), validating 1024x1024 and < 1 MB, with an `--out` preview flag; `icon.png` and `android-icon-background.png` stay authored sources.
+- Added `FinlyApp/tests/i18n/parity.test.ts`: every language registers in `LANGUAGES`, has the same keys as `en`, matching function arity and no empty strings.
+- Added committed `opencode.example.jsonc` (the real `opencode.jsonc` is gitignored).
+- Updated `docs/assets.md` (corrected the stale `app.json` snippet: `backgroundColor` `#E6F4FE`, `backgroundImage`, `expo-sharing`; documented the new generator) and added the `## ANDROID BUILD & RELEASE (EAS)` section to `AGENTS.md`.
+- `npm run test:all` green (93 files / 606 tests).
+
+[2026-10-05] - | FinlyApp/scripts/regenerate-icons.mjs, FinlyApp/scripts/optimize-icons.mjs, FinlyApp/gen-listly-assets.mjs
+- Removed `FinlyApp/scripts/regenerate-icons.mjs` and `FinlyApp/scripts/optimize-icons.mjs`, superseded by `FinlyApp/scripts/gen-finly-assets.mjs`.
+- Removed the stray `FinlyApp/gen-listly-assets.mjs` (an obsolete Listly icon generator with a hardcoded Listly output path, unrelated to Finly).
+
+[2026-10-05] ~ | docs/harnesses.md
+- Updated the test-suite baseline to 2026-10-05: 93 test files / 606 tests (was 92 / 571).
+
+[2026-10-05] ~ | FinlyApp/scripts/gen-finly-assets.mjs
+- Fixed the generator to write the optimized PNG buffer directly (was re-encoding through sharp.toFile, dropping the compression/palette options). Verified against the current assets: splash-icon.png is byte-identical, favicon/foreground/monochrome are visually equivalent (visible-pixel MAD < 1/255).
+
+[2026-10-05] ~ | FinlyApp/scripts/gen-finly-assets.mjs, docs/assets.md, FinlyApp/.gitignore
+- Refactored the generator to use the transparent `assets/splash-icon.png` as the mark source and emit the full six-asset set: it now also writes `icon.png` (glyph on the flat `#E6F4FE` background), `favicon.png` (a copy of `icon.png`) and `android-icon-background.png` (flat `#E6F4FE`), alongside `splash-icon.png`, `android-icon-foreground.png` and `android-icon-monochrome.png`; the glyph is trimmed to its alpha bounds so re-running is idempotent.
+- Added the `--out <dir>` option so the assets can be written to a temporary folder for review before replacing `assets/`, and updated `docs/assets.md` to document the splash-based generation and the flat background.
+
+[2026-10-05] ~ | FinlyApp/assets/icon.png, FinlyApp/assets/favicon.png, FinlyApp/assets/splash-icon.png, FinlyApp/assets/android-icon-background.png, FinlyApp/assets/android-icon-foreground.png, FinlyApp/assets/android-icon-monochrome.png
+- Regenerated all six app assets with `FinlyApp/scripts/gen-finly-assets.mjs` (source of truth: the transparent `splash-icon.png`): `icon.png`/`favicon.png` now carry a flat `#E6F4FE` background and `android-icon-background.png` is flat `#E6F4FE` (was a subtle near-white gradient); `splash-icon.png`, `android-icon-foreground.png` and `android-icon-monochrome.png` are visually unchanged (splash effectively identical, the transparent pair equivalent on visible pixels).
+- Ran `npx expo prebuild --platform android` to bake the new icons/splash into native resources; `npm run test:all` green (93 files / 606 tests).
+
+[2026-10-05] ~ | FinlyApp/scripts/gen-finly-assets.mjs, FinlyApp/app.json, FinlyApp/assets/*.png, docs/assets.md
+- Split the generated background colors: `android-icon-background.png` (and `android.adaptiveIcon.backgroundColor`) is now plain `#FFFFFF` so the Android launcher icon reads better on device, while `icon.png`/`favicon.png` keep the `#E6F4FE` background; the transparent `splash-icon.png`, `android-icon-foreground.png` and `android-icon-monochrome.png` are unchanged.
+- Regenerated the assets and ran `npx expo prebuild --platform android`; `npm run test:all` green (93 files / 606 tests).
+
+[2026-10-05] ~ | FinlyApp/scripts/gen-finly-assets.mjs, FinlyApp/app.json, FinlyApp/assets/*.png, docs/assets.md
+- Switched every generated background to plain `#FFFFFF` (matching Listly): `icon.png`, `favicon.png` and `android-icon-background.png` — plus `android.adaptiveIcon.backgroundColor` — are now flat white, replacing the `#E6F4FE` icon/favicon background; the transparent `splash-icon.png`, `android-icon-foreground.png` and `android-icon-monochrome.png` are unchanged.
+- Regenerated the assets and ran `npx expo prebuild --platform android`; `npm run test:all` green (93 files / 606 tests).
+
+[2026-10-05] ~ | FinlyApp/package.json, FinlyApp/package-lock.json, docs/harnesses.md
+- Bumped the Expo SDK 57 patch set to the versions expected by the compat checker via `npx expo install --fix`: expo `~57.0.24` -> `~57.0.26`, expo-document-picker -> `~57.0.3`, expo-image-picker -> `~57.0.20`, expo-sharing -> `~57.0.22` (expo-constants installed to 57.0.20 without a range change — the existing `~57.0.17` already allows it). Non-SDK packages left alone.
+- Verified: `expo-doctor` 21/21 checks passed, `npx expo install --check` reports "Dependencies are up to date", `npm run test:all` green (93 files / 606 tests); `docs/harnesses.md` SDK-patch line updated to `expo ~57.0.26`.
+
+[2026-10-05] - | FinlyApp/.gitignore, docs/assets.md
+- Removed the temporary icon-preview folder used to compare the generated PNGs against the committed assets, and dropped its `.gitignore` entry.
+- Updated `docs/assets.md` to describe the review flow generically with `--out <dir>` instead of a named folder.
