@@ -3208,3 +3208,12 @@
 [2026-10-05] - | FinlyApp/.gitignore, docs/assets.md
 - Removed the temporary icon-preview folder used to compare the generated PNGs against the committed assets, and dropped its `.gitignore` entry.
 - Updated `docs/assets.md` to describe the review flow generically with `--out <dir>` instead of a named folder.
+
+[2026-10-05] docs | spec/features/028-recurring-transactions/1-spec.md, spec/features/028-recurring-transactions/2-plan.md, spec/features/028-recurring-transactions/3-tasks.md, spec/constitution/3-roadmap.md, spec/constitution/2-tech-stack.md, docs/programming-concepts.md
+- Added the SDD spec for feature `028-recurring-transactions` (`1-spec.md`, `2-plan.md`, `3-tasks.md`): recurring rules materialized by reconciliation on app start/foreground plus a midnight timer while open, daily/weekly/monthly/yearly with an "every N" interval, in-place edit with "from now on" or "from now on + past generated" scope, a Drawer management screen, and delete keeping the generated transactions.
+- Documented the DB migration/versioning plan: additive `004_recurring`, `SCHEMA_VERSION 3 -> 4`, backward-compatible backup format (`v1` + optional collections), and the additive-migration policy in `spec/constitution/2-tech-stack.md`.
+- Added the `028-recurring-transactions` roadmap entry and new `docs/programming-concepts.md` entries (additive schema migration, backward-compatible snapshot format, recurrence rule, reconciliation/catch-up, idempotent materialization); refreshed the stale `PRAGMA user_version` explanation.
+
+[2026-10-05] docs | spec/constitution/7-platform-differences.md, spec/features/028-recurring-transactions/2-plan.md, spec/features/028-recurring-transactions/3-tasks.md
+- Documented the recurring-transactions platform behavior in `spec/constitution/7-platform-differences.md`: two feature-matrix rows plus a "Recurring transactions (feature 028)" section (materialization on app start/foreground/timer on all platforms; closed-app catch-up out of scope for v1; partial-unique-index idempotency; web `AppState` visibility nuance; native-only verification).
+- Referenced the file in the feature's `spec/features/028-recurring-transactions/2-plan.md` docs list and `3-tasks.md` Phase 0.
