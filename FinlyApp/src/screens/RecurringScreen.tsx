@@ -6,6 +6,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import ScreenShell from '../components/ScreenShell';
 import IconBadge from '../components/IconBadge';
 import Fab from '../components/Fab';
+import { switchColors } from '../components/componentStyles';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -104,8 +105,7 @@ export default function RecurringScreen() {
                     value={active}
                     onValueChange={value => handleToggleActive(item, value)}
                     accessibilityLabel={labels.recurring_active}
-                    trackColor={{ false: c.border, true: c.primary }}
-                    thumbColor={c.background}
+                    {...switchColors(c)}
                   />
                 </View>
               </View>

@@ -35,7 +35,7 @@ All commands run from the `FinlyApp/` directory.
 
 ### Current suite baseline
 
-Verified 2026-10-05: **101 test files / 660 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
+Verified 2026-10-05: **102 test files / 663 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
 
 Native E2E baseline (2026-09-09, SDK 57 + v2.0.0 release package): all 10 Maestro flows PASS on the `finly_test` emulator against `com.finly.app` after `expo prebuild` + `assembleDebug`.
 
@@ -340,6 +340,7 @@ and each suite calls `resetStub()` in `beforeEach`. i18n is NOT stubbed — the 
 | `tests/component/RepeatSection.test.tsx` | `RepeatSection` — toggle visibility, frequency chips, interval stepper, end date, recurrence summary, rule-mode (no toggle) |
 | `tests/component/YearNav.test.tsx` | `YearNav` — forward arrow disabled at the current-year default, unbounded when `maxYear` is null, back arrow disabled at `minYear` |
 | `tests/component/DayPicker.test.tsx` | `DayPicker` — default no-future (forward year arrow disabled, future days unselectable); `maxDate={null}` enables future years/days; follows the `date` prop on reopen (view-sync) |
+| `tests/component/ToggleRow.test.tsx` | `ToggleRow` — renders a `Switch` reflecting `checked`, toggles from the switch and from the label |
 
 Context, hooks, and screens are covered by additional RNTL suites (same mock stack — configStub, `@expo/vector-icons` alias, `@react-navigation/native` mocked per file). Coverage added in the Phase C test-expansion pass:
 

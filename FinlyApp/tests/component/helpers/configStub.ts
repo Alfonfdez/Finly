@@ -43,6 +43,8 @@ const colorsTemplate: ColorPalette = {
   green: '#34D399',
   red: '#F87171',
   border: '#334155',
+  switchTrackOff: '#475569',
+  switchThumb: '#F8FAFC',
 };
 
 function createStub(): ConfigStubState {

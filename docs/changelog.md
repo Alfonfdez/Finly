@@ -3276,3 +3276,8 @@
 
 [2026-10-05] docs | spec/constitution/6-screens.md, docs/harnesses.md
 - Corrected the calendar docs: 'YearNav' is now bounds-aware (only 'MonthGrid'/'YearGrid' remain past-only), and noted the 'DayPicker' view-sync test in the harness baseline.
+
+[2026-10-06] style | FinlyApp/src/constants/themes.ts, FinlyApp/src/components/componentStyles.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/components/settings/ToggleRow.tsx, FinlyApp/tests/component/helpers/configStub.ts, FinlyApp/tests/component/ToggleRow.test.tsx, FinlyApp/tests/screens/PersonalizationScreen.test.tsx, spec/constitution/4-design-system.md, docs/harnesses.md
+- Toggle colors: added `switchTrackOff`/`switchThumb` tokens to `ColorPalette` (dark `#475569`/`#F8FAFC`, light `#94A3B8`/`#FFFFFF`) and a shared `switchColors(c)` helper (`componentStyles.ts`, incl. react-native-web's `activeTrackColor`/`activeThumbColor`). Applied to the Repeat switch (Add transaction) and the Recurring Active switch — fixing the low-contrast thumb (it used to be `c.background`, i.e. the page color).
+- Settings → Personalization → Privacy: `ToggleRow` now renders a real React Native `Switch` (was an Ionicons toggle glyph with no thumb animation), so it animates and matches the other toggles.
+- Tests: new `ToggleRow` test; updated `PersonalizationScreen` test to the switch role; `npm run test:all` green (102 files / 663 tests). Docs: `4-design-system.md` switch tokens + usage rule; harness baseline updated. Verified on web (dark: off `#475569`/on `#22D3EE`, thumb `#F8FAFC`; light: off `#94A3B8`/on `#0891B2`, thumb `#FFFFFF`; Privacy renders a switch).
