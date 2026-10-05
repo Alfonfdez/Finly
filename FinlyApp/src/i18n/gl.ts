@@ -525,6 +525,8 @@ export const gl: Language = {
   a11y_close_search: 'Pechar a busca',
   a11y_previous_month: 'Mes anterior',
   a11y_next_month: 'Mes seguinte',
+  a11y_previous_year: 'Ano anterior',
+  a11y_next_year: 'Ano seguinte',
   backup_dialog_title: 'Copia de seguridade Finly',
   a11y_add: 'Engadir',
 };

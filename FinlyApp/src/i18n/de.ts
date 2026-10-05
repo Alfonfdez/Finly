@@ -525,6 +525,8 @@ export const de: Language = {
   a11y_close_search: 'Suche schließen',
   a11y_previous_month: 'Vorheriger Monat',
   a11y_next_month: 'Nächster Monat',
+  a11y_previous_year: 'Vorheriges Jahr',
+  a11y_next_year: 'Nächstes Jahr',
   backup_dialog_title: 'Finly-Sicherung',
   a11y_add: 'Hinzufügen',
 };

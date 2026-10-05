@@ -1,6 +1,8 @@
 import { withTransaction } from './drizzle/engine';
-import { recurringRepo } from './repositories/recurringRepo';
-import { listDueOccurrences, nextDueOnOrAfter, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
+import { recurringRepo, type RecurringRuleInput } from './repositories/recurringRepo';
+import { listDueOccurrences, nextDueOnOrAfter, fromDateOnly, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
+import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, type RecurrenceScope } from '../constants/types';
+import type { RecurringRule } from './types';
 
 /**
  * Materialize every due occurrence for all active recurring rules.
@@ -59,4 +61,82 @@ export async function resumeRecurringRule(ruleId: number, now: Date = new Date()
 
   await recurringRepo.reactivate(ruleId, nextDue);
   return materializeDueRecurring(now);
+}
+
+export interface RecurringEditRecurrence {
+  frequency: RecurringRule['frequency'];
+  interval: number;
+  endDate: string | null;
+}
+
+export interface RecurringEditPastPatch {
+  account_id: number;
+  category_id: number;
+  amount: number;
+  description: string | null;
+}
+
+export interface RecurringEditParams {
+  ruleId: number;
+  updated: Partial<RecurringRuleInput>;
+  recurrence: RecurringEditRecurrence;
+  scope: RecurrenceScope;
+  pastPatch: RecurringEditPastPatch;
+  tagIds: number[];
+  now?: Date;
+}
+
+/**
+ * Apply an edit to a recurring rule.
+ *
+ * Reconciles the old schedule first (so everything due exists with the old
+ * values), then rewrites the rule and reconciles again so the change takes
+ * effect immediately. Scope controls the cursor:
+ * - `future`          → next occurrence on/after today (occurrences missed since
+ *                       the rule's cursor are skipped; past generated unchanged).
+ * - `futureAndPast`   → next occurrence on/after the rule's cursor (the missed
+ *                       window is back-filled) and every already-generated
+ *                       transaction is bulk-updated.
+ *
+ * @returns the number of transactions created by the second reconciliation.
+ */
+export async function saveRecurringRuleEdit(params: RecurringEditParams): Promise<number> {
+  const { ruleId, updated, recurrence, scope, pastPatch, tagIds } = params;
+  const now = params.now ?? new Date();
+  const today = todayDateOnly(now);
+
+  await materializeDueRecurring(now);
+
+  const current = await recurringRepo.getById(ruleId);
+  if (!current) return 0;
+
+  const cursor = current.next_due;
+  const startDate = (updated.start_date ?? current.start_date).slice(0, 10);
+  const start = fromDateOnly(startDate);
+  const schedule = {
+    frequency: recurrence.frequency,
+    interval: recurrence.interval,
+    weekday: recurrence.frequency === RECURRENCE_FREQUENCIES.weekly ? start.getDay() : null,
+    day_of_month:
+      recurrence.frequency === RECURRENCE_FREQUENCIES.monthly || recurrence.frequency === RECURRENCE_FREQUENCIES.yearly
+        ? start.getDate()
+        : null,
+    month: recurrence.frequency === RECURRENCE_FREQUENCIES.yearly ? start.getMonth() + 1 : null,
+    start_date: startDate,
+    end_date: recurrence.endDate,
+  };
+  const nextDue =
+    scope === RECURRENCE_SCOPES.futureAndPast
+      ? nextDueOnOrAfter(schedule, cursor)
+      : nextDueOnOrAfter(schedule, today);
+
+  await recurringRepo.updateWithTags(ruleId, { ...updated, ...schedule, next_due: nextDue }, tagIds);
+
+  const created = await materializeDueRecurring(now);
+
+  if (scope === RECURRENCE_SCOPES.futureAndPast) {
+    await recurringRepo.updateGeneratedTransactions(ruleId, { ...pastPatch, tagIds });
+  }
+
+  return created;
 }

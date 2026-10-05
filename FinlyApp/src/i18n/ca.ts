@@ -525,6 +525,8 @@ export const ca: Language = {
   a11y_close_search: 'Tanca la cerca',
   a11y_previous_month: 'Mes anterior',
   a11y_next_month: 'Mes següent',
+  a11y_previous_year: 'Any anterior',
+  a11y_next_year: 'Any següent',
   backup_dialog_title: 'Còpia de seguretat Finly',
   a11y_add: 'Afegir',
 };

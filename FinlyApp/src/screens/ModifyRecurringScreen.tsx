@@ -11,10 +11,10 @@ import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { t } from '../i18n';
-import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, type RecurrenceScope, type NavigationProp, type RootStackParamList } from '../constants/types';
-import { fromDateOnly, nextDueOnOrAfter, todayDateOnly } from '../utils/recurrence';
+import { RECURRENCE_SCOPES, type RecurrenceScope, type NavigationProp, type RootStackParamList } from '../constants/types';
+import { fromDateOnly } from '../utils/recurrence';
 import { recurringRepository } from '../database';
-import { materializeDueRecurring } from '../database/recurringService';
+import { saveRecurringRuleEdit } from '../database/recurringService';
 import type { RecurringRule } from '../database/types';
 
 type ModifyRecurringRouteProp = RouteProp<RootStackParamList, 'ModifyRecurring'>;
@@ -46,29 +46,15 @@ export default function ModifyRecurringScreen() {
     pastPatch: { account_id: number; category_id: number; amount: number; description: string | null },
     selectedTagIds: number[],
   ) => {
-    await materializeDueRecurring();
-    const startDate = (updated.start_date ?? rule?.start_date ?? todayDateOnly()).slice(0, 10);
-    const schedule = {
-      frequency: recurrence.frequency,
-      interval: recurrence.interval,
-      weekday: recurrence.frequency === RECURRENCE_FREQUENCIES.weekly ? fromDateOnly(startDate).getDay() : null,
-      day_of_month:
-        recurrence.frequency === RECURRENCE_FREQUENCIES.monthly || recurrence.frequency === RECURRENCE_FREQUENCIES.yearly
-          ? fromDateOnly(startDate).getDate()
-          : null,
-      month: recurrence.frequency === RECURRENCE_FREQUENCIES.yearly ? fromDateOnly(startDate).getMonth() + 1 : null,
-      start_date: startDate,
-      end_date: recurrence.endDate,
-    };
-    await recurringRepository.updateWithTags(
+    await saveRecurringRuleEdit({
       ruleId,
-      { ...updated, ...schedule, next_due: nextDueOnOrAfter(schedule, todayDateOnly()) },
-      selectedTagIds,
-    );
-    if (scope === RECURRENCE_SCOPES.futureAndPast) {
-      await recurringRepository.updateGeneratedTransactions(ruleId, { ...pastPatch, tagIds: selectedTagIds });
-    }
-  }, [ruleId, rule, scope]);
+      updated,
+      recurrence,
+      scope,
+      pastPatch,
+      tagIds: selectedTagIds,
+    });
+  }, [ruleId, scope]);
 
   const handleDelete = useCallback(async () => {
     await recurringRepository.remove(ruleId);

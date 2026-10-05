@@ -525,6 +525,8 @@ export const it: Language = {
   a11y_close_search: 'Chiudi ricerca',
   a11y_previous_month: 'Mese precedente',
   a11y_next_month: 'Mese successivo',
+  a11y_previous_year: 'Anno precedente',
+  a11y_next_year: 'Anno successivo',
   backup_dialog_title: 'Backup Finly',
   a11y_add: 'Aggiungi',
 };

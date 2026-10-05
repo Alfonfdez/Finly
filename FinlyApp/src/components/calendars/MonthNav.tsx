@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { getMonthName } from '../../utils/formatters';
+import { resolveDateBounds } from '../../utils/calendarBounds';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import NavArrows from './NavArrows';
@@ -18,9 +19,7 @@ export default function MonthNav({ year, month, onChange, minDate, maxDate }: Pr
   const today = useMemo(() => new Date(), []);
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  // undefined keeps the historical "no future" default; null means unbounded.
-  const max = maxDate === undefined ? today : maxDate;
-  const min = minDate ?? null;
+  const { min, max } = resolveDateBounds(minDate, maxDate, today);
   const atMax = !!max && (year > max.getFullYear() || (year === max.getFullYear() && month >= max.getMonth() + 1));
   const atMin = !!min && (year < min.getFullYear() || (year === min.getFullYear() && month <= min.getMonth() + 1));
 

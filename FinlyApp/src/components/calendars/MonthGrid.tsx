@@ -5,7 +5,7 @@ import type { CalendarBaseProps } from './types';
 import YearNav from './YearNav';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
-import { calendarStyles, FUTURE_OPACITY } from './calendarStyles';
+import { calendarStyles, DISABLED_OPACITY } from './calendarStyles';
 import { MONTHS_PER_YEAR } from '../../constants/calendar';
 
 const MONTHS = Array.from({ length: MONTHS_PER_YEAR }, (_, i) => i + 1);
@@ -32,7 +32,7 @@ export default function MonthGrid({ date, onSelect }: CalendarBaseProps) {
           return (
             <TouchableOpacity
               key={m}
-              style={[calendarStyles.gridItem, isFuture && { opacity: FUTURE_OPACITY }]}
+              style={[calendarStyles.gridItem, isFuture && { opacity: DISABLED_OPACITY }]}
               onPress={() => !isFuture && onSelect(monthDate)}
               disabled={isFuture}
               accessibilityLabel={getMonthName(m)}

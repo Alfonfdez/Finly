@@ -1,13 +1,15 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { getDaysInMonth, isSameDay, isDateWithinBounds, dayOffset } from '../../utils/formatters';
+import { resolveDateBounds } from '../../utils/calendarBounds';
 import { withAlpha } from '../../utils/color';
 import type { CalendarBaseProps } from './types';
 import MonthNav from './MonthNav';
+import YearNav from './YearNav';
 import { useConfig } from '../../context/ConfigContext';
 import { t } from '../../i18n';
 import { useFontSize } from '../../hooks/useFontSize';
-import { calendarStyles, FUTURE_OPACITY } from './calendarStyles';
+import { calendarStyles, DISABLED_OPACITY } from './calendarStyles';
 import { FIRST_DAYS } from '../../constants/types';
 import { CALENDAR_GRID_CELLS, DAY_WIDTH_PERCENT } from '../../constants/calendar';
 
@@ -28,7 +30,27 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
   const labels = t();
   const firstDay = config.firstDayOfWeek;
   // undefined keeps the historical "no future" default; null means unbounded.
-  const effectiveMax = maxDate === undefined ? today : maxDate;
+  const { min: minBound, max: maxBound } = resolveDateBounds(minDate, maxDate, today);
+
+  // Follow the selected date (the modal resets it on open, after this mounts).
+  // Skipped when an explicit initialView is given (e.g. PeriodPicker).
+  useEffect(() => {
+    if (initialView) return;
+    setYear(date.getFullYear());
+    setMonth(date.getMonth() + 1);
+  }, [date, initialView]);
+
+  const changeYear = useCallback((newYear: number) => {
+    if (maxBound && newYear > maxBound.getFullYear()) return;
+    if (minBound && newYear < minBound.getFullYear()) return;
+    setYear(newYear);
+    if (maxBound && newYear === maxBound.getFullYear() && month > maxBound.getMonth() + 1) {
+      setMonth(maxBound.getMonth() + 1);
+    }
+    if (minBound && newYear === minBound.getFullYear() && month < minBound.getMonth() + 1) {
+      setMonth(minBound.getMonth() + 1);
+    }
+  }, [minBound, maxBound, month]);
 
   const daysInMonth = getDaysInMonth(year, month);
   const firstDayOfMonth = new Date(year, month - 1, 1);
@@ -41,7 +63,9 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
 
   return (
     <View style={calendarStyles.container}>
-      <MonthNav year={year} month={month} onChange={(a, m) => { setYear(a); setMonth(m); }} minDate={minDate} maxDate={maxDate} />
+      <YearNav year={year} minDate={minBound} maxDate={maxBound} onChange={changeYear} />
+
+      <MonthNav year={year} month={month} onChange={(a, m) => { setYear(a); setMonth(m); }} minDate={minBound} maxDate={maxBound} />
 
       <View style={styles.weekDays}>
         {headers.map(d => (
@@ -57,7 +81,7 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
           const dayDate = new Date(year, month - 1, day);
           const isToday = isSameDay(dayDate, today);
           const isSelected = isSameDay(dayDate, date);
-          const isDisabled = !isDateWithinBounds(dayDate, minDate, effectiveMax);
+          const isDisabled = !isDateWithinBounds(dayDate, minBound, maxBound);
           const withinRange = inRange(dayDate);
           const isStart = isStartEdge(dayDate);
           const isEnd = isEndEdge(dayDate);
@@ -65,7 +89,7 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
           return (
             <TouchableOpacity
               key={day}
-              style={[styles.day, isDisabled && { opacity: FUTURE_OPACITY }]}
+              style={[styles.day, isDisabled && { opacity: DISABLED_OPACITY }]}
               onPress={() => !isDisabled && onSelect(dayDate)}
               disabled={isDisabled}
               accessibilityLabel={`${day} ${labels.months[month - 1]}${isToday ? ', today' : ''}${isSelected ? ', selected' : ''}`}

@@ -4,7 +4,7 @@ import type { CalendarBaseProps } from './types';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import NavArrows from './NavArrows';
-import { calendarStyles, FUTURE_OPACITY } from './calendarStyles';
+import { calendarStyles, DISABLED_OPACITY } from './calendarStyles';
 import { YEARS_PER_PAGE } from '../../constants/calendar';
 
 export default function YearGrid({ date, onSelect }: CalendarBaseProps) {
@@ -32,7 +32,7 @@ export default function YearGrid({ date, onSelect }: CalendarBaseProps) {
           return (
             <TouchableOpacity
               key={y}
-              style={[calendarStyles.gridItem, isFuture && { opacity: FUTURE_OPACITY }]}
+              style={[calendarStyles.gridItem, isFuture && { opacity: DISABLED_OPACITY }]}
               onPress={() => !isFuture && onSelect(new Date(y, 0, 1))}
               disabled={isFuture}
               accessibilityLabel={String(y)}

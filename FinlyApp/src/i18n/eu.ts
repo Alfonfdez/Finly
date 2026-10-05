@@ -525,6 +525,8 @@ export const eu: Language = {
   a11y_close_search: 'Bilaketa itxi',
   a11y_previous_month: 'Aurreko hilabetea',
   a11y_next_month: 'Hurrengo hilabetea',
+  a11y_previous_year: 'Aurreko urtea',
+  a11y_next_year: 'Hurrengo urtea',
   backup_dialog_title: 'Finly babeskopia',
   a11y_add: 'Gehitu',
 };
