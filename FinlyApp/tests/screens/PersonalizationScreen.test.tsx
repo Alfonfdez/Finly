@@ -33,7 +33,7 @@ describe('PersonalizationScreen', () => {
 
   it('toggles hide balances', async () => {
     const view = await render(<PersonalizationScreen />);
-    fireEvent.press(view.getByLabelText('Hide account balances'));
+    fireEvent(view.getByRole('switch', { name: 'Hide account balances' }), 'valueChange', true);
     expect(getConfigStub().updateConfig).toHaveBeenCalledWith({ hideBalances: true });
   });
 });

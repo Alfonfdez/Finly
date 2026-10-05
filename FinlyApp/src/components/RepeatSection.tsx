@@ -7,7 +7,7 @@ import { RECURRENCE_FREQUENCIES, type RecurrenceFrequency } from '../constants/t
 import { formatDateLong } from '../utils/formatters';
 import { toDateOnly } from '../utils/recurrence';
 import { recurrenceSummary } from '../utils/recurrenceSummary';
-import { PILL_RADIUS, SECTION_GAP, SECTION_TITLE_STYLE } from './componentStyles';
+import { PILL_RADIUS, SECTION_GAP, SECTION_TITLE_STYLE, switchColors } from './componentStyles';
 
 interface Props {
   enabled: boolean;
@@ -82,8 +82,7 @@ export default function RepeatSection({
             value={enabled}
             onValueChange={onToggle}
             accessibilityLabel={labels.recurring_chip}
-            trackColor={{ false: c.border, true: c.primary }}
-            thumbColor={c.background}
+            {...switchColors(c)}
           />
         )}
       </View>

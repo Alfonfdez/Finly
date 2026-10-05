@@ -1,4 +1,5 @@
 import { isWeb } from '../utils/platform';
+import type { ColorPalette } from '../constants/themes';
 
 export const PRESSED_OPACITY = 0.7;
 export const OVERLAY_BG = 'rgba(0,0,0,0.6)';
@@ -29,3 +30,16 @@ export const SECTION_GAP = 16;
 export const SECTION_TITLE_STYLE = {
   fontWeight: '600' as const,
 };
+
+/** Standard colors for every RN `Switch` (dark + light), from theme tokens.
+ *  `activeTrackColor`/`activeThumbColor` are react-native-web's ON-state props
+ *  (harmless on native, where `thumbColor` already covers both states). */
+export function switchColors(c: ColorPalette) {
+  return {
+    trackColor: { false: c.switchTrackOff, true: c.primary },
+    thumbColor: c.switchThumb,
+    ios_backgroundColor: c.switchTrackOff,
+    activeTrackColor: c.primary,
+    activeThumbColor: c.switchThumb,
+  };
+}

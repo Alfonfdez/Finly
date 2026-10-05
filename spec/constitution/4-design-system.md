@@ -30,6 +30,8 @@ interface ColorPalette {
 | `green` | `#34D399` | Positive values, income |
 | `red` | `#F87171` | Negative values, errors, delete |
 | `border` | `#334155` | Input borders, dividers |
+| `switchTrackOff` | `#475569` | Off-state switch track |
+| `switchThumb` | `#F8FAFC` | Switch thumb (both states) |
 
 ### Light Palette
 
@@ -44,11 +46,14 @@ interface ColorPalette {
 | `green` | `#059669` | Positive values, income |
 | `red` | `#DC2626` | Negative values, errors, delete |
 | `border` | `#E2E8F0` | Input borders, dividers |
+| `switchTrackOff` | `#94A3B8` | Off-state switch track |
+| `switchThumb` | `#FFFFFF` | Switch thumb (both states) |
 
 ### Usage Rules
 - Always use tokens via `useConfig()` → `activeColors` (`c.background`, `c.primary`, etc.).
 - Never hardcode hex values in components.
 - Theme switchable from Settings (Dark / Light / System) with real-time switching.
+- Every React Native `Switch` uses the shared `switchColors(c)` helper (`componentStyles.ts`): off track = `c.switchTrackOff`, on track = `c.primary`, thumb = `c.switchThumb` — so all toggles look the same in both themes.
 
 ## Typography
 

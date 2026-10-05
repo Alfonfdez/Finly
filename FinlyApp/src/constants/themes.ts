@@ -14,6 +14,8 @@ export interface ColorPalette {
   green: string;
   red: string;
   border: string;
+  switchTrackOff: string;
+  switchThumb: string;
 }
 
 export const darkColors: ColorPalette = {
@@ -26,6 +28,8 @@ export const darkColors: ColorPalette = {
   green: GREEN,
   red: RED,
   border: '#334155',
+  switchTrackOff: '#475569',
+  switchThumb: '#F8FAFC',
 };
 
 export const lightColors: ColorPalette = {
@@ -38,4 +42,6 @@ export const lightColors: ColorPalette = {
   green: '#059669',
   red: '#DC2626',
   border: '#E2E8F0',
+  switchTrackOff: '#94A3B8',
+  switchThumb: WHITE,
 };
