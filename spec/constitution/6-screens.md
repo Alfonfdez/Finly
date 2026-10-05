@@ -434,11 +434,11 @@ useEffect(() => {
 
 ## Calendar (date pickers)
 
-- `CalendarModal` renders the picker; the day grid is `calendars/DayPicker` and month navigation is `calendars/MonthNav`.
-- **Date bounds:** `CalendarModal` and `DayPicker` accept optional `minDate` / `maxDate` (and forward them to `MonthNav`). Convention: `undefined` keeps the historical default (**no future dates**, i.e. `maxDate` = end of today); `null` means unbounded on that side; a `Date` is an inclusive clamp. Disabled days are dimmed (`FUTURE_OPACITY`) and not pressable, and the month arrows disable at the bounds. The pure predicate is `isDateWithinBounds(date, minDate, maxDate)` in `utils/formatters.ts`.
+- `CalendarModal` renders the picker; the day grid is `calendars/DayPicker`, with **year navigation** (`calendars/YearNav`) above **month navigation** (`calendars/MonthNav`) — the same two-arrow layout as `WeekPicker`, so a year can be jumped to quickly (e.g. a recurring end date 10 years ahead).
+- **Date bounds:** `CalendarModal` and `DayPicker` accept optional `minDate` / `maxDate` (forwarded to `MonthNav` and `YearNav`). Convention: `undefined` keeps the historical default (**no future dates**, i.e. `maxDate` = end of today); `null` means unbounded on that side; a `Date` is an inclusive clamp. The convention lives in `resolveDateBounds(minDate, maxDate)` (`utils/calendarBounds.ts`); the day predicate is `isDateWithinBounds(date, minDate, maxDate)` (`utils/formatters.ts`). Disabled days are dimmed (`DISABLED_OPACITY`) and not pressable, and the month/year arrows disable at the bounds (the year arrows carry year-specific accessibility labels).
 - **Default:** the transaction date and period pickers pass no bounds, so they stay "today or past only" (see feature 001).
-- **Future dates (feature 028):** the recurring **End date** picker passes `minDate = tomorrow` and `maxDate = null`, so only a future date can be chosen — a recurring end date must be in the future.
-- `MonthGrid` / `YearGrid` / `YearNav` (month/year periods) are **not** parameterized yet; they remain past-only.
+- **Recurring end date (feature 028):** the recurring **End date** picker passes `minDate = dayAfter(selected transaction day)` and `maxDate = null`, so the end date must be strictly after the rule's start day — it may be in the past when the start is in the past (e.g. start 01/09, end 30/09) — and `maxDate = null` keeps it open-ended.
+- `MonthGrid` / `YearGrid` (month/year period grids) are **not** parameterized yet; they remain past-only.
 
 ## Export Pattern
 

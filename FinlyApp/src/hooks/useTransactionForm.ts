@@ -14,6 +14,7 @@ import {
 } from '../constants/types';
 import { formatDateForDB } from '../utils/formatters';
 import { toDateOnly } from '../utils/recurrence';
+import { isEndAfterStart } from '../utils/calendarBounds';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { parseAmountValue } from '../utils/amountInput';
 import { transactionRepository, tagRepository } from '../database';
@@ -108,6 +109,13 @@ export function useTransactionForm({
   const [repeatInterval, setRepeatInterval] = useState(initialRepeatInterval ?? 1);
   const [repeatEnd, setRepeatEnd] = useState<Date | null>(initialRepeatEnd ?? null);
 
+  // Keep the end date valid: clear it if the start day moves to/after it.
+  useEffect(() => {
+    if (repeatEnd && !isEndAfterStart(day, repeatEnd)) {
+      setRepeatEnd(null);
+    }
+  }, [day, repeatEnd]);
+
   const [modalAccountVisible, setModalAccountVisible] = useState(false);
   const [modalCalendarVisible, setModalCalendarVisible] = useState(false);
   const [modalRepeatEndVisible, setModalRepeatEndVisible] = useState(false);
@@ -172,8 +180,9 @@ export function useTransactionForm({
     if (numericAmount === null || numericAmount <= 0) return false;
     if (day === null) return false;
     if (accountId === undefined) return false;
+    if ((repeatEnabled || ruleMode) && repeatEnd && !isEndAfterStart(day, repeatEnd)) return false;
     return true;
-  }, [categoryId, numericAmount, day, accountId]);
+  }, [categoryId, numericAmount, day, accountId, repeatEnabled, ruleMode, repeatEnd]);
 
   const handleToggleTag = useCallback((id: number) => {
     setSelectedTags(prev =>

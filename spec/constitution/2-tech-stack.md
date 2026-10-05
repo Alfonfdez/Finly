@@ -89,13 +89,13 @@ FinlyApp/
 |   |   |   +-- PrimaryButton.tsx     <- primary CTA
 |   |   |   +-- SectionTitle.tsx      <- form section heading
 |   |   +-- calendars/                <- date pickers
-|   |   |   +-- DayPicker.tsx         <- monthly day grid
+|   |   |   +-- DayPicker.tsx         <- monthly day grid (year + month navigation)
 |   |   |   +-- MonthGrid.tsx         <- 12-month grid
-|   |   |   +-- MonthNav.tsx          <- previous/next month navigation
+|   |   |   +-- MonthNav.tsx          <- previous/next month navigation (bounds-aware)
 |   |   |   +-- PeriodPicker.tsx      <- date range selector
 |   |   |   +-- WeekPicker.tsx        <- week selector
 |   |   |   +-- YearGrid.tsx          <- 12-year grid
-|   |   |   +-- YearNav.tsx           <- year navigation
+|   |   |   +-- YearNav.tsx           <- previous/next year navigation (bounds-aware)
 |   |   +-- settings/                 <- settings rows and toggles
 |   |       +-- SettingsRow.tsx       <- labelled row
 |   |       +-- SettingsSelectRow.tsx <- selector row
@@ -171,6 +171,9 @@ FinlyApp/
 |   |
 |   +-- utils/
 |       +-- formatters.ts            <- format currency, dates, etc.
+|       +-- calendarBounds.ts        <- shared min/max calendar date-bound convention
+|       +-- recurrence.ts            <- recurrence date math (advance / catch-up)
+|       +-- recurrenceSummary.ts     <- recurrence human-readable summary
 |       +-- calculator.ts            <- calculator logic
 |       +-- platform.ts              <- centralized platform checks
 |       +-- language.ts              <- language re-exports + isCatalan() / isGalician() / isBasque()

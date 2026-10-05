@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 import { BUTTON_BORDER_RADIUS } from '../componentStyles';
 
-export const FUTURE_OPACITY = 0.3;
+export const DISABLED_OPACITY = 0.3;
 
 export const MIN_DATE = new Date(new Date().getFullYear(), 0, 1);
 

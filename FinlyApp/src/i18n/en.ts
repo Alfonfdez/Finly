@@ -523,6 +523,8 @@ export const en = {
   a11y_close_search: 'Close search',
   a11y_previous_month: 'Previous month',
   a11y_next_month: 'Next month',
+  a11y_previous_year: 'Previous year',
+  a11y_next_year: 'Next year',
   backup_dialog_title: 'Finly backup',
   a11y_add: 'Add',
 };

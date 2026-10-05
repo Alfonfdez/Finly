@@ -384,17 +384,17 @@ if (isCatalan(language)) {
 
 ## Calendar date bounds (min/max)
 **Definition:** Optional `minDate`/`maxDate` props on the calendar that restrict which days can be selected, instead of hardcoding "no future dates".
-**Explanation:** Finly's day picker was originally past-only (future days dimmed and disabled). To reuse the same calendar for a recurring rule's **end date** — which must be in the future — the bound is parameterized: `undefined` keeps the historical default (`maxDate` = end of today, so no future), `null` means unbounded on that side, and a `Date` is an inclusive clamp. Disabled days are dimmed and not pressable, and the month arrows disable at the bounds. The predicate is the pure `isDateWithinBounds(date, minDate, maxDate)` in `utils/formatters.ts`, so it is unit-testable without the real clock.
+**Explanation:** Finly's day picker was originally past-only (future days dimmed and disabled). To reuse the same calendar for a recurring rule's **end date** — which must fall after the rule's start day (it may be in the past) — the bound is parameterized: `undefined` keeps the historical default (`maxDate` = end of today, so no future), `null` means unbounded on that side, and a `Date` is an inclusive clamp. Disabled days are dimmed and not pressable, and both the year and month arrows disable at the bounds. The day picker shows a year selector (`YearNav`) above the month selector (`MonthNav`) — the same two-arrow layout as the week picker — so far-future years (e.g. a recurring end date 10 years ahead) are quick to reach. The shared convention is `resolveDateBounds(minDate, maxDate)` in `utils/calendarBounds.ts` (used by both navs and the grid); the day predicate is the pure `isDateWithinBounds(date, minDate, maxDate)` in `utils/formatters.ts`, so both are unit-testable without the real clock.
 **Example:**
 ```tsx
 // Transaction date: today or past (default, no bounds passed)
 <CalendarModal period="day" date={day} onSelectDate={setDay} ... />
 
-// Recurring end date: tomorrow onward, unbounded
+// Recurring end date: strictly after the selected transaction day, unbounded
 <CalendarModal
   period="day"
-  date={repeatEnd ?? day}
-  minDate={tomorrow}
+  date={repeatEnd ?? dayAfter(day)}
+  minDate={dayAfter(day)}
   maxDate={null}
   onSelectDate={setRepeatEnd}
   ...

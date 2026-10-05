@@ -1,6 +1,6 @@
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { FUTURE_OPACITY } from './calendarStyles';
+import { DISABLED_OPACITY } from './calendarStyles';
 import { t } from '../../i18n';
 
 interface Props {
@@ -9,25 +9,35 @@ interface Props {
   onNext: () => void;
   nextDisabled?: boolean;
   prevDisabled?: boolean;
+  prevLabel?: string;
+  nextLabel?: string;
 }
 
-export default function NavArrows({ color, onPrev, onNext, nextDisabled = false, prevDisabled = false }: Props) {
+export default function NavArrows({
+  color,
+  onPrev,
+  onNext,
+  nextDisabled = false,
+  prevDisabled = false,
+  prevLabel,
+  nextLabel,
+}: Props) {
   const labels = t();
   return (
     <View style={styles.container}>
       <TouchableOpacity
         onPress={onPrev}
-        style={{ opacity: prevDisabled ? FUTURE_OPACITY : 1 }}
+        style={{ opacity: prevDisabled ? DISABLED_OPACITY : 1 }}
         disabled={prevDisabled}
-        accessibilityLabel={labels.a11y_previous_month}
+        accessibilityLabel={prevLabel ?? labels.a11y_previous_month}
       >
         <Ionicons name="chevron-back-outline" size={22} color={color} />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={onNext}
-        style={{ opacity: nextDisabled ? FUTURE_OPACITY : 1 }}
+        style={{ opacity: nextDisabled ? DISABLED_OPACITY : 1 }}
         disabled={nextDisabled}
-        accessibilityLabel={labels.a11y_next_month}
+        accessibilityLabel={nextLabel ?? labels.a11y_next_month}
       >
         <Ionicons name="chevron-forward-outline" size={22} color={color} />
       </TouchableOpacity>

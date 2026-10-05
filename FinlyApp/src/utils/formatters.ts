@@ -212,11 +212,6 @@ export function dbTimestamp(): string {
   return formatDateForDB(new Date());
 }
 
-export function isFutureDate(date: Date): boolean {
-  const today = endOfDay(new Date());
-  return date.getTime() > today.getTime();
-}
-
 /** Whether a day is selectable within an inclusive [minDate, maxDate] window. Null/undefined bounds are open. */
 export function isDateWithinBounds(date: Date, minDate?: Date | null, maxDate?: Date | null): boolean {
   const day = startOfDay(date).getTime();

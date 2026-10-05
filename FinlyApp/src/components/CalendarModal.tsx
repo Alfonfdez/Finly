@@ -104,16 +104,16 @@ export default function CalendarModal({
         {period !== PERIODS.custom && <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(13) }]}>{formatPeriodText(period, tempDate, labels.months, labels.months_short)}</Text>}
 
         {period === PERIODS.day && (
-          <DayPicker date={tempDate} onSelect={handleSelect} minDate={minDate} maxDate={maxDate} />
+          <DayPicker key={visible ? PICKER_KEY.open : PICKER_KEY.closed} date={tempDate} onSelect={handleSelect} minDate={minDate} maxDate={maxDate} />
         )}
         {period === PERIODS.week && (
-          <WeekPicker date={tempDate} onSelect={handleSelect} />
+          <WeekPicker key={visible ? PICKER_KEY.open : PICKER_KEY.closed} date={tempDate} onSelect={handleSelect} />
         )}
         {period === PERIODS.month && (
-          <MonthGrid date={tempDate} onSelect={handleSelect} />
+          <MonthGrid key={visible ? PICKER_KEY.open : PICKER_KEY.closed} date={tempDate} onSelect={handleSelect} />
         )}
         {period === PERIODS.year && (
-          <YearGrid date={tempDate} onSelect={handleSelect} />
+          <YearGrid key={visible ? PICKER_KEY.open : PICKER_KEY.closed} date={tempDate} onSelect={handleSelect} />
         )}
         {period === PERIODS.custom && (
           <PeriodPicker

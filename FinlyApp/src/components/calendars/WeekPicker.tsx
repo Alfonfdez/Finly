@@ -7,7 +7,7 @@ import YearNav from './YearNav';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
-import { calendarStyles, FUTURE_OPACITY } from './calendarStyles';
+import { calendarStyles, DISABLED_OPACITY } from './calendarStyles';
 import { type FirstDay } from '../../constants/types';
 import { CONTROL_BORDER_RADIUS } from '../componentStyles';
 import { DAYS_PER_WEEK, CALENDAR_GRID_CELLS } from '../../constants/calendar';
@@ -61,7 +61,7 @@ export default function WeekPicker({ date, onSelect }: CalendarBaseProps) {
           return (
             <TouchableOpacity
               key={i}
-              style={[styles.weekRow, { backgroundColor: c.surface }, isSelected && { backgroundColor: c.primary }, isFuture && { opacity: FUTURE_OPACITY }]}
+              style={[styles.weekRow, { backgroundColor: c.surface }, isSelected && { backgroundColor: c.primary }, isFuture && { opacity: DISABLED_OPACITY }]}
               onPress={() => !isFuture && onSelect(week.start)}
               disabled={isFuture}
             >

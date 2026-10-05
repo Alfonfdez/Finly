@@ -18,7 +18,6 @@ import {
   formatDateForDB,
   parseDbDate,
   dbTimestamp,
-  isFutureDate,
   isDateWithinBounds,
   scaleFontSize,
   formatWeekRange,
@@ -235,13 +234,6 @@ describe('DB date conversion', () => {
 
   it('produces the current timestamp in DB format', () => {
     expect(dbTimestamp()).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
-  });
-});
-
-describe('future dates', () => {
-  it('flags dates beyond today', () => {
-    expect(isFutureDate(new Date(Date.now() + 24 * 60 * 60 * 1000))).toBe(true);
-    expect(isFutureDate(new Date(Date.now() - 24 * 60 * 60 * 1000))).toBe(false);
   });
 });
 

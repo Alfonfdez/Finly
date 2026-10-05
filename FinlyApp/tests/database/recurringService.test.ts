@@ -37,8 +37,8 @@ async function boot() {
   const { recurringRepo } = await import('../../src/database/repositories/recurringRepo');
   const { transactionRepo } = await import('../../src/database/repositories/transactionRepo');
   const { tagRepo } = await import('../../src/database/repositories/tagRepo');
-  const { materializeDueRecurring, resumeRecurringRule } = await import('../../src/database/recurringService');
-  return { db, recurringRepo, transactionRepo, tagRepo, materializeDueRecurring, resumeRecurringRule };
+  const { materializeDueRecurring, resumeRecurringRule, saveRecurringRuleEdit } = await import('../../src/database/recurringService');
+  return { db, recurringRepo, transactionRepo, tagRepo, materializeDueRecurring, resumeRecurringRule, saveRecurringRuleEdit };
 }
 
 const baseRule = {
@@ -112,6 +112,30 @@ describe('materializeDueRecurring', () => {
     expect(await transactionRepo.list()).toHaveLength(2);
   });
 
+  it('materializes a past daily range up to the end date (Sep 1-30)', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring } = await boot();
+    await recurringRepo.createWithTags(
+      {
+        ...baseRule,
+        frequency: 'daily',
+        interval: 1,
+        day_of_month: null,
+        start_date: '2026-09-01',
+        end_date: '2026-09-30',
+        next_due: '2026-09-01',
+      },
+      [],
+    );
+
+    const created = await materializeDueRecurring(new Date(2026, 9, 5)); // Oct 5
+
+    expect(created).toBe(30);
+    const dates = (await transactionRepo.list()).map(t => t.recurrence_date).sort();
+    expect(dates).toHaveLength(30);
+    expect(dates[0]).toBe('2026-09-01');
+    expect(dates[dates.length - 1]).toBe('2026-09-30');
+  });
+
   it('resuming skips the occurrences missed while paused', async () => {
     const { recurringRepo, transactionRepo, materializeDueRecurring, resumeRecurringRule } = await boot();
     const rule = await recurringRepo.createWithTags(baseRule, []);
@@ -145,5 +169,62 @@ describe('materializeDueRecurring', () => {
     expect(await transactionRepo.list()).toHaveLength(2);
     const [resumed] = await recurringRepo.list(1);
     expect(resumed.next_due).toBe('2026-06-02');
+  });
+
+  const dailySep = {
+    ...baseRule,
+    frequency: 'daily' as const,
+    interval: 1,
+    day_of_month: null,
+    start_date: '2026-09-01',
+    end_date: '2026-09-30',
+    next_due: '2026-09-01',
+  };
+  const OCT_5 = new Date(2026, 9, 5);
+
+  it('extending the end date with futureAndPast back-fills the missed window', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(dailySep, []);
+    expect(await materializeDueRecurring(OCT_5)).toBe(30);
+    expect((await recurringRepo.list(1))[0].next_due).toBe('2026-10-01');
+
+    const created = await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'daily', interval: 1, endDate: '2026-10-31' },
+      scope: 'futureAndPast',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent' },
+      tagIds: [],
+      now: OCT_5,
+    });
+
+    expect(created).toBe(5); // Oct 1-5
+    const dates = (await transactionRepo.list()).map(t => t.recurrence_date).sort();
+    expect(dates).toHaveLength(35);
+    expect(dates.slice(30)).toEqual(['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05']);
+    expect((await recurringRepo.list(1))[0].next_due).toBe('2026-10-06');
+  });
+
+  it('extending the end date with future only adds from today', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(dailySep, []);
+    expect(await materializeDueRecurring(OCT_5)).toBe(30);
+
+    const created = await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'daily', interval: 1, endDate: '2026-10-31' },
+      scope: 'future',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent' },
+      tagIds: [],
+      now: OCT_5,
+    });
+
+    expect(created).toBe(1); // Oct 5 only
+    const dates = (await transactionRepo.list()).map(t => t.recurrence_date).sort();
+    expect(dates).toHaveLength(31);
+    expect(dates[dates.length - 1]).toBe('2026-10-05');
+    expect(dates).not.toContain('2026-10-04');
+    expect((await recurringRepo.list(1))[0].next_due).toBe('2026-10-06');
   });
 });

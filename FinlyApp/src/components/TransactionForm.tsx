@@ -22,6 +22,7 @@ import { CARD_BORDER_RADIUS } from './componentStyles';
 import { type TransactionType, type RecurrenceFrequency, type RootStackParamList } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
+import { dayAfter } from '../utils/calendarBounds';
 import { showErrorAlert } from '../utils/errors';
 
 interface TransactionFormProps {
@@ -95,13 +96,8 @@ export default function TransactionForm(props: TransactionFormProps) {
     setModalRepeatEndVisible(false);
   }, [setRepeatEnd, setModalRepeatEndVisible]);
 
-  // The recurring end date is future-only (tomorrow onward, unbounded).
-  const repeatMinDate = useMemo(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    d.setDate(d.getDate() + 1);
-    return d;
-  }, []);
+  // The recurring end date must be strictly after the selected transaction day.
+  const repeatMinDate = useMemo(() => dayAfter(day), [day]);
   const handleCalculatorAccept = useCallback((result: string) => {
     const clean = parseAmountInput(result);
     if (clean !== null && clean !== '') {
@@ -256,7 +252,7 @@ export default function TransactionForm(props: TransactionFormProps) {
       <CalendarModal
         visible={modalRepeatEndVisible}
         period="day"
-        date={repeatEnd ?? day}
+        date={repeatEnd ?? repeatMinDate}
         minDate={repeatMinDate}
         maxDate={null}
         onSelectDate={handleSelectRepeatEnd}
