@@ -52,6 +52,13 @@ vi.mock('../../src/database', () => ({
   tagRepository: {
     create: (data: unknown) => mockTagCreate(data),
   },
+  recurringRepository: {
+    createWithTags: vi.fn(async () => ({ id: 1 })),
+  },
+}));
+
+vi.mock('../../src/database/recurringService', () => ({
+  materializeDueRecurring: vi.fn(async () => 0),
 }));
 
 vi.mock('@react-navigation/native', async () => {

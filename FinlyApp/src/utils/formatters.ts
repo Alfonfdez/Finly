@@ -217,6 +217,14 @@ export function isFutureDate(date: Date): boolean {
   return date.getTime() > today.getTime();
 }
 
+/** Whether a day is selectable within an inclusive [minDate, maxDate] window. Null/undefined bounds are open. */
+export function isDateWithinBounds(date: Date, minDate?: Date | null, maxDate?: Date | null): boolean {
+  const day = startOfDay(date).getTime();
+  if (minDate && day < startOfDay(minDate).getTime()) return false;
+  if (maxDate && day > endOfDay(maxDate).getTime()) return false;
+  return true;
+}
+
 const FACTORS: Record<TextSize, number> = {
   [TEXT_SIZES.small]: 0.85,
   [TEXT_SIZES.medium]: 1.0,

@@ -5,6 +5,7 @@ import { createSqlJsDatabase, type SqlJsDatabase } from '../../src/database/sqli
 import { createSchema } from '../../src/database/migrations/001_initial';
 import { seedDataInner } from '../../src/database/migrations/002_seed';
 import { seedConfigInner } from '../../src/database/migrations/003_config';
+import { createRecurringSchema } from '../../src/database/migrations/004_recurring';
 import { clearDataKeepSettings, resetDatabase } from '../../src/database/database';
 
 vi.mock('expo-sqlite', async () => {
@@ -32,6 +33,7 @@ beforeAll(async () => {
   await createSchema(db);
   await seedDataInner(db);
   await seedConfigInner(db);
+  await createRecurringSchema(db);
 });
 
 async function getConfig(db: DatabaseHandle, key: string): Promise<string> {

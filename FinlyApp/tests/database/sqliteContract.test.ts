@@ -35,9 +35,11 @@ describe('sqlite contract', () => {
     const { createSchema } = await import('../../src/database/migrations/001_initial');
     const { seedDataInner } = await import('../../src/database/migrations/002_seed');
     const { seedConfigInner } = await import('../../src/database/migrations/003_config');
+    const { createRecurringSchema } = await import('../../src/database/migrations/004_recurring');
     await createSchema(db);
     await seedDataInner(db);
     await seedConfigInner(db);
+    await createRecurringSchema(db);
 
     const { accountRepo } = await import('../../src/database/repositories/accountRepo');
     const { categoryRepo } = await import('../../src/database/repositories/categoryRepo');

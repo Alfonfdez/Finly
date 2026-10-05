@@ -35,7 +35,7 @@ All commands run from the `FinlyApp/` directory.
 
 ### Current suite baseline
 
-Verified 2026-10-05: **93 test files / 606 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
+Verified 2026-10-05: **98 test files / 646 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
 
 Native E2E baseline (2026-09-09, SDK 57 + v2.0.0 release package): all 10 Maestro flows PASS on the `finly_test` emulator against `com.finly.app` after `expo prebuild` + `assembleDebug`.
 
@@ -93,6 +93,7 @@ Regression seeds come from real bugs previously fixed in this project.
 | `tests/utils/formHints.test.ts` | `src/utils/formHints.ts` — comment/description hint selection |
 | `tests/utils/errors.test.ts` | `src/utils/errors.ts` — `showErrorAlert` + `runWithErrorAlert` |
 | `tests/utils/pendingCategory.test.ts` | `src/utils/pendingCategory.ts` — pending-category consume/clear |
+| `tests/utils/recurrence.test.ts` | `src/utils/recurrence.ts` — recurrence advancement (daily/weekly/monthly/yearly + interval), month-end/Feb-29 clamping, catch-up list, end-date and cap |
 
 ## Phase B — Unified SQLite engine + contract suite (implemented)
 
@@ -114,7 +115,7 @@ used identically on every platform. The harness guarantees that parity:
   native repos run against real SQLite semantics in Node (WASM) without a device.
 - **DB drift test**: after running migrations on sql.js, `PRAGMA table_info` must match
   `src/database/types.ts`; seed row counts must match the seed data, `user_version` must be
-  3, config rows must equal `DB_KEY_MAP`, and re-init must be idempotent. This catches a
+  4, config rows must equal `DB_KEY_MAP`, and re-init must be idempotent. This catches a
   column added to a migration that the types forgot.
 
 Test files (under `FinlyApp/tests/database/`):
@@ -125,7 +126,9 @@ Test files (under `FinlyApp/tests/database/`):
 | `sqliteContract.test.ts` | The repos (`account/category/tag/transaction/config`) over the sql.js engine pass the suite |
 | `sqliteMock.ts` | `expo-sqlite` → shared sql.js engine adapter (`openDatabaseSync` backed by `SqlJsDatabase`) |
 | `sqliteWebEngine.test.ts` | Engine semantics: results, persistence, transactions, schema boot + seed counts |
-| `dbDrift.test.ts` | Schema drift: 7 tables' `PRAGMA table_info` vs declared columns, every `types.ts` field covered by a migration column, `user_version` 3, seed counts (1 user / 2 accounts / 31 categories / 0 transactions), config rows == `DB_KEY_MAP`, init idempotence |
+| `dbDrift.test.ts` | Schema drift: 9 tables' `PRAGMA table_info` vs declared columns, every `types.ts` field covered by a migration column, `user_version` 4, seed counts (1 user / 2 accounts / 31 categories / 0 transactions / 0 recurring rules), config rows == `DB_KEY_MAP`, init idempotence |
+| `recurringRepo.test.ts` | `recurringRepo` over sql.js: rule CRUD + tags, `listDue`, occurrence insert + unique-index idempotency, bulk past update, delete keeps generated transactions |
+| `recurringService.test.ts` | `materializeDueRecurring`: back-fill missed occurrences, idempotent re-runs, paused rules skipped, end-date respected |
 
 Run the suite alone with `npx vitest run tests/database/` (or all harnesses with `npm run
 test:all`).
@@ -333,6 +336,7 @@ and each suite calls `resetStub()` in `beforeEach`. i18n is NOT stubbed — the 
 | `tests/component/CalculatorModal.test.tsx` | `CalculatorModal` — keypad input, expression evaluation, clear/backspace, trailing-operator rejection, accept/cancel |
 | `tests/component/CategoryFilterModal.test.tsx` | `CategoryFilterModal` — type tabs, search, All/category multi-select, `Apply (N)`/`Apply (All)` labels, disabled Apply at 0 selected, close |
 | `tests/component/TransactionForm.test.tsx` | `TransactionForm` — type tabs, amount input, account picker, category grid + create tile, day selector, form submit/cancel |
+| `tests/component/RepeatSection.test.tsx` | `RepeatSection` — toggle visibility, frequency chips, interval stepper, end date, recurrence summary, rule-mode (no toggle) |
 
 Context, hooks, and screens are covered by additional RNTL suites (same mock stack — configStub, `@expo/vector-icons` alias, `@react-navigation/native` mocked per file). Coverage added in the Phase C test-expansion pass:
 
@@ -344,6 +348,7 @@ Context, hooks, and screens are covered by additional RNTL suites (same mock sta
 | `tests/screens/CategoriesScreen.test.tsx` | `CategoriesScreen` — expense/income tabs, category list + counter, add tile |
 | `tests/screens/AddCategoryScreen.test.tsx` | `AddCategoryScreen` — name search, duplicate check, icon/color pick, create flow |
 | `tests/screens/ModifyCommentScreen.test.tsx` | `ModifyCommentScreen` — preload, edit, Save, Delete with confirmation |
+| `tests/screens/RecurringScreen.test.tsx` | `RecurringScreen` — rule row summary + Active label, info press navigates to ModifyRecurring, switch toggles active without navigating |
 
 ## Phase E — Module-boundary linting (implemented)
 

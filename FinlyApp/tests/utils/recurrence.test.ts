@@ -1,0 +1,105 @@
+import { describe, expect, it } from 'vitest';
+import {
+  advanceOccurrence,
+  fromDateOnly,
+  listDueOccurrences,
+  toDateOnly,
+  todayDateOnly,
+  type RecurrenceSchedule,
+} from '../../src/utils/recurrence';
+
+const base: RecurrenceSchedule = {
+  frequency: 'monthly',
+  interval: 1,
+  day_of_month: 2,
+  start_date: '2026-01-02',
+  end_date: null,
+};
+
+describe('recurrence date helpers', () => {
+  it('round-trips a local date through date-only strings', () => {
+    const date = new Date(2026, 9, 5, 14, 30, 0);
+    expect(toDateOnly(date)).toBe('2026-10-05');
+    const parsed = fromDateOnly('2026-10-05');
+    expect(parsed.getFullYear()).toBe(2026);
+    expect(parsed.getMonth()).toBe(9);
+    expect(parsed.getDate()).toBe(5);
+  });
+
+  it('todayDateOnly uses the local calendar day', () => {
+    expect(todayDateOnly(new Date(2026, 0, 1, 23, 59, 0))).toBe('2026-01-01');
+  });
+});
+
+describe('advanceOccurrence', () => {
+  it('advances daily by the interval', () => {
+    expect(advanceOccurrence({ ...base, frequency: 'daily', interval: 1 }, '2026-01-01')).toBe('2026-01-02');
+    expect(advanceOccurrence({ ...base, frequency: 'daily', interval: 3 }, '2026-01-01')).toBe('2026-01-04');
+  });
+
+  it('advances weekly by the interval', () => {
+    expect(advanceOccurrence({ ...base, frequency: 'weekly', interval: 1 }, '2026-01-01')).toBe('2026-01-08');
+    expect(advanceOccurrence({ ...base, frequency: 'weekly', interval: 2 }, '2026-01-01')).toBe('2026-01-15');
+  });
+
+  it('keeps the monthly day-of-month anchor across short months', () => {
+    const schedule: RecurrenceSchedule = {
+      frequency: 'monthly',
+      interval: 1,
+      day_of_month: 31,
+      start_date: '2026-01-31',
+      end_date: null,
+    };
+    expect(advanceOccurrence(schedule, '2026-01-31')).toBe('2026-02-28');
+    expect(advanceOccurrence(schedule, '2026-02-28')).toBe('2026-03-31');
+  });
+
+  it('advances monthly by a multi-month interval from the anchor day', () => {
+    const schedule: RecurrenceSchedule = { ...base, interval: 3, day_of_month: 2 };
+    expect(advanceOccurrence(schedule, '2026-01-02')).toBe('2026-04-02');
+  });
+
+  it('clamps a yearly Feb 29 occurrence in non-leap years', () => {
+    const schedule: RecurrenceSchedule = {
+      frequency: 'yearly',
+      interval: 1,
+      month: 2,
+      day_of_month: 29,
+      start_date: '2024-02-29',
+      end_date: null,
+    };
+    expect(advanceOccurrence(schedule, '2024-02-29')).toBe('2025-02-28');
+    expect(advanceOccurrence(schedule, '2027-02-28')).toBe('2028-02-29');
+  });
+});
+
+describe('listDueOccurrences', () => {
+  it('back-fills every missed monthly occurrence up to today', () => {
+    const result = listDueOccurrences(base, '2026-01-02', '2026-04-15');
+    expect(result.occurrences).toEqual(['2026-01-02', '2026-02-02', '2026-03-02', '2026-04-02']);
+    expect(result.nextDue).toBe('2026-05-02');
+    expect(result.truncated).toBe(false);
+  });
+
+  it('returns nothing when the next due date is in the future', () => {
+    const result = listDueOccurrences(base, '2026-06-02', '2026-04-15');
+    expect(result.occurrences).toEqual([]);
+    expect(result.nextDue).toBe('2026-06-02');
+  });
+
+  it('stops at the end date', () => {
+    const result = listDueOccurrences({ ...base, end_date: '2026-03-02' }, '2026-01-02', '2026-06-15');
+    expect(result.occurrences).toEqual(['2026-01-02', '2026-02-02', '2026-03-02']);
+  });
+
+  it('truncates at the safety cap', () => {
+    const result = listDueOccurrences(
+      { ...base, frequency: 'daily', interval: 1, start_date: '2026-01-01', day_of_month: null },
+      '2026-01-01',
+      '2027-01-01',
+      10,
+    );
+    expect(result.occurrences).toHaveLength(10);
+    expect(result.truncated).toBe(true);
+  });
+});

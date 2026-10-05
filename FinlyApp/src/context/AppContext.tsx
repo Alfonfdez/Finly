@@ -1,7 +1,9 @@
 import { createContext, useContext, useState, useMemo, useEffect, useCallback, type ReactNode } from 'react';
+import { AppState as RNAppState } from 'react-native';
 import type { Account, Category, Transaction, Tag } from '../database/types';
 import { PERIODS, TRANSACTION_TYPES, type Period, type TransactionType, type CategoryWithTotal, DATE_MIN, DATE_MAX, USER_ID } from '../constants/types';
 import { accountRepository as accountRepo, categoryRepository as categoryRepo, transactionRepository as transactionRepo, tagRepository as tagRepo } from '../database';
+import { materializeDueRecurring } from '../database/recurringService';
 import { isTotalAccount, UNTAGGED_ID } from '../database/helpers';
 import { toggleTagInArray } from '../utils/tagFilter';
 import { categoriesOfType } from '../utils/categoryUtils';
@@ -121,6 +123,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function loadData() {
       try {
+        try {
+          await materializeDueRecurring();
+        } catch (error) {
+          console.error('Failed to materialize recurring transactions:', error);
+        }
         const [accountsData, categoriesData, tagsData] = await Promise.all([
           accountRepo.list(USER_ID),
           categoryRepo.list(USER_ID),
@@ -243,6 +250,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(() => {
     setTransactionsVersion(v => v + 1);
+  }, []);
+
+  // Materialize recurring occurrences when the app returns to the foreground.
+  useEffect(() => {
+    const subscription = RNAppState.addEventListener('change', state => {
+      if (state !== 'active') return;
+      materializeDueRecurring()
+        .then(() => setTransactionsVersion(v => v + 1))
+        .catch(error => console.error('Failed to materialize recurring transactions:', error));
+    });
+    return () => subscription.remove();
+  }, []);
+
+  // Materialize recurring occurrences when the app stays open across midnight.
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const schedule = () => {
+      const now = new Date();
+      const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1, 0);
+      timer = setTimeout(() => {
+        materializeDueRecurring()
+          .then(() => setTransactionsVersion(v => v + 1))
+          .catch(error => console.error('Failed to materialize recurring transactions:', error))
+          .finally(schedule);
+      }, nextMidnight.getTime() - now.getTime());
+    };
+    schedule();
+    return () => clearTimeout(timer);
   }, []);
 
   const refreshCategories = useCallback(async () => {

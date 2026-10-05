@@ -24,6 +24,8 @@ interface Props {
   date: Date;
   rangeStart?: Date;
   rangeEnd?: Date;
+  minDate?: Date | null;
+  maxDate?: Date | null;
   onSelectDate: (date: Date) => void;
   onSelectRange?: (start: Date, end: Date) => void;
   onClose: () => void;
@@ -44,6 +46,7 @@ const PICKER_KEY = {
 
 export default function CalendarModal({
   visible, period, date, rangeStart, rangeEnd,
+  minDate, maxDate,
   onSelectDate, onSelectRange, onClose,
 }: Props) {
   const [tempDate, setTempDate] = useState(date);
@@ -101,7 +104,7 @@ export default function CalendarModal({
         {period !== PERIODS.custom && <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(13) }]}>{formatPeriodText(period, tempDate, labels.months, labels.months_short)}</Text>}
 
         {period === PERIODS.day && (
-          <DayPicker date={tempDate} onSelect={handleSelect} />
+          <DayPicker date={tempDate} onSelect={handleSelect} minDate={minDate} maxDate={maxDate} />
         )}
         {period === PERIODS.week && (
           <WeekPicker date={tempDate} onSelect={handleSelect} />

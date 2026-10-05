@@ -19,6 +19,7 @@ import {
   parseDbDate,
   dbTimestamp,
   isFutureDate,
+  isDateWithinBounds,
   scaleFontSize,
   formatWeekRange,
   formatPeriodText,
@@ -241,6 +242,28 @@ describe('future dates', () => {
   it('flags dates beyond today', () => {
     expect(isFutureDate(new Date(Date.now() + 24 * 60 * 60 * 1000))).toBe(true);
     expect(isFutureDate(new Date(Date.now() - 24 * 60 * 60 * 1000))).toBe(false);
+  });
+});
+
+describe('isDateWithinBounds', () => {
+  const min = new Date(2026, 9, 6); // Oct 6 2026
+  const max = new Date(2026, 9, 20); // Oct 20 2026
+
+  it('is inclusive and ignores time of day', () => {
+    expect(isDateWithinBounds(new Date(2026, 9, 6, 23, 59), min, max)).toBe(true);
+    expect(isDateWithinBounds(new Date(2026, 9, 20, 0, 1), min, max)).toBe(true);
+    expect(isDateWithinBounds(new Date(2026, 9, 13), min, max)).toBe(true);
+  });
+
+  it('rejects days outside the window', () => {
+    expect(isDateWithinBounds(new Date(2026, 9, 5), min, max)).toBe(false);
+    expect(isDateWithinBounds(new Date(2026, 9, 21), min, max)).toBe(false);
+  });
+
+  it('treats null/undefined bounds as open', () => {
+    expect(isDateWithinBounds(new Date(2099, 0, 1), min, null)).toBe(true);
+    expect(isDateWithinBounds(new Date(2026, 9, 21), undefined, undefined)).toBe(true);
+    expect(isDateWithinBounds(new Date(2026, 9, 5), min, undefined)).toBe(false);
   });
 });
 

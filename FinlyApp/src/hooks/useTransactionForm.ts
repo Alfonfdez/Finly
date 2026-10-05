@@ -7,11 +7,13 @@ import { usePhotos } from './usePhotos';
 import { useDeferredRefresh } from './useDeferredRefresh';
 import {
   type TransactionType,
+  type RecurrenceFrequency,
   CATEGORY_USAGE_WINDOW_DAYS,
   USER_ID,
   MAX_VISIBLE_CATEGORIES,
 } from '../constants/types';
 import { formatDateForDB } from '../utils/formatters';
+import { toDateOnly } from '../utils/recurrence';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { parseAmountValue } from '../utils/amountInput';
 import { transactionRepository, tagRepository } from '../database';
@@ -28,6 +30,12 @@ export type TransactionDraft = {
   date: string;
 };
 
+export type RecurrenceDraft = {
+  frequency: RecurrenceFrequency;
+  interval: number;
+  endDate: string | null;
+};
+
 type UseTransactionFormProps = {
   initialType: TransactionType;
   initialAccountId: number | undefined;
@@ -41,8 +49,14 @@ type UseTransactionFormProps = {
   errorTitle: string;
   errorMessage: string;
   onSubmit: (data: TransactionDraft, tagIds: number[]) => Promise<void>;
+  onSubmitRule?: (data: TransactionDraft, tagIds: number[], recurrence: RecurrenceDraft) => Promise<void>;
   resetTagsOnFirstFocus?: boolean;
   onError?: () => void;
+  ruleMode?: boolean;
+  initialRepeatFrequency?: RecurrenceFrequency;
+  initialRepeatInterval?: number;
+  initialRepeatEnd?: Date | null;
+  initialTagIds?: number[];
 };
 
 export function useTransactionForm({
@@ -58,8 +72,14 @@ export function useTransactionForm({
   errorTitle,
   errorMessage,
   onSubmit,
+  onSubmitRule,
   resetTagsOnFirstFocus = false,
   onError,
+  ruleMode = false,
+  initialRepeatFrequency,
+  initialRepeatInterval,
+  initialRepeatEnd,
+  initialTagIds,
 }: UseTransactionFormProps) {
   const { config } = useConfig();
   const { accounts, categories, accountsWithBalance, tags, refresh: refreshAll, refreshTags } = useApp();
@@ -78,13 +98,19 @@ export function useTransactionForm({
   const [reorderedCategory, setReorderedCategory] = useState<number | null>(initialReorderedCategory);
   const [day, setDay] = useState<Date>(initialDay);
   const [categoryUsage, setCategoryUsage] = useState<Map<number, number>>(new Map());
-  const [selectedTags, setSelectedTags] = useState<number[]>([]);
+  const [selectedTags, setSelectedTags] = useState<number[]>(initialTagIds ?? []);
   const [comment, setComment] = useState(initialComment);
   const [submitting, setSubmitting] = useState(false);
   const { photos, handleTakePhoto, handlePickFromGallery, handleRemovePhoto } = usePhotos(initialPhotos);
 
+  const [repeatEnabled, setRepeatEnabled] = useState(ruleMode);
+  const [repeatFrequency, setRepeatFrequency] = useState<RecurrenceFrequency>(initialRepeatFrequency ?? 'monthly');
+  const [repeatInterval, setRepeatInterval] = useState(initialRepeatInterval ?? 1);
+  const [repeatEnd, setRepeatEnd] = useState<Date | null>(initialRepeatEnd ?? null);
+
   const [modalAccountVisible, setModalAccountVisible] = useState(false);
   const [modalCalendarVisible, setModalCalendarVisible] = useState(false);
+  const [modalRepeatEndVisible, setModalRepeatEndVisible] = useState(false);
   const [calculatorVisible, setCalculatorVisible] = useState(false);
 
   const inputRef = useRef<TextInput>(null);
@@ -185,8 +211,7 @@ export function useTransactionForm({
 
     try {
       const dateStr = formatDateForDB(day);
-
-      await onSubmit({
+      const draft: TransactionDraft = {
         account_id: accountId,
         category_id: categoryId,
         type,
@@ -194,7 +219,17 @@ export function useTransactionForm({
         description: comment.trim() || null,
         photo: photos.length > 0 ? JSON.stringify(photos) : null,
         date: dateStr,
-      }, selectedTags);
+      };
+
+      if ((repeatEnabled || ruleMode) && onSubmitRule) {
+        await onSubmitRule(draft, selectedTags, {
+          frequency: repeatFrequency,
+          interval: repeatInterval,
+          endDate: repeatEnd ? toDateOnly(repeatEnd) : null,
+        });
+      } else {
+        await onSubmit(draft, selectedTags);
+      }
 
       navigation.goBack();
       deferredRefresh();
@@ -203,7 +238,7 @@ export function useTransactionForm({
     } finally {
       setSubmitting(false);
     }
-  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, onSubmit, deferredRefresh, navigation, errorTitle, errorMessage]);
+  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, repeatEnabled, repeatFrequency, repeatInterval, repeatEnd, ruleMode, onSubmit, onSubmitRule, deferredRefresh, navigation, errorTitle, errorMessage]);
 
   const categoriesByType = useMemo(() => {
     const byType = categoriesOfType(categories, type);
@@ -237,8 +272,13 @@ export function useTransactionForm({
     selectedTags, comment, setComment,
     submitting,
     photos,
+    repeatEnabled, setRepeatEnabled,
+    repeatFrequency, setRepeatFrequency,
+    repeatInterval, setRepeatInterval,
+    repeatEnd, setRepeatEnd,
     modalAccountVisible, setModalAccountVisible,
     modalCalendarVisible, setModalCalendarVisible,
+    modalRepeatEndVisible, setModalRepeatEndVisible,
     calculatorVisible, setCalculatorVisible,
     handleToggleTag, handleCreateTag,
     handleSelectAccount, handleSelectDate,

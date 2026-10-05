@@ -10,20 +10,27 @@ interface Props {
   year: number;
   month: number;
   onChange: (year: number, month: number) => void;
+  minDate?: Date | null;
+  maxDate?: Date | null;
 }
 
-export default function MonthNav({ year, month, onChange }: Props) {
+export default function MonthNav({ year, month, onChange, minDate, maxDate }: Props) {
   const today = useMemo(() => new Date(), []);
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const isLast = year === today.getFullYear() && month >= today.getMonth() + 1;
+  // undefined keeps the historical "no future" default; null means unbounded.
+  const max = maxDate === undefined ? today : maxDate;
+  const min = minDate ?? null;
+  const atMax = !!max && (year > max.getFullYear() || (year === max.getFullYear() && month >= max.getMonth() + 1));
+  const atMin = !!min && (year < min.getFullYear() || (year === min.getFullYear() && month <= min.getMonth() + 1));
 
   const goToMonth = (delta: number) => {
+    if (delta > 0 && atMax) return;
+    if (delta < 0 && atMin) return;
     let newMonth = month + delta;
     let newYear = year;
     if (newMonth > MONTHS_PER_YEAR) { newMonth = 1; newYear++; }
     if (newMonth < 1) { newMonth = MONTHS_PER_YEAR; newYear--; }
-    if (newYear > today.getFullYear() || (newYear === today.getFullYear() && newMonth > today.getMonth() + 1)) return;
     onChange(newYear, newMonth);
   };
 
@@ -33,7 +40,8 @@ export default function MonthNav({ year, month, onChange }: Props) {
         color={c.text}
         onPrev={() => goToMonth(-1)}
         onNext={() => goToMonth(1)}
-        nextDisabled={isLast}
+        nextDisabled={atMax}
+        prevDisabled={atMin}
       />
       <Text style={{ color: c.text, fontSize: fs(16), fontWeight: '700' }}>{getMonthName(month)} {year}</Text>
     </View>

@@ -25,3 +25,7 @@ export const HEADER_BUTTONS = {
   gap: 8,
   paddingRight: isWeb ? 16 : 0,
 };
+export const SECTION_GAP = 16;
+export const SECTION_TITLE_STYLE = {
+  fontWeight: '600' as const,
+};

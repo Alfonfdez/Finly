@@ -1,24 +1,29 @@
 import { useCallback } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import ScreenShell from '../components/ScreenShell';
-import { useRoute, type RouteProp } from '@react-navigation/native';
+import { useRoute, useNavigation, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
+import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import type { RootStackParamList } from '../constants/types';
+import type { NavigationProp, RootStackParamList } from '../constants/types';
 import { parseDbDate } from '../utils/formatters';
 import { parsePhotos } from '../utils/photoUtils';
 import { transactionRepository } from '../database';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import TransactionForm from '../components/TransactionForm';
 import EmptyState from '../components/EmptyState';
+import { CARD_BORDER_RADIUS } from '../components/componentStyles';
 
 type ModifyRouteProp = RouteProp<RootStackParamList, 'ModifyTransaction'>;
 
 export default function ModifyTransactionScreen() {
   const route = useRoute<ModifyRouteProp>();
   const { transactionId } = route.params;
+  const navigation = useNavigation<NavigationProp<'ModifyTransaction'>>();
   const { activeColors: c } = useConfig();
+  const fs = useFontSize();
   const { changeType } = useApp();
   const labels = t();
 
@@ -62,6 +67,28 @@ export default function ModifyTransactionScreen() {
       submitLabel={labels.modify_save}
       errorTitle={labels.modify_error_title}
       errorMessage={labels.modify_error_message}
+      topNotice={
+        transaction.recurring_rule_id != null ? (
+          <View style={[styles.notice, { backgroundColor: c.surface, borderColor: c.border }]}>
+            <Ionicons name="repeat-outline" size={18} color={c.primary} />
+            <View style={styles.noticeBody}>
+              <Text style={[styles.noticeText, { color: c.textSecondary, fontSize: fs(12) }]}>
+                {labels.recurring_edit_notice}
+              </Text>
+              <TouchableOpacity
+                style={styles.noticeLink}
+                onPress={() =>
+                  navigation.navigate('ModifyRecurring', { ruleId: transaction.recurring_rule_id as number })
+                }
+              >
+                <Text style={[styles.noticeLinkText, { color: c.primary, fontSize: fs(13) }]}>
+                  {labels.recurring_edit_rule}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : undefined
+      }
       onSubmit={async (data, tagIds) => {
         await transactionRepository.updateWithTags(transactionId, data, tagIds);
         changeType(data.type);
@@ -69,3 +96,28 @@ export default function ModifyTransactionScreen() {
     />
   );
 }
+
+const styles = StyleSheet.create({
+  notice: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: CARD_BORDER_RADIUS,
+    padding: 12,
+    marginBottom: 16,
+  },
+  noticeBody: {
+    flex: 1,
+    gap: 4,
+  },
+  noticeText: {
+    fontWeight: '500',
+  },
+  noticeLink: {
+    alignSelf: 'flex-start',
+  },
+  noticeLinkText: {
+    fontWeight: '600',
+  },
+});

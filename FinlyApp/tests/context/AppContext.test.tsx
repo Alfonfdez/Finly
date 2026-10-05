@@ -33,6 +33,10 @@ vi.mock('../../src/database', () => ({
   },
 }));
 
+vi.mock('../../src/database/recurringService', () => ({
+  materializeDueRecurring: vi.fn(async () => 0),
+}));
+
 const walletAccount: Account = { id: 1, user_id: 1, name: 'Wallet', initial_balance: 0, icon: 'wallet', color: '#22D3EE', is_total: 0, created_at: '2026-01-01' };
 const totalAccount: Account = { id: 2, user_id: 1, name: 'Total', initial_balance: 0, icon: 'trending-up', color: '#34D399', is_total: 1, created_at: '2026-01-01' };
 const catFood: Category = { id: 1, user_id: 1, name: 'Food', icon: 'cart', color: '#ff0000', type: 'expense', created_at: '2026-01-01' };

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { getDaysInMonth, isSameDay, isFutureDate, dayOffset } from '../../utils/formatters';
+import { getDaysInMonth, isSameDay, isDateWithinBounds, dayOffset } from '../../utils/formatters';
 import { withAlpha } from '../../utils/color';
 import type { CalendarBaseProps } from './types';
 import MonthNav from './MonthNav';
@@ -15,9 +15,11 @@ interface Props extends CalendarBaseProps {
   rangeStart?: Date | null;
   rangeEnd?: Date | null;
   initialView?: Date;
+  minDate?: Date | null;
+  maxDate?: Date | null;
 }
 
-export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initialView }: Props) {
+export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initialView, minDate, maxDate }: Props) {
   const today = useMemo(() => new Date(), []);
   const [year, setYear] = useState((initialView ?? date).getFullYear());
   const [month, setMonth] = useState((initialView ?? date).getMonth() + 1);
@@ -25,6 +27,8 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
   const fs = useFontSize();
   const labels = t();
   const firstDay = config.firstDayOfWeek;
+  // undefined keeps the historical "no future" default; null means unbounded.
+  const effectiveMax = maxDate === undefined ? today : maxDate;
 
   const daysInMonth = getDaysInMonth(year, month);
   const firstDayOfMonth = new Date(year, month - 1, 1);
@@ -37,7 +41,7 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
 
   return (
     <View style={calendarStyles.container}>
-      <MonthNav year={year} month={month} onChange={(a, m) => { setYear(a); setMonth(m); }} />
+      <MonthNav year={year} month={month} onChange={(a, m) => { setYear(a); setMonth(m); }} minDate={minDate} maxDate={maxDate} />
 
       <View style={styles.weekDays}>
         {headers.map(d => (
@@ -53,7 +57,7 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
           const dayDate = new Date(year, month - 1, day);
           const isToday = isSameDay(dayDate, today);
           const isSelected = isSameDay(dayDate, date);
-          const isFuture = isFutureDate(dayDate);
+          const isDisabled = !isDateWithinBounds(dayDate, minDate, effectiveMax);
           const withinRange = inRange(dayDate);
           const isStart = isStartEdge(dayDate);
           const isEnd = isEndEdge(dayDate);
@@ -61,9 +65,9 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
           return (
             <TouchableOpacity
               key={day}
-              style={[styles.day, isFuture && { opacity: FUTURE_OPACITY }]}
-              onPress={() => !isFuture && onSelect(dayDate)}
-              disabled={isFuture}
+              style={[styles.day, isDisabled && { opacity: FUTURE_OPACITY }]}
+              onPress={() => !isDisabled && onSelect(dayDate)}
+              disabled={isDisabled}
               accessibilityLabel={`${day} ${labels.months[month - 1]}${isToday ? ', today' : ''}${isSelected ? ', selected' : ''}`}
             >
               <View style={styles.dayWrap}>
@@ -80,7 +84,7 @@ export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initia
                     styles.dayText,
                     { color: c.text, fontSize: fs(14) },
                     isSelected && { color: c.background, fontWeight: '700' },
-                    isFuture && { color: c.textSecondary },
+                    isDisabled && { color: c.textSecondary },
                     withinRange && !isSelected && { fontWeight: '600' },
                   ]}>
                     {String(day)}
