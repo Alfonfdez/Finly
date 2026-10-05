@@ -11,14 +11,16 @@ export function recurrenceSummary(schedule: RecurrenceSchedule, language: Langua
   let summary: string;
 
   switch (schedule.frequency) {
-    case RECURRENCE_FREQUENCIES.weekly:
-      summary = labels.repeat_every_week(interval);
+    case RECURRENCE_FREQUENCIES.weekly: {
+      const weekday = schedule.weekday ?? fromDateOnly(schedule.start_date).getDay();
+      summary = `${labels.repeat_every_week(interval)} ${labels.repeat_on_weekday(labels.weekdays[weekday] ?? '')}`;
       break;
+    }
     case RECURRENCE_FREQUENCIES.monthly:
       summary = `${labels.repeat_every_month(interval)} ${labels.repeat_on_day(schedule.day_of_month ?? 1)}`;
       break;
     case RECURRENCE_FREQUENCIES.yearly:
-      summary = `${labels.repeat_every_year(interval)} ${getMonthName(schedule.month ?? 1)} ${labels.repeat_on_day(schedule.day_of_month ?? 1)}`;
+      summary = `${labels.repeat_every_year(interval)} ${labels.repeat_on_month_day(getMonthName(schedule.month ?? 1), schedule.day_of_month ?? 1)}`;
       break;
     case RECURRENCE_FREQUENCIES.daily:
     default:

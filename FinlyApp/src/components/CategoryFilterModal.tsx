@@ -1,13 +1,13 @@
 import { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useResetOnOpen } from '../hooks/useResetOnOpen';
 import { t, getDisplayCategoryName } from '../i18n';
 import SearchBar from './SearchBar';
 import EmptyState from './EmptyState';
+import HeaderCloseButton from './HeaderCloseButton';
 import { CARD_BORDER_RADIUS } from './componentStyles';
 import { TRANSACTION_TYPES, TYPE_FILTERS, type TransactionTypeFilter } from '../constants/types';
 import { sortCategoriesWithOthersLast, categoriesOfType } from '../utils/categoryUtils';
@@ -102,9 +102,7 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
       <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['top', 'bottom']}>
         <View style={[styles.header, { borderBottomColor: c.border }]}>
           <Text style={[styles.title, { color: c.text, fontSize: fs(16) }]}>{labels.filter_categories}</Text>
-          <TouchableOpacity onPress={onClose} accessibilityLabel={labels.common_close} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color={c.text} />
-          </TouchableOpacity>
+          <HeaderCloseButton onPress={onClose} accessibilityLabel={labels.common_close} />
         </View>
 
         <View style={styles.content}>
@@ -196,9 +194,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: '700',
-  },
-  closeButton: {
-    padding: 4,
   },
   content: {
     flex: 1,

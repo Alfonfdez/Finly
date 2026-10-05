@@ -85,8 +85,7 @@ export const es: Language = {
   theme_dark: 'Oscuro',
   theme_light: 'Claro',
   theme_system: 'Sistema',
-  day_monday: 'Lunes',
-  day_sunday: 'Domingo',
+  weekdays: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
   sep_comma: 'Coma (1.234,56)',
   sep_dot: 'Punto (1,234.56)',
   size_small: 'Pequeño',
@@ -506,6 +505,8 @@ export const es: Language = {
   repeat_every_month: (n: number) => (n === 1 ? 'Cada mes' : `Cada ${n} meses`),
   repeat_every_year: (n: number) => (n === 1 ? 'Cada año' : `Cada ${n} años`),
   repeat_on_day: (day: number) => `el día ${day}`,
+  repeat_on_weekday: (weekday: string) => `el ${weekday.toLowerCase()}`,
+  repeat_on_month_day: (month: string, day: number) => `el ${day} de ${month.toLowerCase()}`,
   repeat_until: (date: string) => `hasta ${date}`,
 
   // Home tag filter

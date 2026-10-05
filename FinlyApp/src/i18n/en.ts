@@ -83,8 +83,7 @@ export const en = {
   theme_dark: 'Dark',
   theme_light: 'Light',
   theme_system: 'System',
-  day_monday: 'Monday',
-  day_sunday: 'Sunday',
+  weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
   sep_comma: 'Comma (1.234,56)',
   sep_dot: 'Dot (1,234.56)',
   size_small: 'Small',
@@ -504,6 +503,8 @@ export const en = {
   repeat_every_month: (n: number) => (n === 1 ? 'Every month' : `Every ${n} months`),
   repeat_every_year: (n: number) => (n === 1 ? 'Every year' : `Every ${n} years`),
   repeat_on_day: (day: number) => `on day ${day}`,
+  repeat_on_weekday: (weekday: string) => `on ${weekday}`,
+  repeat_on_month_day: (month: string, day: number) => `on ${month} ${day}`,
   repeat_until: (date: string) => `until ${date}`,
 
   // Home tag filter

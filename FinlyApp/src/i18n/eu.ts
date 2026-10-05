@@ -85,8 +85,7 @@ export const eu: Language = {
   theme_dark: 'Iluna',
   theme_light: 'Argia',
   theme_system: 'Sistema',
-  day_monday: 'Astelehena',
-  day_sunday: 'Igandea',
+  weekdays: ['Igandea', 'Astelehena', 'Asteartea', 'Asteazkena', 'Osteguna', 'Ostirala', 'Larunbata'],
   sep_comma: 'Koma (1.234,56)',
   sep_dot: 'Puntua (1,234.56)',
   size_small: 'Txikia',
@@ -506,6 +505,8 @@ export const eu: Language = {
   repeat_every_month: (n: number) => (n === 1 ? 'Hilero' : `${n} hilero`),
   repeat_every_year: (n: number) => (n === 1 ? 'Urtero' : `${n} urtero`),
   repeat_on_day: (day: number) => `${day}. egunean`,
+  repeat_on_weekday: (weekday: string) => `${weekday.toLowerCase().replace(/a$/, '')}ean`,
+  repeat_on_month_day: (month: string, day: number) => `${month.toLowerCase()}ren ${day}`,
   repeat_until: (date: string) => `${date} arte`,
 
   // Home tag filter

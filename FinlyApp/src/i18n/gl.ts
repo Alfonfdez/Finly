@@ -85,8 +85,7 @@ export const gl: Language = {
   theme_dark: 'Escuro',
   theme_light: 'Claro',
   theme_system: 'Sistema',
-  day_monday: 'Luns',
-  day_sunday: 'Domingo',
+  weekdays: ['Domingo', 'Luns', 'Martes', 'Mércores', 'Xoves', 'Venres', 'Sábado'],
   sep_comma: 'Coma (1.234,56)',
   sep_dot: 'Punto (1,234.56)',
   size_small: 'Pequeno',
@@ -506,6 +505,8 @@ export const gl: Language = {
   repeat_every_month: (n: number) => (n === 1 ? 'Cada mes' : `Cada ${n} meses`),
   repeat_every_year: (n: number) => (n === 1 ? 'Cada ano' : `Cada ${n} anos`),
   repeat_on_day: (day: number) => `o día ${day}`,
+  repeat_on_weekday: (weekday: string) => `o ${weekday.toLowerCase()}`,
+  repeat_on_month_day: (month: string, day: number) => `o ${day} de ${month.toLowerCase()}`,
   repeat_until: (date: string) => `ata ${date}`,
 
   // Home tag filter

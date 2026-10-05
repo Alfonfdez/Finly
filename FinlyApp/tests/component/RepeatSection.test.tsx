@@ -70,6 +70,29 @@ describe('RepeatSection', () => {
     expect(props.onOpenEndDate).toHaveBeenCalledTimes(1);
   });
 
+  it('renders the end-date field with a calendar icon that opens the picker', async () => {
+    const { props, view } = renderSection();
+    const v = await view;
+    const field = v.getByTestId('repeat-end-date');
+    expect(field).toBeTruthy();
+    expect(v.getByText('calendar-outline')).toBeTruthy();
+    await fireEvent.press(field);
+    expect(props.onOpenEndDate).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the clear slot present even without an end date', async () => {
+    const { view } = renderSection({ endDate: null });
+    const v = await view;
+    expect(v.getByText('close-circle', { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  it('clears the end date when the clear button is pressed', async () => {
+    const { props, view } = renderSection({ endDate: new Date(2026, 11, 31) });
+    const v = await view;
+    await fireEvent.press(v.getByText('close-circle'));
+    expect(props.onClearEndDate).toHaveBeenCalledTimes(1);
+  });
+
   it('toggles repeat on switch change', async () => {
     const { props, view } = renderSection({ enabled: false });
     await fireEvent((await view).getByRole('switch'), 'valueChange', true);
@@ -81,5 +104,13 @@ describe('RepeatSection', () => {
     const v = await view;
     expect(v.getByText('Recurring')).toBeTruthy();
     expect(v.queryByRole('switch')).toBeNull();
+  });
+
+  it('highlights the options block only when enabled', async () => {
+    const disabled = await renderSection({ enabled: false });
+    expect((await disabled.view).queryByTestId('repeat-options')).toBeNull();
+
+    const enabled = await renderSection({ enabled: true });
+    expect((await enabled.view).getByTestId('repeat-options')).toBeTruthy();
   });
 });

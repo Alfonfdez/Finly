@@ -85,8 +85,7 @@ export const de: Language = {
   theme_dark: 'Dunkel',
   theme_light: 'Hell',
   theme_system: 'System',
-  day_monday: 'Montag',
-  day_sunday: 'Sonntag',
+  weekdays: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
   sep_comma: 'Komma (1.234,56)',
   sep_dot: 'Punkt (1,234.56)',
   size_small: 'Klein',
@@ -506,6 +505,8 @@ export const de: Language = {
   repeat_every_month: (n: number) => (n === 1 ? 'Jeden Monat' : `Alle ${n} Monate`),
   repeat_every_year: (n: number) => (n === 1 ? 'Jedes Jahr' : `Alle ${n} Jahre`),
   repeat_on_day: (day: number) => `am Tag ${day}`,
+  repeat_on_weekday: (weekday: string) => `am ${weekday}`,
+  repeat_on_month_day: (month: string, day: number) => `am ${day}. ${month}`,
   repeat_until: (date: string) => `bis ${date}`,
 
   // Home tag filter

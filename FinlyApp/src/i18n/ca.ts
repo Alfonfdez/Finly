@@ -85,8 +85,7 @@ export const ca: Language = {
   theme_dark: 'Fosc',
   theme_light: 'Clar',
   theme_system: 'Sistema',
-  day_monday: 'Dilluns',
-  day_sunday: 'Diumenge',
+  weekdays: ['Diumenge', 'Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres', 'Dissabte'],
   sep_comma: 'Coma (1.234,56)',
   sep_dot: 'Punt (1,234.56)',
   size_small: 'Petit',
@@ -506,6 +505,8 @@ export const ca: Language = {
   repeat_every_month: (n: number) => (n === 1 ? 'Cada mes' : `Cada ${n} mesos`),
   repeat_every_year: (n: number) => (n === 1 ? 'Cada any' : `Cada ${n} anys`),
   repeat_on_day: (day: number) => `el dia ${day}`,
+  repeat_on_weekday: (weekday: string) => `el ${weekday.toLowerCase()}`,
+  repeat_on_month_day: (month: string, day: number) => `el ${day} ${/^[aeiouàèéíìòóúù]/.test(month.toLowerCase()) ? "d'" : 'de '}${month.toLowerCase()}`,
   repeat_until: (date: string) => `fins a ${date}`,
 
   // Home tag filter
