@@ -44,6 +44,22 @@ export const TRANSACTION_TYPES = {
 
 export type TransactionType = keyof typeof TRANSACTION_TYPES;
 
+export const RECURRENCE_FREQUENCIES = {
+  daily: 'daily',
+  weekly: 'weekly',
+  monthly: 'monthly',
+  yearly: 'yearly',
+} as const;
+
+export type RecurrenceFrequency = keyof typeof RECURRENCE_FREQUENCIES;
+
+export const RECURRENCE_SCOPES = {
+  future: 'future',
+  futureAndPast: 'futureAndPast',
+} as const;
+
+export type RecurrenceScope = keyof typeof RECURRENCE_SCOPES;
+
 export const TYPE_FILTERS = {
   all: 'all',
   ...TRANSACTION_TYPES,
@@ -181,6 +197,9 @@ export type RootStackParamList = {
   ModifyTag: { tagId: number };
   Comments: undefined;
   ModifyComment: { comment: string };
+  Recurring: undefined;
+  CreateRecurring: undefined;
+  ModifyRecurring: { ruleId: number };
 };
 
 export type NavigationProp<RouteName extends keyof RootStackParamList> =

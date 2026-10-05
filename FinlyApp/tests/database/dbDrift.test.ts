@@ -2,10 +2,12 @@ import { describe, it, expect, beforeAll, vi } from 'vitest';
 import type { DatabaseHandle } from '../../src/database/types';
 import { initSqlJsOnce, resetMockDatabase } from './sqliteMock';
 import { DB_KEY_MAP } from '../../src/database/configDefaults';
-import type { User, Account, Category, Transaction, Tag, TransactionTag } from '../../src/database/types';
+import type { User, Account, Category, Transaction, Tag, TransactionTag, RecurringRule, RecurringRuleTag } from '../../src/database/types';
 import {
   accountSchema,
   categorySchema,
+  recurringRuleSchema,
+  recurringRuleTagSchema,
   tagSchema,
   transactionSchema,
   transactionTagSchema,
@@ -74,6 +76,32 @@ const EXPECTED_COLUMNS: Record<string, [string, string, number][]> = {
     ['date', 'TEXT', 1],
     ['updated_at', 'TEXT', 0],
     ['created_at', 'TEXT', 1],
+    ['recurring_rule_id', 'INTEGER', 0],
+    ['recurrence_date', 'TEXT', 0],
+  ],
+  recurring_rules: [
+    ['id', 'INTEGER', 0],
+    ['user_id', 'INTEGER', 1],
+    ['type', 'TEXT', 1],
+    ['account_id', 'INTEGER', 1],
+    ['category_id', 'INTEGER', 1],
+    ['amount', 'REAL', 1],
+    ['description', 'TEXT', 0],
+    ['frequency', 'TEXT', 1],
+    ['interval', 'INTEGER', 1],
+    ['weekday', 'INTEGER', 0],
+    ['day_of_month', 'INTEGER', 0],
+    ['month', 'INTEGER', 0],
+    ['start_date', 'TEXT', 1],
+    ['end_date', 'TEXT', 0],
+    ['next_due', 'TEXT', 1],
+    ['active', 'INTEGER', 1],
+    ['created_at', 'TEXT', 1],
+    ['updated_at', 'TEXT', 0],
+  ],
+  recurring_rule_tags: [
+    ['rule_id', 'INTEGER', 1],
+    ['tag_id', 'INTEGER', 1],
   ],
   tags: [
     ['id', 'INTEGER', 0],
@@ -125,7 +153,34 @@ const TYPE_SAMPLES: Record<string, { sample: Record<string, unknown> }> = {
       date: '',
       created_at: '',
       updated_at: null,
+      recurring_rule_id: null,
+      recurrence_date: null,
     } satisfies Transaction,
+  },
+  recurring_rules: {
+    sample: {
+      id: 0,
+      user_id: 0,
+      type: 'expense',
+      account_id: 0,
+      category_id: 0,
+      amount: 0,
+      description: null,
+      frequency: 'monthly',
+      interval: 1,
+      weekday: null,
+      day_of_month: 2,
+      month: null,
+      start_date: '',
+      end_date: null,
+      next_due: '',
+      active: 1,
+      created_at: '',
+      updated_at: null,
+    } satisfies RecurringRule,
+  },
+  recurring_rule_tags: {
+    sample: { rule_id: 0, tag_id: 0 } satisfies RecurringRuleTag,
   },
   tags: {
     sample: { id: 0, user_id: 0, name: '', created_at: '' } satisfies Tag,
@@ -177,6 +232,8 @@ describe('DB drift', () => {
       transactions: transactionSchema,
       tags: tagSchema,
       transaction_tags: transactionTagSchema,
+      recurring_rules: recurringRuleSchema,
+      recurring_rule_tags: recurringRuleTagSchema,
     };
     for (const [table, schema] of Object.entries(schemaByTable)) {
       const info = await columns(db, table);
@@ -186,10 +243,10 @@ describe('DB drift', () => {
     }
   });
 
-  it('migrates to user_version 3 and seeds the expected rows', async () => {
+  it('migrates to user_version 4 and seeds the expected rows', async () => {
     const db = await freshDb();
     const version = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
-    expect(version?.user_version).toBe(3);
+    expect(version?.user_version).toBe(4);
 
     expect(await countRows(db, 'users')).toBe(1);
     expect(await countRows(db, 'accounts')).toBe(2);
@@ -197,6 +254,8 @@ describe('DB drift', () => {
     expect(await countRows(db, 'transactions')).toBe(0);
     expect(await countRows(db, 'tags')).toBe(0);
     expect(await countRows(db, 'transaction_tags')).toBe(0);
+    expect(await countRows(db, 'recurring_rules')).toBe(0);
+    expect(await countRows(db, 'recurring_rule_tags')).toBe(0);
 
     const configRows = await db.getAllAsync<{ key: string }>('SELECT key FROM config');
     expect(configRows.map(r => r.key).sort()).toEqual(Object.keys(DB_KEY_MAP).sort());
@@ -205,7 +264,7 @@ describe('DB drift', () => {
   it('initDatabase is idempotent across calls', async () => {
     const db = await freshDb();
     const { initDatabase } = await import('../../src/database/database');
-    await initDatabase(); // user_version already 3: migrate returns early, no re-seed
+    await initDatabase(); // user_version already 4: migrate returns early, no re-seed
     expect(await countRows(db, 'users')).toBe(1);
     expect(await countRows(db, 'accounts')).toBe(2);
     expect(await countRows(db, 'categories')).toBe(31);

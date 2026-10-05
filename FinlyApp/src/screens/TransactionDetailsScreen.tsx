@@ -13,7 +13,7 @@ import { formatAmount, formatDateLong, formatDateTimeShort, parseDbDate, AMOUNT_
 import { deletePhotoFile, parsePhotos } from '../utils/photoUtils';
 import { ERROR_PREFIXES } from '../utils/errors';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
-import { transactionRepository } from '../database';
+import { transactionRepository, recurringRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -39,10 +39,18 @@ export default function TransactionDetailsScreen() {
 
   const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+  const [ruleActive, setRuleActive] = useState<boolean | null>(null);
 
   // Refresh transaction data when screen gains focus (after editing)
   const loadTransaction = useCallback(async () => {
-    return await transactionRepository.getById(transactionId);
+    const tx = await transactionRepository.getById(transactionId);
+    if (tx?.recurring_rule_id != null) {
+      const rule = await recurringRepository.getById(tx.recurring_rule_id);
+      setRuleActive(rule ? rule.active === 1 : null);
+    } else {
+      setRuleActive(null);
+    }
+    return tx;
   }, [transactionId]);
 
   const { data: transaction } = useFocusLoad(loadTransaction, null);
@@ -94,6 +102,13 @@ export default function TransactionDetailsScreen() {
     },
     errorPrefix: ERROR_PREFIXES.transactionsDelete,
   });
+
+  const handleStopRepeating = useCallback(async () => {
+    if (transaction?.recurring_rule_id == null) return;
+    await recurringRepository.setActive(transaction.recurring_rule_id, false);
+    setRuleActive(false);
+    deferredRefresh();
+  }, [transaction?.recurring_rule_id, deferredRefresh]);
 
   if (!transaction) {
     return (
@@ -170,6 +185,26 @@ export default function TransactionDetailsScreen() {
               </Text>
             )}
           </DataRow>
+
+          {transaction.recurring_rule_id != null && (
+            <DataRow label={labels.recurring_chip} noBorder>
+              {ruleActive === false ? (
+                <View style={styles.stopRepeating}>
+                  <Ionicons name="checkmark-circle" size={16} color={c.textSecondary} />
+                  <Text style={[styles.nameValue, { color: c.textSecondary, fontSize: fs(15) }]}>
+                    {labels.recurring_stopped}
+                  </Text>
+                </View>
+              ) : (
+                <TouchableOpacity style={styles.stopRepeating} onPress={handleStopRepeating}>
+                  <Ionicons name="repeat-outline" size={16} color={c.primary} />
+                  <Text style={[styles.nameValue, { color: c.primary, fontSize: fs(15) }]}>
+                    {labels.recurring_stop}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </DataRow>
+          )}
 
           {parsedPhotos.length > 0 && (
             <DataRow label={labels.details_photo} noBorder>
@@ -285,6 +320,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 24,
     gap: 2,
+  },
+  stopRepeating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flex: 2,
+    justifyContent: 'flex-end',
   },
   timestampText: {},
 });

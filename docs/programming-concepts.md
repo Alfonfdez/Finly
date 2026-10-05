@@ -382,6 +382,25 @@ if (isCatalan(language)) {
 </View>
 ```
 
+## Calendar date bounds (min/max)
+**Definition:** Optional `minDate`/`maxDate` props on the calendar that restrict which days can be selected, instead of hardcoding "no future dates".
+**Explanation:** Finly's day picker was originally past-only (future days dimmed and disabled). To reuse the same calendar for a recurring rule's **end date** — which must be in the future — the bound is parameterized: `undefined` keeps the historical default (`maxDate` = end of today, so no future), `null` means unbounded on that side, and a `Date` is an inclusive clamp. Disabled days are dimmed and not pressable, and the month arrows disable at the bounds. The predicate is the pure `isDateWithinBounds(date, minDate, maxDate)` in `utils/formatters.ts`, so it is unit-testable without the real clock.
+**Example:**
+```tsx
+// Transaction date: today or past (default, no bounds passed)
+<CalendarModal period="day" date={day} onSelectDate={setDay} ... />
+
+// Recurring end date: tomorrow onward, unbounded
+<CalendarModal
+  period="day"
+  date={repeatEnd ?? day}
+  minDate={tomorrow}
+  maxDate={null}
+  onSelectDate={setRepeatEnd}
+  ...
+/>
+```
+
 # Design Principles
 
 ## Single Source of Truth (SSOT)

@@ -36,6 +36,9 @@ import CreateTagScreen from '../screens/CreateTagScreen';
 import ModifyTagScreen from '../screens/ModifyTagScreen';
 import CommentsScreen from '../screens/CommentsScreen';
 import ModifyCommentScreen from '../screens/ModifyCommentScreen';
+import RecurringScreen from '../screens/RecurringScreen';
+import CreateRecurringScreen from '../screens/CreateRecurringScreen';
+import ModifyRecurringScreen from '../screens/ModifyRecurringScreen';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
@@ -54,7 +57,7 @@ type ScreenDef = {
   options: Record<string, unknown>;
 };
 
-type DrawerScreenName = 'Home' | 'AllTransactions' | 'Accounts' | 'Categories' | 'Tags' | 'Comments' | 'Settings';
+type DrawerScreenName = 'Home' | 'AllTransactions' | 'Accounts' | 'Categories' | 'Tags' | 'Comments' | 'Recurring' | 'Settings';
 
 type DrawerItemDef =
   | { label: string; icon: keyof typeof Ionicons.glyphMap; screen: DrawerScreenName }
@@ -104,6 +107,7 @@ const ROOT_DRAWER_SCREENS: DrawerScreenName[] = [
   'Categories',
   'Tags',
   'Comments',
+  'Recurring',
 ];
 
 function openDrawerScreen(navigation: DrawerContentComponentProps['navigation'], screen: DrawerScreenName) {
@@ -130,6 +134,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
   const drawerItems: DrawerItemDef[] = [
     { label: labels.nav_home, icon: 'home-outline', screen: 'Home' },
     { label: labels.nav_all_transactions, icon: 'receipt-outline', screen: 'AllTransactions' },
+    { label: labels.nav_recurring, icon: 'repeat-outline', screen: 'Recurring' },
     { label: labels.nav_accounts, icon: 'wallet-outline', screen: 'Accounts' },
     { label: labels.nav_categories, icon: 'grid-outline', screen: 'Categories' },
     { label: labels.nav_tags, icon: 'pricetag-outline', screen: 'Tags' },
@@ -230,6 +235,12 @@ const HomeStack = memo(function HomeStack() {
       options: { headerTitle: () => <HeaderTitle icon="chatbubble-outline" label={labels.nav_comments} />, headerLeft: () => <StackHeaderLeft /> } },
     { name: 'ModifyComment', component: ModifyCommentScreen, icon: 'chatbubble-outline', label: labels.comments_modify_title,
       options: { headerTitle: () => <HeaderTitle icon="chatbubble-outline" label={labels.comments_modify_title} /> } },
+    { name: 'Recurring', component: RecurringScreen, icon: 'repeat-outline', label: labels.nav_recurring,
+      options: { headerTitle: () => <HeaderTitle icon="repeat-outline" label={labels.nav_recurring} />, headerLeft: () => <StackHeaderLeft /> } },
+    { name: 'CreateRecurring', component: CreateRecurringScreen, icon: 'repeat-outline', label: labels.recurring_create_title,
+      options: { headerTitle: () => <HeaderTitle icon="repeat-outline" label={labels.recurring_create_title} /> } },
+    { name: 'ModifyRecurring', component: ModifyRecurringScreen, icon: 'repeat-outline', label: labels.recurring_edit_title,
+      options: { headerTitle: () => <HeaderTitle icon="repeat-outline" label={labels.recurring_edit_title} /> } },
   ], [labels]);
 
   return (

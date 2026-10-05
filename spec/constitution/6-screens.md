@@ -144,6 +144,7 @@ The drawer is a custom `DrawerContentScrollView` in `AppNavigator.tsx` with this
 | `wallet-outline` | `nav_accounts` | `Accounts` |
 | `grid-outline` | `nav_categories` | `Categories` |
 | `pricetag-outline` | `nav_tags` | `Tags` |
+| `repeat-outline` | `nav_recurring` | `Recurring` |
 | `settings-outline` | `nav_settings` | `Settings` |
 
 **Version footer:**
@@ -430,6 +431,14 @@ useEffect(() => {
 ```
 
 **Delete button style:** `{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingVertical: 12, marginTop: 24 }`
+
+## Calendar (date pickers)
+
+- `CalendarModal` renders the picker; the day grid is `calendars/DayPicker` and month navigation is `calendars/MonthNav`.
+- **Date bounds:** `CalendarModal` and `DayPicker` accept optional `minDate` / `maxDate` (and forward them to `MonthNav`). Convention: `undefined` keeps the historical default (**no future dates**, i.e. `maxDate` = end of today); `null` means unbounded on that side; a `Date` is an inclusive clamp. Disabled days are dimmed (`FUTURE_OPACITY`) and not pressable, and the month arrows disable at the bounds. The pure predicate is `isDateWithinBounds(date, minDate, maxDate)` in `utils/formatters.ts`.
+- **Default:** the transaction date and period pickers pass no bounds, so they stay "today or past only" (see feature 001).
+- **Future dates (feature 028):** the recurring **End date** picker passes `minDate = tomorrow` and `maxDate = null`, so only a future date can be chosen — a recurring end date must be in the future.
+- `MonthGrid` / `YearGrid` / `YearNav` (month/year periods) are **not** parameterized yet; they remain past-only.
 
 ## Export Pattern
 

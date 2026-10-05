@@ -398,7 +398,7 @@ Bulk comment management for transactions:
 Spec: spec/features/027-comments-management/.
 
 ## 028-recurring-transactions
-Status: not started.
+Status: completed.
 
 Recurring expenses/income created once and materialized automatically:
 - New `recurring_rules` table (+ `recurring_rule_tags`) storing type, account, category, amount, comment, tags, frequency (daily/weekly/monthly/yearly + "every N"), anchors, start/end date and `next_due`; two nullable columns added to `transactions` (`recurring_rule_id`, `recurrence_date`) with a partial unique occurrence index.

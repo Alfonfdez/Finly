@@ -3,10 +3,11 @@ import { openEngine } from './engine';
 import { createSchema } from './migrations/001_initial';
 import { seedData, seedDataInner } from './migrations/002_seed';
 import { seedConfig, seedConfigInner } from './migrations/003_config';
+import { createRecurringSchema } from './migrations/004_recurring';
 import { sanitizeDefaultAccountConfig } from './configDefaults';
 
 const DATABASE_NAME = 'Finly.db';
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 let dbPromise: Promise<DatabaseHandle> | null = null;
 
@@ -42,6 +43,10 @@ async function migrate(database: DatabaseHandle): Promise<void> {
       }
       await database.execAsync('PRAGMA user_version = 3');
     }
+    if (currentVersion < 4) {
+      await createRecurringSchema(database);
+      await database.execAsync('PRAGMA user_version = 4');
+    }
   });
 }
 
@@ -69,6 +74,8 @@ export async function resetDatabase(): Promise<void> {
   await database.withTransactionAsync(async () => {
     await database.runAsync('DELETE FROM transactions');
     await database.runAsync('DELETE FROM transaction_tags');
+    await database.runAsync('DELETE FROM recurring_rule_tags');
+    await database.runAsync('DELETE FROM recurring_rules');
     await database.runAsync('DELETE FROM accounts');
     await database.runAsync('DELETE FROM categories');
     await database.runAsync('DELETE FROM tags');
@@ -83,6 +90,8 @@ export async function clearDataKeepSettings(): Promise<void> {
   await database.withTransactionAsync(async () => {
     await database.runAsync('DELETE FROM transactions');
     await database.runAsync('DELETE FROM transaction_tags');
+    await database.runAsync('DELETE FROM recurring_rule_tags');
+    await database.runAsync('DELETE FROM recurring_rules');
     await database.runAsync('DELETE FROM accounts');
     await database.runAsync('DELETE FROM categories');
     await database.runAsync('DELETE FROM tags');

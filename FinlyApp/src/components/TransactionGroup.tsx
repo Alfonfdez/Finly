@@ -34,6 +34,9 @@ export const TransactionRow = memo(function TransactionRow({ tx, category, tags,
     />
   ) : undefined;
 
+  const hasRecurring = tx.recurring_rule_id != null;
+  const hasTags = !!tags && tags.length > 0;
+
   return (
     <ListItemRow
       title={category ? getDisplayCategoryName(category) : ''}
@@ -45,9 +48,10 @@ export const TransactionRow = memo(function TransactionRow({ tx, category, tags,
       badgeIconSize={18}
       badgeAlpha={19}
       leading={checkbox}
-      middle={tags && tags.length > 0 ? (
+      middle={(hasRecurring || hasTags) ? (
         <View style={styles.tagsContainer}>
-          {tags.map((tag) => (
+          {hasRecurring && <Ionicons name="repeat-outline" size={14} color={c.textSecondary} />}
+          {tags?.map((tag) => (
             <TagChip key={tag.tag_id} label={tag.name} />
           ))}
         </View>
@@ -96,6 +100,7 @@ const styles = StyleSheet.create({
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    alignItems: 'center',
     gap: 4,
     marginTop: 4,
   },

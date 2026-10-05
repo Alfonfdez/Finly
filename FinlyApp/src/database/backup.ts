@@ -3,6 +3,8 @@ import { z } from 'zod';
 import {
   accountSchema,
   categorySchema,
+  recurringRuleSchema,
+  recurringRuleTagSchema,
   tagSchema,
   transactionSchema,
   transactionTagSchema,
@@ -12,6 +14,8 @@ import type {
   Account,
   Category,
   DatabaseHandle,
+  RecurringRule,
+  RecurringRuleTag,
   Tag,
   Transaction,
   TransactionTag,
@@ -44,6 +48,9 @@ const snapshotSchema = z.object({
     transactions: z.array(transactionSchema),
     tags: z.array(tagSchema),
     transaction_tags: z.array(transactionTagSchema),
+    // Added in schema 4; optional + default keeps pre-028 backups importable.
+    recurring_rules: z.array(recurringRuleSchema).optional().default([]),
+    recurring_rule_tags: z.array(recurringRuleTagSchema).optional().default([]),
     config: z.array(configRowSchema),
   }),
 });
@@ -84,7 +91,7 @@ export async function buildBackup(
   db: DatabaseHandle,
   schemaVersion: number
 ): Promise<BackupSnapshot> {
-  const [users, accounts, categories, transactions, tags, transactionTags, config] =
+  const [users, accounts, categories, transactions, tags, transactionTags, recurringRules, recurringRuleTags, config] =
     await Promise.all([
       db.getAllAsync<User>('SELECT * FROM users'),
       db.getAllAsync<Account>('SELECT * FROM accounts'),
@@ -92,6 +99,8 @@ export async function buildBackup(
       db.getAllAsync<Transaction>('SELECT * FROM transactions'),
       db.getAllAsync<Tag>('SELECT * FROM tags'),
       db.getAllAsync<TransactionTag>('SELECT * FROM transaction_tags'),
+      db.getAllAsync<RecurringRule>('SELECT * FROM recurring_rules'),
+      db.getAllAsync<RecurringRuleTag>('SELECT * FROM recurring_rule_tags'),
       db.getAllAsync<ConfigRow>('SELECT key, value FROM config'),
     ]);
 
@@ -101,7 +110,17 @@ export async function buildBackup(
     formatVersion: BACKUP_FORMAT_VERSION,
     exportedAt: new Date().toISOString(),
     schema: schemaVersion,
-    data: { users, accounts, categories, transactions, tags, transaction_tags: transactionTags, config },
+    data: {
+      users,
+      accounts,
+      categories,
+      transactions,
+      tags,
+      transaction_tags: transactionTags,
+      recurring_rules: recurringRules,
+      recurring_rule_tags: recurringRuleTags,
+      config,
+    },
   };
 }
 
@@ -109,6 +128,8 @@ export async function applyBackup(db: DatabaseHandle, snapshot: BackupSnapshot):
   await db.withTransactionAsync(async () => {
     await db.runAsync('DELETE FROM transactions');
     await db.runAsync('DELETE FROM transaction_tags');
+    await db.runAsync('DELETE FROM recurring_rule_tags');
+    await db.runAsync('DELETE FROM recurring_rules');
     await db.runAsync('DELETE FROM tags');
     await db.runAsync('DELETE FROM categories');
     await db.runAsync('DELETE FROM accounts');
@@ -165,9 +186,41 @@ export async function applyBackup(db: DatabaseHandle, snapshot: BackupSnapshot):
       );
     }
 
+    for (const rule of snapshot.data.recurring_rules) {
+      await db.runAsync(
+        'INSERT INTO recurring_rules (id, user_id, type, account_id, category_id, amount, description, frequency, interval, weekday, day_of_month, month, start_date, end_date, next_due, active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        rule.id,
+        rule.user_id,
+        rule.type,
+        rule.account_id,
+        rule.category_id,
+        rule.amount,
+        rule.description,
+        rule.frequency,
+        rule.interval,
+        rule.weekday,
+        rule.day_of_month,
+        rule.month,
+        rule.start_date,
+        rule.end_date,
+        rule.next_due,
+        rule.active,
+        rule.created_at,
+        rule.updated_at
+      );
+    }
+
+    for (const link of snapshot.data.recurring_rule_tags) {
+      await db.runAsync(
+        'INSERT INTO recurring_rule_tags (rule_id, tag_id) VALUES (?, ?)',
+        link.rule_id,
+        link.tag_id
+      );
+    }
+
     for (const transaction of snapshot.data.transactions) {
       await db.runAsync(
-        'INSERT INTO transactions (id, account_id, category_id, type, amount, description, photo, date, updated_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO transactions (id, account_id, category_id, type, amount, description, photo, date, updated_at, created_at, recurring_rule_id, recurrence_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         transaction.id,
         transaction.account_id,
         transaction.category_id,
@@ -177,7 +230,9 @@ export async function applyBackup(db: DatabaseHandle, snapshot: BackupSnapshot):
         transaction.photo,
         transaction.date,
         transaction.updated_at,
-        transaction.created_at
+        transaction.created_at,
+        transaction.recurring_rule_id ?? null,
+        transaction.recurrence_date ?? null
       );
     }
 

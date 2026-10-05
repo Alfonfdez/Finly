@@ -4,6 +4,7 @@ import { createSqlJsDatabase, type SqlJsDatabase } from '../../src/database/sqli
 import { createSchema } from '../../src/database/migrations/001_initial';
 import { seedDataInner } from '../../src/database/migrations/002_seed';
 import { seedConfigInner } from '../../src/database/migrations/003_config';
+import { createRecurringSchema } from '../../src/database/migrations/004_recurring';
 import {
   BACKUP_FORMAT_VERSION,
   BackupValidationError,
@@ -26,14 +27,14 @@ vi.mock('expo-sqlite', async () => {
 
 vi.mock('../../src/database/database', () => ({
   getDatabase: async () => dbHolder.db,
-  SCHEMA_VERSION: 3,
+  SCHEMA_VERSION: 4,
 }));
 
 // Evaluate the expo-sqlite mock factory now (registry intact) so its dynamic
 // import of sqliteMock resolves to the same module instance the test file uses.
 await import('expo-sqlite');
 
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 const TABLES = [
   'users',
   'accounts',
@@ -41,6 +42,8 @@ const TABLES = [
   'transactions',
   'tags',
   'transaction_tags',
+  'recurring_rules',
+  'recurring_rule_tags',
   'config',
 ];
 
@@ -54,6 +57,7 @@ async function boot(): Promise<SqlJsDatabase> {
   await createSchema(db);
   await seedDataInner(db);
   await seedConfigInner(db);
+  await createRecurringSchema(db);
   return db;
 }
 
@@ -109,6 +113,7 @@ describe('backup snapshot', () => {
     const db = await createSqlJsDatabase(null, null);
     await db.execAsync('PRAGMA foreign_keys = ON;');
     await createSchema(db);
+    await createRecurringSchema(db);
     const snapshot = await buildBackup(db, SCHEMA_VERSION);
     for (const table of TABLES) {
       expect(snapshot.data[table as keyof typeof snapshot.data]).toEqual([]);
@@ -159,10 +164,59 @@ describe('backup round-trip', () => {
     const target = await createSqlJsDatabase(null, null);
     await target.execAsync('PRAGMA foreign_keys = ON;');
     await createSchema(target);
+    await createRecurringSchema(target);
     await applyBackup(target, snapshot);
     expect(await countRows(target, 'users')).toBe(1);
     expect(await countRows(target, 'accounts')).toBe(2);
     expect(await countRows(target, 'categories')).toBe(31);
+    source.close();
+    target.close();
+  });
+
+  it('round-trips recurring rules, their tags and generated transactions', async () => {
+    const source = await boot();
+    const tagId = (
+      await source.runAsync("INSERT INTO tags (user_id, name, created_at) VALUES (1, 'home', '2026-01-01')")
+    ).lastInsertRowId;
+    const ruleId = (
+      await source.runAsync(
+        "INSERT INTO recurring_rules (user_id, type, account_id, category_id, amount, description, frequency, interval, weekday, day_of_month, month, start_date, end_date, next_due, active, created_at, updated_at) VALUES (1, 'expense', 1, 3, 100, 'Rent', 'monthly', 1, NULL, 2, NULL, '2026-01-02', NULL, '2026-03-02', 1, '2026-01-01', NULL)"
+      )
+    ).lastInsertRowId;
+    await source.runAsync('INSERT INTO recurring_rule_tags (rule_id, tag_id) VALUES (?, ?)', ruleId, tagId);
+    await source.runAsync(
+      "INSERT INTO transactions (account_id, category_id, type, amount, description, date, created_at, recurring_rule_id, recurrence_date) VALUES (1, 3, 'expense', 100, 'Rent', '2026-01-02 00:00:00', '2026-01-02', ?, '2026-01-02')",
+      ruleId
+    );
+
+    const snapshot = await buildBackup(source, SCHEMA_VERSION);
+    const target = await boot();
+    await applyBackup(target, snapshot);
+
+    expect(await dump(target)).toEqual(await dump(source));
+    expect(await countRows(target, 'recurring_rules')).toBe(1);
+    expect(await countRows(target, 'recurring_rule_tags')).toBe(1);
+    const tx = await target.getFirstAsync<{ recurring_rule_id: number; recurrence_date: string }>(
+      'SELECT recurring_rule_id, recurrence_date FROM transactions'
+    );
+    expect(tx?.recurring_rule_id).toBe(ruleId);
+    expect(tx?.recurrence_date).toBe('2026-01-02');
+    source.close();
+    target.close();
+  });
+
+  it('imports a pre-028 (schema 3) snapshot without the recurring collections', async () => {
+    const source = await boot();
+    const full = await buildBackup(source, SCHEMA_VERSION);
+    const { recurring_rules: _rules, recurring_rule_tags: _links, ...data } = full.data;
+    void _rules;
+    void _links;
+    const legacy = JSON.stringify({ ...full, schema: 3, data });
+
+    const target = await boot();
+    await applyBackup(target, parseBackup(legacy));
+    expect(await countRows(target, 'users')).toBe(1);
+    expect(await countRows(target, 'recurring_rules')).toBe(0);
     source.close();
     target.close();
   });
@@ -242,6 +296,7 @@ describe('backup validation', () => {
     const target = await createSqlJsDatabase(null, null);
     await target.execAsync('PRAGMA foreign_keys = ON;');
     await createSchema(target);
+    await createRecurringSchema(target);
     await applyBackup(target, snapshot);
 
     const rows = await target.getAllAsync<{ key: string; value: string }>(
@@ -265,6 +320,7 @@ describe('backup validation', () => {
     const target = await createSqlJsDatabase(null, null);
     await target.execAsync('PRAGMA foreign_keys = ON;');
     await createSchema(target);
+    await createRecurringSchema(target);
     await applyBackup(target, snapshot);
 
     const row = await target.getFirstAsync<{ value: string }>(

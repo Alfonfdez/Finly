@@ -4,6 +4,8 @@ import {
   accountSchema,
   categorySchema,
   configSchema,
+  recurringRuleSchema,
+  recurringRuleTagSchema,
   tagSchema,
   transactionSchema,
   transactionTagSchema,
@@ -17,6 +19,8 @@ export type Transaction = z.infer<typeof transactionSchema>;
 export type Tag = z.infer<typeof tagSchema>;
 export type TransactionTag = z.infer<typeof transactionTagSchema>;
 export type Config = z.infer<typeof configSchema>;
+export type RecurringRule = z.infer<typeof recurringRuleSchema>;
+export type RecurringRuleTag = z.infer<typeof recurringRuleTagSchema>;
 
 export type DatabaseBindValue = string | number | null | Uint8Array;
 

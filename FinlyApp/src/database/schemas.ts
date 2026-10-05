@@ -5,6 +5,7 @@ import {
   DECIMAL_SEPARATORS,
   FIRST_DAYS,
   PERIODS,
+  RECURRENCE_FREQUENCIES,
   TEXT_SIZES,
   THEMES,
   TRANSACTION_TYPES,
@@ -19,6 +20,12 @@ const iconShapeSchema = z.enum([CONFIG_ICON_SHAPES.square, CONFIG_ICON_SHAPES.ci
 const firstDaySchema = z.union([z.literal(FIRST_DAYS.monday), z.literal(FIRST_DAYS.sunday)]);
 const decimalSeparatorSchema = z.union([z.literal(DECIMAL_SEPARATORS.comma), z.literal(DECIMAL_SEPARATORS.dot)]);
 const homePeriodSchema = z.enum([PERIODS.day, PERIODS.week, PERIODS.month, PERIODS.year]);
+const recurrenceFrequencySchema = z.enum([
+  RECURRENCE_FREQUENCIES.daily,
+  RECURRENCE_FREQUENCIES.weekly,
+  RECURRENCE_FREQUENCIES.monthly,
+  RECURRENCE_FREQUENCIES.yearly,
+]);
 
 export const userSchema = z.object({
   id: z.number().int(),
@@ -62,6 +69,35 @@ export const transactionSchema = z.object({
   date: z.string(),
   created_at: z.string(),
   updated_at: z.string().nullable(),
+  // Added in migration 004. Optional keeps pre-028 backups (no such keys) importable.
+  recurring_rule_id: z.number().int().nullable().optional(),
+  recurrence_date: z.string().nullable().optional(),
+});
+
+export const recurringRuleSchema = z.object({
+  id: z.number().int(),
+  user_id: z.number().int(),
+  type: transactionTypeSchema,
+  account_id: z.number().int(),
+  category_id: z.number().int(),
+  amount: z.number().positive(),
+  description: z.string().nullable(),
+  frequency: recurrenceFrequencySchema,
+  interval: z.number().int().positive(),
+  weekday: z.number().int().nullable(),
+  day_of_month: z.number().int().nullable(),
+  month: z.number().int().nullable(),
+  start_date: z.string(),
+  end_date: z.string().nullable(),
+  next_due: z.string(),
+  active: z.number().int(),
+  created_at: z.string(),
+  updated_at: z.string().nullable(),
+});
+
+export const recurringRuleTagSchema = z.object({
+  rule_id: z.number().int(),
+  tag_id: z.number().int(),
 });
 
 export const tagSchema = z.object({

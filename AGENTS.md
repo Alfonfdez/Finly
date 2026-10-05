@@ -85,11 +85,11 @@ npx expo lint
 - Spec-docs convention: a code change updates only `spec/features/<NNN>/1-spec.md` (requirement bullets) + `spec/constitution/3-roadmap.md` (entry + Status), and flips the feature's acceptance criteria `[ ]` → `[x]` after verification. Never edit `2-plan.md` or `3-tasks.md` for feature updates.
 
 ## DATABASE
-- 3 idempotent migrations in `src/database/migrations/`: `001_initial` (schema), `002_seed` (seed data), `003_config` (config defaults)
-- Version counter: `src/database/database.ts` runs migrations from `PRAGMA user_version` (`SCHEMA_VERSION = 3`), applying each step (schema -> seed data -> config defaults) once inside a transaction
+- 4 idempotent migrations in `src/database/migrations/`: `001_initial` (schema), `002_seed` (seed data), `003_config` (config defaults), `004_recurring` (recurring rules + `transactions` recurrence columns)
+- Version counter: `src/database/database.ts` runs migrations from `PRAGMA user_version` (`SCHEMA_VERSION = 4`), applying each step (schema -> seed data -> config defaults -> recurring) once inside a transaction
 - SQLite for native, sql.js (WASM) for web — one `DatabaseHandle` interface, same migrations and repositories on both platforms; web persists the database bytes to IndexedDB
 - Repositories are written with Drizzle ORM (`drizzle-orm/sqlite-proxy` over `DatabaseHandle`; schema in `src/database/drizzle/schema.ts`); no `drizzle-kit`, migrations stay on `PRAGMA user_version`
-- 5 repositories: account, category, tag, transaction, config
+- 6 repositories: account, category, tag, transaction, config, recurring
 
 ## I18N
 - Languages: English, Spanish, Catalan, Galician, Basque, French, German, Portuguese, Italian

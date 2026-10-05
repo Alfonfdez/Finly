@@ -49,7 +49,7 @@
 ### 5. Creating a recurring rule
 
 - `TransactionForm` gains a **Repeat** section (a toggle) available when adding a transaction:
-  - Frequency selector (Never / Daily / Weekly / Monthly / Yearly), an "every N" stepper, and an optional end date (reusing the existing `CalendarModal`).
+  - Frequency selector (Never / Daily / Weekly / Monthly / Yearly), an "every N" stepper, and an optional end date (reusing `CalendarModal` with **future-only bounds**: `minDate = tomorrow`, `maxDate = null`).
   - The start date defaults to the day selected in the form's `DaySelector`.
   - A human-readable summary is shown (e.g. "Every 2 months on the 2nd, from 2 Oct 2026").
 - When Repeat is on, saving creates a `recurring_rules` row + tag links **and** reconciliation immediately materializes any occurrence that is already due (including the start date if it is today or earlier). When Repeat is off, saving behaves exactly as today (one transaction).
@@ -108,23 +108,24 @@
 
 ## Acceptance criteria
 
-- [ ] A "Repeat" section is available in the add-transaction form (Never / Daily / Weekly / Monthly / Yearly + "every N" + optional end date) with a readable summary.
-- [ ] Saving with a repeat creates a rule and materializes any already-due occurrence as a transaction (correct account, category, type, amount, comment and tags).
-- [ ] On app start / foreground, every due occurrence since the last run is created, each dated on its scheduled day (missed months/years are back-filled).
-- [ ] Re-running reconciliation never duplicates an occurrence (idempotent via the unique occurrence index).
-- [ ] While the app is open across a due instant, the occurrence is created without reopening the app.
-- [ ] Monthly rules clamp short months (31 → last day) and yearly rules clamp Feb 29 in non-leap years.
-- [ ] A Drawer "Recurring" screen lists rules with frequency summary, next due date and an active toggle; empty state shown when there are none.
-- [ ] A rule can be paused (stops materialization, misses during the pause are not created) and resumed.
-- [ ] Editing a rule "From now on" changes only future occurrences; "From now on + past generated" bulk-updates its generated transactions.
-- [ ] Editing an individual generated transaction does not change its rule.
-- [ ] Transaction details show a Recurring chip with a "Stop repeating" action.
-- [ ] Deleting a rule keeps every transaction it generated.
-- [ ] Export/import round-trips rules and tag links; a pre-028 (schema-3) backup still imports.
-- [ ] Migration 004 applies to an existing v2.1.0 database without touching existing rows and sets `user_version = 4`; fresh installs reach the same schema.
-- [ ] All texts are multilingual (9 languages) and screens respect theme and text size.
-- [ ] `npm run test:all` is green (typecheck + lint + tests).
-- [ ] Web verification via the `verification-loop` skill (375px) for the web-checkable criteria; native-only items (e.g. AppState background/foreground transitions on device) reported as not checkable on web.
+- [x] A "Repeat" section is available in the add-transaction form (Never / Daily / Weekly / Monthly / Yearly + "every N" + optional end date) with a readable summary.
+- [x] The recurring **End date** picker allows only future dates (today and past are disabled), while the transaction date picker still allows only today/past.
+- [x] Saving with a repeat creates a rule and materializes any already-due occurrence as a transaction (correct account, category, type, amount, comment and tags).
+- [x] On app start / foreground, every due occurrence since the last run is created, each dated on its scheduled day (missed months/years are back-filled).
+- [x] Re-running reconciliation never duplicates an occurrence (idempotent via the unique occurrence index).
+- [x] While the app is open across a due instant, the occurrence is created without reopening the app.
+- [x] Monthly rules clamp short months (31 → last day) and yearly rules clamp Feb 29 in non-leap years.
+- [x] A Drawer "Recurring" screen lists rules with frequency summary, next due date and an active toggle; empty state shown when there are none.
+- [x] A rule can be paused (stops materialization, misses during the pause are not created) and resumed.
+- [x] Editing a rule "From now on" changes only future occurrences; "From now on + past generated" bulk-updates its generated transactions.
+- [x] Editing an individual generated transaction does not change its rule.
+- [x] Transaction details show a Recurring chip with a "Stop repeating" action.
+- [x] Deleting a rule keeps every transaction it generated.
+- [x] Export/import round-trips rules and tag links; a pre-028 (schema-3) backup still imports.
+- [x] Migration 004 applies to an existing v2.1.0 database without touching existing rows and sets `user_version = 4`; fresh installs reach the same schema.
+- [x] All texts are multilingual (9 languages) and screens respect theme and text size.
+- [x] `npm run test:all` is green (typecheck + lint + tests).
+- [x] Web verification via the `verification-loop` skill (375px) for the web-checkable criteria; native-only items (e.g. AppState background/foreground transitions on device) reported as not checkable on web.
 
 ---
 

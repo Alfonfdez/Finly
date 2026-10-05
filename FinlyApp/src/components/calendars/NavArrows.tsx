@@ -8,13 +8,19 @@ interface Props {
   onPrev: () => void;
   onNext: () => void;
   nextDisabled?: boolean;
+  prevDisabled?: boolean;
 }
 
-export default function NavArrows({ color, onPrev, onNext, nextDisabled = false }: Props) {
+export default function NavArrows({ color, onPrev, onNext, nextDisabled = false, prevDisabled = false }: Props) {
   const labels = t();
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={onPrev} accessibilityLabel={labels.a11y_previous_month}>
+      <TouchableOpacity
+        onPress={onPrev}
+        style={{ opacity: prevDisabled ? FUTURE_OPACITY : 1 }}
+        disabled={prevDisabled}
+        accessibilityLabel={labels.a11y_previous_month}
+      >
         <Ionicons name="chevron-back-outline" size={22} color={color} />
       </TouchableOpacity>
       <TouchableOpacity

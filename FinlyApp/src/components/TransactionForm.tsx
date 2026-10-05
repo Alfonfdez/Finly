@@ -1,24 +1,25 @@
-import { useRef, useEffect, useMemo, useCallback } from 'react';
+import { useRef, useEffect, useMemo, useCallback, type ReactNode } from 'react';
 import { Text, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { useTransactionForm, type TransactionDraft } from '../hooks/useTransactionForm';
+import { useTransactionForm, type TransactionDraft, type RecurrenceDraft } from '../hooks/useTransactionForm';
 import { t, getDisplayAccountName } from '../i18n';
 import TabBar, { typeTabs } from './TabBar';
 import AmountInput from './AmountInput';
 import AccountModal from './AccountModal';
 import CategoryGrid from './CategoryGrid';
 import DaySelector from './DaySelector';
+import RepeatSection from './RepeatSection';
 import TagSection from './TagSection';
 import CommentInput from './CommentInput';
 import PhotoSection from './PhotoSection';
 import CalendarModal from './CalendarModal';
 import CalculatorModal from './CalculatorModal';
 import { CARD_BORDER_RADIUS } from './componentStyles';
-import { type TransactionType, type RootStackParamList } from '../constants/types';
+import { type TransactionType, type RecurrenceFrequency, type RootStackParamList } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
 import { showErrorAlert } from '../utils/errors';
@@ -37,6 +38,15 @@ interface TransactionFormProps {
   errorTitle: string;
   errorMessage: string;
   onSubmit: (data: TransactionDraft, tagIds: number[]) => Promise<void>;
+  onSubmitRule?: (data: TransactionDraft, tagIds: number[], recurrence: RecurrenceDraft) => Promise<void>;
+  enableRepeat?: boolean;
+  ruleMode?: boolean;
+  initialRepeatFrequency?: RecurrenceFrequency;
+  initialRepeatInterval?: number;
+  initialRepeatEnd?: Date | null;
+  initialTagIds?: number[];
+  footer?: ReactNode;
+  topNotice?: ReactNode;
   resetTagsOnFirstFocus?: boolean;
   onError?: () => void;
 }
@@ -53,8 +63,13 @@ export default function TransactionForm(props: TransactionFormProps) {
     categoryId, setCategoryId, day, setDay,
     selectedTags, comment, setComment,
     submitting, photos,
+    repeatEnabled, setRepeatEnabled,
+    repeatFrequency, setRepeatFrequency,
+    repeatInterval, setRepeatInterval,
+    repeatEnd, setRepeatEnd,
     modalAccountVisible, setModalAccountVisible,
     modalCalendarVisible, setModalCalendarVisible,
+    modalRepeatEndVisible, setModalRepeatEndVisible,
     calculatorVisible, setCalculatorVisible,
     handleToggleTag, handleCreateTag,
     handleSelectAccount, handleSelectDate,
@@ -75,6 +90,18 @@ export default function TransactionForm(props: TransactionFormProps) {
 
   const handleAccountClose = useCallback(() => setModalAccountVisible(false), [setModalAccountVisible]);
   const handleCalendarClose = useCallback(() => setModalCalendarVisible(false), [setModalCalendarVisible]);
+  const handleSelectRepeatEnd = useCallback((date: Date) => {
+    setRepeatEnd(date);
+    setModalRepeatEndVisible(false);
+  }, [setRepeatEnd, setModalRepeatEndVisible]);
+
+  // The recurring end date is future-only (tomorrow onward, unbounded).
+  const repeatMinDate = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + 1);
+    return d;
+  }, []);
   const handleCalculatorAccept = useCallback((result: string) => {
     const clean = parseAmountInput(result);
     if (clean !== null && clean !== '') {
@@ -91,6 +118,7 @@ export default function TransactionForm(props: TransactionFormProps) {
         style={styles.keyboardAvoid}
       >
         <ScrollView ref={scrollRef} style={[styles.container, { backgroundColor: c.background }]} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        {props.topNotice}
         <TabBar
           tabs={tabs}
           active={type}
@@ -133,6 +161,22 @@ export default function TransactionForm(props: TransactionFormProps) {
           onOpenCalendar={() => setModalCalendarVisible(true)}
         />
 
+        {props.enableRepeat && (
+          <RepeatSection
+            showToggle={!props.ruleMode}
+            enabled={props.ruleMode ? true : repeatEnabled}
+            onToggle={setRepeatEnabled}
+            frequency={repeatFrequency}
+            onChangeFrequency={setRepeatFrequency}
+            interval={repeatInterval}
+            onChangeInterval={setRepeatInterval}
+            startDay={day}
+            endDate={repeatEnd}
+            onOpenEndDate={() => setModalRepeatEndVisible(true)}
+            onClearEndDate={() => setRepeatEnd(null)}
+          />
+        )}
+
         {config.addShowLabels && (
           <TagSection
             tags={tags}
@@ -156,7 +200,7 @@ export default function TransactionForm(props: TransactionFormProps) {
           />
         )}
 
-        {config.addShowPhoto && (
+        {config.addShowPhoto && !repeatEnabled && (
           <PhotoSection
             photos={photos}
             onTakePhoto={handleTakePhoto}
@@ -176,6 +220,8 @@ export default function TransactionForm(props: TransactionFormProps) {
               : ''}
           </Text>
         )}
+        {props.footer}
+
         <TouchableOpacity
           style={[
             styles.submitButton,
@@ -205,6 +251,16 @@ export default function TransactionForm(props: TransactionFormProps) {
         date={day}
         onSelectDate={handleSelectDate}
         onClose={handleCalendarClose}
+      />
+
+      <CalendarModal
+        visible={modalRepeatEndVisible}
+        period="day"
+        date={repeatEnd ?? day}
+        minDate={repeatMinDate}
+        maxDate={null}
+        onSelectDate={handleSelectRepeatEnd}
+        onClose={() => setModalRepeatEndVisible(false)}
       />
 
       <CalculatorModal

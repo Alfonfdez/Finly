@@ -1,21 +1,16 @@
 import { useMemo } from 'react';
-import { useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { t } from '../i18n';
-import { PERIODS, RECURRENCE_FREQUENCIES, USER_ID, type RootStackParamList } from '../constants/types';
+import { PERIODS, RECURRENCE_FREQUENCIES, USER_ID } from '../constants/types';
 import { isSameDay } from '../utils/formatters';
 import { fromDateOnly } from '../utils/recurrence';
-import { transactionRepository, recurringRepository } from '../database';
+import { recurringRepository } from '../database';
 import { materializeDueRecurring } from '../database/recurringService';
 import { isTotalAccount } from '../database/helpers';
 import TransactionForm from '../components/TransactionForm';
 
-type AddTransactionRouteProp = RouteProp<RootStackParamList, 'AddTransaction'>;
-
-export default function AddTransactionScreen() {
-  const route = useRoute<AddTransactionRouteProp>();
-  const routeType = route.params?.type;
+export default function CreateRecurringScreen() {
   const { config } = useConfig();
   const { activeType, activePeriod, customDate, selectedDate, accounts, accountsWithBalance, activeAccount, changeType } = useApp();
   const labels = t();
@@ -39,20 +34,17 @@ export default function AddTransactionScreen() {
 
   return (
     <TransactionForm
-      initialType={routeType ?? activeType}
+      initialType={activeType}
       initialAccountId={initialAccountId}
       initialCategoryId={null}
       initialReorderedCategory={null}
       initialDay={initialDay}
       initialComment=""
       initialPhotos={[]}
-      submitLabel={labels.add_submit}
-      errorTitle={labels.add_error_title}
-      errorMessage={labels.add_error_message}
-      onSubmit={async (data, tagIds) => {
-        await transactionRepository.createWithTags(data, tagIds);
-        changeType(data.type);
-      }}
+      submitLabel={labels.recurring_submit}
+      errorTitle={labels.recurring_error_title}
+      errorMessage={labels.recurring_error_message}
+      onSubmit={async () => {}}
       onSubmitRule={async (data, tagIds, recurrence) => {
         const startDate = data.date.slice(0, 10);
         const start = fromDateOnly(startDate);
@@ -83,6 +75,7 @@ export default function AddTransactionScreen() {
         changeType(data.type);
       }}
       enableRepeat
+      ruleMode
       resetTagsOnFirstFocus
     />
   );
