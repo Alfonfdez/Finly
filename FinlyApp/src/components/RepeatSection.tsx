@@ -8,7 +8,7 @@ import { formatDateLong } from '../utils/formatters';
 import { toDateOnly } from '../utils/recurrence';
 import { recurrenceSummary } from '../utils/recurrenceSummary';
 import { withAlpha } from '../utils/color';
-import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, PILL_RADIUS, SECTION_GAP, SECTION_TITLE_STYLE, switchColors } from './componentStyles';
+import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, PILL_RADIUS, SECTION_GAP, SECTION_GAP_SM, SECTION_TITLE_STYLE, switchColors } from './componentStyles';
 import ClearButton from './ClearButton';
 
 interface Props {
@@ -187,6 +187,7 @@ export default function RepeatSection({
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: SECTION_GAP_SM,
     marginBottom: SECTION_GAP,
   },
   header: {

@@ -3298,3 +3298,7 @@
 - Fix the recurring End date field changing width when a date is set: the clear (x) now uses a shared ClearButton that always reserves its 20x20 slot (invisible + inert when empty), so the field width is identical with or without a date.
 - Standardize the app's close/clear affordances (no rule existed before): shared ClearButton (close-circle 20, textSecondary) for inline value clears — SearchBar, TagSection search, RepeatSection end date — and shared HeaderCloseButton (line close 24, text) for modal headers (CategoryFilterModal). Documented the taxonomy + variants (dark viewer, remove badge, select toggle) in the design system.
 - Tests: new ClearButton.test.tsx; RepeatSection asserts the clear slot is always present and clears the end date. 'npm run test:all' green (104 files / 675 tests). Verified on web at 375px: end-date field width 281px both with and without a date (dark + light); header close is a line x, inline clear is a filled circle-x.
+
+[2026-10-06] style | FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/componentStyles.ts
+- Add more breathing room between the Day section and the Recurring section in the add-transaction form: RepeatSection now has a top margin (SECTION_GAP_SM = 8) so the gap below the third day button grows from 16px to 24px; the Day-to-Tags gap when Repeat is off is unchanged.
+- Spacing-only change; 'npm run test:all' green (104 files / 675 tests). Verified on web at 375px: Day-to-Recurring gap = 24px.
