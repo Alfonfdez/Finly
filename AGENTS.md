@@ -42,11 +42,35 @@ Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`
 - Description in English, imperative mood, lowercase, no period
 - Max 50 chars for subject line
 
+## CHANGELOG
+Every code/asset change appends an entry to `docs/changelog.md`. **Always use the script** (never hand-edit):
+```bash
+node scripts/append-changelog.mjs --type <type> --files "<paths>" --bullet "<line>"
+```
+- `--type`: `+` (added), `~` (modified), `-` (removed), or `feat`/`fix`/`docs`/`refactor`/`style`/`test`/`chore`.
+- `--bullet` repeatable (one line each); `--dry-run` to preview; `--date` optional.
+- The script guarantees a blank line between entries, CRLF, and refuses to write if the existing tail looks truncated. See the `changelog` skill.
+
 ## RUN
 ```bash
 cd FinlyApp
 npx expo start
 ```
+
+## ANDROID BUILD & RELEASE (EAS)
+The **official** artifact is an EAS Build; local `gradlew` is a dev smoke-test path only.
+
+```bash
+cd FinlyApp
+npx eas-cli login                     # once
+npx eas-cli build --platform android --profile preview                  # installable APK (internal)
+npx eas-cli build --platform android --profile production --no-wait     # store AAB
+```
+- `FinlyApp/eas.json` defines three profiles (`development`, `preview`, `production`) with `cli.appVersionSource: "local"` — EAS reads `version` / `android.versionCode` / `ios.buildNumber` straight from `app.json`.
+- **Bump `android.versionCode` (and `ios.buildNumber`) for every release**: `versionCode` must strictly increase or Google Play rejects the upload; it is what makes an update install *over* the previous one.
+- **Signing keys are managed by EAS** (generated on the first production build, stored on Expo's servers for the project's `projectId`), so consecutive releases share one signature and update in place — no uninstall. Keep an offline backup: `npx eas-cli credentials` → Android → download the keystore + passwords. Never commit a keystore (`.jks`/`.p12`/`.key` are gitignored; `.easignore` also excludes them).
+- A locally built `gradlew assembleRelease` APK is signed with the **debug** keystore, so it has a different signature than the EAS release — use it only for local smoke tests, and expect to uninstall the debug APK before installing an EAS build.
+- **After changing anything under `assets/` (or the icon/splash config in `app.json`), run `npx expo prebuild --platform android` before the next build** — Expo bakes assets into native resources only during prebuild; Gradle will not regenerate them. The web favicon is injected only at export: `npx expo export --platform web`.
 
 ## LINT
 ```bash

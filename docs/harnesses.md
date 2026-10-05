@@ -35,7 +35,7 @@ All commands run from the `FinlyApp/` directory.
 
 ### Current suite baseline
 
-Verified 2026-09-06: **92 test files / 571 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
+Verified 2026-10-05: **93 test files / 606 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
 
 Native E2E baseline (2026-09-09, SDK 57 + v2.0.0 release package): all 10 Maestro flows PASS on the `finly_test` emulator against `com.finly.app` after `expo prebuild` + `assembleDebug`.
 
@@ -255,9 +255,9 @@ Android / Maestro notes found and fixed while writing them:
 ### Phase D+ — Native E2E re-run on Expo SDK 57 (2026-09-09)
 
 After the upgrade to Expo SDK 57 / RN 0.86.3 (merged via PR #163) the native build and all
-ten Maestro flows were re-validated from scratch. Current SDK patch: `expo ~57.0.24`
-(applied 2026-09-18; JS-level patches within SDK 57 — no native regeneration needed;
-`npx expo install --check` reports no other packages out of date).
+ten Maestro flows were re-validated from scratch. Current SDK patch: `expo ~57.0.26`
+(applied 2026-10-05; JS-level patches within SDK 57 — no native regeneration needed;
+`npx expo install --check` reports "Dependencies are up to date" and `expo-doctor` 21/21).
 
 Re-run on the release package (2026-09-09, required by the Task-3 release pass): the
 application id changed to `com.finly.app` (v2.0.0), so `android/` was regenerated with
