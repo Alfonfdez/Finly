@@ -1,9 +1,10 @@
-import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TextInput, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { BUTTON_BORDER_RADIUS } from './componentStyles';
+import ClearButton from './ClearButton';
 
 interface Props {
   placeholder: string;
@@ -29,9 +30,7 @@ export default function SearchBar({ placeholder, value, onChangeText, onClose, a
         onChangeText={onChangeText}
         autoFocus={autoFocus}
       />
-      <TouchableOpacity onPress={onClose} style={styles.closeButton} accessibilityLabel={labels.a11y_close_search}>
-        <Ionicons name="close-circle" size={20} color={c.textSecondary} />
-      </TouchableOpacity>
+      <ClearButton onPress={onClose} accessibilityLabel={labels.a11y_close_search} />
     </View>
   );
 }
@@ -51,8 +50,5 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     paddingVertical: 10,
-  },
-  closeButton: {
-    marginLeft: 8,
   },
 });

@@ -85,8 +85,7 @@ export const it: Language = {
   theme_dark: 'Scuro',
   theme_light: 'Chiaro',
   theme_system: 'Sistema',
-  day_monday: 'Lunedì',
-  day_sunday: 'Domenica',
+  weekdays: ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'],
   sep_comma: 'Virgola (1.234,56)',
   sep_dot: 'Punto (1,234.56)',
   size_small: 'Piccolo',
@@ -506,6 +505,8 @@ export const it: Language = {
   repeat_every_month: (n: number) => (n === 1 ? 'Ogni mese' : `Ogni ${n} mesi`),
   repeat_every_year: (n: number) => (n === 1 ? 'Ogni anno' : `Ogni ${n} anni`),
   repeat_on_day: (day: number) => `il giorno ${day}`,
+  repeat_on_weekday: (weekday: string) => `il ${weekday.toLowerCase()}`,
+  repeat_on_month_day: (month: string, day: number) => `il ${day} ${month.toLowerCase()}`,
   repeat_until: (date: string) => `fino al ${date}`,
 
   // Home tag filter

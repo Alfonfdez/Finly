@@ -11,6 +11,7 @@ import { countAtLimit } from '../utils/limits';
 import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
 import { CONTROL_BORDER_RADIUS } from './componentStyles';
+import ClearButton from './ClearButton';
 import PrimaryButton from './form/PrimaryButton';
 
 interface Props {
@@ -95,15 +96,13 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
             value={search}
             onChangeText={setSearch}
           />
-          <TouchableOpacity
-            style={styles.searchClose}
+          <ClearButton
             onPress={() => {
               setSearch('');
               setShowSearch(false);
             }}
-          >
-            <Ionicons name="close" size={16} color={c.textSecondary} />
-          </TouchableOpacity>
+            accessibilityLabel={labels.a11y_close_search}
+          />
         </View>
       )}
 
@@ -206,6 +205,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
     marginBottom: 10,
   },
   searchInput: {
@@ -213,9 +213,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: CONTROL_BORDER_RADIUS,
-  },
-  searchClose: {
-    padding: 8,
   },
   tagsContainer: {
     flexDirection: 'row',

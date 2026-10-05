@@ -51,7 +51,7 @@
 - `TransactionForm` gains a **Repeat** section (a toggle) available when adding a transaction:
   - Frequency selector (Never / Daily / Weekly / Monthly / Yearly), an "every N" stepper, and an optional end date (reusing `CalendarModal` with bounds `minDate = the selected transaction day + 1`, `maxDate = null`; the end date may be in the past when the start is in the past).
   - The start date defaults to the day selected in the form's `DaySelector`.
-  - A human-readable summary is shown (e.g. "Every 2 months on the 2nd, from 2 Oct 2026").
+  - A human-readable summary is shown, phrased per frequency and localized (e.g. "Every month on day 6", "Every week on Monday", "Every year on October 6"; Spanish: "Cada año el 6 de octubre"), with an "until &lt;date&gt;" clause appended when an end date is set.
 - When Repeat is on, saving creates a `recurring_rules` row + tag links **and** reconciliation immediately materializes any occurrence that is already due (including the start date if it is today or earlier). When Repeat is off, saving behaves exactly as today (one transaction).
 - The account/category/amount/comment/tags come from the same form fields; a recurring rule does not store a photo.
 

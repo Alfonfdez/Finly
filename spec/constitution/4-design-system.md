@@ -105,6 +105,13 @@ interface ColorPalette {
 - **Category icons:** defined in `components/IconGrid.tsx` (`CATEGORY_ICONS`).
 - **Account icons:** defined in `constants/accountIcons.ts` (`ACCOUNT_ICONS`).
 
+### Close / clear affordances
+Three distinct patterns — never mix them:
+- **Inline clear** (clearing a value in a field/input): shared `ClearButton` (`components/ClearButton.tsx`) — `close-circle`, size `CLEAR_ICON_SIZE` (20), `textSecondary`. It always occupies the same 20×20 box (pass `visible={false}` to reserve the space when empty), so a field's width never changes when the value appears or clears.
+- **Modal / overlay close** (dismissing a modal header): shared `HeaderCloseButton` (`components/HeaderCloseButton.tsx`) — line `close`, size `MODAL_CLOSE_ICON_SIZE` (24), `text`, with a comfortable hit target.
+- **Remove-item badge** (destructive, e.g. removing a photo): a line `close` on a `red` circular badge — see `PhotoSection`.
+- Variants: the full-bleed photo viewer uses a white `close` (28) on its always-dark overlay (`PhotoViewer`); `SelectToggleButton`'s `close-outline` is a select-mode toggle, not a clear.
+
 ## Layout & Spacing
 - **Screen padding:** `paddingHorizontal: 16`
 - **Section spacing:** `marginTop: 16` between sections

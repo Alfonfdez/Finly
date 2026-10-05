@@ -85,8 +85,7 @@ export const pt: Language = {
   theme_dark: 'Escuro',
   theme_light: 'Claro',
   theme_system: 'Sistema',
-  day_monday: 'Segunda-feira',
-  day_sunday: 'Domingo',
+  weekdays: ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'],
   sep_comma: 'Vírgula (1.234,56)',
   sep_dot: 'Ponto (1,234.56)',
   size_small: 'Pequeno',
@@ -506,6 +505,8 @@ export const pt: Language = {
   repeat_every_month: (n: number) => (n === 1 ? 'Todos os meses' : `A cada ${n} meses`),
   repeat_every_year: (n: number) => (n === 1 ? 'Todos os anos' : `A cada ${n} anos`),
   repeat_on_day: (day: number) => `no dia ${day}`,
+  repeat_on_weekday: (weekday: string) => `em ${weekday.toLowerCase()}`,
+  repeat_on_month_day: (month: string, day: number) => `em ${day} de ${month.toLowerCase()}`,
   repeat_until: (date: string) => `até ${date}`,
 
   // Home tag filter

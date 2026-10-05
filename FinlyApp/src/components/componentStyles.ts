@@ -9,6 +9,8 @@ export const CONTROL_BORDER_RADIUS = 8;
 export const ACTION_BUTTON_HEIGHT = 56;
 export const CARD_BORDER_RADIUS = 12;
 export const PILL_RADIUS = 999;
+export const CLEAR_ICON_SIZE = 20;
+export const MODAL_CLOSE_ICON_SIZE = 24;
 export const LIMIT_TEXT_STYLE = {
   fontWeight: '500' as const,
   textAlign: 'center' as const,

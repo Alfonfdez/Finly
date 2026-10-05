@@ -7,7 +7,9 @@ import { RECURRENCE_FREQUENCIES, type RecurrenceFrequency } from '../constants/t
 import { formatDateLong } from '../utils/formatters';
 import { toDateOnly } from '../utils/recurrence';
 import { recurrenceSummary } from '../utils/recurrenceSummary';
-import { PILL_RADIUS, SECTION_GAP, SECTION_TITLE_STYLE, switchColors } from './componentStyles';
+import { withAlpha } from '../utils/color';
+import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, PILL_RADIUS, SECTION_GAP, SECTION_TITLE_STYLE, switchColors } from './componentStyles';
+import ClearButton from './ClearButton';
 
 interface Props {
   enabled: boolean;
@@ -62,6 +64,7 @@ export default function RepeatSection({
     {
       frequency,
       interval,
+      weekday: frequency === RECURRENCE_FREQUENCIES.weekly ? startDay.getDay() : null,
       day_of_month:
         frequency === RECURRENCE_FREQUENCIES.monthly || frequency === RECURRENCE_FREQUENCIES.yearly
           ? dayOfMonth
@@ -76,7 +79,10 @@ export default function RepeatSection({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>{labels.recurring_chip}</Text>
+        <View style={styles.titleRow}>
+          {enabled && <Ionicons name="repeat-outline" size={16} color={c.primary} />}
+          <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>{labels.recurring_chip}</Text>
+        </View>
         {showToggle && (
           <Switch
             value={enabled}
@@ -88,8 +94,14 @@ export default function RepeatSection({
       </View>
 
       {enabled && (
-        <>
-          <Text style={[styles.label, { color: c.textSecondary, fontSize: fs(12) }]}>
+        <View
+          testID="repeat-options"
+          style={[
+            styles.options,
+            { backgroundColor: withAlpha(c.primary, 10), borderColor: withAlpha(c.primary, 30) },
+          ]}
+        >
+          <Text style={[styles.firstLabel, { color: c.textSecondary, fontSize: fs(12) }]}>
             {labels.repeat_frequency}
           </Text>
           <View style={styles.chips}>
@@ -148,25 +160,26 @@ export default function RepeatSection({
             {labels.repeat_end_date}
           </Text>
           <View style={styles.endRow}>
-            <TouchableOpacity style={styles.endButton} onPress={onOpenEndDate} accessibilityRole="button">
-              <Text style={[styles.endText, { color: c.text, fontSize: fs(14) }]}>
+            <TouchableOpacity
+              testID="repeat-end-date"
+              style={[styles.endField, { backgroundColor: c.surface, borderColor: c.border }]}
+              onPress={onOpenEndDate}
+              accessibilityRole="button"
+              accessibilityLabel={labels.repeat_end_date}
+            >
+              <Text
+                style={[styles.endText, { color: endDate ? c.text : c.textSecondary, fontSize: fs(14) }]}
+                numberOfLines={1}
+              >
                 {endDate ? formatDateLong(endDate, config.language) : labels.repeat_no_end}
               </Text>
+              <Ionicons name="calendar-outline" size={20} color={c.primary} />
             </TouchableOpacity>
-            {endDate && (
-              <TouchableOpacity
-                onPress={onClearEndDate}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                accessibilityRole="button"
-                accessibilityLabel={labels.repeat_no_end}
-              >
-                <Ionicons name="close-circle" size={20} color={c.textSecondary} />
-              </TouchableOpacity>
-            )}
+            <ClearButton visible={!!endDate} onPress={onClearEndDate} accessibilityLabel={labels.repeat_no_end} />
           </View>
 
           <Text style={[styles.summary, { color: c.primary, fontSize: fs(13) }]}>{summary}</Text>
-        </>
+        </View>
       )}
     </View>
   );
@@ -182,7 +195,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   title: SECTION_TITLE_STYLE,
+  options: {
+    borderWidth: 1,
+    borderRadius: CARD_BORDER_RADIUS,
+    padding: 14,
+  },
+  firstLabel: {
+    fontWeight: '500',
+  },
   label: {
     fontWeight: '500',
     marginTop: 12,
@@ -230,10 +256,18 @@ const styles = StyleSheet.create({
     gap: 12,
     marginTop: 8,
   },
-  endButton: {
+  endField: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: BUTTON_BORDER_RADIUS,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
   endText: {
+    flex: 1,
     fontWeight: '500',
   },
   summary: {

@@ -201,8 +201,8 @@ export default function RegionalScreen() {
   ];
 
   const FIRST_DAY_OPTIONS: Option[] = [
-    { label: labels.day_monday, value: String(FIRST_DAYS.monday), icon: <DayCircleIcon letter={labels.day_mon_letter} size={16} colors={c} /> },
-    { label: labels.day_sunday, value: String(FIRST_DAYS.sunday), icon: <DayCircleIcon letter={labels.day_sun_letter} size={16} colors={c} /> },
+    { label: labels.weekdays[FIRST_DAYS.monday], value: String(FIRST_DAYS.monday), icon: <DayCircleIcon letter={labels.day_mon_letter} size={16} colors={c} /> },
+    { label: labels.weekdays[FIRST_DAYS.sunday], value: String(FIRST_DAYS.sunday), icon: <DayCircleIcon letter={labels.day_sun_letter} size={16} colors={c} /> },
   ];
 
   return (
