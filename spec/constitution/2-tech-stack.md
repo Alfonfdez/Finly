@@ -4,7 +4,8 @@
 - **React Native** (Expo managed workflow, SDK 57) — main framework for iOS and Android.
 - **TypeScript** — static typing for the codebase.
 - **React Navigation** (native-stack + drawer) — screen navigation.
-- **SQLite** (expo-sqlite) — local persistence on native. Versioned migrations (`PRAGMA user_version`, SCHEMA_VERSION 3): initial schema (`001_initial`), seed (`002_seed`), and config defaults (`003_config`), each applied once inside a transaction.
+- **SQLite** (expo-sqlite) — local persistence on native. Versioned migrations (`PRAGMA user_version`, `SCHEMA_VERSION 3`): initial schema (`001_initial`), seed (`002_seed`), and config defaults (`003_config`), each applied once inside a transaction.
+  - **Migration policy:** adding a feature creates a new **additive** migration (next available number) and bumps `SCHEMA_VERSION`; existing user data is never rewritten or deleted. Schema changes must use only SQLite-safe forms (new tables; `ALTER TABLE ... ADD COLUMN` nullable or with a constant default; new indexes). Every schema surface is updated in lockstep — `schemas.ts` (Zod), `types.ts` (`z.infer`), `drizzle/schema.ts` — and the drift tests (`dbDrift`/`drizzleDrift`) plus `backup.ts` and `resetDatabase`/`clearDataKeepSettings` are updated in the same change. Feature **028-recurring-transactions** is planned to add `004_recurring` and raise `SCHEMA_VERSION` to 4.
 - **@expo/vector-icons** (Ionicons) — icon library used throughout the app.
 - **react-native-svg** — custom donut chart and bar chart.
 - **reanimated-color-picker** — dynamic color picker (CreateCategoryScreen).

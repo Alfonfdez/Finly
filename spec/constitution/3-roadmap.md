@@ -397,6 +397,18 @@ Bulk comment management for transactions:
 
 Spec: spec/features/027-comments-management/.
 
+## 028-recurring-transactions
+Status: not started.
+
+Recurring expenses/income created once and materialized automatically:
+- New `recurring_rules` table (+ `recurring_rule_tags`) storing type, account, category, amount, comment, tags, frequency (daily/weekly/monthly/yearly + "every N"), anchors, start/end date and `next_due`; two nullable columns added to `transactions` (`recurring_rule_id`, `recurrence_date`) with a partial unique occurrence index.
+- Reconciliation on app start, on foreground and via a midnight timer while open: every due occurrence since the last run is created, dated on its scheduled day (missed months/years are back-filled); idempotent via the unique index, transactional, bounded per rule. A closed app catches up on next open (no OS background task in v1).
+- Add form gains a "Repeat" section; a Drawer "Recurring" screen lists rules (frequency summary, next due, pause/resume, FAB); transaction details show a Recurring chip + "Stop repeating".
+- Editing reconciles first then updates in place; scope "From now on" or "From now on + past generated" (bulk update).
+- Deleting a rule keeps every transaction it generated (FK `ON DELETE SET NULL`).
+- Additive migration `004_recurring` and `SCHEMA_VERSION 3 → 4`; existing v2.1.0 data untouched. Backup format v1 extended with optional collections so old backups still import.
+- Spec: spec/features/028-recurring-transactions/.
+
 ## 033-bulk-delete-tags-comments
 Status: completed.
 

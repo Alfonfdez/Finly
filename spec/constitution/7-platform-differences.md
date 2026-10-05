@@ -44,7 +44,22 @@ platform fork of the repository layer.
 | Theme picker (system) | ✅ | ❌ (system option hidden) | Web has no "system" theme concept |
 | Data reset (full reseed) | ✅ | ✅ | Single path: `resetDatabase()` reseeds on all platforms |
 | Data export / import (backup) | ✅ | ✅ | Same JSON snapshot format on all platforms. Android: saved to the public Downloads folder (`MediaStore` via the local `finly-share` module) with an optional Share sheet opened on demand (share outcome is not reported, since Android targets return no reliable result). iOS: written to `documentDirectory` and shared via the `finly-share` share sheet (truthful outcome). Import via `expo-document-picker`. Web: browser download (`Blob` + `<a download>`) and file-input import (`FileReader`) |
+| Recurring transactions (rules + materialization) | ✅ | ✅ | Rules stored and materialized through the shared `DatabaseHandle` on both engines; reconciliation runs on app start, on foreground and via a midnight timer while the app is open |
+| Recurring catch-up while the app is closed | ❌ (v1) | ❌ | No OS background task in v1; a closed app materializes every missed occurrence on the next open |
 | Notifications / haptics | Planned | ❌ | Native-only APIs, not yet implemented |
+
+---
+
+### Recurring transactions (feature 028)
+
+| Aspect | Decision |
+|--------|----------|
+| **Storage** | Rules in `recurring_rules` / `recurring_rule_tags` on the shared engine (native + web); generated transactions carry `recurring_rule_id` + `recurrence_date` |
+| **Materialization trigger** | App start (`AppContext` after DB init), `AppState` → `active` on foreground, and a `setTimeout` scheduled to the next due instant while the app is open — all platforms |
+| **Closed-app execution** | Out of scope for v1: no `expo-background-task` / `expo-task-manager`. A closed app back-fills every missed occurrence on the next open, each dated on its real scheduled day |
+| **Idempotency** | Partial unique index on `(recurring_rule_id, recurrence_date)`; reconciliation is transactional and bounded per rule |
+| **Web nuance** | react-native-web maps `AppState` to page visibility; the midnight timer runs while the tab stays open |
+| **Native-only verification** | AppState background/foreground transitions on a real device are reported as "not checkable on web"; the web loop covers creation, catch-up, edit scope, pause/delete and backup round-trip |
 
 ---
 

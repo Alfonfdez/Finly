@@ -589,7 +589,7 @@ await db.getAllAsync('SELECT * FROM transactions WHERE date >= ?', startDate);
 
 ## PRAGMA user_version
 **Definition:** Integer metadata that SQLite stores in the database header to control which migrations have been executed.
-**Explanation:** Used as a schema version counter. Each migration checks if `user_version` is less than its number, runs the necessary SQL changes, and then increments the value with `PRAGMA user_version = N`. This way, the app knows at each startup which migrations are missing without needing additional control tables. In Finly, the current approach uses a single initial schema (createSchema → seedData → seedConfig) with no versioned migrations — the developer resets the DB manually during development.
+**Explanation:** Used as a schema version counter. Each migration checks if `user_version` is less than its number, runs the necessary SQL changes, and then increments the value with `PRAGMA user_version = N`. This way, the app knows at each startup which migrations are missing without needing additional control tables. In Finly, `src/database/database.ts` reads the version and applies each pending step inside one transaction; `SCHEMA_VERSION` is 3 (`001_initial` schema, `002_seed` data, `003_config` defaults). New features append migrations instead of editing the first one, so already-installed databases are upgraded in place (for example feature 028 will add `004_recurring` and raise the version to 4).
 **Example:**
 ```tsx
 let { user_version: v } = await db.getFirstAsync('PRAGMA user_version');
@@ -646,6 +646,69 @@ if (row.user_version < 1) {
   await createSchema(database);
   await database.execAsync('PRAGMA user_version = 1');
 }
+```
+
+## Additive schema migration (backward-safe)
+**Definition:** A migration that only adds new structures (tables, nullable columns, indexes) so a database created by an older app version is upgraded without rewriting or deleting existing rows.
+**Explanation:** Once an app is released, users already hold data, so a migration must never assume it can recreate the schema. Editing the very first migration (`001_initial`) only affects brand-new installs; existing databases never re-run it. The safe pattern is to append a new migration whose branch runs once for databases that are behind, and to keep the changes additive. In Finly, `004_recurring` (feature 028) adds two tables, two **nullable** `transactions` columns and an index; users on `user_version = 3` run only that new branch, so their rows are untouched.
+**Example:**
+```tsx
+// migrations/004_recurring.ts — additive only
+await db.execAsync(`
+  CREATE TABLE IF NOT EXISTS recurring_rules (...);
+  ALTER TABLE transactions ADD COLUMN recurring_rule_id INTEGER REFERENCES recurring_rules(id) ON DELETE SET NULL;
+`);
+// database.ts — runs once, for any DB below version 4
+if (currentVersion < 4) {
+  await createRecurringSchema(database);
+  await database.execAsync('PRAGMA user_version = 4');
+}
+```
+
+## Backward-compatible snapshot format
+**Definition:** Keep files written by older app versions importable by adding new optional fields instead of making them required or bumping the format version.
+**Explanation:** Finly's backup is a versioned JSON snapshot validated by a Zod schema. If a new collection is added as a required field, a backup exported by an older app would fail validation and become impossible to import. Making the new collections optional with an empty default (`.optional().default([])`) preserves "old files still work". The forward direction is handled separately by the `schema > SCHEMA_VERSION` guard, which refuses backups from a newer app. In Finly, feature 028 adds the `recurring_rules`/`recurring_rule_tags` collections while keeping `BACKUP_FORMAT_VERSION = 1`.
+**Example:**
+```ts
+// backup.ts — new collections optional so old backups still parse
+data: z.object({
+  // ...existing collections...
+  recurring_rules: z.array(recurringRuleSchema).optional().default([]),
+  recurring_rule_tags: z.array(recurringRuleTagSchema).optional().default([]),
+}),
+```
+
+# Recurring transactions
+
+## Recurrence rule
+**Definition:** A stored definition of a repeating expense/income (schedule + template) from which individual transactions are generated later.
+**Explanation:** Instead of pre-creating every future transaction, Finly stores one rule (`recurring_rules`) with the account, category, amount, comment, tags and a schedule, plus a `next_due` cursor. Transactions are generated only when they become due. This keeps the database small and lets the rule be edited/paused without touching history.
+**Example:**
+```text
+recurring_rules: type=expense, amount=100, category=Housing,
+                 frequency=monthly, interval=1, day_of_month=2,
+                 start_date=2026-10-02, next_due=2026-11-02, active=1
+```
+
+## Reconciliation (catch-up)
+**Definition:** On startup/foreground, walking a rule from its `next_due` up to today and creating every occurrence that should exist but does not.
+**Explanation:** A local-only app cannot run while it is closed, so it "catches up" the next time it opens. Because the loop starts at `next_due` (not at "today"), opening the app after a long gap back-fills every missed occurrence, each dated on its real scheduled day, so totals and history stay correct.
+**Example:**
+```tsx
+while (rule.next_due <= today && withinEnd(rule) && n++ < CAP) {
+  await insertTransaction({ ...rule.template, date: rule.next_due });
+  rule.next_due = advanceOccurrence(rule, rule.next_due);
+}
+```
+
+## Idempotent materialization
+**Definition:** Generating occurrences in a way that running the process twice produces the same result (no duplicates).
+**Explanation:** Catch-up can run many times (every app open, every foreground). A partial unique index on `(recurring_rule_id, recurrence_date)` makes the database reject a second transaction for the same rule occurrence, so the whole reconciliation can be wrapped in a transaction and safely re-run.
+**Example:**
+```sql
+CREATE UNIQUE INDEX ux_transactions_recurrence
+  ON transactions(recurring_rule_id, recurrence_date)
+  WHERE recurring_rule_id IS NOT NULL;
 ```
 
 # App Icons (Expo)
