@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation, type RouteProp } from '@react-navigation/native';
 import ScreenShell from '../components/ScreenShell';
 import EmptyState from '../components/EmptyState';
 import ConfirmationModal from '../components/ConfirmationModal';
 import TransactionForm from '../components/TransactionForm';
+import DeleteButton from '../components/form/DeleteButton';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -15,8 +15,7 @@ import { RECURRENCE_SCOPES, type RecurrenceScope, type NavigationProp, type Root
 import { fromDateOnly } from '../utils/recurrence';
 import { recurringRepository } from '../database';
 import { saveRecurringRuleEdit } from '../database/recurringService';
-import { withAlpha } from '../utils/color';
-import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS, CONTROL_BORDER_RADIUS } from '../components/componentStyles';
+import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS, CONTROL_BORDER_RADIUS, recurringCardColors } from '../components/componentStyles';
 import type { RecurringRule } from '../database/types';
 
 type ModifyRecurringRouteProp = RouteProp<RootStackParamList, 'ModifyRecurring'>;
@@ -94,7 +93,7 @@ export default function ModifyRecurringScreen() {
 
   const footer = (
     <View style={styles.footer}>
-      <View style={[styles.scopeCard, { backgroundColor: withAlpha(c.primary, 10), borderColor: withAlpha(c.primary, 30) }]}>
+      <View style={[styles.scopeCard, recurringCardColors(c)]}>
         <Text style={[styles.scopeTitle, { color: c.textSecondary, fontSize: fs(12) }]}>
           {labels.recurring_scope_title}
         </Text>
@@ -127,13 +126,11 @@ export default function ModifyRecurringScreen() {
           </Text>
         )}
       </View>
-      <TouchableOpacity
-        style={[styles.deleteButton, { borderColor: c.red }]}
+      <DeleteButton
+        label={labels.delete}
         onPress={() => setDeleteVisible(true)}
-      >
-        <Ionicons name="trash-outline" size={18} color={c.red} />
-        <Text style={[styles.deleteText, { color: c.red, fontSize: fs(15) }]}>{labels.delete}</Text>
-      </TouchableOpacity>
+        style={styles.deleteButton}
+      />
     </View>
   );
 
@@ -240,16 +237,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   deleteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 12,
     marginTop: 24,
-  },
-  deleteText: {
-    fontWeight: '600',
   },
 });

@@ -79,7 +79,6 @@ export default function CreateTagScreen() {
           enabledTextColor={c.background}
           disabledBg={c.surface}
           disabledTextColor={c.textSecondary}
-          style={styles.button}
         />
       </View>
     </ScreenShell>
@@ -105,8 +104,5 @@ const styles = StyleSheet.create({
   error: {
     marginBottom: 12,
     fontWeight: '500',
-  },
-  button: {
-    borderRadius: CARD_BORDER_RADIUS,
   },
 });

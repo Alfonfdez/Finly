@@ -118,6 +118,11 @@ Three distinct patterns — never mix them:
 - **Border radius:** `10` for inputs/buttons, `12` for cards, `16` for modals, `999` for pill/circle
 - **Grid gap:** `12` for icon/color grids
 
+## Buttons
+- **Full-width action buttons** (Save / Delete / Edit on screens): `paddingVertical: 14`, `borderRadius: BUTTON_BORDER_RADIUS` (10), `fontWeight: '600'`, `fontSize: fs(15)`; outlined variants add `borderWidth: 1`.
+- Use the shared components `components/form/PrimaryButton.tsx` (filled) and `components/form/DeleteButton.tsx` (outlined, red) — never override their `borderRadius`/`paddingVertical` per screen, so a Save and a Delete next to each other always match.
+- **Compact buttons** (modal footers, calendar/period pickers) are a separate, smaller variant (`paddingVertical` ~10–12, radius 8–10).
+
 ## Header
 - All stack navigator header titles are centered (`headerTitleAlign: 'center'` in `screenOptions`).
 - Custom `headerTitle` renderers use an icon + text row.

@@ -14,7 +14,7 @@ import { transactionRepository } from '../database';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import TransactionForm from '../components/TransactionForm';
 import EmptyState from '../components/EmptyState';
-import { CARD_BORDER_RADIUS, SECTION_GAP } from '../components/componentStyles';
+import { CARD_BORDER_RADIUS, SECTION_GAP, recurringCardColors } from '../components/componentStyles';
 
 type ModifyRouteProp = RouteProp<RootStackParamList, 'ModifyTransaction'>;
 
@@ -69,7 +69,7 @@ export default function ModifyTransactionScreen() {
       errorMessage={labels.modify_error_message}
       topNotice={
         transaction.recurring_rule_id != null ? (
-          <View style={[styles.notice, { backgroundColor: c.surface, borderColor: c.border }]}>
+          <View style={[styles.notice, recurringCardColors(c)]}>
             <Ionicons name="repeat-outline" size={18} color={c.primary} />
             <View style={styles.noticeBody}>
               <Text style={[styles.noticeText, { color: c.textSecondary, fontSize: fs(12) }]}>
