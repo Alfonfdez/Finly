@@ -148,6 +148,7 @@ export default function ModifyRecurringScreen() {
         initialRepeatInterval={rule.interval}
         initialRepeatEnd={rule.end_date ? fromDateOnly(rule.end_date) : null}
         initialRuleNextDue={rule.next_due}
+        initialRuleActive={rule.active === 1}
         submitLabel={labels.modify_save}
         errorTitle={labels.recurring_error_title}
         errorMessage={labels.recurring_error_message}

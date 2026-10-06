@@ -47,6 +47,7 @@ interface TransactionFormProps {
   initialRepeatEnd?: Date | null;
   initialTagIds?: number[];
   initialRuleNextDue?: string | null;
+  initialRuleActive?: boolean;
   footer?: ReactNode;
   onRecurringPastAffectedChange?: (value: boolean) => void;
   topNotice?: ReactNode;

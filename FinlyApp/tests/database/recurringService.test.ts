@@ -343,4 +343,121 @@ describe('materializeDueRecurring', () => {
     expect(txs.some(t => t.recurrence_date === '2026-10-01')).toBe(true);
     expect((await recurringRepo.list(1))[0].next_due).toBe('2026-10-01');
   });
+
+  it('futureAndPast rewrites past details; future leaves them unchanged', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(baseRule, []);
+    await materializeDueRecurring(APR_15); // Jan-Apr 2 (4 rows, amount 100)
+    expect((await transactionRepo.list()).every(t => t.amount === 100)).toBe(true);
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: { amount: 250 },
+      recurrence: { frequency: 'monthly', interval: 1, endDate: null },
+      scope: 'future',
+      pastPatch: { account_id: 1, category_id: 3, amount: 250, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: APR_15,
+    });
+    expect((await transactionRepo.list()).every(t => t.amount === 100)).toBe(true);
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: { amount: 250 },
+      recurrence: { frequency: 'monthly', interval: 1, endDate: null },
+      scope: 'futureAndPast',
+      pastPatch: { account_id: 1, category_id: 3, amount: 250, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: APR_15,
+    });
+    const after = await transactionRepo.list();
+    expect(after).toHaveLength(4);
+    expect(after.every(t => t.amount === 250)).toBe(true);
+  });
+
+  it('futureAndPast rewrites past tag links', async () => {
+    const { recurringRepo, transactionRepo, tagRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(baseRule, []);
+    await materializeDueRecurring(APR_15);
+    const tag = await tagRepo.create({ user_id: 1, name: 'New' });
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'monthly', interval: 1, endDate: null },
+      scope: 'futureAndPast',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
+      tagIds: [tag.id],
+      now: APR_15,
+    });
+
+    for (const tx of await transactionRepo.list()) {
+      expect(await transactionRepo.getTagsByTransactionId(tx.id)).toEqual([tag.id]);
+    }
+  });
+
+  it('a frequency change with futureAndPast keeps past dates unchanged', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(dailySep, []);
+    expect(await materializeDueRecurring(OCT_5)).toBe(30);
+    const before = (await transactionRepo.list()).map(t => t.recurrence_date).sort();
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'monthly', interval: 1, endDate: null },
+      scope: 'futureAndPast',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: OCT_5,
+    });
+
+    const after = (await transactionRepo.list()).map(t => t.recurrence_date);
+    for (const date of before) {
+      expect(after).toContain(date);
+    }
+  });
+
+  it('saving the same edit twice is idempotent', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(dailySep, []);
+    await materializeDueRecurring(OCT_5);
+
+    const edit = () =>
+      saveRecurringRuleEdit({
+        ruleId: rule.id,
+        updated: {},
+        recurrence: { frequency: 'daily', interval: 1, endDate: '2026-10-31' },
+        scope: 'futureAndPast',
+        pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
+        tagIds: [],
+        now: OCT_5,
+      });
+
+    await edit();
+    const afterFirst = (await transactionRepo.list()).length;
+    await edit();
+    expect((await transactionRepo.list()).length).toBe(afterFirst);
+  });
+
+  it('a paused rule is not back-filled but its past details are updated', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(dailySep, []);
+    await materializeDueRecurring(OCT_5); // Sep 1-30
+    await recurringRepo.setActive(rule.id, false);
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: { amount: 250 },
+      recurrence: { frequency: 'daily', interval: 1, endDate: '2026-10-31' },
+      scope: 'futureAndPast',
+      pastPatch: { account_id: 1, category_id: 3, amount: 250, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: OCT_5,
+    });
+
+    const txs = await transactionRepo.list();
+    expect(txs).toHaveLength(30); // no back-fill while paused
+    expect(txs.every(t => t.amount === 250)).toBe(true); // details still patched
+  });
 });
