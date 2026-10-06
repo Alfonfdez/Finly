@@ -133,14 +133,14 @@ describe('ModifyRecurringScreen', () => {
     resetStub();
   });
 
-  it('disables "Future + past" and shows a hint until a past-affecting field changes', async () => {
+  it('disables "Future + past" until it can affect the past', async () => {
     const view = await render(<ModifyRecurringScreen />);
     await waitFor(() => expect(view.getByText('Future + past')).toBeTruthy());
 
     const pastPill = view.getByRole('button', { name: 'Future + past' });
     expect(pastPill).toBeDisabled();
     expect(
-      view.getByText('Only account, category, amount, comment, tags or type changes update past transactions'),
+      view.getByText('Also updates past transactions and creates missed occurrences. Changing the end date never deletes transactions.'),
     ).toBeTruthy();
 
     await fireEvent.changeText(view.getByPlaceholderText('0'), '120');
@@ -148,8 +148,5 @@ describe('ModifyRecurringScreen', () => {
     await waitFor(() =>
       expect(view.getByRole('button', { name: 'Future + past' })).toBeEnabled(),
     );
-    expect(
-      view.queryByText('Only account, category, amount, comment, tags or type changes update past transactions'),
-    ).toBeNull();
   });
 });

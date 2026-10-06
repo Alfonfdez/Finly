@@ -13,7 +13,7 @@ import {
   MAX_VISIBLE_CATEGORIES,
 } from '../constants/types';
 import { formatDateForDB } from '../utils/formatters';
-import { advanceOccurrence, buildRecurrenceSchedule, fromDateOnly, toDateOnly } from '../utils/recurrence';
+import { advanceOccurrence, buildRecurrenceSchedule, fromDateOnly, nextDueOnOrAfter, toDateOnly, todayDateOnly } from '../utils/recurrence';
 import { dayAfter, isEndAfterStart } from '../utils/calendarBounds';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { parseAmountValue } from '../utils/amountInput';
@@ -59,6 +59,7 @@ type UseTransactionFormProps = {
   initialRepeatInterval?: number;
   initialRepeatEnd?: Date | null;
   initialTagIds?: number[];
+  initialRuleNextDue?: string | null;
 };
 
 export function useTransactionForm({
@@ -82,6 +83,7 @@ export function useTransactionForm({
   initialRepeatInterval,
   initialRepeatEnd,
   initialTagIds,
+  initialRuleNextDue,
 }: UseTransactionFormProps) {
   const { config } = useConfig();
   const { accounts, categories, accountsWithBalance, tags, refresh: refreshAll, refreshTags } = useApp();
@@ -193,8 +195,9 @@ export function useTransactionForm({
     return true;
   }, [categoryId, numericAmount, day, accountId, repeatEnabled, ruleMode, repeatEnd, repeatMinDate]);
 
-  // In rule mode: does the draft touch a field the "past ones" scope rewrites
-  // (account/category/amount/comment/tags/type)? Timing fields are excluded.
+  // In rule mode: does the draft affect the past — either by touching a field the
+  // "past ones" scope rewrites (account/category/amount/comment/tags/type), or by
+  // opening a missed window the new schedule would actually back-fill.
   const recurringPastAffected = useMemo(() => {
     if (!ruleMode) return false;
     const initialAmountNum = initialAmount !== undefined ? parseAmountValue(initialAmount) : null;
@@ -202,14 +205,22 @@ export function useTransactionForm({
     const currentTags = [...selectedTags].sort((a, b) => a - b);
     const tagsChanged =
       initialTags.length !== currentTags.length || initialTags.some((v, i) => v !== currentTags[i]);
-    return (
+    const detailChanged =
       accountId !== initialAccountId ||
       categoryId !== initialCategoryId ||
       numericAmount !== initialAmountNum ||
       (comment.trim() || null) !== (initialComment.trim() || null) ||
       type !== initialType ||
-      tagsChanged
-    );
+      tagsChanged;
+    // A missed window exists only if the NEW schedule actually has an occurrence due
+    // in [cursor, today] (respecting the end date) — so a finished rule stays disabled.
+    let missedWindow = false;
+    if (initialRuleNextDue != null) {
+      const schedule = buildRecurrenceSchedule(day, repeatFrequency, repeatInterval, repeatEnd ? toDateOnly(repeatEnd) : null);
+      const firstDue = nextDueOnOrAfter(schedule, initialRuleNextDue);
+      missedWindow = firstDue <= todayDateOnly() && (schedule.end_date == null || firstDue <= schedule.end_date);
+    }
+    return detailChanged || missedWindow;
   }, [
     ruleMode,
     accountId,
@@ -224,6 +235,11 @@ export function useTransactionForm({
     initialType,
     selectedTags,
     initialTagIds,
+    initialRuleNextDue,
+    day,
+    repeatFrequency,
+    repeatInterval,
+    repeatEnd,
   ]);
 
   const handleToggleTag = useCallback((id: number) => {

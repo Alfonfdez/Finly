@@ -90,7 +90,9 @@ export default function RecurringScreen() {
                   {recurrenceSummary(item, config.language)}
                 </Text>
                 <Text style={[styles.nextDue, { color: c.textSecondary, fontSize: fs(11) }]} numberOfLines={1}>
-                  {labels.recurring_next_due(formatDateLong(fromDateOnly(item.next_due), config.language))}
+                  {item.end_date != null && item.next_due > item.end_date
+                    ? labels.recurring_ended
+                    : labels.recurring_next_due(formatDateLong(fromDateOnly(item.next_due), config.language))}
                 </Text>
               </TouchableOpacity>
               <View style={styles.right}>

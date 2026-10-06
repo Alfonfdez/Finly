@@ -120,11 +120,9 @@ export default function ModifyRecurringScreen() {
             );
           })}
         </View>
-        {!pastAffected && (
-          <Text style={[styles.scopeHint, { color: c.textSecondary, fontSize: fs(11) }]}>
-            {labels.recurring_scope_past_hint}
-          </Text>
-        )}
+        <Text style={[styles.scopeHint, { color: c.textSecondary, fontSize: fs(11) }]}>
+          {labels.recurring_scope_past_hint}
+        </Text>
       </View>
       <DeleteButton
         label={labels.delete}
@@ -149,6 +147,7 @@ export default function ModifyRecurringScreen() {
         initialRepeatFrequency={rule.frequency}
         initialRepeatInterval={rule.interval}
         initialRepeatEnd={rule.end_date ? fromDateOnly(rule.end_date) : null}
+        initialRuleNextDue={rule.next_due}
         submitLabel={labels.modify_save}
         errorTitle={labels.recurring_error_title}
         errorMessage={labels.recurring_error_message}
