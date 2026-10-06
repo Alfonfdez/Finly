@@ -193,7 +193,7 @@ describe('materializeDueRecurring', () => {
       updated: {},
       recurrence: { frequency: 'daily', interval: 1, endDate: '2026-10-31' },
       scope: 'futureAndPast',
-      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent' },
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
       tagIds: [],
       now: OCT_5,
     });
@@ -215,7 +215,7 @@ describe('materializeDueRecurring', () => {
       updated: {},
       recurrence: { frequency: 'daily', interval: 1, endDate: '2026-10-31' },
       scope: 'future',
-      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent' },
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
       tagIds: [],
       now: OCT_5,
     });
@@ -255,7 +255,7 @@ describe('materializeDueRecurring', () => {
       updated: {},
       recurrence: { frequency: 'monthly', interval: 1, endDate: null },
       scope: 'future',
-      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent' },
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
       tagIds: [],
       now: new Date(2026, 3, 15), // Apr 15 = start day
     });
@@ -263,5 +263,50 @@ describe('materializeDueRecurring', () => {
     expect(created).toBe(0);
     expect(await transactionRepo.list()).toHaveLength(0);
     expect((await recurringRepo.list(1))[0].next_due).toBe('2026-05-15');
+  });
+
+  it('futureAndPast propagates a type change to generated transactions', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(dailySep, []);
+    expect(await materializeDueRecurring(OCT_5)).toBe(30);
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: { type: 'income' },
+      recurrence: { frequency: 'daily', interval: 1, endDate: '2026-09-30' },
+      scope: 'futureAndPast',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'income' },
+      tagIds: [],
+      now: OCT_5,
+    });
+
+    const txs = await transactionRepo.list();
+    expect(txs).toHaveLength(30);
+    expect(txs.every(t => t.type === 'income')).toBe(true);
+  });
+
+  it('a timing-only edit (daily -> yearly) leaves past transactions untouched', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(dailySep, []);
+    expect(await materializeDueRecurring(OCT_5)).toBe(30);
+    const before = (await transactionRepo.list())
+      .map(t => `${t.recurrence_date}:${t.amount}:${t.type}`)
+      .sort();
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'yearly', interval: 1, endDate: null },
+      scope: 'future',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: OCT_5,
+    });
+
+    const after = (await transactionRepo.list())
+      .map(t => `${t.recurrence_date}:${t.amount}:${t.type}`)
+      .sort();
+    expect(after).toEqual(before);
+    expect(after).toHaveLength(30);
   });
 });

@@ -47,6 +47,7 @@ interface TransactionFormProps {
   initialRepeatEnd?: Date | null;
   initialTagIds?: number[];
   footer?: ReactNode;
+  onRecurringPastAffectedChange?: (value: boolean) => void;
   topNotice?: ReactNode;
   resetTagsOnFirstFocus?: boolean;
   onError?: () => void;
@@ -70,6 +71,7 @@ export default function TransactionForm(props: TransactionFormProps) {
     repeatEnd, setRepeatEnd,
     repeatSkipFirst, setRepeatSkipFirst,
     repeatMinDate,
+    recurringPastAffected,
     modalAccountVisible, setModalAccountVisible,
     modalCalendarVisible, setModalCalendarVisible,
     modalRepeatEndVisible, setModalRepeatEndVisible,
@@ -84,10 +86,15 @@ export default function TransactionForm(props: TransactionFormProps) {
   } = useTransactionForm({ ...props, onError: props.onError ?? (() => showErrorAlert()) });
 
   const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { onRecurringPastAffectedChange } = props;
 
   useEffect(() => {
     return () => { if (scrollTimer.current != null) clearTimeout(scrollTimer.current); };
   }, []);
+
+  useEffect(() => {
+    onRecurringPastAffectedChange?.(recurringPastAffected);
+  }, [recurringPastAffected, onRecurringPastAffectedChange]);
 
   const tabs = useMemo(() => typeTabs(labels), [labels]);
 

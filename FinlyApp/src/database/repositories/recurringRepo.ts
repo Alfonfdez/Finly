@@ -14,6 +14,7 @@ export interface GeneratedTransactionPatch {
   category_id?: number;
   amount?: number;
   description?: string | null;
+  type?: RecurringRule['type'];
   tagIds?: number[];
 }
 
@@ -190,6 +191,7 @@ export const recurringRepo = {
       if (patch.category_id !== undefined) set.category_id = patch.category_id;
       if (patch.amount !== undefined) set.amount = patch.amount;
       if (patch.description !== undefined) set.description = patch.description;
+      if (patch.type !== undefined) set.type = patch.type;
 
       let changes = 0;
       if (Object.keys(set).length > 0) {
