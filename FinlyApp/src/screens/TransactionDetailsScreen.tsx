@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image, Switch } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
@@ -14,6 +14,7 @@ import { deletePhotoFile, parsePhotos } from '../utils/photoUtils';
 import { ERROR_PREFIXES } from '../utils/errors';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
 import { transactionRepository, recurringRepository } from '../database';
+import { resumeRecurringRule } from '../database/recurringService';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -22,7 +23,7 @@ import IconBadge from '../components/IconBadge';
 import TagChip from '../components/TagChip';
 import DataRow from '../components/DataRow';
 import PhotoViewer from '../components/PhotoViewer';
-import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS, CONTROL_BORDER_RADIUS } from '../components/componentStyles';
+import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS, CONTROL_BORDER_RADIUS, switchColors } from '../components/componentStyles';
 
 type DetailsRouteProp = RouteProp<RootStackParamList, 'TransactionDetails'>;
 
@@ -103,10 +104,16 @@ export default function TransactionDetailsScreen() {
     errorPrefix: ERROR_PREFIXES.transactionsDelete,
   });
 
-  const handleStopRepeating = useCallback(async () => {
-    if (transaction?.recurring_rule_id == null) return;
-    await recurringRepository.setActive(transaction.recurring_rule_id, false);
-    setRuleActive(false);
+  const handleToggleActive = useCallback(async (value: boolean) => {
+    const ruleId = transaction?.recurring_rule_id;
+    if (ruleId == null) return;
+    if (value) {
+      await resumeRecurringRule(ruleId);
+      setRuleActive(true);
+    } else {
+      await recurringRepository.setActive(ruleId, false);
+      setRuleActive(false);
+    }
     deferredRefresh();
   }, [transaction?.recurring_rule_id, deferredRefresh]);
 
@@ -188,21 +195,17 @@ export default function TransactionDetailsScreen() {
 
           {transaction.recurring_rule_id != null && (
             <DataRow label={labels.recurring_chip} noBorder>
-              {ruleActive === false ? (
-                <View style={styles.stopRepeating}>
-                  <Ionicons name="checkmark-circle" size={16} color={c.textSecondary} />
-                  <Text style={[styles.nameValue, { color: c.textSecondary, fontSize: fs(15) }]}>
-                    {labels.recurring_stopped}
-                  </Text>
-                </View>
-              ) : (
-                <TouchableOpacity style={styles.stopRepeating} onPress={handleStopRepeating}>
-                  <Ionicons name="repeat-outline" size={16} color={c.primary} />
-                  <Text style={[styles.nameValue, { color: c.primary, fontSize: fs(15) }]}>
-                    {labels.recurring_stop}
-                  </Text>
-                </TouchableOpacity>
-              )}
+              <View style={styles.recurringToggle}>
+                <Text style={[styles.nameValue, { color: c.textSecondary, fontSize: fs(13) }]}>
+                  {ruleActive === false ? labels.recurring_paused : labels.recurring_active}
+                </Text>
+                <Switch
+                  value={ruleActive !== false}
+                  onValueChange={handleToggleActive}
+                  accessibilityLabel={labels.recurring_active}
+                  {...switchColors(c)}
+                />
+              </View>
             </DataRow>
           )}
 
@@ -321,10 +324,10 @@ const styles = StyleSheet.create({
     marginTop: 24,
     gap: 2,
   },
-  stopRepeating: {
+  recurringToggle: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     flex: 2,
     justifyContent: 'flex-end',
   },
