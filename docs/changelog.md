@@ -3372,3 +3372,11 @@
 [2026-10-06] fix | FinlyApp/src/utils/errors.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/tests/utils/errors.test.ts, docs/harnesses.md
 - Log the real database error: added describeError(err) which folds in err.cause (drizzle wraps the underlying SQLite error in cause). handleSubmit's catch now logs 'Transaction form submit failed: <message> → <cause>' so DB failures are diagnosable, while the user-facing alert stays generic.
 - Tests: describeError (plain Error, Error with cause, non-Error). 'npm run test:all' green (107 files / 735 tests).
+
+[2026-10-06] style | FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/tests/screens/RecurringScreen.test.tsx
+- Redesign the Recurring row order: Name → frequency summary → Next/Ended → 'Category · Created · N transactions'. The 'Next' line uses the primary (cyan) color while 'Ended' stays textSecondary; the metadata line keeps the middle-dot separators. Created date is now compact ('6 Oct 2026') so the meta line fits without truncating.
+- Style-only; 'npm run test:all' green (107 files / 735 tests). Verified on web at 375px in dark + light.
+
+[2026-10-06] style | FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx
+- Transaction details: add a separator line between the Tags and Recurring rows (only the last row is borderless now) and replace the recurring pause/resume switch with the rule's name (read-only, not tappable). Removed the now-unused Switch/switchColors/handleToggleActive and ruleActive state.
+- Style/UX-only; 'npm run test:all' green (107 files / 735 tests). Verified on web at 375px in dark + light.

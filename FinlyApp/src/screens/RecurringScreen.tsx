@@ -72,6 +72,9 @@ export default function RecurringScreen() {
           const category = categoriesById.get(item.category_id);
           const isIncome = item.type === TRANSACTION_TYPES.income;
           const active = item.active === 1;
+          const ended = item.end_date != null && item.next_due > item.end_date;
+          const created = parseDbDate(item.created_at);
+          const createdText = `${created.getDate()} ${labels.months_short[created.getMonth()]} ${created.getFullYear()}`;
           return (
             <View style={[styles.row, { borderBottomColor: c.border }]}>
               {category && (
@@ -95,15 +98,19 @@ export default function RecurringScreen() {
                   {item.name}
                 </Text>
                 <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(12) }]} numberOfLines={1}>
-                  {category ? `${getDisplayCategoryName(category)} · ` : ''}{recurrenceSummary(item, config.language)}
+                  {recurrenceSummary(item, config.language)}
                 </Text>
-                <Text style={[styles.nextDue, { color: c.textSecondary, fontSize: fs(11) }]} numberOfLines={1}>
-                  {item.end_date != null && item.next_due > item.end_date
+                <Text
+                  style={[styles.nextDue, { color: ended ? c.textSecondary : c.primary, fontSize: fs(11) }]}
+                  numberOfLines={1}
+                >
+                  {ended
                     ? labels.recurring_ended
                     : labels.recurring_next_due(formatDateLong(fromDateOnly(item.next_due), config.language))}
                 </Text>
                 <Text style={[styles.meta, { color: c.textSecondary, fontSize: fs(11) }]} numberOfLines={1}>
-                  {labels.recurring_created_on(formatDateLong(parseDbDate(item.created_at), config.language))}
+                  {category ? `${getDisplayCategoryName(category)} · ` : ''}
+                  {labels.recurring_created_on(createdText)}
                   {' · '}
                   {labels.recurring_transactions_count(counts.get(item.id) ?? 0)}
                 </Text>
