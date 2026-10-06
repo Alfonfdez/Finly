@@ -178,6 +178,7 @@ export const eu: Language = {
   add_hint_category: 'Hautatu kategoria bat',
   add_hint_amount: 'Sartu 0 baino handiagoa den zenbateko baliagarri bat',
   add_hint_category_amount: 'Hautatu kategoria bat eta sartu zenbateko bat',
+  add_hint_repeat_end: 'Amaiera-data lehen errepikapena baino beranduago edo berdina izan behar da',
   add_tag_error_duplicate: 'Etiketa dagoeneko existitzen da',
   add_error_title: 'Errorea',
   add_error_message: 'Ezin izan da transakzioa gorde',
@@ -508,6 +509,8 @@ export const eu: Language = {
   repeat_on_weekday: (weekday: string) => `${weekday.toLowerCase().replace(/a$/, '')}ean`,
   repeat_on_month_day: (month: string, day: number) => `${month.toLowerCase()}ren ${day}`,
   repeat_until: (date: string) => `${date} arte`,
+  repeat_skip_first: 'Lehen errepikapena saltatu',
+  repeat_first_occurrence: (date: string) => `Lehen transakzioa: ${date}`,
 
   // Home tag filter
   home_tag_all: 'Guztiak',

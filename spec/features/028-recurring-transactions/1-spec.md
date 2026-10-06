@@ -49,9 +49,10 @@
 ### 5. Creating a recurring rule
 
 - `TransactionForm` gains a **Repeat** section (a toggle) available when adding a transaction:
-  - Frequency selector (Never / Daily / Weekly / Monthly / Yearly), an "every N" stepper, and an optional end date (reusing `CalendarModal` with bounds `minDate = the selected transaction day + 1`, `maxDate = null`; the end date may be in the past when the start is in the past).
+  - Frequency selector (Never / Daily / Weekly / Monthly / Yearly), an "every N" stepper, and an optional end date (reusing `CalendarModal` with bounds `minDate = the selected transaction day + 1` — or the deferred first occurrence when skipping it — and `maxDate = null`; the end date may be in the past when the start is in the past).
   - The start date defaults to the day selected in the form's `DaySelector`.
   - A human-readable summary is shown, phrased per frequency and localized (e.g. "Every month on day 6", "Every week on Monday", "Every year on October 6"; Spanish: "Cada año el 6 de octubre"), with an "until &lt;date&gt;" clause appended when an end date is set.
+  - An optional **Skip the first occurrence** checkbox (shown when creating — add transaction and Create recurring — and hidden when editing an existing rule) defers the first generated occurrence by one interval (e.g. monthly from 6 Oct → first on 6 Nov): nothing is generated on the selected day and the anchor stays on it. While checked it shows the resulting first date ("First transaction: 6 Nov 2026"). The end date must be on/after that deferred first occurrence (otherwise submit is blocked with a hint).
 - When Repeat is on, saving creates a `recurring_rules` row + tag links **and** reconciliation immediately materializes any occurrence that is already due (including the start date if it is today or earlier). When Repeat is off, saving behaves exactly as today (one transaction).
 - The account/category/amount/comment/tags come from the same form fields; a recurring rule does not store a photo.
 
@@ -110,6 +111,7 @@
 
 - [x] A "Repeat" section is available in the add-transaction form (Never / Daily / Weekly / Monthly / Yearly + "every N" + optional end date) with a readable summary.
 - [x] The recurring **End date** picker allows only dates strictly after the selected transaction day (which may be in the past), while the transaction date picker still allows only today/past.
+- [x] A **Skip the first occurrence** option (creation only) defers the first transaction by one interval (e.g. monthly 6 Oct → 6 Nov) and generates nothing on the start day; the end date must be on/after that first occurrence or submit is blocked with a hint.
 - [x] Saving with a repeat creates a rule and materializes any already-due occurrence as a transaction (correct account, category, type, amount, comment and tags).
 - [x] On app start / foreground, every due occurrence since the last run is created, each dated on its scheduled day (missed months/years are back-filled).
 - [x] Re-running reconciliation never duplicates an occurrence (idempotent via the unique occurrence index).

@@ -176,6 +176,7 @@ export const en = {
   add_hint_category: 'Select a category',
   add_hint_amount: 'Enter a valid amount greater than 0',
   add_hint_category_amount: 'Select a category and enter an amount',
+  add_hint_repeat_end: 'The end date must be on or after the first occurrence',
   add_tag_error_duplicate: 'Tag already exists',
   add_error_title: 'Error',
   add_error_message: 'Failed to save transaction',
@@ -506,6 +507,8 @@ export const en = {
   repeat_on_weekday: (weekday: string) => `on ${weekday}`,
   repeat_on_month_day: (month: string, day: number) => `on ${month} ${day}`,
   repeat_until: (date: string) => `until ${date}`,
+  repeat_skip_first: 'Skip the first occurrence',
+  repeat_first_occurrence: (date: string) => `First transaction: ${date}`,
 
   // Home tag filter
   home_tag_all: 'All',

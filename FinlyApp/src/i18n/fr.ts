@@ -178,6 +178,7 @@ export const fr: Language = {
   add_hint_category: 'Sélectionnez une catégorie',
   add_hint_amount: 'Saisissez un montant valide supérieur à 0',
   add_hint_category_amount: 'Sélectionnez une catégorie et saisissez un montant',
+  add_hint_repeat_end: 'La date de fin doit être égale ou postérieure à la première occurrence',
   add_tag_error_duplicate: 'L\'étiquette existe déjà',
   add_error_title: 'Erreur',
   add_error_message: 'Échec de l\'enregistrement de la transaction',
@@ -508,6 +509,8 @@ export const fr: Language = {
   repeat_on_weekday: (weekday: string) => `le ${weekday.toLowerCase()}`,
   repeat_on_month_day: (month: string, day: number) => `le ${day} ${month.toLowerCase()}`,
   repeat_until: (date: string) => `jusqu'au ${date}`,
+  repeat_skip_first: 'Ignorer la première occurrence',
+  repeat_first_occurrence: (date: string) => `Première transaction : ${date}`,
 
   // Home tag filter
   home_tag_all: 'Tout',

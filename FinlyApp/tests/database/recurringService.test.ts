@@ -227,4 +227,41 @@ describe('materializeDueRecurring', () => {
     expect(dates).not.toContain('2026-10-04');
     expect((await recurringRepo.list(1))[0].next_due).toBe('2026-10-06');
   });
+
+  it('does not materialize a skipped first occurrence (next_due ahead of start_date)', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring } = await boot();
+    await recurringRepo.createWithTags(
+      { ...baseRule, start_date: '2026-04-15', day_of_month: 15, next_due: '2026-05-15' },
+      [],
+    );
+
+    expect(await materializeDueRecurring(new Date(2026, 3, 15))).toBe(0); // Apr 15
+    expect(await transactionRepo.list()).toHaveLength(0);
+    expect((await recurringRepo.list(1))[0].next_due).toBe('2026-05-15');
+
+    expect(await materializeDueRecurring(new Date(2026, 4, 15))).toBe(1); // May 15
+    expect((await recurringRepo.list(1))[0].next_due).toBe('2026-06-15');
+  });
+
+  it('editing a skip-first rule on its start day does not resurrect the skipped occurrence', async () => {
+    const { recurringRepo, transactionRepo, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(
+      { ...baseRule, start_date: '2026-04-15', day_of_month: 15, next_due: '2026-05-15' },
+      [],
+    );
+
+    const created = await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'monthly', interval: 1, endDate: null },
+      scope: 'future',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent' },
+      tagIds: [],
+      now: new Date(2026, 3, 15), // Apr 15 = start day
+    });
+
+    expect(created).toBe(0);
+    expect(await transactionRepo.list()).toHaveLength(0);
+    expect((await recurringRepo.list(1))[0].next_due).toBe('2026-05-15');
+  });
 });

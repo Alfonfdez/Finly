@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { renderHook, act } from '@testing-library/react-native';
-import { useTransactionForm, type TransactionDraft } from '../../src/hooks/useTransactionForm';
+import { useTransactionForm, type TransactionDraft, type RecurrenceDraft } from '../../src/hooks/useTransactionForm';
 import { buildAppMock, getAppStub, setAppData, resetAppStub } from '../component/helpers/appStub';
 import type { Account, Category, Tag } from '../../src/database/types';
 import type { TransactionType } from '../../src/constants/types';
@@ -20,6 +20,7 @@ interface UseTransactionFormProps {
   errorTitle: string;
   errorMessage: string;
   onSubmit: (data: TransactionDraft, tagIds: number[]) => Promise<void>;
+  onSubmitRule?: (data: TransactionDraft, tagIds: number[], recurrence: RecurrenceDraft) => Promise<void>;
   resetTagsOnFirstFocus?: boolean;
   onError?: () => void;
 }
@@ -273,6 +274,34 @@ describe('useTransactionForm', () => {
     });
     expect(props.onSubmit).not.toHaveBeenCalled();
     expect(nav.goBack).not.toHaveBeenCalled();
+  });
+
+  it('includes skipFirst in the recurrence draft on submit', async () => {
+    const onSubmitRule = vi.fn(async (_d: TransactionDraft, _t: number[], _r: RecurrenceDraft) => {});
+    const { result } = await setup({ initialAmount: '10', onSubmitRule });
+    await act(() => result.current.setRepeatEnabled(true));
+    await act(() => result.current.setRepeatSkipFirst(true));
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(onSubmitRule).toHaveBeenCalledTimes(1);
+    const [, , recurrence] = (onSubmitRule as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(recurrence).toMatchObject({ frequency: 'monthly', interval: 1, endDate: null, skipFirst: true });
+  });
+
+  it('blocks submit when the end date precedes the skipped first occurrence', async () => {
+    const { result } = await setup({ initialAmount: '10', initialDay: new Date(2026, 5, 15) });
+    await act(() => result.current.setRepeatEnabled(true));
+    await act(() => result.current.setRepeatSkipFirst(true));
+
+    // First occurrence is Jul 15; an end date before it is invalid.
+    await act(() => result.current.setRepeatEnd(new Date(2026, 5, 20)));
+    expect(result.current.canSubmit).toBe(false);
+
+    // An end date on/after the first occurrence is allowed.
+    await act(() => result.current.setRepeatEnd(new Date(2026, 6, 15)));
+    expect(result.current.canSubmit).toBe(true);
   });
 
   it('loads existing tags when a transaction id is provided', async () => {
