@@ -9,7 +9,6 @@ import FormError from './form/FormError';
 import DeleteButton from './form/DeleteButton';
 import FormScrollView from './form/FormScrollView';
 import AmountInput from './AmountInput';
-import { BUTTON_BORDER_RADIUS } from './componentStyles';
 
 interface AccountFormProps {
   nameLabel: string;
@@ -167,8 +166,6 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     marginTop: 24,
-    paddingVertical: 12,
-    borderRadius: BUTTON_BORDER_RADIUS,
   },
   button: {
     marginTop: 16,

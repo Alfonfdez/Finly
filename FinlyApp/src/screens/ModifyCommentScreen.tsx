@@ -92,7 +92,6 @@ export default function ModifyCommentScreen() {
           enabledTextColor={c.background}
           disabledBg={c.surface}
           disabledTextColor={c.textSecondary}
-          style={styles.button}
         />
 
         <Text style={[styles.mergeHint, { color: c.textSecondary, fontSize: fs(12) }]}>
@@ -135,9 +134,6 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     marginBottom: 12,
-  },
-  button: {
-    borderRadius: CARD_BORDER_RADIUS,
   },
   mergeHint: {
     marginTop: 12,

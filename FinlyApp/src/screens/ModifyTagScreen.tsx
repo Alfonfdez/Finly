@@ -114,7 +114,6 @@ export default function ModifyTagScreen() {
           enabledTextColor={c.background}
           disabledBg={c.surface}
           disabledTextColor={c.textSecondary}
-          style={styles.button}
         />
       </View>
 
@@ -153,8 +152,5 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     marginBottom: 12,
-  },
-  button: {
-    borderRadius: CARD_BORDER_RADIUS,
   },
 });

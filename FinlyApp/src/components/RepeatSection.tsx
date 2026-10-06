@@ -7,8 +7,7 @@ import { RECURRENCE_FREQUENCIES, type RecurrenceFrequency } from '../constants/t
 import { formatDateLong } from '../utils/formatters';
 import { advanceOccurrence, buildRecurrenceSchedule, fromDateOnly, toDateOnly } from '../utils/recurrence';
 import { recurrenceSummary } from '../utils/recurrenceSummary';
-import { withAlpha } from '../utils/color';
-import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, PILL_RADIUS, SECTION_GAP, SECTION_GAP_SM, SECTION_TITLE_STYLE, switchColors } from './componentStyles';
+import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, PILL_RADIUS, SECTION_GAP, SECTION_GAP_SM, SECTION_TITLE_STYLE, recurringCardColors, switchColors } from './componentStyles';
 import ClearButton from './ClearButton';
 import CheckboxRow from './settings/CheckboxRow';
 
@@ -109,7 +108,7 @@ export default function RepeatSection({
           testID="repeat-options"
           style={[
             styles.options,
-            { backgroundColor: withAlpha(c.primary, 10), borderColor: withAlpha(c.primary, 30) },
+            recurringCardColors(c),
           ]}
         >
           <Text style={[styles.firstLabel, { color: c.textSecondary, fontSize: fs(12) }]}>

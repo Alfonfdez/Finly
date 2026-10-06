@@ -22,7 +22,7 @@ import IconBadge from '../components/IconBadge';
 import TagChip from '../components/TagChip';
 import DataRow from '../components/DataRow';
 import PhotoViewer from '../components/PhotoViewer';
-import { CARD_BORDER_RADIUS, CONTROL_BORDER_RADIUS } from '../components/componentStyles';
+import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS, CONTROL_BORDER_RADIUS } from '../components/componentStyles';
 
 type DetailsRouteProp = RouteProp<RootStackParamList, 'TransactionDetails'>;
 
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 14,
-    borderRadius: CARD_BORDER_RADIUS,
+    borderRadius: BUTTON_BORDER_RADIUS,
     borderWidth: 1,
   },
   actionButtonText: { fontWeight: '600' },

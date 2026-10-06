@@ -1,4 +1,5 @@
 import { isWeb } from '../utils/platform';
+import { withAlpha } from '../utils/color';
 import type { ColorPalette } from '../constants/themes';
 
 export const PRESSED_OPACITY = 0.7;
@@ -44,5 +45,14 @@ export function switchColors(c: ColorPalette) {
     ios_backgroundColor: c.switchTrackOff,
     activeTrackColor: c.primary,
     activeThumbColor: c.switchThumb,
+  };
+}
+
+/** Primary-tinted card colors (background + border) shared by the recurring
+ *  repeat-options, scope and notice cards so they stay visually in sync. */
+export function recurringCardColors(c: ColorPalette) {
+  return {
+    backgroundColor: withAlpha(c.primary, 10),
+    borderColor: withAlpha(c.primary, 30),
   };
 }

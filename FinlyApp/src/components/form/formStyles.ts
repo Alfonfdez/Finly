@@ -6,7 +6,7 @@ export const formStyles = StyleSheet.create({
   input: { borderWidth: 1, borderRadius: BUTTON_BORDER_RADIUS, padding: 12 },
   textArea: { minHeight: 80 },
   counter: { textAlign: 'right', marginTop: 4, marginBottom: 4 },
-  button: { paddingVertical: 14, borderRadius: BUTTON_BORDER_RADIUS, alignItems: 'center' },
+  button: { paddingVertical: 14, borderRadius: BUTTON_BORDER_RADIUS, alignItems: 'center', borderWidth: 1, borderColor: 'transparent' },
   buttonText: { fontWeight: '600' },
   scrollView: { flex: 1 },
   scrollContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 },

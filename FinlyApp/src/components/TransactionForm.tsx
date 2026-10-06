@@ -18,7 +18,7 @@ import CommentInput from './CommentInput';
 import PhotoSection from './PhotoSection';
 import CalendarModal from './CalendarModal';
 import CalculatorModal from './CalculatorModal';
-import { CARD_BORDER_RADIUS } from './componentStyles';
+import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS } from './componentStyles';
 import { type TransactionType, type RecurrenceFrequency, type RootStackParamList } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
@@ -240,7 +240,7 @@ export default function TransactionForm(props: TransactionFormProps) {
           onPress={handleSubmit}
           disabled={!canSubmit || submitting}
         >
-          <Text style={[styles.submitButtonText, { color: canSubmit ? c.background : c.text, fontSize: fs(16) }]}>
+          <Text style={[styles.submitButtonText, { color: canSubmit ? c.background : c.text, fontSize: fs(15) }]}>
             {submitting ? '...' : props.submitLabel}
           </Text>
         </TouchableOpacity>
@@ -301,10 +301,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   submitButton: {
-    borderRadius: CARD_BORDER_RADIUS,
-    paddingVertical: 16,
+    borderRadius: BUTTON_BORDER_RADIUS,
+    paddingVertical: 14,
     alignItems: 'center',
     marginTop: 8,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   submitButtonText: {
     fontWeight: '700',
