@@ -96,6 +96,13 @@ describe('RecurringScreen', () => {
     expect(nav.navigate).toHaveBeenCalledWith('ModifyRecurring', { ruleId: 1 });
   });
 
+  it('shows "Ended" when the rule has finished', async () => {
+    mockList.mockResolvedValue([{ ...rule, end_date: '2026-09-30', next_due: '2026-10-01' }]);
+    const view = await render(<RecurringScreen />);
+    await waitFor(() => expect(view.getByText('Food')).toBeTruthy());
+    expect(view.getByText('Ended')).toBeTruthy();
+  });
+
   it('pauses through setActive when the switch is turned off', async () => {
     const view = await render(<RecurringScreen />);
     await waitFor(() => expect(view.getByRole('switch')).toBeTruthy());

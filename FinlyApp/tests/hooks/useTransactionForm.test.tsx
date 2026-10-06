@@ -4,7 +4,7 @@ import { renderHook, act } from '@testing-library/react-native';
 import { useTransactionForm, type TransactionDraft, type RecurrenceDraft } from '../../src/hooks/useTransactionForm';
 import { buildAppMock, getAppStub, setAppData, resetAppStub } from '../component/helpers/appStub';
 import type { Account, Category, Tag } from '../../src/database/types';
-import type { TransactionType } from '../../src/constants/types';
+import type { TransactionType, RecurrenceFrequency } from '../../src/constants/types';
 import { setConfig, resetStub } from '../component/helpers/configStub';
 
 interface UseTransactionFormProps {
@@ -25,6 +25,10 @@ interface UseTransactionFormProps {
   onError?: () => void;
   ruleMode?: boolean;
   initialTagIds?: number[];
+  initialRuleNextDue?: string | null;
+  initialRepeatFrequency?: RecurrenceFrequency;
+  initialRepeatInterval?: number;
+  initialRepeatEnd?: Date | null;
 }
 
 const mockGetTagsByTransactionId = vi.fn(async (_id: number) => [] as number[]);
@@ -330,6 +334,44 @@ describe('useTransactionForm', () => {
     // Type change does.
     await act(() => result.current.setType('income'));
     expect(result.current.recurringPastAffected).toBe(true);
+  });
+
+  it('offers the past scope when the rule has a missed window (rule mode)', async () => {
+    const past = await setup({
+      ruleMode: true,
+      initialAmount: '100',
+      initialCategoryId: 1,
+      initialRuleNextDue: '2000-01-01',
+    });
+    expect(past.result.current.recurringPastAffected).toBe(true);
+
+    const future = await setup({
+      ruleMode: true,
+      initialAmount: '100',
+      initialCategoryId: 1,
+      initialRuleNextDue: '2999-01-01',
+    });
+    expect(future.result.current.recurringPastAffected).toBe(false);
+  });
+
+  it('only offers the past scope when the new schedule has something to back-fill', async () => {
+    const base = {
+      ruleMode: true,
+      initialAmount: '100',
+      initialCategoryId: 1,
+      initialRepeatFrequency: 'daily' as const,
+      initialRepeatInterval: 1,
+      initialDay: new Date(2026, 8, 1),
+      initialRuleNextDue: '2026-10-01',
+    };
+
+    // Finished: the cursor is past the (unchanged) end date → nothing to back-fill.
+    const finished = await setup({ ...base, initialRepeatEnd: new Date(2026, 8, 30) });
+    expect(finished.result.current.recurringPastAffected).toBe(false);
+
+    // Extending the end date opens a window → back-fill.
+    const extended = await setup({ ...base, initialRepeatEnd: new Date(2026, 9, 31) });
+    expect(extended.result.current.recurringPastAffected).toBe(true);
   });
 
   it('loads existing tags when a transaction id is provided', async () => {

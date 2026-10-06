@@ -309,4 +309,38 @@ describe('materializeDueRecurring', () => {
     expect(after).toEqual(before);
     expect(after).toHaveLength(30);
   });
+
+  it('shortening the end date after extending it never deletes generated transactions', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(dailySep, []);
+    expect(await materializeDueRecurring(OCT_5)).toBe(30); // Sep 1-30
+
+    // Extend to Oct 31 -> back-fill Oct 1-5.
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'daily', interval: 1, endDate: '2026-10-31' },
+      scope: 'futureAndPast',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: OCT_5,
+    });
+    expect(await transactionRepo.list()).toHaveLength(35);
+    expect((await recurringRepo.list(1))[0].next_due).toBe('2026-10-06');
+
+    // Shorten back to Sep 30 -> nothing added, nothing deleted.
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'daily', interval: 1, endDate: '2026-09-30' },
+      scope: 'futureAndPast',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: OCT_5,
+    });
+    const txs = await transactionRepo.list();
+    expect(txs).toHaveLength(35);
+    expect(txs.some(t => t.recurrence_date === '2026-10-01')).toBe(true);
+    expect((await recurringRepo.list(1))[0].next_due).toBe('2026-10-01');
+  });
 });
