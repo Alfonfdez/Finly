@@ -54,6 +54,7 @@ vi.mock('../../src/database', () => ({
   },
   recurringRepository: {
     createWithTags: vi.fn(async () => ({ id: 1 })),
+    list: vi.fn(async () => []),
   },
 }));
 

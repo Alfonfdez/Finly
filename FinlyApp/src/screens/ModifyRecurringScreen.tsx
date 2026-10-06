@@ -11,7 +11,7 @@ import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { t } from '../i18n';
-import { RECURRENCE_SCOPES, type RecurrenceScope, type NavigationProp, type RootStackParamList } from '../constants/types';
+import { RECURRENCE_SCOPES, USER_ID, type RecurrenceScope, type NavigationProp, type RootStackParamList } from '../constants/types';
 import { fromDateOnly } from '../utils/recurrence';
 import { recurringRepository } from '../database';
 import { saveRecurringRuleEdit } from '../database/recurringService';
@@ -43,11 +43,14 @@ export default function ModifyRecurringScreen() {
   const load = useCallback(async () => {
     const rule = await recurringRepository.getById(ruleId);
     const tagIds = rule ? await recurringRepository.getTagIds(rule.id) : [];
-    return { rule, tagIds } as { rule: RecurringRule | null; tagIds: number[] };
+    const otherNames = (await recurringRepository.list(USER_ID))
+      .filter(r => r.id !== ruleId)
+      .map(r => r.name);
+    return { rule, tagIds, otherNames } as { rule: RecurringRule | null; tagIds: number[]; otherNames: string[] };
   }, [ruleId]);
 
-  const { data, loading } = useFocusLoad(load, { rule: null, tagIds: [] } as { rule: RecurringRule | null; tagIds: number[] });
-  const { rule, tagIds } = data;
+  const { data, loading } = useFocusLoad(load, { rule: null, tagIds: [], otherNames: [] } as { rule: RecurringRule | null; tagIds: number[]; otherNames: string[] });
+  const { rule, tagIds, otherNames } = data;
 
   const persist = useCallback(async (
     updated: Partial<RecurringRule>,
@@ -149,6 +152,8 @@ export default function ModifyRecurringScreen() {
         initialRepeatEnd={rule.end_date ? fromDateOnly(rule.end_date) : null}
         initialRuleNextDue={rule.next_due}
         initialRuleActive={rule.active === 1}
+        initialRepeatName={rule.name}
+        existingRepeatNames={otherNames}
         submitLabel={labels.modify_save}
         errorTitle={labels.recurring_error_title}
         errorMessage={labels.recurring_error_message}
@@ -156,6 +161,7 @@ export default function ModifyRecurringScreen() {
         onSubmitRule={async (draft, selectedTagIds, recurrence) => {
           await persist(
             {
+              name: recurrence.name,
               type: draft.type,
               account_id: draft.account_id,
               category_id: draft.category_id,

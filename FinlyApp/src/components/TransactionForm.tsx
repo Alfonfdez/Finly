@@ -48,6 +48,8 @@ interface TransactionFormProps {
   initialTagIds?: number[];
   initialRuleNextDue?: string | null;
   initialRuleActive?: boolean;
+  initialRepeatName?: string;
+  existingRepeatNames?: string[];
   footer?: ReactNode;
   onRecurringPastAffectedChange?: (value: boolean) => void;
   topNotice?: ReactNode;
@@ -74,6 +76,7 @@ export default function TransactionForm(props: TransactionFormProps) {
     repeatSkipFirst, setRepeatSkipFirst,
     repeatMinDate,
     recurringPastAffected,
+    repeatName, setRepeatName, repeatNameError,
     modalAccountVisible, setModalAccountVisible,
     modalCalendarVisible, setModalCalendarVisible,
     modalRepeatEndVisible, setModalRepeatEndVisible,
@@ -184,6 +187,9 @@ export default function TransactionForm(props: TransactionFormProps) {
             skipFirst={repeatSkipFirst}
             onChangeSkipFirst={setRepeatSkipFirst}
             showSkipFirst={!!props.allowSkipFirst}
+            name={repeatName}
+            onChangeName={setRepeatName}
+            nameError={repeatNameError}
           />
         )}
 

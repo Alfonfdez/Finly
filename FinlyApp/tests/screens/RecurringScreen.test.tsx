@@ -10,11 +10,13 @@ const nav = { navigate: vi.fn(), setOptions: vi.fn() };
 const mockList = vi.fn(async (_userId: number): Promise<RecurringRule[]> => []);
 const mockSetActive = vi.fn(async (_id: number, _active: boolean): Promise<void> => {});
 const mockResume = vi.fn(async (_id: number): Promise<number> => 0);
+const mockCounts = vi.fn(async (_ids: number[]): Promise<Map<number, number>> => new Map());
 
 vi.mock('../../src/database', () => ({
   recurringRepository: {
     list: (userId: number) => mockList(userId),
     setActive: (id: number, active: boolean) => mockSetActive(id, active),
+    countOccurrencesByRuleIds: (ids: number[]) => mockCounts(ids),
   },
 }));
 
@@ -50,6 +52,7 @@ const category: Category = {
 const rule: RecurringRule = {
   id: 1,
   user_id: 1,
+  name: 'Rent',
   type: 'expense',
   account_id: 1,
   category_id: 1,
@@ -74,6 +77,7 @@ describe('RecurringScreen', () => {
     mockList.mockReset().mockResolvedValue([rule]);
     mockSetActive.mockClear();
     mockResume.mockClear();
+    mockCounts.mockReset().mockResolvedValue(new Map());
     setAppData({ categoriesById: new Map([[1, category]]) });
   });
 
@@ -81,25 +85,26 @@ describe('RecurringScreen', () => {
     resetAppStub();
   });
 
-  it('renders the rule with its summary and active label', async () => {
+  it('renders the rule with its name, summary and active label', async () => {
     const view = await render(<RecurringScreen />);
-    await waitFor(() => expect(view.getByText('Food')).toBeTruthy());
-    expect(view.getByText('Every month on day 5')).toBeTruthy();
+    await waitFor(() => expect(view.getByText('Rent')).toBeTruthy());
+    expect(view.getByText('Food · Every month on day 5')).toBeTruthy();
     expect(view.getByText('Active')).toBeTruthy();
     expect(view.getByText('Next: November 5, 2026')).toBeTruthy();
+    expect(view.getByText('Created October 5, 2026 · 0 transactions')).toBeTruthy();
   });
 
   it('navigates to edit when the rule info is pressed', async () => {
     const view = await render(<RecurringScreen />);
-    await waitFor(() => expect(view.getByText('Food')).toBeTruthy());
-    await fireEvent.press(view.getByText('Food'));
+    await waitFor(() => expect(view.getByText('Rent')).toBeTruthy());
+    await fireEvent.press(view.getByText('Rent'));
     expect(nav.navigate).toHaveBeenCalledWith('ModifyRecurring', { ruleId: 1 });
   });
 
   it('shows "Ended" when the rule has finished', async () => {
     mockList.mockResolvedValue([{ ...rule, end_date: '2026-09-30', next_due: '2026-10-01' }]);
     const view = await render(<RecurringScreen />);
-    await waitFor(() => expect(view.getByText('Food')).toBeTruthy());
+    await waitFor(() => expect(view.getByText('Rent')).toBeTruthy());
     expect(view.getByText('Ended')).toBeTruthy();
   });
 

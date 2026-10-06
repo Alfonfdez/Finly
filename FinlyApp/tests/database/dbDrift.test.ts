@@ -82,6 +82,7 @@ const EXPECTED_COLUMNS: Record<string, [string, string, number][]> = {
   recurring_rules: [
     ['id', 'INTEGER', 0],
     ['user_id', 'INTEGER', 1],
+    ['name', 'TEXT', 1],
     ['type', 'TEXT', 1],
     ['account_id', 'INTEGER', 1],
     ['category_id', 'INTEGER', 1],
@@ -161,6 +162,7 @@ const TYPE_SAMPLES: Record<string, { sample: Record<string, unknown> }> = {
     sample: {
       id: 0,
       user_id: 0,
+      name: '',
       type: 'expense',
       account_id: 0,
       category_id: 0,

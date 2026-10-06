@@ -20,6 +20,9 @@ function renderSection(overrides: Partial<Props> = {}) {
     onClearEndDate: vi.fn(),
     skipFirst: false,
     onChangeSkipFirst: vi.fn(),
+    name: 'Rent',
+    onChangeName: vi.fn(),
+    nameError: null,
     ...overrides,
   };
   return { props, view: render(<RepeatSection {...props} />) };
@@ -128,6 +131,16 @@ describe('RepeatSection', () => {
     const { props, view } = renderSection({ showSkipFirst: true, skipFirst: false });
     await fireEvent.press((await view).getByText('Skip the first occurrence'));
     expect(props.onChangeSkipFirst).toHaveBeenCalledWith(true);
+  });
+
+  it('renders the recurring name field with its value', async () => {
+    const { view } = renderSection({ name: 'Rent' });
+    expect((await view).getByDisplayValue('Rent')).toBeTruthy();
+  });
+
+  it('shows the recurring name error', async () => {
+    const { view } = renderSection({ name: '', nameError: 'taken' });
+    expect((await view).getByText('That name is already used by another recurring')).toBeTruthy();
   });
 
   it('shows the first transaction date only when skipping the first occurrence', async () => {

@@ -13,6 +13,7 @@ const routeParams: Record<string, unknown> = { ruleId: 1 };
 const mockGetById = vi.fn(async (_id: number) => null as RecurringRule | null);
 const mockGetTagIds = vi.fn(async (_id: number) => [] as number[]);
 const mockRemove = vi.fn(async (_id: number) => {});
+const mockList = vi.fn(async (_userId: number) => [] as RecurringRule[]);
 const mockGetTagsByTransactionId = vi.fn(async (_id: number) => [] as number[]);
 const mockGetCategoryUsageCounts = vi.fn(
   async (_userId: number, _type: TransactionType, _start: string, _accountId: number) =>
@@ -46,6 +47,7 @@ vi.mock('../../src/database', () => ({
     getById: (id: number) => mockGetById(id),
     getTagIds: (id: number) => mockGetTagIds(id),
     remove: (id: number) => mockRemove(id),
+    list: (userId: number) => mockList(userId),
   },
   transactionRepository: {
     getTagsByTransactionId: (id: number) => mockGetTagsByTransactionId(id),
@@ -83,6 +85,7 @@ const catFood: Category = { id: 1, user_id: 1, name: 'Food', type: 'expense' } a
 const rule: RecurringRule = {
   id: 1,
   user_id: 1,
+  name: 'Rent',
   type: 'expense',
   account_id: 1,
   category_id: 1,
@@ -110,6 +113,7 @@ describe('ModifyRecurringScreen', () => {
     mockGetById.mockReset().mockResolvedValue(rule);
     mockGetTagIds.mockReset().mockResolvedValue([]);
     mockRemove.mockClear();
+    mockList.mockReset().mockResolvedValue([]);
     mockGetTagsByTransactionId.mockReset().mockResolvedValue([]);
     mockGetCategoryUsageCounts.mockReset().mockResolvedValue([]);
     mockTagCreate.mockClear();

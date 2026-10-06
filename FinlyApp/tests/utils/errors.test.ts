@@ -6,9 +6,10 @@ vi.mock('react-native', () => ({
   Alert: {
     alert: (...args: unknown[]) => mockAlert(...args),
   },
+  Platform: { OS: 'ios' },
 }));
 
-import { showErrorAlert, runWithErrorAlert, ERROR_PREFIXES } from '../../src/utils/errors';
+import { alertError, describeError, showErrorAlert, runWithErrorAlert, ERROR_PREFIXES } from '../../src/utils/errors';
 import { t } from '../../src/i18n';
 
 describe('errors helpers', () => {
@@ -25,6 +26,35 @@ describe('errors helpers', () => {
     it('shows the alert with the provided labels', () => {
       showErrorAlert({ error_title: 'TITLE', error_generic: 'GENERIC' });
       expect(mockAlert).toHaveBeenCalledWith('TITLE', 'GENERIC');
+    });
+  });
+
+  describe('alertError', () => {
+    it('shows the alert with the given title and message', () => {
+      alertError('TITLE', 'MESSAGE');
+      expect(mockAlert).toHaveBeenCalledWith('TITLE', 'MESSAGE');
+    });
+
+    it('logs the error to the console', () => {
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      alertError('TITLE', 'MESSAGE');
+      expect(spy).toHaveBeenCalledWith('TITLE: MESSAGE');
+      spy.mockRestore();
+    });
+  });
+
+  describe('describeError', () => {
+    it('returns the message for a plain Error', () => {
+      expect(describeError(new Error('boom'))).toBe('boom');
+    });
+
+    it('appends the underlying cause message', () => {
+      const err = new Error('Failed query', { cause: new Error('no such column: name') });
+      expect(describeError(err)).toBe('Failed query → no such column: name');
+    });
+
+    it('stringifies a non-Error value', () => {
+      expect(describeError('nope')).toBe('nope');
     });
   });
 

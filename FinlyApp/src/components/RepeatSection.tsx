@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Switch, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Switch, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -25,6 +25,9 @@ interface Props {
   skipFirst: boolean;
   onChangeSkipFirst: (value: boolean) => void;
   showSkipFirst?: boolean;
+  name: string;
+  onChangeName: (value: string) => void;
+  nameError: 'required' | 'taken' | null;
   showToggle?: boolean;
 }
 
@@ -52,6 +55,9 @@ export default function RepeatSection({
   skipFirst,
   onChangeSkipFirst,
   showSkipFirst = false,
+  name,
+  onChangeName,
+  nameError,
   showToggle = true,
 }: Props) {
   const { activeColors: c, config } = useConfig();
@@ -112,6 +118,25 @@ export default function RepeatSection({
           ]}
         >
           <Text style={[styles.firstLabel, { color: c.textSecondary, fontSize: fs(12) }]}>
+            {labels.repeat_name}
+          </Text>
+          <TextInput
+            style={[
+              styles.nameInput,
+              { backgroundColor: c.background, borderColor: nameError ? c.red : c.border, color: c.text, fontSize: fs(14) },
+            ]}
+            placeholder={labels.repeat_name_placeholder}
+            placeholderTextColor={c.textSecondary}
+            value={name}
+            onChangeText={onChangeName}
+            maxLength={60}
+          />
+          {nameError && (
+            <Text style={[styles.nameError, { color: c.red, fontSize: fs(12) }]}>
+              {nameError === 'required' ? labels.repeat_name_required : labels.repeat_name_taken}
+            </Text>
+          )}
+          <Text style={[styles.label, { color: c.textSecondary, fontSize: fs(12) }]}>
             {labels.repeat_frequency}
           </Text>
           <View style={styles.chips}>
@@ -233,6 +258,18 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   firstLabel: {
+    fontWeight: '500',
+  },
+  nameInput: {
+    borderWidth: 1,
+    borderRadius: BUTTON_BORDER_RADIUS,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginTop: 8,
+    fontWeight: '500',
+  },
+  nameError: {
+    marginTop: 4,
     fontWeight: '500',
   },
   skipFirstRow: {

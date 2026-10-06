@@ -43,6 +43,7 @@ async function boot() {
 
 const baseRule = {
   user_id: 1,
+  name: 'Rent',
   type: 'expense' as const,
   account_id: 1,
   category_id: 3,
