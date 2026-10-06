@@ -8,6 +8,9 @@ import type { Account, Category, Transaction } from '../../src/database/types';
 const getById = vi.fn(async (_id: number) => null as Transaction | null);
 const getTagsByTransactionIds = vi.fn(async (_ids: number[]) => [] as { tag_id: number; name: string }[]);
 const remove = vi.fn(async (_id: number) => undefined);
+const recurringGetById = vi.fn(async (_id: number) => null as { id: number; active: number } | null);
+const recurringSetActive = vi.fn(async (_id: number, _active: boolean) => undefined);
+const resumeRecurringRule = vi.fn(async (_id: number) => 0);
 
 vi.mock('../../src/database', () => ({
   transactionRepository: {
@@ -15,6 +18,14 @@ vi.mock('../../src/database', () => ({
     getTagsByTransactionIds: (ids: number[]) => getTagsByTransactionIds(ids),
     delete: (id: number) => remove(id),
   },
+  recurringRepository: {
+    getById: (id: number) => recurringGetById(id),
+    setActive: (id: number, active: boolean) => recurringSetActive(id, active),
+  },
+}));
+
+vi.mock('../../src/database/recurringService', () => ({
+  resumeRecurringRule: (id: number) => resumeRecurringRule(id),
 }));
 
 vi.mock('expo-file-system', () => ({
@@ -72,6 +83,9 @@ describe('TransactionDetailsScreen', () => {
     getById.mockReset().mockResolvedValue(null);
     getTagsByTransactionIds.mockReset().mockResolvedValue([]);
     remove.mockReset().mockResolvedValue(undefined);
+    recurringGetById.mockReset().mockResolvedValue(null);
+    recurringSetActive.mockReset().mockResolvedValue(undefined);
+    resumeRecurringRule.mockReset().mockResolvedValue(0);
     nav.setOptions.mockClear();
     nav.navigate.mockClear();
     nav.goBack.mockClear();
@@ -105,5 +119,21 @@ describe('TransactionDetailsScreen', () => {
     await ue.press(confirm);
     expect(remove).toHaveBeenCalledWith(5);
     expect(nav.goBack).toHaveBeenCalled();
+  });
+
+  it('toggles the recurring rule: off pauses, on resumes', async () => {
+    getById.mockResolvedValue(tx({ recurring_rule_id: 7 }));
+    recurringGetById.mockResolvedValue({ id: 7, active: 1 });
+    const view = await render(<TransactionDetailsScreen />);
+    await view.findByText('Recurring');
+
+    const sw = view.getByRole('switch');
+    expect(sw.props.value).toBe(true);
+
+    await fireEvent(sw, 'valueChange', false);
+    expect(recurringSetActive).toHaveBeenCalledWith(7, false);
+
+    await fireEvent(sw, 'valueChange', true);
+    expect(resumeRecurringRule).toHaveBeenCalledWith(7);
   });
 });

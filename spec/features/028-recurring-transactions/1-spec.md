@@ -74,7 +74,7 @@
 ### 8. Generated transactions and details
 
 - Generated transactions are ordinary transactions (they appear in every list, total and chart on their scheduled date).
-- `TransactionDetailsScreen` shows a **Recurring** chip when `recurring_rule_id` is set, with a **Stop repeating** action (deactivates the rule).
+- `TransactionDetailsScreen` shows a **Recurring** chip when `recurring_rule_id` is set, with a **pause/resume toggle** (deactivates the rule; resuming skips the occurrences missed during the pause, same as the Recurring screen).
 - Photos are per-transaction and are not copied from any template.
 
 ### 9. Deleting a rule
@@ -122,7 +122,7 @@
 - [x] Editing a rule "Future only" applies to future occurrences only; "Future + past" bulk-updates its generated transactions' account/category/amount/comment/tags/type (never their dates); the change is reconciled immediately on save.
 - [x] "Future + past" is only offered when a past-affecting field changed; a timing-only edit (frequency/interval/day/end date) leaves past transactions untouched.
 - [x] Editing an individual generated transaction does not change its rule.
-- [x] Transaction details show a Recurring chip with a "Stop repeating" action.
+- [x] Transaction details show a Recurring chip with a pause/resume toggle (resuming skips the pause window).
 - [x] Deleting a rule keeps every transaction it generated.
 - [x] Export/import round-trips rules and tag links; a pre-028 (schema-3) backup still imports.
 - [x] Migration 004 applies to an existing v2.1.0 database without touching existing rows and sets `user_version = 4`; fresh installs reach the same schema.
