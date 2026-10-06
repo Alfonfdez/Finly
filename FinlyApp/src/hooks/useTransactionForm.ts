@@ -193,6 +193,39 @@ export function useTransactionForm({
     return true;
   }, [categoryId, numericAmount, day, accountId, repeatEnabled, ruleMode, repeatEnd, repeatMinDate]);
 
+  // In rule mode: does the draft touch a field the "past ones" scope rewrites
+  // (account/category/amount/comment/tags/type)? Timing fields are excluded.
+  const recurringPastAffected = useMemo(() => {
+    if (!ruleMode) return false;
+    const initialAmountNum = initialAmount !== undefined ? parseAmountValue(initialAmount) : null;
+    const initialTags = [...(initialTagIds ?? [])].sort((a, b) => a - b);
+    const currentTags = [...selectedTags].sort((a, b) => a - b);
+    const tagsChanged =
+      initialTags.length !== currentTags.length || initialTags.some((v, i) => v !== currentTags[i]);
+    return (
+      accountId !== initialAccountId ||
+      categoryId !== initialCategoryId ||
+      numericAmount !== initialAmountNum ||
+      (comment.trim() || null) !== (initialComment.trim() || null) ||
+      type !== initialType ||
+      tagsChanged
+    );
+  }, [
+    ruleMode,
+    accountId,
+    initialAccountId,
+    categoryId,
+    initialCategoryId,
+    numericAmount,
+    initialAmount,
+    comment,
+    initialComment,
+    type,
+    initialType,
+    selectedTags,
+    initialTagIds,
+  ]);
+
   const handleToggleTag = useCallback((id: number) => {
     setSelectedTags(prev =>
       prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id],
@@ -297,6 +330,7 @@ export function useTransactionForm({
     repeatEnd, setRepeatEnd,
     repeatSkipFirst, setRepeatSkipFirst,
     repeatMinDate,
+    recurringPastAffected,
     modalAccountVisible, setModalAccountVisible,
     modalCalendarVisible, setModalCalendarVisible,
     modalRepeatEndVisible, setModalRepeatEndVisible,

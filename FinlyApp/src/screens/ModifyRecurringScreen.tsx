@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation, type RouteProp } from '@react-navigation/native';
@@ -15,6 +15,8 @@ import { RECURRENCE_SCOPES, type RecurrenceScope, type NavigationProp, type Root
 import { fromDateOnly } from '../utils/recurrence';
 import { recurringRepository } from '../database';
 import { saveRecurringRuleEdit } from '../database/recurringService';
+import { withAlpha } from '../utils/color';
+import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS, CONTROL_BORDER_RADIUS } from '../components/componentStyles';
 import type { RecurringRule } from '../database/types';
 
 type ModifyRecurringRouteProp = RouteProp<RootStackParamList, 'ModifyRecurring'>;
@@ -30,6 +32,14 @@ export default function ModifyRecurringScreen() {
 
   const [scope, setScope] = useState<RecurrenceScope>(RECURRENCE_SCOPES.future);
   const [deleteVisible, setDeleteVisible] = useState(false);
+  const [pastAffected, setPastAffected] = useState(false);
+
+  // "From now on + past ones" only makes sense when a past-affecting field changed.
+  useEffect(() => {
+    if (!pastAffected && scope !== RECURRENCE_SCOPES.future) {
+      setScope(RECURRENCE_SCOPES.future);
+    }
+  }, [pastAffected, scope]);
 
   const load = useCallback(async () => {
     const rule = await recurringRepository.getById(ruleId);
@@ -43,7 +53,7 @@ export default function ModifyRecurringScreen() {
   const persist = useCallback(async (
     updated: Partial<RecurringRule>,
     recurrence: { frequency: RecurringRule['frequency']; interval: number; endDate: string | null },
-    pastPatch: { account_id: number; category_id: number; amount: number; description: string | null },
+    pastPatch: { account_id: number; category_id: number; amount: number; description: string | null; type: RecurringRule['type'] },
     selectedTagIds: number[],
   ) => {
     await saveRecurringRuleEdit({
@@ -84,25 +94,38 @@ export default function ModifyRecurringScreen() {
 
   const footer = (
     <View style={styles.footer}>
-      <Text style={[styles.scopeTitle, { color: c.textSecondary, fontSize: fs(12) }]}>
-        {labels.recurring_scope_title}
-      </Text>
-      <View style={styles.scopeRow}>
-        {([
-          [RECURRENCE_SCOPES.future, labels.recurring_scope_future],
-          [RECURRENCE_SCOPES.futureAndPast, labels.recurring_scope_future_past],
-        ] as [RecurrenceScope, string][]).map(([value, label]) => {
-          const active = scope === value;
-          return (
-            <TouchableOpacity
-              key={value}
-              style={[styles.chip, { borderColor: active ? c.primary : c.border, backgroundColor: active ? c.primary : 'transparent' }]}
-              onPress={() => setScope(value)}
-            >
-              <Text style={[styles.chipText, { color: active ? c.background : c.text, fontSize: fs(13) }]}>{label}</Text>
-            </TouchableOpacity>
-          );
-        })}
+      <View style={[styles.scopeCard, { backgroundColor: withAlpha(c.primary, 10), borderColor: withAlpha(c.primary, 30) }]}>
+        <Text style={[styles.scopeTitle, { color: c.textSecondary, fontSize: fs(12) }]}>
+          {labels.recurring_scope_title}
+        </Text>
+        <View style={[styles.segmented, { backgroundColor: c.background }]}>
+          {([
+            [RECURRENCE_SCOPES.future, labels.recurring_scope_future],
+            [RECURRENCE_SCOPES.futureAndPast, labels.recurring_scope_future_past],
+          ] as [RecurrenceScope, string][]).map(([value, label]) => {
+            const disabled = value === RECURRENCE_SCOPES.futureAndPast && !pastAffected;
+            const active = scope === value && !disabled;
+            return (
+              <TouchableOpacity
+                key={value}
+                style={[styles.segment, active && { backgroundColor: c.primary }, disabled && styles.segmentDisabled]}
+                onPress={() => !disabled && setScope(value)}
+                disabled={disabled}
+                accessibilityRole="button"
+                accessibilityState={{ disabled }}
+              >
+                <Text style={[styles.segmentText, { color: active ? c.background : c.textSecondary, fontSize: fs(13), fontWeight: active ? '700' : '600' }]}>
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+        {!pastAffected && (
+          <Text style={[styles.scopeHint, { color: c.textSecondary, fontSize: fs(11) }]}>
+            {labels.recurring_scope_past_hint}
+          </Text>
+        )}
       </View>
       <TouchableOpacity
         style={[styles.deleteButton, { borderColor: c.red }]}
@@ -150,6 +173,7 @@ export default function ModifyRecurringScreen() {
               category_id: draft.category_id,
               amount: draft.amount,
               description: draft.description,
+              type: draft.type,
             },
             selectedTagIds,
           );
@@ -158,6 +182,7 @@ export default function ModifyRecurringScreen() {
         enableRepeat
         ruleMode
         footer={footer}
+        onRecurringPastAffectedChange={setPastAffected}
       />
 
       <ConfirmationModal
@@ -183,23 +208,36 @@ const styles = StyleSheet.create({
   footer: {
     marginTop: 24,
   },
+  scopeCard: {
+    borderRadius: CARD_BORDER_RADIUS,
+    borderWidth: 1,
+    padding: 12,
+  },
   scopeTitle: {
     fontWeight: '500',
   },
-  scopeRow: {
+  segmented: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+    gap: 4,
+    borderRadius: BUTTON_BORDER_RADIUS,
+    padding: 3,
     marginTop: 8,
   },
-  chip: {
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+  segment: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderRadius: CONTROL_BORDER_RADIUS,
   },
-  chipText: {
+  segmentDisabled: {
+    opacity: 0.5,
+  },
+  segmentText: {
     fontWeight: '600',
+  },
+  scopeHint: {
+    marginTop: 8,
+    fontWeight: '500',
   },
   deleteButton: {
     flexDirection: 'row',

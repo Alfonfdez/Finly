@@ -74,6 +74,7 @@ export interface RecurringEditPastPatch {
   category_id: number;
   amount: number;
   description: string | null;
+  type: RecurringRule['type'];
 }
 
 export interface RecurringEditParams {

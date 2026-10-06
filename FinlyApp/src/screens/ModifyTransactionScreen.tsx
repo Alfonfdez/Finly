@@ -14,7 +14,7 @@ import { transactionRepository } from '../database';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import TransactionForm from '../components/TransactionForm';
 import EmptyState from '../components/EmptyState';
-import { CARD_BORDER_RADIUS } from '../components/componentStyles';
+import { CARD_BORDER_RADIUS, SECTION_GAP } from '../components/componentStyles';
 
 type ModifyRouteProp = RouteProp<RootStackParamList, 'ModifyTransaction'>;
 
@@ -99,23 +99,24 @@ export default function ModifyTransactionScreen() {
 
 const styles = StyleSheet.create({
   notice: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
+    alignItems: 'center',
+    gap: 8,
     borderWidth: 1,
     borderRadius: CARD_BORDER_RADIUS,
     padding: 12,
+    marginTop: SECTION_GAP,
     marginBottom: 16,
   },
   noticeBody: {
-    flex: 1,
+    alignItems: 'center',
     gap: 4,
   },
   noticeText: {
     fontWeight: '500',
+    textAlign: 'center',
   },
   noticeLink: {
-    alignSelf: 'flex-start',
+    alignSelf: 'center',
   },
   noticeLinkText: {
     fontWeight: '600',

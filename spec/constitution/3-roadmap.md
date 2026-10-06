@@ -406,7 +406,7 @@ Recurring expenses/income created once and materialized automatically:
 - Add form gains a "Repeat" section; a Drawer "Recurring" screen lists rules (frequency summary, next due, pause/resume, FAB); transaction details show a Recurring chip + "Stop repeating".
 - The frequency summary is localized and phrased per frequency: weekly includes the weekday, yearly reads naturally ("Every year on October 6" / "Cada año el 6 de octubre"), and the end date appends "until <date>".
 - Creating a rule can **skip the first occurrence**: the first generated transaction is deferred by one interval (monthly 6 Oct → 6 Nov), nothing is generated on the start day, and the resulting first date is shown under the checkbox; the end date must be on/after that first occurrence (creation only; hidden when editing).
-- Editing reconciles first then updates in place; scope "From now on" or "From now on + past generated" (bulk update).
+- Editing reconciles first then updates in place; scope "Future only" or "Future + past" (bulk update of account/category/amount/comment/tags/type on generated transactions — dates never change). The "past" scope is only offered when a past-affecting field actually changed (a timing-only edit leaves past transactions untouched).
 - Deleting a rule keeps every transaction it generated (FK `ON DELETE SET NULL`).
 - Additive migration `004_recurring` and `SCHEMA_VERSION 3 → 4`; existing v2.1.0 data untouched. Backup format v1 extended with optional collections so old backups still import.
 - Spec: spec/features/028-recurring-transactions/.

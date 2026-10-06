@@ -23,6 +23,8 @@ interface UseTransactionFormProps {
   onSubmitRule?: (data: TransactionDraft, tagIds: number[], recurrence: RecurrenceDraft) => Promise<void>;
   resetTagsOnFirstFocus?: boolean;
   onError?: () => void;
+  ruleMode?: boolean;
+  initialTagIds?: number[];
 }
 
 const mockGetTagsByTransactionId = vi.fn(async (_id: number) => [] as number[]);
@@ -302,6 +304,32 @@ describe('useTransactionForm', () => {
     // An end date on/after the first occurrence is allowed.
     await act(() => result.current.setRepeatEnd(new Date(2026, 6, 15)));
     expect(result.current.canSubmit).toBe(true);
+  });
+
+  it('reports recurringPastAffected only for past-affecting fields (rule mode)', async () => {
+    const { result } = await setup({
+      ruleMode: true,
+      initialAmount: '100',
+      initialCategoryId: 1,
+      initialComment: 'Rent',
+    });
+    expect(result.current.recurringPastAffected).toBe(false);
+
+    // Timing-only change does not affect past occurrences.
+    await act(() => result.current.setRepeatFrequency('yearly'));
+    expect(result.current.recurringPastAffected).toBe(false);
+
+    // Amount change does.
+    await act(() => result.current.setAmountRaw('120'));
+    expect(result.current.recurringPastAffected).toBe(true);
+
+    // Reverting it clears the flag again.
+    await act(() => result.current.setAmountRaw('100'));
+    expect(result.current.recurringPastAffected).toBe(false);
+
+    // Type change does.
+    await act(() => result.current.setType('income'));
+    expect(result.current.recurringPastAffected).toBe(true);
   });
 
   it('loads existing tags when a transaction id is provided', async () => {
