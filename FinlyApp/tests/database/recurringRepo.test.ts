@@ -42,6 +42,7 @@ async function boot() {
 
 const baseRule = {
   user_id: 1,
+  name: 'Rent',
   type: 'expense' as const,
   account_id: 1,
   category_id: 3,
@@ -74,6 +75,17 @@ describe('recurringRepo', () => {
     const fetched = await recurringRepo.getById(rule.id);
     expect(fetched?.amount).toBe(100);
     expect(await recurringRepo.getTagIds(rule.id)).toEqual([tag.id]);
+  });
+
+  it('persists the name and counts generated transactions per rule', async () => {
+    const { recurringRepo } = await boot();
+    const rule = await recurringRepo.createWithTags({ ...baseRule, name: 'Groceries' }, []);
+    expect((await recurringRepo.getById(rule.id))?.name).toBe('Groceries');
+    expect((await recurringRepo.countOccurrencesByRuleIds([rule.id])).get(rule.id)).toBeUndefined();
+
+    await recurringRepo.insertOccurrence(rule, '2026-01-02', []);
+    await recurringRepo.insertOccurrence(rule, '2026-02-02', []);
+    expect((await recurringRepo.countOccurrencesByRuleIds([rule.id])).get(rule.id)).toBe(2);
   });
 
   it('listDue returns only active rules due on/before today', async () => {

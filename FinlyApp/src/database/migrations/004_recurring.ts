@@ -5,6 +5,7 @@ export async function createRecurringSchema(db: DatabaseHandle) {
     CREATE TABLE IF NOT EXISTS recurring_rules (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
+      name TEXT NOT NULL,
       type TEXT NOT NULL CHECK(type IN ('expense', 'income')),
       account_id INTEGER NOT NULL,
       category_id INTEGER NOT NULL,

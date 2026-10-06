@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
@@ -37,6 +37,15 @@ export default function AddTransactionScreen() {
     return selectedDate;
   }, [activePeriod, customDate, selectedDate]);
 
+  const [existingRepeatNames, setExistingRepeatNames] = useState<string[]>([]);
+  useEffect(() => {
+    let active = true;
+    recurringRepository.list(USER_ID)
+      .then(rules => { if (active) setExistingRepeatNames(rules.map(r => r.name)); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
   return (
     <TransactionForm
       initialType={routeType ?? activeType}
@@ -62,6 +71,7 @@ export default function AddTransactionScreen() {
         await recurringRepository.createWithTags(
           {
             user_id: USER_ID,
+            name: recurrence.name,
             type: data.type,
             account_id: data.account_id,
             category_id: data.category_id,
@@ -78,6 +88,7 @@ export default function AddTransactionScreen() {
       }}
       enableRepeat
       allowSkipFirst
+      existingRepeatNames={existingRepeatNames}
       resetTagsOnFirstFocus
     />
   );

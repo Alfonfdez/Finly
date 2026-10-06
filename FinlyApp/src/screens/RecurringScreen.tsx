@@ -13,7 +13,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { t, getDisplayCategoryName } from '../i18n';
 import { BADGE_SHAPES, TRANSACTION_TYPES, USER_ID, type RootStackParamList } from '../constants/types';
-import { formatAmount, formatDateLong } from '../utils/formatters';
+import { formatAmount, formatDateLong, parseDbDate } from '../utils/formatters';
 import { fromDateOnly } from '../utils/recurrence';
 import { recurrenceSummary } from '../utils/recurrenceSummary';
 import { recurringRepository } from '../database';
@@ -29,20 +29,28 @@ export default function RecurringScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { categoriesById, refresh } = useApp();
 
-  const loadRules = useCallback(() => recurringRepository.list(USER_ID), []);
-  const { data: rules, setData, loading } = useFocusLoad(loadRules, [] as RecurringRule[]);
+  const loadRules = useCallback(async () => {
+    const rules = await recurringRepository.list(USER_ID);
+    const counts = await recurringRepository.countOccurrencesByRuleIds(rules.map(r => r.id));
+    return { rules, counts };
+  }, []);
+  const { data, setData, loading } = useFocusLoad(
+    loadRules,
+    { rules: [] as RecurringRule[], counts: new Map<number, number>() },
+  );
+  const { rules, counts } = data;
 
   const handleToggleActive = useCallback(async (rule: RecurringRule, value: boolean) => {
     if (value) {
       // Resume: skip the occurrences missed while paused, then materialize the current one.
       await resumeRecurringRule(rule.id);
-      setData(await recurringRepository.list(USER_ID));
+      setData(await loadRules());
       refresh();
     } else {
       await recurringRepository.setActive(rule.id, false);
-      setData(prev => prev.map(r => (r.id === rule.id ? { ...r, active: 0 } : r)));
+      setData(prev => ({ ...prev, rules: prev.rules.map(r => (r.id === rule.id ? { ...r, active: 0 } : r)) }));
     }
-  }, [setData, refresh]);
+  }, [setData, refresh, loadRules]);
 
   if (loading && rules.length === 0) {
     return (
@@ -81,18 +89,23 @@ export default function RecurringScreen() {
                 style={styles.info}
                 onPress={() => navigation.navigate('ModifyRecurring', { ruleId: item.id })}
                 accessibilityRole="button"
-                accessibilityLabel={category ? getDisplayCategoryName(category) : labels.nav_recurring}
+                accessibilityLabel={item.name}
               >
                 <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]} numberOfLines={1}>
-                  {category ? getDisplayCategoryName(category) : ''}
+                  {item.name}
                 </Text>
                 <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(12) }]} numberOfLines={1}>
-                  {recurrenceSummary(item, config.language)}
+                  {category ? `${getDisplayCategoryName(category)} · ` : ''}{recurrenceSummary(item, config.language)}
                 </Text>
                 <Text style={[styles.nextDue, { color: c.textSecondary, fontSize: fs(11) }]} numberOfLines={1}>
                   {item.end_date != null && item.next_due > item.end_date
                     ? labels.recurring_ended
                     : labels.recurring_next_due(formatDateLong(fromDateOnly(item.next_due), config.language))}
+                </Text>
+                <Text style={[styles.meta, { color: c.textSecondary, fontSize: fs(11) }]} numberOfLines={1}>
+                  {labels.recurring_created_on(formatDateLong(parseDbDate(item.created_at), config.language))}
+                  {' · '}
+                  {labels.recurring_transactions_count(counts.get(item.id) ?? 0)}
                 </Text>
               </TouchableOpacity>
               <View style={styles.right}>
@@ -161,6 +174,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   nextDue: {
+    marginTop: 2,
+  },
+  meta: {
     marginTop: 2,
   },
   right: {

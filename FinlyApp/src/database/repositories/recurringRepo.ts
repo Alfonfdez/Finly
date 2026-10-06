@@ -57,6 +57,19 @@ export const recurringRepo = {
     return rows.map(r => r.tag_id);
   },
 
+  /** Number of generated transactions per rule id. */
+  async countOccurrencesByRuleIds(ruleIds: number[]): Promise<Map<number, number>> {
+    if (ruleIds.length === 0) return new Map();
+    const db = await getDrizzle();
+    const rows = await db
+      .select({ rule_id: transactions.recurring_rule_id, count: sql<number>`count(*)` })
+      .from(transactions)
+      .where(inArray(transactions.recurring_rule_id, ruleIds))
+      .groupBy(transactions.recurring_rule_id)
+      .all();
+    return new Map(rows.map(r => [r.rule_id as number, Number(r.count)]));
+  },
+
   async getTagsByRuleIds(ruleIds: number[]): Promise<{ rule_id: number; tag_id: number }[]> {
     if (ruleIds.length === 0) return [];
     const db = await getDrizzle();
@@ -84,6 +97,7 @@ export const recurringRepo = {
   async updateWithTags(id: number, data: Partial<RecurringRuleInput>, tagIds: number[]): Promise<void> {
     await withTransaction(async (db) => {
       const set: Partial<typeof recurringRules.$inferInsert> = {};
+      if (data.name !== undefined) set.name = data.name;
       if (data.type !== undefined) set.type = data.type;
       if (data.account_id !== undefined) set.account_id = data.account_id;
       if (data.category_id !== undefined) set.category_id = data.category_id;

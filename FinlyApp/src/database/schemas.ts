@@ -77,6 +77,7 @@ export const transactionSchema = z.object({
 export const recurringRuleSchema = z.object({
   id: z.number().int(),
   user_id: z.number().int(),
+  name: z.string(),
   type: transactionTypeSchema,
   account_id: z.number().int(),
   category_id: z.number().int(),

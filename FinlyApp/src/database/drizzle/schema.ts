@@ -50,6 +50,7 @@ export const transactions = sqliteTable('transactions', {
 export const recurringRules = sqliteTable('recurring_rules', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   user_id: integer('user_id').notNull(),
+  name: text('name').notNull(),
   type: text('type').notNull(),
   account_id: integer('account_id').notNull(),
   category_id: integer('category_id').notNull(),

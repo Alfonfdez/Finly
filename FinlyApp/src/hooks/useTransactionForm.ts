@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Alert, type TextInput, type ScrollView } from 'react-native';
+import { type TextInput, type ScrollView } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
@@ -20,6 +20,7 @@ import { parseAmountValue } from '../utils/amountInput';
 import { transactionRepository, tagRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
 import { consumePendingCategory } from '../utils/pendingCategory';
+import { alertError, describeError } from '../utils/errors';
 
 export type TransactionDraft = {
   account_id: number;
@@ -32,6 +33,7 @@ export type TransactionDraft = {
 };
 
 export type RecurrenceDraft = {
+  name: string;
   frequency: RecurrenceFrequency;
   interval: number;
   endDate: string | null;
@@ -61,6 +63,8 @@ type UseTransactionFormProps = {
   initialTagIds?: number[];
   initialRuleNextDue?: string | null;
   initialRuleActive?: boolean;
+  initialRepeatName?: string;
+  existingRepeatNames?: string[];
 };
 
 export function useTransactionForm({
@@ -86,6 +90,8 @@ export function useTransactionForm({
   initialTagIds,
   initialRuleNextDue,
   initialRuleActive,
+  initialRepeatName,
+  existingRepeatNames,
 }: UseTransactionFormProps) {
   const { config } = useConfig();
   const { accounts, categories, accountsWithBalance, tags, refresh: refreshAll, refreshTags } = useApp();
@@ -114,6 +120,7 @@ export function useTransactionForm({
   const [repeatInterval, setRepeatInterval] = useState(initialRepeatInterval ?? 1);
   const [repeatEnd, setRepeatEnd] = useState<Date | null>(initialRepeatEnd ?? null);
   const [repeatSkipFirst, setRepeatSkipFirst] = useState(false);
+  const [repeatName, setRepeatName] = useState(initialRepeatName ?? '');
 
   // Earliest valid end date: the first occurrence (which moves one interval ahead when skipping it).
   const repeatMinDate = useMemo(() => {
@@ -188,14 +195,23 @@ export function useTransactionForm({
 
   const numericAmount = useMemo(() => parseAmountValue(amountRaw), [amountRaw]);
 
+  const repeatNameError = useMemo<'required' | 'taken' | null>(() => {
+    if (!repeatEnabled && !ruleMode) return null;
+    const trimmed = repeatName.trim();
+    if (trimmed.length === 0) return 'required';
+    const taken = (existingRepeatNames ?? []).some(n => n.trim().toLowerCase() === trimmed.toLowerCase());
+    return taken ? 'taken' : null;
+  }, [repeatEnabled, ruleMode, repeatName, existingRepeatNames]);
+
   const canSubmit = useMemo(() => {
     if (categoryId === null) return false;
     if (numericAmount === null || numericAmount <= 0) return false;
     if (day === null) return false;
     if (accountId === undefined) return false;
+    if ((repeatEnabled || ruleMode) && repeatNameError) return false;
     if ((repeatEnabled || ruleMode) && repeatEnd && repeatEnd < repeatMinDate) return false;
     return true;
-  }, [categoryId, numericAmount, day, accountId, repeatEnabled, ruleMode, repeatEnd, repeatMinDate]);
+  }, [categoryId, numericAmount, day, accountId, repeatEnabled, ruleMode, repeatNameError, repeatEnd, repeatMinDate]);
 
   // In rule mode: does the draft affect the past — either by touching a field the
   // "past ones" scope rewrites (account/category/amount/comment/tags/type), or by
@@ -294,6 +310,7 @@ export function useTransactionForm({
 
       if ((repeatEnabled || ruleMode) && onSubmitRule) {
         await onSubmitRule(draft, selectedTags, {
+          name: repeatName.trim(),
           frequency: repeatFrequency,
           interval: repeatInterval,
           endDate: repeatEnd ? toDateOnly(repeatEnd) : null,
@@ -305,12 +322,13 @@ export function useTransactionForm({
 
       navigation.goBack();
       deferredRefresh();
-    } catch {
-      Alert.alert(errorTitle, errorMessage);
+    } catch (err) {
+      console.error('Transaction form submit failed:', describeError(err));
+      alertError(errorTitle, errorMessage);
     } finally {
       setSubmitting(false);
     }
-  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, repeatEnabled, repeatFrequency, repeatInterval, repeatEnd, repeatSkipFirst, ruleMode, onSubmit, onSubmitRule, deferredRefresh, navigation, errorTitle, errorMessage]);
+  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, repeatEnabled, repeatFrequency, repeatInterval, repeatEnd, repeatSkipFirst, repeatName, ruleMode, onSubmit, onSubmitRule, deferredRefresh, navigation, errorTitle, errorMessage]);
 
   const categoriesByType = useMemo(() => {
     const byType = categoriesOfType(categories, type);
@@ -351,6 +369,7 @@ export function useTransactionForm({
     repeatSkipFirst, setRepeatSkipFirst,
     repeatMinDate,
     recurringPastAffected,
+    repeatName, setRepeatName, repeatNameError,
     modalAccountVisible, setModalAccountVisible,
     modalCalendarVisible, setModalCalendarVisible,
     modalRepeatEndVisible, setModalRepeatEndVisible,
