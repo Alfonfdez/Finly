@@ -149,4 +149,36 @@ describe('ModifyRecurringScreen', () => {
       expect(view.getByRole('button', { name: 'Future + past' })).toBeEnabled(),
     );
   });
+
+  it('saves with "Future + past" and the edited fields when selected', async () => {
+    const view = await render(<ModifyRecurringScreen />);
+    await waitFor(() => expect(view.getByText('Future + past')).toBeTruthy());
+
+    await fireEvent.changeText(view.getByPlaceholderText('0'), '120');
+    await waitFor(() => expect(view.getByRole('button', { name: 'Future + past' })).toBeEnabled());
+    await fireEvent.press(view.getByRole('button', { name: 'Future + past' }));
+    await fireEvent.press(view.getByText('Save'));
+
+    await waitFor(() => expect(mockSaveEdit).toHaveBeenCalledTimes(1));
+    const params = mockSaveEdit.mock.calls[0][0] as {
+      scope: string;
+      updated: { amount: number };
+      pastPatch: { amount: number };
+      recurrence: { frequency: string; interval: number; endDate: string | null };
+    };
+    expect(params.scope).toBe('futureAndPast');
+    expect(params.updated.amount).toBe(120);
+    expect(params.pastPatch.amount).toBe(120);
+    expect(params.recurrence).toMatchObject({ frequency: 'monthly', interval: 1, endDate: null });
+  });
+
+  it('saves with "Future only" by default', async () => {
+    const view = await render(<ModifyRecurringScreen />);
+    await waitFor(() => expect(view.getByText('Future + past')).toBeTruthy());
+    await fireEvent.press(view.getByText('Save'));
+
+    await waitFor(() => expect(mockSaveEdit).toHaveBeenCalledTimes(1));
+    const params = mockSaveEdit.mock.calls[0][0] as { scope: string };
+    expect(params.scope).toBe('future');
+  });
 });

@@ -60,6 +60,7 @@ type UseTransactionFormProps = {
   initialRepeatEnd?: Date | null;
   initialTagIds?: number[];
   initialRuleNextDue?: string | null;
+  initialRuleActive?: boolean;
 };
 
 export function useTransactionForm({
@@ -84,6 +85,7 @@ export function useTransactionForm({
   initialRepeatEnd,
   initialTagIds,
   initialRuleNextDue,
+  initialRuleActive,
 }: UseTransactionFormProps) {
   const { config } = useConfig();
   const { accounts, categories, accountsWithBalance, tags, refresh: refreshAll, refreshTags } = useApp();
@@ -212,10 +214,11 @@ export function useTransactionForm({
       (comment.trim() || null) !== (initialComment.trim() || null) ||
       type !== initialType ||
       tagsChanged;
-    // A missed window exists only if the NEW schedule actually has an occurrence due
-    // in [cursor, today] (respecting the end date) — so a finished rule stays disabled.
+    // A missed window exists only if the rule is active AND the NEW schedule actually
+    // has an occurrence due in [cursor, today] (respecting the end date) — a finished
+    // or paused rule stays disabled.
     let missedWindow = false;
-    if (initialRuleNextDue != null) {
+    if (initialRuleNextDue != null && (initialRuleActive ?? true)) {
       const schedule = buildRecurrenceSchedule(day, repeatFrequency, repeatInterval, repeatEnd ? toDateOnly(repeatEnd) : null);
       const firstDue = nextDueOnOrAfter(schedule, initialRuleNextDue);
       missedWindow = firstDue <= todayDateOnly() && (schedule.end_date == null || firstDue <= schedule.end_date);
@@ -236,6 +239,7 @@ export function useTransactionForm({
     selectedTags,
     initialTagIds,
     initialRuleNextDue,
+    initialRuleActive,
     day,
     repeatFrequency,
     repeatInterval,
