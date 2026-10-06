@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image, Switch } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
@@ -14,7 +14,6 @@ import { deletePhotoFile, parsePhotos } from '../utils/photoUtils';
 import { ERROR_PREFIXES } from '../utils/errors';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
 import { transactionRepository, recurringRepository } from '../database';
-import { resumeRecurringRule } from '../database/recurringService';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -23,7 +22,7 @@ import IconBadge from '../components/IconBadge';
 import TagChip from '../components/TagChip';
 import DataRow from '../components/DataRow';
 import PhotoViewer from '../components/PhotoViewer';
-import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS, CONTROL_BORDER_RADIUS, switchColors } from '../components/componentStyles';
+import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS, CONTROL_BORDER_RADIUS } from '../components/componentStyles';
 
 type DetailsRouteProp = RouteProp<RootStackParamList, 'TransactionDetails'>;
 
@@ -40,16 +39,16 @@ export default function TransactionDetailsScreen() {
 
   const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
-  const [ruleActive, setRuleActive] = useState<boolean | null>(null);
+  const [ruleName, setRuleName] = useState<string | null>(null);
 
   // Refresh transaction data when screen gains focus (after editing)
   const loadTransaction = useCallback(async () => {
     const tx = await transactionRepository.getById(transactionId);
     if (tx?.recurring_rule_id != null) {
       const rule = await recurringRepository.getById(tx.recurring_rule_id);
-      setRuleActive(rule ? rule.active === 1 : null);
+      setRuleName(rule ? rule.name : null);
     } else {
-      setRuleActive(null);
+      setRuleName(null);
     }
     return tx;
   }, [transactionId]);
@@ -104,19 +103,6 @@ export default function TransactionDetailsScreen() {
     errorPrefix: ERROR_PREFIXES.transactionsDelete,
   });
 
-  const handleToggleActive = useCallback(async (value: boolean) => {
-    const ruleId = transaction?.recurring_rule_id;
-    if (ruleId == null) return;
-    if (value) {
-      await resumeRecurringRule(ruleId);
-      setRuleActive(true);
-    } else {
-      await recurringRepository.setActive(ruleId, false);
-      setRuleActive(false);
-    }
-    deferredRefresh();
-  }, [transaction?.recurring_rule_id, deferredRefresh]);
-
   if (!transaction) {
     return (
       <ScreenShell>
@@ -130,6 +116,8 @@ export default function TransactionDetailsScreen() {
   const isExpense = transaction.type === TRANSACTION_TYPES.expense;
   const typeColor = isExpense ? c.red : c.green;
   const catName = category ? getDisplayCategoryName(category) : '';
+  const hasRecurring = transaction.recurring_rule_id != null;
+  const hasPhoto = parsedPhotos.length > 0;
 
   return (
     <ScreenShell>
@@ -179,7 +167,7 @@ export default function TransactionDetailsScreen() {
             </Text>
           </DataRow>
 
-          <DataRow label={labels.details_tags} noBorder>
+          <DataRow label={labels.details_tags} noBorder={!hasRecurring && !hasPhoto}>
             {tagNames.length > 0 ? (
               <View style={styles.tagsContainer}>
                 {tagNames.map(tag => (
@@ -193,23 +181,15 @@ export default function TransactionDetailsScreen() {
             )}
           </DataRow>
 
-          {transaction.recurring_rule_id != null && (
-            <DataRow label={labels.recurring_chip} noBorder>
-              <View style={styles.recurringToggle}>
-                <Text style={[styles.nameValue, { color: c.textSecondary, fontSize: fs(13) }]}>
-                  {ruleActive === false ? labels.recurring_paused : labels.recurring_active}
-                </Text>
-                <Switch
-                  value={ruleActive !== false}
-                  onValueChange={handleToggleActive}
-                  accessibilityLabel={labels.recurring_active}
-                  {...switchColors(c)}
-                />
-              </View>
+          {hasRecurring && (
+            <DataRow label={labels.recurring_chip} noBorder={!hasPhoto}>
+              <Text style={[styles.nameValue, { color: c.text, fontSize: fs(15) }]}>
+                {ruleName ?? ''}
+              </Text>
             </DataRow>
           )}
 
-          {parsedPhotos.length > 0 && (
+          {hasPhoto && (
             <DataRow label={labels.details_photo} noBorder>
               <View style={styles.photoGrid}>
                 {parsedPhotos.map((uri, index) => (
@@ -323,13 +303,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 24,
     gap: 2,
-  },
-  recurringToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flex: 2,
-    justifyContent: 'flex-end',
   },
   timestampText: {},
 });

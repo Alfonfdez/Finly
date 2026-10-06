@@ -88,10 +88,10 @@ describe('RecurringScreen', () => {
   it('renders the rule with its name, summary and active label', async () => {
     const view = await render(<RecurringScreen />);
     await waitFor(() => expect(view.getByText('Rent')).toBeTruthy());
-    expect(view.getByText('Food · Every month on day 5')).toBeTruthy();
+    expect(view.getByText('Every month on day 5')).toBeTruthy();
     expect(view.getByText('Active')).toBeTruthy();
     expect(view.getByText('Next: November 5, 2026')).toBeTruthy();
-    expect(view.getByText('Created October 5, 2026 · 0 transactions')).toBeTruthy();
+    expect(view.getByText('Food · Created 5 Oct 2026 · 0 transactions')).toBeTruthy();
   });
 
   it('navigates to edit when the rule info is pressed', async () => {

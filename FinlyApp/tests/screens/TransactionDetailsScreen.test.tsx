@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, fireEvent, userEvent } from '@testing-library/react-native';
+import { render, userEvent } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import TransactionDetailsScreen from '../../src/screens/TransactionDetailsScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
@@ -8,9 +8,7 @@ import type { Account, Category, Transaction } from '../../src/database/types';
 const getById = vi.fn(async (_id: number) => null as Transaction | null);
 const getTagsByTransactionIds = vi.fn(async (_ids: number[]) => [] as { tag_id: number; name: string }[]);
 const remove = vi.fn(async (_id: number) => undefined);
-const recurringGetById = vi.fn(async (_id: number) => null as { id: number; active: number } | null);
-const recurringSetActive = vi.fn(async (_id: number, _active: boolean) => undefined);
-const resumeRecurringRule = vi.fn(async (_id: number) => 0);
+const recurringGetById = vi.fn(async (_id: number) => null as { id: number; name: string } | null);
 
 vi.mock('../../src/database', () => ({
   transactionRepository: {
@@ -20,12 +18,7 @@ vi.mock('../../src/database', () => ({
   },
   recurringRepository: {
     getById: (id: number) => recurringGetById(id),
-    setActive: (id: number, active: boolean) => recurringSetActive(id, active),
   },
-}));
-
-vi.mock('../../src/database/recurringService', () => ({
-  resumeRecurringRule: (id: number) => resumeRecurringRule(id),
 }));
 
 vi.mock('expo-file-system', () => ({
@@ -84,8 +77,6 @@ describe('TransactionDetailsScreen', () => {
     getTagsByTransactionIds.mockReset().mockResolvedValue([]);
     remove.mockReset().mockResolvedValue(undefined);
     recurringGetById.mockReset().mockResolvedValue(null);
-    recurringSetActive.mockReset().mockResolvedValue(undefined);
-    resumeRecurringRule.mockReset().mockResolvedValue(0);
     nav.setOptions.mockClear();
     nav.navigate.mockClear();
     nav.goBack.mockClear();
@@ -121,19 +112,12 @@ describe('TransactionDetailsScreen', () => {
     expect(nav.goBack).toHaveBeenCalled();
   });
 
-  it('toggles the recurring rule: off pauses, on resumes', async () => {
+  it('shows the recurring rule name (no toggle) for a recurring transaction', async () => {
     getById.mockResolvedValue(tx({ recurring_rule_id: 7 }));
-    recurringGetById.mockResolvedValue({ id: 7, active: 1 });
+    recurringGetById.mockResolvedValue({ id: 7, name: 'Rent' });
     const view = await render(<TransactionDetailsScreen />);
     await view.findByText('Recurring');
-
-    const sw = view.getByRole('switch');
-    expect(sw.props.value).toBe(true);
-
-    await fireEvent(sw, 'valueChange', false);
-    expect(recurringSetActive).toHaveBeenCalledWith(7, false);
-
-    await fireEvent(sw, 'valueChange', true);
-    expect(resumeRecurringRule).toHaveBeenCalledWith(7);
+    expect(view.getByText('Rent')).toBeTruthy();
+    expect(view.queryByRole('switch')).toBeNull();
   });
 });
