@@ -18,6 +18,9 @@ vi.mock('../../src/database', () => ({
     deleteMany: (ids: number[]) => deleteMany(ids),
     getTagsByTransactionIds: () => getTagsByTransactionIds(),
   },
+  recurringRepository: {
+    list: async () => [],
+  },
 }));
 
 const routeParams: Record<string, unknown> = {};

@@ -75,6 +75,22 @@ describe('TransactionRow', () => {
     expect(view.getByText('lunch')).toBeTruthy();
   });
 
+  it('renders the recurring icon and rule name', async () => {
+    const view = await render(
+      <TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} recurringName="MyRule" />
+    );
+
+    expect(view.getByText('repeat-outline')).toBeTruthy();
+    expect(view.getByText('MyRule')).toBeTruthy();
+  });
+
+  it('renders the recurring icon without a name when none is given', async () => {
+    const view = await render(<TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} />);
+
+    expect(view.getByText('repeat-outline')).toBeTruthy();
+    expect(view.queryByText('MyRule')).toBeNull();
+  });
+
   it('omits tag chips when no tags are present', async () => {
     const view = await render(<TransactionRow tx={makeTx({})} category={category} />);
 
