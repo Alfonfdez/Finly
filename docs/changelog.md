@@ -3380,3 +3380,7 @@
 [2026-10-06] style | FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx
 - Transaction details: add a separator line between the Tags and Recurring rows (only the last row is borderless now) and replace the recurring pause/resume switch with the rule's name (read-only, not tappable). Removed the now-unused Switch/switchColors/handleToggleActive and ruleActive state.
 - Style/UX-only; 'npm run test:all' green (107 files / 735 tests). Verified on web at 375px in dark + light.
+
+[2026-10-06] feat | FinlyApp/src/hooks/useRecurringRuleNames.ts, FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/tests/component/TransactionGroup.test.tsx, FinlyApp/tests/screens/TransactionsScreen.test.tsx, FinlyApp/tests/screens/AllTransactionsScreen.test.tsx, docs/harnesses.md
+- Show the recurring rule name next to the recurring icon in transaction rows (Transactions + All transactions): added a useRecurringRuleNames hook (rule id -> name) and a recurringName prop on TransactionRow, rendered as subtle textSecondary next to the repeat-outline icon. So identical recurring series can be told apart.
+- Tests: TransactionGroup asserts the name renders (and is absent when not provided); screen test mocks include recurringRepository.list. 'npm run test:all' green (107 files / 737 tests). Verified on web at 375px in dark + light with two identical rules (RentA / RentB).

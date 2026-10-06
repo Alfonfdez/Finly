@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
+import { useRecurringRuleNames } from '../hooks/useRecurringRuleNames';
 import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useTransactionListScreen } from '../hooks/useTransactionListScreen';
@@ -42,6 +43,7 @@ export default function AllTransactionsScreen() {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
+  const recurringNames = useRecurringRuleNames();
 
   const [typeTab, setTypeTab] = useState<TransactionTypeFilter>(TYPE_FILTERS.all);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
@@ -127,11 +129,12 @@ export default function AllTransactionsScreen() {
       tx={item}
       category={categoriesById.get(item.category_id)}
       tags={filters.tagsByTransaction.get(item.id)}
+      recurringName={item.recurring_rule_id != null ? recurringNames.get(item.recurring_rule_id) : undefined}
       onPress={handleTransactionPress}
       selectMode={selectMode}
       selected={selectedIds.has(item.id)}
     />
-  ), [categoriesById, filters.tagsByTransaction, handleTransactionPress, selectMode, selectedIds]);
+  ), [categoriesById, filters.tagsByTransaction, recurringNames, handleTransactionPress, selectMode, selectedIds]);
 
   const accountBalance = useMemo(() => {
     return netTransactionTotal(filters.filtered);

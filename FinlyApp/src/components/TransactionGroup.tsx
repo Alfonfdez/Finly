@@ -14,12 +14,13 @@ interface TransactionRowProps {
   tx: Transaction;
   category?: Category;
   tags?: { tag_id: number; name: string }[];
+  recurringName?: string;
   onPress?: (transactionId: number) => void;
   selectMode?: boolean;
   selected?: boolean;
 }
 
-export const TransactionRow = memo(function TransactionRow({ tx, category, tags, onPress, selectMode, selected }: TransactionRowProps) {
+export const TransactionRow = memo(function TransactionRow({ tx, category, tags, recurringName, onPress, selectMode, selected }: TransactionRowProps) {
   const { config, activeColors: c } = useConfig();
   const fs = useFontSize();
 
@@ -50,7 +51,16 @@ export const TransactionRow = memo(function TransactionRow({ tx, category, tags,
       leading={checkbox}
       middle={(hasRecurring || hasTags) ? (
         <View style={styles.tagsContainer}>
-          {hasRecurring && <Ionicons name="repeat-outline" size={14} color={c.textSecondary} />}
+          {hasRecurring && (
+            <View style={styles.recurringBadge}>
+              <Ionicons name="repeat-outline" size={14} color={c.textSecondary} />
+              {recurringName ? (
+                <Text style={[styles.recurringName, { color: c.textSecondary, fontSize: fs(11) }]} numberOfLines={1}>
+                  {recurringName}
+                </Text>
+              ) : null}
+            </View>
+          )}
           {tags?.map((tag) => (
             <TagChip key={tag.tag_id} label={tag.name} />
           ))}
@@ -103,6 +113,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
     marginTop: 4,
+  },
+  recurringBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    maxWidth: '100%',
+  },
+  recurringName: {
+    fontWeight: '500',
+    flexShrink: 1,
   },
   checkbox: {
     marginRight: 10,

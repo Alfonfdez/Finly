@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
+import { useRecurringRuleNames } from '../hooks/useRecurringRuleNames';
 import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useTransactionListScreen } from '../hooks/useTransactionListScreen';
@@ -40,6 +41,7 @@ export default function TransactionsScreen() {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
+  const recurringNames = useRecurringRuleNames();
 
   const categoryId = route.params?.categoryId;
   const startDate = route.params?.startDate;
@@ -113,11 +115,12 @@ export default function TransactionsScreen() {
       tx={item}
       category={categoriesById.get(item.category_id)}
       tags={filters.tagsByTransaction.get(item.id)}
+      recurringName={item.recurring_rule_id != null ? recurringNames.get(item.recurring_rule_id) : undefined}
       onPress={handleTransactionPress}
       selectMode={selectMode}
       selected={selectedIds.has(item.id)}
     />
-  ), [categoriesById, filters.tagsByTransaction, handleTransactionPress, selectMode, selectedIds]);
+  ), [categoriesById, filters.tagsByTransaction, recurringNames, handleTransactionPress, selectMode, selectedIds]);
 
   const category = categories.find(ct => ct.id === categoryId);
 
