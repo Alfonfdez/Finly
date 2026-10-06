@@ -178,6 +178,7 @@ export const es: Language = {
   add_hint_category: 'Selecciona una categoría',
   add_hint_amount: 'Introduce una cantidad válida mayor que 0',
   add_hint_category_amount: 'Selecciona una categoría e introduce una cantidad',
+  add_hint_repeat_end: 'La fecha de fin debe ser igual o posterior a la primera repetición',
   add_tag_error_duplicate: 'La etiqueta ya existe',
   add_error_title: 'Error',
   add_error_message: 'No se ha podido guardar la transacción',
@@ -508,6 +509,8 @@ export const es: Language = {
   repeat_on_weekday: (weekday: string) => `el ${weekday.toLowerCase()}`,
   repeat_on_month_day: (month: string, day: number) => `el ${day} de ${month.toLowerCase()}`,
   repeat_until: (date: string) => `hasta ${date}`,
+  repeat_skip_first: 'Omitir la primera repetición',
+  repeat_first_occurrence: (date: string) => `Primera transacción: ${date}`,
 
   // Home tag filter
   home_tag_all: 'Todos',

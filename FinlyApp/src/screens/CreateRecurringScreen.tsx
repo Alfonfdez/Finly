@@ -2,9 +2,9 @@ import { useMemo } from 'react';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { t } from '../i18n';
-import { PERIODS, RECURRENCE_FREQUENCIES, USER_ID } from '../constants/types';
+import { PERIODS, USER_ID } from '../constants/types';
 import { isSameDay } from '../utils/formatters';
-import { fromDateOnly } from '../utils/recurrence';
+import { advanceOccurrence, buildRecurrenceSchedule, fromDateOnly } from '../utils/recurrence';
 import { recurringRepository } from '../database';
 import { materializeDueRecurring } from '../database/recurringService';
 import { isTotalAccount } from '../database/helpers';
@@ -46,11 +46,11 @@ export default function CreateRecurringScreen() {
       errorMessage={labels.recurring_error_message}
       onSubmit={async () => {}}
       onSubmitRule={async (data, tagIds, recurrence) => {
-        const startDate = data.date.slice(0, 10);
-        const start = fromDateOnly(startDate);
-        const isMonthlyOrYearly =
-          recurrence.frequency === RECURRENCE_FREQUENCIES.monthly ||
-          recurrence.frequency === RECURRENCE_FREQUENCIES.yearly;
+        const start = fromDateOnly(data.date.slice(0, 10));
+        const schedule = buildRecurrenceSchedule(start, recurrence.frequency, recurrence.interval, recurrence.endDate);
+        const nextDue = recurrence.skipFirst
+          ? advanceOccurrence(schedule, schedule.start_date)
+          : schedule.start_date;
         await recurringRepository.createWithTags(
           {
             user_id: USER_ID,
@@ -59,14 +59,8 @@ export default function CreateRecurringScreen() {
             category_id: data.category_id,
             amount: data.amount,
             description: data.description,
-            frequency: recurrence.frequency,
-            interval: recurrence.interval,
-            weekday: recurrence.frequency === RECURRENCE_FREQUENCIES.weekly ? start.getDay() : null,
-            day_of_month: isMonthlyOrYearly ? start.getDate() : null,
-            month: recurrence.frequency === RECURRENCE_FREQUENCIES.yearly ? start.getMonth() + 1 : null,
-            start_date: startDate,
-            end_date: recurrence.endDate,
-            next_due: startDate,
+            ...schedule,
+            next_due: nextDue,
             active: 1,
           },
           tagIds,
@@ -76,6 +70,7 @@ export default function CreateRecurringScreen() {
       }}
       enableRepeat
       ruleMode
+      allowSkipFirst
       resetTagsOnFirstFocus
     />
   );

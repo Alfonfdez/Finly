@@ -1,4 +1,4 @@
-import type { RecurrenceFrequency } from '../constants/types';
+import { RECURRENCE_FREQUENCIES, type RecurrenceFrequency } from '../constants/types';
 import { getDaysInMonth } from './formatters';
 
 export interface RecurrenceSchedule {
@@ -19,6 +19,26 @@ function pad(value: number): string {
 
 export function toDateOnly(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+/** Build a recurrence schedule anchored on a start day (single source of truth for the anchor columns). */
+export function buildRecurrenceSchedule(
+  startDay: Date,
+  frequency: RecurrenceFrequency,
+  interval: number,
+  endDate: string | null = null,
+): RecurrenceSchedule & { weekday: number | null; day_of_month: number | null; month: number | null; end_date: string | null } {
+  const monthlyOrYearly =
+    frequency === RECURRENCE_FREQUENCIES.monthly || frequency === RECURRENCE_FREQUENCIES.yearly;
+  return {
+    frequency,
+    interval,
+    weekday: frequency === RECURRENCE_FREQUENCIES.weekly ? startDay.getDay() : null,
+    day_of_month: monthlyOrYearly ? startDay.getDate() : null,
+    month: frequency === RECURRENCE_FREQUENCIES.yearly ? startDay.getMonth() + 1 : null,
+    start_date: toDateOnly(startDay),
+    end_date: endDate,
+  };
 }
 
 export function fromDateOnly(value: string): Date {

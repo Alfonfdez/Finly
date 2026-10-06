@@ -5,11 +5,12 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { RECURRENCE_FREQUENCIES, type RecurrenceFrequency } from '../constants/types';
 import { formatDateLong } from '../utils/formatters';
-import { toDateOnly } from '../utils/recurrence';
+import { advanceOccurrence, buildRecurrenceSchedule, fromDateOnly, toDateOnly } from '../utils/recurrence';
 import { recurrenceSummary } from '../utils/recurrenceSummary';
 import { withAlpha } from '../utils/color';
 import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, PILL_RADIUS, SECTION_GAP, SECTION_GAP_SM, SECTION_TITLE_STYLE, switchColors } from './componentStyles';
 import ClearButton from './ClearButton';
+import CheckboxRow from './settings/CheckboxRow';
 
 interface Props {
   enabled: boolean;
@@ -22,6 +23,9 @@ interface Props {
   endDate: Date | null;
   onOpenEndDate: () => void;
   onClearEndDate: () => void;
+  skipFirst: boolean;
+  onChangeSkipFirst: (value: boolean) => void;
+  showSkipFirst?: boolean;
   showToggle?: boolean;
 }
 
@@ -46,6 +50,9 @@ export default function RepeatSection({
   endDate,
   onOpenEndDate,
   onClearEndDate,
+  skipFirst,
+  onChangeSkipFirst,
+  showSkipFirst = false,
   showToggle = true,
 }: Props) {
   const { activeColors: c, config } = useConfig();
@@ -75,6 +82,10 @@ export default function RepeatSection({
     },
     config.language,
   );
+
+  const firstOccurrence = skipFirst
+    ? fromDateOnly(advanceOccurrence(buildRecurrenceSchedule(startDay, frequency, interval), toDateOnly(startDay)))
+    : null;
 
   return (
     <View style={styles.container}>
@@ -178,6 +189,21 @@ export default function RepeatSection({
             <ClearButton visible={!!endDate} onPress={onClearEndDate} accessibilityLabel={labels.repeat_no_end} />
           </View>
 
+          {showSkipFirst && (
+            <View style={styles.skipFirstRow}>
+              <CheckboxRow
+                checked={skipFirst}
+                onToggle={() => onChangeSkipFirst(!skipFirst)}
+                label={labels.repeat_skip_first}
+              />
+              {firstOccurrence && (
+                <Text style={[styles.firstOccurrence, { color: c.textSecondary, fontSize: fs(12) }]}>
+                  {labels.repeat_first_occurrence(formatDateLong(firstOccurrence, config.language))}
+                </Text>
+              )}
+            </View>
+          )}
+
           <Text style={[styles.summary, { color: c.primary, fontSize: fs(13) }]}>{summary}</Text>
         </View>
       )}
@@ -209,6 +235,13 @@ const styles = StyleSheet.create({
   },
   firstLabel: {
     fontWeight: '500',
+  },
+  skipFirstRow: {
+    marginTop: 12,
+  },
+  firstOccurrence: {
+    marginTop: 2,
+    marginLeft: 32,
   },
   label: {
     fontWeight: '500',

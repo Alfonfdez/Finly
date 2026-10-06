@@ -128,7 +128,7 @@ export async function saveRecurringRuleEdit(params: RecurringEditParams): Promis
   const nextDue =
     scope === RECURRENCE_SCOPES.futureAndPast
       ? nextDueOnOrAfter(schedule, cursor)
-      : nextDueOnOrAfter(schedule, today);
+      : nextDueOnOrAfter(schedule, cursor > today ? cursor : today);
 
   await recurringRepo.updateWithTags(ruleId, { ...updated, ...schedule, next_due: nextDue }, tagIds);
 

@@ -22,7 +22,6 @@ import { CARD_BORDER_RADIUS } from './componentStyles';
 import { type TransactionType, type RecurrenceFrequency, type RootStackParamList } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
-import { dayAfter } from '../utils/calendarBounds';
 import { showErrorAlert } from '../utils/errors';
 
 interface TransactionFormProps {
@@ -42,6 +41,7 @@ interface TransactionFormProps {
   onSubmitRule?: (data: TransactionDraft, tagIds: number[], recurrence: RecurrenceDraft) => Promise<void>;
   enableRepeat?: boolean;
   ruleMode?: boolean;
+  allowSkipFirst?: boolean;
   initialRepeatFrequency?: RecurrenceFrequency;
   initialRepeatInterval?: number;
   initialRepeatEnd?: Date | null;
@@ -68,6 +68,8 @@ export default function TransactionForm(props: TransactionFormProps) {
     repeatFrequency, setRepeatFrequency,
     repeatInterval, setRepeatInterval,
     repeatEnd, setRepeatEnd,
+    repeatSkipFirst, setRepeatSkipFirst,
+    repeatMinDate,
     modalAccountVisible, setModalAccountVisible,
     modalCalendarVisible, setModalCalendarVisible,
     modalRepeatEndVisible, setModalRepeatEndVisible,
@@ -96,8 +98,8 @@ export default function TransactionForm(props: TransactionFormProps) {
     setModalRepeatEndVisible(false);
   }, [setRepeatEnd, setModalRepeatEndVisible]);
 
-  // The recurring end date must be strictly after the selected transaction day.
-  const repeatMinDate = useMemo(() => dayAfter(day), [day]);
+  // The recurring end date must be on/after the first occurrence (which shifts when skipping the first one).
+  const repeatEndConflict = (repeatEnabled || !!props.ruleMode) && !!repeatEnd && repeatEnd < repeatMinDate;
   const handleCalculatorAccept = useCallback((result: string) => {
     const clean = parseAmountInput(result);
     if (clean !== null && clean !== '') {
@@ -170,6 +172,9 @@ export default function TransactionForm(props: TransactionFormProps) {
             endDate={repeatEnd}
             onOpenEndDate={() => setModalRepeatEndVisible(true)}
             onClearEndDate={() => setRepeatEnd(null)}
+            skipFirst={repeatSkipFirst}
+            onChangeSkipFirst={setRepeatSkipFirst}
+            showSkipFirst={!!props.allowSkipFirst}
           />
         )}
 
@@ -213,6 +218,8 @@ export default function TransactionForm(props: TransactionFormProps) {
               ? labels.add_hint_category
               : numericAmount === null || numericAmount <= 0
               ? labels.add_hint_amount
+              : repeatEndConflict
+              ? labels.add_hint_repeat_end
               : ''}
           </Text>
         )}

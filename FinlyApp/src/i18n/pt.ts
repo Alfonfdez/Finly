@@ -178,6 +178,7 @@ export const pt: Language = {
   add_hint_category: 'Selecione uma categoria',
   add_hint_amount: 'Informe um valor válido maior que 0',
   add_hint_category_amount: 'Selecione uma categoria e informe um valor',
+  add_hint_repeat_end: 'A data de fim deve ser igual ou posterior à primeira ocorrência',
   add_tag_error_duplicate: 'Etiqueta já existente',
   add_error_title: 'Erro',
   add_error_message: 'Falha ao salvar a transação',
@@ -508,6 +509,8 @@ export const pt: Language = {
   repeat_on_weekday: (weekday: string) => `em ${weekday.toLowerCase()}`,
   repeat_on_month_day: (month: string, day: number) => `em ${day} de ${month.toLowerCase()}`,
   repeat_until: (date: string) => `até ${date}`,
+  repeat_skip_first: 'Ignorar a primeira ocorrência',
+  repeat_first_occurrence: (date: string) => `Primeira transação: ${date}`,
 
   // Home tag filter
   home_tag_all: 'Todos',

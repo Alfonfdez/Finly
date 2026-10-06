@@ -18,6 +18,8 @@ function renderSection(overrides: Partial<Props> = {}) {
     endDate: null,
     onOpenEndDate: vi.fn(),
     onClearEndDate: vi.fn(),
+    skipFirst: false,
+    onChangeSkipFirst: vi.fn(),
     ...overrides,
   };
   return { props, view: render(<RepeatSection {...props} />) };
@@ -112,5 +114,32 @@ describe('RepeatSection', () => {
 
     const enabled = await renderSection({ enabled: true });
     expect((await enabled.view).getByTestId('repeat-options')).toBeTruthy();
+  });
+
+  it('shows the skip-first checkbox only when allowed', async () => {
+    const hidden = await renderSection();
+    expect((await hidden.view).queryByText('Skip the first occurrence')).toBeNull();
+
+    const shown = await renderSection({ showSkipFirst: true });
+    expect((await shown.view).getByText('Skip the first occurrence')).toBeTruthy();
+  });
+
+  it('toggles skip first', async () => {
+    const { props, view } = renderSection({ showSkipFirst: true, skipFirst: false });
+    await fireEvent.press((await view).getByText('Skip the first occurrence'));
+    expect(props.onChangeSkipFirst).toHaveBeenCalledWith(true);
+  });
+
+  it('shows the first transaction date only when skipping the first occurrence', async () => {
+    const off = await renderSection({ showSkipFirst: true, skipFirst: false });
+    expect((await off.view).queryByText(/^First transaction:/)).toBeNull();
+
+    const on = await renderSection({
+      showSkipFirst: true,
+      skipFirst: true,
+      frequency: 'monthly',
+      startDay: new Date(2026, 9, 6),
+    });
+    expect((await on.view).getByText('First transaction: November 6, 2026')).toBeTruthy();
   });
 });

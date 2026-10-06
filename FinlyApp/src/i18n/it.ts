@@ -178,6 +178,7 @@ export const it: Language = {
   add_hint_category: 'Seleziona una categoria',
   add_hint_amount: 'Inserisci un importo valido maggiore di 0',
   add_hint_category_amount: 'Seleziona una categoria e inserisci un importo',
+  add_hint_repeat_end: 'La data di fine deve essere uguale o successiva alla prima occorrenza',
   add_tag_error_duplicate: 'L\'etichetta esiste già',
   add_error_title: 'Errore',
   add_error_message: 'Impossibile salvare la transazione',
@@ -508,6 +509,8 @@ export const it: Language = {
   repeat_on_weekday: (weekday: string) => `il ${weekday.toLowerCase()}`,
   repeat_on_month_day: (month: string, day: number) => `il ${day} ${month.toLowerCase()}`,
   repeat_until: (date: string) => `fino al ${date}`,
+  repeat_skip_first: 'Salta la prima occorrenza',
+  repeat_first_occurrence: (date: string) => `Prima transazione: ${date}`,
 
   // Home tag filter
   home_tag_all: 'Tutti',

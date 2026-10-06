@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   advanceOccurrence,
+  buildRecurrenceSchedule,
   fromDateOnly,
   listDueOccurrences,
   toDateOnly,
@@ -101,5 +102,36 @@ describe('listDueOccurrences', () => {
     );
     expect(result.occurrences).toHaveLength(10);
     expect(result.truncated).toBe(true);
+  });
+});
+
+describe('buildRecurrenceSchedule', () => {
+  const start = new Date(2026, 9, 6); // Tue 6 Oct 2026
+
+  it('derives the anchor columns from the start day', () => {
+    expect(buildRecurrenceSchedule(start, 'monthly', 1)).toMatchObject({
+      frequency: 'monthly',
+      interval: 1,
+      weekday: null,
+      day_of_month: 6,
+      month: null,
+      start_date: '2026-10-06',
+      end_date: null,
+    });
+    expect(buildRecurrenceSchedule(start, 'yearly', 2, '2027-10-06')).toMatchObject({
+      day_of_month: 6,
+      month: 10,
+      end_date: '2027-10-06',
+    });
+    expect(buildRecurrenceSchedule(start, 'weekly', 1)).toMatchObject({
+      weekday: 2,
+      day_of_month: null,
+      month: null,
+    });
+  });
+
+  it('supports skipping the first occurrence by advancing one interval', () => {
+    const schedule = buildRecurrenceSchedule(start, 'monthly', 1);
+    expect(advanceOccurrence(schedule, schedule.start_date)).toBe('2026-11-06');
   });
 });

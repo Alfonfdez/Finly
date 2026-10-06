@@ -178,6 +178,7 @@ export const de: Language = {
   add_hint_category: 'Wählen Sie eine Kategorie',
   add_hint_amount: 'Geben Sie einen gültigen Betrag größer als 0 ein',
   add_hint_category_amount: 'Wählen Sie eine Kategorie und geben Sie einen Betrag ein',
+  add_hint_repeat_end: 'Das Enddatum muss am oder nach dem ersten Vorkommen liegen',
   add_tag_error_duplicate: 'Tag existiert bereits',
   add_error_title: 'Fehler',
   add_error_message: 'Transaktion konnte nicht gespeichert werden',
@@ -508,6 +509,8 @@ export const de: Language = {
   repeat_on_weekday: (weekday: string) => `am ${weekday}`,
   repeat_on_month_day: (month: string, day: number) => `am ${day}. ${month}`,
   repeat_until: (date: string) => `bis ${date}`,
+  repeat_skip_first: 'Erstes Vorkommen überspringen',
+  repeat_first_occurrence: (date: string) => `Erste Transaktion: ${date}`,
 
   // Home tag filter
   home_tag_all: 'Alle',

@@ -405,6 +405,7 @@ Recurring expenses/income created once and materialized automatically:
 - Reconciliation on app start, on foreground and via a midnight timer while open: every due occurrence since the last run is created, dated on its scheduled day (missed months/years are back-filled); idempotent via the unique index, transactional, bounded per rule. A closed app catches up on next open (no OS background task in v1).
 - Add form gains a "Repeat" section; a Drawer "Recurring" screen lists rules (frequency summary, next due, pause/resume, FAB); transaction details show a Recurring chip + "Stop repeating".
 - The frequency summary is localized and phrased per frequency: weekly includes the weekday, yearly reads naturally ("Every year on October 6" / "Cada año el 6 de octubre"), and the end date appends "until <date>".
+- Creating a rule can **skip the first occurrence**: the first generated transaction is deferred by one interval (monthly 6 Oct → 6 Nov), nothing is generated on the start day, and the resulting first date is shown under the checkbox; the end date must be on/after that first occurrence (creation only; hidden when editing).
 - Editing reconciles first then updates in place; scope "From now on" or "From now on + past generated" (bulk update).
 - Deleting a rule keeps every transaction it generated (FK `ON DELETE SET NULL`).
 - Additive migration `004_recurring` and `SCHEMA_VERSION 3 → 4`; existing v2.1.0 data untouched. Backup format v1 extended with optional collections so old backups still import.

@@ -13,8 +13,8 @@ import {
   MAX_VISIBLE_CATEGORIES,
 } from '../constants/types';
 import { formatDateForDB } from '../utils/formatters';
-import { toDateOnly } from '../utils/recurrence';
-import { isEndAfterStart } from '../utils/calendarBounds';
+import { advanceOccurrence, buildRecurrenceSchedule, fromDateOnly, toDateOnly } from '../utils/recurrence';
+import { dayAfter, isEndAfterStart } from '../utils/calendarBounds';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { parseAmountValue } from '../utils/amountInput';
 import { transactionRepository, tagRepository } from '../database';
@@ -35,6 +35,7 @@ export type RecurrenceDraft = {
   frequency: RecurrenceFrequency;
   interval: number;
   endDate: string | null;
+  skipFirst: boolean;
 };
 
 type UseTransactionFormProps = {
@@ -108,6 +109,14 @@ export function useTransactionForm({
   const [repeatFrequency, setRepeatFrequency] = useState<RecurrenceFrequency>(initialRepeatFrequency ?? 'monthly');
   const [repeatInterval, setRepeatInterval] = useState(initialRepeatInterval ?? 1);
   const [repeatEnd, setRepeatEnd] = useState<Date | null>(initialRepeatEnd ?? null);
+  const [repeatSkipFirst, setRepeatSkipFirst] = useState(false);
+
+  // Earliest valid end date: the first occurrence (which moves one interval ahead when skipping it).
+  const repeatMinDate = useMemo(() => {
+    if (!repeatSkipFirst) return dayAfter(day);
+    const schedule = buildRecurrenceSchedule(day, repeatFrequency, repeatInterval);
+    return fromDateOnly(advanceOccurrence(schedule, toDateOnly(day)));
+  }, [day, repeatFrequency, repeatInterval, repeatSkipFirst]);
 
   // Keep the end date valid: clear it if the start day moves to/after it.
   useEffect(() => {
@@ -180,9 +189,9 @@ export function useTransactionForm({
     if (numericAmount === null || numericAmount <= 0) return false;
     if (day === null) return false;
     if (accountId === undefined) return false;
-    if ((repeatEnabled || ruleMode) && repeatEnd && !isEndAfterStart(day, repeatEnd)) return false;
+    if ((repeatEnabled || ruleMode) && repeatEnd && repeatEnd < repeatMinDate) return false;
     return true;
-  }, [categoryId, numericAmount, day, accountId, repeatEnabled, ruleMode, repeatEnd]);
+  }, [categoryId, numericAmount, day, accountId, repeatEnabled, ruleMode, repeatEnd, repeatMinDate]);
 
   const handleToggleTag = useCallback((id: number) => {
     setSelectedTags(prev =>
@@ -235,6 +244,7 @@ export function useTransactionForm({
           frequency: repeatFrequency,
           interval: repeatInterval,
           endDate: repeatEnd ? toDateOnly(repeatEnd) : null,
+          skipFirst: repeatSkipFirst,
         });
       } else {
         await onSubmit(draft, selectedTags);
@@ -247,7 +257,7 @@ export function useTransactionForm({
     } finally {
       setSubmitting(false);
     }
-  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, repeatEnabled, repeatFrequency, repeatInterval, repeatEnd, ruleMode, onSubmit, onSubmitRule, deferredRefresh, navigation, errorTitle, errorMessage]);
+  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, repeatEnabled, repeatFrequency, repeatInterval, repeatEnd, repeatSkipFirst, ruleMode, onSubmit, onSubmitRule, deferredRefresh, navigation, errorTitle, errorMessage]);
 
   const categoriesByType = useMemo(() => {
     const byType = categoriesOfType(categories, type);
@@ -285,6 +295,8 @@ export function useTransactionForm({
     repeatFrequency, setRepeatFrequency,
     repeatInterval, setRepeatInterval,
     repeatEnd, setRepeatEnd,
+    repeatSkipFirst, setRepeatSkipFirst,
+    repeatMinDate,
     modalAccountVisible, setModalAccountVisible,
     modalCalendarVisible, setModalCalendarVisible,
     modalRepeatEndVisible, setModalRepeatEndVisible,

@@ -178,6 +178,7 @@ export const ca: Language = {
   add_hint_category: 'Selecciona una categoria',
   add_hint_amount: 'Introdueix un import vàlid major que 0',
   add_hint_category_amount: 'Selecciona una categoria i introdueix un import',
+  add_hint_repeat_end: 'La data de fi ha de ser igual o posterior a la primera repetició',
   add_tag_error_duplicate: 'L\'etiqueta ja existeix',
   add_error_title: 'Error',
   add_error_message: 'No s\'ha pogut guardar la transacció',
@@ -508,6 +509,8 @@ export const ca: Language = {
   repeat_on_weekday: (weekday: string) => `el ${weekday.toLowerCase()}`,
   repeat_on_month_day: (month: string, day: number) => `el ${day} ${/^[aeiouàèéíìòóúù]/.test(month.toLowerCase()) ? "d'" : 'de '}${month.toLowerCase()}`,
   repeat_until: (date: string) => `fins a ${date}`,
+  repeat_skip_first: 'Ometre la primera repetició',
+  repeat_first_occurrence: (date: string) => `Primera transacció: ${date}`,
 
   // Home tag filter
   home_tag_all: 'Tots',

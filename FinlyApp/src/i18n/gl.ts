@@ -178,6 +178,7 @@ export const gl: Language = {
   add_hint_category: 'Selecciona unha categoría',
   add_hint_amount: 'Introduce un importe válido maior que 0',
   add_hint_category_amount: 'Selecciona unha categoría e introduce un importe',
+  add_hint_repeat_end: 'A data de fin debe ser igual ou posterior á primeira repetición',
   add_tag_error_duplicate: 'A etiqueta xa existe',
   add_error_title: 'Erro',
   add_error_message: 'Non se puido gardar a transacción',
@@ -508,6 +509,8 @@ export const gl: Language = {
   repeat_on_weekday: (weekday: string) => `o ${weekday.toLowerCase()}`,
   repeat_on_month_day: (month: string, day: number) => `o ${day} de ${month.toLowerCase()}`,
   repeat_until: (date: string) => `ata ${date}`,
+  repeat_skip_first: 'Omitir a primeira repetición',
+  repeat_first_occurrence: (date: string) => `Primeira transacción: ${date}`,
 
   // Home tag filter
   home_tag_all: 'Todas',
