@@ -3,7 +3,9 @@ import {
   advanceOccurrence,
   buildRecurrenceSchedule,
   fromDateOnly,
+  isRecurrenceEnded,
   listDueOccurrences,
+  nextEffectiveOccurrence,
   toDateOnly,
   todayDateOnly,
   type RecurrenceSchedule,
@@ -102,6 +104,32 @@ describe('listDueOccurrences', () => {
     );
     expect(result.occurrences).toHaveLength(10);
     expect(result.truncated).toBe(true);
+  });
+});
+
+describe('isRecurrenceEnded', () => {
+  const ended = { ...base, end_date: '2026-03-02' };
+
+  it('is false without an end date', () => {
+    expect(isRecurrenceEnded(base, '2099-01-02', '2026-04-15')).toBe(false);
+  });
+
+  it('is true when the cursor has jumped past the end date', () => {
+    expect(isRecurrenceEnded(ended, '2026-04-02', '2026-04-15')).toBe(true);
+  });
+
+  it('is false while an occurrence remains on/after today within the end date', () => {
+    expect(isRecurrenceEnded(ended, '2026-03-02', '2026-02-15')).toBe(false);
+  });
+
+  it('is true for a paused rule whose end date already passed (frozen cursor)', () => {
+    // The frozen cursor (2026-02-02) is within the end date, but nothing remains from today.
+    expect(isRecurrenceEnded(ended, '2026-02-02', '2026-04-15')).toBe(true);
+  });
+
+  it('nextEffectiveOccurrence keeps a frozen cursor that is still in the future', () => {
+    expect(nextEffectiveOccurrence(ended, '2026-03-02', '2026-02-15')).toBe('2026-03-02');
+    expect(nextEffectiveOccurrence(ended, '2026-02-02', '2026-04-15')).toBe('2026-04-02');
   });
 });
 

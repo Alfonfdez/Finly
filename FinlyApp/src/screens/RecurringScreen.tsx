@@ -14,7 +14,7 @@ import { useFocusLoad } from '../hooks/useFocusLoad';
 import { t, getDisplayCategoryName } from '../i18n';
 import { BADGE_SHAPES, TRANSACTION_TYPES, USER_ID, type RootStackParamList } from '../constants/types';
 import { formatAmount, formatDateLong, parseDbDate } from '../utils/formatters';
-import { fromDateOnly } from '../utils/recurrence';
+import { fromDateOnly, isRecurrenceEnded, todayDateOnly } from '../utils/recurrence';
 import { recurrenceSummary } from '../utils/recurrenceSummary';
 import { recurringRepository } from '../database';
 import { resumeRecurringRule } from '../database/recurringService';
@@ -39,8 +39,11 @@ export default function RecurringScreen() {
     { rules: [] as RecurringRule[], counts: new Map<number, number>() },
   );
   const { rules, counts } = data;
+  const today = todayDateOnly();
 
   const handleToggleActive = useCallback(async (rule: RecurringRule, value: boolean) => {
+    // An ended rule has no occurrence left to generate — it cannot be resumed.
+    if (isRecurrenceEnded(rule, rule.next_due, todayDateOnly())) return;
     if (value) {
       // Resume: skip the occurrences missed while paused, then materialize the current one.
       await resumeRecurringRule(rule.id);
@@ -72,7 +75,7 @@ export default function RecurringScreen() {
           const category = categoriesById.get(item.category_id);
           const isIncome = item.type === TRANSACTION_TYPES.income;
           const active = item.active === 1;
-          const ended = item.end_date != null && item.next_due > item.end_date;
+          const ended = isRecurrenceEnded(item, item.next_due, today);
           const created = parseDbDate(item.created_at);
           const createdText = `${created.getDate()} ${labels.months_short[created.getMonth()]} ${created.getFullYear()}`;
           return (
@@ -121,12 +124,15 @@ export default function RecurringScreen() {
                 </Text>
                 <View style={styles.activeRow}>
                   <Text style={[styles.activeLabel, { color: c.textSecondary, fontSize: fs(11) }]}>
-                    {active ? labels.recurring_active : labels.recurring_paused}
+                    {ended ? labels.recurring_ended : active ? labels.recurring_active : labels.recurring_paused}
                   </Text>
                   <Switch
-                    value={active}
+                    value={ended ? false : active}
                     onValueChange={value => handleToggleActive(item, value)}
-                    accessibilityLabel={labels.recurring_active}
+                    disabled={ended}
+                    accessibilityLabel={ended ? labels.recurring_ended : active ? labels.recurring_active : labels.recurring_paused}
+                    accessibilityState={{ disabled: ended }}
+                    style={ended ? styles.switchDisabled : undefined}
                     {...switchColors(c)}
                   />
                 </View>
@@ -198,6 +204,9 @@ const styles = StyleSheet.create({
   },
   activeLabel: {
     fontWeight: '500',
+  },
+  switchDisabled: {
+    opacity: 0.5,
   },
   amount: {
     fontWeight: '700',

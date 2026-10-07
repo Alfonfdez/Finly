@@ -106,7 +106,7 @@ FinlyApp/
 |   |   +-- ConfigContext.tsx         <- user preferences (theme, currency, language)
 |   |
 |   +-- database/
-|   |   +-- database.ts               <- shared init: applies migrations (PRAGMA user_version, SCHEMA_VERSION 3)
+|   |   +-- database.ts               <- shared init: applies migrations (PRAGMA user_version, SCHEMA_VERSION 4)
 |   |   +-- engine.ts                 <- native engine: opens the expo-sqlite database
 |   |   +-- engine.web.ts             <- web engine: sql.js (WASM) + IndexedDB persistence
 |   |   +-- sqliteWeb.ts              <- sql.js engine with autocommit + export/import
@@ -146,6 +146,8 @@ FinlyApp/
 |   |   +-- de.ts                    <- German translations
 |   |   +-- pt.ts                    <- Portuguese translations
 |   |   +-- it.ts                    <- Italian translations
+|   |   +-- gl.ts                    <- Galician translations
+|   |   +-- eu.ts                    <- Basque translations
 |   |
 |   +-- hooks/
 |   |   +-- useFontSize.ts           <- text scaling hook

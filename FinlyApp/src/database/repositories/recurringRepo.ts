@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, lte, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, lte, or, sql } from 'drizzle-orm';
 import { getDrizzle, withTransaction } from '../drizzle/engine';
 import { recurringRules, recurringRuleTags, transactionTags, transactions } from '../drizzle/schema';
 import { runResultOf } from '../drizzle/proxy';
@@ -41,7 +41,14 @@ export const recurringRepo = {
     const rows = await db
       .select()
       .from(recurringRules)
-      .where(and(eq(recurringRules.active, 1), lte(recurringRules.next_due, today)))
+      .where(
+        and(
+          eq(recurringRules.active, 1),
+          lte(recurringRules.next_due, today),
+          // Ended rules (cursor past the end date) can never generate again.
+          or(isNull(recurringRules.end_date), lte(recurringRules.next_due, recurringRules.end_date)),
+        ),
+      )
       .orderBy(asc(recurringRules.next_due), asc(recurringRules.id))
       .all();
     return parseRows(recurringRuleSchema, 'recurring_rules', rows);

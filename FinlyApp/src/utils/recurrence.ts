@@ -104,6 +104,26 @@ export function nextDueOnOrAfter(schedule: RecurrenceSchedule, today: string): s
   return cursor;
 }
 
+/**
+ * The next occurrence a rule would generate from `nextDue`, ignoring a pause
+ * freeze: if the cursor is already in the future it is used as-is, otherwise the
+ * cursor advances to the first occurrence on/after `today`.
+ */
+export function nextEffectiveOccurrence(schedule: RecurrenceSchedule, nextDue: string, today: string): string {
+  return nextDue >= today ? nextDue : nextDueOnOrAfter(schedule, today);
+}
+
+/**
+ * A rule is ended when it has an end date and no occurrence remains on/after
+ * `today` within it — i.e. resuming it could never generate anything. Covers both
+ * active rules (cursor already jumped past the end date) and paused ones (frozen
+ * cursor, checked from today).
+ */
+export function isRecurrenceEnded(schedule: RecurrenceSchedule, nextDue: string, today: string): boolean {
+  if (schedule.end_date == null) return false;
+  return nextEffectiveOccurrence(schedule, nextDue, today) > schedule.end_date;
+}
+
 export function listDueOccurrences(
   schedule: RecurrenceSchedule,
   from: string,

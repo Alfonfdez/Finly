@@ -608,7 +608,7 @@ await db.getAllAsync('SELECT * FROM transactions WHERE date >= ?', startDate);
 
 ## PRAGMA user_version
 **Definition:** Integer metadata that SQLite stores in the database header to control which migrations have been executed.
-**Explanation:** Used as a schema version counter. Each migration checks if `user_version` is less than its number, runs the necessary SQL changes, and then increments the value with `PRAGMA user_version = N`. This way, the app knows at each startup which migrations are missing without needing additional control tables. In Finly, `src/database/database.ts` reads the version and applies each pending step inside one transaction; `SCHEMA_VERSION` is 3 (`001_initial` schema, `002_seed` data, `003_config` defaults). New features append migrations instead of editing the first one, so already-installed databases are upgraded in place (for example feature 028 will add `004_recurring` and raise the version to 4).
+**Explanation:** Used as a schema version counter. Each migration checks if `user_version` is less than its number, runs the necessary SQL changes, and then increments the value with `PRAGMA user_version = N`. This way, the app knows at each startup which migrations are missing without needing additional control tables. In Finly, `src/database/database.ts` reads the version and applies each pending step inside one transaction; `SCHEMA_VERSION` is 4 (`001_initial` schema, `002_seed` data, `003_config` defaults, `004_recurring` recurring rules). New features append migrations instead of editing the first one, so already-installed databases are upgraded in place (feature 028 added `004_recurring` and raised the version to 4).
 **Example:**
 ```tsx
 let { user_version: v } = await db.getFirstAsync('PRAGMA user_version');

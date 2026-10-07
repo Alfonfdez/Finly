@@ -409,6 +409,7 @@ Recurring expenses/income created once and materialized automatically:
 - Creating a rule can **skip the first occurrence**: the first generated transaction is deferred by one interval (monthly 6 Oct → 6 Nov), nothing is generated on the start day, and the resulting first date is shown under the checkbox; the end date must be on/after that first occurrence (creation only; hidden when editing).
 - Editing reconciles first then updates in place; scope "Future only" or "Future + past" (bulk update of account/category/amount/comment/tags/type on generated transactions — dates never change). The "past" scope is only offered when a past-affecting field actually changed (a timing-only edit leaves past transactions untouched).
 - Deleting a rule keeps every transaction it generated (FK `ON DELETE SET NULL`).
+- A rule with no occurrence left within its end date shows an off, **disabled** (dimmed) **Ended** toggle that cannot be resumed; the state is derived from the schedule (not persisted), so extending the end date into the future revives the rule and re-enables the toggle. Ended rules are skipped by reconciliation and the resume path refuses to reactivate them.
 - Additive migration `004_recurring` and `SCHEMA_VERSION 3 → 4`; existing v2.1.0 data untouched. Backup format v1 extended with optional collections so old backups still import.
 - Spec: spec/features/028-recurring-transactions/.
 
