@@ -1,6 +1,6 @@
 import { withTransaction } from './drizzle/engine';
 import { recurringRepo, type RecurringRuleInput } from './repositories/recurringRepo';
-import { listDueOccurrences, nextDueOnOrAfter, fromDateOnly, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
+import { listDueOccurrences, nextDueOnOrAfter, fromDateOnly, todayDateOnly, isRecurrenceEnded, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
 import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, type RecurrenceScope } from '../constants/types';
 import type { RecurringRule } from './types';
 
@@ -57,6 +57,10 @@ export async function resumeRecurringRule(ruleId: number, now: Date = new Date()
   if (!rule) return 0;
 
   const today = todayDateOnly(now);
+  // A finished rule has no occurrence left within its end date — refuse to
+  // reactivate it (the toggle for such a rule is disabled in the UI).
+  if (isRecurrenceEnded(rule, rule.next_due, today)) return 0;
+
   const nextDue = rule.next_due < today ? nextDueOnOrAfter(rule, today) : rule.next_due;
 
   await recurringRepo.reactivate(ruleId, nextDue);

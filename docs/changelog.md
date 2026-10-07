@@ -3388,3 +3388,12 @@
 [2026-10-07] chore | FinlyApp/package.json, FinlyApp/package-lock.json
 - Bumped Expo SDK 57 patch deps via 'npx expo install --fix': expo 57.0.26 -> ~57.0.27, expo-constants -> ~57.0.21, expo-sqlite -> ~57.0.4. 'expo install --check' reports dependencies up to date.
 - Verified: 'npm run test:all' green (107 files / 737 tests, typecheck + lint); web dev boot smoke OK at localhost:8081 (0 console errors, only the pre-existing react-native-web pointerEvents deprecation warning).
+
+[2026-10-07] feat | FinlyApp/src/utils/recurrence.ts, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/database/recurringService.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/screens/RecurringScreen.test.tsx, FinlyApp/tests/database/recurringService.test.ts, FinlyApp/tests/database/recurringRepo.test.ts, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Added a third recurring state: a rule with no occurrence left within its end date now shows an off, disabled (dimmed) 'Ended' toggle that cannot be resumed. Derived via new isRecurrenceEnded/nextEffectiveOccurrence helpers; resumeRecurringRule refuses to reactivate an ended rule and reconciliation (listDue) skips them.
+- Editing the end date into the future revives the rule and re-enables the toggle (no DB flag is persisted). Accessibility label/state now reflect Active/Paused/Ended.
+- Tests (+9): recurrence util ended cases, RecurringScreen disabled toggle + inert toggling, service resume guard + edit-revival, repo listDue exclusion. 'npm run test:all' green (107 files / 746 tests). Verified on web at 375px in dark + light (ended off/dimmed/disabled; extending the end date -> Active again).
+
+[2026-10-07] docs | docs/harnesses.md, spec/constitution/2-tech-stack.md, docs/programming-concepts.md
+- Synced the harness SDK-patch line to the current expo ~57.0.27 (was ~57.0.26; applied 2026-10-07); re-confirmed 'expo install --check' up to date and expo-doctor 21/21.
+- Fixed pre-existing stale version references (unrelated to the bump): tech-stack file-tree comment SCHEMA_VERSION 3 -> 4 and added gl/eu to the i18n tree (now lists 9); programming-concepts PRAGMA user_version explanation updated from SCHEMA_VERSION 3 / future-tense feature 028 to 4 / past tense.

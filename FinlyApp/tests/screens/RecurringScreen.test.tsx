@@ -101,11 +101,23 @@ describe('RecurringScreen', () => {
     expect(nav.navigate).toHaveBeenCalledWith('ModifyRecurring', { ruleId: 1 });
   });
 
-  it('shows "Ended" when the rule has finished', async () => {
+  it('shows "Ended" on the toggle and disables it when the rule has finished', async () => {
     mockList.mockResolvedValue([{ ...rule, end_date: '2026-09-30', next_due: '2026-10-01' }]);
     const view = await render(<RecurringScreen />);
     await waitFor(() => expect(view.getByText('Rent')).toBeTruthy());
-    expect(view.getByText('Ended')).toBeTruthy();
+    // Both the next-due line and the toggle label read "Ended".
+    expect(view.getAllByText('Ended')).toHaveLength(2);
+    expect(view.getByLabelText('Ended').props.accessibilityState).toMatchObject({ disabled: true });
+  });
+
+  it('ignores toggling an ended rule', async () => {
+    mockList.mockResolvedValue([{ ...rule, end_date: '2026-09-30', next_due: '2026-10-01' }]);
+    const view = await render(<RecurringScreen />);
+    await waitFor(() => expect(view.getByRole('switch')).toBeTruthy());
+    await fireEvent(view.getByRole('switch'), 'valueChange', true);
+    await fireEvent(view.getByRole('switch'), 'valueChange', false);
+    expect(mockResume).not.toHaveBeenCalled();
+    expect(mockSetActive).not.toHaveBeenCalled();
   });
 
   it('pauses through setActive when the switch is turned off', async () => {

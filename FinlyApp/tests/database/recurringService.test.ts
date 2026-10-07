@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, vi } from 'vitest';
 import type { DatabaseHandle } from '../../src/database/types';
+import { isRecurrenceEnded } from '../../src/utils/recurrence';
 import { initSqlJsOnce, resetMockDatabase, openDatabaseSync } from './sqliteMock';
 
 vi.mock('../../src/database/photoCleanup', () => ({
@@ -172,6 +173,23 @@ describe('materializeDueRecurring', () => {
     expect(resumed.next_due).toBe('2026-06-02');
   });
 
+  it('refuses to resume an ended rule', async () => {
+    const { recurringRepo, transactionRepo, resumeRecurringRule } = await boot();
+    const rule = await recurringRepo.createWithTags(
+      { ...baseRule, frequency: 'daily', day_of_month: null, start_date: '2026-09-01', end_date: '2026-09-30', next_due: '2026-10-01' },
+      [],
+    );
+    await recurringRepo.setActive(rule.id, false);
+
+    const created = await resumeRecurringRule(rule.id, new Date(2026, 9, 5));
+
+    expect(created).toBe(0);
+    expect(await transactionRepo.list()).toHaveLength(0);
+    const [after] = await recurringRepo.list(1);
+    expect(after.active).toBe(0);
+    expect(after.next_due).toBe('2026-10-01');
+  });
+
   const dailySep = {
     ...baseRule,
     frequency: 'daily' as const,
@@ -182,6 +200,28 @@ describe('materializeDueRecurring', () => {
     next_due: '2026-09-01',
   };
   const OCT_5 = new Date(2026, 9, 5);
+
+  it('editing an ended rule to extend its end date revives it', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(dailySep, []);
+    expect(await materializeDueRecurring(OCT_5)).toBe(30);
+
+    const ended = (await recurringRepo.list(1))[0];
+    expect(isRecurrenceEnded(ended, ended.next_due, '2026-10-05')).toBe(true);
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'daily', interval: 1, endDate: '2026-10-31' },
+      scope: 'future',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: OCT_5,
+    });
+
+    const revived = (await recurringRepo.list(1))[0];
+    expect(isRecurrenceEnded(revived, revived.next_due, '2026-10-05')).toBe(false);
+  });
 
   it('extending the end date with futureAndPast back-fills the missed window', async () => {
     const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();

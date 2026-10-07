@@ -99,6 +99,16 @@ describe('recurringRepo', () => {
     expect(result.map(r => r.id)).toEqual([due.id]);
   });
 
+  it('listDue excludes ended rules (cursor past the end date)', async () => {
+    const { recurringRepo } = await boot();
+    const ended = await recurringRepo.createWithTags({ ...baseRule, end_date: '2026-01-02', next_due: '2026-02-02' }, []);
+    const running = await recurringRepo.createWithTags({ ...baseRule, end_date: '2026-12-02', next_due: '2026-02-02' }, []);
+
+    const result = await recurringRepo.listDue('2026-06-01');
+    expect(result.map(r => r.id)).toEqual([running.id]);
+    expect(result.some(r => r.id === ended.id)).toBe(false);
+  });
+
   it('updates next_due and active state', async () => {
     const { recurringRepo } = await boot();
     const rule = await recurringRepo.createWithTags(baseRule, []);
