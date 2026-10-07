@@ -410,6 +410,7 @@ Recurring expenses/income created once and materialized automatically:
 - Editing reconciles first then updates in place; scope "Future only" or "Future + past" (bulk update of account/category/amount/comment/tags/type on generated transactions — dates never change). The "past" scope is only offered when a past-affecting field actually changed (a timing-only edit leaves past transactions untouched).
 - Deleting a rule keeps every transaction it generated (FK `ON DELETE SET NULL`).
 - A rule with no occurrence left within its end date shows an off, **disabled** (dimmed) **Ended** toggle that cannot be resumed; the state is derived from the schedule (not persisted), so extending the end date into the future revives the rule and re-enables the toggle. Ended rules are skipped by reconciliation and the resume path refuses to reactivate them.
+- A window a **Future only** edit skips is recorded on the rule (`recurring_rules.skipped_from`, added to migration 004); while it is within the end date the edit screen re-enables **Future + past** to back-fill it (cursor re-anchored, no duplicates, record cleared). "Future only" now asks for confirmation before skipping. Pause/resume and skip-first skips stay permanent.
 - Additive migration `004_recurring` and `SCHEMA_VERSION 3 → 4`; existing v2.1.0 data untouched. Backup format v1 extended with optional collections so old backups still import.
 - Spec: spec/features/028-recurring-transactions/.
 

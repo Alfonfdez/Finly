@@ -56,6 +56,7 @@ const baseRule = {
   start_date: '2026-01-02',
   end_date: null,
   next_due: '2026-01-02',
+  skipped_from: null,
   active: 1,
 };
 
@@ -117,6 +118,15 @@ describe('recurringRepo', () => {
     const fetched = await recurringRepo.getById(rule.id);
     expect(fetched?.next_due).toBe('2026-03-02');
     expect(fetched?.active).toBe(0);
+  });
+
+  it('persists skipped_from and clears it', async () => {
+    const { recurringRepo } = await boot();
+    const rule = await recurringRepo.createWithTags({ ...baseRule, skipped_from: '2026-10-01' }, []);
+    expect((await recurringRepo.getById(rule.id))?.skipped_from).toBe('2026-10-01');
+
+    await recurringRepo.updateWithTags(rule.id, { skipped_from: null }, []);
+    expect((await recurringRepo.getById(rule.id))?.skipped_from).toBeNull();
   });
 
   it('inserts an occurrence transaction with its link and tags', async () => {

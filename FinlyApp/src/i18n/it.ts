@@ -518,6 +518,11 @@ export const it: Language = {
   repeat_skip_first: 'Salta la prima occorrenza',
   repeat_first_occurrence: (date: string) => `Prima transazione: ${date}`,
 
+  // Recurring skip warning
+  recurring_skip_warning_title: 'Ignorare le occorrenze?',
+  recurring_skip_warning_message: (count: number, from: string) => `${count} ${count === 1 ? 'occorrenza sarà ignorata' : 'occorrenze saranno ignorate'} a partire dal ${from}. Non verranno create ora — puoi aggiungerle più tardi con "Futuro + passato".`,
+  recurring_skip_warning_confirm: 'Ignorale',
+
   // Home tag filter
   home_tag_all: 'Tutti',
   home_tag_untagged: 'Senza etichetta',

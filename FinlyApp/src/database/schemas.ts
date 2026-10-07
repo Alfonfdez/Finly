@@ -91,6 +91,7 @@ export const recurringRuleSchema = z.object({
   start_date: z.string(),
   end_date: z.string().nullable(),
   next_due: z.string(),
+  skipped_from: z.string().nullable(),
   active: z.number().int(),
   created_at: z.string(),
   updated_at: z.string().nullable(),

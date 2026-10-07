@@ -39,6 +39,7 @@ interface TransactionFormProps {
   errorMessage: string;
   onSubmit: (data: TransactionDraft, tagIds: number[]) => Promise<void>;
   onSubmitRule?: (data: TransactionDraft, tagIds: number[], recurrence: RecurrenceDraft) => Promise<void>;
+  onBeforeSubmitRule?: (data: TransactionDraft, recurrence: RecurrenceDraft) => Promise<boolean>;
   enableRepeat?: boolean;
   ruleMode?: boolean;
   allowSkipFirst?: boolean;
@@ -48,6 +49,7 @@ interface TransactionFormProps {
   initialTagIds?: number[];
   initialRuleNextDue?: string | null;
   initialRuleActive?: boolean;
+  initialRuleSkippedFrom?: string | null;
   initialRepeatName?: string;
   existingRepeatNames?: string[];
   footer?: ReactNode;

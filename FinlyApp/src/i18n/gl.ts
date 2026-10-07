@@ -518,6 +518,11 @@ export const gl: Language = {
   repeat_skip_first: 'Omitir a primeira repetición',
   repeat_first_occurrence: (date: string) => `Primeira transacción: ${date}`,
 
+  // Recurring skip warning
+  recurring_skip_warning_title: 'Omitir ocorrencias?',
+  recurring_skip_warning_message: (count: number, from: string) => `Omitiranse ${count} ${count === 1 ? 'ocorrencia' : 'ocorrencias'} a partir de ${from}. Non se crearán agora — podes engadilas máis tarde con "Futuro + pasado".`,
+  recurring_skip_warning_confirm: 'Omitilas',
+
   // Home tag filter
   home_tag_all: 'Todas',
   home_tag_untagged: 'Sen etiqueta',

@@ -1,6 +1,6 @@
 import { withTransaction } from './drizzle/engine';
 import { recurringRepo, type RecurringRuleInput } from './repositories/recurringRepo';
-import { listDueOccurrences, nextDueOnOrAfter, fromDateOnly, todayDateOnly, isRecurrenceEnded, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
+import { listDueOccurrences, nextDueOnOrAfter, fromDateOnly, todayDateOnly, isRecurrenceEnded, recurrenceSkipWindow, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
 import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, type RecurrenceScope } from '../constants/types';
 import type { RecurringRule } from './types';
 
@@ -130,12 +130,32 @@ export async function saveRecurringRuleEdit(params: RecurringEditParams): Promis
     start_date: startDate,
     end_date: recurrence.endDate,
   };
+  const skip = scope === RECURRENCE_SCOPES.future ? recurrenceSkipWindow(schedule, cursor, today) : null;
+
+  // "Future + past" re-anchors at the earliest skipped occurrence so the window a
+  // previous "Future only" edit passed over is back-filled.
+  const anchor =
+    scope === RECURRENCE_SCOPES.futureAndPast && current.skipped_from != null && current.skipped_from < cursor
+      ? current.skipped_from
+      : cursor;
   const nextDue =
     scope === RECURRENCE_SCOPES.futureAndPast
-      ? nextDueOnOrAfter(schedule, cursor)
+      ? nextDueOnOrAfter(schedule, anchor)
       : nextDueOnOrAfter(schedule, cursor > today ? cursor : today);
 
-  await recurringRepo.updateWithTags(ruleId, { ...updated, ...schedule, next_due: nextDue }, tagIds);
+  // "Future + past" fills the skipped window; "Future only" records the earliest
+  // skipped occurrence so it can be recovered later. Clear it once it falls past
+  // the (possibly shortened) end date.
+  let skippedFrom = scope === RECURRENCE_SCOPES.futureAndPast ? null : current.skipped_from ?? skip?.from ?? null;
+  if (skippedFrom != null && schedule.end_date != null && skippedFrom > schedule.end_date) {
+    skippedFrom = null;
+  }
+
+  await recurringRepo.updateWithTags(
+    ruleId,
+    { ...updated, ...schedule, next_due: nextDue, skipped_from: skippedFrom },
+    tagIds,
+  );
 
   const created = await materializeDueRecurring(now);
 

@@ -6,6 +6,7 @@ import {
   isRecurrenceEnded,
   listDueOccurrences,
   nextEffectiveOccurrence,
+  recurrenceSkipWindow,
   toDateOnly,
   todayDateOnly,
   type RecurrenceSchedule,
@@ -130,6 +131,30 @@ describe('isRecurrenceEnded', () => {
   it('nextEffectiveOccurrence keeps a frozen cursor that is still in the future', () => {
     expect(nextEffectiveOccurrence(ended, '2026-03-02', '2026-02-15')).toBe('2026-03-02');
     expect(nextEffectiveOccurrence(ended, '2026-02-02', '2026-04-15')).toBe('2026-04-02');
+  });
+});
+
+describe('recurrenceSkipWindow', () => {
+  const daily = { ...base, frequency: 'daily' as const, interval: 1, day_of_month: null, start_date: '2026-09-01' };
+
+  it('returns null when the cursor is already at the next occurrence', () => {
+    expect(recurrenceSkipWindow(daily, '2026-10-08', '2026-10-07')).toBeNull();
+  });
+
+  it('reports the occurrences a Future-only edit would skip', () => {
+    expect(recurrenceSkipWindow(daily, '2026-10-01', '2026-10-07')).toEqual({
+      from: '2026-10-01',
+      to: '2026-10-07',
+      count: 6,
+    });
+  });
+
+  it('respects the end date', () => {
+    expect(recurrenceSkipWindow({ ...daily, end_date: '2026-10-03' }, '2026-10-01', '2026-10-07')).toEqual({
+      from: '2026-10-01',
+      to: '2026-10-04',
+      count: 3,
+    });
   });
 });
 

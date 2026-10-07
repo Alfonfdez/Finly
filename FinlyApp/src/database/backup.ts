@@ -188,7 +188,7 @@ export async function applyBackup(db: DatabaseHandle, snapshot: BackupSnapshot):
 
     for (const rule of snapshot.data.recurring_rules) {
       await db.runAsync(
-        'INSERT INTO recurring_rules (id, user_id, name, type, account_id, category_id, amount, description, frequency, interval, weekday, day_of_month, month, start_date, end_date, next_due, active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO recurring_rules (id, user_id, name, type, account_id, category_id, amount, description, frequency, interval, weekday, day_of_month, month, start_date, end_date, next_due, skipped_from, active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         rule.id,
         rule.user_id,
         rule.name,
@@ -205,6 +205,7 @@ export async function applyBackup(db: DatabaseHandle, snapshot: BackupSnapshot):
         rule.start_date,
         rule.end_date,
         rule.next_due,
+        rule.skipped_from,
         rule.active,
         rule.created_at,
         rule.updated_at

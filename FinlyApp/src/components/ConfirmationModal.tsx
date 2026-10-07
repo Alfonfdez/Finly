@@ -51,9 +51,9 @@ export default function ConfirmationModal({
         contentContainerStyle={[styles.scrollContent, { paddingBottom: footerClearance }]}
         showsVerticalScrollIndicator={false}
       >
-        {message && (
+        {message ? (
           <Text style={[styles.message, { color: c.textSecondary, fontSize: fs(14) }]}>{message}</Text>
-        )}
+        ) : null}
         {children}
       </ScrollView>
       <View style={styles.buttonsFooter}>
