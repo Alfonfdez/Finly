@@ -124,6 +124,19 @@ export function isRecurrenceEnded(schedule: RecurrenceSchedule, nextDue: string,
   return nextEffectiveOccurrence(schedule, nextDue, today) > schedule.end_date;
 }
 
+/**
+ * Whether a recorded skip window can still be back-filled by "Future + past":
+ * it exists, starts on/before today, and is not past the (current) end date.
+ */
+export function isSkippedWindowRecoverable(
+  skippedFrom: string | null | undefined,
+  endDate: string | null | undefined,
+  today: string,
+): boolean {
+  if (skippedFrom == null || skippedFrom > today) return false;
+  return endDate == null || skippedFrom <= endDate;
+}
+
 export interface SkipWindow {
   /** First skipped occurrence. */
   from: string;

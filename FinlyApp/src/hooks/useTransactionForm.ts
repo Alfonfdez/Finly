@@ -13,7 +13,7 @@ import {
   MAX_VISIBLE_CATEGORIES,
 } from '../constants/types';
 import { formatDateForDB } from '../utils/formatters';
-import { advanceOccurrence, buildRecurrenceSchedule, fromDateOnly, nextDueOnOrAfter, recurrenceSkipWindow, toDateOnly, todayDateOnly } from '../utils/recurrence';
+import { advanceOccurrence, buildRecurrenceSchedule, fromDateOnly, isSkippedWindowRecoverable, nextDueOnOrAfter, recurrenceSkipWindow, toDateOnly, todayDateOnly } from '../utils/recurrence';
 import { dayAfter, isEndAfterStart } from '../utils/calendarBounds';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { parseAmountValue } from '../utils/amountInput';
@@ -245,13 +245,11 @@ export function useTransactionForm({
       missedWindow = firstDue <= todayDateOnly() && (schedule.end_date == null || firstDue <= schedule.end_date);
     }
     // A window a previous "Future only" edit skipped is recoverable via "Future + past".
-    let skippedRecoverable = false;
-    if (initialRuleSkippedFrom != null) {
-      const schedule = buildRecurrenceSchedule(day, repeatFrequency, repeatInterval, repeatEnd ? toDateOnly(repeatEnd) : null);
-      skippedRecoverable =
-        initialRuleSkippedFrom <= todayDateOnly() &&
-        (schedule.end_date == null || initialRuleSkippedFrom <= schedule.end_date);
-    }
+    const skippedRecoverable = isSkippedWindowRecoverable(
+      initialRuleSkippedFrom,
+      repeatEnd ? toDateOnly(repeatEnd) : null,
+      todayDateOnly(),
+    );
     return detailChanged || missedWindow || skippedRecoverable;
   }, [
     ruleMode,

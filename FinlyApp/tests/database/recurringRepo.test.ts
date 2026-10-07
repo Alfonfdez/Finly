@@ -56,7 +56,6 @@ const baseRule = {
   start_date: '2026-01-02',
   end_date: null,
   next_due: '2026-01-02',
-  skipped_from: null,
   active: 1,
 };
 

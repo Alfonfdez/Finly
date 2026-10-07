@@ -4,9 +4,8 @@ import { useApp } from '../context/AppContext';
 import { t } from '../i18n';
 import { PERIODS, USER_ID } from '../constants/types';
 import { isSameDay } from '../utils/formatters';
-import { advanceOccurrence, buildRecurrenceSchedule, fromDateOnly } from '../utils/recurrence';
 import { recurringRepository } from '../database';
-import { materializeDueRecurring } from '../database/recurringService';
+import { createRecurringRule } from '../database/recurringService';
 import { isTotalAccount } from '../database/helpers';
 import TransactionForm from '../components/TransactionForm';
 
@@ -55,28 +54,20 @@ export default function CreateRecurringScreen() {
       errorMessage={labels.recurring_error_message}
       onSubmit={async () => {}}
       onSubmitRule={async (data, tagIds, recurrence) => {
-        const start = fromDateOnly(data.date.slice(0, 10));
-        const schedule = buildRecurrenceSchedule(start, recurrence.frequency, recurrence.interval, recurrence.endDate);
-        const nextDue = recurrence.skipFirst
-          ? advanceOccurrence(schedule, schedule.start_date)
-          : schedule.start_date;
-        await recurringRepository.createWithTags(
-          {
-            user_id: USER_ID,
-            name: recurrence.name,
-            type: data.type,
-            account_id: data.account_id,
-            category_id: data.category_id,
-            amount: data.amount,
-            description: data.description,
-            ...schedule,
-            next_due: nextDue,
-            skipped_from: null,
-            active: 1,
-          },
+        await createRecurringRule({
+          name: recurrence.name,
+          type: data.type,
+          account_id: data.account_id,
+          category_id: data.category_id,
+          amount: data.amount,
+          description: data.description,
+          date: data.date,
+          frequency: recurrence.frequency,
+          interval: recurrence.interval,
+          endDate: recurrence.endDate,
+          skipFirst: recurrence.skipFirst,
           tagIds,
-        );
-        await materializeDueRecurring();
+        });
         changeType(data.type);
       }}
       enableRepeat

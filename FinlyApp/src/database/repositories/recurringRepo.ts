@@ -7,7 +7,10 @@ import { recurringRuleSchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
 import { dbTimestamp } from '../../utils/formatters';
 
-export type RecurringRuleInput = Omit<RecurringRule, 'id' | 'created_at' | 'updated_at'>;
+/** Fields needed to create a rule. `skipped_from` is derived, so it is optional. */
+export type RecurringRuleInput = Omit<RecurringRule, 'id' | 'created_at' | 'updated_at' | 'skipped_from'> & {
+  skipped_from?: string | null;
+};
 
 export interface GeneratedTransactionPatch {
   account_id?: number;
@@ -88,8 +91,9 @@ export const recurringRepo = {
   },
 
   async createWithTags(data: RecurringRuleInput, tagIds: number[]): Promise<RecurringRule> {
+    const skippedFrom = data.skipped_from ?? null;
     return await withTransaction(async (db) => {
-      const result = await db.insert(recurringRules).values({ ...data }).run();
+      const result = await db.insert(recurringRules).values({ ...data, skipped_from: skippedFrom }).run();
       const id = runResultOf(result).lastInsertRowId;
       if (tagIds.length > 0) {
         await db
@@ -97,29 +101,20 @@ export const recurringRepo = {
           .values(tagIds.map(tagId => ({ rule_id: id, tag_id: tagId })))
           .run();
       }
-      return { ...data, id, created_at: dbTimestamp(), updated_at: null };
+      return { ...data, skipped_from: skippedFrom, id, created_at: dbTimestamp(), updated_at: null };
     });
   },
 
   async updateWithTags(id: number, data: Partial<RecurringRuleInput>, tagIds: number[]): Promise<void> {
     await withTransaction(async (db) => {
+      // Copy every provided writable column (all of `RecurringRuleInput` except
+      // `user_id`), so adding a column needs no change here.
       const set: Partial<typeof recurringRules.$inferInsert> = {};
-      if (data.name !== undefined) set.name = data.name;
-      if (data.type !== undefined) set.type = data.type;
-      if (data.account_id !== undefined) set.account_id = data.account_id;
-      if (data.category_id !== undefined) set.category_id = data.category_id;
-      if (data.amount !== undefined) set.amount = data.amount;
-      if (data.description !== undefined) set.description = data.description;
-      if (data.frequency !== undefined) set.frequency = data.frequency;
-      if (data.interval !== undefined) set.interval = data.interval;
-      if (data.weekday !== undefined) set.weekday = data.weekday;
-      if (data.day_of_month !== undefined) set.day_of_month = data.day_of_month;
-      if (data.month !== undefined) set.month = data.month;
-      if (data.start_date !== undefined) set.start_date = data.start_date;
-      if (data.end_date !== undefined) set.end_date = data.end_date;
-      if (data.next_due !== undefined) set.next_due = data.next_due;
-      if (data.skipped_from !== undefined) set.skipped_from = data.skipped_from;
-      if (data.active !== undefined) set.active = data.active;
+      for (const [key, value] of Object.entries(data)) {
+        if (key !== 'user_id' && value !== undefined) {
+          (set as Record<string, unknown>)[key] = value;
+        }
+      }
       if (Object.keys(set).length > 0) {
         await db
           .update(recurringRules)
