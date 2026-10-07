@@ -5,16 +5,18 @@ import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { usePhotos } from './usePhotos';
 import { useDeferredRefresh } from './useDeferredRefresh';
+import { useRecurringDraft } from './useRecurringDraft';
+import { useRecurringEditScope } from './useRecurringEditScope';
 import {
   type TransactionType,
   type RecurrenceFrequency,
+  type TransactionDraft,
+  type RecurrenceDraft,
   CATEGORY_USAGE_WINDOW_DAYS,
   USER_ID,
   MAX_VISIBLE_CATEGORIES,
 } from '../constants/types';
 import { formatDateForDB } from '../utils/formatters';
-import { advanceOccurrence, buildRecurrenceSchedule, fromDateOnly, isSkippedWindowRecoverable, nextDueOnOrAfter, recurrenceSkipWindow, toDateOnly, todayDateOnly } from '../utils/recurrence';
-import { dayAfter, isEndAfterStart } from '../utils/calendarBounds';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { parseAmountValue } from '../utils/amountInput';
 import { transactionRepository, tagRepository } from '../database';
@@ -22,23 +24,7 @@ import { isTotalAccount } from '../database/helpers';
 import { consumePendingCategory } from '../utils/pendingCategory';
 import { alertError, describeError } from '../utils/errors';
 
-export type TransactionDraft = {
-  account_id: number;
-  category_id: number;
-  type: TransactionType;
-  amount: number;
-  description: string | null;
-  photo: string | null;
-  date: string;
-};
-
-export type RecurrenceDraft = {
-  name: string;
-  frequency: RecurrenceFrequency;
-  interval: number;
-  endDate: string | null;
-  skipFirst: boolean;
-};
+export type { TransactionDraft, RecurrenceDraft } from '../constants/types';
 
 type UseTransactionFormProps = {
   initialType: TransactionType;
@@ -120,30 +106,29 @@ export function useTransactionForm({
   const [submitting, setSubmitting] = useState(false);
   const { photos, handleTakePhoto, handlePickFromGallery, handleRemovePhoto } = usePhotos(initialPhotos);
 
-  const [repeatEnabled, setRepeatEnabled] = useState(ruleMode);
-  const [repeatFrequency, setRepeatFrequency] = useState<RecurrenceFrequency>(initialRepeatFrequency ?? 'monthly');
-  const [repeatInterval, setRepeatInterval] = useState(initialRepeatInterval ?? 1);
-  const [repeatEnd, setRepeatEnd] = useState<Date | null>(initialRepeatEnd ?? null);
-  const [repeatSkipFirst, setRepeatSkipFirst] = useState(false);
-  const [repeatName, setRepeatName] = useState(initialRepeatName ?? '');
-
-  // Earliest valid end date: the first occurrence (which moves one interval ahead when skipping it).
-  const repeatMinDate = useMemo(() => {
-    if (!repeatSkipFirst) return dayAfter(day);
-    const schedule = buildRecurrenceSchedule(day, repeatFrequency, repeatInterval);
-    return fromDateOnly(advanceOccurrence(schedule, toDateOnly(day)));
-  }, [day, repeatFrequency, repeatInterval, repeatSkipFirst]);
-
-  // Keep the end date valid: clear it if the start day moves to/after it.
-  useEffect(() => {
-    if (repeatEnd && !isEndAfterStart(day, repeatEnd)) {
-      setRepeatEnd(null);
-    }
-  }, [day, repeatEnd]);
+  const {
+    repeatEnabled, setRepeatEnabled,
+    repeatFrequency, setRepeatFrequency,
+    repeatInterval, setRepeatInterval,
+    repeatEnd, setRepeatEnd,
+    repeatSkipFirst, setRepeatSkipFirst,
+    repeatName, setRepeatName,
+    repeatMinDate,
+    repeatNameError,
+    modalRepeatEndVisible, setModalRepeatEndVisible,
+    buildRecurrence,
+  } = useRecurringDraft({
+    day,
+    ruleMode,
+    existingRepeatNames,
+    initialRepeatFrequency,
+    initialRepeatInterval,
+    initialRepeatEnd,
+    initialRepeatName,
+  });
 
   const [modalAccountVisible, setModalAccountVisible] = useState(false);
   const [modalCalendarVisible, setModalCalendarVisible] = useState(false);
-  const [modalRepeatEndVisible, setModalRepeatEndVisible] = useState(false);
   const [calculatorVisible, setCalculatorVisible] = useState(false);
 
   const inputRef = useRef<TextInput>(null);
@@ -200,14 +185,6 @@ export function useTransactionForm({
 
   const numericAmount = useMemo(() => parseAmountValue(amountRaw), [amountRaw]);
 
-  const repeatNameError = useMemo<'required' | 'taken' | null>(() => {
-    if (!repeatEnabled && !ruleMode) return null;
-    const trimmed = repeatName.trim();
-    if (trimmed.length === 0) return 'required';
-    const taken = (existingRepeatNames ?? []).some(n => n.trim().toLowerCase() === trimmed.toLowerCase());
-    return taken ? 'taken' : null;
-  }, [repeatEnabled, ruleMode, repeatName, existingRepeatNames]);
-
   const canSubmit = useMemo(() => {
     if (categoryId === null) return false;
     if (numericAmount === null || numericAmount <= 0) return false;
@@ -218,68 +195,28 @@ export function useTransactionForm({
     return true;
   }, [categoryId, numericAmount, day, accountId, repeatEnabled, ruleMode, repeatNameError, repeatEnd, repeatMinDate]);
 
-  // In rule mode: does the draft affect the past — either by touching a field the
-  // "past ones" scope rewrites (account/category/amount/comment/tags/type), or by
-  // opening a missed window the new schedule would actually back-fill.
-  const recurringPastAffected = useMemo(() => {
-    if (!ruleMode) return false;
-    const initialAmountNum = initialAmount !== undefined ? parseAmountValue(initialAmount) : null;
-    const initialTags = [...(initialTagIds ?? [])].sort((a, b) => a - b);
-    const currentTags = [...selectedTags].sort((a, b) => a - b);
-    const tagsChanged =
-      initialTags.length !== currentTags.length || initialTags.some((v, i) => v !== currentTags[i]);
-    const detailChanged =
-      accountId !== initialAccountId ||
-      categoryId !== initialCategoryId ||
-      numericAmount !== initialAmountNum ||
-      (comment.trim() || null) !== (initialComment.trim() || null) ||
-      type !== initialType ||
-      tagsChanged;
-    // A missed window exists only if the rule is active AND the NEW schedule actually
-    // has an occurrence due in [cursor, today] (respecting the end date) — a finished
-    // or paused rule stays disabled.
-    let missedWindow = false;
-    if (initialRuleNextDue != null && (initialRuleActive ?? true)) {
-      const schedule = buildRecurrenceSchedule(day, repeatFrequency, repeatInterval, repeatEnd ? toDateOnly(repeatEnd) : null);
-      const firstDue = nextDueOnOrAfter(schedule, initialRuleNextDue);
-      missedWindow = firstDue <= todayDateOnly() && (schedule.end_date == null || firstDue <= schedule.end_date);
-    }
-    // A window a previous "Future only" edit skipped is recoverable via "Future + past".
-    const skippedRecoverable = isSkippedWindowRecoverable(
-      initialRuleSkippedFrom,
-      repeatEnd ? toDateOnly(repeatEnd) : null,
-      todayDateOnly(),
-    );
-    return detailChanged || missedWindow || skippedRecoverable;
-  }, [
+  const { recurringPastAffected, recurringSkipWindow } = useRecurringEditScope({
     ruleMode,
+    day,
+    frequency: repeatFrequency,
+    interval: repeatInterval,
+    end: repeatEnd,
     accountId,
-    initialAccountId,
     categoryId,
-    initialCategoryId,
-    numericAmount,
-    initialAmount,
+    amount: numericAmount,
     comment,
-    initialComment,
     type,
+    tagIds: selectedTags,
+    initialAccountId,
+    initialCategoryId,
+    initialAmount,
+    initialComment,
     initialType,
-    selectedTags,
     initialTagIds,
     initialRuleNextDue,
     initialRuleActive,
     initialRuleSkippedFrom,
-    day,
-    repeatFrequency,
-    repeatInterval,
-    repeatEnd,
-  ]);
-
-  // Window that "Future only" would skip for the current draft (used to warn on save).
-  const recurringSkipWindow = useMemo(() => {
-    if (!ruleMode || initialRuleNextDue == null) return null;
-    const schedule = buildRecurrenceSchedule(day, repeatFrequency, repeatInterval, repeatEnd ? toDateOnly(repeatEnd) : null);
-    return recurrenceSkipWindow(schedule, initialRuleNextDue, todayDateOnly());
-  }, [ruleMode, initialRuleNextDue, day, repeatFrequency, repeatInterval, repeatEnd]);
+  });
 
   const handleToggleTag = useCallback((id: number) => {
     setSelectedTags(prev =>
@@ -328,13 +265,7 @@ export function useTransactionForm({
       };
 
       if ((repeatEnabled || ruleMode) && onSubmitRule) {
-        const recurrence: RecurrenceDraft = {
-          name: repeatName.trim(),
-          frequency: repeatFrequency,
-          interval: repeatInterval,
-          endDate: repeatEnd ? toDateOnly(repeatEnd) : null,
-          skipFirst: repeatSkipFirst,
-        };
+        const recurrence = buildRecurrence();
         if (onBeforeSubmitRule && !(await onBeforeSubmitRule(draft, recurrence))) return;
         await onSubmitRule(draft, selectedTags, recurrence);
       } else {
@@ -349,7 +280,7 @@ export function useTransactionForm({
     } finally {
       setSubmitting(false);
     }
-  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, repeatEnabled, repeatFrequency, repeatInterval, repeatEnd, repeatSkipFirst, repeatName, ruleMode, onSubmit, onSubmitRule, onBeforeSubmitRule, deferredRefresh, navigation, errorTitle, errorMessage]);
+  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, repeatEnabled, buildRecurrence, ruleMode, onSubmit, onSubmitRule, onBeforeSubmitRule, deferredRefresh, navigation, errorTitle, errorMessage]);
 
   const categoriesByType = useMemo(() => {
     const byType = categoriesOfType(categories, type);

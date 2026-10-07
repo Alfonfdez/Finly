@@ -60,6 +60,28 @@ export const RECURRENCE_SCOPES = {
 
 export type RecurrenceScope = keyof typeof RECURRENCE_SCOPES;
 
+export const REPEAT_MIN_INTERVAL = 1;
+export const REPEAT_MAX_INTERVAL = 99;
+export const REPEAT_NAME_MAX_LENGTH = 60;
+
+export type TransactionDraft = {
+  account_id: number;
+  category_id: number;
+  type: TransactionType;
+  amount: number;
+  description: string | null;
+  photo: string | null;
+  date: string;
+};
+
+export type RecurrenceDraft = {
+  name: string;
+  frequency: RecurrenceFrequency;
+  interval: number;
+  endDate: string | null;
+  skipFirst: boolean;
+};
+
 export const TYPE_FILTERS = {
   all: 'all',
   ...TRANSACTION_TYPES,
