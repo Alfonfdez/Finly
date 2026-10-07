@@ -518,6 +518,11 @@ export const pt: Language = {
   repeat_skip_first: 'Ignorar a primeira ocorrência',
   repeat_first_occurrence: (date: string) => `Primeira transação: ${date}`,
 
+  // Recurring skip warning
+  recurring_skip_warning_title: 'Ignorar ocorrências?',
+  recurring_skip_warning_message: (count: number, from: string) => `${count} ${count === 1 ? 'ocorrência será ignorada' : 'ocorrências serão ignoradas'} a partir de ${from}. Não serão criadas agora — podes adicioná-las mais tarde com "Futuro + passado".`,
+  recurring_skip_warning_confirm: 'Ignorar',
+
   // Home tag filter
   home_tag_all: 'Todos',
   home_tag_untagged: 'Sem etiqueta',

@@ -13,7 +13,7 @@ import {
   MAX_VISIBLE_CATEGORIES,
 } from '../constants/types';
 import { formatDateForDB } from '../utils/formatters';
-import { advanceOccurrence, buildRecurrenceSchedule, fromDateOnly, nextDueOnOrAfter, toDateOnly, todayDateOnly } from '../utils/recurrence';
+import { advanceOccurrence, buildRecurrenceSchedule, fromDateOnly, nextDueOnOrAfter, recurrenceSkipWindow, toDateOnly, todayDateOnly } from '../utils/recurrence';
 import { dayAfter, isEndAfterStart } from '../utils/calendarBounds';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { parseAmountValue } from '../utils/amountInput';
@@ -54,6 +54,8 @@ type UseTransactionFormProps = {
   errorMessage: string;
   onSubmit: (data: TransactionDraft, tagIds: number[]) => Promise<void>;
   onSubmitRule?: (data: TransactionDraft, tagIds: number[], recurrence: RecurrenceDraft) => Promise<void>;
+  /** Runs before `onSubmitRule`; returning false aborts the save (e.g. a confirmation dialog). */
+  onBeforeSubmitRule?: (data: TransactionDraft, recurrence: RecurrenceDraft) => Promise<boolean>;
   resetTagsOnFirstFocus?: boolean;
   onError?: () => void;
   ruleMode?: boolean;
@@ -63,6 +65,7 @@ type UseTransactionFormProps = {
   initialTagIds?: number[];
   initialRuleNextDue?: string | null;
   initialRuleActive?: boolean;
+  initialRuleSkippedFrom?: string | null;
   initialRepeatName?: string;
   existingRepeatNames?: string[];
 };
@@ -81,6 +84,7 @@ export function useTransactionForm({
   errorMessage,
   onSubmit,
   onSubmitRule,
+  onBeforeSubmitRule,
   resetTagsOnFirstFocus = false,
   onError,
   ruleMode = false,
@@ -90,6 +94,7 @@ export function useTransactionForm({
   initialTagIds,
   initialRuleNextDue,
   initialRuleActive,
+  initialRuleSkippedFrom,
   initialRepeatName,
   existingRepeatNames,
 }: UseTransactionFormProps) {
@@ -239,7 +244,15 @@ export function useTransactionForm({
       const firstDue = nextDueOnOrAfter(schedule, initialRuleNextDue);
       missedWindow = firstDue <= todayDateOnly() && (schedule.end_date == null || firstDue <= schedule.end_date);
     }
-    return detailChanged || missedWindow;
+    // A window a previous "Future only" edit skipped is recoverable via "Future + past".
+    let skippedRecoverable = false;
+    if (initialRuleSkippedFrom != null) {
+      const schedule = buildRecurrenceSchedule(day, repeatFrequency, repeatInterval, repeatEnd ? toDateOnly(repeatEnd) : null);
+      skippedRecoverable =
+        initialRuleSkippedFrom <= todayDateOnly() &&
+        (schedule.end_date == null || initialRuleSkippedFrom <= schedule.end_date);
+    }
+    return detailChanged || missedWindow || skippedRecoverable;
   }, [
     ruleMode,
     accountId,
@@ -256,11 +269,19 @@ export function useTransactionForm({
     initialTagIds,
     initialRuleNextDue,
     initialRuleActive,
+    initialRuleSkippedFrom,
     day,
     repeatFrequency,
     repeatInterval,
     repeatEnd,
   ]);
+
+  // Window that "Future only" would skip for the current draft (used to warn on save).
+  const recurringSkipWindow = useMemo(() => {
+    if (!ruleMode || initialRuleNextDue == null) return null;
+    const schedule = buildRecurrenceSchedule(day, repeatFrequency, repeatInterval, repeatEnd ? toDateOnly(repeatEnd) : null);
+    return recurrenceSkipWindow(schedule, initialRuleNextDue, todayDateOnly());
+  }, [ruleMode, initialRuleNextDue, day, repeatFrequency, repeatInterval, repeatEnd]);
 
   const handleToggleTag = useCallback((id: number) => {
     setSelectedTags(prev =>
@@ -309,13 +330,15 @@ export function useTransactionForm({
       };
 
       if ((repeatEnabled || ruleMode) && onSubmitRule) {
-        await onSubmitRule(draft, selectedTags, {
+        const recurrence: RecurrenceDraft = {
           name: repeatName.trim(),
           frequency: repeatFrequency,
           interval: repeatInterval,
           endDate: repeatEnd ? toDateOnly(repeatEnd) : null,
           skipFirst: repeatSkipFirst,
-        });
+        };
+        if (onBeforeSubmitRule && !(await onBeforeSubmitRule(draft, recurrence))) return;
+        await onSubmitRule(draft, selectedTags, recurrence);
       } else {
         await onSubmit(draft, selectedTags);
       }
@@ -328,7 +351,7 @@ export function useTransactionForm({
     } finally {
       setSubmitting(false);
     }
-  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, repeatEnabled, repeatFrequency, repeatInterval, repeatEnd, repeatSkipFirst, repeatName, ruleMode, onSubmit, onSubmitRule, deferredRefresh, navigation, errorTitle, errorMessage]);
+  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, repeatEnabled, repeatFrequency, repeatInterval, repeatEnd, repeatSkipFirst, repeatName, ruleMode, onSubmit, onSubmitRule, onBeforeSubmitRule, deferredRefresh, navigation, errorTitle, errorMessage]);
 
   const categoriesByType = useMemo(() => {
     const byType = categoriesOfType(categories, type);
@@ -369,6 +392,7 @@ export function useTransactionForm({
     repeatSkipFirst, setRepeatSkipFirst,
     repeatMinDate,
     recurringPastAffected,
+    recurringSkipWindow,
     repeatName, setRepeatName, repeatNameError,
     modalAccountVisible, setModalAccountVisible,
     modalCalendarVisible, setModalCalendarVisible,

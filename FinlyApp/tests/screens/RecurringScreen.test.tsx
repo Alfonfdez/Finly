@@ -66,6 +66,7 @@ const rule: RecurringRule = {
   start_date: '2026-10-05',
   end_date: null,
   next_due: '2026-11-05',
+  skipped_from: null,
   active: 1,
   created_at: '2026-10-05',
   updated_at: null,

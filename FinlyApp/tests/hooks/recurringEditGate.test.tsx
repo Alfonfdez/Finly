@@ -94,6 +94,7 @@ function ruleProps(overrides: Partial<HookProps> = {}): HookProps {
     initialTagIds: [],
     initialRuleNextDue: null,
     initialRuleActive: true,
+    initialRuleSkippedFrom: null,
     errorTitle: 'Oops',
     errorMessage: 'Failed',
     onSubmit: vi.fn(),
@@ -119,6 +120,9 @@ const noEnd = { initialRuleNextDue: '2026-10-07', initialRepeatEnd: null };
 const finished = { initialRuleNextDue: '2026-10-01', initialRepeatEnd: new Date(2026, 8, 30) };
 const overdue = { initialRuleNextDue: '2026-09-25', initialRepeatEnd: new Date(2026, 9, 31) };
 const pausedOverdue = { ...overdue, initialRuleActive: false };
+const skippedRecoverable = { initialRuleNextDue: '2026-10-07', initialRuleSkippedFrom: '2026-10-01', initialRepeatEnd: new Date(2026, 9, 31) };
+const skippedPastEnd = { initialRuleNextDue: '2026-10-07', initialRuleSkippedFrom: '2026-10-01', initialRepeatEnd: new Date(2026, 8, 15) };
+const skippedFuture = { initialRuleNextDue: '2026-10-07', initialRuleSkippedFrom: '2026-12-01', initialRepeatEnd: new Date(2026, 9, 31) };
 
 // Edits
 const extendEnd: Edit = (h) => h.setRepeatEnd(new Date(2026, 10, 30));
@@ -158,6 +162,9 @@ const SCENARIOS: [string, Partial<HookProps>, Edit | undefined, boolean][] = [
   ['active future / day', activeFuture, setDay, false],
   ['finished / frequency', finished, setFrequency, false],
   ['overdue / frequency', overdue, setFrequency, true],
+  ['skipped window / none', skippedRecoverable, undefined, true],
+  ['skipped window / outside end date', skippedPastEnd, undefined, false],
+  ['skipped window / in the future', skippedFuture, undefined, false],
 ];
 
 describe('recurring edit gate — "Future + past" enabling logic', () => {

@@ -19,6 +19,7 @@ export async function createRecurringSchema(db: DatabaseHandle) {
       start_date TEXT NOT NULL,
       end_date TEXT,
       next_due TEXT NOT NULL,
+      skipped_from TEXT,
       active INTEGER NOT NULL DEFAULT 1,
       created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
       updated_at TEXT,

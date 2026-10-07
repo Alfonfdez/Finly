@@ -118,6 +118,7 @@ export const recurringRepo = {
       if (data.start_date !== undefined) set.start_date = data.start_date;
       if (data.end_date !== undefined) set.end_date = data.end_date;
       if (data.next_due !== undefined) set.next_due = data.next_due;
+      if (data.skipped_from !== undefined) set.skipped_from = data.skipped_from;
       if (data.active !== undefined) set.active = data.active;
       if (Object.keys(set).length > 0) {
         await db

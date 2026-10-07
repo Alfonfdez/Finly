@@ -63,6 +63,12 @@ vi.mock('../../src/database/recurringService', () => ({
   saveRecurringRuleEdit: (params: unknown) => mockSaveEdit(params),
 }));
 
+// Pin "today" so the skip-window warning is deterministic.
+vi.mock('../../src/utils/recurrence', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../src/utils/recurrence')>();
+  return { ...actual, todayDateOnly: () => '2026-10-06' };
+});
+
 vi.mock('@react-navigation/native', async () => {
   const React = await import('react');
   return {
@@ -99,6 +105,7 @@ const rule: RecurringRule = {
   start_date: '2026-10-05',
   end_date: null,
   next_due: '2026-11-05',
+  skipped_from: null,
   active: 1,
   created_at: '2026-10-05',
   updated_at: null,
@@ -180,6 +187,32 @@ describe('ModifyRecurringScreen', () => {
     const view = await render(<ModifyRecurringScreen />);
     await waitFor(() => expect(view.getByText('Future + past')).toBeTruthy());
     await fireEvent.press(view.getByText('Save'));
+
+    await waitFor(() => expect(mockSaveEdit).toHaveBeenCalledTimes(1));
+    const params = mockSaveEdit.mock.calls[0][0] as { scope: string };
+    expect(params.scope).toBe('future');
+  });
+
+  it('warns before a "Future only" save skips occurrences (and does not save yet)', async () => {
+    mockGetById.mockResolvedValue({ ...rule, start_date: '2026-08-05', next_due: '2026-09-05' });
+    const view = await render(<ModifyRecurringScreen />);
+    await waitFor(() => expect(view.getByText('Future + past')).toBeTruthy());
+
+    // The save awaits the user's choice, so don't await the press itself.
+    void fireEvent.press(view.getByText('Save'));
+
+    await waitFor(() => expect(view.getByText('Skip occurrences?')).toBeTruthy());
+    expect(mockSaveEdit).not.toHaveBeenCalled();
+  });
+
+  it('saves after the skip warning is confirmed', async () => {
+    mockGetById.mockResolvedValue({ ...rule, start_date: '2026-08-05', next_due: '2026-09-05' });
+    const view = await render(<ModifyRecurringScreen />);
+    await waitFor(() => expect(view.getByText('Future + past')).toBeTruthy());
+
+    void fireEvent.press(view.getByText('Save'));
+    await waitFor(() => expect(view.getByText('Skip occurrences?')).toBeTruthy());
+    await fireEvent.press(view.getByText('Skip them'));
 
     await waitFor(() => expect(mockSaveEdit).toHaveBeenCalledTimes(1));
     const params = mockSaveEdit.mock.calls[0][0] as { scope: string };

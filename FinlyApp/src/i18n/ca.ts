@@ -518,6 +518,11 @@ export const ca: Language = {
   repeat_skip_first: 'Ometre la primera repetició',
   repeat_first_occurrence: (date: string) => `Primera transacció: ${date}`,
 
+  // Recurring skip warning
+  recurring_skip_warning_title: 'Ometre ocurrències?',
+  recurring_skip_warning_message: (count: number, from: string) => `Ometrà ${count} ${count === 1 ? 'ocurrència' : 'ocurrències'} a partir de ${from}. No es crearan ara — pots afegir-les més tard amb "Futur + passat".`,
+  recurring_skip_warning_confirm: 'Ometre-les',
+
   // Home tag filter
   home_tag_all: 'Tots',
   home_tag_untagged: 'Sense etiqueta',

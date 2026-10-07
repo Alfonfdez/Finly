@@ -71,6 +71,7 @@ export default function CreateRecurringScreen() {
             description: data.description,
             ...schedule,
             next_due: nextDue,
+            skipped_from: null,
             active: 1,
           },
           tagIds,

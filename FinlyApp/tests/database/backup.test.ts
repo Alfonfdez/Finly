@@ -180,7 +180,7 @@ describe('backup round-trip', () => {
     ).lastInsertRowId;
     const ruleId = (
       await source.runAsync(
-        "INSERT INTO recurring_rules (user_id, name, type, account_id, category_id, amount, description, frequency, interval, weekday, day_of_month, month, start_date, end_date, next_due, active, created_at, updated_at) VALUES (1, 'Rent', 'expense', 1, 3, 100, 'Rent', 'monthly', 1, NULL, 2, NULL, '2026-01-02', NULL, '2026-03-02', 1, '2026-01-01', NULL)"
+        "INSERT INTO recurring_rules (user_id, name, type, account_id, category_id, amount, description, frequency, interval, weekday, day_of_month, month, start_date, end_date, next_due, skipped_from, active, created_at, updated_at) VALUES (1, 'Rent', 'expense', 1, 3, 100, 'Rent', 'monthly', 1, NULL, 2, NULL, '2026-01-02', NULL, '2026-03-02', '2026-02-02', 1, '2026-01-01', NULL)"
       )
     ).lastInsertRowId;
     await source.runAsync('INSERT INTO recurring_rule_tags (rule_id, tag_id) VALUES (?, ?)', ruleId, tagId);

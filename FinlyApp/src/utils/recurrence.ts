@@ -124,6 +124,37 @@ export function isRecurrenceEnded(schedule: RecurrenceSchedule, nextDue: string,
   return nextEffectiveOccurrence(schedule, nextDue, today) > schedule.end_date;
 }
 
+export interface SkipWindow {
+  /** First skipped occurrence. */
+  from: string;
+  /** First occurrence after the skipped window (the new cursor). */
+  to: string;
+  /** Number of occurrences in `[from, to)`. */
+  count: number;
+}
+
+/**
+ * Occurrences a "Future only" edit would skip: those the schedule has in
+ * `[first on/after cursor, first on/after max(cursor, today))`. Returns `null`
+ * when nothing is skipped (the cursor is already at/after the next occurrence).
+ */
+export function recurrenceSkipWindow(
+  schedule: RecurrenceSchedule,
+  cursor: string,
+  today: string,
+): SkipWindow | null {
+  const from = nextDueOnOrAfter(schedule, cursor);
+  const to = nextDueOnOrAfter(schedule, cursor > today ? cursor : today);
+  if (from >= to) return null;
+  let count = 0;
+  let c = from;
+  while (c < to) {
+    count += 1;
+    c = advanceOccurrence(schedule, c);
+  }
+  return { from, to, count };
+}
+
 export function listDueOccurrences(
   schedule: RecurrenceSchedule,
   from: string,

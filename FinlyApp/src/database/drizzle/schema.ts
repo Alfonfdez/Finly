@@ -64,6 +64,7 @@ export const recurringRules = sqliteTable('recurring_rules', {
   start_date: text('start_date').notNull(),
   end_date: text('end_date'),
   next_due: text('next_due').notNull(),
+  skipped_from: text('skipped_from'),
   active: integer('active').notNull().default(1),
   created_at: text('created_at').notNull().default(sql`(datetime('now', 'localtime'))`),
   updated_at: text('updated_at'),

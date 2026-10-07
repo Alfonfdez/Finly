@@ -58,6 +58,7 @@ const baseRule = {
   start_date: '2026-01-02',
   end_date: null,
   next_due: '2026-01-02',
+  skipped_from: null,
   active: 1,
 };
 
@@ -221,6 +222,72 @@ describe('materializeDueRecurring', () => {
 
     const revived = (await recurringRepo.list(1))[0];
     expect(isRecurrenceEnded(revived, revived.next_due, '2026-10-05')).toBe(false);
+  });
+
+  it('records the skipped window on a Future-only edit and recovers it with Future + past', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(dailySep, []);
+    expect(await materializeDueRecurring(OCT_5)).toBe(30); // Sep 1-30
+    expect((await recurringRepo.list(1))[0].next_due).toBe('2026-10-01');
+
+    // Extend to Oct 31, Future only -> skips Oct 1-4, creates Oct 5.
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'daily', interval: 1, endDate: '2026-10-31' },
+      scope: 'future',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: OCT_5,
+    });
+    const afterSkip = (await recurringRepo.list(1))[0];
+    expect(afterSkip.next_due).toBe('2026-10-06');
+    expect(afterSkip.skipped_from).toBe('2026-10-01');
+    expect(await transactionRepo.list()).toHaveLength(31); // Sep 1-30 + Oct 5
+
+    // Change of mind: Future + past back-fills Oct 1-4 and clears the record.
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'daily', interval: 1, endDate: '2026-10-31' },
+      scope: 'futureAndPast',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: OCT_5,
+    });
+    const afterFill = (await recurringRepo.list(1))[0];
+    expect(afterFill.skipped_from).toBeNull();
+    const dates = (await transactionRepo.list()).map(t => t.recurrence_date).sort();
+    expect(dates).toHaveLength(35); // Sep 1-30 + Oct 1-5
+    expect(dates).toContain('2026-10-04');
+  });
+
+  it('clears skipped_from when the end date is shortened past the skipped window', async () => {
+    const { recurringRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(dailySep, []);
+    await materializeDueRecurring(OCT_5);
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'daily', interval: 1, endDate: '2026-10-31' },
+      scope: 'future',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: OCT_5,
+    });
+    expect((await recurringRepo.list(1))[0].skipped_from).toBe('2026-10-01');
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'daily', interval: 1, endDate: '2026-09-30' },
+      scope: 'future',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: OCT_5,
+    });
+    expect((await recurringRepo.list(1))[0].skipped_from).toBeNull();
   });
 
   it('extending the end date with futureAndPast back-fills the missed window', async () => {

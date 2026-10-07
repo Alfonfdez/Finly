@@ -518,6 +518,11 @@ export const de: Language = {
   repeat_skip_first: 'Erstes Vorkommen überspringen',
   repeat_first_occurrence: (date: string) => `Erste Transaktion: ${date}`,
 
+  // Recurring skip warning
+  recurring_skip_warning_title: 'Vorkommen überspringen?',
+  recurring_skip_warning_message: (count: number, from: string) => `${count} ${count === 1 ? 'Vorkommen wird' : 'Vorkommen werden'} ab ${from} übersprungen. Sie werden jetzt nicht erstellt — du kannst sie später mit "Zukunft + Vergangenheit" hinzufügen.`,
+  recurring_skip_warning_confirm: 'Überspringen',
+
   // Home tag filter
   home_tag_all: 'Alle',
   home_tag_untagged: 'Ohne Tag',

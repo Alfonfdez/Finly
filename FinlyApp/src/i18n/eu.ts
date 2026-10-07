@@ -518,6 +518,11 @@ export const eu: Language = {
   repeat_skip_first: 'Lehen errepikapena saltatu',
   repeat_first_occurrence: (date: string) => `Lehen transakzioa: ${date}`,
 
+  // Recurring skip warning
+  recurring_skip_warning_title: 'Errepikapenak saihestu?',
+  recurring_skip_warning_message: (count: number, from: string) => `${from}(e)tik aurrera ${count} errepikapen saihestuko dira. Orain ez dira sortuko — geroago gehitu ditzakezu "Etorkizuna + iragana" aukerarekin.`,
+  recurring_skip_warning_confirm: 'Saihestu',
+
   // Home tag filter
   home_tag_all: 'Guztiak',
   home_tag_untagged: 'Etiketarik gabe',
