@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import { RECURRENCE_FREQUENCIES, type RecurrenceFrequency } from '../constants/types';
+import { RECURRENCE_FREQUENCIES, REPEAT_MAX_INTERVAL, REPEAT_MIN_INTERVAL, REPEAT_NAME_MAX_LENGTH, type RecurrenceFrequency } from '../constants/types';
 import { formatDateLong } from '../utils/formatters';
 import { advanceOccurrence, buildRecurrenceSchedule, fromDateOnly, toDateOnly } from '../utils/recurrence';
 import { recurrenceSummary } from '../utils/recurrenceSummary';
@@ -38,9 +38,6 @@ const FREQUENCIES: RecurrenceFrequency[] = [
   RECURRENCE_FREQUENCIES.yearly,
 ];
 
-const MIN_INTERVAL = 1;
-const MAX_INTERVAL = 99;
-
 export default function RepeatSection({
   enabled,
   onToggle,
@@ -71,20 +68,8 @@ export default function RepeatSection({
     yearly: labels.repeat_yearly,
   };
 
-  const dayOfMonth = startDay.getDate();
   const summary = recurrenceSummary(
-    {
-      frequency,
-      interval,
-      weekday: frequency === RECURRENCE_FREQUENCIES.weekly ? startDay.getDay() : null,
-      day_of_month:
-        frequency === RECURRENCE_FREQUENCIES.monthly || frequency === RECURRENCE_FREQUENCIES.yearly
-          ? dayOfMonth
-          : null,
-      month: frequency === RECURRENCE_FREQUENCIES.yearly ? startDay.getMonth() + 1 : null,
-      start_date: toDateOnly(startDay),
-      end_date: endDate ? toDateOnly(endDate) : null,
-    },
+    buildRecurrenceSchedule(startDay, frequency, interval, endDate ? toDateOnly(endDate) : null),
     config.language,
   );
 
@@ -129,7 +114,7 @@ export default function RepeatSection({
             placeholderTextColor={c.textSecondary}
             value={name}
             onChangeText={onChangeName}
-            maxLength={60}
+            maxLength={REPEAT_NAME_MAX_LENGTH}
           />
           {nameError && (
             <Text style={[styles.nameError, { color: c.red, fontSize: fs(12) }]}>
@@ -171,8 +156,8 @@ export default function RepeatSection({
             <View style={styles.stepper}>
               <TouchableOpacity
                 style={[styles.stepperButton, { borderColor: c.border }]}
-                onPress={() => onChangeInterval(Math.max(MIN_INTERVAL, interval - 1))}
-                disabled={interval <= MIN_INTERVAL}
+                onPress={() => onChangeInterval(Math.max(REPEAT_MIN_INTERVAL, interval - 1))}
+                disabled={interval <= REPEAT_MIN_INTERVAL}
                 accessibilityRole="button"
                 accessibilityLabel="-"
               >
@@ -181,8 +166,8 @@ export default function RepeatSection({
               <Text style={[styles.stepperValue, { color: c.text, fontSize: fs(15) }]}>{interval}</Text>
               <TouchableOpacity
                 style={[styles.stepperButton, { borderColor: c.border }]}
-                onPress={() => onChangeInterval(Math.min(MAX_INTERVAL, interval + 1))}
-                disabled={interval >= MAX_INTERVAL}
+                onPress={() => onChangeInterval(Math.min(REPEAT_MAX_INTERVAL, interval + 1))}
+                disabled={interval >= REPEAT_MAX_INTERVAL}
                 accessibilityRole="button"
                 accessibilityLabel="+"
               >
