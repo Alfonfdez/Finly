@@ -3384,3 +3384,7 @@
 [2026-10-06] feat | FinlyApp/src/hooks/useRecurringRuleNames.ts, FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/tests/component/TransactionGroup.test.tsx, FinlyApp/tests/screens/TransactionsScreen.test.tsx, FinlyApp/tests/screens/AllTransactionsScreen.test.tsx, docs/harnesses.md
 - Show the recurring rule name next to the recurring icon in transaction rows (Transactions + All transactions): added a useRecurringRuleNames hook (rule id -> name) and a recurringName prop on TransactionRow, rendered as subtle textSecondary next to the repeat-outline icon. So identical recurring series can be told apart.
 - Tests: TransactionGroup asserts the name renders (and is absent when not provided); screen test mocks include recurringRepository.list. 'npm run test:all' green (107 files / 737 tests). Verified on web at 375px in dark + light with two identical rules (RentA / RentB).
+
+[2026-10-07] chore | FinlyApp/package.json, FinlyApp/package-lock.json
+- Bumped Expo SDK 57 patch deps via 'npx expo install --fix': expo 57.0.26 -> ~57.0.27, expo-constants -> ~57.0.21, expo-sqlite -> ~57.0.4. 'expo install --check' reports dependencies up to date.
+- Verified: 'npm run test:all' green (107 files / 737 tests, typecheck + lint); web dev boot smoke OK at localhost:8081 (0 console errors, only the pre-existing react-native-web pointerEvents deprecation warning).
