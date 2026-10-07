@@ -8,20 +8,18 @@ import type { Category, RecurringRule } from '../../src/database/types';
 const nav = { navigate: vi.fn(), setOptions: vi.fn() };
 
 const mockList = vi.fn(async (_userId: number): Promise<RecurringRule[]> => []);
-const mockSetActive = vi.fn(async (_id: number, _active: boolean): Promise<void> => {});
-const mockResume = vi.fn(async (_id: number): Promise<number> => 0);
+const mockSetActiveRule = vi.fn(async (_id: number, _active: boolean): Promise<number> => 0);
 const mockCounts = vi.fn(async (_ids: number[]): Promise<Map<number, number>> => new Map());
 
 vi.mock('../../src/database', () => ({
   recurringRepository: {
     list: (userId: number) => mockList(userId),
-    setActive: (id: number, active: boolean) => mockSetActive(id, active),
     countOccurrencesByRuleIds: (ids: number[]) => mockCounts(ids),
   },
 }));
 
 vi.mock('../../src/database/recurringService', () => ({
-  resumeRecurringRule: (id: number) => mockResume(id),
+  setRecurringRuleActive: (id: number, active: boolean) => mockSetActiveRule(id, active),
 }));
 
 vi.mock('@react-navigation/native', async () => {
@@ -76,8 +74,7 @@ describe('RecurringScreen', () => {
   beforeEach(() => {
     nav.navigate.mockClear();
     mockList.mockReset().mockResolvedValue([rule]);
-    mockSetActive.mockClear();
-    mockResume.mockClear();
+    mockSetActiveRule.mockClear();
     mockCounts.mockReset().mockResolvedValue(new Map());
     setAppData({ categoriesById: new Map([[1, category]]) });
   });
@@ -117,25 +114,22 @@ describe('RecurringScreen', () => {
     await waitFor(() => expect(view.getByRole('switch')).toBeTruthy());
     await fireEvent(view.getByRole('switch'), 'valueChange', true);
     await fireEvent(view.getByRole('switch'), 'valueChange', false);
-    expect(mockResume).not.toHaveBeenCalled();
-    expect(mockSetActive).not.toHaveBeenCalled();
+    expect(mockSetActiveRule).not.toHaveBeenCalled();
   });
 
-  it('pauses through setActive when the switch is turned off', async () => {
+  it('pauses through the service when the switch is turned off', async () => {
     const view = await render(<RecurringScreen />);
     await waitFor(() => expect(view.getByRole('switch')).toBeTruthy());
     await fireEvent(view.getByRole('switch'), 'valueChange', false);
-    expect(mockSetActive).toHaveBeenCalledWith(1, false);
-    expect(mockResume).not.toHaveBeenCalled();
+    expect(mockSetActiveRule).toHaveBeenCalledWith(1, false);
     expect(nav.navigate).not.toHaveBeenCalled();
   });
 
-  it('resumes through the skip-pause path when the switch is turned on', async () => {
+  it('resumes through the service when the switch is turned on', async () => {
     const view = await render(<RecurringScreen />);
     await waitFor(() => expect(view.getByRole('switch')).toBeTruthy());
     await fireEvent(view.getByRole('switch'), 'valueChange', true);
-    expect(mockResume).toHaveBeenCalledWith(1);
-    expect(mockSetActive).not.toHaveBeenCalled();
+    expect(mockSetActiveRule).toHaveBeenCalledWith(1, true);
     expect(nav.navigate).not.toHaveBeenCalled();
   });
 });

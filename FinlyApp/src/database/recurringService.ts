@@ -1,7 +1,7 @@
 import { withTransaction } from './drizzle/engine';
 import { recurringRepo, type RecurringRuleInput } from './repositories/recurringRepo';
-import { listDueOccurrences, nextDueOnOrAfter, fromDateOnly, todayDateOnly, isRecurrenceEnded, recurrenceSkipWindow, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
-import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, type RecurrenceScope } from '../constants/types';
+import { advanceOccurrence, buildRecurrenceSchedule, isRecurrenceEnded, isSkippedWindowRecoverable, listDueOccurrences, nextDueOnOrAfter, fromDateOnly, recurrenceSkipWindow, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
+import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, USER_ID, type RecurrenceScope } from '../constants/types';
 import type { RecurringRule } from './types';
 
 /**
@@ -45,6 +45,57 @@ export async function materializeDueRecurring(now: Date = new Date()): Promise<n
   return created;
 }
 
+export interface CreateRecurringRuleParams {
+  name: string;
+  type: RecurringRule['type'];
+  account_id: number;
+  category_id: number;
+  amount: number;
+  description: string | null;
+  /** The selected transaction date, used as the schedule anchor. */
+  date: string;
+  frequency: RecurringRule['frequency'];
+  interval: number;
+  endDate: string | null;
+  skipFirst: boolean;
+  tagIds: number[];
+  now?: Date;
+}
+
+/**
+ * Create a recurring rule from a transaction-form draft and immediately
+ * materialize any occurrence that is already due.
+ *
+ * @returns the number of transactions created by the initial reconciliation.
+ */
+export async function createRecurringRule(params: CreateRecurringRuleParams): Promise<number> {
+  const schedule = buildRecurrenceSchedule(
+    fromDateOnly(params.date.slice(0, 10)),
+    params.frequency,
+    params.interval,
+    params.endDate,
+  );
+  const nextDue = params.skipFirst ? advanceOccurrence(schedule, schedule.start_date) : schedule.start_date;
+
+  await recurringRepo.createWithTags(
+    {
+      user_id: USER_ID,
+      name: params.name,
+      type: params.type,
+      account_id: params.account_id,
+      category_id: params.category_id,
+      amount: params.amount,
+      description: params.description,
+      ...schedule,
+      next_due: nextDue,
+      active: 1,
+    },
+    params.tagIds,
+  );
+
+  return materializeDueRecurring(params.now);
+}
+
 /**
  * Resume a paused rule. Occurrences missed while paused are intentionally NOT
  * created: the cursor jumps to the first occurrence on/after today, then the
@@ -65,6 +116,20 @@ export async function resumeRecurringRule(ruleId: number, now: Date = new Date()
 
   await recurringRepo.reactivate(ruleId, nextDue);
   return materializeDueRecurring(now);
+}
+
+/**
+ * Pause or resume a rule from the Recurring screen toggle. Pausing only clears
+ * the active flag; resuming skips the paused window (see {@link resumeRecurringRule}).
+ *
+ * @returns the number of transactions created (resume only).
+ */
+export async function setRecurringRuleActive(ruleId: number, active: boolean, now: Date = new Date()): Promise<number> {
+  if (!active) {
+    await recurringRepo.setActive(ruleId, false);
+    return 0;
+  }
+  return resumeRecurringRule(ruleId, now);
 }
 
 export interface RecurringEditRecurrence {
@@ -147,7 +212,7 @@ export async function saveRecurringRuleEdit(params: RecurringEditParams): Promis
   // skipped occurrence so it can be recovered later. Clear it once it falls past
   // the (possibly shortened) end date.
   let skippedFrom = scope === RECURRENCE_SCOPES.futureAndPast ? null : current.skipped_from ?? skip?.from ?? null;
-  if (skippedFrom != null && schedule.end_date != null && skippedFrom > schedule.end_date) {
+  if (!isSkippedWindowRecoverable(skippedFrom, schedule.end_date, today)) {
     skippedFrom = null;
   }
 

@@ -17,7 +17,7 @@ import { formatAmount, formatDateLong, parseDbDate } from '../utils/formatters';
 import { fromDateOnly, isRecurrenceEnded, todayDateOnly } from '../utils/recurrence';
 import { recurrenceSummary } from '../utils/recurrenceSummary';
 import { recurringRepository } from '../database';
-import { resumeRecurringRule } from '../database/recurringService';
+import { setRecurringRuleActive } from '../database/recurringService';
 import type { RecurringRule } from '../database/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Recurring'>;
@@ -42,15 +42,15 @@ export default function RecurringScreen() {
   const today = todayDateOnly();
 
   const handleToggleActive = useCallback(async (rule: RecurringRule, value: boolean) => {
-    // An ended rule has no occurrence left to generate — it cannot be resumed.
+    // The switch is disabled for finished rules; guard here anyway (the service
+    // also refuses to resume an ended rule). Pausing clears the flag; resuming
+    // skips the paused window.
     if (isRecurrenceEnded(rule, rule.next_due, todayDateOnly())) return;
+    await setRecurringRuleActive(rule.id, value);
     if (value) {
-      // Resume: skip the occurrences missed while paused, then materialize the current one.
-      await resumeRecurringRule(rule.id);
       setData(await loadRules());
       refresh();
     } else {
-      await recurringRepository.setActive(rule.id, false);
       setData(prev => ({ ...prev, rules: prev.rules.map(r => (r.id === rule.id ? { ...r, active: 0 } : r)) }));
     }
   }, [setData, refresh, loadRules]);

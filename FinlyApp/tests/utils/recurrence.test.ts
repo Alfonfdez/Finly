@@ -4,6 +4,7 @@ import {
   buildRecurrenceSchedule,
   fromDateOnly,
   isRecurrenceEnded,
+  isSkippedWindowRecoverable,
   listDueOccurrences,
   nextEffectiveOccurrence,
   recurrenceSkipWindow,
@@ -131,6 +132,26 @@ describe('isRecurrenceEnded', () => {
   it('nextEffectiveOccurrence keeps a frozen cursor that is still in the future', () => {
     expect(nextEffectiveOccurrence(ended, '2026-03-02', '2026-02-15')).toBe('2026-03-02');
     expect(nextEffectiveOccurrence(ended, '2026-02-02', '2026-04-15')).toBe('2026-04-02');
+  });
+});
+
+describe('isSkippedWindowRecoverable', () => {
+  it('is false without a recorded skip', () => {
+    expect(isSkippedWindowRecoverable(null, null, '2026-10-07')).toBe(false);
+    expect(isSkippedWindowRecoverable(undefined, null, '2026-10-07')).toBe(false);
+  });
+
+  it('is false for a skip in the future', () => {
+    expect(isSkippedWindowRecoverable('2026-12-01', null, '2026-10-07')).toBe(false);
+  });
+
+  it('is true for a past skip with no end date', () => {
+    expect(isSkippedWindowRecoverable('2026-10-01', null, '2026-10-07')).toBe(true);
+  });
+
+  it('is false once the end date falls before the skip', () => {
+    expect(isSkippedWindowRecoverable('2026-10-01', '2026-09-30', '2026-10-07')).toBe(false);
+    expect(isSkippedWindowRecoverable('2026-10-01', '2026-10-31', '2026-10-07')).toBe(true);
   });
 });
 

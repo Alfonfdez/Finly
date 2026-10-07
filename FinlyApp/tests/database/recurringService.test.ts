@@ -38,8 +38,8 @@ async function boot() {
   const { recurringRepo } = await import('../../src/database/repositories/recurringRepo');
   const { transactionRepo } = await import('../../src/database/repositories/transactionRepo');
   const { tagRepo } = await import('../../src/database/repositories/tagRepo');
-  const { materializeDueRecurring, resumeRecurringRule, saveRecurringRuleEdit } = await import('../../src/database/recurringService');
-  return { db, recurringRepo, transactionRepo, tagRepo, materializeDueRecurring, resumeRecurringRule, saveRecurringRuleEdit };
+  const { createRecurringRule, materializeDueRecurring, resumeRecurringRule, saveRecurringRuleEdit } = await import('../../src/database/recurringService');
+  return { db, recurringRepo, transactionRepo, tagRepo, createRecurringRule, materializeDueRecurring, resumeRecurringRule, saveRecurringRuleEdit };
 }
 
 const baseRule = {
@@ -58,11 +58,46 @@ const baseRule = {
   start_date: '2026-01-02',
   end_date: null,
   next_due: '2026-01-02',
-  skipped_from: null,
   active: 1,
 };
 
 const APR_15 = new Date(2026, 3, 15, 12, 0, 0);
+
+describe('createRecurringRule', () => {
+  const params = {
+    name: 'Rent',
+    type: 'expense' as const,
+    account_id: 1,
+    category_id: 3,
+    amount: 100,
+    description: 'Rent',
+    date: '2026-01-02 00:00:00',
+    frequency: 'monthly' as const,
+    interval: 1,
+    endDate: null,
+    tagIds: [],
+  };
+
+  it('creates a rule and materializes already-due occurrences', async () => {
+    const { recurringRepo, transactionRepo, createRecurringRule } = await boot();
+    const created = await createRecurringRule({ ...params, skipFirst: false, now: APR_15 });
+
+    expect(created).toBe(4); // Jan-Apr 2
+    const [rule] = await recurringRepo.list(1);
+    expect(rule.name).toBe('Rent');
+    expect(rule.next_due).toBe('2026-05-02');
+    expect(await transactionRepo.list()).toHaveLength(4);
+  });
+
+  it('defers the first occurrence when skipFirst is set', async () => {
+    const { transactionRepo, createRecurringRule } = await boot();
+    const created = await createRecurringRule({ ...params, skipFirst: true, now: APR_15 });
+
+    expect(created).toBe(3); // Feb-Apr 2
+    const dates = (await transactionRepo.list()).map(t => t.recurrence_date).sort();
+    expect(dates).toEqual(['2026-02-02', '2026-03-02', '2026-04-02']);
+  });
+});
 
 describe('materializeDueRecurring', () => {
   it('back-fills every missed monthly occurrence and advances next_due', async () => {
