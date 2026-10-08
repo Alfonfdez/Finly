@@ -517,6 +517,13 @@ export const eu: Language = {
   repeat_skip_first: 'Lehen errepikapena saltatu',
   repeat_first_occurrence: (date: string) => `Lehen transakzioa: ${date}`,
 
+  // Recurring summary block
+  recurring_info_title: 'Laburpena',
+  recurring_info_next: (date: string) => `Hurrengo transakzioa: ${date}`,
+  recurring_info_count: (n: number) => (n === 0 ? 'Orain ez da transakziorik sortuko' : `${n} transakzio sortuko dira`),
+  recurring_info_skipped: (n: number) => `${n} errepikapen saltatuko dira`,
+  recurring_info_backfill: (n: number) => `${n} falta diren errepikapen beteko dira`,
+
   // Recurring skip warning
   recurring_skip_warning_title: 'Errepikapenak saihestu?',
   recurring_skip_warning_message: (count: number, from: string) => `${from}(e)tik aurrera ${count} errepikapen saihestuko dira. Orain ez dira sortuko — geroago gehitu ditzakezu "Etorkizuna + iragana" aukerarekin.`,

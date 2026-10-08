@@ -517,6 +517,13 @@ export const gl: Language = {
   repeat_skip_first: 'Omitir a primeira repetición',
   repeat_first_occurrence: (date: string) => `Primeira transacción: ${date}`,
 
+  // Recurring summary block
+  recurring_info_title: 'Resumo',
+  recurring_info_next: (date: string) => `Próxima transacción: ${date}`,
+  recurring_info_count: (n: number) => (n === 0 ? 'Non se creará ningunha transacción agora' : `Crearanse ${n} ${n === 1 ? 'transacción' : 'transaccións'}`),
+  recurring_info_skipped: (n: number) => `Omitiranse ${n} ${n === 1 ? 'ocorrencia' : 'ocorrencias'}`,
+  recurring_info_backfill: (n: number) => `Enche ${n} ${n === 1 ? 'ocorrencia omitida' : 'ocorrencias omitidas'}`,
+
   // Recurring skip warning
   recurring_skip_warning_title: 'Omitir ocorrencias?',
   recurring_skip_warning_message: (count: number, from: string) => `Omitiranse ${count} ${count === 1 ? 'ocorrencia' : 'ocorrencias'} a partir de ${from}. Non se crearán agora — podes engadilas máis tarde con "Futuro + pasado".`,

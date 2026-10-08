@@ -1,6 +1,6 @@
 import { withTransaction } from './drizzle/engine';
 import { recurringRepo, type RecurringRuleInput } from './repositories/recurringRepo';
-import { advanceOccurrence, buildRecurrenceSchedule, isRecurrenceEnded, isSkippedWindowRecoverable, listDueOccurrences, nextDueOnOrAfter, fromDateOnly, recurrenceSkipWindow, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
+import { advanceOccurrence, buildRecurrenceSchedule, isRecurrenceEnded, isSkippedWindowRecoverable, listDueOccurrences, nextDueOnOrAfter, resolveEditAnchor, fromDateOnly, recurrenceSkipWindow, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
 import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, USER_ID, type RecurrenceScope } from '../constants/types';
 import type { RecurringRule } from './types';
 
@@ -212,14 +212,12 @@ export async function saveRecurringRuleEdit(params: RecurringEditParams): Promis
 
   // "Future + past" re-anchors at the earliest skipped occurrence so the window a
   // previous "Future only" edit passed over is back-filled.
-  const anchor =
-    scope === RECURRENCE_SCOPES.futureAndPast && current.skipped_from != null && current.skipped_from < cursor
-      ? current.skipped_from
-      : cursor;
-  const nextDue =
-    scope === RECURRENCE_SCOPES.futureAndPast
-      ? nextDueOnOrAfter(schedule, anchor)
-      : nextDueOnOrAfter(schedule, cursor > today ? cursor : today);
+  const nextDue = resolveEditAnchor(schedule, {
+    cursor,
+    scope,
+    today,
+    skippedFrom: current.skipped_from,
+  });
 
   // "Future + past" fills the skipped window; "Future only" records the earliest
   // skipped occurrence so it can be recovered later. Clear it once it falls past

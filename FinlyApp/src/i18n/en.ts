@@ -515,6 +515,13 @@ export const en = {
   repeat_skip_first: 'Skip the first occurrence',
   repeat_first_occurrence: (date: string) => `First transaction: ${date}`,
 
+  // Recurring summary block
+  recurring_info_title: 'Summary',
+  recurring_info_next: (date: string) => `Next transaction: ${date}`,
+  recurring_info_count: (n: number) => (n === 0 ? 'No transactions will be created now' : `${n} ${n === 1 ? 'transaction' : 'transactions'} will be created`),
+  recurring_info_skipped: (n: number) => `${n} ${n === 1 ? 'occurrence' : 'occurrences'} will be skipped`,
+  recurring_info_backfill: (n: number) => `Back-fills ${n} missed ${n === 1 ? 'occurrence' : 'occurrences'}`,
+
   // Recurring skip warning
   recurring_skip_warning_title: 'Skip occurrences?',
   recurring_skip_warning_message: (count: number, from: string) => `This will skip ${count} ${count === 1 ? 'occurrence' : 'occurrences'} starting ${from}. They won't be created now — you can add them later with "Future + past".`,

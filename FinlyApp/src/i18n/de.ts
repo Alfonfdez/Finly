@@ -517,6 +517,13 @@ export const de: Language = {
   repeat_skip_first: 'Erstes Vorkommen überspringen',
   repeat_first_occurrence: (date: string) => `Erste Transaktion: ${date}`,
 
+  // Recurring summary block
+  recurring_info_title: 'Zusammenfassung',
+  recurring_info_next: (date: string) => `Nächste Transaktion: ${date}`,
+  recurring_info_count: (n: number) => (n === 0 ? 'Es wird jetzt keine Transaktion erstellt' : `Es ${n === 1 ? 'wird' : 'werden'} ${n} Transaktion${n === 1 ? '' : 'en'} erstellt`),
+  recurring_info_skipped: (n: number) => `${n} Vorkommen ${n === 1 ? 'wird' : 'werden'} übersprungen`,
+  recurring_info_backfill: (n: number) => `Holt ${n} verpasste Vorkommen nach`,
+
   // Recurring skip warning
   recurring_skip_warning_title: 'Vorkommen überspringen?',
   recurring_skip_warning_message: (count: number, from: string) => `${count} ${count === 1 ? 'Vorkommen wird' : 'Vorkommen werden'} ab ${from} übersprungen. Sie werden jetzt nicht erstellt — du kannst sie später mit "Zukunft + Vergangenheit" hinzufügen.`,

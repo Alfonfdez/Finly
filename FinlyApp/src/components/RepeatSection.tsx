@@ -4,13 +4,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import { RECURRENCE_FREQUENCIES, REPEAT_MAX_INTERVAL, REPEAT_MIN_INTERVAL, REPEAT_NAME_MAX_LENGTH, type RecurrenceFrequency } from '../constants/types';
+import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, REPEAT_MAX_INTERVAL, REPEAT_MIN_INTERVAL, REPEAT_NAME_MAX_LENGTH, type RecurrenceFrequency, type RecurrenceScope } from '../constants/types';
 import { formatDateLong } from '../utils/formatters';
-import { advanceOccurrence, buildRecurrenceSchedule, fromDateOnly, toDateOnly } from '../utils/recurrence';
+import { buildRecurrenceSchedule, fromDateOnly, recurrencePreview, recurrenceSkipWindow, toDateOnly, todayDateOnly } from '../utils/recurrence';
 import { recurrenceSummary } from '../utils/recurrenceSummary';
-import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, PILL_RADIUS, SECTION_GAP, SECTION_GAP_SM, SECTION_TITLE_STYLE, recurringCardColors, switchColors } from './componentStyles';
+import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, CONTROL_BORDER_RADIUS, PILL_RADIUS, SECTION_GAP, SECTION_GAP_SM, SECTION_TITLE_STYLE, recurringCardColors, switchColors } from './componentStyles';
 import ClearButton from './ClearButton';
 import CheckboxRow from './settings/CheckboxRow';
+import RecurrenceInfo from './RecurrenceInfo';
 
 interface Props {
   enabled: boolean;
@@ -30,6 +31,13 @@ interface Props {
   onChangeName: (value: string) => void;
   nameError: 'required' | 'taken' | null;
   showToggle?: boolean;
+  /** Edit mode: the rule's cursor (presence switches the info to "next transaction"). */
+  ruleNextDue?: string | null;
+  ruleSkippedFrom?: string | null;
+  showScope?: boolean;
+  scope?: RecurrenceScope;
+  onChangeScope?: (scope: RecurrenceScope) => void;
+  scopeDisabled?: boolean;
 }
 
 const FREQUENCIES: RecurrenceFrequency[] = [
@@ -57,6 +65,12 @@ export default function RepeatSection({
   onChangeName,
   nameError,
   showToggle = true,
+  ruleNextDue = null,
+  ruleSkippedFrom = null,
+  showScope = false,
+  scope = RECURRENCE_SCOPES.future,
+  onChangeScope,
+  scopeDisabled = false,
 }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
@@ -69,14 +83,36 @@ export default function RepeatSection({
     yearly: labels.repeat_yearly,
   }), [labels]);
 
-  const summary = recurrenceSummary(
-    buildRecurrenceSchedule(startDay, frequency, interval, endDate ? toDateOnly(endDate) : null),
-    config.language,
+  const schedule = useMemo(
+    () => buildRecurrenceSchedule(startDay, frequency, interval, endDate ? toDateOnly(endDate) : null),
+    [startDay, frequency, interval, endDate],
   );
+  const summary = recurrenceSummary(schedule, config.language);
 
-  const firstOccurrence = skipFirst
-    ? fromDateOnly(advanceOccurrence(buildRecurrenceSchedule(startDay, frequency, interval), toDateOnly(startDay)))
+  const isEdit = ruleNextDue != null;
+  const preview = recurrencePreview(schedule, {
+    today: todayDateOnly(),
+    skipFirst: !isEdit && skipFirst,
+    cursor: ruleNextDue,
+    scope,
+    skippedFrom: ruleSkippedFrom,
+  });
+  const skipWindow = isEdit && scope === RECURRENCE_SCOPES.future && ruleNextDue
+    ? recurrenceSkipWindow(schedule, ruleNextDue, todayDateOnly())
     : null;
+
+  const formatOccurrence = (value: string) => formatDateLong(fromDateOnly(value), config.language);
+  const firstLine = isEdit
+    ? labels.recurring_info_next(formatOccurrence(preview.firstDate))
+    : labels.repeat_first_occurrence(formatOccurrence(preview.firstDate));
+
+  const detailLines: string[] = [];
+  if (isEdit && scope === RECURRENCE_SCOPES.futureAndPast) {
+    detailLines.push(preview.count > 0 ? labels.recurring_info_backfill(preview.count) : labels.recurring_info_count(0));
+  } else {
+    detailLines.push(labels.recurring_info_count(preview.count));
+    if (skipWindow) detailLines.push(labels.recurring_info_skipped(skipWindow.count));
+  }
 
   return (
     <View style={styles.container}>
@@ -206,15 +242,44 @@ export default function RepeatSection({
                 onToggle={() => onChangeSkipFirst(!skipFirst)}
                 label={labels.repeat_skip_first}
               />
-              {firstOccurrence && (
-                <Text style={[styles.firstOccurrence, { color: c.textSecondary, fontSize: fs(12) }]}>
-                  {labels.repeat_first_occurrence(formatDateLong(firstOccurrence, config.language))}
-                </Text>
-              )}
             </View>
           )}
 
-          <Text style={[styles.summary, { color: c.primary, fontSize: fs(13) }]}>{summary}</Text>
+          {showScope && (
+            <View style={styles.scopeBlock}>
+              <Text style={[styles.label, { color: c.textSecondary, fontSize: fs(12) }]}>
+                {labels.recurring_scope_title}
+              </Text>
+              <View style={[styles.segmented, { backgroundColor: c.background }]}>
+                {([
+                  [RECURRENCE_SCOPES.future, labels.recurring_scope_future],
+                  [RECURRENCE_SCOPES.futureAndPast, labels.recurring_scope_future_past],
+                ] as [RecurrenceScope, string][]).map(([value, label]) => {
+                  const disabled = value === RECURRENCE_SCOPES.futureAndPast && scopeDisabled;
+                  const active = scope === value && !disabled;
+                  return (
+                    <TouchableOpacity
+                      key={value}
+                      style={[styles.segment, active && { backgroundColor: c.primary }, disabled && styles.segmentDisabled]}
+                      onPress={() => !disabled && onChangeScope?.(value)}
+                      disabled={disabled}
+                      accessibilityRole="button"
+                      accessibilityState={{ disabled }}
+                    >
+                      <Text style={[styles.segmentText, { color: active ? c.background : c.textSecondary, fontSize: fs(13), fontWeight: active ? '700' : '600' }]}>
+                        {label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+              <Text style={[styles.scopeHint, { color: c.textSecondary, fontSize: fs(11) }]}>
+                {labels.recurring_scope_past_hint}
+              </Text>
+            </View>
+          )}
+
+          <RecurrenceInfo summary={summary} firstLine={firstLine} detailLines={detailLines} />
         </View>
       )}
     </View>
@@ -261,9 +326,31 @@ const styles = StyleSheet.create({
   skipFirstRow: {
     marginTop: 12,
   },
-  firstOccurrence: {
-    marginTop: 2,
-    marginLeft: 32,
+  scopeBlock: {
+    marginTop: 12,
+  },
+  segmented: {
+    flexDirection: 'row',
+    gap: 4,
+    borderRadius: BUTTON_BORDER_RADIUS,
+    padding: 3,
+    marginTop: 8,
+  },
+  segment: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderRadius: CONTROL_BORDER_RADIUS,
+  },
+  segmentDisabled: {
+    opacity: 0.5,
+  },
+  segmentText: {
+    fontWeight: '600',
+  },
+  scopeHint: {
+    marginTop: 8,
+    fontWeight: '500',
   },
   label: {
     fontWeight: '500',
@@ -325,9 +412,5 @@ const styles = StyleSheet.create({
   endText: {
     flex: 1,
     fontWeight: '500',
-  },
-  summary: {
-    fontWeight: '600',
-    marginTop: 16,
   },
 });
