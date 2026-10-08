@@ -50,10 +50,17 @@ export const TransactionRow = memo(function TransactionRow({ tx, category, tags,
       badgeAlpha={19}
       leading={checkbox}
       middle={(hasRecurring || hasTags) ? (
-        <View style={styles.tagsContainer}>
+        <>
+          {hasTags && (
+            <View style={styles.tagsRow}>
+              {tags?.map((tag) => (
+                <TagChip key={tag.tag_id} label={tag.name} />
+              ))}
+            </View>
+          )}
           {hasRecurring && (
             <View style={styles.recurringBadge}>
-              <Ionicons name="repeat-outline" size={14} color={c.textSecondary} />
+              <Ionicons name="repeat-outline" size={14} color={c.primary} />
               {recurringName ? (
                 <Text style={[styles.recurringName, { color: c.textSecondary, fontSize: fs(11) }]} numberOfLines={1}>
                   {recurringName}
@@ -61,10 +68,7 @@ export const TransactionRow = memo(function TransactionRow({ tx, category, tags,
               ) : null}
             </View>
           )}
-          {tags?.map((tag) => (
-            <TagChip key={tag.tag_id} label={tag.name} />
-          ))}
-        </View>
+        </>
       ) : undefined}
       right={
         <Text style={[styles.amount, { color: tx.type === TRANSACTION_TYPES.income ? c.green : c.red, fontSize: fs(15) }]}>
@@ -107,7 +111,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
   },
-  tagsContainer: {
+  tagsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
@@ -118,6 +122,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    marginTop: 4,
     maxWidth: '100%',
   },
   recurringName: {

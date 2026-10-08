@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, within } from '@testing-library/react-native';
 import { resetStub } from './helpers/configStub';
 import { TransactionRow, TransactionDateHeader } from '../../src/components/TransactionGroup';
 import type { Transaction, Category } from '../../src/database/types';
@@ -89,6 +89,37 @@ describe('TransactionRow', () => {
 
     expect(view.getByText('repeat-outline')).toBeTruthy();
     expect(view.queryByText('MyRule')).toBeNull();
+  });
+
+  it('renders the recurring icon in the primary color', async () => {
+    const view = await render(
+      <TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} recurringName="MyRule" />
+    );
+
+    const icon = view.root!.queryAll((i) => i.type === 'RCTText' && i.children[0] === 'repeat-outline')[0];
+    expect(icon.props.color).toBe('#22D3EE');
+  });
+
+  it('renders the tag chips before the recurring rule name', async () => {
+    const view = await render(
+      <TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} tags={[{ tag_id: 7, name: 'lunch' }]} recurringName="MyRule" />
+    );
+
+    const json = JSON.stringify(view.toJSON());
+    expect(json.indexOf('lunch')).toBeGreaterThanOrEqual(0);
+    expect(json.indexOf('lunch')).toBeLessThan(json.indexOf('MyRule'));
+  });
+
+  it('renders tags and recurring on separate rows', async () => {
+    const view = await render(
+      <TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} tags={[{ tag_id: 7, name: 'lunch' }]} recurringName="MyRule" />
+    );
+
+    // The tag chip's row must not contain the recurring name (it lives on its own row below).
+    const tagsRow = view.getByText('lunch').parent?.parent;
+    expect(tagsRow).toBeTruthy();
+    expect(within(tagsRow!).queryByText('lunch')).toBeTruthy();
+    expect(within(tagsRow!).queryByText('MyRule')).toBeNull();
   });
 
   it('omits tag chips when no tags are present', async () => {
