@@ -199,6 +199,7 @@ Filtered transaction list screen by category, account, and period, accessible fr
 - Category section: icon + name + total with color (green/red) and prefix (+/-).
 - Account selector with selection modal (radio + icon + name + balance).
 - Sorting by date or amount with ASC/DESC toggle.
+- Recurring view control (All / One-time / Recurring) filtering recurring-generated vs one-time transactions; the screen total reflects the view.
 - List grouped by day with date header.
 - Centered "+" FAB to navigate to add transaction.
 - Passes categoryId, type, period, startDate, endDate as navigation parameters.
@@ -215,6 +216,7 @@ Independent `AllTransactionsScreen` accessible from the hamburger menu (drawer) 
 - **Period selector** — PeriodTabs + CalendarPicker, shared with HomeScreen via AppContext. Default "Year" (current year). Custom range: Jan 1 → today.
 - Account selector with period total balance (green/red), updated by all active filters.
 - Sorting by date or amount with ASC/DESC toggle.
+- Recurring view control (All / One-time / Recurring) filtering recurring-generated vs one-time transactions; the screen total reflects the view.
 - Tag filter bar with local state.
 - Header search toggle + SearchBar: client-side case-insensitive multi-term (AND) search over comment/description, category display name (current language), tag names and account name; composes with all other filters; "No results found" empty state.
 - List grouped by day with date header.

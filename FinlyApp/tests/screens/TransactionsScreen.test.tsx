@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import TransactionsScreen from '../../src/screens/TransactionsScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
@@ -128,5 +128,29 @@ describe('TransactionsScreen', () => {
     await render(<TransactionsScreen />);
     const lastOptions = nav.setOptions.mock.calls[nav.setOptions.mock.calls.length - 1][0] as { headerRight: unknown };
     expect(lastOptions.headerRight).toEqual(expect.any(Function));
+  });
+
+  it('shows the recurring view toggle when a recurring transaction exists and filters on it', async () => {
+    list.mockResolvedValue([
+      tx(1, { description: 'Rent', account_id: 1, recurring_rule_id: 5 }),
+      tx(2, { description: 'Coffee', account_id: 1 }),
+    ]);
+    setAppData({ accounts: [account, savings], categoriesById: new Map([[1, category]]) });
+    const view = await render(<TransactionsScreen />);
+    expect(view.getByText('One-time')).toBeTruthy();
+    expect(view.getByText('Rent')).toBeTruthy();
+    expect(view.getByText('Coffee')).toBeTruthy();
+
+    await fireEvent.press(view.getByText('Recurring'));
+    expect(view.getByText('Rent')).toBeTruthy();
+    expect(view.queryByText('Coffee')).toBeNull();
+  });
+
+  it('always shows the recurring view toggle, even with no recurring transaction', async () => {
+    list.mockResolvedValue([tx(1, { description: 'Coffee', account_id: 1 })]);
+    setAppData({ accounts: [account, savings], categoriesById: new Map([[1, category]]) });
+    const view = await render(<TransactionsScreen />);
+    expect(view.getByText('One-time')).toBeTruthy();
+    expect(view.getByText('Recurring')).toBeTruthy();
   });
 });
