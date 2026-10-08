@@ -7,6 +7,7 @@ import {
   isSkippedWindowRecoverable,
   listDueOccurrences,
   nextEffectiveOccurrence,
+  recurrencePreview,
   recurrenceSkipWindow,
   toDateOnly,
   todayDateOnly,
@@ -132,6 +133,49 @@ describe('isRecurrenceEnded', () => {
   it('nextEffectiveOccurrence keeps a frozen cursor that is still in the future', () => {
     expect(nextEffectiveOccurrence(ended, '2026-03-02', '2026-02-15')).toBe('2026-03-02');
     expect(nextEffectiveOccurrence(ended, '2026-02-02', '2026-04-15')).toBe('2026-04-02');
+  });
+});
+
+describe('recurrencePreview', () => {
+  const monthly = { ...base, frequency: 'monthly' as const, interval: 1, day_of_month: 2, start_date: '2026-01-02' };
+
+  it('create: counts the occurrences up to today', () => {
+    expect(recurrencePreview(monthly, { today: '2026-04-15' })).toEqual({ firstDate: '2026-01-02', count: 4 });
+  });
+
+  it('create: a future first occurrence creates nothing', () => {
+    expect(recurrencePreview({ ...monthly, start_date: '2026-05-02' }, { today: '2026-04-15' })).toEqual({
+      firstDate: '2026-05-02',
+      count: 0,
+    });
+  });
+
+  it('create: skip-first defers the first occurrence', () => {
+    expect(recurrencePreview(monthly, { today: '2026-04-15', skipFirst: true })).toEqual({
+      firstDate: '2026-02-02',
+      count: 3,
+    });
+  });
+
+  it('create: respects the end date', () => {
+    expect(recurrencePreview({ ...monthly, end_date: '2026-03-02' }, { today: '2026-04-15' })).toEqual({
+      firstDate: '2026-01-02',
+      count: 3,
+    });
+  });
+
+  it('edit (future only): anchors on/after today', () => {
+    expect(recurrencePreview(monthly, { today: '2026-04-15', cursor: '2026-01-02' })).toEqual({
+      firstDate: '2026-05-02',
+      count: 0,
+    });
+  });
+
+  it('edit (future + past): back-fills from the cursor', () => {
+    expect(recurrencePreview(monthly, { today: '2026-04-15', cursor: '2026-01-02', scope: 'futureAndPast' })).toEqual({
+      firstDate: '2026-01-02',
+      count: 4,
+    });
   });
 });
 

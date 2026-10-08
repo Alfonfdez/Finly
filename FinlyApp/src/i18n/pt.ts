@@ -517,6 +517,13 @@ export const pt: Language = {
   repeat_skip_first: 'Ignorar a primeira ocorrência',
   repeat_first_occurrence: (date: string) => `Primeira transação: ${date}`,
 
+  // Recurring summary block
+  recurring_info_title: 'Resumo',
+  recurring_info_next: (date: string) => `Próxima transação: ${date}`,
+  recurring_info_count: (n: number) => (n === 0 ? 'Nenhuma transação será criada agora' : `${n} ${n === 1 ? 'transação será criada' : 'transações serão criadas'}`),
+  recurring_info_skipped: (n: number) => `${n} ${n === 1 ? 'ocorrência será ignorada' : 'ocorrências serão ignoradas'}`,
+  recurring_info_backfill: (n: number) => `Preenche ${n} ${n === 1 ? 'ocorrência em falta' : 'ocorrências em falta'}`,
+
   // Recurring skip warning
   recurring_skip_warning_title: 'Ignorar ocorrências?',
   recurring_skip_warning_message: (count: number, from: string) => `${count} ${count === 1 ? 'ocorrência será ignorada' : 'ocorrências serão ignoradas'} a partir de ${from}. Não serão criadas agora — podes adicioná-las mais tarde com "Futuro + passado".`,

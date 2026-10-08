@@ -19,7 +19,7 @@ import PhotoSection from './PhotoSection';
 import CalendarModal from './CalendarModal';
 import CalculatorModal from './CalculatorModal';
 import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS } from './componentStyles';
-import { type TransactionType, type RecurrenceFrequency, type RootStackParamList } from '../constants/types';
+import { type TransactionType, type RecurrenceFrequency, type RecurrenceScope, type RootStackParamList } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
 import { showErrorAlert } from '../utils/errors';
@@ -50,6 +50,10 @@ interface TransactionFormProps {
   initialRuleNextDue?: string | null;
   initialRuleActive?: boolean;
   initialRuleSkippedFrom?: string | null;
+  showRepeatScope?: boolean;
+  repeatScope?: RecurrenceScope;
+  onChangeRepeatScope?: (scope: RecurrenceScope) => void;
+  repeatScopeDisabled?: boolean;
   initialRepeatName?: string;
   existingRepeatNames?: string[];
   footer?: ReactNode;
@@ -192,6 +196,12 @@ export default function TransactionForm(props: TransactionFormProps) {
             name={repeatName}
             onChangeName={setRepeatName}
             nameError={repeatNameError}
+            ruleNextDue={props.initialRuleNextDue ?? null}
+            ruleSkippedFrom={props.initialRuleSkippedFrom ?? null}
+            showScope={!!props.showRepeatScope}
+            scope={props.repeatScope}
+            onChangeScope={props.onChangeRepeatScope}
+            scopeDisabled={props.repeatScopeDisabled}
           />
         )}
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRoute, useNavigation, type RouteProp } from '@react-navigation/native';
 import ScreenShell from '../components/ScreenShell';
 import EmptyState from '../components/EmptyState';
@@ -8,7 +8,6 @@ import TransactionForm from '../components/TransactionForm';
 import DeleteButton from '../components/form/DeleteButton';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
-import { useFontSize } from '../hooks/useFontSize';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { t } from '../i18n';
 import { RECURRENCE_SCOPES, USER_ID, type RecurrenceScope, type NavigationProp, type RootStackParamList } from '../constants/types';
@@ -17,7 +16,6 @@ import { formatDateLong } from '../utils/formatters';
 import { recurringRepository } from '../database';
 import { saveRecurringRuleEdit } from '../database/recurringService';
 import type { TransactionDraft, RecurrenceDraft } from '../hooks/useTransactionForm';
-import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS, CONTROL_BORDER_RADIUS, recurringCardColors } from '../components/componentStyles';
 import type { RecurringRule } from '../database/types';
 
 type ModifyRecurringRouteProp = RouteProp<RootStackParamList, 'ModifyRecurring'>;
@@ -27,7 +25,6 @@ export default function ModifyRecurringScreen() {
   const { ruleId } = route.params;
   const navigation = useNavigation<NavigationProp<'ModifyRecurring'>>();
   const { activeColors: c, config } = useConfig();
-  const fs = useFontSize();
   const labels = t();
   const { changeType } = useApp();
 
@@ -127,37 +124,6 @@ export default function ModifyRecurringScreen() {
 
   const footer = (
     <View style={styles.footer}>
-      <View style={[styles.scopeCard, recurringCardColors(c)]}>
-        <Text style={[styles.scopeTitle, { color: c.textSecondary, fontSize: fs(12) }]}>
-          {labels.recurring_scope_title}
-        </Text>
-        <View style={[styles.segmented, { backgroundColor: c.background }]}>
-          {([
-            [RECURRENCE_SCOPES.future, labels.recurring_scope_future],
-            [RECURRENCE_SCOPES.futureAndPast, labels.recurring_scope_future_past],
-          ] as [RecurrenceScope, string][]).map(([value, label]) => {
-            const disabled = value === RECURRENCE_SCOPES.futureAndPast && !pastAffected;
-            const active = scope === value && !disabled;
-            return (
-              <TouchableOpacity
-                key={value}
-                style={[styles.segment, active && { backgroundColor: c.primary }, disabled && styles.segmentDisabled]}
-                onPress={() => !disabled && setScope(value)}
-                disabled={disabled}
-                accessibilityRole="button"
-                accessibilityState={{ disabled }}
-              >
-                <Text style={[styles.segmentText, { color: active ? c.background : c.textSecondary, fontSize: fs(13), fontWeight: active ? '700' : '600' }]}>
-                  {label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-        <Text style={[styles.scopeHint, { color: c.textSecondary, fontSize: fs(11) }]}>
-          {labels.recurring_scope_past_hint}
-        </Text>
-      </View>
       <DeleteButton
         label={labels.delete}
         onPress={() => setDeleteVisible(true)}
@@ -219,6 +185,10 @@ export default function ModifyRecurringScreen() {
         ruleMode
         footer={footer}
         onRecurringPastAffectedChange={setPastAffected}
+        showRepeatScope
+        repeatScope={scope}
+        onChangeRepeatScope={setScope}
+        repeatScopeDisabled={!pastAffected}
       />
 
       <ConfirmationModal
@@ -258,37 +228,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginTop: 24,
-  },
-  scopeCard: {
-    borderRadius: CARD_BORDER_RADIUS,
-    borderWidth: 1,
-    padding: 12,
-  },
-  scopeTitle: {
-    fontWeight: '500',
-  },
-  segmented: {
-    flexDirection: 'row',
-    gap: 4,
-    borderRadius: BUTTON_BORDER_RADIUS,
-    padding: 3,
-    marginTop: 8,
-  },
-  segment: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderRadius: CONTROL_BORDER_RADIUS,
-  },
-  segmentDisabled: {
-    opacity: 0.5,
-  },
-  segmentText: {
-    fontWeight: '600',
-  },
-  scopeHint: {
-    marginTop: 8,
-    fontWeight: '500',
   },
   deleteButton: {
     marginTop: 24,

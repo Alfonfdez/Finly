@@ -1,4 +1,4 @@
-import { RECURRENCE_FREQUENCIES, type RecurrenceFrequency } from '../constants/types';
+import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, type RecurrenceFrequency, type RecurrenceScope } from '../constants/types';
 import { getDaysInMonth } from './formatters';
 
 export interface RecurrenceSchedule {
@@ -166,6 +166,64 @@ export function recurrenceSkipWindow(
     c = advanceOccurrence(schedule, c);
   }
   return { from, to, count };
+}
+
+export interface EditAnchorOptions {
+  cursor: string;
+  scope: RecurrenceScope;
+  today: string;
+  /** Earliest skipped occurrence to recover with "Future + past". */
+  skippedFrom?: string | null;
+}
+
+/**
+ * First occurrence a save will generate (the cursor anchor). "Future only" jumps
+ * to the next occurrence on/after today (skipping the missed window); "Future +
+ * past" back-fills from the rule's cursor — or the earliest skipped occurrence.
+ */
+export function resolveEditAnchor(
+  schedule: RecurrenceSchedule,
+  { cursor, scope, today, skippedFrom = null }: EditAnchorOptions,
+): string {
+  if (scope === RECURRENCE_SCOPES.futureAndPast) {
+    const base = skippedFrom != null && skippedFrom < cursor ? skippedFrom : cursor;
+    return nextDueOnOrAfter(schedule, base);
+  }
+  return nextDueOnOrAfter(schedule, cursor > today ? cursor : today);
+}
+
+export interface RecurrencePreviewOptions {
+  today: string;
+  /** Create mode: defer the first occurrence by one interval. */
+  skipFirst?: boolean;
+  /** Edit mode: the rule's cursor (omit/null for create). */
+  cursor?: string | null;
+  scope?: RecurrenceScope;
+  skippedFrom?: string | null;
+}
+
+export interface RecurrencePreview {
+  /** First (create) or next (edit) occurrence the save will generate. */
+  firstDate: string;
+  /** Number of transactions the save creates now (up to `today`, bounded). */
+  count: number;
+}
+
+/**
+ * What a recurring-form save will generate: the first/next occurrence date and
+ * how many transactions it creates immediately (up to `today`, respecting the end
+ * date). Mirrors the service's materialization.
+ */
+export function recurrencePreview(
+  schedule: RecurrenceSchedule,
+  { today, skipFirst = false, cursor = null, scope = RECURRENCE_SCOPES.future, skippedFrom = null }: RecurrencePreviewOptions,
+): RecurrencePreview {
+  const firstDate =
+    cursor == null
+      ? (skipFirst ? advanceOccurrence(schedule, schedule.start_date) : schedule.start_date)
+      : resolveEditAnchor(schedule, { cursor, scope, today, skippedFrom });
+  const { occurrences } = listDueOccurrences(schedule, firstDate, today);
+  return { firstDate, count: occurrences.length };
 }
 
 export function listDueOccurrences(

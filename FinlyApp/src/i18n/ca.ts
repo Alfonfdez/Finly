@@ -517,6 +517,13 @@ export const ca: Language = {
   repeat_skip_first: 'Ometre la primera repetició',
   repeat_first_occurrence: (date: string) => `Primera transacció: ${date}`,
 
+  // Recurring summary block
+  recurring_info_title: 'Resum',
+  recurring_info_next: (date: string) => `Propera transacció: ${date}`,
+  recurring_info_count: (n: number) => (n === 0 ? 'No es crearà cap transacció ara' : `Es crearan ${n} ${n === 1 ? 'transacció' : 'transaccions'}`),
+  recurring_info_skipped: (n: number) => `S'ometran ${n} ${n === 1 ? 'ocurrència' : 'ocurrències'}`,
+  recurring_info_backfill: (n: number) => `Omple ${n} ${n === 1 ? 'ocurrència omesa' : 'ocurrències omeses'}`,
+
   // Recurring skip warning
   recurring_skip_warning_title: 'Ometre ocurrències?',
   recurring_skip_warning_message: (count: number, from: string) => `Ometrà ${count} ${count === 1 ? 'ocurrència' : 'ocurrències'} a partir de ${from}. No es crearan ara — pots afegir-les més tard amb "Futur + passat".`,

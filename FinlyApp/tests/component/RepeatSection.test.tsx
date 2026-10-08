@@ -4,6 +4,12 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { resetStub, setConfig } from './helpers/configStub';
 import RepeatSection from '../../src/components/RepeatSection';
 
+// Pin "today" so the summary info block is deterministic.
+vi.mock('../../src/utils/recurrence', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../src/utils/recurrence')>();
+  return { ...actual, todayDateOnly: () => '2026-10-06' };
+});
+
 type Props = ComponentProps<typeof RepeatSection>;
 
 function renderSection(overrides: Partial<Props> = {}) {
@@ -143,9 +149,9 @@ describe('RepeatSection', () => {
     expect((await view).getByText('That name is already used by another recurring')).toBeTruthy();
   });
 
-  it('shows the first transaction date only when skipping the first occurrence', async () => {
-    const off = await renderSection({ showSkipFirst: true, skipFirst: false });
-    expect((await off.view).queryByText(/^First transaction:/)).toBeNull();
+  it('always shows the first transaction date, which shifts when skipping the first occurrence', async () => {
+    const off = await renderSection({ showSkipFirst: true, skipFirst: false, frequency: 'monthly', startDay: new Date(2026, 9, 6) });
+    expect((await off.view).getByText('First transaction: October 6, 2026')).toBeTruthy();
 
     const on = await renderSection({
       showSkipFirst: true,
@@ -154,5 +160,16 @@ describe('RepeatSection', () => {
       startDay: new Date(2026, 9, 6),
     });
     expect((await on.view).getByText('First transaction: November 6, 2026')).toBeTruthy();
+  });
+
+  it('summarizes what will be created on save', async () => {
+    const view = await renderSection({ frequency: 'monthly', startDay: new Date(2026, 9, 6) });
+    expect((await view.view).getByText('Summary')).toBeTruthy();
+    expect((await view.view).getByText('1 transaction will be created')).toBeTruthy();
+  });
+
+  it('reports nothing created when the first occurrence is in the future (skip-first)', async () => {
+    const view = await renderSection({ frequency: 'monthly', startDay: new Date(2026, 9, 6), skipFirst: true });
+    expect((await view.view).getByText('No transactions will be created now')).toBeTruthy();
   });
 });
