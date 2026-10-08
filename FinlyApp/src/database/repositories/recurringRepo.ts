@@ -160,6 +160,13 @@ export const recurringRepo = {
     await db.delete(recurringRules).where(eq(recurringRules.id, id)).run();
   },
 
+  /** Deletes rules by id; their generated transactions are kept (FK SET NULL). */
+  async deleteMany(ids: number[]): Promise<void> {
+    if (ids.length === 0) return;
+    const db = await getDrizzle();
+    await db.delete(recurringRules).where(inArray(recurringRules.id, ids)).run();
+  },
+
   async hasOccurrence(ruleId: number, date: string): Promise<boolean> {
     const db = await getDrizzle();
     const row = await db

@@ -515,6 +515,11 @@ export const en = {
   repeat_skip_first: 'Skip the first occurrence',
   repeat_first_occurrence: (date: string) => `First transaction: ${date}`,
 
+  recurring_search: 'Search recurring',
+  recurring_bulk_delete: (n: number) => `Delete (${n})`,
+  recurring_bulk_delete_confirm_title: (n: number) => `Delete ${n} recurring rule${n === 1 ? '' : 's'}?`,
+  recurring_bulk_delete_confirm_message: 'The selected rules will be deleted; their transactions will be kept.',
+
   // Recurring summary block
   recurring_info_title: 'Summary',
   recurring_info_next: (date: string) => `Next transaction: ${date}`,

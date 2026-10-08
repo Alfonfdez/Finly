@@ -517,6 +517,11 @@ export const fr: Language = {
   repeat_skip_first: 'Ignorer la première occurrence',
   repeat_first_occurrence: (date: string) => `Première transaction : ${date}`,
 
+  recurring_search: 'Rechercher des échéances',
+  recurring_bulk_delete: (n: number) => `Supprimer (${n})`,
+  recurring_bulk_delete_confirm_title: (n: number) => `Supprimer ${n} règle${n === 1 ? '' : 's'} récurrente${n === 1 ? '' : 's'} ?`,
+  recurring_bulk_delete_confirm_message: 'Les règles sélectionnées seront supprimées ; leurs transactions seront conservées.',
+
   // Recurring summary block
   recurring_info_title: 'Résumé',
   recurring_info_next: (date: string) => `Prochaine transaction : ${date}`,

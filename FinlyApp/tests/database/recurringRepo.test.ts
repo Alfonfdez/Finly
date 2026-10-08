@@ -185,4 +185,19 @@ describe('recurringRepo', () => {
     expect(txs).toHaveLength(1);
     expect(txs[0].recurring_rule_id ?? null).toBeNull();
   });
+
+  it('deleteMany removes rules but keeps their generated transactions', async () => {
+    const { recurringRepo, transactionRepo } = await boot();
+    const a = await recurringRepo.createWithTags({ ...baseRule, name: 'A' }, []);
+    const b = await recurringRepo.createWithTags({ ...baseRule, name: 'B' }, []);
+    await recurringRepo.insertOccurrence(a, '2026-01-02', []);
+    await recurringRepo.insertOccurrence(b, '2026-01-02', []);
+
+    await recurringRepo.deleteMany([a.id, b.id]);
+
+    expect(await recurringRepo.list(1)).toHaveLength(0);
+    const txs = await transactionRepo.list();
+    expect(txs).toHaveLength(2);
+    expect(txs.every(t => (t.recurring_rule_id ?? null) === null)).toBe(true);
+  });
 });

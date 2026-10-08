@@ -95,6 +95,7 @@ describe('errors helpers', () => {
         'commentDelete',
         'commentsDelete',
         'transactionsDelete',
+        'recurringDelete',
       ]);
     });
   });
