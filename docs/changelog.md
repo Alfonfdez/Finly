@@ -3426,3 +3426,11 @@
 - Recurring micro-cleanup: extracted materializeRule(rule, today) from materializeDueRecurring and scoped resumeRecurringRule to the resumed rule (other overdue rules are caught up by the app-start/foreground/midnight runs, not as a resume side effect).
 - recurringRepo.setActive/reactivate/updateNextDue now delegate to a private writeRuleFields(id, patch) helper (public API unchanged); RepeatSection memoizes its frequencyLabels map per language.
 - Tests: added a scoped-resume case (resuming one rule leaves other overdue rules untouched). 'npm run test:all' green (111 files / 780 tests). Web smoke: recurring pause/resume, 0 console errors.
+
+[2026-10-08] style | FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/tests/component/TransactionGroup.test.tsx, docs/harnesses.md
+- Transaction rows (Transactions + All transactions): the recurring marker now renders after the tag chips (Category / Comment / Tags / Recurring), and its repeat-outline icon uses the app's primary token instead of textSecondary (icon only; the rule name stays subtle). Applies only to TransactionRow, which those two screens share.
+- Tests (+2): recurring icon color is primary (#22D3EE); tag chips render before the recurring rule name. 'npm run test:all' green (111 files / 782 tests). Web-verified dark (#22D3EE) + light (#0891B2), 0 console errors.
+
+[2026-10-08] style | FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/tests/component/TransactionGroup.test.tsx, docs/harnesses.md
+- Transaction rows: tags and the recurring marker now occupy separate lines. A transaction with a comment, tags and a recurring rule shows up to four stacked rows (Category / Comment / Tags / Recurring), with the recurring marker last; the tag chips wrap on their own row and the recurring marker (blue icon + subtle name) sits below.
+- Tests (+1): tags and recurring render on separate rows. 'npm run test:all' green (111 files / 783 tests). Web-verified the 4-row layout (Groceries / Hello / [misc] / Tagged), 0 console errors.
