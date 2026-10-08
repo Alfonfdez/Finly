@@ -517,6 +517,11 @@ export const eu: Language = {
   repeat_skip_first: 'Lehen errepikapena saltatu',
   repeat_first_occurrence: (date: string) => `Lehen transakzioa: ${date}`,
 
+  recurring_search: 'Errepikariak bilatu',
+  recurring_bulk_delete: (n: number) => `Ezabatu (${n})`,
+  recurring_bulk_delete_confirm_title: (n: number) => `${n} errepikapen-arau ezabatu?`,
+  recurring_bulk_delete_confirm_message: 'Hautatutako arauak ezabatuko dira; haien transakzioak mantenduko dira.',
+
   // Recurring summary block
   recurring_info_title: 'Laburpena',
   recurring_info_next: (date: string) => `Hurrengo transakzioa: ${date}`,

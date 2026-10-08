@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { View, Text, Switch, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
@@ -19,9 +20,11 @@ interface Props {
   today: string;
   onPress: () => void;
   onToggleActive: (value: boolean) => void;
+  selectMode?: boolean;
+  selected?: boolean;
 }
 
-function RecurringRow({ rule, category, count, today, onPress, onToggleActive }: Props) {
+function RecurringRow({ rule, category, count, today, onPress, onToggleActive, selectMode, selected }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -34,6 +37,14 @@ function RecurringRow({ rule, category, count, today, onPress, onToggleActive }:
 
   return (
     <View style={[styles.row, { borderBottomColor: c.border }]}>
+      {selectMode && (
+        <Ionicons
+          name={selected ? 'checkbox' : 'checkbox-outline'}
+          size={22}
+          color={selected ? c.primary : c.textSecondary}
+          style={styles.checkbox}
+        />
+      )}
       {category && (
         <IconBadge
           icon={category.icon}
@@ -80,15 +91,17 @@ function RecurringRow({ rule, category, count, today, onPress, onToggleActive }:
           <Text style={[styles.activeLabel, { color: c.textSecondary, fontSize: fs(11) }]}>
             {ended ? labels.recurring_ended : active ? labels.recurring_active : labels.recurring_paused}
           </Text>
-          <Switch
-            value={ended ? false : active}
-            onValueChange={onToggleActive}
-            disabled={ended}
-            accessibilityLabel={ended ? labels.recurring_ended : active ? labels.recurring_active : labels.recurring_paused}
-            accessibilityState={{ disabled: ended }}
-            style={ended ? styles.switchDisabled : undefined}
-            {...switchColors(c)}
-          />
+          {!selectMode && (
+            <Switch
+              value={ended ? false : active}
+              onValueChange={onToggleActive}
+              disabled={ended}
+              accessibilityLabel={ended ? labels.recurring_ended : active ? labels.recurring_active : labels.recurring_paused}
+              accessibilityState={{ disabled: ended }}
+              style={ended ? styles.switchDisabled : undefined}
+              {...switchColors(c)}
+            />
+          )}
         </View>
       </View>
     </View>
@@ -107,6 +120,9 @@ const styles = StyleSheet.create({
   },
   badge: {
     marginRight: 12,
+  },
+  checkbox: {
+    marginRight: 10,
   },
   info: {
     flex: 1,

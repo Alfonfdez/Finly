@@ -1,20 +1,36 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import type { ReactNode } from 'react';
+import { render, fireEvent, waitFor, userEvent } from '@testing-library/react-native';
+import { useState, type ReactNode } from 'react';
 import RecurringScreen from '../../src/screens/RecurringScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
 import type { Category, RecurringRule } from '../../src/database/types';
 
-const nav = { navigate: vi.fn(), setOptions: vi.fn() };
+// Renders the navigation header's `headerRight` inside the same render tree, so the
+// Select/Search buttons can be pressed like on the other list screens.
+let setHeaderNode: ((node: ReactNode) => void) | null = null;
+const nav = {
+  navigate: vi.fn(),
+  setOptions: vi.fn((opts: { headerRight?: (() => ReactNode) | null }) => {
+    setHeaderNode?.(opts.headerRight ? opts.headerRight() : null);
+  }),
+};
+
+function HeaderHost() {
+  const [node, setNode] = useState<ReactNode>(null);
+  setHeaderNode = setNode;
+  return <>{node}</>;
+}
 
 const mockList = vi.fn(async (_userId: number): Promise<RecurringRule[]> => []);
 const mockSetActiveRule = vi.fn(async (_id: number, _active: boolean): Promise<number> => 0);
 const mockCounts = vi.fn(async (_ids: number[]): Promise<Map<number, number>> => new Map());
+const mockDeleteMany = vi.fn(async (_ids: number[]): Promise<void> => {});
 
 vi.mock('../../src/database', () => ({
   recurringRepository: {
     list: (userId: number) => mockList(userId),
     countOccurrencesByRuleIds: (ids: number[]) => mockCounts(ids),
+    deleteMany: (ids: number[]) => mockDeleteMany(ids),
   },
 }));
 
@@ -70,16 +86,21 @@ const rule: RecurringRule = {
   updated_at: null,
 };
 
+const renderWithHeader = () => render(<><HeaderHost /><RecurringScreen /></>);
+
 describe('RecurringScreen', () => {
   beforeEach(() => {
     nav.navigate.mockClear();
+    nav.setOptions.mockClear();
     mockList.mockReset().mockResolvedValue([rule]);
     mockSetActiveRule.mockClear();
     mockCounts.mockReset().mockResolvedValue(new Map());
+    mockDeleteMany.mockClear();
     setAppData({ categoriesById: new Map([[1, category]]) });
   });
 
   afterEach(() => {
+    setHeaderNode = null;
     resetAppStub();
   });
 
@@ -131,5 +152,44 @@ describe('RecurringScreen', () => {
     await fireEvent(view.getByRole('switch'), 'valueChange', true);
     expect(mockSetActiveRule).toHaveBeenCalledWith(1, true);
     expect(nav.navigate).not.toHaveBeenCalled();
+  });
+
+  it('enters select mode and bulk-deletes the selected rule', async () => {
+    const view = await renderWithHeader();
+    await waitFor(() => expect(view.getByText('Rent')).toBeTruthy());
+
+    const ue = userEvent.setup();
+    await ue.press(view.getByLabelText('Enter select mode'));
+
+    await waitFor(() => expect(view.getByText('Delete (0)')).toBeTruthy());
+    expect(view.getByText('checkbox-outline')).toBeTruthy();
+    await ue.press(view.getByLabelText('Rent'));
+    await waitFor(() => expect(view.getByText('Delete (1)')).toBeTruthy());
+    await ue.press(view.getByText('Delete (1)'));
+    await ue.press(await view.findByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => expect(mockDeleteMany).toHaveBeenCalledWith([1]));
+  });
+
+  it('filters the rules by name, category, comment and frequency', async () => {
+    mockList.mockResolvedValue([{ ...rule, description: 'Landlord' }]);
+    const view = await renderWithHeader();
+    await waitFor(() => expect(view.getByText('Rent')).toBeTruthy());
+
+    const ue = userEvent.setup();
+    await ue.press(view.getByLabelText('Search'));
+
+    const input = await view.findByPlaceholderText('Search recurring');
+    await ue.type(input, 'food'); // category match
+    expect(view.getByText('Rent')).toBeTruthy();
+    await ue.clear(input);
+    await ue.type(input, 'landlord'); // comment match
+    expect(view.getByText('Rent')).toBeTruthy();
+    await ue.clear(input);
+    await ue.type(input, 'monthly'); // frequency match
+    expect(view.getByText('Rent')).toBeTruthy();
+    await ue.clear(input);
+    await ue.type(input, 'zzz');
+    expect(view.queryByText('Rent')).toBeNull();
   });
 });

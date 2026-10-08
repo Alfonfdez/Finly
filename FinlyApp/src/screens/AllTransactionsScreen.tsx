@@ -86,6 +86,7 @@ export default function AllTransactionsScreen() {
       accounts,
       activeAccount,
       categoriesById,
+      recurringNames,
       typeTab,
       selectedCategoryIds,
       periodDates,

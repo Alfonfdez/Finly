@@ -13,6 +13,7 @@ export interface UseTransactionFiltersOptions {
   accounts: Account[];
   activeAccount: Account | null;
   categoriesById?: Map<number, Category>;
+  recurringNames?: Map<number, string>;
   searchTerm?: string;
   initialTagIds?: number[];
   typeTab?: TransactionTypeFilter;
@@ -26,6 +27,7 @@ export function useTransactionFilters({
   accounts,
   activeAccount,
   categoriesById = new Map(),
+  recurringNames = new Map(),
   searchTerm = '',
   initialTagIds = [],
   typeTab,
@@ -121,6 +123,7 @@ export function useTransactionFilters({
             category: categoriesById.get(tx.category_id),
             tags: tagsByTransaction.get(tx.id),
             accountName: accountsById.get(tx.account_id)?.name,
+            recurringName: tx.recurring_rule_id != null ? recurringNames.get(tx.recurring_rule_id) : undefined,
           },
           searchTerm
         )
@@ -136,7 +139,7 @@ export function useTransactionFilters({
       return sortDirection === SORT_DIRECTIONS.desc ? -diff : diff;
     });
     return sorted;
-  }, [transactions, selectedAccountId, isTotal, typeTab, selectedCategoryIds, periodDates, sortBy, sortDirection, localTagIds, tagsByTransaction, searchTerm, categoriesById, accounts]);
+  }, [transactions, selectedAccountId, isTotal, typeTab, selectedCategoryIds, periodDates, sortBy, sortDirection, localTagIds, tagsByTransaction, searchTerm, categoriesById, accounts, recurringNames]);
 
   const sections = useMemo(() => {
     const grouped = new Map<string, Transaction[]>();

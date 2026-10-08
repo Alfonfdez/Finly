@@ -60,4 +60,5 @@ export const ERROR_PREFIXES = {
   commentDelete: 'Failed to delete comment',
   commentsDelete: 'Failed to delete comments',
   transactionsDelete: 'Failed to delete transactions',
+  recurringDelete: 'Failed to delete recurring rules',
 } as const;

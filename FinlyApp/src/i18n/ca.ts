@@ -517,6 +517,11 @@ export const ca: Language = {
   repeat_skip_first: 'Ometre la primera repetició',
   repeat_first_occurrence: (date: string) => `Primera transacció: ${date}`,
 
+  recurring_search: 'Cercar recurrents',
+  recurring_bulk_delete: (n: number) => `Elimina (${n})`,
+  recurring_bulk_delete_confirm_title: (n: number) => `Vols eliminar ${n} regla${n === 1 ? '' : 's'} recurrent${n === 1 ? '' : 's'}?`,
+  recurring_bulk_delete_confirm_message: 'Les regles seleccionades s\'eliminaran; les seves transaccions es conservaran.',
+
   // Recurring summary block
   recurring_info_title: 'Resum',
   recurring_info_next: (date: string) => `Propera transacció: ${date}`,
