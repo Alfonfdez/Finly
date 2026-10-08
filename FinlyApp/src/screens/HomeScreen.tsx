@@ -9,7 +9,8 @@ import { formatDateForDB, resolvePeriodRange } from '../utils/formatters';
 import { type NavigationProp, TRANSACTION_TYPES, CHART_TYPES, type ChartType } from '../constants/types';
 import { t } from '../i18n';
 import { transactionRepository as transactionRepo } from '../database';
-import { UNTAGGED_ID, isTotalAccount } from '../database/helpers';
+import { isTotalAccount } from '../database/helpers';
+import { isUntaggedTag } from '../utils/tagFilter';
 import AccountModal from '../components/AccountModal';
 import TabBar, { typeTabs } from '../components/TabBar';
 import PeriodTabs from '../components/PeriodTabs';
@@ -67,7 +68,7 @@ export default function HomeScreen() {
         if (!active) return;
         const breakdowns = new Map<number, { tag_id: number; name: string; total: number }[]>();
         for (const [catId, rows] of data) {
-          const filtered = tags.length > 0 ? rows : rows.filter(d => d.tag_id !== UNTAGGED_ID);
+          const filtered = tags.length > 0 ? rows : rows.filter(d => !isUntaggedTag(d.tag_id));
           if (filtered.length > 0) breakdowns.set(catId, filtered);
         }
         setTagBreakdowns(breakdowns);
