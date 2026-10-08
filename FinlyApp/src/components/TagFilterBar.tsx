@@ -41,7 +41,7 @@ function TagFilterBarInner({ tags, activeTagIds, onToggle, onClear, style }: Pro
         style={[
           styles.chipText,
           {
-            color: isSelected && isSpecial ? withAlpha(c.background, 80) : isSelected ? c.background : isSpecial ? c.textSecondary : c.text,
+            color: isSelected && isSpecial ? withAlpha(c.background, 80) : isSelected ? c.background : isSpecial ? c.textSecondary : c.primary,
             fontSize: fs(13),
           },
         ]}

@@ -1,6 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { toggleTagInArray } from '../../src/utils/tagFilter';
+import { isUntaggedTag, toggleTagInArray } from '../../src/utils/tagFilter';
 import { UNTAGGED_ID } from '../../src/constants/types';
+
+describe('isUntaggedTag', () => {
+  it('is true for the UNTAGGED sentinel', () => {
+    expect(isUntaggedTag(UNTAGGED_ID)).toBe(true);
+  });
+
+  it('is false for a real tag id', () => {
+    expect(isUntaggedTag(7)).toBe(false);
+  });
+});
 
 describe('toggleTagInArray', () => {
   it('adds a tag to an empty selection', () => {

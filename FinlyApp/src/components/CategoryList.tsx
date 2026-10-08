@@ -1,7 +1,7 @@
 import { useCallback, memo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { type CategoryWithTotal, MAX_VISIBLE_TAGS } from '../constants/types';
-import { UNTAGGED_ID } from '../database/helpers';
+import { isUntaggedTag } from '../utils/tagFilter';
 import { formatAmount } from '../utils/formatters';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { useConfig } from '../context/ConfigContext';
@@ -44,13 +44,16 @@ function CategoryListInner({
     return (
       <View style={styles.tagSection}>
         <View style={styles.tagChips}>
-          {visibleTags.map((tag) => (
-            <TagChip
-              key={tag.tag_id}
-              label={tag.tag_id === UNTAGGED_ID ? labels.home_tag_untagged : tag.name}
-              variant="neutral"
-            />
-          ))}
+          {visibleTags.map((tag) => {
+            const untagged = isUntaggedTag(tag.tag_id);
+            return (
+              <TagChip
+                key={tag.tag_id}
+                label={untagged ? labels.home_tag_untagged : tag.name}
+                variant={untagged ? 'neutral' : 'primary'}
+              />
+            );
+          })}
         </View>
         {hasMore && (
           <TouchableOpacity onPress={() => onToggleExpand(categoryId)}>
