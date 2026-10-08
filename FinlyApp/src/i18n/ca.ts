@@ -485,7 +485,7 @@ export const ca: Language = {
   recurring_ended: 'Finalitzada',
   recurring_created_on: (date: string) => `Creada ${date}`,
   recurring_transactions_count: (n: number) => `${n} ${n === 1 ? 'transacció' : 'transaccions'}`,
-  recurring_edit_notice: "Forma part d'una sèrie recurrent. Els canvis aquí només afecten aquesta transacció.",
+  recurring_edit_notice: "Aquesta transacció forma part d'una sèrie recurrent. En desar, els canvis només afecten aquesta transacció, no la sèrie.",
   recurring_edit_rule: 'Edita la recurrència',
   recurring_scope_title: 'Aplica els canvis a',
   recurring_scope_future: 'Només futures',

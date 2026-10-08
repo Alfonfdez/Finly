@@ -485,7 +485,7 @@ export const pt: Language = {
   recurring_ended: 'Terminada',
   recurring_created_on: (date: string) => `Criada ${date}`,
   recurring_transactions_count: (n: number) => `${n} ${n === 1 ? 'transação' : 'transações'}`,
-  recurring_edit_notice: 'Faz parte de uma série recorrente. As alterações aqui afetam apenas esta transação.',
+  recurring_edit_notice: 'Esta transação faz parte de uma série recorrente. Ao guardar, as alterações afetam apenas esta transação, não a série.',
   recurring_edit_rule: 'Editar regra recorrente',
   recurring_scope_title: 'Aplicar alterações a',
   recurring_scope_future: 'Só futuras',

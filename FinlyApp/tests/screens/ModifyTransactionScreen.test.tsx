@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import ModifyTransactionScreen from '../../src/screens/ModifyTransactionScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
@@ -97,6 +97,7 @@ describe('ModifyTransactionScreen', () => {
     mockTagCreate.mockClear();
     mockUpdateWithTags.mockClear();
     mockSearchComments.mockReset().mockResolvedValue([]);
+    nav.navigate.mockClear();
     setConfig({ language: 'en' });
     setAppData({
       accounts: [account],
@@ -126,5 +127,23 @@ describe('ModifyTransactionScreen', () => {
     const view = await render(<ModifyTransactionScreen />);
     await view.findByText('Save');
     expect(mockGetTagsByTransactionId).toHaveBeenCalledWith(11);
+  });
+
+  it('shows the recurring notice and opens the rule editor for a recurring transaction', async () => {
+    mockGetById.mockResolvedValue({ ...transaction, recurring_rule_id: 5 });
+    const view = await render(<ModifyTransactionScreen />);
+    await view.findByText('Save');
+    expect(view.getByText('Recurring')).toBeTruthy();
+    expect(
+      view.getByText('This transaction is part of a recurring series. Saving changes only affects this transaction, not the series.')
+    ).toBeTruthy();
+    fireEvent.press(view.getByText('Edit recurring rule'));
+    expect(nav.navigate).toHaveBeenCalledWith('ModifyRecurring', { ruleId: 5 });
+  });
+
+  it('hides the recurring notice for a plain transaction', async () => {
+    const view = await render(<ModifyTransactionScreen />);
+    await view.findByText('Save');
+    expect(view.queryByText('Edit recurring rule')).toBeNull();
   });
 });

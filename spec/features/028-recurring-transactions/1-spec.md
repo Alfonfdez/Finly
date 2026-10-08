@@ -77,7 +77,7 @@
   - **Recoverable skip**: a **Future only** save records the earliest skipped occurrence on the rule (`skipped_from`). While that window is within the end date, the edit screen enables **Future + past** again; choosing it re-anchors the cursor to `skipped_from` (back-filling the skipped occurrences, no duplicates) and clears the record. Skip windows caused by **pause/resume** or **skip-first** are intentionally not recorded (they stay permanent).
   - Saving with **Future only** while it would skip occurrences asks for a confirmation first (reporting how many), so a skip is never silent.
 - Changing or shortening the end date never deletes already-generated transactions; it only affects what is generated from now on. A rule whose end date has passed is shown as **Ended** (no future occurrences) and its pause/resume toggle is disabled; extending (or clearing) the end date revives it.
-- Editing an individual generated transaction from the transaction lists remains a one-off edit and does **not** change the rule.
+- Editing an individual generated transaction from the transaction lists remains a one-off edit and does **not** change the rule. The modify form shows a **Recurring** notice at the top (repeat icon + title, "saving changes only affects this transaction, not the series") with an **Edit recurring rule** button that opens the rule editor.
 
 ### 8. Generated transactions and details
 
