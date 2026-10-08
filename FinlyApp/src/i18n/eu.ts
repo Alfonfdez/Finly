@@ -485,7 +485,7 @@ export const eu: Language = {
   recurring_ended: 'Amaituta',
   recurring_created_on: (date: string) => `Sortua ${date}`,
   recurring_transactions_count: (n: number) => `${n} transakzio`,
-  recurring_edit_notice: 'Errepikapen serie baten parte da. Hemen egindako aldaketek transakzio hau bakarrik ukitzen dute.',
+  recurring_edit_notice: 'Transakzio hau errepikapen serie baten parte da. Gordetzean, aldaketek transakzio hau bakarrik ukitzen dute, ez seriea.',
   recurring_edit_rule: 'Editatu errepikapen araua',
   recurring_scope_title: 'Aplikatu aldaketak',
   recurring_scope_future: 'Etorkizuna soilik',

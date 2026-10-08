@@ -483,7 +483,7 @@ export const en = {
   recurring_ended: 'Ended',
   recurring_created_on: (date: string) => `Created ${date}`,
   recurring_transactions_count: (n: number) => `${n} ${n === 1 ? 'transaction' : 'transactions'}`,
-  recurring_edit_notice: 'Part of a recurring series. Changes here affect only this occurrence.',
+  recurring_edit_notice: 'This transaction is part of a recurring series. Saving changes only affects this transaction, not the series.',
   recurring_edit_rule: 'Edit recurring rule',
   recurring_scope_title: 'Apply changes to',
   recurring_scope_future: 'Future only',

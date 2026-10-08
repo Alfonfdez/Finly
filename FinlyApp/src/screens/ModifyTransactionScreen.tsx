@@ -14,7 +14,7 @@ import { transactionRepository } from '../database';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import TransactionForm from '../components/TransactionForm';
 import EmptyState from '../components/EmptyState';
-import { CARD_BORDER_RADIUS, SECTION_GAP, recurringCardColors } from '../components/componentStyles';
+import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS, SECTION_GAP, recurringCardColors } from '../components/componentStyles';
 
 type ModifyRouteProp = RouteProp<RootStackParamList, 'ModifyTransaction'>;
 
@@ -70,22 +70,27 @@ export default function ModifyTransactionScreen() {
       topNotice={
         transaction.recurring_rule_id != null ? (
           <View style={[styles.notice, recurringCardColors(c)]}>
-            <Ionicons name="repeat-outline" size={18} color={c.primary} />
-            <View style={styles.noticeBody}>
-              <Text style={[styles.noticeText, { color: c.textSecondary, fontSize: fs(12) }]}>
-                {labels.recurring_edit_notice}
+            <View style={styles.noticeTitleRow}>
+              <Ionicons name="repeat-outline" size={16} color={c.primary} />
+              <Text style={[styles.noticeTitle, { color: c.text, fontSize: fs(15) }]}>
+                {labels.recurring_chip}
               </Text>
-              <TouchableOpacity
-                style={styles.noticeLink}
-                onPress={() =>
-                  navigation.navigate('ModifyRecurring', { ruleId: transaction.recurring_rule_id as number })
-                }
-              >
-                <Text style={[styles.noticeLinkText, { color: c.primary, fontSize: fs(13) }]}>
-                  {labels.recurring_edit_rule}
-                </Text>
-              </TouchableOpacity>
             </View>
+            <Text style={[styles.noticeText, { color: c.textSecondary, fontSize: fs(12) }]}>
+              {labels.recurring_edit_notice}
+            </Text>
+            <TouchableOpacity
+              style={[styles.noticeButton, { borderColor: c.primary }]}
+              onPress={() =>
+                navigation.navigate('ModifyRecurring', { ruleId: transaction.recurring_rule_id as number })
+              }
+              accessibilityRole="button"
+            >
+              <Ionicons name="create-outline" size={16} color={c.primary} />
+              <Text style={[styles.noticeButtonText, { color: c.primary, fontSize: fs(14) }]}>
+                {labels.recurring_edit_rule}
+              </Text>
+            </TouchableOpacity>
           </View>
         ) : undefined
       }
@@ -99,7 +104,6 @@ export default function ModifyTransactionScreen() {
 
 const styles = StyleSheet.create({
   notice: {
-    alignItems: 'center',
     gap: 8,
     borderWidth: 1,
     borderRadius: CARD_BORDER_RADIUS,
@@ -107,18 +111,27 @@ const styles = StyleSheet.create({
     marginTop: SECTION_GAP,
     marginBottom: 16,
   },
-  noticeBody: {
+  noticeTitleRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
+  },
+  noticeTitle: {
+    fontWeight: '600',
   },
   noticeText: {
     fontWeight: '500',
-    textAlign: 'center',
   },
-  noticeLink: {
-    alignSelf: 'center',
+  noticeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: BUTTON_BORDER_RADIUS,
+    borderWidth: 1,
   },
-  noticeLinkText: {
+  noticeButtonText: {
     fontWeight: '600',
   },
 });
