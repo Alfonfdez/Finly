@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { TRANSACTION_TYPES, type TransactionType } from '../constants/types';
+import { TRANSACTION_TYPES, RECURRING_VIEWS, type TransactionType, type RecurringView } from '../constants/types';
 import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS } from './componentStyles';
 
 interface TypeTab {
@@ -26,6 +26,18 @@ interface Tab<T extends string> {
   key: T;
   label: string;
   accessibilityLabel?: string;
+}
+
+export function recurringViewTabs(labels: {
+  transactions_view_all: string;
+  transactions_view_one_time: string;
+  transactions_view_recurring: string;
+}): Tab<RecurringView>[] {
+  return [
+    { key: RECURRING_VIEWS.all, label: labels.transactions_view_all },
+    { key: RECURRING_VIEWS.oneTime, label: labels.transactions_view_one_time },
+    { key: RECURRING_VIEWS.recurring, label: labels.transactions_view_recurring },
+  ];
 }
 
 interface Props<T extends string> {

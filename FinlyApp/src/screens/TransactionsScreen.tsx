@@ -21,6 +21,7 @@ import { showErrorAlert } from '../utils/errors';
 import { getDisplayCategoryName, t } from '../i18n';
 import AccountTrigger from '../components/AccountTrigger';
 import SortToggle from '../components/SortToggle';
+import TabBar, { recurringViewTabs } from '../components/TabBar';
 import Fab from '../components/Fab';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import TransactionListBody from '../components/TransactionListBody';
@@ -138,26 +139,35 @@ export default function TransactionsScreen() {
         onSelectAccount={filters.selectAccount}
         emptyIcon="document-text-outline"
         emptyMessage={labels.transactions_empty}
-        header={category ? (
-          <View style={[styles.categoryInfo, { borderBottomColor: c.border }]}>
-            <View style={styles.categoryRow}>
-              <View style={[styles.categoryIcon, { backgroundColor: withAlpha(category.color, 19) }]}>
-                <Ionicons name={category.icon as IconName} size={22} color={category.color} />
+        header={
+          <>
+            <TabBar
+              tabs={recurringViewTabs(labels)}
+              active={filters.recurringView}
+              onChange={filters.setRecurringView}
+            />
+            {category ? (
+              <View style={[styles.categoryInfo, { borderBottomColor: c.border }]}>
+                <View style={styles.categoryRow}>
+                  <View style={[styles.categoryIcon, { backgroundColor: withAlpha(category.color, 19) }]}>
+                    <Ionicons name={category.icon as IconName} size={22} color={category.color} />
+                  </View>
+                  <Text style={[styles.categoryName, { color: c.text, fontSize: fs(16) }]} numberOfLines={1}>
+                    {getDisplayCategoryName(category)}
+                  </Text>
+                </View>
+                <Text style={[styles.categoryTotal, { color: categoryTotal >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
+                  {formatSignedCurrency(categoryTotal, config.currency, config.decimalSeparator)}
+                </Text>
+                {periodLabel ? (
+                  <Text style={[styles.categoryPeriod, { color: c.textSecondary, fontSize: fs(13) }]}>
+                    {periodLabel}
+                  </Text>
+                ) : null}
               </View>
-              <Text style={[styles.categoryName, { color: c.text, fontSize: fs(16) }]} numberOfLines={1}>
-                {getDisplayCategoryName(category)}
-              </Text>
-            </View>
-            <Text style={[styles.categoryTotal, { color: categoryTotal >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
-              {formatSignedCurrency(categoryTotal, config.currency, config.decimalSeparator)}
-            </Text>
-            {periodLabel ? (
-              <Text style={[styles.categoryPeriod, { color: c.textSecondary, fontSize: fs(13) }]}>
-                {periodLabel}
-              </Text>
-            ) : null}
-          </View>
-        ) : undefined}
+            ) : undefined}
+          </>
+        }
         controls={
           <>
             <AccountTrigger

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import AllTransactionsScreen from '../../src/screens/AllTransactionsScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
@@ -123,5 +123,37 @@ describe('AllTransactionsScreen', () => {
     await render(<AllTransactionsScreen />);
     const lastOptions = nav.setOptions.mock.calls[nav.setOptions.mock.calls.length - 1][0] as { headerRight: unknown };
     expect(lastOptions.headerRight).toEqual(expect.any(Function));
+  });
+
+  it('shows the recurring view toggle when a recurring transaction exists and filters on it', async () => {
+    list.mockResolvedValue([
+      tx(1, { description: 'Rent', recurring_rule_id: 5 }),
+      tx(2, { description: 'Coffee' }),
+    ]);
+    setAppData({
+      categoriesById: new Map([[1, category]]),
+      activePeriod: PERIODS.custom,
+      customDate: { start: new Date(2026, 0, 1), end: new Date(2026, 0, 31) },
+    });
+    const view = await render(<AllTransactionsScreen />);
+    expect(view.getByText('One-time')).toBeTruthy();
+    expect(view.getByText('Rent')).toBeTruthy();
+    expect(view.getByText('Coffee')).toBeTruthy();
+
+    await fireEvent.press(view.getByText('Recurring'));
+    expect(view.getByText('Rent')).toBeTruthy();
+    expect(view.queryByText('Coffee')).toBeNull();
+  });
+
+  it('always shows the recurring view toggle, even with no recurring transaction', async () => {
+    list.mockResolvedValue([tx(1, { description: 'Coffee' })]);
+    setAppData({
+      categoriesById: new Map([[1, category]]),
+      activePeriod: PERIODS.custom,
+      customDate: { start: new Date(2026, 0, 1), end: new Date(2026, 0, 31) },
+    });
+    const view = await render(<AllTransactionsScreen />);
+    expect(view.getByText('One-time')).toBeTruthy();
+    expect(view.getByText('Recurring')).toBeTruthy();
   });
 });

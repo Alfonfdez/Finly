@@ -22,7 +22,7 @@ import { categoriesOfType } from '../utils/categoryUtils';
 import { t } from '../i18n';
 import AccountTrigger from '../components/AccountTrigger';
 import SortToggle from '../components/SortToggle';
-import TabBar, { typeTabs } from '../components/TabBar';
+import TabBar, { typeTabs, recurringViewTabs } from '../components/TabBar';
 import Fab from '../components/Fab';
 import CategoryFilterModal from '../components/CategoryFilterModal';
 import PeriodTabs from '../components/PeriodTabs';
@@ -147,14 +147,21 @@ export default function AllTransactionsScreen() {
         emptyIcon="receipt-outline"
         emptyMessage={labels.transactions_empty}
         header={
-          <TabBar
-            tabs={[
-              { key: TYPE_FILTERS.all, label: labels.tab_all },
-              ...typeTabs(labels),
-            ]}
-            active={typeTab}
-            onChange={setTypeTab}
-          />
+          <>
+            <TabBar
+              tabs={[
+                { key: TYPE_FILTERS.all, label: labels.tab_all },
+                ...typeTabs(labels),
+              ]}
+              active={typeTab}
+              onChange={setTypeTab}
+            />
+            <TabBar
+              tabs={recurringViewTabs(labels)}
+              active={filters.recurringView}
+              onChange={filters.setRecurringView}
+            />
+          </>
         }
         controls={
           <>

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react-native';
 import { useTransactionFilters } from '../../src/hooks/useTransactionFilters';
 import type { Transaction, Account, Category } from '../../src/database/types';
-import { TYPE_FILTERS, SORT_BY, SORT_DIRECTIONS } from '../../src/constants/types';
+import { TYPE_FILTERS, SORT_BY, SORT_DIRECTIONS, RECURRING_VIEWS } from '../../src/constants/types';
 import { UNTAGGED_ID } from '../../src/database/helpers';
 
 const getTagsByTransactionIds = vi.fn(async () => [] as { transaction_id: number; tag_id: number; name: string }[]);
@@ -120,6 +120,36 @@ describe('useTransactionFilters', () => {
     ];
     const { result } = await renderAll(transactions, { typeTab: TYPE_FILTERS.all });
     expect(result.current.filtered.map(t => t.id).sort()).toEqual([1, 2]);
+  });
+
+  it('shows recurring and one-time transactions by default', async () => {
+    const transactions = [
+      tx(1, { id: 1, account_id: 3, recurring_rule_id: 5 }),
+      tx(2, { id: 2, account_id: 3 }),
+    ];
+    const { result } = await renderAll(transactions);
+    expect(result.current.recurringView).toBe(RECURRING_VIEWS.all);
+    expect(result.current.filtered.map(t => t.id).sort()).toEqual([1, 2]);
+  });
+
+  it('filters to recurring-generated transactions', async () => {
+    const transactions = [
+      tx(1, { id: 1, account_id: 3, recurring_rule_id: 5 }),
+      tx(2, { id: 2, account_id: 3 }),
+    ];
+    const { result } = await renderAll(transactions);
+    await update(() => result.current.setRecurringView(RECURRING_VIEWS.recurring));
+    expect(result.current.filtered.map(t => t.id)).toEqual([1]);
+  });
+
+  it('filters to one-time (non-recurring) transactions', async () => {
+    const transactions = [
+      tx(1, { id: 1, account_id: 3, recurring_rule_id: 5 }),
+      tx(2, { id: 2, account_id: 3 }),
+    ];
+    const { result } = await renderAll(transactions);
+    await update(() => result.current.setRecurringView(RECURRING_VIEWS.oneTime));
+    expect(result.current.filtered.map(t => t.id)).toEqual([2]);
   });
 
   it('filters by selected category ids', async () => {

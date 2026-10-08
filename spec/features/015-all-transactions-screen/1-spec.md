@@ -59,6 +59,10 @@
 
 - Same as 014 (section 3).
 
+#### Recurring view filter
+
+- Same as 014 (section 3): a three-way control (All / One-time / Recurring) directly under the type tabs, always shown; the balance reflects the selected view.
+
 ### 7. Tag filter
 
 - `TagFilterBar` below the period section, same as current implementation.
@@ -121,7 +125,7 @@
 ## Non-functional requirements
 
 - **Screen:** `AllTransactionsScreen.tsx` (standalone screen).
-- **Layout structure:** `SafeAreaView > [AllTypeTabs, SearchBar(conditional), controls(AccountSelector+Balance+CategoryButton+SortToggle), PeriodTabs, CalendarPicker, TagFilterBar, SectionList, FAB(absolute)]`.
+- **Layout structure:** `SafeAreaView > [AllTypeTabs, RecurringView(conditional), SearchBar(conditional), controls(AccountSelector+Balance+CategoryButton+SortToggle), PeriodTabs, CalendarPicker, TagFilterBar, SectionList, FAB(absolute)]`.
 - **Shared components:** reuses `AccountModal`, `SortToggle`, `TransactionGroup`, `TagFilterBar`, `PeriodTabs`, `CalendarPicker`.
 - **New components:** `AllTypeTabs`, `CategoryFilterModal` (spec 021).
 - **Repository:** `transactionRepository.list()` extended with `category_ids` filter.
@@ -147,6 +151,7 @@
 - [x] CalendarPicker updates when the period changes.
 - [x] The transaction list filters by the selected period's date range.
 - [x] The sort toggle works (date/amount, ASC/DESC).
+- [x] A recurring view control (All / One-time / Recurring) filters the list by recurring-generated vs one-time; the balance reflects it and the control is always shown.
 - [x] TagFilterBar is shown and works with local state.
 - [x] A search icon is shown in the header; pressing it toggles a SearchBar.
 - [x] The search matches comment/description, category display name, tag names and account name, case-insensitive.

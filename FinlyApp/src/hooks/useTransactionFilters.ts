@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import type { Transaction, Account, Category } from '../database/types';
-import { SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, type SortBy, type SortDirection, type TransactionTypeFilter } from '../constants/types';
+import { SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, RECURRING_VIEWS, type SortBy, type SortDirection, type TransactionTypeFilter, type RecurringView } from '../constants/types';
 import { transactionRepository } from '../database';
 import { isTotalAccount, UNTAGGED_ID } from '../database/helpers';
 import { formatDateForDB, parseDbDate } from '../utils/formatters';
@@ -48,6 +48,7 @@ export function useTransactionFilters({
   const [accountModalVisible, setAccountModalVisible] = useState(false);
   const [sortBy, setSortBy] = useState<SortBy>(SORT_BY.date);
   const [sortDirection, setSortDirection] = useState<SortDirection>(SORT_DIRECTIONS.desc);
+  const [recurringView, setRecurringView] = useState<RecurringView>(RECURRING_VIEWS.all);
   const [tagsByTransaction, setTagsByTransaction] = useState<TagsByTransaction>(new Map());
   const [localTagIds, setLocalTagIds] = useState<number[]>(initialTagIds);
 
@@ -97,6 +98,12 @@ export function useTransactionFilters({
       list = list.filter(t => catSet.has(t.category_id));
     }
 
+    if (recurringView === RECURRING_VIEWS.recurring) {
+      list = list.filter(t => t.recurring_rule_id != null);
+    } else if (recurringView === RECURRING_VIEWS.oneTime) {
+      list = list.filter(t => t.recurring_rule_id == null);
+    }
+
     if (periodDates) {
       const startStr = formatDateForDB(periodDates.start);
       const endStr = formatDateForDB(periodDates.end);
@@ -139,7 +146,7 @@ export function useTransactionFilters({
       return sortDirection === SORT_DIRECTIONS.desc ? -diff : diff;
     });
     return sorted;
-  }, [transactions, selectedAccountId, isTotal, typeTab, selectedCategoryIds, periodDates, sortBy, sortDirection, localTagIds, tagsByTransaction, searchTerm, categoriesById, accounts, recurringNames]);
+  }, [transactions, selectedAccountId, isTotal, typeTab, selectedCategoryIds, periodDates, recurringView, sortBy, sortDirection, localTagIds, tagsByTransaction, searchTerm, categoriesById, accounts, recurringNames]);
 
   const sections = useMemo(() => {
     const grouped = new Map<string, Transaction[]>();
@@ -186,6 +193,8 @@ export function useTransactionFilters({
     sortDirection,
     handleToggleSort,
     handleToggleDirection,
+    recurringView,
+    setRecurringView,
     tagsByTransaction,
     localTagIds,
     handleToggleTag,

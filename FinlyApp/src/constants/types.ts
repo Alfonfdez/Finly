@@ -129,6 +129,14 @@ export const SORT_DIRECTIONS = {
 
 export type SortDirection = keyof typeof SORT_DIRECTIONS;
 
+export const RECURRING_VIEWS = {
+  all: 'all',
+  oneTime: 'oneTime',
+  recurring: 'recurring',
+} as const;
+
+export type RecurringView = keyof typeof RECURRING_VIEWS;
+
 export const CALC_KEYS = {
   clear: 'C',
   equals: '=',
