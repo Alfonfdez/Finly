@@ -3439,3 +3439,21 @@
 - Tag colors are now consistent: normal tags render in the app's primary (blue) everywhere. Home's category tag chips use variant='primary' (blue) while the 'Untagged' chip stays neutral (grey); the tag filter bar (Home + both list screens) shows normal tags with primary text (All/Untagged stay secondary/grey).
 - Added isUntaggedTag(tagId) to utils/tagFilter (used by CategoryList, HomeScreen and toggleTagInArray) so the 'Untagged' sentinel check is centralized (utils home so it is importable from all layers, incl. tagFilter itself).
 - Tests (+4): isUntaggedTag; CategoryList (normal tag = primary, Untagged = secondary); TagFilterBar (normal = primary, Untagged = secondary). 'npm run test:all' green (113 files / 787 tests). Web-verified Home + filter bar in dark + light, 0 console errors.
+
+[2026-10-08] style | FinlyApp/src/components/DataRow.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, spec/features/016-transaction-details-screen/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Transaction details redesign: every data row now shows a muted (textSecondary) type symbol to the left of its label (icons reused from the drawer/pickers: cash/wallet/grid/calendar/chatbubble/pricetag/repeat/image), the Recurring row is always present (rule name, read-only, or '—'), and empty Comment/Tags/Recurring show a single shared '—' placeholder.
+- i18n: replaced details_no_comment + details_no_tags with a single details_none ('—') across all 9 languages (net -1 key).
+- Tests (+2): Recurring row always present with the '—' placeholder for empty fields, and a symbol per row. 'npm run test:all' green (113 files / 789 tests). Web-verified details (recurring + plain) in dark + light, 0 console errors. Specs 016 + 028 + roadmap updated.
+
+[2026-10-08] style | FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, spec/features/016-transaction-details-screen/1-spec.md
+- Transaction details: the Photo row is now always shown as the last row (thumbnails when a photo exists, the shared '—' placeholder when there is none), so the card is uniform for every transaction.
+- Row separators are now consistent: every row has a bottom divider (Amount→...→Recurring→Photo), with the last row (Photo) borderless — including the Recurring↔Photo divider when a photo exists.
+- Tests updated (photo placeholder count). 'npm run test:all' green (113 files / 789 tests). Web-verified details (no photo -> Photo '—', dividers between all rows), 0 console errors. Spec 016 updated.
+
+[2026-10-08] style | FinlyApp/src/components/DataRow.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, spec/features/016-transaction-details-screen/1-spec.md
+- Transaction details: the row type symbols now use the primary color (c.primary) instead of textSecondary, for a clearer blue marker + muted label hierarchy across all rows.
+- Test: the row-symbol test now also asserts the primary color (#22D3EE) and includes the always-present Photo icon (image-outline). 'npm run test:all' green (113 files / 789 tests). Web-verified dark (cyan) + light (teal), 0 console errors. Spec 016 updated.
+
+[2026-10-08] style | FinlyApp/src/i18n/*.ts, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, spec/features/016-transaction-details-screen/1-spec.md
+- Transaction details: the 'Photo' row label is now plural ('Photos') in 8 languages (en/fr Photos, es/ca/gl/pt/de Fotos, eu Argazkiak; Italian keeps the invariable 'Foto'), consistent with the plural 'Tags' row. The internal key details_photo is unchanged, and the form's add_photo stays singular.
+- Test updated to expect 'Photos'. 'npm run test:all' green (113 files / 789 tests). Web-verified the details row label, 0 console errors. Spec 016 updated.
