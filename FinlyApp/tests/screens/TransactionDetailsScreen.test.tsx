@@ -120,4 +120,27 @@ describe('TransactionDetailsScreen', () => {
     expect(view.getByText('Rent')).toBeTruthy();
     expect(view.queryByRole('switch')).toBeNull();
   });
+
+  it('always shows the Tags, Recurring and Photo rows and uses the placeholder for empty fields', async () => {
+    getById.mockResolvedValue(tx({ description: null }));
+    const view = await render(<TransactionDetailsScreen />);
+    await view.findByText('Recurring');
+    expect(view.getByText('Photos')).toBeTruthy();
+    // Comment, Tags, Recurring and Photo are all empty -> "—" each.
+    expect(view.getAllByText('—')).toHaveLength(4);
+  });
+
+  it('renders a primary-colored symbol for each row', async () => {
+    getById.mockResolvedValue(tx());
+    const view = await render(<TransactionDetailsScreen />);
+    await view.findByText('Wallet');
+    for (const name of [
+      'cash-outline', 'wallet-outline', 'grid-outline', 'calendar-outline',
+      'chatbubble-outline', 'pricetag-outline', 'repeat-outline', 'image-outline',
+    ]) {
+      expect(view.getByText(name)).toBeTruthy();
+    }
+    const cash = view.root!.queryAll((i) => i.type === 'RCTText' && i.children[0] === 'cash-outline')[0];
+    expect(cash.props.color).toBe('#22D3EE');
+  });
 });

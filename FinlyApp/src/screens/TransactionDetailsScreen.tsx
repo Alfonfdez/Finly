@@ -116,20 +116,19 @@ export default function TransactionDetailsScreen() {
   const isExpense = transaction.type === TRANSACTION_TYPES.expense;
   const typeColor = isExpense ? c.red : c.green;
   const catName = category ? getDisplayCategoryName(category) : '';
-  const hasRecurring = transaction.recurring_rule_id != null;
   const hasPhoto = parsedPhotos.length > 0;
 
   return (
     <ScreenShell>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.dataSection}>
-          <DataRow label={labels.details_amount}>
+          <DataRow label={labels.details_amount} icon="cash-outline">
             <Text style={[styles.dataValue, { color: typeColor, fontSize: fs(15) }]}>
               {`${isExpense ? AMOUNT_SIGNS.negative : AMOUNT_SIGNS.positive}${formatAmount(transaction.amount, config)}`}
             </Text>
           </DataRow>
 
-          <DataRow label={labels.details_account}>
+          <DataRow label={labels.details_account} icon="wallet-outline">
             {account && (
               <NamedEntityBadge
                 icon={account.icon}
@@ -142,7 +141,7 @@ export default function TransactionDetailsScreen() {
             )}
           </DataRow>
 
-          <DataRow label={labels.details_category}>
+          <DataRow label={labels.details_category} icon="grid-outline">
             {category && (
               <NamedEntityBadge
                 icon={category.icon}
@@ -155,19 +154,19 @@ export default function TransactionDetailsScreen() {
             )}
           </DataRow>
 
-          <DataRow label={labels.details_date}>
+          <DataRow label={labels.details_date} icon="calendar-outline">
             <Text style={[styles.dataValue, { color: c.text, fontSize: fs(15) }]}>
               {transactionDate ? formatDateLong(transactionDate, config.language) : ''}
             </Text>
           </DataRow>
 
-          <DataRow label={labels.details_comment}>
+          <DataRow label={labels.details_comment} icon="chatbubble-outline">
             <Text style={[styles.dataValue, { color: transaction.description ? c.text : c.textSecondary, fontSize: fs(15) }]}>
-              {transaction.description || labels.details_no_comment}
+              {transaction.description || labels.details_none}
             </Text>
           </DataRow>
 
-          <DataRow label={labels.details_tags} noBorder={!hasRecurring && !hasPhoto}>
+          <DataRow label={labels.details_tags} icon="pricetag-outline">
             {tagNames.length > 0 ? (
               <View style={styles.tagsContainer}>
                 {tagNames.map(tag => (
@@ -176,21 +175,19 @@ export default function TransactionDetailsScreen() {
               </View>
             ) : (
               <Text style={[styles.dataValue, { color: c.textSecondary, fontSize: fs(15) }]}>
-                {labels.details_no_tags}
+                {labels.details_none}
               </Text>
             )}
           </DataRow>
 
-          {hasRecurring && (
-            <DataRow label={labels.recurring_chip} noBorder={!hasPhoto}>
-              <Text style={[styles.nameValue, { color: c.text, fontSize: fs(15) }]}>
-                {ruleName ?? ''}
-              </Text>
-            </DataRow>
-          )}
+          <DataRow label={labels.recurring_chip} icon="repeat-outline">
+            <Text style={[styles.nameValue, { color: ruleName ? c.text : c.textSecondary, fontSize: fs(15) }]}>
+              {ruleName ?? labels.details_none}
+            </Text>
+          </DataRow>
 
-          {hasPhoto && (
-            <DataRow label={labels.details_photo} noBorder>
+          <DataRow label={labels.details_photo} icon="image-outline" noBorder>
+            {hasPhoto ? (
               <View style={styles.photoGrid}>
                 {parsedPhotos.map((uri, index) => (
                   <TouchableOpacity key={`${uri}-${index}`} onPress={() => { setSelectedPhotoIndex(index); setPhotoViewerVisible(true); }}>
@@ -198,8 +195,12 @@ export default function TransactionDetailsScreen() {
                   </TouchableOpacity>
                 ))}
               </View>
-            </DataRow>
-          )}
+            ) : (
+              <Text style={[styles.dataValue, { color: c.textSecondary, fontSize: fs(15) }]}>
+                {labels.details_none}
+              </Text>
+            )}
+          </DataRow>
         </View>
 
         <View style={styles.actionSection}>

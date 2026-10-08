@@ -231,7 +231,7 @@ Status: completed.
 
 Transaction details screen for an individual transaction, accessible by tapping any transaction in the lists (TransactionsScreen, AllTransactionsScreen):
 - Header with "Transaction details" title and back button.
-- Data card with 5 rows: Amount (with type color), Account (icon + name), Category (icon + name), Date (multilingual long format), Comment (or "No comment").
+- Data card rows — each with a muted type symbol to the left of the label (icons reused from the drawer/pickers): Amount (type color), Account (icon + name), Category (icon + name), Date (multilingual long format), Comment, Tags and Recurring. The rows are always present so the card is uniform; empty Comment/Tags/Recurring show the shared `—` placeholder (`details_none`), and the Recurring row is read-only (rule name, or `—`; no toggle).
 - "Delete" button with confirmation modal ("No" / "Yes") that deletes and refreshes the list.
 - "Edit" button that navigates to ModifyTransaction (017) to edit the transaction.
 - Footer "Created HH:mm dd MMM yyyy" with 24h format and year always visible.

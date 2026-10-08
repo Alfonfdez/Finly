@@ -16,7 +16,9 @@
 
 ### 2. Data card
 
-Each field is displayed in a row with a label on the left (gray, `textSecondary`) and the value on the right:
+Each field is displayed in a row with a **symbol** (an Ionicons glyph in the primary color, `c.primary`) followed by the label on the left, and the value on the right. The symbol matches the field's concept and reuses the icons already used elsewhere in the app: `cash-outline` (Amount), `wallet-outline` (Account), `grid-outline` (Category), `calendar-outline` (Date), `chatbubble-outline` (Comment), `pricetag-outline` (Tags), `repeat-outline` (Recurring), `image-outline` (Photo).
+
+Every row is always present so the card is uniform; when a field has no value the row shows a single placeholder, `details_none` (“—”), in `textSecondary`. Each row is separated from the next by a bottom border, so a separator appears between every pair of rows (the last row has none):
 
 | Label (i18n key) | Value | Example |
 |---|---|---|
@@ -24,7 +26,10 @@ Each field is displayed in a row with a label on the left (gray, `textSecondary`
 | `details_account` | Account icon (28×28) + account name | `🏦 Bank` |
 | `details_category` | Category icon (28×28) + category name | `🍔 Restaurant` |
 | `details_date` | Date in long format according to language | `July 14, 2026` / `14 de julio de 2026` / `14 de juliol de 2026` |
-| `details_comment` | Transaction comment, or "No comment" text in gray if empty | `Dinner with friends` / _No comment_ |
+| `details_comment` | Transaction comment, or `—` if empty | `Dinner with friends` / _—_ |
+| `details_tags` | Tag chips, or `—` if none | `lunch` `work` / _—_ |
+| `recurring_chip` | Name of the recurring rule that generated the transaction, or `—` | `Rent` / _—_ |
+| `details_photo` | Photos (tappable thumbnails), or `—` if none (always last) | 🖼️ / _—_ |
 
 ### 3. Date
 
@@ -37,15 +42,15 @@ Each field is displayed in a row with a label on the left (gray, `textSecondary`
 ### 4. Comment
 
 - The "Comment" section is always shown (visual consistency with the rest of the fields).
-- If `transaction.description` is `null` or an empty string, the text "No comment" / "Sin comentario" / "Sense comentari" is displayed in `textSecondary` color without background.
+- If `transaction.description` is `null` or an empty string, the shared placeholder `details_none` (“—”) is shown in `textSecondary` (the same placeholder used for empty Tags and Recurring).
 - If there is a comment, the full text is displayed in `text` color.
 
 ### 5. Photo
 
-- A "Photo" row (i18n key `details_photo`) appears after the Tags row, but only if the transaction has a photo (`transaction.photo` is not null) and the platform is not web.
-- Shows a tappable thumbnail (max width 200, aspect ratio preserved).
-- Tapping opens a full-screen image viewer: a `<Modal>` with black background, the image displayed with `resizeMode: 'contain'`, and a close button ("×" icon) in the top-right corner (i18n key `photo_viewer_close`).
-- If no photo, the row is hidden entirely (not showing "—").
+- The "Photos" row (i18n key `details_photo`) is always shown as the **last** row (after Recurring), so the card is uniform for every transaction.
+- When the transaction has one or more photos (`transaction.photo` is not null/empty) it shows their tappable thumbnails (max width 200, aspect ratio preserved).
+- When there are no photos the row shows the shared `details_none` placeholder ("—") in `textSecondary`.
+- Tapping a thumbnail opens a full-screen image viewer: a `<Modal>` with black background, the image displayed with `resizeMode: 'contain'`, and a close button ("×" icon) in the top-right corner (i18n key `photo_viewer_close`).
 - **Implementation**: see spec `023-photo-attachment` for full functional requirements.
 
 ### 5. "Delete" button
@@ -97,8 +102,11 @@ Each field is displayed in a row with a label on the left (gray, `textSecondary`
 - [x] The "Account" section shows icon + account name.
 - [x] The "Category" section shows icon + category name.
 - [x] The "Date" section displays the date in long format according to the language.
-- [x] The "Comment" section is always shown; if empty, "No comment" appears in gray.
-- [x] The "Photo" row shows a thumbnail when a photo exists (hidden on web, hidden when no photo).
+- [x] Each data row shows a muted symbol to the left of its label (matching the field's concept).
+- [x] The Comment, Tags, Recurring and Photo rows are always shown; an empty one displays the shared `—` placeholder in gray.
+- [x] The Recurring row is present for every transaction (the rule name for a generated transaction, otherwise `—`).
+- [x] The Photos row is always the last row: it shows tappable thumbnail(s) when a photo exists, otherwise `—`.
+- [x] Every row is separated from the next by a divider (a separator between each pair of rows; the last row has none).
 - [x] Tapping the photo thumbnail opens a full-screen viewer with close button.
 - [x] The "Delete" button shows a confirmation modal with "No" and "Yes".
 - [x] Confirming "Yes" deletes the transaction and returns to the previous screen.
