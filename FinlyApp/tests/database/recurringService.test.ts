@@ -209,6 +209,22 @@ describe('materializeDueRecurring', () => {
     expect(resumed.next_due).toBe('2026-06-02');
   });
 
+  it('resuming one rule does not catch up other overdue rules', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, resumeRecurringRule } = await boot();
+    const a = await recurringRepo.createWithTags({ ...baseRule, name: 'A' }, []);
+    const b = await recurringRepo.createWithTags({ ...baseRule, name: 'B' }, []);
+    await recurringRepo.setActive(a.id, false);
+
+    // Resuming A jumps its cursor past the pause window, so nothing is created now.
+    expect(await resumeRecurringRule(a.id, APR_15)).toBe(0);
+    expect(await transactionRepo.list()).toHaveLength(0);
+    expect((await recurringRepo.getById(a.id))?.next_due).toBe('2026-05-02');
+
+    // B is still overdue and untouched; the normal reconciliation catches it up.
+    expect((await recurringRepo.getById(b.id))?.next_due).toBe('2026-01-02');
+    expect(await materializeDueRecurring(APR_15)).toBe(4); // Jan-Apr 2 for B
+  });
+
   it('refuses to resume an ended rule', async () => {
     const { recurringRepo, transactionRepo, resumeRecurringRule } = await boot();
     const rule = await recurringRepo.createWithTags(

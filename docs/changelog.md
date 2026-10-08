@@ -3421,3 +3421,8 @@
 - Deduplicated the two transaction list screens: new TransactionListBody renders the shared chrome (search bar, controls/period slots, tag filter, sectioned list/empty state, account modal, selection bar/FAB, bulk-delete modal) and builds the transaction row/section header. AllTransactionsScreen and TransactionsScreen now pass only their differing header/controls/period/extra-modals/FAB; ~80 duplicated lines removed per screen.
 - The list controller stays in useTransactionListScreen (hooks may not import components, per boundaries), so renderItem/renderSectionHeader are built in the body component.
 - Tests: added TransactionListBody component test; existing screen + hook tests unchanged. 'npm run test:all' green (111 files / 779 tests). Web smoke: both list screens (rows, select mode + bulk delete, period/calendar, category header) with 0 console errors.
+
+[2026-10-08] refactor | FinlyApp/src/database/recurringService.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/tests/database/recurringService.test.ts, docs/harnesses.md
+- Recurring micro-cleanup: extracted materializeRule(rule, today) from materializeDueRecurring and scoped resumeRecurringRule to the resumed rule (other overdue rules are caught up by the app-start/foreground/midnight runs, not as a resume side effect).
+- recurringRepo.setActive/reactivate/updateNextDue now delegate to a private writeRuleFields(id, patch) helper (public API unchanged); RepeatSection memoizes its frequencyLabels map per language.
+- Tests: added a scoped-resume case (resuming one rule leaves other overdue rules untouched). 'npm run test:all' green (111 files / 780 tests). Web smoke: recurring pause/resume, 0 console errors.
