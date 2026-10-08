@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Switch, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
@@ -61,12 +62,12 @@ export default function RepeatSection({
   const fs = useFontSize();
   const labels = t();
 
-  const frequencyLabels: Record<RecurrenceFrequency, string> = {
+  const frequencyLabels = useMemo<Record<RecurrenceFrequency, string>>(() => ({
     daily: labels.repeat_daily,
     weekly: labels.repeat_weekly,
     monthly: labels.repeat_monthly,
     yearly: labels.repeat_yearly,
-  };
+  }), [labels]);
 
   const summary = recurrenceSummary(
     buildRecurrenceSchedule(startDay, frequency, interval, endDate ? toDateOnly(endDate) : null),

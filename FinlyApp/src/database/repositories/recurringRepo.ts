@@ -21,6 +21,16 @@ export interface GeneratedTransactionPatch {
   tagIds?: number[];
 }
 
+/** Write selected rule columns (never tags) and bump `updated_at`. */
+async function writeRuleFields(id: number, patch: { active?: number; next_due?: string }): Promise<void> {
+  const db = await getDrizzle();
+  await db
+    .update(recurringRules)
+    .set({ ...patch, updated_at: sql`datetime('now', 'localtime')` })
+    .where(eq(recurringRules.id, id))
+    .run();
+}
+
 export const recurringRepo = {
   async list(userId: number): Promise<RecurringRule[]> {
     const db = await getDrizzle();
@@ -133,31 +143,16 @@ export const recurringRepo = {
   },
 
   async setActive(id: number, active: boolean): Promise<void> {
-    const db = await getDrizzle();
-    await db
-      .update(recurringRules)
-      .set({ active: active ? 1 : 0, updated_at: sql`datetime('now', 'localtime')` })
-      .where(eq(recurringRules.id, id))
-      .run();
+    return writeRuleFields(id, { active: active ? 1 : 0 });
   },
 
   /** Reactivate a paused rule and jump its cursor forward (skips the pause window). */
   async reactivate(id: number, nextDue: string): Promise<void> {
-    const db = await getDrizzle();
-    await db
-      .update(recurringRules)
-      .set({ active: 1, next_due: nextDue, updated_at: sql`datetime('now', 'localtime')` })
-      .where(eq(recurringRules.id, id))
-      .run();
+    return writeRuleFields(id, { active: 1, next_due: nextDue });
   },
 
   async updateNextDue(id: number, nextDue: string): Promise<void> {
-    const db = await getDrizzle();
-    await db
-      .update(recurringRules)
-      .set({ next_due: nextDue, updated_at: sql`datetime('now', 'localtime')` })
-      .where(eq(recurringRules.id, id))
-      .run();
+    return writeRuleFields(id, { next_due: nextDue });
   },
 
   async remove(id: number): Promise<void> {

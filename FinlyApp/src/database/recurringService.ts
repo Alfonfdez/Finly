@@ -5,6 +5,35 @@ import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, USER_ID, type RecurrenceScop
 import type { RecurringRule } from './types';
 
 /**
+ * Materialize a single rule's due occurrences (bounded) and advance its cursor.
+ * Idempotent: the hasOccurrence guard plus the unique occurrence index.
+ *
+ * @returns the number of transactions created for this rule.
+ */
+async function materializeRule(rule: RecurringRule, today: string): Promise<number> {
+  const tagIds = await recurringRepo.getTagIds(rule.id);
+  const { occurrences, nextDue } = listDueOccurrences(
+    rule,
+    rule.next_due,
+    today,
+    MAX_CATCH_UP_OCCURRENCES,
+  );
+
+  let created = 0;
+  await withTransaction(async () => {
+    for (const occurrence of occurrences) {
+      if (await recurringRepo.hasOccurrence(rule.id, occurrence)) continue;
+      await recurringRepo.insertOccurrence(rule, occurrence, tagIds);
+      created += 1;
+    }
+    if (nextDue !== rule.next_due) {
+      await recurringRepo.updateNextDue(rule.id, nextDue);
+    }
+  });
+  return created;
+}
+
+/**
  * Materialize every due occurrence for all active recurring rules.
  *
  * Runs on app start, on foreground and on the midnight timer. Safe to call
@@ -17,31 +46,11 @@ import type { RecurringRule } from './types';
 export async function materializeDueRecurring(now: Date = new Date()): Promise<number> {
   const today = todayDateOnly(now);
   const rules = await recurringRepo.listDue(today);
-  if (rules.length === 0) return 0;
 
   let created = 0;
-
   for (const rule of rules) {
-    const tagIds = await recurringRepo.getTagIds(rule.id);
-    const { occurrences, nextDue } = listDueOccurrences(
-      rule,
-      rule.next_due,
-      today,
-      MAX_CATCH_UP_OCCURRENCES,
-    );
-
-    await withTransaction(async () => {
-      for (const occurrence of occurrences) {
-        if (await recurringRepo.hasOccurrence(rule.id, occurrence)) continue;
-        await recurringRepo.insertOccurrence(rule, occurrence, tagIds);
-        created += 1;
-      }
-      if (nextDue !== rule.next_due) {
-        await recurringRepo.updateNextDue(rule.id, nextDue);
-      }
-    });
+    created += await materializeRule(rule, today);
   }
-
   return created;
 }
 
@@ -115,7 +124,11 @@ export async function resumeRecurringRule(ruleId: number, now: Date = new Date()
   const nextDue = rule.next_due < today ? nextDueOnOrAfter(rule, today) : rule.next_due;
 
   await recurringRepo.reactivate(ruleId, nextDue);
-  return materializeDueRecurring(now);
+
+  // Materialize only this rule (its cursor is now on/after today); any other
+  // overdue rules are caught up by the app-start/foreground/midnight runs.
+  const resumed = await recurringRepo.getById(ruleId);
+  return resumed ? materializeRule(resumed, today) : 0;
 }
 
 /**
