@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { COUNTER_STYLE } from '../components/componentStyles';
@@ -18,6 +18,7 @@ import ListItemRow from '../components/ListItemRow';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { ERROR_PREFIXES } from '../utils/errors';
 import SelectionActionBar from '../components/SelectionActionBar';
+import SelectAllRow from '../components/SelectAllRow';
 import BulkDeleteConfirmationModal from '../components/BulkDeleteConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
@@ -75,6 +76,8 @@ export default function CommentsScreen() {
 
   const filteredComments = useSearchFilter(comments, searchText, (c) => [c.description]);
 
+  const visibleIds = useMemo(() => filteredComments.map((c) => c.description), [filteredComments]);
+
   const {
     deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
   } = useBulkDelete({
@@ -126,6 +129,16 @@ export default function CommentsScreen() {
           <Text style={[COUNTER_STYLE, { color: c.textSecondary, fontSize: fs(13) }]}>
             {labels.comments_counter(filteredComments.length)}
           </Text>
+        )}
+
+        {selectMode && visibleIds.length > 0 && (
+          <SelectAllRow
+            allSelected={select.allSelected(visibleIds)}
+            countLabel={labels.items_count(visibleIds.length)}
+            selectAllLabel={labels.select_all}
+            deselectAllLabel={labels.deselect_all}
+            onToggle={() => select.toggleSelectAll(visibleIds)}
+          />
         )}
 
         <FlatList

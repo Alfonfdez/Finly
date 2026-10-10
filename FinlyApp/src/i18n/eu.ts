@@ -5,6 +5,9 @@ export const eu: Language = {
   cancel: 'Utzi',
   delete: 'Ezabatu',
   common_close: 'Itxi',
+  select_all: 'Hautatu guztiak',
+  deselect_all: 'Deshautatu guztiak',
+  items_count: (n: number) => `${n} ${n === 1 ? 'elementu' : 'elementuak'}`,
 
   // Settings
   settings_appearance: 'Itxura',

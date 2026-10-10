@@ -5,6 +5,9 @@ export const es: Language = {
   cancel: 'Cancelar',
   delete: 'Eliminar',
   common_close: 'Cerrar',
+  select_all: 'Seleccionar todo',
+  deselect_all: 'Deseleccionar todo',
+  items_count: (n: number) => `${n} elemento${n === 1 ? '' : 's'}`,
 
   // Settings
   settings_appearance: 'Apariencia',

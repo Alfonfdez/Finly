@@ -35,7 +35,7 @@ All commands run from the `FinlyApp/` directory.
 
 ### Current suite baseline
 
-Verified 2026-10-08: **113 test files / 810 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
+Verified 2026-10-10: **114 test files / 821 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
 
 Native E2E baseline (2026-09-09, SDK 57 + v2.0.0 release package): all 10 Maestro flows PASS on the `finly_test` emulator against `com.finly.app` after `expo prebuild` + `assembleDebug`.
 

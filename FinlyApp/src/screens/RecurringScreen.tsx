@@ -7,6 +7,7 @@ import Fab from '../components/Fab';
 import RecurringRow from '../components/RecurringRow';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
+import SelectAllRow from '../components/SelectAllRow';
 import BulkDeleteConfirmationModal from '../components/BulkDeleteConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
@@ -83,6 +84,8 @@ export default function RecurringScreen() {
     ];
   });
 
+  const visibleIds = useMemo(() => filteredRules.map((rule) => rule.id), [filteredRules]);
+
   const handleToggleActive = useCallback(async (rule: RecurringRule, value: boolean) => {
     // The switch is disabled for finished rules; guard here anyway (the service
     // also refuses to resume an ended rule). Pausing clears the flag; resuming
@@ -144,6 +147,16 @@ export default function RecurringScreen() {
         onChangeText={setSearchText}
         onClose={closeSearch}
       />
+
+      {selectMode && visibleIds.length > 0 && (
+        <SelectAllRow
+          allSelected={select.allSelected(visibleIds)}
+          countLabel={labels.items_count(visibleIds.length)}
+          selectAllLabel={labels.select_all}
+          deselectAllLabel={labels.deselect_all}
+          onToggle={() => select.toggleSelectAll(visibleIds)}
+        />
+      )}
 
       <FlatList
         data={filteredRules}

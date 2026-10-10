@@ -109,6 +109,7 @@
 - The header search and search filtering keep working during selection mode; selection applies to the filtered list. All other filters (type tab, account, categories, period, tags) also keep working; selection persists across filter changes.
 - The floating "+" button is hidden in selection mode.
 - A bottom `SelectionActionBar` with "Cancel" and `Delete (N)` (`transactions_bulk_delete(n)`) appears; the delete button is disabled while no transactions are selected.
+- A **Select all** / **Deselect all** row sits above the list in selection mode (`select_all` / `deselect_all`, with the visible count `items_count`); tapping it selects every currently visible transaction in one tap (and clears them again).
 - Deleting opens a single `ConfirmationModal`: `Delete N transactions?` (`transactions_bulk_delete_confirm_title(n)`) with message "The selected transactions will be permanently deleted. This cannot be undone." (`transactions_bulk_delete_confirm_message`) and Cancel / Delete buttons.
 - On confirm: `transactionRepository.deleteMany(ids)` cleans up photos, removes junction rows, and deletes the transactions in a single database transaction; the selection and selection mode reset, and the list reloads.
 
@@ -170,4 +171,5 @@
 - [x] "Select" in the header enters selection mode; transaction rows show checkboxes and tapping toggles selection instead of navigating.
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
 - [x] Bulk delete confirms once for the whole batch and permanently deletes the selected transactions (including photos and tag links).
+- [x] A Select all / Deselect all row above the list selects every currently visible transaction in one tap.
 - [x] After returning from AddTransaction, the type tab matches the added transaction's type (except when "All" was selected, which stays "All").

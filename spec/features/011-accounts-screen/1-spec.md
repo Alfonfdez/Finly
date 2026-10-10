@@ -72,6 +72,7 @@
 - The header search and search filtering keep working during selection mode; selection applies to the filtered list.
 - The floating "+" button is hidden in selection mode.
 - A bottom `SelectionActionBar` with "Cancel" and "Delete (N)" (`accounts_bulk_delete(n)`) appears; the delete button is disabled while no accounts are selected.
+- A **Select all** / **Deselect all** row sits above the list in selection mode (`select_all` / `deselect_all`, with the visible count `items_count`); tapping it selects every visible non-Total account in one tap (the Total account is never selected).
 - A guard prevents deleting ALL non-Total accounts: if the selection includes every non-Total account, a modal warns the user and the delete is blocked (at least one non-Total account must remain).
 - Deleting opens a single `ConfirmationModal`: `Delete N accounts?` (`accounts_bulk_delete_confirm_title(n)`) with message "All transactions linked to the selected accounts will also be deleted. This cannot be undone." (`accounts_bulk_delete_confirm_message`) and Cancel / Delete buttons.
 - On confirm: for each selected account, `transactionRepository.deleteByAccountId(id)` deletes linked transactions, then `accountRepository.deleteMany(ids)` deletes the accounts; selection and selection mode reset, and the list reloads.
@@ -114,5 +115,6 @@
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
 - [x] A guard prevents deleting all non-Total accounts.
 - [x] Bulk delete confirms once for the whole batch, deletes linked transactions and the accounts, and the list reloads.
+- [x] A Select all / Deselect all row above the list selects every visible non-Total account in one tap.
 - [x] All texts change when switching language.
 - [x] The screen respects the active theme and text size.

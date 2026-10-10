@@ -3,6 +3,9 @@ export const en = {
   cancel: 'Cancel',
   delete: 'Delete',
   common_close: 'Close',
+  select_all: 'Select all',
+  deselect_all: 'Deselect all',
+  items_count: (n: number) => `${n} item${n === 1 ? '' : 's'}`,
 
   // Settings
   settings_appearance: 'Appearance',

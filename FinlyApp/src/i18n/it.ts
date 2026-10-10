@@ -5,6 +5,9 @@ export const it: Language = {
   cancel: 'Annulla',
   delete: 'Elimina',
   common_close: 'Chiudi',
+  select_all: 'Seleziona tutto',
+  deselect_all: 'Deseleziona tutto',
+  items_count: (n: number) => `${n} element${n === 1 ? 'o' : 'i'}`,
 
   // Settings
   settings_appearance: 'Aspetto',

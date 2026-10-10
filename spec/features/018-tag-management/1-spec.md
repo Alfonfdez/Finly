@@ -77,6 +77,7 @@
 - The header search and search filtering keep working during selection mode; selection applies to the filtered list.
 - In selection mode the "+" FAB (and the "Maximum of 50 tags reached" message) is replaced by a bottom action bar with "Cancel" and `Delete (N)` (`tags_bulk_delete(n)`), where N is the number of selected tags.
 - The delete button is disabled while no tags are selected; "Cancel" exits selection mode and clears the selection.
+- A **Select all** / **Deselect all** row sits above the list in selection mode (`select_all` / `deselect_all`, with the visible count `items_count`); tapping it selects every visible tag in one tap.
 - Deleting opens a single `ConfirmationModal`: `Delete N tags?` (`tags_bulk_delete_confirm_title(n)`) with message "The selected tags will be deleted and their links to transactions will be removed. This cannot be undone." (`tags_bulk_delete_confirm_message`) and Cancel / Delete buttons.
 - On confirm: `tagRepo.deleteMany(ids)` deletes all selected tags (junction rows cascade), selection and selection mode reset, and `refreshTags()` reloads the list.
 
@@ -121,6 +122,7 @@
 - [x] "Select" in the header enters selection mode; rows show checkboxes and tapping toggles selection instead of navigating.
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
 - [x] Bulk delete confirms once for the whole batch and removes all selected tags at once.
+- [x] A Select all / Deselect all row above the list selects every visible tag in one tap.
 - [x] After create/modify/delete, `refreshTags()` is called and the list updates.
 - [x] All texts change when switching language.
 - [x] The screen respects the active theme and text size.

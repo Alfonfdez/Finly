@@ -106,6 +106,7 @@
 - When there are 0 transactions, the header Select and Search buttons are both hidden.
 - In selection mode each transaction row shows a leading checkbox (`checkbox-outline` unchecked / `checkbox` checked in primary color); tapping a row toggles its selection instead of navigating to transaction details.
 - The header search and search filtering keep working during selection mode; selection applies to the filtered list. The account selector and tag filter also keep working; selection persists across filter changes.
+- A **Select all** / **Deselect all** row sits above the list in selection mode (`select_all` / `deselect_all`, with the visible count `items_count`); tapping it selects every currently visible transaction in one tap (and clears them again).
 - The floating "+" button is hidden in selection mode.
 - A bottom `SelectionActionBar` with "Cancel" and `Delete (N)` (`transactions_bulk_delete(n)`) appears; the delete button is disabled while no transactions are selected.
 - Deleting opens a single `ConfirmationModal`: `Delete N transactions?` (`transactions_bulk_delete_confirm_title(n)`) with message "The selected transactions will be permanently deleted. This cannot be undone." (`transactions_bulk_delete_confirm_message`) and Cancel / Delete buttons.
@@ -159,5 +160,6 @@
 - [x] "Select" in the header enters selection mode; transaction rows show checkboxes and tapping toggles selection instead of navigating.
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
 - [x] Bulk delete confirms once for the whole batch and permanently deletes the selected transactions (including photos and tag links).
+- [x] A Select all / Deselect all row above the list selects every currently visible transaction in one tap.
 - [x] The floating "+" button navigates to "Add transaction" and is hidden in selection mode.
 - [x] The category header shows the active period (label + date/range) built from the navigation params, localized per language.
