@@ -5,6 +5,9 @@ export const gl: Language = {
   cancel: 'Cancelar',
   delete: 'Eliminar',
   common_close: 'Pechar',
+  select_all: 'Seleccionar todo',
+  deselect_all: 'Deseleccionar todo',
+  items_count: (n: number) => `${n} elemento${n === 1 ? '' : 's'}`,
 
   // Settings
   settings_appearance: 'Aparencia',

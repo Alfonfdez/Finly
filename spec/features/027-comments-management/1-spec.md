@@ -50,6 +50,7 @@
 - In selection mode each row shows a leading checkbox (`checkbox-outline` unchecked / `checkbox` checked in primary color); tapping a row toggles its selection instead of navigating.
 - The header search and search filtering keep working during selection mode; selection applies to the filtered list.
 - A bottom action bar with "Cancel" and `Delete (N)` (`comments_bulk_delete(n)`) appears; the delete button is disabled while no comments are selected.
+- A **Select all** / **Deselect all** row sits above the list in selection mode (`select_all` / `deselect_all`, with the visible count `items_count`); tapping it selects every visible comment in one tap.
 - Deleting opens a single `ConfirmationModal`: `Delete N comments?` (`comments_bulk_delete_confirm_title(n)`) with message "The selected comments will be removed from their transactions. This cannot be undone." (`comments_bulk_delete_confirm_message`) and Cancel / Delete buttons.
 - On confirm: `transactionRepository.deleteComments(values)` sets `description = NULL` on every matching transaction, the selection and selection mode reset, and the list reloads via `getDistinctComments()`.
 
@@ -81,6 +82,7 @@
 - [x] "Select" in the header enters selection mode; rows show checkboxes and tapping toggles selection instead of navigating.
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
 - [x] Bulk delete confirms once for the whole batch and removes all selected comments from their transactions.
+- [x] A Select all / Deselect all row above the list selects every visible comment in one tap.
 - [x] In Add/Modify transaction, saving a comment trims it; whitespace-only comments are saved as none.
 - [x] Autocomplete suggestions appear only from 2 trimmed characters, prefix matches first.
 - [x] All texts are multilingual and respect theme + text size.

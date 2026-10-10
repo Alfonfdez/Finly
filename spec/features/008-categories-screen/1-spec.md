@@ -52,6 +52,7 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 - In selection mode each tile shows a checkmark and tapping toggles its selection instead of navigating to Modify category; the "Create" tile, the limit message and the counter are hidden; the header search keeps filtering during selection.
 - Selection is scoped to the active type: switching the Expense/Income tabs exits selection mode and clears the selection.
 - In selection mode a bottom action bar (reuse `SelectionActionBar`) shows "Cancel" and `Delete (N)` (`categories_bulk_delete(n)`), where N is the number of selected categories; the delete button is disabled while no categories are selected.
+- A **Select all** / **Deselect all** row sits above the grid in selection mode (`select_all` / `deselect_all`, with the visible count `items_count`); tapping it selects every visible category of the active type in one tap.
 - Deleting must keep at least one category per type so a transaction can still be created: selecting every category of the active type and pressing Delete blocks with the message "You cannot delete all the categories of a type. Keep at least one." (`categories_bulk_delete_min_one`).
 - If no selected category has transactions, pressing Delete opens a single `ConfirmationModal`: `Delete N categories?` (`categories_bulk_delete_confirm_title(n)`) with "The selected categories will be permanently deleted." (`categories_bulk_delete_confirm_message_empty`).
 - If any selected category has transactions, the modal message states how many of the selected categories have transactions (`categories_bulk_delete_confirm_message_tx(n, total)`) and offers two actions:
@@ -91,6 +92,7 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 - [x] A search with no matches shows a search icon + "No results found".
 - [x] "Select" in the header enters selection mode (shown only when the active type has categories); tiles show checkmarks and tapping toggles selection instead of navigating.
 - [x] In selection mode the "Create" tile, the limit message and the counter are hidden; the action bar shows `Delete (N)` with the selected count and is disabled when nothing is selected.
+- [x] A Select all / Deselect all row above the grid selects every visible category in one tap.
 - [x] Switching the Expense/Income tabs exits selection mode and clears the selection.
 - [x] Selecting every category of the active type blocks deletion with the "keep at least one per type" message.
 - [x] Bulk delete of categories without transactions confirms once and removes them all.

@@ -30,6 +30,7 @@ import ListItemRow from '../components/ListItemRow';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 import SelectionActionBar from '../components/SelectionActionBar';
+import SelectAllRow from '../components/SelectAllRow';
 import ConfirmationModal from '../components/ConfirmationModal';
 import GuardModal from '../components/GuardModal';
 import { CARD_BORDER_RADIUS } from '../components/componentStyles';
@@ -106,6 +107,11 @@ export default function AccountsScreen() {
     if (!searchText.trim()) return accounts;
     return accounts.filter(a => isTotalAccount(a) || matchesAccountSearch(a, searchText));
   }, [accounts, searchText]);
+
+  const visibleIds = useMemo(
+    () => filteredAccounts.filter(a => !isTotalAccount(a)).map(a => a.id),
+    [filteredAccounts]
+  );
 
   const handleDeletePress = useCallback(() => {
     if (selectedIds.size >= nonTotalCount) {
@@ -237,6 +243,16 @@ export default function AccountsScreen() {
         onChangeText={setSearchText}
         onClose={closeSearch}
       />
+
+      {selectMode && visibleIds.length > 0 && (
+        <SelectAllRow
+          allSelected={select.allSelected(visibleIds)}
+          countLabel={labels.items_count(visibleIds.length)}
+          selectAllLabel={labels.select_all}
+          deselectAllLabel={labels.deselect_all}
+          onToggle={() => select.toggleSelectAll(visibleIds)}
+        />
+      )}
 
       <FlatList
         data={filteredAccounts}

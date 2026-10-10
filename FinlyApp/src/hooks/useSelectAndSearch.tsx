@@ -23,6 +23,17 @@ export function useSelectAndSearch<T extends number | string = number>({
     });
   }, []);
 
+  const allSelected = useCallback(
+    (ids: T[]) => ids.length > 0 && ids.every((id) => selectedIds.has(id)),
+    [selectedIds]
+  );
+
+  const toggleSelectAll = useCallback((ids: T[]) => {
+    setSelectedIds((prev) =>
+      ids.length > 0 && ids.every((id) => prev.has(id)) ? new Set() : new Set(ids)
+    );
+  }, []);
+
   const exitSelectMode = useCallback(() => {
     setSelectedIds(new Set());
     setSelectMode(false);
@@ -56,6 +67,8 @@ export function useSelectAndSearch<T extends number | string = number>({
     deleteModalVisible,
     setDeleteModalVisible,
     toggleItem,
+    allSelected,
+    toggleSelectAll,
     exitSelectMode,
     toggleSelectMode,
     toggleSearch,

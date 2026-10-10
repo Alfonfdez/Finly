@@ -5,6 +5,9 @@ export const de: Language = {
   cancel: 'Abbrechen',
   delete: 'Löschen',
   common_close: 'Schließen',
+  select_all: 'Alle auswählen',
+  deselect_all: 'Alle abwählen',
+  items_count: (n: number) => `${n} ${n === 1 ? 'Element' : 'Elemente'}`,
 
   // Settings
   settings_appearance: 'Erscheinungsbild',

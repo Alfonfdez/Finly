@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { View, SectionList, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
@@ -9,6 +9,7 @@ import type { Account, Category, Tag, Transaction } from '../database/types';
 import type { useTransactionListScreen } from '../hooks/useTransactionListScreen';
 import type { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import AccountModal from './AccountModal';
+import SelectAllRow from './SelectAllRow';
 import TagFilterBar from './TagFilterBar';
 import ScreenSearchBar from './ScreenSearchBar';
 import EmptyState, { emptyStateProps } from './EmptyState';
@@ -61,6 +62,8 @@ export default function TransactionListBody({
   } = select;
   const isSearching = searchActive && !!searchText.trim();
 
+  const visibleIds = useMemo(() => filters.filtered.map(t => t.id), [filters.filtered]);
+
   const renderItem = useCallback(({ item }: { item: Transaction }) => (
     <TransactionRow
       tx={item}
@@ -102,6 +105,16 @@ export default function TransactionListBody({
         onClear={filters.handleClearTagFilter}
         style={styles.tagFilter}
       />
+
+      {selectMode && visibleIds.length > 0 && (
+        <SelectAllRow
+          allSelected={select.allSelected(visibleIds)}
+          countLabel={labels.items_count(visibleIds.length)}
+          selectAllLabel={labels.select_all}
+          deselectAllLabel={labels.deselect_all}
+          onToggle={() => select.toggleSelectAll(visibleIds)}
+        />
+      )}
 
       {!loading && filters.sections.length === 0 ? (
         <View style={styles.emptyList}>

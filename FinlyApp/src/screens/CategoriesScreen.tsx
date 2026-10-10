@@ -16,6 +16,7 @@ import CategoryGrid from '../components/CategoryGrid';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
+import SelectAllRow from '../components/SelectAllRow';
 import ConfirmationModal from '../components/ConfirmationModal';
 import BulkCategoryTransferModal, { type BulkCategoryItem } from '../components/BulkCategoryTransferModal';
 import type { TransferTargetId } from '../components/CategoryTransferModal';
@@ -69,6 +70,8 @@ export default function CategoriesScreen() {
   });
 
   const filteredCategories = useSearchFilter(categoriesByType, searchText, (cat) => [getDisplayCategoryName(cat)]);
+
+  const visibleIds = useMemo(() => filteredCategories.map((cat) => cat.id), [filteredCategories]);
 
   const transferTargets = useMemo(
     () => categoriesByType.filter((cat) => !selectedIds.has(cat.id)),
@@ -161,6 +164,16 @@ export default function CategoriesScreen() {
           <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(13) }]}>
             {labels.categories_counter(typeCount, MAX_CATEGORIES_PER_TYPE)}
           </Text>
+        )}
+
+        {selectMode && visibleIds.length > 0 && (
+          <SelectAllRow
+            allSelected={select.allSelected(visibleIds)}
+            countLabel={labels.items_count(visibleIds.length)}
+            selectAllLabel={labels.select_all}
+            deselectAllLabel={labels.deselect_all}
+            onToggle={() => select.toggleSelectAll(visibleIds)}
+          />
         )}
 
         {filteredCategories.length === 0 ? (

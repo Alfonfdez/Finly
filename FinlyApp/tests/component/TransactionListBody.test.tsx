@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { ComponentProps } from 'react';
 import { Text } from 'react-native';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { resetStub, setConfig } from './helpers/configStub';
 import TransactionListBody from '../../src/components/TransactionListBody';
 
@@ -43,6 +43,8 @@ function makeSelect(): Props['select'] {
     selectMode: false,
     selectedIds: new Set<number>(),
     exitSelectMode: vi.fn(),
+    allSelected: () => false,
+    toggleSelectAll: vi.fn(),
   } as unknown as Props['select'];
 }
 
@@ -87,5 +89,25 @@ describe('TransactionListBody', () => {
     (props.select as { selectedIds: Set<number> }).selectedIds = new Set([1]);
     const view = await render(<TransactionListBody {...props} />);
     expect(view.queryByText('fab')).toBeNull();
+  });
+
+  it('selects all filtered transactions when Select all is pressed', async () => {
+    const props = makeProps();
+    const toggleSelectAll = vi.fn();
+    (props.select as { selectMode: boolean }).selectMode = true;
+    (props.select as unknown as { toggleSelectAll: typeof toggleSelectAll }).toggleSelectAll = toggleSelectAll;
+    (props.list as unknown as { filters: { filtered: unknown } }).filters.filtered = [{ id: 1 }, { id: 2 }];
+    const view = await render(<TransactionListBody {...props} />);
+    await fireEvent.press(view.getByText('Select all'));
+    expect(toggleSelectAll).toHaveBeenCalledWith([1, 2]);
+  });
+
+  it('shows Deselect all when everything visible is selected', async () => {
+    const props = makeProps();
+    (props.select as { selectMode: boolean }).selectMode = true;
+    (props.select as unknown as { allSelected: () => boolean }).allSelected = () => true;
+    (props.list as unknown as { filters: { filtered: unknown } }).filters.filtered = [{ id: 1 }];
+    const view = await render(<TransactionListBody {...props} />);
+    expect(view.getByText('Deselect all')).toBeTruthy();
   });
 });

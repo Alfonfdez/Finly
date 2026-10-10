@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { COUNTER_STYLE } from '../components/componentStyles';
@@ -22,6 +22,7 @@ import Fab from '../components/Fab';
 import ListItemRow from '../components/ListItemRow';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
+import SelectAllRow from '../components/SelectAllRow';
 import BulkDeleteConfirmationModal from '../components/BulkDeleteConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
@@ -56,6 +57,8 @@ export default function TagsScreen() {
   });
 
   const filteredTags = useSearchFilter(tags, searchText, (tag) => [tag.name]);
+
+  const visibleIds = useMemo(() => filteredTags.map(t => t.id), [filteredTags]);
 
   const atTagLimit = countAtLimit(tags.length, MAX_TAGS);
 
@@ -108,6 +111,16 @@ export default function TagsScreen() {
         <Text style={[COUNTER_STYLE, { color: c.textSecondary, fontSize: fs(13) }]}>
           {labels.tags_counter(tags.length, MAX_TAGS)}
         </Text>
+      )}
+
+      {selectMode && visibleIds.length > 0 && (
+        <SelectAllRow
+          allSelected={select.allSelected(visibleIds)}
+          countLabel={labels.items_count(visibleIds.length)}
+          selectAllLabel={labels.select_all}
+          deselectAllLabel={labels.deselect_all}
+          onToggle={() => select.toggleSelectAll(visibleIds)}
+        />
       )}
 
       <FlatList

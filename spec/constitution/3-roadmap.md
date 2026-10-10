@@ -679,3 +679,11 @@ Release preparation for 2.1.0, applied and verified 2026-09-18:
 - Gate: `npm run test:all` green (92 files / 579 tests).
 
 `[ ]` Released: Finly 2.1.0 published as a GitHub Release (tag `v2.1.0`) — to be ticked after going live, mirroring the 2.0.0 entry.
+
+## Select all in bulk-selection screens
+Status: completed.
+
+A "Select all" / "Deselect all" toggle added to the shared `SelectionActionBar`, available on every screen with multi-select bulk delete (All transactions, Transactions, Recurring, Tags, Comments, Categories, Accounts), applied 2026-10-10:
+- `useSelectAndSearch` gains `allSelected(ids)` and `toggleSelectAll(ids)`; a shared `SelectAllRow` sits above each list (only in selection mode) showing the toggle + visible count (`items_count`) and flipping its label between `select_all` and `deselect_all` (9 languages). The bottom `SelectionActionBar` stays Cancel/Delete.
+- It selects every **currently visible** item — respecting the header search and each screen's filters — so a whole period, type or filtered set can be cleared in one tap. On Accounts the Total account is excluded.
+- Spec: spec/features/014, 015, 018, 027, 008, 011, 028.

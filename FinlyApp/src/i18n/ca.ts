@@ -5,6 +5,9 @@ export const ca: Language = {
   cancel: 'Cancel·lar',
   delete: 'Eliminar',
   common_close: 'Tanca',
+  select_all: 'Selecciona-ho tot',
+  deselect_all: 'Deselecciona-ho tot',
+  items_count: (n: number) => `${n} element${n === 1 ? '' : 's'}`,
 
   // Settings
   settings_appearance: 'Aparença',

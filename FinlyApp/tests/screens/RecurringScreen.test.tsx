@@ -162,13 +162,31 @@ describe('RecurringScreen', () => {
     await ue.press(view.getByLabelText('Enter select mode'));
 
     await waitFor(() => expect(view.getByText('Delete (0)')).toBeTruthy());
-    expect(view.getByText('checkbox-outline')).toBeTruthy();
+    // The Select all row and the rule rows both show an unchecked checkbox.
+    expect(view.getAllByText('checkbox-outline').length).toBeGreaterThan(0);
     await ue.press(view.getByLabelText('Rent'));
     await waitFor(() => expect(view.getByText('Delete (1)')).toBeTruthy());
     await ue.press(view.getByText('Delete (1)'));
     await ue.press(await view.findByRole('button', { name: 'Delete' }));
 
     await waitFor(() => expect(mockDeleteMany).toHaveBeenCalledWith([1]));
+  });
+
+  it('selects all visible rules and clears them again', async () => {
+    mockList.mockResolvedValue([rule, { ...rule, id: 2, name: 'Gym' }]);
+    const view = await renderWithHeader();
+    await waitFor(() => expect(view.getByText('Rent')).toBeTruthy());
+
+    const ue = userEvent.setup();
+    await ue.press(view.getByLabelText('Enter select mode'));
+    await waitFor(() => expect(view.getByText('Delete (0)')).toBeTruthy());
+
+    await ue.press(view.getByText('Select all'));
+    await waitFor(() => expect(view.getByText('Delete (2)')).toBeTruthy());
+    expect(view.getByText('Deselect all')).toBeTruthy();
+
+    await ue.press(view.getByText('Deselect all'));
+    await waitFor(() => expect(view.getByText('Delete (0)')).toBeTruthy());
   });
 
   it('filters the rules by name, category, comment and frequency', async () => {
