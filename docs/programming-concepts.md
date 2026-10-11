@@ -333,6 +333,14 @@ if (isCatalan(language)) {
 />
 ```
 
+## ScrollView / overflow
+**Definition:** React Native component that makes content larger than its container reachable by scrolling.
+**Explanation:** `ScrollView` renders all its children and lets the user scroll through them (use `FlatList` for long, virtualized lists). What "scrolling" looks like differs by platform:
+- **Native (iOS/Android):** you scroll with a finger drag. The scrollbar is not persistent — React Native only flashes the indicator while scrolling, and hides it entirely when `showsHorizontalScrollIndicator` / `showsVerticalScrollIndicator` is `false`.
+- **Web (react-native-web):** the browser paints a real scrollbar; the app themes it globally (6px, primary-tinted) via a `::-webkit-scrollbar` rule injected in `ConfigContext`. Overflow is reached with the wheel, the trackpad, or by dragging the scrollbar.
+
+Key nuance: on web a **vertical** overflow is still reachable with the wheel even when the scrollbar is hidden, but a **horizontal** overflow is not — the wheel scrolls vertically, so a horizontal row needs a visible scrollbar. That is why horizontal chip rows set `showsHorizontalScrollIndicator={isWeb}` (indicator on web, off on native). See `spec/constitution/7-platform-differences.md`.
+
 ## Modal
 **Definition:** React Native component that displays content overlaid on the current screen.
 **Explanation:** Useful for dialogs, selectors, or forms without changing screens. In Finly, it is used for the account selector (AccountModal) and the date selector (CalendarModal).

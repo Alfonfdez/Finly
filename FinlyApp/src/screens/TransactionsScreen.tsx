@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,10 +18,11 @@ import { formatSignedCurrency, formatDateLong, parseDbDate, getMonthName } from 
 import { netTransactionTotal } from '../utils/calculator';
 import { withAlpha } from '../utils/color';
 import { showErrorAlert } from '../utils/errors';
+import { isWeb } from '../utils/platform';
 import { getDisplayCategoryName, t } from '../i18n';
 import AccountTrigger from '../components/AccountTrigger';
 import SortToggle from '../components/SortToggle';
-import TabBar, { recurringViewTabs } from '../components/TabBar';
+import RecurringViewChip from '../components/RecurringViewChip';
 import Fab from '../components/Fab';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import TransactionListBody from '../components/TransactionListBody';
@@ -139,35 +140,26 @@ export default function TransactionsScreen() {
         onSelectAccount={filters.selectAccount}
         emptyIcon="document-text-outline"
         emptyMessage={labels.transactions_empty}
-        header={
-          <>
-            <TabBar
-              tabs={recurringViewTabs(labels)}
-              active={filters.recurringView}
-              onChange={filters.setRecurringView}
-            />
-            {category ? (
-              <View style={[styles.categoryInfo, { borderBottomColor: c.border }]}>
-                <View style={styles.categoryRow}>
-                  <View style={[styles.categoryIcon, { backgroundColor: withAlpha(category.color, 19) }]}>
-                    <Ionicons name={category.icon as IconName} size={22} color={category.color} />
-                  </View>
-                  <Text style={[styles.categoryName, { color: c.text, fontSize: fs(16) }]} numberOfLines={1}>
-                    {getDisplayCategoryName(category)}
-                  </Text>
-                </View>
-                <Text style={[styles.categoryTotal, { color: categoryTotal >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
-                  {formatSignedCurrency(categoryTotal, config.currency, config.decimalSeparator)}
-                </Text>
-                {periodLabel ? (
-                  <Text style={[styles.categoryPeriod, { color: c.textSecondary, fontSize: fs(13) }]}>
-                    {periodLabel}
-                  </Text>
-                ) : null}
+        header={category ? (
+          <View style={[styles.categoryInfo, { borderBottomColor: c.border }]}>
+            <View style={styles.categoryRow}>
+              <View style={[styles.categoryIcon, { backgroundColor: withAlpha(category.color, 19) }]}>
+                <Ionicons name={category.icon as IconName} size={22} color={category.color} />
               </View>
-            ) : undefined}
-          </>
-        }
+              <Text style={[styles.categoryName, { color: c.text, fontSize: fs(16) }]} numberOfLines={1}>
+                {getDisplayCategoryName(category)}
+              </Text>
+            </View>
+            <Text style={[styles.categoryTotal, { color: categoryTotal >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
+              {formatSignedCurrency(categoryTotal, config.currency, config.decimalSeparator)}
+            </Text>
+            {periodLabel ? (
+              <Text style={[styles.categoryPeriod, { color: c.textSecondary, fontSize: fs(13) }]}>
+                {periodLabel}
+              </Text>
+            ) : null}
+          </View>
+        ) : undefined}
         controls={
           <>
             <AccountTrigger
@@ -175,12 +167,20 @@ export default function TransactionsScreen() {
               accounts={accountsWithBalance}
               onPress={filters.openAccountModal}
             />
-            <SortToggle
-              sortBy={filters.sortBy}
-              direction={filters.sortDirection}
-              onToggleSort={filters.handleToggleSort}
-              onToggleDirection={filters.handleToggleDirection}
-            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={isWeb}
+              style={styles.controlsRow}
+              contentContainerStyle={[styles.controlsRowContent, isWeb && styles.controlsRowWebContent]}
+            >
+              <RecurringViewChip value={filters.recurringView} onChange={filters.setRecurringView} />
+              <SortToggle
+                sortBy={filters.sortBy}
+                direction={filters.sortDirection}
+                onToggleSort={filters.handleToggleSort}
+                onToggleDirection={filters.handleToggleDirection}
+              />
+            </ScrollView>
           </>
         }
         fab={
@@ -217,4 +217,16 @@ const styles = StyleSheet.create({
   categoryName: { fontWeight: '600' },
   categoryTotal: { fontWeight: '700' },
   categoryPeriod: { marginTop: 2, textAlign: 'center' },
+  controlsRow: {
+    alignSelf: 'stretch',
+  },
+  controlsRowContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  controlsRowWebContent: {
+    paddingBottom: 8,
+  },
 });

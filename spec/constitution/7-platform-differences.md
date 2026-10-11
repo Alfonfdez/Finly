@@ -67,30 +67,51 @@ platform fork of the repository layer.
 
 ### Pattern
 
-```tsx
-import { Platform } from 'react-native';
+Platform checks are centralized in `src/utils/platform.ts` (`isWeb`, `isNative`, `isIOS`, `isAndroid`) — prefer these over `Platform.OS` directly.
 
-// Hide camera capture on web (native-only)
-{Platform.OS !== 'web' && <CameraButton />}
+```tsx
+import { isWeb, isAndroid } from '../utils/platform';
+
+// Hide native-only UI on web (camera capture, notifications)
+{!isWeb && <CameraButton />}
 
 // Web-specific fallback (e.g., flag icons use SVG on web instead of emoji)
-if (Platform.OS === 'web') {
+if (isWeb) {
   // FLAG_WEB SVG rendering
 } else {
   // emoji rendering
 }
 
-// Android-only spacer
-{Platform.OS === 'android' && <View style={styles.keyboardSpacer} />}
+// Android-only layout adjustment
+{isAndroid && <View style={styles.keyboardSpacer} />}
 ```
 
 ### Rules
 
-1. **Use `Platform.OS !== 'web'`** to hide native-only UI (camera capture, notifications).
-2. **Use `Platform.OS === 'web'`** to render web-specific fallbacks (e.g., SVG flags). Storage logic no longer branches by platform — both use the same `DatabaseHandle`.
-3. **Use `Platform.OS === 'android'`** only for Android-specific layout adjustments (keyboard spacer).
+1. **Use `!isWeb`** to hide native-only UI (camera capture, notifications).
+2. **Use `isWeb`** to render web-specific fallbacks (e.g., SVG flags). Storage logic no longer branches by platform — both use the same `DatabaseHandle`.
+3. **Use `isAndroid`** only for Android-specific layout adjustments (keyboard spacer).
 4. **Never assume a feature is web-available** without checking the quota/storage implications.
 5. **Document every guard** in this file when adding a new platform-dependent feature.
+6. **Overflow on web** — never hide a scroll indicator on web (the visible scrollbar is the mouse affordance; the wheel cannot scroll horizontal overflow). Suppress indicators only on native via `{isWeb}`. See "Scrolling" below.
+
+### Scrolling (native vs web)
+
+Scrolling works differently by platform, and every overflowing scroller must stay usable on both:
+
+| | Native (iOS/Android) | Web (react-native-web) |
+|---|---|---|
+| **How you scroll** | Touch drag | Mouse wheel, trackpad, or dragging the scrollbar |
+| **Scrollbar** | Not persistent — RN flashes the indicator while scrolling, and hides it entirely when the app sets `shows*ScrollIndicator={false}` | Always rendered by the browser, styled globally (6px, primary-tinted) by `ConfigContext` |
+| **Vertical overflow without a scrollbar** | Reachable (drag) | Reachable (the wheel still scrolls) |
+| **Horizontal overflow without a scrollbar** | Reachable (drag) | **Not reachable** — the wheel scrolls vertically; only the scrollbar (or shift+wheel) moves sideways |
+
+Ruling:
+
+1. **Never hide a scroll indicator on web.** If you suppress it, do it only on native: `showsHorizontalScrollIndicator={isWeb}` / `showsVerticalScrollIndicator={isWeb}` (`src/utils/platform.ts`). On web the visible scrollbar is the mouse affordance for overflow.
+2. **Horizontal scrollers must show the scrollbar on web** (the wheel cannot scroll them); vertical scrollers are safe either way.
+3. For horizontal rows, add a web-only content `paddingBottom` (~8px) so the 6px scrollbar has room.
+4. Reference implementations: `TagFilterBar` and the transaction-list controls rows (All transactions, Transactions).
 
 ---
 

@@ -117,6 +117,7 @@ Three distinct patterns — never mix them:
 - **Section spacing:** `marginTop: 16` between sections
 - **Border radius:** `10` for inputs/buttons, `12` for cards, `16` for modals, `999` for pill/circle
 - **Grid gap:** `12` for icon/color grids
+- **Horizontal chip/filter rows** (e.g., `TagFilterBar`, the transaction controls row) scroll horizontally when they don't fit; on web show the scrollbar (`showsHorizontalScrollIndicator={isWeb}` + a web-only content `paddingBottom`) so overflow stays reachable with a mouse — see `spec/constitution/7-platform-differences.md`.
 
 ## Buttons
 - **Full-width action buttons** (Save / Delete / Edit on screens): `paddingVertical: 14`, `borderRadius: BUTTON_BORDER_RADIUS` (10), `fontWeight: '600'`, `fontSize: fs(15)`; outlined variants add `borderWidth: 1`.
