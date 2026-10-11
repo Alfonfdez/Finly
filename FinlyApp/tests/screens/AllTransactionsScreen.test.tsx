@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, waitFor, userEvent } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import AllTransactionsScreen from '../../src/screens/AllTransactionsScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
@@ -125,7 +125,7 @@ describe('AllTransactionsScreen', () => {
     expect(lastOptions.headerRight).toEqual(expect.any(Function));
   });
 
-  it('shows the recurring view toggle when a recurring transaction exists and filters on it', async () => {
+  it('filters the list through the recurring view chip', async () => {
     list.mockResolvedValue([
       tx(1, { description: 'Rent', recurring_rule_id: 5 }),
       tx(2, { description: 'Coffee' }),
@@ -136,16 +136,20 @@ describe('AllTransactionsScreen', () => {
       customDate: { start: new Date(2026, 0, 1), end: new Date(2026, 0, 31) },
     });
     const view = await render(<AllTransactionsScreen />);
-    expect(view.getByText('One-time')).toBeTruthy();
     expect(view.getByText('Rent')).toBeTruthy();
     expect(view.getByText('Coffee')).toBeTruthy();
 
-    await fireEvent.press(view.getByText('Recurring'));
-    expect(view.getByText('Rent')).toBeTruthy();
-    expect(view.queryByText('Coffee')).toBeNull();
+    const ue = userEvent.setup();
+    await ue.press(view.getByLabelText('All'));
+    await ue.press(view.getByText('One-time'));
+    await ue.press(view.getByText('Select'));
+
+    await waitFor(() => expect(view.queryByText('Rent')).toBeNull());
+    expect(view.getByText('Coffee')).toBeTruthy();
+    expect(view.getByLabelText('One-time')).toBeTruthy();
   });
 
-  it('always shows the recurring view toggle, even with no recurring transaction', async () => {
+  it('always shows the recurring view chip, defaulting to All', async () => {
     list.mockResolvedValue([tx(1, { description: 'Coffee' })]);
     setAppData({
       categoriesById: new Map([[1, category]]),
@@ -153,7 +157,6 @@ describe('AllTransactionsScreen', () => {
       customDate: { start: new Date(2026, 0, 1), end: new Date(2026, 0, 31) },
     });
     const view = await render(<AllTransactionsScreen />);
-    expect(view.getByText('One-time')).toBeTruthy();
-    expect(view.getByText('Recurring')).toBeTruthy();
+    expect(view.getByLabelText('All')).toBeTruthy();
   });
 });

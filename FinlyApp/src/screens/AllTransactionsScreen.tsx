@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation } from '@react-navigation/native';
@@ -18,11 +18,13 @@ import { transactionRepository } from '../database';
 import { formatSignedCurrency, resolvePeriodRange } from '../utils/formatters';
 import { netTransactionTotal } from '../utils/calculator';
 import { showErrorAlert } from '../utils/errors';
+import { isWeb } from '../utils/platform';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { t } from '../i18n';
 import AccountTrigger from '../components/AccountTrigger';
 import SortToggle from '../components/SortToggle';
-import TabBar, { typeTabs, recurringViewTabs } from '../components/TabBar';
+import TabBar, { typeTabs } from '../components/TabBar';
+import RecurringViewChip from '../components/RecurringViewChip';
 import Fab from '../components/Fab';
 import CategoryFilterModal from '../components/CategoryFilterModal';
 import PeriodTabs from '../components/PeriodTabs';
@@ -147,21 +149,14 @@ export default function AllTransactionsScreen() {
         emptyIcon="receipt-outline"
         emptyMessage={labels.transactions_empty}
         header={
-          <>
-            <TabBar
-              tabs={[
-                { key: TYPE_FILTERS.all, label: labels.tab_all },
-                ...typeTabs(labels),
-              ]}
-              active={typeTab}
-              onChange={setTypeTab}
-            />
-            <TabBar
-              tabs={recurringViewTabs(labels)}
-              active={filters.recurringView}
-              onChange={filters.setRecurringView}
-            />
-          </>
+          <TabBar
+            tabs={[
+              { key: TYPE_FILTERS.all, label: labels.tab_all },
+              ...typeTabs(labels),
+            ]}
+            active={typeTab}
+            onChange={setTypeTab}
+          />
         }
         controls={
           <>
@@ -173,7 +168,13 @@ export default function AllTransactionsScreen() {
             <Text style={[styles.accountBalance, { color: accountBalance >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
               {formatSignedCurrency(accountBalance, config.currency, config.decimalSeparator)}
             </Text>
-            <View style={styles.controlsRow}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={isWeb}
+              style={styles.controlsRow}
+              contentContainerStyle={[styles.controlsRowContent, isWeb && styles.controlsRowWebContent]}
+            >
+              <RecurringViewChip value={filters.recurringView} onChange={filters.setRecurringView} />
               <TouchableOpacity
                 style={[styles.categoryButton, { backgroundColor: c.surface }]}
                 onPress={() => setCategoryModalVisible(true)}
@@ -182,6 +183,7 @@ export default function AllTransactionsScreen() {
                 <Text style={[styles.categoryButtonText, { color: c.text, fontSize: fs(13) }]} numberOfLines={1}>
                   {categoryButtonLabel}
                 </Text>
+                <Ionicons name="chevron-down" size={14} color={c.textSecondary} />
               </TouchableOpacity>
               <SortToggle
                 sortBy={filters.sortBy}
@@ -189,7 +191,7 @@ export default function AllTransactionsScreen() {
                 onToggleSort={filters.handleToggleSort}
                 onToggleDirection={filters.handleToggleDirection}
               />
-            </View>
+            </ScrollView>
           </>
         }
         period={
@@ -232,9 +234,16 @@ export default function AllTransactionsScreen() {
 const styles = StyleSheet.create({
   accountBalance: { fontWeight: '700' },
   controlsRow: {
-    flexDirection: 'row',
+    alignSelf: 'stretch',
+  },
+  controlsRowContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
+  },
+  controlsRowWebContent: {
+    paddingBottom: 8,
   },
   categoryButton: {
     flexDirection: 'row',
