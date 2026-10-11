@@ -146,7 +146,7 @@ describe('RepeatSection', () => {
 
   it('shows the recurring name error', async () => {
     const { view } = renderSection({ name: '', nameError: 'taken' });
-    expect((await view).getByText('That name is already used by another recurring')).toBeTruthy();
+    expect((await view).getByText('That name is already used by another recurring rule')).toBeTruthy();
   });
 
   it('always shows the first transaction date, which shifts when skipping the first occurrence', async () => {

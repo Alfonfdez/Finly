@@ -104,7 +104,7 @@ export default function RepeatSection({
   const formatOccurrence = (value: string) => formatDateLong(fromDateOnly(value), config.language);
   const firstLine = isEdit
     ? labels.recurring_info_next(formatOccurrence(preview.firstDate))
-    : labels.repeat_first_occurrence(formatOccurrence(preview.firstDate));
+    : labels.repeat_first_transaction(formatOccurrence(preview.firstDate));
 
   const detailLines: string[] = [];
   if (isEdit && scope === RECURRENCE_SCOPES.futureAndPast) {

@@ -65,11 +65,11 @@ function RecurringRow({ rule, category, count, today, onPress, onToggleActive, s
         <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]} numberOfLines={1}>
           {rule.name}
         </Text>
-        <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(12) }]} numberOfLines={1}>
+        <Text style={[styles.subtitle, { color: c.primary, fontSize: fs(12) }]} numberOfLines={1}>
           {recurrenceSummary(rule, config.language)}
         </Text>
         <Text
-          style={[styles.nextDue, { color: ended ? c.textSecondary : c.primary, fontSize: fs(11) }]}
+          style={[styles.nextDue, { color: ended ? c.textSecondary : c.text, fontSize: fs(11) }]}
           numberOfLines={1}
         >
           {ended
@@ -128,10 +128,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontWeight: '500',
+    fontWeight: '600',
   },
   subtitle: {
     marginTop: 2,
+    fontWeight: '500',
   },
   nextDue: {
     marginTop: 2,

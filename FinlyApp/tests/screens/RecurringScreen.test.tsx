@@ -197,7 +197,7 @@ describe('RecurringScreen', () => {
     const ue = userEvent.setup();
     await ue.press(view.getByLabelText('Search'));
 
-    const input = await view.findByPlaceholderText('Search recurring');
+    const input = await view.findByPlaceholderText('Search recurring rules');
     await ue.type(input, 'food'); // category match
     expect(view.getByText('Rent')).toBeTruthy();
     await ue.clear(input);
