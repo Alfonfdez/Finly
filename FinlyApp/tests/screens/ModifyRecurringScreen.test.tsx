@@ -151,7 +151,7 @@ describe('ModifyRecurringScreen', () => {
     const pastPill = view.getByRole('button', { name: 'Future + past' });
     expect(pastPill).toBeDisabled();
     expect(
-      view.getByText('Also updates past transactions and creates missed occurrences. Changing the end date never deletes transactions.'),
+      view.getByText('Also updates past transactions and adds the missed ones. Changing the end date never deletes transactions.'),
     ).toBeTruthy();
 
     await fireEvent.changeText(view.getByPlaceholderText('0'), '120');

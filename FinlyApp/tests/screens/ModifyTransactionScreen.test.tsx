@@ -135,7 +135,7 @@ describe('ModifyTransactionScreen', () => {
     await view.findByText('Save');
     expect(view.getByText('Recurring')).toBeTruthy();
     expect(
-      view.getByText('This transaction is part of a recurring series. Saving changes only affects this transaction, not the series.')
+      view.getByText('This transaction was created by a recurring rule. Saving changes only affects this transaction, not the rule.')
     ).toBeTruthy();
     fireEvent.press(view.getByText('Edit recurring rule'));
     expect(nav.navigate).toHaveBeenCalledWith('ModifyRecurring', { ruleId: 5 });
