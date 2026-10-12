@@ -523,6 +523,10 @@ export const es: Language = {
   repeat_first_transaction: (date: string) => `Primera transacción: ${date}`,
 
   recurring_search: 'Buscar reglas recurrentes',
+  recurring_sort_next_due: 'Próxima',
+  recurring_sort_name: 'Nombre',
+  recurring_sort_amount: 'Importe',
+  recurring_sort_created: 'Creada',
   recurring_bulk_delete: (n: number) => `Eliminar (${n})`,
   recurring_bulk_delete_confirm_title: (n: number) => `¿Eliminar ${n} regla${n === 1 ? '' : 's'} recurrente${n === 1 ? '' : 's'}?`,
   recurring_bulk_delete_confirm_message: 'Las reglas seleccionadas se eliminarán; sus transacciones se conservarán.',

@@ -523,6 +523,10 @@ export const eu: Language = {
   repeat_first_transaction: (date: string) => `Lehen transakzioa: ${date}`,
 
   recurring_search: 'Bilatu errepikapen arauak',
+  recurring_sort_next_due: 'Hurrengoa',
+  recurring_sort_name: 'Izena',
+  recurring_sort_amount: 'Zenbatekoa',
+  recurring_sort_created: 'Sortua',
   recurring_bulk_delete: (n: number) => `Ezabatu (${n})`,
   recurring_bulk_delete_confirm_title: (n: number) => `${n} errepikapen-arau ezabatu?`,
   recurring_bulk_delete_confirm_message: 'Hautatutako arauak ezabatuko dira; haien transakzioak mantenduko dira.',

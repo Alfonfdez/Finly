@@ -210,4 +210,19 @@ describe('RecurringScreen', () => {
     await ue.type(input, 'zzz');
     expect(view.queryByText('Rent')).toBeNull();
   });
+
+  it('reorders the rules when a sort field is pressed', async () => {
+    mockList.mockResolvedValue([
+      { ...rule, id: 1, name: 'Beta', next_due: '2026-11-01' },
+      { ...rule, id: 2, name: 'Alpha', next_due: '2026-12-01' },
+    ]);
+    const view = await render(<RecurringScreen />);
+    await waitFor(() => expect(view.getByText('Beta')).toBeTruthy());
+
+    const order = () => view.getAllByText(/^(Alpha|Beta)$/).map(n => String(n.props.children));
+    expect(order()).toEqual(['Beta', 'Alpha']); // default: next due ascending
+
+    await fireEvent.press(view.getByText('Name'));
+    await waitFor(() => expect(order()).toEqual(['Alpha', 'Beta']));
+  });
 });

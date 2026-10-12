@@ -523,6 +523,10 @@ export const pt: Language = {
   repeat_first_transaction: (date: string) => `Primeira transação: ${date}`,
 
   recurring_search: 'Pesquisar regras recorrentes',
+  recurring_sort_next_due: 'Próxima',
+  recurring_sort_name: 'Nome',
+  recurring_sort_amount: 'Valor',
+  recurring_sort_created: 'Criada',
   recurring_bulk_delete: (n: number) => `Excluir (${n})`,
   recurring_bulk_delete_confirm_title: (n: number) => `Excluir ${n} regra${n === 1 ? '' : 's'} recorrente${n === 1 ? '' : 's'}?`,
   recurring_bulk_delete_confirm_message: 'As regras selecionadas serão excluídas; as suas transações serão mantidas.',
