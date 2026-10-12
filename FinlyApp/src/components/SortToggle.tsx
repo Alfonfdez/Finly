@@ -2,62 +2,83 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { t } from '../i18n';
-import { SORT_BY, SORT_DIRECTIONS, type SortBy, type SortDirection, type IconName } from '../constants/types';
+import {
+  SORT_BY, SORT_DIRECTIONS, RECURRING_SORT_BY,
+  type SortBy, type SortDirection, type RecurringSortBy, type IconName,
+} from '../constants/types';
 
-interface Props {
-  sortBy: SortBy;
+export interface SortField<T extends string> {
+  key: T;
+  label: string;
+}
+
+interface Props<T extends string> {
+  fields: SortField<T>[];
+  sortBy: T;
   direction: SortDirection;
-  onToggleSort: (field: SortBy) => void;
+  onToggleSort: (field: T) => void;
   onToggleDirection: () => void;
 }
 
-export default function SortToggle({ sortBy, direction, onToggleSort, onToggleDirection }: Props) {
+export function transactionSortFields(labels: {
+  transactions_sort_date: string;
+  transactions_sort_amount: string;
+}): SortField<SortBy>[] {
+  return [
+    { key: SORT_BY.date, label: labels.transactions_sort_date },
+    { key: SORT_BY.amount, label: labels.transactions_sort_amount },
+  ];
+}
+
+export function recurringSortFields(labels: {
+  recurring_sort_next_due: string;
+  recurring_sort_name: string;
+  recurring_sort_amount: string;
+  recurring_sort_created: string;
+}): SortField<RecurringSortBy>[] {
+  return [
+    { key: RECURRING_SORT_BY.nextDue, label: labels.recurring_sort_next_due },
+    { key: RECURRING_SORT_BY.name, label: labels.recurring_sort_name },
+    { key: RECURRING_SORT_BY.amount, label: labels.recurring_sort_amount },
+    { key: RECURRING_SORT_BY.created, label: labels.recurring_sort_created },
+  ];
+}
+
+export default function SortToggle<T extends string>({
+  fields, sortBy, direction, onToggleSort, onToggleDirection,
+}: Props<T>) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const labels = t();
 
   const arrowIcon: IconName = direction === SORT_DIRECTIONS.desc ? 'arrow-down' : 'arrow-up';
 
   return (
     <View style={styles.container}>
-      <View style={styles.option}>
-        <TouchableOpacity
-          onPress={() => onToggleSort(SORT_BY.date)}
-          accessibilityLabel={labels.transactions_sort_date}
-        >
-          <Text style={[
-            styles.label,
-            { color: sortBy === SORT_BY.date ? c.primary : c.textSecondary, fontSize: fs(13) },
-          ]}>
-            {labels.transactions_sort_date}
-          </Text>
-        </TouchableOpacity>
-        {sortBy === SORT_BY.date && (
-          <TouchableOpacity onPress={onToggleDirection} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} accessibilityRole="button" accessibilityLabel={labels.transactions_sort_date}>
-            <Ionicons name={arrowIcon} size={14} color={c.primary} />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <View style={styles.option}>
-        <TouchableOpacity
-          onPress={() => onToggleSort(SORT_BY.amount)}
-          accessibilityLabel={labels.transactions_sort_amount}
-        >
-          <Text style={[
-            styles.label,
-            { color: sortBy === SORT_BY.amount ? c.primary : c.textSecondary, fontSize: fs(13) },
-          ]}>
-            {labels.transactions_sort_amount}
-          </Text>
-        </TouchableOpacity>
-        {sortBy === SORT_BY.amount && (
-          <TouchableOpacity onPress={onToggleDirection} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} accessibilityRole="button" accessibilityLabel={labels.transactions_sort_amount}>
-            <Ionicons name={arrowIcon} size={14} color={c.primary} />
-          </TouchableOpacity>
-        )}
-      </View>
+      {fields.map((field) => {
+        const active = field.key === sortBy;
+        return (
+          <View key={field.key} style={styles.option}>
+            <TouchableOpacity onPress={() => onToggleSort(field.key)} accessibilityLabel={field.label}>
+              <Text style={[
+                styles.label,
+                { color: active ? c.primary : c.textSecondary, fontSize: fs(13) },
+              ]}>
+                {field.label}
+              </Text>
+            </TouchableOpacity>
+            {active && (
+              <TouchableOpacity
+                onPress={onToggleDirection}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel={field.label}
+              >
+                <Ionicons name={arrowIcon} size={14} color={c.primary} />
+              </TouchableOpacity>
+            )}
+          </View>
+        );
+      })}
     </View>
   );
 }

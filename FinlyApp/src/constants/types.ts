@@ -129,6 +129,15 @@ export const SORT_DIRECTIONS = {
 
 export type SortDirection = keyof typeof SORT_DIRECTIONS;
 
+export const RECURRING_SORT_BY = {
+  nextDue: 'nextDue',
+  name: 'name',
+  amount: 'amount',
+  created: 'created',
+} as const;
+
+export type RecurringSortBy = keyof typeof RECURRING_SORT_BY;
+
 export const RECURRING_VIEWS = {
   all: 'all',
   oneTime: 'oneTime',

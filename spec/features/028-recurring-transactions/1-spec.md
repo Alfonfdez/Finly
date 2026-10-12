@@ -85,6 +85,7 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 - It lists every rule with: the rule **name** (title), category icon + name, a human-readable frequency summary, the next due date (or **Ended**), the **creation date** and the **number of generated transactions**, plus type, amount and an active toggle (pause/resume). Empty state when there are none.
 - A FAB opens the create flow (the transaction form in rule mode). Tapping a rule opens its edit flow.
 - The screen has **Select** and **Search** header actions (like the other list screens). Search filters the rules by **name, category, comment and frequency**. Select enters multi-select (rows show a checkbox, the active toggle is hidden) and **bulk-deletes** the selected rules; their generated transactions are kept (`ON DELETE SET NULL`). A **Select all** / **Deselect all** row above the list (`select_all` / `deselect_all`, with the visible count `items_count`) selects every visible rule in one tap.
+- The list can be **sorted** by **next due** (default, ascending), **name**, **amount** or **created** through a horizontally scrollable `SortToggle` row below the search bar; each field has a natural default direction (next due/name ascending, amount/created descending) and tapping the active field flips it. Sorting is **session-only** (not persisted).
 - Pausing sets `active = 0` (stops materialization, keeps the link and the details chip). Resuming sets `active = 1` and sets `next_due` to the next occurrence on/after today, so occurrences missed during the pause are intentionally **not** created.
 - **Ended state:** a rule with an end date and **no occurrence remaining on/after today within it** is shown as **Ended** — the toggle is off and **disabled** (dimmed), labelled **Ended**, and cannot be resumed (resuming could never generate an occurrence). The state is derived from the schedule (not persisted), so editing the end date into the future revives the rule and re-enables the toggle. Ended rules are skipped by reconciliation.
 
@@ -152,6 +153,7 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 - [x] A Drawer "Recurring" screen lists rules with frequency summary, next due date and an active toggle; empty state shown when there are none.
 - [x] The Recurring screen has Select and Search header actions; search filters by name, category, comment and frequency; Select bulk-deletes the selected rules (their generated transactions are kept).
 - [x] A Select all / Deselect all row above the list selects every visible rule in one tap.
+- [x] The Recurring list can be sorted by next due (default), name, amount or created.
 - [x] The transaction search (All transactions, Transactions) also matches the recurring rule name.
 - [x] A rule can be paused (stops materialization, misses during the pause are not created) and resumed.
 - [x] A rule with no occurrence left within its end date shows an off, disabled **Ended** toggle that cannot be resumed; extending the end date into the future revives it (toggle operable again).

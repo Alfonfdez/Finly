@@ -21,7 +21,7 @@ import { showErrorAlert } from '../utils/errors';
 import { isWeb } from '../utils/platform';
 import { getDisplayCategoryName, t } from '../i18n';
 import AccountTrigger from '../components/AccountTrigger';
-import SortToggle from '../components/SortToggle';
+import SortToggle, { transactionSortFields } from '../components/SortToggle';
 import RecurringViewChip from '../components/RecurringViewChip';
 import Fab from '../components/Fab';
 import SelectSearchHeader from '../components/SelectSearchHeader';
@@ -175,6 +175,7 @@ export default function TransactionsScreen() {
             >
               <RecurringViewChip value={filters.recurringView} onChange={filters.setRecurringView} />
               <SortToggle
+                fields={transactionSortFields(labels)}
                 sortBy={filters.sortBy}
                 direction={filters.sortDirection}
                 onToggleSort={filters.handleToggleSort}

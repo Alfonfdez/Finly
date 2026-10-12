@@ -521,6 +521,10 @@ export const en = {
   repeat_first_transaction: (date: string) => `First transaction: ${date}`,
 
   recurring_search: 'Search recurring rules',
+  recurring_sort_next_due: 'Next due',
+  recurring_sort_name: 'Name',
+  recurring_sort_amount: 'Amount',
+  recurring_sort_created: 'Created',
   recurring_bulk_delete: (n: number) => `Delete (${n})`,
   recurring_bulk_delete_confirm_title: (n: number) => `Delete ${n} recurring rule${n === 1 ? '' : 's'}?`,
   recurring_bulk_delete_confirm_message: 'The selected rules will be deleted; their transactions will be kept.',

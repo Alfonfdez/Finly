@@ -523,6 +523,10 @@ export const de: Language = {
   repeat_first_transaction: (date: string) => `Erste Transaktion: ${date}`,
 
   recurring_search: 'Wiederkehrende Regeln suchen',
+  recurring_sort_next_due: 'Nächste',
+  recurring_sort_name: 'Name',
+  recurring_sort_amount: 'Betrag',
+  recurring_sort_created: 'Erstellt',
   recurring_bulk_delete: (n: number) => `Löschen (${n})`,
   recurring_bulk_delete_confirm_title: (n: number) => `${n} wiederkehrende Regel${n === 1 ? '' : 'n'} löschen?`,
   recurring_bulk_delete_confirm_message: 'Die ausgewählten Regeln werden gelöscht; ihre Transaktionen bleiben erhalten.',

@@ -22,7 +22,7 @@ import { isWeb } from '../utils/platform';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { t } from '../i18n';
 import AccountTrigger from '../components/AccountTrigger';
-import SortToggle from '../components/SortToggle';
+import SortToggle, { transactionSortFields } from '../components/SortToggle';
 import TabBar, { typeTabs } from '../components/TabBar';
 import RecurringViewChip from '../components/RecurringViewChip';
 import Fab from '../components/Fab';
@@ -186,6 +186,7 @@ export default function AllTransactionsScreen() {
                 <Ionicons name="chevron-down" size={14} color={c.textSecondary} />
               </TouchableOpacity>
               <SortToggle
+                fields={transactionSortFields(labels)}
                 sortBy={filters.sortBy}
                 direction={filters.sortDirection}
                 onToggleSort={filters.handleToggleSort}

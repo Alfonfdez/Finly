@@ -1,5 +1,5 @@
-import { useCallback, useMemo } from 'react';
-import { View, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { View, FlatList, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import ScreenShell from '../components/ScreenShell';
@@ -8,6 +8,8 @@ import RecurringRow from '../components/RecurringRow';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
+import SortToggle, { recurringSortFields } from '../components/SortToggle';
+import { SECTION_GAP } from '../components/componentStyles';
 import BulkDeleteConfirmationModal from '../components/BulkDeleteConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
@@ -19,8 +21,10 @@ import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { t, getDisplayCategoryName } from '../i18n';
-import { USER_ID, type RecurrenceFrequency, type RootStackParamList } from '../constants/types';
+import { USER_ID, RECURRING_SORT_BY, SORT_DIRECTIONS, type RecurrenceFrequency, type RootStackParamList, type RecurringSortBy, type SortDirection } from '../constants/types';
 import { isRecurrenceEnded, todayDateOnly } from '../utils/recurrence';
+import { defaultRecurringSortDirection, sortRecurringRules } from '../utils/recurringSort';
+import { isWeb } from '../utils/platform';
 import { recurringRepository } from '../database';
 import { setRecurringRuleActive } from '../database/recurringService';
 import { ERROR_PREFIXES } from '../utils/errors';
@@ -45,6 +49,22 @@ export default function RecurringScreen() {
   );
   const { rules, counts } = data;
   const today = todayDateOnly();
+
+  const [sortBy, setSortBy] = useState<RecurringSortBy>(RECURRING_SORT_BY.nextDue);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(defaultRecurringSortDirection(RECURRING_SORT_BY.nextDue));
+
+  const handleToggleSort = useCallback((field: RecurringSortBy) => {
+    if (field === sortBy) {
+      setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
+    } else {
+      setSortBy(field);
+      setSortDirection(defaultRecurringSortDirection(field));
+    }
+  }, [sortBy]);
+
+  const handleToggleDirection = useCallback(() => {
+    setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
+  }, []);
 
   const select = useSelectAndSearch({ hasItems: rules.length > 0 });
   const {
@@ -85,6 +105,11 @@ export default function RecurringScreen() {
   });
 
   const visibleIds = useMemo(() => filteredRules.map((rule) => rule.id), [filteredRules]);
+
+  const sortedRules = useMemo(
+    () => sortRecurringRules(filteredRules, sortBy, sortDirection),
+    [filteredRules, sortBy, sortDirection],
+  );
 
   const handleToggleActive = useCallback(async (rule: RecurringRule, value: boolean) => {
     // The switch is disabled for finished rules; guard here anyway (the service
@@ -158,8 +183,23 @@ export default function RecurringScreen() {
         />
       )}
 
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={isWeb}
+        style={styles.sortRow}
+        contentContainerStyle={[styles.sortRowContent, isWeb && styles.sortRowWebContent]}
+      >
+        <SortToggle
+          fields={recurringSortFields(labels)}
+          sortBy={sortBy}
+          direction={sortDirection}
+          onToggleSort={handleToggleSort}
+          onToggleDirection={handleToggleDirection}
+        />
+      </ScrollView>
+
       <FlatList
-        data={filteredRules}
+        data={sortedRules}
         keyExtractor={item => String(item.id)}
         extraData={`${selectMode}:${selectedIds.size}`}
         contentContainerStyle={filteredRules.length === 0 ? styles.emptyContent : styles.listContent}
@@ -206,5 +246,20 @@ const styles = StyleSheet.create({
   },
   emptyContent: {
     flexGrow: 1,
+  },
+  sortRow: {
+    alignSelf: 'stretch',
+    flexGrow: 0,
+    marginTop: SECTION_GAP,
+  },
+  sortRowContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+  },
+  sortRowWebContent: {
+    paddingBottom: 8,
   },
 });
