@@ -286,8 +286,7 @@ describe('useTransactionForm', () => {
 
   it('includes skipFirst in the recurrence draft on submit', async () => {
     const onSubmitRule = vi.fn(async (_d: TransactionDraft, _t: number[], _r: RecurrenceDraft) => {});
-    const { result } = await setup({ initialAmount: '10', onSubmitRule });
-    await act(() => result.current.setRepeatEnabled(true));
+    const { result } = await setup({ initialAmount: '10', ruleMode: true, onSubmitRule });
     await act(() => result.current.setRepeatSkipFirst(true));
     await act(() => result.current.setRepeatName('Rent'));
     await act(async () => {
@@ -300,8 +299,7 @@ describe('useTransactionForm', () => {
   });
 
   it('blocks submit when the end date precedes the skipped first occurrence', async () => {
-    const { result } = await setup({ initialAmount: '10', initialDay: new Date(2026, 5, 15) });
-    await act(() => result.current.setRepeatEnabled(true));
+    const { result } = await setup({ initialAmount: '10', initialDay: new Date(2026, 5, 15), ruleMode: true });
     await act(() => result.current.setRepeatSkipFirst(true));
     await act(() => result.current.setRepeatName('Rent'));
 
@@ -379,8 +377,7 @@ describe('useTransactionForm', () => {
   });
 
   it('requires a recurring name when repeat is on', async () => {
-    const { result } = await setup({ initialAmount: '10' });
-    await act(() => result.current.setRepeatEnabled(true));
+    const { result } = await setup({ initialAmount: '10', ruleMode: true });
     expect(result.current.repeatNameError).toBe('required');
     expect(result.current.canSubmit).toBe(false);
 
@@ -390,8 +387,7 @@ describe('useTransactionForm', () => {
   });
 
   it('rejects a recurring name already used by another rule', async () => {
-    const { result } = await setup({ initialAmount: '10', existingRepeatNames: ['Rent'] });
-    await act(() => result.current.setRepeatEnabled(true));
+    const { result } = await setup({ initialAmount: '10', existingRepeatNames: ['Rent'], ruleMode: true });
     await act(() => result.current.setRepeatName('  rent '));
     expect(result.current.repeatNameError).toBe('taken');
     expect(result.current.canSubmit).toBe(false);

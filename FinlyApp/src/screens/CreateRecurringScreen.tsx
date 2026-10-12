@@ -52,7 +52,6 @@ export default function CreateRecurringScreen() {
       submitLabel={labels.recurring_submit}
       errorTitle={labels.recurring_error_title}
       errorMessage={labels.recurring_error_message}
-      onSubmit={async () => {}}
       onSubmitRule={async (data, tagIds, recurrence) => {
         await createRecurringRule({
           name: recurrence.name,
@@ -71,7 +70,6 @@ export default function CreateRecurringScreen() {
         });
         changeType(data.type);
       }}
-      enableRepeat
       ruleMode
       allowSkipFirst
       existingRepeatNames={existingRepeatNames}

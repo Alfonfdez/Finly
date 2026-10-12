@@ -37,10 +37,9 @@ interface TransactionFormProps {
   submitLabel: string;
   errorTitle: string;
   errorMessage: string;
-  onSubmit: (data: TransactionDraft, tagIds: number[]) => Promise<void>;
+  onSubmit?: (data: TransactionDraft, tagIds: number[]) => Promise<void>;
   onSubmitRule?: (data: TransactionDraft, tagIds: number[], recurrence: RecurrenceDraft) => Promise<void>;
   onBeforeSubmitRule?: (data: TransactionDraft, recurrence: RecurrenceDraft) => Promise<boolean>;
-  enableRepeat?: boolean;
   ruleMode?: boolean;
   allowSkipFirst?: boolean;
   initialRepeatFrequency?: RecurrenceFrequency;
@@ -76,7 +75,6 @@ export default function TransactionForm(props: TransactionFormProps) {
     categoryId, setCategoryId, day, setDay,
     selectedTags, comment, setComment,
     submitting, photos,
-    repeatEnabled, setRepeatEnabled,
     repeatFrequency, setRepeatFrequency,
     repeatInterval, setRepeatInterval,
     repeatEnd, setRepeatEnd,
@@ -119,7 +117,7 @@ export default function TransactionForm(props: TransactionFormProps) {
   }, [setRepeatEnd, setModalRepeatEndVisible]);
 
   // The recurring end date must be on/after the first occurrence (which shifts when skipping the first one).
-  const repeatEndConflict = (repeatEnabled || !!props.ruleMode) && !!repeatEnd && repeatEnd < repeatMinDate;
+  const repeatEndConflict = !!props.ruleMode && !!repeatEnd && repeatEnd < repeatMinDate;
   const handleCalculatorAccept = useCallback((result: string) => {
     const clean = parseAmountInput(result);
     if (clean !== null && clean !== '') {
@@ -179,11 +177,8 @@ export default function TransactionForm(props: TransactionFormProps) {
           onOpenCalendar={() => setModalCalendarVisible(true)}
         />
 
-        {props.enableRepeat && (
+        {props.ruleMode && (
           <RepeatSection
-            showToggle={!props.ruleMode}
-            enabled={props.ruleMode ? true : repeatEnabled}
-            onToggle={setRepeatEnabled}
             frequency={repeatFrequency}
             onChangeFrequency={setRepeatFrequency}
             interval={repeatInterval}
@@ -232,7 +227,7 @@ export default function TransactionForm(props: TransactionFormProps) {
           />
         )}
 
-        {config.addShowPhoto && !repeatEnabled && (
+        {config.addShowPhoto && !props.ruleMode && (
           <PhotoSection
             photos={photos}
             onTakePhoto={handleTakePhoto}

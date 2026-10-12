@@ -14,8 +14,6 @@ type Props = ComponentProps<typeof RepeatSection>;
 
 function renderSection(overrides: Partial<Props> = {}) {
   const props: Props = {
-    enabled: true,
-    onToggle: vi.fn(),
     frequency: 'monthly',
     onChangeFrequency: vi.fn(),
     interval: 1,
@@ -38,13 +36,6 @@ describe('RepeatSection', () => {
   beforeEach(() => {
     resetStub();
     setConfig({ language: 'en' });
-  });
-
-  it('hides the options when disabled', async () => {
-    const { view } = renderSection({ enabled: false });
-    const v = await view;
-    expect(v.getByText('Recurring')).toBeTruthy();
-    expect(v.queryByText('Daily')).toBeNull();
   });
 
   it('shows the frequency, interval, end date and summary when enabled', async () => {
@@ -104,25 +95,12 @@ describe('RepeatSection', () => {
     expect(props.onClearEndDate).toHaveBeenCalledTimes(1);
   });
 
-  it('toggles repeat on switch change', async () => {
-    const { props, view } = renderSection({ enabled: false });
-    await fireEvent((await view).getByRole('switch'), 'valueChange', true);
-    expect(props.onToggle).toHaveBeenCalledWith(true);
-  });
-
-  it('hides only the switch in rule mode but keeps the title', async () => {
-    const { view } = renderSection({ showToggle: false });
+  it('always renders the options block and the title', async () => {
+    const { view } = renderSection();
     const v = await view;
     expect(v.getByText('Recurring')).toBeTruthy();
+    expect(v.getByTestId('repeat-options')).toBeTruthy();
     expect(v.queryByRole('switch')).toBeNull();
-  });
-
-  it('highlights the options block only when enabled', async () => {
-    const disabled = await renderSection({ enabled: false });
-    expect((await disabled.view).queryByTestId('repeat-options')).toBeNull();
-
-    const enabled = await renderSection({ enabled: true });
-    expect((await enabled.view).getByTestId('repeat-options')).toBeTruthy();
   });
 
   it('shows the skip-first checkbox only when allowed', async () => {
