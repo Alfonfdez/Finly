@@ -3529,3 +3529,7 @@
 
 [2026-10-11] style | FinlyApp/src/components/RecurringRow.tsx
 - Recurring screen rows: the rule name is now fontWeight 600 (was 500), matching the design-system 'names' weight and the AccountScreen list-name convention (fs15 / 600 / text), so the title reads as the clear headline over the primary-colored frequency line. test:all green (115 files / 823 tests).
+
+[2026-10-12] chore | FinlyApp/package.json, FinlyApp/package-lock.json, docs/harnesses.md
+- Bumped the Expo SDK 57 patch deps via 'npx expo install --fix': expo ~57.0.27 to ~57.0.28, expo-sharing ~57.0.22 to ~57.0.23, expo-splash-screen ~57.0.9 to ~57.0.10 (JS-level patches within SDK 57, no native regeneration needed). 'npx expo install --check' now reports dependencies up to date and expo-doctor 21/21.
+- Synced the harness SDK-patch line to expo ~57.0.28 (was ~57.0.27; applied 2026-10-12). Checked for other version references: the READMEs, AGENTS.md, 2-tech-stack.md, 3-roadmap.md and programming-concepts.md mention only 'SDK 57' (no patch), so they stay. test:all green (115 files / 823 tests); web boot check OK, 0 console errors.
