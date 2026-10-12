@@ -15,7 +15,7 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 | **Occurrence** | A scheduled **date** the rule fires on — a slot, not a record. | Schedule concepts: first/next, skip, counts of skipped/missed ("Skip the first occurrence", "4 occurrences will be skipped"). |
 | **Transaction** | A **record** in the transaction lists. A *generated* (or *recurring*) *transaction* is one created by a rule. | Anything the user counts, keeps, edits or deletes ("1 transaction will be created", "its past transactions will be kept"). |
 | **Create / generate** | Turn a due occurrence into a transaction (code: *materialize*). | The UI verb ("N transactions will be created"). |
-| **Next due** | The next occurrence the rule will create (the rule's cursor). | The "Next: &lt;date&gt;" label. |
+| **Next due** | The next occurrence the rule will create (the rule's cursor). | The "Next: `<date>`" label. |
 | **Skipped** | An occurrence deliberately not created (Future only / pause / skip-first). | "occurrences will be skipped". |
 | **Missed** | An occurrence already due but not created yet (the app was closed); it is created on the next run. | The catch-up window ("adds the missed transactions"). |
 | **Paused / Active / Ended** | The rule's states. | The rule's status. |
@@ -70,16 +70,17 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 
 ### 5. Creating a recurring rule
 
-- `TransactionForm` gains a **Repeat** section (a toggle) available when adding a transaction:
+- `TransactionForm` in **rule mode** (the Create/Edit recurring screens) shows a **Repeat** section — always rendered, with no enable toggle:
   - A **compulsory, unique name** field at the top of the section (trimmed, case-insensitive; checked against the user's other rules). It is stored on the rule and shown as the rule's title.
-  - Frequency selector (Never / Daily / Weekly / Monthly / Yearly), an "every N" stepper, and an optional end date (reusing `CalendarModal` with bounds `minDate = the selected transaction day + 1` — or the deferred first occurrence when skipping it — and `maxDate = null`; the end date may be in the past when the start is in the past).
-  - A **Last day of the month** checkbox (shown for monthly/yearly) anchors the rule on each month's last day, starting on the last day of the start month; the summary reads "Every month on the last day" (yearly: "Every year on the last day of &lt;month&gt;").
+  - Frequency selector (Daily / Weekly / Monthly / Yearly), an "every N" stepper, and an optional end date (reusing `CalendarModal` with bounds `minDate = the selected transaction day + 1` — or the deferred first occurrence when skipping it — and `maxDate = null`; the end date may be in the past when the start is in the past).
+  - A **Last day of the month** checkbox (shown for monthly/yearly) anchors the rule on each month's last day, starting on the last day of the start month; the summary reads "Every month on the last day" (yearly: "Every year on the last day of `<month>`").
   - The start date defaults to the day selected in the form's `DaySelector`.
-  - A human-readable summary is shown, phrased per frequency and localized (e.g. "Every month on day 6", "Every week on Monday", "Every year on October 6"; Spanish: "Cada año el 6 de octubre"), with an "until &lt;date&gt;" clause appended when an end date is set.
-  - A **Summary info block** (always shown when the Repeat section is enabled) consolidates: the summary line, the **first transaction** date (which shifts by one interval when skipping the first occurrence), and **how many transactions will be created on save** (occurrences up to today within the end date; "No transactions will be created now" when the first one is in the future).
-  - An optional **Skip the first occurrence** checkbox (shown when creating — add transaction and Create recurring — and hidden when editing an existing rule) defers the first generated occurrence by one interval (e.g. monthly from 6 Oct → first on 6 Nov): nothing is generated on the selected day and the anchor stays on it. The end date must be on/after that deferred first occurrence (otherwise submit is blocked with a hint).
-- When Repeat is on, saving creates a `recurring_rules` row + tag links **and** reconciliation immediately materializes any occurrence that is already due (including the start date if it is today or earlier). When Repeat is off, saving behaves exactly as today (one transaction).
-- The account/category/amount/comment/tags come from the same form fields; a recurring rule does not store a photo.
+  - A human-readable summary is shown, phrased per frequency and localized (e.g. "Every month on day 6", "Every week on Monday", "Every year on October 6"; Spanish: "Cada año el 6 de octubre"), with an "until `<date>`" clause appended when an end date is set.
+  - A **Summary info block** (always shown) consolidates: the summary line, the **first transaction** date (which shifts by one interval when skipping the first occurrence), and **how many transactions will be created on save** (occurrences up to today within the end date; "No transactions will be created now" when the first one is in the future).
+  - An optional **Skip the first occurrence** checkbox (shown when creating a rule and hidden when editing an existing one) defers the first generated occurrence by one interval (e.g. monthly from 6 Oct → first on 6 Nov): nothing is generated on the selected day and the anchor stays on it. The end date must be on/after that deferred first occurrence (otherwise submit is blocked with a hint).
+- Saving creates a `recurring_rules` row + tag links **and** reconciliation immediately materializes any occurrence that is already due (including the start date if it is today or earlier).
+- The account/category/amount/comment/tags come from the same form fields; a recurring rule does not store a photo (the photo section is hidden in rule mode).
+- The **add-transaction** form does **not** offer a Repeat section: it always saves a single plain transaction. Recurring rules are created only from the Recurring screen's create flow.
 
 ### 6. Management screen
 
@@ -141,7 +142,7 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 
 ## Acceptance criteria
 
-- [x] A "Repeat" section is available in the add-transaction form (Never / Daily / Weekly / Monthly / Yearly + "every N" + optional end date) with a readable summary.
+- [x] The recurring create/edit form shows a **Repeat** section (name / Daily / Weekly / Monthly / Yearly + "every N" + optional end date) with a readable summary; the add-transaction form does not.
 - [x] Every recurring rule has a compulsory, unique **name** (trimmed, case-insensitive), shown as the rule's title and editable when editing.
 - [x] The Recurring screen shows each rule's name, creation date, generated-transaction count and next due (or **Ended**).
 - [x] The recurring **End date** picker allows only dates strictly after the selected transaction day (which may be in the past), while the transaction date picker still allows only today/past.

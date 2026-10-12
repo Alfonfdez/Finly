@@ -1,12 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { t } from '../i18n';
-import { PERIODS, USER_ID, type RootStackParamList } from '../constants/types';
+import { PERIODS, type RootStackParamList } from '../constants/types';
 import { isSameDay } from '../utils/formatters';
-import { transactionRepository, recurringRepository } from '../database';
-import { createRecurringRule } from '../database/recurringService';
+import { transactionRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
 import TransactionForm from '../components/TransactionForm';
 
@@ -36,15 +35,6 @@ export default function AddTransactionScreen() {
     return selectedDate;
   }, [activePeriod, customDate, selectedDate]);
 
-  const [existingRepeatNames, setExistingRepeatNames] = useState<string[]>([]);
-  useEffect(() => {
-    let active = true;
-    recurringRepository.list(USER_ID)
-      .then(rules => { if (active) setExistingRepeatNames(rules.map(r => r.name)); })
-      .catch(() => {});
-    return () => { active = false; };
-  }, []);
-
   return (
     <TransactionForm
       initialType={routeType ?? activeType}
@@ -61,27 +51,6 @@ export default function AddTransactionScreen() {
         await transactionRepository.createWithTags(data, tagIds);
         changeType(data.type);
       }}
-      onSubmitRule={async (data, tagIds, recurrence) => {
-        await createRecurringRule({
-          name: recurrence.name,
-          type: data.type,
-          account_id: data.account_id,
-          category_id: data.category_id,
-          amount: data.amount,
-          description: data.description,
-          date: data.date,
-          frequency: recurrence.frequency,
-          interval: recurrence.interval,
-          endDate: recurrence.endDate,
-          skipFirst: recurrence.skipFirst,
-          lastDay: recurrence.lastDay,
-          tagIds,
-        });
-        changeType(data.type);
-      }}
-      enableRepeat
-      allowSkipFirst
-      existingRepeatNames={existingRepeatNames}
       resetTagsOnFirstFocus
     />
   );

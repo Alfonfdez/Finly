@@ -88,8 +88,6 @@ vi.mock('../../src/hooks/useTransactionForm', () => ({
     setModalCalendarVisible: vi.fn(),
     calculatorVisible: false,
     setCalculatorVisible: vi.fn(),
-    repeatEnabled: false,
-    setRepeatEnabled: vi.fn(),
     repeatFrequency: 'monthly' as const,
     setRepeatFrequency: vi.fn(),
     repeatInterval: 1,

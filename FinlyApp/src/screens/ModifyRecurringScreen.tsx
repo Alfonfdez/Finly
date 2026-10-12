@@ -157,7 +157,6 @@ export default function ModifyRecurringScreen() {
         submitLabel={labels.modify_save}
         errorTitle={labels.recurring_error_title}
         errorMessage={labels.recurring_error_message}
-        onSubmit={async () => {}}
         onBeforeSubmitRule={handleBeforeSubmitRule}
         onSubmitRule={async (draft, selectedTagIds, recurrence) => {
           await persist(
@@ -183,7 +182,6 @@ export default function ModifyRecurringScreen() {
           );
           changeType(draft.type);
         }}
-        enableRepeat
         ruleMode
         footer={footer}
         onRecurringPastAffectedChange={setPastAffected}

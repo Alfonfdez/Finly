@@ -16,7 +16,7 @@ interface UseRecurringDraftProps {
 }
 
 /**
- * Recurring-rule draft state shared by the create/edit forms: the repeat toggle,
+ * Recurring-rule draft state shared by the create/edit forms: the
  * frequency/interval/end date/skip-first/name, the end-date bounds and the
  * name validation. Pure form state — no rule persistence.
  */
@@ -30,7 +30,6 @@ export function useRecurringDraft({
   initialRepeatName,
   initialRepeatLastDay,
 }: UseRecurringDraftProps) {
-  const [repeatEnabled, setRepeatEnabled] = useState(ruleMode);
   const [repeatFrequency, setRepeatFrequency] = useState<RecurrenceFrequency>(initialRepeatFrequency ?? 'monthly');
   const [repeatInterval, setRepeatInterval] = useState(initialRepeatInterval ?? 1);
   const [repeatEnd, setRepeatEnd] = useState<Date | null>(initialRepeatEnd ?? null);
@@ -56,12 +55,12 @@ export function useRecurringDraft({
   }, [day, repeatFrequency, repeatInterval, repeatLastDay, repeatEnd]);
 
   const repeatNameError = useMemo<'required' | 'taken' | null>(() => {
-    if (!repeatEnabled && !ruleMode) return null;
+    if (!ruleMode) return null;
     const trimmed = repeatName.trim();
     if (trimmed.length === 0) return 'required';
     const taken = (existingRepeatNames ?? []).some(n => n.trim().toLowerCase() === trimmed.toLowerCase());
     return taken ? 'taken' : null;
-  }, [repeatEnabled, ruleMode, repeatName, existingRepeatNames]);
+  }, [ruleMode, repeatName, existingRepeatNames]);
 
   const buildRecurrence = useCallback((): RecurrenceDraft => ({
     name: repeatName.trim(),
@@ -73,7 +72,6 @@ export function useRecurringDraft({
   }), [repeatName, repeatFrequency, repeatInterval, repeatEnd, repeatSkipFirst, repeatLastDay]);
 
   return {
-    repeatEnabled, setRepeatEnabled,
     repeatFrequency, setRepeatFrequency,
     repeatInterval, setRepeatInterval,
     repeatEnd, setRepeatEnd,

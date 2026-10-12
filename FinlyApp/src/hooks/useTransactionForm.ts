@@ -38,7 +38,7 @@ type UseTransactionFormProps = {
   initialAmount?: string;
   errorTitle: string;
   errorMessage: string;
-  onSubmit: (data: TransactionDraft, tagIds: number[]) => Promise<void>;
+  onSubmit?: (data: TransactionDraft, tagIds: number[]) => Promise<void>;
   onSubmitRule?: (data: TransactionDraft, tagIds: number[], recurrence: RecurrenceDraft) => Promise<void>;
   /** Runs before `onSubmitRule`; returning false aborts the save (e.g. a confirmation dialog). */
   onBeforeSubmitRule?: (data: TransactionDraft, recurrence: RecurrenceDraft) => Promise<boolean>;
@@ -109,7 +109,6 @@ export function useTransactionForm({
   const { photos, handleTakePhoto, handlePickFromGallery, handleRemovePhoto } = usePhotos(initialPhotos);
 
   const {
-    repeatEnabled, setRepeatEnabled,
     repeatFrequency, setRepeatFrequency,
     repeatInterval, setRepeatInterval,
     repeatEnd, setRepeatEnd,
@@ -194,10 +193,10 @@ export function useTransactionForm({
     if (numericAmount === null || numericAmount <= 0) return false;
     if (day === null) return false;
     if (accountId === undefined) return false;
-    if ((repeatEnabled || ruleMode) && repeatNameError) return false;
-    if ((repeatEnabled || ruleMode) && repeatEnd && repeatEnd < repeatMinDate) return false;
+    if (ruleMode && repeatNameError) return false;
+    if (ruleMode && repeatEnd && repeatEnd < repeatMinDate) return false;
     return true;
-  }, [categoryId, numericAmount, day, accountId, repeatEnabled, ruleMode, repeatNameError, repeatEnd, repeatMinDate]);
+  }, [categoryId, numericAmount, day, accountId, ruleMode, repeatNameError, repeatEnd, repeatMinDate]);
 
   const { recurringPastAffected, recurringSkipWindow } = useRecurringEditScope({
     ruleMode,
@@ -268,12 +267,12 @@ export function useTransactionForm({
         date: dateStr,
       };
 
-      if ((repeatEnabled || ruleMode) && onSubmitRule) {
+      if (ruleMode && onSubmitRule) {
         const recurrence = buildRecurrence();
         if (onBeforeSubmitRule && !(await onBeforeSubmitRule(draft, recurrence))) return;
         await onSubmitRule(draft, selectedTags, recurrence);
       } else {
-        await onSubmit(draft, selectedTags);
+        await onSubmit?.(draft, selectedTags);
       }
 
       navigation.goBack();
@@ -284,7 +283,7 @@ export function useTransactionForm({
     } finally {
       setSubmitting(false);
     }
-  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, repeatEnabled, buildRecurrence, ruleMode, onSubmit, onSubmitRule, onBeforeSubmitRule, deferredRefresh, navigation, errorTitle, errorMessage]);
+  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, buildRecurrence, ruleMode, onSubmit, onSubmitRule, onBeforeSubmitRule, deferredRefresh, navigation, errorTitle, errorMessage]);
 
   const categoriesByType = useMemo(() => {
     const byType = categoriesOfType(categories, type);
@@ -318,7 +317,6 @@ export function useTransactionForm({
     selectedTags, comment, setComment,
     submitting,
     photos,
-    repeatEnabled, setRepeatEnabled,
     repeatFrequency, setRepeatFrequency,
     repeatInterval, setRepeatInterval,
     repeatEnd, setRepeatEnd,
