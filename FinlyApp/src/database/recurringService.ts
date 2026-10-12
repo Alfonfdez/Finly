@@ -1,7 +1,7 @@
 import { withTransaction } from './drizzle/engine';
 import { recurringRepo, type RecurringRuleInput } from './repositories/recurringRepo';
 import { advanceOccurrence, buildRecurrenceSchedule, isRecurrenceEnded, isSkippedWindowRecoverable, listDueOccurrences, nextDueOnOrAfter, resolveEditAnchor, fromDateOnly, recurrenceSkipWindow, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
-import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, USER_ID, type RecurrenceScope } from '../constants/types';
+import { RECURRENCE_SCOPES, USER_ID, type RecurrenceScope } from '../constants/types';
 import type { RecurringRule } from './types';
 
 /**
@@ -67,6 +67,8 @@ export interface CreateRecurringRuleParams {
   interval: number;
   endDate: string | null;
   skipFirst: boolean;
+  /** Monthly/yearly: anchor on the last day of the month instead of the start day. */
+  lastDay?: boolean;
   tagIds: number[];
   now?: Date;
 }
@@ -83,6 +85,7 @@ export async function createRecurringRule(params: CreateRecurringRuleParams): Pr
     params.frequency,
     params.interval,
     params.endDate,
+    params.lastDay,
   );
   const nextDue = params.skipFirst ? advanceOccurrence(schedule, schedule.start_date) : schedule.start_date;
 
@@ -149,6 +152,8 @@ export interface RecurringEditRecurrence {
   frequency: RecurringRule['frequency'];
   interval: number;
   endDate: string | null;
+  /** Monthly/yearly: anchor on the last day of the month instead of the start day. */
+  lastDay?: boolean;
 }
 
 export interface RecurringEditPastPatch {
@@ -196,18 +201,7 @@ export async function saveRecurringRuleEdit(params: RecurringEditParams): Promis
   const cursor = current.next_due;
   const startDate = (updated.start_date ?? current.start_date).slice(0, 10);
   const start = fromDateOnly(startDate);
-  const schedule = {
-    frequency: recurrence.frequency,
-    interval: recurrence.interval,
-    weekday: recurrence.frequency === RECURRENCE_FREQUENCIES.weekly ? start.getDay() : null,
-    day_of_month:
-      recurrence.frequency === RECURRENCE_FREQUENCIES.monthly || recurrence.frequency === RECURRENCE_FREQUENCIES.yearly
-        ? start.getDate()
-        : null,
-    month: recurrence.frequency === RECURRENCE_FREQUENCIES.yearly ? start.getMonth() + 1 : null,
-    start_date: startDate,
-    end_date: recurrence.endDate,
-  };
+  const schedule = buildRecurrenceSchedule(start, recurrence.frequency, recurrence.interval, recurrence.endDate, recurrence.lastDay);
   const skip = scope === RECURRENCE_SCOPES.future ? recurrenceSkipWindow(schedule, cursor, today) : null;
 
   // "Future + past" re-anchors at the earliest skipped occurrence so the window a

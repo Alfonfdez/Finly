@@ -74,6 +74,7 @@ export default function AddTransactionScreen() {
           interval: recurrence.interval,
           endDate: recurrence.endDate,
           skipFirst: recurrence.skipFirst,
+          lastDay: recurrence.lastDay,
           tagIds,
         });
         changeType(data.type);

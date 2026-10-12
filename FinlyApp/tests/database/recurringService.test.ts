@@ -97,6 +97,24 @@ describe('createRecurringRule', () => {
     const dates = (await transactionRepo.list()).map(t => t.recurrence_date).sort();
     expect(dates).toEqual(['2026-02-02', '2026-03-02', '2026-04-02']);
   });
+
+  it('anchors a last-day rule on the last day of each month', async () => {
+    const { recurringRepo, transactionRepo, createRecurringRule } = await boot();
+    const created = await createRecurringRule({
+      ...params,
+      date: '2026-01-15 00:00:00',
+      skipFirst: false,
+      lastDay: true,
+      now: APR_15,
+    });
+
+    expect(created).toBe(3); // Jan 31, Feb 28, Mar 31 (Apr 30 is still future)
+    const [rule] = await recurringRepo.list(1);
+    expect(rule.day_of_month).toBe(31);
+    expect(rule.start_date).toBe('2026-01-31');
+    const dates = (await transactionRepo.list()).map(t => t.recurrence_date).sort();
+    expect(dates).toEqual(['2026-01-31', '2026-02-28', '2026-03-31']);
+  });
 });
 
 describe('materializeDueRecurring', () => {

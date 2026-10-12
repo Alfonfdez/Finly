@@ -55,6 +55,7 @@ interface TransactionFormProps {
   onChangeRepeatScope?: (scope: RecurrenceScope) => void;
   repeatScopeDisabled?: boolean;
   initialRepeatName?: string;
+  initialRepeatLastDay?: boolean;
   existingRepeatNames?: string[];
   footer?: ReactNode;
   onRecurringPastAffectedChange?: (value: boolean) => void;
@@ -80,6 +81,7 @@ export default function TransactionForm(props: TransactionFormProps) {
     repeatInterval, setRepeatInterval,
     repeatEnd, setRepeatEnd,
     repeatSkipFirst, setRepeatSkipFirst,
+    repeatLastDay, setRepeatLastDay,
     repeatMinDate,
     recurringPastAffected,
     repeatName, setRepeatName, repeatNameError,
@@ -193,6 +195,8 @@ export default function TransactionForm(props: TransactionFormProps) {
             skipFirst={repeatSkipFirst}
             onChangeSkipFirst={setRepeatSkipFirst}
             showSkipFirst={!!props.allowSkipFirst}
+            lastDay={repeatLastDay}
+            onChangeLastDay={setRepeatLastDay}
             name={repeatName}
             onChangeName={setRepeatName}
             nameError={repeatNameError}

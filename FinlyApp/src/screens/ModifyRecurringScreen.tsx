@@ -55,7 +55,7 @@ export default function ModifyRecurringScreen() {
 
   const persist = useCallback(async (
     updated: Partial<RecurringRule>,
-    recurrence: { frequency: RecurringRule['frequency']; interval: number; endDate: string | null },
+    recurrence: { frequency: RecurringRule['frequency']; interval: number; endDate: string | null; lastDay?: boolean },
     pastPatch: { account_id: number; category_id: number; amount: number; description: string | null; type: RecurringRule['type'] },
     selectedTagIds: number[],
   ) => {
@@ -81,6 +81,7 @@ export default function ModifyRecurringScreen() {
       recurrence.frequency,
       recurrence.interval,
       recurrence.endDate,
+      recurrence.lastDay,
     );
     const skip = recurrenceSkipWindow(schedule, rule.next_due, todayDateOnly());
     if (!skip) return true;
@@ -151,6 +152,7 @@ export default function ModifyRecurringScreen() {
         initialRuleActive={rule.active === 1}
         initialRuleSkippedFrom={rule.skipped_from}
         initialRepeatName={rule.name}
+        initialRepeatLastDay={rule.day_of_month === 31}
         existingRepeatNames={otherNames}
         submitLabel={labels.modify_save}
         errorTitle={labels.recurring_error_title}

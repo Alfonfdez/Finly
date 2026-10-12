@@ -79,6 +79,22 @@ describe('advanceOccurrence', () => {
   });
 });
 
+describe('buildRecurrenceSchedule last day', () => {
+  it('anchors a monthly last-day rule on the last day of the start month', () => {
+    const schedule = buildRecurrenceSchedule(new Date(2026, 0, 15), 'monthly', 1, null, true);
+    expect(schedule.day_of_month).toBe(31);
+    expect(schedule.start_date).toBe('2026-01-31');
+    expect(advanceOccurrence(schedule, '2026-01-31')).toBe('2026-02-28');
+    expect(advanceOccurrence(schedule, '2026-02-28')).toBe('2026-03-31');
+  });
+
+  it('ignores lastDay for non monthly/yearly frequencies', () => {
+    const schedule = buildRecurrenceSchedule(new Date(2026, 0, 15), 'weekly', 1, null, true);
+    expect(schedule.day_of_month).toBeNull();
+    expect(schedule.start_date).toBe('2026-01-15');
+  });
+});
+
 describe('listDueOccurrences', () => {
   it('back-fills every missed monthly occurrence up to today', () => {
     const result = listDueOccurrences(base, '2026-01-02', '2026-04-15');
