@@ -65,6 +65,7 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
   - Weekly: anchored to the start weekday (or an explicit weekday); + `interval` weeks.
   - Monthly: the day-of-month from the start date; short months **clamp** to their last day (31 → 28/29/30) using the existing `getDaysInMonth`.
   - Yearly: month + day from the start date; Feb 29 clamps to Feb 28 in non-leap years.
+  - **Last day** (monthly/yearly only): the anchor is the 31st (clamped to each month's last day) and the **first occurrence is the last day of the start month** (start any day of October → first on Oct 31). A rule anchored on the 31st is the same schedule, so no extra column is stored.
 - Optional **end date**: no occurrences are generated after it. (Occurrence-count ends and "this occurrence only" exceptions are out of scope for v1.)
 
 ### 5. Creating a recurring rule
@@ -72,6 +73,7 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 - `TransactionForm` gains a **Repeat** section (a toggle) available when adding a transaction:
   - A **compulsory, unique name** field at the top of the section (trimmed, case-insensitive; checked against the user's other rules). It is stored on the rule and shown as the rule's title.
   - Frequency selector (Never / Daily / Weekly / Monthly / Yearly), an "every N" stepper, and an optional end date (reusing `CalendarModal` with bounds `minDate = the selected transaction day + 1` — or the deferred first occurrence when skipping it — and `maxDate = null`; the end date may be in the past when the start is in the past).
+  - A **Last day of the month** checkbox (shown for monthly/yearly) anchors the rule on each month's last day, starting on the last day of the start month; the summary reads "Every month on the last day" (yearly: "Every year on the last day of &lt;month&gt;").
   - The start date defaults to the day selected in the form's `DaySelector`.
   - A human-readable summary is shown, phrased per frequency and localized (e.g. "Every month on day 6", "Every week on Monday", "Every year on October 6"; Spanish: "Cada año el 6 de octubre"), with an "until &lt;date&gt;" clause appended when an end date is set.
   - A **Summary info block** (always shown when the Repeat section is enabled) consolidates: the summary line, the **first transaction** date (which shifts by one interval when skipping the first occurrence), and **how many transactions will be created on save** (occurrences up to today within the end date; "No transactions will be created now" when the first one is in the future).
@@ -150,6 +152,7 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 - [x] Re-running reconciliation never duplicates an occurrence (idempotent via the unique occurrence index).
 - [x] While the app is open across a due instant, the occurrence is created without reopening the app.
 - [x] Monthly rules clamp short months (31 → last day) and yearly rules clamp Feb 29 in non-leap years.
+- [x] A monthly/yearly rule can anchor on the **last day of the month**; the first occurrence is the last day of the start month and the summary reads "on the last day".
 - [x] A Drawer "Recurring" screen lists rules with frequency summary, next due date and an active toggle; empty state shown when there are none.
 - [x] The Recurring screen has Select and Search header actions; search filters by name, category, comment and frequency; Select bulk-deletes the selected rules (their generated transactions are kept).
 - [x] A Select all / Deselect all row above the list selects every visible rule in one tap.

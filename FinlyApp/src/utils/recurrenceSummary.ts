@@ -17,10 +17,14 @@ export function recurrenceSummary(schedule: RecurrenceSchedule, language: Langua
       break;
     }
     case RECURRENCE_FREQUENCIES.monthly:
-      summary = `${labels.repeat_every_month(interval)} ${labels.repeat_on_day(schedule.day_of_month ?? 1)}`;
+      summary = schedule.day_of_month === 31
+        ? `${labels.repeat_every_month(interval)} ${labels.repeat_on_last_day}`
+        : `${labels.repeat_every_month(interval)} ${labels.repeat_on_day(schedule.day_of_month ?? 1)}`;
       break;
     case RECURRENCE_FREQUENCIES.yearly:
-      summary = `${labels.repeat_every_year(interval)} ${labels.repeat_on_month_day(getMonthName(schedule.month ?? 1), schedule.day_of_month ?? 1)}`;
+      summary = schedule.day_of_month === 31
+        ? `${labels.repeat_every_year(interval)} ${labels.repeat_on_month_last_day(getMonthName(schedule.month ?? 1))}`
+        : `${labels.repeat_every_year(interval)} ${labels.repeat_on_month_day(getMonthName(schedule.month ?? 1), schedule.day_of_month ?? 1)}`;
       break;
     case RECURRENCE_FREQUENCIES.daily:
     default:

@@ -27,6 +27,8 @@ interface Props {
   skipFirst: boolean;
   onChangeSkipFirst: (value: boolean) => void;
   showSkipFirst?: boolean;
+  lastDay?: boolean;
+  onChangeLastDay?: (value: boolean) => void;
   name: string;
   onChangeName: (value: string) => void;
   nameError: 'required' | 'taken' | null;
@@ -61,6 +63,8 @@ export default function RepeatSection({
   skipFirst,
   onChangeSkipFirst,
   showSkipFirst = false,
+  lastDay = false,
+  onChangeLastDay = () => {},
   name,
   onChangeName,
   nameError,
@@ -84,8 +88,8 @@ export default function RepeatSection({
   }), [labels]);
 
   const schedule = useMemo(
-    () => buildRecurrenceSchedule(startDay, frequency, interval, endDate ? toDateOnly(endDate) : null),
-    [startDay, frequency, interval, endDate],
+    () => buildRecurrenceSchedule(startDay, frequency, interval, endDate ? toDateOnly(endDate) : null, lastDay),
+    [startDay, frequency, interval, endDate, lastDay],
   );
   const summary = recurrenceSummary(schedule, config.language);
 
@@ -213,6 +217,16 @@ export default function RepeatSection({
             </View>
           </View>
 
+          {(frequency === RECURRENCE_FREQUENCIES.monthly || frequency === RECURRENCE_FREQUENCIES.yearly) && (
+            <View style={styles.checkboxRow}>
+              <CheckboxRow
+                checked={lastDay}
+                onToggle={() => onChangeLastDay(!lastDay)}
+                label={labels.repeat_last_day}
+              />
+            </View>
+          )}
+
           <Text style={[styles.label, { color: c.textSecondary, fontSize: fs(12), marginTop: 12 }]}>
             {labels.repeat_end_date}
           </Text>
@@ -324,6 +338,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   skipFirstRow: {
+    marginTop: 12,
+  },
+  checkboxRow: {
     marginTop: 12,
   },
   scopeBlock: {

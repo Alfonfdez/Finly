@@ -12,6 +12,7 @@ interface UseRecurringDraftProps {
   initialRepeatInterval?: number;
   initialRepeatEnd?: Date | null;
   initialRepeatName?: string;
+  initialRepeatLastDay?: boolean;
 }
 
 /**
@@ -27,28 +28,32 @@ export function useRecurringDraft({
   initialRepeatInterval,
   initialRepeatEnd,
   initialRepeatName,
+  initialRepeatLastDay,
 }: UseRecurringDraftProps) {
   const [repeatEnabled, setRepeatEnabled] = useState(ruleMode);
   const [repeatFrequency, setRepeatFrequency] = useState<RecurrenceFrequency>(initialRepeatFrequency ?? 'monthly');
   const [repeatInterval, setRepeatInterval] = useState(initialRepeatInterval ?? 1);
   const [repeatEnd, setRepeatEnd] = useState<Date | null>(initialRepeatEnd ?? null);
   const [repeatSkipFirst, setRepeatSkipFirst] = useState(false);
+  const [repeatLastDay, setRepeatLastDay] = useState(initialRepeatLastDay ?? false);
   const [repeatName, setRepeatName] = useState(initialRepeatName ?? '');
   const [modalRepeatEndVisible, setModalRepeatEndVisible] = useState(false);
 
-  // Earliest valid end date: the first occurrence (which moves one interval ahead when skipping it).
+  // Earliest valid end date: the first occurrence (which moves one interval ahead when
+  // skipping it, and lands on the last day of the start month for a "last day" rule).
   const repeatMinDate = useMemo(() => {
-    if (!repeatSkipFirst) return dayAfter(day);
-    const schedule = buildRecurrenceSchedule(day, repeatFrequency, repeatInterval);
-    return fromDateOnly(advanceOccurrence(schedule, toDateOnly(day)));
-  }, [day, repeatFrequency, repeatInterval, repeatSkipFirst]);
+    const schedule = buildRecurrenceSchedule(day, repeatFrequency, repeatInterval, null, repeatLastDay);
+    if (repeatSkipFirst) return fromDateOnly(advanceOccurrence(schedule, schedule.start_date));
+    return dayAfter(fromDateOnly(schedule.start_date));
+  }, [day, repeatFrequency, repeatInterval, repeatSkipFirst, repeatLastDay]);
 
   // Keep the end date valid: clear it if the start day moves to/after it.
   useEffect(() => {
-    if (repeatEnd && !isEndAfterStart(day, repeatEnd)) {
+    const start = fromDateOnly(buildRecurrenceSchedule(day, repeatFrequency, repeatInterval, null, repeatLastDay).start_date);
+    if (repeatEnd && !isEndAfterStart(start, repeatEnd)) {
       setRepeatEnd(null);
     }
-  }, [day, repeatEnd]);
+  }, [day, repeatFrequency, repeatInterval, repeatLastDay, repeatEnd]);
 
   const repeatNameError = useMemo<'required' | 'taken' | null>(() => {
     if (!repeatEnabled && !ruleMode) return null;
@@ -64,7 +69,8 @@ export function useRecurringDraft({
     interval: repeatInterval,
     endDate: repeatEnd ? toDateOnly(repeatEnd) : null,
     skipFirst: repeatSkipFirst,
-  }), [repeatName, repeatFrequency, repeatInterval, repeatEnd, repeatSkipFirst]);
+    lastDay: repeatLastDay,
+  }), [repeatName, repeatFrequency, repeatInterval, repeatEnd, repeatSkipFirst, repeatLastDay]);
 
   return {
     repeatEnabled, setRepeatEnabled,
@@ -72,6 +78,7 @@ export function useRecurringDraft({
     repeatInterval, setRepeatInterval,
     repeatEnd, setRepeatEnd,
     repeatSkipFirst, setRepeatSkipFirst,
+    repeatLastDay, setRepeatLastDay,
     repeatName, setRepeatName,
     repeatMinDate,
     repeatNameError,

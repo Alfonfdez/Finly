@@ -53,6 +53,7 @@ type UseTransactionFormProps = {
   initialRuleActive?: boolean;
   initialRuleSkippedFrom?: string | null;
   initialRepeatName?: string;
+  initialRepeatLastDay?: boolean;
   existingRepeatNames?: string[];
 };
 
@@ -82,6 +83,7 @@ export function useTransactionForm({
   initialRuleActive,
   initialRuleSkippedFrom,
   initialRepeatName,
+  initialRepeatLastDay,
   existingRepeatNames,
 }: UseTransactionFormProps) {
   const { config } = useConfig();
@@ -112,6 +114,7 @@ export function useTransactionForm({
     repeatInterval, setRepeatInterval,
     repeatEnd, setRepeatEnd,
     repeatSkipFirst, setRepeatSkipFirst,
+    repeatLastDay, setRepeatLastDay,
     repeatName, setRepeatName,
     repeatMinDate,
     repeatNameError,
@@ -125,6 +128,7 @@ export function useTransactionForm({
     initialRepeatInterval,
     initialRepeatEnd,
     initialRepeatName,
+    initialRepeatLastDay,
   });
 
   const [modalAccountVisible, setModalAccountVisible] = useState(false);
@@ -319,6 +323,7 @@ export function useTransactionForm({
     repeatInterval, setRepeatInterval,
     repeatEnd, setRepeatEnd,
     repeatSkipFirst, setRepeatSkipFirst,
+    repeatLastDay, setRepeatLastDay,
     repeatMinDate,
     recurringPastAffected,
     recurringSkipWindow,

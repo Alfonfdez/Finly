@@ -21,22 +21,32 @@ export function toDateOnly(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-/** Build a recurrence schedule anchored on a start day (single source of truth for the anchor columns). */
+/**
+ * Build a recurrence schedule anchored on a start day (single source of truth for
+ * the anchor columns). When `lastDay` is set for a monthly/yearly rule, the anchor
+ * becomes the 31st (which clamps to each month's last day) and the start moves to
+ * the last day of the start month.
+ */
 export function buildRecurrenceSchedule(
   startDay: Date,
   frequency: RecurrenceFrequency,
   interval: number,
   endDate: string | null = null,
+  lastDay = false,
 ): RecurrenceSchedule & { weekday: number | null; day_of_month: number | null; month: number | null; end_date: string | null } {
   const monthlyOrYearly =
     frequency === RECURRENCE_FREQUENCIES.monthly || frequency === RECURRENCE_FREQUENCIES.yearly;
+  const useLastDay = lastDay && monthlyOrYearly;
+  const effectiveStart = useLastDay
+    ? new Date(startDay.getFullYear(), startDay.getMonth(), getDaysInMonth(startDay.getFullYear(), startDay.getMonth() + 1))
+    : startDay;
   return {
     frequency,
     interval,
     weekday: frequency === RECURRENCE_FREQUENCIES.weekly ? startDay.getDay() : null,
-    day_of_month: monthlyOrYearly ? startDay.getDate() : null,
+    day_of_month: useLastDay ? 31 : monthlyOrYearly ? startDay.getDate() : null,
     month: frequency === RECURRENCE_FREQUENCIES.yearly ? startDay.getMonth() + 1 : null,
-    start_date: toDateOnly(startDay),
+    start_date: toDateOnly(effectiveStart),
     end_date: endDate,
   };
 }

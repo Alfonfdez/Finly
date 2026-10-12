@@ -27,6 +27,12 @@ describe('recurrenceSummary', () => {
     expect(recurrenceSummary(schedule({ frequency: 'yearly', month: 10, day_of_month: 6 }), LANGUAGES.en)).toBe('Every year on October 6');
   });
 
+  it('reads "last day" for a 31 anchor', () => {
+    setLanguage('en');
+    expect(recurrenceSummary(schedule({ frequency: 'monthly', day_of_month: 31 }), LANGUAGES.en)).toBe('Every month on the last day');
+    expect(recurrenceSummary(schedule({ frequency: 'yearly', month: 10, day_of_month: 31 }), LANGUAGES.en)).toBe('Every year on the last day of October');
+  });
+
   it('appends the end date in English', () => {
     setLanguage('en');
     const s = schedule({ frequency: 'yearly', month: 10, day_of_month: 6, end_date: '2026-10-30' });

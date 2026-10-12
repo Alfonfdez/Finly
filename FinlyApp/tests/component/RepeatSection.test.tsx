@@ -172,4 +172,25 @@ describe('RepeatSection', () => {
     const view = await renderSection({ frequency: 'monthly', startDay: new Date(2026, 9, 6), skipFirst: true });
     expect((await view.view).getByText('No transactions will be created now')).toBeTruthy();
   });
+
+  it('shows the last-day checkbox only for monthly/yearly', async () => {
+    const monthly = await renderSection({ frequency: 'monthly' });
+    expect((await monthly.view).getByText('Last day of the month')).toBeTruthy();
+
+    const weekly = await renderSection({ frequency: 'weekly' });
+    expect((await weekly.view).queryByText('Last day of the month')).toBeNull();
+  });
+
+  it('toggles last day', async () => {
+    const { props, view } = renderSection({ frequency: 'monthly', lastDay: false, onChangeLastDay: vi.fn() });
+    await fireEvent.press((await view).getByText('Last day of the month'));
+    expect(props.onChangeLastDay).toHaveBeenCalledWith(true);
+  });
+
+  it('summarizes a last-day rule from the last day of the start month', async () => {
+    const view = await renderSection({ frequency: 'monthly', startDay: new Date(2026, 0, 15), lastDay: true });
+    const v = await view.view;
+    expect(v.getByText('Every month on the last day')).toBeTruthy();
+    expect(v.getByText('First transaction: January 31, 2026')).toBeTruthy();
+  });
 });

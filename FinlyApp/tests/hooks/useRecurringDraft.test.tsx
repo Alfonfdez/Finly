@@ -39,6 +39,17 @@ describe('useRecurringDraft', () => {
       interval: 2,
       endDate: null,
       skipFirst: false,
+      lastDay: false,
     });
+  });
+
+  it('anchors a last-day rule on the last day of the start month', async () => {
+    const { result } = await renderHook(() =>
+      useRecurringDraft({ ...base, day: new Date(2026, 0, 15), initialRepeatFrequency: 'monthly', initialRepeatLastDay: true }),
+    );
+    expect(result.current.buildRecurrence()).toMatchObject({ lastDay: true });
+    // End-date minimum = the day after the last day of the start month (31 Jan → 1 Feb).
+    expect(result.current.repeatMinDate.getDate()).toBe(1);
+    expect(result.current.repeatMinDate.getMonth()).toBe(1);
   });
 });
