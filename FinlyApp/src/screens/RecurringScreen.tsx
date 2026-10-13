@@ -1,16 +1,18 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, FlatList, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import ScreenShell from '../components/ScreenShell';
 import Fab from '../components/Fab';
+import AccountTrigger from '../components/AccountTrigger';
+import AccountModal from '../components/AccountModal';
+import TabBar, { typeTabs } from '../components/TabBar';
 import RecurringRow from '../components/RecurringRow';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
 import SortToggle, { recurringSortFields } from '../components/SortToggle';
 import RecurringStatusChip from '../components/RecurringStatusChip';
-import { SECTION_GAP } from '../components/componentStyles';
 import ConfirmationModal from '../components/ConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
@@ -22,10 +24,12 @@ import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { t, getDisplayCategoryName } from '../i18n';
-import { USER_ID, RECURRING_SORT_BY, SORT_DIRECTIONS, type RootStackParamList, type RecurringSortBy, type RecurringStatus, type SortDirection } from '../constants/types';
+import { USER_ID, RECURRING_SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, type RootStackParamList, type RecurringSortBy, type RecurringStatus, type SortDirection, type TransactionTypeFilter } from '../constants/types';
 import { isRecurrenceEnded, recurringStatus, todayDateOnly } from '../utils/recurrence';
 import { recurrenceFrequencyLabels } from '../utils/recurrenceSummary';
 import { defaultRecurringSortDirection, sortRecurringRules } from '../utils/recurringSort';
+import { filterRecurringRules } from '../utils/recurringFilter';
+import { isTotalAccount } from '../database/helpers';
 import { isWeb } from '../utils/platform';
 import { recurringRepository } from '../database';
 import { setRecurringRuleActive } from '../database/recurringService';
@@ -38,7 +42,7 @@ export default function RecurringScreen() {
   const { activeColors: c } = useConfig();
   const labels = t();
   const navigation = useNavigation<NavigationProp>();
-  const { categoriesById, refresh } = useApp();
+  const { accountsWithBalance, categoriesById, refresh } = useApp();
 
   const loadRules = useCallback(async () => {
     const rules = await recurringRepository.list(USER_ID);
@@ -55,6 +59,27 @@ export default function RecurringScreen() {
   const [sortBy, setSortBy] = useState<RecurringSortBy>(RECURRING_SORT_BY.nextDue);
   const [sortDirection, setSortDirection] = useState<SortDirection>(defaultRecurringSortDirection(RECURRING_SORT_BY.nextDue));
   const [statusFilter, setStatusFilter] = useState<RecurringStatus[]>([]);
+  const [typeTab, setTypeTab] = useState<TransactionTypeFilter>(TYPE_FILTERS.all);
+  const [selectedAccountId, setSelectedAccountId] = useState<number | undefined>(undefined);
+  const [accountModalVisible, setAccountModalVisible] = useState(false);
+
+  // Default to the "Total" account (every rule) once accounts load.
+  const totalAccountId = useMemo(() => accountsWithBalance.find(isTotalAccount)?.id, [accountsWithBalance]);
+  useEffect(() => {
+    if (selectedAccountId !== undefined) return;
+    const fallback = totalAccountId ?? accountsWithBalance[0]?.id;
+    if (fallback !== undefined) setSelectedAccountId(fallback);
+  }, [selectedAccountId, totalAccountId, accountsWithBalance]);
+
+  const selectedAccount = accountsWithBalance.find(a => a.id === selectedAccountId);
+  const isTotal = !selectedAccount || isTotalAccount(selectedAccount);
+
+  const openAccountModal = useCallback(() => setAccountModalVisible(true), []);
+  const closeAccountModal = useCallback(() => setAccountModalVisible(false), []);
+  const selectAccount = useCallback((id: number) => {
+    setSelectedAccountId(id);
+    setAccountModalVisible(false);
+  }, []);
 
   const handleToggleSort = useCallback((field: RecurringSortBy) => {
     if (field === sortBy) {
@@ -92,9 +117,14 @@ export default function RecurringScreen() {
 
   const frequencyLabels = recurrenceFrequencyLabels(labels);
 
+  const typeAndAccountRules = useMemo(
+    () => filterRecurringRules(rules, { type: typeTab, accountId: selectedAccountId, isTotal }),
+    [rules, typeTab, selectedAccountId, isTotal],
+  );
+
   const statusFilteredRules = useMemo(
-    () => (statusFilter.length === 0 ? rules : rules.filter(rule => statusFilter.includes(recurringStatus(rule, today)))),
-    [rules, statusFilter, today],
+    () => (statusFilter.length === 0 ? typeAndAccountRules : typeAndAccountRules.filter(rule => statusFilter.includes(recurringStatus(rule, today)))),
+    [typeAndAccountRules, statusFilter, today],
   );
 
   const filteredRules = useSearchFilter(statusFilteredRules, searchText, (rule) => {
@@ -168,6 +198,12 @@ export default function RecurringScreen() {
 
   return (
     <ScreenShell>
+      <TabBar
+        tabs={[{ key: TYPE_FILTERS.all, label: labels.tab_all }, ...typeTabs(labels)]}
+        active={typeTab}
+        onChange={setTypeTab}
+      />
+
       <ScreenSearchBar
         visible={searchActive}
         placeholder={labels.recurring_search}
@@ -175,6 +211,30 @@ export default function RecurringScreen() {
         onChangeText={setSearchText}
         onClose={closeSearch}
       />
+
+      <View style={[styles.controls, { borderBottomColor: c.border }]}>
+        <AccountTrigger
+          accountId={selectedAccountId}
+          accounts={accountsWithBalance}
+          onPress={openAccountModal}
+        />
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={isWeb}
+          style={styles.sortRow}
+          contentContainerStyle={[styles.sortRowContent, isWeb && styles.sortRowWebContent]}
+        >
+          <RecurringStatusChip selected={statusFilter} onChange={setStatusFilter} />
+          <SortToggle
+            fields={recurringSortFields(labels)}
+            sortBy={sortBy}
+            direction={sortDirection}
+            onToggleSort={handleToggleSort}
+            onToggleDirection={handleToggleDirection}
+          />
+        </ScrollView>
+      </View>
 
       {selectMode && visibleIds.length > 0 && (
         <SelectAllRow
@@ -185,22 +245,6 @@ export default function RecurringScreen() {
           onToggle={() => select.toggleSelectAll(visibleIds)}
         />
       )}
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={isWeb}
-        style={styles.sortRow}
-        contentContainerStyle={[styles.sortRowContent, isWeb && styles.sortRowWebContent]}
-      >
-        <RecurringStatusChip selected={statusFilter} onChange={setStatusFilter} />
-        <SortToggle
-          fields={recurringSortFields(labels)}
-          sortBy={sortBy}
-          direction={sortDirection}
-          onToggleSort={handleToggleSort}
-          onToggleDirection={handleToggleDirection}
-        />
-      </ScrollView>
 
       <FlatList
         data={sortedRules}
@@ -224,6 +268,14 @@ export default function RecurringScreen() {
       ) : (
         <Fab onPress={() => navigation.navigate('CreateRecurring')} accessibilityLabel={labels.recurring_add} />
       )}
+
+      <AccountModal
+        visible={accountModalVisible}
+        accounts={accountsWithBalance}
+        selectedId={selectedAccountId}
+        onSelect={selectAccount}
+        onClose={closeAccountModal}
+      />
 
       <ConfirmationModal
         visible={deleteModalVisible}
@@ -251,17 +303,22 @@ const styles = StyleSheet.create({
   emptyContent: {
     flexGrow: 1,
   },
+  controls: {
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    gap: 8,
+  },
   sortRow: {
     alignSelf: 'stretch',
     flexGrow: 0,
-    marginTop: SECTION_GAP,
   },
   sortRowContent: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 16,
     paddingVertical: 6,
   },
   sortRowWebContent: {

@@ -3612,3 +3612,11 @@
 
 [2026-10-13] style | FinlyApp/src/screens/RecurringScreen.tsx
 - Add an 8px gap in the Recurring sort row so the status chip matches the spacing of the transaction screens.
+
+[2026-10-13] feat | FinlyApp/src/utils/recurringFilter.ts FinlyApp/src/screens/RecurringScreen.tsx FinlyApp/tests/utils/recurringFilter.test.ts FinlyApp/tests/screens/RecurringScreen.test.tsx spec/features/028-recurring-transactions/1-spec.md spec/constitution/3-roadmap.md
+- Add an All / Expenses / Income `TabBar` and an account selector (`AccountTrigger` + account modal, Total = all accounts) to the Recurring screen, filtering the rules by type and account.
+- Add `utils/recurringFilter.ts` (`filterRecurringRules`) as the shared filter; the Recurring screen composes it with the status filter, search and sort.
+- Add tests for `filterRecurringRules` and the Recurring screen type/account filters; update spec 028 §6 + acceptance and the roadmap entry.
+
+[2026-10-13] style | FinlyApp/src/screens/RecurringScreen.tsx
+- Move the Recurring separator line below the sort row so the account selector and sort controls read as one group, matching the controls separator of the transaction screens; the Select all row now sits below the line.
