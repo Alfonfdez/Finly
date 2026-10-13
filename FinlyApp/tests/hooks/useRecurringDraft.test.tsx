@@ -38,7 +38,6 @@ describe('useRecurringDraft', () => {
       frequency: 'monthly',
       interval: 2,
       endDate: null,
-      skipFirst: false,
       lastDay: false,
     });
   });

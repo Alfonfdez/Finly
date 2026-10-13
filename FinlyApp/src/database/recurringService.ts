@@ -1,6 +1,6 @@
 import { withTransaction } from './drizzle/engine';
 import { recurringRepo, type RecurringRuleInput } from './repositories/recurringRepo';
-import { advanceOccurrence, buildRecurrenceSchedule, isRecurrenceEnded, isSkippedWindowRecoverable, listDueOccurrences, nextDueOnOrAfter, resolveEditAnchor, fromDateOnly, recurrenceSkipWindow, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
+import { buildRecurrenceSchedule, isRecurrenceEnded, isSkippedWindowRecoverable, listDueOccurrences, nextDueOnOrAfter, resolveEditAnchor, fromDateOnly, recurrenceSkipWindow, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
 import { RECURRENCE_SCOPES, USER_ID, type RecurrenceScope } from '../constants/types';
 import type { RecurringRule } from './types';
 
@@ -66,7 +66,6 @@ export interface CreateRecurringRuleParams {
   frequency: RecurringRule['frequency'];
   interval: number;
   endDate: string | null;
-  skipFirst: boolean;
   /** Monthly/yearly: anchor on the last day of the month instead of the start day. */
   lastDay?: boolean;
   tagIds: number[];
@@ -87,7 +86,7 @@ export async function createRecurringRule(params: CreateRecurringRuleParams): Pr
     params.endDate,
     params.lastDay,
   );
-  const nextDue = params.skipFirst ? advanceOccurrence(schedule, schedule.start_date) : schedule.start_date;
+  const nextDue = schedule.start_date;
 
   await recurringRepo.createWithTags(
     {
@@ -198,10 +197,14 @@ export async function saveRecurringRuleEdit(params: RecurringEditParams): Promis
   const current = await recurringRepo.getById(ruleId);
   if (!current) return 0;
 
-  const cursor = current.next_due;
   const startDate = (updated.start_date ?? current.start_date).slice(0, 10);
   const start = fromDateOnly(startDate);
   const schedule = buildRecurrenceSchedule(start, recurrence.frequency, recurrence.interval, recurrence.endDate, recurrence.lastDay);
+  // A rule whose cursor still equals its start has never generated or skipped an
+  // occurrence ("fresh"): use the NEW schedule's start as the cursor so moving the
+  // start earlier re-anchors the rule. Otherwise keep the cursor — it may encode a
+  // deliberate skip (a pause/resume or a previous "Future only" edit).
+  const cursor = current.next_due === current.start_date ? schedule.start_date : current.next_due;
   const skip = scope === RECURRENCE_SCOPES.future ? recurrenceSkipWindow(schedule, cursor, today) : null;
 
   // "Future + past" re-anchors at the earliest skipped occurrence so the window a
@@ -211,6 +214,7 @@ export async function saveRecurringRuleEdit(params: RecurringEditParams): Promis
     scope,
     today,
     skippedFrom: current.skipped_from,
+    previousSchedule: current,
   });
 
   // "Future + past" fills the skipped window; "Future only" records the earliest

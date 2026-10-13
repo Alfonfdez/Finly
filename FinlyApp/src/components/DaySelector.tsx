@@ -12,9 +12,10 @@ interface Props {
   selectedDate: Date;
   onSelect: (date: Date) => void;
   onOpenCalendar: () => void;
+  title?: string;
 }
 
-export default function DaySelector({ selectedDate, onSelect, onOpenCalendar }: Props) {
+export default function DaySelector({ selectedDate, onSelect, onOpenCalendar, title }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -71,7 +72,7 @@ export default function DaySelector({ selectedDate, onSelect, onOpenCalendar }: 
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>
-          {labels.add_day}
+          {title ?? labels.add_day}
         </Text>
         <TouchableOpacity
           style={styles.calendarButton}

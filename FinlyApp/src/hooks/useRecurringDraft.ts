@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { RecurrenceDraft, RecurrenceFrequency } from '../constants/types';
-import { advanceOccurrence, buildRecurrenceSchedule, fromDateOnly, toDateOnly } from '../utils/recurrence';
+import { buildRecurrenceSchedule, fromDateOnly, toDateOnly } from '../utils/recurrence';
 import { dayAfter, isEndAfterStart } from '../utils/calendarBounds';
 
 interface UseRecurringDraftProps {
@@ -33,18 +33,16 @@ export function useRecurringDraft({
   const [repeatFrequency, setRepeatFrequency] = useState<RecurrenceFrequency>(initialRepeatFrequency ?? 'monthly');
   const [repeatInterval, setRepeatInterval] = useState(initialRepeatInterval ?? 1);
   const [repeatEnd, setRepeatEnd] = useState<Date | null>(initialRepeatEnd ?? null);
-  const [repeatSkipFirst, setRepeatSkipFirst] = useState(false);
   const [repeatLastDay, setRepeatLastDay] = useState(initialRepeatLastDay ?? false);
   const [repeatName, setRepeatName] = useState(initialRepeatName ?? '');
   const [modalRepeatEndVisible, setModalRepeatEndVisible] = useState(false);
 
-  // Earliest valid end date: the first occurrence (which moves one interval ahead when
-  // skipping it, and lands on the last day of the start month for a "last day" rule).
+  // Earliest valid end date: the day after the first occurrence (which lands on the
+  // last day of the start month for a "last day" rule).
   const repeatMinDate = useMemo(() => {
     const schedule = buildRecurrenceSchedule(day, repeatFrequency, repeatInterval, null, repeatLastDay);
-    if (repeatSkipFirst) return fromDateOnly(advanceOccurrence(schedule, schedule.start_date));
     return dayAfter(fromDateOnly(schedule.start_date));
-  }, [day, repeatFrequency, repeatInterval, repeatSkipFirst, repeatLastDay]);
+  }, [day, repeatFrequency, repeatInterval, repeatLastDay]);
 
   // Keep the end date valid: clear it if the start day moves to/after it.
   useEffect(() => {
@@ -67,15 +65,13 @@ export function useRecurringDraft({
     frequency: repeatFrequency,
     interval: repeatInterval,
     endDate: repeatEnd ? toDateOnly(repeatEnd) : null,
-    skipFirst: repeatSkipFirst,
     lastDay: repeatLastDay,
-  }), [repeatName, repeatFrequency, repeatInterval, repeatEnd, repeatSkipFirst, repeatLastDay]);
+  }), [repeatName, repeatFrequency, repeatInterval, repeatEnd, repeatLastDay]);
 
   return {
     repeatFrequency, setRepeatFrequency,
     repeatInterval, setRepeatInterval,
     repeatEnd, setRepeatEnd,
-    repeatSkipFirst, setRepeatSkipFirst,
     repeatLastDay, setRepeatLastDay,
     repeatName, setRepeatName,
     repeatMinDate,

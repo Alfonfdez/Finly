@@ -496,7 +496,7 @@ export const es: Language = {
   recurring_scope_title: 'Aplicar cambios a',
   recurring_scope_future: 'Solo futuras',
   recurring_scope_future_past: 'Futuras + pasadas',
-  recurring_scope_past_hint: 'También actualiza las transacciones pasadas y añade las omitidas. Cambiar la fecha de fin nunca elimina transacciones.',
+  recurring_scope_past_hint: 'También actualiza las transacciones ya creadas y rellena las ocurrencias omitidas. Las fechas existentes nunca se cambian ni se eliminan.',
   recurring_error_title: 'Error',
   recurring_error_message: 'Algo salió mal. Inténtalo de nuevo.',
   repeat_daily: 'Diario',
@@ -522,7 +522,8 @@ export const es: Language = {
   repeat_on_month_last_day: (month: string) => `el último día de ${month}`,
   repeat_last_day: 'Último día del mes',
   repeat_until: (date: string) => `hasta ${date}`,
-  repeat_skip_first: 'Omitir la primera repetición',
+  repeat_start_date: 'Fecha de inicio',
+  repeat_start_earlier_hint: 'Cambiar la fecha de inicio no añade transacciones anteriores.',
   repeat_first_transaction: (date: string) => `Primera transacción: ${date}`,
 
   recurring_search: 'Buscar reglas recurrentes',

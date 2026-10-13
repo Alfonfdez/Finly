@@ -22,6 +22,7 @@ import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS } from './componentStyles';
 import { type TransactionType, type RecurrenceFrequency, type RecurrenceScope, type RootStackParamList } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
+import { buildRecurrenceSchedule, toDateOnly } from '../utils/recurrence';
 import { showErrorAlert } from '../utils/errors';
 
 interface TransactionFormProps {
@@ -41,7 +42,6 @@ interface TransactionFormProps {
   onSubmitRule?: (data: TransactionDraft, tagIds: number[], recurrence: RecurrenceDraft) => Promise<void>;
   onBeforeSubmitRule?: (data: TransactionDraft, recurrence: RecurrenceDraft) => Promise<boolean>;
   ruleMode?: boolean;
-  allowSkipFirst?: boolean;
   initialRepeatFrequency?: RecurrenceFrequency;
   initialRepeatInterval?: number;
   initialRepeatEnd?: Date | null;
@@ -78,10 +78,11 @@ export default function TransactionForm(props: TransactionFormProps) {
     repeatFrequency, setRepeatFrequency,
     repeatInterval, setRepeatInterval,
     repeatEnd, setRepeatEnd,
-    repeatSkipFirst, setRepeatSkipFirst,
     repeatLastDay, setRepeatLastDay,
     repeatMinDate,
     recurringPastAffected,
+    ruleUnmaterialized,
+    ruleStartMovedEarlier,
     repeatName, setRepeatName, repeatNameError,
     modalAccountVisible, setModalAccountVisible,
     modalCalendarVisible, setModalCalendarVisible,
@@ -108,6 +109,26 @@ export default function TransactionForm(props: TransactionFormProps) {
   }, [recurringPastAffected, onRecurringPastAffectedChange]);
 
   const tabs = useMemo(() => typeTabs(labels), [labels]);
+
+  // The rule's schedule before the edit, so the Summary can tell that today's
+  // occurrence already exists (avoid re-counting it on a "Future only" save).
+  const previousSchedule = useMemo(() => {
+    if (props.initialRuleNextDue == null || props.initialRepeatFrequency == null) return null;
+    return buildRecurrenceSchedule(
+      props.initialDay,
+      props.initialRepeatFrequency,
+      props.initialRepeatInterval ?? 1,
+      props.initialRepeatEnd ? toDateOnly(props.initialRepeatEnd) : null,
+      props.initialRepeatLastDay ?? false,
+    );
+  }, [
+    props.initialDay,
+    props.initialRepeatFrequency,
+    props.initialRepeatInterval,
+    props.initialRepeatEnd,
+    props.initialRepeatLastDay,
+    props.initialRuleNextDue,
+  ]);
 
   const handleAccountClose = useCallback(() => setModalAccountVisible(false), [setModalAccountVisible]);
   const handleCalendarClose = useCallback(() => setModalCalendarVisible(false), [setModalCalendarVisible]);
@@ -175,6 +196,7 @@ export default function TransactionForm(props: TransactionFormProps) {
           selectedDate={day}
           onSelect={setDay}
           onOpenCalendar={() => setModalCalendarVisible(true)}
+          title={props.ruleMode ? labels.repeat_start_date : undefined}
         />
 
         {props.ruleMode && (
@@ -187,9 +209,6 @@ export default function TransactionForm(props: TransactionFormProps) {
             endDate={repeatEnd}
             onOpenEndDate={() => setModalRepeatEndVisible(true)}
             onClearEndDate={() => setRepeatEnd(null)}
-            skipFirst={repeatSkipFirst}
-            onChangeSkipFirst={setRepeatSkipFirst}
-            showSkipFirst={!!props.allowSkipFirst}
             lastDay={repeatLastDay}
             onChangeLastDay={setRepeatLastDay}
             name={repeatName}
@@ -197,6 +216,9 @@ export default function TransactionForm(props: TransactionFormProps) {
             nameError={repeatNameError}
             ruleNextDue={props.initialRuleNextDue ?? null}
             ruleSkippedFrom={props.initialRuleSkippedFrom ?? null}
+            ruleUnmaterialized={ruleUnmaterialized}
+            ruleStartMovedEarlier={ruleStartMovedEarlier}
+            previousSchedule={previousSchedule}
             showScope={!!props.showRepeatScope}
             scope={props.repeatScope}
             onChangeScope={props.onChangeRepeatScope}
@@ -278,6 +300,7 @@ export default function TransactionForm(props: TransactionFormProps) {
         visible={modalCalendarVisible}
         period="day"
         date={day}
+        maxDate={props.ruleMode ? null : undefined}
         onSelectDate={handleSelectDate}
         onClose={handleCalendarClose}
       />

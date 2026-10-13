@@ -738,6 +738,40 @@ CREATE UNIQUE INDEX ux_transactions_recurrence
   WHERE recurring_rule_id IS NOT NULL;
 ```
 
+## Occurrence vs transaction
+**Definition:** An *occurrence* is a scheduled **date** a rule fires on; a *transaction* is the database **record** generated for it.
+**Explanation:** Keeping the two apart avoids confusion: the schedule is a set of dates (an occurrence can be skipped, missed or back-filled without any record existing), while a transaction is real history that is counted, kept and never re-dated. Reconciliation generates one transaction per due occurrence.
+**Example:** A daily rule's occurrence on 2026-10-06 that a "Future only" edit skipped has no transaction; the same date under "Future + past" is back-filled into one.
+
+## Recurrence cursor (`next_due`)
+**Definition:** The stored pointer to the next occurrence a rule still has to materialize.
+**Explanation:** The cursor makes catch-up incremental: reconciliation walks from `next_due` to today and advances it, so a later run never re-scans the past. After a normal run it is the first occurrence **after** today; a rule that has never run keeps it equal to `start_date`.
+**Example:**
+```text
+recurring_rules: start_date=2026-10-01, frequency=daily, next_due=2026-10-14
+-- generated through 2026-10-13; the next occurrence to create is 2026-10-14
+```
+
+## Future start date
+**Definition:** A rule whose `start_date` is after today.
+**Explanation:** Because the start date accepts any date, a rule can be scheduled ahead. Creation and reconciliation only materialize occurrences up to today, so a future start creates nothing yet and the cursor stays on the start date until it becomes due.
+**Example:** A daily rule starting 2026-10-30 (today 2026-10-13) shows "Next: October 30, 2026" and "No transactions will be created now".
+
+## Edit scope (Future only / Future + past)
+**Definition:** The "Apply changes to" choice when editing a rule: whether the change also touches the past.
+**Explanation:** *Future only* anchors the new schedule at the first occurrence on/after **today** (so a schedule change, e.g. monthly → daily, takes effect today) and leaves existing transactions alone. *Future + past* additionally back-fills the missed occurrences and rewrites the details (account/category/amount/comment/tags/type) of every transaction the rule already generated — dates are never changed and nothing is deleted.
+**Example:** Changing a monthly rule to daily with "Future only" starts generating daily today; with "Future + past" it also fills the missed window.
+
+## Fresh (unstarted) rule
+**Definition:** A rule that has never generated or skipped an occurrence — its cursor still equals its start date.
+**Explanation:** It has no history to protect, so editing its start date re-anchors the schedule from the new start: moving the start to today makes it due and generates from there. A rule that already generated transactions keeps its cursor position (moving the start earlier does not recreate the past), and the form shows a hint.
+**Example:** A rule starting 2026-10-30 (never run), edited to start today, generates today's occurrence.
+
+## Recoverable skip window
+**Definition:** A past range a "Future only" edit skipped, remembered on the rule (`skipped_from`) so it can be filled later.
+**Explanation:** "Future only" is reversible: the earliest skipped occurrence is recorded, and while it is within the end date the edit screen re-enables "Future + past" to back-fill it. Skips from pause/resume are intentional and not recorded.
+**Example:** Skipping Oct 1–12 with "Future only" stores `skipped_from=2026-10-01`; choosing "Future + past" later creates those transactions and clears the field.
+
 # App Icons (Expo)
 
 ## App icon

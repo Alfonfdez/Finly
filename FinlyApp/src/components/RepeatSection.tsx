@@ -6,7 +6,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, REPEAT_MAX_INTERVAL, REPEAT_MIN_INTERVAL, REPEAT_NAME_MAX_LENGTH, type RecurrenceFrequency, type RecurrenceScope } from '../constants/types';
 import { formatDateLong } from '../utils/formatters';
-import { buildRecurrenceSchedule, fromDateOnly, recurrencePreview, recurrenceSkipWindow, toDateOnly, todayDateOnly } from '../utils/recurrence';
+import { buildRecurrenceSchedule, fromDateOnly, recurrencePreview, recurrenceSkipWindow, toDateOnly, todayDateOnly, type RecurrenceSchedule } from '../utils/recurrence';
 import { recurrenceSummary } from '../utils/recurrenceSummary';
 import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, CONTROL_BORDER_RADIUS, PILL_RADIUS, SECTION_GAP, SECTION_GAP_SM, SECTION_TITLE_STYLE, recurringCardColors } from './componentStyles';
 import ClearButton from './ClearButton';
@@ -22,9 +22,6 @@ interface Props {
   endDate: Date | null;
   onOpenEndDate: () => void;
   onClearEndDate: () => void;
-  skipFirst: boolean;
-  onChangeSkipFirst: (value: boolean) => void;
-  showSkipFirst?: boolean;
   lastDay?: boolean;
   onChangeLastDay?: (value: boolean) => void;
   name: string;
@@ -33,6 +30,12 @@ interface Props {
   /** Edit mode: the rule's cursor (presence switches the info to "next transaction"). */
   ruleNextDue?: string | null;
   ruleSkippedFrom?: string | null;
+  /** The rule's cursor still equals its start (never generated/skipped): the new start anchors it. */
+  ruleUnmaterialized?: boolean;
+  /** Edit mode: the draft start moved earlier than the rule's start (past occurrences stay skipped). */
+  ruleStartMovedEarlier?: boolean;
+  /** The rule's schedule before the edit (used to skip today's already-generated occurrence). */
+  previousSchedule?: RecurrenceSchedule | null;
   showScope?: boolean;
   scope?: RecurrenceScope;
   onChangeScope?: (scope: RecurrenceScope) => void;
@@ -55,9 +58,6 @@ export default function RepeatSection({
   endDate,
   onOpenEndDate,
   onClearEndDate,
-  skipFirst,
-  onChangeSkipFirst,
-  showSkipFirst = false,
   lastDay = false,
   onChangeLastDay = () => {},
   name,
@@ -65,6 +65,9 @@ export default function RepeatSection({
   nameError,
   ruleNextDue = null,
   ruleSkippedFrom = null,
+  ruleUnmaterialized = false,
+  ruleStartMovedEarlier = false,
+  previousSchedule = null,
   showScope = false,
   scope = RECURRENCE_SCOPES.future,
   onChangeScope,
@@ -88,15 +91,18 @@ export default function RepeatSection({
   const summary = recurrenceSummary(schedule, config.language);
 
   const isEdit = ruleNextDue != null;
+  // A "fresh" rule (never generated/skipped) anchors on the new start, so moving the
+  // start date re-anchors it; otherwise keep the rule's cursor.
+  const cursor = ruleUnmaterialized ? schedule.start_date : ruleNextDue;
   const preview = recurrencePreview(schedule, {
     today: todayDateOnly(),
-    skipFirst: !isEdit && skipFirst,
-    cursor: ruleNextDue,
+    cursor,
     scope,
     skippedFrom: ruleSkippedFrom,
+    previousSchedule,
   });
-  const skipWindow = isEdit && scope === RECURRENCE_SCOPES.future && ruleNextDue
-    ? recurrenceSkipWindow(schedule, ruleNextDue, todayDateOnly())
+  const skipWindow = isEdit && scope === RECURRENCE_SCOPES.future && cursor
+    ? recurrenceSkipWindow(schedule, cursor, todayDateOnly())
     : null;
 
   const formatOccurrence = (value: string) => formatDateLong(fromDateOnly(value), config.language);
@@ -234,16 +240,6 @@ export default function RepeatSection({
           <ClearButton visible={!!endDate} onPress={onClearEndDate} accessibilityLabel={labels.repeat_no_end} />
         </View>
 
-        {showSkipFirst && (
-          <View style={styles.skipFirstRow}>
-            <CheckboxRow
-              checked={skipFirst}
-              onToggle={() => onChangeSkipFirst(!skipFirst)}
-              label={labels.repeat_skip_first}
-            />
-          </View>
-        )}
-
         {showScope && (
           <View style={styles.scopeBlock}>
             <Text style={[styles.label, { color: c.textSecondary, fontSize: fs(12) }]}>
@@ -279,6 +275,12 @@ export default function RepeatSection({
         )}
 
         <RecurrenceInfo summary={summary} firstLine={firstLine} detailLines={detailLines} />
+
+        {ruleStartMovedEarlier && (
+          <Text style={[styles.startHint, { color: c.textSecondary, fontSize: fs(11) }]}>
+            {labels.repeat_start_earlier_hint}
+          </Text>
+        )}
       </View>
     </View>
   );
@@ -321,9 +323,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontWeight: '500',
   },
-  skipFirstRow: {
-    marginTop: 12,
-  },
   checkboxRow: {
     marginTop: 12,
   },
@@ -350,6 +349,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   scopeHint: {
+    marginTop: 8,
+    fontWeight: '500',
+  },
+  startHint: {
     marginTop: 8,
     fontWeight: '500',
   },

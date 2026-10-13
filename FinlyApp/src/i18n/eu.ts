@@ -496,7 +496,7 @@ export const eu: Language = {
   recurring_scope_title: 'Aplikatu aldaketak',
   recurring_scope_future: 'Etorkizuna soilik',
   recurring_scope_future_past: 'Etorkizuna + iragana',
-  recurring_scope_past_hint: 'Iraganeko transakzioak ere eguneratzen ditu eta falta direnak gehitzen ditu. Amaiera-data aldatzeak ez ditu inoiz transakzioak ezabatzen.',
+  recurring_scope_past_hint: 'Sortutako transakzioak ere eguneratzen ditu eta falta diren gertaerak betetzen ditu. Dauden datak ez dira inoiz aldatzen ez ezabatzen.',
   recurring_error_title: 'Errorea',
   recurring_error_message: 'Zerbait gaizki joan da. Saiatu berriro.',
   repeat_daily: 'Egunero',
@@ -522,7 +522,8 @@ export const eu: Language = {
   repeat_on_month_last_day: (month: string) => `${month.toLowerCase()}ren azken egunean`,
   repeat_last_day: 'Hilabeteko azken eguna',
   repeat_until: (date: string) => `${date} arte`,
-  repeat_skip_first: 'Lehen errepikapena saltatu',
+  repeat_start_date: 'Hasiera data',
+  repeat_start_earlier_hint: 'Hasiera data aldatzeak ez du aurretiko transakziorik gehitzen.',
   repeat_first_transaction: (date: string) => `Lehen transakzioa: ${date}`,
 
   recurring_search: 'Bilatu errepikapen arauak',

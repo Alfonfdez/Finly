@@ -79,7 +79,6 @@ export type RecurrenceDraft = {
   frequency: RecurrenceFrequency;
   interval: number;
   endDate: string | null;
-  skipFirst: boolean;
   /** Monthly/yearly: anchor on the last day of the month instead of the start day. */
   lastDay?: boolean;
 };

@@ -113,6 +113,12 @@ const rule: RecurringRule = {
 
 const originalRAF = globalThis.requestAnimationFrame;
 
+async function pickCalendarDay(view: Awaited<ReturnType<typeof render>>, label: string) {
+  await fireEvent.press(view.getByLabelText('Select day'));
+  await fireEvent.press(view.getByLabelText(label));
+  await fireEvent.press(view.getByText('Ok'));
+}
+
 describe('ModifyRecurringScreen', () => {
   beforeEach(() => {
     nav.navigate.mockClear();
@@ -151,7 +157,7 @@ describe('ModifyRecurringScreen', () => {
     const pastPill = view.getByRole('button', { name: 'Future + past' });
     expect(pastPill).toBeDisabled();
     expect(
-      view.getByText('Also updates past transactions and adds the missed ones. Changing the end date never deletes transactions.'),
+      view.getByText('Also updates the transactions already created and fills in any missed occurrences. Existing dates are never changed or deleted.'),
     ).toBeTruthy();
 
     await fireEvent.changeText(view.getByPlaceholderText('0'), '120');
@@ -217,5 +223,31 @@ describe('ModifyRecurringScreen', () => {
     await waitFor(() => expect(mockSaveEdit).toHaveBeenCalledTimes(1));
     const params = mockSaveEdit.mock.calls[0][0] as { scope: string };
     expect(params.scope).toBe('future');
+  });
+
+  it('a fresh future rule moved to today updates the Summary and saves with "Future only"', async () => {
+    mockGetById.mockResolvedValue({ ...rule, start_date: '2026-10-30', next_due: '2026-10-30' });
+    const view = await render(<ModifyRecurringScreen />);
+    await waitFor(() => expect(view.getByText('Next: October 30, 2026')).toBeTruthy());
+
+    await pickCalendarDay(view, '6 October');
+    await waitFor(() => expect(view.getByText('Next: October 6, 2026')).toBeTruthy());
+    expect(view.getByText('1 transaction will be created')).toBeTruthy();
+
+    await fireEvent.press(view.getByText('Save'));
+    await waitFor(() => expect(mockSaveEdit).toHaveBeenCalledTimes(1));
+    const params = mockSaveEdit.mock.calls[0][0] as { scope: string; updated: { start_date?: string } };
+    expect(params.scope).toBe('future');
+    expect(params.updated.start_date).toBe('2026-10-06');
+  });
+
+  it('hints that past occurrences are not recreated when the start moves earlier', async () => {
+    const view = await render(<ModifyRecurringScreen />);
+    await waitFor(() => expect(view.getByText('Start date')).toBeTruthy());
+
+    await pickCalendarDay(view, '1 October');
+    await waitFor(() =>
+      expect(view.getByText('Changing the start date doesn\'t add earlier transactions.')).toBeTruthy(),
+    );
   });
 });

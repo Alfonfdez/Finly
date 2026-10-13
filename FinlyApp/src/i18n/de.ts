@@ -496,7 +496,7 @@ export const de: Language = {
   recurring_scope_title: 'Änderungen anwenden auf',
   recurring_scope_future: 'Nur künftig',
   recurring_scope_future_past: 'Künftig + vergangen',
-  recurring_scope_past_hint: 'Aktualisiert auch vergangene Transaktionen und ergänzt die verpassten. Das Enddatum zu ändern löscht niemals Transaktionen.',
+  recurring_scope_past_hint: 'Aktualisiert auch die bereits erstellten Transaktionen und füllt verpasste Vorkommen auf. Bestehende Daten werden nie geändert oder gelöscht.',
   recurring_error_title: 'Fehler',
   recurring_error_message: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.',
   repeat_daily: 'Täglich',
@@ -522,7 +522,8 @@ export const de: Language = {
   repeat_on_month_last_day: (month: string) => `am letzten Tag im ${month}`,
   repeat_last_day: 'Letzter Tag des Monats',
   repeat_until: (date: string) => `bis ${date}`,
-  repeat_skip_first: 'Erstes Vorkommen überspringen',
+  repeat_start_date: 'Startdatum',
+  repeat_start_earlier_hint: 'Das Ändern des Startdatums fügt keine früheren Transaktionen hinzu.',
   repeat_first_transaction: (date: string) => `Erste Transaktion: ${date}`,
 
   recurring_search: 'Wiederkehrende Regeln suchen',

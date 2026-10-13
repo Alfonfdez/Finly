@@ -9,6 +9,7 @@ import {
   nextEffectiveOccurrence,
   recurrencePreview,
   recurrenceSkipWindow,
+  resolveEditAnchor,
   toDateOnly,
   todayDateOnly,
   type RecurrenceSchedule,
@@ -166,13 +167,6 @@ describe('recurrencePreview', () => {
     });
   });
 
-  it('create: skip-first defers the first occurrence', () => {
-    expect(recurrencePreview(monthly, { today: '2026-04-15', skipFirst: true })).toEqual({
-      firstDate: '2026-02-02',
-      count: 3,
-    });
-  });
-
   it('create: respects the end date', () => {
     expect(recurrencePreview({ ...monthly, end_date: '2026-03-02' }, { today: '2026-04-15' })).toEqual({
       firstDate: '2026-01-02',
@@ -192,6 +186,48 @@ describe('recurrencePreview', () => {
       firstDate: '2026-01-02',
       count: 4,
     });
+  });
+
+  it('edit (future only): applies a denser schedule from today, not the stale cursor', () => {
+    const daily: RecurrenceSchedule = { frequency: 'daily', interval: 1, day_of_month: null, start_date: '2026-09-01', end_date: null };
+    const previous: RecurrenceSchedule = { frequency: 'monthly', interval: 1, day_of_month: 1, start_date: '2026-09-01', end_date: null };
+    expect(recurrencePreview(daily, { today: '2026-10-06', cursor: '2026-11-01', previousSchedule: previous })).toEqual({
+      firstDate: '2026-10-06',
+      count: 1,
+    });
+  });
+
+  it('edit (future only): does not re-count an already-generated today', () => {
+    const daily: RecurrenceSchedule = { frequency: 'daily', interval: 1, day_of_month: null, start_date: '2026-10-06', end_date: null };
+    expect(recurrencePreview(daily, { today: '2026-10-06', cursor: '2026-10-07', previousSchedule: daily })).toEqual({
+      firstDate: '2026-10-07',
+      count: 0,
+    });
+  });
+});
+
+describe('resolveEditAnchor (future only)', () => {
+  const daily: RecurrenceSchedule = { frequency: 'daily', interval: 1, day_of_month: null, start_date: '2026-10-06', end_date: null };
+  const monthly: RecurrenceSchedule = { frequency: 'monthly', interval: 1, day_of_month: 1, start_date: '2026-09-01', end_date: null };
+
+  it('anchors at today when today is a new occurrence', () => {
+    expect(resolveEditAnchor(daily, { cursor: '2026-11-01', scope: 'future', today: '2026-10-06' })).toBe('2026-10-06');
+  });
+
+  it('skips today when it was already generated under the previous schedule', () => {
+    expect(resolveEditAnchor(daily, { cursor: '2026-10-07', scope: 'future', today: '2026-10-06', previousSchedule: daily })).toBe('2026-10-07');
+  });
+
+  it('does not skip today when the schedule change made it a new occurrence', () => {
+    expect(resolveEditAnchor(daily, { cursor: '2026-11-01', scope: 'future', today: '2026-10-06', previousSchedule: monthly })).toBe('2026-10-06');
+  });
+
+  it('anchors strictly after today when today is not an occurrence', () => {
+    expect(resolveEditAnchor(monthly, { cursor: '2026-11-01', scope: 'future', today: '2026-10-06' })).toBe('2026-11-01');
+  });
+
+  it('future + past back-fills from the cursor regardless of today', () => {
+    expect(resolveEditAnchor(monthly, { cursor: '2026-09-01', scope: 'futureAndPast', today: '2026-10-06' })).toBe('2026-09-01');
   });
 });
 

@@ -83,7 +83,9 @@ export default function ModifyRecurringScreen() {
       recurrence.endDate,
       recurrence.lastDay,
     );
-    const skip = recurrenceSkipWindow(schedule, rule.next_due, todayDateOnly());
+    // A "fresh" rule (cursor still at its start) re-anchors from the new start.
+    const cursor = rule.next_due === rule.start_date ? schedule.start_date : rule.next_due;
+    const skip = recurrenceSkipWindow(schedule, cursor, todayDateOnly());
     if (!skip) return true;
     return new Promise<boolean>(resolve => {
       skipResolveRef.current = resolve;

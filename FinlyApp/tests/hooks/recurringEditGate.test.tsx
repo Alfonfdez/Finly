@@ -123,6 +123,8 @@ const pausedOverdue = { ...overdue, initialRuleActive: false };
 const skippedRecoverable = { initialRuleNextDue: '2026-10-07', initialRuleSkippedFrom: '2026-10-01', initialRepeatEnd: new Date(2026, 9, 31) };
 const skippedPastEnd = { initialRuleNextDue: '2026-10-07', initialRuleSkippedFrom: '2026-10-01', initialRepeatEnd: new Date(2026, 8, 15) };
 const skippedFuture = { initialRuleNextDue: '2026-10-07', initialRuleSkippedFrom: '2026-12-01', initialRepeatEnd: new Date(2026, 9, 31) };
+// A fresh rule (cursor still at its start, in the future): never generated.
+const freshFuture = { initialDay: new Date(2026, 10, 1), initialRuleNextDue: '2026-11-01', initialRepeatEnd: null };
 
 // Edits
 const extendEnd: Edit = (h) => h.setRepeatEnd(new Date(2026, 10, 30));
@@ -136,6 +138,8 @@ const setAccount: Edit = (h) => h.handleSelectAccount(2);
 const setFrequency: Edit = (h) => h.setRepeatFrequency('monthly');
 const setInterval: Edit = (h) => h.setRepeatInterval(2);
 const setDay: Edit = (h) => h.setDay(new Date(2026, 8, 15));
+const setStartToday: Edit = (h) => h.setDay(new Date(2026, 9, 6));
+const setDayEarlier: Edit = (h) => h.setDay(new Date(2026, 7, 15));
 
 const SCENARIOS: [string, Partial<HookProps>, Edit | undefined, boolean][] = [
   ['active future / none', activeFuture, undefined, false],
@@ -165,6 +169,9 @@ const SCENARIOS: [string, Partial<HookProps>, Edit | undefined, boolean][] = [
   ['skipped window / none', skippedRecoverable, undefined, true],
   ['skipped window / outside end date', skippedPastEnd, undefined, false],
   ['skipped window / in the future', skippedFuture, undefined, false],
+  ['fresh future / none', freshFuture, undefined, false],
+  ['fresh future / start -> today', freshFuture, setStartToday, true],
+  ['active future / start earlier', activeFuture, setDayEarlier, false],
 ];
 
 describe('recurring edit gate — "Future + past" enabling logic', () => {
