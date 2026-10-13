@@ -74,13 +74,17 @@ export type TransactionDraft = {
   date: string;
 };
 
-export type RecurrenceDraft = {
-  name: string;
+/** The recurrence fields shared by the form draft, the create params and the edit params. */
+export type RecurrenceSpec = {
   frequency: RecurrenceFrequency;
   interval: number;
   endDate: string | null;
   /** Monthly/yearly: anchor on the last day of the month instead of the start day. */
   lastDay?: boolean;
+};
+
+export type RecurrenceDraft = RecurrenceSpec & {
+  name: string;
 };
 
 export const TYPE_FILTERS = {

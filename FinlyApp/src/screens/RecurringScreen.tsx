@@ -21,8 +21,9 @@ import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { t, getDisplayCategoryName } from '../i18n';
-import { USER_ID, RECURRING_SORT_BY, SORT_DIRECTIONS, type RecurrenceFrequency, type RootStackParamList, type RecurringSortBy, type SortDirection } from '../constants/types';
+import { USER_ID, RECURRING_SORT_BY, SORT_DIRECTIONS, type RootStackParamList, type RecurringSortBy, type SortDirection } from '../constants/types';
 import { isRecurrenceEnded, todayDateOnly } from '../utils/recurrence';
+import { recurrenceFrequencyLabels } from '../utils/recurrenceSummary';
 import { defaultRecurringSortDirection, sortRecurringRules } from '../utils/recurringSort';
 import { isWeb } from '../utils/platform';
 import { recurringRepository } from '../database';
@@ -87,12 +88,7 @@ export default function RecurringScreen() {
     ),
   });
 
-  const frequencyLabels = useMemo<Record<RecurrenceFrequency, string>>(() => ({
-    daily: labels.repeat_daily,
-    weekly: labels.repeat_weekly,
-    monthly: labels.repeat_monthly,
-    yearly: labels.repeat_yearly,
-  }), [labels]);
+  const frequencyLabels = recurrenceFrequencyLabels(labels);
 
   const filteredRules = useSearchFilter(rules, searchText, (rule) => {
     const category = categoriesById.get(rule.category_id);
