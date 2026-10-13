@@ -19,7 +19,7 @@ import { useBulkDelete } from '../hooks/useBulkDelete';
 import { ERROR_PREFIXES } from '../utils/errors';
 import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
-import BulkDeleteConfirmationModal from '../components/BulkDeleteConfirmationModal';
+import ConfirmationModal from '../components/ConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 
@@ -160,7 +160,7 @@ export default function CommentsScreen() {
         />
       )}
 
-      <BulkDeleteConfirmationModal
+      <ConfirmationModal
         visible={deleteModalVisible}
         title={labels.comments_bulk_delete_confirm_title(selectedComments.size)}
         message={labels.comments_bulk_delete_confirm_message}

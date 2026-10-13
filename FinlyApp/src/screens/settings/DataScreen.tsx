@@ -14,6 +14,7 @@ import {
 } from '../../database';
 import { clearDataKeepSettings, resetDatabase } from '../../database/database';
 import { saveBackupFile, pickBackupFile, saveBackupToDownloads } from '../../utils/backupIO';
+import { alertError, alertInfo } from '../../utils/errors';
 import { ShareResult } from '../../constants/shareResult';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import SettingsRow from '../../components/settings/SettingsRow';
@@ -101,7 +102,7 @@ export default function DataScreen() {
             onPress: () => {
               runShareFlow(json).catch((error) => {
                 console.error('Failed to share data:', error);
-                Alert.alert(labels.settings_export_error_title, labels.settings_export_error_message);
+                alertError(labels.settings_export_error_title, labels.settings_export_error_message);
               });
             },
           },
@@ -112,14 +113,14 @@ export default function DataScreen() {
       await runShareFlow(json);
     } catch (error) {
       console.error('Failed to export data:', error);
-      Alert.alert(labels.settings_export_error_title, labels.settings_export_error_message);
+      alertError(labels.settings_export_error_title, labels.settings_export_error_message);
     }
   };
 
   const runShareFlow = async (json: string) => {
     const result = await saveBackupFile(json);
     if (result === ShareResult.SAVED) {
-      Alert.alert(labels.settings_export_success_title, labels.settings_export_success_message);
+      alertInfo(labels.settings_export_success_title, labels.settings_export_success_message);
     }
   };
 
@@ -131,7 +132,7 @@ export default function DataScreen() {
       setImportModalVisible(true);
     } catch (error) {
       console.error('Failed to read backup file:', error);
-      Alert.alert(labels.settings_import_error_title, labels.settings_import_error_message);
+      alertError(labels.settings_import_error_title, labels.settings_import_error_message);
     }
   };
 
@@ -141,17 +142,17 @@ export default function DataScreen() {
       await importBackup(pendingImport);
       await resetAll();
       updateConfig(await configRepository.get());
-      Alert.alert(labels.settings_import_success_title, labels.settings_import_success_message);
+      alertInfo(labels.settings_import_success_title, labels.settings_import_success_message);
     } catch (error) {
       console.error('Failed to import data:', error);
       if (error instanceof BackupValidationError) {
         if (error.code === 'newer_version') {
-          Alert.alert(labels.settings_import_newer_title, labels.settings_import_newer_message);
+          alertError(labels.settings_import_newer_title, labels.settings_import_newer_message);
         } else {
-          Alert.alert(labels.settings_import_invalid_title, labels.settings_import_invalid_message);
+          alertError(labels.settings_import_invalid_title, labels.settings_import_invalid_message);
         }
       } else {
-        Alert.alert(labels.settings_import_error_title, labels.settings_import_error_message);
+        alertError(labels.settings_import_error_title, labels.settings_import_error_message);
       }
     }
     setImportModalVisible(false);
@@ -176,7 +177,7 @@ export default function DataScreen() {
       await resetAll();
     } catch (error) {
       console.error('Failed to delete all transactions:', error);
-      Alert.alert(labels.settings_delete_transactions_error_title, labels.settings_delete_transactions_error_message);
+      alertError(labels.settings_delete_transactions_error_title, labels.settings_delete_transactions_error_message);
     }
     setDeleteTransactionsModal(false);
   };
@@ -188,7 +189,7 @@ export default function DataScreen() {
       updateConfig(await configRepository.get());
     } catch (error) {
       console.error('Failed to delete all data:', error);
-      Alert.alert(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
+      alertError(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
     }
     closeDeleteAll();
   };
@@ -200,7 +201,7 @@ export default function DataScreen() {
       updateConfig(await configRepository.get());
     } catch (error) {
       console.error('Failed to reset to factory state:', error);
-      Alert.alert(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
+      alertError(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
     }
     closeFactoryReset();
   };

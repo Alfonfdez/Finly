@@ -10,7 +10,7 @@ import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
 import SortToggle, { recurringSortFields } from '../components/SortToggle';
 import { SECTION_GAP } from '../components/componentStyles';
-import BulkDeleteConfirmationModal from '../components/BulkDeleteConfirmationModal';
+import ConfirmationModal from '../components/ConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 import { useConfig } from '../context/ConfigContext';
@@ -217,7 +217,7 @@ export default function RecurringScreen() {
         <Fab onPress={() => navigation.navigate('CreateRecurring')} accessibilityLabel={labels.recurring_add} />
       )}
 
-      <BulkDeleteConfirmationModal
+      <ConfirmationModal
         visible={deleteModalVisible}
         title={labels.recurring_bulk_delete_confirm_title(selectedIds.size)}
         message={labels.recurring_bulk_delete_confirm_message}

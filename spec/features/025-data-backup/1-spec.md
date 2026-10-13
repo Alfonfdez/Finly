@@ -48,7 +48,7 @@
 - The file is named `finly-backup-YYYY-MM-DD.json`.
 - Exporting with zero rows is valid (produces a snapshot with empty collections).
 - The user is informed of success or failure with an alert.
-- **Feedback by platform:** On Android the export writes the file to Downloads and shows the alert "Backup saved — Your backup has been saved to the Downloads folder." with **[Share]** and **[Done]** actions; sharing is a separate on-demand step (`saveBackupFile`, fire-and-forget) whose outcome (complete vs cancel) is never reported, because Android share targets return no reliable result — so no modal can ever be false. On iOS the feedback reflects the real share-sheet outcome (`saved`/`dismissed` from `finly-share`): a completed share shows the success alert and cancelling shows none. On web the file downloads and no alert is shown (Alert is a no-op on react-native-web). A failure shows the error alert on all platforms.
+- **Feedback by platform:** On Android the export writes the file to Downloads and shows the alert "Backup saved — Your backup has been saved to the Downloads folder." with **[Share]** and **[Done]** actions; sharing is a separate on-demand step (`saveBackupFile`, fire-and-forget) whose outcome (complete vs cancel) is never reported, because Android share targets return no reliable result — so no modal can ever be false. On iOS the feedback reflects the real share-sheet outcome (`saved`/`dismissed` from `finly-share`): a completed share shows the success alert and cancelling shows none. On web the file downloads and the feedback is shown as a browser dialog (react-native-web's `Alert` is a no-op, so the shared `alertInfo`/`alertError` helpers fall back to `window.alert`). A failure shows the error alert on all platforms.
 
 ### 4. Import
 
@@ -93,5 +93,6 @@
 - [x] After a successful import, app state and config (theme, language, currency, balances) reflect the backup.
 - [x] All texts are multilingual (en/es/ca) and the screen respects theme and text size.
 - [x] Export feedback is never false (unit-tested): Android saves to Downloads (`MediaStore` via `finly-share`) and alerts; the Share action is optional and its outcome is not reported; iOS reports the real share-sheet outcome (success vs cancel); failures show the error alert; Import shows no modal when the file picker is cancelled.
+- [x] On web, the export/import success and error feedback appears as a browser dialog (`alertInfo`/`alertError` `window.alert` fallback), since react-native-web's `Alert` is a no-op.
 - [ ] On a real device, Export on Android saves the file to the Downloads folder and shows the "Backup saved" alert with Share/Done (device-only check via the Downloads folder, not checkable on web).
 - [x] `npm run test:all` is green (typecheck + lint + tests).

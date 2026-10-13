@@ -3582,3 +3582,13 @@
 - `buildRecurrenceSchedule` now accepts a `Date | string | null` end date (normalized internally), so callers drop the `endDate ? toDateOnly(endDate) : null` boilerplate.
 - Shared `recurrenceFrequencyLabels(labels)` helper (used by the frequency chips and the rules list); added `RecurrenceSpec` type shared by `RecurrenceDraft` and `RecurringEditRecurrence`; fixed a stale "skip-first" comment.
 - Tests (+7): `planEdit` and `ruleEditCursor` unit tests; renamed a stale test. No behavior change - the existing recurring suites stay green (119 files / 878 tests).
+
+[2026-10-13] fix | FinlyApp/src/utils/errors.ts, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/tests/utils/{errors,errors.web}.test.ts
+- Data (settings) feedback was invisible on web: `react-native-web`'s `Alert` is a no-op and `DataScreen` called `Alert.alert` directly, so export/import/delete success and error messages were silently swallowed. Added a web-aware `alertInfo` (sharing the `window.alert` fallback with `alertError`) and routed those messages through it; the Android-only download/share sheet keeps its raw `Alert`.
+- Tests: `alertInfo` cases in errors.test.ts plus a new errors.web.test.ts covering the web fallback.
+
+[2026-10-13] refactor | FinlyApp/src/utils/tagFilter.ts, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/src/components/{TransactionListBody,ConfirmationModal}.tsx, FinlyApp/src/components/BulkDeleteConfirmationModal.tsx (removed), FinlyApp/src/screens/{CommentsScreen,RecurringScreen,TagsScreen}.tsx, FinlyApp/tests/database/helpers/sqliteHarness.ts, FinlyApp/tests/utils/tagFilter.test.ts
+- Added `matchesTagFilter(activeTagIds, transactionTagIds)` to utils/tagFilter.ts (untagged sentinel + regular-id OR, empty = match all). AppContext and useTransactionFilters now share it instead of keeping two copies of the same rule that could drift.
+- Removed the redundant `BulkDeleteConfirmationModal` (a pure pass-through to `ConfirmationModal` with identical props); its 4 call sites (TransactionListBody, Comments, Recurring, Tags) use `ConfirmationModal` directly.
+- Extracted `tests/database/helpers/sqliteHarness.ts` (`initSqliteHarness` + `bootSqliteDb`): the schema/seed/repo boot shared by recurringRepo, recurringService and recurringService.preview tests. The per-file `vi.mock` blocks stay (hoisting).
+- Tests: `matchesTagFilter` cases.
