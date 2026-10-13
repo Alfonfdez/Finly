@@ -527,6 +527,7 @@ export const ca: Language = {
   repeat_first_transaction: (date: string) => `Primera transacció: ${date}`,
 
   recurring_search: 'Cercar regles recurrents',
+  recurring_status_title: 'Estat',
   recurring_sort_next_due: 'Propera',
   recurring_sort_name: 'Nom',
   recurring_sort_amount: 'Import',

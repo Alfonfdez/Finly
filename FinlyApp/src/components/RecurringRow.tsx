@@ -6,9 +6,9 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
 import IconBadge from './IconBadge';
 import { switchColors } from './componentStyles';
-import { BADGE_SHAPES, TRANSACTION_TYPES } from '../constants/types';
+import { BADGE_SHAPES, RECURRING_STATUSES, TRANSACTION_TYPES } from '../constants/types';
 import { formatAmount, formatDateLong, parseDbDate } from '../utils/formatters';
-import { fromDateOnly, isRecurrenceEnded } from '../utils/recurrence';
+import { fromDateOnly, recurringStatus } from '../utils/recurrence';
 import { recurrenceSummary } from '../utils/recurrenceSummary';
 import type { Category, RecurringRule } from '../database/types';
 
@@ -30,8 +30,9 @@ function RecurringRow({ rule, category, count, today, onPress, onToggleActive, s
   const labels = t();
 
   const isIncome = rule.type === TRANSACTION_TYPES.income;
-  const active = rule.active === 1;
-  const ended = isRecurrenceEnded(rule, rule.next_due, today);
+  const status = recurringStatus(rule, today);
+  const active = status === RECURRING_STATUSES.active;
+  const ended = status === RECURRING_STATUSES.ended;
   const created = parseDbDate(rule.created_at);
   const createdText = `${created.getDate()} ${labels.months_short[created.getMonth()]} ${created.getFullYear()}`;
 

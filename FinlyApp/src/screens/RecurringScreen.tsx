@@ -9,6 +9,7 @@ import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
 import SortToggle, { recurringSortFields } from '../components/SortToggle';
+import RecurringStatusChip from '../components/RecurringStatusChip';
 import { SECTION_GAP } from '../components/componentStyles';
 import ConfirmationModal from '../components/ConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
@@ -21,8 +22,8 @@ import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { t, getDisplayCategoryName } from '../i18n';
-import { USER_ID, RECURRING_SORT_BY, SORT_DIRECTIONS, type RootStackParamList, type RecurringSortBy, type SortDirection } from '../constants/types';
-import { isRecurrenceEnded, todayDateOnly } from '../utils/recurrence';
+import { USER_ID, RECURRING_SORT_BY, SORT_DIRECTIONS, type RootStackParamList, type RecurringSortBy, type RecurringStatus, type SortDirection } from '../constants/types';
+import { isRecurrenceEnded, recurringStatus, todayDateOnly } from '../utils/recurrence';
 import { recurrenceFrequencyLabels } from '../utils/recurrenceSummary';
 import { defaultRecurringSortDirection, sortRecurringRules } from '../utils/recurringSort';
 import { isWeb } from '../utils/platform';
@@ -53,6 +54,7 @@ export default function RecurringScreen() {
 
   const [sortBy, setSortBy] = useState<RecurringSortBy>(RECURRING_SORT_BY.nextDue);
   const [sortDirection, setSortDirection] = useState<SortDirection>(defaultRecurringSortDirection(RECURRING_SORT_BY.nextDue));
+  const [statusFilter, setStatusFilter] = useState<RecurringStatus[]>([]);
 
   const handleToggleSort = useCallback((field: RecurringSortBy) => {
     if (field === sortBy) {
@@ -90,7 +92,12 @@ export default function RecurringScreen() {
 
   const frequencyLabels = recurrenceFrequencyLabels(labels);
 
-  const filteredRules = useSearchFilter(rules, searchText, (rule) => {
+  const statusFilteredRules = useMemo(
+    () => (statusFilter.length === 0 ? rules : rules.filter(rule => statusFilter.includes(recurringStatus(rule, today)))),
+    [rules, statusFilter, today],
+  );
+
+  const filteredRules = useSearchFilter(statusFilteredRules, searchText, (rule) => {
     const category = categoriesById.get(rule.category_id);
     return [
       rule.name,
@@ -185,6 +192,7 @@ export default function RecurringScreen() {
         style={styles.sortRow}
         contentContainerStyle={[styles.sortRowContent, isWeb && styles.sortRowWebContent]}
       >
+        <RecurringStatusChip selected={statusFilter} onChange={setStatusFilter} />
         <SortToggle
           fields={recurringSortFields(labels)}
           sortBy={sortBy}
@@ -252,6 +260,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 6,
   },

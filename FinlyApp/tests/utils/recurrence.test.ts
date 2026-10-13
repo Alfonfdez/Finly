@@ -10,6 +10,7 @@ import {
   planEdit,
   recurrencePreview,
   recurrenceSkipWindow,
+  recurringStatus,
   resolveEditAnchor,
   ruleEditCursor,
   toDateOnly,
@@ -311,6 +312,32 @@ describe('buildRecurrenceSchedule', () => {
     expect(buildRecurrenceSchedule(start, 'daily', 1, new Date(2026, 9, 31))).toMatchObject({
       end_date: '2026-10-31',
     });
+  });
+});
+
+describe('recurringStatus', () => {
+  const rule = {
+    frequency: 'monthly' as const,
+    interval: 1,
+    day_of_month: 5,
+    start_date: '2026-10-05',
+    end_date: null,
+    active: 1,
+    next_due: '2026-11-05',
+  };
+
+  it('is active when the flag is on and an occurrence remains', () => {
+    expect(recurringStatus(rule, '2026-10-10')).toBe('active');
+  });
+
+  it('is paused when the flag is off', () => {
+    expect(recurringStatus({ ...rule, active: 0 }, '2026-10-10')).toBe('paused');
+  });
+
+  it('is ended (over the flag) when no occurrence remains within the end date', () => {
+    const ended = { ...rule, end_date: '2026-09-30', next_due: '2026-10-01' };
+    expect(recurringStatus(ended, '2026-10-10')).toBe('ended');
+    expect(recurringStatus({ ...ended, active: 0 }, '2026-10-10')).toBe('ended');
   });
 });
 

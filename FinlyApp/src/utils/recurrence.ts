@@ -1,4 +1,4 @@
-import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, type RecurrenceFrequency, type RecurrenceScope } from '../constants/types';
+import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, RECURRING_STATUSES, type RecurrenceFrequency, type RecurrenceScope, type RecurringStatus } from '../constants/types';
 import { getDaysInMonth } from './formatters';
 
 export interface RecurrenceSchedule {
@@ -132,6 +132,18 @@ export function nextEffectiveOccurrence(schedule: RecurrenceSchedule, nextDue: s
 export function isRecurrenceEnded(schedule: RecurrenceSchedule, nextDue: string, today: string): boolean {
   if (schedule.end_date == null) return false;
   return nextEffectiveOccurrence(schedule, nextDue, today) > schedule.end_date;
+}
+
+/**
+ * The rule's display/filter status: `ended` (no occurrence left within the end date —
+ * it wins over the active flag, matching the row's label) or, otherwise, `active`/`paused`.
+ */
+export function recurringStatus(
+  rule: RecurrenceSchedule & { active: number; next_due: string },
+  today: string,
+): RecurringStatus {
+  if (isRecurrenceEnded(rule, rule.next_due, today)) return RECURRING_STATUSES.ended;
+  return rule.active === 1 ? RECURRING_STATUSES.active : RECURRING_STATUSES.paused;
 }
 
 /**

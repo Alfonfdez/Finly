@@ -527,6 +527,7 @@ export const fr: Language = {
   repeat_first_transaction: (date: string) => `Première transaction : ${date}`,
 
   recurring_search: 'Rechercher des règles récurrentes',
+  recurring_status_title: 'Statut',
   recurring_sort_next_due: 'Prochaine',
   recurring_sort_name: 'Nom',
   recurring_sort_amount: 'Montant',

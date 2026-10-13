@@ -211,6 +211,31 @@ describe('RecurringScreen', () => {
     expect(view.queryByText('Rent')).toBeNull();
   });
 
+  it('filters the rules by status', async () => {
+    mockList.mockResolvedValue([
+      { ...rule, id: 1, name: 'ActiveRule' },
+      { ...rule, id: 2, name: 'PausedRule', active: 0 },
+      { ...rule, id: 3, name: 'EndedRule', end_date: '2026-09-30', next_due: '2026-10-01' },
+    ]);
+    const view = await render(<RecurringScreen />);
+    await waitFor(() => expect(view.getByText('ActiveRule')).toBeTruthy());
+    expect(view.getByText('PausedRule')).toBeTruthy();
+    expect(view.getByText('EndedRule')).toBeTruthy();
+
+    const ue = userEvent.setup();
+    await ue.press(view.getByLabelText('All')); // chip (empty = All)
+    // Modal checkboxes render in order: All, Active, Paused, Ended.
+    const boxes = view.getAllByRole('checkbox');
+    await ue.press(boxes[2]); // Paused
+    await ue.press(boxes[3]); // Ended
+    await ue.press(view.getByText('Apply (2)'));
+
+    await waitFor(() => expect(view.queryByText('ActiveRule')).toBeNull());
+    expect(view.getByText('PausedRule')).toBeTruthy();
+    expect(view.getByText('EndedRule')).toBeTruthy();
+    expect(view.getByLabelText('Paused + Ended')).toBeTruthy();
+  });
+
   it('reorders the rules when a sort field is pressed', async () => {
     mockList.mockResolvedValue([
       { ...rule, id: 1, name: 'Beta', next_due: '2026-11-01' },
