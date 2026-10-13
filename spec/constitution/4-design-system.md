@@ -74,7 +74,7 @@ interface ColorPalette {
 | `fs(15)` | List item names, search input | AccountScreen names, SearchBar, TypeTabs |
 | `fs(16)` | Screen titles, modal titles | Modal titles, TransactionsScreen header |
 | `fs(17)` | Stack navigator header titles | All `headerTitle` in AppNavigator.tsx |
-| `fs(18)` | Modal totals, chart center text | DonutChart total, CalculatorModal display |
+| `fs(18)` | Modal totals, chart center text | DonutChart total, BarChart total, CalculatorModal display |
 | `fs(20)` | Calculator display (result) | CalculatorModal result |
 | `fs(22)` | Screen totals (balance, category total) | AccountsScreen total, TransactionsScreen categoryTotal |
 | `fs(24)` | Large screen titles | AddTransactionScreen title |

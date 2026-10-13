@@ -29,7 +29,7 @@ A main screen in the app that displays the current Account, the Total (income/ex
      - An "All" checkbox selects the whole current year so far — from January 1 of the current year (`MIN_DATE`) to today.
      - When "All" is checked, the range text explains the resolved period explicitly, e.g. `All (from 1 Jan to 2 Sep 2026)`, instead of showing only the word "All".
 
-6. Donut chart (SVG) showing expenses/income for the selected period, broken down by categories with their color. Tapping the chart toggles it to a horizontal bar chart. The total is centered inside the donut hole: the text is constrained to the hole's inner diameter and its font size auto-shrinks (`fitFontSize`) so the full formatted amount always stays inside the hole.
+6. Donut chart (SVG) showing expenses/income for the selected period, broken down by categories with their color. Tapping the chart toggles it to a horizontal bar chart. The total is centered inside the donut hole: the text is constrained to the hole's inner diameter and its font size auto-shrinks (`fitFontSize`) so the full formatted amount always stays inside the hole. The bar chart shows the **same** formatted total, centered **above** the bar (same style as the donut centre: `c.text`, weight 700, auto-fit to the chart width), whether or not there are transactions; the legend below lists each category with its percentage.
 
 7. "+" button (Floating Action Button) centered at the bottom. Background: primary color (`c.primary`). Icon: `Ionicons "add"` with color `c.background` (theme-adaptive). Position: `position: absolute`, `bottom: 56`, `alignSelf: 'center'`. Navigates to the "Add Expense/Income" screen.
 
@@ -60,6 +60,7 @@ Cloud sync, authentication, offline usage (AsyncStorage is already local).
 [x] The donut chart is displayed correctly with period data.
 [x] The total in the center of the donut stays fully visible inside the hole even for large amounts (font auto-shrinks to fit).
 [x] Tapping the donut chart shows the bar chart, and vice versa.
+[x] The bar chart always shows the period total (centered above the bar, same style as the donut centre) with or without transactions.
 [x] The "+" button navigates to the "Add Expense/Income" screen.
 [x] The category list displays icon, name, percentage and total correctly.
 [x] Tapping a category navigates to "Transactions" with that filter.
