@@ -284,10 +284,9 @@ describe('useTransactionForm', () => {
     expect(nav.goBack).not.toHaveBeenCalled();
   });
 
-  it('includes skipFirst in the recurrence draft on submit', async () => {
+  it('includes the recurrence draft on submit', async () => {
     const onSubmitRule = vi.fn(async (_d: TransactionDraft, _t: number[], _r: RecurrenceDraft) => {});
     const { result } = await setup({ initialAmount: '10', ruleMode: true, onSubmitRule });
-    await act(() => result.current.setRepeatSkipFirst(true));
     await act(() => result.current.setRepeatName('Rent'));
     await act(async () => {
       await result.current.handleSubmit();
@@ -295,21 +294,37 @@ describe('useTransactionForm', () => {
 
     expect(onSubmitRule).toHaveBeenCalledTimes(1);
     const [, , recurrence] = (onSubmitRule as ReturnType<typeof vi.fn>).mock.calls[0];
-    expect(recurrence).toMatchObject({ frequency: 'monthly', interval: 1, endDate: null, skipFirst: true });
+    expect(recurrence).toMatchObject({ name: 'Rent', frequency: 'monthly', interval: 1, endDate: null });
   });
 
-  it('blocks submit when the end date precedes the skipped first occurrence', async () => {
+  it('clears the end date when it is on/before the start date', async () => {
     const { result } = await setup({ initialAmount: '10', initialDay: new Date(2026, 5, 15), ruleMode: true });
-    await act(() => result.current.setRepeatSkipFirst(true));
     await act(() => result.current.setRepeatName('Rent'));
 
-    // First occurrence is Jul 15; an end date before it is invalid.
-    await act(() => result.current.setRepeatEnd(new Date(2026, 5, 20)));
-    expect(result.current.canSubmit).toBe(false);
+    // An end date on the start day is invalid and auto-cleared.
+    await act(() => result.current.setRepeatEnd(new Date(2026, 5, 15)));
+    expect(result.current.repeatEnd).toBeNull();
 
-    // An end date on/after the first occurrence is allowed.
-    await act(() => result.current.setRepeatEnd(new Date(2026, 6, 15)));
+    // An end date strictly after the start day is kept.
+    await act(() => result.current.setRepeatEnd(new Date(2026, 5, 16)));
+    expect(result.current.repeatEnd).not.toBeNull();
     expect(result.current.canSubmit).toBe(true);
+  });
+
+  it('flags a fresh rule whose cursor still equals its start', async () => {
+    const fresh = await setup({ ruleMode: true, initialRuleNextDue: '2026-10-30', initialDay: new Date(2026, 9, 30) });
+    expect(fresh.result.current.ruleUnmaterialized).toBe(true);
+
+    const started = await setup({ ruleMode: true, initialRuleNextDue: '2026-10-14', initialDay: new Date(2026, 9, 13) });
+    expect(started.result.current.ruleUnmaterialized).toBe(false);
+  });
+
+  it('flags a started rule whose start date is moved earlier', async () => {
+    const { result } = await setup({ ruleMode: true, initialRuleNextDue: '2026-10-14', initialDay: new Date(2026, 9, 13) });
+    expect(result.current.ruleStartMovedEarlier).toBe(false);
+
+    await act(() => result.current.setDay(new Date(2026, 9, 10)));
+    expect(result.current.ruleStartMovedEarlier).toBe(true);
   });
 
   it('reports recurringPastAffected only for past-affecting fields (rule mode)', async () => {

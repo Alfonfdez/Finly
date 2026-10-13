@@ -17,6 +17,7 @@ import {
   MAX_VISIBLE_CATEGORIES,
 } from '../constants/types';
 import { formatDateForDB } from '../utils/formatters';
+import { toDateOnly } from '../utils/recurrence';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { parseAmountValue } from '../utils/amountInput';
 import { transactionRepository, tagRepository } from '../database';
@@ -112,7 +113,6 @@ export function useTransactionForm({
     repeatFrequency, setRepeatFrequency,
     repeatInterval, setRepeatInterval,
     repeatEnd, setRepeatEnd,
-    repeatSkipFirst, setRepeatSkipFirst,
     repeatLastDay, setRepeatLastDay,
     repeatName, setRepeatName,
     repeatMinDate,
@@ -198,12 +198,21 @@ export function useTransactionForm({
     return true;
   }, [categoryId, numericAmount, day, accountId, ruleMode, repeatNameError, repeatEnd, repeatMinDate]);
 
-  const { recurringPastAffected, recurringSkipWindow } = useRecurringEditScope({
+  // A rule whose cursor still equals its start has never generated/skipped an
+  // occurrence ("fresh"): editing the start date re-anchors it from the new start
+  // instead of keeping the stale (future) cursor.
+  const ruleUnmaterialized = initialRuleNextDue != null && toDateOnly(initialDay) === initialRuleNextDue;
+  // Editing a rule that already generated transactions with an earlier start does
+  // not recreate the past occurrences (the cursor floor keeps them skipped).
+  const ruleStartMovedEarlier = initialRuleNextDue != null && !ruleUnmaterialized && toDateOnly(day) < toDateOnly(initialDay);
+
+  const { recurringPastAffected } = useRecurringEditScope({
     ruleMode,
     day,
     frequency: repeatFrequency,
     interval: repeatInterval,
     end: repeatEnd,
+    lastDay: repeatLastDay,
     accountId,
     categoryId,
     amount: numericAmount,
@@ -217,6 +226,7 @@ export function useTransactionForm({
     initialType,
     initialTagIds,
     initialRuleNextDue,
+    ruleUnmaterialized,
     initialRuleActive,
     initialRuleSkippedFrom,
   });
@@ -320,11 +330,11 @@ export function useTransactionForm({
     repeatFrequency, setRepeatFrequency,
     repeatInterval, setRepeatInterval,
     repeatEnd, setRepeatEnd,
-    repeatSkipFirst, setRepeatSkipFirst,
     repeatLastDay, setRepeatLastDay,
     repeatMinDate,
     recurringPastAffected,
-    recurringSkipWindow,
+    ruleUnmaterialized,
+    ruleStartMovedEarlier,
     repeatName, setRepeatName, repeatNameError,
     modalAccountVisible, setModalAccountVisible,
     modalCalendarVisible, setModalCalendarVisible,

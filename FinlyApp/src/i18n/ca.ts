@@ -496,7 +496,7 @@ export const ca: Language = {
   recurring_scope_title: 'Aplica els canvis a',
   recurring_scope_future: 'Només futures',
   recurring_scope_future_past: 'Futures + passades',
-  recurring_scope_past_hint: 'També actualitza les transaccions passades i afegeix les omeses. Canviar la data de fi no elimina mai transaccions.',
+  recurring_scope_past_hint: 'També actualitza les transaccions ja creades i omple les ocurrències omeses. Les dates existents no es canvien ni s\'eliminen mai.',
   recurring_error_title: 'Error',
   recurring_error_message: 'Alguna cosa ha fallat. Torna-ho a provar.',
   repeat_daily: 'Diari',
@@ -522,7 +522,8 @@ export const ca: Language = {
   repeat_on_month_last_day: (month: string) => `l'últim dia ${/^[aeiouàèéíìòóúù]/i.test(month) ? "d'" : 'de '}${month}`,
   repeat_last_day: 'Últim dia del mes',
   repeat_until: (date: string) => `fins a ${date}`,
-  repeat_skip_first: 'Ometre la primera repetició',
+  repeat_start_date: 'Data d\'inici',
+  repeat_start_earlier_hint: 'Canviar la data d\'inici no afegeix transaccions anteriors.',
   repeat_first_transaction: (date: string) => `Primera transacció: ${date}`,
 
   recurring_search: 'Cercar regles recurrents',

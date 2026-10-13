@@ -12,11 +12,12 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 | Term | Meaning | Used for |
 |---|---|---|
 | **Recurring rule** (*rule*) | The saved definition (frequency, amount, account, category, tags, start/end). | The entity the user creates, edits, deletes and lists ("Edit recurring rule", "Delete 3 recurring rules?"). |
-| **Occurrence** | A scheduled **date** the rule fires on — a slot, not a record. | Schedule concepts: first/next, skip, counts of skipped/missed ("Skip the first occurrence", "4 occurrences will be skipped"). |
+| **Occurrence** | A scheduled **date** the rule fires on — a slot, not a record. | Schedule concepts: first/next, skip, counts of skipped/missed ("4 occurrences will be skipped"). |
 | **Transaction** | A **record** in the transaction lists. A *generated* (or *recurring*) *transaction* is one created by a rule. | Anything the user counts, keeps, edits or deletes ("1 transaction will be created", "its past transactions will be kept"). |
 | **Create / generate** | Turn a due occurrence into a transaction (code: *materialize*). | The UI verb ("N transactions will be created"). |
 | **Next due** | The next occurrence the rule will create (the rule's cursor). | The "Next: `<date>`" label. |
-| **Skipped** | An occurrence deliberately not created (Future only / pause / skip-first). | "occurrences will be skipped". |
+| **Cursor** (`next_due`) | The stored pointer to the next occurrence to materialize: the first occurrence after today once reconciled, or the start date for a rule that has never run. | Edit anchoring and the "Next:" labels. |
+| **Skipped** | An occurrence deliberately not created (Future only / pause). | "occurrences will be skipped". |
 | **Missed** | An occurrence already due but not created yet (the app was closed); it is created on the next run. | The catch-up window ("adds the missed transactions"). |
 | **Paused / Active / Ended** | The rule's states. | The rule's status. |
 
@@ -72,13 +73,12 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 
 - `TransactionForm` in **rule mode** (the Create/Edit recurring screens) shows a **Repeat** section — always rendered, with no enable toggle:
   - A **compulsory, unique name** field at the top of the section (trimmed, case-insensitive; checked against the user's other rules). It is stored on the rule and shown as the rule's title.
-  - Frequency selector (Daily / Weekly / Monthly / Yearly), an "every N" stepper, and an optional end date (reusing `CalendarModal` with bounds `minDate = the selected transaction day + 1` — or the deferred first occurrence when skipping it — and `maxDate = null`; the end date may be in the past when the start is in the past).
+  - Frequency selector (Daily / Weekly / Monthly / Yearly), an "every N" stepper, and an optional end date (reusing `CalendarModal` with bounds `minDate = the day after the start date` and `maxDate = null`; the end date may be in the past when the start is in the past).
   - A **Last day of the month** checkbox (shown for monthly/yearly) anchors the rule on each month's last day, starting on the last day of the start month; the summary reads "Every month on the last day" (yearly: "Every year on the last day of `<month>`").
-  - The start date defaults to the day selected in the form's `DaySelector`.
+  - The date field is labelled **Start date** (the `DaySelector`, relabeled from "Day" in rule mode) and accepts **any** date — past, present or future (its day picker passes `maxDate = null`); it defaults to the day currently selected in the form.
   - A human-readable summary is shown, phrased per frequency and localized (e.g. "Every month on day 6", "Every week on Monday", "Every year on October 6"; Spanish: "Cada año el 6 de octubre"), with an "until `<date>`" clause appended when an end date is set.
-  - A **Summary info block** (always shown) consolidates: the summary line, the **first transaction** date (which shifts by one interval when skipping the first occurrence), and **how many transactions will be created on save** (occurrences up to today within the end date; "No transactions will be created now" when the first one is in the future).
-  - An optional **Skip the first occurrence** checkbox (shown when creating a rule and hidden when editing an existing one) defers the first generated occurrence by one interval (e.g. monthly from 6 Oct → first on 6 Nov): nothing is generated on the selected day and the anchor stays on it. The end date must be on/after that deferred first occurrence (otherwise submit is blocked with a hint).
-- Saving creates a `recurring_rules` row + tag links **and** reconciliation immediately materializes any occurrence that is already due (including the start date if it is today or earlier).
+  - A **Summary info block** (always shown) consolidates: the summary line, the **first transaction** date, and **how many transactions will be created on save** (occurrences up to today within the end date; "No transactions will be created now" when the first one is in the future).
+- Saving creates a `recurring_rules` row + tag links **and** reconciliation immediately materializes any occurrence that is already due: a **past/today start** back-fills every occurrence from the start up to today, while a **future start** creates nothing until it becomes due (the cursor stays at the start date).
 - The account/category/amount/comment/tags come from the same form fields; a recurring rule does not store a photo (the photo section is hidden in rule mode).
 - The **add-transaction** form does **not** offer a Repeat section: it always saves a single plain transaction. Recurring rules are created only from the Recurring screen's create flow.
 
@@ -95,12 +95,33 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 ### 7. Editing a rule
 
 - Editing a rule first **reconciles** the old schedule (so every occurrence due up to now exists with the old values), then updates the rule **in place** (including its editable, unique **name**) and reconciles again so the change takes effect immediately (no reopen needed).
-- The **Apply changes to** (scope) control lives inside the recurring card, directly above the **Summary info block**, so the block reflects the chosen scope: **Future only** shows the **next transaction** date and how many will be created (plus "N occurrences will be skipped" when a window is skipped); **Future + past** shows the back-filled window ("Adds N missed transactions"). The screen footer keeps only the Delete button.
-- The cursor (next occurrence to materialize) is set according to the scope:
-  - **Future only** (default): the next occurrence on/after today — occurrences missed since the rule's cursor are **skipped**, and already-generated transactions are unchanged.
-  - **Future + past**: sets the cursor from the rule's own cursor (so any occurrences **missed since the last materialization are back-filled**) **and** bulk-updates every transaction generated by this rule to the new account/category/amount/comment/tags/**type** (dates are never changed, and **nothing is deleted**). It is offered only when it can affect the past — a detail field changed, the rule has a missed window to catch up, or a previous skip can be recovered.
-  - **Recoverable skip**: a **Future only** save records the earliest skipped occurrence on the rule (`skipped_from`). While that window is within the end date, the edit screen enables **Future + past** again; choosing it re-anchors the cursor to `skipped_from` (back-filling the skipped occurrences, no duplicates) and clears the record. Skip windows caused by **pause/resume** or **skip-first** are intentionally not recorded (they stay permanent).
+- The **Apply changes to** (scope) control lives inside the recurring card, directly above the **Summary info block**, so the block reflects the chosen scope. The screen footer keeps only the Delete button.
+
+**Cursor & edit semantics.** Every rule stores `start_date` (the first/anchored occurrence) and `next_due` (the **cursor**: the next occurrence not yet materialized). After reconciliation the cursor is the first occurrence **after today**; for a rule that has never run it still equals `start_date`.
+
+- The cursor after a save is set by the scope:
+  - **Future only** (default): the new schedule's first occurrence **on/after today** — occurrences before today are **skipped**, and already-generated transactions are unchanged. Because it anchors at *today* (not at the rule's old next occurrence), a schedule change (e.g. **monthly → daily**) takes effect **today**.
+  - **Future + past**: re-anchors at the rule's cursor — or the earliest recorded skipped occurrence — so any **missed window is back-filled**, **and** bulk-updates every transaction the rule generated to the new account/category/amount/comment/tags/**type** (dates are never changed; **nothing is deleted**). It is offered only when it can affect the past (a detail field changed, or a missed/skipped window exists).
+  - **Already-generated today:** when today's occurrence already exists (it did under the rule's *previous* schedule), **Future only** starts at the *next* occurrence instead of re-counting today; the Summary matches what the save will create.
+  - **Recoverable skip:** a **Future only** save records the earliest skipped occurrence on the rule (`skipped_from`). While that window is within the end date, the edit screen enables **Future + past** again; choosing it re-anchors the cursor to `skipped_from` (back-filling the skipped occurrences, no duplicates) and clears the record. Skip windows caused by **pause/resume** are intentionally not recorded (they stay permanent).
   - Saving with **Future only** while it would skip occurrences asks for a confirmation first (reporting how many), so a skip is never silent.
+- **Editing the Start date.** A rule that has **never generated or skipped** an occurrence (its cursor still equals its start date) is treated as **not-yet-started**: editing its **Start date** re-anchors it from the new start, so moving the start to today (or an earlier date) makes it due and generates from there — occurrences before today are still skipped and recorded as recoverable. Editing the start date **earlier** on a rule that has **already generated** transactions does **not** recreate the past occurrences (the cursor keeps its position); the card shows a hint. Moving the start **later** simply shifts the future.
+
+**Edit scenarios** (`existing` = already-generated transactions; `window` = occurrences the new schedule implies in `cursor..today`):
+
+| Scenario | Future only | Future + past |
+|---|---|---|
+| Detail change on a caught-up rule | existing untouched; nothing generated now | existing rewritten; the missed `window` (if any) back-filled |
+| Timing change (frequency / interval / end) on a caught-up rule | takes effect **today**; existing untouched | takes effect today; `window` back-filled; existing details unchanged |
+| Fresh rule (future start) — Start date → **today** | re-anchors; generates today's occurrence | same (nothing before today) |
+| Fresh rule — Start date → **earlier past date** | generates from today; the earlier window is *skipped* and recorded recoverable | back-fills from the new start |
+| Fresh rule — Start date → **later future date** | nothing until due | nothing until due |
+| Started rule — Start date → **earlier** | no earlier dates created; hint shown | no earlier dates created; existing details rewritten |
+| Extend end date | adds from today | back-fills the missed `window` |
+| Shorten end date | never deletes; may become **Ended** | same |
+| Recoverable skip → Future + past | — | re-anchors to `skipped_from`, back-fills, clears the record |
+| Pause → Resume | cursor → first on/after today; the pause window stays skipped | — |
+
 - Changing or shortening the end date never deletes already-generated transactions; it only affects what is generated from now on. A rule whose end date has passed is shown as **Ended** (no future occurrences) and its pause/resume toggle is disabled; extending (or clearing) the end date revives it.
 - Editing an individual generated transaction from the transaction lists remains a one-off edit and does **not** change the rule. The modify form shows a **Recurring** notice at the top (repeat icon + title, "created by a recurring rule. Saving changes only affects this transaction, not the rule") with an **Edit recurring rule** button that opens the rule editor.
 
@@ -145,9 +166,9 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 - [x] The recurring create/edit form shows a **Repeat** section (name / Daily / Weekly / Monthly / Yearly + "every N" + optional end date) with a readable summary; the add-transaction form does not.
 - [x] Every recurring rule has a compulsory, unique **name** (trimmed, case-insensitive), shown as the rule's title and editable when editing.
 - [x] The Recurring screen shows each rule's name, creation date, generated-transaction count and next due (or **Ended**).
-- [x] The recurring **End date** picker allows only dates strictly after the selected transaction day (which may be in the past), while the transaction date picker still allows only today/past.
-- [x] A **Skip the first occurrence** option (creation only) defers the first transaction by one interval (e.g. monthly 6 Oct → 6 Nov) and generates nothing on the start day; the end date must be on/after that first occurrence or submit is blocked with a hint.
-- [x] The Repeat section always shows a **Summary** info block — the summary line, the first/next transaction date, and how many transactions will be created on save — which updates when skipping the first occurrence and when the edit scope changes.
+- [x] The recurring create/edit form labels the date field **Start date** and accepts any date (past, present or future); the plain add/modify transaction date picker still allows only today/past.
+- [x] The recurring **End date** picker allows only dates strictly after the start date, and the transaction date picker still allows only today/past.
+- [x] The Repeat section always shows a **Summary** info block — the summary line, the first/next transaction date, and how many transactions will be created on save — which updates when the edit scope changes.
 - [x] Saving with a repeat creates a rule and materializes any already-due occurrence as a transaction (correct account, category, type, amount, comment and tags).
 - [x] On app start / foreground, every due occurrence since the last run is created, each dated on its scheduled day (missed months/years are back-filled).
 - [x] Re-running reconciliation never duplicates an occurrence (idempotent via the unique occurrence index).
@@ -164,6 +185,8 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 - [x] Editing a rule "Future only" applies to future occurrences only; "Future + past" back-fills the missed window and bulk-updates its generated transactions' account/category/amount/comment/tags/type (never their dates, never deleting them); the change is reconciled immediately on save.
 - [x] "Future + past" is offered only when it can affect the past (a detail field changed or a missed window exists); shortening the end date never deletes generated transactions, and a finished rule shows "Ended".
 - [x] A window skipped by a "Future only" edit can be recovered later by re-opening the edit and choosing "Future + past" (the skipped occurrences are back-filled and the record cleared); "Future only" warns before skipping.
+- [x] Moving the **Start date** of a not-yet-started rule (never generated) re-anchors it from the new start (moving it to today generates from today); moving a started rule's start earlier keeps the past occurrences skipped and shows a hint.
+- [x] A timing change (e.g. monthly → daily) takes effect from **today** under "Future only" (not at the rule's stale next occurrence), and an already-generated today is not re-counted — the Summary matches exactly what the save creates.
 - [x] In the edit form, the "Apply changes to" scope sits inside the recurring card above the Summary block; the block reflects the scope (next transaction + count, skipped occurrences, or back-filled count), and the footer keeps only Delete.
 - [x] Editing an individual generated transaction does not change its rule.
 - [x] Transaction details always show a read-only Recurring row with the rule name (or `—`); pausing/resuming is done from the Recurring screen.

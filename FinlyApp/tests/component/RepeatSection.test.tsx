@@ -22,8 +22,6 @@ function renderSection(overrides: Partial<Props> = {}) {
     endDate: null,
     onOpenEndDate: vi.fn(),
     onClearEndDate: vi.fn(),
-    skipFirst: false,
-    onChangeSkipFirst: vi.fn(),
     name: 'Rent',
     onChangeName: vi.fn(),
     nameError: null,
@@ -103,20 +101,6 @@ describe('RepeatSection', () => {
     expect(v.queryByRole('switch')).toBeNull();
   });
 
-  it('shows the skip-first checkbox only when allowed', async () => {
-    const hidden = await renderSection();
-    expect((await hidden.view).queryByText('Skip the first occurrence')).toBeNull();
-
-    const shown = await renderSection({ showSkipFirst: true });
-    expect((await shown.view).getByText('Skip the first occurrence')).toBeTruthy();
-  });
-
-  it('toggles skip first', async () => {
-    const { props, view } = renderSection({ showSkipFirst: true, skipFirst: false });
-    await fireEvent.press((await view).getByText('Skip the first occurrence'));
-    expect(props.onChangeSkipFirst).toHaveBeenCalledWith(true);
-  });
-
   it('renders the recurring name field with its value', async () => {
     const { view } = renderSection({ name: 'Rent' });
     expect((await view).getByDisplayValue('Rent')).toBeTruthy();
@@ -127,17 +111,9 @@ describe('RepeatSection', () => {
     expect((await view).getByText('That name is already used by another recurring rule')).toBeTruthy();
   });
 
-  it('always shows the first transaction date, which shifts when skipping the first occurrence', async () => {
-    const off = await renderSection({ showSkipFirst: true, skipFirst: false, frequency: 'monthly', startDay: new Date(2026, 9, 6) });
-    expect((await off.view).getByText('First transaction: October 6, 2026')).toBeTruthy();
-
-    const on = await renderSection({
-      showSkipFirst: true,
-      skipFirst: true,
-      frequency: 'monthly',
-      startDay: new Date(2026, 9, 6),
-    });
-    expect((await on.view).getByText('First transaction: November 6, 2026')).toBeTruthy();
+  it('always shows the first transaction date', async () => {
+    const view = await renderSection({ frequency: 'monthly', startDay: new Date(2026, 9, 6) });
+    expect((await view.view).getByText('First transaction: October 6, 2026')).toBeTruthy();
   });
 
   it('summarizes what will be created on save', async () => {
@@ -146,9 +122,51 @@ describe('RepeatSection', () => {
     expect((await view.view).getByText('1 transaction will be created')).toBeTruthy();
   });
 
-  it('reports nothing created when the first occurrence is in the future (skip-first)', async () => {
-    const view = await renderSection({ frequency: 'monthly', startDay: new Date(2026, 9, 6), skipFirst: true });
+  it('reports nothing created when the first occurrence is in the future', async () => {
+    const view = await renderSection({ frequency: 'monthly', startDay: new Date(2026, 10, 6) });
     expect((await view.view).getByText('No transactions will be created now')).toBeTruthy();
+  });
+
+  it('applies a denser schedule from today, not from the stale cursor', async () => {
+    // Monthly rule (cursor 1 Nov) densified to daily: the change takes effect today.
+    const densified = await renderSection({
+      frequency: 'daily',
+      ruleNextDue: '2026-11-01',
+      startDay: new Date(2026, 8, 1),
+      previousSchedule: { frequency: 'monthly', interval: 1, day_of_month: 1, start_date: '2026-09-01', end_date: null },
+    });
+    expect((await densified.view).getByText('Next: October 6, 2026')).toBeTruthy();
+    expect((await densified.view).getByText('1 transaction will be created')).toBeTruthy();
+  });
+
+  it('does not re-count an already-generated today when the schedule is unchanged', async () => {
+    const unchanged = await renderSection({
+      frequency: 'daily',
+      ruleNextDue: '2026-10-07',
+      startDay: new Date(2026, 9, 6),
+      previousSchedule: { frequency: 'daily', interval: 1, start_date: '2026-10-06', end_date: null },
+    });
+    expect((await unchanged.view).getByText('Next: October 7, 2026')).toBeTruthy();
+    expect((await unchanged.view).getByText('No transactions will be created now')).toBeTruthy();
+  });
+
+  it('records the skipped window when a fresh rule start moves into the past', async () => {
+    const movedPast = await renderSection({
+      frequency: 'daily',
+      ruleNextDue: '2026-10-30',
+      ruleUnmaterialized: true,
+      startDay: new Date(2026, 9, 1),
+    });
+    expect((await movedPast.view).getByText('Next: October 6, 2026')).toBeTruthy();
+    expect((await movedPast.view).getByText('5 occurrences will be skipped')).toBeTruthy();
+  });
+
+  it('hints that past occurrences are not recreated when the start moves earlier', async () => {
+    const withHint = await renderSection({ ruleNextDue: '2026-11-02', ruleStartMovedEarlier: true });
+    expect((await withHint.view).getByText('Changing the start date doesn\'t add earlier transactions.')).toBeTruthy();
+
+    const withoutHint = await renderSection({ ruleNextDue: '2026-11-02' });
+    expect((await withoutHint.view).queryByText('Changing the start date doesn\'t add earlier transactions.')).toBeNull();
   });
 
   it('shows the last-day checkbox only for monthly/yearly', async () => {

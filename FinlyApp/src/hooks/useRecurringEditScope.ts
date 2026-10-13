@@ -5,7 +5,6 @@ import {
   buildRecurrenceSchedule,
   isSkippedWindowRecoverable,
   nextDueOnOrAfter,
-  recurrenceSkipWindow,
   toDateOnly,
   todayDateOnly,
 } from '../utils/recurrence';
@@ -17,6 +16,8 @@ interface UseRecurringEditScopeProps {
   frequency: RecurrenceFrequency;
   interval: number;
   end: Date | null;
+  /** Monthly/yearly: anchor on the last day of the month (affects the schedule used here). */
+  lastDay?: boolean;
   /** The current transaction draft. */
   accountId: number | undefined;
   categoryId: number | null;
@@ -34,6 +35,8 @@ interface UseRecurringEditScopeProps {
   initialRuleNextDue?: string | null;
   initialRuleActive?: boolean;
   initialRuleSkippedFrom?: string | null;
+  /** The rule's cursor still equals its start (never generated/skipped): the new start anchors it. */
+  ruleUnmaterialized?: boolean;
 }
 
 /**
@@ -46,6 +49,7 @@ export function useRecurringEditScope({
   frequency,
   interval,
   end,
+  lastDay = false,
   accountId,
   categoryId,
   amount,
@@ -61,6 +65,7 @@ export function useRecurringEditScope({
   initialRuleNextDue,
   initialRuleActive,
   initialRuleSkippedFrom,
+  ruleUnmaterialized = false,
 }: UseRecurringEditScopeProps) {
   // Does the draft affect the past — either by touching a field the "past ones"
   // scope rewrites, or by opening a missed window the new schedule would back-fill?
@@ -83,8 +88,9 @@ export function useRecurringEditScope({
     // or paused rule stays disabled.
     let missedWindow = false;
     if (initialRuleNextDue != null && (initialRuleActive ?? true)) {
-      const schedule = buildRecurrenceSchedule(day, frequency, interval, end ? toDateOnly(end) : null);
-      const firstDue = nextDueOnOrAfter(schedule, initialRuleNextDue);
+      const schedule = buildRecurrenceSchedule(day, frequency, interval, end ? toDateOnly(end) : null, lastDay);
+      const cursor = ruleUnmaterialized ? schedule.start_date : initialRuleNextDue;
+      const firstDue = nextDueOnOrAfter(schedule, cursor);
       missedWindow = firstDue <= todayDateOnly() && (schedule.end_date == null || firstDue <= schedule.end_date);
     }
     // A window a previous "Future only" edit skipped is recoverable via "Future + past".
@@ -111,18 +117,13 @@ export function useRecurringEditScope({
     initialRuleNextDue,
     initialRuleActive,
     initialRuleSkippedFrom,
+    ruleUnmaterialized,
     day,
     frequency,
     interval,
     end,
+    lastDay,
   ]);
 
-  // Window that "Future only" would skip for the current draft (used to warn on save).
-  const recurringSkipWindow = useMemo(() => {
-    if (!ruleMode || initialRuleNextDue == null) return null;
-    const schedule = buildRecurrenceSchedule(day, frequency, interval, end ? toDateOnly(end) : null);
-    return recurrenceSkipWindow(schedule, initialRuleNextDue, todayDateOnly());
-  }, [ruleMode, initialRuleNextDue, day, frequency, interval, end]);
-
-  return { recurringPastAffected, recurringSkipWindow };
+  return { recurringPastAffected };
 }

@@ -94,9 +94,9 @@ vi.mock('../../src/hooks/useTransactionForm', () => ({
     setRepeatInterval: vi.fn(),
     repeatEnd: null as Date | null,
     setRepeatEnd: vi.fn(),
-    repeatSkipFirst: false,
-    setRepeatSkipFirst: vi.fn(),
     repeatMinDate: new Date(2026, 8, 2),
+    ruleUnmaterialized: false,
+    ruleStartMovedEarlier: false,
     modalRepeatEndVisible: false,
     setModalRepeatEndVisible: vi.fn(),
     handleToggleTag: toggleTag,
@@ -122,7 +122,7 @@ vi.mock('../../src/hooks/useTransactionForm', () => ({
 
 const catFood: Category = { id: 1, user_id: 1, name: 'Food', icon: 'cart', color: '#22D3EE', type: 'expense', created_at: '2026-01-01' };
 
-function renderForm() {
+function renderForm(overrides: { ruleMode?: boolean } = {}) {
   return render(
     <TransactionForm
       initialType="expense"
@@ -136,6 +136,7 @@ function renderForm() {
       errorTitle="Error"
       errorMessage="Something went wrong"
       onSubmit={formSubmit}
+      {...overrides}
     />
   );
 }
@@ -215,5 +216,18 @@ describe('TransactionForm', () => {
     mockFormState.config = { ...DEFAULT_CONFIG };
     const view = await renderForm();
     expect(view.getByText('Create')).toBeTruthy();
+  });
+
+  it('labels the date field "Start date" and hides the photo section in rule mode', async () => {
+    const view = await renderForm({ ruleMode: true });
+    expect(view.getByText('Start date')).toBeTruthy();
+    expect(view.queryByText('Day')).toBeNull();
+    expect(view.queryByText('Photo')).toBeNull();
+  });
+
+  it('keeps the "Day" label and shows the photo section outside rule mode', async () => {
+    const view = await renderForm();
+    expect(view.getByText('Day')).toBeTruthy();
+    expect(view.getByText('Photo')).toBeTruthy();
   });
 });

@@ -494,7 +494,7 @@ export const en = {
   recurring_scope_title: 'Apply changes to',
   recurring_scope_future: 'Future only',
   recurring_scope_future_past: 'Future + past',
-  recurring_scope_past_hint: 'Also updates past transactions and adds the missed ones. Changing the end date never deletes transactions.',
+  recurring_scope_past_hint: 'Also updates the transactions already created and fills in any missed occurrences. Existing dates are never changed or deleted.',
   recurring_error_title: 'Error',
   recurring_error_message: 'Something went wrong. Please try again.',
   repeat_daily: 'Daily',
@@ -520,7 +520,8 @@ export const en = {
   repeat_on_month_last_day: (month: string) => `on the last day of ${month}`,
   repeat_last_day: 'Last day of the month',
   repeat_until: (date: string) => `until ${date}`,
-  repeat_skip_first: 'Skip the first occurrence',
+  repeat_start_date: 'Start date',
+  repeat_start_earlier_hint: 'Changing the start date doesn\'t add earlier transactions.',
   repeat_first_transaction: (date: string) => `First transaction: ${date}`,
 
   recurring_search: 'Search recurring rules',

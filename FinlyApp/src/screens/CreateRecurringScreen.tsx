@@ -64,14 +64,12 @@ export default function CreateRecurringScreen() {
           frequency: recurrence.frequency,
           interval: recurrence.interval,
           endDate: recurrence.endDate,
-          skipFirst: recurrence.skipFirst,
           lastDay: recurrence.lastDay,
           tagIds,
         });
         changeType(data.type);
       }}
       ruleMode
-      allowSkipFirst
       existingRepeatNames={existingRepeatNames}
       resetTagsOnFirstFocus
     />

@@ -35,7 +35,6 @@ describe('useRecurringEditScope', () => {
   it('does not affect the past when nothing changed', async () => {
     const { result } = await renderHook(() => useRecurringEditScope(base));
     expect(result.current.recurringPastAffected).toBe(false);
-    expect(result.current.recurringSkipWindow).toBeNull();
   });
 
   it('affects the past when a rewritten detail changed', async () => {
@@ -50,10 +49,15 @@ describe('useRecurringEditScope', () => {
     expect(result.current.recurringPastAffected).toBe(true);
   });
 
-  it('reports the window a Future-only edit would skip', async () => {
-    const { result } = await renderHook(() =>
-      useRecurringEditScope({ ...base, initialRuleNextDue: '2026-09-02' }),
-    );
-    expect(result.current.recurringSkipWindow).toEqual({ from: '2026-09-02', to: '2026-11-02', count: 2 });
+  it('uses the last-day schedule when checking the missed window', async () => {
+    // Today is 2026-10-06. A monthly rule anchored on the 10th has next on Oct 10
+    // (future → no missed window); the last-day variant is due Sep 30 (past → window).
+    const args = { ...base, day: new Date(2026, 7, 10), initialRuleNextDue: '2026-09-30' };
+
+    const byDay = await renderHook(() => useRecurringEditScope(args));
+    expect(byDay.result.current.recurringPastAffected).toBe(false);
+
+    const lastDay = await renderHook(() => useRecurringEditScope({ ...args, lastDay: true }));
+    expect(lastDay.result.current.recurringPastAffected).toBe(true);
   });
 });

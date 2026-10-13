@@ -184,32 +184,46 @@ export interface EditAnchorOptions {
   today: string;
   /** Earliest skipped occurrence to recover with "Future + past". */
   skippedFrom?: string | null;
+  /**
+   * The rule's schedule BEFORE the edit. The app has generated every occurrence of
+   * it up to today, so it tells whether today's occurrence already exists — a
+   * "Future only" edit then starts at the next occurrence instead of re-counting it.
+   */
+  previousSchedule?: RecurrenceSchedule | null;
 }
 
 /**
- * First occurrence a save will generate (the cursor anchor). "Future only" jumps
- * to the next occurrence on/after today (skipping the missed window); "Future +
- * past" back-fills from the rule's cursor — or the earliest skipped occurrence.
+ * First occurrence a save will generate (the cursor anchor).
+ * - "Future only": the new schedule's first occurrence on/after today (occurrences
+ *   before today are skipped). Today's occurrence is also skipped when it already
+ *   exists (it was generated under the previous schedule); but a schedule change that
+ *   introduces today/future occurrences takes effect from **today**, never from the
+ *   rule's stale cursor.
+ * - "Future + past": back-fills from the rule's cursor — or the earliest recorded
+ *   skipped occurrence.
  */
 export function resolveEditAnchor(
   schedule: RecurrenceSchedule,
-  { cursor, scope, today, skippedFrom = null }: EditAnchorOptions,
+  { cursor, scope, today, skippedFrom = null, previousSchedule = null }: EditAnchorOptions,
 ): string {
   if (scope === RECURRENCE_SCOPES.futureAndPast) {
     const base = skippedFrom != null && skippedFrom < cursor ? skippedFrom : cursor;
     return nextDueOnOrAfter(schedule, base);
   }
-  return nextDueOnOrAfter(schedule, cursor > today ? cursor : today);
+  const anchor = nextDueOnOrAfter(schedule, today);
+  const todayAlreadyGenerated =
+    anchor === today && previousSchedule != null && nextDueOnOrAfter(previousSchedule, today) === today;
+  return todayAlreadyGenerated ? advanceOccurrence(schedule, today) : anchor;
 }
 
 export interface RecurrencePreviewOptions {
   today: string;
-  /** Create mode: defer the first occurrence by one interval. */
-  skipFirst?: boolean;
   /** Edit mode: the rule's cursor (omit/null for create). */
   cursor?: string | null;
   scope?: RecurrenceScope;
   skippedFrom?: string | null;
+  /** The rule's schedule before the edit (see {@link resolveEditAnchor}). */
+  previousSchedule?: RecurrenceSchedule | null;
 }
 
 export interface RecurrencePreview {
@@ -226,12 +240,12 @@ export interface RecurrencePreview {
  */
 export function recurrencePreview(
   schedule: RecurrenceSchedule,
-  { today, skipFirst = false, cursor = null, scope = RECURRENCE_SCOPES.future, skippedFrom = null }: RecurrencePreviewOptions,
+  { today, cursor = null, scope = RECURRENCE_SCOPES.future, skippedFrom = null, previousSchedule = null }: RecurrencePreviewOptions,
 ): RecurrencePreview {
   const firstDate =
     cursor == null
-      ? (skipFirst ? advanceOccurrence(schedule, schedule.start_date) : schedule.start_date)
-      : resolveEditAnchor(schedule, { cursor, scope, today, skippedFrom });
+      ? schedule.start_date
+      : resolveEditAnchor(schedule, { cursor, scope, today, skippedFrom, previousSchedule });
   const { occurrences } = listDueOccurrences(schedule, firstDate, today);
   return { firstDate, count: occurrences.length };
 }

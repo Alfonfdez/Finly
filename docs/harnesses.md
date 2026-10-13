@@ -93,7 +93,7 @@ Regression seeds come from real bugs previously fixed in this project.
 | `tests/utils/formHints.test.ts` | `src/utils/formHints.ts` — comment/description hint selection |
 | `tests/utils/errors.test.ts` | `src/utils/errors.ts` — `showErrorAlert` + `runWithErrorAlert` |
 | `tests/utils/pendingCategory.test.ts` | `src/utils/pendingCategory.ts` — pending-category consume/clear |
-| `tests/utils/recurrence.test.ts` | `src/utils/recurrence.ts` — recurrence advancement (daily/weekly/monthly/yearly + interval), month-end/Feb-29 clamping, catch-up list, end-date and cap |
+| `tests/utils/recurrence.test.ts` | `src/utils/recurrence.ts` — recurrence advancement (daily/weekly/monthly/yearly + interval), month-end/Feb-29 clamping, catch-up list, end-date and cap, and edit anchoring (`resolveEditAnchor`/`recurrencePreview`: Future only vs Future + past, today-generated skip, skip window) |
 | `tests/utils/calendarBounds.test.ts` | `src/utils/calendarBounds.ts` — `resolveDateBounds` convention (undefined max → today, null → unbounded, Date → clamp) |
 
 ## Phase B — Unified SQLite engine + contract suite (implemented)
@@ -129,7 +129,8 @@ Test files (under `FinlyApp/tests/database/`):
 | `sqliteWebEngine.test.ts` | Engine semantics: results, persistence, transactions, schema boot + seed counts |
 | `dbDrift.test.ts` | Schema drift: 9 tables' `PRAGMA table_info` vs declared columns, every `types.ts` field covered by a migration column, `user_version` 4, seed counts (1 user / 2 accounts / 31 categories / 0 transactions / 0 recurring rules), config rows == `DB_KEY_MAP`, init idempotence |
 | `recurringRepo.test.ts` | `recurringRepo` over sql.js: rule CRUD + tags, `listDue`, occurrence insert + unique-index idempotency, bulk past update, delete keeps generated transactions |
-| `recurringService.test.ts` | `materializeDueRecurring`: back-fill missed occurrences, idempotent re-runs, paused rules skipped, end-date respected |
+| `recurringService.test.ts` | `materializeDueRecurring` + `saveRecurringRuleEdit`: back-fill/idempotency/paused/end-date, plus edit scenarios (fresh-rule re-anchor, denser schedule taking effect today, skip recording/recovery) |
+| `recurringService.preview.test.ts` | Summary ↔ save invariant: for create/edit scenarios the transactions the save creates equal the `recurrencePreview` the form shows |
 
 Run the suite alone with `npx vitest run tests/database/` (or all harnesses with `npm run
 test:all`).
@@ -337,7 +338,8 @@ and each suite calls `resetStub()` in `beforeEach`. i18n is NOT stubbed — the 
 | `tests/component/CalculatorModal.test.tsx` | `CalculatorModal` — keypad input, expression evaluation, clear/backspace, trailing-operator rejection, accept/cancel |
 | `tests/component/CategoryFilterModal.test.tsx` | `CategoryFilterModal` — type tabs, search, All/category multi-select, `Apply (N)`/`Apply (All)` labels, disabled Apply at 0 selected, close |
 | `tests/component/TransactionForm.test.tsx` | `TransactionForm` — type tabs, amount input, account picker, category grid + create tile, day selector, form submit/cancel |
-| `tests/component/RepeatSection.test.tsx` | `RepeatSection` — toggle visibility, frequency chips, interval stepper, end date, recurrence summary, rule-mode (no toggle) |
+| `tests/component/RepeatSection.test.tsx` | `RepeatSection` — always-rendered options (no toggle), frequency chips, interval stepper, end date, rule-mode re-anchor (denser schedule from today, today not re-counted), start-moved-earlier hint, last-day |
+| `tests/component/recurringSummary.test.tsx` | Summary block wording: create (past/future start), edit Future only (today anchor + skipped window), Future + past (back-filled count), start-moved-earlier hint |
 | `tests/component/YearNav.test.tsx` | `YearNav` — forward arrow disabled at the current-year default, unbounded when `maxYear` is null, back arrow disabled at `minYear` |
 | `tests/component/DayPicker.test.tsx` | `DayPicker` — default no-future (forward year arrow disabled, future days unselectable); `maxDate={null}` enables future years/days; follows the `date` prop on reopen (view-sync) |
 | `tests/component/ToggleRow.test.tsx` | `ToggleRow` — renders a `Switch` reflecting `checked`, toggles from the switch and from the label |
