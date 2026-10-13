@@ -17,7 +17,7 @@ interface UseRecurringDraftProps {
 
 /**
  * Recurring-rule draft state shared by the create/edit forms: the
- * frequency/interval/end date/skip-first/name, the end-date bounds and the
+ * frequency/interval/end date/last-day/name, the end-date bounds and the
  * name validation. Pure form state — no rule persistence.
  */
 export function useRecurringDraft({

@@ -17,7 +17,7 @@ import {
   MAX_VISIBLE_CATEGORIES,
 } from '../constants/types';
 import { formatDateForDB } from '../utils/formatters';
-import { toDateOnly } from '../utils/recurrence';
+import { isRuleUnmaterialized, toDateOnly } from '../utils/recurrence';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { parseAmountValue } from '../utils/amountInput';
 import { transactionRepository, tagRepository } from '../database';
@@ -201,7 +201,9 @@ export function useTransactionForm({
   // A rule whose cursor still equals its start has never generated/skipped an
   // occurrence ("fresh"): editing the start date re-anchors it from the new start
   // instead of keeping the stale (future) cursor.
-  const ruleUnmaterialized = initialRuleNextDue != null && toDateOnly(initialDay) === initialRuleNextDue;
+  const ruleUnmaterialized =
+    initialRuleNextDue != null &&
+    isRuleUnmaterialized({ next_due: initialRuleNextDue, start_date: toDateOnly(initialDay) });
   // Editing a rule that already generated transactions with an earlier start does
   // not recreate the past occurrences (the cursor floor keeps them skipped).
   const ruleStartMovedEarlier = initialRuleNextDue != null && !ruleUnmaterialized && toDateOnly(day) < toDateOnly(initialDay);

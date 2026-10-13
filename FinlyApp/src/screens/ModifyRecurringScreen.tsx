@@ -11,7 +11,7 @@ import { useApp } from '../context/AppContext';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { t } from '../i18n';
 import { RECURRENCE_SCOPES, USER_ID, type RecurrenceScope, type NavigationProp, type RootStackParamList } from '../constants/types';
-import { buildRecurrenceSchedule, fromDateOnly, recurrenceSkipWindow, todayDateOnly, type SkipWindow } from '../utils/recurrence';
+import { buildRecurrenceSchedule, fromDateOnly, planEdit, ruleEditCursor, todayDateOnly, type SkipWindow } from '../utils/recurrence';
 import { formatDateLong } from '../utils/formatters';
 import { recurringRepository } from '../database';
 import { saveRecurringRuleEdit } from '../database/recurringService';
@@ -83,13 +83,18 @@ export default function ModifyRecurringScreen() {
       recurrence.endDate,
       recurrence.lastDay,
     );
-    // A "fresh" rule (cursor still at its start) re-anchors from the new start.
-    const cursor = rule.next_due === rule.start_date ? schedule.start_date : rule.next_due;
-    const skip = recurrenceSkipWindow(schedule, cursor, todayDateOnly());
-    if (!skip) return true;
+    const { skipWindow } = planEdit({
+      schedule,
+      previousSchedule: rule,
+      cursor: ruleEditCursor(rule, schedule),
+      scope,
+      today: todayDateOnly(),
+      skippedFrom: rule.skipped_from,
+    });
+    if (!skipWindow) return true;
     return new Promise<boolean>(resolve => {
       skipResolveRef.current = resolve;
-      setSkipWarning(skip);
+      setSkipWarning(skipWindow);
     });
   }, [scope, rule]);
 

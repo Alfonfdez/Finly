@@ -1,7 +1,7 @@
 import { withTransaction } from './drizzle/engine';
 import { recurringRepo, type RecurringRuleInput } from './repositories/recurringRepo';
-import { buildRecurrenceSchedule, isRecurrenceEnded, isSkippedWindowRecoverable, listDueOccurrences, nextDueOnOrAfter, resolveEditAnchor, fromDateOnly, recurrenceSkipWindow, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
-import { RECURRENCE_SCOPES, USER_ID, type RecurrenceScope } from '../constants/types';
+import { buildRecurrenceSchedule, isRecurrenceEnded, listDueOccurrences, nextDueOnOrAfter, planEdit, ruleEditCursor, fromDateOnly, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
+import { RECURRENCE_SCOPES, USER_ID, type RecurrenceScope, type RecurrenceSpec } from '../constants/types';
 import type { RecurringRule } from './types';
 
 /**
@@ -147,13 +147,7 @@ export async function setRecurringRuleActive(ruleId: number, active: boolean, no
   return resumeRecurringRule(ruleId, now);
 }
 
-export interface RecurringEditRecurrence {
-  frequency: RecurringRule['frequency'];
-  interval: number;
-  endDate: string | null;
-  /** Monthly/yearly: anchor on the last day of the month instead of the start day. */
-  lastDay?: boolean;
-}
+export type RecurringEditRecurrence = RecurrenceSpec;
 
 export interface RecurringEditPastPatch {
   account_id: number;
@@ -198,32 +192,15 @@ export async function saveRecurringRuleEdit(params: RecurringEditParams): Promis
   if (!current) return 0;
 
   const startDate = (updated.start_date ?? current.start_date).slice(0, 10);
-  const start = fromDateOnly(startDate);
-  const schedule = buildRecurrenceSchedule(start, recurrence.frequency, recurrence.interval, recurrence.endDate, recurrence.lastDay);
-  // A rule whose cursor still equals its start has never generated or skipped an
-  // occurrence ("fresh"): use the NEW schedule's start as the cursor so moving the
-  // start earlier re-anchors the rule. Otherwise keep the cursor — it may encode a
-  // deliberate skip (a pause/resume or a previous "Future only" edit).
-  const cursor = current.next_due === current.start_date ? schedule.start_date : current.next_due;
-  const skip = scope === RECURRENCE_SCOPES.future ? recurrenceSkipWindow(schedule, cursor, today) : null;
-
-  // "Future + past" re-anchors at the earliest skipped occurrence so the window a
-  // previous "Future only" edit passed over is back-filled.
-  const nextDue = resolveEditAnchor(schedule, {
-    cursor,
+  const schedule = buildRecurrenceSchedule(fromDateOnly(startDate), recurrence.frequency, recurrence.interval, recurrence.endDate, recurrence.lastDay);
+  const { nextDue, skippedFrom } = planEdit({
+    schedule,
+    previousSchedule: current,
+    cursor: ruleEditCursor(current, schedule),
     scope,
     today,
     skippedFrom: current.skipped_from,
-    previousSchedule: current,
   });
-
-  // "Future + past" fills the skipped window; "Future only" records the earliest
-  // skipped occurrence so it can be recovered later. Clear it once it falls past
-  // the (possibly shortened) end date.
-  let skippedFrom = scope === RECURRENCE_SCOPES.futureAndPast ? null : current.skipped_from ?? skip?.from ?? null;
-  if (!isSkippedWindowRecoverable(skippedFrom, schedule.end_date, today)) {
-    skippedFrom = null;
-  }
 
   await recurringRepo.updateWithTags(
     ruleId,

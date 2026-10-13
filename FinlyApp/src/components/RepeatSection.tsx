@@ -6,8 +6,8 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, REPEAT_MAX_INTERVAL, REPEAT_MIN_INTERVAL, REPEAT_NAME_MAX_LENGTH, type RecurrenceFrequency, type RecurrenceScope } from '../constants/types';
 import { formatDateLong } from '../utils/formatters';
-import { buildRecurrenceSchedule, fromDateOnly, recurrencePreview, recurrenceSkipWindow, toDateOnly, todayDateOnly, type RecurrenceSchedule } from '../utils/recurrence';
-import { recurrenceSummary } from '../utils/recurrenceSummary';
+import { buildRecurrenceSchedule, fromDateOnly, planEdit, recurrencePreview, todayDateOnly, type RecurrenceSchedule } from '../utils/recurrence';
+import { recurrenceFrequencyLabels, recurrenceSummary } from '../utils/recurrenceSummary';
 import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, CONTROL_BORDER_RADIUS, PILL_RADIUS, SECTION_GAP, SECTION_GAP_SM, SECTION_TITLE_STYLE, recurringCardColors } from './componentStyles';
 import ClearButton from './ClearButton';
 import CheckboxRow from './settings/CheckboxRow';
@@ -77,15 +77,10 @@ export default function RepeatSection({
   const fs = useFontSize();
   const labels = t();
 
-  const frequencyLabels = useMemo<Record<RecurrenceFrequency, string>>(() => ({
-    daily: labels.repeat_daily,
-    weekly: labels.repeat_weekly,
-    monthly: labels.repeat_monthly,
-    yearly: labels.repeat_yearly,
-  }), [labels]);
+  const frequencyLabels = recurrenceFrequencyLabels(labels);
 
   const schedule = useMemo(
-    () => buildRecurrenceSchedule(startDay, frequency, interval, endDate ? toDateOnly(endDate) : null, lastDay),
+    () => buildRecurrenceSchedule(startDay, frequency, interval, endDate, lastDay),
     [startDay, frequency, interval, endDate, lastDay],
   );
   const summary = recurrenceSummary(schedule, config.language);
@@ -94,16 +89,12 @@ export default function RepeatSection({
   // A "fresh" rule (never generated/skipped) anchors on the new start, so moving the
   // start date re-anchors it; otherwise keep the rule's cursor.
   const cursor = ruleUnmaterialized ? schedule.start_date : ruleNextDue;
-  const preview = recurrencePreview(schedule, {
-    today: todayDateOnly(),
-    cursor,
-    scope,
-    skippedFrom: ruleSkippedFrom,
-    previousSchedule,
-  });
-  const skipWindow = isEdit && scope === RECURRENCE_SCOPES.future && cursor
-    ? recurrenceSkipWindow(schedule, cursor, todayDateOnly())
+  const today = todayDateOnly();
+  const plan = cursor
+    ? planEdit({ schedule, previousSchedule, cursor, scope, today, skippedFrom: ruleSkippedFrom })
     : null;
+  const preview = plan?.preview ?? recurrencePreview(schedule, { today });
+  const skipWindow = plan?.skipWindow ?? null;
 
   const formatOccurrence = (value: string) => formatDateLong(fromDateOnly(value), config.language);
   const firstLine = isEdit

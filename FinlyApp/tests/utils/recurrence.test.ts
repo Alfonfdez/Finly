@@ -7,9 +7,11 @@ import {
   isSkippedWindowRecoverable,
   listDueOccurrences,
   nextEffectiveOccurrence,
+  planEdit,
   recurrencePreview,
   recurrenceSkipWindow,
   resolveEditAnchor,
+  ruleEditCursor,
   toDateOnly,
   todayDateOnly,
   type RecurrenceSchedule,
@@ -300,8 +302,60 @@ describe('buildRecurrenceSchedule', () => {
     });
   });
 
-  it('supports skipping the first occurrence by advancing one interval', () => {
+  it('advances one interval from the start date', () => {
     const schedule = buildRecurrenceSchedule(start, 'monthly', 1);
     expect(advanceOccurrence(schedule, schedule.start_date)).toBe('2026-11-06');
+  });
+
+  it('accepts a Date end date (normalized to date-only)', () => {
+    expect(buildRecurrenceSchedule(start, 'daily', 1, new Date(2026, 9, 31))).toMatchObject({
+      end_date: '2026-10-31',
+    });
+  });
+});
+
+describe('ruleEditCursor', () => {
+  const schedule: RecurrenceSchedule = { frequency: 'daily', interval: 1, day_of_month: null, start_date: '2026-10-01', end_date: null };
+
+  it('anchors a fresh rule on the new schedule start', () => {
+    expect(ruleEditCursor({ next_due: '2026-10-30', start_date: '2026-10-30' }, schedule)).toBe('2026-10-01');
+  });
+
+  it('keeps the cursor of a rule that already ran', () => {
+    expect(ruleEditCursor({ next_due: '2026-10-14', start_date: '2026-10-01' }, schedule)).toBe('2026-10-14');
+  });
+});
+
+describe('planEdit', () => {
+  const daily: RecurrenceSchedule = { frequency: 'daily', interval: 1, day_of_month: null, start_date: '2026-09-01', end_date: null };
+
+  it('Future only skips the missed window and records it as recoverable', () => {
+    const plan = planEdit({ schedule: daily, cursor: '2026-09-01', scope: 'future', today: '2026-10-07' });
+    expect(plan.nextDue).toBe('2026-10-07');
+    expect(plan.skipWindow).toEqual({ from: '2026-09-01', to: '2026-10-07', count: 36 });
+    expect(plan.skippedFrom).toBe('2026-09-01');
+    expect(plan.preview).toEqual({ firstDate: '2026-10-07', count: 1 });
+  });
+
+  it('Future + past back-fills from the cursor and clears the record', () => {
+    const plan = planEdit({ schedule: daily, cursor: '2026-09-01', scope: 'futureAndPast', today: '2026-10-07' });
+    expect(plan.nextDue).toBe('2026-09-01');
+    expect(plan.skipWindow).toBeNull();
+    expect(plan.skippedFrom).toBeNull();
+    expect(plan.preview).toEqual({ firstDate: '2026-09-01', count: 37 });
+  });
+
+  it('Future only applies a denser schedule from today (previousSchedule)', () => {
+    const previous: RecurrenceSchedule = { frequency: 'monthly', interval: 1, day_of_month: 1, start_date: '2026-09-01', end_date: null };
+    const plan = planEdit({ schedule: daily, previousSchedule: previous, cursor: '2026-11-01', scope: 'future', today: '2026-10-06' });
+    expect(plan.nextDue).toBe('2026-10-06');
+    expect(plan.skippedFrom).toBeNull();
+    expect(plan.preview).toEqual({ firstDate: '2026-10-06', count: 1 });
+  });
+
+  it('drops a recorded skip once the end date falls before it', () => {
+    const ended: RecurrenceSchedule = { ...daily, end_date: '2026-08-15' };
+    const plan = planEdit({ schedule: ended, cursor: '2026-09-01', scope: 'future', today: '2026-10-07', skippedFrom: '2026-09-01' });
+    expect(plan.skippedFrom).toBeNull();
   });
 });

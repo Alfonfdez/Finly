@@ -31,7 +31,7 @@ export function buildRecurrenceSchedule(
   startDay: Date,
   frequency: RecurrenceFrequency,
   interval: number,
-  endDate: string | null = null,
+  endDate: string | Date | null = null,
   lastDay = false,
 ): RecurrenceSchedule & { weekday: number | null; day_of_month: number | null; month: number | null; end_date: string | null } {
   const monthlyOrYearly =
@@ -47,7 +47,7 @@ export function buildRecurrenceSchedule(
     day_of_month: useLastDay ? 31 : monthlyOrYearly ? startDay.getDate() : null,
     month: frequency === RECURRENCE_FREQUENCIES.yearly ? startDay.getMonth() + 1 : null,
     start_date: toDateOnly(effectiveStart),
-    end_date: endDate,
+    end_date: endDate == null ? null : typeof endDate === 'string' ? endDate : toDateOnly(endDate),
   };
 }
 
@@ -178,6 +178,23 @@ export function recurrenceSkipWindow(
   return { from, to, count };
 }
 
+/** True when a rule has never generated or skipped an occurrence (its cursor still equals its start). */
+export function isRuleUnmaterialized(rule: { next_due: string; start_date: string }): boolean {
+  return rule.next_due === rule.start_date;
+}
+
+/**
+ * The cursor an edit anchors from: a not-yet-started rule ("fresh") uses the NEW
+ * schedule's start so moving the start re-anchors it; otherwise keep the rule's own
+ * cursor (it may encode a deliberate skip from a pause/resume or a previous edit).
+ */
+export function ruleEditCursor(
+  rule: { next_due: string; start_date: string },
+  schedule: RecurrenceSchedule,
+): string {
+  return isRuleUnmaterialized(rule) ? schedule.start_date : rule.next_due;
+}
+
 export interface EditAnchorOptions {
   cursor: string;
   scope: RecurrenceScope;
@@ -248,6 +265,53 @@ export function recurrencePreview(
       : resolveEditAnchor(schedule, { cursor, scope, today, skippedFrom, previousSchedule });
   const { occurrences } = listDueOccurrences(schedule, firstDate, today);
   return { firstDate, count: occurrences.length };
+}
+
+export interface RecurrenceEditPlanOptions {
+  /** The schedule AFTER the edit. */
+  schedule: RecurrenceSchedule;
+  /** The rule's schedule BEFORE the edit (used to skip an already-generated today). */
+  previousSchedule?: RecurrenceSchedule | null;
+  /** The rule's cursor before the edit (see {@link ruleEditCursor}). */
+  cursor: string;
+  scope: RecurrenceScope;
+  today: string;
+  /** Earliest occurrence a previous "Future only" edit skipped. */
+  skippedFrom?: string | null;
+}
+
+export interface RecurrenceEditPlan {
+  /** New cursor (`next_due`) to persist. */
+  nextDue: string;
+  /** `skipped_from` to persist (null when nothing is recoverable). */
+  skippedFrom: string | null;
+  /** Occurrences a "Future only" save would skip. */
+  skipWindow: SkipWindow | null;
+  /** What the form's Summary block shows. */
+  preview: RecurrencePreview;
+}
+
+/**
+ * The single source of truth for a recurring-rule edit: the new cursor, the skipped
+ * window, the recoverable-skip record and the Summary preview. Used by both the write
+ * (`saveRecurringRuleEdit`) and the form, so the UI and the persisted result can't drift.
+ */
+export function planEdit({
+  schedule,
+  previousSchedule = null,
+  cursor,
+  scope,
+  today,
+  skippedFrom = null,
+}: RecurrenceEditPlanOptions): RecurrenceEditPlan {
+  const skipWindow = scope === RECURRENCE_SCOPES.future ? recurrenceSkipWindow(schedule, cursor, today) : null;
+  const nextDue = resolveEditAnchor(schedule, { cursor, scope, today, skippedFrom, previousSchedule });
+  let nextSkippedFrom = scope === RECURRENCE_SCOPES.futureAndPast ? null : skippedFrom ?? skipWindow?.from ?? null;
+  if (!isSkippedWindowRecoverable(nextSkippedFrom, schedule.end_date, today)) {
+    nextSkippedFrom = null;
+  }
+  const preview = recurrencePreview(schedule, { today, cursor, scope, skippedFrom, previousSchedule });
+  return { nextDue, skippedFrom: nextSkippedFrom, skipWindow, preview };
 }
 
 export function listDueOccurrences(

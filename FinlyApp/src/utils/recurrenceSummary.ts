@@ -1,8 +1,18 @@
 import { t } from '../i18n';
-import { RECURRENCE_FREQUENCIES } from '../constants/types';
+import { RECURRENCE_FREQUENCIES, type RecurrenceFrequency } from '../constants/types';
 import { formatDateLong, getMonthName } from './formatters';
 import { fromDateOnly, type RecurrenceSchedule } from './recurrence';
 import type { Language } from './language';
+
+/** Localized labels per recurrence frequency (shared by the frequency chips and the rules list). */
+export function recurrenceFrequencyLabels(labels: ReturnType<typeof t> = t()): Record<RecurrenceFrequency, string> {
+  return {
+    daily: labels.repeat_daily,
+    weekly: labels.repeat_weekly,
+    monthly: labels.repeat_monthly,
+    yearly: labels.repeat_yearly,
+  };
+}
 
 /** Human-readable summary of a recurrence schedule (e.g. "Every month on day 2"). */
 export function recurrenceSummary(schedule: RecurrenceSchedule, language: Language): string {
