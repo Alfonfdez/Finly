@@ -77,7 +77,9 @@ export default function DataScreen() {
   const { resetAll } = useApp();
   const labels = t();
 
-  const [deleteTransactionsModal, setDeleteTransactionsModal] = useState(false);
+  const [deleteTransactionsModal1, setDeleteTransactionsModal1] = useState(false);
+  const [deleteTransactionsModal2, setDeleteTransactionsModal2] = useState(false);
+  const [deleteTransactionsText, setDeleteTransactionsText] = useState('');
   const [deleteAllModal1, setDeleteAllModal1] = useState(false);
   const [deleteAllModal2, setDeleteAllModal2] = useState(false);
   const [deleteAllText, setDeleteAllText] = useState('');
@@ -159,6 +161,12 @@ export default function DataScreen() {
     setPendingImport(null);
   };
 
+  const closeDeleteTransactions = () => {
+    setDeleteTransactionsModal1(false);
+    setDeleteTransactionsModal2(false);
+    setDeleteTransactionsText('');
+  };
+
   const closeDeleteAll = () => {
     setDeleteAllModal1(false);
     setDeleteAllModal2(false);
@@ -179,7 +187,7 @@ export default function DataScreen() {
       console.error('Failed to delete all transactions:', error);
       alertError(labels.settings_delete_transactions_error_title, labels.settings_delete_transactions_error_message);
     }
-    setDeleteTransactionsModal(false);
+    closeDeleteTransactions();
   };
 
   const handleDeleteAll = async () => {
@@ -228,7 +236,7 @@ export default function DataScreen() {
         label={labels.settings_delete_all_transactions}
         description={labels.settings_delete_all_transactions_description}
         labelColor={c.red}
-        onPress={() => setDeleteTransactionsModal(true)}
+        onPress={() => setDeleteTransactionsModal1(true)}
       />
 
       <SettingsRow
@@ -250,13 +258,25 @@ export default function DataScreen() {
       />
 
       <ConfirmationModal
-        visible={deleteTransactionsModal}
+        visible={deleteTransactionsModal1}
         title={labels.settings_delete_transactions_confirm_title}
         message={labels.settings_delete_transactions_confirm_message}
         confirmLabel={labels.delete}
         cancelLabel={labels.cancel}
+        onConfirm={() => setDeleteTransactionsModal2(true)}
+        onCancel={() => setDeleteTransactionsModal1(false)}
+      />
+
+      <ConfirmWithTextModal
+        visible={deleteTransactionsModal2}
+        title={labels.settings_delete_data_confirm_title2}
+        message={labels.settings_delete_data_confirm_message2}
+        confirmLabel={labels.settings_delete_confirm}
+        cancelLabel={labels.cancel}
+        text={deleteTransactionsText}
+        onTextChange={setDeleteTransactionsText}
         onConfirm={handleDeleteTransactions}
-        onCancel={() => setDeleteTransactionsModal(false)}
+        onCancel={closeDeleteTransactions}
       />
 
       <ConfirmationModal

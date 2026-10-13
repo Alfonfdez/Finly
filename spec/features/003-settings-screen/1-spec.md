@@ -234,29 +234,38 @@ An eye icon appears next to every masked balance. The icon represents the curren
 
 #### 6.1 — Delete all transactions
 
-- Row with icon `trash-outline` (red), label "Delete all transactions" (multilingual), and chevron-right.
-- Tapping opens a **confirmation modal**:
+- Row with icon `trash-outline` (red), label "Delete all transactions" (multilingual), description "Removes all transactions. Accounts, categories, tags, and recurring rules are kept." (multilingual), and chevron-right.
+- Tapping opens a **first confirmation modal**:
 
-**Modal — "Delete all transactions?"**
+**Modal 1 — "Delete all transactions?"**
 - Title: "Delete all transactions?" (multilingual).
-- Message: "All transaction history will be permanently deleted. Accounts, categories, and tags are kept." (multilingual).
+- Message: "All transaction history will be permanently deleted. Accounts, categories, tags, and recurring rules are kept." (multilingual).
 - Buttons: "Cancel" (neutral) and "Delete" (red).
 - When tapping "Cancel": modal closes.
-- When tapping "Delete":
+- When tapping "Delete": opens a **second confirmation modal**.
+
+**Modal 2 — "Are you sure?"**
+- Title: "Are you sure?" (multilingual).
+- Message: "Type DELETE to confirm" (multilingual).
+- Text input: placeholder "Type DELETE here" (multilingual). Only the word "DELETE" (case-insensitive) enables the confirm button.
+- Buttons: "Cancel" (neutral) and "Confirm" (red, disabled until correct text is typed).
+- When tapping "Cancel": both modals close.
+- When tapping "Confirm":
   1. All rows from `transactions` table are deleted.
   2. All rows from `transaction_tags` junction table are deleted (cleanup).
-  3. AppContext state is refreshed via `resetAll()` so all screens reflect changes immediately.
-  4. Modal closes.
-  5. An error alert is shown only if deletion fails.
+  3. **Recurring rules are kept** (`recurring_rules` + `recurring_rule_tags` are not touched) — they are managed separately from the Recurring screen or removed by "Delete all data".
+  4. AppContext state is refreshed via `resetAll()` so all screens reflect changes immediately.
+  5. Both modals close.
+  6. An error alert is shown only if deletion fails.
 
 #### 6.2 — Delete all data
 
-- Row with icon `warning-outline` (red), label "Delete all data" (multilingual), description "Deletes all accounts, categories, tags, and transactions. Your settings are kept." (multilingual), and chevron-right.
+- Row with icon `warning-outline` (red), label "Delete all data" (multilingual), description "Deletes all accounts, categories, tags, transactions, and recurring rules. Your settings are kept." (multilingual), and chevron-right.
 - Tapping opens a **first confirmation modal**:
 
 **Modal 1 — "Delete all data?"**
 - Title: "Delete all data?" (multilingual).
-- Message: "All accounts, categories, tags, and transactions will be permanently deleted. Your settings (language, theme, currency, and defaults) are kept. This cannot be undone." (multilingual).
+- Message: "All accounts, categories, tags, transactions, and recurring rules will be permanently deleted. Your settings (language, theme, currency, and defaults) are kept. This cannot be undone." (multilingual).
 - Buttons: "Cancel" (neutral) and "Delete all" (red).
 - When tapping "Cancel": modal closes.
 - When tapping "Delete all": opens a **second confirmation modal**.
@@ -268,14 +277,13 @@ An eye icon appears next to every masked balance. The icon represents the curren
 - Buttons: "Cancel" (neutral) and "Confirm" (red, disabled until correct text is typed).
 - When tapping "Cancel": both modals close.
 - When tapping "Confirm":
-  1. All data is cleared (transactions, transaction_tags, accounts, categories, tags).
+  1. All data is cleared (transactions, transaction_tags, recurring_rules, recurring_rule_tags, accounts, categories, tags).
   2. Default data is re-seeded: My Wallet, Total, 31 categories, 4 tags.
   3. The `config` table is **preserved**: language, theme, currency and all other settings are kept.
   4. `home_default_account_id` / `add_default_account_id` fall back to "null" **only** when the referenced account no longer exists after the wipe (e.g. a custom account). Defaults referencing surviving seed accounts (e.g. "My Wallet") are kept.
   5. AppContext state is fully refreshed via `resetAll()`, re-applying home defaults from config.
   6. Both modals close.
   7. All screens reflect the fresh seed state immediately.
-  8. An alert dialog confirms: "All data deleted. App reset to factory state." (multilingual).
 
 #### 6.3 — Reset to factory state
 
@@ -284,7 +292,7 @@ An eye icon appears next to every masked balance. The icon represents the curren
 
 **Modal 1 — "Reset to factory state?"**
 - Title: "Reset to factory state?" (multilingual).
-- Message: "This will reset the app to factory state. All accounts, categories, tags, transactions, and settings will be deleted and returned to their defaults. This cannot be undone." (multilingual).
+- Message: "This will reset the app to factory state. All accounts, categories, tags, transactions, recurring rules, and settings will be deleted and returned to their defaults. This cannot be undone." (multilingual).
 - Buttons: "Cancel" (neutral) and "Reset" (red).
 - When tapping "Cancel": modal closes.
 - When tapping "Reset": opens a **second confirmation modal**.
@@ -296,7 +304,7 @@ An eye icon appears next to every masked balance. The icon represents the curren
 - Buttons: "Cancel" (neutral) and "Confirm" (red, disabled until correct text is typed).
 - When tapping "Cancel": both modals close.
 - When tapping "Confirm":
-  1. All data is cleared (transactions, transaction_tags, accounts, categories, tags).
+  1. All data is cleared (transactions, transaction_tags, recurring_rules, recurring_rule_tags, accounts, categories, tags).
   2. The `config` table is cleared and re-seeded with default values: language English, dark theme, EUR, comma separator, Monday, and all default account/period settings.
   3. Default data is re-seeded: My Wallet, Total, 31 categories, 4 tags.
   4. AppContext state is fully refreshed via `resetAll()`, re-applying home defaults from config.
@@ -366,12 +374,12 @@ An eye icon appears next to every masked balance. The icon represents the curren
 - [x] No timer — visibility persists until manual toggle or navigation.
 
 ### Data
-- [x] "Delete all transactions" row opens a single confirmation modal.
-- [x] Confirming deletes all transactions and transaction_tags, not accounts/categories/tags.
+- [x] "Delete all transactions" row opens a double confirmation modal (second requires typing "DELETE").
+- [x] Confirming deletes all transactions and transaction_tags, not accounts, categories, tags, or recurring rules.
 - [x] After deletion, all screens (HomeScreen, AccountsScreen, etc.) reflect updated data immediately via `resetAll()`.
 - [x] Each destructive row shows a short description of what it deletes/keeps.
 - [x] "Delete all data" row opens a double confirmation modal (second requires typing "DELETE").
-- [x] Confirming "Delete all data" deletes all data, re-seeds seed data, and keeps settings (language, theme, currency, and other config).
+- [x] Confirming "Delete all data" deletes all data (including recurring rules), re-seeds seed data, and keeps settings (language, theme, currency, and other config).
 - [x] After "Delete all data", default-account settings fall back to Total/"Not selected" only when the referenced account no longer exists; defaults referencing surviving accounts (e.g. "My Wallet") are kept.
 - [x] "Reset to factory state" row opens a double confirmation modal (second requires typing "DELETE").
 - [x] Confirming "Reset to factory state" deletes all data and re-seeds config to defaults (language English, dark theme, etc.).

@@ -97,12 +97,18 @@ describe('DataScreen', () => {
     expect(view.getByText('Reset to factory state')).toBeTruthy();
   });
 
-  it('confirms deleting all transactions and refreshes', async () => {
+  it('requires typing DELETE before confirming "delete all transactions"', async () => {
     const view = await render(<DataScreen />);
     const ue = userEvent.setup();
     fireEvent.press(view.getByText('Delete all transactions'));
-    const confirm = await view.findByRole('button', { name: 'Delete' });
-    await ue.press(confirm);
+    const step1 = await view.findByRole('button', { name: 'Delete' });
+    await ue.press(step1);
+    const input = await view.findByPlaceholderText('Type DELETE here');
+    await ue.type(input, 'no');
+    await ue.press(view.getByText('Confirm'));
+    expect(deleteAllTransactions).not.toHaveBeenCalled();
+    await fireEvent.changeText(input, 'DELETE');
+    await ue.press(view.getByText('Confirm'));
     expect(deleteAllTransactions).toHaveBeenCalledTimes(1);
     expect(getAppStub().resetAll).toHaveBeenCalled();
   });
