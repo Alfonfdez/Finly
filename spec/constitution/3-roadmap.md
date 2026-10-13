@@ -25,8 +25,8 @@ b) Bottom section:
       - When "All" is checked, the range text explains the resolved period, e.g. `All (from 1 Jan to 2 Sep 2026)` (localized).
 
 c) Chart section:
-  - Donut chart (SVG) with expenses/income by category.
-  - Can switch to horizontal bar chart by tapping on it.
+  - Donut chart (SVG) with expenses/income by category; the period total is centered inside the hole (auto-fit).
+  - Can switch to horizontal bar chart by tapping on it; the bar chart shows the same period total centered above the bar, with or without transactions.
 
 d) Floating "+" button (FAB) that navigates to the "Add Expense/Income" screen.
 
