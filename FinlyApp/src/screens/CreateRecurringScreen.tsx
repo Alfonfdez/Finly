@@ -4,9 +4,9 @@ import { useApp } from '../context/AppContext';
 import { t } from '../i18n';
 import { PERIODS, USER_ID } from '../constants/types';
 import { isSameDay } from '../utils/formatters';
+import { resolveDefaultAccountId } from '../utils/defaultAccount';
 import { recurringRepository } from '../database';
 import { createRecurringRule } from '../database/recurringService';
-import { isTotalAccount } from '../database/helpers';
 import TransactionForm from '../components/TransactionForm';
 
 export default function CreateRecurringScreen() {
@@ -14,14 +14,10 @@ export default function CreateRecurringScreen() {
   const { activeType, activePeriod, customDate, selectedDate, accounts, accountsWithBalance, activeAccount, changeType } = useApp();
   const labels = t();
 
-  const initialAccountId = useMemo(() => {
-    if (config.addDefaultAccountId !== null) {
-      const found = accountsWithBalance.find(a => a.id === config.addDefaultAccountId && !isTotalAccount(a));
-      if (found) return found.id;
-    }
-    if (activeAccount && !isTotalAccount(activeAccount)) return activeAccount.id;
-    return accounts.find(a => !isTotalAccount(a))?.id;
-  }, [config.addDefaultAccountId, accountsWithBalance, activeAccount, accounts]);
+  const initialAccountId = useMemo(
+    () => resolveDefaultAccountId(config.recurringDefaultAccountId, accountsWithBalance, activeAccount, accounts),
+    [config.recurringDefaultAccountId, accountsWithBalance, activeAccount, accounts],
+  );
 
   const initialDay = useMemo(() => {
     if (activePeriod === PERIODS.custom) {

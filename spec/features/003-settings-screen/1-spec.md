@@ -22,7 +22,7 @@ The main screen displays 4 subsection rows:
 |---|------|-------|------|
 | 1 | `color-palette-outline` | Appearance | Theme, Text size, Account icon shape, Category icon shape |
 | 2 | `globe-outline` | Regional | Language, Currency, Decimal separator, First day of week |
-| 3 | `options-outline` | Personalization | Home screen defaults, Add transaction defaults, Privacy |
+| 3 | `options-outline` | Personalization | Home screen defaults, Add transaction screen defaults, Recurring screen defaults, Privacy |
 | 4 | `server-outline` | Data | Delete all transactions, Delete all data, Reset to factory state |
 
 - Each row shows the subsection icon (24px, primary color), label (fs(15), bold), and a chevron-right (`chevron-forward-outline`, textSecondary).
@@ -152,7 +152,7 @@ Subtitle: "Home screen" (multilingual).
 
 #### 5.2 — Add Transaction Defaults
 
-Subtitle: "Add transaction" (multilingual).
+Subtitle: "Add transaction screen" (multilingual).
 
 **Default account:**
 
@@ -178,7 +178,34 @@ Subtitle: "Add transaction" (multilingual).
 - When ALL checkboxes are unchecked, only the core fields remain: Type, Amount, Account, Category, Date.
 - **Acceptance:** unchecking "Comments" → the CommentInput section disappears from AddTransactionScreen and ModifyTransactionScreen.
 
-#### 5.3 — Privacy
+#### 5.3 — Recurring Screen Defaults
+
+Subtitle: "Recurring screen" (multilingual).
+
+**Default account:**
+
+| Option | Type | Default | Values |
+|--------|------|---------|--------|
+| Default account | Picker modal (SettingsPickerRow + OptionPickerModal) | Not selected | Not selected, My Wallet, [other accounts...] |
+
+- Opens a scrollable modal with radio selection via `OptionPickerModal`. Excludes Total, sorted alphabetically.
+- **"Not selected" (default):** the rule form opens with the account active on HomeScreen (if Total, the first non-Total account).
+- **Specific account selected:** always pre-selects that account in CreateRecurringScreen, independently of the Add-transaction default.
+- Editing a rule is unaffected (the rule's own account is used).
+- **Acceptance:** setting "My Wallet" here → open "New recurring rule" → the account is "My Wallet"; changing the Add-transaction default does not affect it.
+
+**Optional fields:**
+
+| Option | Type | Default | Values |
+|--------|------|---------|--------|
+| Labels | Checkbox | On | On/Off |
+| Comments | Checkbox | On | On/Off |
+
+- There is **no Photo option** (a rule has no photo).
+- When a checkbox is unchecked, the corresponding section is hidden in CreateRecurringScreen and ModifyRecurringScreen (rule mode only); the Add-transaction checkboxes are independent.
+- **Acceptance:** unchecking "Comments" → the CommentInput section disappears from the recurring rule form but stays in AddTransactionScreen.
+
+#### 5.4 — Privacy
 
 Subtitle: "Privacy" (multilingual).
 
@@ -362,6 +389,14 @@ An eye icon appears next to every masked balance. The icon represents the curren
 - [x] Deleting the account set as Add Transaction default resets to "Not selected".
 - [x] Optional fields: 3 checkboxes (Labels, Comments, Photo), all checked by default.
 - [x] Unchecking a field hides the corresponding section in AddTransactionScreen and ModifyTransactionScreen.
+
+### Personalization — Recurring
+- [x] Default account selector excludes Total. Default is "Not selected".
+- [x] "Not selected" opens the rule form with the HomeScreen active account (if Total, the first non-Total).
+- [x] Selecting a specific account pre-selects it in CreateRecurringScreen, independent of the Add-transaction default.
+- [x] Deleting the account set as Recurring default resets to "Not selected".
+- [x] Optional fields: 2 checkboxes (Labels, Comments), both checked by default; no Photo option.
+- [x] Unchecking a field hides the corresponding section in the recurring rule form (create and edit) only.
 
 ### Personalization — Privacy
 - [x] Hide account balances toggle (default: off).

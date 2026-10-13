@@ -58,11 +58,12 @@ Status: completed.
 Restructured Settings screen with 4 subsections:
 - Appearance: Theme, Text size, Account icon shape, Category icon shape.
 - Regional: Language, Currency, Decimal separator, First day of week.
-- Personalization: Home screen defaults (account, period), Add transaction defaults (account, optional fields), Privacy (hide account balances with eye icon).
+- Personalization: Home screen defaults (account, period), Add transaction screen defaults (account, optional fields), Recurring screen defaults (account, optional fields), Privacy (hide account balances with eye icon).
 - Data: Delete all transactions, Delete all data (settings kept), Reset to factory state (all double-confirmation flows).
 
-Persistent config in SQLite on both platforms. 7 new config fields.
+Persistent config in SQLite on both platforms. 10 config fields.
 - Fix (2026-10-13): the Data rows' wording now covers recurring rules — "Delete all transactions" states accounts/categories/tags/recurring rules are kept (already the behaviour), while "Delete all data" and "Reset to factory state" state recurring rules are deleted (already implemented via `clearDataKeepSettings`/`resetDatabase`). "Delete all transactions" now also requires the typed DELETE confirmation, matching the other two rows; the spec's non-existent "All data deleted" success alert was removed.
+- Update (2026-10-14): the Personalization section titles now name the screens ("Home screen", "Add transaction screen", "Recurring screen"), and a new **Recurring screen** section adds its own default account (`recurringDefaultAccountId`, independent of the Add-transaction default) plus Labels/Comments optional fields (`recurringShowLabels`/`recurringShowComments`, no Photo — a rule has none). The rule form (create/edit) honours the recurring flags; the account resolution shared by the add and recurring forms moved to `utils/defaultAccount.ts`.
 
 Spec: spec/features/003-settings-screen/.
 

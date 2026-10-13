@@ -225,6 +225,20 @@ describe('TransactionForm', () => {
     expect(view.queryByText('Photo')).toBeNull();
   });
 
+  it('honours the recurring flags in rule mode', async () => {
+    mockFormState.config = { ...DEFAULT_CONFIG, recurringShowComments: false, recurringShowLabels: false };
+    const view = await renderForm({ ruleMode: true });
+    expect(view.queryByText('Comment')).toBeNull();
+    expect(view.queryByText('Tags')).toBeNull();
+  });
+
+  it('ignores the add-transaction flags in rule mode', async () => {
+    mockFormState.config = { ...DEFAULT_CONFIG, addShowComments: false, addShowLabels: false };
+    const view = await renderForm({ ruleMode: true });
+    expect(view.getByText('Comment')).toBeTruthy();
+    expect(view.getByText('Tags')).toBeTruthy();
+  });
+
   it('keeps the "Day" label and shows the photo section outside rule mode', async () => {
     const view = await renderForm();
     expect(view.getByText('Day')).toBeTruthy();

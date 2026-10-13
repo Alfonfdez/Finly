@@ -226,7 +226,7 @@ export default function TransactionForm(props: TransactionFormProps) {
           />
         )}
 
-        {config.addShowLabels && (
+        {(props.ruleMode ? config.recurringShowLabels : config.addShowLabels) && (
           <TagSection
             tags={tags}
             selectedTags={selectedTags}
@@ -235,7 +235,7 @@ export default function TransactionForm(props: TransactionFormProps) {
           />
         )}
 
-        {config.addShowComments && (
+        {(props.ruleMode ? config.recurringShowComments : config.addShowComments) && (
           <CommentInput
             ref={inputRef}
             comment={comment}
