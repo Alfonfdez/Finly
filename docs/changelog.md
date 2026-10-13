@@ -3592,3 +3592,8 @@
 - Removed the redundant `BulkDeleteConfirmationModal` (a pure pass-through to `ConfirmationModal` with identical props); its 4 call sites (TransactionListBody, Comments, Recurring, Tags) use `ConfirmationModal` directly.
 - Extracted `tests/database/helpers/sqliteHarness.ts` (`initSqliteHarness` + `bootSqliteDb`): the schema/seed/repo boot shared by recurringRepo, recurringService and recurringService.preview tests. The per-file `vi.mock` blocks stay (hoisting).
 - Tests: `matchesTagFilter` cases.
+
+[2026-10-13] refactor | FinlyApp/src/utils/recurrenceInfo.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/tests/utils/recurrenceInfo.test.ts
+- Extracted the recurring Summary-block wording into a new pure, testable `recurrenceInfoLines(schedule, options, language)` (`utils/recurrenceInfo.ts`): the frequency summary line, the first/next transaction line and the create/skipped/back-fill details. It goes through `planEdit` exactly like `saveRecurringRuleEdit`, so the form's preview can't drift from the write.
+- `RepeatSection` now only builds the schedule + cursor and renders `<RecurrenceInfo {...info} />`, dropping the inline `planEdit`/`recurrencePreview`/`formatDateLong` orchestration (~25 fewer lines, fewer imports).
+- Tests (+6): `recurrenceInfoLines` create (past/future start), edit Future only (skipped window), Future + past (back-fill), denser schedule from today, and a localized case. No behavior change.

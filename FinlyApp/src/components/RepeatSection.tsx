@@ -6,8 +6,9 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, REPEAT_MAX_INTERVAL, REPEAT_MIN_INTERVAL, REPEAT_NAME_MAX_LENGTH, type RecurrenceFrequency, type RecurrenceScope } from '../constants/types';
 import { formatDateLong } from '../utils/formatters';
-import { buildRecurrenceSchedule, fromDateOnly, planEdit, recurrencePreview, todayDateOnly, type RecurrenceSchedule } from '../utils/recurrence';
-import { recurrenceFrequencyLabels, recurrenceSummary } from '../utils/recurrenceSummary';
+import { buildRecurrenceSchedule, todayDateOnly, type RecurrenceSchedule } from '../utils/recurrence';
+import { recurrenceFrequencyLabels } from '../utils/recurrenceSummary';
+import { recurrenceInfoLines } from '../utils/recurrenceInfo';
 import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, CONTROL_BORDER_RADIUS, PILL_RADIUS, SECTION_GAP, SECTION_GAP_SM, SECTION_TITLE_STYLE, recurringCardColors } from './componentStyles';
 import ClearButton from './ClearButton';
 import CheckboxRow from './settings/CheckboxRow';
@@ -83,31 +84,21 @@ export default function RepeatSection({
     () => buildRecurrenceSchedule(startDay, frequency, interval, endDate, lastDay),
     [startDay, frequency, interval, endDate, lastDay],
   );
-  const summary = recurrenceSummary(schedule, config.language);
 
-  const isEdit = ruleNextDue != null;
   // A "fresh" rule (never generated/skipped) anchors on the new start, so moving the
   // start date re-anchors it; otherwise keep the rule's cursor.
   const cursor = ruleUnmaterialized ? schedule.start_date : ruleNextDue;
-  const today = todayDateOnly();
-  const plan = cursor
-    ? planEdit({ schedule, previousSchedule, cursor, scope, today, skippedFrom: ruleSkippedFrom })
-    : null;
-  const preview = plan?.preview ?? recurrencePreview(schedule, { today });
-  const skipWindow = plan?.skipWindow ?? null;
-
-  const formatOccurrence = (value: string) => formatDateLong(fromDateOnly(value), config.language);
-  const firstLine = isEdit
-    ? labels.recurring_info_next(formatOccurrence(preview.firstDate))
-    : labels.repeat_first_transaction(formatOccurrence(preview.firstDate));
-
-  const detailLines: string[] = [];
-  if (isEdit && scope === RECURRENCE_SCOPES.futureAndPast) {
-    detailLines.push(preview.count > 0 ? labels.recurring_info_backfill(preview.count) : labels.recurring_info_count(0));
-  } else {
-    detailLines.push(labels.recurring_info_count(preview.count));
-    if (skipWindow) detailLines.push(labels.recurring_info_skipped(skipWindow.count));
-  }
+  const info = recurrenceInfoLines(
+    schedule,
+    {
+      today: todayDateOnly(),
+      cursor,
+      scope,
+      skippedFrom: ruleSkippedFrom,
+      previousSchedule,
+    },
+    config.language,
+  );
 
   return (
     <View style={styles.container}>
@@ -265,7 +256,7 @@ export default function RepeatSection({
           </View>
         )}
 
-        <RecurrenceInfo summary={summary} firstLine={firstLine} detailLines={detailLines} />
+        <RecurrenceInfo summary={info.summary} firstLine={info.firstLine} detailLines={info.detailLines} />
 
         {ruleStartMovedEarlier && (
           <Text style={[styles.startHint, { color: c.textSecondary, fontSize: fs(11) }]}>
