@@ -3636,3 +3636,9 @@
 - Add `utils/formFieldVisibility.ts` (`formFieldVisibility` + `FormMode`), used by `TransactionForm` to resolve the flags from the mode derived from `transactionId` / `initialRuleNextDue`.
 - Add "Modify transaction" and "Edit recurring rule" sections to Personalization (optional fields only, no Default account) and reuse the screens' own titles for the section headers; remove the now-unused `settings_add_transaction`/`settings_recurring` strings from the 9 languages.
 - Add tests for the visibility mapping, the per-screen flags, the section toggles and the config sanitizer; update spec 003 + roadmap.
+
+[2026-10-14] test | FinlyApp/tests/database/upgrade.test.ts
+- Add an upgrade battery for a v2.1.0 (schema 3) database: it builds the frozen 001-003 shape with data and non-default config, runs the real initDatabase, and asserts the migration to schema 4, byte-identical legacy rows, preserved config plus defaulted new keys, repository reads, a no-op reconciliation, the backup round-trip, idempotency and post-upgrade rule creation.
+
+[2026-10-14] chore | FinlyApp/app.json
+- Bump the release to 2.2.0 (version and iOS buildNumber) and android.versionCode to 3, so the update installs over 2.1.0.
