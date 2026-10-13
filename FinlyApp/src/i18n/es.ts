@@ -25,8 +25,6 @@ export const es: Language = {
   settings_category_icon_shape: 'ASPECTO DE CATEGORÍAS',
   settings_account_icon_shape: 'ASPECTO DE CUENTAS',
   settings_home_screen: 'Pantalla principal',
-  settings_add_transaction: 'Pantalla de añadir transacción',
-  settings_recurring: 'Pantalla de recurrentes',
   settings_privacy: 'Privacidad',
   settings_default_account: 'Cuenta predeterminada',
   settings_default_period: 'Período predeterminado',

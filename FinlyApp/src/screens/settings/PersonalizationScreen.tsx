@@ -56,9 +56,9 @@ export default function PersonalizationScreen() {
       ? String(config.addDefaultAccountId)
       : CONFIG_NULL_SENTINEL;
 
-  const recurringSelected =
-    config.recurringDefaultAccountId !== null && notSelectedAccounts.some(o => o.value === String(config.recurringDefaultAccountId))
-      ? String(config.recurringDefaultAccountId)
+  const createRecurringSelected =
+    config.createRecurringDefaultAccountId !== null && notSelectedAccounts.some(o => o.value === String(config.createRecurringDefaultAccountId))
+      ? String(config.createRecurringDefaultAccountId)
       : CONFIG_NULL_SENTINEL;
 
   const PERIOD_OPTIONS: Option<Period>[] = [
@@ -86,7 +86,7 @@ export default function PersonalizationScreen() {
         />
       </SettingsSection>
 
-      <SettingsSection title={labels.settings_add_transaction} card={false}>
+      <SettingsSection title={labels.add_title} card={false}>
         <SettingsPickerRow
           label={labels.settings_default_account}
           options={notSelectedAccounts}
@@ -114,24 +114,61 @@ export default function PersonalizationScreen() {
         </View>
       </SettingsSection>
 
-      <SettingsSection title={labels.settings_recurring} card={false}>
+      <SettingsSection title={labels.modify_title} card={false}>
+        <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
+          <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_optional_fields}</Text>
+          <CheckboxRow
+            checked={config.modifyShowLabels}
+            onToggle={() => updateConfig({ modifyShowLabels: !config.modifyShowLabels })}
+            label={labels.settings_labels}
+          />
+          <CheckboxRow
+            checked={config.modifyShowComments}
+            onToggle={() => updateConfig({ modifyShowComments: !config.modifyShowComments })}
+            label={labels.settings_comments}
+          />
+          <CheckboxRow
+            checked={config.modifyShowPhoto}
+            onToggle={() => updateConfig({ modifyShowPhoto: !config.modifyShowPhoto })}
+            label={labels.settings_photo}
+          />
+        </View>
+      </SettingsSection>
+
+      <SettingsSection title={labels.recurring_create_title} card={false}>
         <SettingsPickerRow
           label={labels.settings_default_account}
           options={notSelectedAccounts}
-          selected={recurringSelected}
-          onSelect={(v) => updateConfig({ recurringDefaultAccountId: v === CONFIG_NULL_SENTINEL ? null : Number(v) })}
+          selected={createRecurringSelected}
+          onSelect={(v) => updateConfig({ createRecurringDefaultAccountId: v === CONFIG_NULL_SENTINEL ? null : Number(v) })}
           title={labels.settings_default_account}
         />
         <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
           <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_optional_fields}</Text>
           <CheckboxRow
-            checked={config.recurringShowLabels}
-            onToggle={() => updateConfig({ recurringShowLabels: !config.recurringShowLabels })}
+            checked={config.createRecurringShowLabels}
+            onToggle={() => updateConfig({ createRecurringShowLabels: !config.createRecurringShowLabels })}
             label={labels.settings_labels}
           />
           <CheckboxRow
-            checked={config.recurringShowComments}
-            onToggle={() => updateConfig({ recurringShowComments: !config.recurringShowComments })}
+            checked={config.createRecurringShowComments}
+            onToggle={() => updateConfig({ createRecurringShowComments: !config.createRecurringShowComments })}
+            label={labels.settings_comments}
+          />
+        </View>
+      </SettingsSection>
+
+      <SettingsSection title={labels.recurring_edit_title} card={false}>
+        <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
+          <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_optional_fields}</Text>
+          <CheckboxRow
+            checked={config.editRecurringShowLabels}
+            onToggle={() => updateConfig({ editRecurringShowLabels: !config.editRecurringShowLabels })}
+            label={labels.settings_labels}
+          />
+          <CheckboxRow
+            checked={config.editRecurringShowComments}
+            onToggle={() => updateConfig({ editRecurringShowComments: !config.editRecurringShowComments })}
             label={labels.settings_comments}
           />
         </View>

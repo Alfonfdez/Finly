@@ -25,8 +25,6 @@ export const eu: Language = {
   settings_category_icon_shape: 'KATEGORIEN ITXURA',
   settings_account_icon_shape: 'KONTUEN ITXURA',
   settings_home_screen: 'Hasierako pantaila',
-  settings_add_transaction: 'Transakzioak gehitzeko pantaila',
-  settings_recurring: 'Errepikakorren pantaila',
   settings_privacy: 'Pribatutasuna',
   settings_default_account: 'Lehenetsitako kontua',
   settings_default_period: 'Lehenetsitako epea',

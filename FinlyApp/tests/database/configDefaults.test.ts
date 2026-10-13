@@ -30,9 +30,9 @@ describe('sanitizeDefaultAccounts', () => {
     expect(sanitizeDefaultAccounts(config, ACCOUNTS)).toEqual({ homeDefaultAccountId: null });
   });
 
-  it('sanitizes the recurring default account id too', () => {
-    expect(sanitizeDefaultAccounts({ ...DEFAULT_CONFIG, recurringDefaultAccountId: 1 }, ACCOUNTS)).toEqual({});
-    expect(sanitizeDefaultAccounts({ ...DEFAULT_CONFIG, recurringDefaultAccountId: 999 }, ACCOUNTS)).toEqual({ recurringDefaultAccountId: null });
-    expect(sanitizeDefaultAccounts({ ...DEFAULT_CONFIG, recurringDefaultAccountId: 2 }, ACCOUNTS)).toEqual({ recurringDefaultAccountId: null });
+  it('sanitizes the create-recurring default account id too', () => {
+    expect(sanitizeDefaultAccounts({ ...DEFAULT_CONFIG, createRecurringDefaultAccountId: 1 }, ACCOUNTS)).toEqual({});
+    expect(sanitizeDefaultAccounts({ ...DEFAULT_CONFIG, createRecurringDefaultAccountId: 999 }, ACCOUNTS)).toEqual({ createRecurringDefaultAccountId: null });
+    expect(sanitizeDefaultAccounts({ ...DEFAULT_CONFIG, createRecurringDefaultAccountId: 2 }, ACCOUNTS)).toEqual({ createRecurringDefaultAccountId: null });
   });
 });

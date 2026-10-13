@@ -19,9 +19,14 @@ export const DEFAULT_CONFIG: Config = {
   addShowLabels: true,
   addShowComments: true,
   addShowPhoto: true,
-  recurringDefaultAccountId: null,
-  recurringShowLabels: true,
-  recurringShowComments: true,
+  modifyShowLabels: true,
+  modifyShowComments: true,
+  modifyShowPhoto: true,
+  createRecurringDefaultAccountId: null,
+  createRecurringShowLabels: true,
+  createRecurringShowComments: true,
+  editRecurringShowLabels: true,
+  editRecurringShowComments: true,
   hideBalances: false,
 };
 
@@ -40,9 +45,14 @@ export const DB_KEY_MAP: Record<string, keyof Config> = {
   add_show_labels: 'addShowLabels',
   add_show_comments: 'addShowComments',
   add_show_photo: 'addShowPhoto',
-  recurring_default_account_id: 'recurringDefaultAccountId',
-  recurring_show_labels: 'recurringShowLabels',
-  recurring_show_comments: 'recurringShowComments',
+  modify_show_labels: 'modifyShowLabels',
+  modify_show_comments: 'modifyShowComments',
+  modify_show_photo: 'modifyShowPhoto',
+  create_recurring_default_account_id: 'createRecurringDefaultAccountId',
+  create_recurring_show_labels: 'createRecurringShowLabels',
+  create_recurring_show_comments: 'createRecurringShowComments',
+  edit_recurring_show_labels: 'editRecurringShowLabels',
+  edit_recurring_show_comments: 'editRecurringShowComments',
   hide_balances: 'hideBalances',
 };
 
@@ -88,8 +98,8 @@ export function sanitizeDefaultAccounts(
   if (config.addDefaultAccountId !== null && !ids.has(config.addDefaultAccountId)) {
     updates.addDefaultAccountId = null;
   }
-  if (config.recurringDefaultAccountId !== null && !ids.has(config.recurringDefaultAccountId)) {
-    updates.recurringDefaultAccountId = null;
+  if (config.createRecurringDefaultAccountId !== null && !ids.has(config.createRecurringDefaultAccountId)) {
+    updates.createRecurringDefaultAccountId = null;
   }
   return updates;
 }
@@ -97,11 +107,11 @@ export function sanitizeDefaultAccounts(
 export async function sanitizeDefaultAccountConfig(database: DatabaseHandle): Promise<void> {
   const homeKey = dbKeyFor('homeDefaultAccountId');
   const addKey = dbKeyFor('addDefaultAccountId');
-  const recurringKey = dbKeyFor('recurringDefaultAccountId');
+  const createRecurringKey = dbKeyFor('createRecurringDefaultAccountId');
   const v = CONFIG_NULL_SENTINEL;
   await database.runAsync(`
     UPDATE config SET value = '${v}'
-    WHERE key IN ('${homeKey}', '${addKey}', '${recurringKey}')
+    WHERE key IN ('${homeKey}', '${addKey}', '${createRecurringKey}')
       AND value != '${v}'
       AND value NOT IN (SELECT CAST(id AS TEXT) FROM accounts WHERE is_total = 0)
   `);

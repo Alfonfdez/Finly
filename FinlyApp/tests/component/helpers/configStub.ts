@@ -30,9 +30,14 @@ const configTemplate: Config = {
   addShowLabels: true,
   addShowComments: true,
   addShowPhoto: true,
-  recurringDefaultAccountId: null,
-  recurringShowLabels: true,
-  recurringShowComments: true,
+  modifyShowLabels: true,
+  modifyShowComments: true,
+  modifyShowPhoto: true,
+  createRecurringDefaultAccountId: null,
+  createRecurringShowLabels: true,
+  createRecurringShowComments: true,
+  editRecurringShowLabels: true,
+  editRecurringShowComments: true,
   hideBalances: false,
 };
 

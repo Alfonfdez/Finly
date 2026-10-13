@@ -23,8 +23,6 @@ export const en = {
   settings_category_icon_shape: 'CATEGORY ICON SHAPE',
   settings_account_icon_shape: 'ACCOUNT ICON SHAPE',
   settings_home_screen: 'Home screen',
-  settings_add_transaction: 'Add transaction screen',
-  settings_recurring: 'Recurring screen',
   settings_privacy: 'Privacy',
   settings_default_account: 'Default account',
   settings_default_period: 'Default period',
