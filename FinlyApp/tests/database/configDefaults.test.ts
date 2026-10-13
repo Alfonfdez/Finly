@@ -29,4 +29,10 @@ describe('sanitizeDefaultAccounts', () => {
     const config = { ...DEFAULT_CONFIG, homeDefaultAccountId: 2, addDefaultAccountId: 1 };
     expect(sanitizeDefaultAccounts(config, ACCOUNTS)).toEqual({ homeDefaultAccountId: null });
   });
+
+  it('sanitizes the recurring default account id too', () => {
+    expect(sanitizeDefaultAccounts({ ...DEFAULT_CONFIG, recurringDefaultAccountId: 1 }, ACCOUNTS)).toEqual({});
+    expect(sanitizeDefaultAccounts({ ...DEFAULT_CONFIG, recurringDefaultAccountId: 999 }, ACCOUNTS)).toEqual({ recurringDefaultAccountId: null });
+    expect(sanitizeDefaultAccounts({ ...DEFAULT_CONFIG, recurringDefaultAccountId: 2 }, ACCOUNTS)).toEqual({ recurringDefaultAccountId: null });
+  });
 });

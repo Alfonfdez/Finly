@@ -8,6 +8,10 @@ export const USER_ID = 1;
 
 export const UNTAGGED_ID = -1;
 
+export function isTotalAccount(account: { is_total?: number }): boolean {
+  return (account.is_total ?? 0) === 1;
+}
+
 export const OTHERS_CATEGORY_ID = 15;
 export const OTHER_CATEGORY_ID = 18;
 export const CATEGORY_USAGE_WINDOW_DAYS = 90;

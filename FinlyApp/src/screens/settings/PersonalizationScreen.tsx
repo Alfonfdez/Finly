@@ -37,7 +37,7 @@ export default function PersonalizationScreen() {
     })),
   ];
 
-  const addAccounts: Option<string>[] = [
+  const notSelectedAccounts: Option<string>[] = [
     { label: labels.settings_not_selected, value: CONFIG_NULL_SENTINEL },
     ...allAccounts.filter(a => !isTotalAccount(a)).sort((a, b) => a.name.localeCompare(b.name)).map(a => ({
       label: getDisplayAccountName(a),
@@ -52,8 +52,13 @@ export default function PersonalizationScreen() {
       : HOME_TOTAL_OPTION;
 
   const addSelected =
-    config.addDefaultAccountId !== null && addAccounts.some(o => o.value === String(config.addDefaultAccountId))
+    config.addDefaultAccountId !== null && notSelectedAccounts.some(o => o.value === String(config.addDefaultAccountId))
       ? String(config.addDefaultAccountId)
+      : CONFIG_NULL_SENTINEL;
+
+  const recurringSelected =
+    config.recurringDefaultAccountId !== null && notSelectedAccounts.some(o => o.value === String(config.recurringDefaultAccountId))
+      ? String(config.recurringDefaultAccountId)
       : CONFIG_NULL_SENTINEL;
 
   const PERIOD_OPTIONS: Option<Period>[] = [
@@ -84,7 +89,7 @@ export default function PersonalizationScreen() {
       <SettingsSection title={labels.settings_add_transaction} card={false}>
         <SettingsPickerRow
           label={labels.settings_default_account}
-          options={addAccounts}
+          options={notSelectedAccounts}
           selected={addSelected}
           onSelect={(v) => updateConfig({ addDefaultAccountId: v === CONFIG_NULL_SENTINEL ? null : Number(v) })}
           title={labels.settings_default_account}
@@ -105,6 +110,29 @@ export default function PersonalizationScreen() {
             checked={config.addShowPhoto}
             onToggle={() => updateConfig({ addShowPhoto: !config.addShowPhoto })}
             label={labels.settings_photo}
+          />
+        </View>
+      </SettingsSection>
+
+      <SettingsSection title={labels.settings_recurring} card={false}>
+        <SettingsPickerRow
+          label={labels.settings_default_account}
+          options={notSelectedAccounts}
+          selected={recurringSelected}
+          onSelect={(v) => updateConfig({ recurringDefaultAccountId: v === CONFIG_NULL_SENTINEL ? null : Number(v) })}
+          title={labels.settings_default_account}
+        />
+        <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
+          <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_optional_fields}</Text>
+          <CheckboxRow
+            checked={config.recurringShowLabels}
+            onToggle={() => updateConfig({ recurringShowLabels: !config.recurringShowLabels })}
+            label={labels.settings_labels}
+          />
+          <CheckboxRow
+            checked={config.recurringShowComments}
+            onToggle={() => updateConfig({ recurringShowComments: !config.recurringShowComments })}
+            label={labels.settings_comments}
           />
         </View>
       </SettingsSection>

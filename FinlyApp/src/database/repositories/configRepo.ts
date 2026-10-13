@@ -5,8 +5,8 @@ import type { Config } from '../types';
 import { FIRST_DAYS } from '../../constants/types';
 import { DEFAULT_CONFIG, DB_KEY_MAP, CONFIG_NULL_SENTINEL, sanitizeConfig, toConfigRows } from '../configDefaults';
 
-const BOOLEAN_KEYS: (keyof Config)[] = ['addShowLabels', 'addShowComments', 'addShowPhoto', 'hideBalances'];
-const INT_OR_NULL_KEYS: (keyof Config)[] = ['homeDefaultAccountId', 'addDefaultAccountId'];
+const BOOLEAN_KEYS: (keyof Config)[] = ['addShowLabels', 'addShowComments', 'addShowPhoto', 'recurringShowLabels', 'recurringShowComments', 'hideBalances'];
+const INT_OR_NULL_KEYS: (keyof Config)[] = ['homeDefaultAccountId', 'addDefaultAccountId', 'recurringDefaultAccountId'];
 
 function parseConfig(rows: { key: string; value: string }[]): Config {
   const map = Object.fromEntries(rows.map(r => [r.key, r.value]));

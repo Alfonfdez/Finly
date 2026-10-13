@@ -3620,3 +3620,13 @@
 
 [2026-10-13] style | FinlyApp/src/screens/RecurringScreen.tsx
 - Move the Recurring separator line below the sort row so the account selector and sort controls read as one group, matching the controls separator of the transaction screens; the Select all row now sits below the line.
+
+[2026-10-14] feat | FinlyApp/src/database/schemas.ts FinlyApp/src/database/configDefaults.ts FinlyApp/src/database/repositories/configRepo.ts FinlyApp/src/screens/settings/PersonalizationScreen.tsx FinlyApp/src/components/TransactionForm.tsx FinlyApp/src/utils/defaultAccount.ts FinlyApp/src/screens/AddTransactionScreen.tsx FinlyApp/src/screens/CreateRecurringScreen.tsx FinlyApp/src/i18n/en.ts FinlyApp/src/i18n/es.ts FinlyApp/src/i18n/ca.ts FinlyApp/src/i18n/gl.ts FinlyApp/src/i18n/eu.ts FinlyApp/src/i18n/fr.ts FinlyApp/src/i18n/de.ts FinlyApp/src/i18n/pt.ts FinlyApp/src/i18n/it.ts FinlyApp/tests/component/helpers/configStub.ts FinlyApp/tests/component/TransactionForm.test.tsx FinlyApp/tests/screens/PersonalizationScreen.test.tsx FinlyApp/tests/database/configDefaults.test.ts FinlyApp/tests/utils/defaultAccount.test.ts spec/features/003-settings-screen/1-spec.md spec/constitution/3-roadmap.md
+- Add a "Recurring screen" section to Personalization: a default account (`recurringDefaultAccountId`, independent of the Add-transaction default) plus Labels/Comments optional fields (`recurringShowLabels`/`recurringShowComments`; no Photo, a rule has none).
+- Make the recurring rule form (create/edit) honour the recurring flags, leaving the plain transaction form on the Add-transaction flags.
+- Add `utils/defaultAccount.ts` (`resolveDefaultAccountId`), shared by the add and recurring forms.
+- Name the Personalization sections after their screens ("Add transaction screen", "Recurring screen").
+- Add tests for the new config keys, the rule-mode flags, the Personalization section and the account resolver; update spec 003 + roadmap.
+
+[2026-10-14] refactor | FinlyApp/src/constants/types.ts FinlyApp/src/database/helpers.ts FinlyApp/src/utils/defaultAccount.ts
+- Move the isTotalAccount predicate to constants/types.ts (still re-exported from database/helpers) so the new utils/defaultAccount.ts can use it without crossing the utils -> database value-import boundary.

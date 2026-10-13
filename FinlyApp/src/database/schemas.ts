@@ -129,5 +129,8 @@ export const configSchema = z.object({
   addShowLabels: z.boolean(),
   addShowComments: z.boolean(),
   addShowPhoto: z.boolean(),
+  recurringDefaultAccountId: z.number().int().positive().nullable(),
+  recurringShowLabels: z.boolean(),
+  recurringShowComments: z.boolean(),
   hideBalances: z.boolean(),
 });

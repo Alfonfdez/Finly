@@ -19,6 +19,9 @@ export const DEFAULT_CONFIG: Config = {
   addShowLabels: true,
   addShowComments: true,
   addShowPhoto: true,
+  recurringDefaultAccountId: null,
+  recurringShowLabels: true,
+  recurringShowComments: true,
   hideBalances: false,
 };
 
@@ -37,6 +40,9 @@ export const DB_KEY_MAP: Record<string, keyof Config> = {
   add_show_labels: 'addShowLabels',
   add_show_comments: 'addShowComments',
   add_show_photo: 'addShowPhoto',
+  recurring_default_account_id: 'recurringDefaultAccountId',
+  recurring_show_labels: 'recurringShowLabels',
+  recurring_show_comments: 'recurringShowComments',
   hide_balances: 'hideBalances',
 };
 
@@ -82,16 +88,20 @@ export function sanitizeDefaultAccounts(
   if (config.addDefaultAccountId !== null && !ids.has(config.addDefaultAccountId)) {
     updates.addDefaultAccountId = null;
   }
+  if (config.recurringDefaultAccountId !== null && !ids.has(config.recurringDefaultAccountId)) {
+    updates.recurringDefaultAccountId = null;
+  }
   return updates;
 }
 
 export async function sanitizeDefaultAccountConfig(database: DatabaseHandle): Promise<void> {
   const homeKey = dbKeyFor('homeDefaultAccountId');
   const addKey = dbKeyFor('addDefaultAccountId');
+  const recurringKey = dbKeyFor('recurringDefaultAccountId');
   const v = CONFIG_NULL_SENTINEL;
   await database.runAsync(`
     UPDATE config SET value = '${v}'
-    WHERE key IN ('${homeKey}', '${addKey}')
+    WHERE key IN ('${homeKey}', '${addKey}', '${recurringKey}')
       AND value != '${v}'
       AND value NOT IN (SELECT CAST(id AS TEXT) FROM accounts WHERE is_total = 0)
   `);
