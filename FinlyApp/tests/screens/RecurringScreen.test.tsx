@@ -3,7 +3,7 @@ import { render, fireEvent, waitFor, userEvent } from '@testing-library/react-na
 import { useState, type ReactNode } from 'react';
 import RecurringScreen from '../../src/screens/RecurringScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
-import type { Category, RecurringRule } from '../../src/database/types';
+import type { Account, Category, RecurringRule } from '../../src/database/types';
 
 // Renders the navigation header's `headerRight` inside the same render tree, so the
 // Select/Search buttons can be pressed like on the other list screens.
@@ -85,6 +85,18 @@ const rule: RecurringRule = {
   created_at: '2026-10-05',
   updated_at: null,
 };
+
+const account = (overrides: Partial<Account>): Account => ({
+  id: 1,
+  user_id: 1,
+  name: 'My Wallet',
+  initial_balance: 0,
+  icon: 'wallet-outline',
+  color: '#22D3EE',
+  is_total: 0,
+  created_at: '2026-01-01',
+  ...overrides,
+});
 
 const renderWithHeader = () => render(<><HeaderHost /><RecurringScreen /></>);
 
@@ -234,6 +246,49 @@ describe('RecurringScreen', () => {
     expect(view.getByText('PausedRule')).toBeTruthy();
     expect(view.getByText('EndedRule')).toBeTruthy();
     expect(view.getByLabelText('Paused + Ended')).toBeTruthy();
+  });
+
+  it('filters the rules by type through the type tabs', async () => {
+    mockList.mockResolvedValue([
+      { ...rule, id: 1, name: 'ExpenseRule', type: 'expense' },
+      { ...rule, id: 2, name: 'IncomeRule', type: 'income' },
+    ]);
+    const view = await render(<RecurringScreen />);
+    await waitFor(() => expect(view.getByText('ExpenseRule')).toBeTruthy());
+    expect(view.getByText('IncomeRule')).toBeTruthy();
+
+    const ue = userEvent.setup();
+    await ue.press(view.getByText('Expenses'));
+    await waitFor(() => expect(view.queryByText('IncomeRule')).toBeNull());
+    expect(view.getByText('ExpenseRule')).toBeTruthy();
+
+    await ue.press(view.getByText('Income'));
+    await waitFor(() => expect(view.queryByText('ExpenseRule')).toBeNull());
+    expect(view.getByText('IncomeRule')).toBeTruthy();
+  });
+
+  it('filters the rules by account, defaulting to the Total account', async () => {
+    setAppData({
+      accounts: [account({ id: 1, name: 'My Wallet' }), account({ id: 2, name: 'Total', is_total: 1 })],
+      categoriesById: new Map([[1, category]]),
+    });
+    mockList.mockResolvedValue([
+      { ...rule, id: 1, name: 'WalletRule', account_id: 1 },
+      { ...rule, id: 2, name: 'OtherRule', account_id: 3 },
+    ]);
+    const view = await render(<RecurringScreen />);
+    await waitFor(() => expect(view.getByText('WalletRule')).toBeTruthy());
+    // Defaults to the Total account: every rule is listed.
+    expect(view.getByText('OtherRule')).toBeTruthy();
+    expect(view.getByLabelText('Total')).toBeTruthy();
+
+    const ue = userEvent.setup();
+    await ue.press(view.getByLabelText('Total')); // open the account modal
+    await ue.press(view.getByText('My Wallet')); // select the wallet row
+    await ue.press(view.getByRole('button', { name: 'Select' })); // confirm
+
+    await waitFor(() => expect(view.queryByText('OtherRule')).toBeNull());
+    expect(view.getByText('WalletRule')).toBeTruthy();
   });
 
   it('reorders the rules when a sort field is pressed', async () => {
