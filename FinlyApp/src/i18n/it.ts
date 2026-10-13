@@ -25,8 +25,6 @@ export const it: Language = {
   settings_category_icon_shape: 'FORMA DELL\'ICONA DELLA CATEGORIA',
   settings_account_icon_shape: 'FORMA DELL\'ICONA DEL CONTO',
   settings_home_screen: 'Schermata iniziale',
-  settings_add_transaction: 'Schermata aggiungi transazione',
-  settings_recurring: 'Schermata ricorrenti',
   settings_privacy: 'Privacy',
   settings_default_account: 'Conto predefinito',
   settings_default_period: 'Periodo predefinito',

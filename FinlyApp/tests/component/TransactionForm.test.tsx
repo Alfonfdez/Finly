@@ -122,7 +122,7 @@ vi.mock('../../src/hooks/useTransactionForm', () => ({
 
 const catFood: Category = { id: 1, user_id: 1, name: 'Food', icon: 'cart', color: '#22D3EE', type: 'expense', created_at: '2026-01-01' };
 
-function renderForm(overrides: { ruleMode?: boolean } = {}) {
+function renderForm(overrides: { ruleMode?: boolean; transactionId?: number; initialRuleNextDue?: string | null } = {}) {
   return render(
     <TransactionForm
       initialType="expense"
@@ -225,9 +225,16 @@ describe('TransactionForm', () => {
     expect(view.queryByText('Photo')).toBeNull();
   });
 
-  it('honours the recurring flags in rule mode', async () => {
-    mockFormState.config = { ...DEFAULT_CONFIG, recurringShowComments: false, recurringShowLabels: false };
+  it('honours the create-rule flags when creating a rule', async () => {
+    mockFormState.config = { ...DEFAULT_CONFIG, createRecurringShowComments: false, createRecurringShowLabels: false };
     const view = await renderForm({ ruleMode: true });
+    expect(view.queryByText('Comment')).toBeNull();
+    expect(view.queryByText('Tags')).toBeNull();
+  });
+
+  it('honours the edit-rule flags when editing a rule', async () => {
+    mockFormState.config = { ...DEFAULT_CONFIG, editRecurringShowComments: false, editRecurringShowLabels: false };
+    const view = await renderForm({ ruleMode: true, initialRuleNextDue: '2026-10-05' });
     expect(view.queryByText('Comment')).toBeNull();
     expect(view.queryByText('Tags')).toBeNull();
   });
@@ -237,6 +244,22 @@ describe('TransactionForm', () => {
     const view = await renderForm({ ruleMode: true });
     expect(view.getByText('Comment')).toBeTruthy();
     expect(view.getByText('Tags')).toBeTruthy();
+  });
+
+  it('honours the modify flags when editing a transaction', async () => {
+    mockFormState.config = { ...DEFAULT_CONFIG, modifyShowComments: false, modifyShowLabels: false, modifyShowPhoto: false };
+    const view = await renderForm({ transactionId: 5 });
+    expect(view.queryByText('Comment')).toBeNull();
+    expect(view.queryByText('Tags')).toBeNull();
+    expect(view.queryByText('Photo')).toBeNull();
+  });
+
+  it('ignores the add-transaction flags when editing a transaction', async () => {
+    mockFormState.config = { ...DEFAULT_CONFIG, addShowComments: false, addShowLabels: false, addShowPhoto: false };
+    const view = await renderForm({ transactionId: 5 });
+    expect(view.getByText('Comment')).toBeTruthy();
+    expect(view.getByText('Tags')).toBeTruthy();
+    expect(view.getByText('Photo')).toBeTruthy();
   });
 
   it('keeps the "Day" label and shows the photo section outside rule mode', async () => {

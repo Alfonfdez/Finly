@@ -23,26 +23,33 @@ describe('PersonalizationScreen', () => {
   it('renders personalization and privacy options', async () => {
     const view = await render(<PersonalizationScreen />);
     expect(view.getAllByText('Home screen').length).toBeGreaterThan(0);
-    expect(view.getAllByText('Add transaction screen').length).toBeGreaterThan(0);
-    expect(view.getAllByText('Recurring screen').length).toBeGreaterThan(0);
+    expect(view.getAllByText('Add transaction').length).toBeGreaterThan(0);
+    expect(view.getAllByText('Modify transaction').length).toBeGreaterThan(0);
+    expect(view.getAllByText('New recurring rule').length).toBeGreaterThan(0);
+    expect(view.getAllByText('Edit recurring rule').length).toBeGreaterThan(0);
     expect(view.getAllByText('Default account').length).toBeGreaterThan(0);
     expect(view.getAllByText('Default period').length).toBeGreaterThan(0);
     expect(view.getByText('Hide account balances')).toBeTruthy();
-    // Labels/Comments appear in both the Add transaction and the Recurring cards; Photo only in Add.
-    expect(view.getAllByText('Labels')).toHaveLength(2);
-    expect(view.getAllByText('Comments')).toHaveLength(2);
-    expect(view.getAllByText('Photo')).toHaveLength(1);
-    expect(view.getAllByRole('checkbox')).toHaveLength(5);
+    // Add and Modify each have Labels/Comments/Photo; New and Edit rule each have Labels/Comments.
+    expect(view.getAllByText('Labels')).toHaveLength(4);
+    expect(view.getAllByText('Comments')).toHaveLength(4);
+    expect(view.getAllByText('Photo')).toHaveLength(2);
+    expect(view.getAllByRole('checkbox')).toHaveLength(10);
   });
 
-  it('toggles the recurring optional fields', async () => {
+  it('toggles the modify and recurring optional fields', async () => {
     const view = await render(<PersonalizationScreen />);
-    const boxes = view.getAllByRole('checkbox'); // Add: Labels, Comments, Photo — Recurring: Labels, Comments
+    // Add: 0-2, Modify: 3-5, New rule: 6-7, Edit rule: 8-9.
+    const boxes = view.getAllByRole('checkbox');
     const ue = userEvent.setup();
     await ue.press(boxes[3]);
-    expect(getConfigStub().updateConfig).toHaveBeenCalledWith({ recurringShowLabels: false });
-    await ue.press(boxes[4]);
-    expect(getConfigStub().updateConfig).toHaveBeenCalledWith({ recurringShowComments: false });
+    expect(getConfigStub().updateConfig).toHaveBeenCalledWith({ modifyShowLabels: false });
+    await ue.press(boxes[5]);
+    expect(getConfigStub().updateConfig).toHaveBeenCalledWith({ modifyShowPhoto: false });
+    await ue.press(boxes[6]);
+    expect(getConfigStub().updateConfig).toHaveBeenCalledWith({ createRecurringShowLabels: false });
+    await ue.press(boxes[9]);
+    expect(getConfigStub().updateConfig).toHaveBeenCalledWith({ editRecurringShowComments: false });
   });
 
   it('toggles hide balances', async () => {

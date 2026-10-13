@@ -23,6 +23,7 @@ import { type TransactionType, type RecurrenceFrequency, type RecurrenceScope, t
 import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
 import { buildRecurrenceSchedule, toDateOnly } from '../utils/recurrence';
+import { formFieldVisibility, type FormMode } from '../utils/formFieldVisibility';
 import { showErrorAlert } from '../utils/errors';
 
 interface TransactionFormProps {
@@ -109,6 +110,13 @@ export default function TransactionForm(props: TransactionFormProps) {
   }, [recurringPastAffected, onRecurringPastAffectedChange]);
 
   const tabs = useMemo(() => typeTabs(labels), [labels]);
+
+  // Which optional sections to show depends on the screen: Add vs Modify
+  // transaction, New vs Edit recurring rule (see `formFieldVisibility`).
+  const mode: FormMode = props.ruleMode
+    ? (props.initialRuleNextDue != null ? 'editRule' : 'createRule')
+    : (props.transactionId !== undefined ? 'modify' : 'add');
+  const fieldVisibility = useMemo(() => formFieldVisibility(config, mode), [config, mode]);
 
   // The rule's schedule before the edit, so the Summary can tell that today's
   // occurrence already exists (avoid re-counting it on a "Future only" save).
@@ -226,7 +234,7 @@ export default function TransactionForm(props: TransactionFormProps) {
           />
         )}
 
-        {(props.ruleMode ? config.recurringShowLabels : config.addShowLabels) && (
+        {fieldVisibility.labels && (
           <TagSection
             tags={tags}
             selectedTags={selectedTags}
@@ -235,7 +243,7 @@ export default function TransactionForm(props: TransactionFormProps) {
           />
         )}
 
-        {(props.ruleMode ? config.recurringShowComments : config.addShowComments) && (
+        {fieldVisibility.comments && (
           <CommentInput
             ref={inputRef}
             comment={comment}
@@ -249,7 +257,7 @@ export default function TransactionForm(props: TransactionFormProps) {
           />
         )}
 
-        {config.addShowPhoto && !props.ruleMode && (
+        {fieldVisibility.photo && (
           <PhotoSection
             photos={photos}
             onTakePhoto={handleTakePhoto}

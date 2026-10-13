@@ -15,8 +15,8 @@ export default function CreateRecurringScreen() {
   const labels = t();
 
   const initialAccountId = useMemo(
-    () => resolveDefaultAccountId(config.recurringDefaultAccountId, accountsWithBalance, activeAccount, accounts),
-    [config.recurringDefaultAccountId, accountsWithBalance, activeAccount, accounts],
+    () => resolveDefaultAccountId(config.createRecurringDefaultAccountId, accountsWithBalance, activeAccount, accounts),
+    [config.createRecurringDefaultAccountId, accountsWithBalance, activeAccount, accounts],
   );
 
   const initialDay = useMemo(() => {

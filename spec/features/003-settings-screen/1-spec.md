@@ -22,7 +22,7 @@ The main screen displays 4 subsection rows:
 |---|------|-------|------|
 | 1 | `color-palette-outline` | Appearance | Theme, Text size, Account icon shape, Category icon shape |
 | 2 | `globe-outline` | Regional | Language, Currency, Decimal separator, First day of week |
-| 3 | `options-outline` | Personalization | Home screen defaults, Add transaction screen defaults, Recurring screen defaults, Privacy |
+| 3 | `options-outline` | Personalization | Home screen defaults, Add/Modify transaction defaults, New/Edit recurring rule defaults, Privacy |
 | 4 | `server-outline` | Data | Delete all transactions, Delete all data, Reset to factory state |
 
 - Each row shows the subsection icon (24px, primary color), label (fs(15), bold), and a chevron-right (`chevron-forward-outline`, textSecondary).
@@ -152,7 +152,7 @@ Subtitle: "Home screen" (multilingual).
 
 #### 5.2 — Add Transaction Defaults
 
-Subtitle: "Add transaction screen" (multilingual).
+Subtitle: "Add transaction" (the screen title, multilingual).
 
 **Default account:**
 
@@ -174,13 +174,31 @@ Subtitle: "Add transaction screen" (multilingual).
 | Comments | Checkbox | On | On/Off |
 | Photo | Checkbox | On | On/Off |
 
-- When a checkbox is unchecked, the corresponding section is hidden in both AddTransactionScreen and ModifyTransactionScreen.
+- These flags apply to **AddTransactionScreen only** (the Modify screen has its own, §5.3).
+- When a checkbox is unchecked, the corresponding section is hidden in AddTransactionScreen.
 - When ALL checkboxes are unchecked, only the core fields remain: Type, Amount, Account, Category, Date.
-- **Acceptance:** unchecking "Comments" → the CommentInput section disappears from AddTransactionScreen and ModifyTransactionScreen.
+- **Acceptance:** unchecking "Comments" → the CommentInput section disappears from AddTransactionScreen but stays in ModifyTransactionScreen.
 
-#### 5.3 — Recurring Screen Defaults
+#### 5.3 — Modify Transaction Defaults
 
-Subtitle: "Recurring screen" (multilingual).
+Subtitle: "Modify transaction" (the screen title, multilingual).
+
+- **No Default account:** editing keeps the account stored on the transaction (same for recurring-generated transactions, which are edited on this screen).
+
+**Optional fields:**
+
+| Option | Type | Default | Values |
+|--------|------|---------|--------|
+| Labels | Checkbox | On | On/Off |
+| Comments | Checkbox | On | On/Off |
+| Photo | Checkbox | On | On/Off |
+
+- These flags apply to **ModifyTransactionScreen only**, independently of the Add flags.
+- **Acceptance:** with "Photo" off here and on in §5.2 → ModifyTransactionScreen hides the Photo section while AddTransactionScreen keeps it.
+
+#### 5.4 — New Recurring Rule Defaults
+
+Subtitle: "New recurring rule" (the screen title, multilingual).
 
 **Default account:**
 
@@ -202,10 +220,27 @@ Subtitle: "Recurring screen" (multilingual).
 | Comments | Checkbox | On | On/Off |
 
 - There is **no Photo option** (a rule has no photo).
-- When a checkbox is unchecked, the corresponding section is hidden in CreateRecurringScreen and ModifyRecurringScreen (rule mode only); the Add-transaction checkboxes are independent.
-- **Acceptance:** unchecking "Comments" → the CommentInput section disappears from the recurring rule form but stays in AddTransactionScreen.
+- These flags apply to **CreateRecurringScreen only** (the Edit rule screen has its own, §5.5).
+- **Acceptance:** unchecking "Comments" → the CommentInput section disappears from the new-rule form but stays in the edit-rule form.
 
-#### 5.4 — Privacy
+#### 5.5 — Edit Recurring Rule Defaults
+
+Subtitle: "Edit recurring rule" (the screen title, multilingual).
+
+- **No Default account:** editing keeps the account stored on the rule.
+
+**Optional fields:**
+
+| Option | Type | Default | Values |
+|--------|------|---------|--------|
+| Labels | Checkbox | On | On/Off |
+| Comments | Checkbox | On | On/Off |
+
+- There is **no Photo option** (a rule has no photo).
+- These flags apply to **ModifyRecurringScreen only**, independently of the new-rule flags.
+- **Acceptance:** with "Comments" off here and on in §5.4 → the edit-rule form hides the Comment section while the new-rule form keeps it.
+
+#### 5.6 — Privacy
 
 Subtitle: "Privacy" (multilingual).
 
@@ -388,15 +423,25 @@ An eye icon appears next to every masked balance. The icon represents the curren
 - [x] Selecting a specific account always pre-selects it in AddTransactionScreen.
 - [x] Deleting the account set as Add Transaction default resets to "Not selected".
 - [x] Optional fields: 3 checkboxes (Labels, Comments, Photo), all checked by default.
-- [x] Unchecking a field hides the corresponding section in AddTransactionScreen and ModifyTransactionScreen.
+- [x] Unchecking a field hides the corresponding section in AddTransactionScreen only.
 
-### Personalization — Recurring
+### Personalization — Modify Transaction
+- [x] No Default account option (the transaction's own account is kept when editing).
+- [x] Optional fields: 3 checkboxes (Labels, Comments, Photo), all checked by default.
+- [x] Unchecking a field hides the corresponding section in ModifyTransactionScreen only, independently of the Add flags.
+
+### Personalization — New Recurring Rule
 - [x] Default account selector excludes Total. Default is "Not selected".
 - [x] "Not selected" opens the rule form with the HomeScreen active account (if Total, the first non-Total).
 - [x] Selecting a specific account pre-selects it in CreateRecurringScreen, independent of the Add-transaction default.
-- [x] Deleting the account set as Recurring default resets to "Not selected".
+- [x] Deleting the account set as New Recurring Rule default resets to "Not selected".
 - [x] Optional fields: 2 checkboxes (Labels, Comments), both checked by default; no Photo option.
-- [x] Unchecking a field hides the corresponding section in the recurring rule form (create and edit) only.
+- [x] Unchecking a field hides the corresponding section in CreateRecurringScreen only.
+
+### Personalization — Edit Recurring Rule
+- [x] No Default account option (the rule's own account is kept when editing).
+- [x] Optional fields: 2 checkboxes (Labels, Comments), both checked by default; no Photo option.
+- [x] Unchecking a field hides the corresponding section in ModifyRecurringScreen only, independently of the new-rule flags.
 
 ### Personalization — Privacy
 - [x] Hide account balances toggle (default: off).

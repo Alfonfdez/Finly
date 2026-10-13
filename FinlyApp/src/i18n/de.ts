@@ -25,8 +25,6 @@ export const de: Language = {
   settings_category_icon_shape: 'KATEGORIE-SYMBOLFORM',
   settings_account_icon_shape: 'KONTO-SYMBOLFORM',
   settings_home_screen: 'Startseite',
-  settings_add_transaction: 'Bildschirm „Transaktion hinzufügen“',
-  settings_recurring: 'Bildschirm „Wiederkehrend“',
   settings_privacy: 'Datenschutz',
   settings_default_account: 'Standardkonto',
   settings_default_period: 'Standardzeitraum',
