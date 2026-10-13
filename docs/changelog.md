@@ -3602,3 +3602,13 @@
 - The Settings > Data delete rows now account for recurring rules: "Delete all transactions" says accounts/categories/tags/recurring rules are kept (the implementation already kept them — only transactions are deleted), while "Delete all data" and "Reset to factory state" say recurring rules are deleted (already implemented in `clearDataKeepSettings`/`resetDatabase`, which delete `recurring_rules` + `recurring_rule_tags`).
 - "Delete all transactions" now also requires the typed DELETE confirmation (2-step, like "Delete all data" and "Reset to factory state"), so an accidental tap cannot wipe all history.
 - Updated the 5 affected messages in all 9 languages; spec 003 (§6.1 double confirmation + recurring wording, §6.2/§6.3 wording, acceptance) and the roadmap entry; removed the spec's non-existent "All data deleted" success alert. DataScreen test updated for the new typed step.
+
+[2026-10-13] feat | FinlyApp/src/components/RecurringStatusChip.tsx FinlyApp/src/screens/RecurringScreen.tsx FinlyApp/src/components/RecurringRow.tsx FinlyApp/src/utils/recurrence.ts FinlyApp/src/constants/types.ts FinlyApp/src/i18n/en.ts FinlyApp/src/i18n/es.ts FinlyApp/src/i18n/ca.ts FinlyApp/src/i18n/gl.ts FinlyApp/src/i18n/eu.ts FinlyApp/src/i18n/fr.ts FinlyApp/src/i18n/de.ts FinlyApp/src/i18n/pt.ts FinlyApp/src/i18n/it.ts FinlyApp/tests/utils/recurrence.test.ts FinlyApp/tests/component/RecurringStatusChip.test.tsx FinlyApp/tests/screens/RecurringScreen.test.tsx spec/features/028-recurring-transactions/1-spec.md spec/constitution/3-roadmap.md
+- Add a `RecurringStatusChip` status filter (All / Active / Paused / Ended, multi-select, session-only) to the Recurring list.
+- Add `recurringStatus(rule, today)` in `utils/recurrence.ts` (ended wins over the active flag) and use it in `RecurringRow`.
+- Add a session-only `statusFilter` to `RecurringScreen`, composed with search and sort; the chip renders in the sort row.
+- Add the `recurring_status_title` string to the 9 languages.
+- Add tests for `recurringStatus`, `RecurringStatusChip` and the screen status filter.
+
+[2026-10-13] style | FinlyApp/src/screens/RecurringScreen.tsx
+- Add an 8px gap in the Recurring sort row so the status chip matches the spacing of the transaction screens.

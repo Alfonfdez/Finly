@@ -525,6 +525,7 @@ export const en = {
   repeat_first_transaction: (date: string) => `First transaction: ${date}`,
 
   recurring_search: 'Search recurring rules',
+  recurring_status_title: 'Status',
   recurring_sort_next_due: 'Next due',
   recurring_sort_name: 'Name',
   recurring_sort_amount: 'Amount',

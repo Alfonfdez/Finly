@@ -151,6 +151,16 @@ export const RECURRING_VIEWS = {
 
 export type RecurringView = keyof typeof RECURRING_VIEWS;
 
+/** Rule states shown/filtered on the Recurring screen. A rule is `ended` when it has
+ *  no occurrence left within its end date; otherwise `active` or `paused`. */
+export const RECURRING_STATUSES = {
+  active: 'active',
+  paused: 'paused',
+  ended: 'ended',
+} as const;
+
+export type RecurringStatus = keyof typeof RECURRING_STATUSES;
+
 export const CALC_KEYS = {
   clear: 'C',
   equals: '=',

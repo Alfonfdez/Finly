@@ -527,6 +527,7 @@ export const eu: Language = {
   repeat_first_transaction: (date: string) => `Lehen transakzioa: ${date}`,
 
   recurring_search: 'Bilatu errepikapen arauak',
+  recurring_status_title: 'Egoera',
   recurring_sort_next_due: 'Hurrengoa',
   recurring_sort_name: 'Izena',
   recurring_sort_amount: 'Zenbatekoa',
