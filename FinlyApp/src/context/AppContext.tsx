@@ -4,8 +4,8 @@ import type { Account, Category, Transaction, Tag } from '../database/types';
 import { PERIODS, TRANSACTION_TYPES, type Period, type TransactionType, type CategoryWithTotal, DATE_MIN, DATE_MAX, USER_ID } from '../constants/types';
 import { accountRepository as accountRepo, categoryRepository as categoryRepo, transactionRepository as transactionRepo, tagRepository as tagRepo } from '../database';
 import { materializeDueRecurring } from '../database/recurringService';
-import { isTotalAccount, UNTAGGED_ID } from '../database/helpers';
-import { toggleTagInArray } from '../utils/tagFilter';
+import { isTotalAccount } from '../database/helpers';
+import { matchesTagFilter, toggleTagInArray } from '../utils/tagFilter';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { useConfig } from './ConfigContext';
 import { formatDateForDB, resolvePeriodRange } from '../utils/formatters';
@@ -195,14 +195,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return true;
       });
       if (activeTagIds.length > 0) {
-        const hasUntagged = activeTagIds.includes(UNTAGGED_ID);
-        const regularIds = activeTagIds.filter(id => id !== UNTAGGED_ID);
-        result = result.filter(t => {
-          const txnTagIds = tagsByTransaction.get(t.id) ?? [];
-          if (hasUntagged && txnTagIds.length === 0) return true;
-          if (regularIds.length > 0 && regularIds.some(id => txnTagIds.includes(id))) return true;
-          return false;
-        });
+        result = result.filter(t => matchesTagFilter(activeTagIds, tagsByTransaction.get(t.id) ?? []));
       }
       return result;
     },

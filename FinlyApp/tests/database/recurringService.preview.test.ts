@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeAll, vi } from 'vitest';
-import type { DatabaseHandle } from '../../src/database/types';
 import type { RecurringRule } from '../../src/database/types';
 import type { RecurrenceScope } from '../../src/constants/types';
 import {
@@ -9,7 +8,7 @@ import {
   recurrencePreview,
   todayDateOnly,
 } from '../../src/utils/recurrence';
-import { initSqlJsOnce, resetMockDatabase, openDatabaseSync } from './sqliteMock';
+import { initSqliteHarness, bootSqliteDb as boot } from './helpers/sqliteHarness';
 
 vi.mock('../../src/database/photoCleanup', () => ({
   collectTransactionPhotos: vi.fn(async () => []),
@@ -24,30 +23,7 @@ vi.mock('expo-sqlite', async () => {
 
 await import('expo-sqlite');
 
-beforeAll(async () => {
-  await initSqlJsOnce();
-});
-
-async function boot() {
-  vi.resetModules();
-  resetMockDatabase();
-  const db = openDatabaseSync('Finly.db') as DatabaseHandle;
-  await db.execAsync('PRAGMA foreign_keys = ON;');
-
-  const { createSchema } = await import('../../src/database/migrations/001_initial');
-  const { seedDataInner } = await import('../../src/database/migrations/002_seed');
-  const { seedConfigInner } = await import('../../src/database/migrations/003_config');
-  const { createRecurringSchema } = await import('../../src/database/migrations/004_recurring');
-  await createSchema(db);
-  await seedDataInner(db);
-  await seedConfigInner(db);
-  await createRecurringSchema(db);
-
-  const { recurringRepo } = await import('../../src/database/repositories/recurringRepo');
-  const { transactionRepo } = await import('../../src/database/repositories/transactionRepo');
-  const { materializeDueRecurring, saveRecurringRuleEdit } = await import('../../src/database/recurringService');
-  return { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit };
-}
+beforeAll(initSqliteHarness);
 
 const baseRule = {
   user_id: 1,

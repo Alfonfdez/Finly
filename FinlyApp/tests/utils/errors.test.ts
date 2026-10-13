@@ -9,7 +9,7 @@ vi.mock('react-native', () => ({
   Platform: { OS: 'ios' },
 }));
 
-import { alertError, describeError, showErrorAlert, runWithErrorAlert, ERROR_PREFIXES } from '../../src/utils/errors';
+import { alertError, alertInfo, describeError, showErrorAlert, runWithErrorAlert, ERROR_PREFIXES } from '../../src/utils/errors';
 import { t } from '../../src/i18n';
 
 describe('errors helpers', () => {
@@ -39,6 +39,20 @@ describe('errors helpers', () => {
       const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
       alertError('TITLE', 'MESSAGE');
       expect(spy).toHaveBeenCalledWith('TITLE: MESSAGE');
+      spy.mockRestore();
+    });
+  });
+
+  describe('alertInfo', () => {
+    it('shows the alert with the given title and message', () => {
+      alertInfo('TITLE', 'MESSAGE');
+      expect(mockAlert).toHaveBeenCalledWith('TITLE', 'MESSAGE');
+    });
+
+    it('does not log to the console', () => {
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      alertInfo('TITLE', 'MESSAGE');
+      expect(spy).not.toHaveBeenCalled();
       spy.mockRestore();
     });
   });

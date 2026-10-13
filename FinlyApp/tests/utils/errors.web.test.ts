@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
+// `react-native-web`'s Alert is a no-op, so `isWeb` must be true for this file.
 const mockAlert = vi.fn();
 const mockWindowAlert = vi.fn();
 
@@ -8,21 +9,31 @@ vi.mock('react-native', () => ({
   Platform: { OS: 'web' },
 }));
 
-vi.stubGlobal('window', { alert: (...args: unknown[]) => mockWindowAlert(...args) });
+import { alertError, alertInfo } from '../../src/utils/errors';
 
-import { alertError } from '../../src/utils/errors';
-
-describe('alertError (web)', () => {
+describe('errors helpers (web fallback)', () => {
   beforeEach(() => {
     mockAlert.mockClear();
     mockWindowAlert.mockClear();
+    vi.stubGlobal('window', { alert: mockWindowAlert });
   });
 
-  it('uses window.alert on web (react-native-web Alert is a no-op)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('alertInfo uses window.alert', () => {
+    alertInfo('TITLE', 'MESSAGE');
+    expect(mockWindowAlert).toHaveBeenCalledWith('TITLE\n\nMESSAGE');
+    expect(mockAlert).not.toHaveBeenCalled();
+  });
+
+  it('alertError uses window.alert and logs', () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     alertError('TITLE', 'MESSAGE');
     expect(mockWindowAlert).toHaveBeenCalledWith('TITLE\n\nMESSAGE');
     expect(mockAlert).not.toHaveBeenCalled();
-    spy.mockRestore();
+    expect(spy).toHaveBeenCalledWith('TITLE: MESSAGE');
   });
 });

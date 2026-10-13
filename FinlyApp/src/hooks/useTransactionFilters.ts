@@ -2,11 +2,11 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import type { Transaction, Account, Category } from '../database/types';
 import { SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, RECURRING_VIEWS, type SortBy, type SortDirection, type TransactionTypeFilter, type RecurringView } from '../constants/types';
 import { transactionRepository } from '../database';
-import { isTotalAccount, UNTAGGED_ID } from '../database/helpers';
+import { isTotalAccount } from '../database/helpers';
 import { formatDateForDB, parseDbDate } from '../utils/formatters';
 import { buildTagsByTransactionMap, type TagsByTransaction } from '../utils/transactionTags';
 import { matchesTransactionSearch } from '../utils/transactionSearch';
-import { toggleTagInArray } from '../utils/tagFilter';
+import { matchesTagFilter, toggleTagInArray } from '../utils/tagFilter';
 
 export interface UseTransactionFiltersOptions {
   transactions: Transaction[];
@@ -111,14 +111,7 @@ export function useTransactionFilters({
     }
 
     if (localTagIds.length > 0) {
-      const hasUntagged = localTagIds.includes(UNTAGGED_ID);
-      const regularIds = localTagIds.filter(id => id !== UNTAGGED_ID);
-      list = list.filter(tx => {
-        const txTags = tagsByTransaction.get(tx.id) ?? [];
-        if (hasUntagged && txTags.length === 0) return true;
-        if (regularIds.length > 0 && regularIds.some(id => txTags.some(t => t.tag_id === id))) return true;
-        return false;
-      });
+      list = list.filter(tx => matchesTagFilter(localTagIds, (tagsByTransaction.get(tx.id) ?? []).map(t => t.tag_id)));
     }
 
     if (searchTerm.trim()) {

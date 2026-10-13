@@ -2,10 +2,9 @@ import { Alert } from 'react-native';
 import { t } from '../i18n';
 import { isWeb } from './platform';
 
-/** Show an error to the user. `react-native-web`'s `Alert` is a no-op, so on web we
- *  fall back to the browser dialog — otherwise failures are completely invisible. */
-export function alertError(title: string, message: string) {
-  console.error(`${title}: ${message}`);
+/** Show a message. `react-native-web`'s `Alert` is a no-op, so on web we fall back
+ *  to the browser dialog — otherwise the feedback is completely invisible. */
+function showMessage(title: string, message: string) {
   if (isWeb) {
     if (typeof window !== 'undefined' && typeof window.alert === 'function') {
       window.alert(`${title}\n\n${message}`);
@@ -13,6 +12,17 @@ export function alertError(title: string, message: string) {
     return;
   }
   Alert.alert(title, message);
+}
+
+/** Show an error to the user (and log it). */
+export function alertError(title: string, message: string) {
+  console.error(`${title}: ${message}`);
+  showMessage(title, message);
+}
+
+/** Show an informational/success message to the user (no logging). */
+export function alertInfo(title: string, message: string) {
+  showMessage(title, message);
 }
 
 export function showErrorAlert(labels?: { error_title: string; error_generic: string }) {
