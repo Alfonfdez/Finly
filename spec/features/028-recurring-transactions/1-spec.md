@@ -130,7 +130,7 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 ### 8. Generated transactions and details
 
 - Generated transactions are ordinary transactions (they appear in every list, total and chart on their scheduled date).
-- `TransactionDetailsScreen` always shows a read-only **Recurring** row with the name of the rule that generated the transaction (or the shared `—` placeholder for a non-recurring one). It has no toggle — pausing/resuming is done from the Recurring screen.
+- `TransactionDetailsScreen` always shows a **Recurring** row with the name of the rule that generated the transaction (or the shared `—` placeholder for a non-recurring one). When the transaction belongs to a rule the whole row is **pressable** (an `create-outline` affordance next to the name) and opens that rule's edit screen directly; without a rule the row is inert. It has no toggle — pausing/resuming is done from the Recurring screen.
 - Photos are per-transaction and are not copied from any template.
 
 ### 9. Deleting a rule
@@ -193,7 +193,7 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 - [x] A timing change (e.g. monthly → daily) takes effect from **today** under "Future only" (not at the rule's stale next occurrence), and an already-generated today is not re-counted — the Summary matches exactly what the save creates.
 - [x] In the edit form, the "Apply changes to" scope sits inside the recurring card above the Summary block; the block reflects the scope (next transaction + count, skipped occurrences, or back-filled count — counting only occurrences not already generated), and the footer keeps only Delete.
 - [x] Editing an individual generated transaction does not change its rule.
-- [x] Transaction details always show a read-only Recurring row with the rule name (or `—`); pausing/resuming is done from the Recurring screen.
+- [x] Transaction details always show a Recurring row with the rule name (or `—`), pressable to open the rule's edit screen when the transaction belongs to a rule; pausing/resuming is done from the Recurring screen.
 - [x] Deleting a rule keeps every transaction it generated.
 - [x] Export/import round-trips rules and tag links; a pre-028 (schema-3) backup still imports.
 - [x] Migration 004 applies to an existing v2.1.0 database without touching existing rows and sets `user_version = 4`; fresh installs reach the same schema.

@@ -3685,3 +3685,6 @@
 [2026-10-14] style | FinlyApp/src/components/SortRow.tsx FinlyApp/src/screens/CommentsScreen.tsx FinlyApp/tests/screens/CommentsScreen.test.tsx spec/features/027-comments-management/1-spec.md
 - Make the bordered SortRow band symmetric (paddingTop 12 + paddingBottom 12) so the sort labels sit perfectly centred between the counter and the separator, matching the Recurring controls band.
 - Keep the Comments counter visible when the list is empty ("0 comments"), so the Comments sort section has the same layout as the Tags screen in every state.
+
+[2026-10-14] feat | FinlyApp/src/components/DataRow.tsx FinlyApp/src/screens/TransactionDetailsScreen.tsx FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx spec/features/028-recurring-transactions/1-spec.md spec/constitution/3-roadmap.md
+- DataRow gained an optional onPress (rendering the row as a button), and the transaction-details Recurring row now opens the rule's edit screen directly with a create-outline affordance when the transaction belongs to a rule.

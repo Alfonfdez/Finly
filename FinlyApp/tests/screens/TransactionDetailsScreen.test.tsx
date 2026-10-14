@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, userEvent } from '@testing-library/react-native';
+import { render, fireEvent, userEvent } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import TransactionDetailsScreen from '../../src/screens/TransactionDetailsScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
@@ -119,6 +119,10 @@ describe('TransactionDetailsScreen', () => {
     await view.findByText('Recurring');
     expect(view.getByText('Rent')).toBeTruthy();
     expect(view.queryByRole('switch')).toBeNull();
+
+    // The row is a button that opens the rule's edit screen.
+    fireEvent.press(view.getByLabelText('Edit recurring rule'));
+    expect(nav.navigate).toHaveBeenCalledWith('ModifyRecurring', { ruleId: 7 });
   });
 
   it('always shows the Tags, Recurring and Photo rows and uses the placeholder for empty fields', async () => {
@@ -126,6 +130,8 @@ describe('TransactionDetailsScreen', () => {
     const view = await render(<TransactionDetailsScreen />);
     await view.findByText('Recurring');
     expect(view.getByText('Photos')).toBeTruthy();
+    // Without a rule the Recurring row is not a button.
+    expect(view.queryByLabelText('Edit recurring rule')).toBeNull();
     // Comment, Tags, Recurring and Photo are all empty -> "—" each.
     expect(view.getAllByText('—')).toHaveLength(4);
   });
