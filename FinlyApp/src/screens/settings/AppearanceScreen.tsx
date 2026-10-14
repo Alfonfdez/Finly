@@ -1,5 +1,6 @@
 import { Text, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import ScreenShell from '../../components/ScreenShell';
 import { useConfig, type Config } from '../../context/ConfigContext';
 import { t } from '../../i18n';
 import { CONFIG_ICON_SHAPES, TEXT_SIZES, THEMES } from '../../constants/types';
@@ -29,23 +30,25 @@ export default function AppearanceScreen() {
   ];
 
   return (
-    <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
-      <SettingsSection title={labels.settings_theme}>
-        <SelectorInline options={THEME_OPTIONS} selected={config.theme} onSelect={(v) => updateConfig({ theme: v })} />
-      </SettingsSection>
+    <ScreenShell>
+      <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
+        <SettingsSection title={labels.settings_theme}>
+          <SelectorInline options={THEME_OPTIONS} selected={config.theme} onSelect={(v) => updateConfig({ theme: v })} />
+        </SettingsSection>
 
-      <SettingsSection title={labels.settings_text_size}>
-        <SelectorInline options={SIZES} selected={config.textSize} onSelect={(v) => updateConfig({ textSize: v })} />
-      </SettingsSection>
+        <SettingsSection title={labels.settings_text_size}>
+          <SelectorInline options={SIZES} selected={config.textSize} onSelect={(v) => updateConfig({ textSize: v })} />
+        </SettingsSection>
 
-      <SettingsSection title={labels.settings_account_icon_shape}>
-        <SelectorInline options={SHAPES} selected={config.accountIconShape} onSelect={(v) => updateConfig({ accountIconShape: v })} />
-      </SettingsSection>
+        <SettingsSection title={labels.settings_account_icon_shape}>
+          <SelectorInline options={SHAPES} selected={config.accountIconShape} onSelect={(v) => updateConfig({ accountIconShape: v })} />
+        </SettingsSection>
 
-      <SettingsSection title={labels.settings_category_icon_shape}>
-        <SelectorInline options={SHAPES} selected={config.categoryIconShape} onSelect={(v) => updateConfig({ categoryIconShape: v })} />
-      </SettingsSection>
-    </ScrollView>
+        <SettingsSection title={labels.settings_category_icon_shape}>
+          <SelectorInline options={SHAPES} selected={config.categoryIconShape} onSelect={(v) => updateConfig({ categoryIconShape: v })} />
+        </SettingsSection>
+      </ScrollView>
+    </ScreenShell>
   );
 }
 

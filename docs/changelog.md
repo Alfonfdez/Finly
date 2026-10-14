@@ -3730,3 +3730,7 @@
 [2026-10-15] fix | FinlyApp/src/utils/photoUtils.ts, FinlyApp/tests/utils/photoUtils.test.ts
 - `deletePhotoFile` now no-ops on web for **any** URI (not only `data:`): photo files are a native-only concern, and calling `expo-file-system` on web warned "expo-file-system is not supported on web" and threw `this.validatePath is not a function`.
 - Fixes the console noise when deleting a transaction / account / category whose photos are native `file://` URIs (e.g. imported from a native backup) on web; added a `photoUtils` web-case test.
+
+[2026-10-15] fix | FinlyApp/src/screens/settings/SettingsScreen.tsx, FinlyApp/src/screens/settings/AppearanceScreen.tsx, FinlyApp/src/screens/settings/RegionalScreen.tsx, FinlyApp/src/screens/settings/PersonalizationScreen.tsx, FinlyApp/src/screens/settings/DataScreen.tsx
+- The five settings screens (Settings, Appearance, Regional, Personalization, Data) now render inside `ScreenShell`, which applies the bottom safe-area inset.
+- Fixes the last section (e.g. Personalization's Privacy card) sitting on/over the Android navigation bar: settings screens were the only ones not using `ScreenShell`, so with edge-to-edge their `ScrollView` content reached the screen bottom.
