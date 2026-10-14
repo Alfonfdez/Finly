@@ -122,7 +122,8 @@ describe('RecurringScreen', () => {
     expect(view.getByText('Every month on day 5')).toBeTruthy();
     expect(view.getByText('Active')).toBeTruthy();
     expect(view.getByText('Next: November 5, 2026')).toBeTruthy();
-    expect(view.getByText('Food · Created 5 Oct 2026 · 0 transactions')).toBeTruthy();
+    expect(view.getByText('Food · 0 transactions')).toBeTruthy();
+    expect(view.getByText('Created 5 Oct 2026')).toBeTruthy();
   });
 
   it('navigates to edit when the rule info is pressed', async () => {

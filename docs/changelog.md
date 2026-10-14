@@ -3648,3 +3648,6 @@
 
 [2026-10-14] chore | FinlyApp/package-lock.json
 - Sync the lockfile's root version to 2.2.0 (metadata only; no dependency changes).
+
+[2026-10-14] style | FinlyApp/src/components/RecurringRow.tsx FinlyApp/tests/component/RecurringRow.test.tsx FinlyApp/tests/screens/RecurringScreen.test.tsx
+- Split the Recurring rule row's meta line into two - 'Category - N transactions' then 'Created <date>' (no time) - so the creation info is no longer clipped.
