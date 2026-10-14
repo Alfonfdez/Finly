@@ -3734,3 +3734,6 @@
 [2026-10-15] fix | FinlyApp/src/screens/settings/SettingsScreen.tsx, FinlyApp/src/screens/settings/AppearanceScreen.tsx, FinlyApp/src/screens/settings/RegionalScreen.tsx, FinlyApp/src/screens/settings/PersonalizationScreen.tsx, FinlyApp/src/screens/settings/DataScreen.tsx
 - The five settings screens (Settings, Appearance, Regional, Personalization, Data) now render inside `ScreenShell`, which applies the bottom safe-area inset.
 - Fixes the last section (e.g. Personalization's Privacy card) sitting on/over the Android navigation bar: settings screens were the only ones not using `ScreenShell`, so with edge-to-edge their `ScrollView` content reached the screen bottom.
+
+[2026-10-15] chore | FinlyApp/package.json, FinlyApp/package-lock.json
+- Updated `expo` 57.0.28 → 57.0.29 and `expo-constants` 57.0.21 → 57.0.22 (`npx expo install --fix`) for SDK 57 compatibility.
