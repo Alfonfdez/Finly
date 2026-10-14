@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Keyboard } from 'react-native';
+import { Text, StyleSheet, Keyboard } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
+import { useKeyboardReveal } from '../hooks/useKeyboardReveal';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, MAX_COMMENT_LENGTH } from '../constants/types';
@@ -13,6 +14,7 @@ import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormError from '../components/form/FormError';
 import DeleteButton from '../components/form/DeleteButton';
+import FormScrollView from '../components/form/FormScrollView';
 import { CARD_BORDER_RADIUS } from '../components/componentStyles';
 import { ERROR_PREFIXES, runWithErrorAlert, showErrorAlert } from '../utils/errors';
 
@@ -28,6 +30,10 @@ export default function ModifyCommentScreen() {
   const originalComment = route.params.comment;
   const [comment, setComment] = useState(originalComment);
   const [count, setCount] = useState(0);
+
+  // The multiline field is at the top; the reveal keeps the Save button above the keyboard
+  // on short screens without moving the field off-screen.
+  const { scrollRef, onBottomFieldFocus, onBottomFieldBlur, onScrollLayout } = useKeyboardReveal();
 
   useEffect(() => {
     let active = true;
@@ -61,7 +67,7 @@ export default function ModifyCommentScreen() {
 
   return (
     <ScreenShell>
-      <View style={styles.content}>
+      <FormScrollView scrollRef={scrollRef} onLayout={onScrollLayout}>
         <LabeledTextField
           label={labels.add_comment}
           placeholder={labels.add_comment}
@@ -75,6 +81,8 @@ export default function ModifyCommentScreen() {
           counterFontSize={fs(12)}
           counterStyle={styles.counter}
           inputStyle={styles.input}
+          onFocus={onBottomFieldFocus}
+          onBlur={onBottomFieldBlur}
         />
 
         <FormError message={isEmpty ? labels.comments_error_empty : null} style={styles.error} />
@@ -97,7 +105,7 @@ export default function ModifyCommentScreen() {
         <Text style={[styles.mergeHint, { color: c.textSecondary, fontSize: fs(12) }]}>
           {labels.comments_merge_hint}
         </Text>
-      </View>
+      </FormScrollView>
 
       <ConfirmationModal
         visible={deleteModalVisible}
@@ -113,11 +121,6 @@ export default function ModifyCommentScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
   input: {
     borderRadius: CARD_BORDER_RADIUS,
     paddingHorizontal: 14,

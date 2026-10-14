@@ -3712,3 +3712,17 @@
 - Extracted `components/ListOrEmpty.tsx` (unmounts the list when empty, showing an `EmptyState` instead) and adopted it in all six list screens: Tags, Comments, Recurring, Accounts, the transactions list (`TransactionListBody`) and Categories — replacing the six inline `View` + `EmptyState` swaps and dropping each screen's `emptyList`/`emptyContent` style.
 - Moved the shared `testID`s to `constants/testIds.ts` (`TEST_IDS`) and used them in `RepeatSection`, the four list screens and their tests.
 - Added "list present when non-empty / unmounted when empty" assertions to the Tags, Comments, Recurring and Accounts screen tests, and documented the convention in `spec/constitution/6-screens.md`.
+
+[2026-10-14] fix | FinlyApp/src/hooks/useKeyboardReveal.ts, FinlyApp/src/hooks/useKeyboardInset.ts, FinlyApp/src/components/form/FormScrollView.tsx, FinlyApp/src/components/form/formStyles.ts, FinlyApp/src/components/AccountForm.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/components/ModalShell.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx, FinlyApp/tests/hooks/useKeyboardReveal.test.tsx
+- Extracted the transaction form's keyboard reveal into a shared `hooks/useKeyboardReveal.ts` (scroll-to-end on bottom-field focus, re-run on `keyboardDidShow`/`onLayout`) and reused it across the forms.
+- `FormScrollView` (`AccountForm`, Create/Modify Category, Modify Comment) is now `KeyboardAvoidingView`-wrapped, exposes `scrollRef`/`onLayout`, and keeps `paddingBottom: 112`; `AccountForm` (Create/Modify Account) and `ModifyCommentScreen` reveal the bottom action when the Note/multiline field is focused, so the Create/Save button is no longer hidden by the keyboard.
+- `ModalShell` now measures the keyboard (`hooks/useKeyboardInset.ts`) and lifts the card above it (capping its height), so the `ConfirmationModal` footer stays reachable — e.g. the typed-DELETE confirmation in the Data screen.
+- `TransactionForm` was refactored onto the shared hook (behaviour unchanged); added a `useKeyboardReveal` unit test.
+
+[2026-10-15] fix | FinlyApp/src/hooks/useKeyboardInset.ts, FinlyApp/src/components/ModalShell.tsx, FinlyApp/src/components/ConfirmationModal.tsx, FinlyApp/tests/hooks/useKeyboardLift.test.tsx
+- `ModalShell` now holds its keyboard lift while the modal is open (`hooks/useKeyboardInset.ts#useKeyboardLift`, resetting on close) instead of dropping it when the keyboard hides.
+- Fixes the typed-DELETE confirmation needing two taps: tapping Confirm blurred the input, the keyboard hid and the card dropped, so the button moved out from under the finger and the first tap was swallowed. `ConfirmationModal`'s scroll area also uses `keyboardShouldPersistTaps="handled"`.
+
+[2026-10-15] fix | FinlyApp/src/screens/settings/DataScreen.tsx
+- `DataScreen`'s outer `ScrollView` now sets `keyboardShouldPersistTaps="handled"`.
+- Fixes the typed-DELETE confirmation needing two taps: the ScrollView (a React-tree ancestor of the modal) captured the first tap to dismiss the keyboard (`ScrollView._handleStartShouldSetResponderCapture`, default `keyboardShouldPersistTaps`), so Confirm only received the second tap. Documented the ancestor-ScrollView rule in `spec/constitution/6-screens.md`.
