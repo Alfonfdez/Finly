@@ -43,6 +43,7 @@ describe('CommentsScreen', () => {
   it('shows an empty state when there are no comments', async () => {
     const view = await render(<CommentsScreen />);
     expect(await view.findByText('No comments yet')).toBeTruthy();
+    expect(view.getByText('0 comments')).toBeTruthy();
   });
 
   it('lists loaded comments with their usage count', async () => {

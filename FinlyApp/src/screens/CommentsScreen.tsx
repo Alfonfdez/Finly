@@ -157,7 +157,7 @@ export default function CommentsScreen() {
           onClose={closeSearch}
         />
 
-        {comments.length > 0 && !selectMode && (
+        {!selectMode && (
           <Text style={[COUNTER_STYLE, { color: c.textSecondary, fontSize: fs(13) }]}>
             {labels.comments_counter(filteredComments.length)}
           </Text>

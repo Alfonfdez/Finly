@@ -132,13 +132,10 @@ export default function ModifyRecurringScreen() {
   }
 
   const footer = (
-    <View style={styles.footer}>
-      <DeleteButton
-        label={labels.delete}
-        onPress={() => setDeleteVisible(true)}
-        style={styles.deleteButton}
-      />
-    </View>
+    <DeleteButton
+      label={labels.delete}
+      onPress={() => setDeleteVisible(true)}
+    />
   );
 
   return (
@@ -234,11 +231,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 16,
-  },
-  footer: {
-    marginTop: 24,
-  },
-  deleteButton: {
-    marginTop: 24,
   },
 });
