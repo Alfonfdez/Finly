@@ -269,8 +269,9 @@ Tag management with database persistence:
 - Tag repository CRUD (SQLite on both platforms).
 - Tags screen accessible from the Drawer with tag list, header search toggle and FAB.
 - Create tag screen with name validation (empty, duplicate, max 20 chars).
-- Maximum of 50 tags (Create button disabled + inline message when reached; "+" FAB on Tags screen and "+ Add tag" chip in the transaction form hidden at the cap).
+- Maximum of 100 tags (Create button disabled + inline message when reached; "+" FAB on Tags screen and "+ Add tag" chip in the transaction form hidden at the cap).
 - Modify/delete tag screen with name edit and delete confirmation.
+- Update (2026-10-14): each tag row shows "Used in N transactions" (`tags_used_in`) and "Created <date>" (`tags_created_on`), and the list gained a `SortToggle` strip (name / created / usage, session-only) via the shared `SortRow`.
 
 Spec: spec/features/018-tag-management/.
 
@@ -400,6 +401,7 @@ Bulk comment management for transactions:
 - Autocomplete: `searchComments()` returns distinct trimmed suggestions ranked prefix-first (NOCASE) capped at `MAX_SUGGESTIONS`; `CommentInput` only triggers from `MIN_COMMENT_SUGGESTION_LENGTH = 2` trimmed characters.
 - i18n keys `nav_comments` + `comments_*` (en/es/ca).
 - Tests: 6 new contract tests + 7 `CommentInput` component tests; `npm run test:all` green (typecheck + lint + 247 tests, 29 files).
+- Update (2026-10-14): each row also shows "Last used <date>" (`getDistinctComments()` now returns `lastUsed = MAX(date)`), the usage line moved to the shared `used_in_transactions`, and the list gained a `SortToggle` strip (name / last used / usage, session-only) via the shared `SortRow`.
 
 Spec: spec/features/027-comments-management/.
 

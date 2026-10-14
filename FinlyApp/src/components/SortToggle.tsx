@@ -3,8 +3,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import {
-  SORT_BY, SORT_DIRECTIONS, RECURRING_SORT_BY,
-  type SortBy, type SortDirection, type RecurringSortBy, type IconName,
+  SORT_BY, SORT_DIRECTIONS, RECURRING_SORT_BY, TAG_SORT_BY, COMMENT_SORT_BY,
+  type SortBy, type SortDirection, type RecurringSortBy, type TagSortBy, type CommentSortBy, type IconName,
 } from '../constants/types';
 
 export interface SortField<T extends string> {
@@ -41,6 +41,30 @@ export function recurringSortFields(labels: {
     { key: RECURRING_SORT_BY.name, label: labels.recurring_sort_name },
     { key: RECURRING_SORT_BY.amount, label: labels.recurring_sort_amount },
     { key: RECURRING_SORT_BY.created, label: labels.recurring_sort_created },
+  ];
+}
+
+export function tagSortFields(labels: {
+  tags_sort_name: string;
+  tags_sort_created: string;
+  tags_sort_usage: string;
+}): SortField<TagSortBy>[] {
+  return [
+    { key: TAG_SORT_BY.name, label: labels.tags_sort_name },
+    { key: TAG_SORT_BY.created, label: labels.tags_sort_created },
+    { key: TAG_SORT_BY.usage, label: labels.tags_sort_usage },
+  ];
+}
+
+export function commentSortFields(labels: {
+  comments_sort_name: string;
+  comments_sort_last_used: string;
+  comments_sort_usage: string;
+}): SortField<CommentSortBy>[] {
+  return [
+    { key: COMMENT_SORT_BY.name, label: labels.comments_sort_name },
+    { key: COMMENT_SORT_BY.lastUsed, label: labels.comments_sort_last_used },
+    { key: COMMENT_SORT_BY.usage, label: labels.comments_sort_usage },
   ];
 }
 

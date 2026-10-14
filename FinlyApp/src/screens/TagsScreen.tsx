@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { COUNTER_STYLE } from '../components/componentStyles';
@@ -11,18 +11,22 @@ import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
-import { tagRepository } from '../database';
+import { tagRepository, transactionRepository } from '../database';
 import { type Tag } from '../database/types';
-import { type NavigationProp, MAX_TAGS } from '../constants/types';
+import { type NavigationProp, MAX_TAGS, TAG_SORT_BY, SORT_DIRECTIONS, type TagSortBy, type SortDirection } from '../constants/types';
 import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import { countAtLimit } from '../utils/limits';
+import { parseDbDate } from '../utils/formatters';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { ERROR_PREFIXES } from '../utils/errors';
+import { defaultTagSortDirection, sortTags } from '../utils/tagSort';
 import Fab from '../components/Fab';
 import ListItemRow from '../components/ListItemRow';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
+import SortToggle, { tagSortFields } from '../components/SortToggle';
+import SortRow from '../components/SortRow';
 import ConfirmationModal from '../components/ConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
@@ -58,7 +62,40 @@ export default function TagsScreen() {
 
   const filteredTags = useSearchFilter(tags, searchText, (tag) => [tag.name]);
 
-  const visibleIds = useMemo(() => filteredTags.map(t => t.id), [filteredTags]);
+  const [usage, setUsage] = useState<Map<number, number>>(new Map());
+  const [sortBy, setSortBy] = useState<TagSortBy>(TAG_SORT_BY.created);
+  // Creation order ascending (oldest first) keeps the list's historical order.
+  const [sortDirection, setSortDirection] = useState<SortDirection>(SORT_DIRECTIONS.asc);
+
+  useEffect(() => {
+    let active = true;
+    transactionRepository.countByTagIdsMap(tags.map(t => t.id))
+      .then(map => {
+        if (active) setUsage(new Map(Object.entries(map).map(([id, count]) => [Number(id), count])));
+      })
+      .catch(() => { if (active) setUsage(new Map()); });
+    return () => { active = false; };
+  }, [tags]);
+
+  const handleToggleSort = useCallback((field: TagSortBy) => {
+    if (field === sortBy) {
+      setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
+    } else {
+      setSortBy(field);
+      setSortDirection(defaultTagSortDirection(field));
+    }
+  }, [sortBy]);
+
+  const handleToggleDirection = useCallback(() => {
+    setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
+  }, []);
+
+  const sortedTags = useMemo(
+    () => sortTags(filteredTags, sortBy, sortDirection, usage),
+    [filteredTags, sortBy, sortDirection, usage],
+  );
+
+  const visibleIds = useMemo(() => sortedTags.map(t => t.id), [sortedTags]);
 
   const atTagLimit = countAtLimit(tags.length, MAX_TAGS);
 
@@ -74,10 +111,18 @@ export default function TagsScreen() {
 
   const renderItem = useCallback(({ item }: { item: Tag }) => {
     const selected = selectedIds.has(item.id);
+    const created = parseDbDate(item.created_at);
+    const createdText = `${created.getDate()} ${labels.months_short[created.getMonth()]} ${created.getFullYear()}`;
     return (
       <ListItemRow
         title={item.name}
         titleSize={15}
+        subtitle={labels.tags_used_in(usage.get(item.id) ?? 0)}
+        middle={
+          <Text style={[styles.created, { color: c.textSecondary, fontSize: fs(12) }]}>
+            {labels.tags_created_on(createdText)}
+          </Text>
+        }
         leading={selectMode ? (
           <Ionicons
             name={selected ? 'checkbox' : 'checkbox-outline'}
@@ -91,7 +136,7 @@ export default function TagsScreen() {
         onPress={() => (selectMode ? toggleItem(item.id) : navigation.navigate('ModifyTag', { tagId: item.id }))}
       />
     );
-  }, [selectedIds, selectMode, toggleItem, navigation, c]);
+  }, [selectedIds, selectMode, toggleItem, navigation, c, usage, labels, fs]);
 
   const renderEmpty = () => (
     <EmptyState {...emptyStateProps(searchActive, 'pricetag-outline', labels.tags_empty)} />
@@ -113,6 +158,16 @@ export default function TagsScreen() {
         </Text>
       )}
 
+      <SortRow bordered>
+        <SortToggle
+          fields={tagSortFields(labels)}
+          sortBy={sortBy}
+          direction={sortDirection}
+          onToggleSort={handleToggleSort}
+          onToggleDirection={handleToggleDirection}
+        />
+      </SortRow>
+
       {selectMode && visibleIds.length > 0 && (
         <SelectAllRow
           allSelected={select.allSelected(visibleIds)}
@@ -124,11 +179,11 @@ export default function TagsScreen() {
       )}
 
       <FlatList
-        data={filteredTags}
+        data={sortedTags}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
         ListEmptyComponent={renderEmpty}
-        contentContainerStyle={filteredTags.length === 0 ? styles.emptyList : styles.list}
+        contentContainerStyle={sortedTags.length === 0 ? styles.emptyList : styles.list}
       />
 
       {selectMode ? (
@@ -175,6 +230,9 @@ const styles = StyleSheet.create({
   },
   row: {
     padding: 14,
+  },
+  created: {
+    marginTop: 2,
   },
   limitWrap: {
     position: 'absolute',

@@ -12,13 +12,17 @@ import { useSearchFilter } from '../hooks/useSearchFilter';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import type { CommentUsage } from '../database/repositories/transactionRepo';
-import type { NavigationProp } from '../constants/types';
+import { COMMENT_SORT_BY, SORT_DIRECTIONS, type NavigationProp, type CommentSortBy, type SortDirection } from '../constants/types';
+import { parseDbDate } from '../utils/formatters';
+import { defaultCommentSortDirection, sortComments } from '../utils/commentSort';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import ListItemRow from '../components/ListItemRow';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { ERROR_PREFIXES } from '../utils/errors';
 import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
+import SortToggle, { commentSortFields } from '../components/SortToggle';
+import SortRow from '../components/SortRow';
 import ConfirmationModal from '../components/ConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
@@ -76,7 +80,28 @@ export default function CommentsScreen() {
 
   const filteredComments = useSearchFilter(comments, searchText, (c) => [c.description]);
 
-  const visibleIds = useMemo(() => filteredComments.map((c) => c.description), [filteredComments]);
+  const [sortBy, setSortBy] = useState<CommentSortBy>(COMMENT_SORT_BY.name);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(SORT_DIRECTIONS.asc);
+
+  const handleToggleSort = useCallback((field: CommentSortBy) => {
+    if (field === sortBy) {
+      setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
+    } else {
+      setSortBy(field);
+      setSortDirection(defaultCommentSortDirection(field));
+    }
+  }, [sortBy]);
+
+  const handleToggleDirection = useCallback(() => {
+    setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
+  }, []);
+
+  const sortedComments = useMemo(
+    () => sortComments(filteredComments, sortBy, sortDirection),
+    [filteredComments, sortBy, sortDirection],
+  );
+
+  const visibleIds = useMemo(() => sortedComments.map((c) => c.description), [sortedComments]);
 
   const {
     deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
@@ -90,11 +115,18 @@ export default function CommentsScreen() {
 
   const renderItem = useCallback(({ item }: { item: CommentUsage }) => {
     const selected = selectedComments.has(item.description);
+    const lastUsed = parseDbDate(item.lastUsed);
+    const lastUsedText = `${lastUsed.getDate()} ${labels.months_short[lastUsed.getMonth()]} ${lastUsed.getFullYear()}`;
     return (
       <ListItemRow
         title={item.description}
         titleSize={15}
         subtitle={labels.comments_used_in(item.count)}
+        middle={
+          <Text style={[styles.lastUsed, { color: c.textSecondary, fontSize: fs(12) }]}>
+            {labels.comments_last_used(lastUsedText)}
+          </Text>
+        }
         leading={selectMode ? (
           <Ionicons
             name={selected ? 'checkbox' : 'checkbox-outline'}
@@ -108,7 +140,7 @@ export default function CommentsScreen() {
         onPress={() => (selectMode ? toggleItem(item.description) : navigation.navigate('ModifyComment', { comment: item.description }))}
       />
     );
-  }, [selectedComments, selectMode, toggleItem, navigation, c, labels]);
+  }, [selectedComments, selectMode, toggleItem, navigation, c, labels, fs]);
 
   const renderEmpty = () => (
     <EmptyState {...emptyStateProps(searchActive, 'chatbubble-outline', labels.comments_empty)} />
@@ -131,6 +163,16 @@ export default function CommentsScreen() {
           </Text>
         )}
 
+        <SortRow bordered>
+          <SortToggle
+            fields={commentSortFields(labels)}
+            sortBy={sortBy}
+            direction={sortDirection}
+            onToggleSort={handleToggleSort}
+            onToggleDirection={handleToggleDirection}
+          />
+        </SortRow>
+
         {selectMode && visibleIds.length > 0 && (
           <SelectAllRow
             allSelected={select.allSelected(visibleIds)}
@@ -142,11 +184,11 @@ export default function CommentsScreen() {
         )}
 
         <FlatList
-          data={filteredComments}
+          data={sortedComments}
           keyExtractor={(item) => item.description}
           renderItem={renderItem}
           ListEmptyComponent={loading ? null : renderEmpty}
-          contentContainerStyle={filteredComments.length === 0 ? styles.emptyList : styles.list}
+          contentContainerStyle={sortedComments.length === 0 ? styles.emptyList : styles.list}
         />
       </View>
 
@@ -186,5 +228,8 @@ const styles = StyleSheet.create({
   },
   row: {
     padding: 14,
+  },
+  lastUsed: {
+    marginTop: 2,
   },
 });

@@ -99,6 +99,7 @@ export interface ContractTransactionRepo {
   countByDescription(comment: string): Promise<number>;
   countByCategoryIds(ids: number[]): Promise<number>;
   countByCategoryIdsMap(ids: number[]): Promise<Record<number, number>>;
+  countByTagIdsMap(ids: number[]): Promise<Record<number, number>>;
   breakdownByCategoriesAndTags(
     accountId: number | null,
     categoryIds: number[],

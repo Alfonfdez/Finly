@@ -49,6 +49,8 @@ interface CategoryUsageCount {
 export interface CommentUsage {
   description: string;
   count: number;
+  /** Date of the most recent transaction using this comment. */
+  lastUsed: string;
 }
 
 async function countByGroup(column: AnySQLiteColumn, ids: number[]): Promise<Record<number, number>> {
@@ -201,6 +203,7 @@ export const transactionReads = {
       .select({
         description: sql<string>`TRIM(${transactions.description})`,
         count: sql<number>`COUNT(*)`,
+        lastUsed: sql<string>`MAX(${transactions.date})`,
       })
       .from(transactions)
       .where(
@@ -232,9 +235,23 @@ export const transactionReads = {
   async countByCategoryIdsMap(ids: number[]): Promise<Record<number, number>> {
     return countByGroup(transactions.category_id, ids);
   },
-
   async countByAccountIdsMap(ids: number[]): Promise<Record<number, number>> {
     return countByGroup(transactions.account_id, ids);
+  },
+
+  /** Transactions per tag, from the `transaction_tags` junction (missing tags are absent). */
+  async countByTagIdsMap(ids: number[]): Promise<Record<number, number>> {
+    if (ids.length === 0) return {};
+    const db = await getDrizzle();
+    const rows = await db
+      .select({ tagId: transactionTags.tag_id, count: sql<number>`COUNT(*)` })
+      .from(transactionTags)
+      .where(inArray(transactionTags.tag_id, ids))
+      .groupBy(transactionTags.tag_id)
+      .all();
+    const map: Record<number, number> = {};
+    for (const row of rows) map[Number(row.tagId)] = row.count;
+    return map;
   },
 
   async breakdownByCategoriesAndTags(
