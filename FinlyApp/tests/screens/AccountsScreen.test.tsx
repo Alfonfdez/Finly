@@ -3,6 +3,7 @@ import { render, fireEvent, waitFor, userEvent } from '@testing-library/react-na
 import { useState, type ReactNode } from 'react';
 import AccountsScreen from '../../src/screens/AccountsScreen';
 import { buildAppMock, resetAppStub } from '../component/helpers/appStub';
+import { TEST_IDS } from '../../src/constants/testIds';
 import type { Account } from '../../src/database/types';
 
 const list = vi.fn(async (_u: number) => [] as Account[]);
@@ -79,6 +80,8 @@ describe('AccountsScreen', () => {
   it('shows the total and an empty state when there are no accounts', async () => {
     const view = await render(<AccountsScreen />);
     expect(await view.findByText('No accounts')).toBeTruthy();
+    // The list must be unmounted when empty so no stale scroll area remains.
+    expect(view.queryByTestId(TEST_IDS.accountsList)).toBeNull();
   });
 
   it('lists accounts with their computed balances', async () => {
@@ -90,6 +93,7 @@ describe('AccountsScreen', () => {
     const view = await render(<AccountsScreen />);
     expect(await view.findByText('Cash')).toBeTruthy();
     expect(view.getByText('Savings')).toBeTruthy();
+    expect(view.getByTestId(TEST_IDS.accountsList)).toBeTruthy();
   });
 
   it('opens the modify screen when an account is pressed', async () => {

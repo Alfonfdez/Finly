@@ -3698,3 +3698,17 @@
 - Extracted the modify form's "row rewritten underneath an open form" logic from `ModifyTransactionScreen` into `hooks/useExternalRowRefresh.ts` (`formKey` remount / `updated` warning / `adopt`), now unit-tested with `renderHook`.
 - Added `utils/arrays.ts#areIdListsEqual` and reused it for the tag-id comparison in `useTransactionForm` and `useRecurringEditScope` (previously duplicated).
 - A non-recurring transaction (which has no notice to show) now always adopts the refreshed row instead of silently keeping stale values.
+
+[2026-10-14] fix | FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/components/CommentInput.tsx
+- The shared transaction form (Add/Modify transaction, New/Edit recurring rule) now scrolls its submit button above the keyboard when the **Comment** field (the bottom-most input) is focused; the reveal is re-run on `onLayout`/`keyboardDidShow` so it lands after the keyboard resize settles, and the content bottom padding grew 48 → 112 px for a clear gap.
+- Focusing any other field (recurring Name, Amount, Account, Category) does not scroll, and the keyboard listener is cleaned up on unmount.
+
+[2026-10-14] fix | FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/tests/screens/TagsScreen.test.tsx
+- The Tags, Comments, Recurring and Accounts lists now **unmount the list** when empty and render a `View` + `EmptyState`, instead of a `ListEmptyComponent` with a conditional `contentContainerStyle`.
+- Fixes the bug where deleting a whole overflowing list at once (Select all → Delete) left the previous scroll extent, so the empty screen stayed vertically scrollable and the empty state was not centred (Android keeps the stale native content size while the FlatList stays mounted).
+- Added the "Empty lists" convention to `spec/constitution/6-screens.md` and a `tags-list`/`comments-list`/`recurring-list`/`accounts-list` testID with a "list unmounted when empty" assertion for Tags.
+
+[2026-10-14] refactor | FinlyApp/src/components/ListOrEmpty.tsx, FinlyApp/src/constants/testIds.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionListBody.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/tests
+- Extracted `components/ListOrEmpty.tsx` (unmounts the list when empty, showing an `EmptyState` instead) and adopted it in all six list screens: Tags, Comments, Recurring, Accounts, the transactions list (`TransactionListBody`) and Categories — replacing the six inline `View` + `EmptyState` swaps and dropping each screen's `emptyList`/`emptyContent` style.
+- Moved the shared `testID`s to `constants/testIds.ts` (`TEST_IDS`) and used them in `RepeatSection`, the four list screens and their tests.
+- Added "list present when non-empty / unmounted when empty" assertions to the Tags, Comments, Recurring and Accounts screen tests, and documented the convention in `spec/constitution/6-screens.md`.

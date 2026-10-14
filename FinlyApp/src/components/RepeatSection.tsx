@@ -10,6 +10,7 @@ import { buildRecurrenceSchedule, todayDateOnly, type RecurrenceSchedule } from 
 import { recurrenceFrequencyLabels } from '../utils/recurrenceSummary';
 import { recurrenceInfoLines } from '../utils/recurrenceInfo';
 import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, CONTROL_BORDER_RADIUS, PILL_RADIUS, SECTION_GAP, SECTION_GAP_SM, SECTION_TITLE_STYLE, recurringCardColors } from './componentStyles';
+import { TEST_IDS } from '../constants/testIds';
 import ClearButton from './ClearButton';
 import CheckboxRow from './settings/CheckboxRow';
 import RecurrenceInfo from './RecurrenceInfo';
@@ -115,7 +116,7 @@ export default function RepeatSection({
       </View>
 
       <View
-        testID="repeat-options"
+        testID={TEST_IDS.repeatOptions}
         style={[
           styles.options,
           recurringCardColors(c),
@@ -210,7 +211,7 @@ export default function RepeatSection({
         </Text>
         <View style={styles.endRow}>
           <TouchableOpacity
-            testID="repeat-end-date"
+            testID={TEST_IDS.repeatEndDate}
             style={[styles.endField, { backgroundColor: c.surface, borderColor: c.border }]}
             onPress={onOpenEndDate}
             accessibilityRole="button"

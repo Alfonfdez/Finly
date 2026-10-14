@@ -241,6 +241,22 @@ if (!entity) {
 - `keyboardShouldPersistTaps`: always `"handled"`
 - `onScrollBeginDrag`: dismiss keyboard on scroll (for form screens)
 
+### Submit button above the keyboard (TransactionForm)
+
+The shared `TransactionForm` (Add/Modify transaction, New/Edit recurring rule) keeps its
+submit button reachable while the keyboard is open:
+
+- When the **Comment** field (the bottom-most input) gains focus it calls `revealSubmit()` →
+  `scrollRef.current?.scrollToEnd({ animated: true })` after a short delay.
+- The reveal is re-run on `Keyboard.addListener('keyboardDidShow')` and on the ScrollView's
+  `onLayout` (the keyboard shrinks it), so it lands *after* the resize settles rather than
+  landing short.
+- Only the Comment field triggers this; focusing the recurring Name, Amount, Account or
+  Category must **not** scroll (jumping to the bottom hides what is being typed).
+- The scroll content keeps `paddingBottom: 112` so the revealed button clears the keyboard
+  with a comfortable gap.
+- `keyboardShouldPersistTaps="handled"` keeps the revealed button tappable in one tap.
+
 ### Android KeyboardSpacer
 
 ```jsx
@@ -250,6 +266,29 @@ if (!entity) {
 **Style:** `{ height: 200 }`
 
 Place at the bottom of scrollable content in Create/Modify screens.
+
+## Empty lists
+
+Render a list through the shared `ListOrEmpty` component, which **unmounts the list when it
+is empty** and shows an `EmptyState` instead — never a `ListEmptyComponent` combined with a
+conditional `contentContainerStyle`:
+
+```jsx
+<ListOrEmpty empty={items.length === 0} emptyState={renderEmpty()}>
+  <FlatList data={items} ... contentContainerStyle={styles.list} />
+</ListOrEmpty>
+```
+
+Why: when the data jumps from a list that overflows the screen to empty in a single update
+(e.g. Select all → Delete), a still-mounted `FlatList` keeps the old (tall) native content
+size on Android, so the emptied screen stays vertically scrollable and the empty state is
+not centred. Unmounting the list forces a fresh measure.
+
+Used by `TagsScreen`, `CommentsScreen`, `RecurringScreen`, `AccountsScreen`,
+`TransactionListBody` (transactions) and `CategoriesScreen`.
+
+`testID`s shared by a component and its test live in `src/constants/testIds.ts` (`TEST_IDS`);
+the rest of the test hooks are i18n accessibility labels queried with `getByLabelText`.
 
 ## FAB (Floating Action Button)
 

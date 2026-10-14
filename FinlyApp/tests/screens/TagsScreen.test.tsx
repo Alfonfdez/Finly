@@ -3,6 +3,7 @@ import { render, fireEvent, userEvent, waitFor } from '@testing-library/react-na
 import type { ReactNode } from 'react';
 import TagsScreen from '../../src/screens/TagsScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
+import { TEST_IDS } from '../../src/constants/testIds';
 import type { Tag } from '../../src/database/types';
 
 const nav = { setOptions: vi.fn(), navigate: vi.fn() };
@@ -51,12 +52,15 @@ describe('TagsScreen', () => {
     expect(view.getByText('Travel')).toBeTruthy();
     expect(view.getByText('1 of 100 tags')).toBeTruthy();
     expect(view.getByText('Created 1 Jan 2026')).toBeTruthy();
+    expect(view.getByTestId(TEST_IDS.tagsList)).toBeTruthy();
   });
 
   it('shows an empty state when there are no tags', async () => {
     setAppData({ tags: [] });
     const view = await render(<TagsScreen />);
     expect(view.getByText('No tags yet')).toBeTruthy();
+    // The list must be unmounted when empty so no stale scroll area remains.
+    expect(view.queryByTestId(TEST_IDS.tagsList)).toBeNull();
   });
 
   it('opens the modify screen when a tag is pressed', async () => {
