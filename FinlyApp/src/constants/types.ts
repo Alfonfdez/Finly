@@ -27,7 +27,7 @@ export const MAX_CATEGORY_NAME_LENGTH = 30;
 export const MAX_ACCOUNT_NAME_LENGTH = 30;
 export const MAX_TAG_NAME_LENGTH = 20;
 export const MAX_CATEGORIES_PER_TYPE = 30;
-export const MAX_TAGS = 50;
+export const MAX_TAGS = 100;
 export const MAX_NOTE_LENGTH = 200;
 export const MAX_COMMENT_LENGTH = 4096;
 export const MIN_COMMENT_SUGGESTION_LENGTH = 2;
@@ -146,6 +146,22 @@ export const RECURRING_SORT_BY = {
 } as const;
 
 export type RecurringSortBy = keyof typeof RECURRING_SORT_BY;
+
+export const TAG_SORT_BY = {
+  name: 'name',
+  created: 'created',
+  usage: 'usage',
+} as const;
+
+export type TagSortBy = keyof typeof TAG_SORT_BY;
+
+export const COMMENT_SORT_BY = {
+  name: 'name',
+  lastUsed: 'lastUsed',
+  usage: 'usage',
+} as const;
+
+export type CommentSortBy = keyof typeof COMMENT_SORT_BY;
 
 export const RECURRING_VIEWS = {
   all: 'all',

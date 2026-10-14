@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, FlatList, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import ScreenShell from '../components/ScreenShell';
@@ -13,6 +13,7 @@ import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
 import SortToggle, { recurringSortFields } from '../components/SortToggle';
 import RecurringStatusChip from '../components/RecurringStatusChip';
+import SortRow from '../components/SortRow';
 import ConfirmationModal from '../components/ConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
@@ -30,7 +31,6 @@ import { recurrenceFrequencyLabels } from '../utils/recurrenceSummary';
 import { defaultRecurringSortDirection, sortRecurringRules } from '../utils/recurringSort';
 import { filterRecurringRules } from '../utils/recurringFilter';
 import { isTotalAccount } from '../database/helpers';
-import { isWeb } from '../utils/platform';
 import { recurringRepository } from '../database';
 import { setRecurringRuleActive } from '../database/recurringService';
 import { ERROR_PREFIXES } from '../utils/errors';
@@ -219,12 +219,7 @@ export default function RecurringScreen() {
           onPress={openAccountModal}
         />
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={isWeb}
-          style={styles.sortRow}
-          contentContainerStyle={[styles.sortRowContent, isWeb && styles.sortRowWebContent]}
-        >
+        <SortRow>
           <RecurringStatusChip selected={statusFilter} onChange={setStatusFilter} />
           <SortToggle
             fields={recurringSortFields(labels)}
@@ -233,7 +228,7 @@ export default function RecurringScreen() {
             onToggleSort={handleToggleSort}
             onToggleDirection={handleToggleDirection}
           />
-        </ScrollView>
+        </SortRow>
       </View>
 
       {selectMode && visibleIds.length > 0 && (
@@ -309,19 +304,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     gap: 8,
-  },
-  sortRow: {
-    alignSelf: 'stretch',
-    flexGrow: 0,
-  },
-  sortRowContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 6,
-  },
-  sortRowWebContent: {
-    paddingBottom: 8,
   },
 });

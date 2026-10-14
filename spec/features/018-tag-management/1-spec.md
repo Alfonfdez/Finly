@@ -40,12 +40,13 @@
 - Search placeholder "Search tags" (multilingual, new `tags_search` key); "x" button closes the search and restores the full list.
 - Search filters the list client-side by characters contained in the tag name (case-insensitive).
 - When a search returns no results, empty state with search icon + "No results found" (reuse `filter_no_results`).
-- FlatList of all tags ordered by creation date.
-- Each row: tag name + chevron right.
+- FlatList of all tags ordered by creation date (oldest first).
+- Each row: tag name, a "Used in N transactions" line (`tags_used_in`) and a "Created <date>" line (`tags_created_on`), plus a chevron right.
+- A sort strip (`SortToggle` in a `SortRow`) above the list sorts by **name**, **created** or **usage** (number of transactions using the tag); each field has a natural default direction (name ascending, created/usage descending) and tapping the active field flips it. Sorting is **session-only** (not persisted).
 - Pressing a tag navigates to `ModifyTag` screen.
 - Floating "+" FAB centered at bottom that navigates to `CreateTag` screen.
-- When the 50-tag maximum (`MAX_TAGS`) is reached, the "+" FAB is hidden and the message "Maximum of 50 tags reached" is shown centered in its place.
-- A counter above the list shows how many tags exist out of the maximum, e.g. "12 of 50 tags" (`tags_counter`), hidden during selection mode.
+- When the 100-tag maximum (`MAX_TAGS`) is reached, the "+" FAB is hidden and the message "Maximum of 100 tags reached" is shown centered in its place.
+- A counter above the list shows how many tags exist out of the maximum, e.g. "12 of 100 tags" (`tags_counter`), hidden during selection mode.
 - Empty state with `pricetag-outline` icon and "No tags" message.
 - When there are no tags at all, the header Select button and search icon are hidden (nothing to select or search); they appear as soon as the first tag exists.
 
@@ -57,7 +58,7 @@
 - Empty name error: "Enter a tag name".
 - Duplicate error: "A tag with this name already exists".
 - "Create" button: disabled if name is empty, too long, or duplicate. Calls `tagRepo.create()`, then `refreshTags()`, then navigates back.
-- Maximum of 50 tags (`MAX_TAGS` in `src/constants/types.ts`). When 50 tags already exist, the "Create" button is disabled and the message "Maximum of 50 tags reached" is shown in red. Enforced at the UI layer only, no database constraint.
+- Maximum of 100 tags (`MAX_TAGS` in `src/constants/types.ts`). When 100 tags already exist, the "Create" button is disabled and the message "Maximum of 100 tags reached" is shown in red. Enforced at the UI layer only, no database constraint.
 
 ### 6. Modify/delete tag screen
 
@@ -75,7 +76,7 @@
 - The header shows a "Select" (`tags_select`) text button next to the search icon; pressing it toggles selection mode (label switches to "Done", `tags_select_done`).
 - In selection mode each row shows a leading checkbox (`checkbox-outline` unchecked / `checkbox` checked in primary color); tapping a row toggles its selection instead of navigating.
 - The header search and search filtering keep working during selection mode; selection applies to the filtered list.
-- In selection mode the "+" FAB (and the "Maximum of 50 tags reached" message) is replaced by a bottom action bar with "Cancel" and `Delete (N)` (`tags_bulk_delete(n)`), where N is the number of selected tags.
+- In selection mode the "+" FAB (and the "Maximum of 100 tags reached" message) is replaced by a bottom action bar with "Cancel" and `Delete (N)` (`tags_bulk_delete(n)`), where N is the number of selected tags.
 - The delete button is disabled while no tags are selected; "Cancel" exits selection mode and clears the selection.
 - A **Select all** / **Deselect all** row sits above the list in selection mode (`select_all` / `deselect_all`, with the visible count `items_count`); tapping it selects every visible tag in one tap.
 - Deleting opens a single `ConfirmationModal`: `Delete N tags?` (`tags_bulk_delete_confirm_title(n)`) with message "The selected tags will be deleted and their links to transactions will be removed. This cannot be undone." (`tags_bulk_delete_confirm_message`) and Cancel / Delete buttons.
@@ -101,11 +102,12 @@
 - [x] The database has a `tags` table and a `transaction_tags` junction table after migration.
 - [x] The Drawer shows "Tags" and pressing it navigates to the tags screen.
 - [x] The header shows a hamburger menu button and "Tags" title in the active language.
-- [x] All tags are displayed in a list ordered by creation date (newest at the bottom).
+- [x] All tags are displayed in a list ordered by creation date by default (oldest first, newest at the bottom).
+- [x] Each tag row shows "Used in N transactions" and "Created <date>", and a sort strip sorts by name, created or usage (session-only).
 - [x] Pressing a tag navigates to "Modify tag" with the tag id.
 - [x] The "+" FAB navigates to "Create tag".
-- [x] At the 50-tag maximum, the "+" FAB is hidden and "Maximum of 50 tags reached" is shown in its place.
-- [x] The screen shows a counter above the list with the current number of tags out of the maximum (e.g. "12 of 50 tags"), hidden during selection mode.
+- [x] At the 100-tag maximum, the "+" FAB is hidden and "Maximum of 100 tags reached" is shown in its place.
+- [x] The screen shows a counter above the list with the current number of tags out of the maximum (e.g. "12 of 100 tags"), hidden during selection mode.
 - [x] The header search button shows/hides a "Search tags" bar.
 - [x] Typing filters the tag list by name (case-insensitive substring).
 - [x] Closing the search restores the full list.
@@ -115,7 +117,7 @@
 - [x] Creating a tag with a duplicate name (case-insensitive) shows an error.
 - [x] Creating a tag with an empty name shows an error.
 - [x] Creating a tag with more than 20 characters is prevented.
-- [x] Creating a tag when the maximum of 50 tags has been reached is prevented (button disabled + "Maximum of 50 tags reached").
+- [x] Creating a tag when the maximum of 100 tags has been reached is prevented (button disabled + "Maximum of 100 tags reached").
 - [x] Modifying a tag name with a duplicate shows an error (excluding current).
 - [x] Deleting a tag shows a confirmation modal with the tag name.
 - [x] After deleting, the tag is removed and junction rows are cascade-deleted.

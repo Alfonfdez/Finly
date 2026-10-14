@@ -3651,3 +3651,23 @@
 
 [2026-10-14] style | FinlyApp/src/components/RecurringRow.tsx FinlyApp/tests/component/RecurringRow.test.tsx FinlyApp/tests/screens/RecurringScreen.test.tsx
 - Split the Recurring rule row's meta line into two - 'Category - N transactions' then 'Created <date>' (no time) - so the creation info is no longer clipped.
+
+[2026-10-14] feat | FinlyApp/src/components/SortRow.tsx FinlyApp/src/components/SortToggle.tsx FinlyApp/src/constants/types.ts FinlyApp/src/utils/tagSort.ts FinlyApp/src/utils/commentSort.ts FinlyApp/src/database/repositories/transactionRepo.reads.ts FinlyApp/src/screens/TagsScreen.tsx FinlyApp/src/screens/CommentsScreen.tsx FinlyApp/src/screens/RecurringScreen.tsx FinlyApp/src/i18n/en.ts FinlyApp/src/i18n/es.ts FinlyApp/src/i18n/ca.ts FinlyApp/src/i18n/gl.ts FinlyApp/src/i18n/eu.ts FinlyApp/src/i18n/fr.ts FinlyApp/src/i18n/de.ts FinlyApp/src/i18n/pt.ts FinlyApp/src/i18n/it.ts FinlyApp/tests/database/contractSuite.ts FinlyApp/tests/database/contractTypes.ts FinlyApp/tests/screens/TagsScreen.test.tsx FinlyApp/tests/screens/CommentsScreen.test.tsx FinlyApp/tests/utils/tagSort.test.ts FinlyApp/tests/utils/commentSort.test.ts spec/features/018-tag-management/1-spec.md spec/features/027-comments-management/1-spec.md spec/constitution/3-roadmap.md
+- Add a session-only sort strip (`SortToggle` inside a shared `SortRow`) to the Tags and Comments screens.
+- Tags: sort by name / created / usage, and each row now shows "Used in N transactions" (new `countByTagIdsMap` query).
+- Comments: sort by name / last used / usage, and each row now shows "Last used <date>" (`getDistinctComments` returns `lastUsed = MAX(date)`).
+- Extract `components/SortRow.tsx` (also used by Recurring) and rename `comments_used_in` to the shared `used_in_transactions` across the 9 languages.
+- Add sort utils (`tagSort`, `commentSort`) with tests, screen sort tests and contract coverage (lastUsed + countByTagIdsMap); update spec 018/027 + roadmap.
+
+[2026-10-14] style | FinlyApp/src/components/SortRow.tsx
+- Move the sort strip's separator and padding onto a wrapper view and give the content more vertical padding, so the strip reads as one balanced, centred block on the Tags and Comments screens.
+
+[2026-10-14] feat | FinlyApp/src/constants/types.ts FinlyApp/tests/screens/TagsScreen.test.tsx spec/features/018-tag-management/1-spec.md spec/constitution/3-roadmap.md
+- Raise the tag cap from 50 to 100 (MAX_TAGS); every string is parameterized so only the constant, the spec, the roadmap and one test assertion change.
+
+[2026-10-14] docs | spec/features/027-comments-management/1-spec.md
+- Record that comments have no count cap (unlike tags) - they are derived from transaction descriptions, so only the per-comment length limit applies.
+
+[2026-10-14] feat | FinlyApp/src/screens/TagsScreen.tsx FinlyApp/src/screens/CommentsScreen.tsx FinlyApp/src/i18n/en.ts FinlyApp/src/i18n/es.ts FinlyApp/src/i18n/ca.ts FinlyApp/src/i18n/gl.ts FinlyApp/src/i18n/eu.ts FinlyApp/src/i18n/fr.ts FinlyApp/src/i18n/de.ts FinlyApp/src/i18n/pt.ts FinlyApp/src/i18n/it.ts FinlyApp/tests/screens/TagsScreen.test.tsx spec/features/018-tag-management/1-spec.md spec/features/027-comments-management/1-spec.md spec/constitution/3-roadmap.md
+- Add a Created <date> line to each Tags row (tags_created_on) so the Created sort is visible.
+- Scope the usage line per screen: tags_used_in (feminine participle, correct for etiqueta) and comments_used_in (masculine), replacing the shared used_in_transactions.

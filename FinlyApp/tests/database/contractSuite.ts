@@ -552,6 +552,11 @@ export function runContractSuite(
           { description: 'coffee', count: 2 },
           { description: 'lunch', count: 1 },
         ]);
+        // lastUsed is the most recent transaction date per comment.
+        expect(comments.map(c => ({ description: c.description.toLowerCase(), lastUsed: c.lastUsed }))).toEqual([
+          { description: 'coffee', lastUsed: '2026-09-07' },
+          { description: 'lunch', lastUsed: '2026-09-08' },
+        ]);
       });
 
       it('countByDescription counts matching trimmed comments', async () => {
@@ -564,6 +569,20 @@ export function runContractSuite(
         expect(await backend.transaction.countByDescription('coffee')).toBe(2);
         expect(await backend.transaction.countByDescription(' tea ')).toBe(1);
         expect(await backend.transaction.countByDescription('zzz')).toBe(0);
+      });
+
+      it('countByTagIdsMap counts transactions per tag', async () => {
+        const acc = await backend.account.create(account('A'));
+        const salary = (await backend.category.list(USER, 'income')).find(c => c.name === 'Salary')!;
+        const tagA = await backend.tag.create({ user_id: USER, name: 'alpha' });
+        const tagB = await backend.tag.create({ user_id: USER, name: 'beta' });
+        await backend.transaction.createWithTags(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-27', description: null }), [tagA.id, tagB.id]);
+        await backend.transaction.createWithTags(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-28', description: null }), [tagA.id]);
+        await backend.transaction.createWithTags(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-29', description: null }), []);
+
+        expect(await backend.transaction.countByTagIdsMap([tagA.id, tagB.id])).toEqual({ [tagA.id]: 2, [tagB.id]: 1 });
+        expect(await backend.transaction.countByTagIdsMap([])).toEqual({});
+        expect(await backend.transaction.countByTagIdsMap([9999])).toEqual({});
       });
 
       it('updateComment renames a comment across matching transactions and reports changed rows', async () => {
@@ -611,7 +630,7 @@ export function runContractSuite(
         expect((await backend.transaction.getById(t1.id))?.description).toBeNull();
         expect((await backend.transaction.getById(t2.id))?.description).toBeNull();
         expect((await backend.transaction.getById(t3.id))?.description).toBe('tea');
-        expect(await backend.transaction.getDistinctComments()).toEqual([{ description: 'tea', count: 1 }]);
+        expect(await backend.transaction.getDistinctComments()).toEqual([{ description: 'tea', count: 1, lastUsed: '2026-09-22' }]);
       });
 
       it('deleteComments removes several comments at once and reports the total', async () => {
@@ -628,7 +647,7 @@ export function runContractSuite(
         expect((await backend.transaction.getById(t2.id))?.description).toBeNull();
         expect((await backend.transaction.getById(t4.id))?.description).toBeNull();
         expect((await backend.transaction.getById(t3.id))?.description).toBe('juice');
-        expect(await backend.transaction.getDistinctComments()).toEqual([{ description: 'juice', count: 1 }]);
+        expect(await backend.transaction.getDistinctComments()).toEqual([{ description: 'juice', count: 1, lastUsed: '2026-09-25' }]);
       });
 
       it('breakdownByCategoriesAndTags splits tagged and untagged sums per category', async () => {
