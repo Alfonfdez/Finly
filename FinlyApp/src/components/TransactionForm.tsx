@@ -50,6 +50,8 @@ interface TransactionFormProps {
   initialRuleNextDue?: string | null;
   initialRuleActive?: boolean;
   initialRuleSkippedFrom?: string | null;
+  /** Dates the rule already generated a transaction for (edit mode, for the Summary count). */
+  initialRuleOccurrenceDates?: string[];
   showRepeatScope?: boolean;
   repeatScope?: RecurrenceScope;
   onChangeRepeatScope?: (scope: RecurrenceScope) => void;
@@ -224,6 +226,7 @@ export default function TransactionForm(props: TransactionFormProps) {
             nameError={repeatNameError}
             ruleNextDue={props.initialRuleNextDue ?? null}
             ruleSkippedFrom={props.initialRuleSkippedFrom ?? null}
+            ruleOccurrenceDates={props.initialRuleOccurrenceDates}
             ruleUnmaterialized={ruleUnmaterialized}
             ruleStartMovedEarlier={ruleStartMovedEarlier}
             previousSchedule={previousSchedule}

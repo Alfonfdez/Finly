@@ -14,6 +14,7 @@ const mockGetById = vi.fn(async (_id: number) => null as RecurringRule | null);
 const mockGetTagIds = vi.fn(async (_id: number) => [] as number[]);
 const mockRemove = vi.fn(async (_id: number) => {});
 const mockList = vi.fn(async (_userId: number) => [] as RecurringRule[]);
+const mockListOccurrenceDates = vi.fn(async (_id: number) => [] as string[]);
 const mockGetTagsByTransactionId = vi.fn(async (_id: number) => [] as number[]);
 const mockGetCategoryUsageCounts = vi.fn(
   async (_userId: number, _type: TransactionType, _start: string, _accountId: number) =>
@@ -48,6 +49,7 @@ vi.mock('../../src/database', () => ({
     getTagIds: (id: number) => mockGetTagIds(id),
     remove: (id: number) => mockRemove(id),
     list: (userId: number) => mockList(userId),
+    listOccurrenceDates: (id: number) => mockListOccurrenceDates(id),
   },
   transactionRepository: {
     getTagsByTransactionId: (id: number) => mockGetTagsByTransactionId(id),
@@ -127,6 +129,7 @@ describe('ModifyRecurringScreen', () => {
     mockGetTagIds.mockReset().mockResolvedValue([]);
     mockRemove.mockClear();
     mockList.mockReset().mockResolvedValue([]);
+    mockListOccurrenceDates.mockReset().mockResolvedValue([]);
     mockGetTagsByTransactionId.mockReset().mockResolvedValue([]);
     mockGetCategoryUsageCounts.mockReset().mockResolvedValue([]);
     mockTagCreate.mockClear();
@@ -239,6 +242,31 @@ describe('ModifyRecurringScreen', () => {
     const params = mockSaveEdit.mock.calls[0][0] as { scope: string; updated: { start_date?: string } };
     expect(params.scope).toBe('future');
     expect(params.updated.start_date).toBe('2026-10-06');
+  });
+
+  it('Future + past counts only the occurrences not already generated', async () => {
+    // Daily rule ended 3 Oct, extended to 10 Oct by a "Future only" save: that skipped
+    // 4-5 Oct and generated today (6 Oct). Back-filling must report 2, not 3.
+    mockGetById.mockResolvedValue({
+      ...rule,
+      frequency: 'daily',
+      day_of_month: null,
+      start_date: '2026-09-23',
+      end_date: '2026-10-10',
+      next_due: '2026-10-07',
+      skipped_from: '2026-10-04',
+    });
+    mockListOccurrenceDates.mockResolvedValue([
+      '2026-09-23', '2026-09-24', '2026-09-25', '2026-09-26', '2026-09-27', '2026-09-28', '2026-09-29', '2026-09-30',
+      '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-06',
+    ]);
+
+    const view = await render(<ModifyRecurringScreen />);
+    await waitFor(() => expect(view.getByText('Future + past')).toBeTruthy());
+    await waitFor(() => expect(view.getByRole('button', { name: 'Future + past' })).toBeEnabled());
+    await fireEvent.press(view.getByRole('button', { name: 'Future + past' }));
+
+    await waitFor(() => expect(view.getByText('Adds 2 missed transactions')).toBeTruthy());
   });
 
   it('hints that past occurrences are not recreated when the start moves earlier', async () => {

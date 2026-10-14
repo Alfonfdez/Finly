@@ -176,4 +176,27 @@ describe('recurringRepo', () => {
     expect(txs).toHaveLength(2);
     expect(txs.every(t => (t.recurring_rule_id ?? null) === null)).toBe(true);
   });
+
+  it('listOccurrenceDates returns the dates the rule already generated', async () => {
+    const { recurringRepo, createRecurringRule } = await boot();
+    await createRecurringRule({
+      name: 'Daily',
+      type: 'expense',
+      account_id: 1,
+      category_id: 3,
+      amount: 1,
+      description: null,
+      date: '2026-01-01',
+      frequency: 'daily',
+      interval: 1,
+      endDate: null,
+      tagIds: [],
+      now: new Date(2026, 0, 3),
+    });
+    const [rule] = await recurringRepo.list(1);
+
+    const dates = [...(await recurringRepo.listOccurrenceDates(rule.id))].sort();
+    expect(dates).toEqual(['2026-01-01', '2026-01-02', '2026-01-03']);
+    expect(await recurringRepo.listOccurrenceDates(9999)).toEqual([]);
+  });
 });

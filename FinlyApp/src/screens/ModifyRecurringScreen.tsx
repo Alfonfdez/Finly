@@ -44,14 +44,15 @@ export default function ModifyRecurringScreen() {
   const load = useCallback(async () => {
     const rule = await recurringRepository.getById(ruleId);
     const tagIds = rule ? await recurringRepository.getTagIds(rule.id) : [];
+    const occurrenceDates = rule ? await recurringRepository.listOccurrenceDates(rule.id) : [];
     const otherNames = (await recurringRepository.list(USER_ID))
       .filter(r => r.id !== ruleId)
       .map(r => r.name);
-    return { rule, tagIds, otherNames } as { rule: RecurringRule | null; tagIds: number[]; otherNames: string[] };
+    return { rule, tagIds, otherNames, occurrenceDates } as { rule: RecurringRule | null; tagIds: number[]; otherNames: string[]; occurrenceDates: string[] };
   }, [ruleId]);
 
-  const { data, loading } = useFocusLoad(load, { rule: null, tagIds: [], otherNames: [] } as { rule: RecurringRule | null; tagIds: number[]; otherNames: string[] });
-  const { rule, tagIds, otherNames } = data;
+  const { data, loading } = useFocusLoad(load, { rule: null, tagIds: [], otherNames: [], occurrenceDates: [] } as { rule: RecurringRule | null; tagIds: number[]; otherNames: string[]; occurrenceDates: string[] });
+  const { rule, tagIds, otherNames, occurrenceDates } = data;
 
   const persist = useCallback(async (
     updated: Partial<RecurringRule>,
@@ -158,6 +159,7 @@ export default function ModifyRecurringScreen() {
         initialRuleNextDue={rule.next_due}
         initialRuleActive={rule.active === 1}
         initialRuleSkippedFrom={rule.skipped_from}
+        initialRuleOccurrenceDates={occurrenceDates}
         initialRepeatName={rule.name}
         initialRepeatLastDay={rule.day_of_month === 31}
         existingRepeatNames={otherNames}
