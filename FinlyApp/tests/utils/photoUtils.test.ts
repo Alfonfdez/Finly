@@ -1,11 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const { mockFileDelete } = vi.hoisted(() => ({ mockFileDelete: vi.fn() }));
+const { mockFileDelete, mockFileCtor, platform } = vi.hoisted(() => ({
+  mockFileDelete: vi.fn(),
+  mockFileCtor: vi.fn(),
+  platform: { isWeb: false, isNative: true, isAndroid: false },
+}));
+
+vi.mock('../../src/utils/platform', () => platform);
 
 vi.mock('expo-file-system', () => ({
   File: class {
     exists = true;
     delete = mockFileDelete;
+    constructor(uri: string) {
+      mockFileCtor(uri);
+    }
   },
 }));
 
@@ -42,7 +51,9 @@ describe('parsePhotos', () => {
 
 describe('deletePhotoFile', () => {
   beforeEach(() => {
+    platform.isWeb = false;
     mockFileDelete.mockClear();
+    mockFileCtor.mockClear();
   });
 
   it('is a no-op for data URIs (web photos live in the DB)', async () => {
@@ -53,5 +64,12 @@ describe('deletePhotoFile', () => {
   it('deletes the physical file for a file URI (native)', async () => {
     await expect(deletePhotoFile(FILE_URI)).resolves.toBeUndefined();
     expect(mockFileDelete).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not touch the file system on web, even for a native file URI', async () => {
+    platform.isWeb = true;
+    await expect(deletePhotoFile(FILE_URI)).resolves.toBeUndefined();
+    expect(mockFileCtor).not.toHaveBeenCalled();
+    expect(mockFileDelete).not.toHaveBeenCalled();
   });
 });

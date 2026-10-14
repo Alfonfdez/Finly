@@ -49,8 +49,8 @@
 ### 7. Photo removal and cleanup
 
 - The "×" remove flow (with the delete confirmation modal) works on web identically to native.
-- `deletePhotoFile(uri)` becomes a **no-op for `data:` URIs**: web photos live inside the DB row, so deleting them means removing the string from the array (and, on transaction delete, the row itself).
-- `deleteTransactionPhotos` (bulk delete paths in `transactionRepo`/`accountRepo`/`categoryRepo`) needs no web branch: rows are deleted by SQL on every platform, and `deletePhotoFile` already no-ops on data URIs.
+- `deletePhotoFile(uri)` is a **no-op on web** (any URI) and for `data:` URIs on any platform: web photos live inside the DB row, so deleting them means removing the string from the array (and, on transaction delete, the row itself). This also covers rows whose photos are **native `file://` URIs** (e.g. imported from a native backup) — those files don't exist on web, and calling `expo-file-system` there warns and throws.
+- `deleteTransactionPhotos` (bulk delete paths in `transactionRepo`/`accountRepo`/`categoryRepo`) needs no web branch: rows are deleted by SQL on every platform, and `deletePhotoFile` already no-ops on web.
 - Errors during cleanup are logged to console (non-critical), as on native.
 
 ---
@@ -80,7 +80,8 @@
 - [x] `TransactionDetailsScreen` shows photo thumbnails on web and the full-screen viewer opens/works.
 - [x] `ModifyTransactionScreen` preloads web photos and allows adding/removing.
 - [x] Deleting a transaction with web photos deletes the row cleanly (photos gone).
-- [x] `deletePhotoFile` no-ops on `data:` URIs without throwing.
+- [x] `deletePhotoFile` no-ops on `data:` URIs and on web (any URI, incl. native `file://` from an imported backup) without throwing.
+- [x] Deleting a transaction whose photo is a native `file://` URI on web touches no file system (`expo-file-system` is never called).
 - [x] `parsePhotos` round-trips data-URI JSON arrays and single data URIs.
 - [x] All texts are multilingual (en/es/ca), theme and text size are respected.
 - [x] `npm run test:all` is green (typecheck + lint + tests).
