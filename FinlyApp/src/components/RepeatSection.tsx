@@ -31,6 +31,8 @@ interface Props {
   /** Edit mode: the rule's cursor (presence switches the info to "next transaction"). */
   ruleNextDue?: string | null;
   ruleSkippedFrom?: string | null;
+  /** Dates this rule already generated a transaction for (edit mode). */
+  ruleOccurrenceDates?: string[];
   /** The rule's cursor still equals its start (never generated/skipped): the new start anchors it. */
   ruleUnmaterialized?: boolean;
   /** Edit mode: the draft start moved earlier than the rule's start (past occurrences stay skipped). */
@@ -66,6 +68,7 @@ export default function RepeatSection({
   nameError,
   ruleNextDue = null,
   ruleSkippedFrom = null,
+  ruleOccurrenceDates,
   ruleUnmaterialized = false,
   ruleStartMovedEarlier = false,
   previousSchedule = null,
@@ -88,6 +91,7 @@ export default function RepeatSection({
   // A "fresh" rule (never generated/skipped) anchors on the new start, so moving the
   // start date re-anchors it; otherwise keep the rule's cursor.
   const cursor = ruleUnmaterialized ? schedule.start_date : ruleNextDue;
+  const occurrenceSet = useMemo(() => new Set(ruleOccurrenceDates ?? []), [ruleOccurrenceDates]);
   const info = recurrenceInfoLines(
     schedule,
     {
@@ -96,6 +100,7 @@ export default function RepeatSection({
       scope,
       skippedFrom: ruleSkippedFrom,
       previousSchedule,
+      existingOccurrences: occurrenceSet,
     },
     config.language,
   );

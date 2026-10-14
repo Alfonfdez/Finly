@@ -253,6 +253,11 @@ export interface RecurrencePreviewOptions {
   skippedFrom?: string | null;
   /** The rule's schedule before the edit (see {@link resolveEditAnchor}). */
   previousSchedule?: RecurrenceSchedule | null;
+  /**
+   * Scheduled dates that already have a generated transaction. Excluded from `count`,
+   * so a back-fill summary reports only the occurrences the save will actually create.
+   */
+  existingOccurrences?: ReadonlySet<string>;
 }
 
 export interface RecurrencePreview {
@@ -269,14 +274,17 @@ export interface RecurrencePreview {
  */
 export function recurrencePreview(
   schedule: RecurrenceSchedule,
-  { today, cursor = null, scope = RECURRENCE_SCOPES.future, skippedFrom = null, previousSchedule = null }: RecurrencePreviewOptions,
+  { today, cursor = null, scope = RECURRENCE_SCOPES.future, skippedFrom = null, previousSchedule = null, existingOccurrences }: RecurrencePreviewOptions,
 ): RecurrencePreview {
   const firstDate =
     cursor == null
       ? schedule.start_date
       : resolveEditAnchor(schedule, { cursor, scope, today, skippedFrom, previousSchedule });
   const { occurrences } = listDueOccurrences(schedule, firstDate, today);
-  return { firstDate, count: occurrences.length };
+  const missing = existingOccurrences
+    ? occurrences.filter(occurrence => !existingOccurrences.has(occurrence))
+    : occurrences;
+  return { firstDate, count: missing.length };
 }
 
 export interface RecurrenceEditPlanOptions {
@@ -290,6 +298,8 @@ export interface RecurrenceEditPlanOptions {
   today: string;
   /** Earliest occurrence a previous "Future only" edit skipped. */
   skippedFrom?: string | null;
+  /** Scheduled dates that already have a generated transaction (see {@link RecurrencePreviewOptions}). */
+  existingOccurrences?: ReadonlySet<string>;
 }
 
 export interface RecurrenceEditPlan {
@@ -315,6 +325,7 @@ export function planEdit({
   scope,
   today,
   skippedFrom = null,
+  existingOccurrences,
 }: RecurrenceEditPlanOptions): RecurrenceEditPlan {
   const skipWindow = scope === RECURRENCE_SCOPES.future ? recurrenceSkipWindow(schedule, cursor, today) : null;
   const nextDue = resolveEditAnchor(schedule, { cursor, scope, today, skippedFrom, previousSchedule });
@@ -322,7 +333,7 @@ export function planEdit({
   if (!isSkippedWindowRecoverable(nextSkippedFrom, schedule.end_date, today)) {
     nextSkippedFrom = null;
   }
-  const preview = recurrencePreview(schedule, { today, cursor, scope, skippedFrom, previousSchedule });
+  const preview = recurrencePreview(schedule, { today, cursor, scope, skippedFrom, previousSchedule, existingOccurrences });
   return { nextDue, skippedFrom: nextSkippedFrom, skipWindow, preview };
 }
 

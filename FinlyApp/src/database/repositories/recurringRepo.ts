@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, isNull, lte, or, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNotNull, isNull, lte, or, sql } from 'drizzle-orm';
 import { getDrizzle, withTransaction } from '../drizzle/engine';
 import { recurringRules, recurringRuleTags, transactionTags, transactions } from '../drizzle/schema';
 import { runResultOf } from '../drizzle/proxy';
@@ -175,6 +175,17 @@ export const recurringRepo = {
       .where(and(eq(transactions.recurring_rule_id, ruleId), eq(transactions.recurrence_date, date)))
       .get();
     return row !== undefined;
+  },
+
+  /** Scheduled dates this rule already generated a transaction for (indexed by rule). */
+  async listOccurrenceDates(ruleId: number): Promise<string[]> {
+    const db = await getDrizzle();
+    const rows = await db
+      .select({ date: transactions.recurrence_date })
+      .from(transactions)
+      .where(and(eq(transactions.recurring_rule_id, ruleId), isNotNull(transactions.recurrence_date)))
+      .all();
+    return rows.map(row => row.date as string);
   },
 
   /** Non-transactional: the caller (recurringService) wraps the whole run in one transaction. */

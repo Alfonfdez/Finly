@@ -24,6 +24,8 @@ export interface RecurrenceInfoOptions {
   skippedFrom?: string | null;
   /** The rule's schedule before the edit (to skip an already-generated today). */
   previousSchedule?: RecurrenceSchedule | null;
+  /** Dates that already have a generated transaction, so they aren't counted as missed. */
+  existingOccurrences?: ReadonlySet<string>;
 }
 
 /**
@@ -56,6 +58,7 @@ export function recurrenceInfoLines(
     scope: options.scope,
     today: options.today,
     skippedFrom: options.skippedFrom ?? null,
+    existingOccurrences: options.existingOccurrences,
   });
 
   const firstLine = labels.recurring_info_next(formatOccurrence(plan.preview.firstDate));
