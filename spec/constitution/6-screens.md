@@ -241,31 +241,38 @@ if (!entity) {
 - `keyboardShouldPersistTaps`: always `"handled"`
 - `onScrollBeginDrag`: dismiss keyboard on scroll (for form screens)
 
-### Submit button above the keyboard (TransactionForm)
+### Bottom action above the keyboard
 
-The shared `TransactionForm` (Add/Modify transaction, New/Edit recurring rule) keeps its
-submit button reachable while the keyboard is open:
+Every form keeps its bottom action reachable while the keyboard is open, via the shared
+`hooks/useKeyboardReveal.ts`:
 
-- When the **Comment** field (the bottom-most input) gains focus it calls `revealSubmit()` →
-  `scrollRef.current?.scrollToEnd({ animated: true })` after a short delay.
+- The **bottom-most field** — Comment in `TransactionForm`, Note in `AccountForm`, the multiline
+  input in `ModifyCommentScreen` — is wired to `onBottomFieldFocus` / `onBottomFieldBlur`.
+  Focusing it scrolls the form to the end (`scrollRef.current?.scrollToEnd`) after a short delay.
 - The reveal is re-run on `Keyboard.addListener('keyboardDidShow')` and on the ScrollView's
-  `onLayout` (the keyboard shrinks it), so it lands *after* the resize settles rather than
-  landing short.
-- Only the Comment field triggers this; focusing the recurring Name, Amount, Account or
-  Category must **not** scroll (jumping to the bottom hides what is being typed).
-- The scroll content keeps `paddingBottom: 112` so the revealed button clears the keyboard
-  with a comfortable gap.
-- `keyboardShouldPersistTaps="handled"` keeps the revealed button tappable in one tap.
+  `onLayout` (the keyboard shrinks it), so it lands *after* the resize settles rather than short.
+- Only that field triggers it — focusing a field higher up (recurring Name, Amount, Category)
+  must **not** jump to the end.
+- `FormScrollView` (Account / Category / Comment forms) wraps its `ScrollView` in a
+  `KeyboardAvoidingView` and exposes `scrollRef` + `onLayout`; `TransactionForm` uses its own
+  `KeyboardAvoidingView`. The content keeps `paddingBottom: 112` so the revealed button clears the
+  keyboard, and `keyboardShouldPersistTaps="handled"` keeps it tappable in one tap.
 
-### Android KeyboardSpacer
+### Modals and the keyboard
 
-```jsx
-{Platform.OS === 'android' && <View style={styles.keyboardSpacer} />}
-```
+A native `Modal` window does not always resize with the keyboard, so `ModalShell` lifts the
+centred card above it via `useKeyboardLift` (`hooks/useKeyboardInset.ts`): it measures the
+keyboard and adds it as the overlay's bottom padding (also capping the card's max height to the
+remaining space). The lift is **held while the modal is open** — tapping a button blurs the input
+and hides the keyboard, and dropping the card at that moment would move the button out from under
+the finger and swallow the tap (e.g. the typed-DELETE confirmation). It resets when the modal
+closes. `ConfirmationModal`'s scroll area uses `keyboardShouldPersistTaps="handled"`.
 
-**Style:** `{ height: 200 }`
-
-Place at the bottom of scrollable content in Create/Modify screens.
+Any `ScrollView` that is an **ancestor of a modal containing a `TextInput`** must also set
+`keyboardShouldPersistTaps="handled"`. With the default (`'never'`), RN's
+`ScrollView._handleStartShouldSetResponderCapture` captures the first tap on a non-input target
+to dismiss the keyboard, so the modal's buttons would need two taps
+(e.g. `DataScreen`'s outer `ScrollView` wraps its typed-DELETE confirmation modals).
 
 ## Empty lists
 

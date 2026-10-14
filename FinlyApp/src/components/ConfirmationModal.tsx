@@ -50,6 +50,7 @@ export default function ConfirmationModal({
         style={[styles.scroll, { maxHeight: scrollMaxHeight }]}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: footerClearance }]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {message ? (
           <Text style={[styles.message, { color: c.textSecondary, fontSize: fs(14) }]}>{message}</Text>

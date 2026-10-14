@@ -193,6 +193,7 @@ Screen for creating a new account:
 - Optional "Note" multiline field with 200 character limit.
 - "Create" button with validation (name + icon + color).
 - On creation, `initial_balance` is set to 0.
+- Fix (2026-10-14): tapping the **Note** field no longer hides it (and the Create button) behind the keyboard — `AccountForm`'s `FormScrollView` is now `KeyboardAvoidingView`-wrapped and reveals the bottom button on the Note focus (shared `useKeyboardReveal`); the same applies to Modify account.
 
 Spec: spec/features/013-create-account-screen/.
 
@@ -378,6 +379,9 @@ Data export / import (backup) on iOS, Android, and web:
 - Fix (2026-09-18, follow-up): Android share targets return no reliable result (a completed Gmail share reported `RESULT_CANCELED`), so on Android the module reports `saved` whenever the share sheet ran and the success alert always appears after Export; iOS keeps truthful detection (dismissal still shows no alert); web unchanged. `FinlyApp/.gitignore` ignores `modules/**/android/build/`.
 - Fix (2026-09-18, hybrid): Android Export now writes the backup to the **public Downloads folder** (`finly-share.saveToDownloadsAsync`, `MediaStore.Downloads`, Android 10+; older Android falls back to the share flow). The "Backup saved" alert is shown only after the write succeeds and offers optional **Share** / **Done** — sharing is fire-and-forget and its outcome is never reported, so no modal can be false. New i18n keys (9 languages); `isAndroid`/`isAndroidPlatform` in `src/utils/platform.ts`; DataScreen Android-flow tests + platform tests added.
 - Fix (2026-10-13): on web the export/import/delete feedback was invisible (react-native-web's `Alert` is a no-op while DataScreen called `Alert.alert` directly). Added a web-aware `alertInfo` (sharing the `window.alert` fallback with `alertError`) and routed the DataScreen messages through it; the Android-only download/share sheet keeps its raw `Alert`.
+- Fix (2026-10-14): the typed-DELETE confirmation modal stayed centred while the keyboard covered its confirm/cancel footer. `ModalShell` now measures the keyboard (`useKeyboardInset`) and lifts the card above it (and caps its height), so the buttons stay reachable.
+- Fix (2026-10-14): the lifted modal dropped back down as soon as the keyboard hid (tapping Confirm blurs the input), which moved the button mid-tap and forced a second tap. The lift is now held while the modal is open (`useKeyboardLift`) and resets on close, so one tap confirms.
+- Fix (2026-10-14): the typed-DELETE confirm still needed two taps — `DataScreen`'s outer `ScrollView` (an ancestor of the modal) captured the first tap to dismiss the keyboard (RN's default `keyboardShouldPersistTaps`). It now sets `keyboardShouldPersistTaps="handled"`, so the Confirm button receives the first tap.
 
 Spec: spec/features/025-data-backup/.
 
@@ -406,6 +410,7 @@ Bulk comment management for transactions:
 - Tests: 6 new contract tests + 7 `CommentInput` component tests; `npm run test:all` green (typecheck + lint + 247 tests, 29 files).
 - Update (2026-10-14): each row also shows "Last used <date>" (`getDistinctComments()` now returns `lastUsed = MAX(date)`), the usage line moved to the shared `used_in_transactions`, and the list gained a `SortToggle` strip (name / last used / usage, session-only) via the shared `SortRow`.
 - Fix (2026-10-14): emptying the list (Select all → Delete from an overflowing list) left the old scroll extent; the list is now unmounted when empty and a plain `View` + `EmptyState` is rendered (see the "Empty lists" convention in `6-screens.md`).
+- Fix (2026-10-14): the ModifyComment screen uses the keyboard-aware `FormScrollView` so the Save button stays above the keyboard (shared `useKeyboardReveal`).
 
 Spec: spec/features/027-comments-management/.
 

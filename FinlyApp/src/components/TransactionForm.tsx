@@ -1,11 +1,12 @@
-import { useRef, useEffect, useMemo, useCallback, type ReactNode } from 'react';
-import { Text, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView, Keyboard } from 'react-native';
+import { useEffect, useMemo, useCallback, type ReactNode } from 'react';
+import { Text, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useTransactionForm, type TransactionDraft, type RecurrenceDraft } from '../hooks/useTransactionForm';
+import { useKeyboardReveal } from '../hooks/useKeyboardReveal';
 import { t, getDisplayAccountName } from '../i18n';
 import TabBar, { typeTabs } from './TabBar';
 import AmountInput from './AmountInput';
@@ -103,48 +104,11 @@ export default function TransactionForm(props: TransactionFormProps) {
     config, tags,
   } = useTransactionForm({ ...props, onError: props.onError ?? (() => showErrorAlert()) });
 
-  const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // The Comment field is the bottom-most text input, so the keyboard can cover the submit
-  // button that follows it. Used to decide whether a keyboard pop should scroll it into view.
-  const bottomFieldFocused = useRef(false);
   const { onRecurringPastAffectedChange, onDirtyChange } = props;
 
-  useEffect(() => {
-    return () => { if (scrollTimer.current != null) clearTimeout(scrollTimer.current); };
-  }, []);
-
-  // Scroll to the end so the submit button clears the keyboard (the content's generous
-  // `paddingBottom` sets the gap). Scheduled, not immediate, because the keyboard resize
-  // animates; the `onLayout`/`keyboardDidShow` passes below re-run it once the viewport has
-  // settled, so a first attempt that lands short is corrected.
-  const revealSubmit = useCallback(() => {
-    if (scrollTimer.current != null) clearTimeout(scrollTimer.current);
-    scrollTimer.current = setTimeout(() => {
-      scrollRef.current?.scrollToEnd({ animated: true });
-    }, 300);
-  }, [scrollRef]);
-
-  const handleBottomFieldFocus = useCallback(() => {
-    bottomFieldFocused.current = true;
-    revealSubmit();
-  }, [revealSubmit]);
-
-  const handleBottomFieldBlur = useCallback(() => {
-    bottomFieldFocused.current = false;
-  }, []);
-
-  // The keyboard shrinks the ScrollView; when that happens while the comment is focused,
-  // re-run the reveal so it lands after the resize (not before it).
-  const handleScrollLayout = useCallback(() => {
-    if (bottomFieldFocused.current) revealSubmit();
-  }, [revealSubmit]);
-
-  useEffect(() => {
-    const sub = Keyboard.addListener('keyboardDidShow', () => {
-      if (bottomFieldFocused.current) revealSubmit();
-    });
-    return () => sub.remove();
-  }, [revealSubmit]);
+  // The Comment field is the bottom-most input, so the keyboard can cover the submit button
+  // that follows it; focusing it scrolls the form so the button clears the keyboard.
+  const { onBottomFieldFocus, onBottomFieldBlur, onScrollLayout } = useKeyboardReveal(scrollRef);
 
   useEffect(() => {
     onRecurringPastAffectedChange?.(recurringPastAffected);
@@ -207,7 +171,7 @@ export default function TransactionForm(props: TransactionFormProps) {
         behavior="padding"
         style={styles.keyboardAvoid}
       >
-        <ScrollView ref={scrollRef} style={[styles.container, { backgroundColor: c.background }]} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" onLayout={handleScrollLayout}>
+        <ScrollView ref={scrollRef} style={[styles.container, { backgroundColor: c.background }]} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" onLayout={onScrollLayout}>
         {props.topNotice}
         <TabBar
           tabs={tabs}
@@ -294,8 +258,8 @@ export default function TransactionForm(props: TransactionFormProps) {
             ref={inputRef}
             comment={comment}
             onChange={setComment}
-            onFocus={handleBottomFieldFocus}
-            onBlur={handleBottomFieldBlur}
+            onFocus={onBottomFieldFocus}
+            onBlur={onBottomFieldBlur}
           />
         )}
 

@@ -215,7 +215,11 @@ export default function DataScreen() {
   };
 
   return (
-    <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
+    <ScrollView
+      style={[settingsStyles.container, { backgroundColor: c.background }]}
+      contentContainerStyle={settingsStyles.content}
+      keyboardShouldPersistTaps="handled"
+    >
       <SettingsRow
         icon="share-outline"
         iconColor={c.primary}

@@ -9,5 +9,5 @@ export const formStyles = StyleSheet.create({
   button: { paddingVertical: 14, borderRadius: BUTTON_BORDER_RADIUS, alignItems: 'center', borderWidth: 1, borderColor: 'transparent' },
   buttonText: { fontWeight: '600' },
   scrollView: { flex: 1 },
-  scrollContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 },
+  scrollContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 112 },
 });

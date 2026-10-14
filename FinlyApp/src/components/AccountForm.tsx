@@ -1,6 +1,7 @@
 import { Text, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useKeyboardReveal } from '../hooks/useKeyboardReveal';
 import { MAX_ACCOUNT_NAME_LENGTH, MAX_NOTE_LENGTH, type ConfigIconShape, type IconName } from '../constants/types';
 import IconColorSection from './IconColorSection';
 import LabeledTextField from './form/LabeledTextField';
@@ -79,9 +80,12 @@ export default function AccountForm({
 }: AccountFormProps) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
+  // The Note is the bottom-most field, so focusing it scrolls the form to keep the
+  // submit button (below it) above the keyboard.
+  const { scrollRef, onBottomFieldFocus, onBottomFieldBlur, onScrollLayout } = useKeyboardReveal();
 
   return (
-    <FormScrollView>
+    <FormScrollView scrollRef={scrollRef} onLayout={onScrollLayout}>
       {showNameField && (
         <LabeledTextField
           label={nameLabel}
@@ -128,6 +132,8 @@ export default function AccountForm({
         textAlignVertical="top"
         maxLength={MAX_NOTE_LENGTH}
         showCounter
+        onFocus={onBottomFieldFocus}
+        onBlur={onBottomFieldBlur}
       />
 
       <FormError message={hintText} fontSize={fs(12)} style={styles.hint} />
