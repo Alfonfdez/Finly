@@ -79,9 +79,10 @@ function RecurringRow({ rule, category, count, today, onPress, onToggleActive, s
         </Text>
         <Text style={[styles.meta, { color: c.textSecondary, fontSize: fs(11) }]} numberOfLines={1}>
           {category ? `${getDisplayCategoryName(category)} · ` : ''}
-          {labels.recurring_created_on(createdText)}
-          {' · '}
           {labels.recurring_transactions_count(count)}
+        </Text>
+        <Text style={[styles.meta, { color: c.textSecondary, fontSize: fs(11) }]} numberOfLines={1}>
+          {labels.recurring_created_on(createdText)}
         </Text>
       </TouchableOpacity>
       <View style={styles.right}>

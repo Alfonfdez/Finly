@@ -50,7 +50,8 @@ describe('RecurringRow', () => {
     expect(view.getByText('Rent')).toBeTruthy();
     expect(view.getByText('Every month on day 5')).toBeTruthy();
     expect(view.getByText('Next: November 5, 2026')).toBeTruthy();
-    expect(view.getByText('Food · Created 5 Oct 2026 · 3 transactions')).toBeTruthy();
+    expect(view.getByText('Food · 3 transactions')).toBeTruthy();
+    expect(view.getByText('Created 5 Oct 2026')).toBeTruthy();
     expect(view.getByText('-50,00 €')).toBeTruthy();
     expect(view.getByText('Active')).toBeTruthy();
   });
