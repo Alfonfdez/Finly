@@ -3675,3 +3675,13 @@
 [2026-10-14] fix | FinlyApp/src/database/repositories/recurringRepo.ts FinlyApp/src/utils/recurrence.ts FinlyApp/src/utils/recurrenceInfo.ts FinlyApp/src/components/RepeatSection.tsx FinlyApp/src/components/TransactionForm.tsx FinlyApp/src/screens/ModifyRecurringScreen.tsx FinlyApp/tests/utils/recurrenceInfo.test.ts FinlyApp/tests/database/recurringRepo.test.ts FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx spec/features/028-recurring-transactions/1-spec.md spec/constitution/3-roadmap.md
 - The edit form's back-fill Summary counted every occurrence in the window, including ones already generated, so 'Adds 3 missed transactions' could create only 2.
 - ModifyRecurringScreen now loads the rule's existing occurrence dates (recurringRepo.listOccurrenceDates) and the preview subtracts them, so the Summary matches the save.
+
+[2026-10-14] style | FinlyApp/src/screens/ModifyRecurringScreen.tsx
+- Remove the doubled footer margin on the Edit recurring rule screen (24 + 24 on top of the comment section's 16), so the gap above Delete matches the other sections instead of ~84px.
+
+[2026-10-14] style | FinlyApp/src/navigation/AppNavigator.tsx
+- Use the edit glyph (create-outline) for every Modify* screen title - ModifyTag, ModifyAccount, ModifyCategory, ModifyComment and ModifyRecurring joined ModifyTransaction - so the header matches the edit buttons that open them (the recurring-notice and details Edit buttons already used create-outline).
+
+[2026-10-14] style | FinlyApp/src/components/SortRow.tsx FinlyApp/src/screens/CommentsScreen.tsx FinlyApp/tests/screens/CommentsScreen.test.tsx spec/features/027-comments-management/1-spec.md
+- Make the bordered SortRow band symmetric (paddingTop 12 + paddingBottom 12) so the sort labels sit perfectly centred between the counter and the separator, matching the Recurring controls band.
+- Keep the Comments counter visible when the list is empty ("0 comments"), so the Comments sort section has the same layout as the Tags screen in every state.

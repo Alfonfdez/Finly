@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
   bordered: {
     alignSelf: 'stretch',
     borderBottomWidth: 1,
+    paddingTop: 12,
     paddingBottom: 12,
   },
 });

@@ -16,6 +16,7 @@
 - Comments have **no count cap** (unlike tags): they are derived from transaction descriptions rather than created on their own screen, so a limit would block writing a comment on a transaction. Only a single comment's length is bounded (`MAX_COMMENT_LENGTH` = 4096).
 - Tapping a row navigates to `ModifyComment` with `{ comment }`.
 - Header has a search toggle button: opens a `SearchBar` that filters the list client-side (case-insensitive substring on the comment).
+- A counter above the list (`comments_counter(n)`, e.g. "2 comments") always shows the number of **visible** comments and updates as the search filters the list; it is hidden only during selection mode. Like the Tags counter it is **permanent**, so an empty list reads "0 comments" and the sort strip keeps the same layout as the Tags screen.
 - Empty state: `comments_empty` ("No comments yet").
 - When there are no comments, the header Select button and search icon are hidden; they appear as soon as a comment exists.
 - The list reloads on focus via `useFocusEffect` → `transactionRepository.getDistinctComments()`.
@@ -75,7 +76,7 @@
 - [x] Each row also shows "Last used <date>", and a sort strip sorts by name, last used or usage (session-only).
 - [x] Whitespace/case variants of the same comment collapse into one row with a summed count.
 - [x] The search toggle filters the list client-side; empty state shows when there are no comments.
-- [x] A counter above the list shows the number of visible comments (e.g., "2 comments"); it updates when a search filters the list.
+- [x] A counter above the list shows the number of visible comments (e.g., "2 comments"); it updates when a search filters the list, and it stays visible when the list is empty ("0 comments") so the sort strip keeps the Tags layout.
 - [x] When there are no comments, the header Select and Search actions are hidden.
 - [x] Tapping a comment opens the modify screen with the comment preloaded and the counter showing `N/4096`.
 - [x] Save is disabled when the comment is empty or unchanged.
