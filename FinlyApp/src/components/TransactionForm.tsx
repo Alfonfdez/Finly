@@ -61,6 +61,8 @@ interface TransactionFormProps {
   existingRepeatNames?: string[];
   footer?: ReactNode;
   onRecurringPastAffectedChange?: (value: boolean) => void;
+  /** Reports whether the draft differs from the values the form opened with. */
+  onDirtyChange?: (dirty: boolean) => void;
   topNotice?: ReactNode;
   resetTagsOnFirstFocus?: boolean;
   onError?: () => void;
@@ -96,12 +98,13 @@ export default function TransactionForm(props: TransactionFormProps) {
     handleSubmit,
     handleTakePhoto, handlePickFromGallery, handleRemovePhoto,
     canSubmit, visibleCategories, hasMore, selectedAccount, selectableAccounts, numericAmount,
+    isDirty,
     inputRef, scrollRef,
     config, tags,
   } = useTransactionForm({ ...props, onError: props.onError ?? (() => showErrorAlert()) });
 
   const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const { onRecurringPastAffectedChange } = props;
+  const { onRecurringPastAffectedChange, onDirtyChange } = props;
 
   useEffect(() => {
     return () => { if (scrollTimer.current != null) clearTimeout(scrollTimer.current); };
@@ -110,6 +113,10 @@ export default function TransactionForm(props: TransactionFormProps) {
   useEffect(() => {
     onRecurringPastAffectedChange?.(recurringPastAffected);
   }, [recurringPastAffected, onRecurringPastAffectedChange]);
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   const tabs = useMemo(() => typeTabs(labels), [labels]);
 

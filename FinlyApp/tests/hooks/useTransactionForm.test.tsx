@@ -431,4 +431,41 @@ describe('useTransactionForm', () => {
     expect(result.current.visibleCategories.map((c) => c.id)).toEqual([2, 3, 1]);
     expect(mockGetCategoryUsageCounts).toHaveBeenCalled();
   });
+
+  describe('isDirty', () => {
+    it('is false until a field actually changes', async () => {
+      const { result } = await setup({ initialComment: 'coffee', initialAmount: '3.5' });
+      expect(result.current.isDirty).toBe(false);
+
+      // Equivalent values: extra whitespace / trailing zeros.
+      await act(async () => { result.current.setComment('coffee  '); });
+      await act(async () => { result.current.setAmountRaw('3.50'); });
+      expect(result.current.isDirty).toBe(false);
+
+      await act(async () => { result.current.setComment('tea'); });
+      expect(result.current.isDirty).toBe(true);
+    });
+
+    it('flags an amount, category or day change', async () => {
+      const { result } = await setup({ initialAmount: '10' });
+
+      await act(async () => { result.current.setAmountRaw('11'); });
+      expect(result.current.isDirty).toBe(true);
+    });
+
+    it('flags a tag change', async () => {
+      const { result } = await setup({ initialTagIds: [1] });
+      expect(result.current.isDirty).toBe(false);
+      await act(async () => { result.current.handleToggleTag(2); });
+      expect(result.current.isDirty).toBe(true);
+    });
+
+    it('does not count the tags loaded for the transaction as a change', async () => {
+      mockGetTagsByTransactionId.mockResolvedValue([11, 12]);
+      const { result } = await setup({ transactionId: 42 });
+      await act(async () => {});
+      expect(result.current.selectedTags).toEqual([11, 12]);
+      expect(result.current.isDirty).toBe(false);
+    });
+  });
 });

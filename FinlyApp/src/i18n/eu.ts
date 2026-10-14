@@ -494,6 +494,8 @@ export const eu: Language = {
   recurring_created_on: (date: string) => `Sortua ${date}`,
   recurring_transactions_count: (n: number) => `${n} transakzio`,
   recurring_edit_notice: 'Transakzio hau errepikapen arau batek sortu zuen. Gordetzean, aldaketek transakzio hau bakarrik ukitzen dute, ez araua.',
+  recurring_updated_notice: 'Transakzio hau bere errepikapen-arauak eguneratu du. Hemen gordetzeak aldaketa horiek transakzio honetan bakarrik gainidatziko ditu.',
+  recurring_use_rule_values: 'Erabili arauaren balioak',
   recurring_edit_rule: 'Editatu errepikapen araua',
   recurring_scope_title: 'Aplikatu aldaketak',
   recurring_scope_future: 'Etorkizuna soilik',

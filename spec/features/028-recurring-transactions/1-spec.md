@@ -132,6 +132,7 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 - Generated transactions are ordinary transactions (they appear in every list, total and chart on their scheduled date).
 - `TransactionDetailsScreen` always shows a **Recurring** row with the name of the rule that generated the transaction (or the shared `—` placeholder for a non-recurring one). When the transaction belongs to a rule the whole row is **pressable** (an `create-outline` affordance next to the name) and opens that rule's edit screen directly; without a rule the row is inert. It has no toggle — pausing/resuming is done from the Recurring screen.
 - Photos are per-transaction and are not copied from any template.
+- If a rule edit rewrites this transaction while its modify form is open (detected via the row's `updated_at`), the form **refreshes**: an untouched form silently adopts the new values, while a form with unsaved input keeps the user's edits and shows an extra **"updated by its recurring rule"** line with a **Use the rule's values** button that re-loads the row's values and discards the draft.
 
 ### 9. Deleting a rule
 
@@ -193,6 +194,7 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 - [x] A timing change (e.g. monthly → daily) takes effect from **today** under "Future only" (not at the rule's stale next occurrence), and an already-generated today is not re-counted — the Summary matches exactly what the save creates.
 - [x] In the edit form, the "Apply changes to" scope sits inside the recurring card above the Summary block; the block reflects the scope (next transaction + count, skipped occurrences, or back-filled count — counting only occurrences not already generated), and the footer keeps only Delete.
 - [x] Editing an individual generated transaction does not change its rule.
+- [x] A rule edit that rewrites an open transaction's modify form refreshes it: an untouched form adopts the new values automatically, while a form with unsaved input keeps the draft and shows a notice with a **Use the rule's values** action that adopts the rule's values.
 - [x] Transaction details always show a Recurring row with the rule name (or `—`), pressable to open the rule's edit screen when the transaction belongs to a rule; pausing/resuming is done from the Recurring screen.
 - [x] Deleting a rule keeps every transaction it generated.
 - [x] Export/import round-trips rules and tag links; a pre-028 (schema-3) backup still imports.

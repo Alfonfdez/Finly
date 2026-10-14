@@ -494,6 +494,8 @@ export const de: Language = {
   recurring_created_on: (date: string) => `Erstellt ${date}`,
   recurring_transactions_count: (n: number) => `${n} ${n === 1 ? 'Transaktion' : 'Transaktionen'}`,
   recurring_edit_notice: 'Diese Transaktion wurde von einer wiederkehrenden Regel erstellt. Beim Speichern betreffen Änderungen nur diese Transaktion, nicht die Regel.',
+  recurring_updated_notice: 'Diese Transaktion wurde von ihrer Wiederholungsregel aktualisiert. Speichern überschreibt diese Änderungen nur für diese Transaktion.',
+  recurring_use_rule_values: 'Werte der Regel verwenden',
   recurring_edit_rule: 'Wiederkehrende Regel bearbeiten',
   recurring_scope_title: 'Änderungen anwenden auf',
   recurring_scope_future: 'Nur künftig',

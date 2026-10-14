@@ -494,6 +494,8 @@ export const es: Language = {
   recurring_created_on: (date: string) => `Creada ${date}`,
   recurring_transactions_count: (n: number) => `${n} ${n === 1 ? 'transacción' : 'transacciones'}`,
   recurring_edit_notice: 'Esta transacción fue creada por una regla recurrente. Al guardar, los cambios solo afectan a esta transacción, no a la regla.',
+  recurring_updated_notice: 'Esta transacción fue actualizada por su regla recurrente. Guardar aquí sobrescribe esos cambios solo en esta transacción.',
+  recurring_use_rule_values: 'Usar los valores de la regla',
   recurring_edit_rule: 'Editar regla recurrente',
   recurring_scope_title: 'Aplicar cambios a',
   recurring_scope_future: 'Solo futuras',
