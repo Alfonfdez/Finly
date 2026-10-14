@@ -427,6 +427,7 @@ Recurring expenses/income created once and materialized automatically:
 - The Recurring list can also be **filtered by type** (All / Expenses / Income `TabBar` at the top) and **by account** (`AccountTrigger` + account modal above the sort row, with the Total account meaning every account), like the transactions screens; both default to every rule and compose with the status filter, the search and the sort.
 - Additive migration `004_recurring` and `SCHEMA_VERSION 3 → 4`; existing v2.1.0 data untouched. Backup format v1 extended with optional collections so old backups still import.
 - Fix (2026-10-14): the edit form's back-fill Summary counted every occurrence the schedule implies in the window, including ones already generated (e.g. today's, created by a previous "Future only" save), so "Adds 3 missed transactions" could create only 2. The screen now loads the rule's existing occurrence dates (`recurringRepo.listOccurrenceDates`) and the preview subtracts them, matching what the save actually creates.
+- Update (2026-10-14): the transaction-details **Recurring** row is now pressable (with a `create-outline` affordance) and opens the rule's edit screen directly, instead of only via Edit → the edit screen's notice button.
 - Spec: spec/features/028-recurring-transactions/.
 
 ## 033-bulk-delete-tags-comments

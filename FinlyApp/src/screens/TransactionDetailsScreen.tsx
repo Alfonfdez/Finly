@@ -117,6 +117,7 @@ export default function TransactionDetailsScreen() {
   const typeColor = isExpense ? c.red : c.green;
   const catName = category ? getDisplayCategoryName(category) : '';
   const hasPhoto = parsedPhotos.length > 0;
+  const ruleId = transaction.recurring_rule_id ?? null;
 
   return (
     <ScreenShell>
@@ -180,10 +181,21 @@ export default function TransactionDetailsScreen() {
             )}
           </DataRow>
 
-          <DataRow label={labels.recurring_chip} icon="repeat-outline">
-            <Text style={[styles.nameValue, { color: ruleName ? c.text : c.textSecondary, fontSize: fs(15) }]}>
-              {ruleName ?? labels.details_none}
-            </Text>
+          <DataRow
+            label={labels.recurring_chip}
+            icon="repeat-outline"
+            onPress={ruleId != null ? () => navigation.navigate('ModifyRecurring', { ruleId }) : undefined}
+            accessibilityLabel={ruleId != null ? labels.recurring_edit_rule : undefined}
+          >
+            <View style={styles.iconRow}>
+              <Text
+                numberOfLines={1}
+                style={[styles.nameValue, { color: ruleName ? c.text : c.textSecondary, fontSize: fs(15) }]}
+              >
+                {ruleName ?? labels.details_none}
+              </Text>
+              {ruleId != null && <Ionicons name="create-outline" size={18} color={c.primary} />}
+            </View>
           </DataRow>
 
           <DataRow label={labels.details_photo} icon="image-outline" noBorder>
