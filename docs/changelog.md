@@ -3642,3 +3642,9 @@
 
 [2026-10-14] chore | FinlyApp/app.json
 - Bump the release to 2.2.0 (version and iOS buildNumber) and android.versionCode to 3, so the update installs over 2.1.0.
+
+[2026-10-14] chore | FinlyApp/package.json
+- Align package.json's version with the release (2.1.0 to 2.2.0); EAS reads app.json, so this is metadata only.
+
+[2026-10-14] chore | FinlyApp/package-lock.json
+- Sync the lockfile's root version to 2.2.0 (metadata only; no dependency changes).
