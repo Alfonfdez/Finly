@@ -348,6 +348,7 @@ Photo attachment for transactions (camera + gallery) on iOS and Android:
 - Hidden on web (native camera + file system; not checkable on web).
 - "Show photo" checkbox hidden in Settings on web.
 - Photo column added directly to 001_initial.ts (no migration — app not in production).
+- Fix (2026-10-15): file cleanup (delete / replace / remove) is **native-only** — on web there are no files to delete (see 024).
 
 Spec: spec/features/023-photo-attachment/.
 
@@ -361,6 +362,7 @@ Photo attachment extended to web, closing the last platform gap from 023:
 - Camera stays native-only: PhotoSection hides "Take photo" on web; web offers gallery only.
 - `deletePhotoFile` no-ops on `data:` URIs (web photos live in the DB row, not the file system).
 - Tests: photoUtils data-URI parse/no-op; PhotoSection camera-option visibility per platform.
+- Fix (2026-10-15): `deletePhotoFile` now no-ops on **all** web URIs (not just `data:`), so deleting a transaction / account / category whose photos are native `file://` URIs (e.g. imported from a native backup) no longer calls `expo-file-system` on web — which warned "not supported on web" and threw `this.validatePath is not a function`.
 
 Spec: spec/features/024-photo-on-web/.
 

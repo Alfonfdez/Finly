@@ -3726,3 +3726,7 @@
 [2026-10-15] fix | FinlyApp/src/screens/settings/DataScreen.tsx
 - `DataScreen`'s outer `ScrollView` now sets `keyboardShouldPersistTaps="handled"`.
 - Fixes the typed-DELETE confirmation needing two taps: the ScrollView (a React-tree ancestor of the modal) captured the first tap to dismiss the keyboard (`ScrollView._handleStartShouldSetResponderCapture`, default `keyboardShouldPersistTaps`), so Confirm only received the second tap. Documented the ancestor-ScrollView rule in `spec/constitution/6-screens.md`.
+
+[2026-10-15] fix | FinlyApp/src/utils/photoUtils.ts, FinlyApp/tests/utils/photoUtils.test.ts
+- `deletePhotoFile` now no-ops on web for **any** URI (not only `data:`): photo files are a native-only concern, and calling `expo-file-system` on web warned "expo-file-system is not supported on web" and threw `this.validatePath is not a function`.
+- Fixes the console noise when deleting a transaction / account / category whose photos are native `file://` URIs (e.g. imported from a native backup) on web; added a `photoUtils` web-case test.

@@ -1,4 +1,5 @@
 import { File } from 'expo-file-system';
+import { isWeb } from './platform';
 
 export function parsePhotos(photoField: string | null | undefined): string[] {
   if (!photoField) return [];
@@ -11,7 +12,9 @@ export function parsePhotos(photoField: string | null | undefined): string[] {
 }
 
 export async function deletePhotoFile(uri: string): Promise<void> {
-  if (uri.startsWith('data:')) return;
+  // Photo files are a native-only concern: web photos are data URIs in the DB row, and
+  // expo-file-system is not supported on web (constructing a File there warns and throws).
+  if (isWeb || uri.startsWith('data:')) return;
   try {
     const file = new File(uri);
     if (file.exists) file.delete();
