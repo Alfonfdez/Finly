@@ -3693,3 +3693,8 @@
 - The modify transaction form now refreshes when a rule edit rewrites its row while the form is open (detected via `updated_at`): an untouched form silently adopts the new values, while a dirty form keeps the user's draft and shows a notice with a "Use the rule's values" button that adopts the rule's values.
 - `useTransactionForm` exposes `isDirty` (diffed against the values the form opened with) and `TransactionForm` forwards it through `onDirtyChange`; `ModifyTransactionScreen` remounts the form (key bump) to adopt, or shows the notice otherwise.
 - Added `recurring_updated_notice` and `recurring_use_rule_values` to all 9 languages.
+
+[2026-10-14] refactor | FinlyApp/src/hooks/useExternalRowRefresh.ts, FinlyApp/src/utils/arrays.ts, FinlyApp/src/screens/ModifyTransactionScreen.tsx, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/hooks/useRecurringEditScope.ts, FinlyApp/tests/hooks/useExternalRowRefresh.test.tsx
+- Extracted the modify form's "row rewritten underneath an open form" logic from `ModifyTransactionScreen` into `hooks/useExternalRowRefresh.ts` (`formKey` remount / `updated` warning / `adopt`), now unit-tested with `renderHook`.
+- Added `utils/arrays.ts#areIdListsEqual` and reused it for the tag-id comparison in `useTransactionForm` and `useRecurringEditScope` (previously duplicated).
+- A non-recurring transaction (which has no notice to show) now always adopts the refreshed row instead of silently keeping stale values.

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { RecurrenceFrequency, TransactionType } from '../constants/types';
 import { parseAmountValue } from '../utils/amountInput';
+import { areIdListsEqual } from '../utils/arrays';
 import {
   buildRecurrenceSchedule,
   isSkippedWindowRecoverable,
@@ -72,10 +73,7 @@ export function useRecurringEditScope({
   const recurringPastAffected = useMemo(() => {
     if (!ruleMode) return false;
     const initialAmountNum = initialAmount !== undefined ? parseAmountValue(initialAmount) : null;
-    const initialTags = [...(initialTagIds ?? [])].sort((a, b) => a - b);
-    const currentTags = [...tagIds].sort((a, b) => a - b);
-    const tagsChanged =
-      initialTags.length !== currentTags.length || initialTags.some((v, i) => v !== currentTags[i]);
+    const tagsChanged = !areIdListsEqual(initialTagIds ?? [], tagIds);
     const detailChanged =
       accountId !== initialAccountId ||
       categoryId !== initialCategoryId ||

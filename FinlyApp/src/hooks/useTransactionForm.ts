@@ -20,6 +20,7 @@ import { formatDateForDB } from '../utils/formatters';
 import { isRuleUnmaterialized, toDateOnly } from '../utils/recurrence';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { parseAmountValue } from '../utils/amountInput';
+import { areIdListsEqual } from '../utils/arrays';
 import { transactionRepository, tagRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
 import { consumePendingCategory } from '../utils/pendingCategory';
@@ -209,10 +210,7 @@ export function useTransactionForm({
   /** Whether the draft differs from the values the form opened with (see `initialSnapshot`). */
   const isDirty = useMemo(() => {
     const initial = initialSnapshot.current;
-    const initialTagsSorted = [...initialTags.current].sort((a, b) => a - b);
-    const tagsSorted = [...selectedTags].sort((a, b) => a - b);
-    const tagsChanged =
-      initialTagsSorted.length !== tagsSorted.length || initialTagsSorted.some((v, i) => v !== tagsSorted[i]);
+    const tagsChanged = !areIdListsEqual(initialTags.current, selectedTags);
     const photosChanged =
       initial.photos.length !== photos.length || initial.photos.some((p, i) => p !== photos[i]);
     return (
