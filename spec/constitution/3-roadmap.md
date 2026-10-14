@@ -81,6 +81,7 @@ Screen for adding expense/income with:
 - Comment input with character counter (4096 max) and autocomplete.
 - Photo section (camera/gallery) — UI ready, functionality pending.
 - "Add" button with validation and help text.
+- Fix (2026-10-14): the shared transaction form (Add/Modify transaction, New/Edit recurring rule) now scrolls its submit button above the keyboard when the **Comment** field is focused — re-run on `onLayout`/`keyboardDidShow` so it lands after the resize has settled — with the scroll content's bottom padding raised to 112 px for a clear gap. Focusing any other field (recurring Name, Amount, Account, Category) does not scroll.
 
 Spec: spec/features/004-add-transaction-screen/.
 
@@ -165,6 +166,7 @@ Screen accessible from the Drawer that shows all accounts with their balance:
 - Header search toggle + SearchBar: client-side case-insensitive multi-term (AND) search over account display name (current language) and description; Total row always visible; "No results found" empty state.
 - Floating "+" button (FAB) that navigates to create account (013).
 - Tapping an account navigates to modify account (012).
+- Fix (2026-10-14): the FlatList is now unmounted when empty (plain `View` + `EmptyState`), so an emptied list never keeps the old scroll extent — see the "Empty lists" convention in `6-screens.md`.
 
 Spec: spec/features/011-accounts-screen/.
 
@@ -272,6 +274,7 @@ Tag management with database persistence:
 - Maximum of 100 tags (Create button disabled + inline message when reached; "+" FAB on Tags screen and "+ Add tag" chip in the transaction form hidden at the cap).
 - Modify/delete tag screen with name edit and delete confirmation.
 - Update (2026-10-14): each tag row shows "Used in N transactions" (`tags_used_in`) and "Created <date>" (`tags_created_on`), and the list gained a `SortToggle` strip (name / created / usage, session-only) via the shared `SortRow`.
+- Fix (2026-10-14): emptying the list (Select all → Delete from an overflowing list) left the old scroll extent, so the empty state stayed scrollable and off-centre. The list is now **unmounted** when empty and a plain `View` + `EmptyState` is rendered (see the "Empty lists" convention in `6-screens.md`).
 
 Spec: spec/features/018-tag-management/.
 
@@ -402,6 +405,7 @@ Bulk comment management for transactions:
 - i18n keys `nav_comments` + `comments_*` (en/es/ca).
 - Tests: 6 new contract tests + 7 `CommentInput` component tests; `npm run test:all` green (typecheck + lint + 247 tests, 29 files).
 - Update (2026-10-14): each row also shows "Last used <date>" (`getDistinctComments()` now returns `lastUsed = MAX(date)`), the usage line moved to the shared `used_in_transactions`, and the list gained a `SortToggle` strip (name / last used / usage, session-only) via the shared `SortRow`.
+- Fix (2026-10-14): emptying the list (Select all → Delete from an overflowing list) left the old scroll extent; the list is now unmounted when empty and a plain `View` + `EmptyState` is rendered (see the "Empty lists" convention in `6-screens.md`).
 
 Spec: spec/features/027-comments-management/.
 
@@ -430,6 +434,7 @@ Recurring expenses/income created once and materialized automatically:
 - Update (2026-10-14): the transaction-details **Recurring** row is now pressable (with a `create-outline` affordance) and opens the rule's edit screen directly, instead of only via Edit → the edit screen's notice button.
 - Update (2026-10-14): the modify form now **refreshes when a rule edit rewrites its row** while it is open (detected via `updated_at`): an untouched form silently adopts the new values, while a form with unsaved input keeps the draft and shows a "This transaction was updated by its recurring rule…" line with a **Use the rule's values** button that adopts the rule's values.
 - Refactor (2026-10-14): that refresh logic moved out of `ModifyTransactionScreen` into `hooks/useExternalRowRefresh.ts` (a generic "row rewritten underneath an open form" hook: `formKey` remount / `updated` warning / `adopt`), unit-tested with `renderHook`; the shared tag-id comparison became `utils/arrays.ts#areIdListsEqual` (reused by `useTransactionForm` and `useRecurringEditScope`); a non-recurring row now always adopts (it has no notice to show).
+- Fix (2026-10-14): emptying the Recurring list (Select all → Delete from an overflowing list) left the old scroll extent; the list is now unmounted when empty and a plain `View` + `EmptyState` is rendered (see the "Empty lists" convention in `6-screens.md`).
 - Spec: spec/features/028-recurring-transactions/.
 
 ## 033-bulk-delete-tags-comments
@@ -442,6 +447,8 @@ Multi-select bulk delete on the Tags and Comments screens:
 - `tagRepo.deleteMany(ids)` deletes tags in one query (junction rows cascade) + `transactionRepo.deleteComments(values)` clears `description` on every matching transaction; screens reload after delete (`refreshTags()` / `getDistinctComments()`).
 - i18n keys `tags_select*`/`tags_bulk_delete*` + `comments_select*`/`comments_bulk_delete*` (en/es/ca).
 - Tests: 2 new contract tests (tags `deleteMany`, comments `deleteComments`) on both native + sql.js backends.
+- Fix (2026-10-14): deleting a whole overflowing list in one batch (Select all → Delete) left the previous scroll extent, so the empty screen stayed scrollable; both screens now unmount the list when empty (see the "Empty lists" convention in `6-screens.md`).
+- Refactor (2026-10-14): the empty/list decision was extracted to `components/ListOrEmpty.tsx` and adopted by all six list screens (Tags, Comments, Recurring, Accounts, the transactions list and Categories); shared `testID`s moved to `constants/testIds.ts` (`TEST_IDS`).
 
 Spec: spec/features/018-tag-management/ and spec/features/027-comments-management/.
 

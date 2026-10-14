@@ -3,6 +3,7 @@ import type { ComponentProps } from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { resetStub, setConfig } from './helpers/configStub';
 import RepeatSection from '../../src/components/RepeatSection';
+import { TEST_IDS } from '../../src/constants/testIds';
 
 // Pin "today" so the summary info block is deterministic.
 vi.mock('../../src/utils/recurrence', async (importOriginal) => {
@@ -73,7 +74,7 @@ describe('RepeatSection', () => {
   it('renders the end-date field with a calendar icon that opens the picker', async () => {
     const { props, view } = renderSection();
     const v = await view;
-    const field = v.getByTestId('repeat-end-date');
+    const field = v.getByTestId(TEST_IDS.repeatEndDate);
     expect(field).toBeTruthy();
     expect(v.getByText('calendar-outline')).toBeTruthy();
     await fireEvent.press(field);
@@ -97,7 +98,7 @@ describe('RepeatSection', () => {
     const { view } = renderSection();
     const v = await view;
     expect(v.getByText('Recurring')).toBeTruthy();
-    expect(v.getByTestId('repeat-options')).toBeTruthy();
+    expect(v.getByTestId(TEST_IDS.repeatOptions)).toBeTruthy();
     expect(v.queryByRole('switch')).toBeNull();
   });
 

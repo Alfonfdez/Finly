@@ -14,6 +14,7 @@ import { useApp } from '../context/AppContext';
 import { tagRepository, transactionRepository } from '../database';
 import { type Tag } from '../database/types';
 import { type NavigationProp, MAX_TAGS, TAG_SORT_BY, SORT_DIRECTIONS, type TagSortBy, type SortDirection } from '../constants/types';
+import { TEST_IDS } from '../constants/testIds';
 import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import { countAtLimit } from '../utils/limits';
 import { parseDbDate } from '../utils/formatters';
@@ -22,6 +23,7 @@ import { ERROR_PREFIXES } from '../utils/errors';
 import { defaultTagSortDirection, sortTags } from '../utils/tagSort';
 import Fab from '../components/Fab';
 import ListItemRow from '../components/ListItemRow';
+import ListOrEmpty from '../components/ListOrEmpty';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
@@ -178,13 +180,15 @@ export default function TagsScreen() {
         />
       )}
 
-      <FlatList
-        data={sortedTags}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={renderItem}
-        ListEmptyComponent={renderEmpty}
-        contentContainerStyle={sortedTags.length === 0 ? styles.emptyList : styles.list}
-      />
+      <ListOrEmpty empty={sortedTags.length === 0} emptyState={renderEmpty()}>
+        <FlatList
+          testID={TEST_IDS.tagsList}
+          data={sortedTags}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={renderItem}
+          contentContainerStyle={styles.list}
+        />
+      </ListOrEmpty>
 
       {selectMode ? (
         <SelectionActionBar
@@ -224,9 +228,6 @@ const styles = StyleSheet.create({
   list: {
     padding: 16,
     ...LIST_BOTTOM_FAB_PADDING,
-  },
-  emptyList: {
-    flex: 1,
   },
   row: {
     padding: 14,

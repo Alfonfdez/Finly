@@ -3,6 +3,7 @@ import { render, fireEvent, userEvent, waitFor } from '@testing-library/react-na
 import type { ReactNode } from 'react';
 import CommentsScreen from '../../src/screens/CommentsScreen';
 import { buildAppMock, resetAppStub } from '../component/helpers/appStub';
+import { TEST_IDS } from '../../src/constants/testIds';
 
 const getDistinctComments = vi.fn(async () => [] as { description: string; count: number; lastUsed: string }[]);
 
@@ -44,6 +45,8 @@ describe('CommentsScreen', () => {
     const view = await render(<CommentsScreen />);
     expect(await view.findByText('No comments yet')).toBeTruthy();
     expect(view.getByText('0 comments')).toBeTruthy();
+    // The list must be unmounted when empty so no stale scroll area remains.
+    expect(view.queryByTestId(TEST_IDS.commentsList)).toBeNull();
   });
 
   it('lists loaded comments with their usage count', async () => {
@@ -51,6 +54,7 @@ describe('CommentsScreen', () => {
     const view = await render(<CommentsScreen />);
     expect(await view.findByText('Coffee')).toBeTruthy();
     expect(view.getByText('Used in 2 transactions')).toBeTruthy();
+    expect(view.getByTestId(TEST_IDS.commentsList)).toBeTruthy();
   });
 
   it('shows when each comment was last used', async () => {

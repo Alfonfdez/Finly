@@ -9,6 +9,7 @@ import AccountModal from '../components/AccountModal';
 import TabBar, { typeTabs } from '../components/TabBar';
 import RecurringRow from '../components/RecurringRow';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
+import ListOrEmpty from '../components/ListOrEmpty';
 import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
 import SortToggle, { recurringSortFields } from '../components/SortToggle';
@@ -26,6 +27,7 @@ import { useSearchFilter } from '../hooks/useSearchFilter';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { t, getDisplayCategoryName } from '../i18n';
 import { USER_ID, RECURRING_SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, type RootStackParamList, type RecurringSortBy, type RecurringStatus, type SortDirection, type TransactionTypeFilter } from '../constants/types';
+import { TEST_IDS } from '../constants/testIds';
 import { isRecurrenceEnded, recurringStatus, todayDateOnly } from '../utils/recurrence';
 import { recurrenceFrequencyLabels } from '../utils/recurrenceSummary';
 import { defaultRecurringSortDirection, sortRecurringRules } from '../utils/recurringSort';
@@ -241,16 +243,19 @@ export default function RecurringScreen() {
         />
       )}
 
-      <FlatList
-        data={sortedRules}
-        keyExtractor={item => String(item.id)}
-        extraData={`${selectMode}:${selectedIds.size}`}
-        contentContainerStyle={filteredRules.length === 0 ? styles.emptyContent : styles.listContent}
-        renderItem={renderItem}
-        ListEmptyComponent={
-          <EmptyState {...emptyStateProps(searchActive, 'repeat-outline', labels.recurring_empty)} />
-        }
-      />
+      <ListOrEmpty
+        empty={sortedRules.length === 0}
+        emptyState={<EmptyState {...emptyStateProps(searchActive, 'repeat-outline', labels.recurring_empty)} />}
+      >
+        <FlatList
+          testID={TEST_IDS.recurringList}
+          data={sortedRules}
+          keyExtractor={item => String(item.id)}
+          extraData={`${selectMode}:${selectedIds.size}`}
+          contentContainerStyle={styles.listContent}
+          renderItem={renderItem}
+        />
+      </ListOrEmpty>
 
       {selectMode ? (
         <SelectionActionBar
@@ -294,9 +299,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 128,
-  },
-  emptyContent: {
-    flexGrow: 1,
   },
   controls: {
     alignItems: 'center',

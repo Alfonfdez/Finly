@@ -3,6 +3,7 @@ import { render, fireEvent, waitFor, userEvent } from '@testing-library/react-na
 import { useState, type ReactNode } from 'react';
 import RecurringScreen from '../../src/screens/RecurringScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
+import { TEST_IDS } from '../../src/constants/testIds';
 import type { Account, Category, RecurringRule } from '../../src/database/types';
 
 // Renders the navigation header's `headerRight` inside the same render tree, so the
@@ -124,6 +125,15 @@ describe('RecurringScreen', () => {
     expect(view.getByText('Next: November 5, 2026')).toBeTruthy();
     expect(view.getByText('Food · 0 transactions')).toBeTruthy();
     expect(view.getByText('Created 5 Oct 2026')).toBeTruthy();
+    expect(view.getByTestId(TEST_IDS.recurringList)).toBeTruthy();
+  });
+
+  it('shows an empty state with the list unmounted when there are no rules', async () => {
+    mockList.mockResolvedValue([]);
+    const view = await render(<RecurringScreen />);
+    await waitFor(() => expect(view.getByText('No recurring rules yet')).toBeTruthy());
+    // The list must be unmounted when empty so no stale scroll area remains.
+    expect(view.queryByTestId(TEST_IDS.recurringList)).toBeNull();
   });
 
   it('navigates to edit when the rule info is pressed', async () => {

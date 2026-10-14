@@ -13,10 +13,12 @@ import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import type { CommentUsage } from '../database/repositories/transactionRepo';
 import { COMMENT_SORT_BY, SORT_DIRECTIONS, type NavigationProp, type CommentSortBy, type SortDirection } from '../constants/types';
+import { TEST_IDS } from '../constants/testIds';
 import { parseDbDate } from '../utils/formatters';
 import { defaultCommentSortDirection, sortComments } from '../utils/commentSort';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import ListItemRow from '../components/ListItemRow';
+import ListOrEmpty from '../components/ListOrEmpty';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { ERROR_PREFIXES } from '../utils/errors';
 import SelectionActionBar from '../components/SelectionActionBar';
@@ -183,13 +185,18 @@ export default function CommentsScreen() {
           />
         )}
 
-        <FlatList
-          data={sortedComments}
-          keyExtractor={(item) => item.description}
-          renderItem={renderItem}
-          ListEmptyComponent={loading ? null : renderEmpty}
-          contentContainerStyle={sortedComments.length === 0 ? styles.emptyList : styles.list}
-        />
+        <ListOrEmpty
+          empty={sortedComments.length === 0}
+          emptyState={loading ? null : renderEmpty()}
+        >
+          <FlatList
+            testID={TEST_IDS.commentsList}
+            data={sortedComments}
+            keyExtractor={(item) => item.description}
+            renderItem={renderItem}
+            contentContainerStyle={styles.list}
+          />
+        </ListOrEmpty>
       </View>
 
       {selectMode && (
@@ -222,9 +229,6 @@ const styles = StyleSheet.create({
   list: {
     padding: 16,
     paddingBottom: 24,
-  },
-  emptyList: {
-    flex: 1,
   },
   row: {
     padding: 14,

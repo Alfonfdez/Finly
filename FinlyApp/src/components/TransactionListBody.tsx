@@ -13,6 +13,7 @@ import SelectAllRow from './SelectAllRow';
 import TagFilterBar from './TagFilterBar';
 import ScreenSearchBar from './ScreenSearchBar';
 import EmptyState, { emptyStateProps } from './EmptyState';
+import ListOrEmpty from './ListOrEmpty';
 import SelectionActionBar from './SelectionActionBar';
 import ConfirmationModal from './ConfirmationModal';
 import { TransactionRow, TransactionDateHeader } from './TransactionGroup';
@@ -116,11 +117,10 @@ export default function TransactionListBody({
         />
       )}
 
-      {!loading && filters.sections.length === 0 ? (
-        <View style={styles.emptyList}>
-          <EmptyState {...emptyStateProps(isSearching, emptyIcon, emptyMessage)} />
-        </View>
-      ) : (
+      <ListOrEmpty
+        empty={!loading && filters.sections.length === 0}
+        emptyState={<EmptyState {...emptyStateProps(isSearching, emptyIcon, emptyMessage)} />}
+      >
         <SectionList
           contentContainerStyle={styles.listContent}
           sections={filters.sections}
@@ -133,7 +133,7 @@ export default function TransactionListBody({
           windowSize={7}
           removeClippedSubviews
         />
-      )}
+      </ListOrEmpty>
 
       <AccountModal
         visible={filters.accountModalVisible}
@@ -179,6 +179,5 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   listContent: { ...LIST_BOTTOM_FAB_PADDING },
-  emptyList: { flex: 1 },
   tagFilter: { marginTop: 12 },
 });

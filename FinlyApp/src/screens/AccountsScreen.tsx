@@ -22,10 +22,12 @@ import { withAlpha } from '../utils/color';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { matchesAccountSearch } from '../utils/accountSearch';
 import { type NavigationProp, USER_ID } from '../constants/types';
+import { TEST_IDS } from '../constants/testIds';
 import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import EyeToggle from '../components/EyeToggle';
 import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
+import ListOrEmpty from '../components/ListOrEmpty';
 import ListItemRow from '../components/ListItemRow';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
@@ -254,14 +256,16 @@ export default function AccountsScreen() {
         />
       )}
 
-      <FlatList
-        data={filteredAccounts}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={renderItem}
-        ListEmptyComponent={renderEmpty}
-        ListFooterComponent={searchingNoResults ? renderSearchFooter : null}
-        contentContainerStyle={filteredAccounts.length === 0 ? styles.emptyList : styles.list}
-      />
+      <ListOrEmpty empty={filteredAccounts.length === 0} emptyState={renderEmpty()}>
+        <FlatList
+          testID={TEST_IDS.accountsList}
+          data={filteredAccounts}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={renderItem}
+          ListFooterComponent={searchingNoResults ? renderSearchFooter : null}
+          contentContainerStyle={styles.list}
+        />
+      </ListOrEmpty>
 
       {selectMode ? (
         <SelectionActionBar
@@ -320,9 +324,6 @@ const styles = StyleSheet.create({
   list: {
     padding: 16,
     ...LIST_BOTTOM_FAB_PADDING,
-  },
-  emptyList: {
-    flex: 1,
   },
   accountRow: {
     borderRadius: CARD_BORDER_RADIUS,

@@ -12,9 +12,10 @@ interface Props {
   comment: string;
   onChange: (text: string) => void;
   onFocus?: () => void;
+  onBlur?: () => void;
 }
 
-const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus }, ref) => {
+const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus, onBlur }, ref) => {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -97,6 +98,7 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus 
           onBlur={() => {
             if (isPressingSuggestion.current) return;
             setFocused(false);
+            onBlur?.();
           }}
           multiline
           maxLength={MAX_COMMENT_LENGTH}

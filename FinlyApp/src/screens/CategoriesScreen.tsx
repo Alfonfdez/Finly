@@ -15,6 +15,7 @@ import TabBar, { typeTabs } from '../components/TabBar';
 import CategoryGrid from '../components/CategoryGrid';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
+import ListOrEmpty from '../components/ListOrEmpty';
 import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -176,9 +177,10 @@ export default function CategoriesScreen() {
           />
         )}
 
-        {filteredCategories.length === 0 ? (
-          <EmptyState {...emptyStateProps(searchActive, 'grid-outline', labels.add_cat_no_results)} />
-        ) : (
+        <ListOrEmpty
+          empty={filteredCategories.length === 0}
+          emptyState={<EmptyState {...emptyStateProps(searchActive, 'grid-outline', labels.add_cat_no_results)} />}
+        >
           <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
             <CategoryGrid
               categories={filteredCategories}
@@ -199,7 +201,7 @@ export default function CategoriesScreen() {
               </Text>
             )}
           </ScrollView>
-        )}
+        </ListOrEmpty>
       </View>
 
       {selectMode && (
