@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import ModifyTransactionScreen from '../../src/screens/ModifyTransactionScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
@@ -56,16 +56,55 @@ vi.mock('../../src/database', () => ({
   },
 }));
 
+// `useFocusLoad` is replaced with a controllable version so a re-focus (returning from
+// the rule editor) can re-run the screen's loader on demand — without touching the form's
+// own focus effects, which leak async work if re-invoked by hand.
+const { reloadRef } = vi.hoisted(() => ({
+  reloadRef: { current: null as (() => Promise<void>) | null },
+}));
+
+vi.mock('../../src/hooks/useFocusLoad', async () => {
+  const React = await import('react');
+  return {
+    useFocusLoad: <T,>(loader: () => Promise<T>, initial: T) => {
+      const [data, setData] = React.useState<T>(initial);
+      const [loading, setLoading] = React.useState(true);
+      const loaderRef = React.useRef(loader);
+      loaderRef.current = loader;
+      const dataRef = React.useRef<T>(initial);
+      const run = React.useCallback(async () => {
+        const result = await loaderRef.current();
+        if (result !== dataRef.current) {
+          dataRef.current = result;
+          setData(result);
+        }
+        setLoading(false);
+      }, []);
+      React.useEffect(() => { run(); }, [run]);
+      reloadRef.current = run;
+      return { data, setData, loading };
+    },
+  };
+});
+
 vi.mock('@react-navigation/native', async () => {
   const React = await import('react');
   return {
     useNavigation: () => nav,
     useRoute: () => ({ params: routeParams }),
     useFocusEffect: (cb: () => void | (() => void)) => {
-      React.useEffect(cb, [cb]);
+      React.useEffect(() => cb(), [cb]);
     },
   };
 });
+
+// Simulates returning to the screen (a re-focus), which re-runs the screen's loader.
+// Wrapping the reload in `act` corrupts React's act scope for later interactions here,
+// so the state updates are flushed with a macrotask instead.
+async function refocus() {
+  reloadRef.current?.();
+  await new Promise(resolve => setTimeout(resolve, 0));
+}
 
 vi.mock('../../src/context/AppContext', () => ({
   useApp: () => buildAppMock(),
@@ -91,6 +130,7 @@ const originalRAF = globalThis.requestAnimationFrame;
 
 describe('ModifyTransactionScreen', () => {
   beforeEach(() => {
+    reloadRef.current = null;
     mockGetById.mockReset().mockResolvedValue(transaction);
     mockGetTagsByTransactionId.mockReset().mockResolvedValue([]);
     mockGetCategoryUsageCounts.mockReset().mockResolvedValue([]);
@@ -145,5 +185,69 @@ describe('ModifyTransactionScreen', () => {
     const view = await render(<ModifyTransactionScreen />);
     await view.findByText('Save');
     expect(view.queryByText('Edit recurring rule')).toBeNull();
+  });
+
+  it('adopts the new values when the row changes underneath an untouched form', async () => {
+    mockGetById.mockResolvedValue({ ...transaction, description: 'before', updated_at: '2026-10-14 10:00:00' });
+    const view = await render(<ModifyTransactionScreen />);
+    await view.findByText('Save');
+    expect(view.getByDisplayValue('before')).toBeTruthy();
+
+    // The rule was saved with "Future + past" while this form was open.
+    mockGetById.mockResolvedValue({ ...transaction, description: 'after', updated_at: '2026-10-14 10:05:00' });
+    await refocus();
+
+    expect(await view.findByDisplayValue('after')).toBeTruthy();
+    expect(view.queryByText(/updated by its recurring rule/)).toBeNull();
+  });
+
+  it('keeps the user input and warns when the row changes underneath a dirty form', async () => {
+    mockGetById.mockResolvedValue({
+      ...transaction,
+      recurring_rule_id: 5,
+      description: 'before',
+      updated_at: '2026-10-14 10:00:00',
+    });
+    const view = await render(<ModifyTransactionScreen />);
+    await view.findByText('Save');
+
+    fireEvent.changeText(view.getByDisplayValue('before'), 'mine');
+
+    mockGetById.mockResolvedValue({
+      ...transaction,
+      recurring_rule_id: 5,
+      description: 'after',
+      updated_at: '2026-10-14 10:05:00',
+    });
+    await refocus();
+
+    expect(await view.findByText(/updated by its recurring rule/)).toBeTruthy();
+    expect(view.getByDisplayValue('mine')).toBeTruthy();
+  });
+
+  it('adopts the rule values when the notice action is pressed', async () => {
+    mockGetById.mockResolvedValue({
+      ...transaction,
+      recurring_rule_id: 5,
+      description: 'before',
+      updated_at: '2026-10-14 10:00:00',
+    });
+    const view = await render(<ModifyTransactionScreen />);
+    await view.findByText('Save');
+
+    fireEvent.changeText(view.getByDisplayValue('before'), 'mine');
+
+    mockGetById.mockResolvedValue({
+      ...transaction,
+      recurring_rule_id: 5,
+      description: 'after',
+      updated_at: '2026-10-14 10:05:00',
+    });
+    await refocus();
+
+    const button = await view.findByText("Use the rule's values");
+    await act(async () => { fireEvent.press(button); });
+    expect(await view.findByDisplayValue('after')).toBeTruthy();
+    expect(view.queryByText(/updated by its recurring rule/)).toBeNull();
   });
 });

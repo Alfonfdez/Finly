@@ -139,11 +139,29 @@ export function useTransactionForm({
   const prevType = useRef(type);
   const isFirstFocus = useRef(true);
 
+  // Values the form opened with. Compared against the live state to tell whether the
+  // user changed anything (a "Future + past" rule edit may rewrite the row underneath,
+  // and an untouched form should adopt it while a dirty one must be preserved).
+  const initialSnapshot = useRef({
+    type: initialType,
+    amount: initialAmount !== undefined ? parseAmountValue(initialAmount) : null,
+    accountId: initialAccountId,
+    categoryId: initialCategoryId,
+    day: toDateOnly(initialDay),
+    comment: initialComment,
+    photos: initialPhotos,
+  });
+  // Tags load from the DB (below), so their "initial" value is the first loaded set.
+  const initialTags = useRef<number[]>(initialTagIds ?? []);
+
   useEffect(() => {
     if (transactionId === undefined) return;
     let active = true;
     transactionRepository.getTagsByTransactionId(transactionId).then(ids => {
-      if (active) setSelectedTags(ids);
+      if (active) {
+        initialTags.current = ids;
+        setSelectedTags(ids);
+      }
     }).catch(onError ?? (() => {}));
     return () => { active = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- onError is stable
@@ -187,6 +205,27 @@ export function useTransactionForm({
   }, [type]);
 
   const numericAmount = useMemo(() => parseAmountValue(amountRaw), [amountRaw]);
+
+  /** Whether the draft differs from the values the form opened with (see `initialSnapshot`). */
+  const isDirty = useMemo(() => {
+    const initial = initialSnapshot.current;
+    const initialTagsSorted = [...initialTags.current].sort((a, b) => a - b);
+    const tagsSorted = [...selectedTags].sort((a, b) => a - b);
+    const tagsChanged =
+      initialTagsSorted.length !== tagsSorted.length || initialTagsSorted.some((v, i) => v !== tagsSorted[i]);
+    const photosChanged =
+      initial.photos.length !== photos.length || initial.photos.some((p, i) => p !== photos[i]);
+    return (
+      type !== initial.type ||
+      numericAmount !== initial.amount ||
+      accountId !== initial.accountId ||
+      categoryId !== initial.categoryId ||
+      toDateOnly(day) !== initial.day ||
+      (comment.trim() || null) !== (initial.comment.trim() || null) ||
+      tagsChanged ||
+      photosChanged
+    );
+  }, [type, numericAmount, accountId, categoryId, day, comment, selectedTags, photos]);
 
   const canSubmit = useMemo(() => {
     if (categoryId === null) return false;
@@ -347,6 +386,7 @@ export function useTransactionForm({
     handleSubmit,
     handleTakePhoto, handlePickFromGallery, handleRemovePhoto,
     canSubmit, visibleCategories, hasMore, selectedAccount, selectableAccounts, numericAmount,
+    isDirty,
     inputRef, scrollRef,
     config, tags,
   };

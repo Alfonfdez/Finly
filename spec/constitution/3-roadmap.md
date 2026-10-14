@@ -428,6 +428,7 @@ Recurring expenses/income created once and materialized automatically:
 - Additive migration `004_recurring` and `SCHEMA_VERSION 3 → 4`; existing v2.1.0 data untouched. Backup format v1 extended with optional collections so old backups still import.
 - Fix (2026-10-14): the edit form's back-fill Summary counted every occurrence the schedule implies in the window, including ones already generated (e.g. today's, created by a previous "Future only" save), so "Adds 3 missed transactions" could create only 2. The screen now loads the rule's existing occurrence dates (`recurringRepo.listOccurrenceDates`) and the preview subtracts them, matching what the save actually creates.
 - Update (2026-10-14): the transaction-details **Recurring** row is now pressable (with a `create-outline` affordance) and opens the rule's edit screen directly, instead of only via Edit → the edit screen's notice button.
+- Update (2026-10-14): the modify form now **refreshes when a rule edit rewrites its row** while it is open (detected via `updated_at`): an untouched form silently adopts the new values, while a form with unsaved input keeps the draft and shows a "This transaction was updated by its recurring rule…" line with a **Use the rule's values** button that adopts the rule's values.
 - Spec: spec/features/028-recurring-transactions/.
 
 ## 033-bulk-delete-tags-comments

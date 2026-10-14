@@ -492,6 +492,8 @@ export const en = {
   recurring_created_on: (date: string) => `Created ${date}`,
   recurring_transactions_count: (n: number) => `${n} ${n === 1 ? 'transaction' : 'transactions'}`,
   recurring_edit_notice: 'This transaction was created by a recurring rule. Saving changes only affects this transaction, not the rule.',
+  recurring_updated_notice: 'This transaction was updated by its recurring rule. Saving here overwrites those changes for this transaction only.',
+  recurring_use_rule_values: 'Use the rule\'s values',
   recurring_edit_rule: 'Edit recurring rule',
   recurring_scope_title: 'Apply changes to',
   recurring_scope_future: 'Future only',

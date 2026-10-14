@@ -3688,3 +3688,8 @@
 
 [2026-10-14] feat | FinlyApp/src/components/DataRow.tsx FinlyApp/src/screens/TransactionDetailsScreen.tsx FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx spec/features/028-recurring-transactions/1-spec.md spec/constitution/3-roadmap.md
 - DataRow gained an optional onPress (rendering the row as a button), and the transaction-details Recurring row now opens the rule's edit screen directly with a create-outline affordance when the transaction belongs to a rule.
+
+[2026-10-14] feat | FinlyApp/src/screens/ModifyTransactionScreen.tsx, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/i18n/{en,es,ca,gl,eu,fr,de,pt,it}.ts, FinlyApp/tests/hooks/useTransactionForm.test.tsx, FinlyApp/tests/screens/ModifyTransactionScreen.test.tsx
+- The modify transaction form now refreshes when a rule edit rewrites its row while the form is open (detected via `updated_at`): an untouched form silently adopts the new values, while a dirty form keeps the user's draft and shows a notice with a "Use the rule's values" button that adopts the rule's values.
+- `useTransactionForm` exposes `isDirty` (diffed against the values the form opened with) and `TransactionForm` forwards it through `onDirtyChange`; `ModifyTransactionScreen` remounts the form (key bump) to adopt, or shows the notice otherwise.
+- Added `recurring_updated_notice` and `recurring_use_rule_values` to all 9 languages.
