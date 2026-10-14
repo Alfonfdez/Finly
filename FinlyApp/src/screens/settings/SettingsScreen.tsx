@@ -1,4 +1,5 @@
 import { ScrollView } from 'react-native';
+import ScreenShell from '../../components/ScreenShell';
 import { useConfig } from '../../context/ConfigContext';
 import { t } from '../../i18n';
 import SettingsRow from '../../components/settings/SettingsRow';
@@ -27,15 +28,17 @@ export default function SettingsScreen({ navigation }: Props) {
   ];
 
   return (
-    <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
-      {subsections.map((item) => (
-        <SettingsRow
-          key={item.screen}
-          icon={item.icon}
-          label={item.label}
-          onPress={() => navigation.navigate(item.screen)}
-        />
-      ))}
-    </ScrollView>
+    <ScreenShell>
+      <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
+        {subsections.map((item) => (
+          <SettingsRow
+            key={item.screen}
+            icon={item.icon}
+            label={item.label}
+            onPress={() => navigation.navigate(item.screen)}
+          />
+        ))}
+      </ScrollView>
+    </ScreenShell>
   );
 }

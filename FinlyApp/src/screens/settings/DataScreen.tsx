@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { TextInput, ScrollView, StyleSheet, Alert, type TextStyle } from 'react-native';
+import ScreenShell from '../../components/ScreenShell';
 import { useConfig } from '../../context/ConfigContext';
 import { useApp } from '../../context/AppContext';
 import { useFontSize } from '../../hooks/useFontSize';
@@ -215,131 +216,133 @@ export default function DataScreen() {
   };
 
   return (
-    <ScrollView
-      style={[settingsStyles.container, { backgroundColor: c.background }]}
-      contentContainerStyle={settingsStyles.content}
-      keyboardShouldPersistTaps="handled"
-    >
-      <SettingsRow
-        icon="share-outline"
-        iconColor={c.primary}
-        label={labels.settings_export_data}
-        onPress={handleExport}
-      />
+    <ScreenShell>
+      <ScrollView
+        style={[settingsStyles.container, { backgroundColor: c.background }]}
+        contentContainerStyle={settingsStyles.content}
+        keyboardShouldPersistTaps="handled"
+      >
+        <SettingsRow
+          icon="share-outline"
+          iconColor={c.primary}
+          label={labels.settings_export_data}
+          onPress={handleExport}
+        />
 
-      <SettingsRow
-        icon="download-outline"
-        iconColor={c.primary}
-        label={labels.settings_import_data}
-        onPress={handlePickImport}
-      />
+        <SettingsRow
+          icon="download-outline"
+          iconColor={c.primary}
+          label={labels.settings_import_data}
+          onPress={handlePickImport}
+        />
 
-      <SettingsRow
-        icon="trash-outline"
-        iconColor={c.red}
-        label={labels.settings_delete_all_transactions}
-        description={labels.settings_delete_all_transactions_description}
-        labelColor={c.red}
-        onPress={() => setDeleteTransactionsModal1(true)}
-      />
+        <SettingsRow
+          icon="trash-outline"
+          iconColor={c.red}
+          label={labels.settings_delete_all_transactions}
+          description={labels.settings_delete_all_transactions_description}
+          labelColor={c.red}
+          onPress={() => setDeleteTransactionsModal1(true)}
+        />
 
-      <SettingsRow
-        icon="warning-outline"
-        iconColor={c.red}
-        label={labels.settings_delete_all_data}
-        description={labels.settings_delete_all_data_description}
-        labelColor={c.red}
-        onPress={() => setDeleteAllModal1(true)}
-      />
+        <SettingsRow
+          icon="warning-outline"
+          iconColor={c.red}
+          label={labels.settings_delete_all_data}
+          description={labels.settings_delete_all_data_description}
+          labelColor={c.red}
+          onPress={() => setDeleteAllModal1(true)}
+        />
 
-      <SettingsRow
-        icon="refresh-outline"
-        iconColor={c.red}
-        label={labels.settings_factory_reset}
-        description={labels.settings_factory_reset_description}
-        labelColor={c.red}
-        onPress={() => setFactoryResetModal1(true)}
-      />
+        <SettingsRow
+          icon="refresh-outline"
+          iconColor={c.red}
+          label={labels.settings_factory_reset}
+          description={labels.settings_factory_reset_description}
+          labelColor={c.red}
+          onPress={() => setFactoryResetModal1(true)}
+        />
 
-      <ConfirmationModal
-        visible={deleteTransactionsModal1}
-        title={labels.settings_delete_transactions_confirm_title}
-        message={labels.settings_delete_transactions_confirm_message}
-        confirmLabel={labels.delete}
-        cancelLabel={labels.cancel}
-        onConfirm={() => setDeleteTransactionsModal2(true)}
-        onCancel={() => setDeleteTransactionsModal1(false)}
-      />
+        <ConfirmationModal
+          visible={deleteTransactionsModal1}
+          title={labels.settings_delete_transactions_confirm_title}
+          message={labels.settings_delete_transactions_confirm_message}
+          confirmLabel={labels.delete}
+          cancelLabel={labels.cancel}
+          onConfirm={() => setDeleteTransactionsModal2(true)}
+          onCancel={() => setDeleteTransactionsModal1(false)}
+        />
 
-      <ConfirmWithTextModal
-        visible={deleteTransactionsModal2}
-        title={labels.settings_delete_data_confirm_title2}
-        message={labels.settings_delete_data_confirm_message2}
-        confirmLabel={labels.settings_delete_confirm}
-        cancelLabel={labels.cancel}
-        text={deleteTransactionsText}
-        onTextChange={setDeleteTransactionsText}
-        onConfirm={handleDeleteTransactions}
-        onCancel={closeDeleteTransactions}
-      />
+        <ConfirmWithTextModal
+          visible={deleteTransactionsModal2}
+          title={labels.settings_delete_data_confirm_title2}
+          message={labels.settings_delete_data_confirm_message2}
+          confirmLabel={labels.settings_delete_confirm}
+          cancelLabel={labels.cancel}
+          text={deleteTransactionsText}
+          onTextChange={setDeleteTransactionsText}
+          onConfirm={handleDeleteTransactions}
+          onCancel={closeDeleteTransactions}
+        />
 
-      <ConfirmationModal
-        visible={importModalVisible}
-        title={labels.settings_import_confirm_title}
-        message={labels.settings_import_confirm_message}
-        confirmLabel={labels.settings_delete_confirm}
-        cancelLabel={labels.cancel}
-        onConfirm={handleConfirmImport}
-        onCancel={() => {
-          setImportModalVisible(false);
-          setPendingImport(null);
-        }}
-      />
+        <ConfirmationModal
+          visible={importModalVisible}
+          title={labels.settings_import_confirm_title}
+          message={labels.settings_import_confirm_message}
+          confirmLabel={labels.settings_delete_confirm}
+          cancelLabel={labels.cancel}
+          onConfirm={handleConfirmImport}
+          onCancel={() => {
+            setImportModalVisible(false);
+            setPendingImport(null);
+          }}
+        />
 
-      <ConfirmationModal
-        visible={deleteAllModal1}
-        title={labels.settings_delete_data_confirm_title}
-        message={labels.settings_delete_data_confirm_message}
-        confirmLabel={labels.settings_delete_all_data_confirm}
-        cancelLabel={labels.cancel}
-        onConfirm={() => setDeleteAllModal2(true)}
-        onCancel={() => setDeleteAllModal1(false)}
-      />
+        <ConfirmationModal
+          visible={deleteAllModal1}
+          title={labels.settings_delete_data_confirm_title}
+          message={labels.settings_delete_data_confirm_message}
+          confirmLabel={labels.settings_delete_all_data_confirm}
+          cancelLabel={labels.cancel}
+          onConfirm={() => setDeleteAllModal2(true)}
+          onCancel={() => setDeleteAllModal1(false)}
+        />
 
-      <ConfirmWithTextModal
-        visible={deleteAllModal2}
-        title={labels.settings_delete_data_confirm_title2}
-        message={labels.settings_delete_data_confirm_message2}
-        confirmLabel={labels.settings_delete_confirm}
-        cancelLabel={labels.cancel}
-        text={deleteAllText}
-        onTextChange={setDeleteAllText}
-        onConfirm={handleDeleteAll}
-        onCancel={closeDeleteAll}
-      />
+        <ConfirmWithTextModal
+          visible={deleteAllModal2}
+          title={labels.settings_delete_data_confirm_title2}
+          message={labels.settings_delete_data_confirm_message2}
+          confirmLabel={labels.settings_delete_confirm}
+          cancelLabel={labels.cancel}
+          text={deleteAllText}
+          onTextChange={setDeleteAllText}
+          onConfirm={handleDeleteAll}
+          onCancel={closeDeleteAll}
+        />
 
-      <ConfirmationModal
-        visible={factoryResetModal1}
-        title={labels.settings_factory_reset_confirm_title}
-        message={labels.settings_factory_reset_confirm_message}
-        confirmLabel={labels.settings_factory_reset_confirm}
-        cancelLabel={labels.cancel}
-        onConfirm={() => setFactoryResetModal2(true)}
-        onCancel={() => setFactoryResetModal1(false)}
-      />
+        <ConfirmationModal
+          visible={factoryResetModal1}
+          title={labels.settings_factory_reset_confirm_title}
+          message={labels.settings_factory_reset_confirm_message}
+          confirmLabel={labels.settings_factory_reset_confirm}
+          cancelLabel={labels.cancel}
+          onConfirm={() => setFactoryResetModal2(true)}
+          onCancel={() => setFactoryResetModal1(false)}
+        />
 
-      <ConfirmWithTextModal
-        visible={factoryResetModal2}
-        title={labels.settings_delete_data_confirm_title2}
-        message={labels.settings_delete_data_confirm_message2}
-        confirmLabel={labels.settings_delete_confirm}
-        cancelLabel={labels.cancel}
-        text={factoryResetText}
-        onTextChange={setFactoryResetText}
-        onConfirm={handleFactoryReset}
-        onCancel={closeFactoryReset}
-      />
-    </ScrollView>
+        <ConfirmWithTextModal
+          visible={factoryResetModal2}
+          title={labels.settings_delete_data_confirm_title2}
+          message={labels.settings_delete_data_confirm_message2}
+          confirmLabel={labels.settings_delete_confirm}
+          cancelLabel={labels.cancel}
+          text={factoryResetText}
+          onTextChange={setFactoryResetText}
+          onConfirm={handleFactoryReset}
+          onCancel={closeFactoryReset}
+        />
+      </ScrollView>
+    </ScreenShell>
   );
 }
 

@@ -1,4 +1,5 @@
 import { View, Text, ScrollView } from 'react-native';
+import ScreenShell from '../../components/ScreenShell';
 import { useConfig, type Config } from '../../context/ConfigContext';
 import { useApp } from '../../context/AppContext';
 import { useFontSize } from '../../hooks/useFontSize';
@@ -69,8 +70,9 @@ export default function PersonalizationScreen() {
   ];
 
   return (
-    <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
-      <SettingsSection title={labels.settings_home_screen} card={false}>
+    <ScreenShell>
+      <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
+        <SettingsSection title={labels.settings_home_screen} card={false}>
         <SettingsPickerRow
           label={labels.settings_default_account}
           options={homeAccounts}
@@ -183,6 +185,7 @@ export default function PersonalizationScreen() {
           />
         </View>
       </SettingsSection>
-    </ScrollView>
+      </ScrollView>
+    </ScreenShell>
   );
 }
