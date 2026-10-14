@@ -132,7 +132,7 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 - Generated transactions are ordinary transactions (they appear in every list, total and chart on their scheduled date).
 - `TransactionDetailsScreen` always shows a **Recurring** row with the name of the rule that generated the transaction (or the shared `—` placeholder for a non-recurring one). When the transaction belongs to a rule the whole row is **pressable** (an `create-outline` affordance next to the name) and opens that rule's edit screen directly; without a rule the row is inert. It has no toggle — pausing/resuming is done from the Recurring screen.
 - Photos are per-transaction and are not copied from any template.
-- If a rule edit rewrites this transaction while its modify form is open (detected via the row's `updated_at`), the form **refreshes**: an untouched form silently adopts the new values, while a form with unsaved input keeps the user's edits and shows an extra **"updated by its recurring rule"** line with a **Use the rule's values** button that re-loads the row's values and discards the draft.
+- If a rule edit rewrites this transaction while its modify form is open (detected via the row's `updated_at`), the form **refreshes**: an untouched form silently adopts the new values, while a form with unsaved input keeps the user's edits and shows an extra **"updated by its recurring rule"** line with a **Use the rule's values** button that re-loads the row's values and discards the draft. A non-recurring transaction has no such notice, so it always adopts the row's values.
 
 ### 9. Deleting a rule
 

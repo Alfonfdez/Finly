@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ScreenShell from '../components/ScreenShell';
@@ -12,6 +12,7 @@ import { parseDbDate } from '../utils/formatters';
 import { parsePhotos } from '../utils/photoUtils';
 import { transactionRepository } from '../database';
 import { useFocusLoad } from '../hooks/useFocusLoad';
+import { useExternalRowRefresh } from '../hooks/useExternalRowRefresh';
 import TransactionForm from '../components/TransactionForm';
 import EmptyState from '../components/EmptyState';
 import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS, SECTION_GAP, recurringCardColors } from '../components/componentStyles';
@@ -34,37 +35,12 @@ export default function ModifyTransactionScreen() {
   const { data: transaction, loading } = useFocusLoad(loadTransaction, null);
 
   // A "Future + past" rule edit (or any external change) rewrites this row while the
-  // form is open. Detect it via `updated_at`: an untouched form adopts the new values
-  // (remount), a dirty one keeps the user's input and shows a notice instead.
-  const [formKey, setFormKey] = useState(0);
-  const [ruleUpdated, setRuleUpdated] = useState(false);
-  const syncedUpdatedAt = useRef<string | null | undefined>(undefined);
-  const dirtyRef = useRef(false);
-
-  useEffect(() => {
-    if (!transaction) return;
-    const updatedAt = transaction.updated_at ?? null;
-    if (syncedUpdatedAt.current === undefined) {
-      syncedUpdatedAt.current = updatedAt;
-      return;
-    }
-    if (syncedUpdatedAt.current === updatedAt) return;
-    syncedUpdatedAt.current = updatedAt;
-    if (dirtyRef.current) {
-      setRuleUpdated(true);
-    } else {
-      setFormKey(key => key + 1);
-      setRuleUpdated(false);
-    }
-  }, [transaction]);
-
-  const handleDirtyChange = useCallback((dirty: boolean) => { dirtyRef.current = dirty; }, []);
-
-  // Adopt the rule's values, discarding whatever the user typed in this form.
-  const useRuleValues = useCallback(() => {
-    setFormKey(key => key + 1);
-    setRuleUpdated(false);
-  }, []);
+  // form is open: an untouched form adopts the new values (remount), a dirty one keeps
+  // the user's input and shows a notice instead. Non-recurring rows have no notice to
+  // show, so they always adopt.
+  const { formKey, updated, adopt, onDirtyChange } = useExternalRowRefresh(transaction?.updated_at, {
+    warnWhenDirty: transaction?.recurring_rule_id != null,
+  });
 
   if (loading && !transaction) {
     return (
@@ -98,7 +74,7 @@ export default function ModifyTransactionScreen() {
       initialComment={transaction.description ?? ''}
       initialAmount={String(transaction.amount)}
       initialPhotos={parsePhotos(transaction.photo)}
-      onDirtyChange={handleDirtyChange}
+      onDirtyChange={onDirtyChange}
       submitLabel={labels.modify_save}
       errorTitle={labels.modify_error_title}
       errorMessage={labels.modify_error_message}
@@ -111,7 +87,7 @@ export default function ModifyTransactionScreen() {
                 {labels.recurring_chip}
               </Text>
             </View>
-            {ruleUpdated && (
+            {updated && (
               <Text style={[styles.noticeText, { color: c.text, fontSize: fs(12) }]}>
                 {labels.recurring_updated_notice}
               </Text>
@@ -119,10 +95,10 @@ export default function ModifyTransactionScreen() {
             <Text style={[styles.noticeText, { color: c.textSecondary, fontSize: fs(12) }]}>
               {labels.recurring_edit_notice}
             </Text>
-            {ruleUpdated && (
+            {updated && (
               <TouchableOpacity
                 style={[styles.noticeButton, { borderColor: c.primary }]}
-                onPress={useRuleValues}
+                onPress={adopt}
                 accessibilityRole="button"
               >
                 <Ionicons name="refresh-outline" size={16} color={c.primary} />
