@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { COUNTER_STYLE } from '../components/componentStyles';
+import CharCounter from '../components/form/CharCounter';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -160,9 +161,9 @@ export default function CommentsScreen() {
         />
 
         {!selectMode && (
-          <Text style={[COUNTER_STYLE, { color: c.textSecondary, fontSize: fs(13) }]}>
+          <CharCounter value={filteredComments.length} style={COUNTER_STYLE}>
             {labels.comments_counter(filteredComments.length)}
-          </Text>
+          </CharCounter>
         )}
 
         <SortRow bordered>

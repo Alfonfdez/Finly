@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { COUNTER_STYLE } from '../components/componentStyles';
+import CharCounter from '../components/form/CharCounter';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -155,9 +156,9 @@ export default function TagsScreen() {
       />
 
       {!selectMode && (
-        <Text style={[COUNTER_STYLE, { color: c.textSecondary, fontSize: fs(13) }]}>
+        <CharCounter value={tags.length} maxLength={MAX_TAGS} style={COUNTER_STYLE}>
           {labels.tags_counter(tags.length, MAX_TAGS)}
-        </Text>
+        </CharCounter>
       )}
 
       <SortRow bordered>

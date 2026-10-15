@@ -3,7 +3,6 @@ import { View, StyleSheet, Keyboard } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
-import { useFontSize } from '../hooks/useFontSize';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
 import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
@@ -23,7 +22,6 @@ type ModifyTagRouteProp = RouteProp<RootStackParamList, 'ModifyTag'>;
 
 export default function ModifyTagScreen() {
   const { activeColors: c } = useConfig();
-  const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp<'ModifyTag'>>();
   const route = useRoute<ModifyTagRouteProp>();
@@ -96,7 +94,6 @@ export default function ModifyTagScreen() {
           returnKeyType="done"
           error={hintText}
           showCounter
-          counterFontSize={fs(12)}
           counterStyle={styles.counter}
           inputStyle={styles.input}
         />

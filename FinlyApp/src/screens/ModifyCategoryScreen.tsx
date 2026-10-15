@@ -27,6 +27,7 @@ import SectionTitle from '../components/form/SectionTitle';
 import PrimaryButton from '../components/form/PrimaryButton';
 import DeleteButton from '../components/form/DeleteButton';
 import FormHintSlot from '../components/form/FormHintSlot';
+import CharCounter from '../components/form/CharCounter';
 import FormScrollView from '../components/form/FormScrollView';
 
 type ModifyCategoryRouteProp = RouteProp<RootStackParamList, 'ModifyCategory'>;
@@ -197,9 +198,7 @@ export default function ModifyCategoryScreen() {
                 autoCapitalize="words"
                 autoCorrect={false}
               />
-              <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
-                {name.length}/{MAX_CATEGORY_NAME_LENGTH}
-              </Text>
+              <CharCounter value={name.length} maxLength={MAX_CATEGORY_NAME_LENGTH} style={styles.counter} />
             </View>
           </View>
 

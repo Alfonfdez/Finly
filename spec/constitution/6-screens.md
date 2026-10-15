@@ -416,13 +416,23 @@ fab: {
 
 ### Character Counter
 
+Every limited input (and the list headers that show a limit) renders `components/form/CharCounter`:
+
 ```jsx
-<Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
-  {value.length}/{MAX_LENGTH}
-</Text>
+<CharCounter value={value.length} maxLength={MAX_LENGTH} />
+
+// A localized list header (not "n/max"): the text goes in as the child.
+<CharCounter value={tags.length} maxLength={MAX_TAGS} style={COUNTER_STYLE}>
+  {labels.tags_counter(tags.length, MAX_TAGS)}
+</CharCounter>
 ```
 
-**Counter style:** `{ textAlign: 'right', marginTop: 4, marginBottom: 4 }`
+- **Limits come from `constants/types.ts`, never a literal**: `MAX_TAG_NAME_LENGTH`, `MAX_ACCOUNT_NAME_LENGTH`, `MAX_CATEGORY_NAME_LENGTH`, `MAX_NOTE_LENGTH`, `MAX_COMMENT_LENGTH`, `MAX_TAGS`, `MAX_CATEGORIES_PER_TYPE`, `REPEAT_NAME_MAX_LENGTH`. A field whose value may already exceed the limit (legacy/imported data, e.g. a recurring rule name) passes `maxLength={Math.max(LIMIT, value.length)}` so the value is never clipped, while the counter flags it.
+- **One look**: `COUNTER_FONT_SIZE` (12, scaled by the text-size setting), `c.textSecondary`, `fontWeight: '500'`, right-aligned — centered for the list headers via `COUNTER_STYLE`.
+- **At the limit (`value >= maxLength`) the whole counter turns red and bold**: that is the only moment the field stops accepting input, so it reads as "you can't type more" rather than "this is invalid". The same rule flags the list headers (`100 of 100 tags`, `30 of 30 categories`).
+- `style` is for layout only (alignment, margins, padding); colour, weight and size always stay the component's, so a caller can never override the at-limit state.
+
+**Counter style:** `{ textAlign: 'right', marginTop: 4, marginBottom: 4 }` for inputs; `{ textAlign: 'center', paddingTop: 12 }` (`COUNTER_STYLE`) for the list headers.
 
 ### Debounce Validation
 

@@ -3787,3 +3787,18 @@
 
 [2026-10-15] test | FinlyApp/.maestro/flow-forms-standard.yaml
 - Added the Maestro flow `.maestro/flow-forms-standard.yaml`, verifying on an Android release APK that an amount of 0 gets a red border, the muted Delete note sits above the button, the red hint sits between Delete and Save, and a fresh field is never red.
+
+[2026-10-15] feat | FinlyApp/src/components/form/CharCounter.tsx, FinlyApp/src/constants/types.ts, FinlyApp/src/components/RepeatSection.tsx
+- Added `components/form/CharCounter`: one shared counter (`value/maxLength`) that turns the whole counter red and bold at the limit, used by every limited input and by the tags/categories list headers. Its `style` prop is layout-only, so the at-limit state can never be overridden.
+- The recurring rule name now has a counter and its limit drops from 60 to 30 characters (`REPEAT_NAME_MAX_LENGTH`, matching account/category names); a name already longer than the limit is kept intact (`maxLength={Math.max(LIMIT, name.length)}`) and flagged by the counter.
+
+[2026-10-15] refactor | FinlyApp/src/components/form/LabeledTextField.tsx, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/screens/CreateTagScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx
+- Replaced the five duplicated counter implementations (`LabeledTextField`, `CommentInput`, the inline tag modal, `ModifyCategoryScreen`, the tags/categories/comments headers) with `CharCounter`, standardising on the 12px `COUNTER_FONT_SIZE` (account/category counters were 11) and dropping the double-scaled `counterFontSize` prop.
+- Every limit stays sourced from `constants/types.ts`; no literal limits remain at the call sites.
+
+[2026-10-15] test | FinlyApp/tests/component/CharCounter.test.tsx, FinlyApp/tests/component/RepeatSection.test.tsx, FinlyApp/tests/screens/TagsScreen.test.tsx, FinlyApp/tests/screens/CategoriesScreen.test.tsx, FinlyApp/tests/component/TransactionForm.test.tsx
+- Added `CharCounter` unit tests (below/at/over the limit, children mode, no-max mode, style precedence) and `RepeatSection` counter tests (0/30, red+bold at 30, legacy over-limit name kept intact), plus at-limit assertions for `TagsScreen` (100 of 100 tags) and `CategoriesScreen` (30 of 30 categories).
+- The `TransactionForm` test mock now provides `repeatName`, matching the hook's contract.
+
+[2026-10-15] docs | spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, spec/features/028-recurring-transactions/1-spec.md
+- Documented the counter standard (one look, limits from constants, red + bold at the limit, the 30-character rule name) in `spec/constitution/6-screens.md`, `spec/features/028` and the roadmap.

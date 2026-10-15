@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { StyleSheet } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import CategoriesScreen from '../../src/screens/CategoriesScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
+import { MAX_CATEGORIES_PER_TYPE } from '../../src/constants/types';
 import type { Category } from '../../src/database/types';
 
 const nav = { setOptions: vi.fn(), navigate: vi.fn() };
@@ -69,6 +71,18 @@ describe('CategoriesScreen', () => {
     expect(view.getByText('Food')).toBeTruthy();
     expect(view.getByText('Transport')).toBeTruthy();
     expect(view.getByText('2 of 30 categories')).toBeTruthy();
+  });
+
+  it('flags the counter once the per-type limit is reached', async () => {
+    setAppData({
+      categories: Array.from({ length: MAX_CATEGORIES_PER_TYPE }, (_, i) => expenseCategory(i + 1, `Cat ${i + 1}`)),
+    });
+    const view = await render(<CategoriesScreen />);
+
+    const counter = view.getByText(`${MAX_CATEGORIES_PER_TYPE} of ${MAX_CATEGORIES_PER_TYPE} categories`);
+    const style = StyleSheet.flatten(counter.props.style) as { color?: string; fontWeight?: string };
+    expect(style.color).toBe('#F87171');
+    expect(style.fontWeight).toBe('700');
   });
 
   it('shows an empty state when there are no categories of the active type', async () => {

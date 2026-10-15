@@ -729,3 +729,15 @@ One rule set for the validation feedback and bottom action area of every form, a
 - Gate: `npm run test:all` green (133 files / 1046 tests); verified on the Android release APK.
 
 Spec: spec/constitution/6-screens.md (Form validation & bottom action area), spec/features/009, 012, 017, 018, 027, 028.
+
+## Character counters: one look, limits from constants
+Status: completed.
+
+Every limited field and list header now shares one counter, applied 2026-10-15:
+- **Shared `components/form/CharCounter`** replaces the five duplicated counter implementations (`LabeledTextField`, `CommentInput`, the inline tag modal, the category name, and the tags/categories/comments list headers). It renders `value/maxLength` (or a localized string passed as a child) muted and right-aligned at `COUNTER_FONT_SIZE` (12, scaled by the text-size setting).
+- **At the limit the whole counter turns red and bold** (`value >= maxLength`) - the only moment the field stops accepting input - and the same rule flags the list headers (`100 of 100 tags`, `30 of 30 categories`). The caller's `style` is layout-only, so the at-limit state can never be overridden.
+- **Limits always come from `constants/types.ts`**, never a literal at the call site.
+- **New counter for the recurring rule name**, whose limit drops from 60 to **30** (`REPEAT_NAME_MAX_LENGTH`, matching account/category names) since the name is rendered on a single line everywhere (transaction row ~41 chars, details ~25). A name already longer than the limit (legacy/imported) is kept intact - `maxLength={Math.max(LIMIT, value.length)}` - and flagged by the counter.
+- Gate: `npm run test:all` green (134 files / 1057 tests); verified on the Android release APK.
+
+Spec: spec/constitution/6-screens.md (Character Counter), spec/features/028.

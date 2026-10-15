@@ -13,6 +13,7 @@ import ModalHeader from './ModalHeader';
 import { CONTROL_BORDER_RADIUS } from './componentStyles';
 import ClearButton from './ClearButton';
 import PrimaryButton from './form/PrimaryButton';
+import CharCounter from './form/CharCounter';
 
 interface Props {
   tags: Tag[];
@@ -155,9 +156,7 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
           onChangeText={handleNameChange}
           maxLength={MAX_TAG_NAME_LENGTH}
         />
-        <Text style={[styles.modalCounter, { color: c.textSecondary, fontSize: fs(12) }]}>
-          {newTag.length}/{MAX_TAG_NAME_LENGTH}
-        </Text>
+        <CharCounter value={newTag.length} maxLength={MAX_TAG_NAME_LENGTH} style={styles.modalCounter} />
         {error ? (
           <Text style={[styles.modalError, { color: c.red, fontSize: fs(13) }]}>
             {error}
