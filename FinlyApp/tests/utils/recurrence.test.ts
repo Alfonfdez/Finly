@@ -4,6 +4,7 @@ import {
   buildRecurrenceSchedule,
   fromDateOnly,
   isRecurrenceEnded,
+  isLastDayAnchor,
   isSkippedWindowRecoverable,
   listDueOccurrences,
   nextEffectiveOccurrence,
@@ -276,6 +277,15 @@ describe('recurrenceSkipWindow', () => {
       count: 3,
     });
   });
+
+  it('respects a multi-unit interval when counting', () => {
+    // Occurrences every 2 days: Oct 1, 3, 5, 7 → the window [Oct 1, Oct 7) holds 3.
+    expect(recurrenceSkipWindow({ ...daily, interval: 2 }, '2026-10-01', '2026-10-07')).toEqual({
+      from: '2026-10-01',
+      to: '2026-10-07',
+      count: 3,
+    });
+  });
 });
 
 describe('buildRecurrenceSchedule', () => {
@@ -384,5 +394,15 @@ describe('planEdit', () => {
     const ended: RecurrenceSchedule = { ...daily, end_date: '2026-08-15' };
     const plan = planEdit({ schedule: ended, cursor: '2026-09-01', scope: 'future', today: '2026-10-07', skippedFrom: '2026-09-01' });
     expect(plan.skippedFrom).toBeNull();
+  });
+});
+
+describe('isLastDayAnchor', () => {
+  it('is true only for the last-day sentinel (31)', () => {
+    expect(isLastDayAnchor(31)).toBe(true);
+    expect(isLastDayAnchor(30)).toBe(false);
+    expect(isLastDayAnchor(1)).toBe(false);
+    expect(isLastDayAnchor(null)).toBe(false);
+    expect(isLastDayAnchor(undefined)).toBe(false);
   });
 });

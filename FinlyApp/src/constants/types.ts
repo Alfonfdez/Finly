@@ -68,6 +68,12 @@ export const REPEAT_MIN_INTERVAL = 1;
 export const REPEAT_MAX_INTERVAL = 99;
 export const REPEAT_NAME_MAX_LENGTH = 60;
 
+/** `day_of_month` anchor meaning "the last day of the month" for a monthly/yearly rule. */
+export const LAST_DAY_OF_MONTH = 31;
+/** `recurring_rules.active` flag values (stored as an integer in SQLite). */
+export const RULE_ACTIVE = 1;
+export const RULE_INACTIVE = 0;
+
 export type TransactionDraft = {
   account_id: number;
   category_id: number;

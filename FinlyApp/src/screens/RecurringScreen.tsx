@@ -26,7 +26,7 @@ import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { t, getDisplayCategoryName } from '../i18n';
-import { USER_ID, RECURRING_SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, type RootStackParamList, type RecurringSortBy, type RecurringStatus, type SortDirection, type TransactionTypeFilter } from '../constants/types';
+import { USER_ID, RULE_INACTIVE, RECURRING_SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, type RootStackParamList, type RecurringSortBy, type RecurringStatus, type SortDirection, type TransactionTypeFilter } from '../constants/types';
 import { TEST_IDS } from '../constants/testIds';
 import { isRecurrenceEnded, recurringStatus, todayDateOnly } from '../utils/recurrence';
 import { recurrenceFrequencyLabels } from '../utils/recurrenceSummary';
@@ -156,7 +156,7 @@ export default function RecurringScreen() {
       setData(await loadRules());
       refresh();
     } else {
-      setData(prev => ({ ...prev, rules: prev.rules.map(r => (r.id === rule.id ? { ...r, active: 0 } : r)) }));
+      setData(prev => ({ ...prev, rules: prev.rules.map(r => (r.id === rule.id ? { ...r, active: RULE_INACTIVE } : r)) }));
     }
   }, [setData, refresh, loadRules]);
 

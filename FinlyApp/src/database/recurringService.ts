@@ -1,7 +1,7 @@
 import { withTransaction } from './drizzle/engine';
 import { recurringRepo, type RecurringRuleInput } from './repositories/recurringRepo';
 import { buildRecurrenceSchedule, isRecurrenceEnded, listDueOccurrences, nextDueOnOrAfter, planEdit, ruleEditCursor, fromDateOnly, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
-import { RECURRENCE_SCOPES, USER_ID, type RecurrenceScope, type RecurrenceSpec } from '../constants/types';
+import { RECURRENCE_SCOPES, RULE_ACTIVE, USER_ID, type RecurrenceScope, type RecurrenceSpec } from '../constants/types';
 import type { RecurringRule } from './types';
 
 /**
@@ -99,7 +99,7 @@ export async function createRecurringRule(params: CreateRecurringRuleParams): Pr
       description: params.description,
       ...schedule,
       next_due: nextDue,
-      active: 1,
+      active: RULE_ACTIVE,
     },
     params.tagIds,
   );

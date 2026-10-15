@@ -3737,3 +3737,11 @@
 
 [2026-10-15] chore | FinlyApp/package.json, FinlyApp/package-lock.json
 - Updated `expo` 57.0.28 → 57.0.29 and `expo-constants` 57.0.21 → 57.0.22 (`npx expo install --fix`) for SDK 57 compatibility.
+
+[2026-10-15] refactor | FinlyApp/src/constants/types.ts, FinlyApp/src/utils/recurrence.ts, FinlyApp/src/utils/recurrenceSummary.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/database/recurringService.ts, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/hooks/useRecurringDraft.ts, FinlyApp/tests/utils/recurrence.test.ts
+- Named the recurring "magic values" as shared constants/helpers: `LAST_DAY_OF_MONTH` + `isLastDayAnchor()` (was `31` / `day_of_month === 31` in `recurrence`, `recurrenceSummary` and `ModifyRecurringScreen`), `RULE_ACTIVE`/`RULE_INACTIVE` (was `1`/`0` in `recurrence`, `recurringRepo`, `recurringService`, `RecurringScreen`, `ModifyRecurringScreen`) and `MAX_SCHEDULE_PROBES` (the `10000` guard in `nextDueOnOrAfter`).
+- `advanceOccurrence` now switches on `RECURRENCE_FREQUENCIES.*` and `useRecurringDraft`'s default frequency uses `RECURRENCE_FREQUENCIES.monthly`; added an `isLastDayAnchor` unit test.
+
+[2026-10-15] test | FinlyApp/tests/database/recurringService.test.ts, FinlyApp/tests/utils/recurrence.test.ts
+- Added service-level tests that a "Future + past" rule edit bumps `updated_at` on every generated transaction (the change an open modify form detects via `useExternalRowRefresh`) while "Future only" leaves it untouched.
+- Added a `recurrenceSkipWindow` test covering a multi-unit interval in the skipped-window count.

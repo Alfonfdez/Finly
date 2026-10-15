@@ -10,8 +10,8 @@ import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { t } from '../i18n';
-import { RECURRENCE_SCOPES, USER_ID, type RecurrenceScope, type NavigationProp, type RootStackParamList } from '../constants/types';
-import { buildRecurrenceSchedule, fromDateOnly, planEdit, ruleEditCursor, todayDateOnly, type SkipWindow } from '../utils/recurrence';
+import { RECURRENCE_SCOPES, RULE_ACTIVE, USER_ID, type RecurrenceScope, type NavigationProp, type RootStackParamList } from '../constants/types';
+import { buildRecurrenceSchedule, fromDateOnly, isLastDayAnchor, planEdit, ruleEditCursor, todayDateOnly, type SkipWindow } from '../utils/recurrence';
 import { formatDateLong } from '../utils/formatters';
 import { recurringRepository } from '../database';
 import { saveRecurringRuleEdit } from '../database/recurringService';
@@ -154,11 +154,11 @@ export default function ModifyRecurringScreen() {
         initialRepeatInterval={rule.interval}
         initialRepeatEnd={rule.end_date ? fromDateOnly(rule.end_date) : null}
         initialRuleNextDue={rule.next_due}
-        initialRuleActive={rule.active === 1}
+        initialRuleActive={rule.active === RULE_ACTIVE}
         initialRuleSkippedFrom={rule.skipped_from}
         initialRuleOccurrenceDates={occurrenceDates}
         initialRepeatName={rule.name}
-        initialRepeatLastDay={rule.day_of_month === 31}
+        initialRepeatLastDay={isLastDayAnchor(rule.day_of_month)}
         existingRepeatNames={otherNames}
         submitLabel={labels.modify_save}
         errorTitle={labels.recurring_error_title}
