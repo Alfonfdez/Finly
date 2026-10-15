@@ -70,6 +70,15 @@ export const REPEAT_MAX_INTERVAL = 99;
  *  them the same length as account/category names and readable where they appear. */
 export const REPEAT_NAME_MAX_LENGTH = 30;
 
+/** Why a recurring rule name is not acceptable (produced by `useRecurringDraft`,
+ *  consumed by the form's bottom hint). */
+export const RECURRING_NAME_ERRORS = {
+  required: 'required',
+  taken: 'taken',
+} as const;
+
+export type RecurringNameError = keyof typeof RECURRING_NAME_ERRORS;
+
 /** `day_of_month` anchor meaning "the last day of the month" for a monthly/yearly rule. */
 export const LAST_DAY_OF_MONTH = 31;
 /** `recurring_rules.active` flag values (stored as an integer in SQLite). */

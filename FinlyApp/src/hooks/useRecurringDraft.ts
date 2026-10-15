@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { RECURRENCE_FREQUENCIES, type RecurrenceDraft, type RecurrenceFrequency } from '../constants/types';
+import { RECURRENCE_FREQUENCIES, RECURRING_NAME_ERRORS, type RecurrenceDraft, type RecurrenceFrequency, type RecurringNameError } from '../constants/types';
 import { buildRecurrenceSchedule, fromDateOnly, toDateOnly } from '../utils/recurrence';
 import { dayAfter, isEndAfterStart } from '../utils/calendarBounds';
 
@@ -55,18 +55,20 @@ export function useRecurringDraft({
     }
   }, [day, repeatFrequency, repeatInterval, repeatLastDay, repeatEnd]);
 
-  const repeatNameError = useMemo<'required' | 'taken' | null>(() => {
+  const repeatNameError = useMemo<RecurringNameError | null>(() => {
     if (!ruleMode) return null;
     const trimmed = repeatName.trim();
-    if (trimmed.length === 0) return 'required';
+    if (trimmed.length === 0) return RECURRING_NAME_ERRORS.required;
     const taken = (existingRepeatNames ?? []).some(n => n.trim().toLowerCase() === trimmed.toLowerCase());
-    return taken ? 'taken' : null;
+    return taken ? RECURRING_NAME_ERRORS.taken : null;
   }, [ruleMode, repeatName, existingRepeatNames]);
 
   const markNameTouched = useCallback(() => setNameTouched(true), []);
 
   /** What the field shows: the raw error, but "required" is held back until the field is blurred. */
-  const repeatNameErrorDisplay = repeatNameError === 'required' && !nameTouched ? null : repeatNameError;
+  const repeatNameErrorDisplay = repeatNameError === RECURRING_NAME_ERRORS.required && !nameTouched
+    ? null
+    : repeatNameError;
 
   const buildRecurrence = useCallback((): RecurrenceDraft => ({
     name: repeatName.trim(),

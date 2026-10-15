@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
-import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, REPEAT_MAX_INTERVAL, REPEAT_MIN_INTERVAL, REPEAT_NAME_MAX_LENGTH, type RecurrenceFrequency, type RecurrenceScope } from '../constants/types';
+import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, REPEAT_MAX_INTERVAL, REPEAT_MIN_INTERVAL, REPEAT_NAME_MAX_LENGTH, type RecurrenceFrequency, type RecurrenceScope, type RecurringNameError } from '../constants/types';
 import { formatDateLong } from '../utils/formatters';
 import { buildRecurrenceSchedule, todayDateOnly, type RecurrenceSchedule } from '../utils/recurrence';
 import { recurrenceFrequencyLabels } from '../utils/recurrenceSummary';
@@ -29,7 +29,7 @@ interface Props {
   onChangeLastDay?: (value: boolean) => void;
   name: string;
   onChangeName: (value: string) => void;
-  nameError: 'required' | 'taken' | null;
+  nameError: RecurringNameError | null;
   /** The name field gained/lost focus (used to reveal the section and to arm its error). */
   onNameFocus?: () => void;
   onNameBlur?: () => void;

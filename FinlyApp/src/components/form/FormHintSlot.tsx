@@ -10,22 +10,27 @@ const LINE_HEIGHT = 1.4;
 /** Lines of room kept by every band, so the buttons around them never move. */
 export const HINT_SLOT_LINES = 2;
 
+/** `error` (red) is the "why you can't save" hint above Save; `muted` is the
+ *  explanation that sits above a disabled Delete. */
+export const HINT_TONES = {
+  error: 'error',
+  muted: 'muted',
+} as const;
+
+export type HintTone = keyof typeof HINT_TONES;
+
 interface Props {
   /** The message, or an empty string / null for a blank (still reserved) band. */
   message?: string | null;
-  /**
-   * `error` (red) is the "why you can't save" hint above Save; `muted` is the
-   * explanation that sits above a disabled Delete. Both are reserved so nothing
-   * shifts when a message appears or disappears.
-   */
-  tone?: 'error' | 'muted';
+  /** Both tones are reserved so nothing shifts when a message appears or disappears. */
+  tone?: HintTone;
   style?: StyleProp<ViewStyle>;
 }
 
-export default function FormHintSlot({ message, tone = 'error', style }: Props) {
+export default function FormHintSlot({ message, tone = HINT_TONES.error, style }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const muted = tone === 'muted';
+  const muted = tone === HINT_TONES.muted;
   const text = message ?? '';
 
   return (
