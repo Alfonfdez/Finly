@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { LIMIT_TEXT_STYLE } from '../components/componentStyles';
+import CharCounter from '../components/form/CharCounter';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -162,9 +163,9 @@ export default function CategoriesScreen() {
         />
 
         {!selectMode && (
-          <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(13) }]}>
+          <CharCounter value={typeCount} maxLength={MAX_CATEGORIES_PER_TYPE} style={styles.counter}>
             {labels.categories_counter(typeCount, MAX_CATEGORIES_PER_TYPE)}
-          </Text>
+          </CharCounter>
         )}
 
         {selectMode && visibleIds.length > 0 && (

@@ -1,9 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { StyleSheet } from 'react-native';
 import { render, fireEvent, userEvent, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import TagsScreen from '../../src/screens/TagsScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
 import { TEST_IDS } from '../../src/constants/testIds';
+import { MAX_TAGS } from '../../src/constants/types';
 import type { Tag } from '../../src/database/types';
 
 const nav = { setOptions: vi.fn(), navigate: vi.fn() };
@@ -53,6 +55,16 @@ describe('TagsScreen', () => {
     expect(view.getByText('1 of 100 tags')).toBeTruthy();
     expect(view.getByText('Created 1 Jan 2026')).toBeTruthy();
     expect(view.getByTestId(TEST_IDS.tagsList)).toBeTruthy();
+  });
+
+  it('flags the counter once the tag limit is reached', async () => {
+    setAppData({ tags: Array.from({ length: MAX_TAGS }, (_, i) => tag(i + 1, `Tag ${i + 1}`)) });
+    const view = await render(<TagsScreen />);
+
+    const counter = view.getByText(`${MAX_TAGS} of ${MAX_TAGS} tags`);
+    const style = StyleSheet.flatten(counter.props.style) as { color?: string; fontWeight?: string };
+    expect(style.color).toBe('#F87171');
+    expect(style.fontWeight).toBe('700');
   });
 
   it('shows an empty state when there are no tags', async () => {

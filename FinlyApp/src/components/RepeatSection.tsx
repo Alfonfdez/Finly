@@ -14,6 +14,7 @@ import { TEST_IDS } from '../constants/testIds';
 import ClearButton from './ClearButton';
 import CheckboxRow from './settings/CheckboxRow';
 import RecurrenceInfo from './RecurrenceInfo';
+import CharCounter from './form/CharCounter';
 
 interface Props {
   frequency: RecurrenceFrequency;
@@ -148,9 +149,12 @@ export default function RepeatSection({
           onChangeText={onChangeName}
           onFocus={onNameFocus}
           onBlur={onNameBlur}
-          maxLength={REPEAT_NAME_MAX_LENGTH}
+          // A name already longer than the limit (legacy/imported data) stays intact:
+          // it can only be shortened, and the counter flags it in red.
+          maxLength={Math.max(REPEAT_NAME_MAX_LENGTH, name.length)}
           accessibilityLabel={labels.repeat_name}
         />
+        <CharCounter value={name.length} maxLength={REPEAT_NAME_MAX_LENGTH} style={styles.nameCounter} />
         <Text style={[styles.label, { color: c.textSecondary, fontSize: fs(12) }]}>
           {labels.repeat_frequency}
         </Text>
@@ -316,6 +320,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginTop: 8,
     fontWeight: '500',
+  },
+  nameCounter: {
+    marginTop: 4,
   },
   checkboxRow: {
     marginTop: 12,

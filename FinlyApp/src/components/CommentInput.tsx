@@ -6,6 +6,7 @@ import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import { DEBOUNCE_MS, MAX_COMMENT_LENGTH, MIN_COMMENT_SUGGESTION_LENGTH } from '../constants/types';
+import CharCounter from './form/CharCounter';
 import { CONTROL_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
@@ -105,9 +106,7 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
           textAlignVertical="top"
           accessibilityLabel={labels.a11y_comment}
         />
-        <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(12) }]}>
-          {comment.length}/{MAX_COMMENT_LENGTH}
-        </Text>
+        <CharCounter value={comment.length} maxLength={MAX_COMMENT_LENGTH} style={styles.counter} />
       </View>
     </>
   );

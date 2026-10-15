@@ -3,7 +3,6 @@ import { View, StyleSheet, Keyboard } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
-import { useFontSize } from '../hooks/useFontSize';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
 import { t } from '../i18n';
@@ -19,7 +18,6 @@ import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 
 export default function CreateTagScreen() {
   const { activeColors: c } = useConfig();
-  const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp<'CreateTag'>>();
   const { refreshTags, tags } = useApp();
@@ -68,7 +66,6 @@ export default function CreateTagScreen() {
           returnKeyType="done"
           error={isEmpty ? labels.create_tag_error_empty : nameError}
           showCounter
-          counterFontSize={fs(12)}
           counterStyle={styles.counter}
           inputStyle={styles.input}
         />

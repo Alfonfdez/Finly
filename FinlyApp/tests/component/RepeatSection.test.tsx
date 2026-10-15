@@ -5,6 +5,7 @@ import { StyleSheet } from 'react-native';
 import { resetStub, setConfig } from './helpers/configStub';
 import RepeatSection from '../../src/components/RepeatSection';
 import { TEST_IDS } from '../../src/constants/testIds';
+import { REPEAT_NAME_MAX_LENGTH } from '../../src/constants/types';
 
 // Pin "today" so the summary info block is deterministic.
 vi.mock('../../src/utils/recurrence', async (importOriginal) => {
@@ -67,8 +68,31 @@ describe('RepeatSection', () => {
     expect(onNameBlur).toHaveBeenCalledTimes(1);
   });
 
-  it('increments and decrements the interval', async () => {
-    const { props, view } = renderSection({ interval: 3 });
+  it('shows the name character counter', async () => {
+    const { view } = renderSection();
+
+    expect((await view).getByText(`4/${REPEAT_NAME_MAX_LENGTH}`)).toBeTruthy();
+  });
+
+  it('turns the name counter red and bold at the limit', async () => {
+    const { view } = renderSection({ name: 'x'.repeat(REPEAT_NAME_MAX_LENGTH) });
+    const counter = (await view).getByText(`${REPEAT_NAME_MAX_LENGTH}/${REPEAT_NAME_MAX_LENGTH}`);
+    const style = StyleSheet.flatten(counter.props.style) as { color?: string; fontWeight?: string };
+
+    expect(style.color).toBe('#F87171');
+    expect(style.fontWeight).toBe('700');
+  });
+
+  it('keeps a name already longer than the limit intact and flags the counter', async () => {
+    const longName = 'x'.repeat(45);
+    const { view } = renderSection({ name: longName });
+    const v = await view;
+
+    expect(v.getByText(`45/${REPEAT_NAME_MAX_LENGTH}`)).toBeTruthy();
+    expect(v.getByTestId(TEST_IDS.repeatName).props.maxLength).toBe(45);
+  });
+
+  it('increments and decrements the interval', async () => {    const { props, view } = renderSection({ interval: 3 });
     const v = await view;
     await fireEvent.press(v.getByLabelText('+'));
     expect(props.onChangeInterval).toHaveBeenCalledWith(4);

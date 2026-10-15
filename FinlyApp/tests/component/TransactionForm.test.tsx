@@ -70,6 +70,7 @@ const mockFormState = {
   photos: [] as string[],
   canSubmit: false,
   config: { ...DEFAULT_CONFIG } as Config,
+  repeatName: '',
   repeatNameErrorDisplay: null as 'required' | 'taken' | null,
   repeatNameError: null as 'required' | 'taken' | null,
 };
@@ -115,6 +116,8 @@ vi.mock('../../src/hooks/useTransactionForm', () => ({
     handlePickFromGallery: pickFromGallery,
     handleRemovePhoto: removePhoto,
     canSubmit: mockFormState.canSubmit,
+    repeatName: mockFormState.repeatName,
+    setRepeatName: vi.fn(),
     repeatNameError: mockFormState.repeatNameError,
     repeatNameErrorDisplay: mockFormState.repeatNameErrorDisplay,
     markNameTouched: vi.fn(),
@@ -164,6 +167,7 @@ describe('TransactionForm', () => {
     mockFormState.config = { ...DEFAULT_CONFIG };
     mockFormState.repeatNameErrorDisplay = null;
     mockFormState.repeatNameError = null;
+    mockFormState.repeatName = '';
     nav.navigate.mockClear();
   });
 

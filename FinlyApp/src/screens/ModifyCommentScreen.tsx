@@ -79,7 +79,6 @@ export default function ModifyCommentScreen() {
           autoFocus
           error={isEmpty}
           showCounter
-          counterFontSize={fs(12)}
           counterStyle={styles.counter}
           inputStyle={styles.input}
           onFocus={onBottomFieldFocus}

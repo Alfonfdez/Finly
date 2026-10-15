@@ -1,9 +1,10 @@
 import { useCallback, useState } from 'react';
-import { Text, TextInput } from 'react-native';
+import { TextInput } from 'react-native';
 import type { TextInputProps, StyleProp, TextStyle } from 'react-native';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import SectionTitle from './SectionTitle';
+import CharCounter from './CharCounter';
 import { formStyles } from './formStyles';
 
 interface Props extends TextInputProps {
@@ -13,7 +14,6 @@ interface Props extends TextInputProps {
   multiline?: boolean;
   inputStyle?: StyleProp<TextStyle>;
   counterStyle?: StyleProp<TextStyle>;
-  counterFontSize?: number;
 }
 
 /**
@@ -30,7 +30,6 @@ export default function LabeledTextField({
   multiline = false,
   inputStyle,
   counterStyle,
-  counterFontSize,
   value,
   maxLength,
   onChangeText,
@@ -72,15 +71,11 @@ export default function LabeledTextField({
         {...inputProps}
       />
       {showCounter && maxLength != null && (
-        <Text
-          style={[
-            formStyles.counter,
-            { color: c.textSecondary, fontSize: fs(counterFontSize ?? 11) },
-            counterStyle,
-          ]}
-        >
-          {String(value ?? '').length}/{maxLength}
-        </Text>
+        <CharCounter
+          value={String(value ?? '').length}
+          maxLength={maxLength}
+          style={[formStyles.counter, counterStyle]}
+        />
       )}
     </>
   );
