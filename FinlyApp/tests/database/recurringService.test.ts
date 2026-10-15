@@ -615,6 +615,46 @@ describe('materializeDueRecurring', () => {
     expect(after.every(t => t.amount === 250)).toBe(true);
   });
 
+  it('futureAndPast bumps updated_at on the generated transactions (an open modify form refreshes)', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(baseRule, []);
+    await materializeDueRecurring(APR_15);
+    const before = new Map((await transactionRepo.list()).map(t => [t.id, t.updated_at]));
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: { amount: 250 },
+      recurrence: { frequency: 'monthly', interval: 1, endDate: null },
+      scope: 'futureAndPast',
+      pastPatch: { account_id: 1, category_id: 3, amount: 250, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: APR_15,
+    });
+
+    const after = await transactionRepo.list();
+    expect(after.every(t => t.updated_at !== before.get(t.id))).toBe(true);
+  });
+
+  it('future only leaves the generated transactions\' updated_at untouched', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(baseRule, []);
+    await materializeDueRecurring(APR_15);
+    const before = new Map((await transactionRepo.list()).map(t => [t.id, t.updated_at]));
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: { amount: 250 },
+      recurrence: { frequency: 'monthly', interval: 1, endDate: null },
+      scope: 'future',
+      pastPatch: { account_id: 1, category_id: 3, amount: 250, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: APR_15,
+    });
+
+    const after = await transactionRepo.list();
+    expect(after.every(t => t.updated_at === before.get(t.id))).toBe(true);
+  });
+
   it('futureAndPast rewrites past tag links', async () => {
     const { recurringRepo, transactionRepo, tagRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
     const rule = await recurringRepo.createWithTags(baseRule, []);

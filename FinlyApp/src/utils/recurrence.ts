@@ -1,4 +1,4 @@
-import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, RECURRING_STATUSES, type RecurrenceFrequency, type RecurrenceScope, type RecurringStatus } from '../constants/types';
+import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, RECURRING_STATUSES, LAST_DAY_OF_MONTH, RULE_ACTIVE, type RecurrenceFrequency, type RecurrenceScope, type RecurringStatus } from '../constants/types';
 import { getDaysInMonth } from './formatters';
 
 export interface RecurrenceSchedule {
@@ -12,6 +12,14 @@ export interface RecurrenceSchedule {
 }
 
 export const MAX_CATCH_UP_OCCURRENCES = 500;
+
+/** Safety bound for the schedule-probing loops (a schedule always advances monotonically). */
+const MAX_SCHEDULE_PROBES = 10000;
+
+/** Whether a `day_of_month` anchor means "the last day of the month". */
+export function isLastDayAnchor(dayOfMonth: number | null | undefined): boolean {
+  return dayOfMonth === LAST_DAY_OF_MONTH;
+}
 
 function pad(value: number): string {
   return String(value).padStart(2, '0');
@@ -44,7 +52,7 @@ export function buildRecurrenceSchedule(
     frequency,
     interval,
     weekday: frequency === RECURRENCE_FREQUENCIES.weekly ? startDay.getDay() : null,
-    day_of_month: useLastDay ? 31 : monthlyOrYearly ? startDay.getDate() : null,
+    day_of_month: useLastDay ? LAST_DAY_OF_MONTH : monthlyOrYearly ? startDay.getDate() : null,
     month: frequency === RECURRENCE_FREQUENCIES.yearly ? startDay.getMonth() + 1 : null,
     start_date: toDateOnly(effectiveStart),
     end_date: endDate == null ? null : typeof endDate === 'string' ? endDate : toDateOnly(endDate),
@@ -70,21 +78,21 @@ export function advanceOccurrence(schedule: RecurrenceSchedule, from: string): s
   const interval = Math.max(1, Math.floor(schedule.interval) || 1);
 
   switch (schedule.frequency) {
-    case 'daily': {
+    case RECURRENCE_FREQUENCIES.daily: {
       date.setDate(date.getDate() + interval);
       return toDateOnly(date);
     }
-    case 'weekly': {
+    case RECURRENCE_FREQUENCIES.weekly: {
       date.setDate(date.getDate() + interval * 7);
       return toDateOnly(date);
     }
-    case 'monthly': {
+    case RECURRENCE_FREQUENCIES.monthly: {
       const anchorDay = schedule.day_of_month ?? date.getDate();
       const monthCursor = new Date(date.getFullYear(), date.getMonth() + interval, 1);
       const day = clampDay(monthCursor.getFullYear(), monthCursor.getMonth(), anchorDay);
       return toDateOnly(new Date(monthCursor.getFullYear(), monthCursor.getMonth(), day));
     }
-    case 'yearly': {
+    case RECURRENCE_FREQUENCIES.yearly: {
       const anchorMonth = (schedule.month ?? date.getMonth() + 1) - 1;
       const anchorDay = schedule.day_of_month ?? date.getDate();
       const year = date.getFullYear() + interval;
@@ -106,7 +114,7 @@ export interface CatchUpResult {
 export function nextDueOnOrAfter(schedule: RecurrenceSchedule, today: string): string {
   let cursor = schedule.start_date;
   let guard = 0;
-  while (cursor < today && guard < 10000) {
+  while (cursor < today && guard < MAX_SCHEDULE_PROBES) {
     if (schedule.end_date && cursor > schedule.end_date) break;
     cursor = advanceOccurrence(schedule, cursor);
     guard += 1;
@@ -143,7 +151,7 @@ export function recurringStatus(
   today: string,
 ): RecurringStatus {
   if (isRecurrenceEnded(rule, rule.next_due, today)) return RECURRING_STATUSES.ended;
-  return rule.active === 1 ? RECURRING_STATUSES.active : RECURRING_STATUSES.paused;
+  return rule.active === RULE_ACTIVE ? RECURRING_STATUSES.active : RECURRING_STATUSES.paused;
 }
 
 /**

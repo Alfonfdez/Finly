@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { RecurrenceDraft, RecurrenceFrequency } from '../constants/types';
+import { RECURRENCE_FREQUENCIES, type RecurrenceDraft, type RecurrenceFrequency } from '../constants/types';
 import { buildRecurrenceSchedule, fromDateOnly, toDateOnly } from '../utils/recurrence';
 import { dayAfter, isEndAfterStart } from '../utils/calendarBounds';
 
@@ -30,7 +30,7 @@ export function useRecurringDraft({
   initialRepeatName,
   initialRepeatLastDay,
 }: UseRecurringDraftProps) {
-  const [repeatFrequency, setRepeatFrequency] = useState<RecurrenceFrequency>(initialRepeatFrequency ?? 'monthly');
+  const [repeatFrequency, setRepeatFrequency] = useState<RecurrenceFrequency>(initialRepeatFrequency ?? RECURRENCE_FREQUENCIES.monthly);
   const [repeatInterval, setRepeatInterval] = useState(initialRepeatInterval ?? 1);
   const [repeatEnd, setRepeatEnd] = useState<Date | null>(initialRepeatEnd ?? null);
   const [repeatLastDay, setRepeatLastDay] = useState(initialRepeatLastDay ?? false);

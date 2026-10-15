@@ -6,6 +6,7 @@ import type { RecurringRule } from '../types';
 import { recurringRuleSchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
 import { dbTimestamp } from '../../utils/formatters';
+import { RULE_ACTIVE, RULE_INACTIVE } from '../../constants/types';
 
 /** Fields needed to create a rule. `skipped_from` is derived, so it is optional. */
 export type RecurringRuleInput = Omit<RecurringRule, 'id' | 'created_at' | 'updated_at' | 'skipped_from'> & {
@@ -56,7 +57,7 @@ export const recurringRepo = {
       .from(recurringRules)
       .where(
         and(
-          eq(recurringRules.active, 1),
+          eq(recurringRules.active, RULE_ACTIVE),
           lte(recurringRules.next_due, today),
           // Ended rules (cursor past the end date) can never generate again.
           or(isNull(recurringRules.end_date), lte(recurringRules.next_due, recurringRules.end_date)),
@@ -143,12 +144,12 @@ export const recurringRepo = {
   },
 
   async setActive(id: number, active: boolean): Promise<void> {
-    return writeRuleFields(id, { active: active ? 1 : 0 });
+    return writeRuleFields(id, { active: active ? RULE_ACTIVE : RULE_INACTIVE });
   },
 
   /** Reactivate a paused rule and jump its cursor forward (skips the pause window). */
   async reactivate(id: number, nextDue: string): Promise<void> {
-    return writeRuleFields(id, { active: 1, next_due: nextDue });
+    return writeRuleFields(id, { active: RULE_ACTIVE, next_due: nextDue });
   },
 
   async updateNextDue(id: number, nextDue: string): Promise<void> {

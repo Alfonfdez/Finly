@@ -1,7 +1,7 @@
 import { t } from '../i18n';
 import { RECURRENCE_FREQUENCIES, type RecurrenceFrequency } from '../constants/types';
 import { formatDateLong, getMonthName } from './formatters';
-import { fromDateOnly, type RecurrenceSchedule } from './recurrence';
+import { fromDateOnly, isLastDayAnchor, type RecurrenceSchedule } from './recurrence';
 import type { Language } from './language';
 
 /** Localized labels per recurrence frequency (shared by the frequency chips and the rules list). */
@@ -27,12 +27,12 @@ export function recurrenceSummary(schedule: RecurrenceSchedule, language: Langua
       break;
     }
     case RECURRENCE_FREQUENCIES.monthly:
-      summary = schedule.day_of_month === 31
+      summary = isLastDayAnchor(schedule.day_of_month)
         ? `${labels.repeat_every_month(interval)} ${labels.repeat_on_last_day}`
         : `${labels.repeat_every_month(interval)} ${labels.repeat_on_day(schedule.day_of_month ?? 1)}`;
       break;
     case RECURRENCE_FREQUENCIES.yearly:
-      summary = schedule.day_of_month === 31
+      summary = isLastDayAnchor(schedule.day_of_month)
         ? `${labels.repeat_every_year(interval)} ${labels.repeat_on_month_last_day(getMonthName(schedule.month ?? 1))}`
         : `${labels.repeat_every_year(interval)} ${labels.repeat_on_month_day(getMonthName(schedule.month ?? 1), schedule.day_of_month ?? 1)}`;
       break;
