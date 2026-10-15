@@ -1,0 +1,31 @@
+appId: com.finly.app
+---
+# Creates a recurring rule "E2E Daily" (Daily, start = today, category Groceries,
+# amount 7) starting from the Home screen and leaves the app on the Recurring
+# screen with the new rule visible.
+- runFlow:
+    file: "open-drawer.yaml"
+- tapOn: "Recurring"
+- waitForAnimationToEnd
+- tapOn: "Add recurring rule"
+- waitForAnimationToEnd
+- assertVisible: "New recurring rule"
+- tapOn: "Amount input"
+- inputText: "7"
+- tapOn: "Groceries"
+- scrollUntilVisible:
+    element:
+      id: "repeat-name"
+    direction: DOWN
+- tapOn:
+    id: "repeat-name"
+- inputText: "E2E Daily"
+- hideKeyboard
+- tapOn: "Daily"
+- scrollUntilVisible:
+    element:
+      text: "Create"
+    direction: DOWN
+- tapOn: "Create"
+- waitForAnimationToEnd
+- assertVisible: "E2E Daily"

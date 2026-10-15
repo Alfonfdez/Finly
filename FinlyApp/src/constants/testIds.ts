@@ -5,6 +5,7 @@
 export const TEST_IDS = {
   repeatOptions: 'repeat-options',
   repeatEndDate: 'repeat-end-date',
+  repeatName: 'repeat-name',
   tagsList: 'tags-list',
   commentsList: 'comments-list',
   recurringList: 'recurring-list',

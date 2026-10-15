@@ -126,6 +126,7 @@ export default function RepeatSection({
           {labels.repeat_name}
         </Text>
         <TextInput
+          testID={TEST_IDS.repeatName}
           style={[
             styles.nameInput,
             { backgroundColor: c.background, borderColor: nameError ? c.red : c.border, color: c.text, fontSize: fs(14) },
@@ -135,6 +136,7 @@ export default function RepeatSection({
           value={name}
           onChangeText={onChangeName}
           maxLength={REPEAT_NAME_MAX_LENGTH}
+          accessibilityLabel={labels.repeat_name}
         />
         {nameError && (
           <Text style={[styles.nameError, { color: c.red, fontSize: fs(12) }]}>
