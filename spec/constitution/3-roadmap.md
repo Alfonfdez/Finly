@@ -752,3 +752,14 @@ The bottom block of every form is now the shared `components/form/FormActions` (
 - Gate: `npm run test:all` green (134 files / 1062 tests); verified on the Android release APK (uiautomator bounds: the Delete->Save distance is identical with and without a hint).
 
 Spec: spec/constitution/6-screens.md (Form validation & bottom action area), spec/features/012.
+
+## String unions as named constants
+Status: completed.
+
+The two vocabularies this feature introduced are now named constants instead of raw literals, applied 2026-10-15:
+- `HINT_TONES` / `HintTone` colocated in `components/form/FormHintSlot.tsx` (the `error`/`muted` band tones) - it followed the `PICKING_PHASE` precedent for a union owned by one component.
+- `RECURRING_NAME_ERRORS` / `RecurringNameError` in `constants/types.ts` next to `REPEAT_NAME_MAX_LENGTH` (the `required`/`taken` rule-name errors produced by `useRecurringDraft` and consumed by the form hint), so the literals no longer appear in `useRecurringDraft`, `RepeatSection` or `TransactionForm`.
+- The convention is documented in `2-tech-stack.md` (Code conventions) and `AGENTS.md` (CODE STYLE): no raw string unions, no TS `enum`; limits and tokens are constants too.
+- Gate: `npm run test:all` green (134 files / 1062 tests).
+
+Spec: spec/constitution/2-tech-stack.md (Code conventions).

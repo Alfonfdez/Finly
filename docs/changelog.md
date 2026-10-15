@@ -3814,3 +3814,7 @@
 
 [2026-10-15] docs | spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, spec/features/012-modify-delete-account-screen/1-spec.md
 - Documented the two reserved bands and the standard footer gaps in `spec/constitution/6-screens.md`, updated spec 012 (the account note lives in the reserved band) and added a roadmap entry.
+
+[2026-10-15] refactor | FinlyApp/src/components/form/FormHintSlot.tsx, FinlyApp/src/components/form/FormActions.tsx, FinlyApp/src/constants/types.ts, FinlyApp/src/hooks/useRecurringDraft.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionForm.tsx, spec/constitution/2-tech-stack.md, spec/constitution/3-roadmap.md, AGENTS.md
+- Added `HINT_TONES`/`HintTone` (colocated in `components/form/FormHintSlot.tsx`) and `RECURRING_NAME_ERRORS`/`RecurringNameError` (in `constants/types.ts`, next to `REPEAT_NAME_MAX_LENGTH`), replacing the raw `'error' | 'muted'` and `'required' | 'taken'` literals in `FormHintSlot`, `FormActions`, `useRecurringDraft`, `RepeatSection` and `TransactionForm`.
+- Documented the convention ("no raw string unions, no TS enum") in `spec/constitution/2-tech-stack.md` and a new `AGENTS.md` CODE STYLE section, together with the limits-are-constants and design-tokens rules.

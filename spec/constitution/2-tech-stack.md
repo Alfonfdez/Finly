@@ -198,3 +198,9 @@ See **`4-design-system.md`** for colors, typography, icons, and layout conventio
 - Clean code with single-responsibility components.
 - i18n: all user-facing strings go through the translation system (i18n/).
 - Persistence: one SQLite engine on all platforms — expo-sqlite on native, sql.js (WASM) + IndexedDB on web — selected per platform by `engine.ts` / `engine.web.ts`.
+- **String unions are named constants, never raw literals** (and never a TS `enum`):
+  ```ts
+  export const TRANSACTION_TYPES = { expense: 'expense', income: 'income' } as const;
+  export type TransactionType = keyof typeof TRANSACTION_TYPES;
+  ```
+  Domain-wide vocabularies live in `constants/types.ts` (`TRANSACTION_TYPES`, `RECURRENCE_SCOPES`, `RECURRING_NAME_ERRORS`, `SORT_BY`, …); a union owned by one component is colocated with it (`PICKING_PHASE` in `calendars/PeriodPicker.tsx`, `HINT_TONES` in `components/form/FormHintSlot.tsx`, `ShareResult` in `utils/shareResult.ts`). Limits (max lengths, max counts) follow the same rule: define the constant once, consume it — never a literal at the call site.

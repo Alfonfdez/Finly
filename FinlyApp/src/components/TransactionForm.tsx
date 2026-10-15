@@ -21,7 +21,7 @@ import FormActions from './form/FormActions';
 import CalendarModal from './CalendarModal';
 import CalculatorModal from './CalculatorModal';
 import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS } from './componentStyles';
-import { type TransactionType, type RecurrenceFrequency, type RecurrenceScope, type RootStackParamList } from '../constants/types';
+import { type TransactionType, type RecurrenceFrequency, type RecurrenceScope, type RootStackParamList, RECURRING_NAME_ERRORS } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
 import { buildRecurrenceSchedule, toDateOnly } from '../utils/recurrence';
@@ -198,8 +198,8 @@ export default function TransactionForm(props: TransactionFormProps) {
     if (numericAmount === null || numericAmount <= 0) missing.push(labels.add_hint_amount);
     if (accountId === undefined) missing.push(labels.add_hint_account);
     if (repeatEndConflict) missing.push(labels.add_hint_repeat_end);
-    if (props.ruleMode && repeatNameError === 'taken') missing.push(labels.recurring_hint_name_taken);
-    else if (props.ruleMode && repeatNameError === 'required') missing.push(labels.recurring_hint_name);
+    if (props.ruleMode && repeatNameError === RECURRING_NAME_ERRORS.taken) missing.push(labels.recurring_hint_name_taken);
+    else if (props.ruleMode && repeatNameError === RECURRING_NAME_ERRORS.required) missing.push(labels.recurring_hint_name);
     return missing.join('. ') + (missing.length > 0 ? '.' : '');
   }, [categoryId, numericAmount, accountId, repeatEndConflict, repeatNameError, props.ruleMode, labels]);
   const handleCalculatorAccept = useCallback((result: string) => {

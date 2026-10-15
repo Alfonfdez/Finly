@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { ReactNode } from 'react';
-import FormHintSlot from './FormHintSlot';
+import FormHintSlot, { HINT_TONES } from './FormHintSlot';
 import DeleteButton from './DeleteButton';
 
 interface Props {
@@ -47,7 +47,7 @@ export default function FormActions({
     <View style={style}>
       {hasDelete && (
         <>
-          <FormHintSlot tone="muted" message={deleteHint} />
+          <FormHintSlot tone={HINT_TONES.muted} message={deleteHint} />
           <DeleteButton
             label={deleteLabel as string}
             onPress={onDeletePress as () => void}

@@ -141,3 +141,13 @@ FinlyApp/
 - Repositories: `camelCaseRepo.ts` (e.g., `accountRepo.ts`)
 - Hooks: `useHookName.ts`
 - i18n keys: `lowercase.with.dots`
+
+## CODE STYLE
+- **No raw string unions and no TS `enum`** — declare a named constant and derive the type:
+  ```ts
+  export const RECURRING_NAME_ERRORS = { required: 'required', taken: 'taken' } as const;
+  export type RecurringNameError = keyof typeof RECURRING_NAME_ERRORS;
+  ```
+  Domain vocabularies go in `src/constants/types.ts` (`TRANSACTION_TYPES`, `RECURRENCE_SCOPES`, `RECURRING_NAME_ERRORS`, `SORT_BY`, …); a union owned by a single component is colocated with it (`HINT_TONES` in `components/form/FormHintSlot.tsx`, `PICKING_PHASE` in `calendars/PeriodPicker.tsx`).
+- **Limits are constants, never literals at the call site**: max lengths/counts live in `src/constants/types.ts` (`MAX_*`, `REPEAT_NAME_MAX_LENGTH`) and are passed down as props.
+- Design tokens (spacing, radii, opacity, counter font size) live in `src/components/componentStyles.ts` or the component that owns them — no duplicated magic numbers.
