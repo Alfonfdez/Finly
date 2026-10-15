@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { StyleSheet } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import CreateCategoryScreen from '../../src/screens/CreateCategoryScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
+import { TEST_IDS } from '../../src/constants/testIds';
 import type { Category } from '../../src/database/types';
 
 const nav = { setOptions: vi.fn(), navigate: vi.fn(), goBack: vi.fn() };
@@ -61,6 +63,14 @@ describe('CreateCategoryScreen', () => {
     expect(view.getByText('Expense')).toBeTruthy();
     expect(view.getByText('Income')).toBeTruthy();
     expect(view.getByText('Add')).toBeDisabled();
+  });
+
+  it('shows the hint inside the reserved band so Add never moves', async () => {
+    const view = await render(<CreateCategoryScreen />);
+
+    const slot = view.getByTestId(TEST_IDS.formHintSlot);
+    expect(StyleSheet.flatten(slot.props.style).minHeight).toBeGreaterThan(0);
+    expect(view.getByText('Enter a category name')).toBeTruthy();
   });
 
   it('shows the icon+color hint once a name is typed and keeps Add disabled', async () => {

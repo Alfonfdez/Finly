@@ -12,7 +12,7 @@ import { type NavigationProp, USER_ID, MAX_TAG_NAME_LENGTH, MAX_TAGS } from '../
 import { countAtLimit } from '../utils/limits';
 import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';
-import FormHintSlot from '../components/form/FormHintSlot';
+import FormActions from '../components/form/FormActions';
 import { CARD_BORDER_RADIUS } from '../components/componentStyles';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 
@@ -70,16 +70,16 @@ export default function CreateTagScreen() {
           inputStyle={styles.input}
         />
 
-        <FormHintSlot message={hintText} reserve={false} />
-
-        <PrimaryButton
-          label={labels.create_tag_button}
-          onPress={handleCreate}
-          disabled={isDisabled}
-          enabledTextColor={c.background}
-          disabledBg={c.surface}
-          disabledTextColor={c.textSecondary}
-        />
+        <FormActions saveHint={hintText}>
+          <PrimaryButton
+            label={labels.create_tag_button}
+            onPress={handleCreate}
+            disabled={isDisabled}
+            enabledTextColor={c.background}
+            disabledBg={c.surface}
+            disabledTextColor={c.textSecondary}
+          />
+        </FormActions>
       </View>
     </ScreenShell>
   );

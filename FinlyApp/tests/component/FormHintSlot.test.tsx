@@ -21,6 +21,7 @@ describe('FormHintSlot', () => {
 
     const text = view.getByText('Select a category');
     expect(StyleSheet.flatten(text.props.style).color).toBe('#F87171');
+    expect(view.getByTestId(TEST_IDS.formHintSlot)).toBeTruthy();
   });
 
   it('renders nothing for an empty message', async () => {
@@ -29,7 +30,7 @@ describe('FormHintSlot', () => {
     expect(view.queryByText(/./)).toBeNull();
   });
 
-  it('reserves room so the buttons never move, even with no message', async () => {
+  it('always reserves room so the buttons never move, even with no message', async () => {
     const empty = await render(<FormHintSlot message={null} />);
     const filled = await render(<FormHintSlot message="Enter a name" />);
 
@@ -38,10 +39,21 @@ describe('FormHintSlot', () => {
     expect(slotMinHeight(filled)).toBe(reserved);
   });
 
-  it('does not reserve room when asked not to', async () => {
-    const view = await render(<FormHintSlot message="" reserve={false} />);
+  it('renders the muted tone (delete explanation) in secondary color', async () => {
+    const view = await render(<FormHintSlot tone="muted" message="Last account" />);
 
-    expect(slotMinHeight(view)).toBeUndefined();
+    const text = view.getByText('Last account');
+    expect(StyleSheet.flatten(text.props.style).color).toBe('#94A3B8');
+    expect(view.getByTestId(TEST_IDS.formMutedSlot)).toBeTruthy();
+  });
+
+  it('reserves the muted tone too, with no message', async () => {
+    const view = await render(<FormHintSlot tone="muted" message={null} />);
+
+    const queries = view as unknown as { getByTestId: (id: string) => { props: { style: unknown } } };
+    const style = StyleSheet.flatten(queries.getByTestId(TEST_IDS.formMutedSlot).props.style) as { minHeight?: number };
+    expect(style.minHeight).toBeGreaterThan(0);
+    expect(view.queryByText(/./)).toBeNull();
   });
 
   it('scales the reserved room with the text size', async () => {

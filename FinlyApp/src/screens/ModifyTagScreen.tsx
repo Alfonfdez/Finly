@@ -13,9 +13,8 @@ import { type RootStackParamList, type NavigationProp, USER_ID, MAX_TAG_NAME_LEN
 import ConfirmationModal from '../components/ConfirmationModal';
 import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';
-import FormHintSlot from '../components/form/FormHintSlot';
+import FormActions from '../components/form/FormActions';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
-import DeleteButton from '../components/form/DeleteButton';
 import { CARD_BORDER_RADIUS } from '../components/componentStyles';
 
 type ModifyTagRouteProp = RouteProp<RootStackParamList, 'ModifyTag'>;
@@ -98,18 +97,20 @@ export default function ModifyTagScreen() {
           inputStyle={styles.input}
         />
 
-        <DeleteButton label={labels.delete} onPress={openDeleteModal} />
-
-        <FormHintSlot message={hintText} />
-
-        <PrimaryButton
-          label={labels.modify_tag_save}
-          onPress={handleSave}
-          disabled={isDisabled}
-          enabledTextColor={c.background}
-          disabledBg={c.surface}
-          disabledTextColor={c.textSecondary}
-        />
+        <FormActions
+          deleteLabel={labels.delete}
+          onDeletePress={openDeleteModal}
+          saveHint={hintText}
+        >
+          <PrimaryButton
+            label={labels.modify_tag_save}
+            onPress={handleSave}
+            disabled={isDisabled}
+            enabledTextColor={c.background}
+            disabledBg={c.surface}
+            disabledTextColor={c.textSecondary}
+          />
+        </FormActions>
       </View>
 
       <ConfirmationModal

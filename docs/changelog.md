@@ -3802,3 +3802,15 @@
 
 [2026-10-15] docs | spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, spec/features/028-recurring-transactions/1-spec.md
 - Documented the counter standard (one look, limits from constants, red + bold at the limit, the 30-character rule name) in `spec/constitution/6-screens.md`, `spec/features/028` and the roadmap.
+
+[2026-10-15] refactor | FinlyApp/src/components/form/FormActions.tsx, FinlyApp/src/components/form/FormHintSlot.tsx, FinlyApp/src/components/AccountForm.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/screens/CreateCategoryScreen.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/screens/CreateTagScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx, FinlyApp/src/constants/testIds.ts
+- Added `components/form/FormActions`, the shared bottom block (muted band -> Delete -> red band -> Save) adopted by AccountForm, TransactionForm, Create/Modify category, Create/Modify tag and Modify comment, so the footer layout can no longer drift.
+- Both hint bands are now always reserved, so Save never moves when a message appears or disappears (Add/Modify transaction, Create recurring, Create account, Create category and Create tag were still shifting).
+- The muted band doubles as the standard separator above the Delete button: every delete form reserves it (blank when there is no explanation), giving Edit recurring/tag/comment and Modify category the same, larger gap from the field area, and Create category the same separation between the colour picker and its button.
+- `FormHintSlot` lost its `reserve` prop (always reserved) and gained `tone: 'error' | 'muted'` (new `TEST_IDS.formMutedSlot`); `TransactionForm`'s `footer` node became explicit `deleteLabel`/`onDeletePress`/`deleteDisabled`/`deleteHint` props.
+
+[2026-10-15] test | FinlyApp/tests/component/FormHintSlot.test.tsx, FinlyApp/tests/component/TransactionForm.test.tsx, FinlyApp/tests/screens/CreateTagScreen.test.tsx, FinlyApp/tests/screens/CreateAccountScreen.test.tsx, FinlyApp/tests/screens/CreateCategoryScreen.test.tsx, FinlyApp/tests/screens/ModifyAccountScreen.test.tsx
+- Updated the `FormHintSlot` tests (always reserved, muted tone) and `TransactionForm` (delete props instead of a footer node, always-reserved band); added reserved-band assertions for Create tag/account/category and a 2+-accounts case proving the account Delete does not move.
+
+[2026-10-15] docs | spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, spec/features/012-modify-delete-account-screen/1-spec.md
+- Documented the two reserved bands and the standard footer gaps in `spec/constitution/6-screens.md`, updated spec 012 (the account note lives in the reserved band) and added a roadmap entry.

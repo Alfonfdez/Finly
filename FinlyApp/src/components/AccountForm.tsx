@@ -1,13 +1,10 @@
-import { Text, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
-import { useFontSize } from '../hooks/useFontSize';
 import { useKeyboardReveal } from '../hooks/useKeyboardReveal';
 import { MAX_ACCOUNT_NAME_LENGTH, MAX_NOTE_LENGTH, type ConfigIconShape, type IconName } from '../constants/types';
 import IconColorSection from './IconColorSection';
 import LabeledTextField from './form/LabeledTextField';
 import PrimaryButton from './form/PrimaryButton';
-import FormHintSlot from './form/FormHintSlot';
-import DeleteButton from './form/DeleteButton';
+import FormActions from './form/FormActions';
 import FormScrollView from './form/FormScrollView';
 import AmountInput from './AmountInput';
 
@@ -84,12 +81,10 @@ export default function AccountForm({
   deleteLastHint,
 }: AccountFormProps) {
   const { activeColors: c } = useConfig();
-  const fs = useFontSize();
   // The Note is the bottom-most field, so focusing it scrolls the form to keep the
   // submit button (below it) above the keyboard.
   const { scrollRef, onBottomFieldFocus, onBottomFieldBlur, onScrollLayout } = useKeyboardReveal();
 
-  const hasDelete = !!(deleteLabel && onDeletePress);
   const nameValidationError = nameDisabled ? null : name.trim() === '' ? nameEmptyError : nameError;
 
   return (
@@ -144,49 +139,15 @@ export default function AccountForm({
         onBlur={onBottomFieldBlur}
       />
 
-      {/* Disabled-Delete explanation (muted), then Delete, then the reserved
-          "why you can't save" slot, then Save. */}
-      {hasDelete && (
-        <>
-          {deleteLastHint != null && (
-            <Text style={[styles.deleteLastHint, { color: c.textSecondary, fontSize: fs(12) }]}>
-              {deleteLastHint}
-            </Text>
-          )}
-
-          <DeleteButton
-            label={deleteLabel as string}
-            onPress={onDeletePress as () => void}
-            disabled={deleteDisabled}
-            style={[styles.deleteButton, deleteLastHint != null && styles.deleteButtonAfterHint]}
-          />
-        </>
-      )}
-
-      <FormHintSlot message={hintText} reserve={hasDelete} />
-
-      <PrimaryButton
-        label={submitLabel}
-        onPress={onSubmit}
-        disabled={isSubmitDisabled}
-        style={styles.button}
-      />
+      <FormActions
+        deleteHint={deleteLastHint}
+        deleteLabel={deleteLabel}
+        onDeletePress={onDeletePress}
+        deleteDisabled={deleteDisabled}
+        saveHint={hintText}
+      >
+        <PrimaryButton label={submitLabel} onPress={onSubmit} disabled={isSubmitDisabled} />
+      </FormActions>
     </FormScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  deleteLastHint: {
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  deleteButton: {
-    marginTop: 24,
-  },
-  deleteButtonAfterHint: {
-    marginTop: 8,
-  },
-  button: {
-    marginTop: 0,
-  },
-});

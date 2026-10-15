@@ -478,7 +478,17 @@ Every form — Create, Edit, and the transaction/recurring forms — shares one 
 
 1. **The bottom hint says why Save is disabled.** It is shown whenever the button is disabled, uses the **same wording in Create and Edit** (shared i18n keys) and is the **only** place the message appears — never duplicated under the field. The recurring form lists **every** unmet condition at once (one sentence each).
 2. **A field is only painted red for a value the user invalidated.** The red border is held back until the field has been **changed or blurred**, so a freshly-opened form never greets the user in red (`LabeledTextField` owns this gating; a screen with its own input, like the category name, repeats the same two-line pattern). `AmountInput` takes an optional `error` prop: an amount of **0** is flagged with a red border (the digits keep their normal color) while an account's initial balance of **0** stays valid; its red *text* is reserved for a value that is not a number at all.
-3. **Bottom action order** (top to bottom): `[muted hint explaining a disabled Delete]` → `Delete` → red hint → `Save`. The red hint lives in the reserved `FormHintSlot` — 2 lines tall, scaling with the text size — so **the two buttons never move** when a hint appears or disappears. The slot is reserved only where a Delete exists; a Save-only form (Add/Modify transaction, Create account/category/tag) shows the hint directly above Save with no reservation.
+3. **The bottom block is one shared component** (`components/form/FormActions`), so its layout cannot drift:
+
+   ```
+   ⟨field area⟩
+   [muted band]   reserved 2 lines — the "you cannot delete this" explanation, blank when there is none
+   [Delete]       only in forms that can delete; label is always the generic `Delete`
+   [red band]     reserved 2 lines — why the save is blocked
+   [Save]
+   ```
+
+   Both bands are **reserved even when empty** (2 lines, 8/8 margins, scaling with the text size), so neither the Delete nor Save ever moves when a message appears or disappears — and the separation from the field area is identical in every screen, whether or not a hint is showing. The **muted band doubles as the standard separator above the destructive button**, which is why every delete form (not just the account, whose note uses it) reserves it. The caller passes only the messages and the Save node (each form keeps its own Save styling).
 4. **The Delete button always reads the generic `Delete`.** Only the confirmation modal spells out what is being deleted.
 5. Purely **informative** notes (e.g. the comment merge note) stay **below Save** — they explain, they do not block.
 

@@ -5,7 +5,6 @@ import ScreenShell from '../components/ScreenShell';
 import EmptyState from '../components/EmptyState';
 import ConfirmationModal from '../components/ConfirmationModal';
 import TransactionForm from '../components/TransactionForm';
-import DeleteButton from '../components/form/DeleteButton';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFocusLoad } from '../hooks/useFocusLoad';
@@ -131,13 +130,6 @@ export default function ModifyRecurringScreen() {
     );
   }
 
-  const footer = (
-    <DeleteButton
-      label={labels.delete}
-      onPress={() => setDeleteVisible(true)}
-    />
-  );
-
   return (
     <>
       <TransactionForm
@@ -189,7 +181,8 @@ export default function ModifyRecurringScreen() {
           changeType(draft.type);
         }}
         ruleMode
-        footer={footer}
+        deleteLabel={labels.delete}
+        onDeletePress={() => setDeleteVisible(true)}
         onRecurringPastAffectedChange={setPastAffected}
         showRepeatScope
         repeatScope={scope}

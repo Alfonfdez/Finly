@@ -17,7 +17,7 @@ import RepeatSection from './RepeatSection';
 import TagSection from './TagSection';
 import CommentInput from './CommentInput';
 import PhotoSection from './PhotoSection';
-import FormHintSlot from './form/FormHintSlot';
+import FormActions from './form/FormActions';
 import CalendarModal from './CalendarModal';
 import CalculatorModal from './CalculatorModal';
 import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS } from './componentStyles';
@@ -62,7 +62,13 @@ interface TransactionFormProps {
   initialRepeatName?: string;
   initialRepeatLastDay?: boolean;
   existingRepeatNames?: string[];
-  footer?: ReactNode;
+  /** Pass label + handler to render the destructive action above the hint band
+   *  (rule editing); omitted for the add/modify transaction and create-rule forms. */
+  deleteLabel?: string;
+  onDeletePress?: () => void;
+  deleteDisabled?: boolean;
+  /** Muted explanation shown above the Delete button (reserved band). */
+  deleteHint?: string | null;
   onRecurringPastAffectedChange?: (value: boolean) => void;
   /** Reports whether the draft differs from the values the form opened with. */
   onDirtyChange?: (dirty: boolean) => void;
@@ -317,24 +323,27 @@ export default function TransactionForm(props: TransactionFormProps) {
         )}
 
         {/* The destructive action comes first, then the "why you can't save" hint,
-            then Save. With a footer (Delete) the hint's room is reserved so the two
-            buttons never move; without one, the hint simply sits above Save. */}
-        {props.footer}
-
-        <FormHintSlot message={submitting ? '' : hintText} reserve={props.footer != null} />
-
-        <TouchableOpacity
-          style={[
-            styles.submitButton,
-            { backgroundColor: canSubmit ? c.primary : withAlpha(c.textSecondary, 38) },
-          ]}
-          onPress={handleSubmit}
-          disabled={!canSubmit || submitting}
+            then Save. Both bands are reserved, so the buttons never move. */}
+        <FormActions
+          deleteLabel={props.deleteLabel}
+          onDeletePress={props.onDeletePress}
+          deleteDisabled={props.deleteDisabled}
+          deleteHint={props.deleteHint}
+          saveHint={submitting ? '' : hintText}
         >
-          <Text style={[styles.submitButtonText, { color: canSubmit ? c.background : c.text, fontSize: fs(15) }]}>
-            {submitting ? '...' : props.submitLabel}
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.submitButton,
+              { backgroundColor: canSubmit ? c.primary : withAlpha(c.textSecondary, 38) },
+            ]}
+            onPress={handleSubmit}
+            disabled={!canSubmit || submitting}
+          >
+            <Text style={[styles.submitButtonText, { color: canSubmit ? c.background : c.text, fontSize: fs(15) }]}>
+              {submitting ? '...' : props.submitLabel}
+            </Text>
+          </TouchableOpacity>
+        </FormActions>
       </ScrollView>
       </KeyboardAvoidingView>
 

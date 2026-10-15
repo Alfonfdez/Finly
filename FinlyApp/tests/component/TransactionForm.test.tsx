@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { StyleSheet, Text } from 'react-native';
-import type { ReactNode } from 'react';
+import { StyleSheet } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import TransactionForm from '../../src/components/TransactionForm';
 import { DEFAULT_CONFIG } from '../../src/database/configDefaults';
@@ -136,7 +135,13 @@ vi.mock('../../src/hooks/useTransactionForm', () => ({
 
 const catFood: Category = { id: 1, user_id: 1, name: 'Food', icon: 'cart', color: '#22D3EE', type: 'expense', created_at: '2026-01-01' };
 
-function renderForm(overrides: { ruleMode?: boolean; transactionId?: number; initialRuleNextDue?: string | null; footer?: ReactNode } = {}) {
+function renderForm(overrides: {
+  ruleMode?: boolean;
+  transactionId?: number;
+  initialRuleNextDue?: string | null;
+  deleteLabel?: string;
+  onDeletePress?: () => void;
+} = {}) {
   return render(
     <TransactionForm
       initialType="expense"
@@ -253,26 +258,29 @@ describe('TransactionForm', () => {
   });
 
   it('puts the delete action before the reserved hint slot and Save', async () => {
-    const view = await renderForm({ footer: <Text>FOOTER</Text> });
+    const view = await renderForm({ deleteLabel: 'Delete', onDeletePress: () => {} });
 
     const texts = view.getAllByText(/./).map((node) => String(node.props.children));
-    const footerAt = texts.indexOf('FOOTER');
+    const deleteAt = texts.indexOf('Delete');
     const hintAt = texts.findIndex((text) => text.startsWith('Select a category'));
     const saveAt = texts.indexOf('Save');
 
-    expect(footerAt).toBeGreaterThan(-1);
-    expect(footerAt).toBeLessThan(hintAt);
+    expect(deleteAt).toBeGreaterThan(-1);
+    expect(deleteAt).toBeLessThan(hintAt);
     expect(hintAt).toBeLessThan(saveAt);
 
     const slot = StyleSheet.flatten(view.getByTestId(TEST_IDS.formHintSlot).props.style) as { minHeight?: number };
     expect(slot.minHeight).toBeGreaterThan(0);
+    // The muted band above the destructive button is reserved as well.
+    expect(view.getByTestId(TEST_IDS.formMutedSlot)).toBeTruthy();
   });
 
-  it('does not reserve the hint slot without a delete action', async () => {
+  it('reserves the hint slot even without a delete action', async () => {
     const view = await renderForm();
 
     const slot = StyleSheet.flatten(view.getByTestId(TEST_IDS.formHintSlot).props.style) as { minHeight?: number };
-    expect(slot.minHeight).toBeUndefined();
+    expect(slot.minHeight).toBeGreaterThan(0);
+    expect(view.queryByTestId(TEST_IDS.formMutedSlot)).toBeNull();
   });
 
   it('hides the comment section when addShowComments is off', async () => {
