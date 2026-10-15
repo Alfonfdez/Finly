@@ -101,7 +101,7 @@ export default function CreateCategoryScreen() {
             maxLength={MAX_CATEGORY_NAME_LENGTH}
             autoCapitalize="words"
             autoCorrect={false}
-            error={nameError}
+            error={name.trim().length === 0 ? labels.create_cat_error_name_empty : nameError}
             showCounter
           />
 

@@ -81,7 +81,8 @@ export default function CreateAccountScreen() {
           showNameField
           name={name}
           onNameChange={(v) => handleNameChange(v, setName)}
-          nameErrorDisplay={nameError}
+          nameError={nameError}
+          nameEmptyError={labels.create_account_error_empty}
           icons={ACCOUNT_ICONS}
           iconShape={config.accountIconShape}
           symbolTitle={labels.create_account_symbols}

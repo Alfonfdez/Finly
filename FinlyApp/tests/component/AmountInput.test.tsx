@@ -93,4 +93,26 @@ describe('AmountInput', () => {
     await fireEvent(input, 'focus');
     expect(flattenStyle(input.props.style).borderColor).toBe('#22D3EE');
   });
+
+  it('leaves a plain zero untouched (a balance may legitimately be 0)', async () => {
+    const view = await render(<AmountInput raw="0" onChangeRaw={() => {}} />);
+
+    expect(flattenStyle(view.getByPlaceholderText('0').props.style).borderColor).toBe('transparent');
+  });
+
+  it('flags an unacceptable value with a red border but keeps the digits readable', async () => {
+    const view = await render(<AmountInput raw="0" onChangeRaw={() => {}} error />);
+    const input = view.getByPlaceholderText('0');
+
+    expect(flattenStyle(input.props.style).borderColor).toBe('#F87171');
+    expect(flattenStyle(input.props.style).color).toBe('#E2E8F0');
+  });
+
+  it('keeps the red border while focused', async () => {
+    const view = await render(<AmountInput raw="0" onChangeRaw={() => {}} error />);
+    const input = view.getByPlaceholderText('0');
+
+    await fireEvent(input, 'focus');
+    expect(flattenStyle(input.props.style).borderColor).toBe('#F87171');
+  });
 });

@@ -12,7 +12,7 @@ import { type RootStackParamList, type NavigationProp, MAX_COMMENT_LENGTH } from
 import ConfirmationModal from '../components/ConfirmationModal';
 import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';
-import FormError from '../components/form/FormError';
+import FormHintSlot from '../components/form/FormHintSlot';
 import DeleteButton from '../components/form/DeleteButton';
 import FormScrollView from '../components/form/FormScrollView';
 import { CARD_BORDER_RADIUS } from '../components/componentStyles';
@@ -74,6 +74,7 @@ export default function ModifyCommentScreen() {
           value={comment}
           onChangeText={setComment}
           multiline
+          textAlignVertical="top"
           maxLength={MAX_COMMENT_LENGTH}
           autoFocus
           error={isEmpty}
@@ -85,13 +86,9 @@ export default function ModifyCommentScreen() {
           onBlur={onBottomFieldBlur}
         />
 
-        <FormError message={isEmpty ? labels.comments_error_empty : null} style={styles.error} />
+        <DeleteButton label={labels.delete} onPress={openDeleteModal} />
 
-        <DeleteButton
-          label={labels.comments_delete}
-          onPress={openDeleteModal}
-          style={styles.deleteButton}
-        />
+        <FormHintSlot message={isEmpty ? labels.comments_error_empty : ''} />
 
         <PrimaryButton
           label={labels.comments_save}
@@ -129,13 +126,6 @@ const styles = StyleSheet.create({
   },
   counter: {
     marginTop: 6,
-    marginBottom: 12,
-  },
-  error: {
-    marginBottom: 12,
-    fontWeight: '500',
-  },
-  deleteButton: {
     marginBottom: 12,
   },
   mergeHint: {

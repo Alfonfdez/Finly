@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { StyleSheet, Text } from 'react-native';
+import type { ReactNode } from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import TransactionForm from '../../src/components/TransactionForm';
 import { DEFAULT_CONFIG } from '../../src/database/configDefaults';
+import { TEST_IDS } from '../../src/constants/testIds';
 import type { Config } from '../../src/database/types';
 import type { Category } from '../../src/database/types';
 import type { Account } from '../../src/database/types';
@@ -130,7 +133,7 @@ vi.mock('../../src/hooks/useTransactionForm', () => ({
 
 const catFood: Category = { id: 1, user_id: 1, name: 'Food', icon: 'cart', color: '#22D3EE', type: 'expense', created_at: '2026-01-01' };
 
-function renderForm(overrides: { ruleMode?: boolean; transactionId?: number; initialRuleNextDue?: string | null } = {}) {
+function renderForm(overrides: { ruleMode?: boolean; transactionId?: number; initialRuleNextDue?: string | null; footer?: ReactNode } = {}) {
   return render(
     <TransactionForm
       initialType="expense"
@@ -227,6 +230,45 @@ describe('TransactionForm', () => {
     expect(view.getByText('Tags')).toBeTruthy();
     expect(view.getByText('Comment')).toBeTruthy();
     expect(view.getByText('Photo')).toBeTruthy();
+  });
+
+  it('flags an amount of 0 with a red border', async () => {
+    mockFormState.amountRaw = '0';
+    mockFormState.numericAmount = 0;
+    const view = await renderForm();
+
+    const input = view.getByPlaceholderText('0');
+    expect(StyleSheet.flatten(input.props.style).borderColor).toBe('#F87171');
+  });
+
+  it('leaves an untouched amount neutral', async () => {
+    const view = await renderForm();
+
+    const input = view.getByPlaceholderText('0');
+    expect(StyleSheet.flatten(input.props.style).borderColor).toBe('transparent');
+  });
+
+  it('puts the delete action before the reserved hint slot and Save', async () => {
+    const view = await renderForm({ footer: <Text>FOOTER</Text> });
+
+    const texts = view.getAllByText(/./).map((node) => String(node.props.children));
+    const footerAt = texts.indexOf('FOOTER');
+    const hintAt = texts.findIndex((text) => text.startsWith('Select a category'));
+    const saveAt = texts.indexOf('Save');
+
+    expect(footerAt).toBeGreaterThan(-1);
+    expect(footerAt).toBeLessThan(hintAt);
+    expect(hintAt).toBeLessThan(saveAt);
+
+    const slot = StyleSheet.flatten(view.getByTestId(TEST_IDS.formHintSlot).props.style) as { minHeight?: number };
+    expect(slot.minHeight).toBeGreaterThan(0);
+  });
+
+  it('does not reserve the hint slot without a delete action', async () => {
+    const view = await renderForm();
+
+    const slot = StyleSheet.flatten(view.getByTestId(TEST_IDS.formHintSlot).props.style) as { minHeight?: number };
+    expect(slot.minHeight).toBeUndefined();
   });
 
   it('hides the comment section when addShowComments is off', async () => {

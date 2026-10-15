@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react';
 import { Text, TextInput } from 'react-native';
 import type { TextInputProps, StyleProp, TextStyle } from 'react-native';
 import { useConfig } from '../../context/ConfigContext';
@@ -15,6 +16,13 @@ interface Props extends TextInputProps {
   counterFontSize?: number;
 }
 
+/**
+ * A labelled text field. `error` is the *validation message* / flag, but the red
+ * border is held back until the field has been **touched** (changed or blurred):
+ * a freshly-opened form must never greet the user in red, while a value the user
+ * themselves invalidated is flagged immediately. The message itself belongs in
+ * the form's bottom hint (a single red line above Save), not here.
+ */
 export default function LabeledTextField({
   label,
   error,
@@ -25,10 +33,14 @@ export default function LabeledTextField({
   counterFontSize,
   value,
   maxLength,
+  onChangeText,
+  onBlur,
   ...inputProps
 }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
+  const [touched, setTouched] = useState(false);
+  const markTouched = useCallback(() => setTouched(true), []);
 
   return (
     <>
@@ -39,7 +51,7 @@ export default function LabeledTextField({
           {
             backgroundColor: c.surface,
             color: c.text,
-            borderColor: error ? c.red : c.border,
+            borderColor: error && touched ? c.red : c.border,
             fontSize: fs(14),
           },
           multiline && formStyles.textArea,
@@ -49,6 +61,14 @@ export default function LabeledTextField({
         maxLength={maxLength}
         multiline={multiline}
         placeholderTextColor={c.textSecondary}
+        onChangeText={(text) => {
+          markTouched();
+          onChangeText?.(text);
+        }}
+        onBlur={(event) => {
+          markTouched();
+          onBlur?.(event);
+        }}
         {...inputProps}
       />
       {showCounter && maxLength != null && (

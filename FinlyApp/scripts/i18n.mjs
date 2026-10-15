@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // i18n key helper for FinlyApp/src/i18n/*.ts.
 //
 // Why this exists: every UI string must exist in all 9 languages with the same

@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
+import { render, fireEvent, waitFor, act, within } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import ModifyAccountScreen from '../../src/screens/ModifyAccountScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
+import { TEST_IDS } from '../../src/constants/testIds';
 import type { Account } from '../../src/database/types';
 
 const nav = { setOptions: vi.fn(), navigate: vi.fn(), goBack: vi.fn() };
@@ -94,5 +96,40 @@ describe('ModifyAccountScreen', () => {
     await waitFor(() => expect(mockAccountUpdate).toHaveBeenCalledTimes(1));
     expect(mockAccountUpdate).toHaveBeenCalledWith(5, expect.objectContaining({ name: 'Cash2' }));
     expect(nav.goBack).toHaveBeenCalled();
+  });
+
+  it('lays out the disabled-delete note, Delete, the reserved hint slot and Save in order', async () => {
+    const view = await render(<ModifyAccountScreen />);
+    await view.findByDisplayValue('Cash');
+    await fireEvent.changeText(view.getByPlaceholderText('Account name'), '');
+
+    const texts = view.getAllByText(/./).map((node) => String(node.props.children));
+    const noteAt = texts.indexOf('You need at least one account, so this one cannot be deleted.');
+    const deleteAt = texts.indexOf('Delete');
+    const hintAt = texts.indexOf('Enter an account name');
+    const saveAt = texts.indexOf('Save');
+
+    expect(noteAt).toBeGreaterThan(-1);
+    expect(noteAt).toBeLessThan(deleteAt);
+    expect(deleteAt).toBeLessThan(hintAt);
+    expect(hintAt).toBeLessThan(saveAt);
+  });
+
+  it('reserves the hint room so Delete and Save never move', async () => {
+    const view = await render(<ModifyAccountScreen />);
+    await view.findByDisplayValue('Cash');
+
+    const slot = StyleSheet.flatten(view.getByTestId(TEST_IDS.formHintSlot).props.style) as { minHeight?: number };
+    expect(slot.minHeight).toBeGreaterThan(0);
+    expect(within(view.getByTestId(TEST_IDS.formHintSlot)).queryByText(/./)).toBeNull();
+  });
+
+  it('only reddens the name field once the user touched it', async () => {
+    const view = await render(<ModifyAccountScreen />);
+    const input = await view.findByDisplayValue('Cash');
+    expect(StyleSheet.flatten(input.props.style).borderColor).toBe('#334155');
+
+    await fireEvent.changeText(input, '');
+    expect(StyleSheet.flatten(input.props.style).borderColor).toBe('#F87171');
   });
 });

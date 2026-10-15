@@ -17,6 +17,7 @@ import RepeatSection from './RepeatSection';
 import TagSection from './TagSection';
 import CommentInput from './CommentInput';
 import PhotoSection from './PhotoSection';
+import FormHintSlot from './form/FormHintSlot';
 import CalendarModal from './CalendarModal';
 import CalculatorModal from './CalculatorModal';
 import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS } from './componentStyles';
@@ -222,6 +223,7 @@ export default function TransactionForm(props: TransactionFormProps) {
           raw={amountRaw}
           onChangeRaw={setAmountRaw}
           onOpenCalculator={() => setCalculatorVisible(true)}
+          error={amountRaw.length > 0 && (numericAmount === null || numericAmount <= 0)}
         />
 
         <TouchableOpacity
@@ -314,12 +316,12 @@ export default function TransactionForm(props: TransactionFormProps) {
           />
         )}
 
-        {!canSubmit && !submitting && hintText !== '' && (
-          <Text style={[styles.hintText, { color: c.red, fontSize: fs(12) }]}>
-            {hintText}
-          </Text>
-        )}
+        {/* The destructive action comes first, then the "why you can't save" hint,
+            then Save. With a footer (Delete) the hint's room is reserved so the two
+            buttons never move; without one, the hint simply sits above Save. */}
         {props.footer}
+
+        <FormHintSlot message={submitting ? '' : hintText} reserve={props.footer != null} />
 
         <TouchableOpacity
           style={[
@@ -394,16 +396,11 @@ const styles = StyleSheet.create({
     borderRadius: BUTTON_BORDER_RADIUS,
     paddingVertical: 14,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 0,
     borderWidth: 1,
     borderColor: 'transparent',
   },
   submitButtonText: {
     fontWeight: '700',
-  },
-  hintText: {
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 8,
   },
 });

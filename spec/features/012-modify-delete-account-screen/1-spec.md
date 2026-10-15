@@ -19,11 +19,11 @@
 - Text input with the current account name.
 - Maximum 30 characters with a "0/30" counter.
 - **Total account (id=2, `is_total=1`)**: the name field is **read-only** (disabled). Shows the i18n "Total" in the active language. Validation and duplicate checks are skipped.
-- **Validation**: empty name is not allowed. If empty, a red error text is shown and the "Save" button remains disabled.
+- **Validation**: empty name is not allowed. If empty, the "Save" button remains disabled and "Enter an account name" appears in the form's bottom hint; the input reddens once it has been changed or blurred (never on a freshly-opened form).
 - **Duplicate validation**: when editing the name, it checks that no other account already exists with the same name (case-insensitive), **excluding the current account**. Keeping the same name should not trigger an error; only if the new name matches a different account.
   - "Account", "account" and "ACCOUNT" are considered duplicates.
   - **Reserved default name**: the default account name is checked via a language-aware guard. The entered name is mapped to a default account ID using the current language (`getDefaultAccountIdByName`). If a match is found, the English name for that default is checked against the DB (`existsByName`, excluding the current account). If the default account still exists in the DB, the name is blocked. If the default was deleted, the name is allowed. This applies even when editing the default account (id 1) itself.
-  - If there is a duplicate, a red error text is shown below the input: "An account with this name already exists" (multilingual) and the "Save" button remains disabled.
+  - If there is a duplicate, the "Save" button remains disabled and "An account with this name already exists" (multilingual, the same `create_account_error_duplicate` key as the create screen) appears in the bottom hint between Delete and Save.
   - The check is executed with a 300ms debounce to avoid querying on every keystroke.
 
 ### 3. Symbols (Icons)
@@ -106,7 +106,7 @@
 - **Last account protection**: when the account being edited is the only account in the database (account count ≤ 1), the "Delete" button is **disabled**:
   - The button border and icon/text use the secondary text color (`c.textSecondary`) and the button has reduced opacity (`0.5`).
   - The button is not tappable (`disabled` + `accessibilityState.disabled`).
-  - A helper hint is shown below the button: "You need at least one account, so this one cannot be deleted" (multilingual, `modify_account_delete_last`).
+  - A helper hint is shown **above** the button: "You need at least one account, so this one cannot be deleted" (multilingual, `modify_account_delete_last`). It is muted (secondary color) because it explains a disabled action rather than an error, and the red "why you can't save" hint sits **between** Delete and Save (see `spec/constitution/6-screens.md`, Form validation & bottom action area).
 - When tapped (and not the last account), a confirmation modal opens:
 
 **Confirmation Modal — "Delete account?"**

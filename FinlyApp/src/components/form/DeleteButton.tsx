@@ -4,6 +4,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { BUTTON_BORDER_RADIUS } from '../componentStyles';
+import { TEST_IDS } from '../../constants/testIds';
 
 interface Props {
   label: string;
@@ -29,6 +30,7 @@ export default function DeleteButton({
 
   return (
     <TouchableOpacity
+      testID={TEST_IDS.formDelete}
       style={[
         styles.button,
         { borderColor: disabled ? c.border : c.red, opacity: disabled ? 0.5 : 1 },

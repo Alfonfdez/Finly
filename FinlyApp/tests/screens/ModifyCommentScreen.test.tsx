@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react-native';
 import ModifyCommentScreen from '../../src/screens/ModifyCommentScreen';
+import { TEST_IDS } from '../../src/constants/testIds';
 
 const nav = { setOptions: vi.fn(), navigate: vi.fn(), goBack: vi.fn() };
 const routeParams: Record<string, unknown> = { comment: 'Coffee' };
@@ -61,8 +62,8 @@ describe('ModifyCommentScreen', () => {
 
   it('opens the delete confirmation and deletes the comment', async () => {
     const view = await render(<ModifyCommentScreen />);
-    await fireEvent.press(view.getByText('Delete comment'));
-    await fireEvent.press(view.getByText('Delete'));
+    await fireEvent.press(view.getByTestId(TEST_IDS.formDelete));
+    await fireEvent.press(view.getByRole('button', { name: 'Delete' }));
 
     expect(mockDeleteComment).toHaveBeenCalledWith('Coffee');
     expect(nav.goBack).toHaveBeenCalled();

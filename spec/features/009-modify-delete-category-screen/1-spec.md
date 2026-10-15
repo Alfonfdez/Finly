@@ -19,9 +19,9 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 - The name is editable. Maximum 30 characters with a "0/30" counter.
 - **Duplicate validation**: when editing the name, it checks that no other category already exists with the same name (case-insensitive), **excluding the current category**. That is, keeping the same name should not trigger an error; only if the new name matches a different category.
   - "Food", "food" and "FOOD" are considered duplicates.
-  - If there is a duplicate, a red error text is shown below the input and the "Save" button remains disabled.
+  - If there is a duplicate, the "Save" button remains disabled and the message ("Enter a category name" when blank, the duplicate message otherwise) appears in the form's bottom hint — a single red line **between Delete and Save** — not below the input. The input itself only turns red once the field has been changed or blurred (a freshly-opened form is never red). See `spec/constitution/6-screens.md` (Form validation & bottom action area).
   - The check runs with a 300ms debounce.
-- If the name is empty, the "Save" button is disabled.
+- If the name is empty, the "Save" button is disabled (same bottom hint, `create_cat_error_name_empty`).
 
 ### 3. Type
 

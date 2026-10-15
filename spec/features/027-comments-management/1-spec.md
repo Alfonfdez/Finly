@@ -25,13 +25,13 @@
 ### 2. Modify comment screen
 
 - `ModifyCommentScreen` receives `{ comment: string }` (already a trimmed, distinct value).
-- Multiline input preloaded with the comment, `0/4096` counter (`MAX_COMMENT_LENGTH`), auto-focus.
-- "Save" (`comments_save`) is disabled when the field is empty or unchanged.
+- Multiline input preloaded with the comment, `0/4096` counter (`MAX_COMMENT_LENGTH`), auto-focus, aligned to the top like every other multiline field.
+- "Save" (`comments_save`) is disabled when the field is empty or unchanged; the "Comment cannot be empty" message (`comments_error_empty`) then appears in the bottom hint — a red line in a fixed-height slot **between Delete and Save** — and the field reddens only once it has been changed or blurred.
 - On save: `transactionRepository.updateComment(old, trimmed)` renames the comment on **all** matching transactions (matched by `TRIM(description)`), then `navigation.goBack()`.
-- "Delete comment" (`comments_delete`) opens a confirmation modal: "Delete this comment?" + "This will remove the comment from N transactions. This cannot be undone." (`comments_delete_confirm_title`, `comments_delete_confirm_message(n)`).
+- The Delete button uses the generic `delete` label and opens a confirmation modal: "Delete this comment?" + "This will remove the comment from N transactions. This cannot be undone." (`comments_delete_confirm_title`, `comments_delete_confirm_message(n)`).
 - On confirm: `transactionRepository.deleteComment(comment)` sets `description = NULL` on all matching transactions, then `navigation.goBack()`.
 - The usage count for the delete message comes from `transactionRepository.countByDescription(comment)` loaded on mount.
-- Small hint at the bottom (`comments_merge_hint`): comments that differ only by case or extra spaces are merged into one.
+- Small informational hint **below Save** (`comments_merge_hint`): comments that differ only by case or extra spaces are merged into one.
 
 ### 3. Comment normalization and merge semantics
 

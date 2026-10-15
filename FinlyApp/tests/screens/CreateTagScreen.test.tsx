@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { StyleSheet } from 'react-native';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import CreateTagScreen from '../../src/screens/CreateTagScreen';
@@ -51,6 +52,24 @@ describe('CreateTagScreen', () => {
     const view = await render(<CreateTagScreen />);
     expect(view.getByPlaceholderText('Tag name')).toBeTruthy();
     expect(view.getByText('Create')).toBeDisabled();
+  });
+
+  it('shows the empty-name hint without painting the fresh field red', async () => {
+    const view = await render(<CreateTagScreen />);
+
+    expect(view.getByText('Enter a tag name')).toBeTruthy();
+    expect(StyleSheet.flatten(view.getByPlaceholderText('Tag name').props.style).borderColor).toBe('#334155');
+  });
+
+  it('reddens the field once the user leaves it empty', async () => {
+    const view = await render(<CreateTagScreen />);
+    const input = view.getByPlaceholderText('Tag name');
+
+    await fireEvent.changeText(input, 'x');
+    expect(StyleSheet.flatten(input.props.style).borderColor).toBe('#334155');
+
+    await fireEvent.changeText(input, '');
+    expect(StyleSheet.flatten(input.props.style).borderColor).toBe('#F87171');
   });
 
   it('creates the tag and goes back after the duplicate check passes', async () => {

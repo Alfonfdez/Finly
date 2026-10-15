@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
+import { render, fireEvent, waitFor, act, within } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import ModifyCategoryScreen from '../../src/screens/ModifyCategoryScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
+import { TEST_IDS } from '../../src/constants/testIds';
 import type { Category, Transaction } from '../../src/database/types';
 
 const nav = { setOptions: vi.fn(), navigate: vi.fn(), goBack: vi.fn() };
@@ -90,5 +92,23 @@ describe('ModifyCategoryScreen', () => {
     await waitFor(() => expect(mockCategoryUpdate).toHaveBeenCalledTimes(1));
     expect(mockCategoryUpdate).toHaveBeenCalledWith(7, expect.objectContaining({ name: 'Food2' }));
     expect(nav.goBack).toHaveBeenCalled();
+  });
+
+  it('shows the name error in the slot above Save, not under the field', async () => {
+    const view = await render(<ModifyCategoryScreen />);
+    const input = await view.findByDisplayValue('Food');
+    await fireEvent.changeText(input, '');
+
+    const slot = view.getByTestId(TEST_IDS.formHintSlot);
+    expect(within(slot).getByText('Enter a category name')).toBeTruthy();
+  });
+
+  it('only reddens the name field once the user touched it', async () => {
+    const view = await render(<ModifyCategoryScreen />);
+    const input = await view.findByDisplayValue('Food');
+    expect(StyleSheet.flatten(input.props.style).borderColor).toBe('#334155');
+
+    await fireEvent.changeText(input, '');
+    expect(StyleSheet.flatten(input.props.style).borderColor).toBe('#F87171');
   });
 });
