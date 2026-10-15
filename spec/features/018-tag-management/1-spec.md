@@ -63,8 +63,8 @@
 ### 6. Modify/delete tag screen
 
 - Header with back arrow + "Modify tag" title (multilingual).
-- Name input preloaded, max 20 characters, counter, same validation as create.
-- "Delete" button with confirmation modal:
+- Name input preloaded, max 20 characters, counter, same validation as create, and the same **empty** error (`create_tag_error_empty`): the bottom hint shows "Enter a tag name" (or the duplicate message) between Delete and Save, and the input reddens only once it has been changed or blurred.
+- "Delete" button (generic `delete` label, like every form) with confirmation modal:
   - Title: `Delete tag "TagName"` (interpolated).
   - Message: "Transactions with this tag will keep it. The tag link will be removed."
   - Cancel / Delete buttons.

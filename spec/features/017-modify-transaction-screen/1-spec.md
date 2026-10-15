@@ -105,7 +105,7 @@
   - The amount must be a valid number greater than 0 (`numericAmount > 0`).
   - A day must be selected.
   - An account must be selected.
-- If the button is disabled, a dynamic help text is shown in red (reuse existing hint from 004).
+- If the button is disabled, a dynamic help text is shown in red (reuse existing hint from 004). An **amount of 0** additionally gets a red border on the amount input (the digits keep their normal color; the field is not red while it is still empty).
 - Tapping "Save":
   1. Collects all form data.
   2. Calls `transactionRepository.update(transactionId, data)` with the modified fields.

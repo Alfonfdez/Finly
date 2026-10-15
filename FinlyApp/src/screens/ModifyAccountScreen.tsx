@@ -43,7 +43,6 @@ export default function ModifyAccountScreen() {
   );
 
   const [name, setName] = useState('');
-  const [nameTouched, setNameTouched] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [initialBalanceRaw, setInitialBalanceRaw] = useState('');
@@ -67,14 +66,9 @@ export default function ModifyAccountScreen() {
       const defaultId = getDefaultAccountIdByName(value);
       return defaultId !== null ? getDefaultEnglishAccountName(defaultId) : null;
     },
-    duplicateErrorKey: labels.modify_account_error_duplicate,
+    duplicateErrorKey: labels.create_account_error_duplicate,
     excludeId: accountId,
   });
-
-  const handleNameChangeLocal = (value: string) => {
-    setNameTouched(true);
-    handleNameChange(value, setName);
-  };
 
   const isTotal = account ? isTotalAccount(account) : false;
   const initialBalanceError = initialBalanceRaw.length > 0 && parseAmountValue(initialBalanceRaw) === null;
@@ -83,7 +77,7 @@ export default function ModifyAccountScreen() {
     ? !checkingName
     : name.trim().length > 0 && !nameError && !checkingName && initialBalanceError === false;
 
-  const hintText = getNameHintText(name, nameError, labels.modify_account_error_empty);
+  const hintText = getNameHintText(name, nameError, labels.create_account_error_empty);
 
   const handleSave = async () => {
     Keyboard.dismiss();
@@ -147,8 +141,9 @@ export default function ModifyAccountScreen() {
             showNameField
             nameDisabled={isTotal}
             name={name}
-            onNameChange={handleNameChangeLocal}
-            nameErrorDisplay={(nameError || (nameTouched && name.trim().length === 0)) ? (nameError ?? ' ') : null}
+            onNameChange={(v) => handleNameChange(v, setName)}
+            nameError={nameError}
+            nameEmptyError={labels.create_account_error_empty}
             icons={ACCOUNT_ICONS}
             iconShape={config.accountIconShape}
             symbolTitle={labels.create_account_symbols}
@@ -170,7 +165,7 @@ export default function ModifyAccountScreen() {
             submitLabel={labels.modify_account_save}
             isSubmitDisabled={!canSave}
             onSubmit={handleSave}
-            deleteLabel={isTotal ? undefined : labels.modify_account_delete}
+            deleteLabel={isTotal ? undefined : labels.delete}
             onDeletePress={isTotal ? undefined : openDeleteModal}
             deleteDisabled={isLastAccount}
             deleteLastHint={isLastAccount ? labels.modify_account_delete_last : null}

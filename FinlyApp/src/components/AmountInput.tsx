@@ -15,9 +15,14 @@ interface Props {
   onOpenCalculator?: () => void;
   label?: string;
   accessibilityLabel?: string;
+  /** The value is unacceptable for this form (e.g. an amount of 0): red border.
+   *  The digits keep their normal color — only the text turns red when the input
+   *  is not a number at all. Callers must not pass this for a field where 0 is
+   *  valid (e.g. an account's initial balance). */
+  error?: boolean;
 }
 
-export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label, accessibilityLabel }: Props) {
+export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label, accessibilityLabel, error }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -25,6 +30,7 @@ export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label,
 
   const displayAmount = formatAmountDisplay(raw, config.decimalSeparator);
   const showError = raw.length > 0 && parseAmountValue(raw) === null;
+  const invalid = showError || !!error;
 
   return (
     <>
@@ -41,7 +47,7 @@ export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label,
               backgroundColor: c.surface,
               color: showError ? c.red : raw ? c.text : c.textSecondary,
               fontSize: fs(24),
-              borderColor: focused ? c.primary : TRANSPARENT,
+              borderColor: invalid ? c.red : focused ? c.primary : TRANSPARENT,
             },
           ]}
           placeholder="0"

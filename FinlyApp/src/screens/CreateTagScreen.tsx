@@ -13,7 +13,7 @@ import { type NavigationProp, USER_ID, MAX_TAG_NAME_LENGTH, MAX_TAGS } from '../
 import { countAtLimit } from '../utils/limits';
 import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';
-import FormError from '../components/form/FormError';
+import FormHintSlot from '../components/form/FormHintSlot';
 import { CARD_BORDER_RADIUS } from '../components/componentStyles';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 
@@ -49,6 +49,13 @@ export default function CreateTagScreen() {
   const atTagLimit = countAtLimit(tags.length, MAX_TAGS);
   const isDisabled = isEmpty || !!nameError || checkingName || atTagLimit;
 
+  // One red line above Save: every reason the tag cannot be created.
+  const blockers: string[] = [];
+  if (isEmpty) blockers.push(labels.create_tag_error_empty);
+  else if (nameError) blockers.push(nameError);
+  if (atTagLimit) blockers.push(labels.create_tag_error_limit(MAX_TAGS));
+  const hintText = blockers.join('. ');
+
   return (
     <ScreenShell>
       <View style={styles.content}>
@@ -59,18 +66,14 @@ export default function CreateTagScreen() {
           autoFocus
           maxLength={MAX_TAG_NAME_LENGTH}
           returnKeyType="done"
-          error={nameError}
+          error={isEmpty ? labels.create_tag_error_empty : nameError}
           showCounter
           counterFontSize={fs(12)}
           counterStyle={styles.counter}
           inputStyle={styles.input}
         />
 
-        <FormError message={nameError} style={styles.error} />
-
-        {atTagLimit && (
-          <FormError message={labels.create_tag_error_limit(MAX_TAGS)} style={styles.error} />
-        )}
+        <FormHintSlot message={hintText} reserve={false} />
 
         <PrimaryButton
           label={labels.create_tag_button}
@@ -100,9 +103,5 @@ const styles = StyleSheet.create({
   counter: {
     marginTop: 6,
     marginBottom: 12,
-  },
-  error: {
-    marginBottom: 12,
-    fontWeight: '500',
   },
 });

@@ -6,7 +6,7 @@ import { MAX_ACCOUNT_NAME_LENGTH, MAX_NOTE_LENGTH, type ConfigIconShape, type Ic
 import IconColorSection from './IconColorSection';
 import LabeledTextField from './form/LabeledTextField';
 import PrimaryButton from './form/PrimaryButton';
-import FormError from './form/FormError';
+import FormHintSlot from './form/FormHintSlot';
 import DeleteButton from './form/DeleteButton';
 import FormScrollView from './form/FormScrollView';
 import AmountInput from './AmountInput';
@@ -15,7 +15,10 @@ interface AccountFormProps {
   nameLabel: string;
   name: string;
   onNameChange: (value: string) => void;
-  nameErrorDisplay: string | null;
+  /** The duplicate-name message (or null) — the empty case comes from `nameEmptyError`. */
+  nameError: string | null;
+  /** Shown when the name is blank; the red border waits for the field to be touched. */
+  nameEmptyError: string;
   showNameField: boolean;
   nameDisabled?: boolean;
   icons: readonly IconName[];
@@ -42,6 +45,7 @@ interface AccountFormProps {
   deleteLabel?: string;
   onDeletePress?: () => void;
   deleteDisabled?: boolean;
+  /** Muted explanation for a disabled Delete; shown directly above the button. */
   deleteLastHint?: string | null;
 }
 
@@ -49,7 +53,8 @@ export default function AccountForm({
   nameLabel,
   name,
   onNameChange,
-  nameErrorDisplay,
+  nameError,
+  nameEmptyError,
   showNameField,
   nameDisabled = false,
   icons,
@@ -84,6 +89,9 @@ export default function AccountForm({
   // submit button (below it) above the keyboard.
   const { scrollRef, onBottomFieldFocus, onBottomFieldBlur, onScrollLayout } = useKeyboardReveal();
 
+  const hasDelete = !!(deleteLabel && onDeletePress);
+  const nameValidationError = nameDisabled ? null : name.trim() === '' ? nameEmptyError : nameError;
+
   return (
     <FormScrollView scrollRef={scrollRef} onLayout={onScrollLayout}>
       {showNameField && (
@@ -95,7 +103,7 @@ export default function AccountForm({
           maxLength={MAX_ACCOUNT_NAME_LENGTH}
           autoCapitalize="words"
           autoCorrect={false}
-          error={nameErrorDisplay}
+          error={nameValidationError}
           showCounter
           editable={!nameDisabled}
           inputStyle={nameDisabled ? { color: c.textSecondary } : undefined}
@@ -136,24 +144,26 @@ export default function AccountForm({
         onBlur={onBottomFieldBlur}
       />
 
-      <FormError message={hintText} fontSize={fs(12)} style={styles.hint} />
-
-      {deleteLabel && onDeletePress && (
+      {/* Disabled-Delete explanation (muted), then Delete, then the reserved
+          "why you can't save" slot, then Save. */}
+      {hasDelete && (
         <>
-          <DeleteButton
-            label={deleteLabel}
-            onPress={onDeletePress}
-            disabled={deleteDisabled}
-            style={styles.deleteButton}
-          />
-
-          {deleteLastHint && (
-            <Text style={[styles.hint, { color: c.textSecondary, fontSize: fs(12) }]}>
+          {deleteLastHint != null && (
+            <Text style={[styles.deleteLastHint, { color: c.textSecondary, fontSize: fs(12) }]}>
               {deleteLastHint}
             </Text>
           )}
+
+          <DeleteButton
+            label={deleteLabel as string}
+            onPress={onDeletePress as () => void}
+            disabled={deleteDisabled}
+            style={[styles.deleteButton, deleteLastHint != null && styles.deleteButtonAfterHint]}
+          />
         </>
       )}
+
+      <FormHintSlot message={hintText} reserve={hasDelete} />
 
       <PrimaryButton
         label={submitLabel}
@@ -166,14 +176,17 @@ export default function AccountForm({
 }
 
 const styles = StyleSheet.create({
-  hint: {
+  deleteLastHint: {
     marginTop: 16,
     textAlign: 'center',
   },
   deleteButton: {
     marginTop: 24,
   },
+  deleteButtonAfterHint: {
+    marginTop: 8,
+  },
   button: {
-    marginTop: 16,
+    marginTop: 0,
   },
 });

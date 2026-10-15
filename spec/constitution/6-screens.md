@@ -459,8 +459,18 @@ useEffect(() => {
 </TouchableOpacity>
 ```
 
-**Button style:** `{ marginTop: 16, paddingVertical: 14, borderRadius: 10, alignItems: 'center' }`
+**Button style:** `{ paddingVertical: 14, borderRadius: 10, alignItems: 'center' }` — the form's hint slot (below) owns the gap above it.
 **Button text style:** `{ fontWeight: '600' }`
+
+### Form validation & bottom action area
+
+Every form — Create, Edit, and the transaction/recurring forms — shares one rule set:
+
+1. **The bottom hint says why Save is disabled.** It is shown whenever the button is disabled, uses the **same wording in Create and Edit** (shared i18n keys) and is the **only** place the message appears — never duplicated under the field. The recurring form lists **every** unmet condition at once (one sentence each).
+2. **A field is only painted red for a value the user invalidated.** The red border is held back until the field has been **changed or blurred**, so a freshly-opened form never greets the user in red (`LabeledTextField` owns this gating; a screen with its own input, like the category name, repeats the same two-line pattern). `AmountInput` takes an optional `error` prop: an amount of **0** is flagged with a red border (the digits keep their normal color) while an account's initial balance of **0** stays valid; its red *text* is reserved for a value that is not a number at all.
+3. **Bottom action order** (top to bottom): `[muted hint explaining a disabled Delete]` → `Delete` → red hint → `Save`. The red hint lives in the reserved `FormHintSlot` — 2 lines tall, scaling with the text size — so **the two buttons never move** when a hint appears or disappears. The slot is reserved only where a Delete exists; a Save-only form (Add/Modify transaction, Create account/category/tag) shows the hint directly above Save with no reservation.
+4. **The Delete button always reads the generic `Delete`.** Only the confirmation modal spells out what is being deleted.
+5. Purely **informative** notes (e.g. the comment merge note) stay **below Save** — they explain, they do not block.
 
 ### Delete Button (Modify screens)
 
@@ -471,12 +481,12 @@ useEffect(() => {
 >
   <Ionicons name="trash-outline" size={18} color={c.red} />
   <Text style={[styles.deleteButtonText, { color: c.red, fontSize: fs(15) }]}>
-    {labels.delete_button}
+    {labels.delete}
   </Text>
 </TouchableOpacity>
 ```
 
-**Delete button style:** `{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingVertical: 12, marginTop: 24 }`
+**Delete button style:** `{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingVertical: 12, marginTop: 24 }` (`marginTop: 8` when the muted hint sits directly above it). The shared `components/form/DeleteButton.tsx` carries `testID: TEST_IDS.formDelete`, and `components/form/FormHintSlot.tsx` is the reserved red-hint slot (`TEST_IDS.formHintSlot`).
 
 ## Calendar (date pickers)
 

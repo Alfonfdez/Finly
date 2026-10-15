@@ -10,4 +10,6 @@ export const TEST_IDS = {
   commentsList: 'comments-list',
   recurringList: 'recurring-list',
   accountsList: 'accounts-list',
+  formDelete: 'form-delete',
+  formHintSlot: 'form-hint-slot',
 } as const;

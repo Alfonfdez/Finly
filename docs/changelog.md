@@ -3767,3 +3767,23 @@
 - Added `FinlyApp/scripts/i18n.mjs`: a surgical i18n key helper (`list` / `add` / `set` / `remove`) that keeps the 9 language files in parity, preserves CRLF/comments/section grouping, handles multi-line and function values (via a `--values-file` with `{ "raw": … }`), and validates every file before writing (all-or-nothing).
 - Added the `npm run i18n -- …` alias and `tests/tooling/i18n.test.ts` (37 tests: escaping, anchors, multi-line extents, CRLF, parity check, CLI write/refuse paths, real-files round-trip).
 - Documented the tool in a new `I18N KEYS` section of `AGENTS.md`.
+
+[2026-10-15] refactor | FinlyApp/src/components/form/FormHintSlot.tsx, FinlyApp/src/components/form/LabeledTextField.tsx, FinlyApp/src/components/AccountForm.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx
+- Added `components/form/FormHintSlot.tsx`: the red "why you can't save" hint now lives in a reserved 2-line slot (scaling with the text size) between Delete and Save, so the two buttons never move when a hint appears or disappears.
+- `LabeledTextField` owns the red-border gating (a field reddens only once it has been changed or blurred, so a freshly-opened form is never red), and `AccountForm`, `TransactionForm` and the category/tag/comment screens now share one bottom-action order: muted hint -> Delete -> hint slot -> Save.
+- The reserved slot is only used where a Delete exists; Save-only forms keep the hint directly above Save. Informative notes (the comment merge note) stay below Save.
+
+[2026-10-15] fix | FinlyApp/src/components/AmountInput.tsx, FinlyApp/src/components/form/DeleteButton.tsx, FinlyApp/src/constants/testIds.ts, FinlyApp/src/screens/CreateTagScreen.tsx, FinlyApp/src/screens/CreateCategoryScreen.tsx, FinlyApp/src/screens/CreateAccountScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts
+- Amount: a value of 0 now gets a red border on the amount input (the digits keep their normal color) while an account's initial balance of 0 stays valid; `AmountInput` gained an optional `error` prop.
+- Every form's Delete button now reads the generic `Delete` (was "Delete tag" / "Delete comment"), and the comment field is aligned to the top like the other multiline fields.
+- i18n: added `create_tag_error_empty` and shared `create_account_error_empty|_duplicate` between Create and Edit; removed the now-unused `modify_account_error_empty|_duplicate`, `modify_tag_delete`, `comments_delete`, `modify_account_delete` and `modify_cat_delete` from all 9 languages.
+
+[2026-10-15] test | FinlyApp/tests/component/FormHintSlot.test.tsx, FinlyApp/tests/component/LabeledTextField.test.tsx, FinlyApp/tests/component/AmountInput.test.tsx, FinlyApp/tests/component/TransactionForm.test.tsx, FinlyApp/tests/screens/ModifyAccountScreen.test.tsx, FinlyApp/tests/screens/ModifyCategoryScreen.test.tsx, FinlyApp/tests/screens/ModifyTagScreen.test.tsx, FinlyApp/tests/screens/CreateTagScreen.test.tsx, FinlyApp/tests/screens/ModifyCommentScreen.test.tsx
+- Component tests for `FormHintSlot` (message + reserved height), `LabeledTextField` (touched gating) and `AmountInput` (error border, digits unchanged), plus screen tests for the bottom-action order, the reserved slot and the "no red on a freshly-opened form" rule.
+- Replaced the tag/comment delete-button label selectors with `TEST_IDS.formDelete` (the shared `DeleteButton` now carries it), removing the ambiguity with the confirmation modal's own Delete.
+
+[2026-10-15] docs | spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, spec/features/009-modify-delete-category-screen/1-spec.md, spec/features/012-modify-delete-account-screen/1-spec.md, spec/features/017-modify-transaction-screen/1-spec.md, spec/features/018-tag-management/1-spec.md, spec/features/027-comments-management/1-spec.md, spec/features/028-recurring-transactions/1-spec.md
+- Documented the form-validation and bottom-action standard (hint placement, red-border gating, button order, generic Delete label) in `spec/constitution/6-screens.md`, with a roadmap entry and updates to specs 009, 012, 017, 018, 027 and 028.
+
+[2026-10-15] test | FinlyApp/.maestro/flow-forms-standard.yaml
+- Added the Maestro flow `.maestro/flow-forms-standard.yaml`, verifying on an Android release APK that an amount of 0 gets a red border, the muted Delete note sits above the button, the red hint sits between Delete and Save, and a fresh field is never red.

@@ -26,6 +26,7 @@ import CategoryTransferModal from '../components/CategoryTransferModal';
 import SectionTitle from '../components/form/SectionTitle';
 import PrimaryButton from '../components/form/PrimaryButton';
 import DeleteButton from '../components/form/DeleteButton';
+import FormHintSlot from '../components/form/FormHintSlot';
 import FormScrollView from '../components/form/FormScrollView';
 
 type ModifyCategoryRouteProp = RouteProp<RootStackParamList, 'ModifyCategory'>;
@@ -45,6 +46,7 @@ export default function ModifyCategoryScreen() {
   );
 
   const [name, setName] = useState('');
+  const [nameTouched, setNameTouched] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const userEditedRef = useRef(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -79,6 +81,7 @@ export default function ModifyCategoryScreen() {
 
   const handleNameChangeLocal = (value: string) => {
     userEditedRef.current = true;
+    setNameTouched(true);
     handleNameChange(value, setName);
   };
 
@@ -181,7 +184,7 @@ export default function ModifyCategoryScreen() {
                   {
                     backgroundColor: c.surface,
                     color: c.text,
-                    borderColor: nameError ? c.red : c.border,
+                    borderColor: nameTouched && validationError ? c.red : c.border,
                     fontSize: fs(14),
                   },
                 ]}
@@ -189,6 +192,7 @@ export default function ModifyCategoryScreen() {
                 placeholderTextColor={c.textSecondary}
                 value={name}
                 onChangeText={handleNameChangeLocal}
+                onBlur={() => setNameTouched(true)}
                 maxLength={MAX_CATEGORY_NAME_LENGTH}
                 autoCapitalize="words"
                 autoCorrect={false}
@@ -196,11 +200,6 @@ export default function ModifyCategoryScreen() {
               <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
                 {name.length}/{MAX_CATEGORY_NAME_LENGTH}
               </Text>
-              {validationError && (
-                <Text style={[styles.errorText, { color: c.red, fontSize: fs(12) }]}>
-                  {validationError}
-                </Text>
-              )}
             </View>
           </View>
 
@@ -221,7 +220,9 @@ export default function ModifyCategoryScreen() {
             onSelectColor={handleColorSelect}
           />
 
-          <DeleteButton label={labels.modify_cat_delete} onPress={handleDeletePress} style={styles.deleteButton} />
+          <DeleteButton label={labels.delete} onPress={handleDeletePress} style={styles.deleteButton} />
+
+          <FormHintSlot message={validationError} />
 
           <PrimaryButton
             label={labels.modify_cat_save}
@@ -289,16 +290,13 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 2,
   },
-  errorText: {
-    marginTop: 2,
-  },
   typeText: {
     marginLeft: 4,
   },
   button: {
-    marginTop: 12,
+    marginTop: 0,
   },
   deleteButton: {
-    marginTop: 16,
+    marginTop: 32,
   },
 });

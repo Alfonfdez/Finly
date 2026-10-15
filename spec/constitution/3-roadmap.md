@@ -716,3 +716,16 @@ A "Select all" / "Deselect all" toggle added to the shared `SelectionActionBar`,
 - `useSelectAndSearch` gains `allSelected(ids)` and `toggleSelectAll(ids)`; a shared `SelectAllRow` sits above each list (only in selection mode) showing the toggle + visible count (`items_count`) and flipping its label between `select_all` and `deselect_all` (9 languages). The bottom `SelectionActionBar` stays Cancel/Delete.
 - It selects every **currently visible** item — respecting the header search and each screen's filters — so a whole period, type or filtered set can be cleared in one tap. On Accounts the Total account is excluded.
 - Spec: spec/features/014, 015, 018, 027, 008, 011, 028.
+
+## Form validation and bottom-action standard (Create + Edit)
+Status: completed.
+
+One rule set for the validation feedback and bottom action area of every form, applied 2026-10-15:
+- **Bottom hint = why Save is disabled.** It is shown whenever the button is disabled, uses the same wording in Create and Edit (shared i18n keys) and is the only place the message appears — no duplicated text next to the field. The recurring form lists every unmet condition at once.
+- **Red border = a value the user themselves invalidated.** The border is held back until the field has been **changed or blurred**, so a freshly-opened form never greets the user in red (`LabeledTextField` owns the gating). `AmountInput` gains an `error` prop: an amount of **0** is flagged (red border, digits unchanged) while an account's initial balance of **0** stays valid; its red text remains reserved for a non-numeric value.
+- **Bottom action order** everywhere: muted hint explaining a disabled Delete → `Delete` → red hint → `Save`, the hint living in a new shared `FormHintSlot` (2 reserved lines, scaling with the text size) so **the two buttons never move**. The slot is reserved only where a Delete exists; Save-only forms keep the hint directly above Save. Informative notes (comment merge note) stay below Save.
+- **Every form's Delete reads the generic `delete`** (was "Delete tag" / "Delete comment"). Key hygiene: `create_tag_error_empty` added and shared by Create/Edit, `create_account_error_empty|_duplicate` shared by Create/Edit, `modify_account_error_empty|_duplicate`, `modify_tag_delete`, `comments_delete`, `modify_account_delete` and `modify_cat_delete` removed.
+- Comment field aligned to the top like the other multiline fields.
+- Gate: `npm run test:all` green (133 files / 1046 tests); verified on the Android release APK.
+
+Spec: spec/constitution/6-screens.md (Form validation & bottom action area), spec/features/009, 012, 017, 018, 027, 028.
