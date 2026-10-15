@@ -3745,3 +3745,7 @@
 [2026-10-15] test | FinlyApp/tests/database/recurringService.test.ts, FinlyApp/tests/utils/recurrence.test.ts
 - Added service-level tests that a "Future + past" rule edit bumps `updated_at` on every generated transaction (the change an open modify form detects via `useExternalRowRefresh`) while "Future only" leaves it untouched.
 - Added a `recurrenceSkipWindow` test covering a multi-unit interval in the skipped-window count.
+
+[2026-10-15] test | FinlyApp/.maestro/flow-028-recurring.yaml, FinlyApp/.maestro/flow-028-recurring-dirty-form.yaml, FinlyApp/.maestro/helpers/create-daily-rule.yaml, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/constants/testIds.ts
+- Added two Maestro flows for the recurring feature on the release APK: `flow-028-recurring` (create a daily rule -> generated transaction -> details -> "Future + past" rewrites the past -> pause/resume -> delete keeps the transactions) and `flow-028-recurring-dirty-form` (dirty modify form + rule edit -> keeps the draft and shows the notice -> "Use the rule's values" adopts the rule's value), sharing a `helpers/create-daily-rule.yaml` subflow.
+- Gave the recurring Name input a `testID` (`repeat-name`, in `TEST_IDS`) and an `accessibilityLabel` ("Name") so Maestro and screen readers can address it.
