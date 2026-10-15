@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { ComponentProps } from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { resetStub, setConfig } from './helpers/configStub';
 import RepeatSection from '../../src/components/RepeatSection';
 import { TEST_IDS } from '../../src/constants/testIds';
@@ -52,6 +53,18 @@ describe('RepeatSection', () => {
     const { props, view } = renderSection();
     await fireEvent.press((await view).getByText('Weekly'));
     expect(props.onChangeFrequency).toHaveBeenCalledWith('weekly');
+  });
+
+  it('reports focus and blur of the name field', async () => {
+    const onNameFocus = vi.fn();
+    const onNameBlur = vi.fn();
+    const { view } = renderSection({ onNameFocus, onNameBlur });
+    const input = (await view).getByTestId(TEST_IDS.repeatName);
+
+    await act(async () => { fireEvent(input, 'focus'); });
+    expect(onNameFocus).toHaveBeenCalledTimes(1);
+    await act(async () => { fireEvent(input, 'blur'); });
+    expect(onNameBlur).toHaveBeenCalledTimes(1);
   });
 
   it('increments and decrements the interval', async () => {
@@ -107,9 +120,10 @@ describe('RepeatSection', () => {
     expect((await view).getByDisplayValue('Rent')).toBeTruthy();
   });
 
-  it('shows the recurring name error', async () => {
+  it('marks the name field with a red border when there is an error', async () => {
     const { view } = renderSection({ name: '', nameError: 'taken' });
-    expect((await view).getByText('That name is already used by another recurring rule')).toBeTruthy();
+    const input = (await view).getByTestId(TEST_IDS.repeatName);
+    expect(StyleSheet.flatten(input.props.style).borderColor).toBe('#F87171');
   });
 
   it('always shows the first transaction date', async () => {

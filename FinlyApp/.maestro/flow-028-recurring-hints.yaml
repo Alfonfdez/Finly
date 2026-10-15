@@ -1,0 +1,42 @@
+appId: com.finly.app
+---
+# Verifies the recurring form's bottom hint: it is a checklist of every unmet
+# condition (not a single priority message), and the name field shows only a
+# red border (no inline message).
+- runFlow:
+    file: "helpers/state-reset.yaml"
+- runFlow:
+    file: "helpers/dismiss-dev-menu.yaml"
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- tapOn: "Recurring"
+- waitForAnimationToEnd
+- tapOn: "Add recurring rule"
+- waitForAnimationToEnd
+- assertVisible: "New recurring rule"
+# Empty form: category + amount + name are all listed at once.
+- scrollUntilVisible:
+    element:
+      text: ".*Enter a name for this recurring rule.*"
+    direction: DOWN
+- assertVisible: "Select a category. Enter a valid amount greater than 0. Enter a name for this recurring rule."
+- takeScreenshot: hint-empty
+# Category + amount set: only the name blocks the save.
+- scrollUntilVisible:
+    element:
+      text: "Amount input"
+    direction: UP
+- tapOn: "Amount input"
+- inputText: "9"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Groceries"
+    direction: DOWN
+- tapOn: "Groceries"
+- scrollUntilVisible:
+    element:
+      text: ".*Enter a name for this recurring rule.*"
+    direction: DOWN
+- assertVisible: "Enter a name for this recurring rule."
+- takeScreenshot: hint-name-only

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useCallback, type ReactNode } from 'react';
+import { useEffect, useMemo, useCallback, useRef, type ReactNode } from 'react';
 import { Text, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -6,7 +6,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useTransactionForm, type TransactionDraft, type RecurrenceDraft } from '../hooks/useTransactionForm';
-import { useKeyboardReveal } from '../hooks/useKeyboardReveal';
+import { useKeyboardReveal, type RevealAction } from '../hooks/useKeyboardReveal';
 import { t, getDisplayAccountName } from '../i18n';
 import TabBar, { typeTabs } from './TabBar';
 import AmountInput from './AmountInput';
@@ -25,6 +25,7 @@ import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
 import { buildRecurrenceSchedule, toDateOnly } from '../utils/recurrence';
 import { formFieldVisibility, type FormMode } from '../utils/formFieldVisibility';
+import { isWeb } from '../utils/platform';
 import { showErrorAlert } from '../utils/errors';
 
 interface TransactionFormProps {
@@ -89,7 +90,9 @@ export default function TransactionForm(props: TransactionFormProps) {
     recurringPastAffected,
     ruleUnmaterialized,
     ruleStartMovedEarlier,
-    repeatName, setRepeatName, repeatNameError,
+    repeatName, setRepeatName,
+    repeatNameError,
+    repeatNameErrorDisplay, markNameTouched,
     modalAccountVisible, setModalAccountVisible,
     modalCalendarVisible, setModalCalendarVisible,
     modalRepeatEndVisible, setModalRepeatEndVisible,
@@ -98,6 +101,7 @@ export default function TransactionForm(props: TransactionFormProps) {
     handleSelectAccount, handleSelectDate,
     handleSubmit,
     handleTakePhoto, handlePickFromGallery, handleRemovePhoto,
+    accountId,
     canSubmit, visibleCategories, hasMore, selectedAccount, selectableAccounts, numericAmount,
     isDirty,
     inputRef, scrollRef,
@@ -109,6 +113,29 @@ export default function TransactionForm(props: TransactionFormProps) {
   // The Comment field is the bottom-most input, so the keyboard can cover the submit button
   // that follows it; focusing it scrolls the form so the button clears the keyboard.
   const { onBottomFieldFocus, onBottomFieldBlur, onScrollLayout } = useKeyboardReveal(scrollRef);
+
+  // Focusing the recurring Name brings the "Recurring" section to the top so the input
+  // stays visible above the keyboard (native only — web has no software keyboard). Same
+  // reveal mechanism as the Comment field, with a scroll-to-section action instead of the end.
+  const repeatSectionY = useRef(0);
+  const handleRepeatSectionLayout = useCallback((y: number) => { repeatSectionY.current = y; }, []);
+  const revealRepeatName = useCallback<RevealAction>((ref) => {
+    if (isWeb) return;
+    ref.current?.scrollTo({ y: Math.max(0, repeatSectionY.current - 8), animated: true });
+  }, []);
+  const {
+    onBottomFieldFocus: onNameFocus,
+    onBottomFieldBlur: onNameBlur,
+    onScrollLayout: onNameScrollLayout,
+  } = useKeyboardReveal(scrollRef, revealRepeatName);
+  const handleRepeatNameBlur = useCallback(() => {
+    onNameBlur();
+    markNameTouched();
+  }, [onNameBlur, markNameTouched]);
+  const handleScrollLayout = useCallback(() => {
+    onScrollLayout();
+    onNameScrollLayout();
+  }, [onScrollLayout, onNameScrollLayout]);
 
   useEffect(() => {
     onRecurringPastAffectedChange?.(recurringPastAffected);
@@ -156,6 +183,18 @@ export default function TransactionForm(props: TransactionFormProps) {
 
   // The recurring end date must be on/after the first occurrence (which shifts when skipping the first one).
   const repeatEndConflict = !!props.ruleMode && !!repeatEnd && repeatEnd < repeatMinDate;
+
+  // Every condition that still blocks the save, as a red checklist above the button.
+  const hintText = useMemo(() => {
+    const missing: string[] = [];
+    if (categoryId === null) missing.push(labels.add_hint_category);
+    if (numericAmount === null || numericAmount <= 0) missing.push(labels.add_hint_amount);
+    if (accountId === undefined) missing.push(labels.add_hint_account);
+    if (repeatEndConflict) missing.push(labels.add_hint_repeat_end);
+    if (props.ruleMode && repeatNameError === 'taken') missing.push(labels.recurring_hint_name_taken);
+    else if (props.ruleMode && repeatNameError === 'required') missing.push(labels.recurring_hint_name);
+    return missing.join('. ') + (missing.length > 0 ? '.' : '');
+  }, [categoryId, numericAmount, accountId, repeatEndConflict, repeatNameError, props.ruleMode, labels]);
   const handleCalculatorAccept = useCallback((result: string) => {
     const clean = parseAmountInput(result);
     if (clean !== null && clean !== '') {
@@ -171,7 +210,7 @@ export default function TransactionForm(props: TransactionFormProps) {
         behavior="padding"
         style={styles.keyboardAvoid}
       >
-        <ScrollView ref={scrollRef} style={[styles.container, { backgroundColor: c.background }]} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" onLayout={onScrollLayout}>
+        <ScrollView ref={scrollRef} style={[styles.container, { backgroundColor: c.background }]} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" onLayout={handleScrollLayout}>
         {props.topNotice}
         <TabBar
           tabs={tabs}
@@ -230,7 +269,10 @@ export default function TransactionForm(props: TransactionFormProps) {
             onChangeLastDay={setRepeatLastDay}
             name={repeatName}
             onChangeName={setRepeatName}
-            nameError={repeatNameError}
+            nameError={repeatNameErrorDisplay}
+            onNameFocus={onNameFocus}
+            onNameBlur={handleRepeatNameBlur}
+            onSectionLayout={handleRepeatSectionLayout}
             ruleNextDue={props.initialRuleNextDue ?? null}
             ruleSkippedFrom={props.initialRuleSkippedFrom ?? null}
             ruleOccurrenceDates={props.initialRuleOccurrenceDates}
@@ -272,17 +314,9 @@ export default function TransactionForm(props: TransactionFormProps) {
           />
         )}
 
-        {!canSubmit && !submitting && (
+        {!canSubmit && !submitting && hintText !== '' && (
           <Text style={[styles.hintText, { color: c.red, fontSize: fs(12) }]}>
-            {categoryId === null && (numericAmount === null || numericAmount <= 0)
-              ? labels.add_hint_category_amount
-              : categoryId === null
-              ? labels.add_hint_category
-              : numericAmount === null || numericAmount <= 0
-              ? labels.add_hint_amount
-              : repeatEndConflict
-              ? labels.add_hint_repeat_end
-              : ''}
+            {hintText}
           </Text>
         )}
         {props.footer}

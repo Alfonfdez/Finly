@@ -29,6 +29,11 @@ interface Props {
   name: string;
   onChangeName: (value: string) => void;
   nameError: 'required' | 'taken' | null;
+  /** The name field gained/lost focus (used to reveal the section and to arm its error). */
+  onNameFocus?: () => void;
+  onNameBlur?: () => void;
+  /** Reports this section's y within the scroll content (for scroll-on-focus). */
+  onSectionLayout?: (y: number) => void;
   /** Edit mode: the rule's cursor (presence switches the info to "next transaction"). */
   ruleNextDue?: string | null;
   ruleSkippedFrom?: string | null;
@@ -67,6 +72,9 @@ export default function RepeatSection({
   name,
   onChangeName,
   nameError,
+  onNameFocus,
+  onNameBlur,
+  onSectionLayout,
   ruleNextDue = null,
   ruleSkippedFrom = null,
   ruleOccurrenceDates,
@@ -107,7 +115,10 @@ export default function RepeatSection({
   );
 
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      onLayout={onSectionLayout ? (e) => onSectionLayout(e.nativeEvent.layout.y) : undefined}
+    >
       <View style={styles.header}>
         <View style={styles.titleRow}>
           <Ionicons name="repeat-outline" size={16} color={c.primary} />
@@ -135,14 +146,11 @@ export default function RepeatSection({
           placeholderTextColor={c.textSecondary}
           value={name}
           onChangeText={onChangeName}
+          onFocus={onNameFocus}
+          onBlur={onNameBlur}
           maxLength={REPEAT_NAME_MAX_LENGTH}
           accessibilityLabel={labels.repeat_name}
         />
-        {nameError && (
-          <Text style={[styles.nameError, { color: c.red, fontSize: fs(12) }]}>
-            {nameError === 'required' ? labels.repeat_name_required : labels.repeat_name_taken}
-          </Text>
-        )}
         <Text style={[styles.label, { color: c.textSecondary, fontSize: fs(12) }]}>
           {labels.repeat_frequency}
         </Text>
@@ -307,10 +315,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginTop: 8,
-    fontWeight: '500',
-  },
-  nameError: {
-    marginTop: 4,
     fontWeight: '500',
   },
   checkboxRow: {

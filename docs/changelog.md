@@ -3749,3 +3749,16 @@
 [2026-10-15] test | FinlyApp/.maestro/flow-028-recurring.yaml, FinlyApp/.maestro/flow-028-recurring-dirty-form.yaml, FinlyApp/.maestro/helpers/create-daily-rule.yaml, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/constants/testIds.ts
 - Added two Maestro flows for the recurring feature on the release APK: `flow-028-recurring` (create a daily rule -> generated transaction -> details -> "Future + past" rewrites the past -> pause/resume -> delete keeps the transactions) and `flow-028-recurring-dirty-form` (dirty modify form + rule edit -> keeps the draft and shows the notice -> "Use the rule's values" adopts the rule's value), sharing a `helpers/create-daily-rule.yaml` subflow.
 - Gave the recurring Name input a `testID` (`repeat-name`, in `TEST_IDS`) and an `accessibilityLabel` ("Name") so Maestro and screen readers can address it.
+
+[2026-10-15] fix | FinlyApp/src/hooks/useRecurringDraft.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/tests/hooks/useRecurringDraft.test.tsx, FinlyApp/tests/component/RepeatSection.test.tsx
+- The recurring-rule form no longer shows the name as required (red) when it opens: the "required" message is held back until the field is blurred (`useRecurringDraft` now exposes `repeatNameErrorDisplay` + `markNameTouched`, while the raw `repeatNameError` still gates submit).
+- Focusing the recurring Name field now scrolls the form so the "Recurring" section sits at the top (native only), keeping the input visible above the keyboard.
+
+[2026-10-15] fix | FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/hooks/useKeyboardReveal.ts, FinlyApp/src/i18n/{en,es,ca,gl,eu,fr,de,pt,it}.ts, FinlyApp/tests/component/TransactionForm.test.tsx
+- The rule form's bottom hint now covers the recurring name: when the name is the only thing blocking the save it shows `recurring_hint_name` (or `recurring_hint_name_taken`), added to all 9 languages.
+- `useKeyboardReveal` now takes a reveal action (default scroll-to-end): the recurring Name reuses it with a scroll-to-section action, so focusing the name brings the "Recurring" section to the top after the keyboard settles (re-run on `keyboardDidShow`/`onLayout`) instead of losing the scroll to the OS reveal.
+
+[2026-10-15] fix | FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/TransactionForm.test.tsx, FinlyApp/tests/component/RepeatSection.test.tsx, FinlyApp/tests/screens/AddTransactionScreen.test.tsx
+- TransactionForm: the bottom hint is now a checklist that lists every unmet condition at once (category, amount, account, end date, rule name) instead of a single priority message; added `add_hint_account` (x9) and dropped the now-unused `add_hint_category_amount` (x9).
+- RepeatSection: the recurring name error is shown only as a red input border (removed the duplicated inline message).
+- Tests: TransactionForm covers the combined checklist and name-only blocker; RepeatSection covers the red border.

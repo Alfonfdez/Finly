@@ -3,19 +3,28 @@ import { Keyboard, type ScrollView } from 'react-native';
 
 type ScrollViewRef = { current: ScrollView | null };
 
+/** What to do to bring a field into view (defaults to scrolling to the end). */
+export type RevealAction = (scrollRef: ScrollViewRef) => void;
+
+const scrollToEnd: RevealAction = (scrollRef) => {
+  scrollRef.current?.scrollToEnd({ animated: true });
+};
+
 /**
- * Keeps a form's bottom action button reachable while the keyboard is open: when the
- * bottom-most field (the one just above the button) is focused, scroll the form to the end.
+ * Keeps a field reachable while the keyboard is open: when the wired field is focused, run
+ * `reveal` (scroll-to-end by default). Used for a bottom field so the submit button clears the
+ * keyboard, and for the recurring name so its section sits at the top.
  *
  * The scroll is scheduled (not immediate) because the keyboard resize animates; it is re-run
  * on `keyboardDidShow` and on the ScrollView's `onLayout` so a first attempt that lands short
- * (before the viewport has shrunk) is corrected. Only the wired field triggers it — focusing
- * a field higher up must not jump the form to the end.
+ * (or gets overridden by the OS reveal-the-focused-input scroll) is corrected. Only the wired
+ * field triggers it — focusing another field must not move the form.
  *
  * @param externalRef the form's ScrollView ref to drive; omit to let the hook own one
  *                    (for `FormScrollView`, pass the ref you give to its `scrollRef` prop).
+ * @param reveal      the action to run; pass a stable (e.g. `useCallback`) function.
  */
-export function useKeyboardReveal(externalRef?: ScrollViewRef) {
+export function useKeyboardReveal(externalRef?: ScrollViewRef, reveal: RevealAction = scrollToEnd) {
   const ownRef = useRef<ScrollView>(null);
   const scrollRef = externalRef ?? ownRef;
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -25,32 +34,32 @@ export function useKeyboardReveal(externalRef?: ScrollViewRef) {
     if (timer.current != null) clearTimeout(timer.current);
   }, []);
 
-  const reveal = useCallback(() => {
+  const scheduleReveal = useCallback(() => {
     if (timer.current != null) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
-      scrollRef.current?.scrollToEnd({ animated: true });
+      reveal(scrollRef);
     }, 300);
-  }, [scrollRef]);
+  }, [reveal, scrollRef]);
 
   const onBottomFieldFocus = useCallback(() => {
     bottomFieldFocused.current = true;
-    reveal();
-  }, [reveal]);
+    scheduleReveal();
+  }, [scheduleReveal]);
 
   const onBottomFieldBlur = useCallback(() => {
     bottomFieldFocused.current = false;
   }, []);
 
   const onScrollLayout = useCallback(() => {
-    if (bottomFieldFocused.current) reveal();
-  }, [reveal]);
+    if (bottomFieldFocused.current) scheduleReveal();
+  }, [scheduleReveal]);
 
   useEffect(() => {
     const sub = Keyboard.addListener('keyboardDidShow', () => {
-      if (bottomFieldFocused.current) reveal();
+      if (bottomFieldFocused.current) scheduleReveal();
     });
     return () => sub.remove();
-  }, [reveal]);
+  }, [scheduleReveal]);
 
   return { scrollRef, onBottomFieldFocus, onBottomFieldBlur, onScrollLayout };
 }
