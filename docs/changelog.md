@@ -3762,3 +3762,8 @@
 - TransactionForm: the bottom hint is now a checklist that lists every unmet condition at once (category, amount, account, end date, rule name) instead of a single priority message; added `add_hint_account` (x9) and dropped the now-unused `add_hint_category_amount` (x9).
 - RepeatSection: the recurring name error is shown only as a red input border (removed the duplicated inline message).
 - Tests: TransactionForm covers the combined checklist and name-only blocker; RepeatSection covers the red border.
+
+[2026-10-15] chore | FinlyApp/scripts/i18n.mjs, FinlyApp/tests/tooling/i18n.test.ts, FinlyApp/package.json, AGENTS.md
+- Added `FinlyApp/scripts/i18n.mjs`: a surgical i18n key helper (`list` / `add` / `set` / `remove`) that keeps the 9 language files in parity, preserves CRLF/comments/section grouping, handles multi-line and function values (via a `--values-file` with `{ "raw": … }`), and validates every file before writing (all-or-nothing).
+- Added the `npm run i18n -- …` alias and `tests/tooling/i18n.test.ts` (37 tests: escaping, anchors, multi-line extents, CRLF, parity check, CLI write/refuse paths, real-files round-trip).
+- Documented the tool in a new `I18N KEYS` section of `AGENTS.md`.

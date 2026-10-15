@@ -96,6 +96,26 @@ npx expo lint
 - `t()` returns full language object
 - All UI strings go through `src/i18n/`
 
+## I18N KEYS
+Every key must exist in all 9 language files (`src/i18n/{en,es,ca,gl,eu,fr,de,pt,it}.ts`) with the same key set — `tests/i18n/parity.test.ts` enforces it. **Always use the script** (never hand-edit the 9 files):
+```bash
+cd FinlyApp
+npm run i18n -- list --check                                    # key counts + parity problems
+npm run i18n -- list --key add_hint                             # show matching keys per language
+npm run i18n -- add --key foo --value "Foo" --after bar --dry-run
+npm run i18n -- add --key foo --values-file keys.json --after bar
+npm run i18n -- set --key foo --value "Foo" --lang es
+npm run i18n -- remove --key foo
+```
+- `--after <existingKey>` inserts at the same anchor in every file (multi-line values are handled); without it the key is appended before the closing `};`. `--dry-run` previews and writes nothing.
+- Values with a quote, a backslash, `$` or a backtick MUST come from `--values-file`, never from `--value` on the command line. Each entry is either a plain string (escaped for you) or a raw TS expression:
+```json
+{ "en": "Text", "es": "Texto", "ca": { "raw": "(n: number) => `1 de ${n}`" } }
+```
+- Languages missing from the file fall back to English and are reported as untranslated.
+- The script is all-or-nothing (it validates every file before writing), keeps comments/section grouping/CRLF intact, and is covered by `tests/tooling/i18n.test.ts`.
+- After any i18n change run `npm run test:all` (the parity test must pass).
+
 ## PROJECT STRUCTURE
 ```
 FinlyApp/
