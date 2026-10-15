@@ -124,6 +124,17 @@ describe('ModifyAccountScreen', () => {
     expect(within(view.getByTestId(TEST_IDS.formHintSlot)).queryByText(/./)).toBeNull();
   });
 
+  it('keeps the reserved muted band when the account can be deleted', async () => {
+    setAppData({ accounts: [account, { ...account, id: 6, name: 'Bank' } as Account] });
+    const view = await render(<ModifyAccountScreen />);
+    await view.findByDisplayValue('Cash');
+
+    const muted = view.getByTestId(TEST_IDS.formMutedSlot);
+    expect(StyleSheet.flatten(muted.props.style).minHeight).toBeGreaterThan(0);
+    expect(within(muted).queryByText(/./)).toBeNull();
+    expect(view.getByTestId(TEST_IDS.formDelete)).toBeEnabled();
+  });
+
   it('only reddens the name field once the user touched it', async () => {
     const view = await render(<ModifyAccountScreen />);
     const input = await view.findByDisplayValue('Cash');

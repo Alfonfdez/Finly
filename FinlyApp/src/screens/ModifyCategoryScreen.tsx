@@ -25,8 +25,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import CategoryTransferModal from '../components/CategoryTransferModal';
 import SectionTitle from '../components/form/SectionTitle';
 import PrimaryButton from '../components/form/PrimaryButton';
-import DeleteButton from '../components/form/DeleteButton';
-import FormHintSlot from '../components/form/FormHintSlot';
+import FormActions from '../components/form/FormActions';
 import CharCounter from '../components/form/CharCounter';
 import FormScrollView from '../components/form/FormScrollView';
 
@@ -219,16 +218,13 @@ export default function ModifyCategoryScreen() {
             onSelectColor={handleColorSelect}
           />
 
-          <DeleteButton label={labels.delete} onPress={handleDeletePress} style={styles.deleteButton} />
-
-          <FormHintSlot message={validationError} />
-
-          <PrimaryButton
-            label={labels.modify_cat_save}
-            onPress={handleSave}
-            disabled={!canSave}
-            style={styles.button}
-          />
+          <FormActions
+            deleteLabel={labels.delete}
+            onDeletePress={handleDeletePress}
+            saveHint={validationError}
+          >
+            <PrimaryButton label={labels.modify_cat_save} onPress={handleSave} disabled={!canSave} />
+          </FormActions>
         </FormScrollView>
       </View>
 
@@ -291,11 +287,5 @@ const styles = StyleSheet.create({
   },
   typeText: {
     marginLeft: 4,
-  },
-  button: {
-    marginTop: 0,
-  },
-  deleteButton: {
-    marginTop: 32,
   },
 });

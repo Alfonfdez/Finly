@@ -106,7 +106,7 @@
 - **Last account protection**: when the account being edited is the only account in the database (account count ≤ 1), the "Delete" button is **disabled**:
   - The button border and icon/text use the secondary text color (`c.textSecondary`) and the button has reduced opacity (`0.5`).
   - The button is not tappable (`disabled` + `accessibilityState.disabled`).
-  - A helper hint is shown **above** the button: "You need at least one account, so this one cannot be deleted" (multilingual, `modify_account_delete_last`). It is muted (secondary color) because it explains a disabled action rather than an error, and the red "why you can't save" hint sits **between** Delete and Save (see `spec/constitution/6-screens.md`, Form validation & bottom action area).
+  - A helper hint is shown **above** the button: "You need at least one account, so this one cannot be deleted" (multilingual, `modify_account_delete_last`). It is muted (secondary color) because it explains a disabled action rather than an error, and it lives in the **reserved muted band** of the shared bottom block — so the Delete sits at exactly the same place whether the hint shows (last account) or not (2+ accounts), and the red "why you can't save" hint sits **between** Delete and Save (see `spec/constitution/6-screens.md`, Form validation & bottom action area).
 - When tapped (and not the last account), a confirmation modal opens:
 
 **Confirmation Modal — "Delete account?"**

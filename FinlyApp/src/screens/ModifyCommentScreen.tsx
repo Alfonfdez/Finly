@@ -12,8 +12,7 @@ import { type RootStackParamList, type NavigationProp, MAX_COMMENT_LENGTH } from
 import ConfirmationModal from '../components/ConfirmationModal';
 import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';
-import FormHintSlot from '../components/form/FormHintSlot';
-import DeleteButton from '../components/form/DeleteButton';
+import FormActions from '../components/form/FormActions';
 import FormScrollView from '../components/form/FormScrollView';
 import { CARD_BORDER_RADIUS } from '../components/componentStyles';
 import { ERROR_PREFIXES, runWithErrorAlert, showErrorAlert } from '../utils/errors';
@@ -85,18 +84,20 @@ export default function ModifyCommentScreen() {
           onBlur={onBottomFieldBlur}
         />
 
-        <DeleteButton label={labels.delete} onPress={openDeleteModal} />
-
-        <FormHintSlot message={isEmpty ? labels.comments_error_empty : ''} />
-
-        <PrimaryButton
-          label={labels.comments_save}
-          onPress={handleSave}
-          disabled={isDisabled}
-          enabledTextColor={c.background}
-          disabledBg={c.surface}
-          disabledTextColor={c.textSecondary}
-        />
+        <FormActions
+          deleteLabel={labels.delete}
+          onDeletePress={openDeleteModal}
+          saveHint={isEmpty ? labels.comments_error_empty : ''}
+        >
+          <PrimaryButton
+            label={labels.comments_save}
+            onPress={handleSave}
+            disabled={isDisabled}
+            enabledTextColor={c.background}
+            disabledBg={c.surface}
+            disabledTextColor={c.textSecondary}
+          />
+        </FormActions>
 
         <Text style={[styles.mergeHint, { color: c.textSecondary, fontSize: fs(12) }]}>
           {labels.comments_merge_hint}

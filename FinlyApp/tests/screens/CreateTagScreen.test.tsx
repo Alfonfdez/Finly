@@ -4,6 +4,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import CreateTagScreen from '../../src/screens/CreateTagScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
+import { TEST_IDS } from '../../src/constants/testIds';
 import type { Tag } from '../../src/database/types';
 
 const nav = { setOptions: vi.fn(), navigate: vi.fn(), goBack: vi.fn() };
@@ -59,6 +60,14 @@ describe('CreateTagScreen', () => {
 
     expect(view.getByText('Enter a tag name')).toBeTruthy();
     expect(StyleSheet.flatten(view.getByPlaceholderText('Tag name').props.style).borderColor).toBe('#334155');
+  });
+
+  it('reserves the hint band so Create never moves', async () => {
+    const view = await render(<CreateTagScreen />);
+
+    const slot = view.getByTestId(TEST_IDS.formHintSlot);
+    expect(StyleSheet.flatten(slot.props.style).minHeight).toBeGreaterThan(0);
+    expect(view.queryByTestId(TEST_IDS.formMutedSlot)).toBeNull();
   });
 
   it('reddens the field once the user leaves it empty', async () => {

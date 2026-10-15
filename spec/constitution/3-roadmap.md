@@ -741,3 +741,14 @@ Every limited field and list header now shares one counter, applied 2026-10-15:
 - Gate: `npm run test:all` green (134 files / 1057 tests); verified on the Android release APK.
 
 Spec: spec/constitution/6-screens.md (Character Counter), spec/features/028.
+
+## Fixed form footer: reserved hint bands everywhere
+Status: completed.
+
+The bottom block of every form is now the shared `components/form/FormActions` (muted band -> Delete -> red band -> Save), applied 2026-10-15:
+- **Both bands are always reserved** (2 lines, 8/8 margins, scaling with the text size), so nothing moves when a message appears or disappears. Previously the reservation existed only where a Delete was passed, so Add/Modify transaction, Create recurring, Create account, Create category and Create tag still shifted their Save button; the account's Delete also moved between the last-account and 2+-accounts states.
+- **The muted band is the standard separator above the destructive button**, which is why every delete form reserves it (blank when there is no explanation) - so Edit recurring, Edit tag, Edit comment and Modify category gained the same, larger distance from the field area above, and Create category gained the same separation between the colour picker and its button.
+- `FormHintSlot` lost its `reserve` prop (always reserved) and gained `tone: 'error' | 'muted'`; `TransactionForm`'s `footer` node was replaced by explicit `deleteLabel`/`onDeletePress`/`deleteDisabled`/`deleteHint` props.
+- Gate: `npm run test:all` green (134 files / 1062 tests); verified on the Android release APK (uiautomator bounds: the Delete->Save distance is identical with and without a hint).
+
+Spec: spec/constitution/6-screens.md (Form validation & bottom action area), spec/features/012.

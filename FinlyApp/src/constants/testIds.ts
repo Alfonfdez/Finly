@@ -12,4 +12,5 @@ export const TEST_IDS = {
   accountsList: 'accounts-list',
   formDelete: 'form-delete',
   formHintSlot: 'form-hint-slot',
+  formMutedSlot: 'form-muted-slot',
 } as const;

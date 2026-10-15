@@ -22,7 +22,7 @@ import RadioButton from '../components/RadioButton';
 import LabeledTextField from '../components/form/LabeledTextField';
 import SectionTitle from '../components/form/SectionTitle';
 import PrimaryButton from '../components/form/PrimaryButton';
-import FormError from '../components/form/FormError';
+import FormActions from '../components/form/FormActions';
 import FormScrollView from '../components/form/FormScrollView';
 
 type CreateCategoryRouteProp = RouteProp<RootStackParamList, 'CreateCategory'>;
@@ -136,18 +136,11 @@ export default function CreateCategoryScreen() {
             onSelectColor={handleColorSelect}
           />
 
-          {atCategoryLimit ? (
-            <FormError message={labels.create_cat_error_limit(MAX_CATEGORIES_PER_TYPE)} fontSize={fs(12)} style={styles.limit} />
-          ) : (
-            <FormError message={hintText} fontSize={fs(12)} style={styles.hint} />
-          )}
-
-          <PrimaryButton
-            label={labels.create_cat_add}
-            onPress={handleCreate}
-            disabled={!canCreate}
-            style={styles.button}
-          />
+          <FormActions
+            saveHint={atCategoryLimit ? labels.create_cat_error_limit(MAX_CATEGORIES_PER_TYPE) : hintText}
+          >
+            <PrimaryButton label={labels.create_cat_add} onPress={handleCreate} disabled={!canCreate} />
+          </FormActions>
         </FormScrollView>
       </View>
     </ScreenShell>
@@ -165,16 +158,5 @@ const styles = StyleSheet.create({
   },
   radioLabel: {
     marginRight: 12,
-  },
-  hint: {
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  limit: {
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  button: {
-    marginTop: 16,
   },
 });
