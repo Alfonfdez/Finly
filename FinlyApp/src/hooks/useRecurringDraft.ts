@@ -35,6 +35,9 @@ export function useRecurringDraft({
   const [repeatEnd, setRepeatEnd] = useState<Date | null>(initialRepeatEnd ?? null);
   const [repeatLastDay, setRepeatLastDay] = useState(initialRepeatLastDay ?? false);
   const [repeatName, setRepeatName] = useState(initialRepeatName ?? '');
+  // The "required" message only appears after the user has left the name empty,
+  // so a freshly-opened form isn't shown in red.
+  const [nameTouched, setNameTouched] = useState(false);
   const [modalRepeatEndVisible, setModalRepeatEndVisible] = useState(false);
 
   // Earliest valid end date: the day after the first occurrence (which lands on the
@@ -60,6 +63,11 @@ export function useRecurringDraft({
     return taken ? 'taken' : null;
   }, [ruleMode, repeatName, existingRepeatNames]);
 
+  const markNameTouched = useCallback(() => setNameTouched(true), []);
+
+  /** What the field shows: the raw error, but "required" is held back until the field is blurred. */
+  const repeatNameErrorDisplay = repeatNameError === 'required' && !nameTouched ? null : repeatNameError;
+
   const buildRecurrence = useCallback((): RecurrenceDraft => ({
     name: repeatName.trim(),
     frequency: repeatFrequency,
@@ -76,6 +84,8 @@ export function useRecurringDraft({
     repeatName, setRepeatName,
     repeatMinDate,
     repeatNameError,
+    repeatNameErrorDisplay,
+    markNameTouched,
     modalRepeatEndVisible, setModalRepeatEndVisible,
     buildRecurrence,
   };

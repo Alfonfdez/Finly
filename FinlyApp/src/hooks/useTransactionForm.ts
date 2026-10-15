@@ -118,6 +118,8 @@ export function useTransactionForm({
     repeatName, setRepeatName,
     repeatMinDate,
     repeatNameError,
+    repeatNameErrorDisplay,
+    markNameTouched,
     modalRepeatEndVisible, setModalRepeatEndVisible,
     buildRecurrence,
   } = useRecurringDraft({
@@ -375,6 +377,7 @@ export function useTransactionForm({
     ruleUnmaterialized,
     ruleStartMovedEarlier,
     repeatName, setRepeatName, repeatNameError,
+    repeatNameErrorDisplay, markNameTouched,
     modalAccountVisible, setModalAccountVisible,
     modalCalendarVisible, setModalCalendarVisible,
     modalRepeatEndVisible, setModalRepeatEndVisible,

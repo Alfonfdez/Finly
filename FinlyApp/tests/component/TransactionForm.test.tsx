@@ -59,12 +59,16 @@ const removePhoto = vi.fn();
 const mockFormState = {
   type: 'expense' as const,
   amountRaw: '',
+  numericAmount: null as number | null,
+  accountId: 1 as number | undefined,
   categoryId: null as number | null,
   selectedTags: [] as number[],
   comment: '',
   photos: [] as string[],
   canSubmit: false,
   config: { ...DEFAULT_CONFIG } as Config,
+  repeatNameErrorDisplay: null as 'required' | 'taken' | null,
+  repeatNameError: null as 'required' | 'taken' | null,
 };
 
 vi.mock('../../src/hooks/useTransactionForm', () => ({
@@ -108,11 +112,15 @@ vi.mock('../../src/hooks/useTransactionForm', () => ({
     handlePickFromGallery: pickFromGallery,
     handleRemovePhoto: removePhoto,
     canSubmit: mockFormState.canSubmit,
+    repeatNameError: mockFormState.repeatNameError,
+    repeatNameErrorDisplay: mockFormState.repeatNameErrorDisplay,
+    markNameTouched: vi.fn(),
+    accountId: mockFormState.accountId,
     visibleCategories: [] as Category[],
     hasMore: false,
     selectedAccount: { id: 1, user_id: 1, name: 'Wallet', is_total: 0, created_at: '2026-01-01' } as Account,
     selectableAccounts: [] as Account[],
-    numericAmount: null as number | null,
+    numericAmount: mockFormState.numericAmount,
     inputRef: { current: null },
     scrollRef: { current: null },
     config: mockFormState.config,
@@ -145,10 +153,14 @@ describe('TransactionForm', () => {
   beforeEach(() => {
     mockFormState.type = 'expense';
     mockFormState.amountRaw = '';
+    mockFormState.numericAmount = null;
+    mockFormState.accountId = 1;
     mockFormState.categoryId = null;
     mockFormState.comment = '';
     mockFormState.canSubmit = false;
     mockFormState.config = { ...DEFAULT_CONFIG };
+    mockFormState.repeatNameErrorDisplay = null;
+    mockFormState.repeatNameError = null;
     nav.navigate.mockClear();
   });
 
@@ -181,7 +193,33 @@ describe('TransactionForm', () => {
 
   it('shows a hint while the form is incomplete', async () => {
     const view = await renderForm();
-    expect(view.getByText('Select a category and enter an amount')).toBeTruthy();
+    expect(view.getByText('Select a category. Enter a valid amount greater than 0.')).toBeTruthy();
+  });
+
+  it('lists every missing condition at once', async () => {
+    mockFormState.repeatNameError = 'required';
+    const view = await renderForm({ ruleMode: true });
+    expect(
+      view.getByText('Select a category. Enter a valid amount greater than 0. Enter a name for this recurring rule.'),
+    ).toBeTruthy();
+  });
+
+  it('shows the recurring name hint when the name is the only blocker', async () => {
+    mockFormState.numericAmount = 10;
+    mockFormState.amountRaw = '10';
+    mockFormState.categoryId = 1;
+    mockFormState.repeatNameError = 'required';
+    const view = await renderForm({ ruleMode: true });
+    expect(view.getByText('Enter a name for this recurring rule.')).toBeTruthy();
+  });
+
+  it('shows the taken-name hint in rule mode', async () => {
+    mockFormState.numericAmount = 10;
+    mockFormState.amountRaw = '10';
+    mockFormState.categoryId = 1;
+    mockFormState.repeatNameError = 'taken';
+    const view = await renderForm({ ruleMode: true });
+    expect(view.getByText('That name is already used by another recurring rule.')).toBeTruthy();
   });
 
   it('shows tag, comment and photo sections by default', async () => {

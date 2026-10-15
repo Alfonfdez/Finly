@@ -110,7 +110,7 @@ describe('AddTransactionScreen', () => {
 
   it('renders the transaction form with the submit button and hint', async () => {
     const view = await render(<AddTransactionScreen />);
-    expect(view.getByText('Select a category and enter an amount')).toBeTruthy();
+    expect(view.getByText('Select a category. Enter a valid amount greater than 0.')).toBeTruthy();
     expect(view.getByText('Add')).toBeDisabled();
   });
 
