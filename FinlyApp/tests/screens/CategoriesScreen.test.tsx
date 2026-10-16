@@ -1,13 +1,41 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { StyleSheet } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import CategoriesScreen from '../../src/screens/CategoriesScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
 import { MAX_CATEGORIES_PER_TYPE } from '../../src/constants/types';
+import { TEST_IDS } from '../../src/constants/testIds';
 import type { Category } from '../../src/database/types';
 
-const nav = { setOptions: vi.fn(), navigate: vi.fn() };
+// The screen's Select/Search controls live in the navigation header, so the header
+// node is captured and rendered next to the screen (mirrors the Accounts test).
+let setHeaderNode: ((node: ReactNode) => void) | null = null;
+const nav = {
+  navigate: vi.fn(),
+  setOptions: vi.fn((opts: { headerRight?: (() => ReactNode) | null }) => {
+    setHeaderNode?.(opts.headerRight ? opts.headerRight() : null);
+  }),
+};
+
+function HeaderHost() {
+  const [node, setNode] = useState<ReactNode>(null);
+  setHeaderNode = setNode;
+  return <>{node}</>;
+}
+
+const renderWithHeader = () => render(<><HeaderHost /><CategoriesScreen /></>);
+
+/** `paddingTop` of the grid's scroll container. */
+function gridPaddingTop(view: unknown): number | undefined {
+  const queries = view as {
+    getByTestId: (id: string) => { props: { contentContainerStyle?: unknown } };
+  };
+  const style = StyleSheet.flatten(
+    queries.getByTestId(TEST_IDS.categoriesGrid).props.contentContainerStyle,
+  ) as { paddingTop?: number } | undefined;
+  return style?.paddingTop;
+}
 
 const mockCountByCategoryIdsMap = vi.fn();
 
@@ -113,5 +141,19 @@ describe('CategoriesScreen', () => {
     const view = await render(<CategoriesScreen />);
     fireEvent.press(view.getByText('Create'));
     expect(nav.navigate).toHaveBeenCalledWith('CreateCategory', { type: 'expense' });
+  });
+
+  it('adds the standard gap below the select-all line in select mode', async () => {
+    setAppData({ categories: [expenseCategory(1, 'Food'), expenseCategory(2, 'Transport')] });
+    const view = await renderWithHeader();
+
+    // Normal mode: there is no select-all row, so the grid keeps its own spacing.
+    expect(gridPaddingTop(view)).toBeUndefined();
+
+    await fireEvent.press(view.getByLabelText('Enter select mode'));
+    await fireEvent.press(await view.findByText('Select all'));
+
+    // The tiles must not touch the separator line of the row above them.
+    expect(gridPaddingTop(view)).toBe(16);
   });
 });

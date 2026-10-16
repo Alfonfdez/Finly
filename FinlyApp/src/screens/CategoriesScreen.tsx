@@ -23,7 +23,8 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import BulkCategoryTransferModal, { type BulkCategoryItem } from '../components/BulkCategoryTransferModal';
 import type { TransferTargetId } from '../components/CategoryTransferModal';
 import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, type TransactionType, type NavigationProp } from '../constants/types';
-import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
+import { LIST_BOTTOM_FAB_PADDING, LIST_TOP_GAP } from '../constants/layout';
+import { TEST_IDS } from '../constants/testIds';
 import { sortCategoriesWithOthersLast, categoriesOfType, countCategoriesOfType } from '../utils/categoryUtils';
 import { countAtLimit } from '../utils/limits';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
@@ -182,7 +183,11 @@ export default function CategoriesScreen() {
           empty={filteredCategories.length === 0}
           emptyState={<EmptyState {...emptyStateProps(searchActive, 'grid-outline', labels.add_cat_no_results)} />}
         >
-          <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+          <ScrollView
+            testID={TEST_IDS.categoriesGrid}
+            style={styles.scrollView}
+            contentContainerStyle={[styles.scrollContent, selectMode && LIST_TOP_GAP]}
+          >
             <CategoryGrid
               categories={filteredCategories}
               selectedCategory={null}
