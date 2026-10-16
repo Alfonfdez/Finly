@@ -73,10 +73,38 @@ describe('ModifyCategoryScreen', () => {
     vi.useRealTimers();
   });
 
-  it('preloads the category into the form', async () => {
+  it('preloads the category and keeps Save disabled until something changes', async () => {
     const view = await render(<ModifyCategoryScreen />);
     expect(view.getByDisplayValue('Food')).toBeTruthy();
+    expect(view.getByText('Save')).toBeDisabled();
+  });
+
+  it('keeps what the user typed when the category data refreshes underneath', async () => {
+    const view = await render(<ModifyCategoryScreen />);
+    const input = await view.findByDisplayValue('Food');
+    await fireEvent.changeText(input, 'Food edited');
+
+    // A refresh from AppContext must not reset the form (the userEdited guard).
+    setAppData({ categories: [{ ...category }] });
+    expect(view.getByDisplayValue('Food edited')).toBeTruthy();
+  });
+
+  it('enables Save only while the form differs from the loaded category', async () => {
+    vi.useFakeTimers();
+    const view = await render(<ModifyCategoryScreen />);
+    const nameInput = await view.findByDisplayValue('Food');
+
+    await fireEvent.changeText(nameInput, 'Food2');
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300);
+    });
     expect(view.getByText('Save')).toBeEnabled();
+
+    await fireEvent.changeText(nameInput, 'Food');
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300);
+    });
+    expect(view.getByText('Save')).toBeDisabled();
   });
 
   it('saves the edited category and goes back', async () => {

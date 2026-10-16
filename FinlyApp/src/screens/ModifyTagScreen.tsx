@@ -6,6 +6,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
 import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
+import { useIsDirty } from '../hooks/useIsDirty';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
@@ -78,7 +79,12 @@ export default function ModifyTagScreen() {
   });
 
   const isEmpty = !name.trim();
-  const isDisabled = isEmpty || !!nameError || checkingName;
+
+  /** The name the form opened with — Save only applies an actual change. */
+  const baseline = useMemo(() => (tag ? { name: tag.name.trim() } : null), [tag]);
+  const isDirty = useIsDirty(baseline, { name: name.trim() });
+
+  const isDisabled = isEmpty || !!nameError || checkingName || !isDirty;
 
   const hintText = isEmpty ? labels.create_tag_error_empty : nameError;
 

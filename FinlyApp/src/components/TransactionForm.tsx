@@ -74,6 +74,8 @@ interface TransactionFormProps {
   onDirtyChange?: (dirty: boolean) => void;
   topNotice?: ReactNode;
   resetTagsOnFirstFocus?: boolean;
+  /** The form edits an existing transaction/rule: Save requires an actual change. */
+  editing?: boolean;
   onError?: () => void;
 }
 

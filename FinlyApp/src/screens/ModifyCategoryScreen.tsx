@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, TextInput,
   StyleSheet, Keyboard,
@@ -10,6 +10,7 @@ import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
 import { useColorSelection } from '../hooks/useColorSelection';
+import { useIsDirty } from '../hooks/useIsDirty';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { t, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdByName } from '../i18n';
 import { categoryRepository, transactionRepository } from '../database';
@@ -49,6 +50,7 @@ export default function ModifyCategoryScreen() {
   const [nameTouched, setNameTouched] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const userEditedRef = useRef(false);
+  const markEdited = useCallback(() => { userEditedRef.current = true; }, []);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectModalVisible, setSelectModalVisible] = useState(false);
   const [targetCategoryId, setTargetCategoryId] = useState<number | null>(null);
@@ -80,13 +82,27 @@ export default function ModifyCategoryScreen() {
   const deferredRefresh = useDeferredRefresh(refresh);
 
   const handleNameChangeLocal = (value: string) => {
-    userEditedRef.current = true;
+    markEdited();
     setNameTouched(true);
     handleNameChange(value, setName);
   };
 
   const validationError = name.trim().length === 0 ? labels.create_cat_error_name_empty : nameError;
-  const canSave = name.trim().length > 0 && !nameError && !checkingName;
+
+  /** The values the form opened with; a refetch must not move the baseline. */
+  const baseline = useMemo(() => (category ? {
+    name: getDisplayCategoryName(category).trim(),
+    icon: category.icon,
+    color: category.color,
+  } : null), [category]);
+
+  const isDirty = useIsDirty(baseline, {
+    name: name.trim(),
+    icon: selectedIcon,
+    color: selectedColor,
+  });
+
+  const canSave = name.trim().length > 0 && !nameError && !checkingName && isDirty;
 
   const sameTypeCategories = useMemo(() => {
     if (!category) return [];
@@ -212,10 +228,10 @@ export default function ModifyCategoryScreen() {
             symbolTitle={labels.create_cat_symbols}
             colorTitle={labels.create_cat_color}
             selectedIcon={selectedIcon}
-            onSelectIcon={setSelectedIcon}
+            onSelectIcon={(icon) => { markEdited(); setSelectedIcon(icon); }}
             selectedColor={selectedColor}
             customColor={customColor}
-            onSelectColor={handleColorSelect}
+            onSelectColor={(color) => { markEdited(); handleColorSelect(color); }}
           />
 
           <FormActions

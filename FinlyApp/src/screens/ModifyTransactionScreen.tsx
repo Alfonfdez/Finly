@@ -75,6 +75,7 @@ export default function ModifyTransactionScreen() {
       initialAmount={String(transaction.amount)}
       initialPhotos={parsePhotos(transaction.photo)}
       onDirtyChange={onDirtyChange}
+      editing
       submitLabel={labels.modify_save}
       errorTitle={labels.modify_error_title}
       errorMessage={labels.modify_error_message}

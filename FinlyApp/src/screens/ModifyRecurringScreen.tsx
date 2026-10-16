@@ -181,6 +181,7 @@ export default function ModifyRecurringScreen() {
           changeType(draft.type);
         }}
         ruleMode
+        editing
         deleteLabel={labels.delete}
         onDeletePress={() => setDeleteVisible(true)}
         onRecurringPastAffectedChange={setPastAffected}
