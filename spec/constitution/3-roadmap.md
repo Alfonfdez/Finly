@@ -763,3 +763,15 @@ The two vocabularies this feature introduced are now named constants instead of 
 - Gate: `npm run test:all` green (134 files / 1062 tests).
 
 Spec: spec/constitution/2-tech-stack.md (Code conventions).
+
+## Edit screens: Save only when something changed
+Status: completed.
+
+Every edit screen keeps Save disabled until the draft actually differs from what it loaded, applied 2026-10-15:
+- The comparison is by **value**, not "was ever touched": retyping the same amount, re-picking the original category/day/account or adding-then-removing the same tag counts as "no change" again. The transaction/rule form reuses `useTransactionForm`'s existing `isDirty` (now part of `canSubmit`, gated by an explicit `editing` prop); the account, category and tag screens use the new `hooks/useIsDirty.ts` (baseline captured once, shallow value compare).
+- The rule editor counts a change of the "Apply changes to" scope away from its default as a change, so a skipped/recoverable window is still recoverable via "Future + past" without editing a field. Saving an unchanged rule is intentionally impossible: due occurrences are materialized automatically on app start, on returning to the foreground and across midnight (`AppContext`).
+- "Nothing changed" keeps the hint band **empty** (the grey button is the signal).
+- Secondary fixes in the same change: `ModifyAccountScreen` guards its preload with `userEditedRef` on all five inputs (a re-focus refetch can no longer wipe the user's input) and `ModifyCategoryScreen`'s guard now covers the icon/colour pickers too.
+- Gate: `npm run test:all` green (135 files / 1071 tests); verified on the Android release APK.
+
+Spec: spec/constitution/6-screens.md (Form validation & bottom action area), spec/features/009, 012, 017, 018, 028.

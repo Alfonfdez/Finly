@@ -35,6 +35,36 @@ vi.mock('../../src/database/configDefaults', () => ({
   sanitizeDefaultAccounts: () => ({}),
 }));
 
+// `useFocusLoad` is replaced with a controllable version so a re-focus refetch can be
+// triggered on demand to prove it does not wipe what the user typed.
+const { reloadRef } = vi.hoisted(() => ({
+  reloadRef: { current: null as (() => Promise<void>) | null },
+}));
+
+vi.mock('../../src/hooks/useFocusLoad', async () => {
+  const React = await import('react');
+  return {
+    useFocusLoad: <T,>(loader: () => Promise<T>, initial: T) => {
+      const [data, setData] = React.useState<T>(initial);
+      const [loading, setLoading] = React.useState(true);
+      const loaderRef = React.useRef(loader);
+      loaderRef.current = loader;
+      const dataRef = React.useRef<T>(initial);
+      const run = React.useCallback(async () => {
+        const result = await loaderRef.current();
+        if (result !== dataRef.current) {
+          dataRef.current = result;
+          setData(result);
+        }
+        setLoading(false);
+      }, []);
+      React.useEffect(() => { run(); }, [run]);
+      reloadRef.current = run;
+      return { data, setData, loading };
+    },
+  };
+});
+
 vi.mock('@react-navigation/native', async () => {
   const React = await import('react');
   return {
@@ -77,10 +107,28 @@ describe('ModifyAccountScreen', () => {
     vi.useRealTimers();
   });
 
-  it('preloads the account into the form', async () => {
+  it('preloads the account and keeps Save disabled until something changes', async () => {
     const view = await render(<ModifyAccountScreen />);
     await view.findByDisplayValue('Cash');
+    expect(view.getByText('Save')).toBeDisabled();
+  });
+
+  it('enables Save only while the form differs from the loaded account', async () => {
+    vi.useFakeTimers();
+    const view = await render(<ModifyAccountScreen />);
+    const nameInput = await view.findByDisplayValue('Cash');
+
+    await fireEvent.changeText(nameInput, 'Cash2');
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300);
+    });
     expect(view.getByText('Save')).toBeEnabled();
+
+    await fireEvent.changeText(nameInput, 'Cash');
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300);
+    });
+    expect(view.getByText('Save')).toBeDisabled();
   });
 
   it('saves the edited account name and goes back', async () => {
@@ -96,6 +144,19 @@ describe('ModifyAccountScreen', () => {
     await waitFor(() => expect(mockAccountUpdate).toHaveBeenCalledTimes(1));
     expect(mockAccountUpdate).toHaveBeenCalledWith(5, expect.objectContaining({ name: 'Cash2' }));
     expect(nav.goBack).toHaveBeenCalled();
+  });
+
+  it('keeps what the user typed when the account is refetched on focus', async () => {
+    const view = await render(<ModifyAccountScreen />);
+    await view.findByDisplayValue('Cash');
+
+    await fireEvent.changeText(view.getByPlaceholderText('Account name'), 'Cash edited');
+
+    await act(async () => {
+      await reloadRef.current?.();
+    });
+
+    expect(view.getByDisplayValue('Cash edited')).toBeTruthy();
   });
 
   it('lays out the disabled-delete note, Delete, the reserved hint slot and Save in order', async () => {

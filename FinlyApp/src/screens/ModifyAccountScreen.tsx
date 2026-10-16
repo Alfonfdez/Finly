@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { View, StyleSheet, Keyboard } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
@@ -9,6 +9,7 @@ import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useColorSelection } from '../hooks/useColorSelection';
 import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
+import { useIsDirty } from '../hooks/useIsDirty';
 import { t, getDisplayAccountName, getDefaultEnglishAccountName, getAccountName, getDefaultAccountIdByName, getDisplayAccountDescription, getDefaultEnglishAccountDescription, getAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
 import { sanitizeDefaultAccounts } from '../database/configDefaults';
@@ -47,9 +48,13 @@ export default function ModifyAccountScreen() {
   const [description, setDescription] = useState('');
   const [initialBalanceRaw, setInitialBalanceRaw] = useState('');
   const { selectedColor, customColor, setSelectedColor, setCustomColor, handleColorSelect } = useColorSelection();
+  // The account is refetched on focus; once the user has touched anything that
+  // refetch must not overwrite their input.
+  const userEditedRef = useRef(false);
+  const markEdited = useCallback(() => { userEditedRef.current = true; }, []);
 
   useEffect(() => {
-    if (!account) return;
+    if (!account || userEditedRef.current) return;
     setName(getDisplayAccountName(account));
     setSelectedIcon(account.icon);
     setSelectedColor(account.color);
@@ -73,9 +78,26 @@ export default function ModifyAccountScreen() {
   const isTotal = account ? isTotalAccount(account) : false;
   const initialBalanceError = initialBalanceRaw.length > 0 && parseAmountValue(initialBalanceRaw) === null;
 
-  const canSave = isTotal
+  /** The values the form opened with; a re-focus refetch must not move the baseline. */
+  const baseline = useMemo(() => (account ? {
+    name: getDisplayAccountName(account).trim(),
+    icon: account.icon,
+    color: account.color,
+    description: getDisplayAccountDescription(account).trim(),
+    balance: account.initial_balance ?? 0,
+  } : null), [account]);
+
+  const isDirty = useIsDirty(baseline, {
+    name: name.trim(),
+    icon: selectedIcon,
+    color: selectedColor,
+    description: description.trim(),
+    balance: parseAmountValue(initialBalanceRaw) ?? 0,
+  });
+
+  const canSave = (isTotal
     ? !checkingName
-    : name.trim().length > 0 && !nameError && !checkingName && initialBalanceError === false;
+    : name.trim().length > 0 && !nameError && !checkingName && initialBalanceError === false) && isDirty;
 
   const hintText = getNameHintText(name, nameError, labels.create_account_error_empty);
 
@@ -141,7 +163,7 @@ export default function ModifyAccountScreen() {
             showNameField
             nameDisabled={isTotal}
             name={name}
-            onNameChange={(v) => handleNameChange(v, setName)}
+            onNameChange={(v) => { markEdited(); handleNameChange(v, setName); }}
             nameError={nameError}
             nameEmptyError={labels.create_account_error_empty}
             icons={ACCOUNT_ICONS}
@@ -149,18 +171,18 @@ export default function ModifyAccountScreen() {
             symbolTitle={labels.create_account_symbols}
             colorTitle={labels.create_account_color}
             selectedIcon={selectedIcon}
-            onSelectIcon={setSelectedIcon}
+            onSelectIcon={(icon) => { markEdited(); setSelectedIcon(icon); }}
             selectedColor={selectedColor}
             customColor={customColor}
-            onSelectColor={handleColorSelect}
+            onSelectColor={(color) => { markEdited(); handleColorSelect(color); }}
             showInitialBalance={!isTotal}
             initialBalanceLabel={labels.modify_account_initial_balance}
             initialBalanceA11yLabel={labels.a11y_initial_balance}
             initialBalanceRaw={initialBalanceRaw}
-            onInitialBalanceChange={setInitialBalanceRaw}
+            onInitialBalanceChange={(value) => { markEdited(); setInitialBalanceRaw(value); }}
             noteLabel={labels.modify_account_note}
             description={description}
-            onDescriptionChange={setDescription}
+            onDescriptionChange={(value) => { markEdited(); setDescription(value); }}
             hintText={hintText}
             submitLabel={labels.modify_account_save}
             isSubmitDisabled={!canSave}

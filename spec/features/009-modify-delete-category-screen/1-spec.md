@@ -22,6 +22,7 @@ Screen accessible from the categories screen (008) that allows the user to edit 
   - If there is a duplicate, the "Save" button remains disabled and the message ("Enter a category name" when blank, the duplicate message otherwise) appears in the form's bottom hint — a single red line **between Delete and Save** — not below the input. The input itself only turns red once the field has been changed or blurred (a freshly-opened form is never red). See `spec/constitution/6-screens.md` (Form validation & bottom action area).
   - The check runs with a 300ms debounce.
 - If the name is empty, the "Save" button is disabled (same bottom hint, `create_cat_error_name_empty`).
+- **Save is enabled only when the category actually changed**: name, icon and color are compared by value with the preloaded category, so an untouched screen keeps Save disabled (empty hint band) and putting the original value back disables it again. Once the user touches any of them a data refresh no longer overwrites the form.
 
 ### 3. Type
 

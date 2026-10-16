@@ -12,9 +12,11 @@ import {
   type RecurrenceFrequency,
   type TransactionDraft,
   type RecurrenceDraft,
+  type RecurrenceScope,
   CATEGORY_USAGE_WINDOW_DAYS,
   USER_ID,
   MAX_VISIBLE_CATEGORIES,
+  RECURRENCE_SCOPES,
 } from '../constants/types';
 import { formatDateForDB } from '../utils/formatters';
 import { isRuleUnmaterialized, toDateOnly } from '../utils/recurrence';
@@ -57,6 +59,10 @@ type UseTransactionFormProps = {
   initialRepeatName?: string;
   initialRepeatLastDay?: boolean;
   existingRepeatNames?: string[];
+  /** The form edits an existing transaction/rule: Save requires an actual change. */
+  editing?: boolean;
+  /** Recurring edit scope; outside the default (`future`) it counts as a change. */
+  repeatScope?: RecurrenceScope;
 };
 
 export function useTransactionForm({
@@ -87,6 +93,8 @@ export function useTransactionForm({
   initialRepeatName,
   initialRepeatLastDay,
   existingRepeatNames,
+  editing = false,
+  repeatScope,
 }: UseTransactionFormProps) {
   const { config } = useConfig();
   const { accounts, categories, accountsWithBalance, tags, refresh: refreshAll, refreshTags } = useApp();
@@ -234,8 +242,16 @@ export function useTransactionForm({
     if (accountId === undefined) return false;
     if (ruleMode && repeatNameError) return false;
     if (ruleMode && repeatEnd && repeatEnd < repeatMinDate) return false;
+    // On an edit screen Save only applies a real change — and picking the original
+    // value back counts as "no change". Switching the rule edit scope away from the
+    // default is itself a change (it back-fills/handles the past).
+    const scopeChanged = ruleMode && repeatScope !== undefined && repeatScope !== RECURRENCE_SCOPES.future;
+    if (editing && !isDirty && !scopeChanged) return false;
     return true;
-  }, [categoryId, numericAmount, day, accountId, ruleMode, repeatNameError, repeatEnd, repeatMinDate]);
+  }, [
+    categoryId, numericAmount, day, accountId, ruleMode, repeatNameError, repeatEnd, repeatMinDate,
+    editing, isDirty, repeatScope,
+  ]);
 
   // A rule whose cursor still equals its start has never generated/skipped an
   // occurrence ("fresh"): editing the start date re-anchors it from the new start

@@ -477,8 +477,9 @@ useEffect(() => {
 Every form — Create, Edit, and the transaction/recurring forms — shares one rule set:
 
 1. **The bottom hint says why Save is disabled.** It is shown whenever the button is disabled, uses the **same wording in Create and Edit** (shared i18n keys) and is the **only** place the message appears — never duplicated under the field. The recurring form lists **every** unmet condition at once (one sentence each).
-2. **A field is only painted red for a value the user invalidated.** The red border is held back until the field has been **changed or blurred**, so a freshly-opened form never greets the user in red (`LabeledTextField` owns this gating; a screen with its own input, like the category name, repeats the same two-line pattern). `AmountInput` takes an optional `error` prop: an amount of **0** is flagged with a red border (the digits keep their normal color) while an account's initial balance of **0** stays valid; its red *text* is reserved for a value that is not a number at all.
-3. **The bottom block is one shared component** (`components/form/FormActions`), so its layout cannot drift:
+2. **Save is enabled only when the form changed *and* every rule passes.** On an **edit** screen (`editing`) the button stays disabled while the draft equals what the screen loaded — with an **empty hint band**, since "nothing changed" is not a field error: the grey button is the signal. The comparison is by **value**, so returning a field to its original value (picking the original category back, retyping the same amount, adding and removing the same tag) disables Save again; the helper is `hooks/useIsDirty.ts` (a value comparison against the first loaded baseline; the transaction/rule form reuses `useTransactionForm`'s `isDirty`). **Exception:** on the rule editor, moving the "Apply changes to" scope away from its default counts as a change (that scope is what back-fills/handles the past occurrences). Create/Add screens have no baseline and keep their own rules.
+3. **A field is only painted red for a value the user invalidated.** The red border is held back until the field has been **changed or blurred**, so a freshly-opened form never greets the user in red (`LabeledTextField` owns this gating; a screen with its own input, like the category name, repeats the same two-line pattern). `AmountInput` takes an optional `error` prop: an amount of **0** is flagged with a red border (the digits keep their normal color) while an account's initial balance of **0** stays valid; its red *text* is reserved for a value that is not a number at all.
+4. **The bottom block is one shared component** (`components/form/FormActions`), so its layout cannot drift:
 
    ```
    ⟨field area⟩
@@ -489,8 +490,8 @@ Every form — Create, Edit, and the transaction/recurring forms — shares one 
    ```
 
    Both bands are **reserved even when empty** (2 lines, 8/8 margins, scaling with the text size), so neither the Delete nor Save ever moves when a message appears or disappears — and the separation from the field area is identical in every screen, whether or not a hint is showing. The **muted band doubles as the standard separator above the destructive button**, which is why every delete form (not just the account, whose note uses it) reserves it. The caller passes only the messages and the Save node (each form keeps its own Save styling).
-4. **The Delete button always reads the generic `Delete`.** Only the confirmation modal spells out what is being deleted.
-5. Purely **informative** notes (e.g. the comment merge note) stay **below Save** — they explain, they do not block.
+5. **The Delete button always reads the generic `Delete`.** Only the confirmation modal spells out what is being deleted.
+6. Purely **informative** notes (e.g. the comment merge note) stay **below Save** — they explain, they do not block.
 
 ### Delete Button (Modify screens)
 

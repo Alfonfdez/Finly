@@ -76,4 +76,17 @@ describe('ModifyTagScreen', () => {
     expect(within(view.getByTestId(TEST_IDS.formHintSlot)).getByText('Enter a tag name')).toBeTruthy();
     expect(StyleSheet.flatten(input.props.style).borderColor).toBe('#F87171');
   });
+
+  it('keeps Save disabled until the name actually changes', async () => {
+    const view = await render(<ModifyTagScreen />);
+    const input = await view.findByDisplayValue('Travel');
+
+    expect(view.getByText('Save')).toBeDisabled();
+
+    await fireEvent.changeText(input, 'Travels');
+    await waitFor(() => expect(view.getByText('Save')).toBeEnabled());
+
+    await fireEvent.changeText(input, 'Travel');
+    await waitFor(() => expect(view.getByText('Save')).toBeDisabled());
+  });
 });

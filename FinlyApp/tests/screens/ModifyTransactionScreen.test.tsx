@@ -157,10 +157,17 @@ describe('ModifyTransactionScreen', () => {
     resetStub();
   });
 
-  it('preloads the transaction into the form and enables Save', async () => {
+  it('preloads the transaction into the form and keeps Save disabled until something changes', async () => {
     const view = await render(<ModifyTransactionScreen />);
-    expect(await view.findByText('Save')).toBeEnabled();
+    expect(await view.findByText('Save')).toBeDisabled();
     expect(view.getByText('Account')).toBeTruthy();
+
+    await fireEvent.changeText(view.getByPlaceholderText('0'), '99');
+    expect(view.getByText('Save')).toBeEnabled();
+
+    // Back to the loaded amount (the configured decimal separator is a comma).
+    await fireEvent.changeText(view.getByPlaceholderText('0'), '12,5');
+    expect(view.getByText('Save')).toBeDisabled();
   });
 
   it('loads the saved tags for the transaction', async () => {

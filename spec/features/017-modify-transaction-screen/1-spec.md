@@ -106,6 +106,7 @@
   - A day must be selected.
   - An account must be selected.
 - If the button is disabled, a dynamic help text is shown in red (reuse existing hint from 004). An **amount of 0** additionally gets a red border on the amount input (the digits keep their normal color; the field is not red while it is still empty).
+- **Save is enabled only when the transaction actually changed**: the draft is compared by value with the values the screen loaded (amount, type, account, category, day, comment, tags, photos), so re-picking the original category — or retyping the same amount — disables Save again. An untouched edit screen keeps Save disabled with no hint message.
 - Tapping "Save":
   1. Collects all form data.
   2. Calls `transactionRepository.update(transactionId, data)` with the modified fields.

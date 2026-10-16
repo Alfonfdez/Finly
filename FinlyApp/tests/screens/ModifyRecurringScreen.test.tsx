@@ -195,6 +195,8 @@ describe('ModifyRecurringScreen', () => {
   it('saves with "Future only" by default', async () => {
     const view = await render(<ModifyRecurringScreen />);
     await waitFor(() => expect(view.getByText('Future + past')).toBeTruthy());
+    // Save only applies a real change.
+    await fireEvent.changeText(view.getByPlaceholderText('0'), '120');
     await fireEvent.press(view.getByText('Save'));
 
     await waitFor(() => expect(mockSaveEdit).toHaveBeenCalledTimes(1));
@@ -207,6 +209,9 @@ describe('ModifyRecurringScreen', () => {
     const view = await render(<ModifyRecurringScreen />);
     await waitFor(() => expect(view.getByText('Future + past')).toBeTruthy());
 
+    // Save only applies a real change.
+    await fireEvent.changeText(view.getByPlaceholderText('0'), '120');
+
     // The save awaits the user's choice, so don't await the press itself.
     void fireEvent.press(view.getByText('Save'));
 
@@ -218,6 +223,9 @@ describe('ModifyRecurringScreen', () => {
     mockGetById.mockResolvedValue({ ...rule, start_date: '2026-08-05', next_due: '2026-09-05' });
     const view = await render(<ModifyRecurringScreen />);
     await waitFor(() => expect(view.getByText('Future + past')).toBeTruthy());
+
+    // Save only applies a real change.
+    await fireEvent.changeText(view.getByPlaceholderText('0'), '120');
 
     void fireEvent.press(view.getByText('Save'));
     await waitFor(() => expect(view.getByText('Skip occurrences?')).toBeTruthy());
@@ -277,5 +285,32 @@ describe('ModifyRecurringScreen', () => {
     await waitFor(() =>
       expect(view.getByText('Changing the start date doesn\'t add earlier transactions.')).toBeTruthy(),
     );
+  });
+
+  it('keeps Save disabled until something changes, and counts a scope-only change', async () => {
+    // A previously skipped window is recoverable: "Future + past" can be chosen
+    // without editing any field.
+    mockGetById.mockResolvedValue({
+      ...rule,
+      frequency: 'daily',
+      day_of_month: null,
+      start_date: '2026-09-23',
+      end_date: '2026-10-10',
+      next_due: '2026-10-07',
+      skipped_from: '2026-10-04',
+    });
+    mockListOccurrenceDates.mockResolvedValue(['2026-09-23', '2026-10-06']);
+
+    const view = await render(<ModifyRecurringScreen />);
+    await waitFor(() => expect(view.getByText('Future + past')).toBeTruthy());
+    await waitFor(() => expect(view.getByRole('button', { name: 'Future + past' })).toBeEnabled());
+
+    expect(view.getByText('Save')).toBeDisabled();
+
+    await fireEvent.press(view.getByRole('button', { name: 'Future + past' }));
+    expect(view.getByText('Save')).toBeEnabled();
+
+    await fireEvent.press(view.getByRole('button', { name: 'Future only' }));
+    expect(view.getByText('Save')).toBeDisabled();
   });
 });

@@ -69,7 +69,7 @@
   - Message: "Transactions with this tag will keep it. The tag link will be removed."
   - Cancel / Delete buttons.
   - On confirm: `tagRepo.delete(id)`, `refreshTags()`, navigate back.
-- "Save" button: calls `tagRepo.update()`, `refreshTags()`, navigate back.
+- "Save" button: calls `tagRepo.update()`, `refreshTags()`, navigate back. It is enabled only when the name actually changed (compared by value with the preloaded tag), so an untouched editor keeps it disabled.
 
 ### 7. Multi-select bulk delete (Tags screen)
 
