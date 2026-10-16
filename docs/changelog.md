@@ -3841,3 +3841,13 @@
 
 [2026-10-16] docs | spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, spec/features/017-modify-transaction-screen/1-spec.md
 - Documented the "baseline is the stored row" rule in `spec/constitution/6-screens.md` and spec 017, with a roadmap entry.
+
+[2026-10-16] fix | FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/constants/layout.ts, FinlyApp/src/constants/testIds.ts
+- Fixed the Categories screen's grid: the first tile row no longer touches the select-all row's separator line. The other lists already showed that gap (card lists pad their top 16, Recurring/Transactions rely on their rows' own padding) while the grid had none.
+- Added the `LIST_TOP_GAP` token in `constants/layout.ts` (next to `LIST_BOTTOM_FAB_PADDING`) so the gap is defined once, and applied it to the grid's scroll container in select mode only (normal mode's counter spacing is untouched). The grid's ScrollView gained the `categories-grid` testID.
+
+[2026-10-16] test | FinlyApp/tests/screens/CategoriesScreen.test.tsx
+- The Categories screen test now enters select mode (rendering the header captured from the nav mock, like the Accounts test) and asserts the grid container's `paddingTop` is 16 there and unset in normal mode.
+
+[2026-10-16] docs | spec/constitution/3-roadmap.md
+- Recorded the select-all list gap standard in the roadmap (`LIST_TOP_GAP` is documented in the constant itself).

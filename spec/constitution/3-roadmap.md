@@ -785,3 +785,14 @@ The modify-transaction form now measures its draft against **what is stored righ
 - Gate: `npm run test:all` green (135 files / 1071 tests); regression test covers the rewrite-then-pick-the-stored-value scenario; verified on the Android release APK.
 
 Spec: spec/constitution/6-screens.md (Form validation & bottom action area), spec/features/017.
+
+## Select-all row: standard gap below the separator
+Status: completed.
+
+The Categories screen's grid no longer touches the select-all row's separator, applied 2026-10-16:
+- The row (`components/SelectAllRow`) ends with a 1px bottom line and the next element is the list. Accounts/Tags/Comments pad their list `16` (card rows), Recurring/Transactions rely on their rows' own `paddingVertical`, and Categories had **no** top gap at all, so the first tile row was flush against the line.
+- New `LIST_TOP_GAP` token in `constants/layout.ts` (next to `LIST_BOTTOM_FAB_PADDING`), applied to the Categories grid's scroll container **in select mode only** (in normal mode the counter sits above the grid, so its existing spacing is untouched). The value is defined once, so a future list picks it up instead of re-inventing it.
+- The grid's `ScrollView` gained the `categories-grid` testID and the screen test now enters select mode (header rendered via the nav mock, like the Accounts test) and asserts `paddingTop === 16` there / `undefined` in normal mode.
+- Gate: `npm run test:all` green (135 files / 1072 tests); verified on the Android release APK.
+
+Spec: spec/constitution/6-screens.md.
