@@ -150,33 +150,24 @@ export function useTransactionForm({
   const prevType = useRef(type);
   const isFirstFocus = useRef(true);
 
-  // Values the form opened with. Compared against the live state to tell whether the
-  // user changed anything (a "Future + past" rule edit may rewrite the row underneath,
-  // and an untouched form should adopt it while a dirty one must be preserved).
-  const initialSnapshot = useRef({
+  // What the draft is measured against: the row as stored right now. Building it from the
+  // props (instead of freezing it at mount) means an external rewrite — e.g. a
+  // "Future + past" rule edit touching this row — re-baselines the comparison, so the
+  // draft is compared with what is actually stored and picking the stored value back
+  // leaves nothing to save.
+  const baseline = useMemo(() => ({
     type: initialType,
     amount: initialAmount !== undefined ? parseAmountValue(initialAmount) : null,
     accountId: initialAccountId,
     categoryId: initialCategoryId,
     day: toDateOnly(initialDay),
-    comment: initialComment,
+    comment: initialComment.trim() || null,
+    tagIds: initialTagIds ?? [],
     photos: initialPhotos,
-  });
-  // Tags load from the DB (below), so their "initial" value is the first loaded set.
-  const initialTags = useRef<number[]>(initialTagIds ?? []);
-
-  useEffect(() => {
-    if (transactionId === undefined) return;
-    let active = true;
-    transactionRepository.getTagsByTransactionId(transactionId).then(ids => {
-      if (active) {
-        initialTags.current = ids;
-        setSelectedTags(ids);
-      }
-    }).catch(onError ?? (() => {}));
-    return () => { active = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- onError is stable
-  }, [transactionId]);
+  }), [
+    initialType, initialAmount, initialAccountId, initialCategoryId, initialDay,
+    initialComment, initialTagIds, initialPhotos,
+  ]);
 
   useFocusEffect(useCallback(() => {
     let active = true;
@@ -217,23 +208,18 @@ export function useTransactionForm({
 
   const numericAmount = useMemo(() => parseAmountValue(amountRaw), [amountRaw]);
 
-  /** Whether the draft differs from the values the form opened with (see `initialSnapshot`). */
-  const isDirty = useMemo(() => {
-    const initial = initialSnapshot.current;
-    const tagsChanged = !areIdListsEqual(initialTags.current, selectedTags);
-    const photosChanged =
-      initial.photos.length !== photos.length || initial.photos.some((p, i) => p !== photos[i]);
-    return (
-      type !== initial.type ||
-      numericAmount !== initial.amount ||
-      accountId !== initial.accountId ||
-      categoryId !== initial.categoryId ||
-      toDateOnly(day) !== initial.day ||
-      (comment.trim() || null) !== (initial.comment.trim() || null) ||
-      tagsChanged ||
-      photosChanged
-    );
-  }, [type, numericAmount, accountId, categoryId, day, comment, selectedTags, photos]);
+  /** Whether the draft differs from what is stored (see `baseline`). */
+  const isDirty = useMemo(() => (
+    type !== baseline.type ||
+    numericAmount !== baseline.amount ||
+    accountId !== baseline.accountId ||
+    categoryId !== baseline.categoryId ||
+    toDateOnly(day) !== baseline.day ||
+    (comment.trim() || null) !== baseline.comment ||
+    !areIdListsEqual(selectedTags, baseline.tagIds) ||
+    photos.length !== baseline.photos.length ||
+    photos.some((p, i) => p !== baseline.photos[i])
+  ), [type, numericAmount, accountId, categoryId, day, comment, selectedTags, photos, baseline]);
 
   const canSubmit = useMemo(() => {
     if (categoryId === null) return false;

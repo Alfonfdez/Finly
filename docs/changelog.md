@@ -3831,3 +3831,13 @@
 
 [2026-10-16] docs | spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, spec/features/009-modify-delete-category-screen/1-spec.md, spec/features/012-modify-delete-account-screen/1-spec.md, spec/features/017-modify-transaction-screen/1-spec.md, spec/features/018-tag-management/1-spec.md, spec/features/028-recurring-transactions/1-spec.md
 - Documented the "Save only when something changed" rule (with the rule-editor scope exception) in `spec/constitution/6-screens.md`, touched specs 009, 012, 017, 018 and 028, and added a roadmap entry.
+
+[2026-10-16] fix | FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/screens/ModifyTransactionScreen.tsx
+- The modify-transaction form now measures its draft against what is stored right now: `useTransactionForm` derives the dirty baseline from the row props (tags included) instead of freezing it in a ref at mount, so a "Future + past" rule edit that rewrites this row re-baselines the comparison and picking the value the rule just wrote leaves nothing to save.
+- `ModifyTransactionScreen`'s focus loader returns `{ transaction, tagIds }` and passes `initialTagIds` (as the rule screen already did), which removed the form's async `getTagsByTransactionId` effect plus the `initialSnapshot`/`initialTags` refs and the "tags arrive after mount" window.
+
+[2026-10-16] test | FinlyApp/tests/hooks/useTransactionForm.test.tsx, FinlyApp/tests/screens/ModifyTransactionScreen.test.tsx
+- Added a regression test for the scenario: change the category, have the rule rewrite the row, then pick the stored category (Save disabled) or keep a different one (Save enabled). The hook test now covers tags passed by props (not a change, and add-remove returns to clean); its getTagsByTransactionId mock is gone.
+
+[2026-10-16] docs | spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, spec/features/017-modify-transaction-screen/1-spec.md
+- Documented the "baseline is the stored row" rule in `spec/constitution/6-screens.md` and spec 017, with a roadmap entry.
