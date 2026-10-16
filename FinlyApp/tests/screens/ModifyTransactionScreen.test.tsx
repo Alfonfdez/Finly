@@ -176,6 +176,47 @@ describe('ModifyTransactionScreen', () => {
     expect(mockGetTagsByTransactionId).toHaveBeenCalledWith(11);
   });
 
+  it('re-baselines after the rule rewrites the row: picking the stored value skips the save', async () => {
+    const catTravel = { id: 2, user_id: 1, name: 'Travel', icon: 'bus', color: '#22D3EE', type: 'expense', created_at: '2026-01-01' } as Category;
+    const catPets = { id: 3, user_id: 1, name: 'Pets', icon: 'paw', color: '#22D3EE', type: 'expense', created_at: '2026-01-01' } as Category;
+    mockGetById.mockResolvedValue({ ...transaction, recurring_rule_id: 5 });
+    setAppData({
+      accounts: [account],
+      categories: [catFood, catTravel, catPets],
+      categoriesById: new Map([[1, catFood], [2, catTravel], [3, catPets]]),
+      tags: [],
+    });
+
+    const view = await render(<ModifyTransactionScreen />);
+    await view.findByText('Save');
+
+    // The user picks another category (Food -> Travel).
+    await fireEvent.press(view.getByLabelText('Category Travel'));
+    expect(view.getByText('Save')).toBeEnabled();
+
+    // Meanwhile a "Future + past" rule edit rewrites the row (category -> Pets).
+    mockGetById.mockResolvedValue({
+      ...transaction,
+      recurring_rule_id: 5,
+      category_id: 3,
+      updated_at: '2026-06-16 10:00:00',
+    });
+    await act(async () => {
+      await reloadRef.current?.();
+    });
+    expect(
+      view.getByText('This transaction was updated by its recurring rule. Saving here overwrites those changes for this transaction only.'),
+    ).toBeTruthy();
+
+    // Picking the stored value leaves nothing to save…
+    await fireEvent.press(view.getByLabelText('Category Pets'));
+    expect(view.getByText('Save')).toBeDisabled();
+
+    // …while keeping a different category still changes the transaction.
+    await fireEvent.press(view.getByLabelText('Category Travel'));
+    expect(view.getByText('Save')).toBeEnabled();
+  });
+
   it('shows the recurring notice and opens the rule editor for a recurring transaction', async () => {
     mockGetById.mockResolvedValue({ ...transaction, recurring_rule_id: 5 });
     const view = await render(<ModifyTransactionScreen />);

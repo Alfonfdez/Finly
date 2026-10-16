@@ -775,3 +775,13 @@ Every edit screen keeps Save disabled until the draft actually differs from what
 - Gate: `npm run test:all` green (135 files / 1071 tests); verified on the Android release APK.
 
 Spec: spec/constitution/6-screens.md (Form validation & bottom action area), spec/features/009, 012, 017, 018, 028.
+
+## Transaction edit: baseline follows the stored row
+Status: completed.
+
+The modify-transaction form now measures its draft against **what is stored right now** instead of the row it saw when it opened, applied 2026-10-16:
+- `useTransactionForm` derives its dirty baseline from the row props (tags included) rather than freezing it in a ref at mount, so a "Future + past" rule edit that bulk-updates this row **re-baselines** the comparison: picking the category the rule just wrote leaves nothing to save and Save stays disabled, while keeping a different value enables it. The informative notice and "Use the rule's values" are unchanged.
+- The row's tags now arrive with the row: `ModifyTransactionScreen`'s focus loader returns `{ transaction, tagIds }` (as the rule screen already did) and passes `initialTagIds`, which removed the form's async `getTagsByTransactionId` effect and the two refs — and with them the old "tags arrive after mount" window.
+- Gate: `npm run test:all` green (135 files / 1071 tests); regression test covers the rewrite-then-pick-the-stored-value scenario; verified on the Android release APK.
+
+Spec: spec/constitution/6-screens.md (Form validation & bottom action area), spec/features/017.

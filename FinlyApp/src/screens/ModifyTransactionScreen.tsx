@@ -29,10 +29,16 @@ export default function ModifyTransactionScreen() {
   const labels = t();
 
   const loadTransaction = useCallback(async () => {
-    return await transactionRepository.getById(transactionId);
+    const [transaction, tagIds] = await Promise.all([
+      transactionRepository.getById(transactionId),
+      transactionRepository.getTagsByTransactionId(transactionId),
+    ]);
+    return { transaction, tagIds };
   }, [transactionId]);
 
-  const { data: transaction, loading } = useFocusLoad(loadTransaction, null);
+  const { data, loading } = useFocusLoad(loadTransaction, null);
+  const transaction = data?.transaction ?? null;
+  const tagIds = data?.tagIds ?? [];
 
   // A "Future + past" rule edit (or any external change) rewrites this row while the
   // form is open: an untouched form adopts the new values (remount), a dirty one keeps
@@ -74,6 +80,7 @@ export default function ModifyTransactionScreen() {
       initialComment={transaction.description ?? ''}
       initialAmount={String(transaction.amount)}
       initialPhotos={parsePhotos(transaction.photo)}
+      initialTagIds={tagIds}
       onDirtyChange={onDirtyChange}
       editing
       submitLabel={labels.modify_save}

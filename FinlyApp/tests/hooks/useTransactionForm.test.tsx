@@ -33,7 +33,6 @@ interface UseTransactionFormProps {
   existingRepeatNames?: string[];
 }
 
-const mockGetTagsByTransactionId = vi.fn(async (_id: number) => [] as number[]);
 const mockGetCategoryUsageCounts = vi.fn(
   async (_userId: number, _type: TransactionType, _start: string, _accountId: number) =>
     [] as { id: number; name: string; icon: string; color: string; count: number }[]
@@ -47,7 +46,6 @@ const mockTagCreate = vi.fn(async (_data: unknown) => ({
 
 vi.mock('../../src/database', () => ({
   transactionRepository: {
-    getTagsByTransactionId: (id: number) => mockGetTagsByTransactionId(id),
     getCategoryUsageCounts: (userId: number, type: TransactionType, start: string, accountId: number) =>
       mockGetCategoryUsageCounts(userId, type, start, accountId),
   },
@@ -128,7 +126,6 @@ async function setup(overrides: Partial<UseTransactionFormProps> = {}) {
 
 describe('useTransactionForm', () => {
   beforeEach(() => {
-    mockGetTagsByTransactionId.mockReset().mockResolvedValue([]);
     mockGetCategoryUsageCounts.mockReset().mockResolvedValue([]);
     mockTagCreate.mockReset().mockResolvedValue({ id: 900, user_id: 1, name: 'NewTag', created_at: '2026-01-01 00:00:00' } as Tag);
     nav.goBack.mockClear();
@@ -411,14 +408,6 @@ describe('useTransactionForm', () => {
     expect(result.current.repeatNameError).toBeNull();
   });
 
-  it('loads existing tags when a transaction id is provided', async () => {
-    mockGetTagsByTransactionId.mockResolvedValue([11, 12]);
-    const { result } = await setup({ transactionId: 42 });
-    await act(async () => {});
-    expect(mockGetTagsByTransactionId).toHaveBeenCalledWith(42);
-    expect(result.current.selectedTags).toEqual([11, 12]);
-  });
-
   it('loads category usage and orders visible categories by usage then name', async () => {
     mockGetCategoryUsageCounts.mockResolvedValue([
       { id: 2, name: 'Home', icon: 'home', color: '#fff', count: 9 },
@@ -460,11 +449,16 @@ describe('useTransactionForm', () => {
       expect(result.current.isDirty).toBe(true);
     });
 
-    it('does not count the tags loaded for the transaction as a change', async () => {
-      mockGetTagsByTransactionId.mockResolvedValue([11, 12]);
-      const { result } = await setup({ transactionId: 42 });
-      await act(async () => {});
+    it('does not count the tags the row already has as a change', async () => {
+      const { result } = await setup({ initialTagIds: [11, 12] });
+
       expect(result.current.selectedTags).toEqual([11, 12]);
+      expect(result.current.isDirty).toBe(false);
+
+      // Adding and removing the same tag returns to the stored set.
+      await act(async () => { result.current.handleToggleTag(3); });
+      expect(result.current.isDirty).toBe(true);
+      await act(async () => { result.current.handleToggleTag(3); });
       expect(result.current.isDirty).toBe(false);
     });
   });
