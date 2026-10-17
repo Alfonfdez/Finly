@@ -355,6 +355,16 @@ describe('i18n helper: CLI', () => {
     expect(res.stdout).toMatch(/untranslated \(English used\) in: ca/);
   });
 
+  it('add accepts a values file with a UTF-8 BOM', () => {
+    const root = makeRoot();
+    const valuesFile = path.join(root, 'keys.json');
+    writeFileSync(valuesFile, '\uFEFF' + JSON.stringify({ en: 'Bommed' }), 'utf8');
+
+    const res = runCli(['add', '--key', 'bommed', '--values-file', valuesFile], root);
+    expect(res.status).toBe(0);
+    expect(readLang(root, 'en')).toContain("  bommed: 'Bommed',");
+  });
+
   it('add rejects an unknown language code in the values file', () => {
     const root = makeRoot();
     const valuesFile = path.join(root, 'keys.json');

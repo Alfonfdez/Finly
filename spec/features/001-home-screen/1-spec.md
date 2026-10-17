@@ -25,6 +25,7 @@ A main screen in the app that displays the current Account, the Total (income/ex
    - Month: month picker.
    - Year: year picker.
    - Period: date range picker.
+- **Fast period arrows** next to the period text (Day/Week/Month/Year only): `‹` steps one period back and is always available, `›` steps forward and is hidden once the next period would be in the future (today / the current week, month or year), and a double-chevron `»` just left of `›` jumps to the current period — offered only from two or more periods back, since on the penultimate one a single `›` already reaches it. The `Period` (custom range) tab keeps its picker with no arrows. Steps follow the same period math as the pickers (weeks are Monday-based) and never step into the future.
      - The period range text above the picker shows the concrete range being set, e.g. `from 1 Jan to 2 Sep 2026`.
      - An "All" checkbox selects the whole current year so far — from January 1 of the current year (`MIN_DATE`) to today.
      - When "All" is checked, the range text explains the resolved period explicitly, e.g. `All (from 1 Jan to 2 Sep 2026)`, instead of showing only the word "All".

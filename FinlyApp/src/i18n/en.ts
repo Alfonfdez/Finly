@@ -572,6 +572,9 @@ export const en = {
   a11y_next_month: 'Next month',
   a11y_previous_year: 'Previous year',
   a11y_next_year: 'Next year',
+  a11y_previous_period: 'Previous period',
+  a11y_next_period: 'Next period',
+  a11y_go_to_current_period: 'Go to the current period',
   backup_dialog_title: 'Finly backup',
   a11y_add: 'Add',
 };

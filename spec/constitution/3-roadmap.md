@@ -829,3 +829,15 @@ A sweep for magic strings/numbers plus a review of the constants-vs-enum choice,
 - Gate: `npm run test:all` green (135 files / 1087 tests).
 
 Spec: no behaviour change (refactor only).
+
+## Fast period arrows on Home and All transactions
+Status: completed.
+
+Day/Week/Month/Year can be browsed without opening the period picker, applied 2026-10-17:
+- The period text is flanked by `‹` and — while not on the current period — `›`, plus a double-chevron `»` jump-to-current that appears only from two or more periods back (on the penultimate one a single `›` already reaches the current one). Equal fixed-width side slots keep the date centred and stop it shifting as the arrows appear/disappear; the icons are the calendar's own chevrons at the same size. The custom **Period** tab keeps just the picker.
+- New `utils/periodNavigation.ts`: `shiftPeriod` (day/week steps; month/year shift with the day clamped to the target month so 31 Jan → 28/29 Feb), `isSamePeriod`, `canGoForward`, `canJumpToCurrent` — pure and unit-tested. Weeks use the same Monday-based boundary as the existing weekly range.
+- The arrows call the existing `onDateChange` (and `onDateChange(new Date())` for the jump), so both screens and their data refresh with no screen changes. New a11y keys `a11y_previous_period` / `a11y_next_period` / `a11y_go_to_current_period` in all 9 languages.
+- The i18n helper now tolerates a UTF-8 BOM in `--values-file` (common in Windows-authored JSON), with a test.
+- Gate: `npm run test:all` green (137 files / 1105 tests); verified on the Android release APK (current day, previous day, two days back, jump, Week/Month/Year, custom tab with no arrows, and All transactions).
+
+Spec: spec/features/001-home-screen/, 015-all-transactions-screen/.
