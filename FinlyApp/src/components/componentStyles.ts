@@ -3,6 +3,8 @@ import { withAlpha } from '../utils/color';
 import type { ColorPalette } from '../constants/themes';
 
 export const PRESSED_OPACITY = 0.7;
+/** Opacity for a disabled control (button, switch, selectable segment). */
+export const DISABLED_CONTROL_OPACITY = 0.5;
 export const OVERLAY_BG = 'rgba(0,0,0,0.6)';
 export const MODAL_BORDER_RADIUS = 16;
 export const BUTTON_BORDER_RADIUS = 10;

@@ -25,7 +25,7 @@ import { type TransactionType, type RecurrenceFrequency, type RecurrenceScope, t
 import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
 import { buildRecurrenceSchedule, toDateOnly } from '../utils/recurrence';
-import { formFieldVisibility, type FormMode } from '../utils/formFieldVisibility';
+import { formFieldVisibility, FORM_MODES, type FormMode } from '../utils/formFieldVisibility';
 import { isWeb } from '../utils/platform';
 import { showErrorAlert } from '../utils/errors';
 import { getTransactionFormHintText } from '../utils/formHints';
@@ -160,8 +160,8 @@ export default function TransactionForm(props: TransactionFormProps) {
   // Which optional sections to show depends on the screen: Add vs Modify
   // transaction, New vs Edit recurring rule (see `formFieldVisibility`).
   const mode: FormMode = props.ruleMode
-    ? (props.initialRuleNextDue != null ? 'editRule' : 'createRule')
-    : (props.transactionId !== undefined ? 'modify' : 'add');
+    ? (props.initialRuleNextDue != null ? FORM_MODES.editRule : FORM_MODES.createRule)
+    : (props.transactionId !== undefined ? FORM_MODES.modify : FORM_MODES.add);
   const fieldVisibility = useMemo(() => formFieldVisibility(config, mode), [config, mode]);
 
   // The rule's schedule before the edit, so the Summary can tell that today's

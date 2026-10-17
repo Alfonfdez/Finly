@@ -816,3 +816,16 @@ The Select-all row is inserted under every list screen's header block without hi
 - Gate: `npm run test:all` green (135 files / 1072 tests); verified on the Android release APK.
 
 Spec: spec/constitution/6-screens.md.
+
+## Constants audit: no enums, named values for the remaining literals
+Status: completed.
+
+A sweep for magic strings/numbers plus a review of the constants-vs-enum choice, applied 2026-10-17:
+- **Const objects + `keyof typeof` remain the standard**; a TS `enum` would be a regression here (Expo/Babel cannot inline `const enum`, a runtime enum stops the values being literal types for SQLite/Zod/i18n and costs bytes). No migration to enums.
+- The real gaps were **type-only unions whose members were still written raw**: `FORM_MODES` now backs `FormMode` (used by `TransactionForm`) and `BACKUP_VALIDATION_CODES` backs `BackupValidationCode` (parser, import service and settings screen, re-exported by the database barrel).
+- Stray literals tokenised: `datePart()` replaces five `.slice(0, 10)` date extractions; `DISABLED_CONTROL_OPACITY = 0.5` replaces five inline disabled-control opacities (the calendar's 0.3 stays module-scoped as a different affordance); `PICK_FALLBACK_DELAY_MS` replaces the web backup picker's 400 ms fallback.
+- The Drizzle schema now carries `$type<TransactionType>()` / `$type<RecurrenceFrequency>()` on the union columns — a compile-time annotation only, so the emitted DDL, the migrations and the data are untouched (2.1.0 backups remain compatible).
+- Deliberately left literal: SQL DDL inside the immutable migrations, the national flag colours in `RegionalScreen`, decimal-separator characters, screen route names (typed by the param list) and component-owned design values (project token policy; a wholesale design-token sweep is out of scope).
+- Gate: `npm run test:all` green (135 files / 1087 tests).
+
+Spec: no behaviour change (refactor only).

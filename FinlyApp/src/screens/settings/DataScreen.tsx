@@ -12,6 +12,7 @@ import {
   exportBackup,
   importBackup,
   BackupValidationError,
+  BACKUP_VALIDATION_CODES,
 } from '../../database';
 import { clearDataKeepSettings, resetDatabase } from '../../database/database';
 import { saveBackupFile, pickBackupFile, saveBackupToDownloads } from '../../utils/backupIO';
@@ -149,7 +150,7 @@ export default function DataScreen() {
     } catch (error) {
       console.error('Failed to import data:', error);
       if (error instanceof BackupValidationError) {
-        if (error.code === 'newer_version') {
+        if (error.code === BACKUP_VALIDATION_CODES.newerVersion) {
           alertError(labels.settings_import_newer_title, labels.settings_import_newer_message);
         } else {
           alertError(labels.settings_import_invalid_title, labels.settings_import_invalid_message);

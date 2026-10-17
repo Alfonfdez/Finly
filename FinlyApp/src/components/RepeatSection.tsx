@@ -9,7 +9,7 @@ import { formatDateLong } from '../utils/formatters';
 import { buildRecurrenceSchedule, todayDateOnly, type RecurrenceSchedule } from '../utils/recurrence';
 import { recurrenceFrequencyLabels } from '../utils/recurrenceSummary';
 import { recurrenceInfoLines } from '../utils/recurrenceInfo';
-import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, CONTROL_BORDER_RADIUS, PILL_RADIUS, SECTION_GAP, SECTION_GAP_SM, SECTION_TITLE_STYLE, recurringCardColors } from './componentStyles';
+import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, CONTROL_BORDER_RADIUS, DISABLED_CONTROL_OPACITY, PILL_RADIUS, SECTION_GAP, SECTION_GAP_SM, SECTION_TITLE_STYLE, recurringCardColors } from './componentStyles';
 import { TEST_IDS } from '../constants/testIds';
 import ClearButton from './ClearButton';
 import CheckboxRow from './settings/CheckboxRow';
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
     borderRadius: CONTROL_BORDER_RADIUS,
   },
   segmentDisabled: {
-    opacity: 0.5,
+    opacity: DISABLED_CONTROL_OPACITY,
   },
   segmentText: {
     fontWeight: '600',

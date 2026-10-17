@@ -5,7 +5,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
 import IconBadge from './IconBadge';
-import { switchColors } from './componentStyles';
+import { DISABLED_CONTROL_OPACITY, switchColors } from './componentStyles';
 import { BADGE_SHAPES, RECURRING_STATUSES, TRANSACTION_TYPES } from '../constants/types';
 import { formatAmount, formatDateLong, parseDbDate } from '../utils/formatters';
 import { fromDateOnly, recurringStatus } from '../utils/recurrence';
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   switchDisabled: {
-    opacity: 0.5,
+    opacity: DISABLED_CONTROL_OPACITY,
   },
   amount: {
     fontWeight: '700',
