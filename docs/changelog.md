@@ -3851,3 +3851,13 @@
 
 [2026-10-16] docs | spec/constitution/3-roadmap.md
 - Recorded the select-all list gap standard in the roadmap (`LIST_TOP_GAP` is documented in the constant itself).
+
+[2026-10-17] fix | FinlyApp/src/screens/AccountsScreen.tsx
+- The Accounts screen no longer hides the Total balance section when select mode starts: the Select-all row is inserted under it (after the search bar when open), matching Tags/Comments (sort strip), Recurring (controls) and the transaction lists (tag filter), where nothing above the row is hidden.
+- The three one-line counters (Categories/Tags/Comments) keep hiding in select mode on purpose — the row already shows the item count and takes their slot.
+
+[2026-10-17] test | FinlyApp/tests/screens/AccountsScreen.test.tsx
+- The Accounts select-mode test now also asserts that the Total balance label stays visible while selecting.
+
+[2026-10-17] docs | spec/constitution/3-roadmap.md
+- Recorded the Select-all placement rule in the roadmap (the row is inserted under the header block; the header stays visible).

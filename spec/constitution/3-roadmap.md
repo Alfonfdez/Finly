@@ -796,3 +796,14 @@ The Categories screen's grid no longer touches the select-all row's separator, a
 - Gate: `npm run test:all` green (135 files / 1072 tests); verified on the Android release APK.
 
 Spec: spec/constitution/6-screens.md.
+
+## Select-all placement: the screen header stays visible
+Status: completed.
+
+The Select-all row is inserted under every list screen's header block without hiding it, applied 2026-10-16:
+- **Accounts** was the outlier: entering select mode hid the prominent **Total balance** section and the row took its place. It now stays visible (the row sits under it, after the search bar when that is open), matching Tags/Comments (which keep their sort strip), Recurring (account + status/sort controls) and the transaction lists (tag filter), where nothing above the row is hidden.
+- The three one-line counters (Categories/Tags/Comments) still hide in select mode on purpose: the row already shows the item count, so it replaces them in the same slot.
+- The Accounts select-mode test now asserts the Total stays visible while selecting.
+- Gate: `npm run test:all` green (135 files / 1072 tests); verified on the Android release APK.
+
+Spec: spec/constitution/6-screens.md.

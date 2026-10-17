@@ -214,29 +214,29 @@ export default function AccountsScreen() {
 
   return (
     <ScreenShell>
-      {!selectMode && (
-        <View style={[styles.totalSection, { backgroundColor: c.surface, borderBottomColor: c.border }]}>
-          <Text style={[styles.totalLabel, { color: c.textSecondary, fontSize: fs(14) }]}>
-            {labels.accounts_total}:
+      {/* Stays visible while selecting: the Select-all row is inserted below it,
+          like every other list screen keeps its header block. */}
+      <View style={[styles.totalSection, { backgroundColor: c.surface, borderBottomColor: c.border }]}>
+        <Text style={[styles.totalLabel, { color: c.textSecondary, fontSize: fs(14) }]}>
+          {labels.accounts_total}:
+        </Text>
+        <View style={styles.totalRow}>
+          <Text
+            style={[
+              styles.totalValue,
+              {
+                color: isBalanceHidden ? c.textSecondary : (total >= 0 ? c.green : c.red),
+                fontSize: fs(22),
+              },
+            ]}
+          >
+            {isBalanceHidden
+              ? HIDDEN_BALANCE
+              : formatSignedCurrency(total, config.currency, config.decimalSeparator)}
           </Text>
-          <View style={styles.totalRow}>
-            <Text
-              style={[
-                styles.totalValue,
-                {
-                  color: isBalanceHidden ? c.textSecondary : (total >= 0 ? c.green : c.red),
-                  fontSize: fs(22),
-                },
-              ]}
-            >
-              {isBalanceHidden
-                ? HIDDEN_BALANCE
-                : formatSignedCurrency(total, config.currency, config.decimalSeparator)}
-            </Text>
-            <EyeToggle isHidden={isBalanceHidden} onToggle={toggleReveal} color={c.textSecondary} />
-          </View>
+          <EyeToggle isHidden={isBalanceHidden} onToggle={toggleReveal} color={c.textSecondary} />
         </View>
-      )}
+      </View>
 
       <ScreenSearchBar
         visible={searchActive}
