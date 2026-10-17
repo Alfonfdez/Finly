@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { formatDate, formatWeekRange } from '../utils/formatters';
+import { formatDate, formatDateRange, formatWeekRange } from '../utils/formatters';
 import { canGoForward, canJumpToCurrent, shiftPeriod } from '../utils/periodNavigation';
 import CalendarModal from './CalendarModal';
 import type { Period } from './calendars/types';
@@ -49,7 +49,12 @@ export default function CalendarPicker({
       case PERIODS.custom: {
         const startDate = rangeStart ?? new Date(today.getFullYear(), 0, 1);
         const endDate = rangeEnd ?? today;
-        return `${labels.cal_from} ${startDate.getDate()} ${shortMonths[startDate.getMonth()]} ${labels.cal_to} ${endDate.getDate()} ${shortMonths[endDate.getMonth()]} ${endDate.getFullYear()}`;
+        return formatDateRange(
+          startDate,
+          endDate,
+          { from: labels.cal_from, to: labels.cal_to },
+          labels.months,
+        );
       }
     }
   })();
@@ -155,7 +160,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   button: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: BUTTON_BORDER_RADIUS },
-  text: { fontWeight: '600' },
+  text: { fontWeight: '600', textAlign: 'center' },
   jumpButton: { flexDirection: 'row', alignItems: 'center' },
   jumpOverlap: { marginLeft: -12 },
 });

@@ -841,3 +841,15 @@ Day/Week/Month/Year can be browsed without opening the period picker, applied 20
 - Gate: `npm run test:all` green (137 files / 1105 tests); verified on the Android release APK (current day, previous day, two days back, jump, Week/Month/Year, custom tab with no arrows, and All transactions).
 
 Spec: spec/features/001-home-screen/, 015-all-transactions-screen/.
+
+## Custom period range: full month names, centred
+Status: completed.
+
+The custom range text now reads clearly and wraps gracefully in every language, applied 2026-10-17:
+- The range uses **full month names** - "from 1 January to 17 October 2026" instead of the abbreviated "from 1 Jan to 17 Oct 2026" - in both the Home period box and the "Select period" modal.
+- A new pure `formatDateRange(start, end, { from, to }, months)` in `utils/formatters` composes it once, so `CalendarPicker`'s box and `PeriodPicker`'s range line (plain range and `All (...)` variant) cannot drift; the "start picked, waiting for the end" hint keeps its single-month text.
+- Both texts are now **centred** (`textAlign: 'center'`), so when a verbose language wraps the range to two lines the block reads as one centred paragraph instead of a left-aligned rag.
+- The Week range deliberately keeps its short month names: it is a compact pair, not a sentence.
+- Gate: `npm run test:all` green (137 files / 1109 tests); verified in all 9 languages on the Android release APK (each language asserted the exact full-month range and was screenshotted).
+
+Spec: spec/features/001-home-screen/.

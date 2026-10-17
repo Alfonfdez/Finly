@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { StyleSheet } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import { resetStub, setConfig } from './helpers/configStub';
 import CalendarPicker from '../../src/components/CalendarPicker';
@@ -76,6 +77,21 @@ describe('CalendarPicker fast arrows', () => {
     expect(view.queryByLabelText('Previous period')).toBeNull();
     expect(view.queryByLabelText('Next period')).toBeNull();
     expect(view.queryByLabelText('Go to the current period')).toBeNull();
+  });
+
+  it('shows the custom range with full month names and centred text', async () => {
+    const view = await render(
+      <CalendarPicker
+        period={PERIODS.custom}
+        date={new Date(2026, 9, 17)}
+        onDateChange={vi.fn()}
+        rangeStart={new Date(2026, 0, 1)}
+        rangeEnd={new Date(2026, 9, 17)}
+      />,
+    );
+
+    const text = view.getByText('from 1 January to 17 October 2026');
+    expect(StyleSheet.flatten(text.props.style).textAlign).toBe('center');
   });
 
   it('keeps the period box opening the calendar', async () => {

@@ -3900,3 +3900,16 @@
 
 [2026-10-17] style | FinlyApp/src/components/CalendarPicker.tsx
 - The period arrows' right group now leaves more room between the double-chevron jump and the single next arrow (12px gap) so the two read as separate buttons; the date stays centred and the next arrow stays at the edge.
+
+[2026-10-17] style | FinlyApp/src/utils/formatters.ts, FinlyApp/src/components/CalendarPicker.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx
+- The custom period range now reads with **full month names** in both the Home period box and the "Select period" modal: "from 1 January to 17 October 2026" instead of "from 1 Jan to 17 Oct 2026".
+- New pure `formatDateRange(start, end, { from, to }, months)` in `utils/formatters` composes the range for `CalendarPicker`'s box and `PeriodPicker`'s range line (plain range and `All (...)` variant), so the two cannot drift; the "start picked, waiting for the end" hint keeps its single-month text.
+- Both texts are centred (`textAlign: 'center'`), so a long range wraps as a centred two-line block instead of a left-aligned rag in verbose languages.
+- The Week range keeps its short month names on purpose: it is a compact pair, not a sentence.
+
+[2026-10-17] test | FinlyApp/tests/utils/formatters.test.ts, FinlyApp/tests/component/CalendarPicker.test.tsx
+- Added `formatDateRange` tests (full month names, same-month range, year-boundary range that keeps the end year).
+- The `CalendarPicker` test now asserts the custom range text and that the box text is centred.
+
+[2026-10-17] docs | spec/features/001-home-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Spec 001 now shows the full-month range examples and states that the range text is centred; the roadmap records the change.

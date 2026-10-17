@@ -257,6 +257,22 @@ export function formatPeriodText(period: Period, date: Date, months: string[], s
   }
 }
 
+interface DateRangeLabels {
+  from: string;
+  to: string;
+}
+
+/**
+ * The custom period range, e.g. "from 1 January to 17 October 2026". Full month
+ * names (the same ones the Month period shows) so the wording is clear; the caller
+ * decides whether it wraps to two lines.
+ */
+export function formatDateRange(start: Date, end: Date, labels: DateRangeLabels, months: string[]): string {
+  const startMonth = months[start.getMonth()];
+  const endMonth = months[end.getMonth()];
+  return `${labels.from} ${start.getDate()} ${startMonth} ${labels.to} ${end.getDate()} ${endMonth} ${end.getFullYear()}`;
+}
+
 export function escapeLikePattern(term: string): string {
   return term.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
 }
