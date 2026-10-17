@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   HIDDEN_BALANCE,
+  datePart,
   formatCurrency,
   formatSignedCurrency,
   formatAmount,
@@ -278,5 +279,19 @@ describe('period text', () => {
     expect(formatPeriodText(PERIODS.day, date, months, shortMonths)).toBe('3 August 2026');
     expect(formatPeriodText(PERIODS.month, date, months, shortMonths)).toBe('August 2026');
     expect(formatPeriodText(PERIODS.year, date, months, shortMonths)).toBe('2026');
+  });
+});
+
+describe('datePart', () => {
+  it('takes the date out of a DB timestamp', () => {
+    expect(datePart('2026-06-15 10:00:00')).toBe('2026-06-15');
+  });
+
+  it('takes the date out of an ISO string', () => {
+    expect(datePart('2026-06-15T10:00:00.000Z')).toBe('2026-06-15');
+  });
+
+  it('leaves an already date-only value untouched', () => {
+    expect(datePart('2026-06-15')).toBe('2026-06-15');
   });
 });

@@ -11,7 +11,7 @@ import { useFocusLoad } from '../hooks/useFocusLoad';
 import { t } from '../i18n';
 import { RECURRENCE_SCOPES, RULE_ACTIVE, USER_ID, type RecurrenceScope, type NavigationProp, type RootStackParamList } from '../constants/types';
 import { buildRecurrenceSchedule, fromDateOnly, isLastDayAnchor, planEdit, ruleEditCursor, todayDateOnly, type SkipWindow } from '../utils/recurrence';
-import { formatDateLong } from '../utils/formatters';
+import { datePart, formatDateLong } from '../utils/formatters';
 import { recurringRepository } from '../database';
 import { saveRecurringRuleEdit } from '../database/recurringService';
 import type { TransactionDraft, RecurrenceDraft } from '../hooks/useTransactionForm';
@@ -77,7 +77,7 @@ export default function ModifyRecurringScreen() {
   ): Promise<boolean> => {
     if (scope !== RECURRENCE_SCOPES.future || !rule) return true;
     const schedule = buildRecurrenceSchedule(
-      fromDateOnly(draft.date.slice(0, 10)),
+      fromDateOnly(datePart(draft.date)),
       recurrence.frequency,
       recurrence.interval,
       recurrence.endDate,
@@ -165,7 +165,7 @@ export default function ModifyRecurringScreen() {
               category_id: draft.category_id,
               amount: draft.amount,
               description: draft.description,
-              start_date: draft.date.slice(0, 10),
+              start_date: datePart(draft.date),
               end_date: recurrence.endDate,
             },
             recurrence,

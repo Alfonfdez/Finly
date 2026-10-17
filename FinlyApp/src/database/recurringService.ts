@@ -1,6 +1,7 @@
 import { withTransaction } from './drizzle/engine';
 import { recurringRepo, type RecurringRuleInput } from './repositories/recurringRepo';
 import { buildRecurrenceSchedule, isRecurrenceEnded, listDueOccurrences, nextDueOnOrAfter, planEdit, ruleEditCursor, fromDateOnly, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
+import { datePart } from '../utils/formatters';
 import { RECURRENCE_SCOPES, RULE_ACTIVE, USER_ID, type RecurrenceScope, type RecurrenceSpec } from '../constants/types';
 import type { RecurringRule } from './types';
 
@@ -80,7 +81,7 @@ export interface CreateRecurringRuleParams {
  */
 export async function createRecurringRule(params: CreateRecurringRuleParams): Promise<number> {
   const schedule = buildRecurrenceSchedule(
-    fromDateOnly(params.date.slice(0, 10)),
+    fromDateOnly(datePart(params.date)),
     params.frequency,
     params.interval,
     params.endDate,
@@ -191,7 +192,7 @@ export async function saveRecurringRuleEdit(params: RecurringEditParams): Promis
   const current = await recurringRepo.getById(ruleId);
   if (!current) return 0;
 
-  const startDate = (updated.start_date ?? current.start_date).slice(0, 10);
+  const startDate = datePart(updated.start_date ?? current.start_date);
   const schedule = buildRecurrenceSchedule(fromDateOnly(startDate), recurrence.frequency, recurrence.interval, recurrence.endDate, recurrence.lastDay);
   const { nextDue, skippedFrom } = planEdit({
     schedule,

@@ -57,7 +57,14 @@ const snapshotSchema = z.object({
 
 type BackupSnapshot = z.infer<typeof snapshotSchema>;
 
-export type BackupValidationCode = 'invalid_json' | 'invalid_format' | 'newer_version';
+/** Why a backup file was rejected; `newer_version` is also branched on by the UI. */
+export const BACKUP_VALIDATION_CODES = {
+  invalidJson: 'invalid_json',
+  invalidFormat: 'invalid_format',
+  newerVersion: 'newer_version',
+} as const;
+
+export type BackupValidationCode = (typeof BACKUP_VALIDATION_CODES)[keyof typeof BACKUP_VALIDATION_CODES];
 
 export class BackupValidationError extends Error {
   readonly code: BackupValidationCode;
@@ -74,11 +81,11 @@ export function parseBackup(json: string): BackupSnapshot {
   try {
     raw = JSON.parse(json);
   } catch {
-    throw new BackupValidationError('invalid_json', 'Not valid JSON');
+    throw new BackupValidationError(BACKUP_VALIDATION_CODES.invalidJson, 'Not valid JSON');
   }
   const result = snapshotSchema.safeParse(raw);
   if (!result.success) {
-    throw new BackupValidationError('invalid_format', 'Snapshot does not match the backup format');
+    throw new BackupValidationError(BACKUP_VALIDATION_CODES.invalidFormat, 'Snapshot does not match the backup format');
   }
   return result.data;
 }

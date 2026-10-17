@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formFieldVisibility } from '../../src/utils/formFieldVisibility';
+import { FORM_MODES, formFieldVisibility } from '../../src/utils/formFieldVisibility';
 import { DEFAULT_CONFIG } from '../../src/database/configDefaults';
 
 describe('formFieldVisibility', () => {
@@ -20,6 +20,15 @@ describe('formFieldVisibility', () => {
 
   it('uses the edit-recurring flags and never shows a photo on the edit-rule form', () => {
     const config = { ...DEFAULT_CONFIG, editRecurringShowLabels: true, editRecurringShowComments: false };
-    expect(formFieldVisibility(config, 'editRule')).toEqual({ labels: true, comments: false, photo: false });
+    expect(formFieldVisibility(config, FORM_MODES.editRule)).toEqual({ labels: true, comments: false, photo: false });
+  });
+
+  it('pins the form mode vocabulary', () => {
+    expect(FORM_MODES).toEqual({
+      add: 'add',
+      modify: 'modify',
+      createRule: 'createRule',
+      editRule: 'editRule',
+    });
   });
 });

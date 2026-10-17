@@ -1,6 +1,9 @@
 import { ShareResult, type ShareResultValue } from '../constants/shareResult';
 import { backupFileName } from './formatters';
 
+/** Wait after the file dialog regains focus before treating it as cancelled. */
+const PICK_FALLBACK_DELAY_MS = 400;
+
 export async function saveBackupToDownloads(json: string): Promise<boolean> {
   await saveBackupFile(json);
   return true;
@@ -30,7 +33,7 @@ export async function pickBackupFile(): Promise<string | null> {
 
     let settled = false;
     const onFocus = () => {
-      window.setTimeout(() => finish(null), 400);
+      window.setTimeout(() => finish(null), PICK_FALLBACK_DELAY_MS);
     };
     const finish = (value: string | null) => {
       if (settled) return;

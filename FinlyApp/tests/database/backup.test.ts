@@ -7,6 +7,7 @@ import { seedConfigInner } from '../../src/database/migrations/003_config';
 import { createRecurringSchema } from '../../src/database/migrations/004_recurring';
 import {
   BACKUP_FORMAT_VERSION,
+  BACKUP_VALIDATION_CODES,
   BackupValidationError,
   applyBackup,
   buildBackup,
@@ -358,5 +359,13 @@ describe('backup facades', () => {
     expect(await countRows(db, 'transactions')).toBe(0);
     await importBackup(json);
     expect(await countRows(db, 'transactions')).toBe(before + 1);
+  });
+
+  it('pins the backup validation codes', () => {
+    expect(BACKUP_VALIDATION_CODES).toEqual({
+      invalidJson: 'invalid_json',
+      invalidFormat: 'invalid_format',
+      newerVersion: 'newer_version',
+    });
   });
 });

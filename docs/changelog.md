@@ -3872,3 +3872,14 @@
 
 [2026-10-17] docs | spec/constitution/3-roadmap.md
 - Recorded the hint-composition split (policy vs formatting) in the roadmap.
+
+[2026-10-17] refactor | FinlyApp/src/utils/formFieldVisibility.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/database/backup.ts, FinlyApp/src/database/backupService.ts, FinlyApp/src/database/index.ts, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/src/utils/formatters.ts, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/database/recurringService.ts, FinlyApp/src/components/componentStyles.ts, FinlyApp/src/components/form/DeleteButton.tsx, FinlyApp/src/components/SelectAllRow.tsx, FinlyApp/src/components/SelectionActionBar.tsx, FinlyApp/src/components/RecurringRow.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/utils/backupIO.web.ts, FinlyApp/src/database/drizzle/schema.ts
+- No raw vocabulary values where a named constant already exists: `FORM_MODES` (`utils/formFieldVisibility`) is now used by `TransactionForm`, and `BACKUP_VALIDATION_CODES` (`database/backup`) by the parser, the import service and the settings screen (re-exported through the database barrel).
+- New tokens replace stray literals: `datePart()` in `utils/formatters` for the five `.slice(0, 10)` date extractions, `DISABLED_CONTROL_OPACITY = 0.5` in `componentStyles` for the five inline disabled-control opacities (the calendar's 0.3 stays its own module-scoped value), and `PICK_FALLBACK_DELAY_MS` for the web backup picker's 400 ms fallback.
+- The Drizzle schema types the union columns (`categories.type`, `transactions.type`, `recurring_rules.type` as `TransactionType`, `recurring_rules.frequency` as `RecurrenceFrequency`). This is a compile-time annotation only: the emitted DDL, the migrations and the data are untouched.
+
+[2026-10-17] test | FinlyApp/tests/utils/formatters.test.ts, FinlyApp/tests/utils/formFieldVisibility.test.ts, FinlyApp/tests/database/backup.test.ts
+- Added `datePart` tests (DB timestamp, ISO string, date-only input) plus assertions pinning the `FORM_MODES` and `BACKUP_VALIDATION_CODES` vocabularies.
+
+[2026-10-17] docs | spec/constitution/3-roadmap.md
+- Recorded the constants audit in the roadmap: no enum migration (const objects + `keyof typeof` remain the standard), the two type-only unions now carry their value maps, and the remaining literals are documented as intentional (SQL DDL in migrations, flag colours, separator characters, component-owned design values).

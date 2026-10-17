@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { BUTTON_BORDER_RADIUS } from './componentStyles';
+import { BUTTON_BORDER_RADIUS, DISABLED_CONTROL_OPACITY } from './componentStyles';
 
 interface Props {
   selectedCount: number;
@@ -35,7 +35,7 @@ export default function SelectionActionBar({
       <TouchableOpacity
         onPress={onDelete}
         disabled={disabled}
-        style={[styles.deleteButton, { borderColor: disabled ? c.border : c.red, opacity: disabled ? 0.5 : 1 }]}
+        style={[styles.deleteButton, { borderColor: disabled ? c.border : c.red, opacity: disabled ? DISABLED_CONTROL_OPACITY : 1 }]}
         accessibilityRole="button"
         accessibilityState={{ disabled }}
       >

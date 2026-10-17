@@ -187,6 +187,11 @@ export function formatDateForDB(date: Date): string {
   return `${y}-${m}-${d} ${h}:${min}:${s}`;
 }
 
+/** The date part (`YYYY-MM-DD`) of a DB timestamp or an ISO string. */
+export function datePart(timestamp: string): string {
+  return timestamp.slice(0, 10);
+}
+
 export function formatDateTimeShort(date: Date, shortMonths: string[]): string {
   const h = String(date.getHours()).padStart(2, '0');
   const min = String(date.getMinutes()).padStart(2, '0');
@@ -257,6 +262,6 @@ export function escapeLikePattern(term: string): string {
 }
 
 export function backupFileName(): string {
-  const stamp = new Date().toISOString().slice(0, 10);
+  const stamp = datePart(new Date().toISOString());
   return `finly-backup-${stamp}.json`;
 }

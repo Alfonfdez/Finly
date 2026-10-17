@@ -1,7 +1,14 @@
 import type { Config } from '../database/types';
 
 /** Which form is being rendered: the add/edit transaction form or the create/edit rule form. */
-export type FormMode = 'add' | 'modify' | 'createRule' | 'editRule';
+export const FORM_MODES = {
+  add: 'add',
+  modify: 'modify',
+  createRule: 'createRule',
+  editRule: 'editRule',
+} as const;
+
+export type FormMode = keyof typeof FORM_MODES;
 
 export interface FormFieldVisibility {
   labels: boolean;

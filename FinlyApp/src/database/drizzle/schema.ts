@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { integer, primaryKey, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import type { RecurrenceFrequency, TransactionType } from '../../constants/types';
 
 export const users = sqliteTable('users', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -28,7 +29,7 @@ export const categories = sqliteTable('categories', {
   name: text('name').notNull(),
   icon: text('icon').notNull().default('tag'),
   color: text('color').notNull().default('#A78BFA'),
-  type: text('type').notNull(),
+  type: text('type').$type<TransactionType>().notNull(),
   created_at: text('created_at').notNull().default(sql`(datetime('now', 'localtime'))`),
 });
 
@@ -36,7 +37,7 @@ export const transactions = sqliteTable('transactions', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   account_id: integer('account_id').notNull(),
   category_id: integer('category_id').notNull(),
-  type: text('type').notNull(),
+  type: text('type').$type<TransactionType>().notNull(),
   amount: real('amount').notNull(),
   description: text('description'),
   photo: text('photo'),
@@ -51,12 +52,12 @@ export const recurringRules = sqliteTable('recurring_rules', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   user_id: integer('user_id').notNull(),
   name: text('name').notNull(),
-  type: text('type').notNull(),
+  type: text('type').$type<TransactionType>().notNull(),
   account_id: integer('account_id').notNull(),
   category_id: integer('category_id').notNull(),
   amount: real('amount').notNull(),
   description: text('description'),
-  frequency: text('frequency').notNull(),
+  frequency: text('frequency').$type<RecurrenceFrequency>().notNull(),
   interval: integer('interval').notNull().default(1),
   weekday: integer('weekday'),
   day_of_month: integer('day_of_month'),

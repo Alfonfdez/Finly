@@ -2,6 +2,7 @@ import { Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { DISABLED_CONTROL_OPACITY } from './componentStyles';
 
 interface Props {
   allSelected: boolean;
@@ -25,7 +26,7 @@ export default function SelectAllRow({
 
   return (
     <TouchableOpacity
-      style={[styles.row, { borderBottomColor: c.border, opacity: disabled ? 0.5 : 1 }]}
+      style={[styles.row, { borderBottomColor: c.border, opacity: disabled ? DISABLED_CONTROL_OPACITY : 1 }]}
       onPress={onToggle}
       disabled={disabled}
       accessibilityRole="checkbox"
