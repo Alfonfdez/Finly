@@ -3883,3 +3883,20 @@
 
 [2026-10-17] docs | spec/constitution/3-roadmap.md
 - Recorded the constants audit in the roadmap: no enum migration (const objects + `keyof typeof` remain the standard), the two type-only unions now carry their value maps, and the remaining literals are documented as intentional (SQL DDL in migrations, flag colours, separator characters, component-owned design values).
+
+[2026-10-17] feat | FinlyApp/src/components/CalendarPicker.tsx, FinlyApp/src/utils/periodNavigation.ts, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/scripts/i18n.mjs
+- Home and All transactions: the period text is now flanked by fast arrows (Day/Week/Month/Year only) — `‹` steps back, `›` steps forward while the next period is not in the future, and a double-chevron `»` jumps to the current period from two or more periods back (not on the penultimate one, where one `›` suffices). The custom `Period` tab keeps just the picker.
+- Equal fixed-width side slots keep the date centred and stable as the arrows appear/disappear; the arrows reuse the calendar's chevrons at the same size.
+- New `utils/periodNavigation.ts` (`shiftPeriod`, `isSamePeriod`, `canGoForward`, `canJumpToCurrent`) with month/year day-clamping; the arrows drive the existing `onDateChange`, so no screen changes were needed.
+- i18n: added `a11y_previous_period`, `a11y_next_period` and `a11y_go_to_current_period` in all 9 languages.
+- The i18n helper now strips a UTF-8 BOM from `--values-file` (Windows-authored JSON), fixing a `JSON.parse` failure.
+
+[2026-10-17] test | FinlyApp/tests/utils/periodNavigation.test.ts, FinlyApp/tests/component/CalendarPicker.test.tsx, FinlyApp/tests/tooling/i18n.test.ts
+- Added `periodNavigation` tests (day/week/month/year stepping with day clamping, same-period comparisons, next/jump visibility per period) and a `CalendarPicker` component test (arrow visibility in the three day states, stepping calls, custom period with no arrows, the box still opening the calendar).
+- Added an i18n tooling test for a BOM-prefixed values file.
+
+[2026-10-17] docs | spec/features/001-home-screen/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Documented the fast arrows in spec 001 (Home) and spec 015 (All transactions) and recorded the feature in the roadmap.
+
+[2026-10-17] style | FinlyApp/src/components/CalendarPicker.tsx
+- The period arrows' right group now leaves more room between the double-chevron jump and the single next arrow (12px gap) so the two read as separate buttons; the date stays centred and the next arrow stays at the edge.

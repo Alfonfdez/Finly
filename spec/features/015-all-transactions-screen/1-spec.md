@@ -53,6 +53,7 @@
 - Selecting "Period" auto-opens the calendar picker, matching HomeScreen behavior.
 - `CalendarPicker` shown below the period tabs, same as HomeScreen.
 - Period date ranges computed the same way as HomeScreen (day/week/month/year/custom).
+- **Fast period arrows** around the period text: `‹` steps back, `›` steps forward (hidden on the current period) and the double-chevron `»` jumps to the current period (offered two or more periods back). Same rules, visibility and stepping as HomeScreen; the `Period` (custom) tab shows no arrows.
 - The transaction list filters by the selected period's start/end dates.
 
 ### 6. Sorting

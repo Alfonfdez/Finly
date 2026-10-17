@@ -574,6 +574,9 @@ export const eu: Language = {
   a11y_next_month: 'Hurrengo hilabetea',
   a11y_previous_year: 'Aurreko urtea',
   a11y_next_year: 'Hurrengo urtea',
+  a11y_previous_period: 'Aurreko aldia',
+  a11y_next_period: 'Hurrengo aldia',
+  a11y_go_to_current_period: 'Joan uneko aldira',
   backup_dialog_title: 'Finly babeskopia',
   a11y_add: 'Gehitu',
 };

@@ -574,6 +574,9 @@ export const es: Language = {
   a11y_next_month: 'Mes siguiente',
   a11y_previous_year: 'Año anterior',
   a11y_next_year: 'Año siguiente',
+  a11y_previous_period: 'Periodo anterior',
+  a11y_next_period: 'Periodo siguiente',
+  a11y_go_to_current_period: 'Ir al periodo actual',
   backup_dialog_title: 'Copia de seguridad Finly',
   a11y_add: 'Añadir',
 };

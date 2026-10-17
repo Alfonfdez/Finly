@@ -574,6 +574,9 @@ export const ca: Language = {
   a11y_next_month: 'Mes següent',
   a11y_previous_year: 'Any anterior',
   a11y_next_year: 'Any següent',
+  a11y_previous_period: 'Període anterior',
+  a11y_next_period: 'Període següent',
+  a11y_go_to_current_period: 'Ves al període actual',
   backup_dialog_title: 'Còpia de seguretat Finly',
   a11y_add: 'Afegir',
 };

@@ -345,7 +345,8 @@ function readValuesFile(file) {
   if (!existsSync(resolved)) throw new Error(`values file not found: ${resolved}`);
   let parsed;
   try {
-    parsed = JSON.parse(readFileSync(resolved, 'utf8'));
+    // A BOM is common in Windows-authored JSON files and breaks JSON.parse.
+    parsed = JSON.parse(readFileSync(resolved, 'utf8').replace(/^\uFEFF/, ''));
   } catch (err) {
     throw new Error(`values file is not valid JSON: ${err.message}`);
   }

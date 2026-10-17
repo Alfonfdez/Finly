@@ -574,6 +574,9 @@ export const gl: Language = {
   a11y_next_month: 'Mes seguinte',
   a11y_previous_year: 'Ano anterior',
   a11y_next_year: 'Ano seguinte',
+  a11y_previous_period: 'Período anterior',
+  a11y_next_period: 'Período seguinte',
+  a11y_go_to_current_period: 'Ir ao período actual',
   backup_dialog_title: 'Copia de seguridade Finly',
   a11y_add: 'Engadir',
 };
