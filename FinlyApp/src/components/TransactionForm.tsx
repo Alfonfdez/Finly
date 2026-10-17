@@ -21,13 +21,14 @@ import FormActions from './form/FormActions';
 import CalendarModal from './CalendarModal';
 import CalculatorModal from './CalculatorModal';
 import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS } from './componentStyles';
-import { type TransactionType, type RecurrenceFrequency, type RecurrenceScope, type RootStackParamList, RECURRING_NAME_ERRORS } from '../constants/types';
+import { type TransactionType, type RecurrenceFrequency, type RecurrenceScope, type RootStackParamList } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
 import { buildRecurrenceSchedule, toDateOnly } from '../utils/recurrence';
 import { formFieldVisibility, type FormMode } from '../utils/formFieldVisibility';
 import { isWeb } from '../utils/platform';
 import { showErrorAlert } from '../utils/errors';
+import { getTransactionFormHintText } from '../utils/formHints';
 
 interface TransactionFormProps {
   initialType: TransactionType;
@@ -194,16 +195,17 @@ export default function TransactionForm(props: TransactionFormProps) {
   const repeatEndConflict = !!props.ruleMode && !!repeatEnd && repeatEnd < repeatMinDate;
 
   // Every condition that still blocks the save, as a red checklist above the button.
-  const hintText = useMemo(() => {
-    const missing: string[] = [];
-    if (categoryId === null) missing.push(labels.add_hint_category);
-    if (numericAmount === null || numericAmount <= 0) missing.push(labels.add_hint_amount);
-    if (accountId === undefined) missing.push(labels.add_hint_account);
-    if (repeatEndConflict) missing.push(labels.add_hint_repeat_end);
-    if (props.ruleMode && repeatNameError === RECURRING_NAME_ERRORS.taken) missing.push(labels.recurring_hint_name_taken);
-    else if (props.ruleMode && repeatNameError === RECURRING_NAME_ERRORS.required) missing.push(labels.recurring_hint_name);
-    return missing.join('. ') + (missing.length > 0 ? '.' : '');
-  }, [categoryId, numericAmount, accountId, repeatEndConflict, repeatNameError, props.ruleMode, labels]);
+  const hintText = getTransactionFormHintText(
+    { categoryId, numericAmount, accountId, repeatEndConflict, ruleMode: props.ruleMode, repeatNameError },
+    {
+      category: labels.add_hint_category,
+      amount: labels.add_hint_amount,
+      account: labels.add_hint_account,
+      repeatEnd: labels.add_hint_repeat_end,
+      repeatName: labels.recurring_hint_name,
+      repeatNameTaken: labels.recurring_hint_name_taken,
+    },
+  );
   const handleCalculatorAccept = useCallback((result: string) => {
     const clean = parseAmountInput(result);
     if (clean !== null && clean !== '') {
