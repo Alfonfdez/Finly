@@ -121,6 +121,10 @@ describe('AccountsScreen', () => {
     await ue.press(view.getByLabelText('Enter select mode'));
     await waitFor(() => expect(view.getByText('Delete (0)')).toBeTruthy());
 
+    // The balance header stays visible: the Select-all row sits under it.
+    expect(view.getByText('Total:')).toBeTruthy();
+    expect(view.getByText('Select all')).toBeTruthy();
+
     await ue.press(view.getByText('Select all'));
     // The Total account is excluded, so only the two non-total accounts get selected.
     await waitFor(() => expect(view.getByText('Delete (2)')).toBeTruthy());
