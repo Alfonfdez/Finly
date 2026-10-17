@@ -3861,3 +3861,14 @@
 
 [2026-10-17] docs | spec/constitution/3-roadmap.md
 - Recorded the Select-all placement rule in the roadmap (the row is inserted under the header block; the header stays visible).
+
+[2026-10-17] refactor | FinlyApp/src/utils/formHints.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/screens/CreateTagScreen.tsx
+- Moved the hint composition out of `TransactionForm` into `utils/formHints.ts`: `joinHints` (drops empty parts, joins with `. `, optional final period) and `getTransactionFormHintText` (the transaction/rule checklist as a pure function that takes the values plus the label strings).
+- `CreateTagScreen` now composes its hint from `getNameHintText` + `joinHints` instead of a hand-rolled blockers list. The rendered hint strings are unchanged (the component tests still assert them).
+- `TransactionForm` no longer imports the recurring-name constants for the hint; its 12-line `useMemo` is a single call.
+
+[2026-10-17] test | FinlyApp/tests/utils/formHints.test.ts
+- Added `joinHints` and `getTransactionFormHintText` unit tests: empty/single/several parts, nulls and blank strings filtered, the final-period option, the checklist order, an amount of zero, the end-date conflict, and the rule-mode name gating (required/taken).
+
+[2026-10-17] docs | spec/constitution/3-roadmap.md
+- Recorded the hint-composition split (policy vs formatting) in the roadmap.

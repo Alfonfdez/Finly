@@ -10,6 +10,7 @@ import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
 import { type NavigationProp, USER_ID, MAX_TAG_NAME_LENGTH, MAX_TAGS } from '../constants/types';
 import { countAtLimit } from '../utils/limits';
+import { getNameHintText, joinHints } from '../utils/formHints';
 import LabeledTextField from '../components/form/LabeledTextField';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormActions from '../components/form/FormActions';
@@ -48,11 +49,10 @@ export default function CreateTagScreen() {
   const isDisabled = isEmpty || !!nameError || checkingName || atTagLimit;
 
   // One red line above Save: every reason the tag cannot be created.
-  const blockers: string[] = [];
-  if (isEmpty) blockers.push(labels.create_tag_error_empty);
-  else if (nameError) blockers.push(nameError);
-  if (atTagLimit) blockers.push(labels.create_tag_error_limit(MAX_TAGS));
-  const hintText = blockers.join('. ');
+  const hintText = joinHints([
+    getNameHintText(name, nameError, labels.create_tag_error_empty),
+    atTagLimit ? labels.create_tag_error_limit(MAX_TAGS) : null,
+  ]);
 
   return (
     <ScreenShell>

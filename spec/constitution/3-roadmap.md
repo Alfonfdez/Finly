@@ -797,7 +797,16 @@ The Categories screen's grid no longer touches the select-all row's separator, a
 
 Spec: spec/constitution/6-screens.md.
 
-## Select-all placement: the screen header stays visible
+## Hint composition extracted to `utils/formHints`
+Status: completed.
+
+The form hints' formatting and the transaction checklist moved out of the components, applied 2026-10-17:
+- `joinHints(parts, { finalPeriod })` in `utils/formHints.ts` drops the empty parts and joins the rest with `. `, adding the final period only when asked (the transaction/rule checklist wants one, the tag reasons don't).
+- `getTransactionFormHintText(values, keys)` is the checklist as a pure function (order: category, amount, account, repeat end date, rule name taken/required; the name only in rule mode) — labels are injected, so it's unit-testable without React or i18n.
+- `TransactionForm`'s 12-line `useMemo` is now one call (and it no longer imports the recurring-name constants); `CreateTagScreen` composes its hint from `getNameHintText` + `joinHints`. The rendered strings are unchanged (the existing component tests still assert them).
+- Gate: `npm run test:all` green (135 files / 1082 tests).
+
+Spec: no behaviour change (refactor only).
 Status: completed.
 
 The Select-all row is inserted under every list screen's header block without hiding it, applied 2026-10-16:
