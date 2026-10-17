@@ -26,9 +26,10 @@ A main screen in the app that displays the current Account, the Total (income/ex
    - Year: year picker.
    - Period: date range picker.
 - **Fast period arrows** next to the period text (Day/Week/Month/Year only): `‹` steps one period back and is always available, `›` steps forward and is hidden once the next period would be in the future (today / the current week, month or year), and a double-chevron `»` just left of `›` jumps to the current period — offered only from two or more periods back, since on the penultimate one a single `›` already reaches it. The `Period` (custom range) tab keeps its picker with no arrows. Steps follow the same period math as the pickers (weeks are Monday-based) and never step into the future.
-     - The period range text above the picker shows the concrete range being set, e.g. `from 1 Jan to 2 Sep 2026`.
+     - The period range text above the picker shows the concrete range being set, e.g. `from 1 September to 2 September 2026`.
      - An "All" checkbox selects the whole current year so far — from January 1 of the current year (`MIN_DATE`) to today.
-     - When "All" is checked, the range text explains the resolved period explicitly, e.g. `All (from 1 Jan to 2 Sep 2026)`, instead of showing only the word "All".
+     - When "All" is checked, the range text explains the resolved period explicitly, e.g. `All (from 1 September to 2 September 2026)`, instead of showing only the word "All".
+     - The range text uses **full month names** and is **centred**; in verbose languages it wraps to two lines, both centred (the box between the period arrows).
 
 6. Donut chart (SVG) showing expenses/income for the selected period, broken down by categories with their color. Tapping the chart toggles it to a horizontal bar chart. The total is centered inside the donut hole: the text is constrained to the hole's inner diameter and its font size auto-shrinks (`fitFontSize`) so the full formatted amount always stays inside the hole. The bar chart shows the **same** formatted total, centered **above** the bar (same style as the donut centre: `c.text`, weight 700, auto-fit to the chart width), whether or not there are transactions; the legend below lists each category with its percentage.
 
@@ -57,7 +58,7 @@ Cloud sync, authentication, offline usage (AsyncStorage is already local).
 [x] The 5 period tabs are displayed correctly.
 [x] When selecting a period, a date can be chosen with the native picker.
 [x] The date picker does not allow selecting future dates.
-[x] The Period picker's "All" checkbox explains its resolved range (e.g. `All (from 1 Jan to 2 Sep 2026)`).
+[x] The Period picker's "All" checkbox explains its resolved range (e.g. `All (from 1 September to 2 September 2026)`).
 [x] The donut chart is displayed correctly with period data.
 [x] The total in the center of the donut stays fully visible inside the hole even for large amounts (font auto-shrinks to fit).
 [x] Tapping the donut chart shows the bar chart, and vice versa.

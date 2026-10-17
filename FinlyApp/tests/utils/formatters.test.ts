@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   HIDDEN_BALANCE,
   datePart,
+  formatDateRange,
   formatCurrency,
   formatSignedCurrency,
   formatAmount,
@@ -293,5 +294,28 @@ describe('datePart', () => {
 
   it('leaves an already date-only value untouched', () => {
     expect(datePart('2026-06-15')).toBe('2026-06-15');
+  });
+});
+
+describe('formatDateRange', () => {
+  const labels = { from: 'from', to: 'to' };
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ];
+
+  it('uses full month names and the end year', () => {
+    expect(formatDateRange(new Date(2026, 0, 1), new Date(2026, 9, 17), labels, months))
+      .toBe('from 1 January to 17 October 2026');
+  });
+
+  it('works within the same month', () => {
+    expect(formatDateRange(new Date(2026, 4, 3), new Date(2026, 4, 9), labels, months))
+      .toBe('from 3 May to 9 May 2026');
+  });
+
+  it('shows the end year when the range crosses a year boundary', () => {
+    expect(formatDateRange(new Date(2025, 11, 20), new Date(2026, 0, 5), labels, months))
+      .toBe('from 20 December to 5 January 2026');
   });
 });

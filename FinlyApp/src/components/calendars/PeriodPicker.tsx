@@ -6,6 +6,7 @@ import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
 import { calendarStyles, MIN_DATE } from './calendarStyles';
 import { CONTROL_BORDER_RADIUS } from '../componentStyles';
+import { formatDateRange } from '../../utils/formatters';
 
 const PICKING_PHASE = {
   start: 'start',
@@ -26,7 +27,7 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const shortMonths = labels.months_short;
+  const months = labels.months;
 
   const today = useMemo(() => new Date(), []);
 
@@ -51,11 +52,12 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
     }
   }, [selecting, tempStart, allTime, onTempRangeChange]);
 
+  const rangeLabels = { from: labels.cal_from, to: labels.cal_to };
   const rangeText = allTime
-    ? `${labels.cal_all} (${labels.cal_from} ${MIN_DATE.getDate()} ${shortMonths[MIN_DATE.getMonth()]} ${labels.cal_to} ${today.getDate()} ${shortMonths[today.getMonth()]} ${today.getFullYear()})`
+    ? `${labels.cal_all} (${formatDateRange(MIN_DATE, today, rangeLabels, months)})`
     : selecting === PICKING_PHASE.end && tempStart.getTime() === tempEnd.getTime()
-      ? `${labels.cal_from} ${tempStart.getDate()} ${shortMonths[tempStart.getMonth()]} — ${labels.cal_period_to_hint}`
-      : `${labels.cal_from} ${tempStart.getDate()} ${shortMonths[tempStart.getMonth()]} ${labels.cal_to} ${tempEnd.getDate()} ${shortMonths[tempEnd.getMonth()]} ${tempEnd.getFullYear()}`;
+      ? `${labels.cal_from} ${tempStart.getDate()} ${months[tempStart.getMonth()]} — ${labels.cal_period_to_hint}`
+      : formatDateRange(tempStart, tempEnd, rangeLabels, months);
 
   return (
     <View style={calendarStyles.container}>
@@ -88,7 +90,7 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
 }
 
 const styles = StyleSheet.create({
-  title: { marginBottom: 12 },
+  title: { marginBottom: 12, textAlign: 'center' },
   allTimeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, marginRight: 8 },
   allTimeText: { fontWeight: '600' },
