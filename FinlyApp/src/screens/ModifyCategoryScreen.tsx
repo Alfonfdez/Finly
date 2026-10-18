@@ -12,8 +12,8 @@ import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
 import { useColorSelection } from '../hooks/useColorSelection';
 import { useIsDirty } from '../hooks/useIsDirty';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
-import { t, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdByName } from '../i18n';
-import { categoryRepository, transactionRepository } from '../database';
+import { t, getDefaultCategoryName, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdByName } from '../i18n';
+import { categoryRepository, recurringRepository, transactionRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, USER_ID } from '../constants/types';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
@@ -55,6 +55,7 @@ export default function ModifyCategoryScreen() {
   const [selectModalVisible, setSelectModalVisible] = useState(false);
   const [targetCategoryId, setTargetCategoryId] = useState<number | null>(null);
   const [deleteHasTransactions, setDeleteHasTransactions] = useState(false);
+  const [deleteHasRules, setDeleteHasRules] = useState(false);
   const { selectedColor, customColor, setSelectedColor, setCustomColor, handleColorSelect } = useColorSelection();
 
   useEffect(() => {
@@ -109,12 +110,20 @@ export default function ModifyCategoryScreen() {
     return categories.filter(cat => cat.type === category.type && cat.id !== category.id);
   }, [categories, category]);
 
+  /** The last category of its type can't be deleted (an income/expense needs one). */
+  const isLastOfType = sameTypeCategories.length === 0;
+  const deleteRemovesData = deleteHasTransactions || deleteHasRules;
+
   const handleSave = async () => {
     Keyboard.dismiss();
     if (!canSave || !category) return;
     if (selectedIcon === null || selectedColor === null) return;
-    const defaultName = getDefaultEnglishName(category.id);
-    const finalName = !userEditedRef.current && defaultName ? defaultName : name.trim();
+    // Still showing the localized default? Persist the canonical English name so the
+    // category keeps following the app language (same rule as the account screen).
+    const trimmedName = name.trim();
+    const englishDefault = getDefaultEnglishName(category.id);
+    const localizedDefault = getDefaultCategoryName(category.id);
+    const finalName = englishDefault && trimmedName === localizedDefault ? englishDefault : trimmedName;
     await runWithErrorAlert(async () => {
       await categoryRepository.update(categoryId, {
         name: finalName,
@@ -127,13 +136,17 @@ export default function ModifyCategoryScreen() {
   };
 
   const handleDeletePress = async () => {
-    if (!category) return;
+    if (!category || isLastOfType) return;
     try {
-      const linkedTransactions = await transactionRepository.list({ category_id: category.id });
-      const canMove = sameTypeCategories.length > 0;
-      setDeleteHasTransactions(linkedTransactions.length > 0 && canMove);
+      const [linkedTransactions, ruleCounts] = await Promise.all([
+        transactionRepository.list({ category_id: category.id }),
+        recurringRepository.countByCategoryIds([category.id]),
+      ]);
+      setDeleteHasTransactions(linkedTransactions.length > 0);
+      setDeleteHasRules((ruleCounts[category.id] ?? 0) > 0);
     } catch {
       setDeleteHasTransactions(true);
+      setDeleteHasRules(true);
     }
     setDeleteModalVisible(true);
   };
@@ -186,7 +199,7 @@ export default function ModifyCategoryScreen() {
             <IconBadge
               icon={selectedIcon || category.icon}
               color={selectedColor || category.color}
-                        shape={badgeShapeFor(config, 'category')}
+              shape={badgeShapeFor(config, 'category')}
               size={48}
               iconSize={28}
               roundedRadius={12}
@@ -237,6 +250,8 @@ export default function ModifyCategoryScreen() {
           <FormActions
             deleteLabel={labels.delete}
             onDeletePress={handleDeletePress}
+            deleteDisabled={isLastOfType}
+            deleteHint={isLastOfType ? labels.modify_cat_delete_last : null}
             saveHint={validationError}
           >
             <PrimaryButton label={labels.modify_cat_save} onPress={handleSave} disabled={!canSave} />
@@ -247,15 +262,19 @@ export default function ModifyCategoryScreen() {
       <ConfirmationModal
         visible={deleteModalVisible}
         title={labels.modify_cat_delete_confirm_title(getDisplayCategoryName(category))}
-        message={deleteHasTransactions
-          ? labels.modify_cat_delete_confirm_message
-          : labels.modify_cat_delete_confirm_message_empty}
+        message={deleteHasTransactions && deleteHasRules
+          ? labels.modify_cat_delete_confirm_message_tx_rules
+          : deleteHasTransactions
+            ? labels.modify_cat_delete_confirm_message
+            : deleteHasRules
+              ? labels.modify_cat_delete_confirm_message_rules
+              : labels.modify_cat_delete_confirm_message_empty}
         confirmLabel={labels.modify_cat_delete_confirm_delete}
         cancelLabel={labels.modify_cat_delete_confirm_cancel}
         onConfirm={handlePermanentDelete}
         onCancel={() => setDeleteModalVisible(false)}
-        moveLabel={deleteHasTransactions ? labels.modify_cat_delete_confirm_move : undefined}
-        onMove={deleteHasTransactions ? handleMoveTransactions : undefined}
+        moveLabel={deleteRemovesData ? labels.modify_cat_delete_confirm_move : undefined}
+        onMove={deleteRemovesData ? handleMoveTransactions : undefined}
       />
 
       <CategoryTransferModal

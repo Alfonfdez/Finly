@@ -146,4 +146,18 @@ describe('AppProvider', () => {
     expect(travel.total).toBe(20);
     expect(travel.percentage).toBeCloseTo(20);
   });
+
+  it('starts the custom period at Jan 1 and the end of today', async () => {
+    const { result } = await renderHook(() => useApp(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const { start, end } = result.current.customDate;
+    expect(start.getMonth()).toBe(0);
+    expect(start.getDate()).toBe(1);
+    expect(start.getHours()).toBe(0);
+    // The whole of today belongs to the range, not just the moment of loading.
+    expect(end.getDate()).toBe(new Date().getDate());
+    expect(end.getHours()).toBe(23);
+    expect(end.getMinutes()).toBe(59);
+  });
 });

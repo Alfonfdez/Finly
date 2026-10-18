@@ -29,7 +29,8 @@ A main screen in the app that displays the current Account, the Total (income/ex
      - The period range text above the picker shows the concrete range being set, e.g. `from 1 September to 2 September 2026`.
      - An "All" checkbox selects the whole current year so far — from January 1 of the current year (`MIN_DATE`) to today.
      - When "All" is checked, the range text explains the resolved period explicitly, e.g. `All (from 1 September to 2 September 2026)`, instead of showing only the word "All".
-     - The range text uses **full month names** and is **centred**; in verbose languages it wraps to two lines, both centred (the box between the period arrows).
+      - The range text uses **full month names** and is **centred**; in verbose languages it wraps to two lines, both centred (the box between the period arrows).
+      - The default range (before any pick) runs from January 1 to the **end of today**, so transactions recorded later today are part of it (the built-in periods already end at end-of-day).
 
 6. Donut chart (SVG) showing expenses/income for the selected period, broken down by categories with their color. Tapping the chart toggles it to a horizontal bar chart. The total is centered inside the donut hole: the text is constrained to the hole's inner diameter and its font size auto-shrinks (`fitFontSize`) so the full formatted amount always stays inside the hole. The bar chart shows the **same** formatted total, centered **above** the bar (same style as the donut centre: `c.text`, weight 700, auto-fit to the chart width), whether or not there are transactions; the legend below lists each category with its percentage.
 

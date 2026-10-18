@@ -725,6 +725,7 @@ describe('materializeDueRecurring', () => {
     const rule = await recurringRepo.createWithTags(dailySep, []);
     await materializeDueRecurring(OCT_5); // Sep 1-30
     await recurringRepo.setActive(rule.id, false);
+    const before = (await recurringRepo.list(1))[0];
 
     await saveRecurringRuleEdit({
       ruleId: rule.id,
@@ -739,5 +740,111 @@ describe('materializeDueRecurring', () => {
     const txs = await transactionRepo.list();
     expect(txs).toHaveLength(30); // no back-fill while paused
     expect(txs.every(t => t.amount === 250)).toBe(true); // details still patched
+    // The cursor is left where it was: the pause window stays skipped.
+    const after = (await recurringRepo.list(1))[0];
+    expect(after.next_due).toBe(before.next_due);
+    expect(after.active).toBe(0);
+  });
+
+  it('resuming keeps a recoverable skip when the cursor does not move', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit, resumeRecurringRule } = await boot();
+    const rule = await recurringRepo.createWithTags(dailySep, []);
+    await materializeDueRecurring(OCT_5); // Sep 1-30
+
+    // Future only, extending the end date: Oct 1-4 are skipped and recorded.
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'daily', interval: 1, endDate: '2026-10-31' },
+      scope: 'future',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: OCT_5,
+    });
+    await recurringRepo.setActive(rule.id, false);
+
+    // Paused and resumed on the same day: nothing was skipped by the pause, so the
+    // earlier skipped window is still recoverable.
+    const created = await resumeRecurringRule(rule.id, OCT_5);
+    expect(created).toBe(0); // the cursor (Oct 6) is still in the future
+    const resumed = (await recurringRepo.list(1))[0];
+    expect(resumed.next_due).toBe('2026-10-06');
+    expect(resumed.skipped_from).toBe('2026-10-01');
+    expect(await transactionRepo.list()).toHaveLength(31); // Sep 1-30 + Oct 5
+
+    // Resumed later the cursor jumps over the pause window, so the recorded skip can
+    // no longer be back-filled faithfully: it is dropped (the resumed day is created).
+    await resumeRecurringRule(rule.id, new Date(2026, 9, 10));
+    const later = (await recurringRepo.list(1))[0];
+    expect(later.next_due).toBe('2026-10-11');
+    expect(later.skipped_from).toBeNull();
+  });
+});
+
+// A rule is the template for its category's future transactions: moving the data must
+// move the rule too, while a permanent delete takes the rule with the category.
+describe('category deletion and recurring rules', () => {
+  const newCategory = (name: string) => ({
+    user_id: 1,
+    name,
+    icon: 'cart-outline',
+    color: '#FF0000',
+    type: 'expense' as const,
+  });
+  const futureRule = (categoryId: number) => ({
+    ...baseRule,
+    category_id: categoryId,
+    start_date: '2030-01-02',
+    next_due: '2030-01-02',
+  });
+
+  it('counts rules per category for the delete confirmation', async () => {
+    const { recurringRepo } = await boot();
+    await recurringRepo.createWithTags(futureRule(3), []);
+    expect(await recurringRepo.countByCategoryIds([3])).toEqual({ 3: 1 });
+    expect(await recurringRepo.countByCategoryIds([3, 4])).toEqual({ 3: 1 });
+    expect(await recurringRepo.countByCategoryIds([])).toEqual({});
+  });
+
+  it('reassignAndDelete moves the category rules to the target', async () => {
+    const { recurringRepo } = await boot();
+    const { categoryRepo } = await import('../../src/database/repositories/categoryRepo');
+    const from = await categoryRepo.create(newCategory('Move From'));
+    const to = await categoryRepo.create(newCategory('Move To'));
+    const rule = await recurringRepo.createWithTags(futureRule(from.id), []);
+
+    await categoryRepo.reassignAndDelete(from.id, to.id);
+
+    expect((await recurringRepo.getById(rule.id))?.category_id).toBe(to.id);
+    expect(await categoryRepo.getById(from.id)).toBeNull();
+  });
+
+  it('permanently deleting a category deletes its rules', async () => {
+    const { recurringRepo } = await boot();
+    const { categoryRepo } = await import('../../src/database/repositories/categoryRepo');
+    const cat = await categoryRepo.create(newCategory('Delete Me'));
+    const rule = await recurringRepo.createWithTags(futureRule(cat.id), []);
+
+    await categoryRepo.delete(cat.id);
+
+    expect(await recurringRepo.getById(rule.id)).toBeNull();
+  });
+
+  it('bulkDeleteWithTargets moves or deletes rules per category', async () => {
+    const { recurringRepo } = await boot();
+    const { categoryRepo } = await import('../../src/database/repositories/categoryRepo');
+    const movedFrom = await categoryRepo.create(newCategory('Bulk Move From'));
+    const deleted = await categoryRepo.create(newCategory('Bulk Delete'));
+    const target = await categoryRepo.create(newCategory('Bulk Target'));
+    const movedRule = await recurringRepo.createWithTags(futureRule(movedFrom.id), []);
+    const deletedRule = await recurringRepo.createWithTags(futureRule(deleted.id), []);
+
+    await categoryRepo.bulkDeleteWithTargets([
+      { id: movedFrom.id, targetId: target.id },
+      { id: deleted.id, targetId: null },
+    ]);
+
+    expect((await recurringRepo.getById(movedRule.id))?.category_id).toBe(target.id);
+    expect(await recurringRepo.getById(deletedRule.id)).toBeNull();
   });
 });

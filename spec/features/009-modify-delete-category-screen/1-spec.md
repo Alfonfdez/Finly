@@ -63,7 +63,9 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 ### 6. "Delete" Button
 
 - "Delete" button (multilingual) with red style (`c.red`), located before the "Save" button.
-- When tapped, a confirmation modal opens. The modal offers the user a **choice**: either move the category's transactions to another category, or delete the category **and its transactions** permanently. Which buttons are shown depends on whether the category has linked transactions and whether another category of the same type exists to move them to.
+- **The last category of its type cannot be deleted**: the button is disabled (dimmed) and the muted band above it explains why ("You need at least one category of each type, so this one cannot be deleted.", `modify_cat_delete_last`) ? an income/expense always needs at least one category.
+- When tapped, a confirmation modal opens. The modal offers the user a **choice**: either move the category's data to another category, or delete the category **permanently**. Which buttons are shown depends on whether the category has linked **transactions or recurring rules** (a rule is the template for the category's future transactions, so moving the data means moving both).
+
 
 **Confirmation Modal — "Delete category?"**
 - Title: "Delete category "{categoryName}"" (multilingual, interpolates the category name).
@@ -71,20 +73,15 @@ Screen accessible from the categories screen (008) that allows the user to edit 
   - "Cancel" (multilingual) → closes the modal.
   - "Permanent delete" (multilingual, red) → deletes the category, then navigates back.
 
-**Scenario A — Category HAS transactions AND there is another category of the same type**
-- Message: "Deleting this category will also delete its transactions, unless you choose to move them to another category." (multilingual).
+**Scenario A — Category HAS transactions and/or recurring rules (and it is not the last of its type)**
+- Message: it spells out what is lost, per case (multilingual): rules only → "Deleting this category will also delete its recurring rules, unless you choose to move them to another category" (`modify_cat_delete_confirm_message_rules`); transactions only → the existing transactions message; both → "…its transactions and its recurring rules…" (`modify_cat_delete_confirm_message_tx_rules`).
 - Buttons (in addition to Cancel / Permanent delete):
-  - "Move transactions first" (multilingual) → opens the target category selection modal, then deletes the category.
+  - "Move them to another category" (multilingual, `modify_cat_delete_confirm_move`) → opens the target category selection modal, then deletes the category.
 
-**Scenario A2 — Category HAS transactions but is the only category of its type**
-- There is no other category of the same type to move transactions to, so the "Move transactions first" option is meaningless.
-- Treated exactly like Scenario B: the modal shows the "no transactions" message and only the "Permanent delete" button (no "Move transactions first").
-- Message: "This category will be permanently deleted." (multilingual).
-- Buttons:
-  - "Cancel" (multilingual) → closes the modal.
-  - "Permanent delete" (multilingual, red) → deletes the category and its transactions, then navigates back.
+**Scenario A2 — Category is the only one of its type**
+- The Delete button is disabled (see above): there is no other category of the same type to move its data to, so the screen never reaches the confirmation modal.
 
-**Confirmation Modal — "Select target category"** (only reached via "Move transactions first")
+**Confirmation Modal — "Select target category"** (only reached via the move option)
 - Title: "Select category" (multilingual).
 - List of categories of the **same type** as the category to be deleted (excluding the current category), with:
   - Radio button (single selection).
@@ -95,15 +92,16 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 - When tapping "Cancel", the modal closes and returns to the edit screen.
 - When tapping "Select":
   1. All transactions with `category_id = {deletedCategory}` are updated to `category_id = {selectedCategory}`.
-  2. The category is deleted from the `categories` table.
-  3. Navigation returns to `CategoriesScreen` (008).
+  2. All recurring rules with `category_id = {deletedCategory}` are updated to `category_id = {selectedCategory}`, in the same transaction, so they keep generating into the target category.
+  3. The category is deleted from the `categories` table.
+  4. Navigation returns to `CategoriesScreen` (008).
 
-**Scenario B — Category has NO transactions**
+**Scenario B — Category has NO transactions and NO recurring rules**
 - Message: "This category will be permanently deleted." (multilingual).
 - Buttons:
   - "Cancel" (multilingual) → closes the modal.
-  - "Permanent delete" (multilingual, red) → deletes the category (and, trivially, has no transactions to move), then navigates back.
-  - The "Move transactions first" button is NOT shown, since there are no transactions to move.
+  - "Permanent delete" (multilingual, red) → deletes the category, then navigates back. Its recurring rules go with it (`ON DELETE CASCADE`).
+  - The move option is NOT shown, since there is nothing to move.
 
 - After deletion (either path), transactions are reloaded via `refresh()` so the HomeScreen chart and breakdown reflect the change.
 
@@ -153,11 +151,12 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 - [x] The 7th color circle shows the custom color if the current one is not among the 6 predefined.
 - [x] The "+" opens the existing `ColorPickerModal`.
 - [x] The "Save" button is disabled if the name is empty or is a duplicate.
-- [x] The red "Delete" button opens a confirmation modal with "Cancel", "Permanent delete", and (when the category has transactions AND another same-type category exists) "Move transactions first".
-- [x] When the category has transactions and another same-type category exists, the modal message is "Deleting this category will also delete its transactions, unless you choose to move them to another category." and tapping "Move transactions first" opens the target category selection modal.
-- [x] When the category has no transactions, or is the only category of its type, the modal message is "This category will be permanently deleted." and the "Move transactions first" button is not shown.
-- [x] When tapping "Select" in the target modal, transactions are reassigned and the category is deleted.
-- [x] Tapping "Permanent delete" deletes the category (and its transactions) and navigates back; transactions are reloaded via refresh().
+- [x] The red "Delete" button opens a confirmation modal with "Cancel", "Permanent delete", and (when the category has transactions and/or recurring rules) "Move them to another category".
+- [x] The "Delete" button is disabled with an explanation when the category is the only one of its type.
+- [x] When the category has transactions and/or recurring rules, the modal message names what is lost (transactions, rules, or both) and the move option opens the target category selection modal.
+- [x] When the category has neither transactions nor recurring rules, the modal message is "This category will be permanently deleted." and the move option is not shown.
+- [x] When tapping "Select" in the target modal, transactions **and recurring rules** are reassigned and the category is deleted.
+- [x] Tapping "Permanent delete" deletes the category (and its transactions and recurring rules) and navigates back; transactions are reloaded via refresh().
 - [x] When tapping "Save", the category is updated and navigation returns to CategoriesScreen.
 - [x] All texts change when switching the language in settings.
 - [x] The screen respects the active theme (dark/light).

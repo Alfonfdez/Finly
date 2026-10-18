@@ -18,6 +18,7 @@
 
 - Three tabs shown at the top of the screen: **All | Expenses | Income**.
 - "All" is selected by default (shows both expense and income transactions).
+- The tab is **local to this screen** and is not overridden by the Home type switcher: adding or switching a type elsewhere never changes the filter the user picked here.
 - Uses the new `AllTypeTabs` component (separate from the 2-tab `TypeTabs` used on HomeScreen).
 - Selecting a tab filters the transaction list by `type` field:
   - "All" → no type filter (shows all).
@@ -45,6 +46,7 @@
 - The modal receives the current `type` tab value so it adapts its category display.
 - When categories are selected, only transactions matching those categories are shown.
 - When "All" is selected (empty array), all categories are shown.
+- Selecting no category and applying is the same as "All categories": the filter can always be cleared (the Apply button stays enabled and reads "All categories" when nothing is selected).
 
 ### 5. Period selector
 

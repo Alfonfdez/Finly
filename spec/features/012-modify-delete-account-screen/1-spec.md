@@ -112,7 +112,7 @@
 
 **Confirmation Modal — "Delete account?"**
 - Title: "Delete account "{accountName}"" (multilingual, interpolates the account name).
-- Message: "All transactions linked to this account will also be deleted" (multilingual).
+- Message: "All transactions and recurring rules linked to this account will also be deleted" (multilingual).
 - Buttons: "Cancel" (multilingual) and "Delete" (multilingual, red color).
 - When tapping "Cancel", the modal closes.
 - When tapping "Delete":

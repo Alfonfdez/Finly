@@ -11,6 +11,7 @@ export const TEST_IDS = {
   recurringList: 'recurring-list',
   accountsList: 'accounts-list',
   categoriesGrid: 'categories-grid',
+  iconGrid: 'icon-grid',
   formDelete: 'form-delete',
   formHintSlot: 'form-hint-slot',
   formMutedSlot: 'form-muted-slot',

@@ -105,4 +105,47 @@ describe('recurrenceInfoLines', () => {
       detailLines: ['Se crearán 4 transacciones'],
     });
   });
+
+  it('adds the month-by-month line when the occurrence day varies', () => {
+    const lastDay = schedule({ day_of_month: 31, start_date: '2026-10-31' });
+    const lines = recurrenceInfoLines(lastDay, { today: '2026-10-17', cursor: null, scope: 'future' }, LANGUAGES.en);
+    expect(lines.summary).toBe('Every month on the last day');
+    expect(lines.detailLines).toEqual([
+      '31 in Jan, Mar, May, Jul, Aug, Oct, Dec · 30 in Apr, Jun, Sep, Nov · 28 in Feb (29 in leap years)',
+      'No transactions will be created now',
+    ]);
+  });
+
+  it('adds the February leap-year line to a yearly last-day rule', () => {
+    const february = schedule({ frequency: 'yearly', month: 2, day_of_month: 31, start_date: '2027-02-28' });
+    const lines = recurrenceInfoLines(february, { today: '2026-10-17', cursor: null, scope: 'future' }, LANGUAGES.en);
+    expect(lines.summary).toBe('Every year on the last day of February');
+    expect(lines.detailLines[0]).toBe('28 in Feb (29 in leap years)');
+  });
+
+  it('keeps the day-only line when the day never varies', () => {
+    const month15 = schedule({ day_of_month: 15, start_date: '2026-01-15' });
+    expect(recurrenceInfoLines(month15, { today: '2026-10-17', cursor: null, scope: 'future' }, LANGUAGES.en).detailLines)
+      .toEqual(['10 transactions will be created']);
+  });
+
+  it('paused rule: says nothing is created instead of promising a back-fill', () => {
+    const monthly = schedule({ day_of_month: 6, start_date: '2026-01-06' });
+    const lines = recurrenceInfoLines(
+      monthly,
+      { today: '2026-10-17', cursor: '2026-09-06', scope: 'futureAndPast', ruleActive: false },
+      LANGUAGES.en,
+    );
+    expect(lines.detailLines).toEqual(['This rule is paused: no transactions are created until you resume it.']);
+  });
+
+  it('active rule with the same draft keeps the back-fill line', () => {
+    const monthly = schedule({ day_of_month: 6, start_date: '2026-01-06' });
+    const lines = recurrenceInfoLines(
+      monthly,
+      { today: '2026-10-17', cursor: '2026-09-06', scope: 'futureAndPast', ruleActive: true },
+      LANGUAGES.en,
+    );
+    expect(lines.detailLines).toEqual(['Adds 2 missed transactions']);
+  });
 });

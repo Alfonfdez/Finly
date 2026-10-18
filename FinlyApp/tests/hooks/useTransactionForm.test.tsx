@@ -6,6 +6,7 @@ import { buildAppMock, getAppStub, setAppData, resetAppStub } from '../component
 import type { Account, Category, Tag } from '../../src/database/types';
 import type { TransactionType, RecurrenceFrequency } from '../../src/constants/types';
 import { setConfig, resetStub } from '../component/helpers/configStub';
+import { setPendingCategory } from '../../src/utils/pendingCategory';
 
 interface UseTransactionFormProps {
   initialType: TransactionType;
@@ -30,6 +31,7 @@ interface UseTransactionFormProps {
   initialRepeatInterval?: number;
   initialRepeatEnd?: Date | null;
   initialRepeatName?: string;
+  initialRepeatLastDay?: boolean;
   existingRepeatNames?: string[];
 }
 
@@ -461,5 +463,29 @@ describe('useTransactionForm', () => {
       await act(async () => { result.current.handleToggleTag(3); });
       expect(result.current.isDirty).toBe(false);
     });
+  });
+
+  it('keeps a category created under the other type selected', async () => {
+    // CreateCategoryScreen leaves the new category pending; it belongs to Income
+    // while the form is on Expenses, and the type switch must not clear it.
+    setPendingCategory(4, 'income');
+    const { result } = await setup();
+    await act(async () => {});
+
+    expect(result.current.type).toBe('income');
+    expect(result.current.categoryId).toBe(4);
+  });
+
+  it('drops the last-day anchor when the start date is no longer a month-end', async () => {
+    const { result } = await setup({
+      initialRepeatFrequency: 'monthly',
+      initialRepeatLastDay: true,
+      initialDay: new Date(2027, 1, 28), // Feb 28 of a non-leap year: still offered
+    });
+    await act(async () => {});
+    expect(result.current.repeatLastDay).toBe(true);
+
+    await act(async () => { result.current.handleSelectDate(new Date(2027, 4, 15)); });
+    expect(result.current.repeatLastDay).toBe(false);
   });
 });

@@ -126,7 +126,9 @@ export async function resumeRecurringRule(ruleId: number, now: Date = new Date()
 
   const nextDue = rule.next_due < today ? nextDueOnOrAfter(rule, today) : rule.next_due;
 
-  await recurringRepo.reactivate(ruleId, nextDue);
+  // The pause window stays skipped forever, so a recovered-skip record from before
+  // the pause can no longer be back-filled faithfully — drop it when the cursor moves.
+  await recurringRepo.reactivate(ruleId, nextDue, nextDue !== rule.next_due);
 
   // Materialize only this rule (its cursor is now on/after today); any other
   // overdue rules are caught up by the app-start/foreground/midnight runs.
@@ -201,6 +203,7 @@ export async function saveRecurringRuleEdit(params: RecurringEditParams): Promis
     scope,
     today,
     skippedFrom: current.skipped_from,
+    ruleActive: current.active === RULE_ACTIVE,
   });
 
   await recurringRepo.updateWithTags(

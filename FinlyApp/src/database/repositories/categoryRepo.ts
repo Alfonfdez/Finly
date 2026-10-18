@@ -1,6 +1,6 @@
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { getDrizzle, withTransaction } from '../drizzle/engine';
-import { categories, transactions } from '../drizzle/schema';
+import { categories, recurringRules, transactions } from '../drizzle/schema';
 import { runResultOf } from '../drizzle/proxy';
 import type { Category } from '../types';
 import type { TransactionType } from '../../constants/types';
@@ -75,6 +75,13 @@ export const categoryRepo = {
         .set({ category_id: newCategoryId })
         .where(eq(transactions.category_id, oldCategoryId))
         .run();
+      // Recurring rules are the template for the category's future transactions, so
+      // moving the data must move them too (otherwise the CASCADE deletes them).
+      await db
+        .update(recurringRules)
+        .set({ category_id: newCategoryId })
+        .where(eq(recurringRules.category_id, oldCategoryId))
+        .run();
       await db.delete(categories).where(eq(categories.id, oldCategoryId)).run();
     });
   },
@@ -97,6 +104,11 @@ export const categoryRepo = {
         .set({ category_id: targetId })
         .where(inArray(transactions.category_id, ids))
         .run();
+      await db
+        .update(recurringRules)
+        .set({ category_id: targetId })
+        .where(inArray(recurringRules.category_id, ids))
+        .run();
       await db.delete(categories).where(inArray(categories.id, ids)).run();
     });
   },
@@ -115,6 +127,11 @@ export const categoryRepo = {
             .update(transactions)
             .set({ category_id: item.targetId })
             .where(eq(transactions.category_id, item.id))
+            .run();
+          await db
+            .update(recurringRules)
+            .set({ category_id: item.targetId })
+            .where(eq(recurringRules.category_id, item.id))
             .run();
         }
       }

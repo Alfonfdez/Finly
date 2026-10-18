@@ -208,16 +208,45 @@ describe('RepeatSection', () => {
     expect((await withoutHint.view).queryByText('Changing the start date doesn\'t add earlier transactions.')).toBeNull();
   });
 
-  it('shows the last-day checkbox only for monthly/yearly', async () => {
-    const monthly = await renderSection({ frequency: 'monthly' });
-    expect((await monthly.view).getByText('Last day of the month')).toBeTruthy();
+  it('offers the last-day checkbox only on a month-end date where the choice matters', async () => {
+    // Feb 28 of a non-leap year and 30 Apr are the ambiguous month-ends.
+    const monthlyFeb28 = await renderSection({ frequency: 'monthly', startDay: new Date(2027, 1, 28) });
+    expect((await monthlyFeb28.view).getByText('Last day of the month')).toBeTruthy();
 
-    const weekly = await renderSection({ frequency: 'weekly' });
+    const monthlyApr30 = await renderSection({ frequency: 'monthly', startDay: new Date(2026, 3, 30) });
+    expect((await monthlyApr30.view).getByText('Last day of the month')).toBeTruthy();
+  });
+
+  it('hides the last-day checkbox on an ordinary day or an unambiguous month-end', async () => {
+    const monthly17 = await renderSection({ frequency: 'monthly', startDay: new Date(2026, 0, 17) });
+    expect((await monthly17.view).queryByText('Last day of the month')).toBeNull();
+
+    // Monthly on the 31st already clamps to the last day of every month.
+    const monthly31 = await renderSection({ frequency: 'monthly', startDay: new Date(2026, 0, 31) });
+    expect((await monthly31.view).queryByText('Last day of the month')).toBeNull();
+
+    // Feb 28 of a leap year is not that month's last day.
+    const monthlyFeb28Leap = await renderSection({ frequency: 'monthly', startDay: new Date(2028, 1, 28) });
+    expect((await monthlyFeb28Leap.view).queryByText('Last day of the month')).toBeNull();
+
+    // Yearly: only 28 February of a non-leap year is ambiguous.
+    const yearlyApr30 = await renderSection({ frequency: 'yearly', startDay: new Date(2026, 3, 30) });
+    expect((await yearlyApr30.view).queryByText('Last day of the month')).toBeNull();
+
+    const yearlyFeb28Leap = await renderSection({ frequency: 'yearly', startDay: new Date(2028, 1, 28) });
+    expect((await yearlyFeb28Leap.view).queryByText('Last day of the month')).toBeNull();
+
+    const weekly = await renderSection({ frequency: 'weekly', startDay: new Date(2027, 1, 28) });
     expect((await weekly.view).queryByText('Last day of the month')).toBeNull();
   });
 
   it('toggles last day', async () => {
-    const { props, view } = renderSection({ frequency: 'monthly', lastDay: false, onChangeLastDay: vi.fn() });
+    const { props, view } = renderSection({
+      frequency: 'monthly',
+      startDay: new Date(2027, 1, 28),
+      lastDay: false,
+      onChangeLastDay: vi.fn(),
+    });
     await fireEvent.press((await view).getByText('Last day of the month'));
     expect(props.onChangeLastDay).toHaveBeenCalledWith(true);
   });
@@ -227,5 +256,23 @@ describe('RepeatSection', () => {
     const v = await view.view;
     expect(v.getByText('Every month on the last day')).toBeTruthy();
     expect(v.getByText('First transaction: January 31, 2026')).toBeTruthy();
+  });
+
+  it('lists the month-by-month days when the occurrence day varies', async () => {
+    const view = await renderSection({ frequency: 'monthly', startDay: new Date(2026, 0, 31) });
+    expect((await view.view).getByText(
+      '31 in Jan, Mar, May, Jul, Aug, Oct, Dec · 30 in Apr, Jun, Sep, Nov · 28 in Feb (29 in leap years)',
+    )).toBeTruthy();
+  });
+
+  it('says nothing is created while the rule is paused', async () => {
+    const paused = await renderSection({
+      frequency: 'monthly',
+      startDay: new Date(2026, 0, 2),
+      ruleNextDue: '2026-09-02',
+      ruleActive: false,
+      scope: 'futureAndPast',
+    });
+    expect((await paused.view).getByText('This rule is paused: no transactions are created until you resume it.')).toBeTruthy();
   });
 });

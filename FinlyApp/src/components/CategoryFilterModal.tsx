@@ -78,24 +78,26 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
     if (type !== TYPE_FILTERS.all) {
       return [{ label: null, data: sortCategoriesWithOthersLast(displayedCategories) }];
     }
-  const expenses = sortCategoriesWithOthersLast(categoriesOfType(displayedCategories, TRANSACTION_TYPES.expense));
-  const income = sortCategoriesWithOthersLast(categoriesOfType(displayedCategories, TRANSACTION_TYPES.income));
+    const expenses = sortCategoriesWithOthersLast(categoriesOfType(displayedCategories, TRANSACTION_TYPES.expense));
+    const income = sortCategoriesWithOthersLast(categoriesOfType(displayedCategories, TRANSACTION_TYPES.income));
     const result: { label: string | null; data: Category[] }[] = [];
     if (expenses.length > 0) result.push({ label: labels.filter_expenses, data: expenses });
     if (income.length > 0) result.push({ label: labels.filter_income, data: income });
     return result;
   }, [displayedCategories, type, labels.filter_expenses, labels.filter_income]);
 
+  // An empty selection means "no category filter" — the same as selecting every one —
+  // so Apply stays enabled and the label never reads "Apply (0)".
+  const applyFiltersAll = allSelected || localSelectedIds.length === 0;
+
   const applyLabel = useMemo(() => {
-    if (allSelected) {
+    if (applyFiltersAll) {
       if (type === TRANSACTION_TYPES.expense) return labels.filter_apply_all_expense;
       if (type === TRANSACTION_TYPES.income) return labels.filter_apply_all_income;
       return labels.filter_apply_all;
     }
     return labels.filter_apply(localSelectedIds.length);
-  }, [allSelected, type, localSelectedIds.length, labels]);
-
-  const applyDisabled = localSelectedIds.length === 0;
+  }, [applyFiltersAll, type, localSelectedIds.length, labels]);
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -167,11 +169,10 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
         </View>
 
         <TouchableOpacity
-          style={[styles.applyButton, { backgroundColor: applyDisabled ? c.surface : c.primary }]}
-          disabled={applyDisabled}
+          style={[styles.applyButton, { backgroundColor: c.primary }]}
           onPress={() => onApply(localSelectedIds)}
         >
-          <Text style={[styles.applyText, { color: applyDisabled ? c.textSecondary : c.background, fontSize: fs(16) }]}>
+          <Text style={[styles.applyText, { color: c.background, fontSize: fs(16) }]}>
             {applyLabel}
           </Text>
         </TouchableOpacity>

@@ -125,14 +125,14 @@ export default function ModalFooter({
   }
 
   return (
-<View
-        style={[
-          styles.row,
-          borderTop && styles.borderTop,
-          borderTop && { borderTopColor: c.border },
-          { paddingHorizontal: horizontalInset, paddingBottom: containerPaddingBottom },
-        ]}
-      >
+    <View
+      style={[
+        styles.row,
+        borderTop && styles.borderTop,
+        borderTop && { borderTopColor: c.border },
+        { paddingHorizontal: horizontalInset, paddingBottom: containerPaddingBottom },
+      ]}
+    >
       {cancelLabel && onCancel ? (
         <TouchableOpacity
           style={[styles.button, { backgroundColor: c.background, borderColor: c.border, paddingVertical: verticalPadding, minHeight }]}

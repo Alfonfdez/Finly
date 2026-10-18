@@ -19,7 +19,7 @@ import {
   RECURRENCE_SCOPES,
 } from '../constants/types';
 import { formatDateForDB } from '../utils/formatters';
-import { isRuleUnmaterialized, toDateOnly } from '../utils/recurrence';
+import { isRuleUnmaterialized, lastDayAnchorUseful, toDateOnly } from '../utils/recurrence';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { parseAmountValue } from '../utils/amountInput';
 import { areIdListsEqual } from '../utils/arrays';
@@ -148,6 +148,8 @@ export function useTransactionForm({
   const inputRef = useRef<TextInput>(null);
   const scrollRef = useRef<ScrollView>(null);
   const prevType = useRef(type);
+  /** Type applied by a pending (newly created) category: the switch must not clear it. */
+  const pendingTypeRef = useRef<TransactionType | null>(null);
   const isFirstFocus = useRef(true);
 
   // What the draft is measured against: the row as stored right now. Building it from the
@@ -177,7 +179,12 @@ export function useTransactionForm({
     }
     const pending = consumePendingCategory();
     if (pending) {
-      if (pending.type !== type) setType(pending.type);
+      if (pending.type !== type) {
+        // The type change comes from the newly created category: the effect below must
+        // not clear the category it is about to select.
+        pendingTypeRef.current = pending.type;
+        setType(pending.type);
+      }
       setCategoryId(pending.categoryId);
       const allByType = categoriesOfType(categories, pending.type);
       const isVisible = allByType.slice(0, MAX_VISIBLE_CATEGORIES).some(c => c.id === pending.categoryId);
@@ -201,10 +208,25 @@ export function useTransactionForm({
   useEffect(() => {
     if (prevType.current !== type) {
       prevType.current = type;
+      if (pendingTypeRef.current === type) {
+        // The switch came from a freshly created category of the other type: keep it.
+        pendingTypeRef.current = null;
+        return;
+      }
       setCategoryId(null);
       setReorderedCategory(null);
     }
   }, [type]);
+
+  // The last-day checkbox is only offered on a month-end date (see spec 028 §4).
+  // Clearing the flag when it is hidden keeps "checkbox visible" and "rule anchored
+  // on the last day" in sync — otherwise changing the start to an ordinary day would
+  // silently keep anchoring the rule on that month's end.
+  useEffect(() => {
+    if (repeatLastDay && !lastDayAnchorUseful(repeatFrequency, day)) {
+      setRepeatLastDay(false);
+    }
+  }, [repeatFrequency, day, repeatLastDay, setRepeatLastDay]);
 
   const numericAmount = useMemo(() => parseAmountValue(amountRaw), [amountRaw]);
 

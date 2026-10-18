@@ -121,6 +121,11 @@ export function getDefaultEnglishName(categoryId: number): string | null {
   return categoryResolver.getDefaultEnglishName(categoryId);
 }
 
+/** The category's localized default name (by id), regardless of what is stored. */
+export function getDefaultCategoryName(categoryId: number): string {
+  return categoryResolver.getName(categoryId);
+}
+
 export function getDisplayCategoryName(category: { id: number; name: string }): string {
   return categoryResolver.getDisplayName(category);
 }

@@ -8,7 +8,7 @@ import { isTotalAccount } from '../database/helpers';
 import { matchesTagFilter, toggleTagInArray } from '../utils/tagFilter';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { useConfig } from './ConfigContext';
-import { formatDateForDB, resolvePeriodRange } from '../utils/formatters';
+import { formatDateForDB, resolvePeriodRange, endOfDay } from '../utils/formatters';
 import { showErrorAlert } from '../utils/errors';
 
 interface AppState {
@@ -53,7 +53,9 @@ const AppContext = createContext<AppContextType | null>(null);
 
 function defaultCustomDate(): { start: Date; end: Date } {
   const now = new Date();
-  return { start: new Date(now.getFullYear(), 0, 1), end: now };
+  // The whole of today belongs to the range: an end at "now" would hide transactions
+  // recorded later today (the built-in periods already use end-of-day).
+  return { start: new Date(now.getFullYear(), 0, 1), end: endOfDay(now) };
 }
 
 async function fetchTransactionsAndTags(

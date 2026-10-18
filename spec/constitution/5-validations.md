@@ -129,7 +129,7 @@ setNameError(exists ? labels.create_cat_error_name_duplicate : null);
 - Color: `c.red`
 - Weight: `'500'`
 - Placement: directly below the input field, with small margin.
-- Maximum 1 error message visible at a time.
+- The hint band can list several unmet conditions at once (one sentence each); no single error is shown twice.
 
 ### Text Rules
 - Lowercase start (no capitalization).

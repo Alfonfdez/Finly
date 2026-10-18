@@ -9,7 +9,7 @@ Todo funciona **en el dispositivo**: tus datos viven en una base de datos SQLite
 | | |
 |---|---|
 | **Plataformas** | iOS, Android y Web |
-| **Versión** | 2.1.0 |
+| **Versión** | 2.2.0 |
 | **Idiomas** | Inglés, Español, Catalán, Gallego, Euskera, Francés, Alemán, Portugués e Italiano |
 | **Datos** | 100 % locales (SQLite en nativo, sql.js + IndexedDB en web) |
 | **Temas** | Oscuro, Claro y Automático (sigue el sistema) |
@@ -24,6 +24,7 @@ Todo funciona **en el dispositivo**: tus datos viven en una base de datos SQLite
 - **Todas las transacciones** — filtros combinados: tipo, categorías (multiselección), período, cuenta, etiquetas y búsqueda con ordenación por fecha o importe.
 - **Etiquetas y comentarios** — etiqueta transacciones y filtra por etiqueta; gestiona todos los comentarios de la app y aplica ediciones o borrados masivos a varias transacciones a la vez.
 - **Fotos** — adjunta una foto a una transacción desde la galería en todas las plataformas (cámara en iOS y Android).
+- **Reglas recurrentes** — convierte una transacción en una programación que se repite (diaria, semanal, mensual o anual, con intervalo y fecha de fin opcional); las ocurrencias vencidas se generan solas y cada regla se puede pausar, reanudar o editar aplicando el cambio solo al futuro o también al pasado.
 - **Acciones masivas** — multiselecciona y elimina transacciones, etiquetas, comentarios y categorías de una vez.
 - **Copia de seguridad** — exporta toda tu base de datos como instantánea JSON e impórtala cuando quieras.
 - **Ajustes** — tema, tamaño de texto, moneda, separador decimal, idioma, primer día de la semana, formas de iconos, valores predeterminados de inicio y de añadir transacción, y opciones de privacidad para ocultar saldos.
@@ -33,7 +34,7 @@ Todo funciona **en el dispositivo**: tus datos viven en una base de datos SQLite
 
 ![Pantalla de inicio](images/screenshots/v2-01-a-home-empty.png)<br>*Pantalla de inicio antes de configurar ninguna cuenta.*<br><br>
 ![Pantalla de inicio](images/screenshots/v2-01-b-home.png)<br>*Pantalla de inicio con cuentas, gráfico de donut y desglose por categorías.*<br><br>
-![Menú hamburguesa](images/screenshots/v2-02-hamburger.png)<br>*Menú lateral con Inicio, Cuentas, Categorías, Etiquetas, Comentarios, Todas las transacciones y Ajustes.*<br><br>
+![Menú hamburguesa](images/screenshots/v2-02-hamburger.png)<br>*Menú lateral con Inicio, Cuentas, Categorías, Etiquetas, Comentarios, Recurrentes, Todas las transacciones y Ajustes.*<br><br>
 ![Añadir transacción](images/screenshots/v2-03-add-transaction.png)<br>*Añade un gasto o ingreso con importe, cuenta, categoría, día, etiquetas, comentario y foto.*<br><br>
 ![Selector de fecha](images/screenshots/v2-04-date-picker.png)<br>*Selector de calendario para elegir un día, semana, mes, año o rango de período personalizado.*<br><br>
 ![Categorías](images/screenshots/v2-05-categories.png)<br>*Categorías organizadas por tipo (gastos/ingresos) en una cuadrícula de 4×N.*<br><br>
@@ -105,11 +106,12 @@ Esto inicia Metro Bundler. Después:
 | `npm test` | Ejecuta la suite de Vitest |
 | `npm run test:watch` | Ejecuta Vitest en modo watch |
 | `npm run test:all` | typecheck + lint + tests (la verificación local completa) |
+| `npm run i18n` | Añade, actualiza, elimina o lista claves de traducción en los 9 idiomas |
 
 ### Pruebas
 
 - **Unitarias / integración** — Vitest. La suite cubre los repositorios de base de datos en ambos backends SQLite (nativo + sql.js), los round-trips de copia de seguridad y los componentes renderizados con `@testing-library/react-native`.
-- **E2E nativas** — los flujos de Maestro en `FinlyApp/.maestro/` (10 flujos + helpers) se ejecutan contra el APK de depuración en un emulador de Android; ver `docs/harnesses.md`.
+- **E2E nativas** — los flujos de Maestro en `FinlyApp/.maestro/` (15 flujos + helpers) se ejecutan contra el APK de depuración en un emulador de Android; ver `docs/harnesses.md`.
 - **Verificación web** — los criterios de aceptación de cada función se verifican en un navegador real a 375px con Playwright.
 - El pipeline de CI (`.github/workflows/ci.yml`) ejecuta el gate completo `npm run test:all` en cada push y pull request de `develop` y `main`.
 
@@ -135,7 +137,7 @@ FinlyApp/
 ### Base de datos
 
 - Una única interfaz de motor (`DatabaseHandle`) en todas las plataformas: expo-sqlite en nativo, sql.js (WASM) con persistencia en IndexedDB en web.
-- Las migraciones se versionan con `PRAGMA user_version` (`001_initial`, `002_seed`, `003_config`) y se aplican una sola vez, dentro de una transacción.
+- Las migraciones se versionan con `PRAGMA user_version` (`001_initial`, `002_seed`, `003_config`, `004_recurring`) y se aplican una sola vez, dentro de una transacción.
 - Los repositorios están escritos con Drizzle ORM sobre el manejo compartido; las filas almacenadas se validan con esquemas Zod.
 - En web, los bytes SQLite exportados se persisten en IndexedDB, así que los mismos datos sobreviven a las recargas.
 

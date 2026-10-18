@@ -9,7 +9,7 @@ Tot funciona **al dispositiu**: les teves dades viuen en una base de dades SQLit
 | | |
 |---|---|
 | **Plataformes** | iOS, Android i Web |
-| **Versió** | 2.1.0 |
+| **Versió** | 2.2.0 |
 | **Idiomes** | Anglès, Castellà, Català, Gallec, Basc, Francès, Alemany, Portuguès i Italià |
 | **Dades** | 100 % locals (SQLite al nadiu, sql.js + IndexedDB al web) |
 | **Temes** | Fosc, Clar i Automàtic (segueix el sistema) |
@@ -24,6 +24,7 @@ Tot funciona **al dispositiu**: les teves dades viuen en una base de dades SQLit
 - **Totes les transaccions** — filtres combinats: tipus, categories (multiselecció), període, compte, etiquetes i cerca amb ordenació per data o import.
 - **Etiquetes i comentaris** — etiqueta transaccions i filtra per etiqueta; gestiona tots els comentaris de l'app i aplica edicions o esborrats massius a diverses transaccions alhora.
 - **Fotos** — adjunta una foto a una transacció des de la galeria en totes les plataformes (càmera a iOS i Android).
+- **Regles recurrents** — converteix una transacció en una programació que es repeteix (diària, setmanal, mensual o anual, amb interval i data de fi opcional); les ocurrències vençudes es generen soles i cada regla es pot pausar, reprendre o editar aplicant el canvi només al futur o també al passat.
 - **Accions massives** — multiselecciona i esborra transaccions, etiquetes, comentaris i categories d'una vegada.
 - **Còpia de seguretat** — exporta tota la base de dades com a instantània JSON i importa-la quan vulguis.
 - **Configuració** — tema, mida del text, moneda, separador decimal, idioma, primer dia de la setmana, formes d'icones, valors per defecte d'inici i d'afegir transacció, i opcions de privadesa per ocultar saldos.
@@ -33,7 +34,7 @@ Tot funciona **al dispositiu**: les teves dades viuen en una base de dades SQLit
 
 ![Pantalla d'inici](images/screenshots/v2-01-a-home-empty.png)<br>*Pantalla d'inici abans de configurar cap compte.*<br><br>
 ![Pantalla d'inici](images/screenshots/v2-01-b-home.png)<br>*Pantalla d'inici amb comptes, gràfic de dònut i desglossament per categories.*<br><br>
-![Menú hamburguesa](images/screenshots/v2-02-hamburger.png)<br>*Menú lateral amb Inici, Comptes, Categories, Etiquetes, Comentaris, Totes les transaccions i Configuració.*<br><br>
+![Menú hamburguesa](images/screenshots/v2-02-hamburger.png)<br>*Menú lateral amb Inici, Comptes, Categories, Etiquetes, Comentaris, Recurrents, Totes les transaccions i Configuració.*<br><br>
 ![Afegeix transacció](images/screenshots/v2-03-add-transaction.png)<br>*Afegeix una despesa o ingrés amb import, compte, categoria, dia, etiquetes, comentari i foto.*<br><br>
 ![Selector de data](images/screenshots/v2-04-date-picker.png)<br>*Selector de calendari per triar un dia, setmana, mes, any o rang de període personalitzat.*<br><br>
 ![Categories](images/screenshots/v2-05-categories.png)<br>*Categories organitzades per tipus (despeses/ingressos) en una graella de 4×N.*<br><br>
@@ -105,11 +106,12 @@ Això inicia Metro Bundler. Després:
 | `npm test` | Executa la suite de Vitest |
 | `npm run test:watch` | Executa Vitest en mode watch |
 | `npm run test:all` | typecheck + lint + tests (la verificació local completa) |
+| `npm run i18n` | Afegeix, actualitza, elimina o llista claus de traducció als 9 idiomes |
 
 ### Proves
 
 - **Unitàries / integració** — Vitest. La suite cobreix els repositoris de base de dades en tots dos backends SQLite (nadiu + sql.js), els round-trips de còpia de seguretat i els components renderitzats amb `@testing-library/react-native`.
-- **E2E natives** — els fluxos de Maestro a `FinlyApp/.maestro/` (10 fluxos + helpers) s'executen contra l'APK de depuració en un emulador d'Android; vegeu `docs/harnesses.md`.
+- **E2E natives** — els fluxos de Maestro a `FinlyApp/.maestro/` (15 fluxos + helpers) s'executen contra l'APK de depuració en un emulador d'Android; vegeu `docs/harnesses.md`.
 - **Verificació web** — els criteris d'acceptació de cada funció es verifiquen en un navegador real a 375px amb Playwright.
 - El pipeline de CI (`.github/workflows/ci.yml`) executa el gate complet `npm run test:all` en cada push i pull request de `develop` i `main`.
 
@@ -135,7 +137,7 @@ FinlyApp/
 ### Base de dades
 
 - Una única interfície de motor (`DatabaseHandle`) en totes les plataformes: expo-sqlite al nadiu, sql.js (WASM) amb persistència a IndexedDB al web.
-- Les migracions es versionen amb `PRAGMA user_version` (`001_initial`, `002_seed`, `003_config`) i s'apliquen una sola vegada, dins d'una transacció.
+- Les migracions es versionen amb `PRAGMA user_version` (`001_initial`, `002_seed`, `003_config`, `004_recurring`) i s'apliquen una sola vegada, dins d'una transacció.
 - Els repositoris estan escrits amb Drizzle ORM sobre el maneig compartit; les files emmagatzemades es validen amb esquemes Zod.
 - Al web, els bytes SQLite exportats es persisteixen a IndexedDB, així que les mateixes dades sobreviuen a les recàrregues.
 

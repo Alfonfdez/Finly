@@ -35,7 +35,7 @@ import { filterRecurringRules } from '../utils/recurringFilter';
 import { isTotalAccount } from '../database/helpers';
 import { recurringRepository } from '../database';
 import { setRecurringRuleActive } from '../database/recurringService';
-import { ERROR_PREFIXES } from '../utils/errors';
+import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import type { RecurringRule } from '../database/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Recurring'>;
@@ -151,13 +151,15 @@ export default function RecurringScreen() {
     // also refuses to resume an ended rule). Pausing clears the flag; resuming
     // skips the paused window.
     if (isRecurrenceEnded(rule, rule.next_due, todayDateOnly())) return;
-    await setRecurringRuleActive(rule.id, value);
-    if (value) {
-      setData(await loadRules());
-      refresh();
-    } else {
-      setData(prev => ({ ...prev, rules: prev.rules.map(r => (r.id === rule.id ? { ...r, active: RULE_INACTIVE } : r)) }));
-    }
+    await runWithErrorAlert(async () => {
+      await setRecurringRuleActive(rule.id, value);
+      if (value) {
+        setData(await loadRules());
+        refresh();
+      } else {
+        setData(prev => ({ ...prev, rules: prev.rules.map(r => (r.id === rule.id ? { ...r, active: RULE_INACTIVE } : r)) }));
+      }
+    }, ERROR_PREFIXES.recurringUpdate);
   }, [setData, refresh, loadRules]);
 
   const handleRulePress = useCallback((rule: RecurringRule) => {

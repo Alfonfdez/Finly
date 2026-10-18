@@ -9,7 +9,7 @@ Dena **gailuan** exekutatzen da: zure datuak tokiko SQLite datu-base batean bizi
 | | |
 |---|---|
 | **Plataformak** | iOS, Android eta Web |
-| **Bertsioa** | 2.1.0 |
+| **Bertsioa** | 2.2.0 |
 | **Hizkuntzak** | Ingelesa, Gaztelania, Katalana, Galiziera, Euskara, Frantsesa, Alemana, Portugesa eta Italiera |
 | **Datuak** | % 100 tokikoak (SQLite natiboan, sql.js + IndexedDB webgunean) |
 | **Gaiak** | Iluna, Argia eta Automatikoa (sistemari jarraitzen dio) |
@@ -24,6 +24,7 @@ Dena **gailuan** exekutatzen da: zure datuak tokiko SQLite datu-base batean bizi
 - **Transakzio guztiak** — iragazki konbinatuak: mota, kategoriak (hautaketa anizkoitza), aldia, kontua, etiketak eta bilaketa, data edo zenbatekoaren araberako ordenarekin.
 - **Etiketak eta iruzkinak** — etiketatu transakzioak eta gero iragazi etiketaren arabera; kudeatu aplikazioko iruzkin guztiak eta aplikatu aldaketak edo ezabaketa masiboak transakzio askori aldi berean.
 - **Argazkiak** — erantsi argazki bat transakzio bati galeriatik plataforma guztietan (kamera iOS eta Androiden).
+- **Arau errepikakorrak** — bihurtu transakzio bat errepikatzen den programazio bat (egunero, astero, hilero edo urtero, tartea eta amaiera-data aukerakoarekin); falta diren ocurrentziak berez sortzen dira eta arau bakoitza pausatu, berrekin edo editatu daiteke aldaketa etorkizunari soilik edo iraganari ere aplikatuz.
 - **Ekintza masiboak** — hautatu anitz eta ezabatu transakzioak, etiketak, iruzkinak eta kategoriak batera.
 - **Datuen babeskopia** — esportatu zure datu-base osoa JSON argazki gisa eta inportatu berriro nahi duzunean.
 - **Ezarpenak** — gaia, testu-tamaina, moneta, hamartar bereizlea, hizkuntza, asteko lehen eguna, ikono-formak, hasiera eta transakzio-gehiketa lehenetsiak, eta saldoak ezkutatzeko pribatutasun-aukerak.
@@ -33,7 +34,7 @@ Dena **gailuan** exekutatzen da: zure datuak tokiko SQLite datu-base batean bizi
 
 ![Hasierako pantaila](images/screenshots/v2-01-a-home-empty.png)<br>*Hasierako pantaila edozein kontu konfiguratu aurretik.*<br><br>
 ![Hasierako pantaila](images/screenshots/v2-01-b-home.png)<br>*Hasierako pantaila kontuekin, donut grafikoarekin eta kategoria-sailkapenarekin.*<br><br>
-![Alboko menua](images/screenshots/v2-02-hamburger.png)<br>*Alboko menua: Hasiera, Kontuak, Kategoriak, Etiketak, Iruzkinak, Transakzio guztiak eta Ezarpenak.*<br><br>
+![Alboko menua](images/screenshots/v2-02-hamburger.png)<br>*Alboko menua: Hasiera, Kontuak, Kategoriak, Etiketak, Iruzkinak, Errepikariak, Transakzio guztiak eta Ezarpenak.*<br><br>
 ![Transakzioa gehitu](images/screenshots/v2-03-add-transaction.png)<br>*Gehitu gastu edo sarrera bat zenbateko, kontu, kategoria, egun, etiketa, iruzkin eta argazkiarekin.*<br><br>
 ![Data-hautatzailea](images/screenshots/v2-04-date-picker.png)<br>*Egutegi-hautatzailea egun, aste, hilabete, urte edo aldi-tarte pertsonalizatua aukeratzeko.*<br><br>
 ![Kategoriak](images/screenshots/v2-05-categories.png)<br>*Kategoriak motaren arabera antolatuta (gastuak/sarrerak) 4×N sare batean.*<br><br>
@@ -105,11 +106,12 @@ Honek Metro Bundler abiarazten du. Ondoren:
 | `npm test` | Vitest suitea exekutatu |
 | `npm run test:watch` | Vitest watch moduan exekutatu |
 | `npm run test:all` | typecheck + lint + tests (tokiko ate osoa) |
+| `npm run i18n` | Gehitu, eguneratu, ezabatu edo zerrendatu itzulpen-gakoak 9 hizkuntzetan |
 
 ### Probak
 
 - **Unitarioak / integrazioa** — Vitest. Suiteak datu-basearen biltegiratze-guneak estaltzen ditu bi SQLite backendetan (natiboa + sql.js), babeskopiaren joan-etorriak eta `@testing-library/react-native`-rekin errendatutako osagaiak.
-- **E2E natiboak** — `FinlyApp/.maestro/`-ko Maestro fluxuak (10 fluxu + laguntzaileak) debug APKaren aurka exekutatzen dira Android emuladore batean; ikusi `docs/harnesses.md`.
+- **E2E natiboak** — `FinlyApp/.maestro/`-ko Maestro fluxuak (15 fluxu + laguntzaileak) debug APKaren aurka exekutatzen dira Android emuladore batean; ikusi `docs/harnesses.md`.
 - **Web egiaztapena** — funtzionalitate bakoitzaren onarpen-irizpideak benetako nabigatzaile batean egiaztatzen dira 375px-an Playwright-ekin.
 - CI pipelineak (`.github/workflows/ci.yml`) `npm run test:all` ate osoa exekutatzen du `develop` eta `main` adarretako push eta pull request bakoitzean.
 
@@ -135,7 +137,7 @@ FinlyApp/
 ### Datu-basea
 
 - Motor-interfaze bakarra (`DatabaseHandle`) plataforma guztietan: expo-sqlite natiboan, sql.js (WASM) IndexedDB iraunkortasunarekin webgunean.
-- Migrazioak `PRAGMA user_version`-ekin bertsionatzen dira (`001_initial`, `002_seed`, `003_config`) eta behin bakarrik aplikatzen dira, transakzio baten barruan.
+- Migrazioak `PRAGMA user_version`-ekin bertsionatzen dira (`001_initial`, `002_seed`, `003_config`, `004_recurring`) eta behin bakarrik aplikatzen dira, transakzio baten barruan.
 - Biltegiratze-guneak Drizzle ORM-rekin idatzita daude handle partekatuaren gainean; gordetako errenkadak Zod eskemen bidez balidatzen dira.
 - Webgunean, esportatutako SQLite byteak IndexedDBn gordetzen dira, beraz datu berak berriz kargatu ondoren ere irauten dute.
 

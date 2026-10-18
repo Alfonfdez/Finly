@@ -15,7 +15,10 @@ import { WHITE } from '../constants/themes';
 
 export interface BulkCategoryItem {
   category: Category;
-  count: number;
+  /** Generated transactions the category holds. */
+  txCount: number;
+  /** Recurring rules pointing at the category. */
+  ruleCount: number;
 }
 
 interface Props {
@@ -64,13 +67,13 @@ export default function BulkCategoryTransferModal({
     <ModalShell visible={visible} onClose={onCancel}>
       <ModalHeader title={labels.categories_bulk_move_title} size={16} />
       <ScrollView style={styles.list}>
-        {categories.map(({ category, count }) => {
+        {categories.map(({ category, txCount, ruleCount }) => {
           const decision = decisions[category.id] ?? null;
           return (
             <ListItemRow
               key={category.id}
               title={getDisplayCategoryName(category)}
-              subtitle={labels.categories_bulk_move_transactions(count)}
+              subtitle={labels.categories_bulk_move_data(txCount, ruleCount)}
               icon={category.icon}
               color={category.color}
               shape={badgeShapeFor(config, 'category')}
