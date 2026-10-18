@@ -13,6 +13,7 @@ const routeParams: Record<string, unknown> = { categoryId: 7 };
 const mockCategoryExists = vi.fn(async (_userId: number, name: string, _excludeId?: number) => false);
 const mockCategoryUpdate = vi.fn(async (_id: number, data: unknown) => {});
 const mockTxList = vi.fn(async (_filter: unknown) => [] as Transaction[]);
+const mockRuleCounts = vi.fn(async (_ids: number[]) => ({} as Record<number, number>));
 
 vi.mock('reanimated-color-picker', () => ({
   default: ({ children }: { children?: ReactNode }) => children ?? null,
@@ -27,6 +28,9 @@ vi.mock('../../src/database', () => ({
     existsByName: (userId: number, name: string, excludeId?: number) =>
       mockCategoryExists(userId, name, excludeId),
     update: (id: number, data: unknown) => mockCategoryUpdate(id, data),
+  },
+  recurringRepository: {
+    countByCategoryIds: (ids: number[]) => mockRuleCounts(ids),
   },
   transactionRepository: {
     list: (filter: unknown) => mockTxList(filter),
@@ -65,6 +69,7 @@ describe('ModifyCategoryScreen', () => {
     mockCategoryExists.mockClear().mockResolvedValue(false);
     mockCategoryUpdate.mockClear();
     mockTxList.mockClear().mockResolvedValue([]);
+    mockRuleCounts.mockClear().mockResolvedValue({});
     setAppData({ categories: [category] });
   });
 
@@ -138,5 +143,47 @@ describe('ModifyCategoryScreen', () => {
 
     await fireEvent.changeText(input, '');
     expect(StyleSheet.flatten(input.props.style).borderColor).toBe('#F87171');
+  });
+
+  it('disables Delete when the category is the only one of its type', async () => {
+    const view = await render(<ModifyCategoryScreen />);
+    await view.findByDisplayValue('Food');
+
+    expect(view.getByText('Delete')).toBeDisabled();
+    expect(view.getByText('You need at least one category of each type, so this one cannot be deleted.')).toBeTruthy();
+  });
+
+  it('warns that the category rules are deleted too and offers moving them', async () => {
+    setAppData({ categories: [category, { ...category, id: 8, name: 'Travel' } as Category] });
+    mockRuleCounts.mockResolvedValue({ 7: 2 });
+    const view = await render(<ModifyCategoryScreen />);
+    await view.findByDisplayValue('Food');
+
+    await fireEvent.press(view.getByText('Delete'));
+
+    await waitFor(() => expect(mockRuleCounts).toHaveBeenCalledWith([7]));
+    expect(view.getByText(
+      'Deleting this category will also delete its recurring rules, unless you choose to move them to another category',
+    )).toBeTruthy();
+    expect(view.getByText('Move them to another category')).toBeTruthy();
+    expect(view.queryByText('This category will be permanently deleted.')).toBeNull();
+  });
+
+  it('keeps a custom name when only the icon changes', async () => {
+    const view = await render(<ModifyCategoryScreen />);
+    await view.findByDisplayValue('Food');
+
+    // The icon grid only renders its cells once it knows its width.
+    await act(async () => {
+      fireEvent(view.getByTestId(TEST_IDS.iconGrid), 'layout', {
+        nativeEvent: { layout: { width: 320, height: 320 } },
+      });
+    });
+    await fireEvent.press(view.getByLabelText('airplane-outline'));
+    await fireEvent.press(view.getByText('Save'));
+
+    await waitFor(() => expect(mockCategoryUpdate).toHaveBeenCalledTimes(1));
+    // "Food" is not the seeded default for this id, so it must be stored as typed.
+    expect(mockCategoryUpdate).toHaveBeenCalledWith(7, expect.objectContaining({ name: 'Food' }));
   });
 });

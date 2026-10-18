@@ -23,7 +23,10 @@ export interface GeneratedTransactionPatch {
 }
 
 /** Write selected rule columns (never tags) and bump `updated_at`. */
-async function writeRuleFields(id: number, patch: { active?: number; next_due?: string }): Promise<void> {
+async function writeRuleFields(
+  id: number,
+  patch: { active?: number; next_due?: string; skipped_from?: string | null },
+): Promise<void> {
   const db = await getDrizzle();
   await db
     .update(recurringRules)
@@ -91,6 +94,21 @@ export const recurringRepo = {
     return new Map(rows.map(r => [r.rule_id as number, Number(r.count)]));
   },
 
+  /** Number of rules per category id (used by the category delete confirmation). */
+  async countByCategoryIds(categoryIds: number[]): Promise<Record<number, number>> {
+    if (categoryIds.length === 0) return {};
+    const db = await getDrizzle();
+    const rows = await db
+      .select({ category_id: recurringRules.category_id, count: sql<number>`count(*)` })
+      .from(recurringRules)
+      .where(inArray(recurringRules.category_id, categoryIds))
+      .groupBy(recurringRules.category_id)
+      .all();
+    const map: Record<number, number> = {};
+    for (const row of rows) map[row.category_id] = Number(row.count);
+    return map;
+  },
+
   async getTagsByRuleIds(ruleIds: number[]): Promise<{ rule_id: number; tag_id: number }[]> {
     if (ruleIds.length === 0) return [];
     const db = await getDrizzle();
@@ -147,9 +165,17 @@ export const recurringRepo = {
     return writeRuleFields(id, { active: active ? RULE_ACTIVE : RULE_INACTIVE });
   },
 
-  /** Reactivate a paused rule and jump its cursor forward (skips the pause window). */
-  async reactivate(id: number, nextDue: string): Promise<void> {
-    return writeRuleFields(id, { active: RULE_ACTIVE, next_due: nextDue });
+  /**
+   * Reactivate a paused rule and jump its cursor forward (skips the pause window).
+   * When the cursor actually moves, the recorded recoverable skip is dropped: a
+   * back-fill from it would also fill the pause window, which stays skipped forever.
+   */
+  async reactivate(id: number, nextDue: string, clearSkippedFrom = false): Promise<void> {
+    return writeRuleFields(id, {
+      active: RULE_ACTIVE,
+      next_due: nextDue,
+      ...(clearSkippedFrom ? { skipped_from: null } : {}),
+    });
   },
 
   async updateNextDue(id: number, nextDue: string): Promise<void> {
@@ -225,7 +251,8 @@ export const recurringRepo = {
       if (patch.type !== undefined) set.type = patch.type;
 
       let changes = 0;
-      if (Object.keys(set).length > 0) {
+      // A tag-only rewrite still bumps `updated_at`, so an open modify form notices it.
+      if (Object.keys(set).length > 0 || patch.tagIds) {
         const result = await db
           .update(transactions)
           .set({ ...set, updated_at: sql`datetime('now', 'localtime')` })

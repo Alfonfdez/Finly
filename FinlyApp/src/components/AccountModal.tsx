@@ -67,16 +67,16 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
         <EyeToggle isHidden={isBalanceHidden} onToggle={() => setIsRevealed(prev => !prev)} color={c.textSecondary} />
       </View>
       <FlatList
-            data={accounts}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderItem}
-          />
-          <ModalFooter
-            cancelLabel={labels.transactions_cancel}
-            confirmLabel={labels.transactions_confirm}
-            onCancel={onClose}
-            onConfirm={() => { if (tempId != null) onSelect(tempId); }}
-          />
+        data={accounts}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
+      />
+      <ModalFooter
+        cancelLabel={labels.transactions_cancel}
+        confirmLabel={labels.transactions_confirm}
+        onCancel={onClose}
+        onConfirm={() => { if (tempId != null) onSelect(tempId); }}
+      />
     </ModalShell>
   );
 }

@@ -95,7 +95,7 @@ const { categories, accounts, tags, refreshCategories, refreshAccounts, refreshT
 
 ### Drawer Menu Button
 
-Primary tab screens (HomeScreen, AccountsScreen, CategoriesScreen, AllTransactionsScreen, TagsScreen) show a hamburger menu button:
+Primary tab screens (HomeScreen, AccountsScreen, CategoriesScreen, AllTransactionsScreen, TagsScreen, CommentsScreen, RecurringScreen) show a hamburger menu button:
 
 ```typescript
 useFocusEffect(
@@ -131,7 +131,7 @@ The drawer is a custom `DrawerContentScrollView` in `AppNavigator.tsx` with this
 │─────────────────────────│  ← Separator
 │  ⚙️ Settings            │
 │                         │
-│       v2.1.0            │  ← Version footer (expo-constants)
+│       v2.2.0            │  ← Version footer (expo-constants)
 └─────────────────────────┘
 ```
 
@@ -140,17 +140,18 @@ The drawer is a custom `DrawerContentScrollView` in `AppNavigator.tsx` with this
 | Icon | Label key | Target screen |
 |------|-----------|---------------|
 | `home-outline` | `nav_home` | `Home` |
-| `stats-chart-outline` | `nav_all_transactions` | `AllTransactions` |
+| `receipt-outline` | `nav_all_transactions` | `AllTransactions` |
 | `wallet-outline` | `nav_accounts` | `Accounts` |
 | `grid-outline` | `nav_categories` | `Categories` |
 | `pricetag-outline` | `nav_tags` | `Tags` |
+| `chatbubble-outline` | `nav_comments` | `Comments` |
 | `repeat-outline` | `nav_recurring` | `Recurring` |
 | `settings-outline` | `nav_settings` | `Settings` |
 
 **Version footer:**
 - Reads version from `Constants.expoConfig?.version` (expo-constants, sourced from `app.json`).
 - Style: `fs(11)`, `c.textSecondary`, centered, pushed to bottom of scroll view.
-- Format: `v{version}` (e.g., `v2.1.0`).
+- Format: `v{version}` (e.g., `v2.2.0`).
 
 ### Sub-screens (Create, Modify, Detail)
 

@@ -11,7 +11,7 @@ import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
 import { useApp } from '../context/AppContext';
 import { t, getDisplayCategoryName } from '../i18n';
-import { categoryRepository, transactionRepository } from '../database';
+import { categoryRepository, recurringRepository, transactionRepository } from '../database';
 import TabBar, { typeTabs } from '../components/TabBar';
 import CategoryGrid from '../components/CategoryGrid';
 import ScreenSearchBar from '../components/ScreenSearchBar';
@@ -42,8 +42,7 @@ export default function CategoriesScreen() {
   const [resolutionVisible, setResolutionVisible] = useState(false);
   const [guardVisible, setGuardVisible] = useState(false);
   const [inUseCategories, setInUseCategories] = useState<BulkCategoryItem[]>([]);
-  const [withTxCount, setWithTxCount] = useState(0);
-  const [deleteHasTransactions, setDeleteHasTransactions] = useState(false);
+  const [deleteHasData, setDeleteHasData] = useState(false);
   const [decisions, setDecisions] = useState<Record<number, TransferTargetId | null>>({});
 
   const categoriesByType = useMemo(() => {
@@ -90,17 +89,21 @@ export default function CategoriesScreen() {
       return;
     }
     try {
-      const counts = await transactionRepository.countByCategoryIdsMap([...selectedIds]);
+      const ids = [...selectedIds];
+      const [txCounts, ruleCounts] = await Promise.all([
+        transactionRepository.countByCategoryIdsMap(ids),
+        recurringRepository.countByCategoryIds(ids),
+      ]);
+      // A category is "in use" when it has transactions or recurring rules: either way
+      // the user must choose a target for it (or accept deleting its data).
       const inUse = categoriesByType
-        .filter((cat) => selectedIds.has(cat.id) && (counts[cat.id] ?? 0) > 0)
-        .map((cat) => ({ category: cat, count: counts[cat.id] ?? 0 }));
+        .filter((cat) => selectedIds.has(cat.id) && ((txCounts[cat.id] ?? 0) > 0 || (ruleCounts[cat.id] ?? 0) > 0))
+        .map((cat) => ({ category: cat, txCount: txCounts[cat.id] ?? 0, ruleCount: ruleCounts[cat.id] ?? 0 }));
       setInUseCategories(inUse);
-      setWithTxCount(inUse.length);
-      setDeleteHasTransactions(inUse.length > 0);
+      setDeleteHasData(inUse.length > 0);
     } catch {
-      setInUseCategories(categoriesByType.filter((cat) => selectedIds.has(cat.id)).map((cat) => ({ category: cat, count: 0 })));
-      setWithTxCount(selectedIds.size);
-      setDeleteHasTransactions(true);
+      setInUseCategories(categoriesByType.filter((cat) => selectedIds.has(cat.id)).map((cat) => ({ category: cat, txCount: 0, ruleCount: 0 })));
+      setDeleteHasData(true);
     }
     setDeleteModalVisible(true);
   };
@@ -223,15 +226,15 @@ export default function CategoriesScreen() {
       <ConfirmationModal
         visible={deleteModalVisible}
         title={labels.categories_bulk_delete_confirm_title(selectedIds.size)}
-        message={deleteHasTransactions
-          ? labels.categories_bulk_delete_confirm_message_tx(withTxCount, selectedIds.size)
+        message={deleteHasData
+          ? labels.categories_bulk_delete_confirm_message_data(inUseCategories.length, selectedIds.size)
           : labels.categories_bulk_delete_confirm_message_empty}
         confirmLabel={labels.categories_bulk_delete_confirm_delete}
         cancelLabel={labels.modify_cat_delete_confirm_cancel}
         onConfirm={handlePermanentDelete}
         onCancel={() => setDeleteModalVisible(false)}
-        moveLabel={deleteHasTransactions ? labels.categories_bulk_delete_confirm_move : undefined}
-        onMove={deleteHasTransactions ? handleMoveTransactions : undefined}
+        moveLabel={deleteHasData ? labels.categories_bulk_delete_confirm_move : undefined}
+        onMove={deleteHasData ? handleMoveTransactions : undefined}
       />
 
       <GuardModal

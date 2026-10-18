@@ -21,6 +21,81 @@ export function isLastDayAnchor(dayOfMonth: number | null | undefined): boolean 
   return dayOfMonth === LAST_DAY_OF_MONTH;
 }
 
+/**
+ * Whether the "Last day of the month" checkbox is offered for this anchor.
+ *
+ * A last-day rule moves its first occurrence to the end of the start month, so a
+ * user who wants that pattern simply starts it on a month-end date. The checkbox is
+ * therefore only an **ambiguity resolver**, and it is offered only when the picked
+ * date *is* that month's last day while "the Nth" and "the last day" still differ:
+ * - monthly: Feb 28 (non-leap), Feb 29 (leap), 30 Apr/Jun/Sep/Nov — not the 31st,
+ *   which already clamps to the last day of every month (identical schedule);
+ * - yearly: 28 February of a **non-leap** year (29 Feb, 30 Apr/Jun/Sep/Nov and any
+ *   31 are already last-day schedules).
+ * See the decision table in `spec/features/028-recurring-transactions/1-spec.md` §4.
+ */
+export function lastDayAnchorUseful(frequency: RecurrenceFrequency, pickedDay: Date): boolean {
+  const year = pickedDay.getFullYear();
+  const month = pickedDay.getMonth() + 1;
+  const day = pickedDay.getDate();
+  if (frequency === RECURRENCE_FREQUENCIES.monthly) {
+    return day === getDaysInMonth(year, month) && day !== LAST_DAY_OF_MONTH;
+  }
+  if (frequency === RECURRENCE_FREQUENCIES.yearly) {
+    return month === 2 && day === 28 && getDaysInMonth(year, month) === 28;
+  }
+  return false;
+}
+
+export interface DayPatternGroup {
+  /** Day the occurrence lands on. */
+  day: number;
+  /** Months (1-12) where it lands on that day. */
+  months: number[];
+}
+
+export interface DayPattern {
+  /** Groups ordered by day, descending. */
+  groups: DayPatternGroup[];
+  /** Day February lands on in a leap year, when it differs from the group's day. */
+  leapDay: number | null;
+}
+
+/**
+ * How a monthly/yearly schedule resolves day-by-day when the anchor doesn't exist
+ * in every month (monthly 29/30/31 or last-day; yearly February). Returns `null`
+ * when the occurrence day never varies, so no extra Summary line is needed.
+ */
+export function recurrenceDayPattern(schedule: RecurrenceSchedule): DayPattern | null {
+  const anchorDay = schedule.day_of_month ?? fromDateOnly(schedule.start_date).getDate();
+  const byDay = new Map<number, number[]>();
+  let leapDay: number | null = null;
+
+  if (schedule.frequency === RECURRENCE_FREQUENCIES.monthly) {
+    for (let month = 1; month <= 12; month += 1) {
+      const day = Math.min(anchorDay, month === 2 ? 28 : getDaysInMonth(2025, month));
+      byDay.set(day, [...(byDay.get(day) ?? []), month]);
+    }
+    const februaryDay = Math.min(anchorDay, 28);
+    const februaryLeapDay = Math.min(anchorDay, 29);
+    if (februaryLeapDay !== februaryDay) leapDay = februaryLeapDay;
+  } else if (schedule.frequency === RECURRENCE_FREQUENCIES.yearly) {
+    const month = schedule.month ?? fromDateOnly(schedule.start_date).getMonth() + 1;
+    if (month !== 2) return null;
+    const nonLeapDay = Math.min(anchorDay, 28);
+    byDay.set(nonLeapDay, [2]);
+    if (Math.min(anchorDay, 29) !== nonLeapDay) leapDay = Math.min(anchorDay, 29);
+  } else {
+    return null;
+  }
+
+  if (byDay.size <= 1 && leapDay == null) return null;
+  const groups = [...byDay.entries()]
+    .map(([day, months]) => ({ day, months }))
+    .sort((a, b) => b.day - a.day);
+  return { groups, leapDay };
+}
+
 function pad(value: number): string {
   return String(value).padStart(2, '0');
 }
@@ -308,6 +383,12 @@ export interface RecurrenceEditPlanOptions {
   skippedFrom?: string | null;
   /** Scheduled dates that already have a generated transaction (see {@link RecurrencePreviewOptions}). */
   existingOccurrences?: ReadonlySet<string>;
+  /**
+   * The rule is paused: reconciliation skips it, so a save can never create an
+   * occurrence. The cursor and the skipped window are then left untouched (resuming
+   * re-anchors the cursor anyway) and the preview reports 0 created.
+   */
+  ruleActive?: boolean;
 }
 
 export interface RecurrenceEditPlan {
@@ -334,7 +415,20 @@ export function planEdit({
   today,
   skippedFrom = null,
   existingOccurrences,
+  ruleActive = true,
 }: RecurrenceEditPlanOptions): RecurrenceEditPlan {
+  // A paused rule is skipped by reconciliation: the save can only rewrite the
+  // transactions it already generated. Keep the cursor/window (the resume
+  // re-anchors the cursor anyway) and report that nothing will be created.
+  if (!ruleActive) {
+    return {
+      nextDue: cursor,
+      skippedFrom: skippedFrom ?? null,
+      skipWindow: null,
+      preview: { firstDate: nextEffectiveOccurrence(schedule, cursor, today), count: 0 },
+    };
+  }
+
   const skipWindow = scope === RECURRENCE_SCOPES.future ? recurrenceSkipWindow(schedule, cursor, today) : null;
   const nextDue = resolveEditAnchor(schedule, { cursor, scope, today, skippedFrom, previousSchedule });
   let nextSkippedFrom = scope === RECURRENCE_SCOPES.futureAndPast ? null : skippedFrom ?? skipWindow?.from ?? null;

@@ -222,139 +222,140 @@ export default function TransactionForm(props: TransactionFormProps) {
         style={styles.keyboardAvoid}
       >
         <ScrollView ref={scrollRef} style={[styles.container, { backgroundColor: c.background }]} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" onLayout={handleScrollLayout}>
-        {props.topNotice}
-        <TabBar
-          tabs={tabs}
-          active={type}
-          onChange={setType}
-        />
-
-        <AmountInput
-          raw={amountRaw}
-          onChangeRaw={setAmountRaw}
-          onOpenCalculator={() => setCalculatorVisible(true)}
-          error={amountRaw.length > 0 && (numericAmount === null || numericAmount <= 0)}
-        />
-
-        <TouchableOpacity
-          style={[styles.accountContainer, { backgroundColor: c.surface }]}
-          onPress={() => setModalAccountVisible(true)}
-        >
-          <Text style={[styles.accountLabel, { color: c.textSecondary, fontSize: fs(12) }]}>
-            {labels.add_account}
-          </Text>
-          <Text style={[styles.accountName, { color: c.text, fontSize: fs(15) }]}>
-            {selectedAccount ? getDisplayAccountName(selectedAccount) : ''}
-          </Text>
-        </TouchableOpacity>
-
-        <CategoryGrid
-          categories={visibleCategories}
-          selectedCategory={categoryId}
-          onSelect={setCategoryId}
-          onAddMore={() => hasMore
-            ? navigation.navigate('AddCategory', { type })
-            : navigation.navigate('CreateCategory', { type })
-          }
-          showAddMore
-          addMoreLabel={hasMore ? labels.add_more : labels.add_cat_create}
-        />
-
-        <DaySelector
-          selectedDate={day}
-          onSelect={setDay}
-          onOpenCalendar={() => setModalCalendarVisible(true)}
-          title={props.ruleMode ? labels.repeat_start_date : undefined}
-        />
-
-        {props.ruleMode && (
-          <RepeatSection
-            frequency={repeatFrequency}
-            onChangeFrequency={setRepeatFrequency}
-            interval={repeatInterval}
-            onChangeInterval={setRepeatInterval}
-            startDay={day}
-            endDate={repeatEnd}
-            onOpenEndDate={() => setModalRepeatEndVisible(true)}
-            onClearEndDate={() => setRepeatEnd(null)}
-            lastDay={repeatLastDay}
-            onChangeLastDay={setRepeatLastDay}
-            name={repeatName}
-            onChangeName={setRepeatName}
-            nameError={repeatNameErrorDisplay}
-            onNameFocus={onNameFocus}
-            onNameBlur={handleRepeatNameBlur}
-            onSectionLayout={handleRepeatSectionLayout}
-            ruleNextDue={props.initialRuleNextDue ?? null}
-            ruleSkippedFrom={props.initialRuleSkippedFrom ?? null}
-            ruleOccurrenceDates={props.initialRuleOccurrenceDates}
-            ruleUnmaterialized={ruleUnmaterialized}
-            ruleStartMovedEarlier={ruleStartMovedEarlier}
-            previousSchedule={previousSchedule}
-            showScope={!!props.showRepeatScope}
-            scope={props.repeatScope}
-            onChangeScope={props.onChangeRepeatScope}
-            scopeDisabled={props.repeatScopeDisabled}
+          {props.topNotice}
+          <TabBar
+            tabs={tabs}
+            active={type}
+            onChange={setType}
           />
-        )}
 
-        {fieldVisibility.labels && (
-          <TagSection
-            tags={tags}
-            selectedTags={selectedTags}
-            onToggle={handleToggleTag}
-            onCreate={handleCreateTag}
+          <AmountInput
+            raw={amountRaw}
+            onChangeRaw={setAmountRaw}
+            onOpenCalculator={() => setCalculatorVisible(true)}
+            error={amountRaw.length > 0 && (numericAmount === null || numericAmount <= 0)}
           />
-        )}
 
-        {fieldVisibility.comments && (
-          <CommentInput
-            ref={inputRef}
-            comment={comment}
-            onChange={setComment}
-            onFocus={onBottomFieldFocus}
-            onBlur={onBottomFieldBlur}
-          />
-        )}
-
-        {fieldVisibility.photo && (
-          <PhotoSection
-            photos={photos}
-            onTakePhoto={handleTakePhoto}
-            onPickFromGallery={handlePickFromGallery}
-            onRemovePhoto={handleRemovePhoto}
-          />
-        )}
-
-        {/* The destructive action comes first, then the "why you can't save" hint,
-            then Save. Both bands are reserved, so the buttons never move. */}
-        <FormActions
-          deleteLabel={props.deleteLabel}
-          onDeletePress={props.onDeletePress}
-          deleteDisabled={props.deleteDisabled}
-          deleteHint={props.deleteHint}
-          saveHint={submitting ? '' : hintText}
-        >
           <TouchableOpacity
-            style={[
-              styles.submitButton,
-              { backgroundColor: canSubmit ? c.primary : withAlpha(c.textSecondary, 38) },
-            ]}
-            onPress={handleSubmit}
-            disabled={!canSubmit || submitting}
+            style={[styles.accountContainer, { backgroundColor: c.surface }]}
+            onPress={() => setModalAccountVisible(true)}
           >
-            <Text style={[styles.submitButtonText, { color: canSubmit ? c.background : c.text, fontSize: fs(15) }]}>
-              {submitting ? '...' : props.submitLabel}
+            <Text style={[styles.accountLabel, { color: c.textSecondary, fontSize: fs(12) }]}>
+              {labels.add_account}
+            </Text>
+            <Text style={[styles.accountName, { color: c.text, fontSize: fs(15) }]}>
+              {selectedAccount ? getDisplayAccountName(selectedAccount) : ''}
             </Text>
           </TouchableOpacity>
-        </FormActions>
-      </ScrollView>
+
+          <CategoryGrid
+            categories={visibleCategories}
+            selectedCategory={categoryId}
+            onSelect={setCategoryId}
+            onAddMore={() => hasMore
+              ? navigation.navigate('AddCategory', { type })
+              : navigation.navigate('CreateCategory', { type })
+            }
+            showAddMore
+            addMoreLabel={hasMore ? labels.add_more : labels.add_cat_create}
+          />
+
+          <DaySelector
+            selectedDate={day}
+            onSelect={setDay}
+            onOpenCalendar={() => setModalCalendarVisible(true)}
+            title={props.ruleMode ? labels.repeat_start_date : undefined}
+          />
+
+          {props.ruleMode && (
+            <RepeatSection
+              frequency={repeatFrequency}
+              onChangeFrequency={setRepeatFrequency}
+              interval={repeatInterval}
+              onChangeInterval={setRepeatInterval}
+              startDay={day}
+              endDate={repeatEnd}
+              onOpenEndDate={() => setModalRepeatEndVisible(true)}
+              onClearEndDate={() => setRepeatEnd(null)}
+              lastDay={repeatLastDay}
+              onChangeLastDay={setRepeatLastDay}
+              name={repeatName}
+              onChangeName={setRepeatName}
+              nameError={repeatNameErrorDisplay}
+              onNameFocus={onNameFocus}
+              onNameBlur={handleRepeatNameBlur}
+              onSectionLayout={handleRepeatSectionLayout}
+              ruleNextDue={props.initialRuleNextDue ?? null}
+              ruleActive={props.initialRuleActive ?? true}
+              ruleSkippedFrom={props.initialRuleSkippedFrom ?? null}
+              ruleOccurrenceDates={props.initialRuleOccurrenceDates}
+              ruleUnmaterialized={ruleUnmaterialized}
+              ruleStartMovedEarlier={ruleStartMovedEarlier}
+              previousSchedule={previousSchedule}
+              showScope={!!props.showRepeatScope}
+              scope={props.repeatScope}
+              onChangeScope={props.onChangeRepeatScope}
+              scopeDisabled={props.repeatScopeDisabled}
+            />
+          )}
+
+          {fieldVisibility.labels && (
+            <TagSection
+              tags={tags}
+              selectedTags={selectedTags}
+              onToggle={handleToggleTag}
+              onCreate={handleCreateTag}
+            />
+          )}
+
+          {fieldVisibility.comments && (
+            <CommentInput
+              ref={inputRef}
+              comment={comment}
+              onChange={setComment}
+              onFocus={onBottomFieldFocus}
+              onBlur={onBottomFieldBlur}
+            />
+          )}
+
+          {fieldVisibility.photo && (
+            <PhotoSection
+              photos={photos}
+              onTakePhoto={handleTakePhoto}
+              onPickFromGallery={handlePickFromGallery}
+              onRemovePhoto={handleRemovePhoto}
+            />
+          )}
+
+          {/* The destructive action comes first, then the "why you can't save" hint,
+            then Save. Both bands are reserved, so the buttons never move. */}
+          <FormActions
+            deleteLabel={props.deleteLabel}
+            onDeletePress={props.onDeletePress}
+            deleteDisabled={props.deleteDisabled}
+            deleteHint={props.deleteHint}
+            saveHint={submitting ? '' : hintText}
+          >
+            <TouchableOpacity
+              style={[
+                styles.submitButton,
+                { backgroundColor: canSubmit ? c.primary : withAlpha(c.textSecondary, 38) },
+              ]}
+              onPress={handleSubmit}
+              disabled={!canSubmit || submitting}
+            >
+              <Text style={[styles.submitButtonText, { color: canSubmit ? c.background : c.text, fontSize: fs(15) }]}>
+                {submitting ? '...' : props.submitLabel}
+              </Text>
+            </TouchableOpacity>
+          </FormActions>
+        </ScrollView>
       </KeyboardAvoidingView>
 
       <AccountModal
         visible={modalAccountVisible}
         accounts={selectableAccounts}
-        selectedId={props.initialAccountId}
+        selectedId={accountId}
         onSelect={handleSelectAccount}
         onClose={handleAccountClose}
       />

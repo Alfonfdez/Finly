@@ -142,66 +142,66 @@ export default function HomeScreen() {
         onOpenAccountModal={() => setModalVisible(true)}
       />
 
-        <TabBar
-          tabs={typeTabs(labels)}
-          active={activeType}
-          onChange={changeType}
-        />
-        <PeriodTabs active={activePeriod} onChange={handlePeriodChange} />
-        <CalendarPicker
-          period={activePeriod}
-          date={selectedDate}
-          onDateChange={handleDateChange}
-          onRangeChange={handleRangeChange}
-          rangeStart={customDate.start}
-          rangeEnd={customDate.end}
-          visible={calendarVisible}
-          onOpen={() => setCalendarVisible(true)}
-          onClose={() => setCalendarVisible(false)}
-        />
+      <TabBar
+        tabs={typeTabs(labels)}
+        active={activeType}
+        onChange={changeType}
+      />
+      <PeriodTabs active={activePeriod} onChange={handlePeriodChange} />
+      <CalendarPicker
+        period={activePeriod}
+        date={selectedDate}
+        onDateChange={handleDateChange}
+        onRangeChange={handleRangeChange}
+        rangeStart={customDate.start}
+        rangeEnd={customDate.end}
+        visible={calendarVisible}
+        onOpen={() => setCalendarVisible(true)}
+        onClose={() => setCalendarVisible(false)}
+      />
 
-        <TouchableOpacity
-          style={styles.chartContainer}
-          onPress={() => setChartType(chartType === CHART_TYPES.donut ? CHART_TYPES.bar : CHART_TYPES.donut)}
-          activeOpacity={0.7}
-        >
-          {chartType === CHART_TYPES.donut ? (
-            <DonutChart data={activeCategories} total={activeTotal} />
-          ) : (
-            <BarChart data={activeCategories} total={activeTotal} />
-          )}
-        </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.chartContainer}
+        onPress={() => setChartType(chartType === CHART_TYPES.donut ? CHART_TYPES.bar : CHART_TYPES.donut)}
+        activeOpacity={0.7}
+      >
+        {chartType === CHART_TYPES.donut ? (
+          <DonutChart data={activeCategories} total={activeTotal} />
+        ) : (
+          <BarChart data={activeCategories} total={activeTotal} />
+        )}
+      </TouchableOpacity>
 
-        <TagFilterBar
-          tags={tags}
-          activeTagIds={activeTagIds}
-          onToggle={toggleTagId}
-          onClear={clearTagFilter}
-        />
+      <TagFilterBar
+        tags={tags}
+        activeTagIds={activeTagIds}
+        onToggle={toggleTagId}
+        onClear={clearTagFilter}
+      />
 
-        <CategoryList
-          categories={activeCategories}
-          onPress={handleCategoryPress}
-          tagBreakdowns={tagBreakdowns}
-          expandedCategoryIds={expandedCategoryIds}
-          onToggleExpand={handleToggleExpand}
-        />
+      <CategoryList
+        categories={activeCategories}
+        onPress={handleCategoryPress}
+        tagBreakdowns={tagBreakdowns}
+        expandedCategoryIds={expandedCategoryIds}
+        onToggleExpand={handleToggleExpand}
+      />
 
-        <Fab
-          onPress={() => navigation.navigate('AddTransaction')}
-          accessibilityLabel={labels.home_add}
-        />
+      <Fab
+        onPress={() => navigation.navigate('AddTransaction')}
+        accessibilityLabel={labels.home_add}
+      />
 
-        <AccountModal
-          visible={modalVisible}
-          accounts={accountsWithBalance}
-          selectedId={activeAccount.id}
-          onSelect={handleAccountSelect}
-          onClose={() => setModalVisible(false)}
-        />
-      </ScreenShell>
-    );
-  }
+      <AccountModal
+        visible={modalVisible}
+        accounts={accountsWithBalance}
+        selectedId={activeAccount.id}
+        onSelect={handleAccountSelect}
+        onClose={() => setModalVisible(false)}
+      />
+    </ScreenShell>
+  );
+}
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

@@ -6,9 +6,11 @@ import {
   isRecurrenceEnded,
   isLastDayAnchor,
   isSkippedWindowRecoverable,
+  lastDayAnchorUseful,
   listDueOccurrences,
   nextEffectiveOccurrence,
   planEdit,
+  recurrenceDayPattern,
   recurrencePreview,
   recurrenceSkipWindow,
   recurringStatus,
@@ -404,5 +406,126 @@ describe('isLastDayAnchor', () => {
     expect(isLastDayAnchor(1)).toBe(false);
     expect(isLastDayAnchor(null)).toBe(false);
     expect(isLastDayAnchor(undefined)).toBe(false);
+  });
+});
+
+// The "Last day" checkbox is only an ambiguity resolver: it is offered when the
+// picked date is that month's last day and "the Nth" still differs from "the last
+// day". A last-day rule is otherwise created by starting on a month-end date.
+describe('lastDayAnchorUseful', () => {
+  it('is hidden for an ordinary monthly day', () => {
+    expect(lastDayAnchorUseful('monthly', new Date(2026, 0, 17))).toBe(false);
+    expect(lastDayAnchorUseful('monthly', new Date(2026, 0, 28))).toBe(false);
+    expect(lastDayAnchorUseful('monthly', new Date(2026, 4, 30))).toBe(false);
+  });
+
+  it('is offered on a monthly month-end whose day differs from "the last day"', () => {
+    expect(lastDayAnchorUseful('monthly', new Date(2027, 1, 28))).toBe(true); // Feb 28, non-leap
+    expect(lastDayAnchorUseful('monthly', new Date(2028, 1, 29))).toBe(true); // Feb 29, leap
+    expect(lastDayAnchorUseful('monthly', new Date(2026, 3, 30))).toBe(true); // 30 Apr
+    expect(lastDayAnchorUseful('monthly', new Date(2026, 5, 30))).toBe(true); // 30 Jun
+  });
+
+  it('is hidden on a monthly month-end that already is the last day everywhere', () => {
+    expect(lastDayAnchorUseful('monthly', new Date(2026, 0, 31))).toBe(false); // 31
+    // Feb 28 is not that month's last day in a leap year: both options differ.
+    expect(lastDayAnchorUseful('monthly', new Date(2028, 1, 28))).toBe(false);
+  });
+
+  it('is offered yearly only for 28 February of a non-leap year', () => {
+    expect(lastDayAnchorUseful('yearly', new Date(2027, 1, 28))).toBe(true);
+    expect(lastDayAnchorUseful('yearly', new Date(2028, 1, 28))).toBe(false); // leap year
+    expect(lastDayAnchorUseful('yearly', new Date(2028, 1, 29))).toBe(false);
+    expect(lastDayAnchorUseful('yearly', new Date(2026, 3, 30))).toBe(false);
+    expect(lastDayAnchorUseful('yearly', new Date(2026, 0, 31))).toBe(false);
+    expect(lastDayAnchorUseful('yearly', new Date(2026, 5, 15))).toBe(false);
+  });
+
+  it('is never offered for daily/weekly rules', () => {
+    expect(lastDayAnchorUseful('daily', new Date(2026, 0, 31))).toBe(false);
+    expect(lastDayAnchorUseful('weekly', new Date(2026, 0, 31))).toBe(false);
+  });
+});
+
+describe('recurrenceDayPattern', () => {
+  const monthly = (dayOfMonth: number, startDate: string): RecurrenceSchedule =>
+    ({ frequency: 'monthly', interval: 1, day_of_month: dayOfMonth, start_date: startDate });
+  const yearly = (month: number, dayOfMonth: number, startDate: string): RecurrenceSchedule =>
+    ({ frequency: 'yearly', interval: 1, month, day_of_month: dayOfMonth, start_date: startDate });
+
+  it('is null when the occurrence day never varies', () => {
+    expect(recurrenceDayPattern(monthly(1, '2026-01-01'))).toBeNull();
+    expect(recurrenceDayPattern(monthly(15, '2026-01-15'))).toBeNull();
+    expect(recurrenceDayPattern(monthly(28, '2026-02-28'))).toBeNull();
+    expect(recurrenceDayPattern(yearly(1, 31, '2026-01-31'))).toBeNull();
+    expect(recurrenceDayPattern(yearly(2, 28, '2026-02-28'))).toBeNull();
+    expect(recurrenceDayPattern({ frequency: 'daily', interval: 1, start_date: '2026-01-01' })).toBeNull();
+    expect(recurrenceDayPattern({ frequency: 'weekly', interval: 1, start_date: '2026-01-01' })).toBeNull();
+  });
+
+  it('groups the months of a monthly 31st (or last-day) rule', () => {
+    expect(recurrenceDayPattern(monthly(31, '2026-10-31'))).toEqual({
+      groups: [
+        { day: 31, months: [1, 3, 5, 7, 8, 10, 12] },
+        { day: 30, months: [4, 6, 9, 11] },
+        { day: 28, months: [2] },
+      ],
+      leapDay: 29,
+    });
+  });
+
+  it('groups a monthly 30th and a monthly 29th', () => {
+    const thirty = recurrenceDayPattern(monthly(30, '2026-04-30'));
+    expect(thirty?.groups).toEqual([
+      { day: 30, months: [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+      { day: 28, months: [2] },
+    ]);
+    expect(thirty?.leapDay).toBe(29);
+
+    const twentyNine = recurrenceDayPattern(monthly(29, '2026-01-29'));
+    expect(twentyNine?.groups[1]).toEqual({ day: 28, months: [2] });
+    expect(twentyNine?.groups[0].months).toHaveLength(11);
+    expect(twentyNine?.leapDay).toBe(29);
+  });
+
+  it('reports only February for a yearly rule', () => {
+    expect(recurrenceDayPattern(yearly(2, 31, '2027-02-28'))).toEqual({
+      groups: [{ day: 28, months: [2] }],
+      leapDay: 29,
+    });
+    expect(recurrenceDayPattern(yearly(2, 29, '2024-02-29'))).toEqual({
+      groups: [{ day: 28, months: [2] }],
+      leapDay: 29,
+    });
+    expect(recurrenceDayPattern(yearly(4, 30, '2026-04-30'))).toBeNull();
+  });
+});
+
+// A paused rule is skipped by reconciliation, so an edit can never create anything:
+// the cursor and the recoverable-skip record stay untouched and the count is 0.
+describe('planEdit on a paused rule', () => {
+  const schedule: RecurrenceSchedule = { frequency: 'monthly', interval: 1, day_of_month: 5, start_date: '2026-06-05' };
+  const options = {
+    schedule,
+    cursor: '2026-07-05',
+    scope: 'futureAndPast' as const,
+    today: '2026-10-17',
+    skippedFrom: '2026-08-05',
+  };
+
+  it('keeps the cursor and the skipped record and reports nothing created', () => {
+    const plan = planEdit({ ...options, ruleActive: false });
+    expect(plan.nextDue).toBe('2026-07-05');
+    expect(plan.skippedFrom).toBe('2026-08-05');
+    expect(plan.skipWindow).toBeNull();
+    expect(plan.preview.count).toBe(0);
+    expect(plan.preview.firstDate).toBe('2026-11-05');
+  });
+
+  it('an active rule still back-fills from the cursor', () => {
+    const plan = planEdit({ ...options, ruleActive: true });
+    expect(plan.nextDue).toBe('2026-07-05');
+    expect(plan.skippedFrom).toBeNull();
+    expect(plan.preview.count).toBe(4);
   });
 });

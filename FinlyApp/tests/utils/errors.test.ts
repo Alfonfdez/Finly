@@ -110,6 +110,7 @@ describe('errors helpers', () => {
         'commentsDelete',
         'transactionsDelete',
         'recurringDelete',
+        'recurringUpdate',
       ]);
     });
   });

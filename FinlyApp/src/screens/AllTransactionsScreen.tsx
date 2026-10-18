@@ -34,7 +34,7 @@ import TransactionListBody from '../components/TransactionListBody';
 
 export default function AllTransactionsScreen() {
   const navigation = useNavigation<NavigationProp<'AllTransactions'>>();
-  const { categories, categoriesById, accounts, activeAccount, activeType, accountsWithBalance, tags, activePeriod, selectedDate, customDate, setSelectedDate, refresh, selectAccount } = useApp();
+  const { categories, categoriesById, accounts, activeAccount, accountsWithBalance, tags, activePeriod, selectedDate, customDate, setSelectedDate, refresh, selectAccount } = useApp();
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -56,14 +56,6 @@ export default function AllTransactionsScreen() {
   useEffect(() => {
     setSelectedCategoryIds([]);
   }, [typeTab]);
-
-  /* eslint-disable react-hooks/exhaustive-deps -- typeTab intentionally excluded: including it causes infinite loop since this effect sets typeTab */
-  useEffect(() => {
-    if (typeTab !== TYPE_FILTERS.all) {
-      setTypeTab(activeType);
-    }
-  }, [activeType]);
-  /* eslint-enable react-hooks/exhaustive-deps */
 
   const select = useSelectAndSearch<number>({ hasItems: allTransactions.length > 0 });
 

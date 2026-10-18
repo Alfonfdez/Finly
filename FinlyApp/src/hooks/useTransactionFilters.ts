@@ -52,6 +52,13 @@ export function useTransactionFilters({
   const [tagsByTransaction, setTagsByTransaction] = useState<TagsByTransaction>(new Map());
   const [localTagIds, setLocalTagIds] = useState<number[]>(initialTagIds);
 
+  // Re-navigating with a new tag selection (e.g. from the Home tag chips) must replace
+  // the previous one: the params only seed the state, so keep them in sync by value.
+  const initialTagKey = initialTagIds.join(',');
+  useEffect(() => {
+    setLocalTagIds(initialTagKey === '' ? [] : initialTagKey.split(',').map(Number));
+  }, [initialTagKey]);
+
   const isTotal = useMemo(
     () => {
       const account = accounts.find(a => a.id === selectedAccountId);

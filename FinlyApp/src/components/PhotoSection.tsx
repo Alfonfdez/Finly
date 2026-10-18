@@ -69,7 +69,7 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
               accessibilityLabel={labels.photo_remove}
             >
               <Ionicons name="close" size={14} color={WHITE} />
-                </TouchableOpacity>
+            </TouchableOpacity>
           </View>
         ))}
         {canAddMore && (

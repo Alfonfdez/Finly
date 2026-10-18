@@ -241,6 +241,26 @@ describe('useTransactionFilters', () => {
     expect(result.current.localTagIds).toEqual([]);
   });
 
+  it('re-applies the route tag selection when it changes', async () => {
+    const transactions = [tx(1, {})];
+    const { result, rerender } = await renderHook(
+      (props: { initialTagIds: number[] }) => useTransactionFilters({
+        ...baseOptions(transactions),
+        initialTagIds: props.initialTagIds,
+      }),
+      { initialProps: { initialTagIds: [10] } },
+    );
+    await act(async () => {});
+    expect(result.current.localTagIds).toEqual([10]);
+
+    // Navigating here again with another tag set must replace the previous one.
+    await act(async () => { rerender({ initialTagIds: [20] }); });
+    expect(result.current.localTagIds).toEqual([20]);
+
+    await act(async () => { rerender({ initialTagIds: [] }); });
+    expect(result.current.localTagIds).toEqual([]);
+  });
+
   it('groups filtered transactions into sections by date', async () => {
     const transactions = [
       tx(1, { id: 1, date: '2026-01-10 10:00:00', account_id: 3 }),

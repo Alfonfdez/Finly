@@ -63,10 +63,12 @@ describe('CategoryFilterModal', () => {
     await fireEvent.press(view.getByText('Apply (1)'));
     expect(mockOnApply).toHaveBeenCalledWith([1]);
 
+    // Deselecting everything is the same as "no filter": the label falls back to All
+    // and applying it clears the selection.
     mockOnApply.mockClear();
     await fireEvent.press(view.getByText('Food'));
-    expect(view.getByText('Apply (0)')).toBeDisabled();
-    expect(mockOnApply).not.toHaveBeenCalled();
+    await fireEvent.press(view.getByText('Apply (All)'));
+    expect(mockOnApply).toHaveBeenCalledWith([]);
   });
 
   it('selects all categories when All is pressed', async () => {
@@ -79,7 +81,7 @@ describe('CategoryFilterModal', () => {
   it('deselects all when All is pressed while all selected', async () => {
     const view = await renderFilter({ selectedIds: [1, 2] });
     await fireEvent.press(view.getByText('All'));
-    expect(view.getByText('Apply (0)')).toBeDisabled();
+    expect(view.getByText('Apply (All)')).toBeEnabled();
   });
 
   it('filters categories by search text', async () => {
@@ -97,9 +99,10 @@ describe('CategoryFilterModal', () => {
     expect(view.getByText('No results found')).toBeTruthy();
   });
 
-  it('disables the apply button when no categories are selected', async () => {
+  it('treats an empty selection as "all categories" so the filter can be cleared', async () => {
     const view = await renderFilter();
-    expect(view.getByText('Apply (0)')).toBeDisabled();
+    await fireEvent.press(view.getByText('Apply (All)'));
+    expect(mockOnApply).toHaveBeenCalledWith([]);
   });
 
   it('closes the modal when the close button is pressed', async () => {

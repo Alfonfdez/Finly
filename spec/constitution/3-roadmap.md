@@ -611,7 +611,7 @@ Status: completed.
 
 Self-healing recovery for the expo-sqlite WAL sidecar bug:
 - `initDatabase()` detects stale state (version present but `tags` table missing in `sqlite_master`).
-- On detection, deletes the database file (`.db`, `-wal`, `-shm`), reopens, and reruns all migrations (001-005).
+- On detection, deletes the database file (`.db`, `-wal`, `-shm`), reopens, and reruns all migrations (001-004).
 - Silent recovery during splash screen; healthy databases are never affected.
 - Web platform is unaffected (it never used expo-sqlite WAL files).
 
@@ -646,7 +646,7 @@ Status: completed.
 
 Drizzle ORM data layer over the shared `DatabaseHandle`:
 - `src/database/drizzle/schema.ts` declares the seven tables mirroring `001_initial`; `src/database/drizzle/proxy.ts` adapts `drizzle-orm/sqlite-proxy` onto `DatabaseHandle` (positional rows, `run` → `lastInsertRowId`/`changes`, `get` → `{ rows: null }` when absent); `src/database/drizzle/engine.ts` provides the lazy `getDrizzle()` singleton and `withTransaction(task)` (Drizzle's own `db.transaction()` is unused to keep web's persist-on-commit batching).
-- All five repositories are rewritten with the Drizzle query builder (behavior-preserving); writes use `.run()` (never `.returning()`, which would skip web persistence); collations/functions stay as parameterized `sql` fragments.
+- All six repositories are rewritten with the Drizzle query builder (behavior-preserving); writes use `.run()` (never `.returning()`, which would skip web persistence); collations/functions stay as parameterized `sql` fragments.
 - `buildUpdateQuery`/`buildNameExistsQuery` helpers and their tests removed; `UNTAGGED_ID`/`isTotalAccount` kept.
 - Same migration runner (`PRAGMA user_version`), Zod validation and backup tooling remain; no `drizzle-kit`; only `drizzle-orm@^0.45.2` added.
 - Phase B contract suite passes unchanged plus new `drizzleProxy.test.ts` and `drizzleDrift.test.ts` (34 files / 271 tests).
@@ -675,7 +675,7 @@ First pass of the Tier-5 cleanup audit (duplicated code, dead exports, unused i1
 - `LIMIT_TEXT_STYLE` and `COUNTER_STYLE` hoisted into `componentStyles.ts` where the styles were exactly identical (TagsScreen `limitText` and CategoriesScreen `counter` kept local - they genuinely differ).
 - New `useResetOnOpen(visible, reset)` hook applied to the 5 modals with the open-time reset pattern.
 - Skipped + documented (would break behavior preservation): routing the three active-flag async loads through `useFocusLoad` (HomeScreen refetches on filter-dep changes + conditional early-return; ModifyCommentScreen runs on mount/prop-change + `showErrorAlert`; CommentsScreen needs a reload-after-delete that `useFocusLoad` doesn't expose).
-- Audit results: i18n fully clean (all 409 `en.ts` keys used, es/ca/fr/de/pt/it parity exact, no missing-key usages); second audit pass scoped out (Transactions vs AllTransactions ~200 lines, modal footer ×5, Tags vs Comments, etc.).
+- Audit results: i18n fully clean (all 510 `en.ts` keys used, es/ca/fr/de/pt/it parity exact, no missing-key usages); second audit pass scoped out (Transactions vs AllTransactions ~200 lines, modal footer ×5, Tags vs Comments, etc.).
 
 Spec: see `docs/changelog.md` (2026-09-04, "Tier-5 codebase cleanup audit").
 
@@ -806,7 +806,11 @@ The form hints' formatting and the transaction checklist moved out of the compon
 - `TransactionForm`'s 12-line `useMemo` is now one call (and it no longer imports the recurring-name constants); `CreateTagScreen` composes its hint from `getNameHintText` + `joinHints`. The rendered strings are unchanged (the existing component tests still assert them).
 - Gate: `npm run test:all` green (135 files / 1082 tests).
 
+Status: completed.
+
 Spec: no behaviour change (refactor only).
+
+## Select-all row keeps the header visible
 Status: completed.
 
 The Select-all row is inserted under every list screen's header block without hiding it, applied 2026-10-16:
@@ -853,3 +857,31 @@ The custom range text now reads clearly and wraps gracefully in every language, 
 - Gate: `npm run test:all` green (137 files / 1109 tests); verified in all 9 languages on the Android release APK (each language asserted the exact full-month range and was screenshotted).
 
 Spec: spec/features/001-home-screen/.
+
+## 2.2.0 audit: category deletion safety, recurring polish and doc truth-up
+Status: completed.
+
+A full pre-release audit of the 2.2.0 code base, applied 2026-10-17. Only the items below changed; the rest of the findings are recorded in the audit report shared with the developer.
+
+**Fixed (data safety and correctness):**
+- **Deleting a category can no longer lose data silently.** The last category of a type cannot be deleted (the button is disabled with an explanation, mirroring accounts); the confirmation names exactly what is lost - its transactions, its recurring rules, or both; and the move option now **reassigns the rules to the target category** along with the transactions (they used to be dropped by the FK cascade). The bulk flow gets the same treatment: rules-only categories appear in the resolution list, each row shows transactions + rules, and moving reassigns both.
+- **A paused rule no longer promises a back-fill it cannot create.** `planEdit` takes the rule's `active` flag: for a paused rule the cursor and the recoverable-skip record stay untouched, nothing is counted as created, and the Summary says the rule must be resumed. "Future + past" still rewrites the transactions it already generated.
+- **A resume that actually skips drops the recoverable-skip record** (a back-fill from it would also fill the pause window, which stays permanent); a resume before the next due date keeps it.
+- **A category whose only edit is its icon or colour keeps its canonical name** (the previous guard persisted the localized string, breaking re-localization on a language change); the save now compares the field with the localized default, like the account screen.
+- **A category created under the other type stays selected** on return to the transaction form (the type switch used to clear it).
+- The default custom period ends at **end of today** instead of "now", so transactions recorded later today are included.
+
+**Fixed (polish and robustness):**
+- Balance visibility no longer inverts when the "hide balances" setting changes (XOR replaced by `hide && !revealed`, with the reveal state reset on a setting change).
+- The category filter can be cleared again (an empty selection applies as "all categories"; the button no longer reads "Apply (0)").
+- The account modal highlights the currently selected account instead of the one the form opened with.
+- The All-transactions type tab is local to the screen (no longer clobbered by the Home type switcher) and the tag selection re-syncs when the screen is re-entered with new params.
+- A tags-only "Future + past" rewrite bumps `updated_at`, so an open modify form notices it.
+- Pause/resume failures surface the standard error alert instead of an unhandled rejection.
+- Account deletion states that its recurring rules are deleted too.
+
+The **"Last day" checkbox** is now an ambiguity resolver, offered only on the month-end dates where "the Nth" and "the last day" differ (monthly Feb 28 non-leap / Feb 29 leap / 30 Apr-Jun-Sep-Nov; yearly 28 February of a non-leap year) and cleared when the start date stops qualifying — picking a month-end is otherwise how the pattern is expressed, since a last-day rule moves its first occurrence to the month's end anyway. The form Summary states the resolved day for every month (`31 in Jan, Mar, ... - 30 in Apr, Jun, Sep, Nov - 28 in Feb (29 in leap years)`), so a rule that lands on different days is never a surprise. The full decision table lives in spec 028 §4.
+
+Gate: `npm run test:all` green (137 files / 1139 tests).
+
+Spec: spec/features/001-home-screen/, 008-categories-screen/, 009-modify-delete-category-screen/, 012-modify-delete-account-screen/, 015-all-transactions-screen/, 028-recurring-transactions/.

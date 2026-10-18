@@ -6,7 +6,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, REPEAT_MAX_INTERVAL, REPEAT_MIN_INTERVAL, REPEAT_NAME_MAX_LENGTH, type RecurrenceFrequency, type RecurrenceScope, type RecurringNameError } from '../constants/types';
 import { formatDateLong } from '../utils/formatters';
-import { buildRecurrenceSchedule, todayDateOnly, type RecurrenceSchedule } from '../utils/recurrence';
+import { buildRecurrenceSchedule, lastDayAnchorUseful, todayDateOnly, type RecurrenceSchedule } from '../utils/recurrence';
 import { recurrenceFrequencyLabels } from '../utils/recurrenceSummary';
 import { recurrenceInfoLines } from '../utils/recurrenceInfo';
 import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, CONTROL_BORDER_RADIUS, DISABLED_CONTROL_OPACITY, PILL_RADIUS, SECTION_GAP, SECTION_GAP_SM, SECTION_TITLE_STYLE, recurringCardColors } from './componentStyles';
@@ -37,6 +37,8 @@ interface Props {
   onSectionLayout?: (y: number) => void;
   /** Edit mode: the rule's cursor (presence switches the info to "next transaction"). */
   ruleNextDue?: string | null;
+  /** Edit mode: the rule is paused, so a save creates nothing (Summary says so). */
+  ruleActive?: boolean;
   ruleSkippedFrom?: string | null;
   /** Dates this rule already generated a transaction for (edit mode). */
   ruleOccurrenceDates?: string[];
@@ -77,6 +79,7 @@ export default function RepeatSection({
   onNameBlur,
   onSectionLayout,
   ruleNextDue = null,
+  ruleActive = true,
   ruleSkippedFrom = null,
   ruleOccurrenceDates,
   ruleUnmaterialized = false,
@@ -111,6 +114,7 @@ export default function RepeatSection({
       skippedFrom: ruleSkippedFrom,
       previousSchedule,
       existingOccurrences: occurrenceSet,
+      ruleActive,
     },
     config.language,
   );
@@ -210,7 +214,9 @@ export default function RepeatSection({
           </View>
         </View>
 
-        {(frequency === RECURRENCE_FREQUENCIES.monthly || frequency === RECURRENCE_FREQUENCIES.yearly) && (
+        {/* The checkbox is offered only when it can change the schedule: it is a no-op
+            for monthly 31 and for a yearly month-end anchor (see spec 028 §4). */}
+        {lastDayAnchorUseful(frequency, startDay) && (
           <View style={styles.checkboxRow}>
             <CheckboxRow
               checked={lastDay}

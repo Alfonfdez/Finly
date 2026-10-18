@@ -49,9 +49,9 @@ function CategoryTile({
         dashed
           ? [styles.dashedItem, { borderColor: c.border }]
           : {
-              backgroundColor: selected ? withAlpha(color, 20) : c.surface,
-              ...(selected && { borderWidth: 2, borderColor: color }),
-            },
+            backgroundColor: selected ? withAlpha(color, 20) : c.surface,
+            ...(selected && { borderWidth: 2, borderColor: color }),
+          },
       ]}
       onPress={onPress}
       accessibilityLabel={accessibilityLabel ?? label}

@@ -206,9 +206,9 @@ export default function ModifyRecurringScreen() {
         title={labels.recurring_skip_warning_title}
         message={skipWarning
           ? labels.recurring_skip_warning_message(
-              skipWarning.count,
-              formatDateLong(fromDateOnly(skipWarning.from), config.language),
-            )
+            skipWarning.count,
+            formatDateLong(fromDateOnly(skipWarning.from), config.language),
+          )
           : undefined}
         confirmLabel={labels.recurring_skip_warning_confirm}
         cancelLabel={labels.cancel}

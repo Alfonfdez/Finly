@@ -9,7 +9,7 @@ Everything runs **on-device**: your data lives in a local SQLite database (sql.j
 | | |
 |---|---|
 | **Platforms** | iOS, Android, and Web |
-| **Version** | 2.1.0 |
+| **Version** | 2.2.0 |
 | **Languages** | English, Spanish, Catalan, Galician, Basque, French, German, Portuguese, Italian |
 | **Data** | 100 % local (SQLite on native, sql.js + IndexedDB on web) |
 | **Themes** | Dark, Light, and Automatic (follows the system) |
@@ -24,6 +24,7 @@ Everything runs **on-device**: your data lives in a local SQLite database (sql.j
 - **All Transactions** — combined filters: type, categories (multi-select), period, account, tags, and search with sorting by date or amount.
 - **Tags & comments** — tag transactions, then filter by tag; manage every comment across the app and apply edits or bulk deletes to many transactions at once.
 - **Photos** — attach a photo to a transaction from the gallery on every platform (camera on iOS and Android).
+- **Recurring rules** — turn a transaction into a repeating schedule (daily, weekly, monthly or yearly, with an interval and an optional end date); due occurrences are generated automatically and each rule can be paused, resumed or edited applying the change to future occurrences only or to the past ones too.
 - **Bulk actions** — multi-select and delete transactions, tags, comments, and categories in one go.
 - **Data backup** — export your whole database as a JSON snapshot and import it back at any time (saved straight to Downloads on Android, with an optional share).
 - **Settings** — theme, text size, currency, decimal separator, language, first day of week, icon shapes, home and add-transaction defaults, and privacy options to hide balances.
@@ -33,7 +34,7 @@ Everything runs **on-device**: your data lives in a local SQLite database (sql.j
 
 ![Home screen](images/screenshots/v2-01-a-home-empty.png)<br>*Home screen before any account is configured.*<br><br>
 ![Home screen](images/screenshots/v2-01-b-home.png)<br>*Home screen with accounts, donut chart, and category breakdown.*<br><br>
-![Hamburger menu](images/screenshots/v2-02-hamburger.png)<br>*Drawer menu with Home, Accounts, Categories, Tags, Comments, All Transactions, and Settings.*<br><br>
+![Hamburger menu](images/screenshots/v2-02-hamburger.png)<br>*Drawer menu with Home, Accounts, Categories, Tags, Comments, Recurring, All Transactions, and Settings.*<br><br>
 ![Add transaction](images/screenshots/v2-03-add-transaction.png)<br>*Add an expense or income with amount, account, category, day, tags, comment, and photo.*<br><br>
 ![Date picker](images/screenshots/v2-04-date-picker.png)<br>*Calendar picker for choosing a day, week, month, year, or custom period range.*<br><br>
 ![Categories](images/screenshots/v2-05-categories.png)<br>*Categories organized by type (expenses/income) in a 4×N grid.*<br><br>
@@ -105,11 +106,12 @@ This starts Metro Bundler. Then:
 | `npm test` | Run the Vitest suite |
 | `npm run test:watch` | Run Vitest in watch mode |
 | `npm run test:all` | typecheck + lint + tests (the full local gate) |
+| `npm run i18n` | Add, update, remove or list translation keys across the 9 language files |
 
 ### Testing
 
 - **Unit / integration** — Vitest. The suite covers the database repositories on both SQLite backends (native + sql.js), backup round-trips, and components rendered with `@testing-library/react-native`.
-- **Native E2E** — Maestro flows in `FinlyApp/.maestro/` (10 flows + helpers) run against the debug APK on an Android emulator; see `docs/harnesses.md`.
+- **Native E2E** — Maestro flows in `FinlyApp/.maestro/` (15 flows + helpers) run against the debug APK on an Android emulator; see `docs/harnesses.md`.
 - **Web verification** — the acceptance criteria of each feature are verified in a real browser at 375px with Playwright.
 - The CI pipeline (`.github/workflows/ci.yml`) runs the full `npm run test:all` gate on every push and pull request to `develop` and `main`.
 
@@ -135,7 +137,7 @@ FinlyApp/
 ### Database
 
 - One engine interface (`DatabaseHandle`) on all platforms: expo-sqlite on native, sql.js (WASM) with IndexedDB persistence on web.
-- Migrations are versioned with `PRAGMA user_version` (`001_initial`, `002_seed`, `003_config`) and applied once, inside a transaction.
+- Migrations are versioned with `PRAGMA user_version` (`001_initial`, `002_seed`, `003_config`, `004_recurring`) and applied once, inside a transaction.
 - Repositories are written with Drizzle ORM over the shared handle; stored rows are validated with Zod schemas.
 - On web the exported SQLite bytes are persisted to IndexedDB, so the same data outlives reloads.
 

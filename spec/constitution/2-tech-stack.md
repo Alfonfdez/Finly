@@ -20,7 +20,7 @@
 
 ```
 FinlyApp/
-+-- app.json                          <- Expo config (name, version 2.1.0, package com.finly.app)
++-- app.json                          <- Expo config (name, version 2.2.0, package com.finly.app)
 +-- App.tsx                           <- main entry: DB init + splash + providers
 +-- tsconfig.json
 +-- package.json
@@ -36,7 +36,7 @@ FinlyApp/
 |   |   +-- TransactionDetailsScreen.tsx <- transaction details (016)
 |   |   +-- AddTransactionScreen.tsx  <- add expense/income
 |   |   +-- ModifyTransactionScreen.tsx <- modify transaction (017)
-|   |   +-- CommentsScreen.tsx        <- comments list (024)
+|   |   +-- CommentsScreen.tsx        <- comments list (027)
 |   |   +-- ModifyCommentScreen.tsx   <- edit/delete comment
 |   |   +-- AccountsScreen.tsx        <- account list
 |   |   +-- CreateAccountScreen.tsx   <- create account
@@ -48,6 +48,9 @@ FinlyApp/
 |   |   +-- TagsScreen.tsx            <- tags list
 |   |   +-- CreateTagScreen.tsx       <- create tag
 |   |   +-- ModifyTagScreen.tsx       <- edit tag
+|   |   +-- RecurringScreen.tsx        <- recurring rules list (028)
+|   |   +-- CreateRecurringScreen.tsx  <- create a recurring rule
+|   |   +-- ModifyRecurringScreen.tsx  <- edit a recurring rule
 |   |   +-- settings/                 <- settings sub-screens
 |   |       +-- SettingsScreen.tsx    <- settings root
 |   |       +-- AppearanceScreen.tsx  <- theme, text size, icon shapes
@@ -133,9 +136,7 @@ FinlyApp/
 |   |       +-- configRepo.ts         <- config persistence
 |   |       +-- transactionRepo.ts (+ .reads.ts / .writes.ts) <- transaction CRUD + aggregations + deleteAll()
 |   |       +-- recurringRepo.ts      <- recurring rule CRUD + tags + due query + occurrence materialization
-|   |
-|   +-- database/
-|   |   +-- recurringService.ts       <- materializeDueRecurring() reconciliation
+|   |   +-- recurringService.ts        <- materializeDueRecurring() reconciliation + rule create/edit/pause flows
 |   |
 |   +-- i18n/
 |   |   +-- index.ts                 <- language selector + getCategoryName helper

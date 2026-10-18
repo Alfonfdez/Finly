@@ -23,4 +23,26 @@ describe('useBalanceVisibility', () => {
     await act(() => result.current.toggleReveal());
     expect(result.current.isBalanceHidden).toBe(true);
   });
+
+  it('keeps balances visible when the hide setting is turned off after a reveal', async () => {
+    const { result, rerender } = await renderHook(({ hide }: { hide: boolean }) => useBalanceVisibility(hide), {
+      initialProps: { hide: true },
+    });
+    await act(() => result.current.toggleReveal());
+    expect(result.current.isBalanceHidden).toBe(false);
+
+    await act(async () => { rerender({ hide: false }); });
+    expect(result.current.isBalanceHidden).toBe(false);
+  });
+
+  it('starts hidden again when the hide setting is turned back on', async () => {
+    const { result, rerender } = await renderHook(({ hide }: { hide: boolean }) => useBalanceVisibility(hide), {
+      initialProps: { hide: false },
+    });
+    await act(() => result.current.toggleReveal());
+    expect(result.current.isBalanceHidden).toBe(false);
+
+    await act(async () => { rerender({ hide: true }); });
+    expect(result.current.isBalanceHidden).toBe(true);
+  });
 });
