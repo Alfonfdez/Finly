@@ -997,3 +997,28 @@ Screenshot naming and release-notes cleanup, applied 2026-10-19:
 - Gate: docs/assets only; `npm run test:all` re-run green after the phase work.
 
 Spec: none (documentation/assets).
+
+## SQLite transactions: one queue, plus a self-healing seed
+Status: completed.
+
+Fixed after a 2.2.0 release-candidate device test (2026-10-19):
+- **Root cause:** the app has a single SQLite connection, but explicit transactions were not serialized. The reconciliation run holds one transaction for a whole catch-up (up to 500 occurrences per rule), so an imported backlog could overlap "Delete all data", "Reset to factory state", an import or a config save; the loser failed with `cannot start a transaction within a transaction` and its `ROLLBACK` could undo the winner ("cannot rollback - no transaction is active"). The reset itself committed, but the collateral config save surfaced a generic error alert.
+- **Fix:** `runExclusiveDb` (`src/database/transactionQueue.ts`) serializes every explicit transaction; both engines return the handle wrapped by it, so reconciliation, rule edits, config saves, delete-all, factory reset, import and migrations all share one queue and can never nest.
+- **Self-heal:** `initDatabase` now repairs empty seeded tables (`users`/`accounts`/`categories`/`config`) left by a wipe interrupted in an older build, using the idempotent `INSERT OR IGNORE` seeds - existing rows are never modified and a deleted account is not resurrected.
+- **Data screen feedback:** the destructive dialogs now show a spinner, disable Cancel and ignore a second confirm while the wipe/import runs (the reset can wait for a running catch-up).
+- **Tests:** transaction-queue unit suite (ordering, rejection isolation, no overlap), concurrency tests (reset/clear/config save/import during a catch-up) and a self-heal suite (each empty table, half-applied wipe, idempotence).
+- Gate: `npm run test:all` green (153 files / 1264 tests); device re-test of the import + reset flow after the rebuild.
+
+Spec: spec/features/028-recurring-transactions/, spec/features/025-data-backup/.
+
+## Transaction details: Created shows the record timestamp
+Status: completed.
+
+Display fix found while testing 2.2.0 on device, applied 2026-10-19:
+- The footer's "Created" line was built from `transaction.date` (the transaction's own date, stored at `00:00:00` for a backdated pick) instead of `created_at`, so a transaction created today for 15 July read "Created 00:00 - 15 jul 2026". It now uses the record's `created_at`, matching the "Updated" line; the Date row above still shows the transaction date.
+- The label stays "Created" (consistent with the recurring rule, tag and sort labels that also read `created_at`).
+- No data changed: inserts never set `created_at` (the column default applies), so no migration was needed; spec 016 ?7 (which had codified the wrong field) was corrected.
+- Tests: distinct `date`/`created_at`/`updated_at` fixture values in the details suite (both footer lines + the Date row) and a database test proving a backdated insert stores `created_at` as today.
+- Gate: `npm run test:all` green.
+
+Spec: spec/features/016-transaction-details-screen/.

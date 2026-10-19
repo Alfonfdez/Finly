@@ -111,7 +111,7 @@ Every row is always present so the card is uniform; when a field has no value th
 - [x] The "Delete" button shows a confirmation modal with "No" and "Yes".
 - [x] Confirming "Yes" deletes the transaction and returns to the previous screen.
 - [x] The "Edit" button navigates to `ModifyTransaction` with `transactionId` (TODO).
-- [x] The footer shows "Created HH:mm dd MMM yyyy" in 24h with the active language (year always visible).
+- [x] The footer shows "Created HH:mm dd MMM yyyy" in 24h with the active language (year always visible), using the record's `created_at` - a backdated transaction does not change it.
 - [x] All texts change when switching the language in settings.
 - [x] The screen respects the active theme (dark/light).
 - [x] The screen respects the configured text size.

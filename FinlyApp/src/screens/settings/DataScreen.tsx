@@ -34,6 +34,7 @@ interface ConfirmWithTextModalProps {
   onTextChange: (value: string) => void;
   onConfirm: () => void;
   onCancel: () => void;
+  busy?: boolean;
 }
 
 function ConfirmWithTextModal({
@@ -46,6 +47,7 @@ function ConfirmWithTextModal({
   onTextChange,
   onConfirm,
   onCancel,
+  busy = false,
 }: ConfirmWithTextModalProps) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
@@ -60,6 +62,7 @@ function ConfirmWithTextModal({
       onConfirm={onConfirm}
       onCancel={onCancel}
       confirmDisabled={text.toUpperCase() !== DELETE_ALL_CONFIRMATION}
+      busy={busy}
     >
       <TextInput
         style={[styles.input, { backgroundColor: c.background, color: c.text, borderColor: c.border, fontSize: fs(14) }, webInputFocusReset]}
@@ -67,12 +70,22 @@ function ConfirmWithTextModal({
         placeholderTextColor={c.textSecondary}
         value={text}
         onChangeText={onTextChange}
+        editable={!busy}
         autoCapitalize="characters"
         autoCorrect={false}
       />
     </ConfirmationModal>
   );
 }
+
+const PENDING_DATA_ACTIONS = {
+  transactions: 'transactions',
+  all: 'all',
+  factory: 'factory',
+  import: 'import',
+} as const;
+
+type PendingDataAction = keyof typeof PENDING_DATA_ACTIONS | null;
 
 export default function DataScreen() {
   const { activeColors: c, updateConfig } = useConfig();
@@ -90,6 +103,7 @@ export default function DataScreen() {
   const [factoryResetText, setFactoryResetText] = useState('');
   const [importModalVisible, setImportModalVisible] = useState(false);
   const [pendingImport, setPendingImport] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingDataAction>(null);
 
   const handleExport = async () => {
     try {
@@ -141,7 +155,8 @@ export default function DataScreen() {
   };
 
   const handleConfirmImport = async () => {
-    if (pendingImport === null) return;
+    if (pendingImport === null || pendingAction !== null) return;
+    setPendingAction(PENDING_DATA_ACTIONS.import);
     try {
       await importBackup(pendingImport);
       await resetAll();
@@ -158,41 +173,65 @@ export default function DataScreen() {
       } else {
         alertError(labels.settings_import_error_title, labels.settings_import_error_message);
       }
+    } finally {
+      setPendingAction(null);
     }
     setImportModalVisible(false);
     setPendingImport(null);
   };
 
-  const closeDeleteTransactions = () => {
+  const hideDeleteTransactions = () => {
     setDeleteTransactionsModal1(false);
     setDeleteTransactionsModal2(false);
     setDeleteTransactionsText('');
   };
 
-  const closeDeleteAll = () => {
+  const hideDeleteAll = () => {
     setDeleteAllModal1(false);
     setDeleteAllModal2(false);
     setDeleteAllText('');
   };
 
-  const closeFactoryReset = () => {
+  const hideFactoryReset = () => {
     setFactoryResetModal1(false);
     setFactoryResetModal2(false);
     setFactoryResetText('');
   };
 
+  // User-initiated closes are blocked while a wipe/import is in flight.
+  const closeDeleteTransactions = () => {
+    if (pendingAction !== null) return;
+    hideDeleteTransactions();
+  };
+
+  const closeDeleteAll = () => {
+    if (pendingAction !== null) return;
+    hideDeleteAll();
+  };
+
+  const closeFactoryReset = () => {
+    if (pendingAction !== null) return;
+    hideFactoryReset();
+  };
+
   const handleDeleteTransactions = async () => {
+    if (pendingAction !== null) return;
+    setPendingAction(PENDING_DATA_ACTIONS.transactions);
     try {
       await transactionRepository.deleteAllTransactions();
       await resetAll();
     } catch (error) {
       console.error('Failed to delete all transactions:', error);
       alertError(labels.settings_delete_transactions_error_title, labels.settings_delete_transactions_error_message);
+    } finally {
+      setPendingAction(null);
     }
-    closeDeleteTransactions();
+    hideDeleteTransactions();
   };
 
   const handleDeleteAll = async () => {
+    if (pendingAction !== null) return;
+    setPendingAction(PENDING_DATA_ACTIONS.all);
     try {
       await clearDataKeepSettings();
       await resetAll();
@@ -200,11 +239,15 @@ export default function DataScreen() {
     } catch (error) {
       console.error('Failed to delete all data:', error);
       alertError(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
+    } finally {
+      setPendingAction(null);
     }
-    closeDeleteAll();
+    hideDeleteAll();
   };
 
   const handleFactoryReset = async () => {
+    if (pendingAction !== null) return;
+    setPendingAction(PENDING_DATA_ACTIONS.factory);
     try {
       await resetDatabase();
       await resetAll();
@@ -212,8 +255,10 @@ export default function DataScreen() {
     } catch (error) {
       console.error('Failed to reset to factory state:', error);
       alertError(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
+    } finally {
+      setPendingAction(null);
     }
-    closeFactoryReset();
+    hideFactoryReset();
   };
 
   return (
@@ -284,6 +329,7 @@ export default function DataScreen() {
           onTextChange={setDeleteTransactionsText}
           onConfirm={handleDeleteTransactions}
           onCancel={closeDeleteTransactions}
+          busy={pendingAction === PENDING_DATA_ACTIONS.transactions}
         />
 
         <ConfirmationModal
@@ -294,9 +340,11 @@ export default function DataScreen() {
           cancelLabel={labels.cancel}
           onConfirm={handleConfirmImport}
           onCancel={() => {
+            if (pendingAction !== null) return;
             setImportModalVisible(false);
             setPendingImport(null);
           }}
+          busy={pendingAction === PENDING_DATA_ACTIONS.import}
         />
 
         <ConfirmationModal
@@ -319,6 +367,7 @@ export default function DataScreen() {
           onTextChange={setDeleteAllText}
           onConfirm={handleDeleteAll}
           onCancel={closeDeleteAll}
+          busy={pendingAction === PENDING_DATA_ACTIONS.all}
         />
 
         <ConfirmationModal
@@ -341,6 +390,7 @@ export default function DataScreen() {
           onTextChange={setFactoryResetText}
           onConfirm={handleFactoryReset}
           onCancel={closeFactoryReset}
+          busy={pendingAction === PENDING_DATA_ACTIONS.factory}
         />
       </ScrollView>
     </ScreenShell>

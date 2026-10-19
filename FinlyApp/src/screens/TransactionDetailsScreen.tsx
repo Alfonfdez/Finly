@@ -74,9 +74,11 @@ export default function TransactionDetailsScreen() {
   );
 
   const createdDate = useMemo(() => {
-    if (!transactionDate) return '';
-    return `${labels.details_created}: ${formatDateTimeShort(transactionDate, labels.months_short)}`;
-  }, [transactionDate, labels]);
+    // The footer is the record's creation timestamp, not the transaction's own
+    // date (a backdated transaction is still created today).
+    if (!transaction?.created_at) return null;
+    return `${labels.details_created}: ${formatDateTimeShort(parseDbDate(transaction.created_at), labels.months_short)}`;
+  }, [transaction, labels]);
 
   const updatedDate = useMemo(() => {
     if (!transaction?.updated_at) return null;
@@ -238,9 +240,11 @@ export default function TransactionDetailsScreen() {
         </View>
 
         <View style={styles.timestamps}>
-          <Text style={[styles.timestampText, { color: c.textSecondary, fontSize: fs(11) }]}>
-            {createdDate}
-          </Text>
+          {createdDate && (
+            <Text style={[styles.timestampText, { color: c.textSecondary, fontSize: fs(11) }]}>
+              {createdDate}
+            </Text>
+          )}
           {updatedDate && (
             <Text style={[styles.timestampText, { color: c.textSecondary, fontSize: fs(11) }]}>
               {updatedDate}

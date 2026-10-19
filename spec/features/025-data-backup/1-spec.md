@@ -60,6 +60,7 @@
 - Import requires an explicit confirmation modal: it **replaces all current data** and cannot be undone.
 - The write runs inside a single transaction: delete all rows in FK-safe order, then insert in dependency order (users → accounts/categories/tags → transactions → transaction_tags → config).
 - Referential integrity is enforced by `PRAGMA foreign_keys = ON`: a snapshot with missing parent rows or duplicate PKs fails the transaction and **rolls back** — existing data is unchanged.
+- Import uses the same serialized transaction queue as reconciliation (`runExclusiveDb`), so it can never interleave with a catch-up run; the Data screen keeps the confirmation dialog open (spinner, no cancel, no second confirm) until the import settles.
 - On success the app state is reloaded: `resetAll()` (accounts/categories/tags/transactions) and `updateConfig(await configRepository.get())` so theme, language, currency, and default selections reflect the backup.
 - Failure (invalid file, wrong version, schema violation) shows an error and leaves data untouched.
 

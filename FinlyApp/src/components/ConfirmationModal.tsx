@@ -17,6 +17,8 @@ interface Props {
   onConfirm: () => void;
   onCancel: () => void;
   confirmDisabled?: boolean;
+  /** An action started from this modal is running: spinner, no cancel, no second press. */
+  busy?: boolean;
   destructive?: boolean;
   children?: ReactNode;
   moveLabel?: string;
@@ -25,7 +27,7 @@ interface Props {
 
 export default function ConfirmationModal({
   visible, title, message, confirmLabel, cancelLabel,
-  onConfirm, onCancel, confirmDisabled = false, destructive = true, children,
+  onConfirm, onCancel, confirmDisabled = false, busy = false, destructive = true, children,
   moveLabel, onMove,
 }: Props) {
   const { activeColors: c } = useConfig();
@@ -70,7 +72,9 @@ export default function ConfirmationModal({
           confirmLabel={confirmLabel}
           onCancel={onCancel}
           onConfirm={onConfirm}
-          confirmDisabled={confirmDisabled}
+          confirmDisabled={confirmDisabled || busy}
+          confirmLoading={busy}
+          cancelDisabled={busy}
           destructive={destructive}
           moveLabel={moveLabel}
           onMove={onMove}

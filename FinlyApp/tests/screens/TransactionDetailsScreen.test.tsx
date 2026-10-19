@@ -59,14 +59,14 @@ function tx(overrides: Partial<Transaction> = {}): Transaction {
   return {
     id: 5,
     user_id: 1,
-    date: '2026-01-15 10:00:00',
+    date: '2026-07-15 00:00:00',
     type: 'expense',
     amount: 100,
     account_id: 1,
     category_id: 1,
     description: 'Lunch',
-    created_at: '2026-01-15 10:00:00',
-    updated_at: '2026-01-15 10:00:00',
+    created_at: '2026-10-19 18:20:00',
+    updated_at: '2026-10-20 09:05:00',
     ...overrides,
   } as Transaction;
 }
@@ -91,6 +91,19 @@ describe('TransactionDetailsScreen', () => {
   it('shows an empty state when the transaction is not found', async () => {
     const view = await render(<TransactionDetailsScreen />);
     expect(await view.findByText('No transactions')).toBeTruthy();
+  });
+
+  it('shows the record creation and update timestamps, not the transaction date', async () => {
+    getById.mockResolvedValue(tx());
+    const view = await render(<TransactionDetailsScreen />);
+    await view.findByText('Wallet');
+
+    // A backdated transaction: the footer reports when the record was created/edited...
+    expect(view.getByText('Created: 18:20 - 19 oct 2026')).toBeTruthy();
+    expect(view.getByText('Updated: 09:05 - 20 oct 2026')).toBeTruthy();
+    // ...while the Date row keeps the transaction's own date.
+    expect(view.getByText('July 15, 2026')).toBeTruthy();
+    expect(view.queryByText('Created: 00:00 - 15 jul 2026')).toBeNull();
   });
 
   it('renders transaction account and category', async () => {

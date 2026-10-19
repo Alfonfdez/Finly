@@ -1,8 +1,8 @@
 import type { DatabaseHandle } from './types';
 import { openEngine } from './engine';
 import { createSchema } from './migrations/001_initial';
-import { seedData, seedDataInner } from './migrations/002_seed';
-import { seedConfig, seedConfigInner } from './migrations/003_config';
+import { seedDataInner } from './migrations/002_seed';
+import { seedConfigInner } from './migrations/003_config';
 import { createRecurringSchema } from './migrations/004_recurring';
 import { sanitizeDefaultAccountConfig } from './configDefaults';
 
@@ -52,17 +52,43 @@ async function migrate(database: DatabaseHandle): Promise<void> {
 
 let initPromise: Promise<DatabaseHandle> | null = null;
 
+type SeededTable = 'users' | 'accounts' | 'categories' | 'config';
+
+async function countRows(database: DatabaseHandle, table: SeededTable): Promise<number> {
+  const row = await database.getFirstAsync<{ count: number }>(`SELECT COUNT(*) AS count FROM ${table}`);
+  return row?.count ?? 0;
+}
+
+/**
+ * Idempotent seed repair. A wipe that was interrupted by the old transaction
+ * interleaving could leave empty tables behind, and init only looked at `users`
+ * (which a factory reset keeps), so it never healed them. The seed inserts use
+ * `INSERT OR IGNORE`, so existing rows are never modified.
+ */
+export async function ensureSeedData(database: DatabaseHandle): Promise<void> {
+  const [users, accounts, categories, configRows] = await Promise.all([
+    countRows(database, 'users'),
+    countRows(database, 'accounts'),
+    countRows(database, 'categories'),
+    countRows(database, 'config'),
+  ]);
+  const needsSeedData = users === 0 || accounts === 0 || categories === 0;
+  const needsConfig = configRows === 0;
+  if (!needsSeedData && !needsConfig) return;
+
+  await database.withTransactionAsync(async () => {
+    if (needsSeedData) await seedDataInner(database);
+    if (needsConfig) await seedConfigInner(database);
+  });
+}
+
 export function initDatabase(): Promise<DatabaseHandle> {
   if (!initPromise) {
     initPromise = (async () => {
       const database = await getDatabase();
       await database.execAsync('PRAGMA foreign_keys = ON;');
       await migrate(database);
-      const user = await database.getFirstAsync<{ count: number }>('SELECT COUNT(*) AS count FROM users');
-      if ((user?.count ?? 0) === 0) {
-        await seedData(database);
-        await seedConfig(database);
-      }
+      await ensureSeedData(database);
       return database;
     })();
   }

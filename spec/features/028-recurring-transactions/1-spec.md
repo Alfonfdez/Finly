@@ -173,6 +173,8 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 - **Pure logic is Node-testable:** recurrence date math lives in `src/utils/recurrence.ts` (no React Native / Expo imports); the reconciliation and repository layers use only `DatabaseHandle`/Drizzle.
 - **No new dependencies.**
 - **Data safety:** the migration is additive and idempotent; reconciliation is transactional and serialized (overlapping triggers cannot duplicate or lose an occurrence); the unique occurrence index makes materialization idempotent; the rule invariants are validated in the service layer; old backups remain importable.
+- **One transaction queue:** every explicit SQLite transaction in the app (reconciliation runs, rule edits, config saves, delete-all, factory reset, import, migrations) goes through a single module-level queue (`runExclusiveDb`), because the app has one connection. A long catch-up therefore never overlaps a wipe or an import (no `cannot start a transaction within a transaction`, no phantom rollbacks), and transactions are never nested.
+- **Self-heal:** an interrupted wipe could leave empty seeded tables behind. `initDatabase` repairs them idempotently (empty `users`/`accounts`/`categories` re-seed, empty `config` re-seeds its defaults) with `INSERT OR IGNORE`, so existing rows are never modified and a deleted account is not resurrected.
 - **Performance:** reconciliation is a bounded loop per rule; each rule reads its generated occurrence dates once per run; `(recurring_rule_id, recurrence_date)` lookups keep it cheap. Schedule probing fast-forwards to the target date for daily/weekly rules (O(1)) and jumps to the nearest period for monthly/yearly ones, so a decades-old rule cannot silently exhaust the probe guard.
 
 ---
@@ -190,6 +192,8 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 - [x] Re-running reconciliation never duplicates an occurrence (idempotent via the unique occurrence index).
 - [x] Overlapping reconciliation triggers are serialized (one DB transaction per run), so two simultaneous runs never duplicate or lose an occurrence.
 - [x] The pause/resume switch is disabled while its write is in flight: a rapid second tap is ignored until the row settles.
+- [x] Delete all data, Factory reset, config saves and backup imports complete without transaction errors while a reconciliation run is in flight (all explicit transactions are serialized through one queue).
+- [x] An empty seeded table left by an interrupted wipe (users/accounts/categories/config) is re-seeded on the next launch without modifying existing rows; the Data screen shows a spinner and blocks cancel/confirm while a wipe or import is running.
 - [x] The service rejects a blank name, a non-positive or non-integer interval and an end date not after the start before writing anything; a legacy name longer than the limit stays editable.
 - [x] While the app is open across a due instant, the occurrence is created without reopening the app.
 - [x] Monthly rules clamp short months (31 → last day) and yearly rules clamp Feb 29 in non-leap years.
