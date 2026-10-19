@@ -37,6 +37,7 @@ A main screen in the app that displays the current Account, the Total (income/ex
 7. "+" button (Floating Action Button) centered at the bottom. Background: primary color (`c.primary`). Icon: `Ionicons "add"` with color `c.background` (theme-adaptive). Position: `position: absolute`, `bottom: 56`, `alignSelf: 'center'`. Navigates to the "Add Expense/Income" screen.
 
 8. Category breakdown list: SVG icon, name, percentage, numeric total with 2 decimal places and currency symbol (€ by default). Tapping a category navigates to "Transactions" filtered by that category.
+- The chart total and every category total above follow the privacy setting ("Hide balances and totals", spec 003 §5.6): masked while it is on, revealed temporarily by the Home eye icon.
 
 - **Content**
 Initial mock data (accounts, categories, sample transactions). Later, data will come from AsyncStorage with what the user inputs.

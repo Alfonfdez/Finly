@@ -166,9 +166,9 @@ export default function HomeScreen() {
         activeOpacity={0.7}
       >
         {chartType === CHART_TYPES.donut ? (
-          <DonutChart data={activeCategories} total={activeTotal} />
+          <DonutChart data={activeCategories} total={activeTotal} hidden={isBalanceHidden} />
         ) : (
-          <BarChart data={activeCategories} total={activeTotal} />
+          <BarChart data={activeCategories} total={activeTotal} hidden={isBalanceHidden} />
         )}
       </TouchableOpacity>
 
@@ -185,6 +185,7 @@ export default function HomeScreen() {
         tagBreakdowns={tagBreakdowns}
         expandedCategoryIds={expandedCategoryIds}
         onToggleExpand={handleToggleExpand}
+        hidden={isBalanceHidden}
       />
 
       <Fab

@@ -35,7 +35,7 @@ export const it: Language = {
   settings_labels: 'Etichette',
   settings_comments: 'Commenti',
   settings_photo: 'Foto',
-  settings_hide_balances: 'Nascondi i saldi dei conti',
+  settings_hide_balances: 'Nascondi saldi e totali',
   settings_export_data: 'Esporta dati',
   settings_import_data: 'Importa dati',
   settings_export_success_title: 'Esportazione completata',
@@ -568,8 +568,8 @@ export const it: Language = {
   color_grid_more: 'Più colori',
 
   // Accessibility labels
-  a11y_show_balances: 'Mostra saldi',
-  a11y_hide_balances: 'Nascondi saldi',
+  a11y_show_balances: 'Mostra importi',
+  a11y_hide_balances: 'Nascondi importi',
   a11y_select_mode: 'Entra in modalità selezione',
   a11y_exit_select_mode: 'Esci dalla modalità selezione',
   a11y_close_search: 'Chiudi ricerca',

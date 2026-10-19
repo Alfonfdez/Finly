@@ -943,3 +943,17 @@ The follow-up of the adoption entry, applied 2026-10-19:
 - Gate: `npm run test:all` green (137 files / 1151 tests).
 
 Spec: no behaviour change (formatting only).
+
+## Privacy: hide balances and totals on every screen that shows an aggregate
+Status: completed.
+
+The "hide balances" setting now covers every aggregate the app displays, applied 2026-10-19:
+- The toggle was renamed to **"Hide balances and totals"** (key `settings_hide_balances`, values only) and the eye labels to "Show amounts"/"Hide amounts" (`a11y_show_balances`/`a11y_hide_balances`), in all 9 languages: the setting no longer hides balances alone.
+- The gaps are closed: the Home donut/bar chart total and every category row total are masked by the setting (the existing header eye covers them), and the All transactions period total and the Transactions category total are masked and gained their own eye icon, reusing `useBalanceVisibility` (so the focus reset applies).
+- Deliberately unchanged: individual amounts stay visible - transaction rows, transaction details and recurring-rule amounts - because the setting covers balances and totals, not the records the user is browsing.
+- Found and fixed on the way: `CategoryList`'s memoised row renderer was missing the new `hidden` dependency, so the rows would not repaint when the eye toggled.
+- Tests: a new `DonutChart` component test, mask + toggle cases for `BarChart` and `CategoryList`, and screen cases for Home, All transactions and Transactions; the Personalization screen test follows the new label.
+- The mask is always gray (`textSecondary`), never the green/red of the value it hides: the color would leak the sign of the total. Home's chart and category-row totals were still drawn in `text`, and the two new list headers colored the mask by the sign; all four now use the same gray as the header and Accounts. Category rows keep the name and the percentage visible.
+- Gate: `npm run test:all` green (138 files / 1160 tests); verified in the browser at 375px (all 9 languages not applicable: text is unchanged except the renamed label, which the parity test covers).
+
+Spec: spec/features/003-settings-screen/ (5.6), 001-home-screen, 014-transactions-screen-from-home, 015-all-transactions-screen.

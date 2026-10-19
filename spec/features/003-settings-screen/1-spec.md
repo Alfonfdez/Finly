@@ -244,39 +244,42 @@ Subtitle: "Edit recurring rule" (the screen title, multilingual).
 
 Subtitle: "Privacy" (multilingual).
 
-**Hide account balances:**
+**Hide balances and totals:**
 
 | Option | Type | Default | Values |
 |--------|------|---------|--------|
-| Hide account balances | Toggle | Off | On/Off |
+| Hide balances and totals | Toggle | Off | On/Off |
 
-- **Off (default):** account balances are visible across the app.
-- **On:** account balances are masked with `•••••` across the app.
+- **Off (default):** balances and totals are visible across the app.
+- **On:** every balance and every aggregate total is masked with `•••••` across the app. Individual amounts (transactions, recurring rules) stay visible on purpose - see below.
 
 **Affected screens:**
-- HomeScreen: total balance, income subtotal, and expenses subtotal below account name.
+- HomeScreen: total balance, income subtotal and expenses subtotal below the account name; the donut/bar chart total; each category row total.
 - AccountsScreen: each account balance in the list + total balance in header.
 - AccountModal/AccountSelector: balances in the account list.
+- All transactions: the period total under the account trigger (the net of the filtered transactions, which reads as a balance) plus its own eye icon.
+- Transactions (from Home): the category total for the period in the header plus its own eye icon.
 
-**NOT affected:**
-- TransactionDetailsScreen: amount is shown (it's a specific transaction, not an account balance).
-- AddTransactionScreen / ModifyTransactionScreen: no balance displayed.
+**NOT affected (deliberate):**
+- TransactionDetailsScreen: amount is shown (it's a specific transaction, not a balance or a total).
+- Transaction amounts in the list rows (`TransactionGroup`) and the recurring-rule amounts (`RecurringRow`): these are the individual records the user is browsing, not totals.
+- AddTransactionScreen / ModifyTransactionScreen: no balance displayed, and the amount input must stay readable while typing.
 
-**Hidden balance styling:**
-- Masked balances display `•••••` in `textSecondary` (gray) color, with no `+`/`-` sign.
+**Hidden value styling:**
+- Masked values display `•••••` in `textSecondary` (gray) color, with no `+`/`-` sign.
 - This avoids leaking positive/negative hints about the balance value.
 
 **Eye icon behavior:**
 
-An eye icon appears next to every masked balance. The icon represents the current privacy mode state:
+An eye icon appears next to every masked value. The icon represents the current privacy mode state:
 
-| Setting | Balances | Default icon | Icon meaning |
+| Setting | Values | Default icon | Icon meaning |
 |---|---|---|---|
 | Off | Visible | `eye-off-outline` | "Privacy off, tap to temporarily hide" |
 | On | Hidden (`•••••`) | `eye-outline` | "Privacy on, tap to temporarily reveal" |
 
 **Tap behavior (symmetric for both settings):**
-- Tap the eye icon → toggles visibility of ALL balances on the current screen.
+- Tap the eye icon → toggles visibility of ALL balances and totals on the current screen.
 - Icon changes to the opposite state (eye ↔ eye-off).
 - The reveal/hide is **temporary** — it resets to the setting default when navigating away and coming back.
 - **No timer** — the visibility persists until the user navigates away or taps the eye again.
@@ -444,12 +447,15 @@ An eye icon appears next to every masked balance. The icon represents the curren
 - [x] Unchecking a field hides the corresponding section in ModifyRecurringScreen only, independently of the new-rule flags.
 
 ### Personalization — Privacy
-- [x] Hide account balances toggle (default: off).
+- [x] Hide balances and totals toggle (default: off).
 - [x] When on, total balance, income subtotal, and expenses subtotal show `•••••` on HomeScreen.
+- [x] When on, the Home donut/bar chart total and every category row total are masked too.
 - [x] When on, balances show `•••••` on AccountsScreen and AccountModal.
-- [x] Hidden balances use gray (`textSecondary`) color with no `+`/`-` sign.
-- [x] Eye icon appears next to masked balances.
-- [x] Tapping eye temporarily reveals/hides ALL balances on screen.
+- [x] When on, the All transactions period total and the Transactions category total are masked, each with its own eye icon.
+- [x] Individual amounts stay visible when the setting is on: transaction rows, transaction details and recurring-rule amounts.
+- [x] Hidden values use gray (`textSecondary`) color with no `+`/`-` sign.
+- [x] Eye icon appears next to masked balances and totals.
+- [x] Tapping eye temporarily reveals/hides ALL balances and totals on screen.
 - [x] Visibility resets to setting default when navigating away and coming back.
 - [x] No timer — visibility persists until manual toggle or navigation.
 

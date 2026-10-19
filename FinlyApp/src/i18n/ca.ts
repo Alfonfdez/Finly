@@ -35,7 +35,7 @@ export const ca: Language = {
   settings_labels: 'Etiquetes',
   settings_comments: 'Comentaris',
   settings_photo: 'Foto',
-  settings_hide_balances: 'Amagar saldos de comptes',
+  settings_hide_balances: 'Amagar saldos i totals',
   settings_export_data: 'Exportar dades',
   settings_import_data: 'Importar dades',
   settings_export_success_title: 'Exportació completada',
@@ -568,8 +568,8 @@ export const ca: Language = {
   color_grid_more: 'Més colors',
 
   // Accessibility labels
-  a11y_show_balances: 'Mostrar saldos',
-  a11y_hide_balances: 'Amagar saldos',
+  a11y_show_balances: 'Mostrar imports',
+  a11y_hide_balances: 'Amagar imports',
   a11y_select_mode: 'Entrar en mode selecció',
   a11y_exit_select_mode: 'Sortir del mode selecció',
   a11y_close_search: 'Tanca la cerca',

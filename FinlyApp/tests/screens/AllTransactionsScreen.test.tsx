@@ -1,10 +1,22 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, waitFor, userEvent } from '@testing-library/react-native';
+import { fireEvent, render, waitFor, userEvent } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import AllTransactionsScreen from '../../src/screens/AllTransactionsScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
+import { setConfig, getConfigStub } from '../component/helpers/configStub';
+import { formatSignedCurrency, HIDDEN_BALANCE } from '../../src/utils/formatters';
 import type { Account, Category, Transaction } from '../../src/database/types';
 import { PERIODS } from '../../src/constants/types';
+
+function flattenStyle(style: unknown): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  const walk = (value: unknown) => {
+    if (Array.isArray(value)) value.forEach(walk);
+    else if (value && typeof value === 'object') Object.assign(out, value);
+  };
+  walk(style);
+  return out;
+}
 
 const list = vi.fn(async (_q: unknown) => [] as Transaction[]);
 const deleteMany = vi.fn(async (_ids: number[]) => undefined);
@@ -79,6 +91,27 @@ describe('AllTransactionsScreen', () => {
 
   afterEach(() => {
     resetAppStub();
+  });
+
+  it('masks the header total when hide balances is on, and the eye reveals it', async () => {
+    setConfig({ hideBalances: true });
+    list.mockResolvedValue([tx(1, { description: 'Rent', amount: 1200 })]);
+    setAppData({
+      activePeriod: PERIODS.custom,
+      customDate: { start: new Date(2026, 0, 1), end: new Date(2026, 0, 31) },
+    });
+    const view = await render(<AllTransactionsScreen />);
+
+    await waitFor(() => expect(view.getByText(HIDDEN_BALANCE)).toBeTruthy());
+    await waitFor(() => expect(view.getByText('Rent')).toBeTruthy());
+    expect(flattenStyle(view.getByText(HIDDEN_BALANCE).props.style).color).toBe('#94A3B8');
+
+    await fireEvent.press(view.getByLabelText('Show amounts'));
+    expect(view.queryByText(HIDDEN_BALANCE)).toBeNull();
+
+    const cfg = getConfigStub().config;
+    const shown = formatSignedCurrency(-1200, cfg.currency, cfg.decimalSeparator);
+    expect(view.getAllByText(shown).some((node) => flattenStyle(node.props.style).color === '#F87171')).toBe(true);
   });
 
   it('shows the account trigger, category filter button and empty state when empty', async () => {

@@ -35,7 +35,7 @@ export const pt: Language = {
   settings_labels: 'Etiquetas',
   settings_comments: 'Comentários',
   settings_photo: 'Foto',
-  settings_hide_balances: 'Ocultar saldos das contas',
+  settings_hide_balances: 'Ocultar saldos e totais',
   settings_export_data: 'Exportar dados',
   settings_import_data: 'Importar dados',
   settings_export_success_title: 'Exportação concluída',
@@ -568,8 +568,8 @@ export const pt: Language = {
   color_grid_more: 'Mais cores',
 
   // Accessibility labels
-  a11y_show_balances: 'Mostrar saldos',
-  a11y_hide_balances: 'Ocultar saldos',
+  a11y_show_balances: 'Mostrar valores',
+  a11y_hide_balances: 'Ocultar valores',
   a11y_select_mode: 'Entrar no modo de seleção',
   a11y_exit_select_mode: 'Sair do modo de seleção',
   a11y_close_search: 'Fechar pesquisa',

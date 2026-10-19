@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useBalanceVisibility } from '../hooks/useBalanceVisibility';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useRecurringRuleNames } from '../hooks/useRecurringRuleNames';
 import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
@@ -14,13 +15,14 @@ import { useTransactionListScreen } from '../hooks/useTransactionListScreen';
 import { PERIODS, type RootStackParamList, type NavigationProp, type IconName } from '../constants/types';
 import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
-import { formatSignedCurrency, formatDateLong, parseDbDate, getMonthName } from '../utils/formatters';
+import { formatSignedCurrency, formatDateLong, parseDbDate, getMonthName, HIDDEN_BALANCE } from '../utils/formatters';
 import { netTransactionTotal } from '../utils/calculator';
 import { withAlpha } from '../utils/color';
 import { showErrorAlert } from '../utils/errors';
 import { isWeb } from '../utils/platform';
 import { getDisplayCategoryName, t } from '../i18n';
 import AccountTrigger from '../components/AccountTrigger';
+import EyeToggle from '../components/EyeToggle';
 import SortToggle, { transactionSortFields } from '../components/SortToggle';
 import RecurringViewChip from '../components/RecurringViewChip';
 import Fab from '../components/Fab';
@@ -35,6 +37,7 @@ export default function TransactionsScreen() {
   const { categories, categoriesById, accounts, activeAccount, accountsWithBalance, tags, refresh } = useApp();
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
+  const { isBalanceHidden, toggleReveal } = useBalanceVisibility(config.hideBalances);
   const labels = t();
   const recurringNames = useRecurringRuleNames();
 
@@ -150,9 +153,12 @@ export default function TransactionsScreen() {
                 {getDisplayCategoryName(category)}
               </Text>
             </View>
-            <Text style={[styles.categoryTotal, { color: categoryTotal >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
-              {formatSignedCurrency(categoryTotal, config.currency, config.decimalSeparator)}
-            </Text>
+            <View style={styles.categoryTotalRow}>
+              <Text style={[styles.categoryTotal, { color: isBalanceHidden ? c.textSecondary : categoryTotal >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
+                {isBalanceHidden ? HIDDEN_BALANCE : formatSignedCurrency(categoryTotal, config.currency, config.decimalSeparator)}
+              </Text>
+              <EyeToggle isHidden={isBalanceHidden} onToggle={toggleReveal} color={c.textSecondary} />
+            </View>
             {periodLabel ? (
               <Text style={[styles.categoryPeriod, { color: c.textSecondary, fontSize: fs(13) }]}>
                 {periodLabel}
@@ -216,6 +222,11 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   categoryName: { fontWeight: '600' },
+  categoryTotalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   categoryTotal: { fontWeight: '700' },
   categoryPeriod: { marginTop: 2, textAlign: 'center' },
   controlsRow: {
