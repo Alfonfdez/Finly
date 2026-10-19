@@ -230,8 +230,8 @@ export function useTransactionForm({
 
   const numericAmount = useMemo(() => parseAmountValue(amountRaw), [amountRaw]);
 
-  /** Whether the draft differs from what is stored (see `baseline`). */
-  const isDirty = useMemo(() => (
+  /** Whether the transaction fields differ from what is stored (see `baseline`). */
+  const transactionDirty = useMemo(() => (
     type !== baseline.type ||
     numericAmount !== baseline.amount ||
     accountId !== baseline.accountId ||
@@ -242,6 +242,37 @@ export function useTransactionForm({
     photos.length !== baseline.photos.length ||
     photos.some((p, i) => p !== baseline.photos[i])
   ), [type, numericAmount, accountId, categoryId, day, comment, selectedTags, photos, baseline]);
+
+  /**
+   * Rule mode only: whether the recurring draft differs from the loaded rule — the
+   * name (trimmed, as it is stored), frequency, interval, end date and the last-day
+   * anchor. Without these an editor that only changes the rule would keep Save
+   * disabled, since they are not transaction fields.
+   */
+  const ruleDraftChanged = useMemo(() => {
+    if (!ruleMode) return false;
+    const initialEnd = initialRepeatEnd ? toDateOnly(initialRepeatEnd) : null;
+    const currentEnd = repeatEnd ? toDateOnly(repeatEnd) : null;
+    // The flag is cleared when the start date makes the control hidden, so compare
+    // against the effective initial intent: a 31-based last-day rule reads as
+    // "not last day" on load and must not look changed.
+    const initialLastDay = (initialRepeatLastDay ?? false)
+      && lastDayAnchorUseful(initialRepeatFrequency ?? repeatFrequency, initialDay);
+    return (
+      repeatName.trim() !== (initialRepeatName ?? '').trim() ||
+      repeatFrequency !== (initialRepeatFrequency ?? repeatFrequency) ||
+      repeatInterval !== (initialRepeatInterval ?? repeatInterval) ||
+      currentEnd !== initialEnd ||
+      repeatLastDay !== initialLastDay
+    );
+  }, [
+    ruleMode, repeatName, initialRepeatName, repeatFrequency, initialRepeatFrequency,
+    repeatInterval, initialRepeatInterval, repeatEnd, initialRepeatEnd,
+    repeatLastDay, initialRepeatLastDay, initialDay,
+  ]);
+
+  /** Whether the draft differs from what is stored (see `baseline`). */
+  const isDirty = transactionDirty || ruleDraftChanged;
 
   const canSubmit = useMemo(() => {
     if (categoryId === null) return false;

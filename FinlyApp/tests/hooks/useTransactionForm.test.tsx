@@ -4,7 +4,7 @@ import { renderHook, act } from '@testing-library/react-native';
 import { useTransactionForm, type TransactionDraft, type RecurrenceDraft } from '../../src/hooks/useTransactionForm';
 import { buildAppMock, getAppStub, setAppData, resetAppStub } from '../component/helpers/appStub';
 import type { Account, Category, Tag } from '../../src/database/types';
-import type { TransactionType, RecurrenceFrequency } from '../../src/constants/types';
+import type { TransactionType, RecurrenceFrequency, RecurrenceScope } from '../../src/constants/types';
 import { setConfig, resetStub } from '../component/helpers/configStub';
 import { setPendingCategory } from '../../src/utils/pendingCategory';
 
@@ -33,6 +33,8 @@ interface UseTransactionFormProps {
   initialRepeatName?: string;
   initialRepeatLastDay?: boolean;
   existingRepeatNames?: string[];
+  editing?: boolean;
+  repeatScope?: RecurrenceScope;
 }
 
 const mockGetCategoryUsageCounts = vi.fn(
@@ -487,5 +489,100 @@ describe('useTransactionForm', () => {
 
     await act(async () => { result.current.handleSelectDate(new Date(2027, 4, 15)); });
     expect(result.current.repeatLastDay).toBe(false);
+  });
+
+  describe('rule edit save gate', () => {
+    const ruleProps: Partial<UseTransactionFormProps> = {
+      ruleMode: true,
+      editing: true,
+      initialAmount: '10',
+      initialRepeatFrequency: 'monthly',
+      initialRepeatInterval: 2,
+      initialRepeatEnd: new Date(2026, 11, 31),
+      initialRepeatName: 'Rent',
+      initialRepeatLastDay: false,
+      existingRepeatNames: [],
+    };
+
+    it('keeps Save disabled while the rule draft matches the loaded rule', async () => {
+      const { result } = await setup(ruleProps);
+      await act(async () => {});
+
+      expect(result.current.isDirty).toBe(false);
+      expect(result.current.canSubmit).toBe(false);
+    });
+
+    it('enables Save for every rule field and disables it again when reverted', async () => {
+      const { result } = await setup(ruleProps);
+      await act(async () => {});
+
+      await act(async () => { result.current.setRepeatName('Rent 2'); });
+      expect(result.current.canSubmit).toBe(true);
+      await act(async () => { result.current.setRepeatName('Rent'); });
+      expect(result.current.canSubmit).toBe(false);
+
+      await act(async () => { result.current.setRepeatFrequency('weekly'); });
+      expect(result.current.canSubmit).toBe(true);
+      await act(async () => { result.current.setRepeatFrequency('monthly'); });
+      expect(result.current.canSubmit).toBe(false);
+
+      await act(async () => { result.current.setRepeatInterval(3); });
+      expect(result.current.canSubmit).toBe(true);
+      await act(async () => { result.current.setRepeatInterval(2); });
+      expect(result.current.canSubmit).toBe(false);
+
+      await act(async () => { result.current.setRepeatEnd(new Date(2027, 0, 31)); });
+      expect(result.current.canSubmit).toBe(true);
+      await act(async () => { result.current.setRepeatEnd(new Date(2026, 11, 31)); });
+      expect(result.current.canSubmit).toBe(false);
+    });
+
+    it('ignores surrounding whitespace in the rule name', async () => {
+      const { result } = await setup(ruleProps);
+      await act(async () => {});
+
+      await act(async () => { result.current.setRepeatName('  Rent  '); });
+      expect(result.current.isDirty).toBe(false);
+      expect(result.current.canSubmit).toBe(false);
+    });
+
+    it('counts ticking the last-day checkbox on a month-end date', async () => {
+      const { result } = await setup({
+        ...ruleProps,
+        initialDay: new Date(2027, 1, 28),
+        initialRepeatEnd: null,
+      });
+      await act(async () => {});
+
+      await act(async () => { result.current.setRepeatLastDay(true); });
+      expect(result.current.isDirty).toBe(true);
+      expect(result.current.canSubmit).toBe(true);
+
+      await act(async () => { result.current.setRepeatLastDay(false); });
+      expect(result.current.canSubmit).toBe(false);
+    });
+
+    it('does not report a hidden last-day rule as changed on load', async () => {
+      // A 31-based rule is last-day, but the control is hidden on the 31st: the flag
+      // is cleared on load, and the rule must still look untouched.
+      const { result } = await setup({
+        ...ruleProps,
+        initialDay: new Date(2026, 0, 31),
+        initialRepeatLastDay: true,
+      });
+      await act(async () => {});
+
+      expect(result.current.repeatLastDay).toBe(false);
+      expect(result.current.isDirty).toBe(false);
+      expect(result.current.canSubmit).toBe(false);
+    });
+
+    it('allows a scope-only save', async () => {
+      const { result } = await setup({ ...ruleProps, repeatScope: 'futureAndPast' });
+      await act(async () => {});
+
+      expect(result.current.isDirty).toBe(false);
+      expect(result.current.canSubmit).toBe(true);
+    });
   });
 });

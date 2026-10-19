@@ -313,4 +313,45 @@ describe('ModifyRecurringScreen', () => {
     await fireEvent.press(view.getByRole('button', { name: 'Future only' }));
     expect(view.getByText('Save')).toBeDisabled();
   });
+
+  it('enables Save for each rule-only change and disables it again when reverted', async () => {
+    const view = await render(<ModifyRecurringScreen />);
+    await waitFor(() => expect(view.getByText('Future + past')).toBeTruthy());
+    expect(view.getByText('Save')).toBeDisabled();
+
+    const nameInput = view.getByDisplayValue('Rent');
+    await fireEvent.changeText(nameInput, 'Rent 2');
+    await waitFor(() => expect(view.getByText('Save')).toBeEnabled());
+    await fireEvent.changeText(nameInput, 'Rent');
+    await waitFor(() => expect(view.getByText('Save')).toBeDisabled());
+
+    await fireEvent.press(view.getByRole('button', { name: 'Weekly' }));
+    await waitFor(() => expect(view.getByText('Save')).toBeEnabled());
+    await fireEvent.press(view.getByRole('button', { name: 'Monthly' }));
+    await waitFor(() => expect(view.getByText('Save')).toBeDisabled());
+
+    await fireEvent.press(view.getByRole('button', { name: '+' }));
+    await waitFor(() => expect(view.getByText('Save')).toBeEnabled());
+    await fireEvent.press(view.getByRole('button', { name: '-' }));
+    await waitFor(() => expect(view.getByText('Save')).toBeDisabled());
+  });
+
+  it('enables Save when the last-day checkbox changes on a month-end start', async () => {
+    mockGetById.mockResolvedValue({
+      ...rule,
+      day_of_month: 30,
+      start_date: '2026-04-30',
+      next_due: '2026-05-30',
+    });
+
+    const view = await render(<ModifyRecurringScreen />);
+    await waitFor(() => expect(view.getByText('Last day of the month')).toBeTruthy());
+    expect(view.getByText('Save')).toBeDisabled();
+
+    await fireEvent.press(view.getByText('Last day of the month'));
+    await waitFor(() => expect(view.getByText('Save')).toBeEnabled());
+
+    await fireEvent.press(view.getByText('Last day of the month'));
+    await waitFor(() => expect(view.getByText('Save')).toBeDisabled());
+  });
 });
