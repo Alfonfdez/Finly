@@ -4073,3 +4073,9 @@
 - Recurrence previews expose whether the backlog was truncated, and the Summary shows the warning instead of a capped count; existing rules that were behind finish catching up on the next launch.
 - Tests: preview truncation and exact counts, the warning line (create and Future + past), the form hint/disabled Save, the service rejection, and a 4,481-occurrence single-run backfill.
 - Gate: `npm run test:all` green (155 files / 1277 tests).
+
+[2026-10-19] fix | FinlyApp/src/database/backup.ts, FinlyApp/src/database/backupService.ts, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/src/i18n (9 files), FinlyApp/tests/database/backup.test.ts, FinlyApp/tests/screens/DataScreen.test.tsx, spec/features/025-data-backup/1-spec.md, spec/constitution/3-roadmap.md
+- Importing a valid-JSON backup that is missing the data the app needs (no user, no account, or no expense/income category) is now rejected **before any write** with a dedicated "Incomplete backup" alert; previously such a file imported and left the app unable to create categories (the missing `users` row made the insert fail with an FK error) until the next launch self-healed it.
+- The check (`assertImportableBackup`) runs in `importBackup` after the version check and before `applyBackup`, so the current data is untouched; a genuine export always satisfies it (one user, one account, one category per type).
+- New i18n keys `settings_import_incomplete_title` / `settings_import_incomplete_message` in the 9 languages; the corrupt-file case keeps the existing "Invalid backup" message.
+- Tests: the pure completeness check (valid + each missing row), an import test asserting the data dump is unchanged, and the Data screen alert branch.

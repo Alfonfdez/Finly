@@ -10,6 +10,7 @@ import {
   BACKUP_VALIDATION_CODES,
   BackupValidationError,
   applyBackup,
+  assertImportableBackup,
   buildBackup,
   parseBackup,
   serializeBackup,
@@ -259,6 +260,30 @@ describe('backup validation', () => {
     expect(() => parseBackup(bad)).toThrow(BackupValidationError);
   });
 
+  it('accepts a complete snapshot and rejects one missing the required rows', async () => {
+    const db = await boot();
+    const snapshot = await buildBackup(db, SCHEMA_VERSION);
+    db.close();
+
+    expect(() => assertImportableBackup(snapshot)).not.toThrow();
+
+    const expectIncomplete = (mutate: (copy: typeof snapshot) => void) => {
+      const copy = structuredClone(snapshot);
+      mutate(copy);
+      try {
+        assertImportableBackup(copy);
+        throw new Error('expected to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(BackupValidationError);
+        expect((error as BackupValidationError).code).toBe('incomplete');
+      }
+    };
+
+    expectIncomplete(copy => { copy.data.users = []; });
+    expectIncomplete(copy => { copy.data.accounts = []; });
+    expectIncomplete(copy => { copy.data.categories = copy.data.categories.filter(c => c.type !== 'expense'); });
+    expectIncomplete(copy => { copy.data.categories = copy.data.categories.filter(c => c.type !== 'income'); });
+  });
   it('rolls back on an FK-violating snapshot and leaves existing data unchanged', async () => {
     const source = await boot();
     const snapshot = await buildBackup(source, SCHEMA_VERSION);
@@ -348,6 +373,17 @@ describe('backup facades', () => {
     expect(await countRows(db, 'accounts')).toBe(before);
   });
 
+  it('rejects an incomplete backup before touching the data', async () => {
+    const db = dbHolder.db as SqlJsDatabase;
+    const before = await dump(db);
+
+    await expect(importBackup(snapshotWith())).rejects.toMatchObject({
+      name: 'BackupValidationError',
+      code: 'incomplete',
+    });
+
+    expect(await dump(db)).toEqual(before);
+  });
   it('round-trips through exportBackup/importBackup', async () => {
     const db = dbHolder.db as SqlJsDatabase;
     const before = await countRows(db, 'transactions');
@@ -366,6 +402,7 @@ describe('backup facades', () => {
       invalidJson: 'invalid_json',
       invalidFormat: 'invalid_format',
       newerVersion: 'newer_version',
+      incomplete: 'incomplete',
     });
   });
 });

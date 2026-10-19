@@ -54,6 +54,8 @@ export const eu: Language = {
   settings_import_error_message: 'Ezin izan da babeskopia fitxategia inportatu. Zure datuak ez dira aldatu.',
   settings_import_invalid_title: 'Babeskopia baliogabea',
   settings_import_invalid_message: 'Hautatutako fitxategia ez da Finly babeskopia baliodun bat.',
+  settings_import_incomplete_title: 'Babes-kopia osatugabea',
+  settings_import_incomplete_message: 'Babes-kopia honi Finlyk behar dituen datuak falta zaizkio. Aukeratu Finlyk esportatutako babes-kopia bat.',
   settings_import_newer_title: 'Babeskopia berriagoa',
   settings_import_newer_message: 'Babeskopia hau Finly bertsio berriago batekin sortu zen. Eguneratu aplikazioa inportatzeko.',
   settings_delete_all_transactions: 'Transakzio guztiak ezabatu',

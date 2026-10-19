@@ -167,6 +167,8 @@ export default function DataScreen() {
       if (error instanceof BackupValidationError) {
         if (error.code === BACKUP_VALIDATION_CODES.newerVersion) {
           alertError(labels.settings_import_newer_title, labels.settings_import_newer_message);
+        } else if (error.code === BACKUP_VALIDATION_CODES.incomplete) {
+          alertError(labels.settings_import_incomplete_title, labels.settings_import_incomplete_message);
         } else {
           alertError(labels.settings_import_invalid_title, labels.settings_import_invalid_message);
         }

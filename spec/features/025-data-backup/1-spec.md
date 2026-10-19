@@ -63,6 +63,7 @@
 - Import uses the same serialized transaction queue as reconciliation (`runExclusiveDb`), so it can never interleave with a catch-up run; the Data screen keeps the confirmation dialog open (spinner, no cancel, no second confirm) until the import settles.
 - On success the app state is reloaded: `resetAll()` (accounts/categories/tags/transactions) and `updateConfig(await configRepository.get())` so theme, language, currency, and default selections reflect the backup.
 - Failure (invalid file, wrong version, schema violation) shows an error and leaves data untouched.
+- **Incomplete snapshots are rejected before any write**: a backup must contain at least one user, one account, and one expense + one income category (a genuine export always does - the app cannot work without them). It fails with the dedicated "Incomplete backup" alert instead of importing and leaving the app unusable (previously the empty `users` table made category creation fail with an FK error until the next launch self-healed it).
 
 ### 5. UI (DataScreen)
 
@@ -92,6 +93,7 @@
 - [x] A transaction's photos (file URIs on native / data URIs on web) survive an export → import round-trip.
 - [x] Import is gated by an explicit confirmation modal.
 - [x] An invalid / corrupt / wrong-version / future-schema backup is rejected with an error and existing data is unchanged (transaction rollback).
+- [x] A valid backup that is missing the required rows (users, accounts, or a category of each type) is rejected as "incomplete" before any write, with the current data untouched.
 - [x] After a successful import, app state and config (theme, language, currency, balances) reflect the backup.
 - [x] All texts are multilingual (en/es/ca) and the screen respects theme and text size.
 - [x] Export feedback is never false (unit-tested): Android saves to Downloads (`MediaStore` via `finly-share`) and alerts; the Share action is optional and its outcome is not reported; iOS reports the real share-sheet outcome (success vs cancel); failures show the error alert; Import shows no modal when the file picker is cancelled.

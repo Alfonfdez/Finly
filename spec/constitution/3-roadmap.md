@@ -1046,3 +1046,14 @@ Edge-case fix found while testing 2.2.0 on device, applied 2026-10-19:
 - Gate: `npm run test:all` green (155 files / 1277 tests); blocked case verified in the browser.
 
 Spec: spec/features/028-recurring-transactions/.
+
+## Import: reject incomplete backups
+Status: completed.
+
+Edge case found after the self-heal test, applied 2026-10-19:
+- A parsed backup that is valid JSON/schema but incomplete (no user, no account, or no expense + income category) is now rejected **before any write**. A genuine export always contains them; importing an empty file left the app unable to create categories (the missing `users` row failed the FK) until the next-launch self-heal.
+- `assertImportableBackup` (pure, in `backup.ts`) runs inside `importBackup` after the newer-version check and before `applyBackup`, so the current data is untouched and the user sees a dedicated "Incomplete backup" alert (title + message, 9 languages) instead of the corrupt-file "Invalid backup".
+- Tests: the pure check (valid + empty users/accounts/missing category type), an import facade test asserting the data dump is unchanged, and the Data screen branch.
+- Gate: `npm run test:all` green; verified in the browser (empty backup rejected, real backup imports).
+
+Spec: spec/features/025-data-backup/.
