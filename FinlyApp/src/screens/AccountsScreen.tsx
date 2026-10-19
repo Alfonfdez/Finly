@@ -21,7 +21,7 @@ import { formatAmount, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/for
 import { withAlpha } from '../utils/color';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { matchesAccountSearch } from '../utils/accountSearch';
-import { type NavigationProp, USER_ID } from '../constants/types';
+import { type NavigationProp, USER_ID, ACCOUNT_SORT_BY, SORT_DIRECTIONS, type AccountSortBy, type SortDirection } from '../constants/types';
 import { TEST_IDS } from '../constants/testIds';
 import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import EyeToggle from '../components/EyeToggle';
@@ -33,11 +33,12 @@ import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
+import SortRow from '../components/SortRow';
+import SortToggle, { accountSortFields } from '../components/SortToggle';
 import ConfirmationModal from '../components/ConfirmationModal';
 import GuardModal from '../components/GuardModal';
 import { CARD_BORDER_RADIUS } from '../components/componentStyles';
-
-type AccountWithBalance = Account & { balance: number };
+import { defaultAccountSortDirection, sortAccounts, type AccountWithBalance } from '../utils/accountSort';
 
 export default function AccountsScreen() {
   const { activeColors: c, config, updateConfig } = useConfig();
@@ -49,6 +50,8 @@ export default function AccountsScreen() {
   const [accounts, setAccounts] = useState<AccountWithBalance[]>([]);
   const [total, setTotal] = useState(0);
   const [guardVisible, setGuardVisible] = useState(false);
+  const [sortBy, setSortBy] = useState<AccountSortBy>(ACCOUNT_SORT_BY.name);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(SORT_DIRECTIONS.asc);
   const { isBalanceHidden, toggleReveal } = useBalanceVisibility(config.hideBalances);
 
   const nonTotalCount = useMemo(
@@ -110,10 +113,28 @@ export default function AccountsScreen() {
     return accounts.filter(a => isTotalAccount(a) || matchesAccountSearch(a, searchText));
   }, [accounts, searchText]);
 
-  const visibleIds = useMemo(
-    () => filteredAccounts.filter(a => !isTotalAccount(a)).map(a => a.id),
-    [filteredAccounts],
+  const visibleAccounts = useMemo(
+    () => sortAccounts(filteredAccounts, sortBy, sortDirection),
+    [filteredAccounts, sortBy, sortDirection],
   );
+
+  const visibleIds = useMemo(
+    () => visibleAccounts.filter(a => !isTotalAccount(a)).map(a => a.id),
+    [visibleAccounts],
+  );
+
+  const handleToggleSort = useCallback((field: AccountSortBy) => {
+    if (field === sortBy) {
+      setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
+    } else {
+      setSortBy(field);
+      setSortDirection(defaultAccountSortDirection(field));
+    }
+  }, [sortBy]);
+
+  const handleToggleDirection = useCallback(() => {
+    setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
+  }, []);
 
   const handleDeletePress = useCallback(() => {
     if (selectedIds.size >= nonTotalCount) {
@@ -246,6 +267,16 @@ export default function AccountsScreen() {
         onClose={closeSearch}
       />
 
+      <SortRow bordered>
+        <SortToggle
+          fields={accountSortFields(labels)}
+          sortBy={sortBy}
+          direction={sortDirection}
+          onToggleSort={handleToggleSort}
+          onToggleDirection={handleToggleDirection}
+        />
+      </SortRow>
+
       {selectMode && visibleIds.length > 0 && (
         <SelectAllRow
           allSelected={select.allSelected(visibleIds)}
@@ -256,10 +287,10 @@ export default function AccountsScreen() {
         />
       )}
 
-      <ListOrEmpty empty={filteredAccounts.length === 0} emptyState={renderEmpty()}>
+      <ListOrEmpty empty={visibleAccounts.length === 0} emptyState={renderEmpty()}>
         <FlatList
           testID={TEST_IDS.accountsList}
-          data={filteredAccounts}
+          data={visibleAccounts}
           keyExtractor={(item) => String(item.id)}
           renderItem={renderItem}
           ListFooterComponent={searchingNoResults ? renderSearchFooter : null}

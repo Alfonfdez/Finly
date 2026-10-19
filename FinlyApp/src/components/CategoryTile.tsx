@@ -18,6 +18,8 @@ interface Props {
   label: string;
   selected?: boolean;
   checkmark?: boolean;
+  /** Lifetime usage shown as a small badge over the icon (Categories screen). */
+  count?: number;
   dashed?: boolean;
   onPress: () => void;
   accessibilityLabel?: string;
@@ -31,6 +33,7 @@ function CategoryTile({
   label,
   selected = false,
   checkmark = false,
+  count,
   dashed = false,
   onPress,
   accessibilityLabel,
@@ -71,6 +74,11 @@ function CategoryTile({
             <Ionicons name="checkmark" size={12} color={c.background} />
           </View>
         )}
+        {count != null && count > 0 && (
+          <View style={[styles.countBadge, { backgroundColor: c.background, borderColor: c.border }]}>
+            <Text style={{ color: c.textSecondary, fontSize: fs(9), fontWeight: '700' }}>{count}</Text>
+          </View>
+        )}
       </View>
       <Text
         style={[styles.name, { color: dashed ? c.textSecondary : c.text, fontSize: fs(11) }]}
@@ -108,6 +116,18 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  countBadge: {
+    position: 'absolute',
+    top: -4,
+    left: -8,
+    minWidth: 16,
+    height: 16,
+    paddingHorizontal: 4,
+    borderRadius: 8,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },

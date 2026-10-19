@@ -197,6 +197,8 @@ export const gl: Language = {
   // Add category
   add_cat_title: 'Engadir categoría',
   add_cat_search: 'Buscar categoría',
+  categories_sort_name: 'Nome',
+  categories_sort_usage: 'Uso',
   add_cat_no_results: 'Non se encontrou nada',
   add_cat_create: 'Crear',
 
@@ -316,6 +318,8 @@ export const gl: Language = {
   accounts_total: 'Total',
   accounts_empty: 'Non hai contas',
   accounts_search: 'Buscar contas',
+  accounts_sort_name: 'Nome',
+  accounts_sort_balance: 'Saldo',
   modify_account_title: 'Modificar conta',
   modify_account_name: 'Nome da conta',
   modify_account_initial_balance: 'Saldo inicial',

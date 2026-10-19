@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { StyleSheet } from 'react-native';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { useState, type ReactNode } from 'react';
 import CategoriesScreen from '../../src/screens/CategoriesScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
-import { MAX_CATEGORIES_PER_TYPE } from '../../src/constants/types';
+import { MAX_CATEGORIES_PER_TYPE, OTHERS_CATEGORY_ID } from '../../src/constants/types';
 import { TEST_IDS } from '../../src/constants/testIds';
 import type { Category } from '../../src/database/types';
 
@@ -101,6 +101,28 @@ describe('CategoriesScreen', () => {
     expect(view.getByText('2 of 30 categories')).toBeTruthy();
   });
 
+  it('sorts by usage with the count on each tile and keeps Others last', async () => {
+    setAppData({
+      categories: [
+        expenseCategory(1, 'Food'),
+        expenseCategory(2, 'Transport'),
+        expenseCategory(OTHERS_CATEGORY_ID, 'Others'),
+      ],
+    });
+    mockCountByCategoryIdsMap.mockResolvedValue({ 1: 7, [OTHERS_CATEGORY_ID]: 99 });
+    const view = await render(<CategoriesScreen />);
+    await view.findByText('Food');
+
+    // Lifetime usage is shown on the tiles; zero counts are hidden.
+    await waitFor(() => expect(view.getByText('7')).toBeTruthy());
+    expect(view.queryByText('0')).toBeNull();
+
+    await fireEvent.press(view.getByText('Usage'));
+    await waitFor(() => {
+      const names = view.getAllByText(/^(Food|Transport|Others)$/).map(node => String(node.props.children));
+      expect(names).toEqual(['Food', 'Transport', 'Others']);
+    });
+  });
   it('flags the counter once the per-type limit is reached', async () => {
     setAppData({
       categories: Array.from({ length: MAX_CATEGORIES_PER_TYPE }, (_, i) => expenseCategory(i + 1, `Cat ${i + 1}`)),

@@ -3,8 +3,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import {
-  SORT_BY, SORT_DIRECTIONS, RECURRING_SORT_BY, TAG_SORT_BY, COMMENT_SORT_BY,
-  type SortBy, type SortDirection, type RecurringSortBy, type TagSortBy, type CommentSortBy, type IconName,
+  SORT_BY, SORT_DIRECTIONS, RECURRING_SORT_BY, TAG_SORT_BY, COMMENT_SORT_BY, ACCOUNT_SORT_BY, CATEGORY_SORT_BY,
+  type SortBy, type SortDirection, type RecurringSortBy, type TagSortBy, type CommentSortBy, type AccountSortBy, type CategorySortBy, type IconName,
 } from '../constants/types';
 
 export interface SortField<T extends string> {
@@ -65,6 +65,26 @@ export function commentSortFields(labels: {
     { key: COMMENT_SORT_BY.name, label: labels.comments_sort_name },
     { key: COMMENT_SORT_BY.lastUsed, label: labels.comments_sort_last_used },
     { key: COMMENT_SORT_BY.usage, label: labels.comments_sort_usage },
+  ];
+}
+
+export function accountSortFields(labels: {
+  accounts_sort_name: string;
+  accounts_sort_balance: string;
+}): SortField<AccountSortBy>[] {
+  return [
+    { key: ACCOUNT_SORT_BY.name, label: labels.accounts_sort_name },
+    { key: ACCOUNT_SORT_BY.balance, label: labels.accounts_sort_balance },
+  ];
+}
+
+export function categorySortFields(labels: {
+  categories_sort_name: string;
+  categories_sort_usage: string;
+}): SortField<CategorySortBy>[] {
+  return [
+    { key: CATEGORY_SORT_BY.name, label: labels.categories_sort_name },
+    { key: CATEGORY_SORT_BY.usage, label: labels.categories_sort_usage },
   ];
 }
 

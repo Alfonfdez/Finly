@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { LIMIT_TEXT_STYLE } from '../components/componentStyles';
@@ -19,13 +19,16 @@ import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import ListOrEmpty from '../components/ListOrEmpty';
 import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
+import SortRow from '../components/SortRow';
+import SortToggle, { categorySortFields } from '../components/SortToggle';
 import ConfirmationModal from '../components/ConfirmationModal';
 import BulkCategoryTransferModal, { type BulkCategoryItem } from '../components/BulkCategoryTransferModal';
 import type { TransferTargetId } from '../components/CategoryTransferModal';
-import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, type TransactionType, type NavigationProp } from '../constants/types';
+import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, CATEGORY_SORT_BY, SORT_DIRECTIONS, type TransactionType, type CategorySortBy, type SortDirection, type NavigationProp } from '../constants/types';
 import { LIST_BOTTOM_FAB_PADDING, LIST_TOP_GAP } from '../constants/layout';
 import { TEST_IDS } from '../constants/testIds';
-import { sortCategoriesWithOthersLast, categoriesOfType, countCategoriesOfType } from '../utils/categoryUtils';
+import { categoriesOfType, countCategoriesOfType } from '../utils/categoryUtils';
+import { defaultCategorySortDirection, sortCategories } from '../utils/categorySort';
 import { countAtLimit } from '../utils/limits';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import SelectSearchHeader from '../components/SelectSearchHeader';
@@ -45,9 +48,38 @@ export default function CategoriesScreen() {
   const [deleteHasData, setDeleteHasData] = useState(false);
   const [decisions, setDecisions] = useState<Record<number, TransferTargetId | null>>({});
 
+  const [sortBy, setSortBy] = useState<CategorySortBy>(CATEGORY_SORT_BY.name);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(SORT_DIRECTIONS.asc);
+  const [usage, setUsage] = useState<ReadonlyMap<number, number>>(() => new Map());
+
+  // Lifetime usage per category, used by the "Usage" sort and the tile count.
+  useEffect(() => {
+    let active = true;
+    transactionRepository.countByCategoryIdsMap(categories.map(category => category.id))
+      .then((counts) => {
+        if (!active) return;
+        setUsage(new Map(Object.entries(counts).map(([id, count]) => [Number(id), Number(count)])));
+      })
+      .catch(() => { if (active) setUsage(new Map()); });
+    return () => { active = false; };
+  }, [categories]);
+
   const categoriesByType = useMemo(() => {
-    return sortCategoriesWithOthersLast(categoriesOfType(categories, activeType));
-  }, [categories, activeType]);
+    return sortCategories(categoriesOfType(categories, activeType), sortBy, sortDirection, usage);
+  }, [categories, activeType, sortBy, sortDirection, usage]);
+
+  const handleToggleSort = useCallback((field: CategorySortBy) => {
+    if (field === sortBy) {
+      setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
+    } else {
+      setSortBy(field);
+      setSortDirection(defaultCategorySortDirection(field));
+    }
+  }, [sortBy]);
+
+  const handleToggleDirection = useCallback(() => {
+    setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
+  }, []);
 
   const select = useSelectAndSearch({ hasItems: categoriesByType.length > 1 });
 
@@ -172,6 +204,16 @@ export default function CategoriesScreen() {
           </CharCounter>
         )}
 
+        <SortRow bordered>
+          <SortToggle
+            fields={categorySortFields(labels)}
+            sortBy={sortBy}
+            direction={sortDirection}
+            onToggleSort={handleToggleSort}
+            onToggleDirection={handleToggleDirection}
+          />
+        </SortRow>
+
         {selectMode && visibleIds.length > 0 && (
           <SelectAllRow
             allSelected={select.allSelected(visibleIds)}
@@ -193,6 +235,7 @@ export default function CategoriesScreen() {
           >
             <CategoryGrid
               categories={filteredCategories}
+              counts={usage}
               selectedCategory={null}
               selectedIds={selectMode ? selectedIds : undefined}
               onSelect={(id) => {

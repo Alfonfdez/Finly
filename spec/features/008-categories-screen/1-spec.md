@@ -46,7 +46,14 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 - Matching is case-insensitive and by characters contained in the category's display name in the current language (via `getDisplayCategoryName`), so default categories are searchable by their translated name in the active language only. Multi-word terms must all be contained in the name.
 - When a search returns no results, the empty state shows a search icon + "No results found" (reuse `add_cat_no_results`).
 
-### 6. Multi-select bulk delete
+### 6. Tile usage count and sort
+
+- A `SortToggle` sits in a `SortRow` below the search controls with two fields: **Name** (`categories_sort_name`, default, ascending) and **Usage** (`categories_sort_usage`, descending on the first press). Pressing the active field flips the direction; the arrow next to it flips it too.
+- Usage is the **lifetime number of transactions** in the category (`transactionRepository.countByCategoryIdsMap`, all accounts). It is shown as a small gray count badge over each tile icon; a zero count hides the badge. The tile accessibility label appends the count.
+- The fallback categories **Others**/**Other** stay pinned last in both modes (catch-all options), and the Expense/Income tabs, search and multi-select keep working on the sorted subset.
+- Ties break by display name (`getDisplayCategoryName`), then id.
+
+### 7. Multi-select bulk delete
 
 - The header shows a "Select" (`categories_select`) text button next to the search icon, only when the active type has at least one category; pressing it toggles selection mode (label switches to "Done", `categories_select_done`).
 - In selection mode each tile shows a checkmark and tapping toggles its selection instead of navigating to Modify category; the "Create" tile, the limit message and the counter are hidden; the header search keeps filtering during selection.
@@ -90,6 +97,7 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 - [x] Typing filters the active type's categories by the current-language display name (case-insensitive, multi-term).
 - [x] Closing the search restores the full grid.
 - [x] A search with no matches shows a search icon + "No results found".
+- [x] A sort toggle sorts the active type by Name (default, ascending) or Usage (descending on the first press); each tile shows its lifetime transaction count (hidden when 0), the direction flips when the active field or the arrow is pressed, and Others/Other stay last.
 - [x] "Select" in the header enters selection mode (shown only when the active type has categories); tiles show checkmarks and tapping toggles selection instead of navigating.
 - [x] In selection mode the "Create" tile, the limit message and the counter are hidden; the action bar shows `Delete (N)` with the selected count and is disabled when nothing is selected.
 - [x] A Select all / Deselect all row above the grid selects every visible category in one tap.
