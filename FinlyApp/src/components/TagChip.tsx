@@ -29,8 +29,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: MODAL_BORDER_RADIUS,
+    // Never wider than the container: an over-long name ellipsizes (numberOfLines)
+    // instead of overflowing and being clipped by the card.
+    maxWidth: '100%',
+    flexShrink: 1,
   },
   text: {
     fontWeight: '500',
+    flexShrink: 1,
   },
 });

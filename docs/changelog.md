@@ -4059,3 +4059,10 @@
 - No stored data changed: inserts never set `created_at` (the column default `datetime('now','localtime')` already applied), so this is a display fix with no migration; spec 016 §7 was corrected (it had codified the wrong field).
 - Tests: the details fixture now uses distinct `date`/`created_at`/`updated_at` values and asserts both footer lines plus the Date row; a database test proves a backdated insert stores `created_at` as today.
 - Gate: `npm run test:all` green.
+
+[2026-10-19] fix | FinlyApp/src/components/DataRow.tsx, FinlyApp/src/components/TagChip.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/constants/testIds.ts, FinlyApp/tests/component/DataRow.test.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, spec/features/016-transaction-details-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Transaction-details rows now top-align the label with the first line of the value: a long comment (up to 4096 characters) or a block of tag chips no longer leaves "Comment"/"Tags" floating in the middle of the block.
+- The tag chips container takes the value column (`flex: 2`), so with many tags the chips wrap and right-align inside it instead of demanding the full row width and collapsing the label to zero size; every tag is shown and the card grows (the screen scrolls).
+- `TagChip` is capped to its container and can shrink, so an over-long tag name ellipsizes instead of being clipped by the card edge.
+- Tests: a `DataRow` suite (top alignment) and a details case with 12 long tags plus a long comment (both labels present, all chips rendered, value column `flex: 2`).
+- Gate: `npm run test:all` green.
