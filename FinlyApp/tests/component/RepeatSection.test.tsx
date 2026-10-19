@@ -92,7 +92,8 @@ describe('RepeatSection', () => {
     expect(v.getByTestId(TEST_IDS.repeatName).props.maxLength).toBe(45);
   });
 
-  it('increments and decrements the interval', async () => {    const { props, view } = renderSection({ interval: 3 });
+  it('increments and decrements the interval', async () => {
+    const { props, view } = renderSection({ interval: 3 });
     const v = await view;
     await fireEvent.press(v.getByLabelText('+'));
     expect(props.onChangeInterval).toHaveBeenCalledWith(4);

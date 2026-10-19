@@ -18,7 +18,6 @@ import { WHITE } from '../constants/themes';
 import ModalShell from './ModalShell';
 import ModalFooter from './ModalFooter';
 
-
 interface Props {
   visible: boolean;
   onAccept: (result: string) => void;

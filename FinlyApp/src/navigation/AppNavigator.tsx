@@ -117,7 +117,7 @@ function openDrawerScreen(navigation: DrawerContentComponentProps['navigation'],
         CommonActions.reset({
           index: 0,
           routes: [{ name: screen as keyof RootStackParamList }],
-        })
+        }),
       );
     }
     navigation.closeDrawer();
@@ -160,7 +160,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
               icon={item.icon}
               onPress={() => openDrawerScreen(props.navigation, item.screen)}
             />
-          )
+          ),
         )}
       </DrawerContentScrollView>
       <Text style={[styles.drawerVersion, { color: c.textSecondary, fontSize: fs(11) }]}>
@@ -255,7 +255,7 @@ const HomeStack = memo(function HomeStack() {
       ))}
     </Stack.Navigator>
   );
-})
+});
 
 function AppDrawer() {
   const { activeColors: c } = useConfig();

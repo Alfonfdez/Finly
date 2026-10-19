@@ -128,8 +128,8 @@ describe('recurringRepo', () => {
     await expect(
       db.runAsync(
         'INSERT INTO transactions (account_id, category_id, type, amount, date, recurring_rule_id, recurrence_date) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        1, 3, 'expense', 1, '2026-01-02 00:00:00', rule.id, '2026-01-02'
-      )
+        1, 3, 'expense', 1, '2026-01-02 00:00:00', rule.id, '2026-01-02',
+      ),
     ).rejects.toThrow();
   });
 

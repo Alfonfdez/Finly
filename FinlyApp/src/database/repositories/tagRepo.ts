@@ -62,7 +62,7 @@ export const tagRepo = {
       { name: tags.name, userId: tags.user_id, id: tags.id },
       userId,
       name,
-      excludeId
+      excludeId,
     );
   },
 };

@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { alertError, alertInfo, describeError, showErrorAlert, runWithErrorAlert, ERROR_PREFIXES } from '../../src/utils/errors';
+import { t } from '../../src/i18n';
+
 const mockAlert = vi.fn();
 
 vi.mock('react-native', () => ({
@@ -8,9 +11,6 @@ vi.mock('react-native', () => ({
   },
   Platform: { OS: 'ios' },
 }));
-
-import { alertError, alertInfo, describeError, showErrorAlert, runWithErrorAlert, ERROR_PREFIXES } from '../../src/utils/errors';
-import { t } from '../../src/i18n';
 
 describe('errors helpers', () => {
   beforeEach(() => {

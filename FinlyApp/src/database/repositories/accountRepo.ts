@@ -102,7 +102,7 @@ export const accountRepo = {
       { name: accounts.name, userId: accounts.user_id, id: accounts.id },
       userId,
       name,
-      excludeId
+      excludeId,
     );
   },
 };

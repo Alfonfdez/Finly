@@ -490,7 +490,7 @@ export const ca: Language = {
   recurring_ended: 'Finalitzada',
   recurring_created_on: (date: string) => `Creada ${date}`,
   recurring_transactions_count: (n: number) => `${n} ${n === 1 ? 'transacció' : 'transaccions'}`,
-  recurring_edit_notice: "Aquesta transacció va ser creada per una regla recurrent. En desar, els canvis només afecten aquesta transacció, no la regla.",
+  recurring_edit_notice: 'Aquesta transacció va ser creada per una regla recurrent. En desar, els canvis només afecten aquesta transacció, no la regla.',
   recurring_updated_notice: 'Aquesta transacció va ser actualitzada per la seva regla recurrent. Guardar aquí sobreescriu aquests canvis només en aquesta transacció.',
   recurring_use_rule_values: 'Usar els valors de la regla',
   recurring_edit_rule: 'Edita la regla recurrent',

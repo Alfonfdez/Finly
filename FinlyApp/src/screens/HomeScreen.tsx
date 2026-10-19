@@ -62,7 +62,7 @@ export default function HomeScreen() {
           activeType,
           formatDateForDB(dates.start),
           formatDateForDB(dates.end),
-          activeTagIds.length > 0 ? activeTagIds : undefined
+          activeTagIds.length > 0 ? activeTagIds : undefined,
         );
 
         if (!active) return;

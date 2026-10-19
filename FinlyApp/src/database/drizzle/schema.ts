@@ -77,7 +77,7 @@ export const recurringRuleTags = sqliteTable(
     rule_id: integer('rule_id').notNull(),
     tag_id: integer('tag_id').notNull(),
   },
-  (table) => [primaryKey({ columns: [table.rule_id, table.tag_id] })]
+  (table) => [primaryKey({ columns: [table.rule_id, table.tag_id] })],
 );
 
 export const tags = sqliteTable('tags', {
@@ -93,7 +93,7 @@ export const transactionTags = sqliteTable(
     transaction_id: integer('transaction_id').notNull(),
     tag_id: integer('tag_id').notNull(),
   },
-  (table) => [primaryKey({ columns: [table.transaction_id, table.tag_id] })]
+  (table) => [primaryKey({ columns: [table.transaction_id, table.tag_id] })],
 );
 
 export const config = sqliteTable('config', {

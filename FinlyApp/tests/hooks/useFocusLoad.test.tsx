@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react-native';
 
+import { useFocusLoad } from '../../src/hooks/useFocusLoad';
+
 vi.mock('@react-navigation/native', async () => {
   const React = await import('react');
   return {
@@ -9,8 +11,6 @@ vi.mock('@react-navigation/native', async () => {
     },
   };
 });
-
-import { useFocusLoad } from '../../src/hooks/useFocusLoad';
 
 describe('useFocusLoad', () => {
   beforeEach(() => {

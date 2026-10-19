@@ -60,17 +60,17 @@ export default function TransactionDetailsScreen() {
 
   const category = useMemo(
     () => categories.find(cat => cat.id === transaction?.category_id),
-    [categories, transaction]
+    [categories, transaction],
   );
 
   const account = useMemo(
     () => accounts.find(acc => acc.id === transaction?.account_id),
-    [accounts, transaction]
+    [accounts, transaction],
   );
 
   const transactionDate = useMemo(
     () => transaction ? parseDbDate(transaction.date) : null,
-    [transaction]
+    [transaction],
   );
 
   const createdDate = useMemo(() => {

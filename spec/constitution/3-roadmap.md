@@ -932,3 +932,14 @@ The style rules that used to live only in the docs are now machine-enforced, app
 - Gate: `npm run test:all` green (137 files / 1151 tests) with `npm run lint` at 0 errors; a deliberately mis-indented line fails the gate (verified, then reverted).
 
 Spec: no behaviour change (tooling only).
+
+## Formatting is enforced by ESLint (@stylistic), step 2: apply the fixes
+Status: completed.
+
+The follow-up of the adoption entry, applied 2026-10-19:
+- `npm run lint:fix` normalised the codebase (111 files: 51 under `src`, 57 under `tests`, `App.tsx`, the eslint config and the local `finly-share` module) - trailing commas in multiline literals, final newlines, single quotes (two i18n values), two stray BOMs, double blank lines, plus the fixers of the enabled import/type rules (import order and merging, `Array<T>` to `T[]`). Whitespace, punctuation, quotes, import order and type aliases only: no behaviour change.
+- The eight rules that shipped as warnings (`comma-dangle`, `eol-last`, `quotes`, `unicode-bom`, `no-multiple-empty-lines`, `semi`, `brace-style`, `no-multi-spaces`) are errors now, so the formatting block is fully strict and `npm run lint:fix` is the only way to apply style.
+- `npm run lint` is at 0 errors and the 229 formatting warnings are gone. The remaining warnings are pre-existing and non-formatting: `boundaries/no-unknown-files` (151 - files outside the declared element patterns: tests, scripts, root configs), `@typescript-eslint/no-unused-vars` (13) and `react-hooks/exhaustive-deps` (3). They need code or config decisions, not a formatter, and are tracked separately.
+- Gate: `npm run test:all` green (137 files / 1151 tests).
+
+Spec: no behaviour change (formatting only).

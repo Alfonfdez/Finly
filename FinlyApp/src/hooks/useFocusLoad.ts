@@ -44,7 +44,7 @@ export function useFocusLoad<T>(
 
       runLoader();
       return () => { active = false; };
-    }, [])
+    }, []),
   );
 
   return { data, setData, loading };

@@ -46,7 +46,7 @@ function tx(overrides: Partial<NewTransaction>): NewTransaction {
 
 export function runContractSuite(
   name: string,
-  createBackend: () => Promise<ContractBackend>
+  createBackend: () => Promise<ContractBackend>,
 ): void {
   describe(`contract: ${name}`, () => {
     let backend: ContractBackend;
@@ -141,7 +141,7 @@ export function runContractSuite(
         const grocery = (await backend.category.list(USER, 'expense')).find(c => c.name === 'Groceries')!;
         const transaction = await backend.transaction.createWithTags(
           tx({ account_id: acc.id, category_id: grocery.id, amount: 10, date: '2026-02-01' }),
-          [tag.id]
+          [tag.id],
         );
         expect(await backend.transaction.getTagsByTransactionId(transaction.id)).toEqual([tag.id]);
 
@@ -330,11 +330,11 @@ export function runContractSuite(
         const salary = (await backend.category.list(USER, 'income')).find(c => c.name === 'Salary')!;
         const t1 = await backend.transaction.createWithTags(
           tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 10, date: '2026-04-02' }),
-          [tagA.id, tagB.id]
+          [tagA.id, tagB.id],
         );
         const t2 = await backend.transaction.createWithTags(
           tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 10, date: '2026-04-03' }),
-          [tagC.id]
+          [tagC.id],
         );
 
         await backend.tag.deleteMany([tagA.id, tagB.id]);
@@ -349,7 +349,7 @@ export function runContractSuite(
         const acc = await backend.account.create(account('A'));
         const salary = (await backend.category.list(USER, 'income')).find(c => c.name === 'Salary')!;
         const created = await backend.transaction.create(
-          tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1000, description: 'salary', date: '2026-01-15' })
+          tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1000, description: 'salary', date: '2026-01-15' }),
         );
         expect(created.updated_at).toBeNull();
 
@@ -464,7 +464,7 @@ export function runContractSuite(
         const tagB = await backend.tag.create({ user_id: USER, name: 'beta' });
         const created = await backend.transaction.createWithTags(
           tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 10, date: '2026-08-01' }),
-          [tagA.id, tagB.id]
+          [tagA.id, tagB.id],
         );
         const links = await backend.transaction.getTagsByTransactionIds([created.id]);
         expect(links.map(l => l.name).sort()).toEqual(['alpha', 'beta']);
@@ -478,7 +478,7 @@ export function runContractSuite(
         const tagB = await backend.tag.create({ user_id: USER, name: 'b' });
         const created = await backend.transaction.createWithTags(
           tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 10, date: '2026-08-02' }),
-          [tagA.id]
+          [tagA.id],
         );
 
         await backend.transaction.updateWithTags(created.id, { amount: 20 }, [tagB.id]);
@@ -492,7 +492,7 @@ export function runContractSuite(
         const tag = await backend.tag.create({ user_id: USER, name: 'x' });
         const created = await backend.transaction.createWithTags(
           tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 10, date: '2026-08-03' }),
-          [tag.id]
+          [tag.id],
         );
 
         await backend.transaction.deleteAllTransactions();

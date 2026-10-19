@@ -20,7 +20,7 @@ async function renderSection() {
       onTakePhoto={onTakePhoto}
       onPickFromGallery={onPickFromGallery}
       onRemovePhoto={onRemovePhoto}
-    />
+    />,
   );
 }
 
@@ -75,7 +75,7 @@ describe('PhotoSection', () => {
         onTakePhoto={onTakePhoto}
         onPickFromGallery={onPickFromGallery}
         onRemovePhoto={onRemovePhoto}
-      />
+      />,
     );
 
     await fireEvent.press(view.getByLabelText('Remove photo'));

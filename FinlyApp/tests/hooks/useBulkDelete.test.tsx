@@ -28,7 +28,7 @@ async function setup(overrides: Partial<Parameters<typeof useBulkDelete>[0]> = {
       afterDelete,
       errorPrefix: 'Failed to delete items',
       ...overrides,
-    })
+    }),
   );
 
   return { result, selectedIds, exitSelectMode, deleteFn, afterDelete };

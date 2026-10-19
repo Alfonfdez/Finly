@@ -11,7 +11,7 @@ const useReveal = (ref: MockRef) =>
   useKeyboardReveal(ref as unknown as { current: ScrollView | null });
 
 describe('useKeyboardReveal', () => {
-  let handlers: Record<string, Array<(e: unknown) => void>>;
+  let handlers: Record<string, ((e: unknown) => void)[]>;
 
   beforeEach(() => {
     handlers = {};

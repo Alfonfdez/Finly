@@ -3994,3 +3994,9 @@
 [2026-10-19] docs | AGENTS.md
 - `AGENTS.md` ENVIRONMENT now states the encoding rule: non-ASCII text must be written with the Write/Edit tools (or a JSON values file the script reads), never through a PowerShell here-string piped to a program, which re-encodes it with the console codepage and turns accented characters into `?`.
 - Noted there that `scripts/i18n.mjs` only covers `FinlyApp/src/i18n/*.ts`, so the READMEs and other translated files need that safe path (the six mangled `npm run lint:fix` rows inserted in the previous commit were corrected this way).
+
+[2026-10-19] style | FinlyApp/src/** (51 files), FinlyApp/tests/** (57 files), FinlyApp/App.tsx, FinlyApp/eslint.config.mjs, FinlyApp/modules/finly-share/src/index.ts, spec/constitution/3-roadmap.md
+- Ran `npm run lint:fix` over the codebase (111 files): trailing commas in multiline literals, final newlines, single quotes in two i18n values, two stray BOMs, double blank lines, plus the enabled import/type fixers (import order and merging, `Array<T>` to `T[]`). Whitespace, punctuation, quotes, import order and type aliases only - no behaviour change.
+- Promoted the eight formatting rules from `warn` to `error` in `eslint.config.mjs`, so the whole formatting block is strict: `comma-dangle`, `eol-last`, `quotes`, `unicode-bom`, `no-multiple-empty-lines`, `semi`, `brace-style`, `no-multi-spaces`.
+- `npm run lint` is now 0 errors and the 229 formatting warnings are gone. The remaining warnings are pre-existing and non-formatting (`boundaries/no-unknown-files` 151, `@typescript-eslint/no-unused-vars` 13, `react-hooks/exhaustive-deps` 3); they need code or config decisions and are tracked separately.
+- Gate: `npm run test:all` green (137 files / 1151 tests).

@@ -59,7 +59,7 @@ export const DB_KEY_MAP: Record<string, keyof Config> = {
 export const CONFIG_NULL_SENTINEL = 'null';
 
 const DB_KEY_OF: Record<string, string> = Object.fromEntries(
-  Object.entries(DB_KEY_MAP).map(([dbKey, configKey]) => [configKey, dbKey])
+  Object.entries(DB_KEY_MAP).map(([dbKey, configKey]) => [configKey, dbKey]),
 );
 
 const DB_KEY_RE = /^[a-z_]+$/;
@@ -88,7 +88,7 @@ export function sanitizeConfig(config: Config): Config {
 
 export function sanitizeDefaultAccounts(
   config: Config,
-  accounts: { id: number; is_total?: number }[]
+  accounts: { id: number; is_total?: number }[],
 ): Partial<Config> {
   const ids = new Set(accounts.filter(a => (a.is_total ?? 0) === 0).map(a => a.id));
   const updates: Partial<Config> = {};

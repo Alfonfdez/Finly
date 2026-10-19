@@ -23,7 +23,7 @@ describe('SearchBar', () => {
 
   it('renders a text input with placeholder and value', async () => {
     const view = await render(
-      <SearchBar placeholder="Search transactions" value="grocer" onChangeText={() => {}} onClose={() => {}} />
+      <SearchBar placeholder="Search transactions" value="grocer" onChangeText={() => {}} onClose={() => {}} />,
     );
 
     const input = view.getByPlaceholderText('Search transactions');
@@ -32,7 +32,7 @@ describe('SearchBar', () => {
 
   it('renders search and close icons', async () => {
     const view = await render(
-      <SearchBar placeholder="Search" value="" onChangeText={() => {}} onClose={() => {}} />
+      <SearchBar placeholder="Search" value="" onChangeText={() => {}} onClose={() => {}} />,
     );
 
     const icons = view.root!.queryAll((i) => i.type === 'RCTText').map((i) => i.children[0]);
@@ -42,7 +42,7 @@ describe('SearchBar', () => {
 
   it('applies themed colors to the container', async () => {
     const view = await render(
-      <SearchBar placeholder="Search" value="" onChangeText={() => {}} onClose={() => {}} />
+      <SearchBar placeholder="Search" value="" onChangeText={() => {}} onClose={() => {}} />,
     );
 
     const style = flattenStyle(view.root!.props.style);
@@ -52,7 +52,7 @@ describe('SearchBar', () => {
 
   it('styles the input text with the configured color and scaled font size', async () => {
     const view = await render(
-      <SearchBar placeholder="Search" value="" onChangeText={() => {}} onClose={() => {}} />
+      <SearchBar placeholder="Search" value="" onChangeText={() => {}} onClose={() => {}} />,
     );
 
     const input = view.getByPlaceholderText('Search');
@@ -65,7 +65,7 @@ describe('SearchBar', () => {
   it('reports text changes through onChangeText', async () => {
     const onChangeText = vi.fn();
     const view = await render(
-      <SearchBar placeholder="Search" value="" onChangeText={onChangeText} onClose={() => {}} />
+      <SearchBar placeholder="Search" value="" onChangeText={onChangeText} onClose={() => {}} />,
     );
 
     const input = view.getByPlaceholderText('Search');
@@ -76,7 +76,7 @@ describe('SearchBar', () => {
   it('fires onClose when the close button is pressed', async () => {
     const onClose = vi.fn();
     const view = await render(
-      <SearchBar placeholder="Search" value="" onChangeText={() => {}} onClose={onClose} />
+      <SearchBar placeholder="Search" value="" onChangeText={() => {}} onClose={onClose} />,
     );
 
     await fireEvent.press(view.getByText('close-circle'));
@@ -85,7 +85,7 @@ describe('SearchBar', () => {
 
   it('is focused on mount when autoFocus is set', async () => {
     const view = await render(
-      <SearchBar placeholder="Search" value="" onChangeText={() => {}} onClose={() => {}} autoFocus />
+      <SearchBar placeholder="Search" value="" onChangeText={() => {}} onClose={() => {}} autoFocus />,
     );
 
     expect(view.getByPlaceholderText('Search').props.autoFocus).toBe(true);

@@ -12,7 +12,7 @@ export function getIconColorHintText(
   nameError: string | null,
   selectedIcon: string | null,
   selectedColor: string | null,
-  keys: IconColorHintKeys
+  keys: IconColorHintKeys,
 ): string | null {
   if (name.trim().length === 0) return keys.empty;
   if (nameError) return nameError;
@@ -25,7 +25,7 @@ export function getIconColorHintText(
 export function getNameHintText(
   name: string,
   nameError: string | null,
-  emptyKey: string
+  emptyKey: string,
 ): string | null {
   if (name.trim().length === 0) return emptyKey;
   if (nameError) return nameError;
@@ -44,10 +44,10 @@ interface JoinHintsOptions {
  */
 export function joinHints(
   parts: (string | null | undefined)[],
-  { finalPeriod = false }: JoinHintsOptions = {}
+  { finalPeriod = false }: JoinHintsOptions = {},
 ): string {
   const sentences = parts.filter(
-    (part): part is string => typeof part === 'string' && part.trim() !== ''
+    (part): part is string => typeof part === 'string' && part.trim() !== '',
   );
   if (sentences.length === 0) return '';
   return `${sentences.join('. ')}${finalPeriod ? '.' : ''}`;
@@ -79,7 +79,7 @@ interface TransactionHintKeys {
  */
 export function getTransactionFormHintText(
   values: TransactionHintValues,
-  keys: TransactionHintKeys
+  keys: TransactionHintKeys,
 ): string {
   const { categoryId, numericAmount, accountId, repeatEndConflict, ruleMode, repeatNameError } = values;
 
@@ -92,6 +92,6 @@ export function getTransactionFormHintText(
       ruleMode && repeatNameError === RECURRING_NAME_ERRORS.taken ? keys.repeatNameTaken : null,
       ruleMode && repeatNameError === RECURRING_NAME_ERRORS.required ? keys.repeatName : null,
     ],
-    { finalPeriod: true }
+    { finalPeriod: true },
   );
 }

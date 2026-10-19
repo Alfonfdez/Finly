@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { parsePhotos, deletePhotoFile } from '../../src/utils/photoUtils';
+
 const { mockFileDelete, mockFileCtor, platform } = vi.hoisted(() => ({
   mockFileDelete: vi.fn(),
   mockFileCtor: vi.fn(),
@@ -17,8 +19,6 @@ vi.mock('expo-file-system', () => ({
     }
   },
 }));
-
-import { parsePhotos, deletePhotoFile } from '../../src/utils/photoUtils';
 
 const DATA_URI = 'data:image/jpeg;base64,/9j/4AAQSkZJRg==';
 const DATA_URI_2 = 'data:image/png;base64,iVBORw0KGgo=';

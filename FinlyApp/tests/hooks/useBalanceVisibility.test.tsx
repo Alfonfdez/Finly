@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react-native';
 
+import { useBalanceVisibility } from '../../src/hooks/useBalanceVisibility';
+
 // Capture the focus callback so a test can simulate leaving and coming back.
 let focusCallback: (() => void | (() => void)) | null = null;
 
@@ -13,8 +15,6 @@ vi.mock('@react-navigation/native', async () => {
     },
   };
 });
-
-import { useBalanceVisibility } from '../../src/hooks/useBalanceVisibility';
 
 describe('useBalanceVisibility', () => {
   beforeEach(() => {

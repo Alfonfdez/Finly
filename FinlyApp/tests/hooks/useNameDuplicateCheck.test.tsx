@@ -31,7 +31,7 @@ describe('useNameDuplicateCheck', () => {
         existsByName: options.existsByName,
         resolveDefaultEnglishName: options.resolveDefaultEnglishName,
         duplicateErrorKey: 'duplicate',
-      })
+      }),
     );
   }
 
@@ -140,7 +140,7 @@ describe('useNameDuplicateCheck', () => {
         resolveDefaultEnglishName,
         duplicateErrorKey: 'duplicate',
         excludeId: 42,
-      })
+      }),
     );
 
     await act(() => result.current.handleNameChange('Unique', vi.fn()));

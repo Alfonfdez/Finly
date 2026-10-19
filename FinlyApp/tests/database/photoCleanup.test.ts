@@ -1,5 +1,11 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
+import {
+  collectTransactionPhotos,
+  collectAllTransactionPhotos,
+  deletePhotoUris,
+} from '../../src/database/photoCleanup';
+
 const mocks = vi.hoisted(() => {
   const chain = (rows: { photo: string | null }[]) => ({
     from: () => ({
@@ -28,12 +34,6 @@ vi.mock('../../src/utils/photoUtils', () => ({
   deletePhotoFile: mocks.deletePhotoFile,
 }));
 
-import {
-  collectTransactionPhotos,
-  collectAllTransactionPhotos,
-  deletePhotoUris,
-} from '../../src/database/photoCleanup';
-
 type SelectChain = ReturnType<typeof mocks.fakeDb.select>;
 
 const rowsFor = (rows: { photo: string | null }[]): SelectChain => ({
@@ -53,7 +53,7 @@ describe('photoCleanup', () => {
 
   it('collects parsed photo uris from all matching rows without throwing for null photos', async () => {
     mocks.fakeDb.select.mockImplementation(() =>
-      rowsFor([{ photo: 'a' }, { photo: null }, { photo: 'c,d' }])
+      rowsFor([{ photo: 'a' }, { photo: null }, { photo: 'c,d' }]),
     );
     mocks.parsePhotos.mockImplementation((photo) => (photo ? photo.split(',') : []));
     await expect(collectTransactionPhotos('id', 1, 2)).resolves.toEqual(['a', 'c', 'd']);

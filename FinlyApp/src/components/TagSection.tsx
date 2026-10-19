@@ -33,7 +33,7 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
   const labels = t();
 
   const filteredTags = useMemo(() => tags.filter(tag =>
-    tag.name.toLowerCase().includes(search.toLowerCase())
+    tag.name.toLowerCase().includes(search.toLowerCase()),
   ), [tags, search]);
 
   const checkDuplicate = useCallback((value: string) => {

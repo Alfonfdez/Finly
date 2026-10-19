@@ -4,9 +4,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 import TransactionForm from '../../src/components/TransactionForm';
 import { DEFAULT_CONFIG } from '../../src/database/configDefaults';
 import { TEST_IDS } from '../../src/constants/testIds';
-import type { Config } from '../../src/database/types';
-import type { Category } from '../../src/database/types';
-import type { Account } from '../../src/database/types';
+import type { Config , Category , Account } from '../../src/database/types';
 
 vi.mock('expo-image-picker', () => ({
   requestCameraPermissionsAsync: vi.fn(async () => ({ status: 'denied' })),
@@ -156,7 +154,7 @@ function renderForm(overrides: {
       errorMessage="Something went wrong"
       onSubmit={formSubmit}
       {...overrides}
-    />
+    />,
   );
 }
 

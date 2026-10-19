@@ -26,7 +26,7 @@ export default function PersonalizationScreen() {
   const labels = t();
 
   const allAccounts = accounts.filter(a => isTotalAccount(a)).concat(
-    accounts.filter(a => !isTotalAccount(a)).sort((a, b) => a.name.localeCompare(b.name))
+    accounts.filter(a => !isTotalAccount(a)).sort((a, b) => a.name.localeCompare(b.name)),
   );
 
   const homeAccounts: Option<string>[] = [

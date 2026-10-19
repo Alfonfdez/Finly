@@ -12,7 +12,7 @@ const incomeCat: Category = { id: 2, user_id: 1, name: 'Salary', icon: 'wallet',
 const allCategories: Category[] = [expenseCat, incomeCat];
 
 function renderFilter(
-  overrides: Partial<{ visible: boolean; categories: Category[]; selectedIds: number[]; type: string }> = {}
+  overrides: Partial<{ visible: boolean; categories: Category[]; selectedIds: number[]; type: string }> = {},
 ) {
   return render(
     <CategoryFilterModal
@@ -22,7 +22,7 @@ function renderFilter(
       type={(overrides.type ?? TYPE_FILTERS.all) as typeof TYPE_FILTERS.all}
       onApply={mockOnApply}
       onClose={mockOnClose}
-    />
+    />,
   );
 }
 

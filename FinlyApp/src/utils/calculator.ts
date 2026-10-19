@@ -109,6 +109,6 @@ export function roundTo2(n: number): number {
 export function netTransactionTotal(transactions: Transaction[]): number {
   return transactions.reduce(
     (sum, t) => sum + (t.type === TRANSACTION_TYPES.expense ? -t.amount : t.amount),
-    0
+    0,
   );
 }

@@ -42,7 +42,7 @@ export function describeError(err: unknown): string {
 export async function runWithErrorAlert<T>(
   fn: () => Promise<T>,
   prefix: string,
-  labels?: { error_title: string; error_generic: string }
+  labels?: { error_title: string; error_generic: string },
 ): Promise<T | undefined> {
   try {
     return await fn();

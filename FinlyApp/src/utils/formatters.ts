@@ -135,7 +135,7 @@ function getPeriodRange(period: Period, date: Date): { start: Date; end: Date } 
 export function resolvePeriodRange(
   period: Period,
   date: Date,
-  custom: { start: Date; end: Date }
+  custom: { start: Date; end: Date },
 ): { start: Date; end: Date } {
   return period === PERIODS.custom ? custom : getPeriodRange(period, date);
 }

@@ -77,7 +77,7 @@ describe('TransactionRow', () => {
 
   it('renders the recurring icon and rule name', async () => {
     const view = await render(
-      <TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} recurringName="MyRule" />
+      <TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} recurringName="MyRule" />,
     );
 
     expect(view.getByText('repeat-outline')).toBeTruthy();
@@ -93,7 +93,7 @@ describe('TransactionRow', () => {
 
   it('renders the recurring icon in the primary color', async () => {
     const view = await render(
-      <TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} recurringName="MyRule" />
+      <TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} recurringName="MyRule" />,
     );
 
     const icon = view.root!.queryAll((i) => i.type === 'RCTText' && i.children[0] === 'repeat-outline')[0];
@@ -102,7 +102,7 @@ describe('TransactionRow', () => {
 
   it('renders the tag chips before the recurring rule name', async () => {
     const view = await render(
-      <TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} tags={[{ tag_id: 7, name: 'lunch' }]} recurringName="MyRule" />
+      <TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} tags={[{ tag_id: 7, name: 'lunch' }]} recurringName="MyRule" />,
     );
 
     const json = JSON.stringify(view.toJSON());
@@ -112,7 +112,7 @@ describe('TransactionRow', () => {
 
   it('renders tags and recurring on separate rows', async () => {
     const view = await render(
-      <TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} tags={[{ tag_id: 7, name: 'lunch' }]} recurringName="MyRule" />
+      <TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} tags={[{ tag_id: 7, name: 'lunch' }]} recurringName="MyRule" />,
     );
 
     // The tag chip's row must not contain the recurring name (it lives on its own row below).

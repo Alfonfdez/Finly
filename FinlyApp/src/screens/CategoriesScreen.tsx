@@ -77,7 +77,7 @@ export default function CategoriesScreen() {
 
   const transferTargets = useMemo(
     () => categoriesByType.filter((cat) => !selectedIds.has(cat.id)),
-    [categoriesByType, selectedIds]
+    [categoriesByType, selectedIds],
   );
 
   const typeCount = countCategoriesOfType(categories, activeType);

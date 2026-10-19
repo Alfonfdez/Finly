@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
+import { alertError, alertInfo } from '../../src/utils/errors';
+
 // `react-native-web`'s Alert is a no-op, so `isWeb` must be true for this file.
 const mockAlert = vi.fn();
 const mockWindowAlert = vi.fn();
@@ -8,8 +10,6 @@ vi.mock('react-native', () => ({
   Alert: { alert: (...args: unknown[]) => mockAlert(...args) },
   Platform: { OS: 'web' },
 }));
-
-import { alertError, alertInfo } from '../../src/utils/errors';
 
 describe('errors helpers (web fallback)', () => {
   beforeEach(() => {

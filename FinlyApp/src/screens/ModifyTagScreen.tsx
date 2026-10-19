@@ -32,7 +32,7 @@ export default function ModifyTagScreen() {
 
   const tag = useMemo(
     () => tags.find(t => t.id === tagId),
-    [tags, tagId]
+    [tags, tagId],
   );
 
   const [name, setName] = useState('');

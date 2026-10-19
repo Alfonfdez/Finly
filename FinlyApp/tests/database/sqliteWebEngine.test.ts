@@ -84,7 +84,7 @@ describe('sql.js web engine', () => {
       db.withTransactionAsync(async () => {
         await db.runAsync('INSERT INTO t (name) VALUES (?)', 'rolled back');
         throw new Error('boom');
-      })
+      }),
     ).rejects.toThrow('boom');
 
     expect(await db.getAllAsync<{ name: string }>('SELECT name FROM t')).toEqual([{ name: 'committed' }]);
@@ -101,7 +101,7 @@ describe('sql.js web engine', () => {
     await db.execAsync('PRAGMA foreign_keys = ON;');
     await db.execAsync(
       'CREATE TABLE accounts (id INTEGER PRIMARY KEY, name TEXT);' +
-        'CREATE TABLE transactions (id INTEGER PRIMARY KEY, account_id INTEGER REFERENCES accounts(id));'
+        'CREATE TABLE transactions (id INTEGER PRIMARY KEY, account_id INTEGER REFERENCES accounts(id));',
     );
     await db.runAsync('INSERT INTO accounts (id, name) VALUES (1, ?)', 'a');
     const fk = await db.getFirstAsync<{ foreign_keys: number }>('PRAGMA foreign_keys');

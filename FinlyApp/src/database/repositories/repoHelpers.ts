@@ -13,7 +13,7 @@ export async function existsByName(
   columns: ExistsByNameColumns,
   userId: number,
   name: string,
-  excludeId?: number
+  excludeId?: number,
 ): Promise<boolean> {
   const db = await getDrizzle();
   const conditions: SQL[] = [sql`LOWER(${columns.name}) = LOWER(${name})`, eq(columns.userId, userId)];

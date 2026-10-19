@@ -43,7 +43,7 @@ export default function ModifyCategoryScreen() {
 
   const category = useMemo(
     () => categories.find(cat => cat.id === categoryId),
-    [categories, categoryId]
+    [categories, categoryId],
   );
 
   const [name, setName] = useState('');

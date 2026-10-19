@@ -35,7 +35,7 @@ describe('useSelectableScreen', () => {
   it('registers the header right renderer when showHeader is true', async () => {
     await renderHook(useHook, { initialProps: DEFAULT_PROPS });
     expect(mockSetOptions).toHaveBeenCalledWith(
-      expect.objectContaining({ headerRight: expect.any(Function) })
+      expect.objectContaining({ headerRight: expect.any(Function) }),
     );
 
     const opts = mockSetOptions.mock.calls[0][0] as { headerRight: () => unknown };

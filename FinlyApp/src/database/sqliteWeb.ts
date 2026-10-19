@@ -116,7 +116,7 @@ export class SqlJsDatabase implements DatabaseHandle {
 export async function createSqlJsDatabase(
   bytes: Uint8Array | null,
   storage: DatabaseStorage | null = null,
-  locateFile?: (file: string) => string
+  locateFile?: (file: string) => string,
 ): Promise<SqlJsDatabase> {
   const SQL = await initSqlJsEngine(locateFile);
   return new SqlJsDatabase(new SQL.Database(bytes ?? undefined), storage);

@@ -24,7 +24,7 @@ async function setup(overrides: Partial<Parameters<typeof useDeleteConfirmation>
       onSuccess,
       errorPrefix: 'Failed to delete item',
       ...overrides,
-    })
+    }),
   );
 
   return { result, deleteFn, onSuccess };

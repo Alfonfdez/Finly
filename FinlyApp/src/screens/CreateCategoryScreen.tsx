@@ -53,7 +53,6 @@ export default function CreateCategoryScreen() {
     duplicateErrorKey: labels.create_cat_error_name_duplicate,
   });
 
-
   const typeCount = countCategoriesOfType(categories, type);
   const atCategoryLimit = countAtLimit(typeCount, MAX_CATEGORIES_PER_TYPE);
 
@@ -69,7 +68,7 @@ export default function CreateCategoryScreen() {
       iconColor: labels.create_cat_hint_icon_color,
       icon: labels.create_cat_hint_icon,
       color: labels.create_cat_hint_color,
-    }
+    },
   );
 
   const handleCreate = async () => {

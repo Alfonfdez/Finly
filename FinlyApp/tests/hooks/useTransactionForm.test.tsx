@@ -39,7 +39,7 @@ interface UseTransactionFormProps {
 
 const mockGetCategoryUsageCounts = vi.fn(
   async (_userId: number, _type: TransactionType, _start: string, _accountId: number) =>
-    [] as { id: number; name: string; icon: string; color: string; count: number }[]
+    [] as { id: number; name: string; icon: string; color: string; count: number }[],
 );
 const mockTagCreate = vi.fn(async (_data: unknown) => ({
   id: 900,
