@@ -20,6 +20,9 @@ Each field is displayed in a row with a **symbol** (an Ionicons glyph in the pri
 
 Every row is always present so the card is uniform; when a field has no value the row shows a single placeholder, `details_none` (“—”), in `textSecondary`. Each row is separated from the next by a bottom border, so a separator appears between every pair of rows (the last row has none):
 
+- Rows **top-align** the symbol/label with the first line of the value, so a wrapping value (a long comment, many tag chips) never leaves the label floating in the middle of the block; single-line rows are visually unchanged.
+- Values that wrap take the value column (`flex: 2`): tag chips wrap inside that column (right-aligned) and **every** tag is shown - the card grows and the screen scrolls. A chip never exceeds the column width (a long name ellipsizes).
+
 | Label (i18n key) | Value | Example |
 |---|---|---|
 | `details_amount` | Amount formatted with currency | `€1,234.56` |
@@ -104,6 +107,7 @@ Every row is always present so the card is uniform; when a field has no value th
 - [x] The "Date" section displays the date in long format according to the language.
 - [x] Each data row shows a muted symbol to the left of its label (matching the field's concept).
 - [x] The Comment, Tags, Recurring and Photo rows are always shown; an empty one displays the shared `—` placeholder in gray.
+- [x] A long comment or many tag chips keep their label on the first line (the rows top-align), chips wrap inside the value column and no chip is clipped, while every tag is shown.
 - [x] The Recurring row is present for every transaction (the rule name for a generated transaction, otherwise `—`).
 - [x] The Photos row is always the last row: it shows tappable thumbnail(s) when a photo exists, otherwise `—`.
 - [x] Every row is separated from the next by a divider (a separator between each pair of rows; the last row has none).

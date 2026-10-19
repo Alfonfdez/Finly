@@ -1022,3 +1022,15 @@ Display fix found while testing 2.2.0 on device, applied 2026-10-19:
 - Gate: `npm run test:all` green.
 
 Spec: spec/features/016-transaction-details-screen/.
+
+## Transaction details: top-aligned rows and wrapping tag chips
+Status: completed.
+
+Layout fix found while testing 2.2.0 on device, applied 2026-10-19:
+- All data rows now top-align the symbol/label with the first line of the value (single-line rows are visually unchanged). A 4096-character comment or a tall block of tag chips used to leave "Comment"/"Tags" vertically centred.
+- With many tags the chip container demanded its full single-line width, so the basis-0 label collapsed to zero and disappeared (the chips were also clipped by the card). The container now takes the value column (`flex: 2`): chips wrap and right-align inside it, the label keeps its third, every tag is shown and the screen scrolls.
+- `TagChip` is capped to its container and shrinks, so an over-long tag name ellipsizes instead of overflowing.
+- Tests: a `DataRow` suite (top alignment) and a details case with 12 long tags plus a long comment (labels present, all chips rendered, value column `flex: 2`).
+- Gate: `npm run test:all` green; verified in the browser at 375px.
+
+Spec: spec/features/016-transaction-details-screen/.

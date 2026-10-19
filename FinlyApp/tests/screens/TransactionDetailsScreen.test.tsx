@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent, userEvent } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import type { ReactNode } from 'react';
 import TransactionDetailsScreen from '../../src/screens/TransactionDetailsScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
+import { TEST_IDS } from '../../src/constants/testIds';
 import type { Account, Category, Transaction } from '../../src/database/types';
 
 const getById = vi.fn(async (_id: number) => null as Transaction | null);
@@ -149,6 +151,25 @@ describe('TransactionDetailsScreen', () => {
     expect(view.getAllByText('—')).toHaveLength(4);
   });
 
+  it('keeps the Tags and Comment labels visible with long, wrapping values', async () => {
+    const tags = Array.from({ length: 12 }, (_, index) => ({
+      tag_id: index + 1,
+      name: `very-long-tag-${String(index + 1).padStart(2, '0')}`,
+    }));
+    getById.mockResolvedValue(tx({ description: 'a long comment '.repeat(300) }));
+    getTagsByTransactionIds.mockResolvedValue(tags);
+    const view = await render(<TransactionDetailsScreen />);
+
+    await view.findByText('very-long-tag-01');
+    // The labels stay rendered next to the wrapping values...
+    expect(view.getByText('Comment')).toBeTruthy();
+    expect(view.getByText('Tags')).toBeTruthy();
+    // ...and every tag chip is shown.
+    expect(view.getAllByText(/^very-long-tag-/)).toHaveLength(12);
+    // The chips wrap inside the value column (1:2 split), so the label cannot collapse.
+    const container = view.getByTestId(TEST_IDS.detailsTags);
+    expect((StyleSheet.flatten(container.props.style) as { flex?: number }).flex).toBe(2);
+  });
   it('renders a primary-colored symbol for each row', async () => {
     getById.mockResolvedValue(tx());
     const view = await render(<TransactionDetailsScreen />);

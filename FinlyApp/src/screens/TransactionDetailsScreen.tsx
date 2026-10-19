@@ -15,6 +15,7 @@ import { ERROR_PREFIXES } from '../utils/errors';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
 import { transactionRepository, recurringRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES } from '../constants/types';
+import { TEST_IDS } from '../constants/testIds';
 import { badgeShapeFor } from '../utils/badgeShape';
 import ConfirmationModal from '../components/ConfirmationModal';
 import EmptyState from '../components/EmptyState';
@@ -171,7 +172,7 @@ export default function TransactionDetailsScreen() {
 
           <DataRow label={labels.details_tags} icon="pricetag-outline">
             {tagNames.length > 0 ? (
-              <View style={styles.tagsContainer}>
+              <View style={styles.tagsContainer} testID={TEST_IDS.detailsTags}>
                 {tagNames.map(tag => (
                   <TagChip key={tag.tag_id} label={tag.name} size={13} />
                 ))}
@@ -302,6 +303,9 @@ const styles = StyleSheet.create({
   },
   actionButtonText: { fontWeight: '600' },
   tagsContainer: {
+    // Same 1:2 split as the other values: the chip block wraps inside the value
+    // column instead of demanding the full row width (which collapsed the label).
+    flex: 2,
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,

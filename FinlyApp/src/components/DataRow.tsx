@@ -48,7 +48,10 @@ export default function DataRow({
 const styles = StyleSheet.create({
   dataRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    // Top-aligned: a wrapping value (comment, tags) keeps its label on the first
+    // line instead of centring it in the middle of the block. Single-line rows are
+    // visually unchanged.
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     paddingVertical: 14,
     paddingHorizontal: 16,
