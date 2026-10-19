@@ -70,6 +70,12 @@ const mockFormState = {
   repeatName: '',
   repeatNameErrorDisplay: null as 'required' | 'taken' | null,
   repeatNameError: null as 'required' | 'taken' | null,
+  day: new Date(2026, 8, 1),
+  repeatFrequency: 'monthly' as 'daily' | 'weekly' | 'monthly' | 'yearly',
+  repeatInterval: 1,
+  repeatEnd: null as Date | null,
+  repeatLastDay: false,
+  repeatMinDate: new Date(2026, 8, 2),
 };
 
 vi.mock('../../src/hooks/useTransactionForm', () => ({
@@ -80,7 +86,7 @@ vi.mock('../../src/hooks/useTransactionForm', () => ({
     setAmountRaw,
     categoryId: mockFormState.categoryId,
     setCategoryId,
-    day: new Date(2026, 8, 1),
+    day: mockFormState.day,
     setDay,
     selectedTags: mockFormState.selectedTags,
     comment: mockFormState.comment,
@@ -93,13 +99,15 @@ vi.mock('../../src/hooks/useTransactionForm', () => ({
     setModalCalendarVisible: vi.fn(),
     calculatorVisible: false,
     setCalculatorVisible: vi.fn(),
-    repeatFrequency: 'monthly' as const,
+    repeatFrequency: mockFormState.repeatFrequency,
     setRepeatFrequency: vi.fn(),
-    repeatInterval: 1,
+    repeatInterval: mockFormState.repeatInterval,
     setRepeatInterval: vi.fn(),
-    repeatEnd: null as Date | null,
+    repeatEnd: mockFormState.repeatEnd,
     setRepeatEnd: vi.fn(),
-    repeatMinDate: new Date(2026, 8, 2),
+    repeatMinDate: mockFormState.repeatMinDate,
+    repeatLastDay: mockFormState.repeatLastDay,
+    setRepeatLastDay: vi.fn(),
     ruleUnmaterialized: false,
     ruleStartMovedEarlier: false,
     modalRepeatEndVisible: false,
@@ -134,6 +142,7 @@ vi.mock('../../src/hooks/useTransactionForm', () => ({
 const catFood: Category = { id: 1, user_id: 1, name: 'Food', icon: 'cart', color: '#22D3EE', type: 'expense', created_at: '2026-01-01' };
 
 function renderForm(overrides: {
+  initialDay?: Date;
   ruleMode?: boolean;
   transactionId?: number;
   initialRuleNextDue?: string | null;
@@ -171,6 +180,12 @@ describe('TransactionForm', () => {
     mockFormState.repeatNameErrorDisplay = null;
     mockFormState.repeatNameError = null;
     mockFormState.repeatName = '';
+    mockFormState.day = new Date(2026, 8, 1);
+    mockFormState.repeatFrequency = 'monthly';
+    mockFormState.repeatInterval = 1;
+    mockFormState.repeatEnd = null;
+    mockFormState.repeatLastDay = false;
+    mockFormState.repeatMinDate = new Date(2026, 8, 2);
     nav.navigate.mockClear();
   });
 
@@ -214,6 +229,36 @@ describe('TransactionForm', () => {
     ).toBeTruthy();
   });
 
+  it('blocks Save when the rule backlog exceeds the catch-up limit', async () => {
+    mockFormState.canSubmit = true;
+    mockFormState.numericAmount = 10;
+    mockFormState.amountRaw = '10';
+    mockFormState.categoryId = 1;
+    mockFormState.day = new Date(1990, 0, 1);
+    mockFormState.repeatFrequency = 'daily';
+    const view = await renderForm({ ruleMode: true, initialDay: new Date(1990, 0, 1) });
+
+    expect(view.getByText(
+      'This rule would create more than 5000 transactions. Move the start date later or add an end date.',
+    )).toBeTruthy();
+    expect(view.getByText('Save')).toBeDisabled();
+  });
+  it('asks for an earlier end date when the rule already has one', async () => {
+    mockFormState.canSubmit = true;
+    mockFormState.numericAmount = 10;
+    mockFormState.amountRaw = '10';
+    mockFormState.categoryId = 1;
+    mockFormState.day = new Date(1990, 0, 1);
+    mockFormState.repeatFrequency = 'daily';
+    mockFormState.repeatEnd = new Date(2005, 11, 31);
+    mockFormState.repeatMinDate = new Date(1990, 0, 2);
+    const view = await renderForm({ ruleMode: true, initialDay: new Date(1990, 0, 1) });
+
+    expect(view.getByText(
+      'This rule would create more than 5000 transactions. Move the start date later or set an earlier end date.',
+    )).toBeTruthy();
+    expect(view.getByText('Save')).toBeDisabled();
+  });
   it('shows the recurring name hint when the name is the only blocker', async () => {
     mockFormState.numericAmount = 10;
     mockFormState.amountRaw = '10';

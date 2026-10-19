@@ -551,6 +551,8 @@ export const eu: Language = {
   recurring_info_count: (n: number) => (n === 0 ? 'Orain ez da transakziorik sortuko' : `${n} transakzio sortuko dira`),
   recurring_info_skipped: (n: number) => `${n} errepikapen saltatuko dira`,
   recurring_info_backfill: (n: number) => `${n} falta diren transakzio gehitzen ditu`,
+  recurring_too_many_occurrences: (limit: number) => `Arau honek ${limit} transakzio baino gehiago sortuko lituzke. Mugitu hasiera-data beranduago edo gehitu amaiera-data`,
+  recurring_too_many_occurrences_end: (limit: number) => `Arau honek ${limit} transakzio baino gehiago sortuko lituzke. Mugitu hasiera-data beranduago edo aurreratu amaiera-data`,
   recurring_info_paused: 'Arau hau pausatuta dago: ez da transakziorik sortuko berriro aktibatu arte.',
 
   // Recurring skip warning

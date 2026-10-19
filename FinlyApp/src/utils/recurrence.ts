@@ -11,7 +11,13 @@ export interface RecurrenceSchedule {
   end_date?: string | null;
 }
 
-export const MAX_CATCH_UP_OCCURRENCES = 500;
+/**
+ * Per-rule bound for one catch-up run. It is also the creation/edit guard: a rule
+ * whose due backlog exceeds it is refused (the form blocks Save), so accepted rules
+ * always finish in a single run and the cursor never stays in the past.
+ * Daily: ~13.7 years, weekly: ~96 years, monthly: centuries.
+ */
+export const MAX_CATCH_UP_OCCURRENCES = 5000;
 
 /** Safety bound for the schedule-probing loops (a schedule always advances monotonically). */
 const MAX_SCHEDULE_PROBES = 10000;
@@ -402,6 +408,8 @@ export interface RecurrencePreview {
   firstDate: string;
   /** Number of transactions the save creates now (up to `today`, bounded). */
   count: number;
+  /** The due backlog exceeds the run cap: the save must be refused. */
+  truncated: boolean;
 }
 
 /**
@@ -417,11 +425,11 @@ export function recurrencePreview(
     cursor == null
       ? schedule.start_date
       : resolveEditAnchor(schedule, { cursor, scope, today, skippedFrom, previousSchedule });
-  const { occurrences } = listDueOccurrences(schedule, firstDate, today);
+  const { occurrences, truncated } = listDueOccurrences(schedule, firstDate, today);
   const missing = existingOccurrences
     ? occurrences.filter(occurrence => !existingOccurrences.has(occurrence))
     : occurrences;
-  return { firstDate, count: missing.length };
+  return { firstDate, count: missing.length, truncated };
 }
 
 export interface RecurrenceEditPlanOptions {
@@ -479,7 +487,7 @@ export function planEdit({
       nextDue: cursor,
       skippedFrom: skippedFrom ?? null,
       skipWindow: null,
-      preview: { firstDate: nextEffectiveOccurrence(schedule, cursor, today), count: 0 },
+      preview: { firstDate: nextEffectiveOccurrence(schedule, cursor, today), count: 0, truncated: false },
     };
   }
 

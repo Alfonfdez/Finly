@@ -61,6 +61,8 @@ interface TransactionHintValues {
   /** Rule mode only: the recurring name participates in the checklist. */
   ruleMode?: boolean;
   repeatNameError: RecurringNameError | null;
+  /** Rule mode: the due backlog exceeds the catch-up limit, so the save is refused. */
+  repeatTooMany?: boolean;
 }
 
 interface TransactionHintKeys {
@@ -70,6 +72,7 @@ interface TransactionHintKeys {
   repeatEnd: string;
   repeatName: string;
   repeatNameTaken: string;
+  repeatTooMany: string;
 }
 
 /**
@@ -81,7 +84,7 @@ export function getTransactionFormHintText(
   values: TransactionHintValues,
   keys: TransactionHintKeys,
 ): string {
-  const { categoryId, numericAmount, accountId, repeatEndConflict, ruleMode, repeatNameError } = values;
+  const { categoryId, numericAmount, accountId, repeatEndConflict, ruleMode, repeatNameError, repeatTooMany } = values;
 
   return joinHints(
     [
@@ -91,6 +94,7 @@ export function getTransactionFormHintText(
       repeatEndConflict ? keys.repeatEnd : null,
       ruleMode && repeatNameError === RECURRING_NAME_ERRORS.taken ? keys.repeatNameTaken : null,
       ruleMode && repeatNameError === RECURRING_NAME_ERRORS.required ? keys.repeatName : null,
+      ruleMode && repeatTooMany ? keys.repeatTooMany : null,
     ],
     { finalPeriod: true },
   );

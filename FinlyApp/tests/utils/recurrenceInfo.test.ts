@@ -25,6 +25,27 @@ describe('recurrenceInfoLines', () => {
     });
   });
 
+  it('create: warns instead of promising a count when the backlog exceeds the limit', () => {
+    const daily = schedule({ frequency: 'daily', day_of_month: null, start_date: '1990-01-01' });
+    const lines = recurrenceInfoLines(daily, { today: '2026-10-19', cursor: null, scope: 'future' }, LANGUAGES.en);
+
+    expect(lines.detailLines).toEqual([
+      'This rule would create more than 5000 transactions. Move the start date later or add an end date',
+    ]);
+  });
+
+  it('edit (Future + past): warns when the back-fill exceeds the limit', () => {
+    const daily = schedule({ frequency: 'daily', day_of_month: null, start_date: '1990-01-01' });
+    const lines = recurrenceInfoLines(
+      daily,
+      { today: '2026-10-19', cursor: '1990-01-01', scope: 'futureAndPast' },
+      LANGUAGES.en,
+    );
+
+    expect(lines.detailLines.at(-1)).toBe(
+      'This rule would create more than 5000 transactions. Move the start date later or add an end date',
+    );
+  });
   it('create: nothing is created while the start is in the future', () => {
     const future = schedule({ start_date: '2026-05-06' });
     expect(recurrenceInfoLines(future, { today: '2026-04-15', cursor: null, scope: 'future' }, LANGUAGES.en)).toMatchObject({
@@ -147,5 +168,18 @@ describe('recurrenceInfoLines', () => {
       LANGUAGES.en,
     );
     expect(lines.detailLines).toEqual(['Adds 2 missed transactions']);
+  });
+
+  it('edit (Future + past): asks for an earlier end date when one is already set', () => {
+    const daily = schedule({ frequency: 'daily', day_of_month: null, start_date: '1990-01-01', end_date: '2005-12-31' });
+    const lines = recurrenceInfoLines(
+      daily,
+      { today: '2026-10-19', cursor: '1990-01-01', scope: 'futureAndPast' },
+      LANGUAGES.en,
+    );
+
+    expect(lines.detailLines.at(-1)).toBe(
+      'This rule would create more than 5000 transactions. Move the start date later or set an earlier end date',
+    );
   });
 });

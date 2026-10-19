@@ -551,6 +551,8 @@ export const pt: Language = {
   recurring_info_count: (n: number) => (n === 0 ? 'Nenhuma transação será criada agora' : `${n} ${n === 1 ? 'transação será criada' : 'transações serão criadas'}`),
   recurring_info_skipped: (n: number) => `${n} ${n === 1 ? 'ocorrência será ignorada' : 'ocorrências serão ignoradas'}`,
   recurring_info_backfill: (n: number) => `Adiciona ${n} ${n === 1 ? 'transação em falta' : 'transações em falta'}`,
+  recurring_too_many_occurrences: (limit: number) => `Esta regra criaria mais de ${limit} transações. Move a data de início mais para a frente ou adiciona uma data de fim`,
+  recurring_too_many_occurrences_end: (limit: number) => `Esta regra criaria mais de ${limit} transações. Move a data de início mais para a frente ou antecipa a data de fim`,
   recurring_info_paused: 'Esta regra está em pausa: nenhuma transação será criada até você retomá-la.',
 
   // Recurring skip warning

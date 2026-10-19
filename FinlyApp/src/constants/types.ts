@@ -84,6 +84,7 @@ export const RECURRING_RULE_ERRORS = {
   nameRequired: 'nameRequired',
   intervalInvalid: 'intervalInvalid',
   endNotAfterStart: 'endNotAfterStart',
+  tooManyOccurrences: 'tooManyOccurrences',
 } as const;
 
 export type RecurringRuleError = keyof typeof RECURRING_RULE_ERRORS;

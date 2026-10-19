@@ -1,9 +1,9 @@
 import { withTransaction } from './drizzle/engine';
 import { recurringRepo, type RecurringRuleInput } from './repositories/recurringRepo';
-import { buildRecurrenceSchedule, isRecurrenceEnded, listDueOccurrences, nextDueOnOrAfter, planEdit, ruleEditCursor, fromDateOnly, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
+import { buildRecurrenceSchedule, isRecurrenceEnded, listDueOccurrences, nextDueOnOrAfter, planEdit, recurrencePreview, ruleEditCursor, fromDateOnly, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
 import { InvalidRecurringRuleError, validateRecurringRuleDraft, type RecurringRuleDraft } from '../utils/recurringRuleValidation';
 import { datePart } from '../utils/formatters';
-import { RECURRENCE_SCOPES, RULE_ACTIVE, USER_ID, type RecurrenceScope, type RecurrenceSpec } from '../constants/types';
+import { RECURRENCE_SCOPES, RECURRING_RULE_ERRORS, RULE_ACTIVE, USER_ID, type RecurrenceScope, type RecurrenceSpec } from '../constants/types';
 import type { RecurringRule } from './types';
 
 /**
@@ -137,6 +137,12 @@ export async function createRecurringRule(params: CreateRecurringRuleParams): Pr
       params.endDate,
       params.lastDay,
     );
+    const now = params.now ?? new Date();
+    // Refuse a backlog that would not finish in this run: every accepted rule must
+    // catch up completely, so the cursor never stays in the past.
+    if (recurrencePreview(schedule, { today: todayDateOnly(now) }).truncated) {
+      throw new InvalidRecurringRuleError(RECURRING_RULE_ERRORS.tooManyOccurrences);
+    }
     const nextDue = schedule.start_date;
 
     await recurringRepo.createWithTags(
@@ -155,7 +161,7 @@ export async function createRecurringRule(params: CreateRecurringRuleParams): Pr
       params.tagIds,
     );
 
-    return materializeDueCore(params.now ?? new Date());
+    return materializeDueCore(now);
   });
 }
 
@@ -267,7 +273,7 @@ export function saveRecurringRuleEdit(params: RecurringEditParams): Promise<numb
       interval: recurrence.interval,
     });
 
-    const { nextDue, skippedFrom } = planEdit({
+    const plan = planEdit({
       schedule,
       previousSchedule: current,
       cursor: ruleEditCursor(current, schedule),
@@ -277,9 +283,16 @@ export function saveRecurringRuleEdit(params: RecurringEditParams): Promise<numb
       ruleActive: current.active === RULE_ACTIVE,
     });
 
+    // Same guard as creation: an edit that would have to generate more than one run
+    // can hold is refused before anything is written (the reconciliation above only
+    // materializes what was already due).
+    if (plan.preview.truncated) {
+      throw new InvalidRecurringRuleError(RECURRING_RULE_ERRORS.tooManyOccurrences);
+    }
+
     await recurringRepo.updateWithTags(
       ruleId,
-      { ...updated, ...schedule, next_due: nextDue, skipped_from: skippedFrom },
+      { ...updated, ...schedule, next_due: plan.nextDue, skipped_from: plan.skippedFrom },
       tagIds,
     );
 

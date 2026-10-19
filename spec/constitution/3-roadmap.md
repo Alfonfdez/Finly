@@ -1034,3 +1034,15 @@ Layout fix found while testing 2.2.0 on device, applied 2026-10-19:
 - Gate: `npm run test:all` green; verified in the browser at 375px.
 
 Spec: spec/features/016-transaction-details-screen/.
+
+## Recurring catch-up: raise the run limit and refuse impossible backfills
+Status: completed.
+
+Edge-case fix found while testing 2.2.0 on device, applied 2026-10-19:
+- The per-rule catch-up limit is 5,000 occurrences (daily ~13.7 years, weekly ~96 years) and the same limit guards creation/editing. A rule whose due backlog exceeds it cannot be saved: the Summary and the bottom hint explain it, Save is disabled, and the service throws `tooManyOccurrences` without writing anything. The advice adapts to the draft - "Move the start date later or add an end date" when none is set, "Move the start date later or set an earlier end date" when one already exists.
+- Every accepted rule now catches up completely on save: a daily rule started in 2014 generates all 4,668 occurrences in one run, so its next due date is always in the future instead of a past cursor stuck at 500 rows. Rules already behind finish catching up on the next launch.
+- The Recurring row keeps showing the generated count ("N transactions"), never the pending backlog.
+- Tests: preview truncation and exact counts, the warning line in the Summary (create and Future + past), the form hint/disabled Save, the service rejection, and a 4,481-occurrence single-run backfill.
+- Gate: `npm run test:all` green (155 files / 1277 tests); blocked case verified in the browser.
+
+Spec: spec/features/028-recurring-transactions/.

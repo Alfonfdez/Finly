@@ -87,6 +87,7 @@ describe('getTransactionFormHintText', () => {
     repeatEnd: 'REPEAT_END',
     repeatName: 'NAME',
     repeatNameTaken: 'NAME_TAKEN',
+    repeatTooMany: 'TOO_MANY',
   };
 
   const valid = {
@@ -134,6 +135,19 @@ describe('getTransactionFormHintText', () => {
     ).toBe('');
   });
 
+  it('flags a rule whose backlog exceeds the catch-up limit', () => {
+    const ruleValues = { ...valid, ruleMode: true, repeatTooMany: true };
+
+    expect(getTransactionFormHintText(ruleValues, keys)).toBe('TOO_MANY.');
+    // Outside rule mode it is not a blocker.
+    expect(getTransactionFormHintText({ ...valid, repeatTooMany: true }, keys)).toBe('');
+    // Order: after the rule name.
+    expect(getTransactionFormHintText({
+      ...ruleValues,
+      repeatEndConflict: true,
+      repeatNameError: RECURRING_NAME_ERRORS.required,
+    }, keys)).toBe('REPEAT_END. NAME. TOO_MANY.');
+  });
   it('keeps the checklist order when several conditions apply', () => {
     expect(
       getTransactionFormHintText(
