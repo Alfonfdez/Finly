@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
-import { LIMIT_TEXT_STYLE } from '../components/componentStyles';
+import { COUNTER_STYLE, LIMIT_TEXT_STYLE } from '../components/componentStyles';
 import CharCounter from '../components/form/CharCounter';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -179,7 +179,7 @@ export default function CategoriesScreen() {
 
   return (
     <ScreenShell>
-      <View style={styles.content}>
+      <View style={styles.header}>
         <TabBar
           tabs={typeTabs(labels)}
           active={activeType}
@@ -199,31 +199,33 @@ export default function CategoriesScreen() {
         />
 
         {!selectMode && (
-          <CharCounter value={typeCount} maxLength={MAX_CATEGORIES_PER_TYPE} style={styles.counter}>
+          <CharCounter value={typeCount} maxLength={MAX_CATEGORIES_PER_TYPE} style={COUNTER_STYLE}>
             {labels.categories_counter(typeCount, MAX_CATEGORIES_PER_TYPE)}
           </CharCounter>
         )}
+      </View>
 
-        <SortRow bordered>
-          <SortToggle
-            fields={categorySortFields(labels)}
-            sortBy={sortBy}
-            direction={sortDirection}
-            onToggleSort={handleToggleSort}
-            onToggleDirection={handleToggleDirection}
-          />
-        </SortRow>
+      <SortRow bordered>
+        <SortToggle
+          fields={categorySortFields(labels)}
+          sortBy={sortBy}
+          direction={sortDirection}
+          onToggleSort={handleToggleSort}
+          onToggleDirection={handleToggleDirection}
+        />
+      </SortRow>
 
-        {selectMode && visibleIds.length > 0 && (
-          <SelectAllRow
-            allSelected={select.allSelected(visibleIds)}
-            countLabel={labels.items_count(visibleIds.length)}
-            selectAllLabel={labels.select_all}
-            deselectAllLabel={labels.deselect_all}
-            onToggle={() => select.toggleSelectAll(visibleIds)}
-          />
-        )}
+      {selectMode && visibleIds.length > 0 && (
+        <SelectAllRow
+          allSelected={select.allSelected(visibleIds)}
+          countLabel={labels.items_count(visibleIds.length)}
+          selectAllLabel={labels.select_all}
+          deselectAllLabel={labels.deselect_all}
+          onToggle={() => select.toggleSelectAll(visibleIds)}
+        />
+      )}
 
+      <View style={styles.listArea}>
         <ListOrEmpty
           empty={filteredCategories.length === 0}
           emptyState={<EmptyState {...emptyStateProps(searchActive, 'grid-outline', labels.add_cat_no_results)} />}
@@ -231,7 +233,7 @@ export default function CategoriesScreen() {
           <ScrollView
             testID={TEST_IDS.categoriesGrid}
             style={styles.scrollView}
-            contentContainerStyle={[styles.scrollContent, selectMode && LIST_TOP_GAP]}
+            contentContainerStyle={[styles.scrollContent, LIST_TOP_GAP]}
           >
             <CategoryGrid
               categories={filteredCategories}
@@ -301,7 +303,10 @@ export default function CategoriesScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: {
+  header: {
+    paddingHorizontal: 16,
+  },
+  listArea: {
     flex: 1,
     paddingHorizontal: 16,
   },
@@ -314,11 +319,5 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     ...LIST_BOTTOM_FAB_PADDING,
-  },
-  counter: {
-    fontWeight: '500',
-    textAlign: 'center',
-    paddingTop: 8,
-    paddingBottom: 12,
   },
 });
