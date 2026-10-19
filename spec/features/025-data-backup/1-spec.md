@@ -10,6 +10,7 @@
 ### 1. Platform scope
 
 - Export and import are available on **iOS, Android, and web**.
+- **The Android app data is excluded from the OS-level backup** (`expo.android.allowBackup: false` in `app.json`, which prebuild turns into `android:allowBackup="false"`). The SQLite database is app-private (`files/SQLite/Finly.db`), and while Android's auto-backup included it, installing the app again restored a snapshot taken **before** an in-app Factory Reset — bringing back accounts, recurring rules, tags and transactions that no longer existed locally. With the flag off, a reinstall always starts from the seeded, empty database, and this JSON backup is the only way to move data.
 - The backup is a single **JSON snapshot** (not a raw `.db` file): one shared code path through the unified `DatabaseHandle`, so behavior is identical on every platform.
 - **Android:** the exported file is written to the **public Downloads folder** via `MediaStore.Downloads` (the `finly-share` module, Android 10+; on older Android it falls back to the share sheet). A system alert confirms the local save and offers a **Share** action that opens the system share sheet only on demand — the file's save never depends on a share outcome. `expo-sharing` is unused on Android.
 - **iOS:** the exported file is written to `documentDirectory` via `expo-file-system` and shared through the system share sheet (the `finly-share` module resolves the outcome truthfully via `completionWithItemsHandler.completed`). Import picks a `.json` file via `expo-document-picker` on both.
@@ -95,4 +96,5 @@
 - [x] Export feedback is never false (unit-tested): Android saves to Downloads (`MediaStore` via `finly-share`) and alerts; the Share action is optional and its outcome is not reported; iOS reports the real share-sheet outcome (success vs cancel); failures show the error alert; Import shows no modal when the file picker is cancelled.
 - [x] On web, the export/import success and error feedback appears as a browser dialog (`alertInfo`/`alertError` `window.alert` fallback), since react-native-web's `Alert` is a no-op.
 - [ ] On a real device, Export on Android saves the file to the Downloads folder and shows the "Backup saved" alert with Share/Done (device-only check via the Downloads folder, not checkable on web).
+- [x] A fresh Android install starts from the seeded database only: `app.json` sets `android.allowBackup: false`, the packaged manifest carries `android:allowBackup="false"`, and uninstalling before installing again no longer restores a previous snapshot.
 - [x] `npm run test:all` is green (typecheck + lint + tests).

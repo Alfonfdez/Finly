@@ -896,3 +896,13 @@ The edit form gate only compared the transaction fields, so changing the rule na
 - Gate: `npm run test:all` green (137 files / 1150 tests).
 
 Spec: spec/features/028-recurring-transactions/ (the behaviour was already specified; the implementation now matches it).
+
+## Android: a reinstall no longer restores app data
+Status: completed.
+
+A phone reinstall came back with accounts, a recurring rule and transactions that had been deleted with the in-app Factory Reset, applied 2026-10-19:
+- **Cause:** the app used Android's default `android:allowBackup="true"` with no backup rules, so the OS cloud backup had copied the private SQLite database (`files/SQLite/Finly.db`) and Android **restored it on install**. The restored snapshot predated the reset, which is why deleted data reappeared. Ruled out independently: the APK bundles no `.db`, the seed creates only the default user, `My Wallet`/`Total` and the 31 categories, and the tag/names in question exist nowhere in the app.
+- **Fix:** `expo.android.allowBackup: false` in `app.json`; prebuild emits `android:allowBackup="false"` and the packaged manifest was checked after `assembleRelease`. Cloud backup and restore (and `adb backup`) are off, so a reinstall always starts from the seed; data moves only through the in-app JSON export/import (025). Device-to-device transfer on API 31+ is out of scope (it applies when migrating to a new phone).
+- Gate: `npm run test:all` green (137 files / 1150 tests).
+
+Spec: spec/constitution/7-platform-differences.md, spec/features/025-data-backup/.

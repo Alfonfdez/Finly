@@ -128,6 +128,18 @@ Ruling:
 
 ---
 
+## App data and OS-level backup
+
+| Platform | Behaviour |
+|----------|-----------|
+| Android | **OS auto-backup is disabled** (`expo.android.allowBackup: false` in `app.json`; prebuild emits `android:allowBackup="false"` in the packaged manifest). The database lives in the app's private folder (`files/SQLite/Finly.db`), so with Android's default `allowBackup="true"` the OS cloud backup copied it and **restored it when the app was installed again** — including a snapshot older than an in-app Factory Reset, which resurrected deleted accounts, rules, tags and transactions. `false` disables cloud backup and restore (and `adb backup`); device-to-device transfer on API 31+ is out of scope (it only happens when migrating to a new phone). |
+| iOS | No equivalent flag: reinstalling an app never restores its data (only a full device restore does), so the container stays untouched. |
+| Web | The data lives in the browser origin's IndexedDB; the app has no control over it. |
+
+Data is moved between installs or devices **only** through the in-app JSON export/import (feature 025).
+
+---
+
 ## Adding a new platform-dependent feature
 
 Before merging any feature with platform guards:

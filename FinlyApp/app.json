@@ -20,7 +20,8 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.finly.app",
-      "versionCode": 3
+      "versionCode": 3,
+      "allowBackup": false
     },
     "web": {
       "favicon": "./assets/favicon.png"
