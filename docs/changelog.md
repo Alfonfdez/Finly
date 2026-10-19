@@ -4086,3 +4086,8 @@
 - New constants (`ACCOUNT_SORT_BY`, `CATEGORY_SORT_BY`), pure helpers (`utils/accountSort`, `utils/categorySort`) and `SortToggle` field builders; four i18n keys (name/balance/usage) in the 9 languages.
 - Both sorts are session-only, consistent with the other lists until the persistence follow-up.
 - Tests: the two sort helpers (pinned rows, natural directions, ties, no mutation), the Accounts screen order + direction flip, the Categories screen usage order + counts + pinned fallback, and the CategoryGrid count badge.
+
+[2026-10-19] style | FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/tests/screens/CategoriesScreen.test.tsx, spec/features/008-categories-screen/1-spec.md
+- Categories: the sort separator now spans the full width and the grid starts 16 px below it in normal and selection mode, matching Tags/Comments/Accounts.
+- Categories: the counter above the strip uses the shared COUNTER_STYLE, so the spacing rhythm is identical to the other list screens.
+- Updated the Categories screen test to expect the permanent 16 px gap below the separator.

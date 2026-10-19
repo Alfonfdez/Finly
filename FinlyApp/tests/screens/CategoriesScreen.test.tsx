@@ -165,17 +165,17 @@ describe('CategoriesScreen', () => {
     expect(nav.navigate).toHaveBeenCalledWith('CreateCategory', { type: 'expense' });
   });
 
-  it('adds the standard gap below the select-all line in select mode', async () => {
+  it('keeps the standard gap below the controls separator in normal and select mode', async () => {
     setAppData({ categories: [expenseCategory(1, 'Food'), expenseCategory(2, 'Transport')] });
     const view = await renderWithHeader();
 
-    // Normal mode: there is no select-all row, so the grid keeps its own spacing.
-    expect(gridPaddingTop(view)).toBeUndefined();
+    // Normal mode: the tiles must not touch the sort row separator line.
+    expect(gridPaddingTop(view)).toBe(16);
 
     await fireEvent.press(view.getByLabelText('Enter select mode'));
     await fireEvent.press(await view.findByText('Select all'));
 
-    // The tiles must not touch the separator line of the row above them.
+    // Selection mode: the gap is kept below the select-all row separator.
     expect(gridPaddingTop(view)).toBe(16);
   });
 });

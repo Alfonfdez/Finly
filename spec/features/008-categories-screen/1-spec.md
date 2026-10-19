@@ -52,6 +52,7 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 - Usage is the **lifetime number of transactions** in the category (`transactionRepository.countByCategoryIdsMap`, all accounts). It is shown as a small gray count badge over each tile icon; a zero count hides the badge. The tile accessibility label appends the count.
 - The fallback categories **Others**/**Other** stay pinned last in both modes (catch-all options), and the Expense/Income tabs, search and multi-select keep working on the sorted subset.
 - Ties break by display name (`getDisplayCategoryName`), then id.
+- The strip keeps the shared layout standard: its separator spans the full width (like Tags/Comments/Accounts) and the grid starts 16 px below it, in normal and selection mode.
 
 ### 7. Multi-select bulk delete
 
