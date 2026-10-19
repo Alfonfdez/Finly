@@ -287,7 +287,7 @@ An eye icon appears next to every masked balance. The icon represents the curren
 3. Navigate to AccountsScreen → balances hidden again (reset to setting).
 4. Navigate back to HomeScreen → balances hidden again (reset to setting).
 
-**Implementation:** each screen manages local `isRevealed` state via `useState`. State resets on screen focus via `useFocusEffect` (screens) or `useEffect` on `visible` change (modals). The `isBalanceHidden` derived value is `config.hideBalances !== isRevealed`.
+**Implementation:** each screen manages local `isRevealed` state via `useState` (`hooks/useBalanceVisibility.ts`). State resets on screen focus via `useFocusEffect` (screens) or `useEffect` on `visible` change (modals), and also when the setting itself changes, so the new setting applies its own default. The `isBalanceHidden` derived value is `config.hideBalances !== isRevealed`.
 
 ### 6. Data Subsection
 

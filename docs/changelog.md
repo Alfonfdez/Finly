@@ -3973,3 +3973,8 @@
 - Android: `expo.android.allowBackup: false` in `app.json` (prebuild emits `android:allowBackup="false"` in the packaged manifest). With Android's default `true` the OS cloud backup copied the app's private SQLite database and **restored it on reinstall**, resurrecting a snapshot taken before an in-app Factory Reset (accounts, recurring rules, tags and transactions that no longer existed locally).
 - Ruled out other causes while diagnosing: the APK bundles no `.db` file, the seed only creates the default user, `My Wallet`/`Total` and the 31 categories, and nothing in the code creates the data that reappeared.
 - With backups off, a reinstall always starts from the seed and data moves only through the in-app JSON export/import (025); documented in the platform-differences doc, spec 025, the roadmap and `AGENTS.md`.
+
+[2026-10-19] fix | FinlyApp/src/hooks/useBalanceVisibility.ts, FinlyApp/tests/hooks/useBalanceVisibility.test.tsx, spec/features/003-settings-screen/1-spec.md, spec/constitution/3-roadmap.md
+- The balance eye icon works again with "Hide account balances" off: the audit batch had replaced the documented `hideBalances !== isRevealed` with `hide && !revealed`, which made the icon a no-op when the setting was off (it must be "Privacy off, tap to temporarily hide", spec 003 §5.6). The XOR is restored, so the setting is the default and a tap flips it both ways, matching the account picker.
+- The temporary state now also resets when the screen regains focus (`useFocusEffect`, as `useFocusLoad` does), so leaving Home/Accounts and coming back shows the balances the setting asks for; changing the setting likewise applies the new default.
+- Tests: `useBalanceVisibility` covers both directions, the focus reset and the setting-change reset.

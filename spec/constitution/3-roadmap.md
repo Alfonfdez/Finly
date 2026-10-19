@@ -872,7 +872,7 @@ A full pre-release audit of the 2.2.0 code base, applied 2026-10-17. Only the it
 - The default custom period ends at **end of today** instead of "now", so transactions recorded later today are included.
 
 **Fixed (polish and robustness):**
-- Balance visibility no longer inverts when the "hide balances" setting changes (XOR replaced by `hide && !revealed`, with the reveal state reset on a setting change).
+- Balance visibility keeps the setting as the **default** and the eye icon as a temporary toggle in both directions (`hideBalances !== isRevealed`); the temporary state is dropped when the setting changes or the screen regains focus (see the follow-up entry below - this bullet originally replaced the XOR by mistake).
 - The category filter can be cleared again (an empty selection applies as "all categories"; the button no longer reads "Apply (0)").
 - The account modal highlights the currently selected account instead of the one the form opened with.
 - The All-transactions type tab is local to the screen (no longer clobbered by the Home type switcher) and the tag selection re-syncs when the screen is re-entered with new params.
@@ -906,3 +906,14 @@ A phone reinstall came back with accounts, a recurring rule and transactions tha
 - Gate: `npm run test:all` green (137 files / 1150 tests).
 
 Spec: spec/constitution/7-platform-differences.md, spec/features/025-data-backup/.
+
+## Balance visibility: setting is the default, the eye is temporary
+Status: completed.
+
+The eye icon had stopped working when "Hide account balances" was off, fixed 2026-10-19:
+- The 2.2.0 audit had replaced the documented `hideBalances !== isRevealed` with `hide && !revealed`, which made the eye a no-op with the setting off (spec 003 ?5.6 expects it to toggle both ways: "Privacy off, tap to temporarily hide"). The XOR is restored, so the setting is the default and a tap flips it in either direction - matching the account picker, which never lost the behaviour.
+- The temporary state is dropped when the setting changes (the new setting applies its own default) and when the screen regains focus (`useFocusEffect`, the same pattern as `useFocusLoad`), so leaving Home/Accounts and coming back shows the balances the setting asks for.
+- Tests: `useBalanceVisibility` now covers both directions, the focus reset and the setting-change reset.
+- Gate: `npm run test:all` green (137 files / 1151 tests).
+
+Spec: spec/features/003-settings-screen/ (behaviour unchanged; the implementation matches it again).
