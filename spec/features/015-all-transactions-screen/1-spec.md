@@ -36,6 +36,7 @@
   - Formatted with `formatCurrency()`.
   - Green color with "+" prefix if positive, red with "-" prefix if negative.
   - Balance reflects **all active filters** (type, category, period, tags).
+  - The total follows the privacy setting ("Hide balances and totals", spec 003 §5.6): when it is on the figure is masked and an eye icon next to it reveals it temporarily (reset when the screen regains focus). Individual transaction amounts stay visible.
 
 ### 4. Category filter
 
@@ -148,6 +149,7 @@
 - [x] The Total account is shown in the account selector modal.
 - [x] When the active account is Total, the account filter is skipped and all transactions matching other filters are shown.
 - [x] The balance updates dynamically based on all active filters (type, category, period, tags).
+- [x] The period total follows the privacy setting (masked with an eye icon to reveal it temporarily; reset on refocus), while the transaction rows keep their amounts visible.
 - [x] A category filter button shows "All categories" by default or "N categories" when filtered.
 - [x] Tapping the category button opens the CategoryFilterModal (021).
 - [x] Selecting categories in the modal filters the transaction list.

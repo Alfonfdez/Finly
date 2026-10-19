@@ -1,11 +1,12 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useBalanceVisibility } from '../hooks/useBalanceVisibility';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useRecurringRuleNames } from '../hooks/useRecurringRuleNames';
 import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
@@ -15,13 +16,14 @@ import { usePeriodNavigation } from '../hooks/usePeriodNavigation';
 import { TRANSACTION_TYPES, TYPE_FILTERS, type NavigationProp, type TransactionTypeFilter } from '../constants/types';
 import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
-import { formatSignedCurrency, resolvePeriodRange } from '../utils/formatters';
+import { formatSignedCurrency, HIDDEN_BALANCE, resolvePeriodRange } from '../utils/formatters';
 import { netTransactionTotal } from '../utils/calculator';
 import { showErrorAlert } from '../utils/errors';
 import { isWeb } from '../utils/platform';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { t } from '../i18n';
 import AccountTrigger from '../components/AccountTrigger';
+import EyeToggle from '../components/EyeToggle';
 import SortToggle, { transactionSortFields } from '../components/SortToggle';
 import TabBar, { typeTabs } from '../components/TabBar';
 import RecurringViewChip from '../components/RecurringViewChip';
@@ -39,6 +41,7 @@ export default function AllTransactionsScreen() {
   const fs = useFontSize();
   const labels = t();
   const recurringNames = useRecurringRuleNames();
+  const { isBalanceHidden, toggleReveal } = useBalanceVisibility(config.hideBalances);
 
   const [typeTab, setTypeTab] = useState<TransactionTypeFilter>(TYPE_FILTERS.all);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
@@ -157,9 +160,12 @@ export default function AllTransactionsScreen() {
               accounts={accountsWithBalance}
               onPress={filters.openAccountModal}
             />
-            <Text style={[styles.accountBalance, { color: accountBalance >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
-              {formatSignedCurrency(accountBalance, config.currency, config.decimalSeparator)}
-            </Text>
+            <View style={styles.balanceRow}>
+              <Text style={[styles.accountBalance, { color: isBalanceHidden ? c.textSecondary : accountBalance >= 0 ? c.green : c.red, fontSize: fs(22) }]}>
+                {isBalanceHidden ? HIDDEN_BALANCE : formatSignedCurrency(accountBalance, config.currency, config.decimalSeparator)}
+              </Text>
+              <EyeToggle isHidden={isBalanceHidden} onToggle={toggleReveal} color={c.textSecondary} />
+            </View>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={isWeb}
@@ -225,6 +231,12 @@ export default function AllTransactionsScreen() {
 }
 
 const styles = StyleSheet.create({
+  balanceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    alignSelf: 'center',
+  },
   accountBalance: { fontWeight: '700' },
   controlsRow: {
     alignSelf: 'stretch',

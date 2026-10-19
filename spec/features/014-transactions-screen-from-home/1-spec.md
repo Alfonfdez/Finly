@@ -13,7 +13,7 @@
 - **Stack navigator header** with back button and title "Transactions" (multilingual).
 - Category section below the header:
   - **Row 1:** category icon (with background color) + category name.
-  - **Row 2:** formatted category total (`formatCurrency`), green with "+" prefix if positive, red with "-" prefix if negative.
+  - **Row 2:** formatted category total (`formatCurrency`), green with "+" prefix if positive, red with "-" prefix if negative. It follows the privacy setting ("Hide balances and totals", spec 003 §5.6): masked with an eye icon beside it when the setting is on.
   - **Row 3:** period indicator line (secondary color), `<period label> · <date/range>`, built from the navigation `period` + `startDate`/`endDate` params so the user always knows which period the list is showing:
     - **Day:** `Day · September 2, 2026` (via `formatDateLong`).
     - **Week:** `Week · September 1, 2026 – September 7, 2026` (start–end range).
@@ -133,6 +133,7 @@
 - [x] The Stack header shows a back button and title "Transactions".
 - [x] Below the header, the category icon + category name is displayed.
 - [x] Below the category name, the formatted total with color (green/red) and prefix (+/-) is displayed.
+- [x] The category total follows the privacy setting (masked with an eye icon beside it; reset on refocus), while the transaction rows keep their amounts visible.
 - [x] The selected account is shown with icon + name + chevron-down.
 - [x] On tapping the account, the modal opens with the account list (radio + icon + name + balance).
 - [x] The modal allows canceling or selecting a different account.

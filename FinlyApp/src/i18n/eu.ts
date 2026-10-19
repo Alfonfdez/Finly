@@ -35,7 +35,7 @@ export const eu: Language = {
   settings_labels: 'Etiketak',
   settings_comments: 'Iruzkinak',
   settings_photo: 'Argazkia',
-  settings_hide_balances: 'Kontu saldoak ezkutatu',
+  settings_hide_balances: 'Ezkutatu saldoak eta totalak',
   settings_export_data: 'Datuak esportatu',
   settings_import_data: 'Datuak inportatu',
   settings_export_success_title: 'Esportazioa osatuta',
@@ -568,8 +568,8 @@ export const eu: Language = {
   color_grid_more: 'Kolore gehiago',
 
   // Accessibility labels
-  a11y_show_balances: 'Saldoak erakutsi',
-  a11y_hide_balances: 'Saldoak ezkutatu',
+  a11y_show_balances: 'Erakutsi zenbatekoak',
+  a11y_hide_balances: 'Ezkutatu zenbatekoak',
   a11y_select_mode: 'Hautapen moduan sartu',
   a11y_exit_select_mode: 'Hautapen modutik atera',
   a11y_close_search: 'Bilaketa itxi',

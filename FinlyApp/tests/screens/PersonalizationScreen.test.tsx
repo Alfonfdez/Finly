@@ -29,7 +29,7 @@ describe('PersonalizationScreen', () => {
     expect(view.getAllByText('Edit recurring rule').length).toBeGreaterThan(0);
     expect(view.getAllByText('Default account').length).toBeGreaterThan(0);
     expect(view.getAllByText('Default period').length).toBeGreaterThan(0);
-    expect(view.getByText('Hide account balances')).toBeTruthy();
+    expect(view.getByText('Hide balances and totals')).toBeTruthy();
     // Add and Modify each have Labels/Comments/Photo; New and Edit rule each have Labels/Comments.
     expect(view.getAllByText('Labels')).toHaveLength(4);
     expect(view.getAllByText('Comments')).toHaveLength(4);
@@ -54,7 +54,7 @@ describe('PersonalizationScreen', () => {
 
   it('toggles hide balances', async () => {
     const view = await render(<PersonalizationScreen />);
-    fireEvent(view.getByRole('switch', { name: 'Hide account balances' }), 'valueChange', true);
+    fireEvent(view.getByRole('switch', { name: 'Hide balances and totals' }), 'valueChange', true);
     expect(getConfigStub().updateConfig).toHaveBeenCalledWith({ hideBalances: true });
   });
 });

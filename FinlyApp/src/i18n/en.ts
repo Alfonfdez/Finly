@@ -33,7 +33,7 @@ export const en = {
   settings_labels: 'Labels',
   settings_comments: 'Comments',
   settings_photo: 'Photo',
-  settings_hide_balances: 'Hide account balances',
+  settings_hide_balances: 'Hide balances and totals',
   settings_export_data: 'Export data',
   settings_import_data: 'Import data',
   settings_export_success_title: 'Export complete',
@@ -566,8 +566,8 @@ export const en = {
   color_grid_more: 'More colors',
 
   // Accessibility labels
-  a11y_show_balances: 'Show balances',
-  a11y_hide_balances: 'Hide balances',
+  a11y_show_balances: 'Show amounts',
+  a11y_hide_balances: 'Hide amounts',
   a11y_select_mode: 'Enter select mode',
   a11y_exit_select_mode: 'Exit select mode',
   a11y_close_search: 'Close search',

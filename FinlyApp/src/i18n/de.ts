@@ -35,7 +35,7 @@ export const de: Language = {
   settings_labels: 'Beschriftungen',
   settings_comments: 'Kommentare',
   settings_photo: 'Foto',
-  settings_hide_balances: 'Kontostände ausblenden',
+  settings_hide_balances: 'Salden und Summen verbergen',
   settings_export_data: 'Daten exportieren',
   settings_import_data: 'Daten importieren',
   settings_export_success_title: 'Export abgeschlossen',
@@ -568,8 +568,8 @@ export const de: Language = {
   color_grid_more: 'Weitere Farben',
 
   // Accessibility labels
-  a11y_show_balances: 'Kontostände anzeigen',
-  a11y_hide_balances: 'Kontostände ausblenden',
+  a11y_show_balances: 'Beträge anzeigen',
+  a11y_hide_balances: 'Beträge verbergen',
   a11y_select_mode: 'Auswahlmodus aktivieren',
   a11y_exit_select_mode: 'Auswahlmodus beenden',
   a11y_close_search: 'Suche schließen',

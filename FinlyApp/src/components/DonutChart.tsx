@@ -2,13 +2,15 @@ import { memo, useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { G, Circle, Path } from 'react-native-svg';
 import type { CategoryWithTotal } from '../constants/types';
-import { formatAmount, fitFontSize } from '../utils/formatters';
+import { formatAmount, fitFontSize, HIDDEN_BALANCE } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 
 interface Props {
   data: CategoryWithTotal[];
   total: number;
+  /** "Hide balances and totals" is on: show the mask instead of the total. */
+  hidden?: boolean;
 }
 
 const SIZE = 160;
@@ -26,11 +28,11 @@ function describeArc(startAngle: number, endAngle: number): string {
   return `M ${startX} ${startY} A ${RADIUS} ${RADIUS} 0 ${largeArcFlag} 1 ${endX} ${endY}`;
 }
 
-function DonutChartInner({ data, total }: Props) {
+function DonutChartInner({ data, total, hidden = false }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
 
-  const formatted = formatAmount(total, config);
+  const formatted = hidden ? HIDDEN_BALANCE : formatAmount(total, config);
   const totalFontSize = fitFontSize(formatted, fs(18), HOLE_SIZE);
 
   const segments = useMemo(() => {
@@ -72,7 +74,7 @@ function DonutChartInner({ data, total }: Props) {
         </G>
       </Svg>
       <View style={styles.totalContainer}>
-        <Text style={[styles.total, { color: c.text, fontSize: totalFontSize }]} numberOfLines={1}>
+        <Text style={[styles.total, { color: hidden ? c.textSecondary : c.text, fontSize: totalFontSize }]} numberOfLines={1}>
           {formatted}
         </Text>
       </View>

@@ -3,6 +3,8 @@ import { render, fireEvent } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import HomeScreen from '../../src/screens/HomeScreen';
 import { buildAppMock, setAppData, setAppState, resetAppStub } from '../component/helpers/appStub';
+import { setConfig } from '../component/helpers/configStub';
+import { HIDDEN_BALANCE } from '../../src/utils/formatters';
 import type { Account } from '../../src/database/types';
 
 vi.mock('react-native-svg', () => {
@@ -55,6 +57,17 @@ describe('HomeScreen', () => {
 
   afterEach(() => {
     resetAppStub();
+  });
+
+  it('masks the header, chart and category totals when hide balances is on, and the eye reveals them', async () => {
+    setConfig({ hideBalances: true });
+    const view = await render(<HomeScreen />);
+
+    // Header masks + the donut centre: the totals follow the setting too.
+    expect(view.getAllByText(HIDDEN_BALANCE).length).toBeGreaterThanOrEqual(2);
+
+    await fireEvent.press(view.getByLabelText('Show amounts'));
+    expect(view.queryByText(HIDDEN_BALANCE)).toBeNull();
   });
 
   it('shows a loading state while no account is active', async () => {

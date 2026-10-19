@@ -2,7 +2,7 @@ import { useCallback, memo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { type CategoryWithTotal, MAX_VISIBLE_TAGS } from '../constants/types';
 import { isUntaggedTag } from '../utils/tagFilter';
-import { formatAmount } from '../utils/formatters';
+import { formatAmount, HIDDEN_BALANCE } from '../utils/formatters';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -22,11 +22,14 @@ interface Props {
   tagBreakdowns?: Map<number, TagBreakdown[]>;
   expandedCategoryIds?: Set<number>;
   onToggleExpand?: (id: number) => void;
+  /** "Hide balances and totals" is on: show the mask instead of each category total. */
+  hidden?: boolean;
 }
 
 function CategoryListInner({
   categories, onPress,
   tagBreakdowns, expandedCategoryIds, onToggleExpand,
+  hidden = false,
 }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
@@ -87,7 +90,9 @@ function CategoryListInner({
           }
           right={
             <View style={styles.amounts}>
-              <Text style={[styles.total, { color: c.text, fontSize: fs(14) }]}>{formatAmount(item.total, config)}</Text>
+              <Text style={[styles.total, { color: hidden ? c.textSecondary : c.text, fontSize: fs(14) }]}>
+                {hidden ? HIDDEN_BALANCE : formatAmount(item.total, config)}
+              </Text>
               <Text style={[styles.percentage, { color: c.textSecondary, fontSize: fs(12) }]}>{item.percentage.toFixed(1)}%</Text>
             </View>
           }
@@ -98,7 +103,7 @@ function CategoryListInner({
         {renderTagChips(item.id)}
       </View>
     );
-  }, [c, labels, fs, config, onPress, renderTagChips]);
+  }, [c, labels, fs, config, onPress, renderTagChips, hidden]);
 
   return (
     <FlatList

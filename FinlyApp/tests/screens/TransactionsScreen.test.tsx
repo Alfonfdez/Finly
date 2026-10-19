@@ -1,9 +1,21 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, waitFor, userEvent } from '@testing-library/react-native';
+import { fireEvent, render, waitFor, userEvent } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import TransactionsScreen from '../../src/screens/TransactionsScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
+import { setConfig, getConfigStub } from '../component/helpers/configStub';
+import { formatSignedCurrency, HIDDEN_BALANCE } from '../../src/utils/formatters';
 import type { Account, Category, Transaction } from '../../src/database/types';
+
+function flattenStyle(style: unknown): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  const walk = (value: unknown) => {
+    if (Array.isArray(value)) value.forEach(walk);
+    else if (value && typeof value === 'object') Object.assign(out, value);
+  };
+  walk(style);
+  return out;
+}
 
 const list = vi.fn(async (_q: unknown) => [] as Transaction[]);
 const deleteMany = vi.fn(async (_ids: number[]) => undefined);
@@ -83,6 +95,24 @@ describe('TransactionsScreen', () => {
 
   afterEach(() => {
     resetAppStub();
+  });
+
+  it('masks the category total when hide balances is on, and the eye reveals it', async () => {
+    setConfig({ hideBalances: true });
+    routeParams.categoryId = 1;
+    list.mockResolvedValue([tx(1, { description: 'Coffee', amount: 250 })]);
+    const view = await render(<TransactionsScreen />);
+
+    await waitFor(() => expect(view.getByText(HIDDEN_BALANCE)).toBeTruthy());
+    await waitFor(() => expect(view.getByText('Coffee')).toBeTruthy());
+    expect(flattenStyle(view.getByText(HIDDEN_BALANCE).props.style).color).toBe('#94A3B8');
+
+    await fireEvent.press(view.getByLabelText('Show amounts'));
+    expect(view.queryByText(HIDDEN_BALANCE)).toBeNull();
+
+    const cfg = getConfigStub().config;
+    const shown = formatSignedCurrency(-250, cfg.currency, cfg.decimalSeparator);
+    expect(view.getAllByText(shown).some((node) => flattenStyle(node.props.style).color === '#F87171')).toBe(true);
   });
 
   it('shows the account trigger and empty state with no transactions', async () => {

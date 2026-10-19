@@ -1,7 +1,7 @@
 import { memo, useState } from 'react';
 import { View, Text, StyleSheet, type LayoutChangeEvent } from 'react-native';
 import type { CategoryWithTotal } from '../constants/types';
-import { formatAmount, fitFontSize } from '../utils/formatters';
+import { formatAmount, fitFontSize, HIDDEN_BALANCE } from '../utils/formatters';
 import { getDisplayCategoryName } from '../i18n';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -10,16 +10,18 @@ import { CARD_BORDER_RADIUS } from './componentStyles';
 interface Props {
   data: CategoryWithTotal[];
   total?: number;
+  /** "Hide balances and totals" is on: show the mask instead of the total. */
+  hidden?: boolean;
 }
 
 const H_PADDING = 16;
 
-function BarChartInner({ data, total = 0 }: Props) {
+function BarChartInner({ data, total = 0, hidden = false }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const [width, setWidth] = useState(0);
 
-  const formatted = formatAmount(total, config);
+  const formatted = hidden ? HIDDEN_BALANCE : formatAmount(total, config);
   // Same style as the donut centre: fit the total to the available width.
   const totalFontSize = width > 0 ? fitFontSize(formatted, fs(18), width - H_PADDING * 2) : fs(18);
 
@@ -27,7 +29,7 @@ function BarChartInner({ data, total = 0 }: Props) {
 
   return (
     <View style={styles.container} onLayout={handleLayout}>
-      <Text style={[styles.total, { color: c.text, fontSize: totalFontSize }]} numberOfLines={1}>
+      <Text style={[styles.total, { color: hidden ? c.textSecondary : c.text, fontSize: totalFontSize }]} numberOfLines={1}>
         {formatted}
       </Text>
 
