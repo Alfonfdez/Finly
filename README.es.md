@@ -106,6 +106,7 @@ Esto inicia Metro Bundler. Después:
 | `npm test` | Ejecuta la suite de Vitest |
 | `npm run test:watch` | Ejecuta Vitest en modo watch |
 | `npm run test:all` | typecheck + lint + tests (la verificación local completa) |
+| `npm run lint:fix` | Corrige automáticamente los problemas de lint/formato (sangría, comillas, comas finales, salto de línea final) |
 | `npm run i18n` | Añade, actualiza, elimina o lista claves de traducción en los 9 idiomas |
 
 ### Pruebas

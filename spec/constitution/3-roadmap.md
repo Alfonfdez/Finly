@@ -917,3 +917,18 @@ The eye icon had stopped working when "Hide account balances" was off, fixed 202
 - Gate: `npm run test:all` green (137 files / 1151 tests).
 
 Spec: spec/features/003-settings-screen/ (behaviour unchanged; the implementation matches it again).
+
+## Formatting is enforced by ESLint (@stylistic), step 1: adopt the rules
+Status: completed.
+
+The style rules that used to live only in the docs are now machine-enforced, applied 2026-10-19. This is the first of **two** steps; the second one is the formatting pass described at the end of this entry:
+- `@stylistic/eslint-plugin` (5.10.0) added; `FinlyApp/eslint.config.js` became `eslint.config.mjs` because the plugin is ESM-only (the expo config is imported as `eslint-config-expo/flat/default.js`, since that package has no `exports` map and a bare directory import is rejected in ESM).
+- Rules that reported **nothing** on the current code are errors now, so they gate immediately: `indent` (2 spaces, `case` one level - the rule that would have caught the recent mis-indents), `jsx-quotes`, `jsx-indent-props`, `object-curly-spacing`, `array-bracket-spacing`, `template-curly-spacing`, `space-in-parens`, `space-before-function-paren` (house style: anonymous/async arrow always, named never), `arrow-spacing`, `keyword-spacing`, `space-before-blocks`, `space-infix-ops`, `key-spacing`, `padded-blocks`, `no-trailing-spaces`.
+- Rules with existing violations are **warnings** until the formatting pass: `comma-dangle` (182), `eol-last` (29), `quotes` (12), `unicode-bom` (2), `no-multiple-empty-lines` (3), `semi` (1), `brace-style` (1), `no-multi-spaces` (1). Each carries a `// PR 2: promote to error` marker in the config.
+- **`expo lint` only lints `src`/`app`/`components` when called without arguments**, so `tests/` had never been linted (which is why the test-file indentation slips passed CI). The scripts now pass `.` (`npm run lint`, plus the new `npm run lint:fix`), covering 385 files: `src`, `tests`, `scripts` and the root configs. Node globals are declared for `scripts/**`, and the test-only "probe component" pattern (assigning a module-level variable during render) has `react-hooks/globals` off under `tests/**`.
+- `.editorconfig` at the repo root mirrors the style for editors (no `end_of_line`, deliberately: the committed blobs are LF while Windows checkouts are CRLF).
+- Docs: `AGENTS.md` LINT section and CODE STYLE bullet, and the `npm run lint:fix` row in the commands table of the 9 READMEs.
+- **Follow-up (next PR):** run `npm run lint:fix` (about 100 files, whitespace/trailing commas only) and promote the eight warning rules to `error` in the same commit.
+- Gate: `npm run test:all` green (137 files / 1151 tests) with `npm run lint` at 0 errors; a deliberately mis-indented line fails the gate (verified, then reverted).
+
+Spec: no behaviour change (tooling only).
