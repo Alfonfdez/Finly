@@ -21,6 +21,7 @@
 
 ## ENVIRONMENT
 - Host: Windows, PowerShell 5.1 shell. There is NO ripgrep in the shell — use the grep/glob/read tools for searching.
+- **Never write non-ASCII text through the shell**: a PowerShell here-string piped to a program (`@'…'@ | node`, `Set-Content` from a here-string, `>` redirects) is re-encoded with the console codepage and turns `á é í ñ ç ü · —` into `?`. Write such files with the Write/Edit tools (UTF-8), or put the text in a JSON/values file written with Write and have the script read it. `scripts/i18n.mjs` only covers `FinlyApp/src/i18n/*.ts` — not the READMEs or any other file.
 - Web verification uses the Playwright MCP browser against the Expo web dev server at `http://localhost:8081`.
 - Dev-server lifecycle: start `npx expo start --web` (port 8081) in the background, poll the URL until it serves HTML, and always terminate it when done (free port 8081). Concrete commands are in `docs/harnesses.md` and the `verification-loop` skill.
 
@@ -75,8 +76,12 @@ npx eas-cli build --platform android --profile production --no-wait     # store 
 
 ## LINT
 ```bash
-npx expo lint
+npm run lint       # expo lint .  (src, tests, scripts, root configs)
+npm run lint:fix   # the same with --fix: indent, quotes, trailing commas, EOF newlines
 ```
+- Formatting is enforced by **`@stylistic/eslint-plugin`** in `FinlyApp/eslint.config.mjs` (ESM; `expo lint` accepts `.mjs`). 2-space indent, `case` indented one level, single quotes, semicolons, no trailing whitespace, final newline.
+- The repo-root `.editorconfig` mirrors the style for editors; ESLint is the gate (CI runs `test:all`).
+- Run `npm run lint:fix` before committing style changes; never hand-fix indentation.
 
 ## VERIFICATION
 - A change is only "done" when `npm run test:all` passes (typecheck + lint + tests).
@@ -151,4 +156,5 @@ FinlyApp/
   ```
   Domain vocabularies go in `src/constants/types.ts` (`TRANSACTION_TYPES`, `RECURRENCE_SCOPES`, `RECURRING_NAME_ERRORS`, `SORT_BY`, …); a union owned by a single component is colocated with it (`HINT_TONES` in `components/form/FormHintSlot.tsx`, `PICKING_PHASE` in `calendars/PeriodPicker.tsx`).
 - **Limits are constants, never literals at the call site**: max lengths/counts live in `src/constants/types.ts` (`MAX_*`, `REPEAT_NAME_MAX_LENGTH`) and are passed down as props.
+- **Formatting is machine-enforced**: 2-space indentation (`case` one level deeper), single quotes, semicolons, trailing commas in multiline literals, a final newline and no trailing whitespace. `npm run lint:fix` applies it; `npm run lint` must report 0 errors.
 - Design tokens (spacing, radii, opacity, counter font size) live in `src/components/componentStyles.ts` or the component that owns them — no duplicated magic numbers.
