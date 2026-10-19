@@ -114,6 +114,7 @@ used identically on every platform. The harness guarantees that parity:
   boot with the expected seed counts.
 - **Native parity**: the same engine backs the `expo-sqlite` mock (`sqliteMock.ts`), so the
   native repos run against real SQLite semantics in Node (WASM) without a device.
+- **Limits of the Node suite**: it runs the shared sql.js engine behind an `expo-sqlite` mock, so it proves the SQL/zod/repository contract, not the native driver itself. The real native engine is exercised on a device by the release APK + the Maestro flows (see Phase C); the drawer navigation is likewise covered by `flow-smoke` (there is no AppNavigator unit test).
 - **DB drift test**: after running migrations on sql.js, `PRAGMA table_info` must match
   `src/database/types.ts`; seed row counts must match the seed data, `user_version` must be
   4, config rows must equal `DB_KEY_MAP`, and re-init must be idempotent. This catches a

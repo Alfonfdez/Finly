@@ -34,7 +34,7 @@ Tudo funciona **no dispositivo**: seus dados vivem em um banco de dados SQLite l
 
 ![Tela inicial](images/screenshots/v2-01-a-home-empty.png)<br>*Tela inicial antes de configurar qualquer conta.*<br><br>
 ![Tela inicial](images/screenshots/v2-01-b-home.png)<br>*Tela inicial com contas, gráfico de rosca e detalhamento por categorias.*<br><br>
-![Menu hambúrguer](images/screenshots/v2-02-hamburger.png)<br>*Menu lateral com Início, Contas, Categorias, Etiquetas, Comentários, Recorrentes, Todas as transações e Configurações.*<br><br>
+![Menu hambúrguer](images/screenshots/v3-02-hamburger.png)<br>*Menu lateral com Início, Contas, Categorias, Etiquetas, Comentários, Recorrentes, Todas as transações e Configurações.*<br><br>
 ![Adicionar transação](images/screenshots/v2-03-add-transaction.png)<br>*Adicione uma despesa ou receita com valor, conta, categoria, dia, etiquetas, comentário e foto.*<br><br>
 ![Seletor de data](images/screenshots/v2-04-date-picker.png)<br>*Seletor de calendário para escolher um dia, semana, mês, ano ou intervalo de período personalizado.*<br><br>
 ![Categorias](images/screenshots/v2-05-categories.png)<br>*Categorias organizadas por tipo (despesas/receitas) em uma grade 4×N.*<br><br>

@@ -34,7 +34,7 @@ Dena **gailuan** exekutatzen da: zure datuak tokiko SQLite datu-base batean bizi
 
 ![Hasierako pantaila](images/screenshots/v2-01-a-home-empty.png)<br>*Hasierako pantaila edozein kontu konfiguratu aurretik.*<br><br>
 ![Hasierako pantaila](images/screenshots/v2-01-b-home.png)<br>*Hasierako pantaila kontuekin, donut grafikoarekin eta kategoria-sailkapenarekin.*<br><br>
-![Alboko menua](images/screenshots/v2-02-hamburger.png)<br>*Alboko menua: Hasiera, Kontuak, Kategoriak, Etiketak, Iruzkinak, Errepikariak, Transakzio guztiak eta Ezarpenak.*<br><br>
+![Alboko menua](images/screenshots/v3-02-hamburger.png)<br>*Alboko menua: Hasiera, Kontuak, Kategoriak, Etiketak, Iruzkinak, Errepikariak, Transakzio guztiak eta Ezarpenak.*<br><br>
 ![Transakzioa gehitu](images/screenshots/v2-03-add-transaction.png)<br>*Gehitu gastu edo sarrera bat zenbateko, kontu, kategoria, egun, etiketa, iruzkin eta argazkiarekin.*<br><br>
 ![Data-hautatzailea](images/screenshots/v2-04-date-picker.png)<br>*Egutegi-hautatzailea egun, aste, hilabete, urte edo aldi-tarte pertsonalizatua aukeratzeko.*<br><br>
 ![Kategoriak](images/screenshots/v2-05-categories.png)<br>*Kategoriak motaren arabera antolatuta (gastuak/sarrerak) 4×N sare batean.*<br><br>

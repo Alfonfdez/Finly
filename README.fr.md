@@ -34,7 +34,7 @@ Tout fonctionne **sur l'appareil** : vos données vivent dans une base de donné
 
 ![Écran d'accueil](images/screenshots/v2-01-a-home-empty.png)<br>*Écran d'accueil avant la configuration d'un compte.*<br><br>
 ![Écran d'accueil](images/screenshots/v2-01-b-home.png)<br>*Écran d'accueil avec comptes, camembert en anneau et répartition par catégorie.*<br><br>
-![Menu hamburger](images/screenshots/v2-02-hamburger.png)<br>*Menu latéral avec Accueil, Comptes, Catégories, Étiquettes, Commentaires, Récurrences, Toutes les transactions et Réglages.*<br><br>
+![Menu hamburger](images/screenshots/v3-02-hamburger.png)<br>*Menu latéral avec Accueil, Comptes, Catégories, Étiquettes, Commentaires, Récurrences, Toutes les transactions et Réglages.*<br><br>
 ![Ajouter une transaction](images/screenshots/v2-03-add-transaction.png)<br>*Ajoutez une dépense ou un revenu avec montant, compte, catégorie, jour, étiquettes, commentaire et photo.*<br><br>
 ![Sélecteur de date](images/screenshots/v2-04-date-picker.png)<br>*Sélecteur de calendrier pour choisir un jour, une semaine, un mois, une année ou une plage de période personnalisée.*<br><br>
 ![Catégories](images/screenshots/v2-05-categories.png)<br>*Catégories organisées par type (dépenses/revenus) dans une grille de 4×N.*<br><br>

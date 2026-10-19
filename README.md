@@ -34,7 +34,7 @@ Everything runs **on-device**: your data lives in a local SQLite database (sql.j
 
 ![Home screen](images/screenshots/v2-01-a-home-empty.png)<br>*Home screen before any account is configured.*<br><br>
 ![Home screen](images/screenshots/v2-01-b-home.png)<br>*Home screen with accounts, donut chart, and category breakdown.*<br><br>
-![Hamburger menu](images/screenshots/v2-02-hamburger.png)<br>*Drawer menu with Home, Accounts, Categories, Tags, Comments, Recurring, All Transactions, and Settings.*<br><br>
+![Hamburger menu](images/screenshots/v3-02-hamburger.png)<br>*Drawer menu with Home, Accounts, Categories, Tags, Comments, Recurring, All Transactions, and Settings.*<br><br>
 ![Add transaction](images/screenshots/v2-03-add-transaction.png)<br>*Add an expense or income with amount, account, category, day, tags, comment, and photo.*<br><br>
 ![Date picker](images/screenshots/v2-04-date-picker.png)<br>*Calendar picker for choosing a day, week, month, year, or custom period range.*<br><br>
 ![Categories](images/screenshots/v2-05-categories.png)<br>*Categories organized by type (expenses/income) in a 4×N grid.*<br><br>

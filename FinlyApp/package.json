@@ -45,6 +45,7 @@
     "eslint": "^9.0.0",
     "eslint-config-expo": "~57.0.2",
     "eslint-plugin-boundaries": "^7.1.0",
+    "fake-indexeddb": "^6.2.6",
     "happy-dom": "^20.11.1",
     "sharp": "^0.35.3",
     "test-renderer": "1.1",

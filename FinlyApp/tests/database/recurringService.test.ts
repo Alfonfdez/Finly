@@ -80,6 +80,17 @@ describe('createRecurringRule', () => {
     const dates = (await transactionRepo.list()).map(t => t.recurrence_date).sort();
     expect(dates).toEqual(['2026-01-31', '2026-02-28', '2026-03-31']);
   });
+
+  it('rejects a blank name, a bad interval or an end date not after the start', async () => {
+    const { recurringRepo, createRecurringRule } = await boot();
+
+    await expect(createRecurringRule({ ...params, name: '   ' })).rejects.toMatchObject({ code: 'nameRequired' });
+    await expect(createRecurringRule({ ...params, interval: 0 })).rejects.toMatchObject({ code: 'intervalInvalid' });
+    await expect(createRecurringRule({ ...params, endDate: '2026-01-02' })).rejects.toMatchObject({ code: 'endNotAfterStart' });
+
+    // Nothing was written for any of the rejected drafts.
+    expect(await recurringRepo.list(1)).toHaveLength(0);
+  });
 });
 
 describe('materializeDueRecurring', () => {
@@ -114,6 +125,20 @@ describe('materializeDueRecurring', () => {
 
     expect(second).toBe(0);
     expect(await transactionRepo.list()).toHaveLength(4);
+  });
+
+  it('serializes overlapping runs so two triggers never duplicate occurrences', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring } = await boot();
+    await recurringRepo.createWithTags(baseRule, []);
+
+    const [first, second] = await Promise.all([
+      materializeDueRecurring(APR_15),
+      materializeDueRecurring(APR_15),
+    ]);
+
+    expect(first + second).toBe(4);
+    expect(await transactionRepo.list()).toHaveLength(4);
+    expect((await recurringRepo.list(1))[0].next_due).toBe('2026-05-02');
   });
 
   it('skips paused rules', async () => {
@@ -778,6 +803,24 @@ describe('materializeDueRecurring', () => {
     const later = (await recurringRepo.list(1))[0];
     expect(later.next_due).toBe('2026-10-11');
     expect(later.skipped_from).toBeNull();
+  });
+
+  it('rejects an invalid interval on an edit without touching the rule', async () => {
+    const { recurringRepo, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(dailySep, []);
+
+    await expect(saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'daily', interval: 0, endDate: '2026-10-31' },
+      scope: 'future',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: OCT_5,
+    })).rejects.toMatchObject({ code: 'intervalInvalid' });
+
+    const [stored] = await recurringRepo.list(1);
+    expect(stored.interval).toBe(1);
   });
 });
 

@@ -6,7 +6,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { RECURRENCE_FREQUENCIES, RECURRENCE_SCOPES, REPEAT_MAX_INTERVAL, REPEAT_MIN_INTERVAL, REPEAT_NAME_MAX_LENGTH, type RecurrenceFrequency, type RecurrenceScope, type RecurringNameError } from '../constants/types';
 import { formatDateLong } from '../utils/formatters';
-import { buildRecurrenceSchedule, lastDayAnchorUseful, todayDateOnly, type RecurrenceSchedule } from '../utils/recurrence';
+import { buildRecurrenceSchedule, lastDayAnchorUseful, ruleEditCursorFrom, todayDateOnly, type RecurrenceSchedule } from '../utils/recurrence';
 import { recurrenceFrequencyLabels } from '../utils/recurrenceSummary';
 import { recurrenceInfoLines } from '../utils/recurrenceInfo';
 import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, CONTROL_BORDER_RADIUS, DISABLED_CONTROL_OPACITY, PILL_RADIUS, SECTION_GAP, SECTION_GAP_SM, SECTION_TITLE_STYLE, recurringCardColors } from './componentStyles';
@@ -103,7 +103,7 @@ export default function RepeatSection({
 
   // A "fresh" rule (never generated/skipped) anchors on the new start, so moving the
   // start date re-anchors it; otherwise keep the rule's cursor.
-  const cursor = ruleUnmaterialized ? schedule.start_date : ruleNextDue;
+  const cursor = ruleEditCursorFrom(ruleUnmaterialized ?? false, ruleNextDue, schedule);
   const occurrenceSet = useMemo(() => new Set(ruleOccurrenceDates ?? []), [ruleOccurrenceDates]);
   const info = recurrenceInfoLines(
     schedule,
