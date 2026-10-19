@@ -1,7 +1,7 @@
 import { t } from '../i18n';
 import { RECURRENCE_SCOPES, type RecurrenceScope } from '../constants/types';
 import { formatDateLong } from './formatters';
-import { fromDateOnly, planEdit, recurrenceDayPattern, recurrencePreview, type RecurrenceSchedule } from './recurrence';
+import { fromDateOnly, planEdit, recurrenceDayPattern, recurrencePreview, MAX_CATCH_UP_OCCURRENCES, type RecurrenceSchedule } from './recurrence';
 import { recurrenceSummary } from './recurrenceSummary';
 import type { Language } from './language';
 
@@ -69,12 +69,19 @@ export function recurrenceInfoLines(
   const patternLine = dayPatternLine(schedule, labels);
   const patternLines = patternLine ? [patternLine] : [];
 
+  const tooManyLine = schedule.end_date != null
+    ? labels.recurring_too_many_occurrences_end(MAX_CATCH_UP_OCCURRENCES)
+    : labels.recurring_too_many_occurrences(MAX_CATCH_UP_OCCURRENCES);
+
   if (options.cursor == null) {
     const preview = recurrencePreview(schedule, { today: options.today });
+    const countLine = preview.truncated
+      ? tooManyLine
+      : labels.recurring_info_count(preview.count);
     return {
       summary,
       firstLine: labels.repeat_first_transaction(formatOccurrence(preview.firstDate)),
-      detailLines: [...patternLines, labels.recurring_info_count(preview.count)],
+      detailLines: [...patternLines, countLine],
     };
   }
 
@@ -96,6 +103,9 @@ export function recurrenceInfoLines(
     // A paused rule creates nothing on save, whatever the scope; say so instead of
     // promising a back-fill (the "Future + past" save still rewrites its past rows).
     detailLines.push(labels.recurring_info_paused);
+  } else if (plan.preview.truncated) {
+    // Over the run cap: the save is refused (the form blocks it), so never promise a count.
+    detailLines.push(tooManyLine);
   } else if (options.scope === RECURRENCE_SCOPES.futureAndPast) {
     detailLines.push(plan.preview.count > 0 ? labels.recurring_info_backfill(plan.preview.count) : labels.recurring_info_count(0));
   } else {

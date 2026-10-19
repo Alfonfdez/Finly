@@ -551,6 +551,8 @@ export const it: Language = {
   recurring_info_count: (n: number) => (n === 0 ? 'Nessuna transazione verrà creata ora' : `${n} ${n === 1 ? 'transazione verrà creata' : 'transazioni verranno create'}`),
   recurring_info_skipped: (n: number) => `${n} ${n === 1 ? 'occorrenza verrà ignorata' : 'occorrenze verranno ignorate'}`,
   recurring_info_backfill: (n: number) => `Aggiunge ${n} ${n === 1 ? 'transazione mancante' : 'transazioni mancanti'}`,
+  recurring_too_many_occurrences: (limit: number) => `Questa regola creerebbe più di ${limit} transazioni. Sposta la data di inizio più avanti o aggiungi una data di fine`,
+  recurring_too_many_occurrences_end: (limit: number) => `Questa regola creerebbe più di ${limit} transazioni. Sposta la data di inizio più avanti o anticipa la data di fine`,
   recurring_info_paused: 'Questa regola è in pausa: non verrà creata alcuna transazione finché non la riprendi.',
 
   // Recurring skip warning

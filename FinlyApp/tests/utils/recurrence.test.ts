@@ -13,6 +13,7 @@ import {
   planEdit,
   recurrenceDayPattern,
   recurrencePreview,
+  MAX_CATCH_UP_OCCURRENCES,
   recurrenceSkipWindow,
   recurringStatus,
   resolveEditAnchor,
@@ -164,13 +165,14 @@ describe('recurrencePreview', () => {
   const monthly = { ...base, frequency: 'monthly' as const, interval: 1, day_of_month: 2, start_date: '2026-01-02' };
 
   it('create: counts the occurrences up to today', () => {
-    expect(recurrencePreview(monthly, { today: '2026-04-15' })).toEqual({ firstDate: '2026-01-02', count: 4 });
+    expect(recurrencePreview(monthly, { today: '2026-04-15' })).toEqual({ firstDate: '2026-01-02', count: 4, truncated: false });
   });
 
   it('create: a future first occurrence creates nothing', () => {
     expect(recurrencePreview({ ...monthly, start_date: '2026-05-02' }, { today: '2026-04-15' })).toEqual({
       firstDate: '2026-05-02',
       count: 0,
+      truncated: false,
     });
   });
 
@@ -178,6 +180,7 @@ describe('recurrencePreview', () => {
     expect(recurrencePreview({ ...monthly, end_date: '2026-03-02' }, { today: '2026-04-15' })).toEqual({
       firstDate: '2026-01-02',
       count: 3,
+      truncated: false,
     });
   });
 
@@ -185,6 +188,7 @@ describe('recurrencePreview', () => {
     expect(recurrencePreview(monthly, { today: '2026-04-15', cursor: '2026-01-02' })).toEqual({
       firstDate: '2026-05-02',
       count: 0,
+      truncated: false,
     });
   });
 
@@ -192,6 +196,7 @@ describe('recurrencePreview', () => {
     expect(recurrencePreview(monthly, { today: '2026-04-15', cursor: '2026-01-02', scope: 'futureAndPast' })).toEqual({
       firstDate: '2026-01-02',
       count: 4,
+      truncated: false,
     });
   });
 
@@ -201,6 +206,7 @@ describe('recurrencePreview', () => {
     expect(recurrencePreview(daily, { today: '2026-10-06', cursor: '2026-11-01', previousSchedule: previous })).toEqual({
       firstDate: '2026-10-06',
       count: 1,
+      truncated: false,
     });
   });
 
@@ -209,6 +215,7 @@ describe('recurrencePreview', () => {
     expect(recurrencePreview(daily, { today: '2026-10-06', cursor: '2026-10-07', previousSchedule: daily })).toEqual({
       firstDate: '2026-10-07',
       count: 0,
+      truncated: false,
     });
   });
 });
@@ -374,7 +381,7 @@ describe('planEdit', () => {
     expect(plan.nextDue).toBe('2026-10-07');
     expect(plan.skipWindow).toEqual({ from: '2026-09-01', to: '2026-10-07', count: 36 });
     expect(plan.skippedFrom).toBe('2026-09-01');
-    expect(plan.preview).toEqual({ firstDate: '2026-10-07', count: 1 });
+    expect(plan.preview).toEqual({ firstDate: '2026-10-07', count: 1, truncated: false });
   });
 
   it('Future + past back-fills from the cursor and clears the record', () => {
@@ -382,7 +389,7 @@ describe('planEdit', () => {
     expect(plan.nextDue).toBe('2026-09-01');
     expect(plan.skipWindow).toBeNull();
     expect(plan.skippedFrom).toBeNull();
-    expect(plan.preview).toEqual({ firstDate: '2026-09-01', count: 37 });
+    expect(plan.preview).toEqual({ firstDate: '2026-09-01', count: 37, truncated: false });
   });
 
   it('Future only applies a denser schedule from today (previousSchedule)', () => {
@@ -390,7 +397,7 @@ describe('planEdit', () => {
     const plan = planEdit({ schedule: daily, previousSchedule: previous, cursor: '2026-11-01', scope: 'future', today: '2026-10-06' });
     expect(plan.nextDue).toBe('2026-10-06');
     expect(plan.skippedFrom).toBeNull();
-    expect(plan.preview).toEqual({ firstDate: '2026-10-06', count: 1 });
+    expect(plan.preview).toEqual({ firstDate: '2026-10-06', count: 1, truncated: false });
   });
 
   it('drops a recorded skip once the end date falls before it', () => {
@@ -596,5 +603,23 @@ describe('todayDateOnly around DST', () => {
     expect(todayDateOnly(new Date(2026, 2, 29, 23, 30))).toBe('2026-03-29');
     expect(todayDateOnly(new Date(2026, 2, 30, 0, 30))).toBe('2026-03-30');
     expect(todayDateOnly(new Date(2026, 9, 25, 23, 59))).toBe('2026-10-25');
+  });
+});
+
+describe('recurrencePreview backlog limit', () => {
+  it('flags a backlog that cannot finish in one catch-up run', () => {
+    const daily1990 = buildRecurrenceSchedule(fromDateOnly('1990-01-01'), 'daily', 1, null);
+    const preview = recurrencePreview(daily1990, { today: '2026-10-19' });
+
+    expect(preview.truncated).toBe(true);
+    expect(preview.count).toBe(MAX_CATCH_UP_OCCURRENCES);
+  });
+
+  it('counts an accepted backlog exactly', () => {
+    const daily2014 = buildRecurrenceSchedule(fromDateOnly('2014-01-08'), 'daily', 1, null);
+    const preview = recurrencePreview(daily2014, { today: '2026-10-19' });
+
+    expect(preview.truncated).toBe(false);
+    expect(preview.count).toBe(4668);
   });
 });

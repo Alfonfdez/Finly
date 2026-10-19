@@ -21,10 +21,10 @@ import FormActions from './form/FormActions';
 import CalendarModal from './CalendarModal';
 import CalculatorModal from './CalculatorModal';
 import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS } from './componentStyles';
-import { type TransactionType, type RecurrenceFrequency, type RecurrenceScope, type RootStackParamList } from '../constants/types';
+import { type TransactionType, type RecurrenceFrequency, type RecurrenceScope, type RootStackParamList, RECURRENCE_SCOPES } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
-import { buildRecurrenceSchedule, toDateOnly } from '../utils/recurrence';
+import { buildRecurrenceSchedule, recurrencePreview, ruleEditCursor, toDateOnly, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
 import { formFieldVisibility, FORM_MODES, type FormMode } from '../utils/formFieldVisibility';
 import { isWeb } from '../utils/platform';
 import { showErrorAlert } from '../utils/errors';
@@ -184,6 +184,45 @@ export default function TransactionForm(props: TransactionFormProps) {
     props.initialRuleNextDue,
   ]);
 
+  // Mirrors the service guard: a rule whose due backlog cannot finish in one run is
+  // refused, so the form blocks Save and explains it in the bottom hint.
+  const tooManyOccurrences = useMemo(() => {
+    if (!props.ruleMode) return false;
+    const schedule = buildRecurrenceSchedule(
+      day,
+      repeatFrequency,
+      repeatInterval,
+      repeatEnd ? toDateOnly(repeatEnd) : null,
+      repeatLastDay,
+    );
+    const today = todayDateOnly();
+    if (props.initialRuleNextDue == null) {
+      return recurrencePreview(schedule, { today }).truncated;
+    }
+    return recurrencePreview(schedule, {
+      today,
+      cursor: ruleEditCursor({ next_due: props.initialRuleNextDue, start_date: toDateOnly(props.initialDay) }, schedule),
+      scope: props.repeatScope ?? RECURRENCE_SCOPES.future,
+      skippedFrom: props.initialRuleSkippedFrom ?? null,
+      previousSchedule,
+      existingOccurrences: new Set(props.initialRuleOccurrenceDates ?? []),
+    }).truncated;
+  }, [
+    props.ruleMode,
+    props.initialRuleNextDue,
+    props.initialRuleSkippedFrom,
+    props.initialRuleOccurrenceDates,
+    props.repeatScope,
+    props.initialDay,
+    day,
+    repeatFrequency,
+    repeatInterval,
+    repeatEnd,
+    repeatLastDay,
+    previousSchedule,
+  ]);
+  const saveDisabled = !canSubmit || submitting || tooManyOccurrences;
+
   const handleAccountClose = useCallback(() => setModalAccountVisible(false), [setModalAccountVisible]);
   const handleCalendarClose = useCallback(() => setModalCalendarVisible(false), [setModalCalendarVisible]);
   const handleSelectRepeatEnd = useCallback((date: Date) => {
@@ -196,7 +235,10 @@ export default function TransactionForm(props: TransactionFormProps) {
 
   // Every condition that still blocks the save, as a red checklist above the button.
   const hintText = getTransactionFormHintText(
-    { categoryId, numericAmount, accountId, repeatEndConflict, ruleMode: props.ruleMode, repeatNameError },
+    {
+      categoryId, numericAmount, accountId, repeatEndConflict, ruleMode: props.ruleMode, repeatNameError,
+      repeatTooMany: tooManyOccurrences,
+    },
     {
       category: labels.add_hint_category,
       amount: labels.add_hint_amount,
@@ -204,6 +246,10 @@ export default function TransactionForm(props: TransactionFormProps) {
       repeatEnd: labels.add_hint_repeat_end,
       repeatName: labels.recurring_hint_name,
       repeatNameTaken: labels.recurring_hint_name_taken,
+      // The advice adapts to the draft: "add an end date" only makes sense when none is set.
+      repeatTooMany: repeatEnd
+        ? labels.recurring_too_many_occurrences_end(MAX_CATCH_UP_OCCURRENCES)
+        : labels.recurring_too_many_occurrences(MAX_CATCH_UP_OCCURRENCES),
     },
   );
   const handleCalculatorAccept = useCallback((result: string) => {
@@ -339,12 +385,12 @@ export default function TransactionForm(props: TransactionFormProps) {
             <TouchableOpacity
               style={[
                 styles.submitButton,
-                { backgroundColor: canSubmit ? c.primary : withAlpha(c.textSecondary, 38) },
+                { backgroundColor: saveDisabled ? withAlpha(c.textSecondary, 38) : c.primary },
               ]}
               onPress={handleSubmit}
-              disabled={!canSubmit || submitting}
+              disabled={saveDisabled}
             >
-              <Text style={[styles.submitButtonText, { color: canSubmit ? c.background : c.text, fontSize: fs(15) }]}>
+              <Text style={[styles.submitButtonText, { color: saveDisabled ? c.text : c.background, fontSize: fs(15) }]}>
                 {submitting ? '...' : props.submitLabel}
               </Text>
             </TouchableOpacity>

@@ -4066,3 +4066,10 @@
 - `TagChip` is capped to its container and can shrink, so an over-long tag name ellipsizes instead of being clipped by the card edge.
 - Tests: a `DataRow` suite (top alignment) and a details case with 12 long tags plus a long comment (both labels present, all chips rendered, value column `flex: 2`).
 - Gate: `npm run test:all` green.
+
+[2026-10-19] fix | FinlyApp/src/utils/recurrence.ts, FinlyApp/src/utils/recurrenceInfo.ts, FinlyApp/src/utils/formHints.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/database/recurringService.ts, FinlyApp/src/constants/types.ts, FinlyApp/src/i18n (9 files), FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/utils/recurrenceInfo.test.ts, FinlyApp/tests/utils/formHints.test.ts, FinlyApp/tests/component/TransactionForm.test.tsx, FinlyApp/tests/database/recurringService.test.ts, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- The per-rule catch-up limit is now 5,000 occurrences (daily ~13.7 years, weekly ~96 years) and the same limit guards creation and editing: a rule whose due backlog exceeds it cannot be saved. A daily rule started in 2014 now generates all 4,668 due transactions in one run, so "Next transaction" is always in the future instead of a past cursor stuck at 500 rows.
+- A refused rule is blocked by the form (Summary and bottom hint, Save disabled) and rejected by the service (`tooManyOccurrences`) without writing anything. The advice adapts to the draft: "Move the start date later or add an end date" when none is set, "Move the start date later or set an earlier end date" when one already exists (keys `recurring_too_many_occurrences` / `recurring_too_many_occurrences_end` in the 9 languages).
+- Recurrence previews expose whether the backlog was truncated, and the Summary shows the warning instead of a capped count; existing rules that were behind finish catching up on the next launch.
+- Tests: preview truncation and exact counts, the warning line (create and Future + past), the form hint/disabled Save, the service rejection, and a 4,481-occurrence single-run backfill.
+- Gate: `npm run test:all` green (155 files / 1277 tests).

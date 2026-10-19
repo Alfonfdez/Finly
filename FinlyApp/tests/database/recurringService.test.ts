@@ -91,6 +91,34 @@ describe('createRecurringRule', () => {
     // Nothing was written for any of the rejected drafts.
     expect(await recurringRepo.list(1)).toHaveLength(0);
   });
+  it('refuses a backlog that cannot finish in one catch-up run', async () => {
+    const { recurringRepo, createRecurringRule } = await boot();
+
+    await expect(createRecurringRule({
+      ...params,
+      date: '1990-01-01 00:00:00',
+      frequency: 'daily',
+      now: APR_15,
+    })).rejects.toMatchObject({ code: 'tooManyOccurrences' });
+
+    expect(await recurringRepo.list(1)).toHaveLength(0);
+  });
+
+  it('backfills a years-long daily backlog in a single run', async () => {
+    const { recurringRepo, transactionRepo, createRecurringRule } = await boot();
+
+    const created = await createRecurringRule({
+      ...params,
+      date: '2014-01-08 00:00:00',
+      frequency: 'daily',
+      now: APR_15,
+    });
+
+    expect(created).toBe(4481); // 2014-01-08 .. 2026-04-15 inclusive
+    const [rule] = await recurringRepo.list(1);
+    expect(rule.next_due > '2026-04-15').toBe(true);
+    expect(await transactionRepo.list()).toHaveLength(4481);
+  });
 });
 
 describe('materializeDueRecurring', () => {

@@ -551,6 +551,8 @@ export const ca: Language = {
   recurring_info_count: (n: number) => (n === 0 ? 'No es crearà cap transacció ara' : `Es crearan ${n} ${n === 1 ? 'transacció' : 'transaccions'}`),
   recurring_info_skipped: (n: number) => `S'ometran ${n} ${n === 1 ? 'ocurrència' : 'ocurrències'}`,
   recurring_info_backfill: (n: number) => `Afegeix ${n} ${n === 1 ? 'transacció omesa' : 'transaccions omeses'}`,
+  recurring_too_many_occurrences: (limit: number) => `Aquesta regla crearia més de ${limit} transaccions. Mou la data d'inici més endavant o afegeix una data de fi`,
+  recurring_too_many_occurrences_end: (limit: number) => `Aquesta regla crearia més de ${limit} transaccions. Mou la data d'inici més endavant o avança la data de fi`,
   recurring_info_paused: 'Aquesta regla està en pausa: no es crearà cap transacció fins que la reprenguis.',
 
   // Recurring skip warning
