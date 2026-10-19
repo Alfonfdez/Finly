@@ -1057,3 +1057,16 @@ Edge case found after the self-heal test, applied 2026-10-19:
 - Gate: `npm run test:all` green; verified in the browser (empty backup rejected, real backup imports).
 
 Spec: spec/features/025-data-backup/.
+
+## Accounts and Categories: sortable lists
+Status: completed.
+
+Added while polishing the list screens, applied 2026-10-19:
+- **Accounts** gained a `SortToggle` (`SortRow`) below the search controls: **Name** (default, ascending) or **Balance** (descending on the first press). The direction flips from the active field or the arrow. The **Total account stays pinned first** (it is an aggregate, not a real account) and sorting applies to the searched subset; ties break by display name, then id.
+- **Categories** gained the same toggle: **Name** (default, ascending) or **Usage** (lifetime transactions, descending). Each tile shows its lifetime count as a small gray badge over the icon (hidden at 0, appended to the accessibility label); **Others/Other stay pinned last**. Type tabs, search and multi-select work on the sorted subset.
+- New `ACCOUNT_SORT_BY`/`CATEGORY_SORT_BY` constants, pure `utils/accountSort`/`utils/categorySort` helpers, `SortToggle` field builders and four i18n keys in the 9 languages.
+- Both sorts are session-only for now, consistent with the other lists; remembering them is a separate follow-up.
+- Tests: the sort helpers (pinned rows, natural directions, ties, no mutation), the Accounts order and direction flip, the Categories usage order + counts + pinned fallback, and the CategoryGrid count badge.
+- Gate: `npm run test:all` green; verified in the browser at 375px.
+
+Spec: spec/features/011-accounts-screen/, spec/features/008-categories-screen/.

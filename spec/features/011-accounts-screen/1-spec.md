@@ -49,7 +49,14 @@
 - Closing the search bar restores the full list.
 - When a search yields no results, the empty state shows "No results found" (multilingual) with a search icon.
 
-### 5. Floating "+" button
+### 5. Sort
+
+- A `SortToggle` sits in a `SortRow` below the search controls with two fields: **Name** (`accounts_sort_name`, default, ascending) and **Balance** (`accounts_sort_balance`, descending on the first press).
+- Pressing the active field flips the direction; the arrow next to it flips it too.
+- Sorting applies to the real accounts (including the searched subset); the **Total account always stays first** because it is an aggregate, not a real account.
+- Ties break by display name (`getDisplayAccountName`), then id.
+
+### 6. Floating "+" button
 
 - Floating button (FAB) centered at the bottom with `Ionicons "add"` icon.
 - When pressed, navigates to `CreateAccountScreen` (013) to create a new account.
@@ -57,13 +64,13 @@
 - Position: `position: absolute`, `bottom: 56`, `alignSelf: 'center'`.
 - It overlays on top of the account list.
 
-### 6. Persistence
+### 7. Persistence
 
 - Accounts are loaded from `accountRepository.list()` with the active user.
 - Balances are obtained with `accountRepository.getCurrentBalance()`.
 - **Refresh after mutations**: after creating or modifying an account (013 and 012), `refreshAccounts()` from `AppContext` must be invoked so the account list in HomeScreen (AccountModal) updates immediately.
 
-### 7. Multi-select bulk delete
+### 8. Multi-select bulk delete
 
 - The header shows a "Select" (`accounts_select`) text button next to the search icon; pressing it toggles selection mode (label switches to "Done", `accounts_select_done`).
 - When there are 0 accounts (excluding Total), the header Select button is hidden.
@@ -101,6 +108,7 @@
 - [x] If there are no accounts, an empty state is shown.
 - [x] The default account "My Wallet" is displayed translated according to the active language (e.g. es "Mi Cartera", ca "La meva cartera") via `getDisplayAccountName`.
 - [x] The Total account appears first in the accounts list with its icon and total balance.
+- [x] A sort toggle sorts the real accounts by Name (default, ascending) or Balance (descending on the first press); the direction flips when the active field or the arrow is pressed, and the Total account stays first in every mode.
 - [x] A search icon is shown in the header; pressing it toggles a SearchBar.
 - [x] The search matches account display name and description, case-insensitive.
 - [x] Multi-term searches require all terms to match (AND).

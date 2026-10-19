@@ -197,6 +197,8 @@ export const fr: Language = {
   // Add category
   add_cat_title: 'Ajouter une catégorie',
   add_cat_search: 'Rechercher une catégorie',
+  categories_sort_name: 'Nom',
+  categories_sort_usage: 'Utilisation',
   add_cat_no_results: 'Aucun résultat trouvé',
   add_cat_create: 'Créer',
 
@@ -316,6 +318,8 @@ export const fr: Language = {
   accounts_total: 'Total',
   accounts_empty: 'Aucun compte',
   accounts_search: 'Rechercher des comptes',
+  accounts_sort_name: 'Nom',
+  accounts_sort_balance: 'Solde',
   modify_account_title: 'Modifier le compte',
   modify_account_name: 'Nom du compte',
   modify_account_initial_balance: 'Solde initial',

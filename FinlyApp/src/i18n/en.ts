@@ -195,6 +195,8 @@ export const en = {
   // Add category
   add_cat_title: 'Add category',
   add_cat_search: 'Search category',
+  categories_sort_name: 'Name',
+  categories_sort_usage: 'Usage',
   add_cat_no_results: 'No results found',
   add_cat_create: 'Create',
 
@@ -314,6 +316,8 @@ export const en = {
   accounts_total: 'Total',
   accounts_empty: 'No accounts',
   accounts_search: 'Search accounts',
+  accounts_sort_name: 'Name',
+  accounts_sort_balance: 'Balance',
   modify_account_title: 'Modify account',
   modify_account_name: 'Account name',
   modify_account_initial_balance: 'Initial balance',

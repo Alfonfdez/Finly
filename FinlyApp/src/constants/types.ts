@@ -190,6 +190,22 @@ export const COMMENT_SORT_BY = {
 
 export type CommentSortBy = keyof typeof COMMENT_SORT_BY;
 
+/** Accounts screen sort fields. The Total account stays pinned first in every mode. */
+export const ACCOUNT_SORT_BY = {
+  name: 'name',
+  balance: 'balance',
+} as const;
+
+export type AccountSortBy = keyof typeof ACCOUNT_SORT_BY;
+
+/** Categories screen sort fields. The fallback categories (Others/Other) stay last. */
+export const CATEGORY_SORT_BY = {
+  name: 'name',
+  usage: 'usage',
+} as const;
+
+export type CategorySortBy = keyof typeof CATEGORY_SORT_BY;
+
 export const RECURRING_VIEWS = {
   all: 'all',
   oneTime: 'oneTime',

@@ -197,6 +197,8 @@ export const eu: Language = {
   // Add category
   add_cat_title: 'Kategoria gehitu',
   add_cat_search: 'Kategoria bilatu',
+  categories_sort_name: 'Izena',
+  categories_sort_usage: 'Erabilera',
   add_cat_no_results: 'Ez da ezer aurkitu',
   add_cat_create: 'Sortu',
 
@@ -316,6 +318,8 @@ export const eu: Language = {
   accounts_total: 'Totala',
   accounts_empty: 'Ez dago konturik',
   accounts_search: 'Kontuak bilatu',
+  accounts_sort_name: 'Izena',
+  accounts_sort_balance: 'Saldoa',
   modify_account_title: 'Kontua aldatu',
   modify_account_name: 'Kontu-izena',
   modify_account_initial_balance: 'Hasierako saldoa',

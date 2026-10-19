@@ -96,6 +96,26 @@ describe('AccountsScreen', () => {
     expect(view.getByTestId(TEST_IDS.accountsList)).toBeTruthy();
   });
 
+  it('sorts by balance on demand with the Total account pinned first', async () => {
+    list.mockResolvedValue([account(1, 'Wallet'), account(2, 'Cash'), totalAccount]);
+    getBalances.mockResolvedValue([
+      { account_id: 1, balance: 100 },
+      { account_id: 2, balance: 50 },
+    ]);
+    const view = await render(<AccountsScreen />);
+    await view.findByText('Wallet');
+
+    const order = () => view.getAllByText(/^(Total|Wallet|Cash)$/).map(node => String(node.props.children));
+    // Name ascending by default; the Total account always comes first.
+    expect(order()).toEqual(['Total', 'Cash', 'Wallet']);
+
+    await fireEvent.press(view.getByText('Balance', { exact: true }));
+    await waitFor(() => expect(order()).toEqual(['Total', 'Wallet', 'Cash']));
+
+    // Tapping the active field flips the direction.
+    await fireEvent.press(view.getByText('Balance', { exact: true }));
+    await waitFor(() => expect(order()).toEqual(['Total', 'Cash', 'Wallet']));
+  });
   it('opens the modify screen when an account is pressed', async () => {
     list.mockResolvedValue([account(1, 'Cash'), account(2, 'Savings')]);
     getBalances.mockResolvedValue([

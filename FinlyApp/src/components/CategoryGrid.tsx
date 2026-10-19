@@ -12,6 +12,8 @@ interface Props {
   categories: Category[];
   selectedCategory: number | null;
   selectedIds?: ReadonlySet<number>;
+  /** Optional per-category usage count shown on the tile (Categories screen). */
+  counts?: ReadonlyMap<number, number>;
   onSelect: (id: number) => void;
   onAddMore: () => void;
   showAddMore?: boolean;
@@ -19,7 +21,7 @@ interface Props {
   hideTitle?: boolean;
 }
 
-function CategoryGridInner({ categories, selectedCategory, onSelect, onAddMore, showAddMore = true, addMoreLabel, hideTitle = false, selectedIds }: Props) {
+function CategoryGridInner({ categories, selectedCategory, onSelect, onAddMore, showAddMore = true, addMoreLabel, hideTitle = false, selectedIds, counts }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -27,6 +29,7 @@ function CategoryGridInner({ categories, selectedCategory, onSelect, onAddMore, 
   const renderCategory = useCallback((cat: Category) => {
     const categoryName = getDisplayCategoryName(cat);
     const multiSelected = selectedIds?.has(cat.id) ?? false;
+    const count = counts?.get(cat.id);
 
     return (
       <CategoryTile
@@ -37,11 +40,12 @@ function CategoryGridInner({ categories, selectedCategory, onSelect, onAddMore, 
         label={categoryName}
         selected={selectedIds ? multiSelected : cat.id === selectedCategory}
         checkmark={!!selectedIds}
+        count={count}
         onPress={() => onSelect(cat.id)}
-        accessibilityLabel={`${labels.a11y_category} ${categoryName}`}
+        accessibilityLabel={`${labels.a11y_category} ${categoryName}${count ? `, ${count}` : ''}`}
       />
     );
-  }, [config, selectedCategory, onSelect, labels, selectedIds]);
+  }, [config, selectedCategory, onSelect, labels, selectedIds, counts]);
 
   const label = addMoreLabel ?? labels.add_more;
 
