@@ -54,6 +54,8 @@ export const pt: Language = {
   settings_import_error_message: 'Não foi possível importar o arquivo de backup. Seus dados não foram alterados.',
   settings_import_invalid_title: 'Backup inválido',
   settings_import_invalid_message: 'O arquivo selecionado não é um backup válido do Finly.',
+  settings_import_incomplete_title: 'Cópia de segurança incompleta',
+  settings_import_incomplete_message: 'A esta cópia de segurança faltam dados de que o Finly precisa. Escolhe uma cópia exportada pelo Finly.',
   settings_import_newer_title: 'Backup mais recente',
   settings_import_newer_message: 'Este backup foi criado com uma versão mais recente do Finly. Atualize o aplicativo para importá-lo.',
   settings_delete_all_transactions: 'Excluir todas as transações',

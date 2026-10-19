@@ -54,6 +54,8 @@ export const ca: Language = {
   settings_import_error_message: 'No s\'ha pogut importar el fitxer de còpia de seguretat. Les teves dades no han canviat.',
   settings_import_invalid_title: 'Còpia de seguretat no vàlida',
   settings_import_invalid_message: 'El fitxer seleccionat no és una còpia de seguretat vàlida de Finly.',
+  settings_import_incomplete_title: 'Còpia de seguretat incompleta',
+  settings_import_incomplete_message: 'A aquesta còpia de seguretat li falten dades que Finly necessita. Tria una còpia exportada per Finly.',
   settings_import_newer_title: 'Còpia més recent',
   settings_import_newer_message: 'Aquesta còpia es va crear amb una versió més recent de Finly. Actualitza l\'app per importar-la.',
   settings_delete_all_transactions: 'Eliminar totes les transaccions',

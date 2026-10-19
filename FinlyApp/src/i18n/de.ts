@@ -54,6 +54,8 @@ export const de: Language = {
   settings_import_error_message: 'Die Sicherungsdatei konnte nicht importiert werden. Ihre Daten bleiben unverändert.',
   settings_import_invalid_title: 'Ungültige Sicherung',
   settings_import_invalid_message: 'Die ausgewählte Datei ist keine gültige Finly-Sicherung.',
+  settings_import_incomplete_title: 'Unvollständige Sicherung',
+  settings_import_incomplete_message: 'Dieser Sicherung fehlen Daten, die Finly benötigt. Wähle eine von Finly exportierte Sicherung.',
   settings_import_newer_title: 'Neuere Sicherung',
   settings_import_newer_message: 'Diese Sicherung wurde mit einer neueren Version von Finly erstellt. Aktualisieren Sie die App, um sie zu importieren.',
   settings_delete_all_transactions: 'Alle Transaktionen löschen',

@@ -54,6 +54,8 @@ export const fr: Language = {
   settings_import_error_message: 'Le fichier de sauvegarde n\'a pas pu être importé. Vos données sont inchangées.',
   settings_import_invalid_title: 'Sauvegarde invalide',
   settings_import_invalid_message: 'Le fichier sélectionné n\'est pas une sauvegarde Finly valide.',
+  settings_import_incomplete_title: 'Sauvegarde incomplète',
+  settings_import_incomplete_message: 'Cette sauvegarde ne contient pas les données dont Finly a besoin. Choisissez une sauvegarde exportée par Finly.',
   settings_import_newer_title: 'Sauvegarde plus récente',
   settings_import_newer_message: 'Cette sauvegarde a été créée avec une version plus récente de Finly. Mettez à jour l\'application pour l\'importer.',
   settings_delete_all_transactions: 'Supprimer toutes les transactions',

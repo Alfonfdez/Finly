@@ -19,12 +19,34 @@ const saveBackupFile = vi.fn<() => Promise<ShareResultValue>>(async () => ShareR
 const saveBackupToDownloads = vi.fn<() => Promise<boolean>>(async () => false);
 const pickBackupFile = vi.fn<() => Promise<string | null>>(async () => null);
 
+const validationMocks = vi.hoisted(() => {
+  class BackupValidationError extends Error {
+    code: string;
+
+    constructor(code: string) {
+      super(code);
+      this.name = 'BackupValidationError';
+      this.code = code;
+    }
+  }
+  return {
+    BackupValidationError,
+    BACKUP_VALIDATION_CODES: {
+      invalidJson: 'invalid_json',
+      invalidFormat: 'invalid_format',
+      newerVersion: 'newer_version',
+      incomplete: 'incomplete',
+    },
+  };
+});
+
 vi.mock('../../src/database', () => ({
   transactionRepository: { deleteAllTransactions: () => deleteAllTransactions() },
   configRepository: { get: () => configGet() },
   exportBackup: () => exportBackup(),
   importBackup: () => importBackup(),
-  BackupValidationError: class BackupValidationError extends Error {},
+  BackupValidationError: validationMocks.BackupValidationError,
+  BACKUP_VALIDATION_CODES: validationMocks.BACKUP_VALIDATION_CODES,
 }));
 
 vi.mock('../../src/database/database', () => ({
@@ -225,6 +247,24 @@ describe('DataScreen', () => {
       t.settings_import_success_title,
       t.settings_import_success_message,
     );
+  });
+
+  it('shows the incomplete-backup alert and leaves the data untouched', async () => {
+    pickBackupFile.mockResolvedValue('{}');
+    importBackup.mockRejectedValueOnce(new validationMocks.BackupValidationError('incomplete'));
+    const alertSpy = vi.spyOn(Alert, 'alert').mockImplementation(() => {});
+    const view = await render(<DataScreen />);
+    const ue = userEvent.setup();
+    fireEvent.press(view.getByText('Import data'));
+    await waitFor(() => expect(pickBackupFile).toHaveBeenCalledTimes(1));
+    const confirmButton = await view.findByRole('button', { name: t.settings_delete_confirm });
+    await ue.press(confirmButton);
+
+    await waitFor(() => expect(alertSpy).toHaveBeenCalledWith(
+      t.settings_import_incomplete_title,
+      t.settings_import_incomplete_message,
+    ));
+    expect(getAppStub().resetAll).not.toHaveBeenCalled();
   });
 });
 

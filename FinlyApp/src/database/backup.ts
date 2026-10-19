@@ -22,6 +22,7 @@ import type {
   User,
 } from './types';
 import { sanitizeDefaultAccountConfig } from './configDefaults';
+import { TRANSACTION_TYPES } from '../constants/types';
 
 interface ConfigRow {
   key: string;
@@ -62,6 +63,8 @@ export const BACKUP_VALIDATION_CODES = {
   invalidJson: 'invalid_json',
   invalidFormat: 'invalid_format',
   newerVersion: 'newer_version',
+  /** Valid JSON/schema, but missing data the app needs to work (e.g. no user). */
+  incomplete: 'incomplete',
 } as const;
 
 export type BackupValidationCode = (typeof BACKUP_VALIDATION_CODES)[keyof typeof BACKUP_VALIDATION_CODES];
@@ -92,6 +95,24 @@ export function parseBackup(json: string): BackupSnapshot {
 
 export function serializeBackup(snapshot: BackupSnapshot): string {
   return JSON.stringify(snapshot, null, 2);
+}
+
+/**
+ * Whether a parsed snapshot can replace the app's data without leaving it
+ * unusable. A genuine export always satisfies this: the app requires one user
+ * (accounts and categories reference it), at least one account, and one category
+ * of each type (the UI never allows deleting the last one of a type).
+ *
+ * Call it before {@link applyBackup}: a rejected file then leaves the current
+ * data untouched.
+ */
+export function assertImportableBackup(snapshot: BackupSnapshot): void {
+  const { users, accounts, categories } = snapshot.data;
+  const hasExpense = categories.some(category => category.type === TRANSACTION_TYPES.expense);
+  const hasIncome = categories.some(category => category.type === TRANSACTION_TYPES.income);
+  if (users.length === 0 || accounts.length === 0 || !hasExpense || !hasIncome) {
+    throw new BackupValidationError(BACKUP_VALIDATION_CODES.incomplete, 'Snapshot is missing required data');
+  }
 }
 
 export async function buildBackup(

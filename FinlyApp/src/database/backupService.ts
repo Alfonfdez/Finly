@@ -1,5 +1,6 @@
 import {
   applyBackup,
+  assertImportableBackup,
   buildBackup,
   parseBackup,
   serializeBackup,
@@ -21,6 +22,8 @@ export async function importBackup(json: string): Promise<void> {
   if (snapshot.schema > SCHEMA_VERSION) {
     throw new BackupValidationError(BACKUP_VALIDATION_CODES.newerVersion, 'Backup comes from a newer app version');
   }
+  // Reject unusable snapshots before touching the DB (the current data is kept).
+  assertImportableBackup(snapshot);
   const db = await getDatabase();
   await applyBackup(db, snapshot);
 }
