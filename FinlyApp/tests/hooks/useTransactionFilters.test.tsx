@@ -207,6 +207,35 @@ describe('useTransactionFilters', () => {
     expect(result.current.filtered.map(t => t.id)).toEqual([1]);
   });
 
+  it('composes every filter at once', async () => {
+    const transactions = [
+      tx(1, { id: 1, category_id: 1, account_id: 1, date: '2026-01-10 00:00:00', description: 'Lunch with the team' }),
+      tx(2, { id: 2, category_id: 1, account_id: 1, date: '2026-01-20 00:00:00', description: 'Lunch alone' }),
+      tx(3, { id: 3, category_id: 1, account_id: 1, date: '2026-02-10 00:00:00', description: 'Lunch with the team' }),
+      tx(4, { id: 4, category_id: 2, account_id: 1, type: 'income', date: '2026-01-15 00:00:00', description: 'Lunch with the team' }),
+      tx(5, { id: 5, category_id: 1, account_id: 2, date: '2026-01-15 00:00:00', description: 'Lunch with the team' }),
+      tx(6, { id: 6, category_id: 1, account_id: 1, date: '2026-01-15 00:00:00', description: 'Lunch with the team' }),
+    ];
+    getTagsByTransactionIds.mockResolvedValue([
+      { transaction_id: 1, tag_id: 10, name: 'Work' },
+      { transaction_id: 2, tag_id: 10, name: 'Work' },
+      { transaction_id: 3, tag_id: 10, name: 'Work' },
+      { transaction_id: 4, tag_id: 10, name: 'Work' },
+      { transaction_id: 5, tag_id: 10, name: 'Work' },
+    ]);
+
+    const { result } = await renderFilters(transactions, {
+      activeAccount: account1,
+      typeTab: TYPE_FILTERS.expense,
+      selectedCategoryIds: [1],
+      initialTagIds: [10],
+      searchTerm: 'team',
+      periodDates: { start: new Date(2026, 0, 1), end: new Date(2026, 0, 31) },
+    });
+
+    // Only #1 is an expense, in Food, in Wallet, tagged Work, matching 'team' in January.
+    expect(result.current.filtered.map(t => t.id)).toEqual([1]);
+  });
   it('sorts by date descending by default', async () => {
     const transactions = [
       tx(1, { id: 1, date: '2026-01-10 00:00:00', account_id: 3 }),

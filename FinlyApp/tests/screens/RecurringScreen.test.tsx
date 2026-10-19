@@ -177,6 +177,28 @@ describe('RecurringScreen', () => {
     expect(nav.navigate).not.toHaveBeenCalled();
   });
 
+  it('ignores a second toggle while the write is in flight', async () => {
+    let release!: () => void;
+    mockSetActiveRule.mockImplementationOnce(() => new Promise<number>((resolve) => {
+      release = () => resolve(0);
+    }));
+
+    const view = await render(<RecurringScreen />);
+    await waitFor(() => expect(view.getByRole('switch')).toBeTruthy());
+
+    fireEvent(view.getByRole('switch'), 'valueChange', false);
+    await waitFor(() => expect(view.getByRole('switch').props.disabled).toBe(true));
+
+    // A second tap (e.g. the opposite value) is ignored until the write settles.
+    fireEvent(view.getByRole('switch'), 'valueChange', true);
+    expect(mockSetActiveRule).toHaveBeenCalledTimes(1);
+
+    release();
+    await waitFor(() => expect(view.getByRole('switch').props.disabled).toBe(false));
+    expect(mockSetActiveRule).toHaveBeenCalledTimes(1);
+    expect(mockSetActiveRule).toHaveBeenCalledWith(1, false);
+  });
+
   it('enters select mode and bulk-deletes the selected rule', async () => {
     const view = await renderWithHeader();
     await waitFor(() => expect(view.getByText('Rent')).toBeTruthy());

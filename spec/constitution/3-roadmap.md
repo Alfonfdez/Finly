@@ -707,7 +707,7 @@ Release preparation for 2.1.0, applied and verified 2026-09-18:
 - Version references updated in the 9 READMEs, tech-stack and screens constitution docs, plus a 2.1.0 changelog entry.
 - Gate: `npm run test:all` green (92 files / 579 tests).
 
-`[ ]` Released: Finly 2.1.0 published as a GitHub Release (tag `v2.1.0`) — to be ticked after going live, mirroring the 2.0.0 entry.
+Superseded: the 2.1.0 GitHub Release was not published; its changes ship in the 2.2.0 release (no separate `v2.1.0` tag).
 
 ## Select all in bulk-selection screens
 Status: completed.
@@ -805,8 +805,6 @@ The form hints' formatting and the transaction checklist moved out of the compon
 - `getTransactionFormHintText(values, keys)` is the checklist as a pure function (order: category, amount, account, repeat end date, rule name taken/required; the name only in rule mode) — labels are injected, so it's unit-testable without React or i18n.
 - `TransactionForm`'s 12-line `useMemo` is now one call (and it no longer imports the recurring-name constants); `CreateTagScreen` composes its hint from `getNameHintText` + `joinHints`. The rendered strings are unchanged (the existing component tests still assert them).
 - Gate: `npm run test:all` green (135 files / 1082 tests).
-
-Status: completed.
 
 Spec: no behaviour change (refactor only).
 
@@ -957,3 +955,45 @@ The "hide balances" setting now covers every aggregate the app displays, applied
 - Gate: `npm run test:all` green (138 files / 1160 tests); verified in the browser at 375px (all 9 languages not applicable: text is unchanged except the renamed label, which the parity test covers).
 
 Spec: spec/features/003-settings-screen/ (5.6), 001-home-screen, 014-transactions-screen-from-home, 015-all-transactions-screen.
+
+## Recurring materialization: serialized runs and catch-up hardening
+Status: completed.
+
+Hardening pass on the reconciliation pipeline, applied 2026-10-19:
+- Reconciliation runs are serialized behind a module-level queue, so the app-start/foreground/midnight triggers and the reconciliations a rule edit fires can no longer interleave their cursors; each run is now one DB transaction (matching spec 028).
+- Each rule reads its already-generated occurrence dates once per run instead of querying per occurrence (one query per rule; the unique occurrence index stays as the last line of defence).
+- `nextDueOnOrAfter` fast-forwards daily/weekly schedules in O(1) and jumps to the nearest period for monthly/yearly ones, so a decades-old rule can no longer silently exhaust the 10,000-probe guard and return a past date; ended schedules still stop at their first occurrence past the end date.
+- The pause/resume switch is busy-guarded (disabled while the write is in flight; a ref also rejects a same-tick second tap).
+- The service validates the rule invariants (blank name, non-positive/non-integer interval, end date not after the start) before writing; the name-length limit stays in the form so legacy rules remain editable.
+- Repo hygiene: `updateWithTags` uses an explicit column allowlist, the dead `getTagsByRuleIds` is removed, and `RepeatSection` reuses the shared edit-cursor helper.
+- Tests: validation cases, the fast-forward behaviour (including the ended-schedule stop), two concurrent reconciliation runs, the column allowlist and the toggle guard.
+- Gate: `npm run test:all` green (139 files / 1180 tests).
+
+Spec: spec/features/028-recurring-transactions/.
+
+## Audit coverage: the remaining test gaps closed
+Status: completed.
+
+Tests added after the 2.2.0 audit, applied 2026-10-19:
+- `CreateRecurringScreen` gained its missing suite (rule mode and labels, default account resolution, the custom-period single-day anchor, the existing-name preload and its failure tolerance, and the submit mapping to the service + Home type switch).
+- Category delete messaging covers every path: transactions only, transactions + rules, no data (no move option) and the failed linked-data check.
+- Both category transfer modals: target/delete selection, Confirm gating (nothing selected / not every item resolved) and cancel.
+- `CalendarModal` (titles per period, day pick, confirm/cancel, custom range, reset on reopen) and `OptionPickerModal` (selection, search, no-results, short non-searchable lists).
+- `useTransactionFilters` composes every filter at once (type + category + account + tag + search + period).
+- Reconciliation: overlapping runs are serialized (two concurrent runs, no duplicates) plus the fast-forward and DST date-only matrix.
+- Pure units: `utils/arrays`, `database/validate`, `utils/backupIO` (native + web) and `storage/indexedDb` (via `fake-indexeddb`, a new devDependency); the i18n function keys render in all 9 languages.
+- `docs/harnesses.md` records the Node suite's limit (sql.js behind an `expo-sqlite` mock; the real driver is covered on device by the APK + Maestro) and that the drawer navigation is exercised by `flow-smoke`.
+- Gate: `npm run test:all` green (150 files / 1249 tests).
+
+Spec: docs/harnesses.md.
+
+## Docs: drawer screenshot under a v3 name + roadmap cleanups
+Status: completed.
+
+Screenshot naming and release-notes cleanup, applied 2026-10-19:
+- The refreshed drawer capture (Recurring entry, v2.2.0 footer) is published as `images/screenshots/v3-02-hamburger.png` and the 9 READMEs point at it. The shipped `v2-02-hamburger.png` is left untouched, so GitHub keeps the existing v2 set intact and only the new name renders as a new image.
+- The rest of the screenshot set (every screen, including Recurring) is deferred to a pre-release task: a mock-data build will recapture everything as `v<N>-NN-...` (current version + 1) and update the 9 READMEs once the UI is final, because more UI changes may still land before 2.2.0.
+- The 2.1.0 GitHub release line now reads as superseded by 2.2.0 (no separate `v2.1.0` tag), and the stray Status/Spec fragment after the form-hints entry was collapsed.
+- Gate: docs/assets only; `npm run test:all` re-run green after the phase work.
+
+Spec: none (documentation/assets).

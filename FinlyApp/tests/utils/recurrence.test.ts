@@ -8,6 +8,7 @@ import {
   isSkippedWindowRecoverable,
   lastDayAnchorUseful,
   listDueOccurrences,
+  nextDueOnOrAfter,
   nextEffectiveOccurrence,
   planEdit,
   recurrenceDayPattern,
@@ -527,5 +528,73 @@ describe('planEdit on a paused rule', () => {
     expect(plan.nextDue).toBe('2026-07-05');
     expect(plan.skippedFrom).toBeNull();
     expect(plan.preview.count).toBe(4);
+  });
+});
+
+describe('nextDueOnOrAfter', () => {
+  const schedule = (overrides: Partial<RecurrenceSchedule>): RecurrenceSchedule => ({
+    frequency: 'daily',
+    interval: 1,
+    weekday: null,
+    day_of_month: null,
+    month: null,
+    start_date: '2026-01-01',
+    end_date: null,
+    ...overrides,
+  });
+
+  it('fast-forwards a decades-old daily rule instead of exhausting the probe guard', () => {
+    expect(nextDueOnOrAfter(schedule({ start_date: '1980-01-01' }), '2026-10-19')).toBe('2026-10-19');
+  });
+
+  it('keeps the daily interval', () => {
+    expect(nextDueOnOrAfter(schedule({ interval: 3 }), '2026-01-05')).toBe('2026-01-07');
+  });
+
+  it('fast-forwards a decades-old weekly rule', () => {
+    // 1980-01-01 was a Tuesday; 2026-10-19 is a Monday.
+    expect(nextDueOnOrAfter(schedule({ frequency: 'weekly', start_date: '1980-01-01' }), '2026-10-19')).toBe('2026-10-20');
+  });
+
+  it('fast-forwards a monthly 31st rule, clamping short months', () => {
+    const monthly31 = schedule({ frequency: 'monthly', day_of_month: 31, start_date: '1990-01-31' });
+    expect(nextDueOnOrAfter(monthly31, '2026-10-19')).toBe('2026-10-31');
+    expect(nextDueOnOrAfter(monthly31, '2026-11-01')).toBe('2026-11-30');
+  });
+
+  it('fast-forwards a yearly 29 February rule across non-leap years', () => {
+    const yearly = schedule({ frequency: 'yearly', month: 2, day_of_month: 29, start_date: '2000-02-29' });
+    expect(nextDueOnOrAfter(yearly, '2026-10-19')).toBe('2027-02-28');
+  });
+
+  it('stops at the first occurrence past the end date', () => {
+    const ended = schedule({ start_date: '2000-01-01', end_date: '2000-01-10' });
+    expect(nextDueOnOrAfter(ended, '2026-10-19')).toBe('2000-01-11');
+  });
+
+  it('falls back to probing when the anchor columns are missing', () => {
+    const partial = schedule({ frequency: 'monthly', start_date: '2026-01-15' });
+    expect(nextDueOnOrAfter(partial, '2026-04-15')).toBe('2026-04-15');
+  });
+
+  it('fast-forwards a daily rule across the spring DST change', () => {
+    // 2026-03-29 is the spring change in Europe; the arithmetic is DST-proof.
+    expect(nextDueOnOrAfter(schedule({ start_date: '2026-03-20' }), '2026-03-31')).toBe('2026-03-31');
+  });
+
+  it('keeps a weekly rule on the same weekday across the autumn change', () => {
+    // 2026-10-19 is a Monday; 2026-10-25 is the autumn change in Europe.
+    expect(nextDueOnOrAfter(schedule({ frequency: 'weekly', start_date: '2026-10-19' }), '2026-10-26')).toBe('2026-10-26');
+  });
+  it('returns the start date when it is still in the future', () => {
+    expect(nextDueOnOrAfter(schedule({ start_date: '2026-12-01' }), '2026-10-19')).toBe('2026-12-01');
+  });
+});
+
+describe('todayDateOnly around DST', () => {
+  it('keeps the local calendar day on both sides of midnight', () => {
+    expect(todayDateOnly(new Date(2026, 2, 29, 23, 30))).toBe('2026-03-29');
+    expect(todayDateOnly(new Date(2026, 2, 30, 0, 30))).toBe('2026-03-30');
+    expect(todayDateOnly(new Date(2026, 9, 25, 23, 59))).toBe('2026-10-25');
   });
 });

@@ -22,6 +22,29 @@ export interface GeneratedTransactionPatch {
   tagIds?: number[];
 }
 
+/**
+ * Columns `updateWithTags` may write: the rule fields owned by the edit form.
+ * `user_id` (and the generated `id`/timestamps) stay out on purpose.
+ */
+const WRITABLE_RULE_COLUMNS = [
+  'name',
+  'type',
+  'account_id',
+  'category_id',
+  'amount',
+  'description',
+  'frequency',
+  'interval',
+  'weekday',
+  'day_of_month',
+  'month',
+  'start_date',
+  'end_date',
+  'next_due',
+  'active',
+  'skipped_from',
+] as const satisfies readonly (keyof RecurringRuleInput)[];
+
 /** Write selected rule columns (never tags) and bump `updated_at`. */
 async function writeRuleFields(
   id: number,
@@ -109,16 +132,6 @@ export const recurringRepo = {
     return map;
   },
 
-  async getTagsByRuleIds(ruleIds: number[]): Promise<{ rule_id: number; tag_id: number }[]> {
-    if (ruleIds.length === 0) return [];
-    const db = await getDrizzle();
-    return await db
-      .select({ rule_id: recurringRuleTags.rule_id, tag_id: recurringRuleTags.tag_id })
-      .from(recurringRuleTags)
-      .where(inArray(recurringRuleTags.rule_id, ruleIds))
-      .all();
-  },
-
   async createWithTags(data: RecurringRuleInput, tagIds: number[]): Promise<RecurringRule> {
     const skippedFrom = data.skipped_from ?? null;
     return await withTransaction(async (db) => {
@@ -136,11 +149,12 @@ export const recurringRepo = {
 
   async updateWithTags(id: number, data: Partial<RecurringRuleInput>, tagIds: number[]): Promise<void> {
     await withTransaction(async (db) => {
-      // Copy every provided writable column (all of `RecurringRuleInput` except
-      // `user_id`), so adding a column needs no change here.
+      // Only the columns the edit form owns: an allowlist keeps a stray field (e.g.
+      // `user_id`) from being written through the spread of a partial input.
       const set: Partial<typeof recurringRules.$inferInsert> = {};
-      for (const [key, value] of Object.entries(data)) {
-        if (key !== 'user_id' && value !== undefined) {
+      for (const key of WRITABLE_RULE_COLUMNS) {
+        const value = data[key];
+        if (value !== undefined) {
           (set as Record<string, unknown>)[key] = value;
         }
       }
@@ -215,7 +229,7 @@ export const recurringRepo = {
     return rows.map(row => row.date as string);
   },
 
-  /** Non-transactional: the caller (recurringService) wraps the whole run in one transaction. */
+  /** Non-transactional: the service runs the whole catch-up inside one transaction. */
   async insertOccurrence(rule: RecurringRule, date: string, tagIds: number[]): Promise<void> {
     const db = await getDrizzle();
     const result = await db

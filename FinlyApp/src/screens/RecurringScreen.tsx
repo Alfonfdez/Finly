@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -64,6 +64,16 @@ export default function RecurringScreen() {
   const [typeTab, setTypeTab] = useState<TransactionTypeFilter>(TYPE_FILTERS.all);
   const [selectedAccountId, setSelectedAccountId] = useState<number | undefined>(undefined);
   const [accountModalVisible, setAccountModalVisible] = useState(false);
+  // A ref mirrors the state so a same-tick double tap is still rejected (the settled
+  // state would only be visible on the next render).
+  const busyRuleIdsRef = useRef<Set<number>>(new Set());
+  const [busyRuleIds, setBusyRuleIds] = useState<ReadonlySet<number>>(() => new Set());
+  const setRuleBusy = useCallback((ruleId: number, busy: boolean) => {
+    const next = new Set(busyRuleIdsRef.current);
+    if (busy) next.add(ruleId); else next.delete(ruleId);
+    busyRuleIdsRef.current = next;
+    setBusyRuleIds(next);
+  }, []);
 
   // Default to the "Total" account (every rule) once accounts load.
   const totalAccountId = useMemo(() => accountsWithBalance.find(isTotalAccount)?.id, [accountsWithBalance]);
@@ -151,16 +161,24 @@ export default function RecurringScreen() {
     // also refuses to resume an ended rule). Pausing clears the flag; resuming
     // skips the paused window.
     if (isRecurrenceEnded(rule, rule.next_due, todayDateOnly())) return;
-    await runWithErrorAlert(async () => {
-      await setRecurringRuleActive(rule.id, value);
-      if (value) {
-        setData(await loadRules());
-        refresh();
-      } else {
-        setData(prev => ({ ...prev, rules: prev.rules.map(r => (r.id === rule.id ? { ...r, active: RULE_INACTIVE } : r)) }));
-      }
-    }, ERROR_PREFIXES.recurringUpdate);
-  }, [setData, refresh, loadRules]);
+    // One write per rule at a time: a second tap while resuming would interleave
+    // the optimistic pause with the reloaded list.
+    if (busyRuleIdsRef.current.has(rule.id)) return;
+    setRuleBusy(rule.id, true);
+    try {
+      await runWithErrorAlert(async () => {
+        await setRecurringRuleActive(rule.id, value);
+        if (value) {
+          setData(await loadRules());
+          refresh();
+        } else {
+          setData(prev => ({ ...prev, rules: prev.rules.map(r => (r.id === rule.id ? { ...r, active: RULE_INACTIVE } : r)) }));
+        }
+      }, ERROR_PREFIXES.recurringUpdate);
+    } finally {
+      setRuleBusy(rule.id, false);
+    }
+  }, [setData, refresh, loadRules, setRuleBusy]);
 
   const handleRulePress = useCallback((rule: RecurringRule) => {
     if (selectMode) { toggleItem(rule.id); return; }
@@ -185,10 +203,11 @@ export default function RecurringScreen() {
       today={today}
       onPress={() => handleRulePress(item)}
       onToggleActive={value => handleToggleActive(item, value)}
+      busy={busyRuleIds.has(item.id)}
       selectMode={selectMode}
       selected={selectedIds.has(item.id)}
     />
-  ), [categoriesById, counts, today, handleRulePress, handleToggleActive, selectMode, selectedIds]);
+  ), [categoriesById, counts, today, handleRulePress, handleToggleActive, busyRuleIds, selectMode, selectedIds]);
 
   if (loading && rules.length === 0) {
     return (

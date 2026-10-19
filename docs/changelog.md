@@ -4015,3 +4015,29 @@
 - Category rows keep the name and the percentage visible; only the money is masked.
 - Tests assert the mask color (and that revealing restores the green/red total) in the DonutChart/BarChart/CategoryList cases and on both list screens.
 - Gate: `npm run test:all` green (138 files / 1160 tests).
+
+[2026-10-19] fix | FinlyApp/src/database/recurringService.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/utils/recurrence.ts, FinlyApp/src/utils/recurringRuleValidation.ts, FinlyApp/src/constants/types.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/RecurringRow.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/utils/recurringRuleValidation.test.ts, FinlyApp/tests/database/recurringService.test.ts, FinlyApp/tests/database/recurringRepo.test.ts, FinlyApp/tests/screens/RecurringScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Reconciliation runs are serialized behind a module-level queue, so the app-start/foreground/midnight triggers and the reconciliations a rule edit fires can no longer interleave their cursors; each run is now one DB transaction, as spec 028 always claimed.
+- Each rule reads its already-generated occurrence dates once per run instead of querying per occurrence: a long catch-up costs one query per rule, and the unique occurrence index stays as the last line of defence.
+- `nextDueOnOrAfter` fast-forwards daily/weekly schedules in O(1) and jumps to the nearest period for monthly/yearly ones, so a decades-old rule can no longer silently exhaust the 10,000-probe guard and return a past date; ended schedules still stop at their first occurrence past the end date.
+- The pause/resume switch is busy-guarded: it is disabled while the write is in flight, and a ref rejects a same-tick second tap so the optimistic pause cannot interleave with the reloaded list.
+- The service now validates the rule invariants before writing (blank name, non-positive/non-integer interval, end date not after the start). The name-length limit stays in the form so a legacy rule longer than it remains editable.
+- Repo hygiene: `updateWithTags` writes an explicit column allowlist (no more "everything except user_id"), the dead `getTagsByRuleIds` is removed, and `RepeatSection` reuses the shared edit-cursor helper.
+- Tests: the validation cases, the fast-forward behaviour (including the ended-schedule stop), two concurrent reconciliation runs, the column allowlist and the toggle guard.
+- Gate: `npm run test:all` green (139 files / 1180 tests).
+
+[2026-10-19] test | FinlyApp/tests (11 new suites), FinlyApp/tests/component/CalendarModal.test.tsx, FinlyApp/tests/component/OptionPickerModal.test.tsx, FinlyApp/tests/component/CategoryTransferModal.test.tsx, FinlyApp/tests/component/BulkCategoryTransferModal.test.tsx, FinlyApp/tests/database/indexedDbStorage.test.ts, FinlyApp/tests/i18n/render.test.ts, FinlyApp/tests/screens/CreateRecurringScreen.test.tsx, FinlyApp/tests/utils (arrays, validate, backupIO), FinlyApp/package.json, docs/harnesses.md, spec/constitution/3-roadmap.md
+- `CreateRecurringScreen` gained its missing suite: rule mode and labels, default account (configured, active, first non-Total), the custom-period single-day anchor, the existing-name preload (and its failure tolerance), and the submit mapping to the service plus the Home type switch.
+- Category delete messaging is covered for every path: transactions only, transactions + rules, no data (no move option) and the failed linked-data check (assumes data).
+- Both category transfer modals are tested: target and delete selection, Confirm gating while nothing is selected or not every item is resolved, and cancel.
+- `CalendarModal` (title/subtitle per period, day pick, confirm/cancel, custom range, reset on reopen) and `OptionPickerModal` (current selection, search filtering, no-results, short non-searchable lists) now have suites.
+- `useTransactionFilters` composes type + category + account + tag + search + period in one case.
+- Reconciliation tests: two overlapping runs are serialized without duplicates, plus the fast-forward and DST date-only matrix.
+- Pure units: `utils/arrays`, `database/validate`, `utils/backupIO` (native + web, with the platform/picker/share mocks) and `storage/indexedDb` (via `fake-indexeddb`, a new devDependency); the i18n function keys are rendered in all 9 languages to catch placeholder/`undefined` regressions.
+- `docs/harnesses.md` records the Node suite's limit (sql.js behind an `expo-sqlite` mock; the real driver is covered on device by the APK + Maestro) and that the drawer navigation is exercised by `flow-smoke`.
+- Gate: `npm run test:all` green (150 files / 1249 tests).
+
+[2026-10-19] docs | images/screenshots/v3-02-hamburger.png, README.md, README.es.md, README.ca.md, README.gl.md, README.eu.md, README.fr.md, README.de.md, README.pt.md, README.it.md, spec/constitution/3-roadmap.md
+- Added the refreshed drawer capture as `images/screenshots/v3-02-hamburger.png` (Recurring entry, v2.2.0 footer) and pointed the Screenshots section of the 9 READMEs at it; the shipped `v2-02-hamburger.png` is left untouched so GitHub keeps the existing v2 set intact.
+- The rest of the screenshot set is deferred to a pre-release task (mock-data build, every screen, `v3-NN-...` names) because the UI may still change before 2.2.0.
+- The 2.1.0 GitHub release line in the roadmap now reads as superseded by 2.2.0, and the stray Status/Spec fragment after the form-hints entry was collapsed.

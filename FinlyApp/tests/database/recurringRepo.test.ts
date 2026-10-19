@@ -199,4 +199,17 @@ describe('recurringRepo', () => {
     expect(dates).toEqual(['2026-01-01', '2026-01-02', '2026-01-03']);
     expect(await recurringRepo.listOccurrenceDates(9999)).toEqual([]);
   });
+
+  it('updateWithTags only writes the allowlisted columns', async () => {
+    const { recurringRepo } = await boot();
+    const rule = await recurringRepo.createWithTags(baseRule, []);
+
+    await recurringRepo.updateWithTags(rule.id, { name: 'Rent 2', user_id: 99, interval: 2 }, []);
+
+    const stored = await recurringRepo.getById(rule.id);
+    expect(stored?.name).toBe('Rent 2');
+    expect(stored?.interval).toBe(2);
+    // `user_id` is not writable: the rule keeps its owner.
+    expect(stored?.user_id).toBe(1);
+  });
 });

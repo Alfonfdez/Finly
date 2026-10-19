@@ -34,7 +34,7 @@ Alles läuft **auf dem Gerät**: Ihre Daten leben in einer lokalen SQLite-Datenb
 
 ![Startbildschirm](images/screenshots/v2-01-a-home-empty.png)<br>*Startbildschirm, bevor Konten eingerichtet wurden.*<br><br>
 ![Startbildschirm](images/screenshots/v2-01-b-home.png)<br>*Startbildschirm mit Konten, Donut-Diagramm und Aufschlüsselung nach Kategorie.*<br><br>
-![Hamburger-Menü](images/screenshots/v2-02-hamburger.png)<br>*Seitliches Menü mit Startseite, Konten, Kategorien, Tags, Kommentare, Wiederkehrend, Alle Transaktionen und Einstellungen.*<br><br>
+![Hamburger-Menü](images/screenshots/v3-02-hamburger.png)<br>*Seitliches Menü mit Startseite, Konten, Kategorien, Tags, Kommentare, Wiederkehrend, Alle Transaktionen und Einstellungen.*<br><br>
 ![Transaktion hinzufügen](images/screenshots/v2-03-add-transaction.png)<br>*Ausgabe oder Einnahme mit Betrag, Konto, Kategorie, Tag, Tags, Kommentar und Foto hinzufügen.*<br><br>
 ![Datumsauswahl](images/screenshots/v2-04-date-picker.png)<br>*Kalenderauswahl, um einen Tag, eine Woche, einen Monat, ein Jahr oder einen freien Zeitraum zu wählen.*<br><br>
 ![Kategorien](images/screenshots/v2-05-categories.png)<br>*Kategorien nach Typ (Ausgaben/Einnahmen) in einem 4×N-Raster organisiert.*<br><br>

@@ -34,7 +34,7 @@ Tot funciona **al dispositiu**: les teves dades viuen en una base de dades SQLit
 
 ![Pantalla d'inici](images/screenshots/v2-01-a-home-empty.png)<br>*Pantalla d'inici abans de configurar cap compte.*<br><br>
 ![Pantalla d'inici](images/screenshots/v2-01-b-home.png)<br>*Pantalla d'inici amb comptes, gràfic de dònut i desglossament per categories.*<br><br>
-![Menú hamburguesa](images/screenshots/v2-02-hamburger.png)<br>*Menú lateral amb Inici, Comptes, Categories, Etiquetes, Comentaris, Recurrents, Totes les transaccions i Configuració.*<br><br>
+![Menú hamburguesa](images/screenshots/v3-02-hamburger.png)<br>*Menú lateral amb Inici, Comptes, Categories, Etiquetes, Comentaris, Recurrents, Totes les transaccions i Configuració.*<br><br>
 ![Afegeix transacció](images/screenshots/v2-03-add-transaction.png)<br>*Afegeix una despesa o ingrés amb import, compte, categoria, dia, etiquetes, comentari i foto.*<br><br>
 ![Selector de data](images/screenshots/v2-04-date-picker.png)<br>*Selector de calendari per triar un dia, setmana, mes, any o rang de període personalitzat.*<br><br>
 ![Categories](images/screenshots/v2-05-categories.png)<br>*Categories organitzades per tipus (despeses/ingressos) en una graella de 4×N.*<br><br>

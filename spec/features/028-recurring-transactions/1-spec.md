@@ -51,7 +51,7 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 
 ### 3. Reconciliation (catch-up materialization)
 
-- A reconciliation routine runs on app start (after DB init), on foreground, and on the timer; each run is a single DB transaction.
+- A reconciliation routine runs on app start (after DB init), on foreground, and on the timer; each run is a single DB transaction, and runs are **serialized** (a module-level queue) so overlapping triggers - and the reconciliations a rule edit triggers - never interleave their cursors. Each rule's already-generated occurrence dates are read once per run, so a long catch-up costs one query instead of one per occurrence (the unique occurrence index stays as the last line of defence).
 - For every **active** rule with `next_due <= today`, it walks from `next_due` forward, inserting one transaction per occurrence (`date` = occurrence day at `00:00:00`, tag links copied from `recurring_rule_tags`, `recurring_rule_id`/`recurrence_date` set), then advances `next_due` past the last inserted occurrence.
 - **Missed occurrences are back-filled**: opening the app one year after a monthly rule was created creates the 12 missed transactions, each dated on its real day.
 - Idempotency is guaranteed by the unique index: a re-run never duplicates an occurrence. The loop is bounded per rule per run (a safety cap, e.g. 500 occurrences) to avoid runaway generation.
@@ -88,6 +88,7 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
   - A human-readable summary is shown, phrased per frequency and localized (e.g. "Every month on day 6", "Every week on Monday", "Every year on October 6"; Spanish: "Cada año el 6 de octubre"), with an "until `<date>`" clause appended when an end date is set.
   - A **Summary info block** (always shown) consolidates: the summary line, the **first transaction** date, and **how many transactions will be created on save** (occurrences up to today within the end date; "No transactions will be created now" when the first one is in the future). When the occurrence day differs by month (monthly 29/30/31 or last-day, and yearly February on 28/29 or last-day) the block adds one line stating where each month lands, localized and built only from the schedule (never from today or the end date) — e.g. `31 in Jan, Mar, May, Jul, Aug, Oct, Dec · 30 in Apr, Jun, Sep, Nov · 28 in Feb (29 in leap years)`. It is the form-only companion to the "Last day" checkbox: the list rows keep the single summary line.
 - Saving creates a `recurring_rules` row + tag links **and** reconciliation immediately materializes any occurrence that is already due: a **past/today start** back-fills every occurrence from the start up to today, while a **future start** creates nothing until it becomes due (the cursor stays at the start date).
+- The service rejects the intrinsic invariants before writing anything (defensive: the form already prevents them) - a blank/whitespace-only name, an interval that is not a positive integer, or an end date not strictly after the start. The name-length limit is not enforced there, so a legacy rule longer than it stays editable.
 - The account/category/amount/comment/tags come from the same form fields; a recurring rule does not store a photo (the photo section is hidden in rule mode).
 - The **add-transaction** form does **not** offer a Repeat section: it always saves a single plain transaction. Recurring rules are created only from the Recurring screen's create flow.
 
@@ -100,7 +101,7 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 - The list can be **sorted** by **next due** (default, ascending), **name**, **amount** or **created** through a horizontally scrollable `SortToggle` row below the search bar; each field has a natural default direction (next due/name ascending, amount/created descending) and tapping the active field flips it. Sorting is **session-only** (not persisted).
 - The list can be **filtered by status** with a `RecurringStatusChip` (in the same row as the sort toggle): **All** (default), **Active**, **Paused**, **Ended** — multi-select, session-only. "All" and the concrete statuses are mutually exclusive (picking a status clears All; picking All clears the statuses); selecting every status collapses back to All. The chip label shows "All", the single status, or the joined statuses ("Active + Ended"). A rule's status is **ended** when it has no occurrence left within its end date (which wins over the active flag — see the Ended state below), otherwise **active**/**paused** from the `active` flag.
 - The list can be **filtered by type** with an **All / Expenses / Income** `TabBar` at the top (like All transactions), keeping only the rules whose `type` matches, and **by account** with an `AccountTrigger` above the sort row (like the transactions screens) opening the account modal; the **Total** account shows every account's rules. Both default to showing every rule (All / Total) and are **session-only**; they compose with the status filter, the search and the sort.
-- Pausing sets `active = 0` (stops materialization, keeps the link and the details chip). Resuming sets `active = 1` and sets `next_due` to the next occurrence on/after today, so occurrences missed during the pause are intentionally **not** created.
+- Pausing sets `active = 0` (stops materialization, keeps the link and the details chip). Resuming sets `active = 1` and sets `next_due` to the next occurrence on/after today, so occurrences missed during the pause are intentionally **not** created. Both writes are serialized with the reconciliation runs, and the row's switch is **disabled while the write is in flight**, so a rapid second tap cannot interleave with the reloaded list.
 - **Ended state:** a rule with an end date and **no occurrence remaining on/after today within it** is shown as **Ended** — the toggle is off and **disabled** (dimmed), labelled **Ended**, and cannot be resumed (resuming could never generate an occurrence). The state is derived from the schedule (not persisted), so editing the end date into the future revives the rule and re-enables the toggle. Ended rules are skipped by reconciliation.
 
 ### 7. Editing a rule
@@ -171,8 +172,8 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 - **Theme / text size:** screens use `useConfig().activeColors` and `useFontSize()`.
 - **Pure logic is Node-testable:** recurrence date math lives in `src/utils/recurrence.ts` (no React Native / Expo imports); the reconciliation and repository layers use only `DatabaseHandle`/Drizzle.
 - **No new dependencies.**
-- **Data safety:** the migration is additive and idempotent; reconciliation is transactional; the unique occurrence index makes materialization idempotent; old backups remain importable.
-- **Performance:** reconciliation is a bounded loop per rule; the unique index and `(recurring_rule_id, recurrence_date)` lookups keep it cheap.
+- **Data safety:** the migration is additive and idempotent; reconciliation is transactional and serialized (overlapping triggers cannot duplicate or lose an occurrence); the unique occurrence index makes materialization idempotent; the rule invariants are validated in the service layer; old backups remain importable.
+- **Performance:** reconciliation is a bounded loop per rule; each rule reads its generated occurrence dates once per run; `(recurring_rule_id, recurrence_date)` lookups keep it cheap. Schedule probing fast-forwards to the target date for daily/weekly rules (O(1)) and jumps to the nearest period for monthly/yearly ones, so a decades-old rule cannot silently exhaust the probe guard.
 
 ---
 
@@ -187,6 +188,9 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 - [x] Saving with a repeat creates a rule and materializes any already-due occurrence as a transaction (correct account, category, type, amount, comment and tags).
 - [x] On app start / foreground, every due occurrence since the last run is created, each dated on its scheduled day (missed months/years are back-filled).
 - [x] Re-running reconciliation never duplicates an occurrence (idempotent via the unique occurrence index).
+- [x] Overlapping reconciliation triggers are serialized (one DB transaction per run), so two simultaneous runs never duplicate or lose an occurrence.
+- [x] The pause/resume switch is disabled while its write is in flight: a rapid second tap is ignored until the row settles.
+- [x] The service rejects a blank name, a non-positive or non-integer interval and an end date not after the start before writing anything; a legacy name longer than the limit stays editable.
 - [x] While the app is open across a due instant, the occurrence is created without reopening the app.
 - [x] Monthly rules clamp short months (31 → last day) and yearly rules clamp Feb 29 in non-leap years.
 - [x] A monthly/yearly rule can anchor on the **last day of the month**; the first occurrence is the last day of the start month and the summary reads "on the last day".

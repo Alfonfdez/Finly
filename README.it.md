@@ -34,7 +34,7 @@ Tutto funziona **sul dispositivo**: i tuoi dati vivono in un database SQLite loc
 
 ![Schermata iniziale](images/screenshots/v2-01-a-home-empty.png)<br>*Schermata iniziale prima di configurare qualsiasi conto.*<br><br>
 ![Schermata iniziale](images/screenshots/v2-01-b-home.png)<br>*Schermata iniziale con conti, grafico a ciambella e ripartizione per categorie.*<br><br>
-![Menu hamburger](images/screenshots/v2-02-hamburger.png)<br>*Menu laterale con Home, Conti, Categorie, Etichette, Commenti, Ricorrenti, Tutte le transazioni e Impostazioni.*<br><br>
+![Menu hamburger](images/screenshots/v3-02-hamburger.png)<br>*Menu laterale con Home, Conti, Categorie, Etichette, Commenti, Ricorrenti, Tutte le transazioni e Impostazioni.*<br><br>
 ![Aggiungi transazione](images/screenshots/v2-03-add-transaction.png)<br>*Aggiungi un'uscita o un'entrata con importo, conto, categoria, giorno, etichette, commento e foto.*<br><br>
 ![Selettore data](images/screenshots/v2-04-date-picker.png)<br>*Selettore calendario per scegliere un giorno, settimana, mese, anno o un intervallo di periodo personalizzato.*<br><br>
 ![Categorie](images/screenshots/v2-05-categories.png)<br>*Categorie organizzate per tipo (uscite/entrate) in una griglia 4×N.*<br><br>

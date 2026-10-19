@@ -169,6 +169,60 @@ describe('ModifyCategoryScreen', () => {
     expect(view.queryByText('This category will be permanently deleted.')).toBeNull();
   });
 
+  it('warns that the transactions are deleted too', async () => {
+    setAppData({ categories: [category, { ...category, id: 8, name: 'Travel' } as Category] });
+    mockTxList.mockResolvedValue([{ id: 1 } as Transaction]);
+    const view = await render(<ModifyCategoryScreen />);
+    await view.findByDisplayValue('Food');
+
+    await fireEvent.press(view.getByText('Delete'));
+
+    await waitFor(() => expect(mockTxList).toHaveBeenCalled());
+    expect(view.getByText(
+      'Deleting this category will also delete its transactions, unless you choose to move them to another category',
+    )).toBeTruthy();
+    expect(view.getByText('Move them to another category')).toBeTruthy();
+  });
+
+  it('warns about transactions and rules together', async () => {
+    setAppData({ categories: [category, { ...category, id: 8, name: 'Travel' } as Category] });
+    mockTxList.mockResolvedValue([{ id: 1 } as Transaction]);
+    mockRuleCounts.mockResolvedValue({ 7: 1 });
+    const view = await render(<ModifyCategoryScreen />);
+    await view.findByDisplayValue('Food');
+
+    await fireEvent.press(view.getByText('Delete'));
+
+    await waitFor(() => expect(mockRuleCounts).toHaveBeenCalledWith([7]));
+    expect(view.getByText(
+      'Deleting this category will also delete its transactions and its recurring rules, unless you choose to move them to another category',
+    )).toBeTruthy();
+  });
+
+  it('does not offer to move a category without data', async () => {
+    setAppData({ categories: [category, { ...category, id: 8, name: 'Travel' } as Category] });
+    const view = await render(<ModifyCategoryScreen />);
+    await view.findByDisplayValue('Food');
+
+    await fireEvent.press(view.getByText('Delete'));
+
+    await waitFor(() => expect(view.getByText('This category will be permanently deleted.')).toBeTruthy());
+    expect(view.queryByText('Move them to another category')).toBeNull();
+  });
+
+  it('assumes data when the linked-data check fails', async () => {
+    setAppData({ categories: [category, { ...category, id: 8, name: 'Travel' } as Category] });
+    mockTxList.mockRejectedValue(new Error('offline'));
+    mockRuleCounts.mockRejectedValue(new Error('offline'));
+    const view = await render(<ModifyCategoryScreen />);
+    await view.findByDisplayValue('Food');
+
+    await fireEvent.press(view.getByText('Delete'));
+
+    await waitFor(() => expect(view.getByText(
+      'Deleting this category will also delete its transactions and its recurring rules, unless you choose to move them to another category',
+    )).toBeTruthy());
+  });
   it('keeps a custom name when only the icon changes', async () => {
     const view = await render(<ModifyCategoryScreen />);
     await view.findByDisplayValue('Food');

@@ -20,11 +20,13 @@ interface Props {
   today: string;
   onPress: () => void;
   onToggleActive: (value: boolean) => void;
+  /** The pause/resume write is in flight: keep the switch from firing again. */
+  busy?: boolean;
   selectMode?: boolean;
   selected?: boolean;
 }
 
-function RecurringRow({ rule, category, count, today, onPress, onToggleActive, selectMode, selected }: Props) {
+function RecurringRow({ rule, category, count, today, onPress, onToggleActive, busy = false, selectMode, selected }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -97,10 +99,10 @@ function RecurringRow({ rule, category, count, today, onPress, onToggleActive, s
             <Switch
               value={ended ? false : active}
               onValueChange={onToggleActive}
-              disabled={ended}
+              disabled={ended || busy}
               accessibilityLabel={ended ? labels.recurring_ended : active ? labels.recurring_active : labels.recurring_paused}
-              accessibilityState={{ disabled: ended }}
-              style={ended ? styles.switchDisabled : undefined}
+              accessibilityState={{ disabled: ended || busy }}
+              style={ended || busy ? styles.switchDisabled : undefined}
               {...switchColors(c)}
             />
           )}

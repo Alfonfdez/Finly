@@ -34,7 +34,7 @@ Todo funciona **no dispositivo**: os teus datos viven nunha base de datos SQLite
 
 ![Pantalla de inicio](images/screenshots/v2-01-a-home-empty.png)<br>*Pantalla de inicio antes de configurar ningunha conta.*<br><br>
 ![Pantalla de inicio](images/screenshots/v2-01-b-home.png)<br>*Pantalla de inicio con contas, gráfico de donut e desglose por categorías.*<br><br>
-![Menú lateral](images/screenshots/v2-02-hamburger.png)<br>*Menú lateral con Inicio, Contas, Categorías, Etiquetas, Comentarios, Recorrentes, Todas as transaccións e Axustes.*<br><br>
+![Menú lateral](images/screenshots/v3-02-hamburger.png)<br>*Menú lateral con Inicio, Contas, Categorías, Etiquetas, Comentarios, Recorrentes, Todas as transaccións e Axustes.*<br><br>
 ![Engadir transacción](images/screenshots/v2-03-add-transaction.png)<br>*Engade un gasto ou ingreso con importe, conta, categoría, día, etiquetas, comentario e foto.*<br><br>
 ![Selector de data](images/screenshots/v2-04-date-picker.png)<br>*Selector de calendario para escoller un día, semana, mes, ano ou rango de período personalizado.*<br><br>
 ![Categorías](images/screenshots/v2-05-categories.png)<br>*Categorías organizadas por tipo (gastos/ingresos) nunha cuadrícula de 4×N.*<br><br>

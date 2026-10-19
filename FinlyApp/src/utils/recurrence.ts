@@ -185,9 +185,50 @@ export interface CatchUpResult {
   truncated: boolean;
 }
 
+function daysBetween(from: Date, to: Date): number {
+  // UTC day numbers keep the arithmetic DST-proof.
+  const fromUtc = Date.UTC(from.getFullYear(), from.getMonth(), from.getDate());
+  const toUtc = Date.UTC(to.getFullYear(), to.getMonth(), to.getDate());
+  return Math.round((toUtc - fromUtc) / 86400000);
+}
+
 /** First occurrence on or after `today` (used when a rule's schedule changes). */
 export function nextDueOnOrAfter(schedule: RecurrenceSchedule, today: string): string {
+  if (today <= schedule.start_date) return schedule.start_date;
+
+  const interval = Math.max(1, Math.floor(schedule.interval) || 1);
+  const start = fromDateOnly(schedule.start_date);
+  // An ended schedule stops at its first occurrence past the end date (the probe
+  // loop below breaks there), so the fast-forward must not jump beyond that point.
+  const endDay = schedule.end_date ? fromDateOnly(schedule.end_date) : null;
+  const endPlusOne = endDay ? toDateOnly(new Date(endDay.getFullYear(), endDay.getMonth(), endDay.getDate() + 1)) : null;
+  const target = fromDateOnly(endPlusOne != null && endPlusOne < today ? endPlusOne : today);
   let cursor = schedule.start_date;
+
+  if (schedule.frequency === RECURRENCE_FREQUENCIES.daily || schedule.frequency === RECURRENCE_FREQUENCIES.weekly) {
+    // Daily/weekly never skip an occurrence: jump straight to the last slot on or
+    // before the target in O(1) (a decades-old rule used to exhaust the probe guard).
+    const stepDays = schedule.frequency === RECURRENCE_FREQUENCIES.daily ? interval : interval * 7;
+    const steps = Math.max(0, Math.ceil(daysBetween(start, target) / stepDays));
+    cursor = toDateOnly(new Date(start.getFullYear(), start.getMonth(), start.getDate() + steps * stepDays));
+  } else if (schedule.day_of_month != null && (schedule.frequency === RECURRENCE_FREQUENCIES.monthly || schedule.month != null)) {
+    // Monthly/yearly: jump to the last period boundary on or before the target, then
+    // let the loop below resolve the anchor (31st/last-day clamping, 29 Feb).
+    const periodMonths = schedule.frequency === RECURRENCE_FREQUENCIES.monthly ? interval : interval * 12;
+    const monthsApart = (target.getFullYear() - start.getFullYear()) * 12 + (target.getMonth() - start.getMonth());
+    const jumps = Math.max(0, Math.floor(monthsApart / periodMonths));
+    if (jumps > 0) {
+      if (schedule.frequency === RECURRENCE_FREQUENCIES.monthly) {
+        const month = new Date(start.getFullYear(), start.getMonth() + jumps * periodMonths, 1);
+        cursor = toDateOnly(new Date(month.getFullYear(), month.getMonth(), clampDay(month.getFullYear(), month.getMonth(), schedule.day_of_month)));
+      } else {
+        const monthIndex = (schedule.month ?? start.getMonth() + 1) - 1;
+        const year = start.getFullYear() + jumps * interval;
+        cursor = toDateOnly(new Date(year, monthIndex, clampDay(year, monthIndex, schedule.day_of_month)));
+      }
+    }
+  }
+
   let guard = 0;
   while (cursor < today && guard < MAX_SCHEDULE_PROBES) {
     if (schedule.end_date && cursor > schedule.end_date) break;
@@ -288,6 +329,19 @@ export function ruleEditCursor(
   schedule: RecurrenceSchedule,
 ): string {
   return isRuleUnmaterialized(rule) ? schedule.start_date : rule.next_due;
+}
+
+/**
+ * The same cursor rule when the caller already knows whether the rule is
+ * unmaterialized (the form holds the flag, not the rule row). `nextDue` stays
+ * `null` in create mode so the summary keeps reading the schedule.
+ */
+export function ruleEditCursorFrom(
+  unmaterialized: boolean,
+  nextDue: string | null,
+  schedule: RecurrenceSchedule,
+): string | null {
+  return unmaterialized ? schedule.start_date : nextDue;
 }
 
 export interface EditAnchorOptions {

@@ -79,6 +79,15 @@ export const RECURRING_NAME_ERRORS = {
 
 export type RecurringNameError = keyof typeof RECURRING_NAME_ERRORS;
 
+/** Intrinsic rule invariants rejected by the service (the form already prevents them). */
+export const RECURRING_RULE_ERRORS = {
+  nameRequired: 'nameRequired',
+  intervalInvalid: 'intervalInvalid',
+  endNotAfterStart: 'endNotAfterStart',
+} as const;
+
+export type RecurringRuleError = keyof typeof RECURRING_RULE_ERRORS;
+
 /** `day_of_month` anchor meaning "the last day of the month" for a monthly/yearly rule. */
 export const LAST_DAY_OF_MONTH = 31;
 /** `recurring_rules.active` flag values (stored as an integer in SQLite). */
