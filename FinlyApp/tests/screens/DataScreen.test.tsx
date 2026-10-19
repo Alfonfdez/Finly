@@ -129,6 +129,43 @@ describe('DataScreen', () => {
     expect(getAppStub().resetAll).toHaveBeenCalled();
   });
 
+  it('keeps the factory-reset dialog open and disabled while the reset runs', async () => {
+    let release!: () => void;
+    resetDatabase.mockImplementationOnce(() => new Promise<undefined>((resolve) => {
+      release = () => resolve(undefined);
+    }));
+    const view = await render(<DataScreen />);
+    const ue = userEvent.setup();
+
+    fireEvent.press(view.getByText('Reset to factory state'));
+    await ue.press(await view.findByRole('button', { name: 'Reset' }));
+    const input = await view.findByPlaceholderText('Type DELETE here');
+    await fireEvent.changeText(input, 'DELETE');
+    await ue.press(view.getByText('Confirm'));
+
+    // In flight: spinner state, no second confirm, no cancel, read-only input.
+    const confirm = view.getByRole('button', { name: 'Confirm' });
+    expect(confirm).toBeDisabled();
+    expect(confirm.props.accessibilityState?.busy).toBe(true);
+    // The first (still mounted) step also has a Cancel; the busy modal is the last one.
+    const cancels = view.getAllByRole('button', { name: 'Cancel' });
+    expect(cancels[cancels.length - 1]).toBeDisabled();
+    expect(view.getByPlaceholderText('Type DELETE here').props.editable).toBe(false);
+    expect(resetDatabase).toHaveBeenCalledTimes(1);
+
+    await ue.press(confirm);
+    expect(resetDatabase).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      release();
+    });
+    await waitFor(() => {
+      const confirms = view.getAllByRole('button', { name: 'Confirm' });
+      expect(confirms.every(btn => btn.props.accessibilityState?.busy !== true)).toBe(true);
+    });
+    expect(getAppStub().resetAll).toHaveBeenCalled();
+  });
+
   it('shows a success alert when the export completes the share', async () => {
     const alertSpy = vi.spyOn(Alert, 'alert').mockImplementation(() => {});
     const view = await render(<DataScreen />);

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { BUTTON_BORDER_RADIUS, ACTION_BUTTON_HEIGHT } from './componentStyles';
@@ -11,6 +11,10 @@ interface Props {
   onCancel?: () => void;
   onConfirm: () => void;
   confirmDisabled?: boolean;
+  /** The action is running: show a spinner and block a second press. */
+  confirmLoading?: boolean;
+  /** Block cancelling while the action is in flight. */
+  cancelDisabled?: boolean;
   destructive?: boolean;
   layout?: FooterLayout;
   borderTop?: boolean;
@@ -31,6 +35,8 @@ export default function ModalFooter({
   onCancel,
   onConfirm,
   confirmDisabled = false,
+  confirmLoading = false,
+  cancelDisabled = false,
   destructive = false,
   layout = FOOTER_LAYOUTS.row,
   borderTop = false,
@@ -47,14 +53,15 @@ export default function ModalFooter({
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
 
+  const confirmInactive = confirmDisabled || confirmLoading;
   const confirmBg = destructive
     ? c.red
-    : confirmDisabled
+    : confirmInactive
       ? (disabledBg ?? c.surface)
       : c.primary;
   const confirmFg = destructive
     ? WHITE
-    : confirmDisabled
+    : confirmInactive
       ? (disabledTextColor ?? c.textSecondary)
       : c.background;
   const buttonTextStyle = { fontSize: fs(textSize) };
@@ -68,11 +75,15 @@ export default function ModalFooter({
             { backgroundColor: confirmBg, paddingVertical: verticalPadding, minHeight },
           ]}
           onPress={onConfirm}
-          disabled={confirmDisabled}
+          disabled={confirmInactive}
           accessibilityRole="button"
           accessibilityLabel={confirmLabel}
+          accessibilityState={{ disabled: confirmInactive, busy: confirmLoading }}
         >
-          <Text style={[styles.buttonText, { color: confirmFg }, buttonTextStyle]}>{confirmLabel}</Text>
+          <View style={styles.confirmContent}>
+            {confirmLoading ? <ActivityIndicator size="small" color={confirmFg} /> : null}
+            <Text style={[styles.buttonText, { color: confirmFg }, buttonTextStyle]}>{confirmLabel}</Text>
+          </View>
         </TouchableOpacity>
       </View>
     );
@@ -95,13 +106,17 @@ export default function ModalFooter({
           <TouchableOpacity
             style={[styles.stackedButton, { backgroundColor: confirmBg }]}
             onPress={onConfirm}
-            disabled={confirmDisabled}
+            disabled={confirmInactive}
             accessibilityRole="button"
             accessibilityLabel={confirmLabel}
+            accessibilityState={{ disabled: confirmInactive, busy: confirmLoading }}
           >
-            <Text numberOfLines={2} style={[styles.buttonText, { color: confirmFg }, buttonTextStyle]}>
-              {confirmLabel}
-            </Text>
+            <View style={styles.confirmContent}>
+              {confirmLoading ? <ActivityIndicator size="small" color={confirmFg} /> : null}
+              <Text numberOfLines={2} style={[styles.buttonText, { color: confirmFg }, buttonTextStyle]}>
+                {confirmLabel}
+              </Text>
+            </View>
           </TouchableOpacity>
         </View>
         {cancelLabel && onCancel ? (
@@ -112,8 +127,10 @@ export default function ModalFooter({
               { backgroundColor: c.background, borderColor: c.border },
             ]}
             onPress={onCancel}
+            disabled={cancelDisabled}
             accessibilityRole="button"
             accessibilityLabel={cancelLabel}
+            accessibilityState={{ disabled: cancelDisabled }}
           >
             <Text style={[styles.buttonText, { color: c.text }, buttonTextStyle]} numberOfLines={2}>
               {cancelLabel}
@@ -137,8 +154,10 @@ export default function ModalFooter({
         <TouchableOpacity
           style={[styles.button, { backgroundColor: c.background, borderColor: c.border, paddingVertical: verticalPadding, minHeight }]}
           onPress={onCancel}
+          disabled={cancelDisabled}
           accessibilityRole="button"
           accessibilityLabel={cancelLabel}
+          accessibilityState={{ disabled: cancelDisabled }}
         >
           <Text style={[styles.buttonText, { color: c.text, fontSize: fs(textSize) }]}>{cancelLabel}</Text>
         </TouchableOpacity>
@@ -149,18 +168,22 @@ export default function ModalFooter({
           { backgroundColor: confirmBg, paddingVertical: verticalPadding, minHeight },
         ]}
         onPress={onConfirm}
-        disabled={confirmDisabled}
+        disabled={confirmInactive}
         accessibilityRole="button"
         accessibilityLabel={confirmLabel}
+        accessibilityState={{ disabled: confirmInactive, busy: confirmLoading }}
       >
-        <Text
-          style={[
-            styles.buttonText,
-            { color: confirmFg, fontSize: fs(textSize) },
-          ]}
-        >
-          {confirmLabel}
-        </Text>
+        <View style={styles.confirmContent}>
+          {confirmLoading ? <ActivityIndicator size="small" color={confirmFg} /> : null}
+          <Text
+            style={[
+              styles.buttonText,
+              { color: confirmFg, fontSize: fs(textSize) },
+            ]}
+          >
+            {confirmLabel}
+          </Text>
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -210,5 +233,11 @@ const styles = StyleSheet.create({
   buttonText: {
     fontWeight: '600',
     textAlign: 'center',
+  },
+  confirmContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
 });

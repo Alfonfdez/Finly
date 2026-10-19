@@ -4041,3 +4041,21 @@
 - Added the refreshed drawer capture as `images/screenshots/v3-02-hamburger.png` (Recurring entry, v2.2.0 footer) and pointed the Screenshots section of the 9 READMEs at it; the shipped `v2-02-hamburger.png` is left untouched so GitHub keeps the existing v2 set intact.
 - The rest of the screenshot set is deferred to a pre-release task (mock-data build, every screen, `v3-NN-...` names) because the UI may still change before 2.2.0.
 - The 2.1.0 GitHub release line in the roadmap now reads as superseded by 2.2.0, and the stray Status/Spec fragment after the form-hints entry was collapsed.
+
+[2026-10-19] fix | FinlyApp/src/database/transactionQueue.ts, FinlyApp/src/database/engine.ts, FinlyApp/src/database/engine.web.ts, FinlyApp/src/database/database.ts, FinlyApp/tests/database/transactionQueue.test.ts, FinlyApp/tests/database/transactionConcurrency.test.ts, FinlyApp/tests/database/selfHeal.test.ts, spec/features/028-recurring-transactions/1-spec.md, spec/features/025-data-backup/1-spec.md, AGENTS.md, spec/constitution/3-roadmap.md
+- Every explicit SQLite transaction now goes through one module-level queue (`src/database/transactionQueue.ts`, wired into the native and web engines): a long reconciliation run can no longer overlap a factory reset, a delete-all, a config save or an import.
+- Fixed the release-blocking device report: "Delete all data" and "Reset to factory state" failed with `cannot start a transaction within a transaction` / `cannot rollback - no transaction is active` while the imported backlog was being materialized (the reset itself committed, but a concurrent config save surfaced a generic error).
+- `initDatabase` gained a self-heal: empty `users`/`accounts`/`categories`/`config` tables (an interrupted wipe in an older build) are re-seeded with the idempotent `INSERT OR IGNORE` seeds, leaving existing rows untouched.
+- Tests: a transaction-queue unit suite (ordering, rejection isolation, no overlap), concurrency tests (reset/clear/config save/import while a catch-up is running) and a self-heal suite (each empty table, half-applied wipe, idempotence).
+- Gate: `npm run test:all` green (153 files / 1264 tests).
+
+[2026-10-19] feat | FinlyApp/src/components/ModalFooter.tsx, FinlyApp/src/components/ConfirmationModal.tsx, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/tests/screens/DataScreen.test.tsx
+- The wipe and import dialogs now stay open with a small spinner in the confirm button, a disabled Cancel and a read-only input while the operation runs, so a double tap or a mid-flight cancel can no longer race the write.
+- `ModalFooter` gained `confirmLoading` and `cancelDisabled` (forwarded by `ConfirmationModal` as `busy`), used by the Data screen for delete-all-transactions, delete-all-data, factory reset and import.
+- Test: the factory-reset dialog stays open and disabled until the reset promise settles, and a second confirm press is ignored.
+
+[2026-10-19] fix | FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, FinlyApp/tests/database/transactionCreatedAt.test.ts, spec/features/016-transaction-details-screen/1-spec.md, spec/constitution/3-roadmap.md
+- The transaction-details footer labelled "Created" was showing the transaction's own date (stored at `00:00:00` for a backdated pick) instead of the record's `created_at`, so a transaction created today for 15 July read "Created 00:00 - 15 jul 2026"; it now shows the real creation timestamp (e.g. "Created 18:20 - 19 oct 2026"), while the Date row keeps the transaction date.
+- No stored data changed: inserts never set `created_at` (the column default `datetime('now','localtime')` already applied), so this is a display fix with no migration; spec 016 §7 was corrected (it had codified the wrong field).
+- Tests: the details fixture now uses distinct `date`/`created_at`/`updated_at` values and asserts both footer lines plus the Date row; a database test proves a backdated insert stores `created_at` as today.
+- Gate: `npm run test:all` green.
