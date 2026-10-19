@@ -885,3 +885,14 @@ The **"Last day" checkbox** is now an ambiguity resolver, offered only on the mo
 Gate: `npm run test:all` green (137 files / 1139 tests).
 
 Spec: spec/features/001-home-screen/, 008-categories-screen/, 009-modify-delete-category-screen/, 012-modify-delete-account-screen/, 015-all-transactions-screen/, 028-recurring-transactions/.
+
+## Recurring edit: Save follows the whole rule draft
+Status: completed.
+
+The edit form gate only compared the transaction fields, so changing the rule name, frequency, interval, end date or the "Last day" checkbox left Save disabled, applied 2026-10-18:
+- `useTransactionForm` now also compares the recurring draft with the loaded rule (`ruleDraftChanged`): name (trimmed, as it is stored), frequency, interval, end date (date-only) and the last-day anchor. `isDirty` is the union of both, still gated on `editing` plus the documented scope-only exception.
+- The last-day term compares against the *effective* initial intent, so a rule anchored on the 31st - whose checkbox is hidden and whose flag is cleared on load - is not reported as changed.
+- Tests: a hook-level rule gate suite (every field enables Save and reverting disables it, surrounding whitespace in the name is ignored, a hidden last-day rule is untouched, a scope-only save is allowed) plus screen tests for the name, frequency, interval and last-day changes.
+- Gate: `npm run test:all` green (137 files / 1150 tests).
+
+Spec: spec/features/028-recurring-transactions/ (the behaviour was already specified; the implementation now matches it).
