@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll, vi } from 'vitest';
-import type { DatabaseHandle } from '../../src/database/types';
+import type { DatabaseHandle , User, Account, Category, Transaction, Tag, TransactionTag, RecurringRule, RecurringRuleTag } from '../../src/database/types';
 import { initSqlJsOnce, resetMockDatabase } from './sqliteMock';
 import { DB_KEY_MAP } from '../../src/database/configDefaults';
-import type { User, Account, Category, Transaction, Tag, TransactionTag, RecurringRule, RecurringRuleTag } from '../../src/database/types';
+
 import {
   accountSchema,
   categorySchema,

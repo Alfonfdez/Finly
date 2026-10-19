@@ -61,7 +61,7 @@ function TagFilterBarInner({ tags, activeTagIds, onToggle, onClear, style }: Pro
         {renderChip(labels.home_tag_all, -2, activeTagIds.length === 0, onClear, true)}
         {renderChip(labels.home_tag_untagged, UNTAGGED_ID, activeTagIds.includes(UNTAGGED_ID), undefined, true)}
         {tags.map(tag =>
-          renderChip(tag.name, tag.id, activeTagIds.includes(tag.id))
+          renderChip(tag.name, tag.id, activeTagIds.includes(tag.id)),
         )}
       </ScrollView>
     </View>

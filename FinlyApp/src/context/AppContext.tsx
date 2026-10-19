@@ -104,7 +104,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const categoriesById = useMemo(
     () => new Map(categories.map(cat => [cat.id, cat])),
-    [categories]
+    [categories],
   );
 
   const applyHomeDefaults = useCallback((accountsData: Account[]) => {
@@ -180,8 +180,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           accounts.map((a) =>
             isTotalAccount(a)
               ? { ...a, balance: totalBalance }
-              : { ...a, balance: balanceById.get(a.id) ?? 0 }
-          )
+              : { ...a, balance: balanceById.get(a.id) ?? 0 },
+          ),
         );
       } catch (error) {
         console.error('Failed to refresh data:', error);

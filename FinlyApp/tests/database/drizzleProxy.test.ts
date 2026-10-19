@@ -10,7 +10,7 @@ beforeAll(async () => {
 async function setup(): Promise<DatabaseHandle> {
   const db = createMockDatabaseSync();
   await db.execAsync(
-    'CREATE TABLE items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, qty INTEGER NOT NULL DEFAULT 0)'
+    'CREATE TABLE items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, qty INTEGER NOT NULL DEFAULT 0)',
   );
   return db;
 }
@@ -27,7 +27,7 @@ describe('sqlite proxy adapter', () => {
     const inserted = await cb('INSERT INTO items (name, qty) VALUES (?, ?)', ['apple', 3], 'run');
     expect(runResultOf(inserted)).toEqual({ lastInsertRowId: 1, changes: 1 });
 
-    const updated = await cb("UPDATE items SET qty = ? WHERE name = ?", [5, 'apple'], 'run');
+    const updated = await cb('UPDATE items SET qty = ? WHERE name = ?', [5, 'apple'], 'run');
     expect(runResultOf(updated)).toEqual({ lastInsertRowId: 1, changes: 1 });
 
     const deleted = await cb('DELETE FROM items WHERE name = ?', ['apple'], 'run');

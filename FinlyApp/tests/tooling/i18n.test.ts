@@ -314,7 +314,7 @@ describe('i18n helper: CLI', () => {
       const content = readLang(root, code);
       expect(content).toContain("  zeta: 'Z',");
       expect(content).not.toMatch(/[^\r]\n/);
-      expect(content.indexOf("  zeta: 'Z',")).toBeGreaterThan(content.indexOf("  omega:"));
+      expect(content.indexOf("  zeta: 'Z',")).toBeGreaterThan(content.indexOf('  omega:'));
     }
     const again = runCli(['add', '--key', 'zeta', '--value', 'Z', '--after', 'omega'], root);
     expect(again.status).toBe(1);
@@ -345,7 +345,7 @@ describe('i18n helper: CLI', () => {
     const valuesFile = path.join(root, 'keys.json');
     writeFileSync(valuesFile, JSON.stringify({
       en: { raw: "(n: number) => `${n} thing${n === 1 ? '' : 's'}`" },
-      es: "cosas",
+      es: 'cosas',
     }), 'utf8');
     const res = runCli(['add', '--key', 'things', '--values-file', valuesFile, '--after', 'alpha'], root);
     expect(res.status).toBe(0);

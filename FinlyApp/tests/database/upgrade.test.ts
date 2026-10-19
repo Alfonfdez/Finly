@@ -53,7 +53,7 @@ const V210_CONFIG: [string, string][] = [
 
 async function tableExists(db: DatabaseHandle, name: string): Promise<boolean> {
   const row = await db.getFirstAsync<{ n: number }>(
-    `SELECT COUNT(*) AS n FROM sqlite_master WHERE type = 'table' AND name = ?`,
+    'SELECT COUNT(*) AS n FROM sqlite_master WHERE type = \'table\' AND name = ?',
     name,
   );
   return (row?.n ?? 0) > 0;
@@ -107,7 +107,7 @@ async function bootV210(): Promise<DatabaseHandle> {
     await db.runAsync('INSERT INTO config (key, value) VALUES (?, ?)', key, value);
   }
 
-  await db.runAsync(`INSERT INTO tags (id, user_id, name) VALUES (1, 1, 'work'), (2, 1, 'essential')`);
+  await db.runAsync('INSERT INTO tags (id, user_id, name) VALUES (1, 1, \'work\'), (2, 1, \'essential\')');
   await db.runAsync(`
     INSERT INTO transactions (id, account_id, category_id, type, amount, description, photo, date, updated_at, created_at) VALUES
       (1, 1, 3, 'expense', 24.99, 'Lunch', NULL, '2026-10-05', NULL, '2026-10-05 12:00:00'),
@@ -161,7 +161,7 @@ describe('upgrade from a v2.1.0 database (schema 3 -> 4)', () => {
     expect(columns).toContain('recurrence_date');
 
     const index = await db.getFirstAsync<{ n: number }>(
-      `SELECT COUNT(*) AS n FROM sqlite_master WHERE type = 'index' AND name = 'ux_transactions_recurrence'`,
+      'SELECT COUNT(*) AS n FROM sqlite_master WHERE type = \'index\' AND name = \'ux_transactions_recurrence\'',
     );
     expect(index?.n).toBe(1);
 

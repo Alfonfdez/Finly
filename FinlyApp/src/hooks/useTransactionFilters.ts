@@ -36,7 +36,7 @@ export function useTransactionFilters({
   onError,
 }: UseTransactionFiltersOptions) {
   const [selectedAccountId, setSelectedAccountId] = useState(
-    () => activeAccount?.id ?? accounts.find(a => !isTotalAccount(a))?.id
+    () => activeAccount?.id ?? accounts.find(a => !isTotalAccount(a))?.id,
   );
 
   const activeAccountId = activeAccount?.id;
@@ -64,7 +64,7 @@ export function useTransactionFilters({
       const account = accounts.find(a => a.id === selectedAccountId);
       return account ? isTotalAccount(account) : false;
     },
-    [accounts, selectedAccountId]
+    [accounts, selectedAccountId],
   );
 
   useEffect(() => {
@@ -132,8 +132,8 @@ export function useTransactionFilters({
             accountName: accountsById.get(tx.account_id)?.name,
             recurringName: tx.recurring_rule_id != null ? recurringNames.get(tx.recurring_rule_id) : undefined,
           },
-          searchTerm
-        )
+          searchTerm,
+        ),
       );
     }
 

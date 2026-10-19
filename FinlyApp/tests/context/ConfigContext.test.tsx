@@ -2,6 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, act, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 
+import { ConfigProvider, useConfig } from '../../src/context/ConfigContext';
+import { DEFAULT_CONFIG } from '../../src/database/configDefaults';
+import { THEMES } from '../../src/constants/types';
+import { darkColors, lightColors } from '../../src/constants/themes';
+import type { Config } from '../../src/database/types';
+
 const mockConfigGet = vi.fn();
 const mockConfigSave = vi.fn();
 const mockGetColorScheme = vi.fn((): 'light' | 'dark' => 'light');
@@ -28,12 +34,6 @@ vi.mock('react-native', async () => {
     },
   };
 });
-
-import { ConfigProvider, useConfig } from '../../src/context/ConfigContext';
-import { DEFAULT_CONFIG } from '../../src/database/configDefaults';
-import { THEMES } from '../../src/constants/types';
-import { darkColors, lightColors } from '../../src/constants/themes';
-import type { Config } from '../../src/database/types';
 
 let captured: { config: Config; activeColors: typeof darkColors; loading: boolean; updateConfig: (partial: Partial<Config>) => void } | null = null;
 

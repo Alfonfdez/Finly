@@ -490,7 +490,7 @@ export const fr: Language = {
   recurring_ended: 'Terminée',
   recurring_created_on: (date: string) => `Créée le ${date}`,
   recurring_transactions_count: (n: number) => `${n} ${n === 1 ? 'transaction' : 'transactions'}`,
-  recurring_edit_notice: "Cette transaction a été créée par une règle récurrente. En enregistrant, les modifications ne concernent que cette transaction, pas la règle.",
+  recurring_edit_notice: 'Cette transaction a été créée par une règle récurrente. En enregistrant, les modifications ne concernent que cette transaction, pas la règle.',
   recurring_updated_notice: 'Cette transaction a été mise à jour par sa règle récurrente. Enregistrer ici remplace ces modifications pour cette transaction uniquement.',
   recurring_use_rule_values: 'Utiliser les valeurs de la règle',
   recurring_edit_rule: 'Modifier la règle récurrente',

@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react-native';
 import * as ImagePicker from 'expo-image-picker';
 
+import { usePhotos } from '../../src/hooks/usePhotos';
+
 const mockFile = vi.fn();
 const mockCopy = vi.fn();
 const mockDeletePhotoFile = vi.fn(async (..._args: unknown[]) => {});
@@ -30,8 +32,6 @@ vi.mock('expo-file-system', () => ({
 vi.mock('../../src/utils/photoUtils', () => ({
   deletePhotoFile: (...args: unknown[]) => mockDeletePhotoFile(...args),
 }));
-
-import { usePhotos } from '../../src/hooks/usePhotos';
 
 function setPermission(kind: 'camera' | 'library', granted: boolean) {
   const spy =

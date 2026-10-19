@@ -8,7 +8,7 @@ const mockOnCancel = vi.fn();
 
 function renderModal(visible = true) {
   return render(
-    <CalculatorModal visible={visible} onAccept={mockOnAccept} onCancel={mockOnCancel} />
+    <CalculatorModal visible={visible} onAccept={mockOnAccept} onCancel={mockOnCancel} />,
   );
 }
 

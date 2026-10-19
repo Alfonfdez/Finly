@@ -1,18 +1,19 @@
 import { useEffect, useState, useRef } from 'react';
-import { Platform, Animated, Appearance } from 'react-native';
+import { Platform, Animated, Appearance , StyleSheet, View, Text, Image } from 'react-native';
 import { enableFreeze } from 'react-native-screens';
-import 'react-native-gesture-handler';
-
-enableFreeze(true);
-import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet, View, Text, Image } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+
 import { AppProvider } from './src/context/AppContext';
-import { ConfigProvider } from './src/context/ConfigContext';
+import { ConfigProvider , useConfig } from './src/context/ConfigContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import ErrorBoundary from './src/components/ErrorBoundary';
 import { initDatabase } from './src/database/database';
 import { darkColors } from './src/constants/themes';
+
+import { THEMES } from './src/constants/types';
+
+enableFreeze(true);
 
 const EXIT_DURATION = 400;
 const USE_NATIVE_DRIVER = Platform.OS !== 'web';
@@ -51,9 +52,6 @@ function SplashScreen({ exiting }: { exiting: boolean }) {
     </Animated.View>
   );
 }
-
-import { useConfig } from './src/context/ConfigContext';
-import { THEMES } from './src/constants/types';
 
 function ThemeStatusBar() {
   const { config } = useConfig();

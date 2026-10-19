@@ -18,7 +18,7 @@ interface Props {
 function iconRadius(
   size: number,
   shape: BadgeShape,
-  roundedRadius = Math.max(4, Math.round(size / 4))
+  roundedRadius = Math.max(4, Math.round(size / 4)),
 ): number {
   return shape === BADGE_SHAPES.circle ? size / 2 : roundedRadius;
 }

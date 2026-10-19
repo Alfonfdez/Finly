@@ -13,7 +13,7 @@ interface TransactionSearchContext {
 export function matchesTransactionSearch(
   tx: Transaction,
   ctx: TransactionSearchContext,
-  query: string
+  query: string,
 ): boolean {
   const description = (tx.description ?? '').toLowerCase();
   const categoryName = ctx.category ? getDisplayCategoryName(ctx.category).toLowerCase() : '';

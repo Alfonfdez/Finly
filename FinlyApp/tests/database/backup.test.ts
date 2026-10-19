@@ -77,7 +77,7 @@ async function dump(db: DatabaseHandle): Promise<Record<string, unknown[]>> {
 
 function snapshotWith(
   overrides: Partial<Record<'app' | 'kind' | 'formatVersion' | 'schema', unknown>> = {},
-  data: Record<string, unknown> | null = null
+  data: Record<string, unknown> | null = null,
 ): string {
   return JSON.stringify({
     app: 'Finly',
@@ -135,7 +135,7 @@ describe('backup round-trip', () => {
       'Cafe',
       '["data:image/jpeg;base64,AAAA","data:image/png;base64,BBBB"]',
       '2026-08-08',
-      '2026-08-08 10:00:00'
+      '2026-08-08 10:00:00',
     );
     const tagId = (
       await source.runAsync("INSERT INTO tags (user_id, name, created_at) VALUES (1, 'work', '2026-08-08')")
@@ -181,13 +181,13 @@ describe('backup round-trip', () => {
     ).lastInsertRowId;
     const ruleId = (
       await source.runAsync(
-        "INSERT INTO recurring_rules (user_id, name, type, account_id, category_id, amount, description, frequency, interval, weekday, day_of_month, month, start_date, end_date, next_due, skipped_from, active, created_at, updated_at) VALUES (1, 'Rent', 'expense', 1, 3, 100, 'Rent', 'monthly', 1, NULL, 2, NULL, '2026-01-02', NULL, '2026-03-02', '2026-02-02', 1, '2026-01-01', NULL)"
+        "INSERT INTO recurring_rules (user_id, name, type, account_id, category_id, amount, description, frequency, interval, weekday, day_of_month, month, start_date, end_date, next_due, skipped_from, active, created_at, updated_at) VALUES (1, 'Rent', 'expense', 1, 3, 100, 'Rent', 'monthly', 1, NULL, 2, NULL, '2026-01-02', NULL, '2026-03-02', '2026-02-02', 1, '2026-01-01', NULL)",
       )
     ).lastInsertRowId;
     await source.runAsync('INSERT INTO recurring_rule_tags (rule_id, tag_id) VALUES (?, ?)', ruleId, tagId);
     await source.runAsync(
       "INSERT INTO transactions (account_id, category_id, type, amount, description, date, created_at, recurring_rule_id, recurrence_date) VALUES (1, 3, 'expense', 100, 'Rent', '2026-01-02 00:00:00', '2026-01-02', ?, '2026-01-02')",
-      ruleId
+      ruleId,
     );
 
     const snapshot = await buildBackup(source, SCHEMA_VERSION);
@@ -198,7 +198,7 @@ describe('backup round-trip', () => {
     expect(await countRows(target, 'recurring_rules')).toBe(1);
     expect(await countRows(target, 'recurring_rule_tags')).toBe(1);
     const tx = await target.getFirstAsync<{ recurring_rule_id: number; recurrence_date: string }>(
-      'SELECT recurring_rule_id, recurrence_date FROM transactions'
+      'SELECT recurring_rule_id, recurrence_date FROM transactions',
     );
     expect(tx?.recurring_rule_id).toBe(ruleId);
     expect(tx?.recurrence_date).toBe('2026-01-02');
@@ -287,10 +287,10 @@ describe('backup validation', () => {
   it('nulls default-account config keys referencing missing or total accounts', async () => {
     const source = await boot();
     await source.runAsync(
-      "INSERT INTO config (key, value) VALUES ('home_default_account_id', '424242') ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+      "INSERT INTO config (key, value) VALUES ('home_default_account_id', '424242') ON CONFLICT(key) DO UPDATE SET value = excluded.value",
     );
     await source.runAsync(
-      "INSERT INTO config (key, value) VALUES ('add_default_account_id', '2') ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+      "INSERT INTO config (key, value) VALUES ('add_default_account_id', '2') ON CONFLICT(key) DO UPDATE SET value = excluded.value",
     );
     const snapshot = await buildBackup(source, SCHEMA_VERSION);
 
@@ -301,7 +301,7 @@ describe('backup validation', () => {
     await applyBackup(target, snapshot);
 
     const rows = await target.getAllAsync<{ key: string; value: string }>(
-      "SELECT key, value FROM config WHERE key IN ('home_default_account_id', 'add_default_account_id') ORDER BY key"
+      "SELECT key, value FROM config WHERE key IN ('home_default_account_id', 'add_default_account_id') ORDER BY key",
     );
     expect(rows).toEqual([
       { key: 'add_default_account_id', value: 'null' },
@@ -314,7 +314,7 @@ describe('backup validation', () => {
   it('keeps default-account config keys that reference existing accounts', async () => {
     const source = await boot();
     await source.runAsync(
-      "INSERT INTO config (key, value) VALUES ('home_default_account_id', '1') ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+      "INSERT INTO config (key, value) VALUES ('home_default_account_id', '1') ON CONFLICT(key) DO UPDATE SET value = excluded.value",
     );
     const snapshot = await buildBackup(source, SCHEMA_VERSION);
 
@@ -325,7 +325,7 @@ describe('backup validation', () => {
     await applyBackup(target, snapshot);
 
     const row = await target.getFirstAsync<{ value: string }>(
-      "SELECT value FROM config WHERE key = 'home_default_account_id'"
+      "SELECT value FROM config WHERE key = 'home_default_account_id'",
     );
     expect(row?.value).toBe('1');
     source.close();
@@ -352,7 +352,7 @@ describe('backup facades', () => {
     const db = dbHolder.db as SqlJsDatabase;
     const before = await countRows(db, 'transactions');
     await db.runAsync(
-      "INSERT INTO transactions (account_id, category_id, type, amount, date, created_at) VALUES (1, 1, 'expense', 10, '2026-08-08', '2026-08-08')"
+      "INSERT INTO transactions (account_id, category_id, type, amount, date, created_at) VALUES (1, 1, 'expense', 10, '2026-08-08', '2026-08-08')",
     );
     const json = await exportBackup();
     await db.runAsync('DELETE FROM transactions');

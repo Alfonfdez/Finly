@@ -8,7 +8,7 @@ import type { Account, Category, Transaction } from '../../src/database/types';
 const list = vi.fn(async (_q: unknown) => [] as Transaction[]);
 const deleteMany = vi.fn(async (_ids: number[]) => undefined);
 const getTagsByTransactionIds = vi.fn(
-  async () => [] as { transaction_id: number; tag_id: number; name: string }[]
+  async () => [] as { transaction_id: number; tag_id: number; name: string }[],
 );
 
 vi.mock('../../src/database', () => ({

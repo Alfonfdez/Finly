@@ -9,7 +9,6 @@ import { CARD_BORDER_RADIUS } from './componentStyles';
 import ModalShell from './ModalShell';
 import ModalFooter from './ModalFooter';
 
-
 interface Props {
   visible: boolean;
   selectedColor: string | null;

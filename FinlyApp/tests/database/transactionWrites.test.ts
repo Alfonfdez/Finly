@@ -1,5 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
+import { transactionWrites } from '../../src/database/repositories/transactionRepo.writes';
+
 const mocks = vi.hoisted(() => {
   const calls: string[] = [];
   let collectResult: string[] = [];
@@ -50,8 +52,6 @@ vi.mock('../../src/database/photoCleanup', () => ({
   collectAllTransactionPhotos: mocks.collectAllTransactionPhotos,
   deletePhotoUris: mocks.deletePhotoUris,
 }));
-
-import { transactionWrites } from '../../src/database/repositories/transactionRepo.writes';
 
 describe('transaction photo cleanup ordering', () => {
   beforeEach(() => {

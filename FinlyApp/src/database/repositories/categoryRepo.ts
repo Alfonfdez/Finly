@@ -19,8 +19,8 @@ export const categoryRepo = {
       .where(
         and(
           eq(categories.user_id, userId),
-          type !== undefined ? eq(categories.type, type) : undefined
-        )
+          type !== undefined ? eq(categories.type, type) : undefined,
+        ),
       )
       .orderBy(sql`name COLLATE NOCASE`)
       .all();
@@ -151,7 +151,7 @@ export const categoryRepo = {
       { name: categories.name, userId: categories.user_id, id: categories.id },
       userId,
       name,
-      excludeId
+      excludeId,
     );
   },
 };

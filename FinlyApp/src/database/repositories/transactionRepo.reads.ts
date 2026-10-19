@@ -102,15 +102,15 @@ export const transactionReads = {
               db
                 .select({ transaction_id: transactionTags.transaction_id })
                 .from(transactionTags)
-                .where(inArray(transactionTags.tag_id, regularIds))
+                .where(inArray(transactionTags.tag_id, regularIds)),
             ),
             notExists(
               db
                 .select({ one: sql`1` })
                 .from(transactionTags)
-                .where(eq(transactionTags.transaction_id, transactions.id))
-            )
-          )!
+                .where(eq(transactionTags.transaction_id, transactions.id)),
+            ),
+          )!,
         );
       } else if (hasUntagged) {
         conditions.push(
@@ -118,8 +118,8 @@ export const transactionReads = {
             db
               .select({ one: sql`1` })
               .from(transactionTags)
-              .where(eq(transactionTags.transaction_id, transactions.id))
-          )
+              .where(eq(transactionTags.transaction_id, transactions.id)),
+          ),
         );
       } else {
         conditions.push(
@@ -128,8 +128,8 @@ export const transactionReads = {
             db
               .select({ transaction_id: transactionTags.transaction_id })
               .from(transactionTags)
-              .where(inArray(transactionTags.tag_id, regularIds))
-          )
+              .where(inArray(transactionTags.tag_id, regularIds)),
+          ),
         );
       }
     }
@@ -153,7 +153,7 @@ export const transactionReads = {
     accountId: number | null,
     type: TransactionType,
     startDate: string,
-    endDate: string
+    endDate: string,
   ): Promise<number> {
     const db = await getDrizzle();
     const row = await db
@@ -164,8 +164,8 @@ export const transactionReads = {
           accountId !== null ? eq(transactions.account_id, accountId) : undefined,
           eq(transactions.type, type),
           gte(transactions.date, startDate),
-          lte(transactions.date, endDate)
-        )
+          lte(transactions.date, endDate),
+        ),
       )
       .get();
     return row?.total ?? 0;
@@ -185,12 +185,12 @@ export const transactionReads = {
         and(
           isNotNull(transactions.description),
           sql`TRIM(${transactions.description}) <> ''`,
-          sql`TRIM(${transactions.description}) LIKE ${`%${escaped}%`} ESCAPE '\\'`
-        )
+          sql`TRIM(${transactions.description}) LIKE ${`%${escaped}%`} ESCAPE '\\'`,
+        ),
       )
       .orderBy(
         sql`CASE WHEN TRIM(${transactions.description}) LIKE ${`${escaped}%`} ESCAPE '\\' COLLATE NOCASE THEN 0 ELSE 1 END`,
-        sql`${transactions.description} COLLATE NOCASE`
+        sql`${transactions.description} COLLATE NOCASE`,
       )
       .limit(MAX_SUGGESTIONS)
       .all();
@@ -209,8 +209,8 @@ export const transactionReads = {
       .where(
         and(
           isNotNull(transactions.description),
-          sql`TRIM(${transactions.description}) <> ''`
-        )
+          sql`TRIM(${transactions.description}) <> ''`,
+        ),
       )
       .groupBy(sql`TRIM(${transactions.description})`)
       .orderBy(sql`${transactions.description} COLLATE NOCASE`)
@@ -260,7 +260,7 @@ export const transactionReads = {
     type: TransactionType,
     startDate: string,
     endDate: string,
-    tagIds?: number[]
+    tagIds?: number[],
   ): Promise<Map<number, CategoryTagBreakdown[]>> {
     const db = await getDrizzle();
     const hasFilter = tagIds && tagIds.length > 0;
@@ -287,8 +287,8 @@ export const transactionReads = {
             gte(transactions.date, startDate),
             lte(transactions.date, endDate),
             filterRegular.length > 0 ? inArray(transactionTags.tag_id, filterRegular) : undefined,
-            accountId !== null ? eq(transactions.account_id, accountId) : undefined
-          )
+            accountId !== null ? eq(transactions.account_id, accountId) : undefined,
+          ),
         )
         .groupBy(transactions.category_id, transactionTags.tag_id)
         .all();
@@ -318,10 +318,10 @@ export const transactionReads = {
               db
                 .select({ one: sql`1` })
                 .from(transactionTags)
-                .where(eq(transactionTags.transaction_id, transactions.id))
+                .where(eq(transactionTags.transaction_id, transactions.id)),
             ),
-            accountId !== null ? eq(transactions.account_id, accountId) : undefined
-          )
+            accountId !== null ? eq(transactions.account_id, accountId) : undefined,
+          ),
         )
         .groupBy(transactions.category_id)
         .having(sql`COALESCE(SUM(${transactions.amount}), 0) > 0`)
@@ -365,7 +365,7 @@ export const transactionReads = {
     userId: number,
     type: TransactionType,
     startDate: string,
-    accountId: number
+    accountId: number,
   ): Promise<CategoryUsageCount[]> {
     const db = await getDrizzle();
     return (await db
@@ -384,8 +384,8 @@ export const transactionReads = {
           eq(transactions.category_id, categories.id),
           gte(transactions.date, startDate),
           eq(transactions.account_id, accountId),
-          eq(transactions.type, type)
-        )
+          eq(transactions.type, type),
+        ),
       )
       .where(and(eq(categories.user_id, userId), eq(categories.type, type)))
       .groupBy(categories.id)

@@ -4,7 +4,7 @@ import { Keyboard } from 'react-native';
 import { useKeyboardLift } from '../../src/hooks/useKeyboardInset';
 
 describe('useKeyboardLift', () => {
-  let handlers: Record<string, Array<(e: unknown) => void>>;
+  let handlers: Record<string, ((e: unknown) => void)[]>;
 
   beforeEach(() => {
     handlers = {};

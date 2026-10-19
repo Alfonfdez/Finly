@@ -53,7 +53,7 @@ export default function CreateAccountScreen() {
       iconColor: labels.create_account_error_icon_color,
       icon: labels.create_account_error_icon,
       color: labels.create_account_error_color,
-    }
+    },
   );
 
   const handleCreate = async () => {

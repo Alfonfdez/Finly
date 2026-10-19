@@ -25,12 +25,12 @@ export function useSelectAndSearch<T extends number | string = number>({
 
   const allSelected = useCallback(
     (ids: T[]) => ids.length > 0 && ids.every((id) => selectedIds.has(id)),
-    [selectedIds]
+    [selectedIds],
   );
 
   const toggleSelectAll = useCallback((ids: T[]) => {
     setSelectedIds((prev) =>
-      ids.length > 0 && ids.every((id) => prev.has(id)) ? new Set() : new Set(ids)
+      ids.length > 0 && ids.every((id) => prev.has(id)) ? new Set() : new Set(ids),
     );
   }, []);
 

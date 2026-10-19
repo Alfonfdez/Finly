@@ -53,7 +53,7 @@ export default function AccountsScreen() {
 
   const nonTotalCount = useMemo(
     () => accounts.filter(a => !isTotalAccount(a)).length,
-    [accounts]
+    [accounts],
   );
 
   const select = useSelectAndSearch({ hasItems: nonTotalCount > 1 });
@@ -81,7 +81,7 @@ export default function AccountsScreen() {
   const loadData = useCallback(async (): Promise<{ accounts: AccountWithBalance[]; total: number }> => {
     const list = await accountRepository.list(USER_ID);
     const balanceById = new Map(
-      (await accountRepository.getBalances()).map(b => [b.account_id, b.balance])
+      (await accountRepository.getBalances()).map(b => [b.account_id, b.balance]),
     );
     const withBalance = list.map((account) => {
       if (isTotalAccount(account)) return { ...account, balance: 0 };
@@ -102,7 +102,7 @@ export default function AccountsScreen() {
         setTotal(total);
       }).catch(() => showErrorAlert());
       return () => { active = false; };
-    }, [loadData])
+    }, [loadData]),
   );
 
   const filteredAccounts = useMemo(() => {
@@ -112,7 +112,7 @@ export default function AccountsScreen() {
 
   const visibleIds = useMemo(
     () => filteredAccounts.filter(a => !isTotalAccount(a)).map(a => a.id),
-    [filteredAccounts]
+    [filteredAccounts],
   );
 
   const handleDeletePress = useCallback(() => {

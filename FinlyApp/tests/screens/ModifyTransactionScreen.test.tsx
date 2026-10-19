@@ -14,7 +14,7 @@ const mockGetById = vi.fn(async (_id: number) => null as Transaction | null);
 const mockGetTagsByTransactionId = vi.fn(async (_id: number) => [] as number[]);
 const mockGetCategoryUsageCounts = vi.fn(
   async (_userId: number, _type: TransactionType, _start: string, _accountId: number) =>
-    [] as { id: number; name: string; icon: string; color: string; count: number }[]
+    [] as { id: number; name: string; icon: string; color: string; count: number }[],
 );
 const mockTagCreate = vi.fn(async (_data: unknown) => ({ id: 900 }) as Tag);
 const mockUpdateWithTags = vi.fn(async (_id: number, _data: unknown, _tagIds: number[]) => {});
@@ -223,7 +223,7 @@ describe('ModifyTransactionScreen', () => {
     await view.findByText('Save');
     expect(view.getByText('Recurring')).toBeTruthy();
     expect(
-      view.getByText('This transaction was created by a recurring rule. Saving changes only affects this transaction, not the rule.')
+      view.getByText('This transaction was created by a recurring rule. Saving changes only affects this transaction, not the rule.'),
     ).toBeTruthy();
     fireEvent.press(view.getByText('Edit recurring rule'));
     expect(nav.navigate).toHaveBeenCalledWith('ModifyRecurring', { ruleId: 5 });

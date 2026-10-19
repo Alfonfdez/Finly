@@ -32,7 +32,7 @@ describe('YearNav', () => {
   it('disables the back arrow at the minDate year', async () => {
     const onChange = vi.fn();
     const view = await render(
-      <YearNav year={2026} minDate={new Date(2026, 0, 1)} maxDate={null} onChange={onChange} />
+      <YearNav year={2026} minDate={new Date(2026, 0, 1)} maxDate={null} onChange={onChange} />,
     );
 
     await fireEvent.press(view.getByLabelText('Previous year'));

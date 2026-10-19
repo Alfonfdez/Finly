@@ -39,10 +39,10 @@ export async function createRecurringSchema(db: DatabaseHandle) {
   `);
 
   await db.execAsync(
-    'ALTER TABLE transactions ADD COLUMN recurring_rule_id INTEGER REFERENCES recurring_rules(id) ON DELETE SET NULL'
+    'ALTER TABLE transactions ADD COLUMN recurring_rule_id INTEGER REFERENCES recurring_rules(id) ON DELETE SET NULL',
   );
   await db.execAsync('ALTER TABLE transactions ADD COLUMN recurrence_date TEXT');
   await db.execAsync(
-    'CREATE UNIQUE INDEX IF NOT EXISTS ux_transactions_recurrence ON transactions(recurring_rule_id, recurrence_date) WHERE recurring_rule_id IS NOT NULL'
+    'CREATE UNIQUE INDEX IF NOT EXISTS ux_transactions_recurrence ON transactions(recurring_rule_id, recurrence_date) WHERE recurring_rule_id IS NOT NULL',
   );
 }

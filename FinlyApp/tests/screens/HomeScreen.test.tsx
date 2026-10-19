@@ -17,7 +17,7 @@ vi.mock('react-native-svg', () => {
 });
 
 const breakdown = vi.fn(
-  async () => new Map<number, { tag_id: number; name: string; total: number }[]>()
+  async () => new Map<number, { tag_id: number; name: string; total: number }[]>(),
 );
 
 vi.mock('../../src/database', () => ({

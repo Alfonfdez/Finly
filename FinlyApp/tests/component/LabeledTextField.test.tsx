@@ -55,7 +55,7 @@ describe('LabeledTextField', () => {
         onBlur={() => {
           blurred = true;
         }}
-      />
+      />,
     );
 
     await fireEvent(view.getByPlaceholderText('Name'), 'blur');

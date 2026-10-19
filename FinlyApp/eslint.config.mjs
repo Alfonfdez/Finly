@@ -93,15 +93,11 @@ export default defineConfig([
   {
     // Formatting lives here so style slips can't pass the gate (see
     // spec/constitution/3-roadmap.md). `npm run lint:fix` applies every fixer.
-    //
-    // The rules below were measured against the whole codebase when this block
-    // was added: the 'error' ones reported nothing, the 'warn' ones reported the
-    // slips fixed by the follow-up formatting change, which also promotes them
-    // to 'error' in one atomic commit.
+    // Every rule below is an error; the whole codebase was normalised when they
+    // were all promoted (see the roadmap entry for the formatting pass).
     files: ['**/*.{js,jsx,mjs,cjs,ts,tsx}'],
     plugins: { '@stylistic': stylistic },
     rules: {
-      // --- enforced now (0 findings when enabled) ---
       '@stylistic/indent': ['error', 2, { SwitchCase: 1 }],
       '@stylistic/jsx-quotes': ['error', 'prefer-double'],
       '@stylistic/jsx-indent-props': ['error', 2],
@@ -121,17 +117,15 @@ export default defineConfig([
       '@stylistic/key-spacing': ['error', { beforeColon: false, afterColon: true }],
       '@stylistic/padded-blocks': ['error', 'never'],
       '@stylistic/no-trailing-spaces': ['error'],
-
-      // --- warn until the follow-up formatting change (then 'error') ---
-      // PR 2: promote these after `npm run lint:fix` lands.
-      'unicode-bom': ['warn', 'never'],
-      '@stylistic/comma-dangle': ['warn', 'always-multiline'],
-      '@stylistic/eol-last': ['warn', 'always'],
-      '@stylistic/quotes': ['warn', 'single', { avoidEscape: true }],
-      '@stylistic/semi': ['warn', 'always'],
-      '@stylistic/brace-style': ['warn', '1tbs', { allowSingleLine: true }],
-      '@stylistic/no-multi-spaces': ['warn', { ignoreEOLComments: true }],
-      '@stylistic/no-multiple-empty-lines': ['warn', { max: 1 }],
+      '@stylistic/comma-dangle': ['error', 'always-multiline'],
+      '@stylistic/eol-last': ['error', 'always'],
+      '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
+      '@stylistic/semi': ['error', 'always'],
+      '@stylistic/brace-style': ['error', '1tbs', { allowSingleLine: true }],
+      '@stylistic/no-multi-spaces': ['error', { ignoreEOLComments: true }],
+      '@stylistic/no-multiple-empty-lines': ['error', { max: 1 }],
+      // `unicode-bom` stayed in ESLint core: @stylistic has no rule for it.
+      'unicode-bom': ['error', 'never'],
     },
   },
   {

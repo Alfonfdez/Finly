@@ -96,7 +96,7 @@ export function serializeBackup(snapshot: BackupSnapshot): string {
 
 export async function buildBackup(
   db: DatabaseHandle,
-  schemaVersion: number
+  schemaVersion: number,
 ): Promise<BackupSnapshot> {
   const [users, accounts, categories, transactions, tags, transactionTags, recurringRules, recurringRuleTags, config] =
     await Promise.all([
@@ -151,7 +151,7 @@ export async function applyBackup(db: DatabaseHandle, snapshot: BackupSnapshot):
         user.email,
         user.avatar,
         user.currency,
-        user.created_at
+        user.created_at,
       );
     }
 
@@ -166,7 +166,7 @@ export async function applyBackup(db: DatabaseHandle, snapshot: BackupSnapshot):
         account.color,
         account.description ?? '',
         account.is_total ?? 0,
-        account.created_at
+        account.created_at,
       );
     }
 
@@ -179,7 +179,7 @@ export async function applyBackup(db: DatabaseHandle, snapshot: BackupSnapshot):
         category.icon,
         category.color,
         category.type,
-        category.created_at
+        category.created_at,
       );
     }
 
@@ -189,7 +189,7 @@ export async function applyBackup(db: DatabaseHandle, snapshot: BackupSnapshot):
         tag.id,
         tag.user_id,
         tag.name,
-        tag.created_at
+        tag.created_at,
       );
     }
 
@@ -215,7 +215,7 @@ export async function applyBackup(db: DatabaseHandle, snapshot: BackupSnapshot):
         rule.skipped_from,
         rule.active,
         rule.created_at,
-        rule.updated_at
+        rule.updated_at,
       );
     }
 
@@ -223,7 +223,7 @@ export async function applyBackup(db: DatabaseHandle, snapshot: BackupSnapshot):
       await db.runAsync(
         'INSERT INTO recurring_rule_tags (rule_id, tag_id) VALUES (?, ?)',
         link.rule_id,
-        link.tag_id
+        link.tag_id,
       );
     }
 
@@ -241,7 +241,7 @@ export async function applyBackup(db: DatabaseHandle, snapshot: BackupSnapshot):
         transaction.updated_at,
         transaction.created_at,
         transaction.recurring_rule_id ?? null,
-        transaction.recurrence_date ?? null
+        transaction.recurrence_date ?? null,
       );
     }
 
@@ -249,7 +249,7 @@ export async function applyBackup(db: DatabaseHandle, snapshot: BackupSnapshot):
       await db.runAsync(
         'INSERT INTO transaction_tags (transaction_id, tag_id) VALUES (?, ?)',
         link.transaction_id,
-        link.tag_id
+        link.tag_id,
       );
     }
 

@@ -106,8 +106,8 @@ describe('getTransactionFormHintText', () => {
     expect(
       getTransactionFormHintText(
         { ...valid, categoryId: null, numericAmount: null, accountId: undefined },
-        keys
-      )
+        keys,
+      ),
     ).toBe('CATEGORY. AMOUNT. ACCOUNT.');
   });
 
@@ -123,14 +123,14 @@ describe('getTransactionFormHintText', () => {
     const ruleValues = { ...valid, ruleMode: true };
 
     expect(
-      getTransactionFormHintText({ ...ruleValues, repeatNameError: RECURRING_NAME_ERRORS.required }, keys)
+      getTransactionFormHintText({ ...ruleValues, repeatNameError: RECURRING_NAME_ERRORS.required }, keys),
     ).toBe('NAME.');
     expect(
-      getTransactionFormHintText({ ...ruleValues, repeatNameError: RECURRING_NAME_ERRORS.taken }, keys)
+      getTransactionFormHintText({ ...ruleValues, repeatNameError: RECURRING_NAME_ERRORS.taken }, keys),
     ).toBe('NAME_TAKEN.');
     // Outside rule mode the name is not a blocker.
     expect(
-      getTransactionFormHintText({ ...valid, repeatNameError: RECURRING_NAME_ERRORS.taken }, keys)
+      getTransactionFormHintText({ ...valid, repeatNameError: RECURRING_NAME_ERRORS.taken }, keys),
     ).toBe('');
   });
 
@@ -145,8 +145,8 @@ describe('getTransactionFormHintText', () => {
           ruleMode: true,
           repeatNameError: RECURRING_NAME_ERRORS.required,
         },
-        keys
-      )
+        keys,
+      ),
     ).toBe('CATEGORY. AMOUNT. REPEAT_END. NAME.');
   });
 });

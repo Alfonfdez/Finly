@@ -100,7 +100,7 @@ export const transactionWrites = {
 
   async createWithTags(
     data: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>,
-    tagIds: number[]
+    tagIds: number[],
   ): Promise<Transaction> {
     return await withTransaction(async (db) => {
       const created = await transactionWrites.create(data);
@@ -117,7 +117,7 @@ export const transactionWrites = {
   async updateWithTags(
     id: number,
     data: Partial<Omit<Transaction, 'id' | 'created_at' | 'updated_at'>>,
-    tagIds: number[]
+    tagIds: number[],
   ): Promise<void> {
     await withTransaction(async (db) => {
       await transactionWrites.update(id, data);

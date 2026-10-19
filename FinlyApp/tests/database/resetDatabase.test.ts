@@ -39,19 +39,19 @@ beforeAll(async () => {
 async function getConfig(db: DatabaseHandle, key: string): Promise<string> {
   const row = await db.getFirstAsync<{ value: string }>(
     'SELECT value FROM config WHERE key = ?',
-    key
+    key,
   );
   return row?.value ?? '';
 }
 
 async function setConfig(db: DatabaseHandle, key: string, value: string): Promise<void> {
-  await db.runAsync("UPDATE config SET value = ? WHERE key = ?", value, key);
+  await db.runAsync('UPDATE config SET value = ? WHERE key = ?', value, key);
 }
 
 async function insertTestAccount(db: DatabaseHandle): Promise<void> {
   await db.runAsync(
     `INSERT INTO accounts (id, user_id, name, initial_balance, icon, color, description, is_total, created_at)
-     VALUES (3, 1, 'Test', 0, 'wallet-outline', '#000000', '', 0, '2026-01-01')`
+     VALUES (3, 1, 'Test', 0, 'wallet-outline', '#000000', '', 0, '2026-01-01')`,
   );
 }
 
@@ -70,7 +70,7 @@ describe('resetDatabase (factory reset)', () => {
     await expect(getConfig(db, 'add_default_account_id')).resolves.toBe('null');
 
     const accounts = await db.getAllAsync<{ id: number }>(
-      'SELECT id FROM accounts ORDER BY id'
+      'SELECT id FROM accounts ORDER BY id',
     );
     expect(accounts.map(a => a.id)).toEqual([1, 2]);
 
@@ -94,7 +94,7 @@ describe('clearDataKeepSettings (delete data, keep settings)', () => {
     await expect(getConfig(db, 'add_default_account_id')).resolves.toBe('1');
 
     const accounts = await db.getAllAsync<{ id: number }>(
-      'SELECT id FROM accounts ORDER BY id'
+      'SELECT id FROM accounts ORDER BY id',
     );
     expect(accounts.map(a => a.id)).toEqual([1, 2]);
   });
