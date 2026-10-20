@@ -43,7 +43,7 @@
 - A trigger button/pill in the controls area shows the current category filter state:
   - Default: "All categories" (multilingual).
   - When categories are selected: "N categories" (multilingual, where N is the count).
-- Tapping the button opens the `CategoryFilterModal` (spec 021).
+- The button sits next to the recurring view chip in the first controls row; tapping it opens the `CategoryFilterModal` (spec 021).
 - The modal receives the current `type` tab value so it adapts its category display.
 - When categories are selected, only transactions matching those categories are shown.
 - When "All" is selected (empty array), all categories are shown.
@@ -65,7 +65,7 @@
 
 #### Recurring view filter
 
-- Same as 014 (section 3): a compact chip in the controls row (first, before the category and sort controls), always shown; the balance reflects the selected view. The controls row scrolls horizontally when it does not fit (horizontal scrollbar shown on web).
+- Same as 014 (section 3): a compact chip in the first controls row, next to the category button, always shown; the balance reflects the selected view. The filters row scrolls horizontally when it does not fit (horizontal scrollbar shown on web); the sort toggle sits on a second row below it. The filters row keeps the standard **16px** separation from the account/balance block.
 
 ### 7. Tag filter
 
@@ -130,7 +130,7 @@
 ## Non-functional requirements
 
 - **Screen:** `AllTransactionsScreen.tsx` (standalone screen).
-- **Layout structure:** `SafeAreaView > [AllTypeTabs, SearchBar(conditional), controls(AccountSelector+Balance+RecurringViewChip+CategoryButton+SortToggle), PeriodTabs, CalendarPicker, TagFilterBar, SectionList, FAB(absolute)]`.
+- **Layout structure:** `SafeAreaView > [AllTypeTabs, SearchBar(conditional), controls(AccountSelector+Balance / RecurringViewChip+CategoryButton / SortToggle), PeriodTabs, CalendarPicker, TagFilterBar, SectionList, FAB(absolute)]` - the recurring view and category controls share the first row and the sort toggle has its own row.
 - **Shared components:** reuses `AccountModal`, `SortToggle`, `TransactionGroup`, `TagFilterBar`, `PeriodTabs`, `CalendarPicker`.
 - **New components:** `AllTypeTabs`, `CategoryFilterModal` (spec 021).
 - **Repository:** `transactionRepository.list()` extended with `category_ids` filter.
@@ -157,7 +157,7 @@
 - [x] CalendarPicker updates when the period changes.
 - [x] The transaction list filters by the selected period's date range.
 - [x] The sort toggle works (date/amount, ASC/DESC) and the choice is remembered independently from the Transactions screen.
-- [x] A recurring view chip (All / One-time / Recurring) in the controls row filters the list by recurring-generated vs one-time; the balance reflects it and the control is always shown.
+- [x] A recurring view chip (All / One-time / Recurring) in the first controls row, next to the category button, filters the list by recurring-generated vs one-time; the balance reflects it and the control is always shown.
 - [x] TagFilterBar is shown and works with local state.
 - [x] A search icon is shown in the header; pressing it toggles a SearchBar.
 - [x] The search matches comment/description, category display name, tag names and account name, case-insensitive.

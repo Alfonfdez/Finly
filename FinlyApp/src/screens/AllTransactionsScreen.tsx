@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ScreenShell from '../components/ScreenShell';
+import { CONTROLS_GROUP_TOP_GAP } from '../components/componentStyles';
 import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
@@ -25,6 +26,7 @@ import { t } from '../i18n';
 import AccountTrigger from '../components/AccountTrigger';
 import EyeToggle from '../components/EyeToggle';
 import SortToggle, { transactionSortFields } from '../components/SortToggle';
+import SortRow from '../components/SortRow';
 import TabBar, { typeTabs } from '../components/TabBar';
 import RecurringViewChip from '../components/RecurringViewChip';
 import Fab from '../components/Fab';
@@ -170,7 +172,7 @@ export default function AllTransactionsScreen() {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={isWeb}
-              style={styles.controlsRow}
+              style={[styles.controlsRow, CONTROLS_GROUP_TOP_GAP]}
               contentContainerStyle={[styles.controlsRowContent, isWeb && styles.controlsRowWebContent]}
             >
               <RecurringViewChip value={filters.recurringView} onChange={filters.setRecurringView} />
@@ -184,6 +186,8 @@ export default function AllTransactionsScreen() {
                 </Text>
                 <Ionicons name="chevron-down" size={14} color={c.textSecondary} />
               </TouchableOpacity>
+            </ScrollView>
+            <SortRow>
               <SortToggle
                 fields={transactionSortFields(labels)}
                 sortBy={filters.sortBy}
@@ -191,7 +195,7 @@ export default function AllTransactionsScreen() {
                 onToggleSort={filters.handleToggleSort}
                 onToggleDirection={filters.handleToggleDirection}
               />
-            </ScrollView>
+            </SortRow>
           </>
         }
         period={

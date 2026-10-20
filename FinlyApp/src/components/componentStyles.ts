@@ -1,3 +1,4 @@
+import type { ViewStyle } from 'react-native';
 import { isWeb } from '../utils/platform';
 import { withAlpha } from '../utils/color';
 import type { ColorPalette } from '../constants/themes';
@@ -33,6 +34,9 @@ export const HEADER_BUTTONS = {
 };
 export const SECTION_GAP = 16;
 export const SECTION_GAP_SM = 8;
+/** Extra top margin that, on top of the 8px controls stack gap, separates a new
+ *  control group (filters vs account/balance header) by the standard 16px. */
+export const CONTROLS_GROUP_TOP_GAP: ViewStyle = { marginTop: SECTION_GAP_SM };
 export const SECTION_TITLE_STYLE = {
   fontWeight: '600' as const,
 };

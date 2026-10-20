@@ -3,6 +3,7 @@ import { View, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import ScreenShell from '../components/ScreenShell';
+import { CONTROLS_GROUP_TOP_GAP } from '../components/componentStyles';
 import Fab from '../components/Fab';
 import AccountTrigger from '../components/AccountTrigger';
 import AccountModal from '../components/AccountModal';
@@ -239,8 +240,11 @@ export default function RecurringScreen() {
           onPress={openAccountModal}
         />
 
-        <SortRow>
+        <View style={CONTROLS_GROUP_TOP_GAP}>
           <RecurringStatusChip selected={statusFilter} onChange={setStatusFilter} />
+        </View>
+
+        <SortRow>
           <SortToggle
             fields={recurringSortFields(labels)}
             sortBy={sortBy}
