@@ -4098,3 +4098,13 @@
 - Shared sortPreference helpers (toggleSortDirection, nextSortPreference) and a TRANSACTION_SORT_SCOPES constant replace the duplicated toggle logic.
 - The test config stub now merges partials and re-renders like the real provider, so sort changes are exercised end to end.
 - Tests: sort helpers, Zod/sanitize cases, config get/save round-trip, screen restore + persist assertions and transaction hook scope tests; specs, roadmap and AGENTS updated.
+
+[2026-10-20] style | FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/features/020-tag-home-filter/1-spec.md, spec/constitution/3-roadmap.md
+- Transactions and All transactions: the recurring view chip (plus the category pill on All transactions) and the Date/Amount sort now sit on two separate rows, so every control is visible at a glance at 375px.
+- The first row keeps the horizontal scroll for long category selections; the sort row reuses the shared SortRow and its standard spacing. No behaviour change.
+- Specs 014/015/020 updated, roadmap and changelog entries added.
+
+[2026-10-20] style | FinlyApp/src/components/componentStyles.ts, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Controls: the account/balance header is separated from the filter rows by the standard 16px on Transactions, All transactions and Recurring (8px stack gap + the new CONTROLS_GROUP_TOP_GAP margin).
+- Recurring: the status filter and the sort now sit on separate rows (status pill first, sort below), matching the transaction screens.
+- Intra-group spacing stays 8px and the sort rows keep the shared SortRow padding; no behaviour change. Specs 014/015/028, roadmap and changelog updated.

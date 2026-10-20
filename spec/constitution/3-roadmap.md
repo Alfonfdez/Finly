@@ -1085,3 +1085,25 @@ Added while closing the sort work, applied 2026-10-19:
 - Gate: `npm run test:all` green; verified in the browser at 375px (each list keeps its sort after navigating away and a full reload).
 
 Spec: spec/features/008-categories-screen/, 011-accounts-screen/, 014-transactions-screen-from-home/, 015-all-transactions-screen/, 018-tag-management/, 027-comments-management/, 028-recurring-transactions/.
+
+## Two-row transaction controls
+Status: completed.
+
+Added while polishing the transaction lists, applied 2026-10-20:
+- **Transactions** and **All transactions** split their controls into two rows: the recurring-view chip (plus the category pill on All transactions) on the first row, and the Date/Amount `SortToggle` on a second row inside the shared `SortRow`.
+- The split keeps every control visible at a glance on a 375px screen; the first row still scrolls horizontally for long category selections or large text sizes, and the sort row keeps the standard 10px padding used by the other list screens.
+- No behaviour change: the recurring view, category filter, sort and their persisted preferences work exactly as before.
+- Specs 014/015 updated (020 location note included); changelog entry added.
+
+Spec: spec/features/014-transactions-screen-from-home/, spec/features/015-all-transactions-screen/.
+
+## Controls group spacing (16px)
+Status: completed.
+
+Added after the two-row controls, applied 2026-10-20:
+- Standardized the separation between the account/balance header and the filter rows on **Transactions**, **All transactions** and **Recurring** at **16px**: the controls stack keeps its 8px gap and a shared `CONTROLS_GROUP_TOP_GAP` margin adds the other 8px.
+- **Recurring** split its status filter and sort into two rows (status pill, then the sort row), matching the transaction screens; the account selector sits 16px above the status pill.
+- Intra-group spacing stays 8px and the sort row keeps the shared `SortRow` padding, so the filter and sort rows stay visually grouped. No behaviour change.
+- Specs 014/015/028 and the changelog updated.
+
+Spec: spec/features/014-transactions-screen-from-home/, spec/features/015-all-transactions-screen/, spec/features/028-recurring-transactions/.

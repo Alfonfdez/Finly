@@ -1,6 +1,7 @@
 import { useMemo, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
+import { CONTROLS_GROUP_TOP_GAP } from '../components/componentStyles';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
@@ -24,6 +25,7 @@ import { getDisplayCategoryName, t } from '../i18n';
 import AccountTrigger from '../components/AccountTrigger';
 import EyeToggle from '../components/EyeToggle';
 import SortToggle, { transactionSortFields } from '../components/SortToggle';
+import SortRow from '../components/SortRow';
 import RecurringViewChip from '../components/RecurringViewChip';
 import Fab from '../components/Fab';
 import SelectSearchHeader from '../components/SelectSearchHeader';
@@ -177,10 +179,12 @@ export default function TransactionsScreen() {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={isWeb}
-              style={styles.controlsRow}
+              style={[styles.controlsRow, CONTROLS_GROUP_TOP_GAP]}
               contentContainerStyle={[styles.controlsRowContent, isWeb && styles.controlsRowWebContent]}
             >
               <RecurringViewChip value={filters.recurringView} onChange={filters.setRecurringView} />
+            </ScrollView>
+            <SortRow>
               <SortToggle
                 fields={transactionSortFields(labels)}
                 sortBy={filters.sortBy}
@@ -188,7 +192,7 @@ export default function TransactionsScreen() {
                 onToggleSort={filters.handleToggleSort}
                 onToggleDirection={filters.handleToggleDirection}
               />
-            </ScrollView>
+            </SortRow>
           </>
         }
         fab={

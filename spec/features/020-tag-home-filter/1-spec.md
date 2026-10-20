@@ -10,7 +10,7 @@
 ### 1. Tag filter bar (horizontal chips)
 
 - **HomeScreen**: located below the chart and above the CategoryList.
-- **TransactionsScreen**: located below the controls section (AccountSelector + SortToggle) and above the SectionList. Inherits tags from HomeScreen via nav params; allows user to toggle/clear independently.
+- **TransactionsScreen**: located below the controls section (account selector, filters row and sort row) and above the SectionList. Inherits tags from HomeScreen via nav params; allows user to toggle/clear independently.
 - Horizontal ScrollView of tag chips, same visual style as TagSection (rounded pills).
 - **Multi-select**: multiple chips can be active simultaneously. OR logic — selecting [Urgent] + [Family] shows transactions that have either tag.
 - **"All" chip** (always first, sticky): when tapped, clears all selections (resets to unfiltered). Visually active when no chips are selected.
@@ -53,7 +53,7 @@
 
 ### 5. AllTransactionsScreen filter bar
 
-- The AllTransactionsScreen displays its own TagFilterBar, located below the controls section (AccountSelector + SortToggle) and above the SectionList.
+- The AllTransactionsScreen displays its own TagFilterBar, located below the controls section (account selector, filters row and sort row) and above the SectionList.
 - **No navigation params** — the filter always starts with "All" selected (unfiltered).
 - The user can toggle or clear tags independently on the AllTransactionsScreen — this does NOT affect the HomeScreen's or TransactionsScreen's `activeTagIds`.
 - When tags are selected, the transaction list filters in real-time (OR logic, same as HomeScreen and TransactionsScreen).
