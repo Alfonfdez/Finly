@@ -192,7 +192,6 @@ export default function TransactionDetailsScreen() {
           >
             <View style={styles.iconRow}>
               <Text
-                numberOfLines={1}
                 style={[styles.nameValue, { color: ruleName ? c.text : c.textSecondary, fontSize: fs(15) }]}
               >
                 {ruleName ?? labels.details_none}
@@ -283,7 +282,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   dataValue: { fontWeight: '600', flex: 2, textAlign: 'right' },
-  nameValue: { fontWeight: '600' },
+  nameValue: { fontWeight: '600', flexShrink: 1, textAlign: 'right' },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 2, justifyContent: 'flex-end' },
   actionSection: {
     flexDirection: 'row',

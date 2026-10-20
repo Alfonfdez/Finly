@@ -152,7 +152,7 @@ export default function TransactionsScreen() {
               <View style={[styles.categoryIcon, { backgroundColor: withAlpha(category.color, 19) }]}>
                 <Ionicons name={category.icon as IconName} size={22} color={category.color} />
               </View>
-              <Text style={[styles.categoryName, { color: c.text, fontSize: fs(16) }]} numberOfLines={1}>
+              <Text style={[styles.categoryName, { color: c.text, fontSize: fs(16) }]} numberOfLines={2}>
                 {getDisplayCategoryName(category)}
               </Text>
             </View>

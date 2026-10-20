@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontWeight: '500',
-    maxWidth: 120,
+    maxWidth: 160,
   },
   options: {
     marginTop: 4,

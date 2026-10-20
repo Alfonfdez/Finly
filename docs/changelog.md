@@ -4108,3 +4108,24 @@
 - Controls: the account/balance header is separated from the filter rows by the standard 16px on Transactions, All transactions and Recurring (8px stack gap + the new CONTROLS_GROUP_TOP_GAP margin).
 - Recurring: the status filter and the sort now sit on separate rows (status pill first, sort below), matching the transaction screens.
 - Intra-group spacing stays 8px and the sort rows keep the shared SortRow padding; no behaviour change. Specs 014/015/028, roadmap and changelog updated.
+
+[2026-10-20] style | FinlyApp/src/components/ListItemRow.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/src/components/RecurringRow.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/components/RecurringStatusChip.tsx, FinlyApp/tests/component/ListItemRow.test.tsx, FinlyApp/tests/component/TransactionGroup.test.tsx, FinlyApp/tests/component/RecurringRow.test.tsx, FinlyApp/tests/screens/AccountsScreen.test.tsx, FinlyApp/tests/screens/CommentsScreen.test.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, spec/features/011-accounts-screen/1-spec.md, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/016-transaction-details-screen/1-spec.md, spec/features/027-comments-management/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- ListItemRow: new titleLines/subtitleLines props (default 1) let each list choose its cap.
+- Accounts notes use 3 lines, comments and transaction descriptions 2 lines, recurring rule names 2 lines, and the Transactions category header 2 lines; transaction details let the rule name wrap.
+- Recurring status chip label widened to 160 so multi-status labels are not clipped.
+- Category tiles, pills, modal rows and metadata keep one line by design. Tests, specs 011/014/016/027/028, roadmap and changelog updated.
+
+[2026-10-21] style | FinlyApp/src/navigation/AppNavigator.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Drawer: long menu labels now render on up to two lines (DrawerItem clamps string labels to one), so translations like Spanish 'Todas las transacciones' are not clipped; short labels stay single-line.
+- Headers: long titles use the compact size (14) and a bounded width, preventing the title from overlapping the header buttons; they ellipsize on very narrow screens while the drawer shows the full label.
+- 6-screens conventions, roadmap and changelog updated.
+
+[2026-10-21] style | FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/i18n (9 files), spec/features/015-all-transactions-screen/1-spec.md, spec/constitution/3-roadmap.md
+- All transactions: the category pill shows shorter type-aware labels (All expenses / All income) and its text cap grows from 120 to 160, so the label is never ellipsized in any of the 9 languages.
+- Translations updated in all 9 files; the neutral All categories label is unchanged.
+- Spec 015, roadmap and changelog updated.
+
+[2026-10-21] fix | FinlyApp/src/navigation/AppNavigator.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Header titles: one uniform size (17) for every screen and language, scaled only by the Settings text size; long titles now wrap to two lines instead of shrinking the font.
+- Removed the compact-size rule for labels over 18 characters; the bounded title never overlaps the header buttons and ellipsizes only beyond two lines.
+- Conventions (6-screens), roadmap and changelog updated.

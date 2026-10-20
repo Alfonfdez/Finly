@@ -1107,3 +1107,37 @@ Added after the two-row controls, applied 2026-10-20:
 - Specs 014/015/028 and the changelog updated.
 
 Spec: spec/features/014-transactions-screen-from-home/, spec/features/015-all-transactions-screen/, spec/features/028-recurring-transactions/.
+
+## Multi-line text in rows
+Status: completed.
+
+Added while auditing ellipsized text, applied 2026-10-20:
+- `ListItemRow` gained `titleLines` / `subtitleLines` (default 1), so callers decide the cap without touching the shared layout.
+- **Accounts**: the note shows up to **3 lines** (matching the 3-line note input), then ellipsizes.
+- **Comments**: the comment text shows up to **2 lines**. **Transactions**: the description shows up to **2 lines**. **Recurring**: the rule name shows up to **2 lines**. The category header on Transactions shows up to **2 lines**.
+- **Transaction details**: the recurring rule name wraps fully (no line cap), like the description.
+- **Recurring status chip**: label width raised from 120 to 160, so "Active + Paused + Ended" is not clipped.
+- Left as-is on purpose: category tiles (a square 22% tile cannot fit a second line without clipping), pills/chips (account trigger, category button, tag chips), modal/picker rows, chart totals, buttons and metadata lines.
+- Tests: `ListItemRow` line props, plus Accounts, Comments, TransactionGroup, RecurringRow and details assertions.
+- Specs 011/014/016/027/028 and the changelog updated.
+
+Spec: spec/features/011-accounts-screen/, 014-transactions-screen-from-home/, 016-transaction-details-screen/, 027-comments-management/, 028-recurring-transactions/.
+
+## Drawer and header labels
+Status: completed.
+
+Added while fixing truncated translations, applied 2026-10-21:
+- **Drawer:** labels render on up to **two lines** (a custom label node, since the library clamps string labels to one), so long menu entries such as Spanish "Todas las transacciones" are fully visible at 375px and with Large text size; short labels stay on one line.
+- **Headers:** every title keeps the same size (`fs(17)`, scaled only by the Settings text size); long titles wrap to **two lines** inside a bounded width, so German "Wiederkehrende Regel bearbeiten" (31 chars), French "Modifier la règle récurrente" or Spanish "Detalles de la transacción" are fully visible without a compact font. The tail ellipsizes only beyond two lines.
+- Browser-checked in French/Spanish/German at 375px and 320px (including Large text); Android clipping to be confirmed with the APK.
+- `spec/constitution/6-screens.md` (Drawer Navigator + Header Title Alignment), changelog updated.
+
+## Category pill labels
+Status: completed.
+
+Added while fixing the truncated filter pill, applied 2026-10-21:
+- **All transactions** category filter now uses shorter type-aware labels in all 9 languages: **All categories** (All tab), **All expenses** (Expenses), **All income** (Income). The longest is French "Toutes les dépenses" (19 chars), down from 33 ("Toutes les catégories de dépenses").
+- The pill text cap went from 120 to 160, so the label is shown in full (no ellipsis) in every language; the filters row scrolls horizontally only for a large text size or a 320px screen, never clipping the text itself.
+- Verified in the browser with the longest languages (fr/es/ca/gl/pt) on the three tabs; spec 015 and the changelog updated.
+
+Spec: spec/features/015-all-transactions-screen/.

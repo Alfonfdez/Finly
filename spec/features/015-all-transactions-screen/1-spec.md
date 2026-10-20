@@ -41,9 +41,10 @@
 ### 4. Category filter
 
 - A trigger button/pill in the controls area shows the current category filter state:
-  - Default: "All categories" (multilingual).
+  - Default: the type-aware label - **All categories** (All tab), **All expenses** (Expenses tab) or **All income** (Income tab), multilingual.
   - When categories are selected: "N categories" (multilingual, where N is the count).
 - The button sits next to the recurring view chip in the first controls row; tapping it opens the `CategoryFilterModal` (spec 021).
+- The label is always shown in full (no ellipsis; `maxWidth: 160`); the filters row scrolls horizontally only when a long language or a large text size needs it.
 - The modal receives the current `type` tab value so it adapts its category display.
 - When categories are selected, only transactions matching those categories are shown.
 - When "All" is selected (empty array), all categories are shown.
@@ -150,7 +151,7 @@
 - [x] When the active account is Total, the account filter is skipped and all transactions matching other filters are shown.
 - [x] The balance updates dynamically based on all active filters (type, category, period, tags).
 - [x] The period total follows the privacy setting (masked with an eye icon to reveal it temporarily; reset on refocus), while the transaction rows keep their amounts visible.
-- [x] A category filter button shows "All categories" by default or "N categories" when filtered.
+- [x] A category filter button shows the type-aware "All categories" / "All expenses" / "All income" label by default (never ellipsized) or "N categories" when filtered.
 - [x] Tapping the category button opens the CategoryFilterModal (021).
 - [x] Selecting categories in the modal filters the transaction list.
 - [x] PeriodTabs (Day/Week/Month/Year/Period) are shown with "Month" selected by default (from config).

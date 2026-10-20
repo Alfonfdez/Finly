@@ -98,6 +98,14 @@ describe('AccountsScreen', () => {
     expect(view.getByTestId(TEST_IDS.accountsList)).toBeTruthy();
   });
 
+  it('shows the account note with up to three lines', async () => {
+    list.mockResolvedValue([{ ...account(1, 'Wallet'), description: 'A long account note' }]);
+    const view = await render(<AccountsScreen />);
+    await view.findByText('Wallet');
+
+    expect(view.getByText('A long account note').props.numberOfLines).toBe(3);
+  });
+
   it('sorts by balance on demand with the Total account pinned first', async () => {
     list.mockResolvedValue([account(1, 'Wallet'), account(2, 'Cash'), totalAccount]);
     getBalances.mockResolvedValue([

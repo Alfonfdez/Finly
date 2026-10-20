@@ -171,6 +171,7 @@ export default function AccountsScreen() {
           title={getDisplayAccountName(item)}
           titleSize={15}
           subtitle={item.description ? getDisplayAccountDescription(item) : undefined}
+          subtitleLines={3}
           icon={item.icon}
           color={item.color}
           shape={badgeShapeFor(config, 'account')}

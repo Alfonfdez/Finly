@@ -72,6 +72,7 @@ describe('CommentsScreen', () => {
     ]);
     const view = await render(<CommentsScreen />);
     await view.findByText('Alpha');
+    expect(view.getByText('Alpha').props.numberOfLines).toBe(2);
 
     const order = () => view.getAllByText(/^(Alpha|Beta)$/).map(n => String(n.props.children));
     expect(order()).toEqual(['Alpha', 'Beta']); // default: name ascending

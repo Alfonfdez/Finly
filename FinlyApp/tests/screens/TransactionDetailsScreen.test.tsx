@@ -133,6 +133,8 @@ describe('TransactionDetailsScreen', () => {
     const view = await render(<TransactionDetailsScreen />);
     await view.findByText('Recurring');
     expect(view.getByText('Rent')).toBeTruthy();
+    // The rule name wraps instead of being clipped to one line.
+    expect(view.getByText('Rent').props.numberOfLines).toBeUndefined();
     expect(view.queryByRole('switch')).toBeNull();
 
     // The row is a button that opens the rule's edit screen.
