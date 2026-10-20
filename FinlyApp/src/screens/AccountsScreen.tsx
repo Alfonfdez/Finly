@@ -21,7 +21,7 @@ import { formatAmount, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/for
 import { withAlpha } from '../utils/color';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { matchesAccountSearch } from '../utils/accountSearch';
-import { type NavigationProp, USER_ID, ACCOUNT_SORT_BY, SORT_DIRECTIONS, type AccountSortBy, type SortDirection } from '../constants/types';
+import { type NavigationProp, USER_ID, type AccountSortBy } from '../constants/types';
 import { TEST_IDS } from '../constants/testIds';
 import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import EyeToggle from '../components/EyeToggle';
@@ -39,6 +39,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import GuardModal from '../components/GuardModal';
 import { CARD_BORDER_RADIUS } from '../components/componentStyles';
 import { defaultAccountSortDirection, sortAccounts, type AccountWithBalance } from '../utils/accountSort';
+import { nextSortPreference, toggleSortDirection } from '../utils/sortPreference';
 
 export default function AccountsScreen() {
   const { activeColors: c, config, updateConfig } = useConfig();
@@ -50,8 +51,8 @@ export default function AccountsScreen() {
   const [accounts, setAccounts] = useState<AccountWithBalance[]>([]);
   const [total, setTotal] = useState(0);
   const [guardVisible, setGuardVisible] = useState(false);
-  const [sortBy, setSortBy] = useState<AccountSortBy>(ACCOUNT_SORT_BY.name);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(SORT_DIRECTIONS.asc);
+  const sortBy = config.accountsSortBy;
+  const sortDirection = config.accountsSortDirection;
   const { isBalanceHidden, toggleReveal } = useBalanceVisibility(config.hideBalances);
 
   const nonTotalCount = useMemo(
@@ -124,17 +125,13 @@ export default function AccountsScreen() {
   );
 
   const handleToggleSort = useCallback((field: AccountSortBy) => {
-    if (field === sortBy) {
-      setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
-    } else {
-      setSortBy(field);
-      setSortDirection(defaultAccountSortDirection(field));
-    }
-  }, [sortBy]);
+    const next = nextSortPreference({ by: sortBy, direction: sortDirection }, field, defaultAccountSortDirection);
+    updateConfig({ accountsSortBy: next.by, accountsSortDirection: next.direction });
+  }, [sortBy, sortDirection, updateConfig]);
 
   const handleToggleDirection = useCallback(() => {
-    setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
-  }, []);
+    updateConfig({ accountsSortDirection: toggleSortDirection(sortDirection) });
+  }, [sortDirection, updateConfig]);
 
   const handleDeletePress = useCallback(() => {
     if (selectedIds.size >= nonTotalCount) {

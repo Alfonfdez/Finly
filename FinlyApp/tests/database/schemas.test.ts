@@ -88,5 +88,11 @@ describe('config schema + sanitizeConfig', () => {
 
     const corruptAccountId = { ...DEFAULT_CONFIG, homeDefaultAccountId: -3 } as unknown as Config;
     expect(sanitizeConfig(corruptAccountId)).toEqual(DEFAULT_CONFIG);
+
+    const corruptSort = { ...DEFAULT_CONFIG, tagsSortBy: 'price' } as unknown as Config;
+    expect(sanitizeConfig(corruptSort)).toEqual(DEFAULT_CONFIG);
+
+    const corruptDirection = { ...DEFAULT_CONFIG, accountsSortDirection: 'up' } as unknown as Config;
+    expect(sanitizeConfig(corruptDirection)).toEqual(DEFAULT_CONFIG);
   });
 });

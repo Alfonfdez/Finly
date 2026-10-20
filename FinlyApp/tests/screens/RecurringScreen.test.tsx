@@ -3,6 +3,7 @@ import { render, fireEvent, waitFor, userEvent } from '@testing-library/react-na
 import { useState, type ReactNode } from 'react';
 import RecurringScreen from '../../src/screens/RecurringScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
+import { getConfigStub, resetStub } from '../component/helpers/configStub';
 import { TEST_IDS } from '../../src/constants/testIds';
 import type { Account, Category, RecurringRule } from '../../src/database/types';
 
@@ -105,6 +106,7 @@ describe('RecurringScreen', () => {
   beforeEach(() => {
     nav.navigate.mockClear();
     nav.setOptions.mockClear();
+    resetStub();
     mockList.mockReset().mockResolvedValue([rule]);
     mockSetActiveRule.mockClear();
     mockCounts.mockReset().mockResolvedValue(new Map());
@@ -337,5 +339,9 @@ describe('RecurringScreen', () => {
 
     await fireEvent.press(view.getByText('Name'));
     await waitFor(() => expect(order()).toEqual(['Alpha', 'Beta']));
+    expect(getConfigStub().updateConfig).toHaveBeenCalledWith({
+      recurringSortBy: 'name',
+      recurringSortDirection: 'asc',
+    });
   });
 });

@@ -4,6 +4,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { useState, type ReactNode } from 'react';
 import CategoriesScreen from '../../src/screens/CategoriesScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
+import { getConfigStub, resetStub } from '../component/helpers/configStub';
 import { MAX_CATEGORIES_PER_TYPE, OTHERS_CATEGORY_ID } from '../../src/constants/types';
 import { TEST_IDS } from '../../src/constants/testIds';
 import type { Category } from '../../src/database/types';
@@ -83,6 +84,7 @@ function incomeCategory(id: number, name: string): Category {
 
 describe('CategoriesScreen', () => {
   beforeEach(() => {
+    resetStub();
     nav.setOptions.mockClear();
     nav.navigate.mockClear();
     mockCountByCategoryIdsMap.mockReset().mockResolvedValue({});
@@ -121,6 +123,10 @@ describe('CategoriesScreen', () => {
     await waitFor(() => {
       const names = view.getAllByText(/^(Food|Transport|Others)$/).map(node => String(node.props.children));
       expect(names).toEqual(['Food', 'Transport', 'Others']);
+    });
+    expect(getConfigStub().updateConfig).toHaveBeenCalledWith({
+      categoriesSortBy: 'usage',
+      categoriesSortDirection: 'desc',
     });
   });
   it('flags the counter once the per-type limit is reached', async () => {

@@ -42,7 +42,7 @@
 - When a search returns no results, empty state with search icon + "No results found" (reuse `filter_no_results`).
 - FlatList of all tags ordered by creation date (oldest first).
 - Each row: tag name, a "Used in N transactions" line (`tags_used_in`) and a "Created <date>" line (`tags_created_on`), plus a chevron right.
-- A sort strip (`SortToggle` in a `SortRow`) above the list sorts by **name**, **created** or **usage** (number of transactions using the tag); each field has a natural default direction (name ascending, created/usage descending) and tapping the active field flips it. Sorting is **session-only** (not persisted).
+- A sort strip (`SortToggle` in a `SortRow`) above the list sorts by **name**, **created** or **usage** (number of transactions using the tag); each field has a natural default direction (name ascending, created/usage descending) and tapping the active field flips it. The choice is **remembered** (`tagsSortBy` / `tagsSortDirection` in the `config` table) and restored on the next visit and after restarting the app.
 - Pressing a tag navigates to `ModifyTag` screen.
 - Floating "+" FAB centered at bottom that navigates to `CreateTag` screen.
 - When the 100-tag maximum (`MAX_TAGS`) is reached, the "+" FAB is hidden and the message "Maximum of 100 tags reached" is shown centered in its place.
@@ -103,7 +103,7 @@
 - [x] The Drawer shows "Tags" and pressing it navigates to the tags screen.
 - [x] The header shows a hamburger menu button and "Tags" title in the active language.
 - [x] All tags are displayed in a list ordered by creation date by default (oldest first, newest at the bottom).
-- [x] Each tag row shows "Used in N transactions" and "Created <date>", and a sort strip sorts by name, created or usage (session-only).
+- [x] Each tag row shows "Used in N transactions" and "Created <date>", and a sort strip sorts by name, created or usage (the choice is remembered across visits and restarts).
 - [x] Pressing a tag navigates to "Modify tag" with the tag id.
 - [x] The "+" FAB navigates to "Create tag".
 - [x] At the 100-tag maximum, the "+" FAB is hidden and "Maximum of 100 tags reached" is shown in its place.

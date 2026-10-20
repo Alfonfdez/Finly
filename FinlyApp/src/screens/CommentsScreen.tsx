@@ -13,10 +13,11 @@ import { useSearchFilter } from '../hooks/useSearchFilter';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import type { CommentUsage } from '../database/repositories/transactionRepo';
-import { COMMENT_SORT_BY, SORT_DIRECTIONS, type NavigationProp, type CommentSortBy, type SortDirection } from '../constants/types';
+import { type NavigationProp, type CommentSortBy } from '../constants/types';
 import { TEST_IDS } from '../constants/testIds';
 import { parseDbDate } from '../utils/formatters';
 import { defaultCommentSortDirection, sortComments } from '../utils/commentSort';
+import { nextSortPreference, toggleSortDirection } from '../utils/sortPreference';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import ListItemRow from '../components/ListItemRow';
 import ListOrEmpty from '../components/ListOrEmpty';
@@ -31,7 +32,7 @@ import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 
 export default function CommentsScreen() {
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config, updateConfig } = useConfig();
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp<'Comments'>>();
@@ -83,21 +84,17 @@ export default function CommentsScreen() {
 
   const filteredComments = useSearchFilter(comments, searchText, (c) => [c.description]);
 
-  const [sortBy, setSortBy] = useState<CommentSortBy>(COMMENT_SORT_BY.name);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(SORT_DIRECTIONS.asc);
+  const sortBy = config.commentsSortBy;
+  const sortDirection = config.commentsSortDirection;
 
   const handleToggleSort = useCallback((field: CommentSortBy) => {
-    if (field === sortBy) {
-      setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
-    } else {
-      setSortBy(field);
-      setSortDirection(defaultCommentSortDirection(field));
-    }
-  }, [sortBy]);
+    const next = nextSortPreference({ by: sortBy, direction: sortDirection }, field, defaultCommentSortDirection);
+    updateConfig({ commentsSortBy: next.by, commentsSortDirection: next.direction });
+  }, [sortBy, sortDirection, updateConfig]);
 
   const handleToggleDirection = useCallback(() => {
-    setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
-  }, []);
+    updateConfig({ commentsSortDirection: toggleSortDirection(sortDirection) });
+  }, [sortDirection, updateConfig]);
 
   const sortedComments = useMemo(
     () => sortComments(filteredComments, sortBy, sortDirection),

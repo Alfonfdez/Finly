@@ -96,6 +96,7 @@ npm run lint:fix   # the same with --fix: indent, quotes, trailing commas, EOF n
 - SQLite for native, sql.js (WASM) for web — one `DatabaseHandle` interface, same migrations and repositories on both platforms; web persists the database bytes to IndexedDB
 - Repositories are written with Drizzle ORM (`drizzle-orm/sqlite-proxy` over `DatabaseHandle`; schema in `src/database/drizzle/schema.ts`); no `drizzle-kit`, migrations stay on `PRAGMA user_version`
 - **One transaction queue**: every explicit SQLite transaction goes through `runExclusiveDb` (`src/database/transactionQueue.ts`, wired into both engines). One connection means only one `BEGIN` at a time — reconciliation, rule edits, config saves, delete-all, factory reset and import are serialized through it. Never nest transactions (a nested call would queue behind itself).
+- **UI preferences** (theme, default accounts, hide balances, and each list's sort field/direction) live in the `config` table. `parseConfig` merges `DEFAULT_CONFIG`, so a new key needs no migration: add the Zod field, the default value and the `DB_KEY_MAP` entry (the drift tests compare all three).
 - `initDatabase` self-heals empty seeded tables (`users`/`accounts`/`categories`/`config`) with the idempotent `INSERT OR IGNORE` seeds, so an interrupted wipe repairs itself on the next launch without touching existing rows.
 - 6 repositories: account, category, tag, transaction, config, recurring
 

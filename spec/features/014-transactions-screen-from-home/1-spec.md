@@ -54,7 +54,7 @@
   - ↓ = descending (highest to lowest / most recent to oldest).
   - ↑ = ascending (lowest to highest / oldest to most recent).
 - On tapping the arrow icon, the direction is inverted (ASC ↔ DESC).
-- On tapping the text of the other option, the sort criterion changes while keeping the current direction.
+- On tapping the other option, the sort criterion switches and the direction resets to its natural default (descending for date and amount).
 - **Default values:** sort by date descending (↓, most recent first).
 
 #### Recurring view filter
@@ -141,7 +141,7 @@
 - [x] The active option has primary color and a direction arrow.
 - [x] On tapping the arrow, the direction is inverted (ASC ↔ DESC).
 - [x] On tapping the other option, the sort criterion changes.
-- [x] By default, transactions are sorted by date descending.
+- [x] By default, transactions are sorted by date descending, and the chosen sort is remembered across visits and restarts.
 - [x] A recurring view chip (All / One-time / Recurring) in the controls row filters the list by recurring-generated vs one-time; the category total reflects it.
 - [x] Transactions are grouped by day with a formatted date header.
 - [x] Each transaction shows category icon + name + description + amount with color.

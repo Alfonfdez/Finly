@@ -39,6 +39,20 @@ const configTemplate: Config = {
   editRecurringShowLabels: true,
   editRecurringShowComments: true,
   hideBalances: false,
+  tagsSortBy: 'created',
+  tagsSortDirection: 'asc',
+  commentsSortBy: 'name',
+  commentsSortDirection: 'asc',
+  recurringSortBy: 'nextDue',
+  recurringSortDirection: 'asc',
+  transactionsSortBy: 'date',
+  transactionsSortDirection: 'desc',
+  allTransactionsSortBy: 'date',
+  allTransactionsSortDirection: 'desc',
+  accountsSortBy: 'name',
+  accountsSortDirection: 'asc',
+  categoriesSortBy: 'name',
+  categoriesSortDirection: 'asc',
 };
 
 const colorsTemplate: ColorPalette = {
@@ -55,16 +69,31 @@ const colorsTemplate: ColorPalette = {
   switchThumb: '#F8FAFC',
 };
 
+const configListeners = new Set<() => void>();
+
+function notifyConfigChanged(): void {
+  for (const listener of configListeners) listener();
+}
+
+function subscribeConfig(listener: () => void): () => void {
+  configListeners.add(listener);
+  return () => { configListeners.delete(listener); };
+}
+
 function createStub(): ConfigStubState {
   const state: ConfigStubState = {
     config: { ...configTemplate },
     activeColors: { ...colorsTemplate },
-    updateConfig: vi.fn(),
+    updateConfig: vi.fn((partial: Partial<Config>) => {
+      state.config = { ...state.config, ...partial };
+      notifyConfigChanged();
+    }),
     loading: false,
     reset: () => {
       state.config = { ...configTemplate };
       state.activeColors = { ...colorsTemplate };
       state.updateConfig.mockClear();
+      notifyConfigChanged();
     },
   };
   return state;
@@ -73,10 +102,18 @@ function createStub(): ConfigStubState {
 const g = globalThis as GlobalWithConfigStub;
 g.__finlyConfigStub__ = createStub();
 
-vi.mock('../../../src/context/ConfigContext', () => ({
-  useConfig: () => (globalThis as GlobalWithConfigStub).__finlyConfigStub__,
-  ConfigProvider: ({ children }: { children: ReactNode }) => children,
-}));
+vi.mock('../../../src/context/ConfigContext', async () => {
+  const React = await import('react');
+  return {
+    // Subscribing makes the stub re-render like the real provider when a
+    // screen persists a preference through updateConfig().
+    useConfig: () => {
+      React.useSyncExternalStore(subscribeConfig, () => (globalThis as GlobalWithConfigStub).__finlyConfigStub__?.config);
+      return (globalThis as GlobalWithConfigStub).__finlyConfigStub__;
+    },
+    ConfigProvider: ({ children }: { children: ReactNode }) => children,
+  };
+});
 
 function currentStub(): ConfigStubState {
   const stub = (globalThis as GlobalWithConfigStub).__finlyConfigStub__;
@@ -91,11 +128,13 @@ export function getConfigStub(): ConfigStubState {
 export function setConfig(partial: Partial<Config>): void {
   const stub = currentStub();
   stub.config = { ...stub.config, ...partial };
+  notifyConfigChanged();
 }
 
 export function setColors(partial: Partial<ColorPalette>): void {
   const stub = currentStub();
   stub.activeColors = { ...stub.activeColors, ...partial };
+  notifyConfigChanged();
 }
 
 export function resetStub(): void {

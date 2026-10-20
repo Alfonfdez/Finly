@@ -1,6 +1,8 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import type { Transaction, Account, Category } from '../database/types';
-import { SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, RECURRING_VIEWS, type SortBy, type SortDirection, type TransactionTypeFilter, type RecurringView } from '../constants/types';
+import { SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, RECURRING_VIEWS, TRANSACTION_SORT_SCOPES, type SortBy, type SortDirection, type TransactionTypeFilter, type RecurringView, type TransactionSortScope } from '../constants/types';
+import { useConfig } from '../context/ConfigContext';
+import { nextSortPreference, toggleSortDirection } from '../utils/sortPreference';
 import { transactionRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
 import { formatDateForDB, parseDbDate } from '../utils/formatters';
@@ -20,6 +22,8 @@ export interface UseTransactionFiltersOptions {
   selectedCategoryIds?: number[];
   periodDates?: { start: Date; end: Date } | null;
   onError?: () => void;
+  /** Which transaction list owns the persisted sort preference. */
+  sortScope: TransactionSortScope;
 }
 
 export function useTransactionFilters({
@@ -34,7 +38,9 @@ export function useTransactionFilters({
   selectedCategoryIds = [],
   periodDates,
   onError,
+  sortScope,
 }: UseTransactionFiltersOptions) {
+  const { config, updateConfig } = useConfig();
   const [selectedAccountId, setSelectedAccountId] = useState(
     () => activeAccount?.id ?? accounts.find(a => !isTotalAccount(a))?.id,
   );
@@ -46,8 +52,9 @@ export function useTransactionFilters({
     }
   }, [activeAccountId]);
   const [accountModalVisible, setAccountModalVisible] = useState(false);
-  const [sortBy, setSortBy] = useState<SortBy>(SORT_BY.date);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(SORT_DIRECTIONS.desc);
+  const usesOwnSort = sortScope === TRANSACTION_SORT_SCOPES.transactions;
+  const sortBy = usesOwnSort ? config.transactionsSortBy : config.allTransactionsSortBy;
+  const sortDirection = usesOwnSort ? config.transactionsSortDirection : config.allTransactionsSortDirection;
   const [recurringView, setRecurringView] = useState<RecurringView>(RECURRING_VIEWS.all);
   const [tagsByTransaction, setTagsByTransaction] = useState<TagsByTransaction>(new Map());
   const [localTagIds, setLocalTagIds] = useState<number[]>(initialTagIds);
@@ -162,18 +169,19 @@ export function useTransactionFilters({
     return Array.from(grouped.entries()).map(([date, data]) => ({ date, data }));
   }, [filtered]);
 
+  const persistSort = useCallback((by: SortBy, direction: SortDirection) => {
+    if (usesOwnSort) updateConfig({ transactionsSortBy: by, transactionsSortDirection: direction });
+    else updateConfig({ allTransactionsSortBy: by, allTransactionsSortDirection: direction });
+  }, [usesOwnSort, updateConfig]);
+
   const handleToggleSort = useCallback((field: SortBy) => {
-    if (field === sortBy) {
-      setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
-    } else {
-      setSortBy(field);
-      setSortDirection(SORT_DIRECTIONS.desc);
-    }
-  }, [sortBy]);
+    const next = nextSortPreference({ by: sortBy, direction: sortDirection }, field, () => SORT_DIRECTIONS.desc);
+    persistSort(next.by, next.direction);
+  }, [sortBy, sortDirection, persistSort]);
 
   const handleToggleDirection = useCallback(() => {
-    setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
-  }, []);
+    persistSort(sortBy, toggleSortDirection(sortDirection));
+  }, [sortBy, sortDirection, persistSort]);
 
   const openAccountModal = useCallback(() => setAccountModalVisible(true), []);
   const closeAccountModal = useCallback(() => setAccountModalVisible(false), []);

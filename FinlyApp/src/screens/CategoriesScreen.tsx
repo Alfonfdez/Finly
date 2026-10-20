@@ -24,18 +24,19 @@ import SortToggle, { categorySortFields } from '../components/SortToggle';
 import ConfirmationModal from '../components/ConfirmationModal';
 import BulkCategoryTransferModal, { type BulkCategoryItem } from '../components/BulkCategoryTransferModal';
 import type { TransferTargetId } from '../components/CategoryTransferModal';
-import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, CATEGORY_SORT_BY, SORT_DIRECTIONS, type TransactionType, type CategorySortBy, type SortDirection, type NavigationProp } from '../constants/types';
+import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, type TransactionType, type CategorySortBy, type NavigationProp } from '../constants/types';
 import { LIST_BOTTOM_FAB_PADDING, LIST_TOP_GAP } from '../constants/layout';
 import { TEST_IDS } from '../constants/testIds';
 import { categoriesOfType, countCategoriesOfType } from '../utils/categoryUtils';
 import { defaultCategorySortDirection, sortCategories } from '../utils/categorySort';
+import { nextSortPreference, toggleSortDirection } from '../utils/sortPreference';
 import { countAtLimit } from '../utils/limits';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import GuardModal from '../components/GuardModal';
 
 export default function CategoriesScreen() {
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config, updateConfig } = useConfig();
   const { categories, refreshCategories, refresh } = useApp();
   const labels = t();
   const fs = useFontSize();
@@ -48,8 +49,8 @@ export default function CategoriesScreen() {
   const [deleteHasData, setDeleteHasData] = useState(false);
   const [decisions, setDecisions] = useState<Record<number, TransferTargetId | null>>({});
 
-  const [sortBy, setSortBy] = useState<CategorySortBy>(CATEGORY_SORT_BY.name);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(SORT_DIRECTIONS.asc);
+  const sortBy = config.categoriesSortBy;
+  const sortDirection = config.categoriesSortDirection;
   const [usage, setUsage] = useState<ReadonlyMap<number, number>>(() => new Map());
 
   // Lifetime usage per category, used by the "Usage" sort and the tile count.
@@ -69,17 +70,13 @@ export default function CategoriesScreen() {
   }, [categories, activeType, sortBy, sortDirection, usage]);
 
   const handleToggleSort = useCallback((field: CategorySortBy) => {
-    if (field === sortBy) {
-      setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
-    } else {
-      setSortBy(field);
-      setSortDirection(defaultCategorySortDirection(field));
-    }
-  }, [sortBy]);
+    const next = nextSortPreference({ by: sortBy, direction: sortDirection }, field, defaultCategorySortDirection);
+    updateConfig({ categoriesSortBy: next.by, categoriesSortDirection: next.direction });
+  }, [sortBy, sortDirection, updateConfig]);
 
   const handleToggleDirection = useCallback(() => {
-    setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
-  }, []);
+    updateConfig({ categoriesSortDirection: toggleSortDirection(sortDirection) });
+  }, [sortDirection, updateConfig]);
 
   const select = useSelectAndSearch({ hasItems: categoriesByType.length > 1 });
 

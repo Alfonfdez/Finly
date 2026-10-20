@@ -1,11 +1,18 @@
 import { z } from 'zod';
 
 import {
+  ACCOUNT_SORT_BY,
+  CATEGORY_SORT_BY,
+  COMMENT_SORT_BY,
   CONFIG_ICON_SHAPES,
   DECIMAL_SEPARATORS,
   FIRST_DAYS,
   PERIODS,
   RECURRENCE_FREQUENCIES,
+  RECURRING_SORT_BY,
+  SORT_BY,
+  SORT_DIRECTIONS,
+  TAG_SORT_BY,
   TEXT_SIZES,
   THEMES,
   TRANSACTION_TYPES,
@@ -26,6 +33,18 @@ const recurrenceFrequencySchema = z.enum([
   RECURRENCE_FREQUENCIES.monthly,
   RECURRENCE_FREQUENCIES.yearly,
 ]);
+const sortDirectionSchema = z.enum([SORT_DIRECTIONS.asc, SORT_DIRECTIONS.desc]);
+const transactionSortBySchema = z.enum([SORT_BY.date, SORT_BY.amount]);
+const tagSortBySchema = z.enum([TAG_SORT_BY.name, TAG_SORT_BY.created, TAG_SORT_BY.usage]);
+const commentSortBySchema = z.enum([COMMENT_SORT_BY.name, COMMENT_SORT_BY.lastUsed, COMMENT_SORT_BY.usage]);
+const recurringSortBySchema = z.enum([
+  RECURRING_SORT_BY.nextDue,
+  RECURRING_SORT_BY.name,
+  RECURRING_SORT_BY.amount,
+  RECURRING_SORT_BY.created,
+]);
+const accountSortBySchema = z.enum([ACCOUNT_SORT_BY.name, ACCOUNT_SORT_BY.balance]);
+const categorySortBySchema = z.enum([CATEGORY_SORT_BY.name, CATEGORY_SORT_BY.usage]);
 
 export const userSchema = z.object({
   id: z.number().int(),
@@ -138,4 +157,18 @@ export const configSchema = z.object({
   editRecurringShowLabels: z.boolean(),
   editRecurringShowComments: z.boolean(),
   hideBalances: z.boolean(),
+  tagsSortBy: tagSortBySchema,
+  tagsSortDirection: sortDirectionSchema,
+  commentsSortBy: commentSortBySchema,
+  commentsSortDirection: sortDirectionSchema,
+  recurringSortBy: recurringSortBySchema,
+  recurringSortDirection: sortDirectionSchema,
+  transactionsSortBy: transactionSortBySchema,
+  transactionsSortDirection: sortDirectionSchema,
+  allTransactionsSortBy: transactionSortBySchema,
+  allTransactionsSortDirection: sortDirectionSchema,
+  accountsSortBy: accountSortBySchema,
+  accountsSortDirection: sortDirectionSchema,
+  categoriesSortBy: categorySortBySchema,
+  categoriesSortDirection: sortDirectionSchema,
 });
