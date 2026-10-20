@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { UNTAGGED_ID } from '../../src/database/helpers';
 import { UNTAGGED_LABEL, MAX_SUGGESTIONS, THEMES, TRANSACTION_TYPES } from '../../src/constants/types';
 import { DEFAULT_CONFIG } from '../../src/database/configDefaults';
+import { TAG_SORT_BY, SORT_DIRECTIONS } from '../../src/constants/types';
 import type { ContractBackend, NewAccount, NewCategory, NewTransaction } from './contractTypes';
 import type { Transaction } from '../../src/database/types';
 
@@ -712,11 +713,15 @@ export function runContractSuite(
           theme: THEMES.light,
           hideBalances: true,
           homeDefaultAccountId: 3,
+          tagsSortBy: TAG_SORT_BY.usage,
+          tagsSortDirection: SORT_DIRECTIONS.desc,
         });
         const after = await backend.config.get();
         expect(after.theme).toBe(THEMES.light);
         expect(after.hideBalances).toBe(true);
         expect(after.homeDefaultAccountId).toBe(3);
+        expect(after.tagsSortBy).toBe(TAG_SORT_BY.usage);
+        expect(after.tagsSortDirection).toBe(SORT_DIRECTIONS.desc);
         expect(after.currency).toBe(DEFAULT_CONFIG.currency);
         expect(after.language).toBe(DEFAULT_CONFIG.language);
         expect(after.firstDayOfWeek).toBe(DEFAULT_CONFIG.firstDayOfWeek);

@@ -1070,3 +1070,18 @@ Added while polishing the list screens, applied 2026-10-19:
 - Gate: `npm run test:all` green; verified in the browser at 375px.
 
 Spec: spec/features/011-accounts-screen/, spec/features/008-categories-screen/.
+
+## Persisted list sort preferences
+Status: completed.
+
+Added while closing the sort work, applied 2026-10-19:
+- Every sortable list stores its field and direction in the `config` table and restores them on the next visit and after a restart: Tags, Comments, Recurring, Transactions, All transactions, Accounts and Categories (**14 keys**, snake_case in `DB_KEY_MAP`).
+- **Transactions** and **All transactions** keep **independent** preferences (`transactions*` vs `allTransactions*`); filters and search stay session-only.
+- Defaults mirror the previous in-memory behaviour: Tags `created/asc`, Comments `name/asc`, Recurring `nextDue/asc`, both transaction lists `date/desc`, Accounts `name/asc`, Categories `name/asc`.
+- No migration: `parseConfig` merges `DEFAULT_CONFIG` and fresh databases are seeded from it. Values are validated by Zod enums (an invalid value falls back to the defaults, like the rest of the config).
+- Screens **derive** the sort from `useConfig()` (no local sort state) and persist through `updateConfig`, so the choice survives the drawer remounts; a `sortPreference` helper centralizes the flip/switch rules and `TRANSACTION_SORT_SCOPES` selects the transaction pair. The test config stub now merges partials and re-renders like the real provider.
+- The preferences travel in JSON backups (config rows) and return to defaults after a Factory reset.
+- Tests: the sort helpers, Zod/sanitize cases, a config get/save round-trip on both engines, screen restore + persist assertions and the transaction hook scope tests.
+- Gate: `npm run test:all` green; verified in the browser at 375px (each list keeps its sort after navigating away and a full reload).
+
+Spec: spec/features/008-categories-screen/, 011-accounts-screen/, 014-transactions-screen-from-home/, 015-all-transactions-screen/, 018-tag-management/, 027-comments-management/, 028-recurring-transactions/.

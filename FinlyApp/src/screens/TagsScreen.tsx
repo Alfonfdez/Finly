@@ -14,7 +14,7 @@ import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository, transactionRepository } from '../database';
 import { type Tag } from '../database/types';
-import { type NavigationProp, MAX_TAGS, TAG_SORT_BY, SORT_DIRECTIONS, type TagSortBy, type SortDirection } from '../constants/types';
+import { type NavigationProp, MAX_TAGS, type TagSortBy } from '../constants/types';
 import { TEST_IDS } from '../constants/testIds';
 import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import { countAtLimit } from '../utils/limits';
@@ -22,6 +22,7 @@ import { parseDbDate } from '../utils/formatters';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { ERROR_PREFIXES } from '../utils/errors';
 import { defaultTagSortDirection, sortTags } from '../utils/tagSort';
+import { nextSortPreference, toggleSortDirection } from '../utils/sortPreference';
 import Fab from '../components/Fab';
 import ListItemRow from '../components/ListItemRow';
 import ListOrEmpty from '../components/ListOrEmpty';
@@ -35,7 +36,7 @@ import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 
 export default function TagsScreen() {
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config, updateConfig } = useConfig();
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp<'Tags'>>();
@@ -66,9 +67,9 @@ export default function TagsScreen() {
   const filteredTags = useSearchFilter(tags, searchText, (tag) => [tag.name]);
 
   const [usage, setUsage] = useState<Map<number, number>>(new Map());
-  const [sortBy, setSortBy] = useState<TagSortBy>(TAG_SORT_BY.created);
   // Creation order ascending (oldest first) keeps the list's historical order.
-  const [sortDirection, setSortDirection] = useState<SortDirection>(SORT_DIRECTIONS.asc);
+  const sortBy = config.tagsSortBy;
+  const sortDirection = config.tagsSortDirection;
 
   useEffect(() => {
     let active = true;
@@ -81,17 +82,13 @@ export default function TagsScreen() {
   }, [tags]);
 
   const handleToggleSort = useCallback((field: TagSortBy) => {
-    if (field === sortBy) {
-      setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
-    } else {
-      setSortBy(field);
-      setSortDirection(defaultTagSortDirection(field));
-    }
-  }, [sortBy]);
+    const next = nextSortPreference({ by: sortBy, direction: sortDirection }, field, defaultTagSortDirection);
+    updateConfig({ tagsSortBy: next.by, tagsSortDirection: next.direction });
+  }, [sortBy, sortDirection, updateConfig]);
 
   const handleToggleDirection = useCallback(() => {
-    setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
-  }, []);
+    updateConfig({ tagsSortDirection: toggleSortDirection(sortDirection) });
+  }, [sortDirection, updateConfig]);
 
   const sortedTags = useMemo(
     () => sortTags(filteredTags, sortBy, sortDirection, usage),

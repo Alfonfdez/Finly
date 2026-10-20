@@ -4,6 +4,7 @@ import { render, fireEvent, userEvent, waitFor } from '@testing-library/react-na
 import type { ReactNode } from 'react';
 import TagsScreen from '../../src/screens/TagsScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
+import { getConfigStub, resetStub, setConfig } from '../component/helpers/configStub';
 import { TEST_IDS } from '../../src/constants/testIds';
 import { MAX_TAGS } from '../../src/constants/types';
 import type { Tag } from '../../src/database/types';
@@ -41,6 +42,7 @@ describe('TagsScreen', () => {
   beforeEach(() => {
     nav.setOptions.mockClear();
     nav.navigate.mockClear();
+    resetStub();
     mockCountByTagIdsMap.mockReset().mockResolvedValue({});
     setAppData({ tags: [tag(1, 'Travel')] });
   });
@@ -100,5 +102,19 @@ describe('TagsScreen', () => {
     const ue = userEvent.setup();
     await ue.press(view.getByText('Usage'));
     await waitFor(() => expect(order()).toEqual(['Beta', 'Alpha']));
+    expect(getConfigStub().updateConfig).toHaveBeenCalledWith({
+      tagsSortBy: 'usage',
+      tagsSortDirection: 'desc',
+    });
+  });
+
+  it('restores the persisted sort on mount', async () => {
+    setAppData({ tags: [tag(1, 'Alpha'), tag(2, 'Beta')] });
+    mockCountByTagIdsMap.mockResolvedValue({ 1: 1, 2: 5 });
+    setConfig({ tagsSortBy: 'usage', tagsSortDirection: 'desc' });
+    const view = await render(<TagsScreen />);
+    await waitFor(() => expect(view.getByText('Used in 5 transactions')).toBeTruthy());
+
+    expect(view.getAllByText(/^(Alpha|Beta)$/).map(n => String(n.props.children))).toEqual(['Beta', 'Alpha']);
   });
 });

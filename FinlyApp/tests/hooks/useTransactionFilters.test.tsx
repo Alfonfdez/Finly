@@ -2,8 +2,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react-native';
 import { useTransactionFilters } from '../../src/hooks/useTransactionFilters';
 import type { Transaction, Account, Category } from '../../src/database/types';
-import { TYPE_FILTERS, SORT_BY, SORT_DIRECTIONS, RECURRING_VIEWS } from '../../src/constants/types';
+import { TYPE_FILTERS, SORT_BY, SORT_DIRECTIONS, RECURRING_VIEWS, TRANSACTION_SORT_SCOPES } from '../../src/constants/types';
 import { UNTAGGED_ID } from '../../src/database/helpers';
+import { getConfigStub, resetStub, setConfig } from '../component/helpers/configStub';
 
 const getTagsByTransactionIds = vi.fn(async () => [] as { transaction_id: number; tag_id: number; name: string }[]);
 
@@ -44,6 +45,7 @@ function baseOptions(transactions: Transaction[]): Options {
     accounts: [account1, account2, totalAccount],
     activeAccount: null,
     categoriesById: new Map([[1, category1], [2, category2]]),
+    sortScope: TRANSACTION_SORT_SCOPES.transactions,
   };
 }
 
@@ -68,6 +70,7 @@ describe('useTransactionFilters', () => {
   beforeEach(() => {
     getTagsByTransactionIds.mockReset();
     getTagsByTransactionIds.mockResolvedValue([]);
+    resetStub();
   });
 
   it('defaults selectedAccountId to the first non-total account', async () => {
@@ -245,6 +248,29 @@ describe('useTransactionFilters', () => {
     expect(result.current.filtered.map(t => t.id)).toEqual([2, 1]);
   });
 
+  it('reads and persists the sort preference of its own list', async () => {
+    setConfig({ allTransactionsSortBy: SORT_BY.amount, allTransactionsSortDirection: SORT_DIRECTIONS.asc });
+    const transactions = [
+      tx(1, { id: 1, amount: 150, account_id: 3 }),
+      tx(2, { id: 2, amount: 50, account_id: 3 }),
+    ];
+    const { result } = await renderFilters(transactions, {
+      activeAccount: totalAccount,
+      sortScope: TRANSACTION_SORT_SCOPES.allTransactions,
+    });
+
+    expect(result.current.sortBy).toBe(SORT_BY.amount);
+    expect(result.current.sortDirection).toBe(SORT_DIRECTIONS.asc);
+    expect(result.current.filtered.map(t => t.id)).toEqual([2, 1]);
+
+    await update(() => result.current.handleToggleDirection());
+    expect(result.current.sortDirection).toBe(SORT_DIRECTIONS.desc);
+    expect(result.current.filtered.map(t => t.id)).toEqual([1, 2]);
+    expect(getConfigStub().updateConfig).toHaveBeenCalledWith({
+      allTransactionsSortBy: SORT_BY.amount,
+      allTransactionsSortDirection: SORT_DIRECTIONS.desc,
+    });
+  });
   it('handleToggleSort switches field and toggles direction', async () => {
     const transactions = [
       tx(1, { id: 1, amount: 50, account_id: 3 }),

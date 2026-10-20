@@ -165,6 +165,14 @@ export const SORT_DIRECTIONS = {
 
 export type SortDirection = keyof typeof SORT_DIRECTIONS;
 
+/** Which transaction list a sort preference belongs to (they are stored separately). */
+export const TRANSACTION_SORT_SCOPES = {
+  transactions: 'transactions',
+  allTransactions: 'allTransactions',
+} as const;
+
+export type TransactionSortScope = keyof typeof TRANSACTION_SORT_SCOPES;
+
 export const RECURRING_SORT_BY = {
   nextDue: 'nextDue',
   name: 'name',

@@ -55,6 +55,7 @@
 - Pressing the active field flips the direction; the arrow next to it flips it too.
 - Sorting applies to the real accounts (including the searched subset); the **Total account always stays first** because it is an aggregate, not a real account.
 - Ties break by display name (`getDisplayAccountName`), then id.
+- The chosen field and direction are **remembered** (`accountsSortBy` / `accountsSortDirection` in the `config` table) and restored on the next visit and after restarting the app.
 
 ### 6. Floating "+" button
 
@@ -108,7 +109,7 @@
 - [x] If there are no accounts, an empty state is shown.
 - [x] The default account "My Wallet" is displayed translated according to the active language (e.g. es "Mi Cartera", ca "La meva cartera") via `getDisplayAccountName`.
 - [x] The Total account appears first in the accounts list with its icon and total balance.
-- [x] A sort toggle sorts the real accounts by Name (default, ascending) or Balance (descending on the first press); the direction flips when the active field or the arrow is pressed, and the Total account stays first in every mode.
+- [x] A sort toggle sorts the real accounts by Name (default, ascending) or Balance (descending on the first press); the direction flips when the active field or the arrow is pressed, and the Total account stays first in every mode; the choice is remembered across visits and restarts.
 - [x] A search icon is shown in the header; pressing it toggles a SearchBar.
 - [x] The search matches account display name and description, case-insensitive.
 - [x] Multi-term searches require all terms to match (AND).

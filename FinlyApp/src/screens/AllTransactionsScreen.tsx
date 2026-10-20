@@ -13,7 +13,7 @@ import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useTransactionListScreen } from '../hooks/useTransactionListScreen';
 import { usePeriodNavigation } from '../hooks/usePeriodNavigation';
-import { TRANSACTION_TYPES, TYPE_FILTERS, type NavigationProp, type TransactionTypeFilter } from '../constants/types';
+import { TRANSACTION_TYPES, TYPE_FILTERS, TRANSACTION_SORT_SCOPES, type NavigationProp, type TransactionTypeFilter } from '../constants/types';
 import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatSignedCurrency, HIDDEN_BALANCE, resolvePeriodRange } from '../utils/formatters';
@@ -87,6 +87,7 @@ export default function AllTransactionsScreen() {
       typeTab,
       selectedCategoryIds,
       periodDates,
+      sortScope: TRANSACTION_SORT_SCOPES.allTransactions,
       onError: () => showErrorAlert(),
     },
     deleteFn: (ids) => transactionRepository.deleteMany(ids),

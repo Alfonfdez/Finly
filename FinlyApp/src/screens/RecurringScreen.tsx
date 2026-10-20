@@ -26,11 +26,12 @@ import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { t, getDisplayCategoryName } from '../i18n';
-import { USER_ID, RULE_INACTIVE, RECURRING_SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, type RootStackParamList, type RecurringSortBy, type RecurringStatus, type SortDirection, type TransactionTypeFilter } from '../constants/types';
+import { USER_ID, RULE_INACTIVE, TYPE_FILTERS, type RootStackParamList, type RecurringSortBy, type RecurringStatus, type TransactionTypeFilter } from '../constants/types';
 import { TEST_IDS } from '../constants/testIds';
 import { isRecurrenceEnded, recurringStatus, todayDateOnly } from '../utils/recurrence';
 import { recurrenceFrequencyLabels } from '../utils/recurrenceSummary';
 import { defaultRecurringSortDirection, sortRecurringRules } from '../utils/recurringSort';
+import { nextSortPreference, toggleSortDirection } from '../utils/sortPreference';
 import { filterRecurringRules } from '../utils/recurringFilter';
 import { isTotalAccount } from '../database/helpers';
 import { recurringRepository } from '../database';
@@ -41,7 +42,7 @@ import type { RecurringRule } from '../database/types';
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Recurring'>;
 
 export default function RecurringScreen() {
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config, updateConfig } = useConfig();
   const labels = t();
   const navigation = useNavigation<NavigationProp>();
   const { accountsWithBalance, categoriesById, refresh } = useApp();
@@ -58,8 +59,8 @@ export default function RecurringScreen() {
   const { rules, counts } = data;
   const today = todayDateOnly();
 
-  const [sortBy, setSortBy] = useState<RecurringSortBy>(RECURRING_SORT_BY.nextDue);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(defaultRecurringSortDirection(RECURRING_SORT_BY.nextDue));
+  const sortBy = config.recurringSortBy;
+  const sortDirection = config.recurringSortDirection;
   const [statusFilter, setStatusFilter] = useState<RecurringStatus[]>([]);
   const [typeTab, setTypeTab] = useState<TransactionTypeFilter>(TYPE_FILTERS.all);
   const [selectedAccountId, setSelectedAccountId] = useState<number | undefined>(undefined);
@@ -94,17 +95,13 @@ export default function RecurringScreen() {
   }, []);
 
   const handleToggleSort = useCallback((field: RecurringSortBy) => {
-    if (field === sortBy) {
-      setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
-    } else {
-      setSortBy(field);
-      setSortDirection(defaultRecurringSortDirection(field));
-    }
-  }, [sortBy]);
+    const next = nextSortPreference({ by: sortBy, direction: sortDirection }, field, defaultRecurringSortDirection);
+    updateConfig({ recurringSortBy: next.by, recurringSortDirection: next.direction });
+  }, [sortBy, sortDirection, updateConfig]);
 
   const handleToggleDirection = useCallback(() => {
-    setSortDirection(d => (d === SORT_DIRECTIONS.desc ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc));
-  }, []);
+    updateConfig({ recurringSortDirection: toggleSortDirection(sortDirection) });
+  }, [sortDirection, updateConfig]);
 
   const select = useSelectAndSearch({ hasItems: rules.length > 0 });
   const {

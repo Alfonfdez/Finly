@@ -12,7 +12,7 @@ import { useRecurringRuleNames } from '../hooks/useRecurringRuleNames';
 import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useTransactionListScreen } from '../hooks/useTransactionListScreen';
-import { PERIODS, type RootStackParamList, type NavigationProp, type IconName } from '../constants/types';
+import { PERIODS, TRANSACTION_SORT_SCOPES, type RootStackParamList, type NavigationProp, type IconName } from '../constants/types';
 import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatSignedCurrency, formatDateLong, parseDbDate, getMonthName, HIDDEN_BALANCE } from '../utils/formatters';
@@ -82,6 +82,7 @@ export default function TransactionsScreen() {
       recurringNames,
       initialTagIds: tagIds ?? [],
       onError: () => showErrorAlert(),
+      sortScope: TRANSACTION_SORT_SCOPES.transactions,
     },
     deleteFn: (ids) => transactionRepository.deleteMany(ids),
     onAfterDelete: refresh,

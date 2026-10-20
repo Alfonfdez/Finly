@@ -61,7 +61,7 @@
 
 ### 6. Sorting
 
-- Same as 014 (section 3).
+- Same as 014 (section 3), with its own independent saved preference (`allTransactionsSortBy` / `allTransactionsSortDirection`), so each transaction screen remembers its own sort.
 
 #### Recurring view filter
 
@@ -156,7 +156,7 @@
 - [x] PeriodTabs (Day/Week/Month/Year/Period) are shown with "Month" selected by default (from config).
 - [x] CalendarPicker updates when the period changes.
 - [x] The transaction list filters by the selected period's date range.
-- [x] The sort toggle works (date/amount, ASC/DESC).
+- [x] The sort toggle works (date/amount, ASC/DESC) and the choice is remembered independently from the Transactions screen.
 - [x] A recurring view chip (All / One-time / Recurring) in the controls row filters the list by recurring-generated vs one-time; the balance reflects it and the control is always shown.
 - [x] TagFilterBar is shown and works with local state.
 - [x] A search icon is shown in the header; pressing it toggles a SearchBar.

@@ -3,6 +3,7 @@ import { render, fireEvent, userEvent, waitFor } from '@testing-library/react-na
 import type { ReactNode } from 'react';
 import CommentsScreen from '../../src/screens/CommentsScreen';
 import { buildAppMock, resetAppStub } from '../component/helpers/appStub';
+import { getConfigStub, resetStub } from '../component/helpers/configStub';
 import { TEST_IDS } from '../../src/constants/testIds';
 
 const getDistinctComments = vi.fn(async () => [] as { description: string; count: number; lastUsed: string }[]);
@@ -35,6 +36,7 @@ describe('CommentsScreen', () => {
     getDistinctComments.mockReset().mockResolvedValue([]);
     nav.setOptions.mockClear();
     nav.navigate.mockClear();
+    resetStub();
   });
 
   afterEach(() => {
@@ -77,6 +79,10 @@ describe('CommentsScreen', () => {
     const ue = userEvent.setup();
     await ue.press(view.getByText('Usage'));
     await waitFor(() => expect(order()).toEqual(['Beta', 'Alpha']));
+    expect(getConfigStub().updateConfig).toHaveBeenCalledWith({
+      commentsSortBy: 'usage',
+      commentsSortDirection: 'desc',
+    });
   });
 
   it('opens the modify screen when a comment is pressed', async () => {

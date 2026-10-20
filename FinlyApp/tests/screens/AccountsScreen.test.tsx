@@ -3,6 +3,7 @@ import { render, fireEvent, waitFor, userEvent } from '@testing-library/react-na
 import { useState, type ReactNode } from 'react';
 import AccountsScreen from '../../src/screens/AccountsScreen';
 import { buildAppMock, resetAppStub } from '../component/helpers/appStub';
+import { getConfigStub, resetStub, setConfig } from '../component/helpers/configStub';
 import { TEST_IDS } from '../../src/constants/testIds';
 import type { Account } from '../../src/database/types';
 
@@ -66,6 +67,7 @@ const totalAccount: Account = {
 
 describe('AccountsScreen', () => {
   beforeEach(() => {
+    resetStub();
     list.mockReset().mockResolvedValue([]);
     getBalances.mockReset().mockResolvedValue([]);
     nav.setOptions.mockClear();
@@ -111,10 +113,32 @@ describe('AccountsScreen', () => {
 
     await fireEvent.press(view.getByText('Balance', { exact: true }));
     await waitFor(() => expect(order()).toEqual(['Total', 'Wallet', 'Cash']));
+    expect(getConfigStub().updateConfig).toHaveBeenCalledWith({
+      accountsSortBy: 'balance',
+      accountsSortDirection: 'desc',
+    });
 
     // Tapping the active field flips the direction.
     await fireEvent.press(view.getByText('Balance', { exact: true }));
     await waitFor(() => expect(order()).toEqual(['Total', 'Cash', 'Wallet']));
+    expect(getConfigStub().updateConfig).toHaveBeenLastCalledWith({
+      accountsSortBy: 'balance',
+      accountsSortDirection: 'asc',
+    });
+  });
+
+  it('restores the persisted sort on mount', async () => {
+    setConfig({ accountsSortBy: 'balance', accountsSortDirection: 'desc' });
+    list.mockResolvedValue([account(1, 'Wallet'), account(2, 'Cash'), totalAccount]);
+    getBalances.mockResolvedValue([
+      { account_id: 1, balance: 100 },
+      { account_id: 2, balance: 50 },
+    ]);
+    const view = await render(<AccountsScreen />);
+    await view.findByText('Wallet');
+
+    expect(view.getAllByText(/^(Total|Wallet|Cash)$/).map(node => String(node.props.children)))
+      .toEqual(['Total', 'Wallet', 'Cash']);
   });
   it('opens the modify screen when an account is pressed', async () => {
     list.mockResolvedValue([account(1, 'Cash'), account(2, 'Savings')]);

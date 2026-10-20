@@ -1,4 +1,18 @@
-import { CONFIG_ICON_SHAPES, PERIODS, TEXT_SIZES, THEMES, DECIMAL_SEPARATORS, FIRST_DAYS } from '../constants/types';
+import {
+  ACCOUNT_SORT_BY,
+  CATEGORY_SORT_BY,
+  COMMENT_SORT_BY,
+  CONFIG_ICON_SHAPES,
+  DECIMAL_SEPARATORS,
+  FIRST_DAYS,
+  PERIODS,
+  RECURRING_SORT_BY,
+  SORT_BY,
+  SORT_DIRECTIONS,
+  TAG_SORT_BY,
+  TEXT_SIZES,
+  THEMES,
+} from '../constants/types';
 import { LANGUAGES } from '../utils/language';
 import { DEFAULT_CURRENCY } from '../constants/currencies';
 import { configSchema } from './schemas';
@@ -28,6 +42,20 @@ export const DEFAULT_CONFIG: Config = {
   editRecurringShowLabels: true,
   editRecurringShowComments: true,
   hideBalances: false,
+  tagsSortBy: TAG_SORT_BY.created,
+  tagsSortDirection: SORT_DIRECTIONS.asc,
+  commentsSortBy: COMMENT_SORT_BY.name,
+  commentsSortDirection: SORT_DIRECTIONS.asc,
+  recurringSortBy: RECURRING_SORT_BY.nextDue,
+  recurringSortDirection: SORT_DIRECTIONS.asc,
+  transactionsSortBy: SORT_BY.date,
+  transactionsSortDirection: SORT_DIRECTIONS.desc,
+  allTransactionsSortBy: SORT_BY.date,
+  allTransactionsSortDirection: SORT_DIRECTIONS.desc,
+  accountsSortBy: ACCOUNT_SORT_BY.name,
+  accountsSortDirection: SORT_DIRECTIONS.asc,
+  categoriesSortBy: CATEGORY_SORT_BY.name,
+  categoriesSortDirection: SORT_DIRECTIONS.asc,
 };
 
 export const DB_KEY_MAP: Record<string, keyof Config> = {
@@ -54,6 +82,20 @@ export const DB_KEY_MAP: Record<string, keyof Config> = {
   edit_recurring_show_labels: 'editRecurringShowLabels',
   edit_recurring_show_comments: 'editRecurringShowComments',
   hide_balances: 'hideBalances',
+  tags_sort_by: 'tagsSortBy',
+  tags_sort_direction: 'tagsSortDirection',
+  comments_sort_by: 'commentsSortBy',
+  comments_sort_direction: 'commentsSortDirection',
+  recurring_sort_by: 'recurringSortBy',
+  recurring_sort_direction: 'recurringSortDirection',
+  transactions_sort_by: 'transactionsSortBy',
+  transactions_sort_direction: 'transactionsSortDirection',
+  all_transactions_sort_by: 'allTransactionsSortBy',
+  all_transactions_sort_direction: 'allTransactionsSortDirection',
+  accounts_sort_by: 'accountsSortBy',
+  accounts_sort_direction: 'accountsSortDirection',
+  categories_sort_by: 'categoriesSortBy',
+  categories_sort_direction: 'categoriesSortDirection',
 };
 
 export const CONFIG_NULL_SENTINEL = 'null';

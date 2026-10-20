@@ -53,6 +53,7 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 - The fallback categories **Others**/**Other** stay pinned last in both modes (catch-all options), and the Expense/Income tabs, search and multi-select keep working on the sorted subset.
 - Ties break by display name (`getDisplayCategoryName`), then id.
 - The strip keeps the shared layout standard: its separator spans the full width (like Tags/Comments/Accounts) and the grid starts 16 px below it, in normal and selection mode.
+- The chosen field and direction are **remembered** (`categoriesSortBy` / `categoriesSortDirection` in the `config` table) and restored on the next visit and after restarting the app.
 
 ### 7. Multi-select bulk delete
 
@@ -98,7 +99,7 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 - [x] Typing filters the active type's categories by the current-language display name (case-insensitive, multi-term).
 - [x] Closing the search restores the full grid.
 - [x] A search with no matches shows a search icon + "No results found".
-- [x] A sort toggle sorts the active type by Name (default, ascending) or Usage (descending on the first press); each tile shows its lifetime transaction count (hidden when 0), the direction flips when the active field or the arrow is pressed, and Others/Other stay last.
+- [x] A sort toggle sorts the active type by Name (default, ascending) or Usage (descending on the first press); each tile shows its lifetime transaction count (hidden when 0), the direction flips when the active field or the arrow is pressed, and Others/Other stay last; the choice is remembered across visits and restarts.
 - [x] "Select" in the header enters selection mode (shown only when the active type has categories); tiles show checkmarks and tapping toggles selection instead of navigating.
 - [x] In selection mode the "Create" tile, the limit message and the counter are hidden; the action bar shows `Delete (N)` with the selected count and is disabled when nothing is selected.
 - [x] A Select all / Deselect all row above the grid selects every visible category in one tap.
