@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { ComponentProps } from 'react';
 import { render, fireEvent, act } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
-import { resetStub, setConfig } from './helpers/configStub';
+import { getConfigStub, resetStub, setConfig } from './helpers/configStub';
+import { recurringCardColors, recurringCardErrorColors } from '../../src/components/componentStyles';
 import RepeatSection from '../../src/components/RepeatSection';
 import { TEST_IDS } from '../../src/constants/testIds';
 import { REPEAT_NAME_MAX_LENGTH } from '../../src/constants/types';
@@ -264,6 +265,24 @@ describe('RepeatSection', () => {
     expect((await view.view).getByText(
       '31 in Jan, Mar, May, Jul, Aug, Oct, Dec · 30 in Apr, Jun, Sep, Nov · 28 in Feb (29 in leap years)',
     )).toBeTruthy();
+  });
+
+  it('keeps the primary tint while the rule is allowed', async () => {
+    const { view } = renderSection();
+    const v = await view;
+    const style = StyleSheet.flatten(v.getByTestId(TEST_IDS.repeatOptions).props.style);
+    const c = getConfigStub().activeColors;
+    expect(style.borderColor).toBe(recurringCardColors(c).borderColor);
+    expect(style.backgroundColor).toBe(recurringCardColors(c).backgroundColor);
+  });
+
+  it('turns the card red while the rule exceeds the catch-up limit', async () => {
+    const { view } = renderSection({ tooMany: true });
+    const v = await view;
+    const style = StyleSheet.flatten(v.getByTestId(TEST_IDS.repeatOptions).props.style);
+    const c = getConfigStub().activeColors;
+    expect(style.borderColor).toBe(recurringCardErrorColors(c).borderColor);
+    expect(style.backgroundColor).toBe(recurringCardErrorColors(c).backgroundColor);
   });
 
   it('says nothing is created while the rule is paused', async () => {

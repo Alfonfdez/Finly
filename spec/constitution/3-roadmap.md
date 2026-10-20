@@ -1141,3 +1141,13 @@ Added while fixing the truncated filter pill, applied 2026-10-21:
 - Verified in the browser with the longest languages (fr/es/ca/gl/pt) on the three tabs; spec 015 and the changelog updated.
 
 Spec: spec/features/015-all-transactions-screen/.
+
+## Recurring card error tint
+Status: completed.
+
+Added while improving the over-limit feedback, applied 2026-10-21:
+- The recurring form card turns **red** (border + background, `recurringCardErrorColors` next to the primary `recurringCardColors`) while the draft would create more than **5,000** transactions, and returns to the primary tint as soon as the draft is valid.
+- It uses the same `tooManyOccurrences` flag that blocks Save, so it works in **create and edit** (including the scope-aware Future + past back-fill) and always matches the bottom hint. The paused state creates nothing and therefore stays in the primary tint.
+- Tests cover the primary/red card styles and an edit that would exceed the limit; spec 028, `6-screens` and the changelog updated.
+
+Spec: spec/features/028-recurring-transactions/.

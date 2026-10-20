@@ -5,6 +5,9 @@ import TransactionForm from '../../src/components/TransactionForm';
 import { DEFAULT_CONFIG } from '../../src/database/configDefaults';
 import { TEST_IDS } from '../../src/constants/testIds';
 import type { Config , Category , Account } from '../../src/database/types';
+import { getConfigStub } from './helpers/configStub';
+import type { RecurrenceScope } from '../../src/constants/types';
+import { recurringCardErrorColors } from '../../src/components/componentStyles';
 
 vi.mock('expo-image-picker', () => ({
   requestCameraPermissionsAsync: vi.fn(async () => ({ status: 'denied' })),
@@ -146,6 +149,7 @@ function renderForm(overrides: {
   ruleMode?: boolean;
   transactionId?: number;
   initialRuleNextDue?: string | null;
+  repeatScope?: RecurrenceScope;
   deleteLabel?: string;
   onDeletePress?: () => void;
 } = {}) {
@@ -242,7 +246,31 @@ describe('TransactionForm', () => {
       'This rule would create more than 5000 transactions. Move the start date later or add an end date.',
     )).toBeTruthy();
     expect(view.getByText('Save')).toBeDisabled();
+    const card = StyleSheet.flatten(view.getByTestId(TEST_IDS.repeatOptions).props.style);
+    const c = getConfigStub().activeColors;
+    expect(card.borderColor).toBe(recurringCardErrorColors(c).borderColor);
   });
+
+  it('turns the card red while an edit would exceed the catch-up limit', async () => {
+    mockFormState.canSubmit = true;
+    mockFormState.numericAmount = 10;
+    mockFormState.amountRaw = '10';
+    mockFormState.categoryId = 1;
+    mockFormState.day = new Date(2005, 0, 1);
+    mockFormState.repeatFrequency = 'daily';
+    const view = await renderForm({
+      ruleMode: true,
+      initialDay: new Date(2005, 0, 1),
+      initialRuleNextDue: '2005-01-01',
+      repeatScope: 'futureAndPast',
+    });
+
+    expect(view.getByText('Save')).toBeDisabled();
+    const card = StyleSheet.flatten(view.getByTestId(TEST_IDS.repeatOptions).props.style);
+    const c = getConfigStub().activeColors;
+    expect(card.borderColor).toBe(recurringCardErrorColors(c).borderColor);
+  });
+
   it('asks for an earlier end date when the rule already has one', async () => {
     mockFormState.canSubmit = true;
     mockFormState.numericAmount = 10;

@@ -9,7 +9,7 @@ import { formatDateLong } from '../utils/formatters';
 import { buildRecurrenceSchedule, lastDayAnchorUseful, ruleEditCursorFrom, todayDateOnly, type RecurrenceSchedule } from '../utils/recurrence';
 import { recurrenceFrequencyLabels } from '../utils/recurrenceSummary';
 import { recurrenceInfoLines } from '../utils/recurrenceInfo';
-import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, CONTROL_BORDER_RADIUS, DISABLED_CONTROL_OPACITY, PILL_RADIUS, SECTION_GAP, SECTION_GAP_SM, SECTION_TITLE_STYLE, recurringCardColors } from './componentStyles';
+import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, CONTROL_BORDER_RADIUS, DISABLED_CONTROL_OPACITY, PILL_RADIUS, SECTION_GAP, SECTION_GAP_SM, SECTION_TITLE_STYLE, recurringCardColors, recurringCardErrorColors } from './componentStyles';
 import { TEST_IDS } from '../constants/testIds';
 import ClearButton from './ClearButton';
 import CheckboxRow from './settings/CheckboxRow';
@@ -52,6 +52,8 @@ interface Props {
   scope?: RecurrenceScope;
   onChangeScope?: (scope: RecurrenceScope) => void;
   scopeDisabled?: boolean;
+  /** The draft would create more than the catch-up limit: the card turns red (Save is blocked). */
+  tooMany?: boolean;
 }
 
 const FREQUENCIES: RecurrenceFrequency[] = [
@@ -89,6 +91,7 @@ export default function RepeatSection({
   scope = RECURRENCE_SCOPES.future,
   onChangeScope,
   scopeDisabled = false,
+  tooMany = false,
 }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
@@ -135,7 +138,7 @@ export default function RepeatSection({
         testID={TEST_IDS.repeatOptions}
         style={[
           styles.options,
-          recurringCardColors(c),
+          tooMany ? recurringCardErrorColors(c) : recurringCardColors(c),
         ]}
       >
         <Text style={[styles.firstLabel, { color: c.textSecondary, fontSize: fs(12) }]}>
