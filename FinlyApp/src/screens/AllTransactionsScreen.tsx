@@ -265,6 +265,6 @@ const styles = StyleSheet.create({
   },
   categoryButtonText: {
     fontWeight: '500',
-    maxWidth: 120,
+    maxWidth: 160,
   },
 });

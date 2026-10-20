@@ -42,6 +42,7 @@ export const TransactionRow = memo(function TransactionRow({ tx, category, tags,
     <ListItemRow
       title={category ? getDisplayCategoryName(category) : ''}
       subtitle={tx.description ?? undefined}
+      subtitleLines={2}
       icon={category?.icon}
       color={category?.color}
       shape={BADGE_SHAPES.circle}

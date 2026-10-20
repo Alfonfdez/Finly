@@ -24,8 +24,10 @@ interface Props {
   badgeRadius?: number;
   badgeAlpha?: number;
   titleSize?: number;
+  titleLines?: number;
   subtitle?: string;
   subtitleSize?: number;
+  subtitleLines?: number;
   leading?: ReactNode;
   middle?: ReactNode;
   right?: ReactNode;
@@ -49,8 +51,10 @@ function ListItemRow({
   badgeRadius,
   badgeAlpha,
   titleSize = 14,
+  titleLines = 1,
   subtitle,
   subtitleSize = 12,
+  subtitleLines = 1,
   leading,
   middle,
   right,
@@ -82,11 +86,11 @@ function ListItemRow({
         />
       )}
       <View style={styles.info}>
-        <Text style={[styles.title, { color: c.text, fontSize: fs(titleSize) }]} numberOfLines={1}>
+        <Text style={[styles.title, { color: c.text, fontSize: fs(titleSize) }]} numberOfLines={titleLines}>
           {title}
         </Text>
         {subtitle ? (
-          <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(subtitleSize) }]} numberOfLines={1}>
+          <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(subtitleSize) }]} numberOfLines={subtitleLines}>
             {subtitle}
           </Text>
         ) : null}

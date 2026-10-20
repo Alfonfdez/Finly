@@ -12,7 +12,7 @@
 - The screen is accessed from `HomeScreen` by tapping a category from the breakdown (CategoryList).
 - **Stack navigator header** with back button and title "Transactions" (multilingual).
 - Category section below the header:
-  - **Row 1:** category icon (with background color) + category name.
+  - **Row 1:** category icon (with background color) + category name (up to 2 lines, then ellipsized).
   - **Row 2:** formatted category total (`formatCurrency`), green with "+" prefix if positive, red with "-" prefix if negative. It follows the privacy setting ("Hide balances and totals", spec 003 §5.6): masked with an eye icon beside it when the setting is on.
   - **Row 3:** period indicator line (secondary color), `<period label> · <date/range>`, built from the navigation `period` + `startDate`/`endDate` params so the user always knows which period the list is showing:
     - **Day:** `Day · September 2, 2026` (via `formatDateLong`).
@@ -77,7 +77,7 @@
   - **Transaction rows:** one per transaction of the day, with:
     - Category icon (with background color).
     - Category name.
-    - Transaction description/message.
+    - Transaction description/comment (up to 2 lines, then ellipsized).
     - Amount formatted with `formatCurrency()`, green if income, red if expense.
 - If there are no transactions for the selected filters, an empty state is shown: "No transactions" (multilingual).
 
@@ -132,7 +132,7 @@
 ## Acceptance criteria
 
 - [x] The Stack header shows a back button and title "Transactions".
-- [x] Below the header, the category icon + category name is displayed.
+- [x] Below the header, the category icon + category name is displayed (the name uses up to 2 lines).
 - [x] Below the category name, the formatted total with color (green/red) and prefix (+/-) is displayed.
 - [x] The category total follows the privacy setting (masked with an eye icon beside it; reset on refocus), while the transaction rows keep their amounts visible.
 - [x] The selected account is shown with icon + name + chevron-down.
@@ -145,7 +145,7 @@
 - [x] By default, transactions are sorted by date descending, and the chosen sort is remembered across visits and restarts.
 - [x] A recurring view chip (All / One-time / Recurring) in its own row above the sort controls filters the list by recurring-generated vs one-time; the category total reflects it.
 - [x] Transactions are grouped by day with a formatted date header.
-- [x] Each transaction shows category icon + name + description + amount with color.
+- [x] Each transaction shows category icon + name + description + amount with color (the description uses up to 2 lines, then ellipsizes).
 - [x] The list is filtered by account, category, and period.
 - [x] The Total account is shown in the account selector modal.
 - [x] When the active account is Total (is_total=1), the account filter is skipped and all transactions for the category and period are shown.

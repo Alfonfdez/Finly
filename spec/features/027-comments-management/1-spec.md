@@ -11,7 +11,7 @@
 
 - New "Comments" Drawer item (icon `chatbubble-outline`, label `nav_comments`) placed after "Tags".
 - `CommentsScreen` lists every distinct comment grouped by its trimmed value, sorted alphabetically by default (case-insensitive).
-- Each row shows the comment, "Used in N transactions" (`comments_used_in(n)`) and "Last used <date>" (`comments_last_used(date)`, the most recent transaction date using that comment).
+- Each row shows the comment (up to **2 lines**, then ellipsized), "Used in N transactions" (`comments_used_in(n)`) and "Last used <date>" (`comments_last_used(date)`, the most recent transaction date using that comment).
 - A sort strip (`SortToggle` in a `SortRow`) above the list sorts by **name**, **last used** or **usage** (number of transactions); each field has a natural default direction (name ascending, last used/usage descending) and tapping the active field flips it. The choice is **remembered** (`commentsSortBy` / `commentsSortDirection` in the `config` table) and restored on the next visit and after restarting the app.
 - Comments have **no count cap** (unlike tags): they are derived from transaction descriptions rather than created on their own screen, so a limit would block writing a comment on a transaction. Only a single comment's length is bounded (`MAX_COMMENT_LENGTH` = 4096).
 - Tapping a row navigates to `ModifyComment` with `{ comment }`.
@@ -72,7 +72,7 @@
 ## Acceptance criteria
 
 - [x] "Comments" appears in the Drawer between "Tags" and the separator, with a chat bubble icon.
-- [x] The Comments screen lists every distinct comment with its "Used in N transactions" count, sorted alphabetically by default.
+- [x] The Comments screen lists every distinct comment with its "Used in N transactions" count, sorted alphabetically by default; long comments use up to 2 lines and then ellipsize.
 - [x] Each row also shows "Last used <date>", and a sort strip sorts by name, last used or usage (the choice is remembered across visits and restarts).
 - [x] Whitespace/case variants of the same comment collapse into one row with a summed count.
 - [x] The search toggle filters the list client-side; empty state shows when there are no comments.

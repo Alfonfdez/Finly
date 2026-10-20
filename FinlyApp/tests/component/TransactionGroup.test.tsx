@@ -53,6 +53,7 @@ describe('TransactionRow', () => {
 
     expect(view.getByText('Restaurants')).toBeTruthy();
     expect(view.getByText('Lunch')).toBeTruthy();
+    expect(view.getByText('Lunch').props.numberOfLines).toBe(2);
   });
 
   it('formats an expense with a minus sign and the red color', async () => {

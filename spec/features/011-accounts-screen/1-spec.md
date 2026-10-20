@@ -25,7 +25,7 @@
 - The Total account always appears **first** in the list (sorted by `is_total DESC, name`).
 - Each row contains:
   - **First row** (always visible): account icon with its background color on the left, account name in the center, current balance formatted with the active currency on the right.
-  - **Second row** (only if the account has a note): note text below the name, in `textoSuave` color and reduced size, spanning the available width.
+  - **Second row** (only if the account has a note): note text below the name, in `textoSuave` color and reduced size, spanning the available width; it shows up to **3 lines** and then ellipsizes.
 - The full row is a `TouchableOpacity` that navigates to `ModifyAccountScreen` (012) with `accountId` as a parameter when pressed.
 - If there are no accounts (except the Total account), an empty state is shown with an icon and message. The Total account is always present in the seed data.
 
@@ -104,7 +104,7 @@
 - [x] The header shows a hamburger menu button and the title "Accounts" in the active language.
 - [x] "Total:" is displayed with the total balance of all accounts, green if >= 0, red if < 0, with a maximum of 2 decimals.
 - [x] Each account shows an icon with background color + name + formatted balance.
-- [x] If the account has a note (description), it is displayed below the name in a soft color and reduced size.
+- [x] If the account has a note (description), it is displayed below the name in a soft color and reduced size, using up to 3 lines before ellipsizing.
 - [x] Pressing an account navigates to "Modify account" (012) with the `accountId`.
 - [x] If there are no accounts, an empty state is shown.
 - [x] The default account "My Wallet" is displayed translated according to the active language (e.g. es "Mi Cartera", ca "La meva cartera") via `getDisplayAccountName`.

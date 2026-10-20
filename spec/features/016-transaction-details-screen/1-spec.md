@@ -46,7 +46,7 @@ Every row is always present so the card is uniform; when a field has no value th
 
 - The "Comment" section is always shown (visual consistency with the rest of the fields).
 - If `transaction.description` is `null` or an empty string, the shared placeholder `details_none` (“—”) is shown in `textSecondary` (the same placeholder used for empty Tags and Recurring).
-- If there is a comment, the full text is displayed in `text` color.
+- If there is a comment, the full text is displayed in `text` color. The recurring rule name in its row also wraps fully (no line cap).
 
 ### 5. Photo
 

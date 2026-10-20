@@ -48,6 +48,7 @@ describe('RecurringRow', () => {
       <RecurringRow rule={rule} category={category} count={3} today="2026-10-06" onPress={vi.fn()} onToggleActive={vi.fn()} />,
     );
     expect(view.getByText('Rent')).toBeTruthy();
+    expect(view.getByText('Rent').props.numberOfLines).toBe(2);
     expect(view.getByText('Every month on day 5')).toBeTruthy();
     expect(view.getByText('Next: November 5, 2026')).toBeTruthy();
     expect(view.getByText('Food · 3 transactions')).toBeTruthy();

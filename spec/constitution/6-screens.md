@@ -148,6 +148,8 @@ The drawer is a custom `DrawerContentScrollView` in `AppNavigator.tsx` with this
 | `repeat-outline` | `nav_recurring` | `Recurring` |
 | `settings-outline` | `nav_settings` | `Settings` |
 
+**Labels:** long translations wrap to **two lines** (`numberOfLines={2}`) before ellipsizing; short labels stay on one line, so no item is clipped for a long language or a large text size. The library clamps *string* labels to one line, so `DrawerNavItem` passes a label node instead.
+
 **Version footer:**
 - Reads version from `Constants.expoConfig?.version` (expo-constants, sourced from `app.json`).
 - Style: `fs(11)`, `c.textSecondary`, centered, pushed to bottom of scroll view.
@@ -160,6 +162,8 @@ Rely on React Navigation's default header with back button. Never call `setOptio
 ### Header Title Alignment
 
 All headers are centered via `headerTitleAlign: 'center'` in `screenOptions` (AppNavigator.tsx). No per-screen override needed.
+
+- **Titles:** every header uses the same size (`fs(17)`, scaled only by the Settings text size - no per-language size changes). Long titles wrap to up to **2 lines** inside a bounded width and never overlap the header buttons; the tail ellipsizes only if a title would need a third line. Back-only sub-screens get a wider bound than list screens with Select/Search, so longer titles still fit within two lines.
 
 ## Loading States
 

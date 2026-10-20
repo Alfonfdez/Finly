@@ -65,7 +65,7 @@ function RecurringRow({ rule, category, count, today, onPress, onToggleActive, b
         accessibilityRole="button"
         accessibilityLabel={rule.name}
       >
-        <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]} numberOfLines={1}>
+        <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]} numberOfLines={2}>
           {rule.name}
         </Text>
         <Text style={[styles.subtitle, { color: c.primary, fontSize: fs(12) }]} numberOfLines={1}>

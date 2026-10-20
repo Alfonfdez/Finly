@@ -121,6 +121,7 @@ export default function CommentsScreen() {
       <ListItemRow
         title={item.description}
         titleSize={15}
+        titleLines={2}
         subtitle={labels.comments_used_in(item.count)}
         middle={
           <Text style={[styles.lastUsed, { color: c.textSecondary, fontSize: fs(12) }]}>
