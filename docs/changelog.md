@@ -4129,3 +4129,8 @@
 - Header titles: one uniform size (17) for every screen and language, scaled only by the Settings text size; long titles now wrap to two lines instead of shrinking the font.
 - Removed the compact-size rule for labels over 18 characters; the bounded title never overlaps the header buttons and ellipsizes only beyond two lines.
 - Conventions (6-screens), roadmap and changelog updated.
+
+[2026-10-21] feat | FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/components/componentStyles.ts, FinlyApp/tests/component/RepeatSection.test.tsx, FinlyApp/tests/component/TransactionForm.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Recurring card: when the draft would create more than 5000 transactions, the card switches from the primary tint to the red error tint (border and background) until the rule is valid again.
+- Applies to both create and edit (including Future + past), matching the existing Save block; the helper is shared with the primary card colors.
+- Tests cover the primary/red tints and an edit that would exceed the limit; spec 028 and 6-screens updated.

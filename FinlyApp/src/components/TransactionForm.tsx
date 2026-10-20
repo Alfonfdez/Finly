@@ -342,6 +342,7 @@ export default function TransactionForm(props: TransactionFormProps) {
               scope={props.repeatScope}
               onChangeScope={props.onChangeRepeatScope}
               scopeDisabled={props.repeatScopeDisabled}
+              tooMany={tooManyOccurrences}
             />
           )}
 

@@ -62,3 +62,11 @@ export function recurringCardColors(c: ColorPalette) {
     borderColor: withAlpha(c.primary, 30),
   };
 }
+
+/** Same card, in the error palette: an over-limit rule is not saveable. */
+export function recurringCardErrorColors(c: ColorPalette) {
+  return {
+    backgroundColor: withAlpha(c.red, 10),
+    borderColor: withAlpha(c.red, 30),
+  };
+}
