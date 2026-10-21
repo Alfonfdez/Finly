@@ -1,7 +1,7 @@
 # 005 — Add Category Page
 
 - **Objective**
-Screen accessible from the "More" button in the categories section of `AddTransactionScreen` that allows the user to view the categories of the active type (expense or income) and select one to add it to the transaction. All texts are multilingual (en/es/ca).
+Screen accessible from the "More" button in the categories section of `AddTransactionScreen` that allows the user to view the categories of the active type (expense or income) and select one to add it to the transaction. All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it).
 
 ---
 
@@ -55,7 +55,7 @@ Screen accessible from the "More" button in the categories section of `AddTransa
 - **Configuration**: the screen must use `useConfig().coloresActivos` for colors (not hardcoded).
 - **Text**: the screen must use `useFontSize()` for text scaling.
 - **Navigation**: the screen is added to the `HomeStack` in `AppNavigator.tsx`.
-- **Persistence**: categories are loaded from the existing repository (native SQLite or web localStorage).
+- **Persistence**: categories are loaded from the existing repository (native SQLite, sql.js + IndexedDB on web).
 
 ---
 

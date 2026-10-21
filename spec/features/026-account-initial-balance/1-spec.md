@@ -38,7 +38,7 @@
 
 ## Non-functional requirements
 
-- **Multilingual**: all new texts use `t()` (en/es/ca).
+- **Multilingual**: all new texts use `t()` (en/es/ca/gl/eu/fr/de/pt/it).
 - **Reuse**: the field reuses the tested `AmountInput` + `amountInput` parsing utils (`parseAmountInput`, `formatAmountDisplay`, `parseAmountValue`).
 - **No schema/migration changes**: the `initial_balance` column already exists (migration `001_initial`).
 - **Theme/text size**: the field inherits `useConfig().activeColors` and `useFontSize()` from `AmountInput`.

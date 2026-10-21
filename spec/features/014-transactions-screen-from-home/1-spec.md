@@ -1,7 +1,7 @@
 # 014 — Transactions page (from home screen)
 
 - **Objective**
-  Screen accessible from the home screen (HomeScreen) that displays the transaction list filtered by category, account, and period. Allows changing the account, sorting transactions, searching, multi-selecting transactions for bulk delete, and navigating to add a new transaction. All texts are multilingual (en/es/ca).
+  Screen accessible from the home screen (HomeScreen) that displays the transaction list filtered by category, account, and period. Allows changing the account, sorting transactions, searching, multi-selecting transactions for bulk delete, and navigating to add a new transaction. All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it).
 
 ---
 
@@ -123,7 +123,7 @@
 - **Text**: use `useFontSize()` for scaling.
 - **Navigation**: added to `HomeStack` in `AppNavigator.tsx`.
 - **Layout structure:** `SafeAreaView > [categoryInfo, SearchBar(conditional), controls, SectionList, FAB(absolute)], SelectionActionBar(conditional), ConfirmationModal`. The FAB is a direct child of SafeAreaView with `position: absolute`. `keyboardSpacer` is not used.
-- **Persistence**: transactions are loaded from `transactionRepository` (native SQLite / web localStorage).
+- **Persistence**: transactions are loaded from `transactionRepository` (native SQLite, sql.js + IndexedDB on web).
 - **Monetary format**: use existing `formatCurrency()` (maximum 2 decimals).
 - **Icons**: `@expo/vector-icons` (Ionicons).
 

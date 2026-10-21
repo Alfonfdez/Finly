@@ -1,7 +1,7 @@
 # 018 — Tag management
 
 - **Objective**
-  Database schema for tags (many-to-many with transactions), repository CRUD, web localStorage support, and a Drawer-accessible screen to view, modify and delete tags. All texts multilingual (en/es/ca).
+  Database schema for tags (many-to-many with transactions), repository CRUD, shared web persistence through sql.js/IndexedDB, and a Drawer-accessible screen to view, modify and delete tags. All texts multilingual (en/es/ca/gl/eu/fr/de/pt/it).
 
 ---
 
@@ -13,9 +13,9 @@
 - **`transaction_tags` junction table**: `transaction_id` (INTEGER NOT NULL → transactions.id), `tag_id` (INTEGER NOT NULL → tags.id), PRIMARY KEY (`transaction_id`, `tag_id`).
 - Foreign keys with ON DELETE CASCADE: `transaction_id` → transactions.id, `tag_id` → tags.id.
 - Indexes: `idx_tags_user ON tags(user_id)`, `idx_transaction_tags_tag ON transaction_tags(tag_id)`.
-- Migration: `004_tags.ts`, DATABASE_VERSION = 4.
+- Created by `001_initial` (schema version 1); no separate tags migration exists.
 
-### 2. Tag repository (native SQLite)
+### 2. Tag repository (shared)
 
 - `tagRepo.list(userId)`: returns all tags ordered by creation date (id).
 - `tagRepo.create(data)`: inserts a tag (user_id, name). Returns the created tag.
@@ -25,12 +25,11 @@
 - `tagRepo.existsByName(userId, name, excludeId?)`: case-insensitive duplicate check.
 - `tagRepo.getByTransactionIds(transactionIds)`: returns `{ transaction_id, tag_id, name }[]` for a batch of transaction IDs.
 
-### 3. Web localStorage support
+### 3. Web persistence
 
-- `webTagRepo`: same interface as tagRepo using localStorage key `@Finly/tags`.
-- `webTransactionTagRepo`: junction table stored as `@Finly/transaction_tags`.
-- `initWebStorage`: seed empty arrays for tags and transaction_tags.
-- Cascade on delete handled in JS (filter out junction rows).
+- There is no separate web repository: `tagRepo` runs over the same SQLite schema through sql.js, persisted to IndexedDB.
+- The engine writes the exported database bytes once per committed transaction, so tags and their junction rows survive reloads.
+- Cascade on delete is handled by SQLite (`ON DELETE CASCADE`), identically on native and web.
 
 ### 4. Tags screen (Drawer)
 
@@ -87,11 +86,11 @@
 ## Non-functional requirements
 
 - **Multilingual**: all visible texts must use `t()`.
-- **i18n**: new key `tags_search` (en/es/ca) for the search placeholder.
+- **i18n**: new key `tags_search` (en/es/ca/gl/eu/fr/de/pt/it) for the search placeholder.
 - **Configuration**: `useConfig().activeColors` for colors.
 - **Text**: `useFontSize()` for scaling.
 - **Navigation**: add `Tags`, `CreateTag`, `ModifyTag` to `RootStackParamList` and `HomeStack`. Connect "Tags" DrawerItem.
-- **Persistence**: data from `tagRepo` (native) / `webTagRepo` (web).
+- **Persistence**: data from `tagRepo` over the shared SQLite engine (`expo-sqlite` native, sql.js + IndexedDB web).
 - **Tags are global**: not tied to a specific type (expense/income). Same tag can be used on both.
 - **Max name length**: 20 characters (same as tag input in AddTransaction).
 

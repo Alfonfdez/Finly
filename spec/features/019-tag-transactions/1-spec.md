@@ -83,10 +83,10 @@ Tags       | [Urgent] [Recurring]
 - When `tagIds` is not provided or empty, all transactions for the category are shown (current behavior).
 - The `tagIds` parameter is passed from HomeScreen when a tag filter is active.
 
-### 8. Web localStorage support
+### 8. Web persistence
 
-- Add `webTransactionRepo.createWithTags()`, `updateWithTags()`, `getTagsByTransactionId()`, `getTagsByTransactionIds()`.
-- Junction operations done in JS (read/write `@Finly/transaction_tags`).
+- No separate web repository exists: `transactionRepo.createWithTags()`, `updateWithTags()`, `getTagsByTransactionId()` and `getTagsByTransactionIds()` run over the same SQLite schema through sql.js, persisted to IndexedDB.
+- Junction rows are written with the transaction in one explicit transaction (serialized by `runExclusiveDb`).
 
 ---
 

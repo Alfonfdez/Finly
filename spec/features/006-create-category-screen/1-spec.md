@@ -1,7 +1,7 @@
 # 006 — Create Category Page
 
 - **Goal**
-Screen accessible from the "Create" button in the last position of the grid in `AddCategoryScreen` that allows the user to create a new custom category with name, type, icon and color. All texts are multilingual (en/es/ca).
+Screen accessible from the "Create" button in the last position of the grid in `AddCategoryScreen` that allows the user to create a new custom category with name, type, icon and color. All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it).
 
 ---
 
@@ -112,7 +112,7 @@ Screen accessible from the "Create" button in the last position of the grid in `
   4. "Select a color" (if color missing)
   5. "Select an icon and a color" (if both missing)
   6. "Maximum of 30 categories per type reached" (if the per-type limit is reached)
-- When pressing "Add", the category is created in the database (native SQLite / web localStorage) and navigation returns to `AddCategoryScreen` with the newly created category selected.
+- When pressing "Add", the category is created in the database (native SQLite, sql.js + IndexedDB on web) and navigation returns to `AddCategoryScreen` with the newly created category selected.
 
 ### 7. Behavior on Creation
 
@@ -141,9 +141,9 @@ Screen accessible from the "Create" button in the last position of the grid in `
 - **Configuration**: the screen must use `useConfig().activeColors` for colors (not hardcoded).
 - **Text**: the screen must use `useFontSize()` for text scaling.
 - **Navigation**: the screen is added to the `HomeStack` in `AppNavigator.tsx`.
-- **Persistence**: the category is saved in the `categoryRepository` (native SQLite or web localStorage).
+- **Persistence**: the category is saved in the `categoryRepository` (native SQLite, sql.js + IndexedDB on web).
 - **Icons**: use `@expo/vector-icons` (Ionicons) as in the rest of the app.
-- **Duplicate validation**: an `existsByName(userId: number, name: string, excludeId?: number)` function must be added to `categoryRepo` and `webCategoryRepo` that returns `true` if a category with that name (case-insensitive) already exists for the same type and user.
+- **Duplicate validation**: an `existsByName(userId: number, name: string, excludeId?: number)` function must be added to `categoryRepo` that returns `true` if a category with that name (case-insensitive) already exists for the same type and user.
 
 ---
 

@@ -181,6 +181,8 @@ All headers are centered via `headerTitleAlign: 'center'` in `screenOptions` (Ap
 
 **Loading container style:** `{ flex: 1, justifyContent: 'center', alignItems: 'center' }`
 
+**List body loading:** while a list's data is still loading, render the centered `ActivityIndicator` inside the list body instead of the empty state, so users never see a "no results" flash before the data arrives (`TransactionListBody`). Do not use `removeClippedSubviews` on the transaction list: it produced blank rows on iOS.
+
 ### Loading Guard (for screens with async data)
 
 ```jsx
@@ -538,8 +540,10 @@ Never use arrow functions or `export default` on a variable assignment.
 
 | Category | Examples | Key Features |
 |----------|----------|--------------|
-| Tab/List | HomeScreen, AccountsScreen, TagsScreen | SafeAreaView, FAB, FlatList, empty states |
-| Form/Create | CreateAccountScreen, CreateCategoryScreen, CreateTagScreen | SafeAreaView + ScrollView, input validation, icon/color grids, Android keyboardSpacer |
-| Form/Modify | ModifyAccountScreen, ModifyCategoryScreen, ModifyTagScreen | Same as Create + pre-populated data, delete button + modal |
+| Tab/List | HomeScreen, AccountsScreen, TagsScreen, CommentsScreen, RecurringScreen, AllTransactionsScreen | SafeAreaView, FAB, FlatList, centered loading state, empty states |
+| Form/Create | CreateAccountScreen, CreateCategoryScreen, CreateTagScreen, CreateRecurringScreen | SafeAreaView + ScrollView, input validation, icon/color grids, Android keyboardSpacer |
+| Form/Modify | ModifyAccountScreen, ModifyCategoryScreen, ModifyTagScreen, ModifyRecurringScreen | Same as Create + pre-populated data, delete button + modal |
 | Transaction Form | AddTransactionScreen, ModifyTransactionScreen | Complex: TypeTabs, calculator, category grid, tags, comment, photo |
 | Detail | TransactionDetailsScreen | Read-only data display, action buttons (delete, edit) |
+| Settings | SettingsScreen + Appearance/Regional/Personalization/Data | Section rows, pickers, toggles, privacy (hide balances), backup/import, reset flows |
+| Modal/overlay | CategoryFilterModal, CalendarModal, ConfirmationModal, SelectionActionBar | Filter presets, multi-select, confirmation dialogs, bulk actions |

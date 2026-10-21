@@ -142,11 +142,11 @@
 - **Configuration**: use `useConfig().activeColors`.
 - **Text**: use `useFontSize()`.
 - **Navigation**: added to `HomeStack` in `AppNavigator.tsx`.
-- **Persistence**: `accountRepository.update()` and `accountRepository.delete()` (SQLite / localStorage).
+- **Persistence**: `accountRepository.update()` and `accountRepository.delete()` (SQLite native, sql.js + IndexedDB web).
 - **Cascade deletion**: when deleting an account, all its transactions are deleted first (`transactionRepository.deleteByAccountId`) and then the account itself. Refresh the account list after deletion.
 - **Icons**: `@expo/vector-icons` (Ionicons).
 - **DB**: add `description TEXT` column to the `accounts` table via migration.
-- **Duplicate validation**: use `existsByName(userId: number, name: string, excludeId?: number)` function from `accountRepo` and `webAccountRepo` (created in 013). The `excludeId` parameter excludes the current account from the check.
+- **Duplicate validation**: use `existsByName(userId: number, name: string, excludeId?: number)` function from `accountRepo` (created in 013). The `excludeId` parameter excludes the current account from the check.
 
 ---
 

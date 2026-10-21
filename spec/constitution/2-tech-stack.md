@@ -5,6 +5,7 @@
 - **TypeScript** — static typing for the codebase.
 - **React Navigation** (native-stack + drawer) — screen navigation.
 - **SQLite** (expo-sqlite) — local persistence on native. Versioned migrations (`PRAGMA user_version`, `SCHEMA_VERSION 4`): initial schema (`001_initial`), seed (`002_seed`), config defaults (`003_config`), and recurring rules (`004_recurring`), each applied once inside a transaction.
+- **Drizzle ORM** (`drizzle-orm/sqlite-proxy` over the shared `DatabaseHandle`) — repository query layer on native and web; migrations stay on `PRAGMA user_version` (no `drizzle-kit`).
   - **Migration policy:** adding a feature creates a new **additive** migration (next available number) and bumps `SCHEMA_VERSION`; existing user data is never rewritten or deleted. Schema changes must use only SQLite-safe forms (new tables; `ALTER TABLE ... ADD COLUMN` nullable or with a constant default; new indexes). Every schema surface is updated in lockstep — `schemas.ts` (Zod), `types.ts` (`z.infer`), `drizzle/schema.ts` — and the drift tests (`dbDrift`/`drizzleDrift`) plus `backup.ts` and `resetDatabase`/`clearDataKeepSettings` are updated in the same change. Feature **028-recurring-transactions** applied this policy with `004_recurring` (raising `SCHEMA_VERSION` to 4).
 - **@expo/vector-icons** (Ionicons) — icon library used throughout the app.
 - **react-native-svg** — custom donut chart and bar chart.
@@ -86,7 +87,6 @@ FinlyApp/
 |   |   +-- TransactionGroup.tsx      <- transactions grouped by date
 |   |   +-- form/                     <- form building blocks (048)
 |   |   |   +-- DeleteButton.tsx      <- destructive action row
-|   |   |   +-- FormError.tsx         <- inline validation error
 |   |   |   +-- FormScrollView.tsx    <- scrollable form wrapper
 |   |   |   +-- LabeledTextField.tsx  <- label + TextInput + counter
 |   |   |   +-- PrimaryButton.tsx     <- primary CTA
@@ -116,17 +116,19 @@ FinlyApp/
 |   |   +-- storage/indexedDb.ts      <- IndexedDB persistence for the exported SQLite bytes
 |   |   +-- types.ts                  <- TypeScript entity interfaces
 |   |   +-- index.ts                  <- exports repositories for all platforms (single DatabaseHandle)
-|   |   +-- schemas.ts                <- Drizzle table definitions
+|   |   +-- schemas.ts                <- Zod row schemas (types derived with z.infer)
 |   |   +-- seedData.ts               <- seed entities (accounts, categories, tags)
 |   |   +-- configDefaults.ts         <- default config values
 |   |   +-- backup.ts + backupService.ts <- backup / restore logic
+|   |   +-- photoCleanup.ts           <- photo cleanup for deleted transactions/accounts/categories
+|   |   +-- transactionQueue.ts       <- one queue for every explicit SQLite transaction
 |   |   +-- drizzle/
 |   |   |   +-- schema.ts             <- Drizzle schema over DatabaseHandle
 |   |   |   +-- proxy.ts              <- sqlite-proxy adapter
 |   |   |   +-- engine.ts             <- Drizzle engine
 |   |   +-- migrations/
 |   |   |   +-- 001_initial.ts        <- CREATE TABLE (users, accounts, categories, transactions, tags, transaction_tags, config) + indexes
-|   |   |   +-- 002_seed.ts           <- default user, 1 account, 31 categories
+|   |   |   +-- 002_seed.ts           <- default user, 2 accounts (My Wallet + Total), 31 categories
 |   |   |   +-- 003_config.ts         <- config default values (table created in 001)
 |   |   |   +-- 004_recurring.ts      <- recurring_rules + recurring_rule_tags; transactions.recurring_rule_id / recurrence_date + unique occurrence index
 |   |   +-- repositories/

@@ -1,7 +1,7 @@
 # 022 — Total Account
 
 - **Objective**
-  Add a special "Total" virtual account that aggregates data from all existing accounts. The Total account appears as the first option in the HomeScreen account selector and as a card in the Accounts screen list. It can be customized (icon, color, note) but cannot be deleted or renamed. All texts are multilingual (en/es/ca).
+  Add a special "Total" virtual account that aggregates data from all existing accounts. The Total account appears as the first option in the HomeScreen account selector and as a card in the Accounts screen list. It can be customized (icon, color, note) but cannot be deleted or renamed. All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it).
 
 ---
 
@@ -18,7 +18,8 @@
 
 - `accountRepo.list()` returns all accounts (including Total), sorted with Total first.
 - Screens that need only real accounts (AddTransaction, ModifyTransaction) filter client-side: `accounts.filter(a => !a.is_total)`.
-- Web localStorage (`webAccountRepo.list()`) sorts with Total first using the same logic.
+- The same `accountRepo.list()` runs on native and web (sql.js + IndexedDB), so the Total-first order is identical on every platform.
+- `accountRepo.delete()`/`deleteMany()` skip the Total account (`is_total = 1`), so it cannot be deleted and its transactions are never removed.
 
 ### 3. Balance Calculation
 
@@ -77,7 +78,7 @@ When the Total account (id=2) is loaded in ModifyAccountScreen:
 ### 10. Default Account Description (multilingual)
 
 - The Total account has a default description explaining its purpose.
-- Stored in English in the seed data (`002_seed.ts` and `webStorage.ts`).
+- Stored in English in the seed data (`002_seed.ts` / `seedData.ts`).
 - `ACCOUNT_DESCRIPTION_I18N_KEYS` maps id=2 to `account_total_description`.
 - In ModifyAccountScreen, when the stored description matches the English default, the i18n translation is displayed instead.
 - Users can still edit the description freely.
@@ -107,6 +108,7 @@ When the Total account (id=2) is loaded in ModifyAccountScreen:
 - [x] Total appears as the first card in the Accounts screen list.
 - [x] Tapping Total navigates to ModifyAccountScreen with id=2.
 - [x] In ModifyAccountScreen for Total: name is read-only, delete button is hidden, save updates icon/color/note only.
+- [x] Deleting the Total account (single or bulk) is skipped by the repository and never removes its transactions.
 - [x] Tapping a transaction from any screen (including when Total is selected) opens TransactionDetailsScreen with the correct data.
 - [x] The Total account name follows the active language (en "Total", es "Total", ca "Total").
 - [x] Total's balance equals the sum of all non-total accounts.

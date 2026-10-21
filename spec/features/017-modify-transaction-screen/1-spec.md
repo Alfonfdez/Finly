@@ -71,7 +71,7 @@
 
 - Title: "Tags" (multilingual) — i18n key `add_tags` (existing).
 - **The tags currently associated with the transaction appear pre-selected** when the screen loads.
-- NOTE: Tags are not currently persisted in the database. The section is included for visual consistency with `AddTransactionScreen`, but the selected tags state does not affect saving. This will be marked as TODO in the spec.
+- Tags are persisted in `transaction_tags`: saving the transaction replaces its junction rows with the selected set (see 019).
 - Search button that shows/hides an input with placeholder "Search and create tags".
 - "+ Add tag" button that opens a modal to create a new tag (same behavior as 004).
 
@@ -120,7 +120,7 @@
 ## Non-functional requirements
 
 - **Multilingual**: all visible texts must use `t()` from the existing i18n system. No hardcoded strings allowed.
-- **Persistence**: the modification is saved in the `transactions` table of SQLite (native) or localStorage (web) via `transactionRepository.update()`.
+- **Persistence**: the modification is saved in the `transactions` table of SQLite (native) or sql.js + IndexedDB (web) via `transactionRepository.update()`.
 - **Configuration**: currency, decimal separator, and language are read from the existing `ConfigContext`.
 - **Theme**: the screen must use `useConfig().activeColors` for colors (not hardcoded).
 - **Text**: the screen must use `useFontSize()` for text scaling.

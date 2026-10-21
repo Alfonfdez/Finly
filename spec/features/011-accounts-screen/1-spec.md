@@ -1,7 +1,7 @@
 # 011 — Accounts page
 
 - **Objective**
-  Screen accessible from the Drawer (hamburger menu) that displays all existing accounts with their balance and allows navigation to modify each account. All texts are multilingual (en/es/ca).
+  Screen accessible from the Drawer (hamburger menu) that displays all existing accounts with their balance and allows navigation to modify each account. All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it).
 
 ---
 
@@ -93,7 +93,7 @@
 - **Configuration**: use `useConfig().activeColors` for colors.
 - **Text**: use `useFontSize()` for scaling.
 - **Navigation**: add to `HomeStack` in `AppNavigator.tsx` and connect the "Accounts" `DrawerItem` to navigate to it.
-- **Persistence**: data from `accountRepository` (native SQLite / web localStorage).
+- **Persistence**: data from `accountRepository` (native SQLite, sql.js + IndexedDB on web).
 - **Monetary format**: all amounts are displayed with a maximum of 2 decimals using `formatCurrency()`.
 
 ---

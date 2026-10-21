@@ -35,7 +35,7 @@ All commands run from the `FinlyApp/` directory.
 
 ### Current suite baseline
 
-Verified 2026-10-12: **116 test files / 838 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
+Verified 2026-10-21: **161 test files / 1341 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
 
 Native E2E baseline (2026-09-09, SDK 57 + v2.0.0 release package): all 10 Maestro flows PASS on the `finly_test` emulator against `com.finly.app` after `expo prebuild` + `assembleDebug`.
 
@@ -59,7 +59,7 @@ acceptance criteria in a real browser.
 | Pure-logic unit tests | Vitest + happy-dom | ✅ Implemented (Phase A) | Calculator, formatters, amount input, category sorting, tag maps, color utils, DB query builders |
 | Component unit tests | Vitest + vitest-native + RNTL 14 | ✅ Implemented (Phase D) | Presentational components + context/hooks/screens suites with ConfigContext stubbed |
 | Type-checking | `tsc --noEmit` (strict) | ✅ Implemented | Whole codebase types, `verbatimModuleSyntax` enforced |
-| Linting | `npx expo lint` (eslint-config-expo) | ✅ Implemented | Code style, unused imports, React hooks rules |
+| Linting | `expo lint . --max-warnings 0` (eslint-config-expo + `@stylistic` + `eslint-plugin-boundaries`) | ✅ Implemented | Code style, unused imports, React hooks rules, module boundaries; **0 warnings** enforced |
 | Module-boundary linting | `eslint-plugin-boundaries` | ✅ Implemented (Phase E) | `src/` layer DAG — inverted/cyclic imports are lint errors |
 | Schema layer + validation | Zod 4 (`src/database/schemas.ts`) | ✅ Implemented (Phase F) | Row types derived via `z.infer`; read-path validation in native + web backends; schema-vs-migration drift test |
 | Dual-storage contract suite | Vitest + sql.js (real SQLite in Node) | ✅ Implemented (Phase B) | One shared SQLite engine (native parity via expo-sqlite mock + web via sql.js/IndexedDB), repo contract + DB drift vs types |
@@ -68,7 +68,7 @@ acceptance criteria in a real browser.
 | CI pipeline | GitHub Actions (`.github/workflows/ci.yml`) | ✅ Implemented | `npm run test:all` on every PR to `develop`/`main` and push to those branches |
 | SDD alignment | `spec/` + changelog + test mapping | ✅ In use | Every feature spec maps to tests + changelog entries |
 
-Deferred (not planned yet): Drizzle ORM (its `expo-sqlite` driver cannot drive the web's custom `DatabaseHandle` — see Phase F).
+No harness is currently deferred: Drizzle ORM landed as the repository query layer (`drizzle-orm/sqlite-proxy` over `DatabaseHandle`).
 
 ## Phase A — Pure-logic unit tests (implemented)
 
@@ -419,10 +419,10 @@ data is validated at the storage boundary of both backends (spec
   match the migration columns for all entity tables — a column added to a migration without
   the schema (or vice versa) fails the suite. `tests/database/schemas.test.ts` covers the
   accept/reject matrix and config fallback.
-- **Drizzle is deferred:** web storage now runs real SQLite (sql.js) but through a custom
-  `DatabaseHandle` that is not an `expo-sqlite` driver, so Drizzle's `expo-sqlite` driver
-  still cannot cover it. It stays deferred until the web engine is exposed through an
-  ORM-compatible driver.
+- **Drizzle is implemented:** repositories query through `drizzle-orm/sqlite-proxy` over the
+  shared `DatabaseHandle` (`drizzle/schema.ts`, `drizzle/proxy.ts`, `drizzle/engine.ts`), so
+  native and web share one query layer; migrations remain on `PRAGMA user_version` and there
+  is no `drizzle-kit` step.
 
 ## Adding a test
 
