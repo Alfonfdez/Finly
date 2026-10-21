@@ -190,6 +190,8 @@ export const de: Language = {
   add_error_message: 'Transaktion konnte nicht gespeichert werden',
   error_title: 'Fehler',
   error_generic: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
+  web_save_error_title: 'Änderungen konnten nicht gespeichert werden',
+  web_save_error_message: 'Der Browser konnte die Datenbank nicht speichern. Exportiere ein Backup unter Einstellungen → Daten, um deine Änderungen zu sichern, und lade die Seite neu.',
   error_boundary_title: 'Etwas ist schiefgelaufen',
   error_boundary_message: 'Ein unerwarteter Fehler ist aufgetreten.',
   error_boundary_retry: 'Erneut versuchen',

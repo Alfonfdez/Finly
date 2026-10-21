@@ -190,6 +190,8 @@ export const gl: Language = {
   add_error_message: 'Non se puido gardar a transacción',
   error_title: 'Erro',
   error_generic: 'Algo foi mal. Por favor, téntao de novo.',
+  web_save_error_title: 'Non se puideron gardar os cambios',
+  web_save_error_message: 'O navegador non puido gardar a base de datos. Exporta unha copia de seguridade desde Axustes → Datos para conservar os cambios e recarga a páxina.',
   error_boundary_title: 'Algo foi mal',
   error_boundary_message: 'Produciuse un erro inesperado.',
   error_boundary_retry: 'Téntao de novo',

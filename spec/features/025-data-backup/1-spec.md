@@ -26,7 +26,7 @@
   "kind": "backup",
   "formatVersion": 1,
   "exportedAt": "2026-08-08T10:00:00.000Z",
-  "schema": 3,
+  "schema": 4,
   "data": {
     "users": [],
     "accounts": [],
@@ -34,6 +34,8 @@
     "transactions": [],
     "tags": [],
     "transaction_tags": [],
+    "recurring_rules": [],
+    "recurring_rule_tags": [],
     "config": []
   }
 }
@@ -45,7 +47,7 @@
 
 ### 3. Export
 
-- Reading the backup: `buildBackup()` runs `SELECT *` on the 7 tables (`users`, `accounts`, `categories`, `transactions`, `tags`, `transaction_tags`, `config`) via the `DatabaseHandle` and serializes them.
+- Reading the backup: `buildBackup()` runs `SELECT *` on the **9 tables** (`users`, `accounts`, `categories`, `transactions`, `tags`, `transaction_tags`, `recurring_rules`, `recurring_rule_tags`, `config`) via the `DatabaseHandle`, **inside one read transaction**, so a catch-up or rule edit committing between the queries cannot produce a mixed snapshot.
 - The file is named `finly-backup-YYYY-MM-DD.json`.
 - Exporting with zero rows is valid (produces a snapshot with empty collections).
 - The user is informed of success or failure with an alert.
@@ -56,14 +58,16 @@
 - The selected file is parsed and validated before anything is touched:
   - Top-level shape: `app === 'Finly'`, `kind === 'backup'`, `formatVersion === 1`.
   - `schema <= SCHEMA_VERSION` (refuse backups from a newer app version).
-  - Each collection is validated with the existing row Zod schemas (`userSchema`, `accountSchema`, `categorySchema`, `tagSchema`, `transactionSchema`, `transactionTagSchema`); config rows are validated as `{ key: string, value: string }`.
+  - Each collection is validated with the existing row Zod schemas (`userSchema`, `accountSchema`, `categorySchema`, `tagSchema`, `transactionSchema`, `transactionTagSchema`, `recurringRuleSchema`, `recurringRuleTagSchema`; the recurring ones default to `[]` so pre-028 backups stay importable); config rows are validated as `{ key: string, value: string }`.
 - Import requires an explicit confirmation modal: it **replaces all current data** and cannot be undone.
 - The write runs inside a single transaction: delete all rows in FK-safe order, then insert in dependency order (users → accounts/categories/tags → transactions → transaction_tags → config).
 - Referential integrity is enforced by `PRAGMA foreign_keys = ON`: a snapshot with missing parent rows or duplicate PKs fails the transaction and **rolls back** — existing data is unchanged.
 - Import uses the same serialized transaction queue as reconciliation (`runExclusiveDb`), so it can never interleave with a catch-up run; the Data screen keeps the confirmation dialog open (spinner, no cancel, no second confirm) until the import settles.
 - On success the app state is reloaded: `resetAll()` (accounts/categories/tags/transactions) and `updateConfig(await configRepository.get())` so theme, language, currency, and default selections reflect the backup.
 - Failure (invalid file, wrong version, schema violation) shows an error and leaves data untouched.
-- **Incomplete snapshots are rejected before any write**: a backup must contain at least one user, one account, and one expense + one income category (a genuine export always does - the app cannot work without them). It fails with the dedicated "Incomplete backup" alert instead of importing and leaving the app unusable (previously the empty `users` table made category creation fail with an FK error until the next launch self-healed it).
+- **Incomplete snapshots are rejected before any write**: a backup must contain the app user (`id = USER_ID = 1`), at least one account, and one expense + one income category (a genuine export always does - the app cannot work without them). It fails with the dedicated "Incomplete backup" alert instead of importing and leaving the app unusable (previously the empty `users` table made category creation fail with an FK error until the next launch self-healed it).
+- **Imported recurring rules are validated**: `interval` within `1..REPEAT_MAX_INTERVAL`, every date field a real date-only string (`YYYY-MM-DD`), and `start_date <= end_date`; a violation rejects the file as invalid before any write.
+- **`applyBackup()` re-checks completeness** even when called directly (defence in depth), and the service awaits `initDatabase()` before exporting/importing so the snapshot always comes from a migrated, self-healed database.
 
 ### 5. UI (DataScreen)
 
@@ -87,13 +91,15 @@
 ## Acceptance criteria
 
 - [x] DataScreen shows "Export data" and "Import data" rows on all platforms.
-- [x] Export produces a versioned JSON snapshot containing all 7 tables, downloadable on web and shareable on native.
+- [x] Export produces a versioned JSON snapshot containing all **9 tables** (including recurring rules and their tag links), read in one transaction, downloadable on web and shareable on native.
 - [x] Export of an empty database is valid.
 - [x] Import replaces all data: accounts, categories, tags, transactions (with photos), tag links, config, and users.
 - [x] A transaction's photos (file URIs on native / data URIs on web) survive an export → import round-trip.
 - [x] Import is gated by an explicit confirmation modal.
 - [x] An invalid / corrupt / wrong-version / future-schema backup is rejected with an error and existing data is unchanged (transaction rollback).
-- [x] A valid backup that is missing the required rows (users, accounts, or a category of each type) is rejected as "incomplete" before any write, with the current data untouched.
+- [x] A valid backup that is missing the required rows (the app user `id = 1`, accounts, or a category of each type) is rejected as "incomplete" before any write, with the current data untouched.
+- [x] A backup whose recurring rules have an out-of-range interval, a non-date-only field or `start_date > end_date` is rejected as invalid before any write.
+- [x] `buildBackup()` reads all tables in one transaction, so a backup exported while a catch-up is running is internally consistent.
 - [x] After a successful import, app state and config (theme, language, currency, balances) reflect the backup.
 - [x] All texts are multilingual (en/es/ca) and the screen respects theme and text size.
 - [x] Export feedback is never false (unit-tested): Android saves to Downloads (`MediaStore` via `finly-share`) and alerts; the Share action is optional and its outcome is not reported; iOS reports the real share-sheet outcome (success vs cancel); failures show the error alert; Import shows no modal when the file picker is cancelled.

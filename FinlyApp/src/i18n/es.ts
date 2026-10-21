@@ -190,6 +190,8 @@ export const es: Language = {
   add_error_message: 'No se ha podido guardar la transacción',
   error_title: 'Error',
   error_generic: 'Algo salió mal. Por favor, inténtalo de nuevo.',
+  web_save_error_title: 'No se pudieron guardar los cambios',
+  web_save_error_message: 'El navegador no pudo guardar la base de datos. Exporta una copia de seguridad desde Ajustes → Datos para conservar los cambios y recarga la página.',
   error_boundary_title: 'Algo salió mal',
   error_boundary_message: 'Ocurrió un error inesperado.',
   error_boundary_retry: 'Reintentar',

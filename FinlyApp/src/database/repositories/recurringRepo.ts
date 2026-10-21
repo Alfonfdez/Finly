@@ -1,5 +1,5 @@
 import { and, asc, eq, inArray, isNotNull, isNull, lte, or, sql } from 'drizzle-orm';
-import { getDrizzle, withTransaction } from '../drizzle/engine';
+import { getDrizzle, withTransaction, type DrizzleDb } from '../drizzle/engine';
 import { recurringRules, recurringRuleTags, transactionTags, transactions } from '../drizzle/schema';
 import { runResultOf } from '../drizzle/proxy';
 import type { RecurringRule } from '../types';
@@ -132,9 +132,9 @@ export const recurringRepo = {
     return map;
   },
 
-  async createWithTags(data: RecurringRuleInput, tagIds: number[]): Promise<RecurringRule> {
+  async createWithTags(data: RecurringRuleInput, tagIds: number[], tx?: DrizzleDb): Promise<RecurringRule> {
     const skippedFrom = data.skipped_from ?? null;
-    return await withTransaction(async (db) => {
+    const run = async (db: DrizzleDb) => {
       const result = await db.insert(recurringRules).values({ ...data, skipped_from: skippedFrom }).run();
       const id = runResultOf(result).lastInsertRowId;
       if (tagIds.length > 0) {
@@ -144,11 +144,12 @@ export const recurringRepo = {
           .run();
       }
       return { ...data, skipped_from: skippedFrom, id, created_at: dbTimestamp(), updated_at: null };
-    });
+    };
+    return tx ? run(tx) : withTransaction(run);
   },
 
-  async updateWithTags(id: number, data: Partial<RecurringRuleInput>, tagIds: number[]): Promise<void> {
-    await withTransaction(async (db) => {
+  async updateWithTags(id: number, data: Partial<RecurringRuleInput>, tagIds: number[], tx?: DrizzleDb): Promise<void> {
+    const run = async (db: DrizzleDb) => {
       // Only the columns the edit form owns: an allowlist keeps a stray field (e.g.
       // `user_id`) from being written through the spread of a partial input.
       const set: Partial<typeof recurringRules.$inferInsert> = {};
@@ -172,7 +173,8 @@ export const recurringRepo = {
           .values(tagIds.map(tagId => ({ rule_id: id, tag_id: tagId })))
           .run();
       }
-    });
+    };
+    await (tx ? run(tx) : withTransaction(run));
   },
 
   async setActive(id: number, active: boolean): Promise<void> {
@@ -255,8 +257,8 @@ export const recurringRepo = {
     }
   },
 
-  async updateGeneratedTransactions(ruleId: number, patch: GeneratedTransactionPatch): Promise<number> {
-    return await withTransaction(async (db) => {
+  async updateGeneratedTransactions(ruleId: number, patch: GeneratedTransactionPatch, tx?: DrizzleDb): Promise<number> {
+    const run = async (db: DrizzleDb): Promise<number> => {
       const set: Partial<typeof transactions.$inferInsert> = {};
       if (patch.account_id !== undefined) set.account_id = patch.account_id;
       if (patch.category_id !== undefined) set.category_id = patch.category_id;
@@ -295,6 +297,7 @@ export const recurringRepo = {
       }
 
       return changes;
-    });
+    };
+    return tx ? run(tx) : withTransaction(run);
   },
 };

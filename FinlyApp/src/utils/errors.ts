@@ -25,6 +25,12 @@ export function alertInfo(title: string, message: string) {
   showMessage(title, message);
 }
 
+/** One-shot warning when the web database cannot be written back to IndexedDB. */
+export function showWebPersistAlert() {
+  const l = t();
+  alertError(l.web_save_error_title, l.web_save_error_message);
+}
+
 export function showErrorAlert(labels?: { error_title: string; error_generic: string }) {
   const l = labels ?? t();
   alertError(l.error_title, l.error_generic);

@@ -123,9 +123,20 @@ export function toConfigRows(partial: Partial<Config>): { key: string; value: st
   return rows;
 }
 
+/**
+ * Drop invalid fields instead of the whole config: one corrupt value (a legacy
+ * import, a manually edited DB) must never reset the theme, language or sort
+ * preferences. Each key falls back to its default on its own.
+ */
 export function sanitizeConfig(config: Config): Config {
-  const result = configSchema.safeParse(config);
-  return result.success ? result.data : DEFAULT_CONFIG;
+  const shape = configSchema.shape;
+  const source = config as unknown as Record<string, unknown>;
+  const result = { ...DEFAULT_CONFIG } as Record<keyof Config, unknown>;
+  for (const key of Object.keys(DEFAULT_CONFIG) as (keyof Config)[]) {
+    const parsed = shape[key].safeParse(source[key]);
+    if (parsed.success) result[key] = parsed.data;
+  }
+  return result as Config;
 }
 
 export function sanitizeDefaultAccounts(

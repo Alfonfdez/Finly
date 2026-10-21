@@ -188,6 +188,8 @@ export const en = {
   add_error_message: 'Failed to save transaction',
   error_title: 'Error',
   error_generic: 'Something went wrong. Please try again.',
+  web_save_error_title: 'Changes could not be saved',
+  web_save_error_message: 'The browser could not save the database. Export a backup from Settings → Data to keep your changes, then reload the page.',
   error_boundary_title: 'Something went wrong',
   error_boundary_message: 'An unexpected error occurred.',
   error_boundary_retry: 'Try again',

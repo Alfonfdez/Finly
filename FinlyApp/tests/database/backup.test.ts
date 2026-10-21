@@ -29,6 +29,7 @@ vi.mock('expo-sqlite', async () => {
 
 vi.mock('../../src/database/database', () => ({
   getDatabase: async () => dbHolder.db,
+  initDatabase: async () => dbHolder.db,
   SCHEMA_VERSION: 4,
 }));
 
@@ -260,6 +261,58 @@ describe('backup validation', () => {
     expect(() => parseBackup(bad)).toThrow(BackupValidationError);
   });
 
+  it('rejects recurring rules with an invalid interval, date or order', async () => {
+    const db = await boot();
+    const snapshot = await buildBackup(db, SCHEMA_VERSION);
+    db.close();
+
+    const rule: (typeof snapshot.data.recurring_rules)[number] = {
+      id: 1,
+      user_id: 1,
+      name: 'Rule',
+      type: 'expense',
+      account_id: 1,
+      category_id: 1,
+      amount: 10,
+      description: null,
+      frequency: 'daily',
+      interval: 1,
+      weekday: null,
+      day_of_month: null,
+      month: null,
+      start_date: '2026-01-01',
+      end_date: null,
+      next_due: '2026-01-01',
+      skipped_from: null,
+      active: 1,
+      created_at: '2026-01-01',
+      updated_at: null,
+    };
+
+    const expectInvalid = (mutate: (copy: typeof snapshot) => void) => {
+      const copy = structuredClone(snapshot);
+      mutate(copy);
+      try {
+        assertImportableBackup(copy);
+        throw new Error('expected to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(BackupValidationError);
+        expect((error as BackupValidationError).code).toBe('invalid_format');
+      }
+    };
+
+    expectInvalid(copy => { copy.data.recurring_rules = [{ ...rule, interval: 100 }]; });
+    expectInvalid(copy => { copy.data.recurring_rules = [{ ...rule, start_date: '2026-01-01 00:00:00' }]; });
+    expectInvalid(copy => { copy.data.recurring_rules = [{ ...rule, end_date: '2025-12-31' }]; });
+  });
+
+  it('applyBackup refuses an incomplete snapshot even when called directly', async () => {
+    const db = await boot();
+    const incomplete = parseBackup(snapshotWith());
+    await expect(applyBackup(db, incomplete)).rejects.toMatchObject({ code: 'incomplete' });
+    expect(await countRows(db, 'accounts')).toBeGreaterThan(0);
+    db.close();
+  });
   it('accepts a complete snapshot and rejects one missing the required rows', async () => {
     const db = await boot();
     const snapshot = await buildBackup(db, SCHEMA_VERSION);
@@ -280,6 +333,7 @@ describe('backup validation', () => {
     };
 
     expectIncomplete(copy => { copy.data.users = []; });
+    expectIncomplete(copy => { copy.data.users = [{ ...copy.data.users[0], id: 5 }]; });
     expectIncomplete(copy => { copy.data.accounts = []; });
     expectIncomplete(copy => { copy.data.categories = copy.data.categories.filter(c => c.type !== 'expense'); });
     expectIncomplete(copy => { copy.data.categories = copy.data.categories.filter(c => c.type !== 'income'); });

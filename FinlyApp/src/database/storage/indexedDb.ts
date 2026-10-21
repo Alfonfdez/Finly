@@ -14,7 +14,7 @@ function openDatabase(): Promise<IDBDatabase | null> {
   if (typeof indexedDB === 'undefined') return Promise.resolve(null);
   if (!open) {
     const handle: OpenHandle = { db: null, promise: Promise.resolve(null) };
-    handle.promise = new Promise((resolve) => {
+    handle.promise = new Promise((resolve, reject) => {
       const request = indexedDB.open(DATABASE_NAME, 1);
       request.onupgradeneeded = () => {
         const db = request.result;
@@ -26,10 +26,9 @@ function openDatabase(): Promise<IDBDatabase | null> {
         handle.db = request.result;
         resolve(request.result);
       };
-      request.onerror = () => {
-        console.error('Failed to open IndexedDB:', request.error);
-        resolve(null);
-      };
+      // Fail closed: booting an empty database after a read failure would let the
+      // next save overwrite the real (merely unreadable) data.
+      request.onerror = () => reject(request.error ?? new Error('Failed to open IndexedDB'));
     });
     open = handle;
   }
@@ -48,25 +47,22 @@ export function createIndexedDbStorage(): DatabaseStorage {
     async get(): Promise<Uint8Array | null> {
       const store = await objectStore('readonly');
       if (!store) return null;
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         const request = store.get(DB_FILE_KEY);
         request.onsuccess = () => {
           const value = request.result;
           resolve(value instanceof Uint8Array ? value : null);
         };
-        request.onerror = () => resolve(null);
+        request.onerror = () => reject(request.error ?? new Error('Failed to read IndexedDB'));
       });
     },
     async set(data: Uint8Array): Promise<void> {
       const store = await objectStore('readwrite');
       if (!store) return;
-      await new Promise<void>((resolve) => {
+      await new Promise<void>((resolve, reject) => {
         const request = store.put(data, DB_FILE_KEY);
         request.onsuccess = () => resolve();
-        request.onerror = () => {
-          console.error('Failed to write IndexedDB:', request.error);
-          resolve();
-        };
+        request.onerror = () => reject(request.error ?? new Error('Failed to write IndexedDB'));
       });
     },
   };

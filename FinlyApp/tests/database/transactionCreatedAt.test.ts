@@ -16,17 +16,16 @@ await import('expo-sqlite');
 
 beforeAll(initSqliteHarness);
 
-function todayDateOnly(): string {
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${now.getFullYear()}-${month}-${day}`;
+function dbTimestamp(date: Date): string {
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 }
 
 describe('transactions.created_at', () => {
   it('is the record creation time, not the backdated transaction date', async () => {
     const { transactionRepo } = await boot();
 
+    const before = new Date();
     const created = await transactionRepo.createWithTags(
       {
         account_id: 1,
@@ -40,10 +39,13 @@ describe('transactions.created_at', () => {
       [],
     );
 
+    const after = new Date();
     const stored = await transactionRepo.getById(created.id);
     expect(stored?.date).toBe('2026-07-15 00:00:00');
     expect(stored?.created_at).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
-    expect(stored?.created_at.slice(0, 10)).toBe(todayDateOnly());
+    // A range, not "today": the insert may cross midnight between the two reads.
+    expect(stored!.created_at >= dbTimestamp(before)).toBe(true);
+    expect(stored!.created_at <= dbTimestamp(after)).toBe(true);
     expect(stored?.updated_at).toBeNull();
   });
 });

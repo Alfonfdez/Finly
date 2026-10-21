@@ -76,6 +76,22 @@ describe('config schema + sanitizeConfig', () => {
     expect(sanitizeConfig(custom)).toEqual(custom);
   });
 
+  it('sanitizeConfig drops only the corrupt field and keeps the rest', () => {
+    const custom = {
+      ...DEFAULT_CONFIG,
+      theme: 'neon',
+      language: 'ca',
+      tagsSortBy: 'usage',
+      hideBalances: true,
+    } as unknown as Config;
+
+    expect(sanitizeConfig(custom)).toEqual({
+      ...DEFAULT_CONFIG,
+      language: 'ca',
+      tagsSortBy: 'usage',
+      hideBalances: true,
+    });
+  });
   it('sanitizeConfig falls back to defaults on corrupt values', () => {
     const corruptTheme = { ...DEFAULT_CONFIG, theme: 'neon' } as unknown as Config;
     expect(sanitizeConfig(corruptTheme)).toEqual(DEFAULT_CONFIG);

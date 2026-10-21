@@ -29,12 +29,18 @@ export function getSqlJsStatic(): SqlJsStatic | null {
 export class SqlJsDatabase implements DatabaseHandle {
   private readonly db: Database;
   private readonly storage: DatabaseStorage | null;
+  private readonly onPersistError?: (error: unknown) => void;
   private inTransaction = 0;
   private persistQueue: Promise<void> = Promise.resolve();
 
-  constructor(db: Database, storage: DatabaseStorage | null = null) {
+  constructor(
+    db: Database,
+    storage: DatabaseStorage | null = null,
+    onPersistError?: (error: unknown) => void,
+  ) {
     this.db = db;
     this.storage = storage;
+    this.onPersistError = onPersistError;
     this.db.exec('PRAGMA foreign_keys = ON;');
   }
 
@@ -63,8 +69,10 @@ export class SqlJsDatabase implements DatabaseHandle {
   }
 
   async withTransactionAsync(task: () => Promise<void>): Promise<void> {
-    this.inTransaction += 1;
+    // BEGIN first: a failed BEGIN must not leave the counter raised, or every
+    // later persist would be skipped for the rest of the session.
     this.db.exec('BEGIN');
+    this.inTransaction += 1;
     try {
       await task();
       this.db.exec('COMMIT');
@@ -101,14 +109,24 @@ export class SqlJsDatabase implements DatabaseHandle {
   }
 
   private persistIfCommitted(): Promise<void> {
-    if (this.inTransaction > 0 || !this.storage) return Promise.resolve();
+    const storage = this.storage;
+    if (this.inTransaction > 0 || !storage) return Promise.resolve();
     const bytes = this.db.export();
     this.db.exec('PRAGMA foreign_keys = ON;');
-    this.persistQueue = this.persistQueue
-      .then(() => this.storage!.set(bytes))
-      .catch((error) => {
-        console.error('Failed to persist web database:', error);
-      });
+    const write = () => storage.set(bytes);
+    this.persistQueue = this.persistQueue.then(async () => {
+      try {
+        await write();
+      } catch {
+        // Retry once (transient quota/failure), then surface it instead of
+        // pretending the change was saved.
+        try {
+          await write();
+        } catch (error) {
+          this.onPersistError?.(error);
+        }
+      }
+    });
     return this.persistQueue;
   }
 }
@@ -117,7 +135,8 @@ export async function createSqlJsDatabase(
   bytes: Uint8Array | null,
   storage: DatabaseStorage | null = null,
   locateFile?: (file: string) => string,
+  onPersistError?: (error: unknown) => void,
 ): Promise<SqlJsDatabase> {
   const SQL = await initSqlJsEngine(locateFile);
-  return new SqlJsDatabase(new SQL.Database(bytes ?? undefined), storage);
+  return new SqlJsDatabase(new SQL.Database(bytes ?? undefined), storage, onPersistError);
 }

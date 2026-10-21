@@ -58,20 +58,37 @@ export const accountRepo = {
   },
 
   async delete(id: number): Promise<void> {
-    const uris = await collectTransactionPhotos('account_id', id);
-    await withTransaction(async (db) => {
+    const uris = await withTransaction(async (db) => {
+      // Guard before touching the linked rows: deleting the pseudo-total account
+      // must never delete its transactions (the account itself is not deletable).
+      const account = await db
+        .select({ is_total: accounts.is_total })
+        .from(accounts)
+        .where(eq(accounts.id, id))
+        .get();
+      if (!account || account.is_total === 1) return [];
+      const photos = await collectTransactionPhotos('account_id', id);
       await db.delete(transactions).where(eq(transactions.account_id, id)).run();
-      await db.delete(accounts).where(and(eq(accounts.id, id), eq(accounts.is_total, 0))).run();
+      await db.delete(accounts).where(eq(accounts.id, id)).run();
+      return photos;
     });
     await deletePhotoUris(uris);
   },
 
   async deleteMany(ids: number[]): Promise<void> {
     if (ids.length === 0) return;
-    const uris = await collectTransactionPhotos('account_id', ...ids);
-    await withTransaction(async (db) => {
-      await db.delete(transactions).where(inArray(transactions.account_id, ids)).run();
-      await db.delete(accounts).where(and(inArray(accounts.id, ids), eq(accounts.is_total, 0))).run();
+    const uris = await withTransaction(async (db) => {
+      const rows = await db
+        .select({ id: accounts.id })
+        .from(accounts)
+        .where(and(inArray(accounts.id, ids), eq(accounts.is_total, 0)))
+        .all();
+      const deletable = rows.map(row => row.id);
+      if (deletable.length === 0) return [];
+      const photos = await collectTransactionPhotos('account_id', ...deletable);
+      await db.delete(transactions).where(inArray(transactions.account_id, deletable)).run();
+      await db.delete(accounts).where(inArray(accounts.id, deletable)).run();
+      return photos;
     });
     await deletePhotoUris(uris);
   },

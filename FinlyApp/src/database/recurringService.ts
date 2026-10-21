@@ -59,15 +59,22 @@ async function materializeRule(rule: RecurringRule, today: string): Promise<numb
   return created;
 }
 
-/** Reconcile every due rule in one transaction (the "single DB transaction" run). */
-async function materializeDueCore(now: Date): Promise<number> {
+/** Reconcile every due rule inside an already open transaction (no transaction of its own). */
+async function materializeDueInTransaction(now: Date): Promise<number> {
   const today = todayDateOnly(now);
   let created = 0;
+  const rules = await recurringRepo.listDue(today);
+  for (const rule of rules) {
+    created += await materializeRuleInRun(rule, today);
+  }
+  return created;
+}
+
+/** Reconcile every due rule in one transaction (the "single DB transaction" run). */
+async function materializeDueCore(now: Date): Promise<number> {
+  let created = 0;
   await withTransaction(async () => {
-    const rules = await recurringRepo.listDue(today);
-    for (const rule of rules) {
-      created += await materializeRuleInRun(rule, today);
-    }
+    created = await materializeDueInTransaction(now);
   });
   return created;
 }
@@ -122,13 +129,6 @@ export interface CreateRecurringRuleParams {
  * @returns the number of transactions created by the initial reconciliation.
  */
 export async function createRecurringRule(params: CreateRecurringRuleParams): Promise<number> {
-  assertValidRule({
-    name: params.name,
-    startDate: datePart(params.date),
-    endDate: params.endDate,
-    interval: params.interval,
-  });
-
   return runExclusive(async () => {
     const schedule = buildRecurrenceSchedule(
       fromDateOnly(datePart(params.date)),
@@ -137,6 +137,14 @@ export async function createRecurringRule(params: CreateRecurringRuleParams): Pr
       params.endDate,
       params.lastDay,
     );
+    // Validate the schedule the rule actually gets: with the last-day anchor the
+    // start can move to the month end, so the raw picked date is not enough.
+    assertValidRule({
+      name: params.name,
+      startDate: schedule.start_date,
+      endDate: params.endDate,
+      interval: params.interval,
+    });
     const now = params.now ?? new Date();
     // Refuse a backlog that would not finish in this run: every accepted rule must
     // catch up completely, so the cursor never stays in the past.
@@ -145,23 +153,28 @@ export async function createRecurringRule(params: CreateRecurringRuleParams): Pr
     }
     const nextDue = schedule.start_date;
 
-    await recurringRepo.createWithTags(
-      {
-        user_id: USER_ID,
-        name: params.name,
-        type: params.type,
-        account_id: params.account_id,
-        category_id: params.category_id,
-        amount: params.amount,
-        description: params.description,
-        ...schedule,
-        next_due: nextDue,
-        active: RULE_ACTIVE,
-      },
-      params.tagIds,
-    );
+    // One transaction: a failure while catching up must not leave a rule without
+    // its due occurrences.
+    return withTransaction(async (db) => {
+      await recurringRepo.createWithTags(
+        {
+          user_id: USER_ID,
+          name: params.name,
+          type: params.type,
+          account_id: params.account_id,
+          category_id: params.category_id,
+          amount: params.amount,
+          description: params.description,
+          ...schedule,
+          next_due: nextDue,
+          active: RULE_ACTIVE,
+        },
+        params.tagIds,
+        db,
+      );
 
-    return materializeDueCore(now);
+      return materializeDueInTransaction(now);
+    });
   });
 }
 
@@ -258,50 +271,58 @@ export function saveRecurringRuleEdit(params: RecurringEditParams): Promise<numb
     const now = params.now ?? new Date();
     const today = todayDateOnly(now);
 
-    await materializeDueCore(now);
+    // One transaction for the whole edit: the pre-catch-up, the rule update, the
+    // post-update catch-up and the past patch either all apply or none do.
+    return withTransaction(async (db) => {
+      await materializeDueInTransaction(now);
 
-    const current = await recurringRepo.getById(ruleId);
-    if (!current) return 0;
+      const current = await recurringRepo.getById(ruleId);
+      if (!current) return 0;
 
-    const startDate = datePart(updated.start_date ?? current.start_date);
-    const schedule = buildRecurrenceSchedule(fromDateOnly(startDate), recurrence.frequency, recurrence.interval, recurrence.endDate, recurrence.lastDay);
+      const startDate = datePart(updated.start_date ?? current.start_date);
+      const schedule = buildRecurrenceSchedule(fromDateOnly(startDate), recurrence.frequency, recurrence.interval, recurrence.endDate, recurrence.lastDay);
 
-    assertValidRule({
-      name: updated.name ?? current.name,
-      startDate,
-      endDate: recurrence.endDate,
-      interval: recurrence.interval,
+      assertValidRule({
+        name: updated.name ?? current.name,
+        startDate: schedule.start_date,
+        endDate: recurrence.endDate,
+        interval: recurrence.interval,
+      });
+
+      // Mirror the form: occurrences that already exist do not count against the cap.
+      const existingOccurrences = new Set(await recurringRepo.listOccurrenceDates(ruleId));
+      const plan = planEdit({
+        schedule,
+        previousSchedule: current,
+        cursor: ruleEditCursor(current, schedule),
+        scope,
+        today,
+        skippedFrom: current.skipped_from,
+        existingOccurrences,
+        ruleActive: current.active === RULE_ACTIVE,
+      });
+
+      // Same guard as creation: an edit that would have to generate more than one run
+      // can hold is refused before anything is written (the reconciliation above only
+      // materializes what was already due).
+      if (plan.preview.truncated) {
+        throw new InvalidRecurringRuleError(RECURRING_RULE_ERRORS.tooManyOccurrences);
+      }
+
+      await recurringRepo.updateWithTags(
+        ruleId,
+        { ...updated, ...schedule, next_due: plan.nextDue, skipped_from: plan.skippedFrom },
+        tagIds,
+        db,
+      );
+
+      const created = await materializeDueInTransaction(now);
+
+      if (scope === RECURRENCE_SCOPES.futureAndPast) {
+        await recurringRepo.updateGeneratedTransactions(ruleId, { ...pastPatch, tagIds }, db);
+      }
+
+      return created;
     });
-
-    const plan = planEdit({
-      schedule,
-      previousSchedule: current,
-      cursor: ruleEditCursor(current, schedule),
-      scope,
-      today,
-      skippedFrom: current.skipped_from,
-      ruleActive: current.active === RULE_ACTIVE,
-    });
-
-    // Same guard as creation: an edit that would have to generate more than one run
-    // can hold is refused before anything is written (the reconciliation above only
-    // materializes what was already due).
-    if (plan.preview.truncated) {
-      throw new InvalidRecurringRuleError(RECURRING_RULE_ERRORS.tooManyOccurrences);
-    }
-
-    await recurringRepo.updateWithTags(
-      ruleId,
-      { ...updated, ...schedule, next_due: plan.nextDue, skipped_from: plan.skippedFrom },
-      tagIds,
-    );
-
-    const created = await materializeDueCore(now);
-
-    if (scope === RECURRENCE_SCOPES.futureAndPast) {
-      await recurringRepo.updateGeneratedTransactions(ruleId, { ...pastPatch, tagIds });
-    }
-
-    return created;
   });
 }

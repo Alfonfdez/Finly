@@ -1151,3 +1151,17 @@ Added while improving the over-limit feedback, applied 2026-10-21:
 - Tests cover the primary/red card styles and an edit that would exceed the limit; spec 028, `6-screens` and the changelog updated.
 
 Spec: spec/features/028-recurring-transactions/.
+
+## 2.2.0 data-safety hardening
+Status: completed.
+
+Added in the pre-release audit, applied 2026-10-21:
+- **Config:** `sanitizeConfig` validates every field on its own; one corrupt value (a legacy/manual DB) no longer resets the theme, language or sort preferences.
+- **Accounts:** deleting the pseudo-total account (individually or in bulk) is guarded before the linked rows, so its transactions are never deleted.
+- **Backups:** the snapshot requires the app user (`USER_ID = 1`), reads all 9 tables inside one transaction, and refuses imported recurring rules with an out-of-range interval, a non-date-only field or `start > end`; `applyBackup` re-checks completeness and the service awaits `initDatabase()` before export/import.
+- **Web persistence:** IndexedDB open/read failures fail closed (no empty-DB overwrite); a failed write is retried once and then surfaced with a one-time localized alert; a failed `BEGIN` no longer leaks the transaction counter (which used to disable persistence for the session).
+- **Recurring:** create/edit are atomic (rule + tag links + catch-up occurrences + past patch in one transaction); the service validates the built schedule start (last-day rules), mirrors the form cap with the existing occurrence dates, and rejects `interval > 99`.
+- **Tests/config:** per-field config, total-account deletes, strict imports, atomic recurring failure injection, IndexedDB failures, BEGIN leak, deterministic concurrency; the suite timeouts were raised (the 5s default flaked under parallel load) and the sqlite harness marks its schema as migrated. `npm run test:all` green x3.
+- **Release metadata:** `versionCode` stays **3** (the 2.2.0 bump landed in `e2dcbda`; the 2.1.0 artifact is versionCode 2). The image-picker plugin now declares camera/photos strings and blocks `RECORD_AUDIO` (prebuild-verified).
+
+Specs: 025, 028, 7-platform-differences.

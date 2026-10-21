@@ -152,10 +152,32 @@ export function runContractSuite(
         expect(await backend.transaction.getTagsByTransactionId(transaction.id)).toEqual([]);
       });
 
-      it('cannot delete the total pseudo-account', async () => {
+      it('cannot delete the total pseudo-account (nor its transactions)', async () => {
         const total = (await backend.account.list(USER)).find(a => (a.is_total ?? 0) === 1)!;
+        const grocery = (await backend.category.list(USER, 'expense')).find(c => c.name === 'Groceries')!;
+        const transaction = await backend.transaction.createWithTags(
+          tx({ account_id: total.id, category_id: grocery.id, amount: 5, date: '2026-02-01' }),
+          [],
+        );
+
         await backend.account.delete(total.id);
         expect(await backend.account.getById(total.id)).not.toBeNull();
+        expect(await backend.transaction.getById(transaction.id)).not.toBeNull();
+      });
+
+      it('bulk delete skips the total account and keeps its transactions', async () => {
+        const total = (await backend.account.list(USER)).find(a => (a.is_total ?? 0) === 1)!;
+        const temp = await backend.account.create(account('Temp bulk'));
+        const grocery = (await backend.category.list(USER, 'expense')).find(c => c.name === 'Groceries')!;
+        const transaction = await backend.transaction.createWithTags(
+          tx({ account_id: total.id, category_id: grocery.id, amount: 5, date: '2026-02-01' }),
+          [],
+        );
+
+        await backend.account.deleteMany([total.id, temp.id]);
+        expect(await backend.account.getById(temp.id)).toBeNull();
+        expect(await backend.account.getById(total.id)).not.toBeNull();
+        expect(await backend.transaction.getById(transaction.id)).not.toBeNull();
       });
 
       it('sorts names case-insensitively after the total account', async () => {

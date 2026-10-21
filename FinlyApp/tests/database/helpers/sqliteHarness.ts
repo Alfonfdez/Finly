@@ -25,10 +25,14 @@ export async function bootSqliteDb() {
   const { seedDataInner } = await import('../../../src/database/migrations/002_seed');
   const { seedConfigInner } = await import('../../../src/database/migrations/003_config');
   const { createRecurringSchema } = await import('../../../src/database/migrations/004_recurring');
+  const { SCHEMA_VERSION } = await import('../../../src/database/database');
   await createSchema(db);
   await seedDataInner(db);
   await seedConfigInner(db);
   await createRecurringSchema(db);
+  // Mark the harness DB as migrated: `initDatabase()` (used by the data screens and
+  // backupService) must not replay the ALTER TABLE migrations on it.
+  await db.execAsync(`PRAGMA user_version = ${SCHEMA_VERSION}`);
 
   const { recurringRepo } = await import('../../../src/database/repositories/recurringRepo');
   const { transactionRepo } = await import('../../../src/database/repositories/transactionRepo');
