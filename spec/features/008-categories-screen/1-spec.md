@@ -1,7 +1,7 @@
 # 008 — Categories page
 
 - **Goal**
-Screen accessible from the Drawer (hamburger menu) that displays all existing categories organized by type (expense/income) and allows navigating to creating new categories or modifying existing ones. All texts are multilingual (en/es/ca).
+Screen accessible from the Drawer (hamburger menu) that displays all existing categories organized by type (expense/income) and allows navigating to creating new categories or modifying existing ones. All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it).
 
 ---
 

@@ -1,7 +1,7 @@
 # 009 — Edit/Delete Category Page
 
 - **Objective**
-Screen accessible from the categories screen (008) that allows the user to edit an existing category (name, icon, color), as well as delete it with transaction reassignment to another category of the same type. All texts are multilingual (en/es/ca).
+Screen accessible from the categories screen (008) that allows the user to edit an existing category (name, icon, color), as well as delete it with transaction reassignment to another category of the same type. All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it).
 
 ---
 
@@ -130,7 +130,7 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 - **Configuration**: the screen must use `useConfig().activeColors` for colors (not hardcoded).
 - **Text**: the screen must use `useFontSize()` for text scaling.
 - **Navigation**: the screen is added to `HomeStack` in `AppNavigator.tsx`.
-- **Persistence**: the category is updated/deleted in the `categoryRepository` (native SQLite or web localStorage).
+- **Persistence**: the category is updated/deleted in the `categoryRepository` (native SQLite, sql.js + IndexedDB on web).
 - **Reassignment**: when deleting, transactions are reassigned via `transactionRepository` and then the category is deleted.
 - **Icons**: use `@expo/vector-icons` (Ionicons) as in the rest of the app.
 

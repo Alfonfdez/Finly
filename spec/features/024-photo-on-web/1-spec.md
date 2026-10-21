@@ -61,7 +61,7 @@
 - **Size control:** `quality: 0.7` compression and `MAX_PHOTOS = 3` keep base64 bloat acceptable for the whole-DB persistence model.
 - **Camera:** native-only; not offered on web.
 - **Permissions:** unchanged from 023.
-- **Multilingual:** all visible texts use `t()` from the i18n system (en/es/ca) — no new keys required (023 labels reused).
+- **Multilingual:** all visible texts use `t()` from the i18n system (en/es/ca/gl/eu/fr/de/pt/it) — no new keys required (023 labels reused).
 - **Theme / text size:** `useConfig().activeColors` and `useFontSize()` as in 023.
 - **No new dependencies:** `expo-image-picker` and `expo-file-system` are already installed.
 - **Backwards compatibility:** existing native file-URI photos and web data-URI photos both parse correctly; native behavior is byte-for-byte unchanged.
@@ -83,5 +83,5 @@
 - [x] `deletePhotoFile` no-ops on `data:` URIs and on web (any URI, incl. native `file://` from an imported backup) without throwing.
 - [x] Deleting a transaction whose photo is a native `file://` URI on web touches no file system (`expo-file-system` is never called).
 - [x] `parsePhotos` round-trips data-URI JSON arrays and single data URIs.
-- [x] All texts are multilingual (en/es/ca), theme and text size are respected.
+- [x] All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it), theme and text size are respected.
 - [x] `npm run test:all` is green (typecheck + lint + tests).

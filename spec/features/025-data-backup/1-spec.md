@@ -80,7 +80,7 @@
 
 ## Non-functional requirements
 
-- **Multilingual:** all visible texts use `t()` (en/es/ca).
+- **Multilingual:** all visible texts use `t()` (en/es/ca/gl/eu/fr/de/pt/it).
 - **Theme / text size:** `useConfig().activeColors` and `useFontSize()`.
 - **No platform fork of business logic:** the snapshot build/apply code is pure DB logic (`src/database/backup.ts`, no React Native / Expo imports) so it is unit-testable in Node; only the file I/O is platform-split (`backupIO.ts` / `backupIO.web.ts`, same pattern as `engine.ts` / `engine.web.ts`).
 - **New dependencies:** `expo-sharing` (iOS share sheet) and `expo-document-picker` (native file picking). Android's Downloads write uses the `finly-share` module's `saveToDownloadsAsync` (`MediaStore.Downloads`). Web uses built-in browser APIs only.
@@ -101,7 +101,7 @@
 - [x] A backup whose recurring rules have an out-of-range interval, a non-date-only field or `start_date > end_date` is rejected as invalid before any write.
 - [x] `buildBackup()` reads all tables in one transaction, so a backup exported while a catch-up is running is internally consistent.
 - [x] After a successful import, app state and config (theme, language, currency, balances) reflect the backup.
-- [x] All texts are multilingual (en/es/ca) and the screen respects theme and text size.
+- [x] All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it) and the screen respects theme and text size.
 - [x] Export feedback is never false (unit-tested): Android saves to Downloads (`MediaStore` via `finly-share`) and alerts; the Share action is optional and its outcome is not reported; iOS reports the real share-sheet outcome (success vs cancel); failures show the error alert; Import shows no modal when the file picker is cancelled.
 - [x] On web, the export/import success and error feedback appears as a browser dialog (`alertInfo`/`alertError` `window.alert` fallback), since react-native-web's `Alert` is a no-op.
 - [ ] On a real device, Export on Android saves the file to the Downloads folder and shows the "Backup saved" alert with Share/Done (device-only check via the Downloads folder, not checkable on web).

@@ -1,7 +1,7 @@
 # 013 — Create account page
 
 - **Objective**
-  Screen accessible from the floating "+" button (FAB) in `AccountsScreen` (011) that allows the user to create a new account with name, icon, color, and optional note. All texts are multilingual (en/es/ca).
+  Screen accessible from the floating "+" button (FAB) in `AccountsScreen` (011) that allows the user to create a new account with name, icon, color, and optional note. All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it).
 
 ---
 
@@ -102,7 +102,7 @@
   3. "Select an icon" (if icon missing)
   4. "Select a color" (if color missing)
   5. "Select an icon and a color" (if both missing)
-- When "Create" is pressed, the account is created in the database (native SQLite / web localStorage) and navigation goes back to `AccountsScreen` (011).
+- When "Create" is pressed, the account is created in the database (native SQLite, sql.js + IndexedDB on web) and navigation goes back to `AccountsScreen` (011).
 
 ### 7. Create behavior
 
@@ -123,9 +123,9 @@
 - **Configuration**: the screen must use `useConfig().activeColors` for colors (not hardcoded).
 - **Text**: the screen must use `useFontSize()` for text scaling.
 - **Navigation**: the screen is added to the `HomeStack` in `AppNavigator.tsx`.
-- **Persistence**: the account is saved in the `accountRepository` (native SQLite or web localStorage).
+- **Persistence**: the account is saved in the `accountRepository` (native SQLite, sql.js + IndexedDB on web).
 - **Icons**: use `@expo/vector-icons` (Ionicons) as in the rest of the app.
-- **Duplicate validation**: a function `existsByName(userId: number, name: string, excludeId?: number)` must be added to `accountRepo` and `webAccountRepo` that returns `true` if an account with that name already exists (case-insensitive) for the given user. The `excludeId` parameter is used in 012 to exclude the current account from the check.
+- **Duplicate validation**: a function `existsByName(userId: number, name: string, excludeId?: number)` must be added to `accountRepo` that returns `true` if an account with that name already exists (case-insensitive) for the given user. The `excludeId` parameter is used in 012 to exclude the current account from the check.
 
 ---
 

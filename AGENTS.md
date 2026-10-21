@@ -76,7 +76,7 @@ npx eas-cli build --platform android --profile production --no-wait     # store 
 
 ## LINT
 ```bash
-npm run lint       # expo lint .  (src, tests, scripts, root configs)
+npm run lint       # expo lint . --max-warnings 0  (src, tests, scripts, root configs)
 npm run lint:fix   # the same with --fix: indent, quotes, trailing commas, EOF newlines
 ```
 - Formatting is enforced by **`@stylistic/eslint-plugin`** in `FinlyApp/eslint.config.mjs` (ESM; `expo lint` accepts `.mjs`). 2-space indent, `case` indented one level, single quotes, semicolons, no trailing whitespace, final newline.
@@ -159,5 +159,5 @@ FinlyApp/
   ```
   Domain vocabularies go in `src/constants/types.ts` (`TRANSACTION_TYPES`, `RECURRENCE_SCOPES`, `RECURRING_NAME_ERRORS`, `SORT_BY`, …); a union owned by a single component is colocated with it (`HINT_TONES` in `components/form/FormHintSlot.tsx`, `PICKING_PHASE` in `calendars/PeriodPicker.tsx`).
 - **Limits are constants, never literals at the call site**: max lengths/counts live in `src/constants/types.ts` (`MAX_*`, `REPEAT_NAME_MAX_LENGTH`) and are passed down as props.
-- **Formatting is machine-enforced**: 2-space indentation (`case` one level deeper), single quotes, semicolons, trailing commas in multiline literals, a final newline and no trailing whitespace. `npm run lint:fix` applies it; `npm run lint` must report 0 errors.
+- **Formatting is machine-enforced**: 2-space indentation (`case` one level deeper), single quotes, semicolons, trailing commas in multiline literals, a final newline and no trailing whitespace. `npm run lint:fix` applies it; `npm run lint` must report 0 errors and 0 warnings (`--max-warnings 0`).
 - Design tokens (spacing, radii, opacity, counter font size) live in `src/components/componentStyles.ts` or the component that owns them — no duplicated magic numbers.

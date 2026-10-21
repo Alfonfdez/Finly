@@ -1,7 +1,7 @@
 # 004 — Add transaction page
 
 - **Goal**
-Screen accessible from the Home "+" button that allows the user to record a new expense or income. The transaction is created with type (expense/income), amount, account, category, day, tags, comment and optional photo. All texts are multilingual (en/es/ca).
+Screen accessible from the Home "+" button that allows the user to record a new expense or income. The transaction is created with type (expense/income), amount, account, category, day, tags, comment and optional photo. All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it).
 
 ---
 
@@ -141,7 +141,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 ## Non-functional requirements
 
 - **Multilingual**: all visible texts (titles, placeholders, errors, buttons, day names) must use `t()` from the existing i18n system. No hardcoded strings are allowed.
-- **Persistence**: the transaction is saved in the `transacciones` table in SQLite (native) or localStorage (web).
+- **Persistence**: the transaction is saved in the `transacciones` table in SQLite (native) or sql.js + IndexedDB (web).
 - **Configuration**: the currency, decimal separator and language are read from the existing `ConfigContext`.
 - **Theme**: the screen must use `useConfig().coloresActivos` for colors (not hardcoded).
 - **Text**: the screen must use `useFontSize()` for text scaling.

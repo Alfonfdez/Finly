@@ -4158,3 +4158,14 @@
 - Added logError(prefix, error, ...extra) and extended ERROR_PREFIXES with the load/refresh/internal log prefixes, so no call site hardcodes a developer error string.
 - Replaced every inline console.error('...') prefix across screens, contexts, hooks, ErrorBoundary, the web engine and photo cleanup; runWithErrorAlert now uses the same helper.
 - Added the missing config-load log (was silent) and unified the two photo-delete messages. Tests cover logError and the full prefix list.
+
+[2026-10-21] docs | docs/harnesses.md, spec/constitution/2-tech-stack.md, spec/constitution/3-roadmap.md, spec/constitution/5-validations.md, spec/constitution/6-screens.md, spec/features/002-db-design/1-spec.md, spec/features/004-add-transaction-screen/1-spec.md, spec/features/005-add-category-screen/1-spec.md, spec/features/006-create-category-screen/1-spec.md, spec/features/008-categories-screen/1-spec.md, spec/features/009-modify-delete-category-screen/1-spec.md, spec/features/011-accounts-screen/1-spec.md, spec/features/012-modify-delete-account-screen/1-spec.md, spec/features/013-create-account-screen/1-spec.md, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/017-modify-transaction-screen/1-spec.md, spec/features/018-tag-management/1-spec.md, spec/features/019-tag-transactions/1-spec.md, spec/features/020-tag-home-filter/1-spec.md, spec/features/022-total-account/1-spec.md, spec/features/023-photo-attachment/1-spec.md, spec/features/024-photo-on-web/1-spec.md, spec/features/025-data-backup/1-spec.md, spec/features/026-account-initial-balance/1-spec.md, spec/features/027-comments-management/1-spec.md
+- 002 now documents the real engine: sql.js + IndexedDB on web, versioned migrations (SCHEMA_VERSION 4), seed self-heal, the single runExclusiveDb queue, per-field config sanitize, the Total-account delete guard, recurring tables and the full config key set.
+- Removed stale web localStorage/web*Repo references from specs 004-022, fixed the tags persistence note in 017, and updated every language list to the 9 supported languages (018, 023-027).
+- 023 reconciled with 024: photos are available on web through the gallery/file picker with base64 data URIs, camera stays native-only, and cleanup removes native files while web only drops the array entry.
+- Constitution: tech-stack tree now labels Zod schemas correctly, adds Drizzle, transactionQueue and photoCleanup, and seeds 2 accounts; 5-validations gained the accessibility role/state conventions; 6-screens gained the list-body spinner and the current screen map; roadmap counts/logging updated.
+- Harness docs: baseline 161 files / 1341 tests, lint enforces 0 warnings, and Drizzle is documented as implemented (sqlite-proxy).
+- Docs-only change; npm run test:all remains green.
+
+[2026-10-21] docs | AGENTS.md
+- Lint documentation now states that npm run lint enforces 0 errors and 0 warnings (--max-warnings 0).

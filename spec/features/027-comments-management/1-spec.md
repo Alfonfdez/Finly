@@ -61,8 +61,8 @@
 
 ## Non-functional requirements
 
-- **Multilingual**: all new texts go through `t()` (en/es/ca).
-- **Reuse**: `SearchBar`, `EmptyState`, `LabeledTextField`, `PrimaryButton`, `DeleteButton`, `FormError`, `ConfirmationModal`, `SelectionActionBar`, `useFocusEffect`.
+- **Multilingual**: all new texts go through `t()` (en/es/ca/gl/eu/fr/de/pt/it).
+- **Reuse**: `SearchBar`, `EmptyState`, `LabeledTextField`, `PrimaryButton`, `DeleteButton`, `ConfirmationModal`, `SelectionActionBar`, `useFocusEffect`.
 - **No schema/migration changes**: comments live in the existing `transactions.description` column.
 - **Theme/text size**: all screens/components use `useConfig().activeColors` and `useFontSize()`.
 - **Tests**: new Phase B contract tests for the four repo methods + merge regression; new component test for `CommentInput` min-length and suggestion flow.

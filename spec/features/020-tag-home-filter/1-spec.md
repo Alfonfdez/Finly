@@ -75,11 +75,10 @@
 - `filteredTransactions` memo adds tag filtering when `activeTagIds.length > 0`.
 - `activeCategories` recalculates with the tag-filtered transactions.
 
-### 8. Web localStorage support
+### 8. Web persistence
 
-- Add `webTransactionRepo.breakdownByCategoryAndTag()` with JS filtering.
-- Add `tagIds` filter to `webTransactionRepo.list()`.
-- Add `getTagsByTransactionIds()` to `webTransactionRepo`.
+- No separate web repository exists: `transactionRepo.breakdownByCategoryAndTag()`, the `tagIds` filter in `transactionRepo.list()` and `getTagsByTransactionIds()` run over the same SQLite schema through sql.js, persisted to IndexedDB.
+- Behavior (OR logic, Untagged handling, filtered balance) is identical on native and web.
 
 ---
 
