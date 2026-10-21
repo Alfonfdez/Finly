@@ -8,6 +8,7 @@ import { resetStub, setConfig } from '../component/helpers/configStub';
 import type { Config } from '../../src/context/ConfigContext';
 import { ShareResult, type ShareResultValue } from '../../src/constants/shareResult';
 import { en as t } from '../../src/i18n/en';
+import { ERROR_PREFIXES } from '../../src/utils/errors';
 
 const deleteAllTransactions = vi.fn(async () => undefined);
 const clearDataKeepSettings = vi.fn(async () => undefined);
@@ -211,7 +212,8 @@ describe('DataScreen', () => {
   });
 
   it('shows an error alert when the export fails', async () => {
-    saveBackupFile.mockRejectedValue(new Error('boom'));
+    const exportError = new Error('boom');
+    saveBackupFile.mockRejectedValue(exportError);
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const alertSpy = vi.spyOn(Alert, 'alert').mockImplementation(() => {});
     const view = await render(<DataScreen />);
@@ -221,6 +223,7 @@ describe('DataScreen', () => {
       t.settings_export_error_title,
       t.settings_export_error_message,
     );
+    expect(consoleErrorSpy).toHaveBeenCalledWith(`${ERROR_PREFIXES.backupExport}:`, exportError);
     consoleErrorSpy.mockRestore();
   });
 
@@ -251,7 +254,9 @@ describe('DataScreen', () => {
 
   it('shows the incomplete-backup alert and leaves the data untouched', async () => {
     pickBackupFile.mockResolvedValue('{}');
-    importBackup.mockRejectedValueOnce(new validationMocks.BackupValidationError('incomplete'));
+    const importError = new validationMocks.BackupValidationError('incomplete');
+    importBackup.mockRejectedValueOnce(importError);
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const alertSpy = vi.spyOn(Alert, 'alert').mockImplementation(() => {});
     const view = await render(<DataScreen />);
     const ue = userEvent.setup();
@@ -264,7 +269,9 @@ describe('DataScreen', () => {
       t.settings_import_incomplete_title,
       t.settings_import_incomplete_message,
     ));
+    expect(consoleErrorSpy).toHaveBeenCalledWith(`${ERROR_PREFIXES.backupImport}:`, importError);
     expect(getAppStub().resetAll).not.toHaveBeenCalled();
+    consoleErrorSpy.mockRestore();
   });
 });
 

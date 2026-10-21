@@ -16,7 +16,7 @@ import {
 } from '../../database';
 import { clearDataKeepSettings, resetDatabase } from '../../database/database';
 import { saveBackupFile, pickBackupFile, saveBackupToDownloads } from '../../utils/backupIO';
-import { alertError, alertInfo } from '../../utils/errors';
+import { ERROR_PREFIXES, alertError, alertInfo, logError } from '../../utils/errors';
 import { ShareResult } from '../../constants/shareResult';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import SettingsRow from '../../components/settings/SettingsRow';
@@ -119,7 +119,7 @@ export default function DataScreen() {
             text: labels.settings_export_share_action,
             onPress: () => {
               runShareFlow(json).catch((error) => {
-                console.error('Failed to share data:', error);
+                logError(ERROR_PREFIXES.backupShare, error);
                 alertError(labels.settings_export_error_title, labels.settings_export_error_message);
               });
             },
@@ -130,7 +130,7 @@ export default function DataScreen() {
       }
       await runShareFlow(json);
     } catch (error) {
-      console.error('Failed to export data:', error);
+      logError(ERROR_PREFIXES.backupExport, error);
       alertError(labels.settings_export_error_title, labels.settings_export_error_message);
     }
   };
@@ -149,7 +149,7 @@ export default function DataScreen() {
       setPendingImport(json);
       setImportModalVisible(true);
     } catch (error) {
-      console.error('Failed to read backup file:', error);
+      logError(ERROR_PREFIXES.backupRead, error);
       alertError(labels.settings_import_error_title, labels.settings_import_error_message);
     }
   };
@@ -163,7 +163,7 @@ export default function DataScreen() {
       updateConfig(await configRepository.get());
       alertInfo(labels.settings_import_success_title, labels.settings_import_success_message);
     } catch (error) {
-      console.error('Failed to import data:', error);
+      logError(ERROR_PREFIXES.backupImport, error);
       if (error instanceof BackupValidationError) {
         if (error.code === BACKUP_VALIDATION_CODES.newerVersion) {
           alertError(labels.settings_import_newer_title, labels.settings_import_newer_message);
@@ -223,7 +223,7 @@ export default function DataScreen() {
       await transactionRepository.deleteAllTransactions();
       await resetAll();
     } catch (error) {
-      console.error('Failed to delete all transactions:', error);
+      logError(ERROR_PREFIXES.transactionsDeleteAll, error);
       alertError(labels.settings_delete_transactions_error_title, labels.settings_delete_transactions_error_message);
     } finally {
       setPendingAction(null);
@@ -239,7 +239,7 @@ export default function DataScreen() {
       await resetAll();
       updateConfig(await configRepository.get());
     } catch (error) {
-      console.error('Failed to delete all data:', error);
+      logError(ERROR_PREFIXES.dataDeleteAll, error);
       alertError(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
     } finally {
       setPendingAction(null);
@@ -255,7 +255,7 @@ export default function DataScreen() {
       await resetAll();
       updateConfig(await configRepository.get());
     } catch (error) {
-      console.error('Failed to reset to factory state:', error);
+      logError(ERROR_PREFIXES.factoryReset, error);
       alertError(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
     } finally {
       setPendingAction(null);
