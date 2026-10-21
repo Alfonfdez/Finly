@@ -4174,3 +4174,16 @@
 - Added the seven data-screen prefixes to ERROR_PREFIXES: backupShare, backupExport, backupRead, backupImport, transactionsDeleteAll, dataDeleteAll and factoryReset.
 - DataScreen now logs every failure through logError; no inline console.error prefixes remain in the app.
 - Updated the prefix vocabulary test and asserted the shared prefix in the export-failure and incomplete-import tests; test:all green (161 files / 1341 tests).
+
+[2026-10-22] docs | images/screenshots/ (v3 set), README.md, README.es.md, README.ca.md, README.gl.md, README.eu.md, README.fr.md, README.de.md, README.pt.md, README.it.md, docs/screenshots.md, docs/harnesses.md, spec/constitution/3-roadmap.md, FinlyApp/package.json, FinlyApp/package-lock.json, FinlyApp/scripts/screenshots/fixture.json, FinlyApp/scripts/screenshots/manifest.mjs, FinlyApp/scripts/screenshots/capture.mjs, FinlyApp/tests/tooling/screenshots.test.ts
+- Added the reusable `npm run screenshots` workflow (Playwright Core + installed Chrome): it starts/stops Expo web, freezes the clock at 2026-10-21, imports the committed fixture and captures the manifest at 375x812.
+- Added the 20-screen v3 set from the mock backup, with two fresh empty states captured before import, plus the new Category filter, Comments and Recurring screens.
+- Updated all 9 READMEs to the v3 links and translated captions; the v2 files stay for history.
+- Added the fixture/README tooling test and docs/screenshots.md; harness baseline is now 162 files / 1343 tests.
+
+[2026-10-22] chore | .gitignore
+- Ignore the root node_modules cache directory created by Vitest runs; app dependencies remain in FinlyApp/node_modules.
+
+[2026-10-22] docs | images/screenshots/v3.1-02-hamburger.png, images/screenshots/v3-02-hamburger.png, README.md, README.es.md, README.ca.md, README.gl.md, README.eu.md, README.fr.md, README.de.md, README.pt.md, README.it.md, FinlyApp/scripts/screenshots/manifest.mjs, FinlyApp/scripts/screenshots/capture.mjs, FinlyApp/tests/tooling/screenshots.test.ts, docs/screenshots.md, spec/constitution/3-roadmap.md
+- Renamed the refreshed hamburger capture to v3.1-02-hamburger.png (previously tracked as v3-02-hamburger.png) so GitHub shows it as a new image instead of a modified binary.
+- Updated the 9 READMEs, the screenshot manifest/capture helper (per-screen name override), the tooling test and docs/screenshots.md.

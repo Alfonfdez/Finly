@@ -32,23 +32,26 @@ Tudo funciona **no dispositivo**: seus dados vivem em um banco de dados SQLite l
 
 ## Capturas de tela
 
-![Tela inicial](images/screenshots/v2-01-a-home-empty.png)<br>*Tela inicial antes de configurar qualquer conta.*<br><br>
-![Tela inicial](images/screenshots/v2-01-b-home.png)<br>*Tela inicial com contas, gráfico de rosca e detalhamento por categorias.*<br><br>
-![Menu hambúrguer](images/screenshots/v3-02-hamburger.png)<br>*Menu lateral com Início, Contas, Categorias, Etiquetas, Comentários, Recorrentes, Todas as transações e Configurações.*<br><br>
-![Adicionar transação](images/screenshots/v2-03-add-transaction.png)<br>*Adicione uma despesa ou receita com valor, conta, categoria, dia, etiquetas, comentário e foto.*<br><br>
-![Seletor de data](images/screenshots/v2-04-date-picker.png)<br>*Seletor de calendário para escolher um dia, semana, mês, ano ou intervalo de período personalizado.*<br><br>
-![Categorias](images/screenshots/v2-05-categories.png)<br>*Categorias organizadas por tipo (despesas/receitas) em uma grade 4×N.*<br><br>
-![Etiquetas](images/screenshots/v2-06-tags.png)<br>*Tela de etiquetas com busca e seleção em massa.*<br><br>
-![Todas as transações, vazio](images/screenshots/v2-07-a-all-transactions-empty-state.png)<br>*Todas as transações em estado vazio.*<br><br>
-![Todas as transações](images/screenshots/v2-07-b-all-transactions.png)<br>*Todas as transações com filtros de tipo, categoria, período e etiquetas, além de ordenação e busca.*<br><br>
-![Contas](images/screenshots/v2-08-accounts.png)<br>*Tela de contas com saldos e a conta Total agregada.*<br><br>
-![Detalhes de receita](images/screenshots/v2-09-a-details-income.png)<br>*Detalhes de uma transação de receita com edição e exclusão.*<br><br>
-![Detalhes de despesa](images/screenshots/v2-09-b-details-expense.png)<br>*Detalhes de uma transação de despesa com edição e exclusão.*<br><br>
-![Configurações](images/screenshots/v2-10-settings.png)<br>*Configurações: Aparência, Regional, Personalização e Dados.*<br><br>
-![Configurações regionais](images/screenshots/v2-11-regional-en.png)<br>*Configurações regionais: idioma, moeda, separador decimal e primeiro dia da semana.*<br><br>
-![Configurações de aparência](images/screenshots/v2-12-settings-appearance.png)<br>*Aparência: tema, tamanho do texto e formatos dos ícones.*<br><br>
-![Configurações de personalização](images/screenshots/v2-13-settings-personalization.png)<br>*Personalização: valores padrão de início e de adicionar transação, e privacidade.*<br><br>
-![Configurações de dados](images/screenshots/v2-14-settings-data.png)<br>*Dados: exportação/importação de backup e ações de exclusão/reinicialização.*<br><br>
+![Tela inicial](images/screenshots/v3-01-a-home-empty.png)<br>*Instalação nova sem transações.*<br><br>
+![Tela inicial](images/screenshots/v3-01-b-home.png)<br>*Tela inicial com contas, gráfico de rosca e detalhamento por categorias.*<br><br>
+![Menu hambúrguer](images/screenshots/v3.1-02-hamburger.png)<br>*Menu lateral com Início, Contas, Categorias, Etiquetas, Comentários, Recorrentes, Todas as transações e Configurações.*<br><br>
+![Adicionar transação](images/screenshots/v3-03-add-transaction.png)<br>*Adicione uma despesa ou receita com valor, conta, categoria, dia, etiquetas, comentário e foto.*<br><br>
+![Seletor de data](images/screenshots/v3-04-date-picker.png)<br>*Seletor de calendário para escolher um dia, semana, mês, ano ou intervalo de período personalizado.*<br><br>
+![Categorias](images/screenshots/v3-05-categories.png)<br>*Categorias organizadas por tipo (despesas/receitas) em uma grade 4×N.*<br><br>
+![Etiquetas](images/screenshots/v3-06-tags.png)<br>*Tela de etiquetas com busca e seleção em massa.*<br><br>
+![Todas as transações, vazio](images/screenshots/v3-07-a-all-transactions-empty-state.png)<br>*Todas as transações em estado vazio.*<br><br>
+![Todas as transações](images/screenshots/v3-07-b-all-transactions.png)<br>*Todas as transações com filtros de tipo, categoria, período e etiquetas, além de ordenação e busca.*<br><br>
+![Filtro de categorias](images/screenshots/v3-07-c-category-filter.png)<br>*Filtro de categorias com as predefinições Todas as categorias, Todas as despesas e Todas as receitas.*<br><br>
+![Contas](images/screenshots/v3-08-accounts.png)<br>*Tela de contas com saldos e a conta Total agregada.*<br><br>
+![Detalhes de receita](images/screenshots/v3-09-a-details-income.png)<br>*Detalhes de uma transação de receita com edição e exclusão.*<br><br>
+![Detalhes de despesa](images/screenshots/v3-09-b-details-expense.png)<br>*Detalhes de uma transação de despesa com edição e exclusão.*<br><br>
+![Configurações](images/screenshots/v3-10-settings.png)<br>*Configurações: Aparência, Regional, Personalização e Dados.*<br><br>
+![Configurações regionais](images/screenshots/v3-11-regional-en.png)<br>*Configurações regionais: idioma, moeda, separador decimal e primeiro dia da semana.*<br><br>
+![Configurações de aparência](images/screenshots/v3-12-settings-appearance.png)<br>*Aparência: tema, tamanho do texto e formatos dos ícones.*<br><br>
+![Configurações de personalização](images/screenshots/v3-13-settings-personalization.png)<br>*Personalização: valores padrão de início e de adicionar transação, e privacidade.*<br><br>
+![Configurações de dados](images/screenshots/v3-14-settings-data.png)<br>*Dados: exportação/importação de backup e ações de exclusão/reinicialização.*<br><br>
+![Comentários](images/screenshots/v3-15-comments.png)<br>*Tela de comentários com pesquisa, contagem de usos e seleção múltipla.*<br><br>
+![Recorrentes](images/screenshots/v3-16-recurring.png)<br>*Regras recorrentes com próximas datas, valores e alternadores ativa/em pausa.*<br><br>
 
 ## Stack tecnológica
 

@@ -32,23 +32,26 @@ Tout fonctionne **sur l'appareil** : vos données vivent dans une base de donné
 
 ## Captures d'écran
 
-![Écran d'accueil](images/screenshots/v2-01-a-home-empty.png)<br>*Écran d'accueil avant la configuration d'un compte.*<br><br>
-![Écran d'accueil](images/screenshots/v2-01-b-home.png)<br>*Écran d'accueil avec comptes, camembert en anneau et répartition par catégorie.*<br><br>
-![Menu hamburger](images/screenshots/v3-02-hamburger.png)<br>*Menu latéral avec Accueil, Comptes, Catégories, Étiquettes, Commentaires, Récurrences, Toutes les transactions et Réglages.*<br><br>
-![Ajouter une transaction](images/screenshots/v2-03-add-transaction.png)<br>*Ajoutez une dépense ou un revenu avec montant, compte, catégorie, jour, étiquettes, commentaire et photo.*<br><br>
-![Sélecteur de date](images/screenshots/v2-04-date-picker.png)<br>*Sélecteur de calendrier pour choisir un jour, une semaine, un mois, une année ou une plage de période personnalisée.*<br><br>
-![Catégories](images/screenshots/v2-05-categories.png)<br>*Catégories organisées par type (dépenses/revenus) dans une grille de 4×N.*<br><br>
-![Étiquettes](images/screenshots/v2-06-tags.png)<br>*Écran des étiquettes avec recherche et sélection groupée.*<br><br>
-![Toutes les transactions, vide](images/screenshots/v2-07-a-all-transactions-empty-state.png)<br>*Toutes les transactions à l'état vide.*<br><br>
-![Toutes les transactions](images/screenshots/v2-07-b-all-transactions.png)<br>*Toutes les transactions avec filtres de type, catégorie, période et étiquettes, plus le tri et la recherche.*<br><br>
-![Comptes](images/screenshots/v2-08-accounts.png)<br>*Écran des comptes avec soldes et le compte Total agrégé.*<br><br>
-![Détails d'un revenu](images/screenshots/v2-09-a-details-income.png)<br>*Détails d'une transaction de revenu avec modification et suppression.*<br><br>
-![Détails d'une dépense](images/screenshots/v2-09-b-details-expense.png)<br>*Détails d'une transaction de dépense avec modification et suppression.*<br><br>
-![Réglages](images/screenshots/v2-10-settings.png)<br>*Réglages : Apparence, Régional, Personnalisation et Données.*<br><br>
-![Réglages régionaux](images/screenshots/v2-11-regional-en.png)<br>*Réglages régionaux : langue, devise, séparateur décimal et premier jour de la semaine.*<br><br>
-![Réglages d'apparence](images/screenshots/v2-12-settings-appearance.png)<br>*Apparence : thème, taille du texte et formes des icônes.*<br><br>
-![Réglages de personnalisation](images/screenshots/v2-13-settings-personalization.png)<br>*Personnalisation : valeurs par défaut de l'accueil et de l'ajout de transaction, plus confidentialité.*<br><br>
-![Réglages des données](images/screenshots/v2-14-settings-data.png)<br>*Données : export/import de la sauvegarde et actions de suppression/réinitialisation.*<br><br>
+![Écran d'accueil](images/screenshots/v3-01-a-home-empty.png)<br>*Nouvelle installation sans transactions.*<br><br>
+![Écran d'accueil](images/screenshots/v3-01-b-home.png)<br>*Écran d'accueil avec comptes, camembert en anneau et répartition par catégorie.*<br><br>
+![Menu hamburger](images/screenshots/v3.1-02-hamburger.png)<br>*Menu latéral avec Accueil, Comptes, Catégories, Étiquettes, Commentaires, Récurrences, Toutes les transactions et Réglages.*<br><br>
+![Ajouter une transaction](images/screenshots/v3-03-add-transaction.png)<br>*Ajoutez une dépense ou un revenu avec montant, compte, catégorie, jour, étiquettes, commentaire et photo.*<br><br>
+![Sélecteur de date](images/screenshots/v3-04-date-picker.png)<br>*Sélecteur de calendrier pour choisir un jour, une semaine, un mois, une année ou une plage de période personnalisée.*<br><br>
+![Catégories](images/screenshots/v3-05-categories.png)<br>*Catégories organisées par type (dépenses/revenus) dans une grille de 4×N.*<br><br>
+![Étiquettes](images/screenshots/v3-06-tags.png)<br>*Écran des étiquettes avec recherche et sélection groupée.*<br><br>
+![Toutes les transactions, vide](images/screenshots/v3-07-a-all-transactions-empty-state.png)<br>*Toutes les transactions à l'état vide.*<br><br>
+![Toutes les transactions](images/screenshots/v3-07-b-all-transactions.png)<br>*Toutes les transactions avec filtres de type, catégorie, période et étiquettes, plus le tri et la recherche.*<br><br>
+![Filtre de catégories](images/screenshots/v3-07-c-category-filter.png)<br>*Filtre de catégories avec les préréglages Toutes les catégories, Toutes les dépenses et Tous les revenus.*<br><br>
+![Comptes](images/screenshots/v3-08-accounts.png)<br>*Écran des comptes avec soldes et le compte Total agrégé.*<br><br>
+![Détails d'un revenu](images/screenshots/v3-09-a-details-income.png)<br>*Détails d'une transaction de revenu avec modification et suppression.*<br><br>
+![Détails d'une dépense](images/screenshots/v3-09-b-details-expense.png)<br>*Détails d'une transaction de dépense avec modification et suppression.*<br><br>
+![Réglages](images/screenshots/v3-10-settings.png)<br>*Réglages : Apparence, Régional, Personnalisation et Données.*<br><br>
+![Réglages régionaux](images/screenshots/v3-11-regional-en.png)<br>*Réglages régionaux : langue, devise, séparateur décimal et premier jour de la semaine.*<br><br>
+![Réglages d'apparence](images/screenshots/v3-12-settings-appearance.png)<br>*Apparence : thème, taille du texte et formes des icônes.*<br><br>
+![Réglages de personnalisation](images/screenshots/v3-13-settings-personalization.png)<br>*Personnalisation : valeurs par défaut de l'accueil et de l'ajout de transaction, plus confidentialité.*<br><br>
+![Réglages des données](images/screenshots/v3-14-settings-data.png)<br>*Données : export/import de la sauvegarde et actions de suppression/réinitialisation.*<br><br>
+![Commentaires](images/screenshots/v3-15-comments.png)<br>*Écran des commentaires avec recherche, nombre d'utilisations et sélection multiple.*<br><br>
+![Récurrences](images/screenshots/v3-16-recurring.png)<br>*Règles récurrentes avec prochaines échéances, montants et boutons actif/en pause.*<br><br>
 
 ## Pile technique
 

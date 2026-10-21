@@ -32,23 +32,26 @@ Todo funciona **en el dispositivo**: tus datos viven en una base de datos SQLite
 
 ## Capturas de pantalla
 
-![Pantalla de inicio](images/screenshots/v2-01-a-home-empty.png)<br>*Pantalla de inicio antes de configurar ninguna cuenta.*<br><br>
-![Pantalla de inicio](images/screenshots/v2-01-b-home.png)<br>*Pantalla de inicio con cuentas, gráfico de donut y desglose por categorías.*<br><br>
-![Menú hamburguesa](images/screenshots/v3-02-hamburger.png)<br>*Menú lateral con Inicio, Cuentas, Categorías, Etiquetas, Comentarios, Recurrentes, Todas las transacciones y Ajustes.*<br><br>
-![Añadir transacción](images/screenshots/v2-03-add-transaction.png)<br>*Añade un gasto o ingreso con importe, cuenta, categoría, día, etiquetas, comentario y foto.*<br><br>
-![Selector de fecha](images/screenshots/v2-04-date-picker.png)<br>*Selector de calendario para elegir un día, semana, mes, año o rango de período personalizado.*<br><br>
-![Categorías](images/screenshots/v2-05-categories.png)<br>*Categorías organizadas por tipo (gastos/ingresos) en una cuadrícula de 4×N.*<br><br>
-![Etiquetas](images/screenshots/v2-06-tags.png)<br>*Pantalla de etiquetas con búsqueda y selección masiva.*<br><br>
-![Todas las transacciones, vacío](images/screenshots/v2-07-a-all-transactions-empty-state.png)<br>*Todas las transacciones en estado vacío.*<br><br>
-![Todas las transacciones](images/screenshots/v2-07-b-all-transactions.png)<br>*Todas las transacciones con filtros de tipo, categoría, período y etiquetas, además de ordenación y búsqueda.*<br><br>
-![Cuentas](images/screenshots/v2-08-accounts.png)<br>*Pantalla de cuentas con saldos y la cuenta Total agregada.*<br><br>
-![Detalles de ingreso](images/screenshots/v2-09-a-details-income.png)<br>*Detalles de una transacción de ingreso con edición y eliminación.*<br><br>
-![Detalles de gasto](images/screenshots/v2-09-b-details-expense.png)<br>*Detalles de una transacción de gasto con edición y eliminación.*<br><br>
-![Ajustes](images/screenshots/v2-10-settings.png)<br>*Ajustes: Apariencia, Regional, Personalización y Datos.*<br><br>
-![Ajustes regionales](images/screenshots/v2-11-regional-en.png)<br>*Ajustes regionales: idioma, moneda, separador decimal y primer día de la semana.*<br><br>
-![Ajustes de apariencia](images/screenshots/v2-12-settings-appearance.png)<br>*Apariencia: tema, tamaño de texto y formas de iconos.*<br><br>
-![Ajustes de personalización](images/screenshots/v2-13-settings-personalization.png)<br>*Personalización: valores predeterminados de inicio y de añadir transacción, y privacidad.*<br><br>
-![Ajustes de datos](images/screenshots/v2-14-settings-data.png)<br>*Datos: exportación/importación de copia de seguridad y acciones de borrado/reinicio.*<br><br>
+![Pantalla de inicio](images/screenshots/v3-01-a-home-empty.png)<br>*Instalación nueva sin transacciones.*<br><br>
+![Pantalla de inicio](images/screenshots/v3-01-b-home.png)<br>*Pantalla de inicio con cuentas, gráfico de donut y desglose por categorías.*<br><br>
+![Menú hamburguesa](images/screenshots/v3.1-02-hamburger.png)<br>*Menú lateral con Inicio, Cuentas, Categorías, Etiquetas, Comentarios, Recurrentes, Todas las transacciones y Ajustes.*<br><br>
+![Añadir transacción](images/screenshots/v3-03-add-transaction.png)<br>*Añade un gasto o ingreso con importe, cuenta, categoría, día, etiquetas, comentario y foto.*<br><br>
+![Selector de fecha](images/screenshots/v3-04-date-picker.png)<br>*Selector de calendario para elegir un día, semana, mes, año o rango de período personalizado.*<br><br>
+![Categorías](images/screenshots/v3-05-categories.png)<br>*Categorías organizadas por tipo (gastos/ingresos) en una cuadrícula de 4×N.*<br><br>
+![Etiquetas](images/screenshots/v3-06-tags.png)<br>*Pantalla de etiquetas con búsqueda y selección masiva.*<br><br>
+![Todas las transacciones, vacío](images/screenshots/v3-07-a-all-transactions-empty-state.png)<br>*Todas las transacciones en estado vacío.*<br><br>
+![Todas las transacciones](images/screenshots/v3-07-b-all-transactions.png)<br>*Todas las transacciones con filtros de tipo, categoría, período y etiquetas, además de ordenación y búsqueda.*<br><br>
+![Filtro de categorías](images/screenshots/v3-07-c-category-filter.png)<br>*Filtro de categorías con los preajustes Todas las categorías, Todos los gastos y Todos los ingresos.*<br><br>
+![Cuentas](images/screenshots/v3-08-accounts.png)<br>*Pantalla de cuentas con saldos y la cuenta Total agregada.*<br><br>
+![Detalles de ingreso](images/screenshots/v3-09-a-details-income.png)<br>*Detalles de una transacción de ingreso con edición y eliminación.*<br><br>
+![Detalles de gasto](images/screenshots/v3-09-b-details-expense.png)<br>*Detalles de una transacción de gasto con edición y eliminación.*<br><br>
+![Ajustes](images/screenshots/v3-10-settings.png)<br>*Ajustes: Apariencia, Regional, Personalización y Datos.*<br><br>
+![Ajustes regionales](images/screenshots/v3-11-regional-en.png)<br>*Ajustes regionales: idioma, moneda, separador decimal y primer día de la semana.*<br><br>
+![Ajustes de apariencia](images/screenshots/v3-12-settings-appearance.png)<br>*Apariencia: tema, tamaño de texto y formas de iconos.*<br><br>
+![Ajustes de personalización](images/screenshots/v3-13-settings-personalization.png)<br>*Personalización: valores predeterminados de inicio y de añadir transacción, y privacidad.*<br><br>
+![Ajustes de datos](images/screenshots/v3-14-settings-data.png)<br>*Datos: exportación/importación de copia de seguridad y acciones de borrado/reinicio.*<br><br>
+![Comentarios](images/screenshots/v3-15-comments.png)<br>*Pantalla de comentarios con búsqueda, recuento de uso y selección múltiple.*<br><br>
+![Recurrentes](images/screenshots/v3-16-recurring.png)<br>*Reglas recurrentes con próximas fechas, importes e interruptores de activa/pausada.*<br><br>
 
 ## Stack tecnológico
 

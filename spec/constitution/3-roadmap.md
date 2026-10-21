@@ -1187,3 +1187,13 @@ Added before the 2.2.0 release, applied 2026-10-21:
 - **Errors:** the recurring rule-name load and the comments load are logged and surfaced; the App database failure shows a localized message plus the raw details. All developer logs use the shared `ERROR_PREFIXES` vocabulary through `logError(prefix, error, ...extra)` (screens, contexts, hooks, `ErrorBoundary`, web persistence, photo cleanup), so no call site hardcodes a prefix.
 - **Lint:** `npm run lint` now enforces **0 warnings** (`--max-warnings 0`). `boundaries/no-unknown-files` is off for tests/scripts/modules/root files (they are not app layers), the unused vars/imports and App effect dependencies are fixed, and dead code (`FormError`, two i18n keys) was removed. The drawer inactive icons use the secondary color.
 - **Tests:** role/state assertions (rows, tiles, sort, tabs, toggle), the loading state, and a language-change reorder test; `npm run test:all` green twice (161 files / 1341 tests).
+
+## v3 release screenshots
+Status: completed.
+
+Added before the 2.2.0 release, applied 2026-10-22:
+- The full 20-screen set was recaptured as `v3-*` (the refreshed hamburger is `v3.1-02-hamburger.png`, so GitHub renders it as a new file instead of a modified one) from a committed mock backup (`FinlyApp/scripts/screenshots/fixture.json`): 4 accounts, all 31 categories, 16 October 2026 transactions, 5 tags, 3 recurring rules and the English/dark/EUR configuration. The two empty-state screens are captured from a fresh context before importing it.
+- A reusable one-command workflow (`npm run screenshots`) drives the real web app with Playwright Core and installed Chrome: it starts/stops Expo on 8081, freezes the clock at 2026-10-21, imports the fixture through Settings -> Data -> Import, navigates the manifest, and writes 375x812 PNGs. Options: `--set`, `--only`, `--no-server`, `--url`, `--out`.
+- The 9 READMEs now point at the `v3-*` set, with new Category filter, Comments and Recurring screenshots and translated captions; the old `v2-*` files stay for history.
+- Guards: `tests/tooling/screenshots.test.ts` validates the fixture with `parseBackup` (references/IDs) and asserts the 9 READMEs reference the same existing images; `docs/screenshots.md` documents fixture rules, naming/versioning and how to add a screen.
+- `npm run test:all` green (162 files / 1343 tests); Playwright Core is a dev dependency and the dev server is always cleaned up.

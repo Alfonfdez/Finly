@@ -32,23 +32,26 @@ Tot funciona **al dispositiu**: les teves dades viuen en una base de dades SQLit
 
 ## Captures de pantalla
 
-![Pantalla d'inici](images/screenshots/v2-01-a-home-empty.png)<br>*Pantalla d'inici abans de configurar cap compte.*<br><br>
-![Pantalla d'inici](images/screenshots/v2-01-b-home.png)<br>*Pantalla d'inici amb comptes, gràfic de dònut i desglossament per categories.*<br><br>
-![Menú hamburguesa](images/screenshots/v3-02-hamburger.png)<br>*Menú lateral amb Inici, Comptes, Categories, Etiquetes, Comentaris, Recurrents, Totes les transaccions i Configuració.*<br><br>
-![Afegeix transacció](images/screenshots/v2-03-add-transaction.png)<br>*Afegeix una despesa o ingrés amb import, compte, categoria, dia, etiquetes, comentari i foto.*<br><br>
-![Selector de data](images/screenshots/v2-04-date-picker.png)<br>*Selector de calendari per triar un dia, setmana, mes, any o rang de període personalitzat.*<br><br>
-![Categories](images/screenshots/v2-05-categories.png)<br>*Categories organitzades per tipus (despeses/ingressos) en una graella de 4×N.*<br><br>
-![Etiquetes](images/screenshots/v2-06-tags.png)<br>*Pantalla d'etiquetes amb cerca i selecció massiva.*<br><br>
-![Totes les transaccions, buit](images/screenshots/v2-07-a-all-transactions-empty-state.png)<br>*Totes les transaccions en estat buit.*<br><br>
-![Totes les transaccions](images/screenshots/v2-07-b-all-transactions.png)<br>*Totes les transaccions amb filtres de tipus, categoria, període i etiquetes, a més d'ordenació i cerca.*<br><br>
-![Comptes](images/screenshots/v2-08-accounts.png)<br>*Pantalla de comptes amb saldos i el compte Total agregat.*<br><br>
-![Detalls d'ingrés](images/screenshots/v2-09-a-details-income.png)<br>*Detalls d'una transacció d'ingrés amb edició i eliminació.*<br><br>
-![Detalls de despesa](images/screenshots/v2-09-b-details-expense.png)<br>*Detalls d'una transacció de despesa amb edició i eliminació.*<br><br>
-![Configuració](images/screenshots/v2-10-settings.png)<br>*Configuració: Aparença, Regional, Personalització i Dades.*<br><br>
-![Configuració regional](images/screenshots/v2-11-regional-en.png)<br>*Configuració regional: idioma, moneda, separador decimal i primer dia de la setmana.*<br><br>
-![Configuració d'aparença](images/screenshots/v2-12-settings-appearance.png)<br>*Aparença: tema, mida del text i formes d'icones.*<br><br>
-![Configuració de personalització](images/screenshots/v2-13-settings-personalization.png)<br>*Personalització: valors per defecte d'inici i d'afegir transacció, i privadesa.*<br><br>
-![Configuració de dades](images/screenshots/v2-14-settings-data.png)<br>*Dades: exportació/importació de còpia de seguretat i accions d'esborrat/reinici.*<br><br>
+![Pantalla d'inici](images/screenshots/v3-01-a-home-empty.png)<br>*Instal·lació nova sense transaccions.*<br><br>
+![Pantalla d'inici](images/screenshots/v3-01-b-home.png)<br>*Pantalla d'inici amb comptes, gràfic de dònut i desglossament per categories.*<br><br>
+![Menú hamburguesa](images/screenshots/v3.1-02-hamburger.png)<br>*Menú lateral amb Inici, Comptes, Categories, Etiquetes, Comentaris, Recurrents, Totes les transaccions i Configuració.*<br><br>
+![Afegeix transacció](images/screenshots/v3-03-add-transaction.png)<br>*Afegeix una despesa o ingrés amb import, compte, categoria, dia, etiquetes, comentari i foto.*<br><br>
+![Selector de data](images/screenshots/v3-04-date-picker.png)<br>*Selector de calendari per triar un dia, setmana, mes, any o rang de període personalitzat.*<br><br>
+![Categories](images/screenshots/v3-05-categories.png)<br>*Categories organitzades per tipus (despeses/ingressos) en una graella de 4×N.*<br><br>
+![Etiquetes](images/screenshots/v3-06-tags.png)<br>*Pantalla d'etiquetes amb cerca i selecció massiva.*<br><br>
+![Totes les transaccions, buit](images/screenshots/v3-07-a-all-transactions-empty-state.png)<br>*Totes les transaccions en estat buit.*<br><br>
+![Totes les transaccions](images/screenshots/v3-07-b-all-transactions.png)<br>*Totes les transaccions amb filtres de tipus, categoria, període i etiquetes, a més d'ordenació i cerca.*<br><br>
+![Filtre de categories](images/screenshots/v3-07-c-category-filter.png)<br>*Filtre de categories amb els predefinits Totes les categories, Totes les despeses i Tots els ingressos.*<br><br>
+![Comptes](images/screenshots/v3-08-accounts.png)<br>*Pantalla de comptes amb saldos i el compte Total agregat.*<br><br>
+![Detalls d'ingrés](images/screenshots/v3-09-a-details-income.png)<br>*Detalls d'una transacció d'ingrés amb edició i eliminació.*<br><br>
+![Detalls de despesa](images/screenshots/v3-09-b-details-expense.png)<br>*Detalls d'una transacció de despesa amb edició i eliminació.*<br><br>
+![Configuració](images/screenshots/v3-10-settings.png)<br>*Configuració: Aparença, Regional, Personalització i Dades.*<br><br>
+![Configuració regional](images/screenshots/v3-11-regional-en.png)<br>*Configuració regional: idioma, moneda, separador decimal i primer dia de la setmana.*<br><br>
+![Configuració d'aparença](images/screenshots/v3-12-settings-appearance.png)<br>*Aparença: tema, mida del text i formes d'icones.*<br><br>
+![Configuració de personalització](images/screenshots/v3-13-settings-personalization.png)<br>*Personalització: valors per defecte d'inici i d'afegir transacció, i privadesa.*<br><br>
+![Configuració de dades](images/screenshots/v3-14-settings-data.png)<br>*Dades: exportació/importació de còpia de seguretat i accions d'esborrat/reinici.*<br><br>
+![Comentaris](images/screenshots/v3-15-comments.png)<br>*Pantalla de comentaris amb cerca, recompte d'ús i selecció múltiple.*<br><br>
+![Recurrents](images/screenshots/v3-16-recurring.png)<br>*Regles recurrents amb properes dates, imports i interruptors d'activa/pausada.*<br><br>
 
 ## Stack tecnològic
 
