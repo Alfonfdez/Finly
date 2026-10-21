@@ -1,4 +1,4 @@
-import { RECURRING_RULE_ERRORS, type RecurringRuleError } from '../constants/types';
+import { RECURRING_RULE_ERRORS, REPEAT_MAX_INTERVAL, type RecurringRuleError } from '../constants/types';
 import { datePart } from './formatters';
 
 export interface RecurringRuleDraft {
@@ -19,7 +19,9 @@ export interface RecurringRuleDraft {
  */
 export function validateRecurringRuleDraft(draft: RecurringRuleDraft): RecurringRuleError | null {
   if (draft.name.trim().length === 0) return RECURRING_RULE_ERRORS.nameRequired;
-  if (!Number.isInteger(draft.interval) || draft.interval < 1) return RECURRING_RULE_ERRORS.intervalInvalid;
+  if (!Number.isInteger(draft.interval) || draft.interval < 1 || draft.interval > REPEAT_MAX_INTERVAL) {
+    return RECURRING_RULE_ERRORS.intervalInvalid;
+  }
   if (draft.endDate != null && datePart(draft.endDate) <= datePart(draft.startDate)) {
     return RECURRING_RULE_ERRORS.endNotAfterStart;
   }

@@ -190,6 +190,8 @@ export const ca: Language = {
   add_error_message: 'No s\'ha pogut guardar la transacció',
   error_title: 'Error',
   error_generic: 'Alguna cosa ha anat malament. Si us plau, torna-ho a provar.',
+  web_save_error_title: 'No s\'han pogut desar els canvis',
+  web_save_error_message: 'El navegador no ha pogut desar la base de dades. Exporta una còpia de seguretat des de Configuració → Dades per conservar els canvis i recarrega la pàgina.',
   error_boundary_title: 'Alguna cosa ha anat malament',
   error_boundary_message: 'S\'ha produït un error inesperat.',
   error_boundary_retry: 'Torna-ho a provar',

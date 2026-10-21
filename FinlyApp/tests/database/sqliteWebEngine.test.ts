@@ -95,6 +95,58 @@ describe('sql.js web engine', () => {
     reloaded.close();
   });
 
+  it('keeps persisting after a failed BEGIN (no counter leak)', async () => {
+    const storage = new MemoryStorage();
+    const db = await createSqlJsDatabase(null, storage);
+    await db.execAsync('CREATE TABLE t (id INTEGER PRIMARY KEY AUTOINCREMENT)');
+
+    await expect(
+      db.withTransactionAsync(async () => {
+        // A nested BEGIN throws before the counter is raised.
+        await db.withTransactionAsync(async () => {});
+      }),
+    ).rejects.toThrow();
+
+    storage.setCount = 0;
+    await db.runAsync('INSERT INTO t DEFAULT VALUES');
+    expect(storage.setCount).toBe(1);
+    db.close();
+  });
+
+  it('retries a failed persist once and reports the final failure', async () => {
+    class FlakyStorage extends MemoryStorage {
+      calls = 0;
+      failures: number;
+      constructor(failures: number) {
+        super();
+        this.failures = failures;
+      }
+      override async set(data: Uint8Array): Promise<void> {
+        this.calls += 1;
+        if (this.failures > 0) {
+          this.failures -= 1;
+          throw new Error('quota');
+        }
+        await super.set(data);
+      }
+    }
+
+    const transient = new FlakyStorage(1);
+    const transientErrors: unknown[] = [];
+    const db = await createSqlJsDatabase(null, transient, undefined, e => transientErrors.push(e));
+    await db.execAsync('CREATE TABLE t (id INTEGER PRIMARY KEY)');
+    expect(transient.calls).toBe(2);
+    expect(transientErrors).toHaveLength(0);
+    db.close();
+
+    const broken = new FlakyStorage(Number.POSITIVE_INFINITY);
+    const brokenErrors: unknown[] = [];
+    const brokenDb = await createSqlJsDatabase(null, broken, undefined, e => brokenErrors.push(e));
+    await brokenDb.execAsync('CREATE TABLE t (id INTEGER PRIMARY KEY)');
+    expect(broken.calls).toBe(2);
+    expect(brokenErrors).toHaveLength(1);
+    brokenDb.close();
+  });
   it('keeps foreign keys enabled after persisting (export must not reset the pragma)', async () => {
     const storage = new MemoryStorage();
     const db = await createSqlJsDatabase(null, storage);

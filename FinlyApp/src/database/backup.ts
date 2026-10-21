@@ -22,7 +22,7 @@ import type {
   User,
 } from './types';
 import { sanitizeDefaultAccountConfig } from './configDefaults';
-import { TRANSACTION_TYPES } from '../constants/types';
+import { REPEAT_MAX_INTERVAL, TRANSACTION_TYPES, USER_ID } from '../constants/types';
 
 interface ConfigRow {
   key: string;
@@ -106,53 +106,90 @@ export function serializeBackup(snapshot: BackupSnapshot): string {
  * Call it before {@link applyBackup}: a rejected file then leaves the current
  * data untouched.
  */
+function isValidDateOnly(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+}
+
+function assertImportableRecurringRules(rules: RecurringRule[]): void {
+  const invalid = (reason: string) => new BackupValidationError(BACKUP_VALIDATION_CODES.invalidFormat, reason);
+  for (const rule of rules) {
+    if (!Number.isInteger(rule.interval) || rule.interval < 1 || rule.interval > REPEAT_MAX_INTERVAL) {
+      throw invalid('Recurring rule interval is out of range');
+    }
+    const dates = [rule.start_date, rule.next_due, rule.end_date, rule.skipped_from];
+    if (dates.some(date => date != null && !isValidDateOnly(date))) {
+      throw invalid('Recurring rule has an invalid date');
+    }
+    if (rule.end_date != null && rule.start_date > rule.end_date) {
+      throw invalid('Recurring rule ends before it starts');
+    }
+  }
+}
+
 export function assertImportableBackup(snapshot: BackupSnapshot): void {
-  const { users, accounts, categories } = snapshot.data;
+  const { users, accounts, categories, recurring_rules: recurringRules } = snapshot.data;
   const hasExpense = categories.some(category => category.type === TRANSACTION_TYPES.expense);
   const hasIncome = categories.some(category => category.type === TRANSACTION_TYPES.income);
-  if (users.length === 0 || accounts.length === 0 || !hasExpense || !hasIncome) {
+  // Every repository query is scoped to USER_ID: a snapshot without that user would
+  // import "successfully" and then show an empty app (and self-heal cannot add it).
+  const hasAppUser = users.some(user => user.id === USER_ID);
+  if (!hasAppUser || accounts.length === 0 || !hasExpense || !hasIncome) {
     throw new BackupValidationError(BACKUP_VALIDATION_CODES.incomplete, 'Snapshot is missing required data');
   }
+  assertImportableRecurringRules(recurringRules);
 }
 
 export async function buildBackup(
   db: DatabaseHandle,
   schemaVersion: number,
 ): Promise<BackupSnapshot> {
-  const [users, accounts, categories, transactions, tags, transactionTags, recurringRules, recurringRuleTags, config] =
-    await Promise.all([
-      db.getAllAsync<User>('SELECT * FROM users'),
-      db.getAllAsync<Account>('SELECT * FROM accounts'),
-      db.getAllAsync<Category>('SELECT * FROM categories'),
-      db.getAllAsync<Transaction>('SELECT * FROM transactions'),
-      db.getAllAsync<Tag>('SELECT * FROM tags'),
-      db.getAllAsync<TransactionTag>('SELECT * FROM transaction_tags'),
-      db.getAllAsync<RecurringRule>('SELECT * FROM recurring_rules'),
-      db.getAllAsync<RecurringRuleTag>('SELECT * FROM recurring_rule_tags'),
-      db.getAllAsync<ConfigRow>('SELECT key, value FROM config'),
-    ]);
+  // One read transaction keeps the nine tables consistent when a catch-up, import
+  // or rule edit commits between the queries.
+  let snapshot: BackupSnapshot | null = null;
+  await db.withTransactionAsync(async () => {
+    const [users, accounts, categories, transactions, tags, transactionTags, recurringRules, recurringRuleTags, config] =
+      await Promise.all([
+        db.getAllAsync<User>('SELECT * FROM users'),
+        db.getAllAsync<Account>('SELECT * FROM accounts'),
+        db.getAllAsync<Category>('SELECT * FROM categories'),
+        db.getAllAsync<Transaction>('SELECT * FROM transactions'),
+        db.getAllAsync<Tag>('SELECT * FROM tags'),
+        db.getAllAsync<TransactionTag>('SELECT * FROM transaction_tags'),
+        db.getAllAsync<RecurringRule>('SELECT * FROM recurring_rules'),
+        db.getAllAsync<RecurringRuleTag>('SELECT * FROM recurring_rule_tags'),
+        db.getAllAsync<ConfigRow>('SELECT key, value FROM config'),
+      ]);
 
-  return {
-    app: 'Finly',
-    kind: 'backup',
-    formatVersion: BACKUP_FORMAT_VERSION,
-    exportedAt: new Date().toISOString(),
-    schema: schemaVersion,
-    data: {
-      users,
-      accounts,
-      categories,
-      transactions,
-      tags,
-      transaction_tags: transactionTags,
-      recurring_rules: recurringRules,
-      recurring_rule_tags: recurringRuleTags,
-      config,
-    },
-  };
+    snapshot = {
+      app: 'Finly',
+      kind: 'backup',
+      formatVersion: BACKUP_FORMAT_VERSION,
+      exportedAt: new Date().toISOString(),
+      schema: schemaVersion,
+      data: {
+        users,
+        accounts,
+        categories,
+        transactions,
+        tags,
+        transaction_tags: transactionTags,
+        recurring_rules: recurringRules,
+        recurring_rule_tags: recurringRuleTags,
+        config,
+      },
+    };
+  });
+  if (snapshot == null) throw new Error('Backup snapshot was not built');
+  return snapshot;
 }
 
 export async function applyBackup(db: DatabaseHandle, snapshot: BackupSnapshot): Promise<void> {
+  // Defence in depth: callers normally validate before this point, but a direct call
+  // must never wipe the current data with an unusable snapshot.
+  assertImportableBackup(snapshot);
   await db.withTransactionAsync(async () => {
     await db.runAsync('DELETE FROM transactions');
     await db.runAsync('DELETE FROM transaction_tags');

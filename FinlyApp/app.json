@@ -21,7 +21,10 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.finly.app",
       "versionCode": 3,
-      "allowBackup": false
+      "allowBackup": false,
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -37,7 +40,15 @@
           "backgroundColor": "#0F172A"
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Finly needs access to your photos so you can attach a picture to a transaction.",
+          "cameraPermission": "Finly needs access to your camera so you can take a picture for a transaction.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "extra": {
       "eas": {

@@ -7,12 +7,12 @@ import {
   BackupValidationError,
   BACKUP_VALIDATION_CODES,
 } from './backup';
-import { getDatabase, SCHEMA_VERSION } from './database';
+import { initDatabase, SCHEMA_VERSION } from './database';
 
 export { BackupValidationError, BACKUP_VALIDATION_CODES };
 
 export async function exportBackup(): Promise<string> {
-  const db = await getDatabase();
+  const db = await initDatabase();
   const snapshot = await buildBackup(db, SCHEMA_VERSION);
   return serializeBackup(snapshot);
 }
@@ -24,6 +24,6 @@ export async function importBackup(json: string): Promise<void> {
   }
   // Reject unusable snapshots before touching the DB (the current data is kept).
   assertImportableBackup(snapshot);
-  const db = await getDatabase();
+  const db = await initDatabase();
   await applyBackup(db, snapshot);
 }

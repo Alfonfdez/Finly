@@ -190,6 +190,8 @@ export const it: Language = {
   add_error_message: 'Impossibile salvare la transazione',
   error_title: 'Errore',
   error_generic: 'Qualcosa è andato storto. Riprova.',
+  web_save_error_title: 'Impossibile salvare le modifiche',
+  web_save_error_message: 'Il browser non è riuscito a salvare il database. Esporta un backup da Impostazioni → Dati per conservare le modifiche, poi ricarica la pagina.',
   error_boundary_title: 'Qualcosa è andato storto',
   error_boundary_message: 'Si è verificato un errore imprevisto.',
   error_boundary_retry: 'Riprova',

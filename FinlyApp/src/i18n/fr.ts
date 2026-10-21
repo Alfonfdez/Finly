@@ -190,6 +190,8 @@ export const fr: Language = {
   add_error_message: 'Échec de l\'enregistrement de la transaction',
   error_title: 'Erreur',
   error_generic: 'Une erreur s\'est produite. Veuillez réessayer.',
+  web_save_error_title: 'Les modifications n\'ont pas pu être enregistrées',
+  web_save_error_message: 'Le navigateur n\'a pas pu enregistrer la base de données. Exportez une sauvegarde depuis Paramètres → Données pour conserver vos modifications, puis rechargez la page.',
   error_boundary_title: 'Quelque chose s\'est mal passé',
   error_boundary_message: 'Une erreur inattendue est survenue.',
   error_boundary_retry: 'Réessayer',

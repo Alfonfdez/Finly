@@ -86,7 +86,15 @@ describe('createRecurringRule', () => {
 
     await expect(createRecurringRule({ ...params, name: '   ' })).rejects.toMatchObject({ code: 'nameRequired' });
     await expect(createRecurringRule({ ...params, interval: 0 })).rejects.toMatchObject({ code: 'intervalInvalid' });
+    await expect(createRecurringRule({ ...params, interval: 100 })).rejects.toMatchObject({ code: 'intervalInvalid' });
     await expect(createRecurringRule({ ...params, endDate: '2026-01-02' })).rejects.toMatchObject({ code: 'endNotAfterStart' });
+    // The last-day anchor moves the start to Jan 31, past the picked end date.
+    await expect(createRecurringRule({
+      ...params,
+      date: '2026-01-15 00:00:00',
+      lastDay: true,
+      endDate: '2026-01-20',
+    })).rejects.toMatchObject({ code: 'endNotAfterStart' });
 
     // Nothing was written for any of the rejected drafts.
     expect(await recurringRepo.list(1)).toHaveLength(0);
@@ -104,6 +112,16 @@ describe('createRecurringRule', () => {
     expect(await recurringRepo.list(1)).toHaveLength(0);
   });
 
+  it('rolls back the rule when materializing its occurrences fails', async () => {
+    const { recurringRepo, transactionRepo, createRecurringRule } = await boot();
+    const insertSpy = vi.spyOn(recurringRepo, 'insertOccurrence').mockRejectedValueOnce(new Error('insert failed'));
+
+    await expect(createRecurringRule({ ...params, now: APR_15 })).rejects.toThrow('insert failed');
+    insertSpy.mockRestore();
+
+    expect(await recurringRepo.list(1)).toHaveLength(0);
+    expect(await transactionRepo.list()).toHaveLength(0);
+  });
   it('backfills a years-long daily backlog in a single run', async () => {
     const { recurringRepo, transactionRepo, createRecurringRule } = await boot();
 
@@ -917,5 +935,30 @@ describe('category deletion and recurring rules', () => {
 
     expect((await recurringRepo.getById(movedRule.id))?.category_id).toBe(target.id);
     expect(await recurringRepo.getById(deletedRule.id)).toBeNull();
+  });
+});
+
+describe('saveRecurringRuleEdit atomicity', () => {
+  it('rolls back the rule update and the catch-up when the past patch fails', async () => {
+    const { recurringRepo, transactionRepo, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags({ ...baseRule, name: 'Original', amount: 100 }, []);
+    const patchSpy = vi.spyOn(recurringRepo, 'updateGeneratedTransactions').mockRejectedValueOnce(new Error('patch failed'));
+
+    await expect(saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: { name: 'Changed', amount: 200 },
+      recurrence: { frequency: 'monthly', interval: 1, endDate: null },
+      scope: 'futureAndPast',
+      pastPatch: { account_id: 1, category_id: 3, amount: 200, description: 'Changed', type: 'expense' },
+      tagIds: [],
+      now: APR_15,
+    })).rejects.toThrow('patch failed');
+    patchSpy.mockRestore();
+
+    const saved = await recurringRepo.getById(rule.id);
+    expect(saved?.name).toBe('Original');
+    expect(saved?.amount).toBe(100);
+    // The pre-catch-up ran inside the same transaction, so it rolled back too.
+    expect(await transactionRepo.list()).toHaveLength(0);
   });
 });

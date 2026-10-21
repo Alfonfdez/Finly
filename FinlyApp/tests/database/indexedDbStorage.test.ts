@@ -24,6 +24,19 @@ async function readStoredValue(): Promise<unknown> {
   });
 }
 
+async function objectStorePrototype(): Promise<Record<string, unknown>> {
+  const db = await new Promise<IDBDatabase>((resolve, reject) => {
+    const request = indexedDB.open('Finly.db', 1);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains('sqlite')) request.result.createObjectStore('sqlite');
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+  const store = db.transaction('sqlite', 'readonly').objectStore('sqlite');
+  return Object.getPrototypeOf(store) as Record<string, unknown>;
+}
+
 async function loadStorage() {
   const { createIndexedDbStorage } = await import('../../src/database/storage/indexedDb');
   return createIndexedDbStorage();
@@ -73,6 +86,51 @@ describe('createIndexedDbStorage', () => {
     expect(await readStoredValue()).toBeInstanceOf(Uint8Array);
   });
 
+  it('fails closed when IndexedDB cannot be opened', async () => {
+    const failingFactory = {
+      open: () => {
+        const request: { onerror?: (event: unknown) => void } = {};
+        queueMicrotask(() => request.onerror?.({ target: request }));
+        return request;
+      },
+    };
+    (globalThis as unknown as { indexedDB: unknown }).indexedDB = failingFactory;
+    const storage = await loadStorage();
+
+    await expect(storage.get()).rejects.toThrow();
+  });
+
+  it('fails closed when reading the stored database fails', async () => {
+    const storage = await loadStorage();
+    const proto = (await objectStorePrototype()) as { get: (...args: unknown[]) => IDBRequest };
+    const original = proto.get;
+    proto.get = () => {
+      const request = {} as IDBRequest & { onerror?: (event: unknown) => void };
+      queueMicrotask(() => request.onerror?.({ target: request }));
+      return request;
+    };
+    try {
+      await expect(storage.get()).rejects.toThrow();
+    } finally {
+      proto.get = original;
+    }
+  });
+
+  it('rejects a failed write instead of pretending it was saved', async () => {
+    const storage = await loadStorage();
+    const proto = (await objectStorePrototype()) as { put: (...args: unknown[]) => IDBRequest };
+    const original = proto.put;
+    proto.put = () => {
+      const request = {} as IDBRequest & { onerror?: (event: unknown) => void };
+      queueMicrotask(() => request.onerror?.({ target: request }));
+      return request;
+    };
+    try {
+      await expect(storage.set(new Uint8Array([1]))).rejects.toThrow();
+    } finally {
+      proto.put = original;
+    }
+  });
   it('keeps working when indexedDB is unavailable', async () => {
     (globalThis as unknown as { indexedDB: IDBFactory | undefined }).indexedDB = undefined;
     const storage = await loadStorage();

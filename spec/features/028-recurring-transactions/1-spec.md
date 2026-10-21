@@ -39,7 +39,7 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 
 - New table `recurring_rules`:
   - `id`, `user_id` (FK users, cascade), `type` (`expense`/`income`), `account_id` (FK accounts, cascade), `category_id` (FK categories, cascade), `amount` (> 0), `description` (comment template, nullable).
-  - Schedule: `frequency` (`daily`/`weekly`/`monthly`/`yearly`), `interval` (>= 1, "every N"), and the anchor columns `weekday?` (weekly), `day_of_month?` (monthly/yearly), `month?` (yearly).
+  - Schedule: `frequency` (`daily`/`weekly`/`monthly`/`yearly`), `interval` (**1..99**, `REPEAT_MAX_INTERVAL`, "every N"; enforced by the form, the service and imports), and the anchor columns `weekday?` (weekly), `day_of_month?` (monthly/yearly), `month?` (yearly).
   - `start_date` (first occurrence, date-only), `end_date?` (optional last occurrence, date-only), `next_due` (date-only, the next occurrence to materialize), `active` (1/0), `created_at`, `updated_at`.
 - New junction table `recurring_rule_tags(rule_id, tag_id)` holds the tag template (both FKs cascade).
 - `transactions` gains two nullable columns:
@@ -54,7 +54,9 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 - A reconciliation routine runs on app start (after DB init), on foreground, and on the timer; each run is a single DB transaction, and runs are **serialized** (a module-level queue) so overlapping triggers - and the reconciliations a rule edit triggers - never interleave their cursors. Each rule's already-generated occurrence dates are read once per run, so a long catch-up costs one query instead of one per occurrence (the unique occurrence index stays as the last line of defence).
 - For every **active** rule with `next_due <= today`, it walks from `next_due` forward, inserting one transaction per occurrence (`date` = occurrence day at `00:00:00`, tag links copied from `recurring_rule_tags`, `recurring_rule_id`/`recurrence_date` set), then advances `next_due` past the last inserted occurrence.
 - **Missed occurrences are back-filled**: opening the app one year after a monthly rule was created creates the 12 missed transactions, each dated on its real day.
-- Idempotency is guaranteed by the unique index: a re-run never duplicates an occurrence. A run is bounded per rule (**5,000 occurrences**), and the same limit is the **creation/edit guard**: a rule whose due backlog exceeds it cannot be saved (the form blocks Save with a hint, the service rejects it), so every accepted rule catches up completely in a single run and its cursor never stays in the past. Daily ~13.7 years, weekly ~96 years, monthly effectively unlimited.
+- Idempotency is guaranteed by the unique index: a re-run never duplicates an occurrence. A run is bounded per rule (**5,000 occurrences**), and the same limit is the **creation/edit guard**: a rule whose due backlog exceeds it cannot be saved (the form blocks Save with a hint, the service rejects it), so every accepted rule catches up completely in a single run and its cursor never stays in the past. The service mirrors the form by passing the already-generated occurrence dates into `planEdit`, so both agree on the count for "Future + past" edits.
+- **Atomic writes:** creating or editing a rule runs in **one transaction** (rule row + tag links + the catch-up occurrences, and for an edit the past patch); a failure at any step rolls the whole operation back, leaving the previous rule/occurrences untouched.
+- **Schedule validation:** the service validates the **built** start (with the last-day anchor it can move to the month end) against the end date, not the raw picked date, so a last-day rule can never end before it starts. Daily ~13.7 years, weekly ~96 years, monthly effectively unlimited.
 - Occurrences are only generated up to `today`; future occurrences are generated later when they become due.
 - A rule that is `active = 0` (paused) is skipped; generated transactions are never modified by reconciliation afterwards.
 
@@ -195,6 +197,8 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 - [x] Delete all data, Factory reset, config saves and backup imports complete without transaction errors while a reconciliation run is in flight (all explicit transactions are serialized through one queue).
 - [x] An empty seeded table left by an interrupted wipe (users/accounts/categories/config) is re-seeded on the next launch without modifying existing rows; the Data screen shows a spinner and blocks cancel/confirm while a wipe or import is running.
 - [x] The service rejects a blank name, a non-positive or non-integer interval and an end date not after the start before writing anything; a legacy name longer than the limit stays editable.
+- [x] Creating or editing a rule is atomic: if the rule write, its catch-up or the past patch fails, nothing is written (no partial rule or occurrences).
+- [x] A last-day rule whose month-end start would fall after the picked end date is rejected, and an interval outside 1..99 is rejected by the service and imports.
 - [x] A rule whose due backlog exceeds 5,000 occurrences cannot be saved: the Summary and the bottom hint explain it (move the start date later, and add an end date or bring an existing one forward - the advice adapts to whether the draft already has an end date), Save is disabled, the recurring card is tinted red (create and edit), and the service rejects it without writing anything.
 - [x] An accepted rule catches up completely on save: a daily rule starting 8 Jan 2014 creates all 4,668 due transactions in one run and its next due date is in the future.
 - [x] While the app is open across a due instant, the occurrence is created without reopening the app.

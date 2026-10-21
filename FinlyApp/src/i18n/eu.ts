@@ -190,6 +190,8 @@ export const eu: Language = {
   add_error_message: 'Ezin izan da transakzioa gorde',
   error_title: 'Errorea',
   error_generic: 'Zerbait gaizki atera da. Mesedez, saiatu berriro.',
+  web_save_error_title: 'Ezin izan dira aldaketak gorde',
+  web_save_error_message: 'Nabigatzaileak ezin izan du datu-basea gorde. Esportatu segurtasun-kopia bat Ezarpenak → Datuak ataletik aldaketak gordetzeko, eta birkargatu orria.',
   error_boundary_title: 'Zerbait gaizki atera da',
   error_boundary_message: 'Ustegabeko errorea gertatu da.',
   error_boundary_retry: 'Saiatu berriro',

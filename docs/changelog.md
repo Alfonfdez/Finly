@@ -4134,3 +4134,11 @@
 - Recurring card: when the draft would create more than 5000 transactions, the card switches from the primary tint to the red error tint (border and background) until the rule is valid again.
 - Applies to both create and edit (including Future + past), matching the existing Save block; the helper is shared with the primary card colors.
 - Tests cover the primary/red tints and an edit that would exceed the limit; spec 028 and 6-screens updated.
+
+[2026-10-21] fix | FinlyApp/src/database/configDefaults.ts, FinlyApp/src/database/repositories/accountRepo.ts, FinlyApp/src/database/backup.ts, FinlyApp/src/database/backupService.ts, FinlyApp/src/database/storage/indexedDb.ts, FinlyApp/src/database/sqliteWeb.ts, FinlyApp/src/database/engine.web.ts, FinlyApp/src/database/engine.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/database/recurringService.ts, FinlyApp/src/utils/recurringRuleValidation.ts, FinlyApp/src/utils/errors.ts, FinlyApp/src/i18n (9 files), FinlyApp/app.json, FinlyApp/vitest.config.mts, FinlyApp/tests/database/{schemas,backup,contractSuite,contractTypes,indexedDbStorage,sqliteWebEngine,recurringService,transactionCreatedAt,helpers/sqliteHarness}, spec/features/025-data-backup/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/7-platform-differences.md, spec/constitution/3-roadmap.md
+- Config: per-field sanitize keeps the valid preferences when one value is corrupt.
+- Backups: require the app user (id 1), read the 9 tables in one transaction, validate imported recurring rules, re-check completeness in applyBackup and init the DB before export/import.
+- Accounts: deleting the total account no longer deletes its transactions.
+- Web: IndexedDB read/open failures fail closed, failed writes retry once then show a one-time alert, and a failed BEGIN no longer disables persistence.
+- Recurring: atomic create/edit, built-schedule last-day validation, cap parity with the form and an interval cap; failure-injection tests.
+- Tests: deterministic concurrency/created-at, harness user_version, raised Vitest timeouts; permissions block RECORD_AUDIO. Version stays 2.2.0/versionCode 3.
