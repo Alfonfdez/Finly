@@ -1165,3 +1165,15 @@ Added in the pre-release audit, applied 2026-10-21:
 - **Release metadata:** `versionCode` stays **3** (the 2.2.0 bump landed in `e2dcbda`; the 2.1.0 artifact is versionCode 2). The image-picker plugin now declares camera/photos strings and blocks `RECORD_AUDIO` (prebuild-verified).
 
 Specs: 025, 028, 7-platform-differences.
+
+## Category filter presets
+Status: completed.
+
+Added while refining the All transactions filter, applied 2026-10-21:
+- The category filter modal now shows **preset chips** instead of the single "All" chip: **All categories / All expenses / All income** on the All tab, and only the matching preset on the Expenses/Income tabs. Tapping a preset selects its exact set; tapping the active one clears the selection.
+- The Apply label is computed from the **selection**: empty keeps the type-aware no-filter label, an exact full set reads **Apply (All categories / All expenses / All income)**, and any other selection reads **Apply (N)**.
+- The screen pill names the applied selection the same way, so selecting every expense (or income) category on the All tab shows **All expenses / All income** instead of a raw count.
+- A shared `utils/categoryFilterSelection.ts` (`classifyCategorySelection`) drives the modal and the pill; `filter_apply_all` now reads "Apply (All categories)" in the 9 languages.
+- Tests: classifier unit tests, modal presets/manual-set/apply labels, screen pill; spec 021, spec 015, changelog.
+
+Spec: spec/features/021-category-filter-modal/, spec/features/015-all-transactions-screen/.

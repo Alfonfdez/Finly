@@ -11,10 +11,12 @@ import HeaderCloseButton from './HeaderCloseButton';
 import { CARD_BORDER_RADIUS } from './componentStyles';
 import { TRANSACTION_TYPES, TYPE_FILTERS, type TransactionTypeFilter } from '../constants/types';
 import { sortCategoriesWithOthersLast, categoriesOfType } from '../utils/categoryUtils';
+import { CATEGORY_SELECTION_KINDS, classifyCategorySelection } from '../utils/categoryFilterSelection';
 import { matchesAllTerms } from '../utils/search';
 import type { Category } from '../database/types';
 import { badgeShapeFor } from '../utils/badgeShape';
 import CategoryTile from './CategoryTile';
+import { TEST_IDS } from '../constants/testIds';
 
 interface Props {
   visible: boolean;
@@ -39,20 +41,25 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
   }, [selectedIds]);
   useResetOnOpen(visible, resetOnOpen);
 
-  const allCategoryIds = useMemo(() => categories.map(cat => cat.id), [categories]);
-  const visibleCategoryIds = useMemo(() => {
-    if (type === TYPE_FILTERS.all) return allCategoryIds;
-    return categoriesOfType(categories, type).map(cat => cat.id);
-  }, [categories, type, allCategoryIds]);
-  const allSelected = visibleCategoryIds.length > 0 && visibleCategoryIds.every(id => localSelectedIds.includes(id));
+  const presets = useMemo(() => {
+    const expenseIds = categoriesOfType(categories, TRANSACTION_TYPES.expense).map(cat => cat.id);
+    const incomeIds = categoriesOfType(categories, TRANSACTION_TYPES.income).map(cat => cat.id);
+    const list = type === TRANSACTION_TYPES.expense
+      ? [{ key: 'expenses', label: labels.filter_all_expense_categories, ids: expenseIds }]
+      : type === TRANSACTION_TYPES.income
+        ? [{ key: 'income', label: labels.filter_all_income_categories, ids: incomeIds }]
+        : [
+          { key: 'all', label: labels.filter_all_categories, ids: categories.map(cat => cat.id) },
+          { key: 'expenses', label: labels.filter_all_expense_categories, ids: expenseIds },
+          { key: 'income', label: labels.filter_all_income_categories, ids: incomeIds },
+        ];
+    return list.filter(preset => preset.ids.length > 0);
+  }, [categories, type, labels]);
 
-  const handleToggleAll = useCallback(() => {
-    if (allSelected) {
-      setLocalSelectedIds([]);
-    } else {
-      setLocalSelectedIds([...visibleCategoryIds]);
-    }
-  }, [allSelected, visibleCategoryIds]);
+  const handlePresetPress = useCallback((ids: number[]) => {
+    const active = ids.length === localSelectedIds.length && ids.every(id => localSelectedIds.includes(id));
+    setLocalSelectedIds(active ? [] : [...ids]);
+  }, [localSelectedIds]);
 
   const handleToggleCategory = useCallback((id: number) => {
     setLocalSelectedIds(prev => {
@@ -88,16 +95,18 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
 
   // An empty selection means "no category filter" — the same as selecting every one —
   // so Apply stays enabled and the label never reads "Apply (0)".
-  const applyFiltersAll = allSelected || localSelectedIds.length === 0;
-
   const applyLabel = useMemo(() => {
-    if (applyFiltersAll) {
+    if (localSelectedIds.length === 0) {
       if (type === TRANSACTION_TYPES.expense) return labels.filter_apply_all_expense;
       if (type === TRANSACTION_TYPES.income) return labels.filter_apply_all_income;
-      return labels.filter_apply_all;
+      return labels.filter_apply_all_categories;
     }
+    const kind = classifyCategorySelection(localSelectedIds, categories);
+    if (kind === CATEGORY_SELECTION_KINDS.all) return labels.filter_apply_all_categories;
+    if (kind === CATEGORY_SELECTION_KINDS.allExpenses) return labels.filter_apply_all_expense;
+    if (kind === CATEGORY_SELECTION_KINDS.allIncome) return labels.filter_apply_all_income;
     return labels.filter_apply(localSelectedIds.length);
-  }, [applyFiltersAll, type, localSelectedIds.length, labels]);
+  }, [type, localSelectedIds, categories, labels]);
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -115,27 +124,39 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
             onClose={() => setSearchText('')}
           />
 
-          <TouchableOpacity
-            style={[
-              styles.allChip,
-              {
-                backgroundColor: allSelected ? c.primary : c.surface,
-                borderWidth: allSelected ? 0 : 1,
-                borderColor: c.border,
-              },
-            ]}
-            onPress={handleToggleAll}
-          >
-            <Text
-              style={{
-                color: allSelected ? c.background : c.text,
-                fontSize: fs(14),
-                fontWeight: '600',
-              }}
-            >
-              {labels.home_tag_all}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.presetsRow}>
+            {presets.map((preset) => {
+              const active = preset.ids.length === localSelectedIds.length
+                && preset.ids.every(id => localSelectedIds.includes(id));
+              return (
+                <TouchableOpacity
+                  key={preset.key}
+                  style={[
+                    styles.presetChip,
+                    {
+                      backgroundColor: active ? c.primary : c.surface,
+                      borderWidth: active ? 0 : 1,
+                      borderColor: c.border,
+                    },
+                  ]}
+                  onPress={() => handlePresetPress(preset.ids)}
+                  testID={`${TEST_IDS.categoryFilterPresetPrefix}-${preset.key}`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                >
+                  <Text
+                    style={{
+                      color: active ? c.background : c.text,
+                      fontSize: fs(14),
+                      fontWeight: '600',
+                    }}
+                  >
+                    {preset.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
 
           {sections.every(section => section.data.length === 0) ? (
             <EmptyState icon="search-outline" message={labels.filter_no_results} />
@@ -171,6 +192,7 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
         <TouchableOpacity
           style={[styles.applyButton, { backgroundColor: c.primary }]}
           onPress={() => onApply(localSelectedIds)}
+          testID={TEST_IDS.categoryFilterApply}
         >
           <Text style={[styles.applyText, { color: c.background, fontSize: fs(16) }]}>
             {applyLabel}
@@ -201,12 +223,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
   },
-  allChip: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 16,
+  presetsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  presetChip: {
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 16,
-    marginBottom: 12,
   },
   scrollView: {
     flex: 1,

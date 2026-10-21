@@ -4142,3 +4142,8 @@
 - Web: IndexedDB read/open failures fail closed, failed writes retry once then show a one-time alert, and a failed BEGIN no longer disables persistence.
 - Recurring: atomic create/edit, built-schedule last-day validation, cap parity with the form and an interval cap; failure-injection tests.
 - Tests: deterministic concurrency/created-at, harness user_version, raised Vitest timeouts; permissions block RECORD_AUDIO. Version stays 2.2.0/versionCode 3.
+
+[2026-10-21] feat | FinlyApp/src/components/CategoryFilterModal.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/utils/categoryFilterSelection.ts, FinlyApp/src/constants/testIds.ts, FinlyApp/src/i18n (9 files), FinlyApp/tests/utils/categoryFilterSelection.test.ts, FinlyApp/tests/component/CategoryFilterModal.test.tsx, FinlyApp/tests/screens/AllTransactionsScreen.test.tsx, spec/features/021-category-filter-modal/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/constitution/3-roadmap.md
+- All transactions category modal: preset chips All categories / All expenses / All income on the All tab (only the matching one on type tabs); tapping the active preset clears the selection.
+- Apply and the screen pill are selection-based: full sets read All categories / All expenses / All income, other selections keep the count; empty keeps the type-aware label.
+- Shared classifyCategorySelection helper, new testIDs, filter_apply_all now 'Apply (All categories)' in the 9 languages. Tests and specs 021/015 updated.

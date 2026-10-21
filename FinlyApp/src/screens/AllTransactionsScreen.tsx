@@ -15,13 +15,14 @@ import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useTransactionListScreen } from '../hooks/useTransactionListScreen';
 import { usePeriodNavigation } from '../hooks/usePeriodNavigation';
 import { TRANSACTION_TYPES, TYPE_FILTERS, TRANSACTION_SORT_SCOPES, type NavigationProp, type TransactionTypeFilter } from '../constants/types';
+import { TEST_IDS } from '../constants/testIds';
 import type { Transaction } from '../database/types';
 import { transactionRepository } from '../database';
 import { formatSignedCurrency, HIDDEN_BALANCE, resolvePeriodRange } from '../utils/formatters';
 import { netTransactionTotal } from '../utils/calculator';
 import { showErrorAlert } from '../utils/errors';
 import { isWeb } from '../utils/platform';
-import { categoriesOfType } from '../utils/categoryUtils';
+import { CATEGORY_SELECTION_KINDS, classifyCategorySelection } from '../utils/categoryFilterSelection';
 import { t } from '../i18n';
 import AccountTrigger from '../components/AccountTrigger';
 import EyeToggle from '../components/EyeToggle';
@@ -115,15 +116,17 @@ export default function AllTransactionsScreen() {
   }, [filters.filtered]);
 
   const categoryButtonLabel = useMemo(() => {
-    const visibleCategories = typeTab === TYPE_FILTERS.all
-      ? categories
-      : categoriesOfType(categories, typeTab);
-    const allVisibleSelected = visibleCategories.length > 0 && visibleCategories.every(cat => selectedCategoryIds.includes(cat.id));
-    if (selectedCategoryIds.length === 0 || allVisibleSelected) {
+    // The pill names the applied filter: a full type set reads as "All expenses/income"
+    // even on the All tab, instead of a plain count.
+    if (selectedCategoryIds.length === 0) {
       if (typeTab === TRANSACTION_TYPES.expense) return labels.filter_all_expense_categories;
       if (typeTab === TRANSACTION_TYPES.income) return labels.filter_all_income_categories;
       return labels.filter_all_categories;
     }
+    const kind = classifyCategorySelection(selectedCategoryIds, categories);
+    if (kind === CATEGORY_SELECTION_KINDS.all) return labels.filter_all_categories;
+    if (kind === CATEGORY_SELECTION_KINDS.allExpenses) return labels.filter_all_expense_categories;
+    if (kind === CATEGORY_SELECTION_KINDS.allIncome) return labels.filter_all_income_categories;
     return labels.filter_categories_count(selectedCategoryIds.length);
   }, [selectedCategoryIds, typeTab, categories, labels]);
 
@@ -179,6 +182,7 @@ export default function AllTransactionsScreen() {
               <TouchableOpacity
                 style={[styles.categoryButton, { backgroundColor: c.surface }]}
                 onPress={() => setCategoryModalVisible(true)}
+                testID={TEST_IDS.allTransactionsCategoryFilter}
               >
                 <Ionicons name="grid-outline" size={14} color={c.primary} />
                 <Text style={[styles.categoryButtonText, { color: c.text, fontSize: fs(13) }]} numberOfLines={1}>

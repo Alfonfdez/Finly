@@ -35,13 +35,13 @@
 - Filters categories by name (case-insensitive substring match).
 - When search is active and returns no results, show empty state with search icon + "No results found" text.
 
-### 4. "All" chip
+### 4. Preset chips
 
-- Always shown as the first element above the category grid.
-- Label: "All" (multilingual, reuse `home_tag_all`).
-- When tapped: selects ALL categories (clears individual selections, sets selectedIds to all category IDs).
-- Visually: selected = `c.primary` background + `c.background` text; unselected = `surface` background + `text` text.
-- The "All" chip is considered active when `selectedIds` contains all category IDs.
+- A wrapping row of preset chips above the category grid, replacing the old "All" chip:
+  - `type = all`: **All categories** (`filter_all_categories`), **All expenses** (`filter_all_expense_categories`), **All income** (`filter_all_income_categories`).
+  - `type = expense`: only **All expenses**; `type = income`: only **All income** (never a preset of a type hidden by the tab).
+- Tapping a preset selects its exact set: all category IDs, the expense IDs or the income IDs (it replaces any individual selection). Tapping the active preset again clears the selection (no filter), matching the old toggle.
+- Visually: selected = `c.primary` background + `c.background` text; unselected = `surface` background + `text` text. Chips expose `accessibilityRole="button"` and `accessibilityState.selected`.
 
 ### 5. Category grid
 
@@ -63,8 +63,12 @@
 ### 7. Apply button
 
 - Fixed at the bottom of the modal (inside SafeAreaView).
-- Label: "Apply (N)" where N is the number of selected categories (multilingual).
-- When all categories are selected (or "All" is active), label shows "Apply (All)".
+- Label is based on the **selection**, not the type tab:
+  - Nothing selected: the type-aware no-filter label - "Apply (All categories)" on the All tab, "Apply (All expenses)" / "Apply (All income)" on a type tab.
+  - Every category selected: "Apply (All categories)".
+  - Exactly every expense category selected (even when chosen manually, or from the All tab): "Apply (All expenses)".
+  - Exactly every income category selected: "Apply (All income)".
+  - Any other selection: "Apply (N)" with the selected count.
 - Background: `c.primary`. Text: `c.background`, `fontWeight: '700'`.
 - Pressing Apply calls `onApply(selectedIds)` and closes the modal.
 
@@ -92,15 +96,15 @@
 - [x] Pressing X closes the modal without applying changes.
 - [x] A SearchBar filters categories by name (case-insensitive).
 - [x] Empty state shows when search returns no results.
-- [x] The "All" chip is shown above the grid and is visually distinct.
-- [x] Tapping "All" selects all categories.
-- [x] When all categories are individually selected, "All" appears active.
+- [x] The All tab shows the three presets (All categories / All expenses / All income); a type tab shows only its matching preset.
+- [x] Tapping a preset selects its exact set; tapping the active preset clears the selection.
+- [x] Manually selecting every category of one type shows the matching "Apply (All expenses)" / "Apply (All income)" label.
 - [x] The category grid shows icon + color + name in a 4×N layout.
 - [x] Multi-select works: tapping toggles selection, checkmark shown on selected items.
 - [x] When type='all', categories are grouped under "Expenses" and "Income" headers.
 - [x] When type='expense' or 'income', only that type's categories are shown without headers.
 - [x] The Apply button shows the count of selected categories.
-- [x] When all are selected, Apply shows "Apply (All)".
+- [x] An empty selection on the All tab shows "Apply (All categories)"; the type tabs keep "Apply (All expenses)" / "Apply (All income)".
 - [x] Pressing Apply calls onApply with the selected IDs and closes the modal.
 - [x] The modal respects the active theme and text size.
 - [x] All texts change when switching language.

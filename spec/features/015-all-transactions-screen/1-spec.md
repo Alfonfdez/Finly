@@ -41,8 +41,10 @@
 ### 4. Category filter
 
 - A trigger button/pill in the controls area shows the current category filter state:
-  - Default: the type-aware label - **All categories** (All tab), **All expenses** (Expenses tab) or **All income** (Income tab), multilingual.
-  - When categories are selected: "N categories" (multilingual, where N is the count).
+  - Default (nothing selected): the type-aware label - **All categories** (All tab), **All expenses** (Expenses tab) or **All income** (Income tab), multilingual.
+  - When a full set is selected: **All categories** (every category), **All expenses** (every expense category, even when selected manually on the All tab) or **All income** (every income category).
+  - Any other selection: "N categories" (multilingual, where N is the count).
+- The filter modal offers preset chips (see spec 021): All categories / All expenses / All income on the All tab, only the matching one on a type tab.
 - The button sits next to the recurring view chip in the first controls row; tapping it opens the `CategoryFilterModal` (spec 021).
 - The label is always shown in full (no ellipsis; `maxWidth: 160`); the filters row scrolls horizontally only when a long language or a large text size needs it.
 - The modal receives the current `type` tab value so it adapts its category display.
@@ -151,7 +153,7 @@
 - [x] When the active account is Total, the account filter is skipped and all transactions matching other filters are shown.
 - [x] The balance updates dynamically based on all active filters (type, category, period, tags).
 - [x] The period total follows the privacy setting (masked with an eye icon to reveal it temporarily; reset on refocus), while the transaction rows keep their amounts visible.
-- [x] A category filter button shows the type-aware "All categories" / "All expenses" / "All income" label by default (never ellipsized) or "N categories" when filtered.
+- [x] A category filter button shows the type-aware "All categories" / "All expenses" / "All income" label by default (never ellipsized), names a full type set after applying it (All expenses / All income, even from the All tab), and shows "N categories" for any other selection.
 - [x] Tapping the category button opens the CategoryFilterModal (021).
 - [x] Selecting categories in the modal filters the transaction list.
 - [x] PeriodTabs (Day/Week/Month/Year/Period) are shown with "Month" selected by default (from config).
