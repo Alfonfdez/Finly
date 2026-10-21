@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, type Dispatch, type SetStateAction } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
+import { ERROR_PREFIXES, logError } from '../utils/errors';
 
 export function useFocusLoad<T>(
   loader: () => Promise<T>,
@@ -36,7 +37,7 @@ export function useFocusLoad<T>(
           hasLoaded.current = true;
         }).catch((error) => {
           if (!active) return;
-          console.error('useFocusLoad failed:', error);
+          logError(ERROR_PREFIXES.focusLoad, error);
           hasLoaded.current = true;
           setLoading(false);
         });

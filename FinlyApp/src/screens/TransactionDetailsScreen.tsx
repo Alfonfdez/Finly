@@ -204,7 +204,12 @@ export default function TransactionDetailsScreen() {
             {hasPhoto ? (
               <View style={styles.photoGrid}>
                 {parsedPhotos.map((uri, index) => (
-                  <TouchableOpacity key={`${uri}-${index}`} onPress={() => { setSelectedPhotoIndex(index); setPhotoViewerVisible(true); }}>
+                  <TouchableOpacity
+                    key={`${uri}-${index}`}
+                    onPress={() => { setSelectedPhotoIndex(index); setPhotoViewerVisible(true); }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${labels.details_photo} ${index + 1}`}
+                  >
                     <Image source={{ uri }} style={styles.photoThumbnail} />
                   </TouchableOpacity>
                 ))}

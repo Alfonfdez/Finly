@@ -3,7 +3,7 @@ import { Appearance } from 'react-native';
 import { type ColorPalette, darkColors, lightColors } from '../constants/themes';
 import { configRepository } from '../database';
 import { setLanguage } from '../i18n';
-import { showErrorAlert } from '../utils/errors';
+import { ERROR_PREFIXES, logError, showErrorAlert } from '../utils/errors';
 import { isWeb } from '../utils/platform';
 import { withAlpha } from '../utils/color';
 import { THEMES, type Theme } from '../constants/types';
@@ -53,7 +53,8 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         setConfig(loaded);
         setActiveColors(resolveColors(loaded.theme));
         setLanguage(loaded.language);
-      } catch {
+      } catch (error) {
+        logError(ERROR_PREFIXES.configLoad, error);
         setActiveColors(resolveColors(DEFAULT_CONFIG.theme));
       }
       setLoading(false);
@@ -101,7 +102,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     try {
       await configRepository.save(partial);
     } catch (error) {
-      console.error('Failed to save config:', error);
+      logError(ERROR_PREFIXES.configSave, error);
       if (gen !== saveGeneration.current) return;
       setConfig(previous);
       setActiveColors(resolveColors(previous.theme));

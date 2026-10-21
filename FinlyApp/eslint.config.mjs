@@ -91,6 +91,23 @@ export default defineConfig([
     },
   },
   {
+    // The boundaries plugin classifies `src/` layers; tests, scripts, the local
+    // module and root config files are not app layers, so they are not
+    // "unknown files" to report.
+    files: [
+      'tests/**/*',
+      'scripts/**/*',
+      'modules/**/*',
+      'App.tsx',
+      'index.ts',
+      'metro.config.js',
+      'eslint.config.mjs',
+    ],
+    rules: {
+      'boundaries/no-unknown-files': 'off',
+    },
+  },
+  {
     // Formatting lives here so style slips can't pass the gate (see
     // spec/constitution/3-roadmap.md). `npm run lint:fix` applies every fixer.
     // Every rule below is an error; the whole codebase was normalised when they

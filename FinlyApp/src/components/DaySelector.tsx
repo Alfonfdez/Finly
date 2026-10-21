@@ -58,6 +58,7 @@ export default function DaySelector({ selectedDate, onSelect, onOpenCalendar, ti
         isSelected && { borderWidth: 2, borderColor: c.primary },
       ]}
       onPress={() => onSelect(date)}
+      accessibilityRole="button"
     >
       <Text style={[styles.date, { color: c.text, fontSize: fs(14) }]}>
         {isDynamic ? formatLongDate(date) : formatShortDate(date)}
@@ -77,6 +78,7 @@ export default function DaySelector({ selectedDate, onSelect, onOpenCalendar, ti
         <TouchableOpacity
           style={styles.calendarButton}
           onPress={onOpenCalendar}
+          accessibilityRole="button"
           accessibilityLabel={labels.cal_select_day}
         >
           <Ionicons name="calendar-outline" size={20} color={c.primary} />

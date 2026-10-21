@@ -22,7 +22,7 @@ import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import ListItemRow from '../components/ListItemRow';
 import ListOrEmpty from '../components/ListOrEmpty';
 import { useBulkDelete } from '../hooks/useBulkDelete';
-import { ERROR_PREFIXES } from '../utils/errors';
+import { ERROR_PREFIXES, logError, showErrorAlert } from '../utils/errors';
 import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
 import SortToggle, { commentSortFields } from '../components/SortToggle';
@@ -68,6 +68,13 @@ export default function CommentsScreen() {
     transactionRepository.getDistinctComments()
       .then(rows => {
         if (active) setComments(rows);
+      })
+      .catch((error) => {
+        logError(ERROR_PREFIXES.commentsLoad, error);
+        if (active) {
+          setComments([]);
+          showErrorAlert();
+        }
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -137,6 +144,7 @@ export default function CommentsScreen() {
         ) : undefined}
         right={!selectMode ? <Ionicons name="chevron-forward" size={18} color={c.textSecondary} /> : undefined}
         divider
+        accessibilityState={selectMode ? { selected } : undefined}
         style={[styles.row, { backgroundColor: c.surface }]}
         onPress={() => (selectMode ? toggleItem(item.description) : navigation.navigate('ModifyComment', { comment: item.description }))}
       />

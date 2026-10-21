@@ -32,6 +32,16 @@ describe('SortToggle', () => {
     resetStub();
   });
 
+  it('exposes the active field and the direction to assistive tech', async () => {
+    const view = await render(
+      <SortToggle fields={fields} sortBy={SORT_BY.date} direction={SORT_DIRECTIONS.desc} onToggleSort={() => {}} onToggleDirection={() => {}} />,
+    );
+
+    expect(view.getByRole('button', { name: 'By date' }).props.accessibilityState).toEqual({ selected: true });
+    expect(view.getByRole('button', { name: 'By amount' }).props.accessibilityState).toEqual({ selected: false });
+    expect(view.getByLabelText('Sort ascending')).toBeTruthy();
+  });
+
   it('renders a label for every field', async () => {
     const view = await render(
       <SortToggle fields={fields} sortBy={SORT_BY.date} direction={SORT_DIRECTIONS.desc} onToggleSort={() => {}} onToggleDirection={() => {}} />,

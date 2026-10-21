@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react';
+import { ERROR_PREFIXES, logError } from '../utils/errors';
 
 type AnyAsyncFn = (...args: unknown[]) => unknown;
 
@@ -12,7 +13,7 @@ export function useDeferredRefresh<T extends AnyAsyncFn>(fn: T): T {
         try {
           await fnRef.current(...args);
         } catch (err) {
-          console.error('useDeferredRefresh error:', err);
+          logError(ERROR_PREFIXES.deferredRefresh, err);
         }
         resolve();
       });

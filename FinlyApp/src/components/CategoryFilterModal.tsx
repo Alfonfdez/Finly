@@ -192,6 +192,7 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
         <TouchableOpacity
           style={[styles.applyButton, { backgroundColor: c.primary }]}
           onPress={() => onApply(localSelectedIds)}
+          accessibilityRole="button"
           testID={TEST_IDS.categoryFilterApply}
         >
           <Text style={[styles.applyText, { color: c.background, fontSize: fs(16) }]}>

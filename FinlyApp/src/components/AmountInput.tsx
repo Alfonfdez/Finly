@@ -70,6 +70,7 @@ export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label,
           <TouchableOpacity
             style={styles.calculatorButton}
             onPress={onOpenCalculator}
+            accessibilityRole="button"
             accessibilityLabel={labels.a11y_calculator}
           >
             <Ionicons name="calculator-outline" size={24} color={c.primary} />

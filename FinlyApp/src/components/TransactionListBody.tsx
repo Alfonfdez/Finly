@@ -1,9 +1,10 @@
 import { useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { View, SectionList, StyleSheet } from 'react-native';
+import { View, SectionList, StyleSheet, ActivityIndicator } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { t } from '../i18n';
 import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
+import { TEST_IDS } from '../constants/testIds';
 import type { IconName } from '../constants/types';
 import type { Account, Category, Tag, Transaction } from '../database/types';
 import type { useTransactionListScreen } from '../hooks/useTransactionListScreen';
@@ -117,23 +118,27 @@ export default function TransactionListBody({
         />
       )}
 
-      <ListOrEmpty
-        empty={!loading && filters.sections.length === 0}
-        emptyState={<EmptyState {...emptyStateProps(isSearching, emptyIcon, emptyMessage)} />}
-      >
-        <SectionList
-          contentContainerStyle={styles.listContent}
-          sections={filters.sections}
-          keyExtractor={keyExtractor}
-          renderSectionHeader={renderSectionHeader}
-          renderItem={renderItem}
-          ListEmptyComponent={<EmptyState icon={emptyIcon} message={emptyMessage} />}
-          stickySectionHeadersEnabled={false}
-          initialNumToRender={12}
-          windowSize={7}
-          removeClippedSubviews
-        />
-      </ListOrEmpty>
+      {loading ? (
+        <View style={styles.loading}>
+          <ActivityIndicator testID={TEST_IDS.listLoading} color={c.primary} />
+        </View>
+      ) : (
+        <ListOrEmpty
+          empty={filters.sections.length === 0}
+          emptyState={<EmptyState {...emptyStateProps(isSearching, emptyIcon, emptyMessage)} />}
+        >
+          <SectionList
+            contentContainerStyle={styles.listContent}
+            sections={filters.sections}
+            keyExtractor={keyExtractor}
+            renderSectionHeader={renderSectionHeader}
+            renderItem={renderItem}
+            stickySectionHeadersEnabled={false}
+            initialNumToRender={12}
+            windowSize={7}
+          />
+        </ListOrEmpty>
+      )}
 
       <AccountModal
         visible={filters.accountModalVisible}
@@ -177,6 +182,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     gap: 8,
+  },
+  loading: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   listContent: { ...LIST_BOTTOM_FAB_PADDING },
   tagFilter: { marginTop: 12 },

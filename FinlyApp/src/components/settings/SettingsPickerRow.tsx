@@ -38,6 +38,8 @@ export default function SettingsPickerRow<T extends string>({
         <TouchableOpacity
           style={[styles.trigger, { borderColor: c.border }]}
           onPress={() => setVisible(true)}
+          accessibilityRole="button"
+          accessibilityLabel={`${label}: ${selectedOption?.label ?? selected}`}
           activeOpacity={0.7}
         >
           <Text style={[styles.triggerText, { color: c.text, fontSize: fs(14) }]}>

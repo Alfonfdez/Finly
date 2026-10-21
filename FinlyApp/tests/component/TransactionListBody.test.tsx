@@ -4,6 +4,7 @@ import { Text } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import { resetStub, setConfig } from './helpers/configStub';
 import TransactionListBody from '../../src/components/TransactionListBody';
+import { TEST_IDS } from '../../src/constants/testIds';
 
 type Props = ComponentProps<typeof TransactionListBody>;
 
@@ -76,6 +77,13 @@ describe('TransactionListBody', () => {
     const view = await render(<TransactionListBody {...makeProps()} />);
     expect(view.getByText('controls')).toBeTruthy();
     expect(view.getByText('No transactions')).toBeTruthy();
+  });
+
+  it('shows a spinner while loading instead of the empty state', async () => {
+    const view = await render(<TransactionListBody {...makeProps({ loading: true })} />);
+    expect(view.getByTestId(TEST_IDS.listLoading)).toBeTruthy();
+    expect(view.queryByText('No transactions')).toBeNull();
+    expect(view.getByText('controls')).toBeTruthy();
   });
 
   it('renders the fab when not selecting', async () => {

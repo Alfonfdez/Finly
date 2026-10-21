@@ -132,6 +132,7 @@ export default function TagsScreen() {
         ) : undefined}
         right={!selectMode ? <Ionicons name="chevron-forward" size={18} color={c.textSecondary} /> : undefined}
         divider
+        accessibilityState={selectMode ? { selected } : undefined}
         style={[styles.row, { backgroundColor: c.surface }]}
         onPress={() => (selectMode ? toggleItem(item.id) : navigation.navigate('ModifyTag', { tagId: item.id }))}
       />

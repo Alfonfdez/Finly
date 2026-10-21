@@ -220,7 +220,7 @@ describe('useTransactionForm', () => {
   });
 
   it('handleCreateTag creates a tag, refreshes and selects it', async () => {
-    const { result, props } = await setup();
+    const { result } = await setup();
     setAppData({ tags: [] });
     let ok = false;
     await act(async () => {

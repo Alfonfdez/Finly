@@ -5,7 +5,7 @@ import { useConfig } from '../context/ConfigContext';
 import { nextSortPreference, toggleSortDirection } from '../utils/sortPreference';
 import { transactionRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
-import { formatDateForDB, parseDbDate } from '../utils/formatters';
+import { formatDateForDB } from '../utils/formatters';
 import { buildTagsByTransactionMap, type TagsByTransaction } from '../utils/transactionTags';
 import { matchesTransactionSearch } from '../utils/transactionSearch';
 import { matchesTagFilter, toggleTagInArray } from '../utils/tagFilter';
@@ -146,7 +146,8 @@ export function useTransactionFilters({
 
     const sorted = [...list].sort((a, b) => {
       if (sortBy === SORT_BY.date) {
-        const diff = parseDbDate(a.date).getTime() - parseDbDate(b.date).getTime();
+        // Fixed `YYYY-MM-DD HH:MM:SS` strings: lexicographic order is chronological.
+        const diff = a.date.localeCompare(b.date);
         return sortDirection === SORT_DIRECTIONS.desc ? -diff : diff;
       }
       const diff = a.amount - b.amount;

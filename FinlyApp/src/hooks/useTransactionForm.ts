@@ -26,7 +26,7 @@ import { areIdListsEqual } from '../utils/arrays';
 import { transactionRepository, tagRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
 import { consumePendingCategory } from '../utils/pendingCategory';
-import { alertError, describeError } from '../utils/errors';
+import { ERROR_PREFIXES, alertError, describeError, logError } from '../utils/errors';
 
 export type { TransactionDraft, RecurrenceDraft } from '../constants/types';
 
@@ -384,7 +384,7 @@ export function useTransactionForm({
       navigation.goBack();
       deferredRefresh();
     } catch (err) {
-      console.error('Transaction form submit failed:', describeError(err));
+      logError(ERROR_PREFIXES.transactionSubmit, describeError(err));
       alertError(errorTitle, errorMessage);
     } finally {
       setSubmitting(false);

@@ -57,6 +57,8 @@ function CategoryTile({
           },
       ]}
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
       accessibilityLabel={accessibilityLabel ?? label}
     >
       <View style={styles.iconWrap}>

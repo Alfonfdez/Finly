@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { useDebouncedCallback } from './useDebouncedCallback';
 import { DEBOUNCE_MS } from '../constants/types';
+import { ERROR_PREFIXES, logError } from '../utils/errors';
 
 interface UseNameDuplicateCheckOptions {
   existsByName: (name: string, excludeId?: number) => Promise<boolean>;
@@ -36,7 +37,7 @@ export function useNameDuplicateCheck(options: UseNameDuplicateCheckOptions) {
       const exists = await existsByName(value.trim(), excludeId);
       setNameError(exists ? duplicateErrorKey : null);
     } catch (error) {
-      console.error('Failed to check name duplicate:', error);
+      logError(ERROR_PREFIXES.duplicateCheck, error);
       setNameError(null);
     } finally {
       setCheckingName(false);

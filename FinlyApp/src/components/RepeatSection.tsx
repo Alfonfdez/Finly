@@ -200,7 +200,7 @@ export default function RepeatSection({
               onPress={() => onChangeInterval(Math.max(REPEAT_MIN_INTERVAL, interval - 1))}
               disabled={interval <= REPEAT_MIN_INTERVAL}
               accessibilityRole="button"
-              accessibilityLabel="-"
+              accessibilityLabel={labels.a11y_decrease}
             >
               <Ionicons name="remove" size={18} color={c.text} />
             </TouchableOpacity>
@@ -210,7 +210,7 @@ export default function RepeatSection({
               onPress={() => onChangeInterval(Math.min(REPEAT_MAX_INTERVAL, interval + 1))}
               disabled={interval >= REPEAT_MAX_INTERVAL}
               accessibilityRole="button"
-              accessibilityLabel="+"
+              accessibilityLabel={labels.a11y_increase}
             >
               <Ionicons name="add" size={18} color={c.text} />
             </TouchableOpacity>

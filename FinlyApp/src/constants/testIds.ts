@@ -19,4 +19,5 @@ export const TEST_IDS = {
   allTransactionsCategoryFilter: 'all-transactions-category-filter',
   categoryFilterPresetPrefix: 'category-filter-preset',
   categoryFilterApply: 'category-filter-apply',
+  listLoading: 'list-loading',
 } as const;

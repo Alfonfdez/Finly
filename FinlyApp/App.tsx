@@ -9,6 +9,8 @@ import { ConfigProvider , useConfig } from './src/context/ConfigContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import ErrorBoundary from './src/components/ErrorBoundary';
 import { initDatabase } from './src/database/database';
+import { ERROR_PREFIXES, logError } from './src/utils/errors';
+import { t } from './src/i18n';
 import { darkColors } from './src/constants/themes';
 
 import { THEMES } from './src/constants/types';
@@ -34,7 +36,7 @@ function SplashScreen({ exiting }: { exiting: boolean }) {
       logoOpacity.stopAnimation();
       logoScale.stopAnimation();
     };
-  }, []);
+  }, [logoOpacity, logoScale]);
 
   useEffect(() => {
     if (!exiting) return;
@@ -42,7 +44,7 @@ function SplashScreen({ exiting }: { exiting: boolean }) {
       Animated.timing(exitOpacity, { toValue: 0, duration: EXIT_DURATION, useNativeDriver: USE_NATIVE_DRIVER }),
       Animated.timing(exitScale, { toValue: 1.1, duration: EXIT_DURATION, useNativeDriver: USE_NATIVE_DRIVER }),
     ]).start();
-  }, [exiting]);
+  }, [exiting, exitOpacity, exitScale]);
 
   return (
     <Animated.View style={[styles.splash, { opacity: exitOpacity, transform: [{ scale: exitScale }] }]}>
@@ -72,6 +74,7 @@ export default function App() {
         await initDatabase();
         setDbReady(true);
       } catch (error) {
+        logError(ERROR_PREFIXES.databaseInit, error);
         setDbError(String(error));
       }
     }
@@ -83,13 +86,16 @@ export default function App() {
       setExiting(true);
       setTimeout(() => setShowApp(true), EXIT_DURATION);
     }
-  }, [dbReady]);
+  }, [dbReady, exiting, showApp]);
 
   if (dbError) {
+    const labels = t();
     return (
       <View style={styles.error}>
         <StatusBar style="light" />
-        <Text style={{ color: 'white', padding: 20 }}>{dbError}</Text>
+        <Text style={styles.errorTitle}>{labels.error_title}</Text>
+        <Text style={styles.errorMessage}>{labels.error_generic}</Text>
+        <Text style={styles.errorDetail} numberOfLines={4}>{dbError}</Text>
       </View>
     );
   }
@@ -131,5 +137,21 @@ const styles = StyleSheet.create({
   error: {
     flex: 1,
     backgroundColor: darkColors.background,
+    padding: 20,
+    justifyContent: 'center',
+    gap: 8,
+  },
+  errorTitle: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  errorMessage: {
+    color: 'white',
+    fontSize: 14,
+  },
+  errorDetail: {
+    color: '#94A3B8',
+    fontSize: 12,
   },
 });

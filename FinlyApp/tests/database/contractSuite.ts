@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { UNTAGGED_ID } from '../../src/database/helpers';
-import { UNTAGGED_LABEL, MAX_SUGGESTIONS, THEMES, TRANSACTION_TYPES } from '../../src/constants/types';
+import { UNTAGGED_LABEL, MAX_SUGGESTIONS, THEMES, TRANSACTION_TYPES, TAG_SORT_BY, SORT_DIRECTIONS } from '../../src/constants/types';
 import { DEFAULT_CONFIG } from '../../src/database/configDefaults';
-import { TAG_SORT_BY, SORT_DIRECTIONS } from '../../src/constants/types';
 import type { ContractBackend, NewAccount, NewCategory, NewTransaction } from './contractTypes';
 import type { Transaction } from '../../src/database/types';
 

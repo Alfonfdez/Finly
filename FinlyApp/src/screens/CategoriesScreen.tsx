@@ -65,9 +65,8 @@ export default function CategoriesScreen() {
     return () => { active = false; };
   }, [categories]);
 
-  const categoriesByType = useMemo(() => {
-    return sortCategories(categoriesOfType(categories, activeType), sortBy, sortDirection, usage);
-  }, [categories, activeType, sortBy, sortDirection, usage]);
+  // No memo: display names are localized, so the order must refresh with the language.
+  const categoriesByType = sortCategories(categoriesOfType(categories, activeType), sortBy, sortDirection, usage);
 
   const handleToggleSort = useCallback((field: CategorySortBy) => {
     const next = nextSortPreference({ by: sortBy, direction: sortDirection }, field, defaultCategorySortDirection);

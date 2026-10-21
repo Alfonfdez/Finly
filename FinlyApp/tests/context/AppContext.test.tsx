@@ -38,10 +38,8 @@ vi.mock('../../src/database/recurringService', () => ({
 }));
 
 const walletAccount: Account = { id: 1, user_id: 1, name: 'Wallet', initial_balance: 0, icon: 'wallet', color: '#22D3EE', is_total: 0, created_at: '2026-01-01' };
-const totalAccount: Account = { id: 2, user_id: 1, name: 'Total', initial_balance: 0, icon: 'trending-up', color: '#34D399', is_total: 1, created_at: '2026-01-01' };
 const catFood: Category = { id: 1, user_id: 1, name: 'Food', icon: 'cart', color: '#ff0000', type: 'expense', created_at: '2026-01-01' };
 const catTravel: Category = { id: 2, user_id: 1, name: 'Travel', icon: 'car', color: '#00ff00', type: 'expense', created_at: '2026-01-01' };
-const catSalary: Category = { id: 3, user_id: 1, name: 'Salary', icon: 'wallet', color: '#0000ff', type: 'income', created_at: '2026-01-01' };
 
 function tx(overrides: Partial<Transaction> = {}): Transaction {
   return {

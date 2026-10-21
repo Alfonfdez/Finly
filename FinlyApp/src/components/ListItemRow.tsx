@@ -110,6 +110,7 @@ function ListItemRow({
     <TouchableOpacity
       style={rowStyle}
       onPress={onPress}
+      accessibilityRole="button"
       activeOpacity={activeOpacity}
       hitSlop={hitSlop}
       accessibilityLabel={accessibilityLabel}

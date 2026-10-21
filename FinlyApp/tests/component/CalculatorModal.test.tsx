@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent, act } from '@testing-library/react-native';
 import CalculatorModal from '../../src/components/CalculatorModal';
-import { CALC_KEYS } from '../../src/constants/types';
 
 const mockOnAccept = vi.fn();
 const mockOnCancel = vi.fn();

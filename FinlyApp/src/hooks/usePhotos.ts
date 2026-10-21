@@ -4,7 +4,7 @@ import { File, Paths } from 'expo-file-system';
 import { isWeb } from '../utils/platform';
 import { deletePhotoFile } from '../utils/photoUtils';
 import { t } from '../i18n';
-import { showErrorAlert } from '../utils/errors';
+import { ERROR_PREFIXES, logError, showErrorAlert } from '../utils/errors';
 
 let photoCounter = 0;
 
@@ -46,7 +46,7 @@ export function usePhotos(initialPhotos: string[] = []) {
         const dest = copyPhotoToStorage(src);
         setPhotos(prev => [...prev, dest]);
       } catch (err) {
-        console.error('Failed to copy photo:', err);
+        logError(ERROR_PREFIXES.photoCopy, err);
         showErrorAlert(t());
       }
     }
@@ -68,7 +68,7 @@ export function usePhotos(initialPhotos: string[] = []) {
         const dest = copyPhotoToStorage(src);
         setPhotos(prev => [...prev, dest]);
       } catch (err) {
-        console.error('Failed to copy photo:', err);
+        logError(ERROR_PREFIXES.photoCopy, err);
         showErrorAlert(t());
       }
     }
@@ -78,7 +78,7 @@ export function usePhotos(initialPhotos: string[] = []) {
     try {
       await deletePhotoFile(uri);
     } catch (err) {
-      console.error('Failed to delete photo:', err);
+      logError(ERROR_PREFIXES.photoDelete, err);
     }
     setPhotos(prev => prev.filter(p => p !== uri));
   }, []);

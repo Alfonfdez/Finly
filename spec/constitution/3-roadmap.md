@@ -1177,3 +1177,13 @@ Added while refining the All transactions filter, applied 2026-10-21:
 - Tests: classifier unit tests, modal presets/manual-set/apply labels, screen pill; spec 021, spec 015, changelog.
 
 Spec: spec/features/021-category-filter-modal/, spec/features/015-all-transactions-screen/.
+
+## 2.2.0 accessibility and cleanup pass
+Status: completed.
+
+Added before the 2.2.0 release, applied 2026-10-21:
+- **Accessibility:** list rows and category tiles expose `button` roles and their selected state; sort fields/tabs/filter chips expose roles and `selected`; the sort arrow announces the direction action (ascending/descending) instead of repeating the field; the FAB, eye/select toggles, day picker, calculator, tag add/close, settings pickers, detail photo thumbnails and the Home chart toggle have roles/labels; `ToggleRow` is a single switch focus stop; DayPicker today/selected suffixes and the stepper +/- are localized (7 new keys in the 9 languages).
+- **Lists:** no empty-state flash while loading (a centered spinner instead), `removeClippedSubviews` removed from the transaction list (iOS blank rows), the date sort compares the fixed timestamp strings instead of parsing dates, and localized sort/search results refresh immediately on a language change.
+- **Errors:** the recurring rule-name load and the comments load are logged and surfaced; the App database failure shows a localized message plus the raw details.
+- **Lint:** `npm run lint` now enforces **0 warnings** (`--max-warnings 0`). `boundaries/no-unknown-files` is off for tests/scripts/modules/root files (they are not app layers), the unused vars/imports and App effect dependencies are fixed, and dead code (`FormError`, two i18n keys) was removed. The drawer inactive icons use the secondary color.
+- **Tests:** role/state assertions (rows, tiles, sort, tabs, toggle), the loading state, and a language-change reorder test; `npm run test:all` green twice (161 files / 1340 tests).

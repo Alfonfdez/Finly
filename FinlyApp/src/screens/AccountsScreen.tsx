@@ -16,7 +16,6 @@ import { accountRepository } from '../database';
 import { sanitizeDefaultAccounts } from '../database/configDefaults';
 import { ERROR_PREFIXES, runWithErrorAlert, showErrorAlert } from '../utils/errors';
 import { isTotalAccount } from '../database/helpers';
-import type { Account } from '../database/types';
 import { formatAmount, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
 import { withAlpha } from '../utils/color';
 import { badgeShapeFor } from '../utils/badgeShape';
@@ -114,10 +113,8 @@ export default function AccountsScreen() {
     return accounts.filter(a => isTotalAccount(a) || matchesAccountSearch(a, searchText));
   }, [accounts, searchText]);
 
-  const visibleAccounts = useMemo(
-    () => sortAccounts(filteredAccounts, sortBy, sortDirection),
-    [filteredAccounts, sortBy, sortDirection],
-  );
+  // No memo: display names are localized, so the order must refresh with the language.
+  const visibleAccounts = sortAccounts(filteredAccounts, sortBy, sortDirection);
 
   const visibleIds = useMemo(
     () => visibleAccounts.filter(a => !isTotalAccount(a)).map(a => a.id),
@@ -179,6 +176,7 @@ export default function AccountsScreen() {
           badgeIconSize={24}
           badgeRadius={12}
           badgeAlpha={13}
+          accessibilityState={selectMode && selectable ? { selected } : undefined}
           right={
             selectMode && selectable ? (
               <Ionicons
