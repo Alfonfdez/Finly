@@ -32,23 +32,26 @@ Dena **gailuan** exekutatzen da: zure datuak tokiko SQLite datu-base batean bizi
 
 ## Pantaila-argazkiak
 
-![Hasierako pantaila](images/screenshots/v2-01-a-home-empty.png)<br>*Hasierako pantaila edozein kontu konfiguratu aurretik.*<br><br>
-![Hasierako pantaila](images/screenshots/v2-01-b-home.png)<br>*Hasierako pantaila kontuekin, donut grafikoarekin eta kategoria-sailkapenarekin.*<br><br>
-![Alboko menua](images/screenshots/v3-02-hamburger.png)<br>*Alboko menua: Hasiera, Kontuak, Kategoriak, Etiketak, Iruzkinak, Errepikariak, Transakzio guztiak eta Ezarpenak.*<br><br>
-![Transakzioa gehitu](images/screenshots/v2-03-add-transaction.png)<br>*Gehitu gastu edo sarrera bat zenbateko, kontu, kategoria, egun, etiketa, iruzkin eta argazkiarekin.*<br><br>
-![Data-hautatzailea](images/screenshots/v2-04-date-picker.png)<br>*Egutegi-hautatzailea egun, aste, hilabete, urte edo aldi-tarte pertsonalizatua aukeratzeko.*<br><br>
-![Kategoriak](images/screenshots/v2-05-categories.png)<br>*Kategoriak motaren arabera antolatuta (gastuak/sarrerak) 4×N sare batean.*<br><br>
-![Etiketak](images/screenshots/v2-06-tags.png)<br>*Etiketa-pantaila bilaketarekin eta hautaketa masiboarekin.*<br><br>
-![Transakzio guztiak, hutsik](images/screenshots/v2-07-a-all-transactions-empty-state.png)<br>*Transakzio guztiak egoera hutsean.*<br><br>
-![Transakzio guztiak](images/screenshots/v2-07-b-all-transactions.png)<br>*Transakzio guztiak mota, kategoria, aldi eta etiketa iragazkiekin, ordenarekin eta bilaketarekin.*<br><br>
-![Kontuak](images/screenshots/v2-08-accounts.png)<br>*Kontuen pantaila saldoekin eta Total kontu agregatuarekin.*<br><br>
-![Sarrera-xehetasunak](images/screenshots/v2-09-a-details-income.png)<br>*Sarrera-transakzio baten xehetasunak, edizio eta ezabaketarekin.*<br><br>
-![Gastu-xehetasunak](images/screenshots/v2-09-b-details-expense.png)<br>*Gastu-transakzio baten xehetasunak, edizio eta ezabaketarekin.*<br><br>
-![Ezarpenak](images/screenshots/v2-10-settings.png)<br>*Ezarpenak: Itxura, Eskualdea, Pertsonalizazioa eta Datuak.*<br><br>
-![Eskualde-ezarpenak](images/screenshots/v2-11-regional-en.png)<br>*Eskualde-ezarpenak: hizkuntza, moneta, hamartar bereizlea eta asteko lehen eguna.*<br><br>
-![Itxura-ezarpenak](images/screenshots/v2-12-settings-appearance.png)<br>*Itxura: gaia, testu-tamaina eta ikono-formak.*<br><br>
-![Pertsonalizazio-ezarpenak](images/screenshots/v2-13-settings-personalization.png)<br>*Pertsonalizazioa: hasiera eta transakzio-gehiketa lehenetsiak eta pribatutasuna.*<br><br>
-![Datu-ezarpenak](images/screenshots/v2-14-settings-data.png)<br>*Datuak: babeskopia esportatu/inportatu eta ezabatu/berrezarri ekintzak.*<br><br>
+![Hasierako pantaila](images/screenshots/v3-01-a-home-empty.png)<br>*Instalazio berria transakziorik gabe.*<br><br>
+![Hasierako pantaila](images/screenshots/v3-01-b-home.png)<br>*Hasierako pantaila kontuekin, donut grafikoarekin eta kategoria-sailkapenarekin.*<br><br>
+![Alboko menua](images/screenshots/v3.1-02-hamburger.png)<br>*Alboko menua: Hasiera, Kontuak, Kategoriak, Etiketak, Iruzkinak, Errepikariak, Transakzio guztiak eta Ezarpenak.*<br><br>
+![Transakzioa gehitu](images/screenshots/v3-03-add-transaction.png)<br>*Gehitu gastu edo sarrera bat zenbateko, kontu, kategoria, egun, etiketa, iruzkin eta argazkiarekin.*<br><br>
+![Data-hautatzailea](images/screenshots/v3-04-date-picker.png)<br>*Egutegi-hautatzailea egun, aste, hilabete, urte edo aldi-tarte pertsonalizatua aukeratzeko.*<br><br>
+![Kategoriak](images/screenshots/v3-05-categories.png)<br>*Kategoriak motaren arabera antolatuta (gastuak/sarrerak) 4×N sare batean.*<br><br>
+![Etiketak](images/screenshots/v3-06-tags.png)<br>*Etiketa-pantaila bilaketarekin eta hautaketa masiboarekin.*<br><br>
+![Transakzio guztiak, hutsik](images/screenshots/v3-07-a-all-transactions-empty-state.png)<br>*Transakzio guztiak egoera hutsean.*<br><br>
+![Transakzio guztiak](images/screenshots/v3-07-b-all-transactions.png)<br>*Transakzio guztiak mota, kategoria, aldi eta etiketa iragazkiekin, ordenarekin eta bilaketarekin.*<br><br>
+![Kategoria-iragazkia](images/screenshots/v3-07-c-category-filter.png)<br>*Kategoria-iragazkia Kategoria guztiak, Gastu guztiak eta Sarrera guztiak aurre-ezarpenekin.*<br><br>
+![Kontuak](images/screenshots/v3-08-accounts.png)<br>*Kontuen pantaila saldoekin eta Total kontu agregatuarekin.*<br><br>
+![Sarrera-xehetasunak](images/screenshots/v3-09-a-details-income.png)<br>*Sarrera-transakzio baten xehetasunak, edizio eta ezabaketarekin.*<br><br>
+![Gastu-xehetasunak](images/screenshots/v3-09-b-details-expense.png)<br>*Gastu-transakzio baten xehetasunak, edizio eta ezabaketarekin.*<br><br>
+![Ezarpenak](images/screenshots/v3-10-settings.png)<br>*Ezarpenak: Itxura, Eskualdea, Pertsonalizazioa eta Datuak.*<br><br>
+![Eskualde-ezarpenak](images/screenshots/v3-11-regional-en.png)<br>*Eskualde-ezarpenak: hizkuntza, moneta, hamartar bereizlea eta asteko lehen eguna.*<br><br>
+![Itxura-ezarpenak](images/screenshots/v3-12-settings-appearance.png)<br>*Itxura: gaia, testu-tamaina eta ikono-formak.*<br><br>
+![Pertsonalizazio-ezarpenak](images/screenshots/v3-13-settings-personalization.png)<br>*Pertsonalizazioa: hasiera eta transakzio-gehiketa lehenetsiak eta pribatutasuna.*<br><br>
+![Datu-ezarpenak](images/screenshots/v3-14-settings-data.png)<br>*Datuak: babeskopia esportatu/inportatu eta ezabatu/berrezarri ekintzak.*<br><br>
+![Iruzkinak](images/screenshots/v3-15-comments.png)<br>*Iruzkinen pantaila bilaketarekin, erabilera-kontagailuekin eta hautapen anitzarekin.*<br><br>
+![Errepikariak](images/screenshots/v3-16-recurring.png)<br>*Errepikapen-arauak hurrengo epemugekin, zenbatekoekin eta aktibo/pausatuta etengailuekin.*<br><br>
 
 ## Teknologia-pila
 

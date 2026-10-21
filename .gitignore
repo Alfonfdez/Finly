@@ -1,3 +1,4 @@
 opencode.jsonc
 .opencode/
 .playwright-mcp/
+node_modules/

@@ -32,23 +32,26 @@ Alles läuft **auf dem Gerät**: Ihre Daten leben in einer lokalen SQLite-Datenb
 
 ## Screenshots
 
-![Startbildschirm](images/screenshots/v2-01-a-home-empty.png)<br>*Startbildschirm, bevor Konten eingerichtet wurden.*<br><br>
-![Startbildschirm](images/screenshots/v2-01-b-home.png)<br>*Startbildschirm mit Konten, Donut-Diagramm und Aufschlüsselung nach Kategorie.*<br><br>
-![Hamburger-Menü](images/screenshots/v3-02-hamburger.png)<br>*Seitliches Menü mit Startseite, Konten, Kategorien, Tags, Kommentare, Wiederkehrend, Alle Transaktionen und Einstellungen.*<br><br>
-![Transaktion hinzufügen](images/screenshots/v2-03-add-transaction.png)<br>*Ausgabe oder Einnahme mit Betrag, Konto, Kategorie, Tag, Tags, Kommentar und Foto hinzufügen.*<br><br>
-![Datumsauswahl](images/screenshots/v2-04-date-picker.png)<br>*Kalenderauswahl, um einen Tag, eine Woche, einen Monat, ein Jahr oder einen freien Zeitraum zu wählen.*<br><br>
-![Kategorien](images/screenshots/v2-05-categories.png)<br>*Kategorien nach Typ (Ausgaben/Einnahmen) in einem 4×N-Raster organisiert.*<br><br>
-![Tags](images/screenshots/v2-06-tags.png)<br>*Tags-Bildschirm mit Suche und Massenauswahl.*<br><br>
-![Alle Transaktionen, leer](images/screenshots/v2-07-a-all-transactions-empty-state.png)<br>*Alle Transaktionen im Leerzustand.*<br><br>
-![Alle Transaktionen](images/screenshots/v2-07-b-all-transactions.png)<br>*Alle Transaktionen mit Typ-, Kategorie-, Zeitraum- und Tag-Filtern sowie Sortierung und Suche.*<br><br>
-![Konten](images/screenshots/v2-08-accounts.png)<br>*Konten-Bildschirm mit Guthaben und aggregiertem Gesamt-Konto.*<br><br>
-![Einnahmen-Details](images/screenshots/v2-09-a-details-income.png)<br>*Details einer Einnahmen-Transaktion mit Bearbeiten und Löschen.*<br><br>
-![Ausgaben-Details](images/screenshots/v2-09-b-details-expense.png)<br>*Details einer Ausgaben-Transaktion mit Bearbeiten und Löschen.*<br><br>
-![Einstellungen](images/screenshots/v2-10-settings.png)<br>*Einstellungen: Darstellung, Regional, Personalisierung und Daten.*<br><br>
-![Regionale Einstellungen](images/screenshots/v2-11-regional-en.png)<br>*Regionale Einstellungen: Sprache, Währung, Dezimaltrennzeichen und erster Tag der Woche.*<br><br>
-![Darstellungs-Einstellungen](images/screenshots/v2-12-settings-appearance.png)<br>*Darstellung: Design, Textgröße und Icon-Formen.*<br><br>
-![Personalisierungs-Einstellungen](images/screenshots/v2-13-settings-personalization.png)<br>*Personalisierung: Start- und Transaktion-hinzufügen-Standardwerte sowie Datenschutz.*<br><br>
-![Daten-Einstellungen](images/screenshots/v2-14-settings-data.png)<br>*Daten: Sicherungs-Export/Import und Lösch-/Reset-Aktionen.*<br><br>
+![Startbildschirm](images/screenshots/v3-01-a-home-empty.png)<br>*Neue Installation ohne Transaktionen.*<br><br>
+![Startbildschirm](images/screenshots/v3-01-b-home.png)<br>*Startbildschirm mit Konten, Donut-Diagramm und Aufschlüsselung nach Kategorie.*<br><br>
+![Hamburger-Menü](images/screenshots/v3.1-02-hamburger.png)<br>*Seitliches Menü mit Startseite, Konten, Kategorien, Tags, Kommentare, Wiederkehrend, Alle Transaktionen und Einstellungen.*<br><br>
+![Transaktion hinzufügen](images/screenshots/v3-03-add-transaction.png)<br>*Ausgabe oder Einnahme mit Betrag, Konto, Kategorie, Tag, Tags, Kommentar und Foto hinzufügen.*<br><br>
+![Datumsauswahl](images/screenshots/v3-04-date-picker.png)<br>*Kalenderauswahl, um einen Tag, eine Woche, einen Monat, ein Jahr oder einen freien Zeitraum zu wählen.*<br><br>
+![Kategorien](images/screenshots/v3-05-categories.png)<br>*Kategorien nach Typ (Ausgaben/Einnahmen) in einem 4×N-Raster organisiert.*<br><br>
+![Tags](images/screenshots/v3-06-tags.png)<br>*Tags-Bildschirm mit Suche und Massenauswahl.*<br><br>
+![Alle Transaktionen, leer](images/screenshots/v3-07-a-all-transactions-empty-state.png)<br>*Alle Transaktionen im Leerzustand.*<br><br>
+![Alle Transaktionen](images/screenshots/v3-07-b-all-transactions.png)<br>*Alle Transaktionen mit Typ-, Kategorie-, Zeitraum- und Tag-Filtern sowie Sortierung und Suche.*<br><br>
+![Kategorie-Filter](images/screenshots/v3-07-c-category-filter.png)<br>*Kategoriefilter mit den Vorgaben Alle Kategorien, Alle Ausgaben und Alle Einnahmen.*<br><br>
+![Konten](images/screenshots/v3-08-accounts.png)<br>*Konten-Bildschirm mit Guthaben und aggregiertem Gesamt-Konto.*<br><br>
+![Einnahmen-Details](images/screenshots/v3-09-a-details-income.png)<br>*Details einer Einnahmen-Transaktion mit Bearbeiten und Löschen.*<br><br>
+![Ausgaben-Details](images/screenshots/v3-09-b-details-expense.png)<br>*Details einer Ausgaben-Transaktion mit Bearbeiten und Löschen.*<br><br>
+![Einstellungen](images/screenshots/v3-10-settings.png)<br>*Einstellungen: Darstellung, Regional, Personalisierung und Daten.*<br><br>
+![Regionale Einstellungen](images/screenshots/v3-11-regional-en.png)<br>*Regionale Einstellungen: Sprache, Währung, Dezimaltrennzeichen und erster Tag der Woche.*<br><br>
+![Darstellungs-Einstellungen](images/screenshots/v3-12-settings-appearance.png)<br>*Darstellung: Design, Textgröße und Icon-Formen.*<br><br>
+![Personalisierungs-Einstellungen](images/screenshots/v3-13-settings-personalization.png)<br>*Personalisierung: Start- und Transaktion-hinzufügen-Standardwerte sowie Datenschutz.*<br><br>
+![Daten-Einstellungen](images/screenshots/v3-14-settings-data.png)<br>*Daten: Sicherungs-Export/Import und Lösch-/Reset-Aktionen.*<br><br>
+![Kommentare](images/screenshots/v3-15-comments.png)<br>*Kommentaransicht mit Suche, Nutzungszählern und Mehrfachauswahl.*<br><br>
+![Wiederkehrend](images/screenshots/v3-16-recurring.png)<br>*Wiederkehrende Regeln mit nächsten Fälligkeiten, Beträgen und Aktiv/Pausiert-Schaltern.*<br><br>
 
 ## Technologie-Stack
 

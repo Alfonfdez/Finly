@@ -17,6 +17,7 @@ All commands run from the `FinlyApp/` directory.
 | Typecheck | `npm run typecheck` |
 | Lint | `npm run lint` |
 | Web E2E (spec criteria) | `npx expo start --web` then run the `verification-loop` skill (Playwright, 375px viewport) |
+| Release screenshots | `npm run screenshots` (starts/stops Expo web; see `docs/screenshots.md`) |
 | Mobile E2E (Maestro flows) | boot the emulator (`emulator -avd finly_test`), `adb reverse tcp:8081 tcp:8081`, `npx expo start`, then `maestro test .maestro/<flow>.yaml` |
 
 ### Windows / PowerShell notes (host is win32, PowerShell 5.1)
@@ -35,7 +36,7 @@ All commands run from the `FinlyApp/` directory.
 
 ### Current suite baseline
 
-Verified 2026-10-21: **161 test files / 1341 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
+Verified 2026-10-22: **162 test files / 1343 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
 
 Native E2E baseline (2026-09-09, SDK 57 + v2.0.0 release package): all 10 Maestro flows PASS on the `finly_test` emulator against `com.finly.app` after `expo prebuild` + `assembleDebug`.
 
@@ -65,6 +66,7 @@ acceptance criteria in a real browser.
 | Dual-storage contract suite | Vitest + sql.js (real SQLite in Node) | ✅ Implemented (Phase B) | One shared SQLite engine (native parity via expo-sqlite mock + web via sql.js/IndexedDB), repo contract + DB drift vs types |
 | Backup round-trip | Vitest + sql.js (`tests/database/backup.test.ts`) | ✅ Implemented (025) | Snapshot build/parse/apply round-trips (photos + tag links), empty-DB export, invalid / FK / newer-version rejection with rollback, facade round-trip |
 | UI / E2E verification | Playwright MCP + `verification-loop` skill | ✅ Implemented (Phase C) | Spec acceptance criteria in a live Expo web app |
+| Release screenshots | Playwright Core + installed Chrome | ✅ Implemented | 20-screen `v3` README set from the committed fixture (375×812, fixed clock, empty + populated states) |
 | CI pipeline | GitHub Actions (`.github/workflows/ci.yml`) | ✅ Implemented | `npm run test:all` on every PR to `develop`/`main` and push to those branches |
 | SDD alignment | `spec/` + changelog + test mapping | ✅ In use | Every feature spec maps to tests + changelog entries |
 

@@ -32,23 +32,26 @@ Everything runs **on-device**: your data lives in a local SQLite database (sql.j
 
 ## Screenshots
 
-![Home screen](images/screenshots/v2-01-a-home-empty.png)<br>*Home screen before any account is configured.*<br><br>
-![Home screen](images/screenshots/v2-01-b-home.png)<br>*Home screen with accounts, donut chart, and category breakdown.*<br><br>
-![Hamburger menu](images/screenshots/v3-02-hamburger.png)<br>*Drawer menu with Home, Accounts, Categories, Tags, Comments, Recurring, All Transactions, and Settings.*<br><br>
-![Add transaction](images/screenshots/v2-03-add-transaction.png)<br>*Add an expense or income with amount, account, category, day, tags, comment, and photo.*<br><br>
-![Date picker](images/screenshots/v2-04-date-picker.png)<br>*Calendar picker for choosing a day, week, month, year, or custom period range.*<br><br>
-![Categories](images/screenshots/v2-05-categories.png)<br>*Categories organized by type (expenses/income) in a 4×N grid.*<br><br>
-![Tags](images/screenshots/v2-06-tags.png)<br>*Tags screen with search and bulk selection.*<br><br>
-![All transactions empty state](images/screenshots/v2-07-a-all-transactions-empty-state.png)<br>*All Transactions empty state.*<br><br>
-![All transactions](images/screenshots/v2-07-b-all-transactions.png)<br>*All Transactions with type, category, period, and tag filters plus sorting and search.*<br><br>
-![Accounts](images/screenshots/v2-08-accounts.png)<br>*Accounts screen with balances and the aggregate Total account.*<br><br>
-![Income details](images/screenshots/v2-09-a-details-income.png)<br>*Income transaction details with edit and delete.*<br><br>
-![Expense details](images/screenshots/v2-09-b-details-expense.png)<br>*Expense transaction details with edit and delete.*<br><br>
-![Settings](images/screenshots/v2-10-settings.png)<br>*Settings: Appearance, Regional, Personalization, and Data.*<br><br>
-![Regional settings](images/screenshots/v2-11-regional-en.png)<br>*Regional settings: language, currency, decimal separator, and first day of week.*<br><br>
-![Appearance settings](images/screenshots/v2-12-settings-appearance.png)<br>*Appearance: theme, text size, and icon shapes.*<br><br>
-![Personalization settings](images/screenshots/v2-13-settings-personalization.png)<br>*Personalization: home and add-transaction defaults plus privacy.*<br><br>
-![Data settings](images/screenshots/v2-14-settings-data.png)<br>*Data: backup export/import and delete/reset actions.*<br><br>
+![Home screen](images/screenshots/v3-01-a-home-empty.png)<br>*Fresh install with no transactions.*<br><br>
+![Home screen](images/screenshots/v3-01-b-home.png)<br>*Home screen with accounts, donut chart, and category breakdown.*<br><br>
+![Hamburger menu](images/screenshots/v3.1-02-hamburger.png)<br>*Drawer menu with Home, Accounts, Categories, Tags, Comments, Recurring, All Transactions, and Settings.*<br><br>
+![Add transaction](images/screenshots/v3-03-add-transaction.png)<br>*Add an expense or income with amount, account, category, day, tags, comment, and photo.*<br><br>
+![Date picker](images/screenshots/v3-04-date-picker.png)<br>*Calendar picker for choosing a day, week, month, year, or custom period range.*<br><br>
+![Categories](images/screenshots/v3-05-categories.png)<br>*Categories organized by type (expenses/income) in a 4×N grid.*<br><br>
+![Tags](images/screenshots/v3-06-tags.png)<br>*Tags screen with search and bulk selection.*<br><br>
+![All transactions empty state](images/screenshots/v3-07-a-all-transactions-empty-state.png)<br>*All Transactions empty state.*<br><br>
+![All transactions](images/screenshots/v3-07-b-all-transactions.png)<br>*All Transactions with type, category, period, and tag filters plus sorting and search.*<br><br>
+![Category filter](images/screenshots/v3-07-c-category-filter.png)<br>*Category filter with the All categories, All expenses and All income presets.*<br><br>
+![Accounts](images/screenshots/v3-08-accounts.png)<br>*Accounts screen with balances and the aggregate Total account.*<br><br>
+![Income details](images/screenshots/v3-09-a-details-income.png)<br>*Income transaction details with edit and delete.*<br><br>
+![Expense details](images/screenshots/v3-09-b-details-expense.png)<br>*Expense transaction details with edit and delete.*<br><br>
+![Settings](images/screenshots/v3-10-settings.png)<br>*Settings: Appearance, Regional, Personalization, and Data.*<br><br>
+![Regional settings](images/screenshots/v3-11-regional-en.png)<br>*Regional settings: language, currency, decimal separator, and first day of week.*<br><br>
+![Appearance settings](images/screenshots/v3-12-settings-appearance.png)<br>*Appearance: theme, text size, and icon shapes.*<br><br>
+![Personalization settings](images/screenshots/v3-13-settings-personalization.png)<br>*Personalization: home and add-transaction defaults plus privacy.*<br><br>
+![Data settings](images/screenshots/v3-14-settings-data.png)<br>*Data: backup export/import and delete/reset actions.*<br><br>
+![Comments](images/screenshots/v3-15-comments.png)<br>*Comments screen with search, usage counts and bulk selection.*<br><br>
+![Recurring](images/screenshots/v3-16-recurring.png)<br>*Recurring rules with next due dates, amounts and active/paused toggles.*<br><br>
 
 ## Tech Stack
 
