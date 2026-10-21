@@ -16,4 +16,7 @@ export const TEST_IDS = {
   formHintSlot: 'form-hint-slot',
   formMutedSlot: 'form-muted-slot',
   detailsTags: 'details-tags',
+  allTransactionsCategoryFilter: 'all-transactions-category-filter',
+  categoryFilterPresetPrefix: 'category-filter-preset',
+  categoryFilterApply: 'category-filter-apply',
 } as const;

@@ -109,6 +109,7 @@ export const es: Language = {
   filter_all_income_categories: 'Todos los ingresos',
   filter_apply: (n: number) => `Aplicar (${n})`,
   filter_apply_all: 'Aplicar (Todas)',
+  filter_apply_all_categories: 'Aplicar (Todas las categorías)',
   filter_apply_all_expense: 'Aplicar (Todos los gastos)',
   filter_apply_all_income: 'Aplicar (Todos los ingresos)',
   filter_no_results: 'No se encontraron resultados',

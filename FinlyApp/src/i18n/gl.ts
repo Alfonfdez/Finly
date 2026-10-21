@@ -109,6 +109,7 @@ export const gl: Language = {
   filter_all_income_categories: 'Todas as receitas',
   filter_apply: (n: number) => `Aplicar (${n})`,
   filter_apply_all: 'Aplicar (Todas)',
+  filter_apply_all_categories: 'Aplicar (Todas as categorías)',
   filter_apply_all_expense: 'Aplicar (Todos os gastos)',
   filter_apply_all_income: 'Aplicar (Todos os ingresos)',
   filter_no_results: 'Non se encontraron resultados',

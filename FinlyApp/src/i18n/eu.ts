@@ -109,6 +109,7 @@ export const eu: Language = {
   filter_all_income_categories: 'Sarrera guztiak',
   filter_apply: (n: number) => `Aplikatu (${n})`,
   filter_apply_all: 'Aplikatu (Guztiak)',
+  filter_apply_all_categories: 'Aplikatu (Kategoria guztiak)',
   filter_apply_all_expense: 'Aplikatu (Gastu guztiak)',
   filter_apply_all_income: 'Aplikatu (Sarrera guztiak)',
   filter_no_results: 'Ez da emaitzarik aurkitu',

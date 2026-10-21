@@ -109,6 +109,7 @@ export const ca: Language = {
   filter_all_income_categories: 'Tots els ingressos',
   filter_apply: (n: number) => `Aplicar (${n})`,
   filter_apply_all: 'Aplicar (Totes)',
+  filter_apply_all_categories: 'Aplicar (Totes les categories)',
   filter_apply_all_expense: 'Aplicar (Totes les despeses)',
   filter_apply_all_income: 'Aplicar (Tots els ingressos)',
   filter_no_results: 'No s\'han trobat resultats',

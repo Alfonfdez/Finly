@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { fireEvent, render, waitFor, userEvent } from '@testing-library/react-native';
+import { fireEvent, render, waitFor, userEvent, within } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import AllTransactionsScreen from '../../src/screens/AllTransactionsScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
@@ -7,6 +7,7 @@ import { setConfig, getConfigStub } from '../component/helpers/configStub';
 import { formatSignedCurrency, HIDDEN_BALANCE } from '../../src/utils/formatters';
 import type { Account, Category, Transaction } from '../../src/database/types';
 import { PERIODS } from '../../src/constants/types';
+import { TEST_IDS } from '../../src/constants/testIds';
 
 function flattenStyle(style: unknown): Record<string, unknown> {
   const out: Record<string, unknown> = {};
@@ -121,6 +122,25 @@ describe('AllTransactionsScreen', () => {
     expect(view.getByText('No transactions')).toBeTruthy();
   });
 
+  it('labels the pill with the applied category selection', async () => {
+    const food: Category = { ...category };
+    const travel: Category = { ...category, id: 2, name: 'Travel' };
+    const salary: Category = { ...category, id: 3, name: 'Salary', type: 'income' };
+    setAppData({
+      categories: [food, travel, salary],
+      categoriesById: new Map([[1, food], [2, travel], [3, salary]]),
+    });
+    const view = await render(<AllTransactionsScreen />);
+
+    // All tab -> All expenses preset -> the pill names the applied set.
+    await fireEvent.press(view.getByTestId(TEST_IDS.allTransactionsCategoryFilter));
+    await fireEvent.press(view.getByTestId(`${TEST_IDS.categoryFilterPresetPrefix}-expenses`));
+    await fireEvent.press(view.getByTestId(TEST_IDS.categoryFilterApply));
+
+    await waitFor(() => expect(
+      within(view.getByTestId(TEST_IDS.allTransactionsCategoryFilter)).getByText('All expenses'),
+    ).toBeTruthy());
+  });
   it('loads transactions through the repository on focus', async () => {
     list.mockResolvedValue([tx(1, { description: 'Rent' })]);
     await render(<AllTransactionsScreen />);
