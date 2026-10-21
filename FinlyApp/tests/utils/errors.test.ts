@@ -100,7 +100,7 @@ describe('errors helpers', () => {
     });
   });
   describe('ERROR_PREFIXES', () => {
-    it('defines a prefix for every destructive write action', () => {
+    it('defines the shared prefix vocabulary', () => {
       expect(Object.keys(ERROR_PREFIXES)).toEqual([
         'accountCreate',
         'accountUpdate',
@@ -120,6 +120,13 @@ describe('errors helpers', () => {
         'transactionsDelete',
         'recurringDelete',
         'recurringUpdate',
+        'backupShare',
+        'backupExport',
+        'backupRead',
+        'backupImport',
+        'transactionsDeleteAll',
+        'dataDeleteAll',
+        'factoryReset',
         'databaseInit',
         'configLoad',
         'configSave',

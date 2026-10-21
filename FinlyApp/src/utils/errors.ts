@@ -83,6 +83,14 @@ export const ERROR_PREFIXES = {
   transactionsDelete: 'Failed to delete transactions',
   recurringDelete: 'Failed to delete recurring rules',
   recurringUpdate: 'Failed to update recurring rule',
+  // Data screen (backup + destructive actions).
+  backupShare: 'Failed to share backup',
+  backupExport: 'Failed to export backup',
+  backupRead: 'Failed to read backup file',
+  backupImport: 'Failed to import backup',
+  transactionsDeleteAll: 'Failed to delete all transactions',
+  dataDeleteAll: 'Failed to delete all data',
+  factoryReset: 'Failed to reset to factory state',
   // Loads, refreshes and internal lifecycle logs.
   databaseInit: 'Database initialization failed',
   configLoad: 'Failed to load config',

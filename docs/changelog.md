@@ -4169,3 +4169,8 @@
 
 [2026-10-21] docs | AGENTS.md
 - Lint documentation now states that npm run lint enforces 0 errors and 0 warnings (--max-warnings 0).
+
+[2026-10-21] refactor | FinlyApp/src/utils/errors.ts, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/tests/utils/errors.test.ts, FinlyApp/tests/screens/DataScreen.test.tsx
+- Added the seven data-screen prefixes to ERROR_PREFIXES: backupShare, backupExport, backupRead, backupImport, transactionsDeleteAll, dataDeleteAll and factoryReset.
+- DataScreen now logs every failure through logError; no inline console.error prefixes remain in the app.
+- Updated the prefix vocabulary test and asserted the shared prefix in the export-failure and incomplete-import tests; test:all green (161 files / 1341 tests).
