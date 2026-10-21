@@ -45,6 +45,8 @@ export default function TabBar<T extends string>({ tabs, active, onChange }: Pro
           key={tab.key}
           style={[styles.tab, active === tab.key && { backgroundColor: c.background }]}
           onPress={() => onChange(tab.key)}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: active === tab.key }}
           accessibilityLabel={tab.accessibilityLabel}
         >
           <Text

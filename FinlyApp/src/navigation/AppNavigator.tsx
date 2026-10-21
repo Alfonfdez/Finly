@@ -106,7 +106,7 @@ function DrawerNavItem({
       )}
       onPress={onPress}
       icon={({ color, size }) => <Ionicons name={icon} size={size} color={color} />}
-      inactiveTintColor={c.primary}
+      inactiveTintColor={c.textSecondary}
     />
   );
 }

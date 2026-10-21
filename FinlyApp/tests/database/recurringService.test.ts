@@ -309,7 +309,7 @@ describe('materializeDueRecurring', () => {
   const OCT_13 = new Date(2026, 9, 13, 12, 0, 0);
 
   it('editing an ended rule to extend its end date revives it', async () => {
-    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const { recurringRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
     const rule = await recurringRepo.createWithTags(dailySep, []);
     expect(await materializeDueRecurring(OCT_5)).toBe(30);
 

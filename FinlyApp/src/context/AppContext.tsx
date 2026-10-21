@@ -9,7 +9,7 @@ import { matchesTagFilter, toggleTagInArray } from '../utils/tagFilter';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { useConfig } from './ConfigContext';
 import { formatDateForDB, resolvePeriodRange, endOfDay } from '../utils/formatters';
-import { showErrorAlert } from '../utils/errors';
+import { ERROR_PREFIXES, logError, showErrorAlert } from '../utils/errors';
 
 interface AppState {
   activeAccount: Account | null;
@@ -128,7 +128,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         try {
           await materializeDueRecurring();
         } catch (error) {
-          console.error('Failed to materialize recurring transactions:', error);
+          logError(ERROR_PREFIXES.recurringMaterialize, error);
         }
         const [accountsData, categoriesData, tagsData] = await Promise.all([
           accountRepo.list(USER_ID),
@@ -140,7 +140,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setTags(tagsData);
         applyHomeDefaults(accountsData);
       } catch (error) {
-        console.error('Failed to load initial data:', error);
+        logError(ERROR_PREFIXES.initialDataLoad, error);
         showErrorAlert();
       } finally {
         setLoading(false);
@@ -184,7 +184,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           ),
         );
       } catch (error) {
-        console.error('Failed to refresh data:', error);
+        logError(ERROR_PREFIXES.dataRefresh, error);
       }
     }
     refreshAll();
@@ -253,7 +253,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (state !== 'active') return;
       materializeDueRecurring()
         .then(() => setTransactionsVersion(v => v + 1))
-        .catch(error => console.error('Failed to materialize recurring transactions:', error));
+        .catch(error => logError(ERROR_PREFIXES.recurringMaterialize, error));
     });
     return () => subscription.remove();
   }, []);
@@ -267,7 +267,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       timer = setTimeout(() => {
         materializeDueRecurring()
           .then(() => setTransactionsVersion(v => v + 1))
-          .catch(error => console.error('Failed to materialize recurring transactions:', error))
+          .catch(error => logError(ERROR_PREFIXES.recurringMaterialize, error))
           .finally(schedule);
       }, nextMidnight.getTime() - now.getTime());
     };
@@ -280,7 +280,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const categoriesData = await categoryRepo.list(USER_ID);
       setCategories(categoriesData);
     } catch (error) {
-      console.error('Failed to refresh categories:', error);
+      logError(ERROR_PREFIXES.categoriesRefresh, error);
       showErrorAlert();
     }
   }, []);
@@ -300,7 +300,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       });
       setTransactionsVersion(v => v + 1);
     } catch (error) {
-      console.error('Failed to refresh accounts:', error);
+      logError(ERROR_PREFIXES.accountsRefresh, error);
       showErrorAlert();
     }
   }, [appConfig.homeDefaultAccountId]);
@@ -310,7 +310,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const tagsData = await tagRepo.list(USER_ID);
       setTags(tagsData);
     } catch (error) {
-      console.error('Failed to refresh tags:', error);
+      logError(ERROR_PREFIXES.tagsRefresh, error);
       showErrorAlert();
     }
   }, []);
@@ -332,7 +332,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCustomDateState(defaultCustomDate());
       setTransactionsVersion(v => v + 1);
     } catch (error) {
-      console.error('Failed to reset all data:', error);
+      logError(ERROR_PREFIXES.dataReset, error);
       showErrorAlert();
     }
   }, [applyHomeDefaults]);

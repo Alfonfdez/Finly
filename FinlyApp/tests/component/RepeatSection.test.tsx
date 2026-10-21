@@ -96,9 +96,9 @@ describe('RepeatSection', () => {
   it('increments and decrements the interval', async () => {
     const { props, view } = renderSection({ interval: 3 });
     const v = await view;
-    await fireEvent.press(v.getByLabelText('+'));
+    await fireEvent.press(v.getByLabelText('Increase'));
     expect(props.onChangeInterval).toHaveBeenCalledWith(4);
-    await fireEvent.press(v.getByLabelText('-'));
+    await fireEvent.press(v.getByLabelText('Decrease'));
     expect(props.onChangeInterval).toHaveBeenCalledWith(2);
   });
 

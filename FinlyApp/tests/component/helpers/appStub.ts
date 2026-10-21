@@ -1,5 +1,4 @@
 import { vi } from 'vitest';
-import type { ReactNode } from 'react';
 import type { Account, Category, Tag, Transaction } from '../../../src/database/types';
 import { PERIODS, TRANSACTION_TYPES, type Period, type TransactionType, type CategoryWithTotal } from '../../../src/constants/types';
 

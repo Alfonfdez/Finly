@@ -330,9 +330,9 @@ describe('ModifyRecurringScreen', () => {
     await fireEvent.press(view.getByRole('button', { name: 'Monthly' }));
     await waitFor(() => expect(view.getByText('Save')).toBeDisabled());
 
-    await fireEvent.press(view.getByRole('button', { name: '+' }));
+    await fireEvent.press(view.getByRole('button', { name: 'Increase' }));
     await waitFor(() => expect(view.getByText('Save')).toBeEnabled());
-    await fireEvent.press(view.getByRole('button', { name: '-' }));
+    await fireEvent.press(view.getByRole('button', { name: 'Decrease' }));
     await waitFor(() => expect(view.getByText('Save')).toBeDisabled());
   });
 

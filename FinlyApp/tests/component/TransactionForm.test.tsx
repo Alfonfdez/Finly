@@ -142,8 +142,6 @@ vi.mock('../../src/hooks/useTransactionForm', () => ({
   }),
 }));
 
-const catFood: Category = { id: 1, user_id: 1, name: 'Food', icon: 'cart', color: '#22D3EE', type: 'expense', created_at: '2026-01-01' };
-
 function renderForm(overrides: {
   initialDay?: Date;
   ruleMode?: boolean;

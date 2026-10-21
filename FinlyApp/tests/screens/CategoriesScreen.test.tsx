@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { StyleSheet } from 'react-native';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { useState, type ReactNode } from 'react';
 import CategoriesScreen from '../../src/screens/CategoriesScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
-import { getConfigStub, resetStub } from '../component/helpers/configStub';
+import { getConfigStub, resetStub, setConfig } from '../component/helpers/configStub';
+import { setLanguage } from '../../src/i18n';
 import { MAX_CATEGORIES_PER_TYPE, OTHERS_CATEGORY_ID } from '../../src/constants/types';
 import { TEST_IDS } from '../../src/constants/testIds';
 import type { Category } from '../../src/database/types';
@@ -85,6 +86,7 @@ function incomeCategory(id: number, name: string): Category {
 describe('CategoriesScreen', () => {
   beforeEach(() => {
     resetStub();
+    setLanguage('en');
     nav.setOptions.mockClear();
     nav.navigate.mockClear();
     mockCountByCategoryIdsMap.mockReset().mockResolvedValue({});
@@ -147,6 +149,22 @@ describe('CategoriesScreen', () => {
     expect(view.getByText('No results found')).toBeTruthy();
   });
 
+  it('reorders name-sorted categories when the language changes', async () => {
+    setAppData({
+      categories: [expenseCategory(13, 'Clothing'), expenseCategory(10, 'Education')],
+    });
+    const view = await renderWithHeader();
+    await view.findByText('Clothing');
+
+    const order = () => view.getAllByText(/^(Clothing|Education|Ropa|Educación)$/).map(n => String(n.props.children));
+    expect(order()).toEqual(['Clothing', 'Education']);
+
+    await act(async () => {
+      setLanguage('es');
+      setConfig({ language: 'es' });
+    });
+    expect(order()).toEqual(['Educación', 'Ropa']);
+  });
   it('opens the modify screen when a category is selected', async () => {
     setAppData({ categories: [expenseCategory(1, 'Food'), expenseCategory(2, 'Transport')] });
     const view = await render(<CategoriesScreen />);

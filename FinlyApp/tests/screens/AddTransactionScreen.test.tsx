@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import AddTransactionScreen from '../../src/screens/AddTransactionScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
 import { setConfig, resetStub } from '../component/helpers/configStub';
-import type { Account, Category, Transaction, Tag } from '../../src/database/types';
+import type { Account, Category, Tag } from '../../src/database/types';
 import type { TransactionType } from '../../src/constants/types';
 
 const nav = { setOptions: vi.fn(), navigate: vi.fn(), goBack: vi.fn() };

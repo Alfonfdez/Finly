@@ -7,6 +7,7 @@ import { isSameDay } from '../utils/formatters';
 import { resolveDefaultAccountId } from '../utils/defaultAccount';
 import { recurringRepository } from '../database';
 import { createRecurringRule } from '../database/recurringService';
+import { ERROR_PREFIXES, logError, showErrorAlert } from '../utils/errors';
 import TransactionForm from '../components/TransactionForm';
 
 export default function CreateRecurringScreen() {
@@ -32,7 +33,10 @@ export default function CreateRecurringScreen() {
     let active = true;
     recurringRepository.list(USER_ID)
       .then(rules => { if (active) setExistingRepeatNames(rules.map(r => r.name)); })
-      .catch(() => {});
+      .catch((error) => {
+        logError(ERROR_PREFIXES.recurringNamesLoad, error);
+        if (active) showErrorAlert();
+      });
     return () => { active = false; };
   }, []);
 

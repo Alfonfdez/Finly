@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, act, waitFor } from '@testing-library/react-native';
-import type { ReactNode } from 'react';
 
 import { ConfigProvider, useConfig } from '../../src/context/ConfigContext';
 import { DEFAULT_CONFIG } from '../../src/database/configDefaults';

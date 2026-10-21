@@ -31,6 +31,11 @@ export function showWebPersistAlert() {
   alertError(l.web_save_error_title, l.web_save_error_message);
 }
 
+/** Log a failed operation with the shared prefix vocabulary (`ERROR_PREFIXES`). */
+export function logError(prefix: string, error: unknown, ...extra: unknown[]): void {
+  console.error(`${prefix}:`, error, ...extra);
+}
+
 export function showErrorAlert(labels?: { error_title: string; error_generic: string }) {
   const l = labels ?? t();
   alertError(l.error_title, l.error_generic);
@@ -53,7 +58,7 @@ export async function runWithErrorAlert<T>(
   try {
     return await fn();
   } catch (err) {
-    console.error(`${prefix}:`, err);
+    logError(prefix, err);
     showErrorAlert(labels);
     return undefined;
   }
@@ -78,4 +83,27 @@ export const ERROR_PREFIXES = {
   transactionsDelete: 'Failed to delete transactions',
   recurringDelete: 'Failed to delete recurring rules',
   recurringUpdate: 'Failed to update recurring rule',
+  // Loads, refreshes and internal lifecycle logs.
+  databaseInit: 'Database initialization failed',
+  configLoad: 'Failed to load config',
+  configSave: 'Failed to save config',
+  initialDataLoad: 'Failed to load initial data',
+  dataRefresh: 'Failed to refresh data',
+  recurringMaterialize: 'Failed to materialize recurring transactions',
+  categoriesRefresh: 'Failed to refresh categories',
+  accountsRefresh: 'Failed to refresh accounts',
+  tagsRefresh: 'Failed to refresh tags',
+  dataReset: 'Failed to reset all data',
+  commentsLoad: 'Failed to load comments',
+  recurringNamesLoad: 'Failed to load recurring rule names',
+  tagBreakdownsLoad: 'Failed to load tag breakdowns',
+  duplicateCheck: 'Failed to check name duplicate',
+  focusLoad: 'useFocusLoad failed',
+  deferredRefresh: 'useDeferredRefresh error',
+  transactionSubmit: 'Transaction form submit failed',
+  photoCollect: 'Failed to collect transaction photos',
+  photoCopy: 'Failed to copy photo',
+  photoDelete: 'Failed to delete photo',
+  webPersist: 'Failed to persist web database',
+  errorBoundary: 'ErrorBoundary caught',
 } as const;

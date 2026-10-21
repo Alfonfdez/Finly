@@ -2,6 +2,7 @@ import { sql, type Column } from 'drizzle-orm';
 import { getDrizzle } from './drizzle/engine';
 import { transactions } from './drizzle/schema';
 import { parsePhotos, deletePhotoFile } from '../utils/photoUtils';
+import { ERROR_PREFIXES, logError } from '../utils/errors';
 
 const COLUMN_MAP: Record<string, Column> = {
   id: transactions.id,
@@ -36,7 +37,7 @@ export async function collectTransactionPhotos(column: string, ...values: (strin
   try {
     return await selectPhotoRows(column, values);
   } catch (error) {
-    console.error('Failed to collect transaction photos:', error);
+    logError(ERROR_PREFIXES.photoCollect, error);
     return [];
   }
 }
@@ -51,7 +52,7 @@ export async function collectAllTransactionPhotos(): Promise<string[]> {
       .all();
     return photoUrisOf(rows);
   } catch (error) {
-    console.error('Failed to collect transaction photos:', error);
+    logError(ERROR_PREFIXES.photoCollect, error);
     return [];
   }
 }
@@ -61,7 +62,7 @@ export async function deletePhotoUris(uris: string[]): Promise<void> {
     try {
       await deletePhotoFile(uri);
     } catch (error) {
-      console.error('Failed to delete transaction photo:', error);
+      logError(ERROR_PREFIXES.photoDelete, error);
     }
   }
 }

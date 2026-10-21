@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { BUTTON_BORDER_RADIUS } from './componentStyles';
 import { t } from '../i18n';
+import { ERROR_PREFIXES, logError } from '../utils/errors';
 
 interface ThemeColors {
   background: string;
@@ -30,7 +31,7 @@ class ErrorBoundaryBase extends Component<BaseProps, State> {
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     if (__DEV__) {
-      console.error('ErrorBoundary caught:', error, info.componentStack);
+      logError(ERROR_PREFIXES.errorBoundary, error, info.componentStack);
     }
   }
 

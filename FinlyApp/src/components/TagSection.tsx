@@ -82,6 +82,7 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
         </Text>
         <TouchableOpacity
           onPress={() => setShowSearch(!showSearch)}
+          accessibilityRole="button"
           accessibilityLabel={labels.add_tag_search}
         >
           <Ionicons name="search-outline" size={20} color={c.primary} />

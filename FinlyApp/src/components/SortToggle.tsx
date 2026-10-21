@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
+import { t } from '../i18n';
 import { useFontSize } from '../hooks/useFontSize';
 import {
   SORT_BY, SORT_DIRECTIONS, RECURRING_SORT_BY, TAG_SORT_BY, COMMENT_SORT_BY, ACCOUNT_SORT_BY, CATEGORY_SORT_BY,
@@ -93,6 +94,7 @@ export default function SortToggle<T extends string>({
 }: Props<T>) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
+  const labels = t();
 
   const arrowIcon: IconName = direction === SORT_DIRECTIONS.desc ? 'arrow-down' : 'arrow-up';
 
@@ -102,7 +104,12 @@ export default function SortToggle<T extends string>({
         const active = field.key === sortBy;
         return (
           <View key={field.key} style={styles.option}>
-            <TouchableOpacity onPress={() => onToggleSort(field.key)} accessibilityLabel={field.label}>
+            <TouchableOpacity
+              onPress={() => onToggleSort(field.key)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              accessibilityLabel={field.label}
+            >
               <Text style={[
                 styles.label,
                 { color: active ? c.primary : c.textSecondary, fontSize: fs(13) },
@@ -115,7 +122,7 @@ export default function SortToggle<T extends string>({
                 onPress={onToggleDirection}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 accessibilityRole="button"
-                accessibilityLabel={field.label}
+                accessibilityLabel={direction === SORT_DIRECTIONS.desc ? labels.a11y_sort_ascending : labels.a11y_sort_descending}
               >
                 <Ionicons name={arrowIcon} size={14} color={c.primary} />
               </TouchableOpacity>

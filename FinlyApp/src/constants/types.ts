@@ -66,7 +66,7 @@ export type RecurrenceScope = keyof typeof RECURRENCE_SCOPES;
 
 export const REPEAT_MIN_INTERVAL = 1;
 export const REPEAT_MAX_INTERVAL = 99;
-/** Rule names are shown on one line (list row, transaction row, details); 30 keeps
+/** Rule names use up to two lines in lists and wrap in the details view; 30 keeps
  *  them the same length as account/category names and readable where they appear. */
 export const REPEAT_NAME_MAX_LENGTH = 30;
 

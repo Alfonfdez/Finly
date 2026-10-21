@@ -73,6 +73,18 @@ describe('TabBar', () => {
     expect(onChange).toHaveBeenCalledWith('expense');
   });
 
+  it('exposes the tab role and the selected state', async () => {
+    const view = await render(<TabBar tabs={tabs} active="income" onChange={() => {}} />);
+
+    const active = view.getByText('Income').parent!;
+    expect(active.props.accessibilityRole).toBe('tab');
+    expect(active.props.accessibilityState).toEqual({ selected: true });
+
+    const inactive = view.getByText('All').parent!;
+    expect(inactive.props.accessibilityRole).toBe('tab');
+    expect(inactive.props.accessibilityState).toEqual({ selected: false });
+  });
+
   it('exposes the optional accessibility label per tab', async () => {
     const onChange = vi.fn();
     const view = await render(<TabBar tabs={tabs} active="all" onChange={onChange} />);

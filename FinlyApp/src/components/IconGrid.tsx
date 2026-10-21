@@ -59,6 +59,7 @@ export default function IconGrid({ icons, selectedIcon, selectedColor = null, sh
               isSelected && { borderWidth: 2, borderColor },
             ]}
             onPress={() => onSelect(icon)}
+            accessibilityRole="button"
             accessibilityLabel={icon}
             accessibilityState={{ selected: isSelected }}
           >

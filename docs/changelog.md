@@ -4147,3 +4147,14 @@
 - All transactions category modal: preset chips All categories / All expenses / All income on the All tab (only the matching one on type tabs); tapping the active preset clears the selection.
 - Apply and the screen pill are selection-based: full sets read All categories / All expenses / All income, other selections keep the count; empty keeps the type-aware label.
 - Shared classifyCategorySelection helper, new testIDs, filter_apply_all now 'Apply (All categories)' in the 9 languages. Tests and specs 021/015 updated.
+
+[2026-10-21] refactor | FinlyApp/src/components (a11y roles/states), FinlyApp/src/screens (a11y + errors), FinlyApp/src/hooks/useSearchFilter.ts, FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/App.tsx, FinlyApp/src/navigation/AppNavigator.tsx, FinlyApp/src/i18n (9 files), FinlyApp/eslint.config.mjs, FinlyApp/package.json, FinlyApp/tests/component/{CategoryTile,ListItemRow,SortToggle,TabBar,PeriodTabs,ToggleRow,TransactionListBody}, FinlyApp/tests/screens/{CategoriesScreen,ModifyRecurringScreen,PersonalizationScreen}, FinlyApp/tests/component/RepeatSection.test.tsx, spec/constitution/3-roadmap.md
+- Accessibility: button/tab/switch roles and selected/checked states on rows, tiles, sort fields, tabs, filter chips and icon-only controls; localized sort direction, DayPicker today/selected and stepper labels (7 keys).
+- Lists: loading spinner instead of the empty-state flash, removed removeClippedSubviews, lexicographic date sort, and language-change refresh for localized sorts/search.
+- Errors: recurring name and comments loads are logged/surfaced; the App DB error is localized with details.
+- Lint: 0 warnings enforced (--max-warnings 0), boundaries noise off for non-app files, unused vars/imports and effect deps fixed, dead FormError/i18n keys removed, drawer inactive tint fixed.
+
+[2026-10-21] refactor | FinlyApp/src/utils/errors.ts, FinlyApp/App.tsx, FinlyApp/src/database/engine.web.ts, FinlyApp/src/database/photoCleanup.ts, FinlyApp/src/components/ErrorBoundary.tsx, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/context/ConfigContext.tsx, FinlyApp/src/hooks/useDeferredRefresh.ts, FinlyApp/src/hooks/useFocusLoad.ts, FinlyApp/src/hooks/useNameDuplicateCheck.ts, FinlyApp/src/hooks/usePhotos.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/screens/HomeScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/screens/CreateRecurringScreen.tsx, FinlyApp/tests/utils/errors.test.ts
+- Added logError(prefix, error, ...extra) and extended ERROR_PREFIXES with the load/refresh/internal log prefixes, so no call site hardcodes a developer error string.
+- Replaced every inline console.error('...') prefix across screens, contexts, hooks, ErrorBoundary, the web engine and photo cleanup; runWithErrorAlert now uses the same helper.
+- Added the missing config-load log (was silent) and unified the two photo-delete messages. Tests cover logError and the full prefix list.

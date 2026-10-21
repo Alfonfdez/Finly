@@ -18,7 +18,7 @@ describe('useDebouncedCallback', () => {
   it('calls the callback once after the delay with the latest args', async () => {
     vi.useFakeTimers();
     const cb = vi.fn();
-    const { result, unmount } = await renderHook(() => useDebouncedCallback(cb, 300));
+    const { result } = await renderHook(() => useDebouncedCallback(cb, 300));
 
     await act(() => result.current('a'));
     await act(() => result.current('b'));

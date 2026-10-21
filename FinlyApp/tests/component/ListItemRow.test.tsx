@@ -10,6 +10,16 @@ describe('ListItemRow', () => {
     expect(view.getByText('Subtitle').props.numberOfLines).toBe(1);
   });
 
+  it('exposes a pressable row as a button and a static row as plain content', async () => {
+    const pressable = await render(
+      <ListItemRow title="Title" onPress={() => {}} accessibilityState={{ selected: true }} />,
+    );
+    expect(pressable.getByRole('button').props.accessibilityState).toEqual({ selected: true });
+
+    const staticView = await render(<ListItemRow title="Title" />);
+    expect(staticView.queryByRole('button')).toBeNull();
+  });
+
   it('forwards custom title and subtitle line limits', async () => {
     const view = await render(
       <ListItemRow title="Title" titleLines={2} subtitle="Subtitle" subtitleLines={3} />,

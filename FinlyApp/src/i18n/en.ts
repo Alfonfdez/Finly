@@ -514,8 +514,6 @@ export const en = {
   repeat_frequency: 'Frequency',
   repeat_name: 'Name',
   repeat_name_placeholder: 'e.g. Rent',
-  repeat_name_required: 'Enter a name for this recurring rule',
-  repeat_name_taken: 'That name is already used by another recurring rule',
   repeat_interval: 'Interval',
   repeat_end_date: 'End date',
   repeat_no_end: 'No end date',
@@ -591,6 +589,13 @@ export const en = {
   a11y_go_to_current_period: 'Go to the current period',
   backup_dialog_title: 'Finly backup',
   a11y_add: 'Add',
+  a11y_increase: 'Increase',
+  a11y_decrease: 'Decrease',
+  a11y_chart_toggle: 'Switch chart',
+  a11y_selected: 'selected',
+  a11y_today: 'today',
+  a11y_sort_descending: 'Sort descending',
+  a11y_sort_ascending: 'Sort ascending',
 };
 
 export type Language = typeof en;

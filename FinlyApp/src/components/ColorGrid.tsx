@@ -29,6 +29,7 @@ export default function ColorGrid({ selectedColor, customColor, onSelect, onOpen
               isSelected && { borderWidth: 3, borderColor: c.text },
             ]}
             onPress={() => onSelect(color)}
+            accessibilityRole="button"
             accessibilityLabel={color}
             accessibilityState={{ selected: isSelected }}
           >
@@ -46,6 +47,7 @@ export default function ColorGrid({ selectedColor, customColor, onSelect, onOpen
             selectedColor === customColor && { borderWidth: 3, borderColor: c.text },
           ]}
           onPress={() => onSelect(customColor)}
+          accessibilityRole="button"
           accessibilityLabel={customColor}
           accessibilityState={{ selected: selectedColor === customColor }}
         >
@@ -57,6 +59,7 @@ export default function ColorGrid({ selectedColor, customColor, onSelect, onOpen
       <TouchableOpacity
         style={[styles.circle, { backgroundColor: c.textSecondary }]}
         onPress={onOpenPicker}
+        accessibilityRole="button"
         accessibilityLabel={labels.color_grid_more}
       >
         <Ionicons name="add" size={18} color={WHITE} />

@@ -11,15 +11,21 @@ describe('ToggleRow', () => {
 
   it('renders a switch that reflects the checked state', async () => {
     const view = await render(<ToggleRow checked label="Hide balances" onToggle={() => {}} />);
-    expect(view.getByRole('switch').props.value).toBe(true);
+    expect(view.getByRole('switch').props.accessibilityState).toEqual({ checked: true });
     expect(view.getByText('Hide balances')).toBeTruthy();
   });
 
   it('fires onToggle when the switch changes', async () => {
     const onToggle = vi.fn();
     const view = await render(<ToggleRow checked={false} label="Hide balances" onToggle={onToggle} />);
-    await fireEvent(view.getByRole('switch'), 'valueChange', true);
+    await fireEvent.press(view.getByRole('switch'));
     expect(onToggle).toHaveBeenCalled();
+  });
+
+  it('keeps a single accessible switch, not a second button for the label', async () => {
+    const view = await render(<ToggleRow checked={false} label="Hide balances" onToggle={() => {}} />);
+    expect(view.getAllByRole('switch')).toHaveLength(1);
+    expect(view.queryByRole('button')).toBeNull();
   });
 
   it('fires onToggle when the label is pressed', async () => {

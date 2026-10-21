@@ -36,6 +36,8 @@ function TagFilterBarInner({ tags, activeTagIds, onToggle, onClear, style }: Pro
         },
       ]}
       onPress={onPress ?? (() => onToggle(id))}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isSelected }}
     >
       <Text
         style={[

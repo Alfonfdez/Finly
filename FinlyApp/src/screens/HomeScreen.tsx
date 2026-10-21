@@ -11,6 +11,7 @@ import { t } from '../i18n';
 import { transactionRepository as transactionRepo } from '../database';
 import { isTotalAccount } from '../database/helpers';
 import { isUntaggedTag } from '../utils/tagFilter';
+import { ERROR_PREFIXES, logError } from '../utils/errors';
 import AccountModal from '../components/AccountModal';
 import TabBar, { typeTabs } from '../components/TabBar';
 import PeriodTabs from '../components/PeriodTabs';
@@ -73,7 +74,7 @@ export default function HomeScreen() {
         }
         setTagBreakdowns(breakdowns);
       } catch (error) {
-        console.error('Failed to load tag breakdowns:', error);
+        logError(ERROR_PREFIXES.tagBreakdownsLoad, error);
         if (active) setTagBreakdowns(new Map());
       }
     }
@@ -163,6 +164,8 @@ export default function HomeScreen() {
       <TouchableOpacity
         style={styles.chartContainer}
         onPress={() => setChartType(chartType === CHART_TYPES.donut ? CHART_TYPES.bar : CHART_TYPES.donut)}
+        accessibilityRole="button"
+        accessibilityLabel={labels.a11y_chart_toggle}
         activeOpacity={0.7}
       >
         {chartType === CHART_TYPES.donut ? (

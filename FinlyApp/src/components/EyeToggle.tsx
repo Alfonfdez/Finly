@@ -11,7 +11,7 @@ interface Props {
 export default function EyeToggle({ isHidden, onToggle, color }: Props) {
   const labels = t();
   return (
-    <TouchableOpacity onPress={onToggle} hitSlop={8} accessibilityLabel={isHidden ? labels.a11y_show_balances : labels.a11y_hide_balances}>
+    <TouchableOpacity onPress={onToggle} hitSlop={8} accessibilityRole="button" accessibilityLabel={isHidden ? labels.a11y_show_balances : labels.a11y_hide_balances}>
       <Ionicons
         name={isHidden ? 'eye-outline' : 'eye-off-outline'}
         size={18}

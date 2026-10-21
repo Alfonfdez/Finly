@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { alertError, alertInfo, describeError, showErrorAlert, runWithErrorAlert, ERROR_PREFIXES } from '../../src/utils/errors';
+import { alertError, alertInfo, describeError, logError, showErrorAlert, runWithErrorAlert, ERROR_PREFIXES } from '../../src/utils/errors';
 import { t } from '../../src/i18n';
 
 const mockAlert = vi.fn();
@@ -90,6 +90,15 @@ describe('errors helpers', () => {
     });
   });
 
+  describe('logError', () => {
+    it('logs the shared prefix with the error and any extra context', () => {
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const error = new Error('boom');
+      logError(ERROR_PREFIXES.commentsLoad, error, 'extra');
+      expect(spy).toHaveBeenCalledWith(`${ERROR_PREFIXES.commentsLoad}:`, error, 'extra');
+      spy.mockRestore();
+    });
+  });
   describe('ERROR_PREFIXES', () => {
     it('defines a prefix for every destructive write action', () => {
       expect(Object.keys(ERROR_PREFIXES)).toEqual([
@@ -111,6 +120,28 @@ describe('errors helpers', () => {
         'transactionsDelete',
         'recurringDelete',
         'recurringUpdate',
+        'databaseInit',
+        'configLoad',
+        'configSave',
+        'initialDataLoad',
+        'dataRefresh',
+        'recurringMaterialize',
+        'categoriesRefresh',
+        'accountsRefresh',
+        'tagsRefresh',
+        'dataReset',
+        'commentsLoad',
+        'recurringNamesLoad',
+        'tagBreakdownsLoad',
+        'duplicateCheck',
+        'focusLoad',
+        'deferredRefresh',
+        'transactionSubmit',
+        'photoCollect',
+        'photoCopy',
+        'photoDelete',
+        'webPersist',
+        'errorBoundary',
       ]);
     });
   });

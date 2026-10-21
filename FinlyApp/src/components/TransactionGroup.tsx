@@ -49,6 +49,7 @@ export const TransactionRow = memo(function TransactionRow({ tx, category, tags,
       badgeSize={36}
       badgeIconSize={18}
       badgeAlpha={19}
+      accessibilityState={selectMode ? { selected } : undefined}
       leading={checkbox}
       middle={(hasRecurring || hasTags) ? (
         <>
