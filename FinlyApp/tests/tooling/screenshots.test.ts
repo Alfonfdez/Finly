@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { parseBackup } from '../../src/database/backup';
+import { SCREENS, SET } from '../../scripts/screenshots/manifest.mjs';
 
 const APP_ROOT = process.env.FINLY_APP_ROOT ?? process.cwd();
 const REPO_ROOT = path.resolve(APP_ROOT, '..');
@@ -69,15 +70,17 @@ describe('screenshot workflow', () => {
     }
   });
 
-  it('keeps the 9 READMEs on the same existing screenshot set', () => {
+  it('keeps the 9 READMEs on the exact ordered screenshot set', () => {
     expect(readmes).toHaveLength(9);
 
+    const expected = SCREENS.map(
+      screen => `images/screenshots/${SET}-${screen.key}.png`,
+    );
     const sets = readmes.map(name => ({ name, refs: screenshotRefs(name) }));
-    const expected = sets[0].refs;
 
-    expect(expected).toHaveLength(20);
-    expect(expected.every(ref => /\/v3(\.1)?-/.test(ref))).toBe(true);
-    expect(expected).toContain('images/screenshots/v3.1-02-hamburger.png');
+    expect(expected).toHaveLength(30);
+    expect(expected.every(ref => ref.includes(`/${SET}-`))).toBe(true);
+    expect(sets[0].refs).toEqual(expected);
     for (const entry of sets) {
       expect(entry.refs).toEqual(expected);
       for (const ref of entry.refs) {

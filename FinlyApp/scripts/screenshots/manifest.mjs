@@ -1,35 +1,29 @@
 /**
  * Release screenshot manifest.
  *
- * The set name is the `v<N>` prefix of every file. Keep the keys stable and
- * append new screens at the end; bump SET only for a new release set.
+ * The filenames are `<set>-<index>-<slug>.png`. The README screenshots section
+ * must follow this order exactly; tests/tooling/screenshots.test.ts enforces it.
  */
-export const SET = 'v3';
+export const SET = 'v3.2';
 
 /** Frozen browser clock so every capture shows the same dates. */
 export const FIXED_TIME = '2026-10-21T12:00:00+02:00';
 
+const fixture = 'fixture';
+const empty = 'empty';
+
 export const SCREENS = [
   {
     key: '01-a-home-empty',
-    phase: 'empty',
+    phase: empty,
     run: async h => {
       await h.reload();
       await h.waitHome();
     },
   },
   {
-    key: '07-a-all-transactions-empty-state',
-    phase: 'empty',
-    run: async h => {
-      await h.reload();
-      await h.drawer('All transactions');
-      await h.page.getByText('No transactions', { exact: true }).filter({ visible: true }).waitFor();
-    },
-  },
-  {
     key: '01-b-home',
-    phase: 'fixture',
+    phase: fixture,
     run: async h => {
       await h.reload();
       await h.waitTotal();
@@ -37,9 +31,7 @@ export const SCREENS = [
   },
   {
     key: '02-hamburger',
-    // Shipped previously as v3-02-hamburger.png; the new name makes GitHub render the refreshed image as a new file.
-    name: 'v3.1-02-hamburger',
-    phase: 'fixture',
+    phase: fixture,
     run: async h => {
       await h.reload();
       await h.openDrawer();
@@ -47,7 +39,7 @@ export const SCREENS = [
   },
   {
     key: '03-add-transaction',
-    phase: 'fixture',
+    phase: fixture,
     run: async h => {
       await h.reload();
       await h.addForm();
@@ -55,7 +47,7 @@ export const SCREENS = [
   },
   {
     key: '04-date-picker',
-    phase: 'fixture',
+    phase: fixture,
     run: async h => {
       await h.reload();
       await h.addForm();
@@ -63,26 +55,17 @@ export const SCREENS = [
     },
   },
   {
-    key: '05-categories',
-    phase: 'fixture',
+    key: '05-a-all-transactions-empty-state',
+    phase: empty,
     run: async h => {
       await h.reload();
-      await h.drawer('Categories');
-      await h.waitList('categories-grid');
+      await h.drawer('All transactions');
+      await h.page.getByText('No transactions', { exact: true }).filter({ visible: true }).waitFor();
     },
   },
   {
-    key: '06-tags',
-    phase: 'fixture',
-    run: async h => {
-      await h.reload();
-      await h.drawer('Tags');
-      await h.waitList('tags-list');
-    },
-  },
-  {
-    key: '07-b-all-transactions',
-    phase: 'fixture',
+    key: '05-b-all-transactions',
+    phase: fixture,
     run: async h => {
       await h.reload();
       await h.drawer('All transactions');
@@ -91,8 +74,8 @@ export const SCREENS = [
     },
   },
   {
-    key: '07-c-category-filter',
-    phase: 'fixture',
+    key: '05-c-category-filter',
+    phase: fixture,
     run: async h => {
       await h.reload();
       await h.drawer('All transactions');
@@ -100,17 +83,8 @@ export const SCREENS = [
     },
   },
   {
-    key: '08-accounts',
-    phase: 'fixture',
-    run: async h => {
-      await h.reload();
-      await h.drawer('Accounts');
-      await h.waitList('accounts-list');
-    },
-  },
-  {
-    key: '09-a-details-income',
-    phase: 'fixture',
+    key: '05-d-details-income',
+    phase: fixture,
     run: async h => {
       await h.reload();
       await h.drawer('All transactions');
@@ -118,8 +92,8 @@ export const SCREENS = [
     },
   },
   {
-    key: '09-b-details-expense',
-    phase: 'fixture',
+    key: '05-e-details-expense',
+    phase: fixture,
     run: async h => {
       await h.reload();
       await h.drawer('All transactions');
@@ -127,48 +101,126 @@ export const SCREENS = [
     },
   },
   {
-    key: '10-settings',
-    phase: 'fixture',
+    key: '05-f-modify-transaction',
+    phase: fixture,
     run: async h => {
       await h.reload();
-      await h.drawer('Settings');
+      await h.drawer('All transactions');
+      await h.openDetails('October rent');
+      await h.openEditTransaction();
     },
   },
   {
-    key: '11-regional-en',
-    phase: 'fixture',
+    key: '06-recurring',
+    phase: fixture,
     run: async h => {
       await h.reload();
-      await h.settings('Regional');
+      await h.drawer('Recurring');
+      await h.waitList('recurring-list');
     },
   },
   {
-    key: '12-settings-appearance',
-    phase: 'fixture',
+    key: '06-a-create-recurring',
+    phase: fixture,
     run: async h => {
       await h.reload();
-      await h.settings('Appearance');
+      await h.drawer('Recurring');
+      await h.openCreateRecurring();
     },
   },
   {
-    key: '13-settings-personalization',
-    phase: 'fixture',
+    key: '06-b-modify-recurring',
+    phase: fixture,
     run: async h => {
       await h.reload();
-      await h.settings('Personalization');
+      await h.drawer('Recurring');
+      await h.openModifyRecurring();
     },
   },
   {
-    key: '14-settings-data',
-    phase: 'fixture',
+    key: '07-accounts',
+    phase: fixture,
     run: async h => {
       await h.reload();
-      await h.settings('Data');
+      await h.drawer('Accounts');
+      await h.waitList('accounts-list');
     },
   },
   {
-    key: '15-comments',
-    phase: 'fixture',
+    key: '07-a-create-account',
+    phase: fixture,
+    run: async h => {
+      await h.reload();
+      await h.drawer('Accounts');
+      await h.openCreateAccount();
+    },
+  },
+  {
+    key: '07-b-modify-account',
+    phase: fixture,
+    run: async h => {
+      await h.reload();
+      await h.drawer('Accounts');
+      await h.openModifyAccount('Credit Card');
+    },
+  },
+  {
+    key: '08-categories',
+    phase: fixture,
+    run: async h => {
+      await h.reload();
+      await h.drawer('Categories');
+      await h.waitList('categories-grid');
+    },
+  },
+  {
+    key: '08-a-create-category',
+    phase: fixture,
+    run: async h => {
+      await h.reload();
+      await h.drawer('Categories');
+      await h.openCreateCategory();
+    },
+  },
+  {
+    key: '08-b-modify-category',
+    phase: fixture,
+    run: async h => {
+      await h.reload();
+      await h.drawer('Categories');
+      await h.openModifyCategory('Restaurants');
+    },
+  },
+  {
+    key: '09-tags',
+    phase: fixture,
+    run: async h => {
+      await h.reload();
+      await h.drawer('Tags');
+      await h.waitList('tags-list');
+    },
+  },
+  {
+    key: '09-a-create-tag',
+    phase: fixture,
+    run: async h => {
+      await h.reload();
+      await h.drawer('Tags');
+      await h.openCreateTag();
+    },
+  },
+  {
+    key: '09-b-modify-tag',
+    phase: fixture,
+    run: async h => {
+      await h.reload();
+      await h.drawer('Tags');
+      await h.openModifyTag('food');
+    },
+  },
+  {
+    key: '10-comments',
+    phase: fixture,
     run: async h => {
       await h.reload();
       await h.drawer('Comments');
@@ -176,12 +228,52 @@ export const SCREENS = [
     },
   },
   {
-    key: '16-recurring',
-    phase: 'fixture',
+    key: '10-a-modify-comment',
+    phase: fixture,
     run: async h => {
       await h.reload();
-      await h.drawer('Recurring');
-      await h.waitList('recurring-list');
+      await h.drawer('Comments');
+      await h.openModifyComment('Weekly groceries');
+    },
+  },
+  {
+    key: '11-settings',
+    phase: fixture,
+    run: async h => {
+      await h.reload();
+      await h.drawer('Settings');
+    },
+  },
+  {
+    key: '11-a-appearance',
+    phase: fixture,
+    run: async h => {
+      await h.reload();
+      await h.settings('Appearance');
+    },
+  },
+  {
+    key: '11-b-regional-en',
+    phase: fixture,
+    run: async h => {
+      await h.reload();
+      await h.settings('Regional');
+    },
+  },
+  {
+    key: '11-c-personalization',
+    phase: fixture,
+    run: async h => {
+      await h.reload();
+      await h.settings('Personalization');
+    },
+  },
+  {
+    key: '11-d-data',
+    phase: fixture,
+    run: async h => {
+      await h.reload();
+      await h.settings('Data');
     },
   },
 ];

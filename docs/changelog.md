@@ -4187,3 +4187,9 @@
 [2026-10-22] docs | images/screenshots/v3.1-02-hamburger.png, images/screenshots/v3-02-hamburger.png, README.md, README.es.md, README.ca.md, README.gl.md, README.eu.md, README.fr.md, README.de.md, README.pt.md, README.it.md, FinlyApp/scripts/screenshots/manifest.mjs, FinlyApp/scripts/screenshots/capture.mjs, FinlyApp/tests/tooling/screenshots.test.ts, docs/screenshots.md, spec/constitution/3-roadmap.md
 - Renamed the refreshed hamburger capture to v3.1-02-hamburger.png (previously tracked as v3-02-hamburger.png) so GitHub shows it as a new image instead of a modified binary.
 - Updated the 9 READMEs, the screenshot manifest/capture helper (per-screen name override), the tooling test and docs/screenshots.md.
+
+[2026-10-22] docs | images/screenshots/ (v3.2 set), README.md, README.es.md, README.ca.md, README.gl.md, README.eu.md, README.fr.md, README.de.md, README.pt.md, README.it.md, FinlyApp/scripts/screenshots/manifest.mjs, FinlyApp/scripts/screenshots/capture.mjs, FinlyApp/tests/tooling/screenshots.test.ts, docs/screenshots.md, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Rebuilt the README screenshots as the 30-screen v3.2 set in drawer order: Home, hamburger, Add transaction/date picker, All transactions, Recurring, Accounts, Categories, Tags, Comments, and Settings with its subpages last.
+- Added Modify transaction, New/Edit recurring rule, Create/Modify account, Create/Modify category, Create/Modify tag and Edit comment screenshots; create forms use filled examples and recurring forms capture the schedule section.
+- Replaced the old v3/v3.1 images with v3.2-<index>-<slug> files and updated all 9 READMEs with the exact manifest order and translated captions.
+- The tooling test now imports SCREENS/SET and enforces the README order; docs/screenshots, harness and roadmap updated. npm run test:all green (162 files / 1343 tests).
