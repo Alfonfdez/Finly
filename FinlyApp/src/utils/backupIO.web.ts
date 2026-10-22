@@ -25,25 +25,42 @@ export async function saveBackupFile(json: string): Promise<ShareResultValue> {
 
 export async function pickBackupFile(): Promise<string | null> {
   if (typeof document === 'undefined') return null;
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'application/json';
     input.style.display = 'none';
 
     let settled = false;
-    const onFocus = () => {
-      window.setTimeout(() => finish(null), PICK_FALLBACK_DELAY_MS);
+    let focusTimer: number | undefined;
+    const cleanup = () => {
+      if (focusTimer !== undefined) window.clearTimeout(focusTimer);
+      input.remove();
+      window.removeEventListener('focus', onFocus);
     };
     const finish = (value: string | null) => {
       if (settled) return;
       settled = true;
-      input.remove();
-      window.removeEventListener('focus', onFocus);
+      cleanup();
       resolve(value);
+    };
+    const fail = (error: unknown) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(error);
+    };
+    const onFocus = () => {
+      focusTimer = window.setTimeout(() => finish(null), PICK_FALLBACK_DELAY_MS);
     };
 
     input.onchange = () => {
+      // The dialog returned focus before the change event in some browsers; a
+      // pending fallback must not beat the actual file read.
+      if (focusTimer !== undefined) {
+        window.clearTimeout(focusTimer);
+        focusTimer = undefined;
+      }
       const file = input.files?.[0];
       if (!file) {
         finish(null);
@@ -51,7 +68,7 @@ export async function pickBackupFile(): Promise<string | null> {
       }
       const reader = new FileReader();
       reader.onload = () => finish(typeof reader.result === 'string' ? reader.result : null);
-      reader.onerror = () => finish(null);
+      reader.onerror = () => fail(reader.error ?? new Error('Failed to read backup file'));
       reader.readAsText(file);
     };
 

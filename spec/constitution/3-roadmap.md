@@ -1207,3 +1207,14 @@ Follow-up after the first v3 screenshot PR, applied 2026-10-22:
 - Every image now uses `v3.2-<index>-<slug>`; the old `v3-*` and `v3.1-*` assets were removed and all 9 READMEs now follow the manifest order exactly.
 - `tests/tooling/screenshots.test.ts` imports `SCREENS`/`SET` and asserts the 9 READMEs reference the exact ordered file list, so the README can no longer drift from the capture order.
 - `npm run test:all` green (162 files / 1343 tests).
+
+## 2.2.0 audit hardening
+Status: completed (iOS simulator build passed; runtime not tested).
+
+Release-hardening pass from the final app audit, applied 2026-10-22:
+- Home headline now uses the active account balance from `accountsWithBalance`, restoring `initial_balance` to the displayed total (spec 026).
+- Photo edits are deferred: removing a photo only changes form state, files are deleted after a successful save/delete, and the details screen relies on the transaction repository's post-commit cleanup.
+- Backup imports cancel the web picker fallback timer, wait for `FileReader`, surface read errors, enforce `USER_ID` scoping/a real non-total account/category-type consistency, and normalize legacy date-only transaction dates to full timestamps for 2.1.0 compatibility.
+- Web IndexedDB absence/open failures fail closed, and writes resolve only after the IndexedDB transaction commits.
+- Added `FinlyShare.podspec`, the `preview-simulator` EAS profile and the missing `MissingCurrentViewControllerException`; the free EAS iOS simulator build **427cb65f** finished successfully, verifying Swift compilation and module linking. Runtime/share-sheet behavior still needs a Mac or device. Native photo backups remain URI-only by design for 2.2.0 (documented in 025).
+- `npm run test:all` green (162 files / 1347 tests). iOS runtime/share testing remains unverified without a Mac or physical device.

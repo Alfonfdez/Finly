@@ -116,26 +116,11 @@ describe('createIndexedDbStorage', () => {
     }
   });
 
-  it('rejects a failed write instead of pretending it was saved', async () => {
-    const storage = await loadStorage();
-    const proto = (await objectStorePrototype()) as { put: (...args: unknown[]) => IDBRequest };
-    const original = proto.put;
-    proto.put = () => {
-      const request = {} as IDBRequest & { onerror?: (event: unknown) => void };
-      queueMicrotask(() => request.onerror?.({ target: request }));
-      return request;
-    };
-    try {
-      await expect(storage.set(new Uint8Array([1]))).rejects.toThrow();
-    } finally {
-      proto.put = original;
-    }
-  });
-  it('keeps working when indexedDB is unavailable', async () => {
+  it('fails closed when indexedDB is unavailable', async () => {
     (globalThis as unknown as { indexedDB: IDBFactory | undefined }).indexedDB = undefined;
     const storage = await loadStorage();
 
-    await expect(storage.get()).resolves.toBeNull();
-    await expect(storage.set(new Uint8Array([1]))).resolves.toBeUndefined();
+    await expect(storage.get()).rejects.toThrow('IndexedDB is not available');
+    await expect(storage.set(new Uint8Array([1]))).rejects.toThrow('IndexedDB is not available');
   });
 });

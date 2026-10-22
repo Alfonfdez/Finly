@@ -131,12 +131,12 @@ describe('backup round-trip', () => {
     await source.runAsync(
       'INSERT INTO transactions (account_id, category_id, type, amount, description, photo, date, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       1,
-      1,
+      3,
       'expense',
       12.5,
       'Cafe',
       '["data:image/jpeg;base64,AAAA","data:image/png;base64,BBBB"]',
-      '2026-08-08',
+      '2026-08-08 00:00:00',
       '2026-08-08 10:00:00',
     );
     const tagId = (
@@ -157,6 +157,20 @@ describe('backup round-trip', () => {
     const photo = await target.getFirstAsync<{ photo: string | null }>('SELECT photo FROM transactions');
     expect(photo?.photo).toBe('["data:image/jpeg;base64,AAAA","data:image/png;base64,BBBB"]');
     expect(await countRows(target, 'transaction_tags')).toBe(1);
+    source.close();
+    target.close();
+  });
+
+  it('normalizes legacy date-only transaction dates on import', async () => {
+    const source = await boot();
+    await source.runAsync(
+      "INSERT INTO transactions (account_id, category_id, type, amount, description, date, created_at) VALUES (1, 3, 'expense', 5, 'Legacy', '2026-08-08', '2026-08-08 10:00:00')",
+    );
+    const snapshot = await buildBackup(source, SCHEMA_VERSION);
+    const target = await boot();
+    await applyBackup(target, snapshot);
+    const row = await target.getFirstAsync<{ date: string }>("SELECT date FROM transactions WHERE description = 'Legacy'");
+    expect(row?.date).toBe('2026-08-08 00:00:00');
     source.close();
     target.close();
   });
@@ -335,9 +349,33 @@ describe('backup validation', () => {
     expectIncomplete(copy => { copy.data.users = []; });
     expectIncomplete(copy => { copy.data.users = [{ ...copy.data.users[0], id: 5 }]; });
     expectIncomplete(copy => { copy.data.accounts = []; });
+    expectIncomplete(copy => { copy.data.accounts = copy.data.accounts.filter(a => a.is_total === 1); });
+    expectIncomplete(copy => { copy.data.accounts = copy.data.accounts.map(a => ({ ...a, user_id: 2 })); });
     expectIncomplete(copy => { copy.data.categories = copy.data.categories.filter(c => c.type !== 'expense'); });
     expectIncomplete(copy => { copy.data.categories = copy.data.categories.filter(c => c.type !== 'income'); });
   });
+  it('rejects invalid transaction dates and category type mismatches', async () => {
+    const source = await boot();
+    await source.runAsync(
+      "INSERT INTO transactions (account_id, category_id, type, amount, description, date, created_at) VALUES (1, 3, 'expense', 5, 'Lunch', '2026-08-08 00:00:00', '2026-08-08 10:00:00')",
+    );
+    const snapshot = await buildBackup(source, SCHEMA_VERSION);
+    source.close();
+
+    const expectInvalid = (mutate: (copy: typeof snapshot) => void) => {
+      const copy = structuredClone(snapshot);
+      mutate(copy);
+      expect(() => assertImportableBackup(copy)).toThrow(BackupValidationError);
+    };
+    expectInvalid(copy => { copy.data.transactions[0].date = '08/08/2026'; });
+    expectInvalid(copy => {
+      const income = copy.data.categories.find(category => category.type === 'income');
+      if (!income) throw new Error('missing income category');
+      copy.data.transactions[0].category_id = income.id;
+      copy.data.transactions[0].type = 'expense';
+    });
+  });
+
   it('rolls back on an FK-violating snapshot and leaves existing data unchanged', async () => {
     const source = await boot();
     const snapshot = await buildBackup(source, SCHEMA_VERSION);
@@ -442,7 +480,7 @@ describe('backup facades', () => {
     const db = dbHolder.db as SqlJsDatabase;
     const before = await countRows(db, 'transactions');
     await db.runAsync(
-      "INSERT INTO transactions (account_id, category_id, type, amount, date, created_at) VALUES (1, 1, 'expense', 10, '2026-08-08', '2026-08-08')",
+      "INSERT INTO transactions (account_id, category_id, type, amount, date, created_at) VALUES (1, 3, 'expense', 10, '2026-08-08', '2026-08-08')",
     );
     const json = await exportBackup();
     await db.runAsync('DELETE FROM transactions');

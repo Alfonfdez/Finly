@@ -53,3 +53,9 @@ internal class ShareFileUnreadableException: Exception {
     "The file to share is not readable."
   }
 }
+
+internal class MissingCurrentViewControllerException: Exception {
+  override var reason: String {
+    "Could not find the current view controller to present the share sheet."
+  }
+}

@@ -3,7 +3,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import HomeScreen from '../../src/screens/HomeScreen';
 import { buildAppMock, setAppData, setAppState, resetAppStub } from '../component/helpers/appStub';
-import { setConfig } from '../component/helpers/configStub';
+import { resetStub, setConfig } from '../component/helpers/configStub';
 import { HIDDEN_BALANCE } from '../../src/utils/formatters';
 import type { Account } from '../../src/database/types';
 
@@ -49,6 +49,7 @@ const account: Account = { id: 1, user_id: 1, name: 'Wallet', icon: 'wallet-outl
 
 describe('HomeScreen', () => {
   beforeEach(() => {
+    resetStub();
     breakdown.mockReset().mockResolvedValue(new Map());
     nav.setOptions.mockClear();
     nav.navigate.mockClear();
@@ -81,6 +82,13 @@ describe('HomeScreen', () => {
     expect(await view.findByText('Wallet')).toBeTruthy();
     expect(view.getAllByText('Expenses').length).toBeGreaterThan(0);
     expect(view.getAllByText('Income').length).toBeGreaterThan(0);
+  });
+
+  it('uses the account balance, including initial_balance, for the headline', async () => {
+    setAppData({ balances: { [account.id]: 100 } });
+    const view = await render(<HomeScreen />);
+    await view.findByText('Wallet');
+    expect(view.getByText(/100,00/)).toBeTruthy();
   });
 
   it('opens the Add transaction screen from the fab', async () => {

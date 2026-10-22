@@ -90,7 +90,7 @@ export function parseBackup(json: string): BackupSnapshot {
   if (!result.success) {
     throw new BackupValidationError(BACKUP_VALIDATION_CODES.invalidFormat, 'Snapshot does not match the backup format');
   }
-  return result.data;
+  return normalizeSnapshotDates(result.data);
 }
 
 export function serializeBackup(snapshot: BackupSnapshot): string {
@@ -113,6 +113,31 @@ function isValidDateOnly(value: string): boolean {
   return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
 }
 
+const TRANSACTION_DATE_RE = /^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2})?$/;
+
+function isValidTransactionDate(value: string): boolean {
+  if (!TRANSACTION_DATE_RE.test(value)) return false;
+  return isValidDateOnly(value.slice(0, 10));
+}
+
+/** Legacy backups may store the date without a time; the app compares full timestamps. */
+function normalizeTransactionDate(value: string): string {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value} 00:00:00` : value;
+}
+
+function normalizeSnapshotDates(snapshot: BackupSnapshot): BackupSnapshot {
+  return {
+    ...snapshot,
+    data: {
+      ...snapshot.data,
+      transactions: snapshot.data.transactions.map(transaction => ({
+        ...transaction,
+        date: normalizeTransactionDate(transaction.date),
+      })),
+    },
+  };
+}
+
 function assertImportableRecurringRules(rules: RecurringRule[]): void {
   const invalid = (reason: string) => new BackupValidationError(BACKUP_VALIDATION_CODES.invalidFormat, reason);
   for (const rule of rules) {
@@ -130,14 +155,29 @@ function assertImportableRecurringRules(rules: RecurringRule[]): void {
 }
 
 export function assertImportableBackup(snapshot: BackupSnapshot): void {
-  const { users, accounts, categories, recurring_rules: recurringRules } = snapshot.data;
+  const { users, accounts, categories, transactions, tags, recurring_rules: recurringRules } = snapshot.data;
+  const invalid = (reason: string) => new BackupValidationError(BACKUP_VALIDATION_CODES.invalidFormat, reason);
+  const hasAppUser = users.length === 1 && users[0].id === USER_ID;
+  const userScopedRows = [...accounts, ...categories, ...tags, ...recurringRules];
+  const hasWrongUser = userScopedRows.some(row => row.user_id !== USER_ID);
   const hasExpense = categories.some(category => category.type === TRANSACTION_TYPES.expense);
   const hasIncome = categories.some(category => category.type === TRANSACTION_TYPES.income);
+  const hasRealAccount = accounts.some(account => (account.is_total ?? 0) === 0);
   // Every repository query is scoped to USER_ID: a snapshot without that user would
   // import "successfully" and then show an empty app (and self-heal cannot add it).
-  const hasAppUser = users.some(user => user.id === USER_ID);
-  if (!hasAppUser || accounts.length === 0 || !hasExpense || !hasIncome) {
+  if (!hasAppUser || hasWrongUser || !hasRealAccount || !hasExpense || !hasIncome) {
     throw new BackupValidationError(BACKUP_VALIDATION_CODES.incomplete, 'Snapshot is missing required data');
+  }
+
+  const categoryById = new Map(categories.map(category => [category.id, category]));
+  for (const transaction of transactions) {
+    if (!isValidTransactionDate(transaction.date)) throw invalid('Transaction has an invalid date');
+    const category = categoryById.get(transaction.category_id);
+    if (!category || category.type !== transaction.type) throw invalid('Transaction category type mismatch');
+  }
+  for (const rule of recurringRules) {
+    const category = categoryById.get(rule.category_id);
+    if (!category || category.type !== rule.type) throw invalid('Recurring rule category type mismatch');
   }
   assertImportableRecurringRules(recurringRules);
 }
@@ -295,7 +335,7 @@ export async function applyBackup(db: DatabaseHandle, snapshot: BackupSnapshot):
         transaction.amount,
         transaction.description,
         transaction.photo,
-        transaction.date,
+        normalizeTransactionDate(transaction.date),
         transaction.updated_at,
         transaction.created_at,
         transaction.recurring_rule_id ?? null,

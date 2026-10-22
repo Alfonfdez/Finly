@@ -41,7 +41,10 @@ export default function HomeScreen() {
   const [tagBreakdowns, setTagBreakdowns] = useState<Map<number, { tag_id: number; name: string; total: number }[]>>(new Map());
   const { isBalanceHidden, toggleReveal } = useBalanceVisibility(config.hideBalances);
 
-  const total = totalIncomeAll - totalExpensesAll;
+  const activeBalance = activeAccount
+    ? accountsWithBalance.find(a => a.id === activeAccount.id)?.balance ?? 0
+    : 0;
+  const total = activeBalance;
   const activeTotal = activeType === TRANSACTION_TYPES.expense ? totalExpenses : totalIncome;
   const totalColor = total >= 0 ? c.green : c.red;
 

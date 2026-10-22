@@ -12,13 +12,19 @@ interface FakeAnchor {
 
 describe('backupIO (web)', () => {
   let anchor: FakeAnchor;
+  let input: HTMLInputElement | null;
   let createObjectUrl: ReturnType<typeof vi.fn>;
   let revokeObjectUrl: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     anchor = { href: '', download: '', click: vi.fn(), remove: vi.fn() };
+    input = null;
     vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
       if (tag === 'a') return anchor as unknown as HTMLElement;
+      if (tag === 'input') {
+        input = document.createElementNS('http://www.w3.org/1999/xhtml', tag) as HTMLInputElement;
+        return input;
+      }
       return document.createElementNS('http://www.w3.org/1999/xhtml', tag);
     });
     vi.spyOn(document.body, 'appendChild').mockImplementation(node => node as unknown as never);
@@ -45,6 +51,21 @@ describe('backupIO (web)', () => {
   it('reports a saved file for Downloads', async () => {
     expect(await saveBackupToDownloads('{}')).toBe(true);
     expect(anchor.click).toHaveBeenCalledTimes(1);
+  });
+
+  it('reads the selected backup even after the focus fallback elapsed', async () => {
+    vi.useFakeTimers();
+    try {
+      const pick = pickBackupFile();
+      window.dispatchEvent(new Event('focus'));
+      const selected = new File(['{"app":"Finly"}'], 'backup.json', { type: 'application/json' });
+      Object.defineProperty(input!, 'files', { value: [selected], configurable: true });
+      input!.onchange?.(new Event('change'));
+      await vi.advanceTimersByTimeAsync(500);
+      expect(await pick).toBe('{"app":"Finly"}');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('resolves to null when the file dialog is dismissed', async () => {

@@ -4193,3 +4193,15 @@
 - Added Modify transaction, New/Edit recurring rule, Create/Modify account, Create/Modify category, Create/Modify tag and Edit comment screenshots; create forms use filled examples and recurring forms capture the schedule section.
 - Replaced the old v3/v3.1 images with v3.2-<index>-<slug> files and updated all 9 READMEs with the exact manifest order and translated captions.
 - The tooling test now imports SCREENS/SET and enforces the README order; docs/screenshots, harness and roadmap updated. npm run test:all green (162 files / 1343 tests).
+
+[2026-10-22] fix | FinlyApp/src/screens/HomeScreen.tsx, FinlyApp/tests/screens/HomeScreen.test.tsx, FinlyApp/tests/component/helpers/appStub.ts, FinlyApp/src/hooks/usePhotos.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/utils/photoUtils.ts, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/database/backup.ts, FinlyApp/src/utils/backupIO.web.ts, FinlyApp/src/database/storage/indexedDb.ts, FinlyApp/modules/finly-share/ios/FinlyShare.podspec, FinlyApp/eas.json, .easignore, FinlyApp/tests/hooks/usePhotos.test.tsx, FinlyApp/tests/utils/photoUtils.test.ts, FinlyApp/tests/utils/backupIO.web.test.ts, FinlyApp/tests/database/backup.test.ts, FinlyApp/tests/database/indexedDbStorage.test.ts, spec/features/025-data-backup/1-spec.md
+- Home headline now uses the active account balance, so account initial balances are included again.
+- Photo removal no longer deletes files immediately; files are deleted only after a successful save/delete, and the details screen relies on the repository cleanup.
+- Web backup import cancels the focus fallback timer, waits for FileReader and surfaces read errors.
+- Backup imports now enforce USER_ID scoping, a real non-total account and category/type consistency, and normalize legacy date-only transaction dates.
+- Web IndexedDB failures now fail closed, and writes resolve only after the transaction commits.
+- Added the missing FinlyShare iOS podspec, a preview-simulator EAS profile and EAS ignore rules for native module build outputs.
+- Documented that native photo backups are URI-only and not portable across reinstalls/devices; test:all green (162 files / 1347 tests).
+
+[2026-10-22] fix | FinlyApp/modules/finly-share/ios/FinlyShareModule.swift
+- Defined the missing MissingCurrentViewControllerException used by the iOS share module; the first free EAS simulator build exposed the Swift compile error.

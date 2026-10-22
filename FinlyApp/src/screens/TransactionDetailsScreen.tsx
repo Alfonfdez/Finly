@@ -10,7 +10,7 @@ import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
 import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
 import { formatAmount, formatDateLong, formatDateTimeShort, parseDbDate, AMOUNT_SIGNS } from '../utils/formatters';
-import { deletePhotoFile, parsePhotos } from '../utils/photoUtils';
+import { parsePhotos } from '../utils/photoUtils';
 import { ERROR_PREFIXES } from '../utils/errors';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
 import { transactionRepository, recurringRepository } from '../database';
@@ -94,9 +94,6 @@ export default function TransactionDetailsScreen() {
 
   const { visible: deleteModalVisible, open: openDeleteModal, close: closeDeleteModal, confirm: confirmDelete } = useDeleteConfirmation({
     deleteFn: async () => {
-      for (const uri of parsedPhotos) {
-        await deletePhotoFile(uri);
-      }
       await transactionRepository.delete(transactionId);
     },
     onSuccess: async () => {

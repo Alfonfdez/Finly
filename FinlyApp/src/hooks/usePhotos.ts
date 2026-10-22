@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { File, Paths } from 'expo-file-system';
 import { isWeb } from '../utils/platform';
@@ -35,6 +35,7 @@ function copyPhotoToStorage(src: string): string {
 
 export function usePhotos(initialPhotos: string[] = []) {
   const [photos, setPhotos] = useState<string[]>(initialPhotos);
+  const removedPhotos = useRef(new Set<string>());
 
   const handleTakePhoto = useCallback(async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -75,13 +76,23 @@ export function usePhotos(initialPhotos: string[] = []) {
   }, []);
 
   const handleRemovePhoto = useCallback(async (uri: string) => {
-    try {
-      await deletePhotoFile(uri);
-    } catch (err) {
-      logError(ERROR_PREFIXES.photoDelete, err);
-    }
+    // A removed photo is still referenced by the saved row until the form is
+    // saved. Deleting it now breaks the transaction if the user cancels.
+    removedPhotos.current.add(uri);
     setPhotos(prev => prev.filter(p => p !== uri));
   }, []);
 
-  return { photos, handleTakePhoto, handlePickFromGallery, handleRemovePhoto };
+  const finalizePhotos = useCallback(async () => {
+    const uris = [...removedPhotos.current];
+    removedPhotos.current.clear();
+    for (const uri of uris) {
+      try {
+        await deletePhotoFile(uri);
+      } catch (err) {
+        logError(ERROR_PREFIXES.photoDelete, err);
+      }
+    }
+  }, []);
+
+  return { photos, handleTakePhoto, handlePickFromGallery, handleRemovePhoto, finalizePhotos };
 }
