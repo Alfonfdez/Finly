@@ -116,7 +116,7 @@ export function useTransactionForm({
   const [selectedTags, setSelectedTags] = useState<number[]>(initialTagIds ?? []);
   const [comment, setComment] = useState(initialComment);
   const [submitting, setSubmitting] = useState(false);
-  const { photos, handleTakePhoto, handlePickFromGallery, handleRemovePhoto } = usePhotos(initialPhotos);
+  const { photos, handleTakePhoto, handlePickFromGallery, handleRemovePhoto, finalizePhotos } = usePhotos(initialPhotos);
 
   const {
     repeatFrequency, setRepeatFrequency,
@@ -380,6 +380,7 @@ export function useTransactionForm({
       } else {
         await onSubmit?.(draft, selectedTags);
       }
+      await finalizePhotos();
 
       navigation.goBack();
       deferredRefresh();
@@ -389,7 +390,7 @@ export function useTransactionForm({
     } finally {
       setSubmitting(false);
     }
-  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, buildRecurrence, ruleMode, onSubmit, onSubmitRule, onBeforeSubmitRule, deferredRefresh, navigation, errorTitle, errorMessage]);
+  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, buildRecurrence, ruleMode, onSubmit, onSubmitRule, onBeforeSubmitRule, finalizePhotos, deferredRefresh, navigation, errorTitle, errorMessage]);
 
   const categoriesByType = useMemo(() => {
     const byType = categoriesOfType(categories, type);

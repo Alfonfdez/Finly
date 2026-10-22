@@ -143,10 +143,16 @@ describe('usePhotos', () => {
     errorSpy.mockRestore();
   });
 
-  it('removes a photo and deletes its backing file', async () => {
+  it('defers the file deletion until the form is saved', async () => {
     const { result } = await renderHook(() => usePhotos(['x.jpg', 'y.jpg']));
     await act(() => result.current.handleRemovePhoto('x.jpg'));
-    expect(mockDeletePhotoFile).toHaveBeenCalledWith('x.jpg');
+    expect(mockDeletePhotoFile).not.toHaveBeenCalled();
     expect(result.current.photos).toEqual(['y.jpg']);
+
+    await act(() => result.current.finalizePhotos());
+    expect(mockDeletePhotoFile).toHaveBeenCalledWith('x.jpg');
+
+    await act(() => result.current.finalizePhotos());
+    expect(mockDeletePhotoFile).toHaveBeenCalledTimes(1);
   });
 });

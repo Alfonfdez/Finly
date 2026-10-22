@@ -9,6 +9,7 @@ interface AppStubState {
   selectedDate: Date;
   customDate: { start: Date; end: Date };
   accounts: Account[];
+  balances: Record<number, number>;
   categories: Category[];
   transactions: Transaction[];
   tags: Tag[];
@@ -43,6 +44,7 @@ function createStub(): AppStubState {
     selectedDate: now,
     customDate: { start: new Date(now.getFullYear(), 0, 1), end: now },
     accounts: [],
+    balances: {},
     categories: [],
     transactions: [],
     tags: [],
@@ -68,6 +70,7 @@ function createStub(): AppStubState {
       state.selectedDate = fresh.selectedDate;
       state.customDate = fresh.customDate;
       state.accounts = fresh.accounts;
+      state.balances = fresh.balances;
       state.categories = fresh.categories;
       state.transactions = fresh.transactions;
       state.tags = fresh.tags;
@@ -107,7 +110,7 @@ const EMPTY_TAGS_BY_TX = new Map<number, number[]>();
 // references that could be touched before this module initializes.
 export function buildAppMock() {
   const s = currentStub();
-  const accountsWithBalance = s.accounts.map((a) => ({ ...a, balance: 0 }));
+  const accountsWithBalance = s.accounts.map((a) => ({ ...a, balance: s.balances[a.id] ?? 0 }));
   return {
     activeAccount: s.activeAccount,
     activeType: s.activeType,

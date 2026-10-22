@@ -42,7 +42,7 @@
 ```
 
 - `data.config` holds the raw `{ key, value }` rows of the `config` table (the app-level parsed `Config` shape is derived, not stored).
-- `data.transactions[].photo` is the existing `TEXT` column (JSON array of file URIs on native / data URIs on web), so photos round-trip inside the backup with no extra storage work.
+- `data.transactions[].photo` is the existing `TEXT` column (JSON array of file URIs on native / data URIs on web). Web data URIs are embedded and portable; native backups store only the file URIs, so native photos survive an import on the same installation but not an uninstall/reinstall or another device. Embedding native photo bytes is deferred to a follow-up feature.
 - `schema` records the `SCHEMA_VERSION` at export time (informational + forward-compat guard).
 
 ### 3. Export
@@ -94,7 +94,7 @@
 - [x] Export produces a versioned JSON snapshot containing all **9 tables** (including recurring rules and their tag links), read in one transaction, downloadable on web and shareable on native.
 - [x] Export of an empty database is valid.
 - [x] Import replaces all data: accounts, categories, tags, transactions (with photos), tag links, config, and users.
-- [x] A transaction's photos (file URIs on native / data URIs on web) survive an export → import round-trip.
+- [x] Web photo data URIs survive an export → import round-trip; native photos keep working only while their files still exist (same installation), because native backups store URI references rather than bytes.
 - [x] Import is gated by an explicit confirmation modal.
 - [x] An invalid / corrupt / wrong-version / future-schema backup is rejected with an error and existing data is unchanged (transaction rollback).
 - [x] A valid backup that is missing the required rows (the app user `id = 1`, accounts, or a category of each type) is rejected as "incomplete" before any write, with the current data untouched.

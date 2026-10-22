@@ -25,6 +25,9 @@ expo-env.d.ts
 # from EAS archives.
 /FinlyApp/android/
 /FinlyApp/ios/
+# Local native module build outputs (keep their sources).
+modules/**/android/build/
+modules/**/ios/build/
 .kotlin/
 node_modules/
 *.jks

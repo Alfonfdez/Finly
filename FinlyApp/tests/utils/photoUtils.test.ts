@@ -66,6 +66,11 @@ describe('deletePhotoFile', () => {
     expect(mockFileDelete).toHaveBeenCalledTimes(1);
   });
 
+  it('propagates deletion failures so callers can log them', async () => {
+    mockFileDelete.mockImplementationOnce(() => { throw new Error('delete failed'); });
+    await expect(deletePhotoFile(FILE_URI)).rejects.toThrow('delete failed');
+  });
+
   it('does not touch the file system on web, even for a native file URI', async () => {
     platform.isWeb = true;
     await expect(deletePhotoFile(FILE_URI)).resolves.toBeUndefined();
