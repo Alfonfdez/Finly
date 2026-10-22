@@ -1256,3 +1256,12 @@ Applied 2026-10-22:
 - Transaction details now show a time icon beside "Created" and a refresh icon beside "Updated"; the day/end-date inputs keep their existing calendar icon.
 - Date label top spacing moved from the text to the row, so clock and calendar icons align with their labels.
 - Tests assert the icons in the date header, period button, tags, comments, recurring rows and details footer; `npm run test:all` green (162 files / 1359 tests).
+
+## 2.2.0 custom period range wording
+Status: completed.
+
+Applied 2026-10-22:
+- Custom period ranges always render on two lines: start on top, end below, with the full-width button and no empty arrow slots.
+- Replaced the generic "from ... to ..." wording with localised start/end phrases and standard connectors in all 9 languages, keeping the app's capitalised month names.
+- The start year is shown only when the range crosses a year boundary; the calendar modal header uses the same range wording.
+- Added all-language range tests and verified Home/All transactions at 375px; `npm run test:all` green (163 files / 1371 tests).

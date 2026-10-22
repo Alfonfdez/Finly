@@ -134,8 +134,8 @@ export const ca: Language = {
   cal_all: 'Tots',
   cal_select_start: 'Seleccioneu data d\'inici',
   cal_select_end: 'Seleccioneu data de fi',
-  cal_from: 'des de',
-  cal_to: 'fins a',
+  cal_range_start: (day: number, month: string, year?: number) => `${day === 1 ? 'Des de l\'1' : `Des del ${day}`} ${/^[AEIOU]/.test(month) ? `d'${month}` : `de ${month}`}${year ? ` de ${year}` : ''}`,
+  cal_range_end: (day: number, month: string, year: number) => `${day === 1 ? 'fins a l\'1' : `fins al ${day}`} ${/^[AEIOU]/.test(month) ? `d'${month}` : `de ${month}`} de ${year}`,
 
   // Calendar picker display
   cal_period_to_hint: 'seleccioneu fi',

@@ -134,8 +134,8 @@ export const gl: Language = {
   cal_all: 'Todos',
   cal_select_start: 'Selecciona data de inicio',
   cal_select_end: 'Selecciona data de fin',
-  cal_from: 'desde',
-  cal_to: 'ata',
+  cal_range_start: (day: number, month: string, year?: number) => `Desde o ${day} de ${month}${year ? ` de ${year}` : ''}`,
+  cal_range_end: (day: number, month: string, year: number) => `ata o ${day} de ${month} de ${year}`,
 
   // Calendar picker display
   cal_period_to_hint: 'selecciona fin',

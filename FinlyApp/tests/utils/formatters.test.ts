@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   HIDDEN_BALANCE,
   datePart,
-  formatDateRange,
+  formatDateRangeLines,
   formatCurrency,
   formatSignedCurrency,
   formatAmount,
@@ -316,25 +316,43 @@ describe('datePart', () => {
   });
 });
 
-describe('formatDateRange', () => {
-  const labels = { from: 'from', to: 'to' };
+describe('formatDateRangeLines', () => {
   const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December',
   ];
+  const formatStart = (day: number, month: string, year?: number) =>
+    `From ${day} ${month}${year ? ` ${year}` : ''}`;
+  const formatEnd = (day: number, month: string, year: number) =>
+    `to ${day} ${month} ${year}`;
 
-  it('uses full month names and the end year', () => {
-    expect(formatDateRange(new Date(2026, 0, 1), new Date(2026, 9, 17), labels, months))
-      .toBe('from 1 January to 17 October 2026');
+  it('splits the range into start and end lines with the end year', () => {
+    expect(formatDateRangeLines(
+      new Date(2026, 0, 1),
+      new Date(2026, 9, 17),
+      months,
+      formatStart,
+      formatEnd,
+    )).toEqual({ start: 'From 1 January', end: 'to 17 October 2026' });
+  });
+
+  it('keeps the start year only when the range crosses a year boundary', () => {
+    expect(formatDateRangeLines(
+      new Date(2025, 11, 20),
+      new Date(2026, 0, 5),
+      months,
+      formatStart,
+      formatEnd,
+    )).toEqual({ start: 'From 20 December 2025', end: 'to 5 January 2026' });
   });
 
   it('works within the same month', () => {
-    expect(formatDateRange(new Date(2026, 4, 3), new Date(2026, 4, 9), labels, months))
-      .toBe('from 3 May to 9 May 2026');
-  });
-
-  it('shows the end year when the range crosses a year boundary', () => {
-    expect(formatDateRange(new Date(2025, 11, 20), new Date(2026, 0, 5), labels, months))
-      .toBe('from 20 December to 5 January 2026');
+    expect(formatDateRangeLines(
+      new Date(2026, 4, 3),
+      new Date(2026, 4, 9),
+      months,
+      formatStart,
+      formatEnd,
+    )).toEqual({ start: 'From 3 May', end: 'to 9 May 2026' });
   });
 });

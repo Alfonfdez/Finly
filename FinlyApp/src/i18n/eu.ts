@@ -134,8 +134,8 @@ export const eu: Language = {
   cal_all: 'Guztiak',
   cal_select_start: 'Hautatu hasiera-data',
   cal_select_end: 'Hautatu amaiera-data',
-  cal_from: 'tik',
-  cal_to: 'ra',
+  cal_range_start: (day: number, month: string, year?: number) => `${year ? `${year}ko ` : ''}${month.slice(0, -1)}aren ${day}etik`,
+  cal_range_end: (day: number, month: string, year: number) => `${year}ko ${month.slice(0, -1)}aren ${day}era`,
 
   // Calendar picker display
   cal_period_to_hint: 'hautatu amaiera',

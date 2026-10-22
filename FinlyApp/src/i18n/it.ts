@@ -134,8 +134,8 @@ export const it: Language = {
   cal_all: 'Tutti',
   cal_select_start: 'Seleziona data di inizio',
   cal_select_end: 'Seleziona data di fine',
-  cal_from: 'da',
-  cal_to: 'a',
+  cal_range_start: (day: number, month: string, year?: number) => `${day === 1 ? 'Dal 1°' : `Dal ${day}`} ${month}${year ? ` ${year}` : ''}`,
+  cal_range_end: (day: number, month: string, year: number) => `al ${day === 1 ? '1°' : day} ${month} ${year}`,
 
   // Calendar picker display
   cal_period_to_hint: 'seleziona fine',
