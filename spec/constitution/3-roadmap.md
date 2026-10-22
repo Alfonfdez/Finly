@@ -1197,3 +1197,13 @@ Added before the 2.2.0 release, applied 2026-10-22:
 - The 9 READMEs now point at the `v3-*` set, with new Category filter, Comments and Recurring screenshots and translated captions; the old `v2-*` files stay for history.
 - Guards: `tests/tooling/screenshots.test.ts` validates the fixture with `parseBackup` (references/IDs) and asserts the 9 READMEs reference the same existing images; `docs/screenshots.md` documents fixture rules, naming/versioning and how to add a screen.
 - `npm run test:all` green (162 files / 1343 tests); Playwright Core is a dev dependency and the dev server is always cleaned up.
+
+## v3.2 expanded screenshot set
+Status: completed.
+
+Follow-up after the first v3 screenshot PR, applied 2026-10-22:
+- Expanded the set to **30 screens** in drawer order: Home, hamburger, Add transaction/date picker, All transactions (empty/list/filter/details/modify), Recurring (list/new/edit), Accounts (list/create/modify), Categories (list/create/modify), Tags (list/create/modify), Comments (list/edit) and Settings with its four subpages last.
+- Added the missing Modify transaction, New/Edit recurring rule, Create/Modify account, Create/Modify category, Create/Modify tag and Edit comment screenshots; create forms use filled examples and recurring forms capture the schedule section.
+- Every image now uses `v3.2-<index>-<slug>`; the old `v3-*` and `v3.1-*` assets were removed and all 9 READMEs now follow the manifest order exactly.
+- `tests/tooling/screenshots.test.ts` imports `SCREENS`/`SET` and asserts the 9 READMEs reference the exact ordered file list, so the README can no longer drift from the capture order.
+- `npm run test:all` green (162 files / 1343 tests).

@@ -1,6 +1,6 @@
 # Release screenshots
 
-The `v3` screenshot set in `images/screenshots/` is generated from a committed mock backup, so every release can be re-shot with the same data and layout.
+The `v3.2` screenshot set (30 screens) in `images/screenshots/` is generated from a committed mock backup, so every release can be re-shot with the same data and layout.
 
 ## Run it
 
@@ -16,8 +16,8 @@ The script:
 2. launches the installed Chrome through `playwright-core`;
 3. opens a fresh browser context (new IndexedDB) at `375x812`, DPR 1, English, dark theme, `Europe/Madrid`;
 4. freezes the browser clock at **2026-10-21 12:00**;
-5. captures the two empty-state screens, imports `scripts/screenshots/fixture.json` through Settings -> Data -> Import, then captures the populated screens;
-6. writes `images/screenshots/v3-*.png` and fails on unexpected console errors.
+5. captures the two empty-state screens first, imports `scripts/screenshots/fixture.json` through Settings -> Data -> Import, then captures the populated screens in manifest order;
+6. writes `images/screenshots/v3.2-*.png` and fails on unexpected console errors.
 
 Options:
 
@@ -49,17 +49,17 @@ Rules:
 
 ## Naming and versioning
 
-- Every file is `<set>-<key>.png`, e.g. `v3-01-b-home.png`.
-- Exception: `v3.1-02-hamburger.png`. That capture previously shipped as `v3-02-hamburger.png`, so the refreshed image keeps a new name to render as a new file on GitHub. The manifest `name` field overrides the filename; future sets should use the standard `<set>-<key>` form.
-- A set is tied to a release (`v3` for 2.2.0); bump `SET` in `manifest.mjs` for the next release.
+- Every file is `<set>-<index>-<slug>.png`, e.g. `v3.2-01-b-home.png`; sub-screens use `<index><letter>` (`05-a`, `05-b`, ...).
+- A set is tied to a release (`v3.2` for 2.2.0); bump `SET` in `manifest.mjs` for the next release, and every image gets a new name so GitHub renders it as a new file.
+- The README screenshot order must match `SCREENS` exactly; the tooling test enforces it.
 - Old sets stay in the repo for history; READMEs point at the current one.
 
 ## Adding or changing a screen
 
-1. Add an entry to `FinlyApp/scripts/screenshots/manifest.mjs` with a stable `key`, a `phase` (`empty` or `fixture`) and a `run` function using the helpers (`reload`, `drawer`, `settings`, `openDetails`, ...). Add `name` only when a file must keep a one-off filename.
+1. Add an entry to `FinlyApp/scripts/screenshots/manifest.mjs` with a stable `key`, a `phase` (`empty` or `fixture`) and a `run` function using the helpers (`reload`, `drawer`, `settings`, `openDetails`, ...). Add `name` only for a deliberate filename override.
 2. Add the image block (alt text + caption) to all 9 `README*.md` files.
 3. Run `npm run screenshots -- --only <key>`, inspect the PNG, then run the full set.
-4. Run `npm run test:all` (the tooling test also checks that all 9 READMEs reference the same existing files).
+4. Run `npm run test:all` (the tooling test also checks that all 9 READMEs reference the exact ordered manifest files).
 
 ## Checklist
 
@@ -67,4 +67,4 @@ Rules:
 - English, dark theme, medium text, EUR/comma.
 - No focus caret, no hover state, no clipped content, no browser scrollbars.
 - No console errors during the run.
-- All 9 READMEs reference the same 20 files and every path exists.
+- All 9 READMEs reference the same 30 files in manifest order and every path exists.
