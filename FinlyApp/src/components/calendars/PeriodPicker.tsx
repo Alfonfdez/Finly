@@ -6,7 +6,7 @@ import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
 import { calendarStyles, MIN_DATE } from './calendarStyles';
 import { CONTROL_BORDER_RADIUS } from '../componentStyles';
-import { formatDateRange } from '../../utils/formatters';
+import { formatDateRangeLines } from '../../utils/formatters';
 
 const PICKING_PHASE = {
   start: 'start',
@@ -52,12 +52,18 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
     }
   }, [selecting, tempStart, allTime, onTempRangeChange]);
 
-  const rangeLabels = { from: labels.cal_from, to: labels.cal_to };
+  const rangeLines = formatDateRangeLines(
+    tempStart,
+    tempEnd,
+    months,
+    labels.cal_range_start,
+    labels.cal_range_end,
+  );
   const rangeText = allTime
-    ? `${labels.cal_all} (${formatDateRange(MIN_DATE, today, rangeLabels, months)})`
+    ? `${labels.cal_all}\n${rangeLines.start}\n${rangeLines.end}`
     : selecting === PICKING_PHASE.end && tempStart.getTime() === tempEnd.getTime()
-      ? `${labels.cal_from} ${tempStart.getDate()} ${months[tempStart.getMonth()]} — ${labels.cal_period_to_hint}`
-      : formatDateRange(tempStart, tempEnd, rangeLabels, months);
+      ? `${labels.cal_range_start(tempStart.getDate(), months[tempStart.getMonth()])}\n${labels.cal_period_to_hint}`
+      : `${rangeLines.start}\n${rangeLines.end}`;
 
   return (
     <View style={calendarStyles.container}>

@@ -132,8 +132,8 @@ export const en = {
   cal_all: 'All',
   cal_select_start: 'Select start date',
   cal_select_end: 'Select end date',
-  cal_from: 'from',
-  cal_to: 'to',
+  cal_range_start: (day: number, month: string, year?: number) => `From ${day} ${month}${year ? ` ${year}` : ''}`,
+  cal_range_end: (day: number, month: string, year: number) => `to ${day} ${month} ${year}`,
 
   // Calendar picker display
   cal_period_to_hint: 'select end',

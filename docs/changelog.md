@@ -4233,3 +4233,9 @@
 - Added a time icon beside the Created footer in Transaction details and a refresh icon beside Updated (the label differentiates history from edit).
 - Moved the date-label top margin from the text to the row, so the clock and calendar icons center with their labels in Tags, Comments and Recurring.
 - Extended the details footer test for both icons; test:all green (162 files / 1359 tests).
+
+[2026-10-22] feat | FinlyApp/src/components/CalendarPicker.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/utils/formatters.ts, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/CalendarPicker.test.tsx, FinlyApp/tests/utils/formatters.test.ts, FinlyApp/tests/i18n/range.test.ts, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Reworked custom period ranges into two lines: the start date on top and the end date below.
+- Replaced the generic from/to wording with localised, capitalised start/end phrases in all 9 languages; the start year appears only when the range crosses a year boundary.
+- Custom mode now uses the full width without empty arrow slots, and the calendar modal header shares the same wording.
+- Added all-language range tests and browser-checked Home and All transactions at 375px; test:all green (163 files / 1371 tests).

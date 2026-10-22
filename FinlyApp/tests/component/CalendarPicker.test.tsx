@@ -4,6 +4,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { resetStub, setConfig } from './helpers/configStub';
 import CalendarPicker from '../../src/components/CalendarPicker';
 import { PERIODS, type Period } from '../../src/constants/types';
+import { setLanguage } from '../../src/i18n';
 import { formatDate } from '../../src/utils/formatters';
 
 function dayOffset(offset: number): Date {
@@ -33,6 +34,7 @@ async function renderPicker(period: Period, date: Date) {
 describe('CalendarPicker fast arrows', () => {
   beforeEach(() => {
     resetStub();
+    setLanguage('en');
     setConfig({ language: 'en' });
   });
 
@@ -84,7 +86,7 @@ describe('CalendarPicker fast arrows', () => {
     expect(view.queryByLabelText('Go to the current period')).toBeNull();
   });
 
-  it('shows the custom range with full month names and centred text', async () => {
+  it('shows the custom range on two centred lines', async () => {
     const view = await render(
       <CalendarPicker
         period={PERIODS.custom}
@@ -95,8 +97,59 @@ describe('CalendarPicker fast arrows', () => {
       />,
     );
 
-    const text = view.getByText('from 1 January to 17 October 2026');
-    expect(StyleSheet.flatten(text.props.style).textAlign).toBe('center');
+    const start = view.getByText('From 1 January');
+    const end = view.getByText('to 17 October 2026');
+    expect(StyleSheet.flatten(start.props.style).textAlign).toBe('center');
+    expect(StyleSheet.flatten(end.props.style).textAlign).toBe('center');
+  });
+
+  it('localises the custom range with capitalised months', async () => {
+    setLanguage('es');
+    setConfig({ language: 'es' });
+    const view = await render(
+      <CalendarPicker
+        period={PERIODS.custom}
+        date={new Date(2026, 9, 22)}
+        onDateChange={vi.fn()}
+        rangeStart={new Date(2026, 0, 1)}
+        rangeEnd={new Date(2026, 9, 22)}
+      />,
+    );
+
+    expect(view.getByText('Desde el 1 de Enero')).toBeTruthy();
+    expect(view.getByText('hasta el 22 de Octubre de 2026')).toBeTruthy();
+  });
+
+  it('applies Catalan contractions in the custom range', async () => {
+    setLanguage('ca');
+    setConfig({ language: 'ca' });
+    const view = await render(
+      <CalendarPicker
+        period={PERIODS.custom}
+        date={new Date(2026, 9, 22)}
+        onDateChange={vi.fn()}
+        rangeStart={new Date(2026, 0, 1)}
+        rangeEnd={new Date(2026, 9, 22)}
+      />,
+    );
+
+    expect(view.getByText('Des de l\'1 de Gener')).toBeTruthy();
+    expect(view.getByText('fins al 22 d\'Octubre de 2026')).toBeTruthy();
+  });
+
+  it('adds the start year only when the custom range crosses a year boundary', async () => {
+    const view = await render(
+      <CalendarPicker
+        period={PERIODS.custom}
+        date={new Date(2026, 0, 5)}
+        onDateChange={vi.fn()}
+        rangeStart={new Date(2025, 11, 20)}
+        rangeEnd={new Date(2026, 0, 5)}
+      />,
+    );
+
+    expect(view.getByText('From 20 December 2025')).toBeTruthy();
+    expect(view.getByText('to 5 January 2026')).toBeTruthy();
   });
 
   it('keeps the period box opening the calendar', async () => {

@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { formatDate, formatDateRange, formatWeekRange } from '../utils/formatters';
+import { formatDate, formatDateRangeLines, formatWeekRange } from '../utils/formatters';
 import { canGoForward, canJumpToCurrent, shiftPeriod } from '../utils/periodNavigation';
 import CalendarModal from './CalendarModal';
 import type { Period } from './calendars/types';
@@ -41,22 +41,23 @@ export default function CalendarPicker({
   const today = new Date();
   const showNavigation = period !== PERIODS.custom;
 
+  const rangeLines = period === PERIODS.custom
+    ? formatDateRangeLines(
+      rangeStart ?? new Date(today.getFullYear(), 0, 1),
+      rangeEnd ?? today,
+      months,
+      labels.cal_range_start,
+      labels.cal_range_end,
+    )
+    : null;
+
   const dateText = (() => {
     switch (period) {
       case PERIODS.day: return formatDate(date);
       case PERIODS.week: return formatWeekRange(date, shortMonths, false, config.firstDayOfWeek);
       case PERIODS.month: return `${months[date.getMonth()]} ${date.getFullYear()}`;
       case PERIODS.year: return date.getFullYear().toString();
-      case PERIODS.custom: {
-        const startDate = rangeStart ?? new Date(today.getFullYear(), 0, 1);
-        const endDate = rangeEnd ?? today;
-        return formatDateRange(
-          startDate,
-          endDate,
-          { from: labels.cal_from, to: labels.cal_to },
-          labels.months,
-        );
-      }
+      case PERIODS.custom: return '';
     }
   })();
 
@@ -70,8 +71,8 @@ export default function CalendarPicker({
   return (
     <>
       <View style={styles.row}>
-        <View style={styles.slot}>
-          {showNavigation && (
+        {showNavigation && (
+          <View style={styles.slot}>
             <TouchableOpacity
               onPress={goBack}
               hitSlop={8}
@@ -80,49 +81,58 @@ export default function CalendarPicker({
             >
               <Ionicons name="chevron-back-outline" size={PERIOD_ARROW_SIZE} color={c.primary} />
             </TouchableOpacity>
-          )}
-        </View>
+          </View>
+        )}
 
         <View style={styles.center}>
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: c.surface }]}
+            style={[styles.button, period === PERIODS.custom && styles.buttonCustom, { backgroundColor: c.surface }]}
             onPress={onOpen}
-            accessibilityLabel={dateText}
+            accessibilityLabel={rangeLines ? `${rangeLines.start}, ${rangeLines.end}` : dateText}
           >
             <DateIcon kind="calendar" size={14} color={c.primary} />
-            <Text style={[styles.text, { color: c.primary, fontSize: fs(14) }]}>{dateText}</Text>
+            {rangeLines ? (
+              <View style={styles.rangeText}>
+                <Text style={[styles.text, { color: c.primary, fontSize: fs(14) }]}>{rangeLines.start}</Text>
+                <Text style={[styles.text, { color: c.primary, fontSize: fs(14) }]}>{rangeLines.end}</Text>
+              </View>
+            ) : (
+              <Text style={[styles.text, { color: c.primary, fontSize: fs(14) }]}>{dateText}</Text>
+            )}
           </TouchableOpacity>
         </View>
 
-        <View style={[styles.slot, styles.slotRight]}>
-          {showJump && (
-            <TouchableOpacity
-              onPress={goToCurrent}
-              style={styles.jumpButton}
-              hitSlop={6}
-              accessibilityRole="button"
-              accessibilityLabel={labels.a11y_go_to_current_period}
-            >
-              <Ionicons name="chevron-forward-outline" size={PERIOD_ARROW_SIZE} color={c.primary} />
-              <Ionicons
-                name="chevron-forward-outline"
-                size={PERIOD_ARROW_SIZE}
-                color={c.primary}
-                style={styles.jumpOverlap}
-              />
-            </TouchableOpacity>
-          )}
-          {showNext && (
-            <TouchableOpacity
-              onPress={goForward}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel={labels.a11y_next_period}
-            >
-              <Ionicons name="chevron-forward-outline" size={PERIOD_ARROW_SIZE} color={c.primary} />
-            </TouchableOpacity>
-          )}
-        </View>
+        {showNavigation && (
+          <View style={[styles.slot, styles.slotRight]}>
+            {showJump && (
+              <TouchableOpacity
+                onPress={goToCurrent}
+                style={styles.jumpButton}
+                hitSlop={6}
+                accessibilityRole="button"
+                accessibilityLabel={labels.a11y_go_to_current_period}
+              >
+                <Ionicons name="chevron-forward-outline" size={PERIOD_ARROW_SIZE} color={c.primary} />
+                <Ionicons
+                  name="chevron-forward-outline"
+                  size={PERIOD_ARROW_SIZE}
+                  color={c.primary}
+                  style={styles.jumpOverlap}
+                />
+              </TouchableOpacity>
+            )}
+            {showNext && (
+              <TouchableOpacity
+                onPress={goForward}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={labels.a11y_next_period}
+              >
+                <Ionicons name="chevron-forward-outline" size={PERIOD_ARROW_SIZE} color={c.primary} />
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </View>
 
       <CalendarModal
@@ -169,7 +179,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: BUTTON_BORDER_RADIUS,
   },
-  text: { fontWeight: '600', textAlign: 'center' },
+  buttonCustom: {
+    maxWidth: '100%',
+    paddingHorizontal: 12,
+  },
+  text: { fontWeight: '600', textAlign: 'center', flexShrink: 1 },
+  rangeText: { flexShrink: 1, minWidth: 0 },
   jumpButton: { flexDirection: 'row', alignItems: 'center' },
   jumpOverlap: { marginLeft: -12 },
 });
