@@ -8,6 +8,7 @@ import {
   formatAmount,
   fitFontSize,
   formatDate,
+  formatDayShort,
   getMonthName,
   startOfDay,
   endOfDay,
@@ -123,6 +124,11 @@ describe('date helpers', () => {
     expect(formatDate(new Date(2026, 7, 3))).toBe('03/08/2026');
   });
 
+  it('formats the day period compactly', () => {
+    expect(formatDayShort(new Date(2026, 9, 22), ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']))
+      .toBe('22 Oct 2026');
+  });
+
   it('returns the localized month name for a month index', () => {
     expect(getMonthName(8)).toBe('August');
   });
@@ -161,7 +167,7 @@ describe('date helpers', () => {
 
   it('formats Sunday-first week ranges', () => {
     expect(formatWeekRange(new Date(2026, 0, 5), shortMonths, false, FIRST_DAYS.sunday)).toBe('4 Jan – 10 Jan');
-    expect(formatPeriodText(PERIODS.week, new Date(2026, 0, 5), months, shortMonths, FIRST_DAYS.sunday)).toBe('4 Jan – 10 Jan 2026');
+    expect(formatPeriodText(PERIODS.week, new Date(2026, 0, 5), months, FIRST_DAYS.sunday)).toBe('4 January – 10 January 2026');
   });
 
   it('computes the day offset for Monday-first calendars', () => {
@@ -296,9 +302,9 @@ describe('period text', () => {
 
   it('formats day, month and year period labels', () => {
     const date = new Date(2026, 7, 3);
-    expect(formatPeriodText(PERIODS.day, date, months, shortMonths)).toBe('3 August 2026');
-    expect(formatPeriodText(PERIODS.month, date, months, shortMonths)).toBe('August 2026');
-    expect(formatPeriodText(PERIODS.year, date, months, shortMonths)).toBe('2026');
+    expect(formatPeriodText(PERIODS.day, date, months)).toBe('3 August 2026');
+    expect(formatPeriodText(PERIODS.month, date, months)).toBe('August 2026');
+    expect(formatPeriodText(PERIODS.year, date, months)).toBe('2026');
   });
 });
 

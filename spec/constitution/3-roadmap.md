@@ -1265,3 +1265,13 @@ Applied 2026-10-22:
 - Replaced the generic "from ... to ..." wording with localised start/end phrases and standard connectors in all 9 languages, keeping the app's capitalised month names.
 - The start year is shown only when the range crosses a year boundary; the calendar modal header uses the same range wording.
 - Added all-language range tests and verified Home/All transactions at 375px; `npm run test:all` green (163 files / 1371 tests).
+
+## 2.2.0 compact calendar strings
+Status: completed.
+
+Applied 2026-10-23:
+- Day period uses the short month in the compact box (e.g. `22 Oct 2026`); the calendar modal keeps the full date.
+- Week period stays one line with short months; the week modal subtitle now uses full month names and the year, while week rows keep short months.
+- Period button horizontal padding reduced to 12px so short day/week strings remain safe on narrow screens and large text.
+- Renamed the custom "All" shortcut to "This year" and removed the redundant top title line; it selects 1 January to today.
+- Added formatter and calendar tests; browser-verified day, week, modal subtitle and this-year states at 375px; `npm run test:all` green (163 files / 1373 tests).

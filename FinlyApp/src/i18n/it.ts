@@ -131,7 +131,7 @@ export const it: Language = {
   cal_select_period: 'Seleziona periodo',
   cal_cancel: 'Annulla',
   cal_ok: 'Ok',
-  cal_all: 'Tutti',
+  cal_this_year: 'Quest\'anno',
   cal_select_start: 'Seleziona data di inizio',
   cal_select_end: 'Seleziona data di fine',
   cal_range_start: (day: number, month: string, year?: number) => `${day === 1 ? 'Dal 1°' : `Dal ${day}`} ${month}${year ? ` ${year}` : ''}`,

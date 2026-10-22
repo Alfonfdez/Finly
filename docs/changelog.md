@@ -4239,3 +4239,14 @@
 - Replaced the generic from/to wording with localised, capitalised start/end phrases in all 9 languages; the start year appears only when the range crosses a year boundary.
 - Custom mode now uses the full width without empty arrow slots, and the calendar modal header shares the same wording.
 - Added all-language range tests and browser-checked Home and All transactions at 375px; test:all green (163 files / 1371 tests).
+
+[2026-10-23] feat | FinlyApp/src/components/CalendarPicker.tsx, FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/utils/formatters.ts, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/utils/formatters.test.ts, FinlyApp/tests/component/CalendarPicker.test.tsx, FinlyApp/tests/component/CalendarModal.test.tsx, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Day period now shows a short month in the compact box (22 Oct 2026); the modal keeps the full date.
+- Week period stays one line with short months, while the week modal subtitle shows full month names and the year and the week rows stay compact.
+- Reduced period-button horizontal padding to 12px so the short day/week strings stay safe on narrow screens and large text.
+- Renamed the custom "All" shortcut to "This year" and removed the redundant top title line; it covers 1 January to today.
+- Added formatter and calendar tests and browser-checked day, week and this-year states at 375px; test:all green (163 files / 1373 tests).
+
+[2026-10-23] fix | FinlyApp/src/i18n/ca.ts, FinlyApp/tests/i18n/encoding.test.ts, docs/harnesses.md
+- Corrected the Catalan Categories sort label from "?s" to "Ús".
+- Added an i18n source encoding test for replacement characters, mojibake and misplaced question marks, plus question-mark consistency with English; test:all green (164 files / 1375 tests).
