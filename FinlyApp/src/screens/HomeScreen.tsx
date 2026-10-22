@@ -57,7 +57,7 @@ export default function HomeScreen() {
     let active = true;
 
     async function loadTagBreakdowns() {
-      const dates = resolvePeriodRange(activePeriod, selectedDate, customDate);
+      const dates = resolvePeriodRange(activePeriod, selectedDate, customDate, config.firstDayOfWeek);
 
       try {
         const data = await transactionRepo.breakdownByCategoriesAndTags(
@@ -84,10 +84,10 @@ export default function HomeScreen() {
 
     loadTagBreakdowns();
     return () => { active = false; };
-  }, [activeAccount, activeCategories, activeType, activePeriod, selectedDate, customDate, activeTagIds, tags]);
+  }, [activeAccount, activeCategories, activeType, activePeriod, selectedDate, customDate, activeTagIds, tags, config.firstDayOfWeek]);
 
   const handleCategoryPress = useCallback((category: { id: number }) => {
-    const { start, end } = resolvePeriodRange(activePeriod, selectedDate, customDate);
+    const { start, end } = resolvePeriodRange(activePeriod, selectedDate, customDate, config.firstDayOfWeek);
     navigation.navigate('Transactions', {
       categoryId: category.id,
       type: activeType,
@@ -96,7 +96,7 @@ export default function HomeScreen() {
       endDate: formatDateForDB(end),
       tagIds: activeTagIds.length > 0 ? activeTagIds : undefined,
     });
-  }, [navigation, activeType, activePeriod, customDate, selectedDate, activeTagIds]);
+  }, [navigation, activeType, activePeriod, customDate, selectedDate, activeTagIds, config.firstDayOfWeek]);
 
   const handleToggleExpand = useCallback((categoryId: number) => {
     setExpandedCategoryIds(prev => {

@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useMemo, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { AppState as RNAppState } from 'react-native';
 import type { Account, Category, Transaction, Tag } from '../database/types';
-import { TRANSACTION_TYPES, type Period, type TransactionType, type CategoryWithTotal, DATE_MIN, DATE_MAX, USER_ID } from '../constants/types';
+import { TRANSACTION_TYPES, type FirstDay, type Period, type TransactionType, type CategoryWithTotal, DATE_MIN, DATE_MAX, USER_ID } from '../constants/types';
 import { accountRepository as accountRepo, categoryRepository as categoryRepo, transactionRepository as transactionRepo, tagRepository as tagRepo } from '../database';
 import { materializeDueRecurring } from '../database/recurringService';
 import { isTotalAccount } from '../database/helpers';
@@ -63,8 +63,9 @@ async function fetchTransactionsAndTags(
   period: Period,
   date: Date,
   customDateRange: { start: Date; end: Date },
+  firstDay: FirstDay,
 ): Promise<{ data: Transaction[]; tagMap: Map<number, number[]> }> {
-  const dates = resolvePeriodRange(period, date, customDateRange);
+  const dates = resolvePeriodRange(period, date, customDateRange, firstDay);
   const isTotal = isTotalAccount(account);
   const data = await transactionRepo.list({
     account_id: isTotal ? undefined : account.id,
@@ -202,7 +203,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const nonTotal = accounts.filter(a => !isTotalAccount(a));
 
         const [{ data, tagMap }, [income, expenses], balancesResult] = await Promise.all([
-          fetchTransactionsAndTags(account, activePeriod, selectedDate, customDate),
+          fetchTransactionsAndTags(account, activePeriod, selectedDate, customDate, appConfig.firstDayOfWeek),
           Promise.all([
             transactionRepo.totalByPeriod(accountId, TRANSACTION_TYPES.income, DATE_MIN, DATE_MAX),
             transactionRepo.totalByPeriod(accountId, TRANSACTION_TYPES.expense, DATE_MIN, DATE_MAX),
@@ -231,7 +232,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     refreshAll();
     return () => { active = false; };
-  }, [activeAccount, activePeriod, selectedDate, customDate, accounts, transactionsVersion]);
+  }, [activeAccount, activePeriod, selectedDate, customDate, accounts, transactionsVersion, appConfig.firstDayOfWeek]);
   const filteredTransactions = useMemo(
     () => {
       let result = transactions.filter(t => {

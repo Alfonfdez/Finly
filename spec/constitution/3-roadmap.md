@@ -1227,3 +1227,14 @@ Batch B1 from the final audit, applied 2026-10-22:
 - ConfigContext merges updates from the latest config, serializes repository saves, rolls back only the fields of the failed update and returns a Promise; DataScreen applies the new config before resetAll.
 - OptionPicker now tracks option values (not labels) and useResetOnOpen is edge-triggered; duplicate-name checks, comment suggestions, selection mode, bulk deletion and useFocusLoad have race/re-entry guards.
 - `npm run test:all` green (162 files / 1353 tests).
+
+## 2.2.0 UI and period correctness
+Status: completed.
+
+Batch B2a from the final audit, applied 2026-10-22:
+- Week period math, labels, navigation and the week picker now share `firstDayOfWeek`; Sunday-first weeks use Sunday-Saturday consistently.
+- Amount sorting renders a flat list without date headers; each row shows its date.
+- The bulk-category transfer flow uses one modal with two inline steps instead of nesting a second RN Modal (iOS-safe).
+- Home list clears the FAB; ColorGrid wraps on narrow screens; TagSection clears hidden search; MonthGrid only highlights the matching year; disabled destructive buttons use inactive colors; ModifyAccount/TransactionDetails show a loading spinner.
+- The shared account pill can show longer localized names (e.g. Catalan "La meva cartera") without premature ellipsis.
+- `npm run test:all` green (162 files / 1355 tests), plus browser checks for the Catalan account pill, Sunday-first week label and flat amount-sorted list.

@@ -54,15 +54,15 @@ export default function ModalFooter({
   const fs = useFontSize();
 
   const confirmInactive = confirmDisabled || confirmLoading;
-  const confirmBg = destructive
-    ? c.red
-    : confirmInactive
-      ? (disabledBg ?? c.surface)
+  const confirmBg = confirmInactive
+    ? (disabledBg ?? c.surface)
+    : destructive
+      ? c.red
       : c.primary;
-  const confirmFg = destructive
-    ? WHITE
-    : confirmInactive
-      ? (disabledTextColor ?? c.textSecondary)
+  const confirmFg = confirmInactive
+    ? (disabledTextColor ?? c.textSecondary)
+    : destructive
+      ? WHITE
       : c.background;
   const buttonTextStyle = { fontSize: fs(textSize) };
 

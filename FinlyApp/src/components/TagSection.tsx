@@ -81,7 +81,10 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
           {labels.add_tags}
         </Text>
         <TouchableOpacity
-          onPress={() => setShowSearch(!showSearch)}
+          onPress={() => {
+            if (showSearch) setSearch('');
+            setShowSearch(!showSearch);
+          }}
           accessibilityRole="button"
           accessibilityLabel={labels.add_tag_search}
         >

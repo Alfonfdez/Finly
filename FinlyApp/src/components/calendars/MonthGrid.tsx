@@ -28,7 +28,7 @@ export default function MonthGrid({ date, onSelect }: CalendarBaseProps) {
         {MONTHS.map(m => {
           const monthDate = new Date(year, m - 1, 1);
           const isFuture = monthDate > futureMonthLimit;
-          const isActive = m === date.getMonth() + 1;
+          const isActive = year === date.getFullYear() && m === date.getMonth() + 1;
           return (
             <TouchableOpacity
               key={m}

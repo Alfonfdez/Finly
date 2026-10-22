@@ -18,9 +18,11 @@ interface TransactionRowProps {
   onPress?: (transactionId: number) => void;
   selectMode?: boolean;
   selected?: boolean;
+  /** Amount sorting renders a flat list, so the row carries its own date. */
+  showDate?: boolean;
 }
 
-export const TransactionRow = memo(function TransactionRow({ tx, category, tags, recurringName, onPress, selectMode, selected }: TransactionRowProps) {
+export const TransactionRow = memo(function TransactionRow({ tx, category, tags, recurringName, onPress, selectMode, selected, showDate }: TransactionRowProps) {
   const { config, activeColors: c } = useConfig();
   const fs = useFontSize();
 
@@ -51,8 +53,13 @@ export const TransactionRow = memo(function TransactionRow({ tx, category, tags,
       badgeAlpha={19}
       accessibilityState={selectMode ? { selected } : undefined}
       leading={checkbox}
-      middle={(hasRecurring || hasTags) ? (
+      middle={(showDate || hasRecurring || hasTags) ? (
         <>
+          {showDate && (
+            <Text style={[styles.rowDate, { color: c.textSecondary, fontSize: fs(11) }]}>
+              {formatDateHeader(tx.date)}
+            </Text>
+          )}
           {hasTags && (
             <View style={styles.tagsRow}>
               {tags?.map((tag) => (
@@ -127,6 +134,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     maxWidth: '100%',
   },
+  rowDate: { marginBottom: 2 },
   recurringName: {
     fontWeight: '500',
     flexShrink: 1,

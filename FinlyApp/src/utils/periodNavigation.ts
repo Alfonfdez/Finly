@@ -1,4 +1,4 @@
-import { PERIODS, type Period } from '../constants/types';
+import { FIRST_DAYS, PERIODS, type FirstDay, type Period } from '../constants/types';
 import { getDaysInMonth, isSameDay, weekStart } from './formatters';
 
 /**
@@ -30,13 +30,13 @@ export function shiftPeriod(period: Period, date: Date, delta: number): Date {
 }
 
 /** Whether two dates belong to the same period (day, week, month or year). */
-export function isSamePeriod(period: Period, a: Date, b: Date): boolean {
+export function isSamePeriod(period: Period, a: Date, b: Date, firstDay: FirstDay = FIRST_DAYS.monday): boolean {
   switch (period) {
     case PERIODS.day:
     case PERIODS.custom:
       return isSameDay(a, b);
     case PERIODS.week:
-      return weekStart(a).getTime() === weekStart(b).getTime();
+      return weekStart(a, firstDay).getTime() === weekStart(b, firstDay).getTime();
     case PERIODS.month:
       return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
     case PERIODS.year:
@@ -45,8 +45,8 @@ export function isSamePeriod(period: Period, a: Date, b: Date): boolean {
 }
 
 /** The next period is only offered while it is not in the future. */
-export function canGoForward(period: Period, date: Date, today: Date): boolean {
-  return !isSamePeriod(period, date, today);
+export function canGoForward(period: Period, date: Date, today: Date, firstDay: FirstDay = FIRST_DAYS.monday): boolean {
+  return !isSamePeriod(period, date, today, firstDay);
 }
 
 /**
@@ -54,9 +54,9 @@ export function canGoForward(period: Period, date: Date, today: Date): boolean {
  * more steps away: on the current period you are already there, and on the
  * penultimate one a single forward step reaches it.
  */
-export function canJumpToCurrent(period: Period, date: Date, today: Date): boolean {
+export function canJumpToCurrent(period: Period, date: Date, today: Date, firstDay: FirstDay = FIRST_DAYS.monday): boolean {
   return (
-    !isSamePeriod(period, date, today) &&
-    !isSamePeriod(period, date, shiftPeriod(period, today, -1))
+    !isSamePeriod(period, date, today, firstDay) &&
+    !isSamePeriod(period, date, shiftPeriod(period, today, -1), firstDay)
   );
 }

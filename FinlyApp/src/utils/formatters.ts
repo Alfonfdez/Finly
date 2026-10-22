@@ -102,7 +102,7 @@ export function dayOffset(dayDate: Date, firstDay: FirstDay): number {
   return weekDay;
 }
 
-function getPeriodRange(period: Period, date: Date): { start: Date; end: Date } {
+function getPeriodRange(period: Period, date: Date, firstDay: FirstDay = FIRST_DAYS.monday): { start: Date; end: Date } {
   switch (period) {
     case PERIODS.day: {
       const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -110,8 +110,8 @@ function getPeriodRange(period: Period, date: Date): { start: Date; end: Date } 
       return { start, end };
     }
     case PERIODS.week: {
-      const start = weekStart(date);
-      const end = weekEnd(date);
+      const start = weekStart(date, firstDay);
+      const end = weekEnd(date, firstDay);
       return { start, end };
     }
     case PERIODS.month: {
@@ -136,8 +136,9 @@ export function resolvePeriodRange(
   period: Period,
   date: Date,
   custom: { start: Date; end: Date },
+  firstDay: FirstDay = FIRST_DAYS.monday,
 ): { start: Date; end: Date } {
-  return period === PERIODS.custom ? custom : getPeriodRange(period, date);
+  return period === PERIODS.custom ? custom : getPeriodRange(period, date, firstDay);
 }
 
 export function getDaysInMonth(year: number, month: number): number {
@@ -246,11 +247,17 @@ export function formatWeekRange(date: Date, shortMonths: string[], includeYear =
   return `${startDay} ${startMonth} – ${endDay} ${endMonth}${year}`;
 }
 
-export function formatPeriodText(period: Period, date: Date, months: string[], shortMonths: string[]): string {
+export function formatPeriodText(
+  period: Period,
+  date: Date,
+  months: string[],
+  shortMonths: string[],
+  firstDay: FirstDay = FIRST_DAYS.monday,
+): string {
   const m = months[date.getMonth()];
   switch (period) {
     case PERIODS.day: return `${date.getDate()} ${m} ${date.getFullYear()}`;
-    case PERIODS.week: return formatWeekRange(date, shortMonths, true);
+    case PERIODS.week: return formatWeekRange(date, shortMonths, true, firstDay);
     case PERIODS.month: return `${m} ${date.getFullYear()}`;
     case PERIODS.year: return date.getFullYear().toString();
     default: return '';

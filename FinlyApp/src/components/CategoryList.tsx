@@ -4,6 +4,7 @@ import { type CategoryWithTotal, MAX_VISIBLE_TAGS } from '../constants/types';
 import { isUntaggedTag } from '../utils/tagFilter';
 import { formatAmount, HIDDEN_BALANCE } from '../utils/formatters';
 import { badgeShapeFor } from '../utils/badgeShape';
+import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
@@ -110,6 +111,7 @@ function CategoryListInner({
       data={categories}
       keyExtractor={keyExtractor}
       renderItem={renderItem}
+      contentContainerStyle={LIST_BOTTOM_FAB_PADDING}
     />
   );
 }
