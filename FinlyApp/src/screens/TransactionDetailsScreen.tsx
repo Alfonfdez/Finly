@@ -22,6 +22,7 @@ import EmptyState from '../components/EmptyState';
 import IconBadge from '../components/IconBadge';
 import TagChip from '../components/TagChip';
 import DataRow from '../components/DataRow';
+import DateIcon from '../components/DateIcon';
 import PhotoViewer from '../components/PhotoViewer';
 import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS, CONTROL_BORDER_RADIUS } from '../components/componentStyles';
 
@@ -253,14 +254,20 @@ export default function TransactionDetailsScreen() {
 
         <View style={styles.timestamps}>
           {createdDate && (
-            <Text style={[styles.timestampText, { color: c.textSecondary, fontSize: fs(11) }]}>
-              {createdDate}
-            </Text>
+            <View style={styles.timestampRow}>
+              <DateIcon kind="time" size={11} />
+              <Text style={[styles.timestampText, { color: c.textSecondary, fontSize: fs(11) }]}>
+                {createdDate}
+              </Text>
+            </View>
           )}
           {updatedDate && (
-            <Text style={[styles.timestampText, { color: c.textSecondary, fontSize: fs(11) }]}>
-              {updatedDate}
-            </Text>
+            <View style={styles.timestampRow}>
+              <DateIcon kind="updated" size={11} />
+              <Text style={[styles.timestampText, { color: c.textSecondary, fontSize: fs(11) }]}>
+                {updatedDate}
+              </Text>
+            </View>
           )}
         </View>
       </ScrollView>
@@ -336,7 +343,14 @@ const styles = StyleSheet.create({
     marginTop: 24,
     gap: 2,
   },
-  timestampText: {},
+  timestampRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  timestampText: {
+    flexShrink: 1,
+  },
 });
 
 interface NamedEntityBadgeProps {

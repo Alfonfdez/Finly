@@ -1246,3 +1246,13 @@ Follow-up after device review, applied 2026-10-22:
 - Added a `meta` slot to ListItemRow between the title and subtitle.
 - Amount-sorted transaction rows now show the date (calendar icon + semibold text) before the comment, followed by tags and the recurring name: Type -> Date -> Comment -> Tags -> Recurring.
 - Tests cover the meta order and the date-before-comment layout; `npm run test:all` green (162 files / 1358 tests).
+
+## 2.2.0 contextual date icons
+Status: completed.
+
+Applied 2026-10-22:
+- Added a shared DateIcon: calendar for scheduled/current dates, time for historical metadata.
+- Calendar icons now mark Date-sort section headers and the tappable period button; time icons mark Tags "Created on", Comments "Last used" and Recurring "Created on"; Recurring "Next due" keeps a calendar icon.
+- Transaction details now show a time icon beside "Created" and a refresh icon beside "Updated"; the day/end-date inputs keep their existing calendar icon.
+- Date label top spacing moved from the text to the row, so clock and calendar icons align with their labels.
+- Tests assert the icons in the date header, period button, tags, comments, recurring rows and details footer; `npm run test:all` green (162 files / 1359 tests).

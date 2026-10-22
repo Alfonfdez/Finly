@@ -8,6 +8,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { getDisplayCategoryName } from '../i18n';
 import { BADGE_SHAPES, TRANSACTION_TYPES } from '../constants/types';
 import ListItemRow from './ListItemRow';
+import DateIcon from './DateIcon';
 import TagChip from './TagChip';
 
 interface TransactionRowProps {
@@ -47,7 +48,7 @@ export const TransactionRow = memo(function TransactionRow({ tx, category, tags,
       subtitleLines={2}
       meta={showDate ? (
         <View style={styles.dateMeta}>
-          <Ionicons name="calendar-outline" size={12} color={c.textSecondary} />
+          <DateIcon kind="calendar" size={12} />
           <Text style={[styles.rowDate, { color: c.textSecondary, fontSize: fs(11) }]}>
             {formatDateHeader(tx.date)}
           </Text>
@@ -99,9 +100,12 @@ export const TransactionDateHeader = memo(function TransactionDateHeader({ date 
   const fs = useFontSize();
 
   return (
-    <Text style={[styles.dateHeader, { color: c.textSecondary, fontSize: fs(13) }]}>
-      {formatDateHeader(date)}
-    </Text>
+    <View style={styles.dateHeaderRow}>
+      <DateIcon kind="calendar" size={13} />
+      <Text style={[styles.dateHeader, { color: c.textSecondary, fontSize: fs(13) }]}>
+        {formatDateHeader(date)}
+      </Text>
+    </View>
   );
 });
 
@@ -118,10 +122,16 @@ function formatDateHeader(dateStr: string): string {
 }
 
 const styles = StyleSheet.create({
-  dateHeader: {
-    fontWeight: '600',
+  dateHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingVertical: 8,
     paddingHorizontal: 16,
+  },
+  dateHeader: {
+    fontWeight: '600',
+    flexShrink: 1,
   },
   tagsRow: {
     flexDirection: 'row',
