@@ -68,6 +68,21 @@ describe('OptionPickerModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('confirms the tapped value even when two options share a label', async () => {
+    const { view, onSelect } = await renderPicker({
+      options: [
+        { label: 'Same', value: 'alpha' },
+        { label: 'Same', value: 'beta' },
+      ],
+      selected: 'alpha',
+    });
+
+    await fireEvent.press(view.getAllByText('Same')[1]);
+    await fireEvent.press(view.getByText(t().transactions_confirm));
+
+    expect(onSelect).toHaveBeenCalledWith('beta');
+  });
+
   it('cancels without selecting', async () => {
     const { view, onSelect, onClose } = await renderPicker();
 

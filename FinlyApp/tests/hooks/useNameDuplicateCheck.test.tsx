@@ -116,6 +116,27 @@ describe('useNameDuplicateCheck', () => {
     expect(result.current.checkingName).toBe(false);
   });
 
+  it('ignores a stale duplicate result from an older name', async () => {
+    vi.useFakeTimers();
+    let resolveFirst!: (value: boolean) => void;
+    const first = new Promise<boolean>((resolve) => { resolveFirst = resolve; });
+    const options = makeOptions();
+    options.existsByName.mockImplementationOnce(() => first).mockResolvedValueOnce(true);
+    const { result } = await renderWith(options);
+
+    await act(() => result.current.handleNameChange('First', vi.fn()));
+    await flushDebounce();
+    await act(() => result.current.handleNameChange('Second', vi.fn()));
+    await flushDebounce();
+    expect(result.current.nameError).toBe('duplicate');
+
+    await act(async () => {
+      resolveFirst(false);
+      await Promise.resolve();
+    });
+    expect(result.current.nameError).toBe('duplicate');
+  });
+
   it('clearNameError clears the error', async () => {
     vi.useFakeTimers();
     const options = makeOptions();

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import { AppProvider, useApp } from '../../src/context/AppContext';
+import { materializeDueRecurring } from '../../src/database/recurringService';
 import { setConfig, resetStub } from '../component/helpers/configStub';
 import { TRANSACTION_TYPES } from '../../src/constants/types';
 import type { Account, Category, Transaction } from '../../src/database/types';
@@ -86,6 +87,23 @@ describe('AppProvider', () => {
     expect(result.current.categories).toEqual([catFood]);
     expect(result.current.tags).toEqual([]);
     expect(mockAccountList).toHaveBeenCalled();
+  });
+
+  it('does not reload reference data or re-materialize when a Home default changes', async () => {
+    const { result } = await renderHook(() => useApp(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const listCalls = mockAccountList.mock.calls.length;
+    const materializeCalls = vi.mocked(materializeDueRecurring).mock.calls.length;
+    expect(materializeCalls).toBe(1);
+
+    await act(async () => {
+      setConfig({ homeDefaultPeriod: 'year' });
+    });
+
+    expect(result.current.activePeriod).toBe('year');
+    expect(mockAccountList).toHaveBeenCalledTimes(listCalls);
+    expect(vi.mocked(materializeDueRecurring).mock.calls.length).toBe(materializeCalls);
   });
 
   it('applies the home default account from the config', async () => {

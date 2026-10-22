@@ -100,7 +100,7 @@ export default function TagsScreen() {
   const atTagLimit = countAtLimit(tags.length, MAX_TAGS);
 
   const {
-    deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
+    deleteModalVisible, busy, openDeleteModal, closeDeleteModal, confirmBulkDelete,
   } = useBulkDelete({
     selectedIds,
     exitSelectMode,
@@ -218,6 +218,7 @@ export default function TagsScreen() {
         cancelLabel={labels.modify_tag_delete_confirm_cancel}
         onConfirm={confirmBulkDelete}
         onCancel={closeDeleteModal}
+        busy={busy}
       />
     </ScreenShell>
   );

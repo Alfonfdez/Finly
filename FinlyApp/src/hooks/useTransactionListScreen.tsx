@@ -42,7 +42,7 @@ export function useTransactionListScreen({
   }, [loadTransactions, setTransactions, onAfterDelete]);
 
   const {
-    deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
+    deleteModalVisible, busy, openDeleteModal, closeDeleteModal, confirmBulkDelete,
   } = useBulkDelete({
     selectedIds,
     exitSelectMode,
@@ -60,7 +60,7 @@ export function useTransactionListScreen({
 
   return {
     filters,
-    deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
+    deleteModalVisible, busy, openDeleteModal, closeDeleteModal, confirmBulkDelete,
     handleTransactionPress,
     keyExtractor,
   };

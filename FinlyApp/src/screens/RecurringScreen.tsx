@@ -184,7 +184,7 @@ export default function RecurringScreen() {
   }, [selectMode, toggleItem, navigation]);
 
   const {
-    deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
+    deleteModalVisible, busy, openDeleteModal, closeDeleteModal, confirmBulkDelete,
   } = useBulkDelete({
     selectedIds,
     exitSelectMode,
@@ -307,6 +307,7 @@ export default function RecurringScreen() {
         cancelLabel={labels.cancel}
         onConfirm={confirmBulkDelete}
         onCancel={closeDeleteModal}
+        busy={busy}
       />
     </ScreenShell>
   );

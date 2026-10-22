@@ -34,16 +34,15 @@ export default function OptionPickerModal<T extends string>({
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const [tempLabel, setTempLabel] = useState('');
+  const [tempValue, setTempValue] = useState<T | null>(null);
   const [search, setSearch] = useState('');
 
   const isSearchable = searchable ?? options.length > 10;
 
   const resetOnOpen = useCallback(() => {
-    const match = options.find(op => op.value === selected);
-    setTempLabel(match?.label ?? '');
+    setTempValue(selected);
     setSearch('');
-  }, [selected, options]);
+  }, [selected]);
   useResetOnOpen(visible, resetOnOpen);
 
   const filtered = useMemo(() => {
@@ -53,13 +52,12 @@ export default function OptionPickerModal<T extends string>({
   }, [options, search]);
 
   const handleConfirm = useCallback(() => {
-    const match = options.find(op => op.label === tempLabel);
-    if (match) onSelect(match.value);
+    if (tempValue !== null) onSelect(tempValue);
     onClose();
-  }, [options, tempLabel, onSelect, onClose]);
+  }, [tempValue, onSelect, onClose]);
 
   const renderItem = useCallback(({ item }: { item: Option<T> }) => {
-    const isSelected = item.label === tempLabel;
+    const isSelected = item.value === tempValue;
     return (
       <ListItemRow
         title={item.label}
@@ -71,12 +69,12 @@ export default function OptionPickerModal<T extends string>({
         }
         divider
         style={styles.row}
-        onPress={() => setTempLabel(item.label)}
+        onPress={() => setTempValue(item.value)}
       />
     );
-  }, [tempLabel, c]);
+  }, [tempValue, c]);
 
-  const keyExtractor = useCallback((item: Option<T>) => item.label, []);
+  const keyExtractor = useCallback((item: Option<T>) => String(item.value), []);
 
   return (
     <ModalShell visible={visible} onClose={onClose} maxHeight="85%">

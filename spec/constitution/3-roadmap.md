@@ -1218,3 +1218,12 @@ Release-hardening pass from the final app audit, applied 2026-10-22:
 - Web IndexedDB absence/open failures fail closed, and writes resolve only after the IndexedDB transaction commits.
 - Added `FinlyShare.podspec`, the `preview-simulator` EAS profile and the missing `MissingCurrentViewControllerException`; the free EAS iOS simulator build **427cb65f** finished successfully, verifying Swift compilation and module linking. Runtime/share-sheet behavior still needs a Mac or device. Native photo backups remain URI-only by design for 2.2.0 (documented in 025).
 - `npm run test:all` green (162 files / 1347 tests). iOS runtime/share testing remains unverified without a Mac or physical device.
+
+## 2.2.0 state and race hardening
+Status: completed.
+
+Batch B1 from the final audit, applied 2026-10-22:
+- AppContext now loads recurring materialization + reference data once (gated by ConfigContext loading), applies Home defaults without reloading, initialises the period from config, guards stale async results and only replaces an invalid/deleted active account.
+- ConfigContext merges updates from the latest config, serializes repository saves, rolls back only the fields of the failed update and returns a Promise; DataScreen applies the new config before resetAll.
+- OptionPicker now tracks option values (not labels) and useResetOnOpen is edge-triggered; duplicate-name checks, comment suggestions, selection mode, bulk deletion and useFocusLoad have race/re-entry guards.
+- `npm run test:all` green (162 files / 1353 tests).

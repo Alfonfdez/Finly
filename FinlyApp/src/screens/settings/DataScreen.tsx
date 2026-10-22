@@ -159,8 +159,8 @@ export default function DataScreen() {
     setPendingAction(PENDING_DATA_ACTIONS.import);
     try {
       await importBackup(pendingImport);
+      await updateConfig(await configRepository.get());
       await resetAll();
-      updateConfig(await configRepository.get());
       alertInfo(labels.settings_import_success_title, labels.settings_import_success_message);
     } catch (error) {
       logError(ERROR_PREFIXES.backupImport, error);
@@ -236,8 +236,8 @@ export default function DataScreen() {
     setPendingAction(PENDING_DATA_ACTIONS.all);
     try {
       await clearDataKeepSettings();
+      await updateConfig(await configRepository.get());
       await resetAll();
-      updateConfig(await configRepository.get());
     } catch (error) {
       logError(ERROR_PREFIXES.dataDeleteAll, error);
       alertError(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
@@ -252,8 +252,8 @@ export default function DataScreen() {
     setPendingAction(PENDING_DATA_ACTIONS.factory);
     try {
       await resetDatabase();
+      await updateConfig(await configRepository.get());
       await resetAll();
-      updateConfig(await configRepository.get());
     } catch (error) {
       logError(ERROR_PREFIXES.factoryReset, error);
       alertError(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);

@@ -48,5 +48,15 @@ export function useFocusLoad<T>(
     }, []),
   );
 
-  return { data, setData, loading };
+  // Keep the comparison baseline in sync when a caller updates the data
+  // outside the loader (bulk delete reloads, external refreshes, ...).
+  const updateData = useCallback<Dispatch<SetStateAction<T>>>((value) => {
+    setData((prev) => {
+      const next = typeof value === 'function' ? (value as (prev: T) => T)(prev) : value;
+      dataRef.current = next;
+      return next;
+    });
+  }, []);
+
+  return { data, setData: updateData, loading };
 }
