@@ -1238,3 +1238,11 @@ Batch B2a from the final audit, applied 2026-10-22:
 - Home list clears the FAB; ColorGrid wraps on narrow screens; TagSection clears hidden search; MonthGrid only highlights the matching year; disabled destructive buttons use inactive colors; ModifyAccount/TransactionDetails show a loading spinner.
 - The shared account pill can show longer localized names (e.g. Catalan "La meva cartera") without premature ellipsis.
 - `npm run test:all` green (162 files / 1355 tests), plus browser checks for the Catalan account pill, Sunday-first week label and flat amount-sorted list.
+
+## 2.2.0 amount-sort row order
+Status: completed.
+
+Follow-up after device review, applied 2026-10-22:
+- Added a `meta` slot to ListItemRow between the title and subtitle.
+- Amount-sorted transaction rows now show the date (calendar icon + semibold text) before the comment, followed by tags and the recurring name: Type -> Date -> Comment -> Tags -> Recurring.
+- Tests cover the meta order and the date-before-comment layout; `npm run test:all` green (162 files / 1358 tests).
