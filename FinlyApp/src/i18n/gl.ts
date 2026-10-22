@@ -131,7 +131,7 @@ export const gl: Language = {
   cal_select_period: 'Seleccionar período',
   cal_cancel: 'Cancelar',
   cal_ok: 'Aceptar',
-  cal_all: 'Todos',
+  cal_this_year: 'Este ano',
   cal_select_start: 'Selecciona data de inicio',
   cal_select_end: 'Selecciona data de fin',
   cal_range_start: (day: number, month: string, year?: number) => `Desde o ${day} de ${month}${year ? ` de ${year}` : ''}`,

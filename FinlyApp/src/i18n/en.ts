@@ -129,7 +129,7 @@ export const en = {
   cal_select_period: 'Select period',
   cal_cancel: 'Cancel',
   cal_ok: 'Ok',
-  cal_all: 'All',
+  cal_this_year: 'This year',
   cal_select_start: 'Select start date',
   cal_select_end: 'Select end date',
   cal_range_start: (day: number, month: string, year?: number) => `From ${day} ${month}${year ? ` ${year}` : ''}`,

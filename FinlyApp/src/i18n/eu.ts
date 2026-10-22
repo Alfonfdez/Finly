@@ -131,7 +131,7 @@ export const eu: Language = {
   cal_select_period: 'Epea hautatu',
   cal_cancel: 'Utzi',
   cal_ok: 'Ados',
-  cal_all: 'Guztiak',
+  cal_this_year: 'Urte hau',
   cal_select_start: 'Hautatu hasiera-data',
   cal_select_end: 'Hautatu amaiera-data',
   cal_range_start: (day: number, month: string, year?: number) => `${year ? `${year}ko ` : ''}${month.slice(0, -1)}aren ${day}etik`,

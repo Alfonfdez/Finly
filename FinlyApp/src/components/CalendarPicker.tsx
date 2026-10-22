@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { formatDate, formatDateRangeLines, formatWeekRange } from '../utils/formatters';
+import { formatDayShort, formatDateRangeLines, formatWeekRange } from '../utils/formatters';
 import { canGoForward, canJumpToCurrent, shiftPeriod } from '../utils/periodNavigation';
 import CalendarModal from './CalendarModal';
 import type { Period } from './calendars/types';
@@ -53,7 +53,7 @@ export default function CalendarPicker({
 
   const dateText = (() => {
     switch (period) {
-      case PERIODS.day: return formatDate(date);
+      case PERIODS.day: return formatDayShort(date, shortMonths);
       case PERIODS.week: return formatWeekRange(date, shortMonths, false, config.firstDayOfWeek);
       case PERIODS.month: return `${months[date.getMonth()]} ${date.getFullYear()}`;
       case PERIODS.year: return date.getFullYear().toString();
@@ -175,13 +175,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 20,
+    paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: BUTTON_BORDER_RADIUS,
   },
   buttonCustom: {
     maxWidth: '100%',
-    paddingHorizontal: 12,
   },
   text: { fontWeight: '600', textAlign: 'center', flexShrink: 1 },
   rangeText: { flexShrink: 1, minWidth: 0 },

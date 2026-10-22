@@ -5,7 +5,8 @@ import { resetStub, setConfig } from './helpers/configStub';
 import CalendarPicker from '../../src/components/CalendarPicker';
 import { PERIODS, type Period } from '../../src/constants/types';
 import { setLanguage } from '../../src/i18n';
-import { formatDate } from '../../src/utils/formatters';
+import { en } from '../../src/i18n/en';
+import { formatDayShort } from '../../src/utils/formatters';
 
 function dayOffset(offset: number): Date {
   const date = new Date();
@@ -41,6 +42,11 @@ describe('CalendarPicker fast arrows', () => {
   it('shows a calendar icon in the period button', async () => {
     const { view } = await renderPicker(PERIODS.day, dayOffset(0));
     expect(view.getByText('calendar-outline', { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  it('shows the day period with a short month', async () => {
+    const { view } = await renderPicker(PERIODS.day, new Date(2026, 9, 22));
+    expect(view.getByText('22 Oct 2026')).toBeTruthy();
   });
 
   it('shows only the previous arrow on the current day', async () => {
@@ -159,7 +165,7 @@ describe('CalendarPicker fast arrows', () => {
       <CalendarPicker period={PERIODS.day} date={today} onDateChange={vi.fn()} onOpen={onOpen} />,
     );
 
-    await fireEvent.press(view.getByText(formatDate(today)));
+    await fireEvent.press(view.getByText(formatDayShort(today, en.months_short)));
     expect(onOpen).toHaveBeenCalledTimes(1);
   });
 });

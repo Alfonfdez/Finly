@@ -60,7 +60,7 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
     labels.cal_range_end,
   );
   const rangeText = allTime
-    ? `${labels.cal_all}\n${rangeLines.start}\n${rangeLines.end}`
+    ? `${rangeLines.start}\n${rangeLines.end}`
     : selecting === PICKING_PHASE.end && tempStart.getTime() === tempEnd.getTime()
       ? `${labels.cal_range_start(tempStart.getDate(), months[tempStart.getMonth()])}\n${labels.cal_period_to_hint}`
       : `${rangeLines.start}\n${rangeLines.end}`;
@@ -71,7 +71,7 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
 
       <TouchableOpacity style={styles.allTimeRow} onPress={handleAllTime} accessibilityRole="checkbox" accessibilityState={{ checked: allTime }}>
         <View style={[styles.checkbox, { borderColor: c.textSecondary }, allTime && { backgroundColor: c.primary, borderColor: c.primary }]} />
-        <Text style={[styles.allTimeText, { color: c.text, fontSize: fs(14) }]}>{labels.cal_all}</Text>
+        <Text style={[styles.allTimeText, { color: c.text, fontSize: fs(14) }]}>{labels.cal_this_year}</Text>
       </TouchableOpacity>
 
       {!allTime && (

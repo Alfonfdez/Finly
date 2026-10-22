@@ -63,6 +63,10 @@ export function formatDate(date: Date): string {
   return `${day}/${month}/${year}`;
 }
 
+export function formatDayShort(date: Date, shortMonths: string[]): string {
+  return `${date.getDate()} ${shortMonths[date.getMonth()]} ${date.getFullYear()}`;
+}
+
 export function getMonthName(month: number): string {
   return t().months[month - 1] ?? '';
 }
@@ -251,13 +255,12 @@ export function formatPeriodText(
   period: Period,
   date: Date,
   months: string[],
-  shortMonths: string[],
   firstDay: FirstDay = FIRST_DAYS.monday,
 ): string {
   const m = months[date.getMonth()];
   switch (period) {
     case PERIODS.day: return `${date.getDate()} ${m} ${date.getFullYear()}`;
-    case PERIODS.week: return formatWeekRange(date, shortMonths, true, firstDay);
+    case PERIODS.week: return formatWeekRange(date, months, true, firstDay);
     case PERIODS.month: return `${m} ${date.getFullYear()}`;
     case PERIODS.year: return date.getFullYear().toString();
     default: return '';

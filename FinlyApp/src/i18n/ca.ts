@@ -131,7 +131,7 @@ export const ca: Language = {
   cal_select_period: 'Seleccionar període',
   cal_cancel: 'Cancel·lar',
   cal_ok: 'D\'acord',
-  cal_all: 'Tots',
+  cal_this_year: 'Aquest any',
   cal_select_start: 'Seleccioneu data d\'inici',
   cal_select_end: 'Seleccioneu data de fi',
   cal_range_start: (day: number, month: string, year?: number) => `${day === 1 ? 'Des de l\'1' : `Des del ${day}`} ${/^[AEIOU]/.test(month) ? `d'${month}` : `de ${month}`}${year ? ` de ${year}` : ''}`,
@@ -201,7 +201,7 @@ export const ca: Language = {
   add_cat_title: 'Afegir categoria',
   add_cat_search: 'Cercar categoria',
   categories_sort_name: 'Nom',
-  categories_sort_usage: '?s',
+  categories_sort_usage: 'Ús',
   add_cat_no_results: 'No s\'ha trobat res',
   add_cat_create: 'Crear',
 
