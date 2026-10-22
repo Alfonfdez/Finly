@@ -24,9 +24,13 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
   const [focused, setFocused] = useState(false);
   const skipNextSearch = useRef(false);
   const isPressingSuggestion = useRef(false);
+  const focusedRef = useRef(false);
+  const searchId = useRef(0);
 
   const searchComments = useCallback(async (value: string) => {
+    const id = ++searchId.current;
     const results = await transactionRepository.searchComments(value);
+    if (id !== searchId.current || !focusedRef.current) return;
     setSuggestions(results);
   }, []);
 
@@ -34,6 +38,8 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
 
   useEffect(() => {
     if (!focused) {
+      debouncedSearch.cancel();
+      searchId.current += 1;
       setSuggestions([]);
       return;
     }
@@ -42,14 +48,23 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
       return;
     }
     if (comment.trim().length < MIN_COMMENT_SUGGESTION_LENGTH) {
+      debouncedSearch.cancel();
+      searchId.current += 1;
       setSuggestions([]);
       return;
     }
     debouncedSearch(comment.trim());
   }, [comment, debouncedSearch, focused]);
 
+  useEffect(() => () => {
+    debouncedSearch.cancel();
+    searchId.current += 1;
+  }, [debouncedSearch]);
+
   const handleSelectSuggestion = (text: string) => {
     skipNextSearch.current = true;
+    debouncedSearch.cancel();
+    searchId.current += 1;
     onChange(text);
     setSuggestions([]);
   };
@@ -93,11 +108,16 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
           value={comment}
           onChangeText={onChange}
           onFocus={() => {
+            focusedRef.current = true;
             setFocused(true);
             onFocus?.();
           }}
           onBlur={() => {
             if (isPressingSuggestion.current) return;
+            focusedRef.current = false;
+            debouncedSearch.cancel();
+            searchId.current += 1;
+            setSuggestions([]);
             setFocused(false);
             onBlur?.();
           }}

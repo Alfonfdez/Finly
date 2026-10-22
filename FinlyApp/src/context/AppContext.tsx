@@ -1,13 +1,13 @@
-import { createContext, useContext, useState, useMemo, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useMemo, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { AppState as RNAppState } from 'react-native';
 import type { Account, Category, Transaction, Tag } from '../database/types';
-import { PERIODS, TRANSACTION_TYPES, type Period, type TransactionType, type CategoryWithTotal, DATE_MIN, DATE_MAX, USER_ID } from '../constants/types';
+import { TRANSACTION_TYPES, type Period, type TransactionType, type CategoryWithTotal, DATE_MIN, DATE_MAX, USER_ID } from '../constants/types';
 import { accountRepository as accountRepo, categoryRepository as categoryRepo, transactionRepository as transactionRepo, tagRepository as tagRepo } from '../database';
 import { materializeDueRecurring } from '../database/recurringService';
 import { isTotalAccount } from '../database/helpers';
 import { matchesTagFilter, toggleTagInArray } from '../utils/tagFilter';
 import { categoriesOfType } from '../utils/categoryUtils';
-import { useConfig } from './ConfigContext';
+import { useConfig, type Config } from './ConfigContext';
 import { formatDateForDB, resolvePeriodRange, endOfDay } from '../utils/formatters';
 import { ERROR_PREFIXES, logError, showErrorAlert } from '../utils/errors';
 
@@ -87,10 +87,10 @@ async function fetchTransactionsAndTags(
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { config: appConfig } = useConfig();
+  const { config: appConfig, loading: configLoading } = useConfig();
   const [activeAccount, setActiveAccount] = useState<Account | null>(null);
   const [activeType, setActiveType] = useState<TransactionType>(TRANSACTION_TYPES.expense);
-  const [activePeriod, setActivePeriod] = useState<Period>(PERIODS.day);
+  const [activePeriod, setActivePeriod] = useState<Period>(appConfig.homeDefaultPeriod);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [customDate, setCustomDateState] = useState<{ start: Date; end: Date }>(defaultCustomDate);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -107,22 +107,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [categories],
   );
 
-  const applyHomeDefaults = useCallback((accountsData: Account[]) => {
-    if (accountsData.length > 0) {
-      if (appConfig.homeDefaultAccountId !== null) {
-        const found = accountsData.find(a => a.id === appConfig.homeDefaultAccountId);
-        if (found) setActiveAccount(found);
-        else setActiveAccount(accountsData[0]);
-      } else {
-        setActiveAccount(accountsData[0]);
-      }
-      if (appConfig.homeDefaultPeriod) {
-        setActivePeriod(appConfig.homeDefaultPeriod);
-      }
-    }
-  }, [appConfig.homeDefaultAccountId, appConfig.homeDefaultPeriod]);
+  const configRef = useRef(appConfig);
+  configRef.current = appConfig;
+  const accountsRef = useRef(accounts);
+  accountsRef.current = accounts;
+  const activeAccountRef = useRef(activeAccount);
+  activeAccountRef.current = activeAccount;
+  const defaultsRef = useRef({
+    id: appConfig.homeDefaultAccountId,
+    period: appConfig.homeDefaultPeriod,
+  });
+  const bootstrapDone = useRef(false);
 
+  const applyHomeDefaults = useCallback((
+    accountsData: Account[],
+    cfg: Config = configRef.current,
+  ) => {
+    if (accountsData.length === 0) return;
+    if (cfg.homeDefaultAccountId !== null) {
+      const found = accountsData.find(a => a.id === cfg.homeDefaultAccountId);
+      setActiveAccount(found ?? accountsData[0]);
+    } else {
+      setActiveAccount(accountsData[0]);
+    }
+    setActivePeriod(cfg.homeDefaultPeriod);
+  }, []);
+
+  // One startup pass: materialize recurring rules and load the reference data.
+  // Home-default changes must not repeat this work (and must not re-materialize).
   useEffect(() => {
+    if (configLoading) return;
+    let active = true;
+
     async function loadData() {
       try {
         try {
@@ -135,19 +151,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
           categoryRepo.list(USER_ID),
           tagRepo.list(USER_ID),
         ]);
+        if (!active) return;
+        const cfg = configRef.current;
         setAccounts(accountsData);
         setCategories(categoriesData);
         setTags(tagsData);
-        applyHomeDefaults(accountsData);
+        applyHomeDefaults(accountsData, cfg);
+        defaultsRef.current = { id: cfg.homeDefaultAccountId, period: cfg.homeDefaultPeriod };
+        bootstrapDone.current = true;
       } catch (error) {
         logError(ERROR_PREFIXES.initialDataLoad, error);
         showErrorAlert();
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     }
+
     loadData();
-  }, [appConfig.homeDefaultAccountId, appConfig.homeDefaultPeriod, applyHomeDefaults]);
+    return () => { active = false; };
+  }, [configLoading, applyHomeDefaults]);
+
+  // Apply a later Home-default change without reloading reference data.
+  useEffect(() => {
+    if (configLoading || !bootstrapDone.current) return;
+    const previous = defaultsRef.current;
+    if (
+      previous.id === appConfig.homeDefaultAccountId
+      && previous.period === appConfig.homeDefaultPeriod
+    ) return;
+    defaultsRef.current = { id: appConfig.homeDefaultAccountId, period: appConfig.homeDefaultPeriod };
+    applyHomeDefaults(accountsRef.current, configRef.current);
+  }, [appConfig.homeDefaultAccountId, appConfig.homeDefaultPeriod, configLoading, applyHomeDefaults]);
+
+  // Keep the active account valid after an account is deleted or data is reloaded.
+  useEffect(() => {
+    const current = activeAccountRef.current;
+    if (!current) return;
+    if (accounts.some(account => account.id === current.id)) return;
+    applyHomeDefaults(accounts);
+  }, [accounts, applyHomeDefaults]);
 
   useEffect(() => {
     if (!activeAccount) return;

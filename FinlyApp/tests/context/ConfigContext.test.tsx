@@ -83,6 +83,21 @@ describe('ConfigProvider', () => {
     expect(captured!.config.firstDayOfWeek).toBe(0);
   });
 
+  it('merges back-to-back updates from the latest config', async () => {
+    mockConfigGet.mockResolvedValue(DEFAULT_CONFIG);
+    await renderProvider();
+    await waitFor(() => expect(captured?.loading).toBe(false));
+
+    await act(async () => {
+      const first = captured!.updateConfig({ firstDayOfWeek: 0 });
+      const second = captured!.updateConfig({ homeDefaultPeriod: 'week' });
+      await Promise.all([first, second]);
+    });
+
+    expect(captured!.config.firstDayOfWeek).toBe(0);
+    expect(captured!.config.homeDefaultPeriod).toBe('week');
+  });
+
   it('updateConfig changes colors immediately when the theme changes', async () => {
     mockConfigGet.mockResolvedValue(DEFAULT_CONFIG);
     await renderProvider();

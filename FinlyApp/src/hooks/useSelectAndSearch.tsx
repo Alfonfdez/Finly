@@ -40,11 +40,10 @@ export function useSelectAndSearch<T extends number | string = number>({
   }, []);
 
   const toggleSelectMode = useCallback(() => {
-    setSelectMode(prev => {
-      if (prev) setSelectedIds(new Set());
-      return !prev;
-    });
-  }, []);
+    const next = !selectMode;
+    setSelectMode(next);
+    if (!next) setSelectedIds(new Set());
+  }, [selectMode]);
 
   const toggleSearch = useCallback(() => {
     setSearchActive((prev) => !prev);

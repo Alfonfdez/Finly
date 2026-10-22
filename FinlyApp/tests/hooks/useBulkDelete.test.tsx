@@ -106,4 +106,23 @@ describe('useBulkDelete', () => {
 
     expect(runWithErrorAlert).toHaveBeenCalledTimes(1);
   });
+
+  it('ignores a second confirm while the first delete is in flight', async () => {
+    let finish!: () => void;
+    const deleteFn = vi.fn(() => new Promise<void>((resolve) => {
+      finish = resolve;
+    }));
+    const { result } = await setup({ deleteFn });
+
+    let first!: Promise<void>;
+    let second!: Promise<void>;
+    await act(async () => {
+      first = result.current.confirmBulkDelete();
+      second = result.current.confirmBulkDelete();
+      finish();
+      await Promise.all([first, second]);
+    });
+
+    expect(deleteFn).toHaveBeenCalledTimes(1);
+  });
 });

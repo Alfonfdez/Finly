@@ -84,6 +84,17 @@ describe('CommentInput', () => {
     expect(view.getByText('coffee shop')).toBeTruthy();
   });
 
+  it('does not reopen suggestions when the debounce fires after blur', async () => {
+    mockedSearchComments.mockResolvedValue(['coffee']);
+    const view = await renderInput('cof');
+
+    await focusInput(view);
+    await act(async () => { fireEvent(view.getByLabelText('Comment input'), 'blur'); });
+    await flushDebounce();
+
+    expect(view.queryByText('coffee')).toBeNull();
+  });
+
   it('selecting a suggestion fills the comment and clears the suggestions', async () => {
     mockedSearchComments.mockResolvedValue(['coffee', 'coffee shop']);
     const onChange = vi.fn();

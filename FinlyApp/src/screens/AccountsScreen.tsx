@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import {
   View, Text, FlatList, StyleSheet,
 } from 'react-native';
@@ -138,24 +138,35 @@ export default function AccountsScreen() {
     setDeleteModalVisible(true);
   }, [selectedIds.size, nonTotalCount, setDeleteModalVisible]);
 
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const bulkDeletingRef = useRef(false);
+
   const handleBulkDelete = useCallback(async () => {
+    if (bulkDeletingRef.current) return;
+    bulkDeletingRef.current = true;
+    setBulkDeleting(true);
     setDeleteModalVisible(false);
-    await runWithErrorAlert(async () => {
-      await accountRepository.deleteMany([...selectedIds]);
+    try {
+      await runWithErrorAlert(async () => {
+        await accountRepository.deleteMany([...selectedIds]);
 
-      const remaining = accounts.filter(a => !selectedIds.has(a.id));
-      const updates = sanitizeDefaultAccounts(config, remaining);
-      if (Object.keys(updates).length > 0) {
-        updateConfig(updates);
-      }
+        const remaining = accounts.filter(a => !selectedIds.has(a.id));
+        const updates = sanitizeDefaultAccounts(config, remaining);
+        if (Object.keys(updates).length > 0) {
+          await updateConfig(updates);
+        }
 
-      exitSelectMode();
-      const { accounts: updated, total: newTotal } = await loadData();
-      setAccounts(updated);
-      setTotal(newTotal);
-      await refreshAccounts();
-      refresh();
-    }, ERROR_PREFIXES.accountsDelete);
+        exitSelectMode();
+        const { accounts: updated, total: newTotal } = await loadData();
+        setAccounts(updated);
+        setTotal(newTotal);
+        await refreshAccounts();
+        refresh();
+      }, ERROR_PREFIXES.accountsDelete);
+    } finally {
+      bulkDeletingRef.current = false;
+      setBulkDeleting(false);
+    }
   }, [selectedIds, config, accounts, exitSelectMode, loadData, refreshAccounts, refresh, updateConfig, setDeleteModalVisible]);
 
   const renderItem = useCallback(({ item }: { item: AccountWithBalance }) => {
@@ -317,6 +328,7 @@ export default function AccountsScreen() {
         cancelLabel={labels.cancel}
         onConfirm={handleBulkDelete}
         onCancel={() => setDeleteModalVisible(false)}
+        busy={bulkDeleting}
       />
 
       <GuardModal

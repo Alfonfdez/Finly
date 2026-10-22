@@ -111,7 +111,7 @@ export default function CommentsScreen() {
   const visibleIds = useMemo(() => sortedComments.map((c) => c.description), [sortedComments]);
 
   const {
-    deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
+    deleteModalVisible, busy, openDeleteModal, closeDeleteModal, confirmBulkDelete,
   } = useBulkDelete({
     selectedIds: selectedComments,
     exitSelectMode,
@@ -224,6 +224,7 @@ export default function CommentsScreen() {
         cancelLabel={labels.comments_delete_confirm_cancel}
         onConfirm={confirmBulkDelete}
         onCancel={closeDeleteModal}
+        busy={busy}
       />
     </ScreenShell>
   );

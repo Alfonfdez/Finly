@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { runWithErrorAlert } from '../utils/errors';
 
 interface UseBulkDeleteOptions<T> {
@@ -19,21 +19,32 @@ export function useBulkDelete<T extends number | string>({
   labels,
 }: UseBulkDeleteOptions<T>) {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const busyRef = useRef(false);
 
   const openDeleteModal = useCallback(() => setDeleteModalVisible(true), []);
   const closeDeleteModal = useCallback(() => setDeleteModalVisible(false), []);
 
   const confirmBulkDelete = useCallback(async () => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
     setDeleteModalVisible(false);
-    await runWithErrorAlert(async () => {
-      await deleteFn([...selectedIds]);
-      exitSelectMode();
-      await afterDelete?.();
-    }, errorPrefix, labels);
+    try {
+      await runWithErrorAlert(async () => {
+        await deleteFn([...selectedIds]);
+        exitSelectMode();
+        await afterDelete?.();
+      }, errorPrefix, labels);
+    } finally {
+      busyRef.current = false;
+      setBusy(false);
+    }
   }, [selectedIds, exitSelectMode, deleteFn, afterDelete, errorPrefix, labels]);
 
   return {
     deleteModalVisible,
+    busy,
     openDeleteModal,
     closeDeleteModal,
     confirmBulkDelete,

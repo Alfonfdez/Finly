@@ -15,7 +15,7 @@ export type { Config };
 interface ConfigContextType {
   config: Config;
   activeColors: ColorPalette;
-  updateConfig: (partial: Partial<Config>) => void;
+  updateConfig: (partial: Partial<Config>) => Promise<void>;
   loading: boolean;
 }
 
@@ -40,8 +40,8 @@ function resolveColors(theme: Theme): ColorPalette {
 
 export function ConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<Config>(DEFAULT_CONFIG);
-  const configRef = useRef(config);
-  configRef.current = config;
+  const configRef = useRef<Config>(DEFAULT_CONFIG);
+  const saveQueue = useRef<Promise<void>>(Promise.resolve());
   const [loading, setLoading] = useState(true);
   const [activeColors, setActiveColors] = useState<ColorPalette>(darkColors);
   const saveGeneration = useRef(0);
@@ -50,6 +50,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     (async () => {
       try {
         const loaded = await configRepository.get();
+        configRef.current = loaded;
         setConfig(loaded);
         setActiveColors(resolveColors(loaded.theme));
         setLanguage(loaded.language);
@@ -95,18 +96,30 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   const updateConfig = useCallback(async (partial: Partial<Config>) => {
     const previous = configRef.current;
     const updated = { ...previous, ...partial };
+    configRef.current = updated;
     const gen = ++saveGeneration.current;
     if (partial.language) setLanguage(partial.language);
     setConfig(updated);
     if (partial.theme) setActiveColors(resolveColors(partial.theme));
+
+    // Serialize saves so a slow earlier write cannot land after a newer one.
+    const save = saveQueue.current.then(() => configRepository.save(partial));
+    saveQueue.current = save.catch(() => {});
+
     try {
-      await configRepository.save(partial);
+      await save;
     } catch (error) {
       logError(ERROR_PREFIXES.configSave, error);
       if (gen !== saveGeneration.current) return;
-      setConfig(previous);
-      setActiveColors(resolveColors(previous.theme));
-      if (previous.language) setLanguage(previous.language);
+      // Roll back only the fields this call attempted, preserving newer updates.
+      const rolledBack = { ...configRef.current };
+      for (const key of Object.keys(partial) as (keyof Config)[]) {
+        (rolledBack as Record<string, unknown>)[key] = previous[key];
+      }
+      configRef.current = rolledBack;
+      setConfig(rolledBack);
+      setActiveColors(resolveColors(rolledBack.theme));
+      setLanguage(rolledBack.language);
       showErrorAlert();
     }
   }, []);

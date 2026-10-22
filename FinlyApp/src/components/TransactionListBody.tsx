@@ -56,7 +56,7 @@ export default function TransactionListBody({
 
   const {
     filters, keyExtractor, handleTransactionPress,
-    deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
+    deleteModalVisible, busy, openDeleteModal, closeDeleteModal, confirmBulkDelete,
   } = list;
   const {
     searchActive, searchText, setSearchText, closeSearch,
@@ -170,6 +170,7 @@ export default function TransactionListBody({
         cancelLabel={labels.cancel}
         onConfirm={confirmBulkDelete}
         onCancel={closeDeleteModal}
+        busy={busy}
       />
     </>
   );
