@@ -5,6 +5,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
 import IconBadge from './IconBadge';
+import DateIcon from './DateIcon';
 import { DISABLED_CONTROL_OPACITY, switchColors } from './componentStyles';
 import { BADGE_SHAPES, RECURRING_STATUSES, TRANSACTION_TYPES } from '../constants/types';
 import { formatAmount, formatDateLong, parseDbDate } from '../utils/formatters';
@@ -71,21 +72,27 @@ function RecurringRow({ rule, category, count, today, onPress, onToggleActive, b
         <Text style={[styles.subtitle, { color: c.primary, fontSize: fs(12) }]} numberOfLines={1}>
           {recurrenceSummary(rule, config.language)}
         </Text>
-        <Text
-          style={[styles.nextDue, { color: ended ? c.textSecondary : c.text, fontSize: fs(11) }]}
-          numberOfLines={1}
-        >
-          {ended
-            ? labels.recurring_ended
-            : labels.recurring_next_due(formatDateLong(fromDateOnly(rule.next_due), config.language))}
-        </Text>
+        <View style={styles.dateRow}>
+          <DateIcon kind="calendar" size={12} />
+          <Text
+            style={[styles.dateText, { color: ended ? c.textSecondary : c.text, fontSize: fs(11) }]}
+            numberOfLines={1}
+          >
+            {ended
+              ? labels.recurring_ended
+              : labels.recurring_next_due(formatDateLong(fromDateOnly(rule.next_due), config.language))}
+          </Text>
+        </View>
         <Text style={[styles.meta, { color: c.textSecondary, fontSize: fs(11) }]} numberOfLines={1}>
           {category ? `${getDisplayCategoryName(category)} · ` : ''}
           {labels.recurring_transactions_count(count)}
         </Text>
-        <Text style={[styles.meta, { color: c.textSecondary, fontSize: fs(11) }]} numberOfLines={1}>
-          {labels.recurring_created_on(createdText)}
-        </Text>
+        <View style={styles.dateRow}>
+          <DateIcon kind="time" size={11} />
+          <Text style={[styles.dateText, { color: c.textSecondary, fontSize: fs(11) }]} numberOfLines={1}>
+            {labels.recurring_created_on(createdText)}
+          </Text>
+        </View>
       </TouchableOpacity>
       <View style={styles.right}>
         <Text style={[styles.amount, { color: isIncome ? c.green : c.red, fontSize: fs(15) }]}>
@@ -138,8 +145,14 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontWeight: '500',
   },
-  nextDue: {
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     marginTop: 2,
+  },
+  dateText: {
+    flexShrink: 1,
   },
   meta: {
     marginTop: 2,

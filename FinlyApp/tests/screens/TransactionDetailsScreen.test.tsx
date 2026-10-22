@@ -103,6 +103,8 @@ describe('TransactionDetailsScreen', () => {
     // A backdated transaction: the footer reports when the record was created/edited...
     expect(view.getByText('Created: 18:20 - 19 oct 2026')).toBeTruthy();
     expect(view.getByText('Updated: 09:05 - 20 oct 2026')).toBeTruthy();
+    expect(view.getByText('time-outline', { includeHiddenElements: true })).toBeTruthy();
+    expect(view.getByText('refresh-outline', { includeHiddenElements: true })).toBeTruthy();
     // ...while the Date row keeps the transaction's own date.
     expect(view.getByText('July 15, 2026')).toBeTruthy();
     expect(view.queryByText('Created: 00:00 - 15 jul 2026')).toBeNull();

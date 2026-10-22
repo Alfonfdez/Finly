@@ -36,6 +36,11 @@ describe('CalendarPicker fast arrows', () => {
     setConfig({ language: 'en' });
   });
 
+  it('shows a calendar icon in the period button', async () => {
+    const { view } = await renderPicker(PERIODS.day, dayOffset(0));
+    expect(view.getByText('calendar-outline', { includeHiddenElements: true })).toBeTruthy();
+  });
+
   it('shows only the previous arrow on the current day', async () => {
     const { view } = await renderPicker(PERIODS.day, dayOffset(0));
 

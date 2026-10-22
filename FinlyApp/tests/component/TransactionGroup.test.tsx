@@ -73,7 +73,7 @@ describe('TransactionRow', () => {
   it('renders a calendar date before the comment when showDate is set', async () => {
     const view = await render(<TransactionRow tx={makeTx({})} category={category} showDate />);
 
-    expect(view.getByText('calendar-outline')).toBeTruthy();
+    expect(view.getByText('calendar-outline', { includeHiddenElements: true })).toBeTruthy();
     const date = view.getByText('5 august');
     expect(flattenStyle(date.props.style).fontWeight).toBe('600');
     const json = JSON.stringify(view.toJSON());
@@ -176,6 +176,7 @@ describe('TransactionDateHeader', () => {
     const view = await render(<TransactionDateHeader date={`${year}-08-05 12:00:00`} />);
 
     expect(view.getByText('5 august')).toBeTruthy();
+    expect(view.getByText('calendar-outline', { includeHiddenElements: true })).toBeTruthy();
   });
 
   it('includes the year for other years', async () => {

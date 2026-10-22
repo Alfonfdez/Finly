@@ -25,6 +25,7 @@ import { defaultTagSortDirection, sortTags } from '../utils/tagSort';
 import { nextSortPreference, toggleSortDirection } from '../utils/sortPreference';
 import Fab from '../components/Fab';
 import ListItemRow from '../components/ListItemRow';
+import DateIcon from '../components/DateIcon';
 import ListOrEmpty from '../components/ListOrEmpty';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
@@ -119,9 +120,12 @@ export default function TagsScreen() {
         titleSize={15}
         subtitle={labels.tags_used_in(usage.get(item.id) ?? 0)}
         middle={
-          <Text style={[styles.created, { color: c.textSecondary, fontSize: fs(12) }]}>
-            {labels.tags_created_on(createdText)}
-          </Text>
+          <View style={styles.dateRow}>
+            <DateIcon kind="time" size={12} />
+            <Text style={[styles.dateText, { color: c.textSecondary, fontSize: fs(12) }]}>
+              {labels.tags_created_on(createdText)}
+            </Text>
+          </View>
         }
         leading={selectMode ? (
           <Ionicons
@@ -232,9 +236,8 @@ const styles = StyleSheet.create({
   row: {
     padding: 14,
   },
-  created: {
-    marginTop: 2,
-  },
+  dateRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  dateText: { flexShrink: 1 },
   limitWrap: {
     position: 'absolute',
     bottom: 56,

@@ -9,6 +9,7 @@ import { PERIODS } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
+import DateIcon from './DateIcon';
 import { BUTTON_BORDER_RADIUS } from './componentStyles';
 
 const PERIOD_ARROW_SIZE = 22;
@@ -88,6 +89,7 @@ export default function CalendarPicker({
             onPress={onOpen}
             accessibilityLabel={dateText}
           >
+            <DateIcon kind="calendar" size={14} color={c.primary} />
             <Text style={[styles.text, { color: c.primary, fontSize: fs(14) }]}>{dateText}</Text>
           </TouchableOpacity>
         </View>
@@ -159,7 +161,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  button: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: BUTTON_BORDER_RADIUS },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: BUTTON_BORDER_RADIUS,
+  },
   text: { fontWeight: '600', textAlign: 'center' },
   jumpButton: { flexDirection: 'row', alignItems: 'center' },
   jumpOverlap: { marginLeft: -12 },

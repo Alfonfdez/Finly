@@ -63,6 +63,7 @@ describe('CommentsScreen', () => {
     getDistinctComments.mockResolvedValue([{ description: 'Coffee', count: 2, lastUsed: '2026-09-22' }]);
     const view = await render(<CommentsScreen />);
     expect(await view.findByText('Last used 22 Sep 2026')).toBeTruthy();
+    expect(view.getByText('time-outline', { includeHiddenElements: true })).toBeTruthy();
   });
 
   it('sorts by usage when the Usage field is tapped', async () => {

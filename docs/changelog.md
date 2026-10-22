@@ -4223,3 +4223,13 @@
 - Added a meta slot to ListItemRow between the title and subtitle.
 - Amount-sorted rows now show the date with a calendar icon and semibold weight before the comment, followed by tags and the recurring name.
 - Added tests for the meta order and date-before-comment layout; test:all green (162 files / 1358 tests).
+
+[2026-10-22] fix | FinlyApp/src/components/DateIcon.tsx, FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/src/components/CalendarPicker.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/components/RecurringRow.tsx, FinlyApp/tests/component/TransactionGroup.test.tsx, FinlyApp/tests/component/CalendarPicker.test.tsx, FinlyApp/tests/component/RecurringRow.test.tsx, FinlyApp/tests/screens/TagsScreen.test.tsx, FinlyApp/tests/screens/CommentsScreen.test.tsx, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Added a shared DateIcon for calendar (scheduled dates) and time (history metadata).
+- Date-sort headers and the period button now show calendar icons; Tags/Comments/Recurring created-on use time icons, and Recurring next due uses a calendar icon.
+- Added icon assertions to the date header, period, tags, comments and recurring tests; test:all green (162 files / 1359 tests).
+
+[2026-10-22] fix | FinlyApp/src/components/DateIcon.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/components/RecurringRow.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Added a time icon beside the Created footer in Transaction details and a refresh icon beside Updated (the label differentiates history from edit).
+- Moved the date-label top margin from the text to the row, so the clock and calendar icons center with their labels in Tags, Comments and Recurring.
+- Extended the details footer test for both icons; test:all green (162 files / 1359 tests).

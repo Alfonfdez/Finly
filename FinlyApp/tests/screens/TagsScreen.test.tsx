@@ -56,6 +56,7 @@ describe('TagsScreen', () => {
     expect(view.getByText('Travel')).toBeTruthy();
     expect(view.getByText('1 of 100 tags')).toBeTruthy();
     expect(view.getByText('Created 1 Jan 2026')).toBeTruthy();
+    expect(view.getByText('time-outline', { includeHiddenElements: true })).toBeTruthy();
     expect(view.getByTestId(TEST_IDS.tagsList)).toBeTruthy();
   });
 

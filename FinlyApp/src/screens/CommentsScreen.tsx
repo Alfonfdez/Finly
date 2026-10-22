@@ -20,6 +20,7 @@ import { defaultCommentSortDirection, sortComments } from '../utils/commentSort'
 import { nextSortPreference, toggleSortDirection } from '../utils/sortPreference';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import ListItemRow from '../components/ListItemRow';
+import DateIcon from '../components/DateIcon';
 import ListOrEmpty from '../components/ListOrEmpty';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { ERROR_PREFIXES, logError, showErrorAlert } from '../utils/errors';
@@ -131,9 +132,12 @@ export default function CommentsScreen() {
         titleLines={2}
         subtitle={labels.comments_used_in(item.count)}
         middle={
-          <Text style={[styles.lastUsed, { color: c.textSecondary, fontSize: fs(12) }]}>
-            {labels.comments_last_used(lastUsedText)}
-          </Text>
+          <View style={styles.dateRow}>
+            <DateIcon kind="time" size={12} />
+            <Text style={[styles.dateText, { color: c.textSecondary, fontSize: fs(12) }]}>
+              {labels.comments_last_used(lastUsedText)}
+            </Text>
+          </View>
         }
         leading={selectMode ? (
           <Ionicons
@@ -241,7 +245,6 @@ const styles = StyleSheet.create({
   row: {
     padding: 14,
   },
-  lastUsed: {
-    marginTop: 2,
-  },
+  dateRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  dateText: { flexShrink: 1 },
 });
