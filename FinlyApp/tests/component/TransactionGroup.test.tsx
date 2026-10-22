@@ -70,6 +70,21 @@ describe('TransactionRow', () => {
     expect(flattenStyle(amount.props.style).color).toBe('#34D399');
   });
 
+  it('renders a calendar date before the comment when showDate is set', async () => {
+    const view = await render(<TransactionRow tx={makeTx({})} category={category} showDate />);
+
+    expect(view.getByText('calendar-outline')).toBeTruthy();
+    const date = view.getByText('5 august');
+    expect(flattenStyle(date.props.style).fontWeight).toBe('600');
+    const json = JSON.stringify(view.toJSON());
+    expect(json.indexOf('5 august')).toBeLessThan(json.indexOf('Lunch'));
+  });
+
+  it('does not render the row date without showDate', async () => {
+    const view = await render(<TransactionRow tx={makeTx({})} category={category} />);
+    expect(view.queryByText('5 august')).toBeNull();
+  });
+
   it('renders tag chips for the transaction', async () => {
     const view = await render(<TransactionRow tx={makeTx({})} category={category} tags={[{ tag_id: 7, name: 'lunch' }]} />);
 

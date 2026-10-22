@@ -29,6 +29,7 @@ interface Props {
   subtitleSize?: number;
   subtitleLines?: number;
   leading?: ReactNode;
+  meta?: ReactNode;
   middle?: ReactNode;
   right?: ReactNode;
   onPress?: () => void;
@@ -52,6 +53,7 @@ function ListItemRow({
   badgeAlpha,
   titleSize = 14,
   titleLines = 1,
+  meta,
   subtitle,
   subtitleSize = 12,
   subtitleLines = 1,
@@ -89,6 +91,7 @@ function ListItemRow({
         <Text style={[styles.title, { color: c.text, fontSize: fs(titleSize) }]} numberOfLines={titleLines}>
           {title}
         </Text>
+        {meta}
         {subtitle ? (
           <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(subtitleSize) }]} numberOfLines={subtitleLines}>
             {subtitle}

@@ -4218,3 +4218,8 @@
 - Bulk category transfer uses one modal with inline steps instead of nesting a second RN Modal.
 - Applied UI fixes: Home list FAB padding, ColorGrid wrapping, TagSection search reset, MonthGrid year check, inactive destructive buttons, loading spinners, and a wider account pill for localized names.
 - Browser-verified the Catalan account pill, Sunday-first week label and flat amount-sorted list; test:all green (162 files / 1355 tests).
+
+[2026-10-22] fix | FinlyApp/src/components/ListItemRow.tsx, FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/tests/component/ListItemRow.test.tsx, FinlyApp/tests/component/TransactionGroup.test.tsx, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Added a meta slot to ListItemRow between the title and subtitle.
+- Amount-sorted rows now show the date with a calendar icon and semibold weight before the comment, followed by tags and the recurring name.
+- Added tests for the meta order and date-before-comment layout; test:all green (162 files / 1358 tests).

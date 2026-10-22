@@ -45,6 +45,14 @@ export const TransactionRow = memo(function TransactionRow({ tx, category, tags,
       title={category ? getDisplayCategoryName(category) : ''}
       subtitle={tx.description ?? undefined}
       subtitleLines={2}
+      meta={showDate ? (
+        <View style={styles.dateMeta}>
+          <Ionicons name="calendar-outline" size={12} color={c.textSecondary} />
+          <Text style={[styles.rowDate, { color: c.textSecondary, fontSize: fs(11) }]}>
+            {formatDateHeader(tx.date)}
+          </Text>
+        </View>
+      ) : undefined}
       icon={category?.icon}
       color={category?.color}
       shape={BADGE_SHAPES.circle}
@@ -53,13 +61,8 @@ export const TransactionRow = memo(function TransactionRow({ tx, category, tags,
       badgeAlpha={19}
       accessibilityState={selectMode ? { selected } : undefined}
       leading={checkbox}
-      middle={(showDate || hasRecurring || hasTags) ? (
+      middle={(hasRecurring || hasTags) ? (
         <>
-          {showDate && (
-            <Text style={[styles.rowDate, { color: c.textSecondary, fontSize: fs(11) }]}>
-              {formatDateHeader(tx.date)}
-            </Text>
-          )}
           {hasTags && (
             <View style={styles.tagsRow}>
               {tags?.map((tag) => (
@@ -134,7 +137,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
     maxWidth: '100%',
   },
-  rowDate: { marginBottom: 2 },
+  dateMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  rowDate: { fontWeight: '600' },
   recurringName: {
     fontWeight: '500',
     flexShrink: 1,
