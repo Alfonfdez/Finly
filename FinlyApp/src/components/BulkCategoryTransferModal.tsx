@@ -9,7 +9,7 @@ import type { Category } from '../database/types';
 import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
 import ListItemRow from './ListItemRow';
-import CategoryTransferModal, { type TransferTargetId } from './CategoryTransferModal';
+import { CategoryTransferBody, type TransferTargetId } from './CategoryTransferModal';
 import ModalFooter from './ModalFooter';
 import { WHITE } from '../constants/themes';
 
@@ -63,82 +63,96 @@ export default function BulkCategoryTransferModal({
   const allResolved =
     categories.length > 0 && categories.every(({ category }) => decisions[category.id] != null);
 
-  return (
-    <ModalShell visible={visible} onClose={onCancel}>
-      <ModalHeader title={labels.categories_bulk_move_title} size={16} />
-      <ScrollView style={styles.list}>
-        {categories.map(({ category, txCount, ruleCount }) => {
-          const decision = decisions[category.id] ?? null;
-          return (
-            <ListItemRow
-              key={category.id}
-              title={getDisplayCategoryName(category)}
-              subtitle={labels.categories_bulk_move_data(txCount, ruleCount)}
-              icon={category.icon}
-              color={category.color}
-              shape={badgeShapeFor(config, 'category')}
-              badgeSize={36}
-              badgeIconSize={20}
-              badgeRadius={8}
-              badgeAlpha={20}
-              badgeGap={12}
-              right={
-                <View style={styles.decision}>
-                  <Text
-                    style={[
-                      styles.decisionText,
-                      {
-                        color: decision == null ? c.textSecondary : c.primary,
-                        fontSize: fs(13),
-                      },
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {decisionLabel(category.id)}
-                  </Text>
-                  <Ionicons name="chevron-forward" size={16} color={c.textSecondary} />
-                </View>
-              }
-              onPress={() => setPickerFor(category.id)}
-              accessibilityLabel={getDisplayCategoryName(category)}
-              accessibilityState={{ expanded: pickerFor === category.id }}
-              divider
-            />
-          );
-        })}
-        <Text style={[styles.note, { color: c.textSecondary, fontSize: fs(13) }]}>
-          {labels.categories_bulk_move_note}
-        </Text>
-      </ScrollView>
-      <ModalFooter
-        cancelLabel={labels.modify_cat_select_cancel}
-        confirmLabel={labels.categories_bulk_move_confirm}
-        onCancel={onCancel}
-        onConfirm={onConfirm}
-        confirmDisabled={!allResolved}
-        minHeight={44}
-        disabledBg={c.textSecondary}
-        disabledTextColor={WHITE}
-      />
+  const pickerDecision = pickerFor !== null ? (decisions[pickerFor] ?? null) : null;
 
-      <CategoryTransferModal
-        visible={pickerFor !== null}
-        title={
-          pickerCategory
-            ? `${labels.categories_bulk_move_title}: ${getDisplayCategoryName(pickerCategory.category)}`
-            : labels.categories_bulk_move_title
-        }
-        categories={targets}
-        selectedId={pickerFor !== null ? (decisions[pickerFor] ?? null) : null}
-        confirmLabel={labels.modify_cat_select_confirm}
-        cancelLabel={labels.modify_cat_select_cancel}
-        deleteOptionLabel={labels.categories_bulk_move_delete_option}
-        onSelect={(id) => {
-          if (pickerFor !== null) onDecide(pickerFor, id);
-        }}
-        onConfirm={() => setPickerFor(null)}
-        onCancel={() => setPickerFor(null)}
-      />
+  return (
+    <ModalShell visible={visible} onClose={pickerFor !== null ? () => setPickerFor(null) : onCancel}>
+      {pickerFor !== null ? (
+        <>
+          <ModalHeader
+            title={
+              pickerCategory
+                ? `${labels.categories_bulk_move_title}: ${getDisplayCategoryName(pickerCategory.category)}`
+                : labels.categories_bulk_move_title
+            }
+            size={16}
+          />
+          <CategoryTransferBody
+            categories={targets}
+            selectedId={pickerDecision}
+            deleteOptionLabel={labels.categories_bulk_move_delete_option}
+            onSelect={(id) => onDecide(pickerFor, id)}
+          />
+          <ModalFooter
+            cancelLabel={labels.modify_cat_select_cancel}
+            confirmLabel={labels.modify_cat_select_confirm}
+            onCancel={() => setPickerFor(null)}
+            onConfirm={() => setPickerFor(null)}
+            confirmDisabled={pickerDecision === null}
+            minHeight={44}
+            disabledBg={c.textSecondary}
+            disabledTextColor={WHITE}
+          />
+        </>
+      ) : (
+        <>
+          <ModalHeader title={labels.categories_bulk_move_title} size={16} />
+          <ScrollView style={styles.list}>
+            {categories.map(({ category, txCount, ruleCount }) => {
+              const decision = decisions[category.id] ?? null;
+              return (
+                <ListItemRow
+                  key={category.id}
+                  title={getDisplayCategoryName(category)}
+                  subtitle={labels.categories_bulk_move_data(txCount, ruleCount)}
+                  icon={category.icon}
+                  color={category.color}
+                  shape={badgeShapeFor(config, 'category')}
+                  badgeSize={36}
+                  badgeIconSize={20}
+                  badgeRadius={8}
+                  badgeAlpha={20}
+                  badgeGap={12}
+                  right={
+                    <View style={styles.decision}>
+                      <Text
+                        style={[
+                          styles.decisionText,
+                          {
+                            color: decision == null ? c.textSecondary : c.primary,
+                            fontSize: fs(13),
+                          },
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {decisionLabel(category.id)}
+                      </Text>
+                      <Ionicons name="chevron-forward" size={16} color={c.textSecondary} />
+                    </View>
+                  }
+                  onPress={() => setPickerFor(category.id)}
+                  accessibilityLabel={getDisplayCategoryName(category)}
+                  accessibilityState={{ expanded: false }}
+                  divider
+                />
+              );
+            })}
+            <Text style={[styles.note, { color: c.textSecondary, fontSize: fs(13) }]}>
+              {labels.categories_bulk_move_note}
+            </Text>
+          </ScrollView>
+          <ModalFooter
+            cancelLabel={labels.modify_cat_select_cancel}
+            confirmLabel={labels.categories_bulk_move_confirm}
+            onCancel={onCancel}
+            onConfirm={onConfirm}
+            confirmDisabled={!allResolved}
+            minHeight={44}
+            disabledBg={c.textSecondary}
+            disabledTextColor={WHITE}
+          />
+        </>
+      )}
     </ModalShell>
   );
 }

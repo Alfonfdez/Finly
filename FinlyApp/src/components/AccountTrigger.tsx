@@ -48,5 +48,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  accountTriggerName: { fontWeight: '600', maxWidth: 100 },
+  accountTriggerName: { fontWeight: '600', maxWidth: 180, flexShrink: 1 },
 });

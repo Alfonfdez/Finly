@@ -145,6 +145,25 @@ describe('date helpers', () => {
     expect(start.getDate()).toBe(5);
   });
 
+  it('computes week ranges with Sunday as first day', () => {
+    // 2026-01-07 is a Wednesday; its Sunday-first week is 2026-01-04..10
+    const start = weekStart(new Date(2026, 0, 7), FIRST_DAYS.sunday);
+    expect(start.getDate()).toBe(4);
+    const range = resolvePeriodRange(
+      PERIODS.week,
+      new Date(2026, 0, 7),
+      { start: new Date(), end: new Date() },
+      FIRST_DAYS.sunday,
+    );
+    expect(range.start.getDate()).toBe(4);
+    expect(range.end.getDate()).toBe(10);
+  });
+
+  it('formats Sunday-first week ranges', () => {
+    expect(formatWeekRange(new Date(2026, 0, 5), shortMonths, false, FIRST_DAYS.sunday)).toBe('4 Jan – 10 Jan');
+    expect(formatPeriodText(PERIODS.week, new Date(2026, 0, 5), months, shortMonths, FIRST_DAYS.sunday)).toBe('4 Jan – 10 Jan 2026');
+  });
+
   it('computes the day offset for Monday-first calendars', () => {
     // Monday -> 0, Sunday -> 6
     expect(dayOffset(new Date(2026, 0, 5), FIRST_DAYS.monday)).toBe(0);

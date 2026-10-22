@@ -4211,3 +4211,10 @@
 - ConfigContext merges from the latest config, serializes saves, rolls back only the failed fields and returns a Promise; DataScreen applies the imported/reset config before resetAll.
 - OptionPicker tracks option values and useResetOnOpen only resets on open; duplicate-name checks, comment suggestions, select mode, bulk deletes and useFocusLoad now guard stale results and re-entry.
 - Added/updated context, picker, comment, bulk-delete and reset-on-open tests; test:all green (162 files / 1353 tests).
+
+[2026-10-22] fix | FinlyApp/src/utils/formatters.ts, FinlyApp/src/utils/periodNavigation.ts, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/screens/HomeScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/components/AccountTrigger.tsx, FinlyApp/src/components/CategoryList.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/components/calendars/MonthGrid.tsx, FinlyApp/src/components/ColorGrid.tsx, FinlyApp/src/components/ModalFooter.tsx, FinlyApp/src/components/CalendarPicker.tsx, FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/src/components/TransactionListBody.tsx, FinlyApp/src/components/BulkCategoryTransferModal.tsx, FinlyApp/src/components/CategoryTransferModal.tsx, FinlyApp/tests/utils/formatters.test.ts, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Week math and labels now share firstDayOfWeek, so Sunday-first weeks use Sunday-Saturday consistently.
+- Amount sorting uses a flat list without date headers; rows carry their own date.
+- Bulk category transfer uses one modal with inline steps instead of nesting a second RN Modal.
+- Applied UI fixes: Home list FAB padding, ColorGrid wrapping, TagSection search reset, MonthGrid year check, inactive destructive buttons, loading spinners, and a wider account pill for localized names.
+- Browser-verified the Catalan account pill, Sunday-first week label and flat amount-sorted list; test:all green (162 files / 1355 tests).

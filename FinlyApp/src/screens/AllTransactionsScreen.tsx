@@ -51,7 +51,10 @@ export default function AllTransactionsScreen() {
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
   const [calendarVisible, setCalendarVisible] = useState(false);
 
-  const periodDates = useMemo(() => resolvePeriodRange(activePeriod, selectedDate, customDate), [activePeriod, selectedDate, customDate]);
+  const periodDates = useMemo(
+    () => resolvePeriodRange(activePeriod, selectedDate, customDate, config.firstDayOfWeek),
+    [activePeriod, selectedDate, customDate, config.firstDayOfWeek],
+  );
 
   const loadTransactions = useCallback(async () => {
     return await transactionRepository.list({});

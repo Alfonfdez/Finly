@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
@@ -54,7 +54,7 @@ export default function TransactionDetailsScreen() {
     return tx;
   }, [transactionId]);
 
-  const { data: transaction } = useFocusLoad(loadTransaction, null);
+  const { data: transaction, loading } = useFocusLoad(loadTransaction, null);
 
   // Parse photos from DB (supports both old single URI and new JSON array)
   const parsedPhotos = useMemo(() => parsePhotos(transaction?.photo), [transaction?.photo]);
@@ -102,6 +102,16 @@ export default function TransactionDetailsScreen() {
     },
     errorPrefix: ERROR_PREFIXES.transactionsDelete,
   });
+
+  if (loading && !transaction) {
+    return (
+      <ScreenShell>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={c.primary} />
+        </View>
+      </ScreenShell>
+    );
+  }
 
   if (!transaction) {
     return (

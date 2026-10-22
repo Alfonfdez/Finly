@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { View, SectionList, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, SectionList, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { t } from '../i18n';
 import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import { TEST_IDS } from '../constants/testIds';
-import type { IconName } from '../constants/types';
+import { SORT_BY, type IconName } from '../constants/types';
 import type { Account, Category, Tag, Transaction } from '../database/types';
 import type { useTransactionListScreen } from '../hooks/useTransactionListScreen';
 import type { useSelectAndSearch } from '../hooks/useSelectAndSearch';
@@ -75,8 +75,9 @@ export default function TransactionListBody({
       onPress={handleTransactionPress}
       selectMode={selectMode}
       selected={selectedIds.has(item.id)}
+      showDate={filters.sortBy === SORT_BY.amount}
     />
-  ), [categoriesById, filters.tagsByTransaction, recurringNames, handleTransactionPress, selectMode, selectedIds]);
+  ), [categoriesById, filters.tagsByTransaction, filters.sortBy, recurringNames, handleTransactionPress, selectMode, selectedIds]);
 
   const renderSectionHeader = useCallback(({ section }: { section: { date: string } }) => (
     <TransactionDateHeader date={section.date} />
@@ -127,16 +128,27 @@ export default function TransactionListBody({
           empty={filters.sections.length === 0}
           emptyState={<EmptyState {...emptyStateProps(isSearching, emptyIcon, emptyMessage)} />}
         >
-          <SectionList
-            contentContainerStyle={styles.listContent}
-            sections={filters.sections}
-            keyExtractor={keyExtractor}
-            renderSectionHeader={renderSectionHeader}
-            renderItem={renderItem}
-            stickySectionHeadersEnabled={false}
-            initialNumToRender={12}
-            windowSize={7}
-          />
+          {filters.sortBy === SORT_BY.amount ? (
+            <FlatList
+              contentContainerStyle={styles.listContent}
+              data={filters.filtered}
+              keyExtractor={keyExtractor}
+              renderItem={renderItem}
+              initialNumToRender={12}
+              windowSize={7}
+            />
+          ) : (
+            <SectionList
+              contentContainerStyle={styles.listContent}
+              sections={filters.sections}
+              keyExtractor={keyExtractor}
+              renderSectionHeader={renderSectionHeader}
+              renderItem={renderItem}
+              stickySectionHeadersEnabled={false}
+              initialNumToRender={12}
+              windowSize={7}
+            />
+          )}
         </ListOrEmpty>
       )}
 

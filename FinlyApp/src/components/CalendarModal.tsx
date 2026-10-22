@@ -52,7 +52,7 @@ export default function CalendarModal({
   const [tempDate, setTempDate] = useState(date);
   const [tempRangeStart, setTempRangeStart] = useState(rangeStart ?? MIN_DATE);
   const [tempRangeEnd, setTempRangeEnd] = useState(rangeEnd ?? new Date());
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
 
@@ -101,7 +101,7 @@ export default function CalendarModal({
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>{labels[TITLE_KEYS[period]]}</Text>
-        {period !== PERIODS.custom && <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(13) }]}>{formatPeriodText(period, tempDate, labels.months, labels.months_short)}</Text>}
+        {period !== PERIODS.custom && <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(13) }]}>{formatPeriodText(period, tempDate, labels.months, labels.months_short, config.firstDayOfWeek)}</Text>}
 
         {period === PERIODS.day && (
           <DayPicker key={visible ? PICKER_KEY.open : PICKER_KEY.closed} date={tempDate} onSelect={handleSelect} minDate={minDate} maxDate={maxDate} />

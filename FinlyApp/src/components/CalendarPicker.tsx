@@ -31,7 +31,7 @@ export default function CalendarPicker({
   period, date, onDateChange, onRangeChange,
   rangeStart, rangeEnd, visible = false, onOpen, onClose,
 }: Props) {
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
   const months = labels.months;
@@ -43,7 +43,7 @@ export default function CalendarPicker({
   const dateText = (() => {
     switch (period) {
       case PERIODS.day: return formatDate(date);
-      case PERIODS.week: return formatWeekRange(date, shortMonths);
+      case PERIODS.week: return formatWeekRange(date, shortMonths, false, config.firstDayOfWeek);
       case PERIODS.month: return `${months[date.getMonth()]} ${date.getFullYear()}`;
       case PERIODS.year: return date.getFullYear().toString();
       case PERIODS.custom: {
@@ -59,8 +59,8 @@ export default function CalendarPicker({
     }
   })();
 
-  const showNext = showNavigation && canGoForward(period, date, today);
-  const showJump = showNavigation && canJumpToCurrent(period, date, today);
+  const showNext = showNavigation && canGoForward(period, date, today, config.firstDayOfWeek);
+  const showJump = showNavigation && canJumpToCurrent(period, date, today, config.firstDayOfWeek);
 
   const goBack = useCallback(() => onDateChange(shiftPeriod(period, date, -1)), [onDateChange, period, date]);
   const goForward = useCallback(() => onDateChange(shiftPeriod(period, date, 1)), [onDateChange, period, date]);

@@ -71,6 +71,7 @@ export default function ColorGrid({ selectedColor, customColor, onSelect, onOpen
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 10,
     alignItems: 'center',
   },

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { View, StyleSheet, Keyboard } from 'react-native';
+import { View, StyleSheet, Keyboard, ActivityIndicator } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -29,7 +29,7 @@ import { parseAmountValue } from '../utils/amountInput';
 type ModifyAccountRouteProp = RouteProp<RootStackParamList, 'ModifyAccount'>;
 
 export default function ModifyAccountScreen() {
-  const { config, updateConfig } = useConfig();
+  const { activeColors: c, config, updateConfig } = useConfig();
   const { accounts, refreshAccounts } = useApp();
   const labels = t();
   const navigation = useNavigation<NavigationProp<'ModifyAccount'>>();
@@ -38,7 +38,7 @@ export default function ModifyAccountScreen() {
 
   const deferredRefreshAccounts = useDeferredRefresh(refreshAccounts);
 
-  const { data: account } = useFocusLoad(
+  const { data: account, loading } = useFocusLoad(
     () => accountRepository.getById(accountId),
     null as Account | null,
   );
@@ -143,6 +143,16 @@ export default function ModifyAccountScreen() {
     },
     errorPrefix: ERROR_PREFIXES.accountDelete,
   });
+
+  if (loading && !account) {
+    return (
+      <ScreenShell>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={c.primary} />
+        </View>
+      </ScreenShell>
+    );
+  }
 
   if (!account) {
     return (
