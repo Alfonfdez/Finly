@@ -546,7 +546,8 @@ import { ComponentProps } from 'react';
 **Example:**
 ```tsx
 // ❌ Recreated on every render
-function WeekPicker({ date, firstDay }) {
+function WeekPicker({ date, onSelect }) {
+  const firstDay = useConfig().config.firstDayOfWeek;
   function sameWeek(a, b) {
     return weekStart(a, firstDay).getTime() === weekStart(b, firstDay).getTime();
   }
@@ -557,8 +558,8 @@ function sameWeek(a: Date, b: Date, firstDay: 0 | 1): boolean {
   return weekStart(a, firstDay).getTime() === weekStart(b, firstDay).getTime();
 }
 
-function WeekPicker({ date, firstDay }) {
-  // sameWeek is called with firstDay as an argument
+function WeekPicker({ date, onSelect }) {
+  const firstDay = useConfig().config.firstDayOfWeek;
   const isSelected = sameWeek(week.start, date, firstDay);
 }
 ```
