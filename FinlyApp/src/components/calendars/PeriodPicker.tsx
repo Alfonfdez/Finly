@@ -64,6 +64,13 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
   const today = useMemo(() => new Date(), []);
   const activePreset = findPresetForRange(tempStart, tempEnd, today);
 
+  const presetLabels: Record<PeriodPreset, string> = {
+    [PERIOD_PRESETS.thisYear]: labels.cal_this_year,
+    [PERIOD_PRESETS.last12Months]: labels.cal_12_months,
+    [PERIOD_PRESETS.last30Days]: labels.cal_30_days,
+    [PERIOD_PRESETS.last90Days]: labels.cal_90_days,
+  };
+
   const handlePreset = useCallback((preset: PeriodPreset) => {
     onTempRangeChange(presetStart(preset, today), today);
     setSelecting(PICKING_PHASE.start);
@@ -92,30 +99,15 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
       />
 
       <View style={styles.presetGrid}>
-        <CheckboxRow
-          checked={activePreset === PERIOD_PRESETS.thisYear}
-          onToggle={() => handlePreset(PERIOD_PRESETS.thisYear)}
-          label={labels.cal_this_year}
-          style={styles.presetCell}
-        />
-        <CheckboxRow
-          checked={activePreset === PERIOD_PRESETS.last12Months}
-          onToggle={() => handlePreset(PERIOD_PRESETS.last12Months)}
-          label={labels.cal_12_months}
-          style={styles.presetCell}
-        />
-        <CheckboxRow
-          checked={activePreset === PERIOD_PRESETS.last30Days}
-          onToggle={() => handlePreset(PERIOD_PRESETS.last30Days)}
-          label={labels.cal_30_days}
-          style={styles.presetCell}
-        />
-        <CheckboxRow
-          checked={activePreset === PERIOD_PRESETS.last90Days}
-          onToggle={() => handlePreset(PERIOD_PRESETS.last90Days)}
-          label={labels.cal_90_days}
-          style={styles.presetCell}
-        />
+        {PERIOD_PRESET_ORDER.map(preset => (
+          <CheckboxRow
+            key={preset}
+            checked={activePreset === preset}
+            onToggle={() => handlePreset(preset)}
+            label={presetLabels[preset]}
+            style={styles.presetCell}
+          />
+        ))}
       </View>
 
       <Text style={[styles.hint, { color: c.textSecondary, fontSize: fs(12) }]}>

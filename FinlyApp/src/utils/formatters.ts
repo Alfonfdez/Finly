@@ -240,18 +240,14 @@ export function scaleFontSize(size: number, textSize: TextSize): number {
   return Math.round(size * FACTORS[textSize]);
 }
 
-export function formatWeekRange(date: Date, shortMonths: string[], includeYear = false, firstDay: FirstDay = FIRST_DAYS.monday): string {
+export function formatWeekRange(date: Date, shortMonths: string[], firstDay: FirstDay = FIRST_DAYS.monday): string {
   const start = weekStart(date, firstDay);
   const end = weekEnd(date, firstDay);
   const startDay = start.getDate();
   const startMonth = shortMonths[start.getMonth()];
   const endDay = end.getDate();
   const endMonth = shortMonths[end.getMonth()];
-  const startYear = start.getFullYear();
-  const endYear = end.getFullYear();
-  const startYearText = includeYear && startYear !== endYear ? ` ${startYear}` : '';
-  const endYearText = includeYear ? ` ${endYear}` : '';
-  return `${startDay} ${startMonth}${startYearText} – ${endDay} ${endMonth}${endYearText}`;
+  return `${startDay} ${startMonth} – ${endDay} ${endMonth}`;
 }
 
 export function formatWeekRangeLines(date: Date, months: string[], firstDay: FirstDay = FIRST_DAYS.monday): DateRangeLines {
@@ -272,7 +268,10 @@ export function formatPeriodText(
   const m = months[date.getMonth()];
   switch (period) {
     case PERIODS.day: return `${date.getDate()} ${m} ${date.getFullYear()}`;
-    case PERIODS.week: return formatWeekRange(date, months, true, firstDay);
+    case PERIODS.week: {
+      const lines = formatWeekRangeLines(date, months, firstDay);
+      return `${lines.start} – ${lines.end}`;
+    }
     case PERIODS.month: return `${m} ${date.getFullYear()}`;
     case PERIODS.year: return date.getFullYear().toString();
     default: return '';

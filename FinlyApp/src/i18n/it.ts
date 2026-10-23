@@ -589,6 +589,8 @@ export const it: Language = {
   a11y_next_month: 'Mese successivo',
   a11y_previous_year: 'Anno precedente',
   a11y_next_year: 'Anno successivo',
+  a11y_previous_years: 'Anni precedenti',
+  a11y_next_years: 'Anni successivi',
   a11y_previous_period: 'Periodo precedente',
   a11y_next_period: 'Periodo successivo',
   a11y_go_to_current_period: 'Vai al periodo attuale',

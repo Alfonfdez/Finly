@@ -54,7 +54,7 @@ export default function CalendarPicker({
   const dateText = (() => {
     switch (period) {
       case PERIODS.day: return formatDayShort(date, shortMonths);
-      case PERIODS.week: return formatWeekRange(date, shortMonths, false, config.firstDayOfWeek);
+      case PERIODS.week: return formatWeekRange(date, shortMonths, config.firstDayOfWeek);
       case PERIODS.month: return `${months[date.getMonth()]} ${date.getFullYear()}`;
       case PERIODS.year: return date.getFullYear().toString();
       case PERIODS.custom: return '';

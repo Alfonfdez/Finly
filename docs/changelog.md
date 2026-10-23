@@ -4291,3 +4291,9 @@
 - Calendar modals now size to their content up to the 85% cap instead of using a fixed 73% height.
 - Day, Week, Month and Year are compact, while Period remains taller for its presets and start/end hint; the forced bottom gap is gone.
 - Browser-checked the content-fit Period and Day modals at 375px; test:all green (165 files / 1384 tests).
+
+[2026-10-23] refactor | FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/CalendarPicker.tsx, FinlyApp/src/components/calendars/WeekPicker.tsx, FinlyApp/src/components/calendars/YearGrid.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/components/calendars/calendarStyles.ts, FinlyApp/src/utils/formatters.ts, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/CalendarModal.test.tsx, FinlyApp/tests/utils/formatters.test.ts, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Added correct Previous years/Next years accessibility labels to the Year picker arrows.
+- Consolidated week formatting around the shared week-lines helper, mapped the preset checkboxes and named the Month-row spacer height.
+- Changed the calendar modal cap to 94% with 12px overlay padding so the Period hint stays visible at 375x667.
+- Added year-page label coverage; test:all green (165 files / 1385 tests).
