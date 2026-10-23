@@ -117,8 +117,8 @@ export default function CalendarModal({
       onClose={handleCancel}
       maxWidth={380}
       padding={16}
-      overlayPadding={24}
-      maxHeight={'85%'}
+      overlayPadding={12}
+      maxHeight={'94%'}
       backgroundColor={c.background}
       shadow
     >

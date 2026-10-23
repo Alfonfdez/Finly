@@ -167,14 +167,14 @@ describe('date helpers', () => {
   });
 
   it('formats Sunday-first week ranges', () => {
-    expect(formatWeekRange(new Date(2026, 0, 5), shortMonths, false, FIRST_DAYS.sunday)).toBe('4 Jan – 10 Jan');
-    expect(formatPeriodText(PERIODS.week, new Date(2026, 0, 5), months, FIRST_DAYS.sunday)).toBe('4 January – 10 January 2026');
+    expect(formatWeekRange(new Date(2026, 0, 5), shortMonths, FIRST_DAYS.sunday)).toBe('4 Jan – 10 Jan');
+    expect(formatPeriodText(PERIODS.week, new Date(2026, 0, 5), months, FIRST_DAYS.sunday)).toBe('4 January 2026 – 10 January 2026');
   });
 
   it('shows both years when a week crosses a year boundary', () => {
     const week = new Date(2025, 11, 29);
-    expect(formatWeekRange(week, months, true, FIRST_DAYS.monday))
-      .toBe('29 December 2025 – 4 January 2026');
+    expect(formatWeekRange(week, months, FIRST_DAYS.monday))
+      .toBe('29 December – 4 January');
     expect(formatPeriodText(PERIODS.week, week, months, FIRST_DAYS.monday))
       .toBe('29 December 2025 – 4 January 2026');
     expect(formatPeriodText(PERIODS.week, new Date(2026, 0, 1), months, FIRST_DAYS.monday))

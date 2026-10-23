@@ -589,6 +589,8 @@ export const ca: Language = {
   a11y_next_month: 'Mes següent',
   a11y_previous_year: 'Any anterior',
   a11y_next_year: 'Any següent',
+  a11y_previous_years: 'Anys anteriors',
+  a11y_next_years: 'Anys següents',
   a11y_previous_period: 'Període anterior',
   a11y_next_period: 'Període següent',
   a11y_go_to_current_period: 'Ves al període actual',

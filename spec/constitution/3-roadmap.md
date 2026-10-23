@@ -1285,9 +1285,10 @@ Applied 2026-10-23:
 - Applying a preset keeps the calendar visible with that range selected; pressing the active preset re-applies it.
 - 30/90 days include today (29/89 days back); 12 months shifts the calendar by 12 months.
 - Week modal subtitles now show both years when a week crosses a year boundary, e.g. 29 December 2025 - 4 January 2026.
-- Calendar modals now size to their content up to an 85% height cap with a fixed header, scrollable body and fixed Cancel/OK footer; Month and Year use a 3x4 grid.
+- Calendar modals now size to their content up to a 94% height cap with a fixed header, scrollable body and fixed Cancel/OK footer; Month and Year use a 3x4 grid.
 - The custom period picker always shows the start/end indicator and resets to start-date selection after an end date is chosen.
 - The start/end instruction uses the muted left-aligned hint style instead of a button-like surface.
 - Calendar headers now reserve two left-aligned information lines; Week shows both full start/end dates with years, and Period keeps its Desde/hasta range there.
 - Period presets and the indicator now sit below the calendar, while Month and Year reserve an empty Month-row spacer for vertical alignment.
-- Added PeriodPicker preset tests, cross-year/week-line and modal header tests; browser-verified all pickers at 375px; `npm run test:all` green (165 files / 1384 tests).
+- Added year-page accessibility labels, consolidated week formatting around the shared week-lines helper, mapped the preset checkboxes and named the Month-row spacer.
+- The 94% cap keeps the Period hint visible on short screens; added preset, cross-year/week-line and modal header tests; browser-verified all pickers at 375px; `npm run test:all` green (165 files / 1385 tests).

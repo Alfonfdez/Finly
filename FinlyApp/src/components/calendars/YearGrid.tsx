@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import type { CalendarBaseProps } from './types';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
+import { t } from '../../i18n';
 import NavArrows from './NavArrows';
 import { calendarStyles, DISABLED_OPACITY } from './calendarStyles';
 import { YEARS_PER_PAGE } from '../../constants/calendar';
@@ -12,6 +13,7 @@ export default function YearGrid({ date, onSelect }: CalendarBaseProps) {
   const [startYear, setStartYear] = useState(date.getFullYear() - Math.floor((YEARS_PER_PAGE - 1) / 2));
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
+  const labels = t();
   const years = useMemo(() => Array.from({ length: YEARS_PER_PAGE }, (_, i) => startYear + i), [startYear]);
 
   return (
@@ -22,6 +24,8 @@ export default function YearGrid({ date, onSelect }: CalendarBaseProps) {
           onPrev={() => setStartYear(a => a - YEARS_PER_PAGE)}
           onNext={() => setStartYear(a => a + YEARS_PER_PAGE)}
           nextDisabled={startYear + YEARS_PER_PAGE - 1 >= today.getFullYear()}
+          prevLabel={labels.a11y_previous_years}
+          nextLabel={labels.a11y_next_years}
         />
         <Text style={{ color: c.text, fontSize: fs(18), fontWeight: '700' }}>{startYear} - {startYear + YEARS_PER_PAGE - 1}</Text>
       </View>

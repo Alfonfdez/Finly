@@ -58,6 +58,21 @@ describe('CalendarModal', () => {
     expect(view.getByText('2 August 2026')).toBeTruthy();
   });
 
+  it('labels year-page navigation for screen readers', async () => {
+    const view = await render(
+      <CalendarModal
+        visible
+        period={PERIODS.year}
+        date={base}
+        onSelectDate={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+
+    expect(view.getByLabelText('Previous years')).toBeTruthy();
+    expect(view.getByLabelText('Next years')).toBeTruthy();
+  });
+
   it('confirms a day picked in the grid', async () => {
     const onSelectDate = vi.fn();
     const view = await render(
