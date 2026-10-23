@@ -220,7 +220,7 @@ Status: completed.
 Independent `AllTransactionsScreen` accessible from the hamburger menu (drawer) — "Transactions" — with advanced filtering:
 - **Type tabs** (All | Expenses | Income) — default "All", filters by transaction type.
 - **Category filter** — multi-select category modal (021) with search, "All" chip, type-aware sections.
-- **Period selector** — PeriodTabs + CalendarPicker, shared with HomeScreen via AppContext. Default "Year" (current year). Custom range: Jan 1 → today.
+- **Period selector** — PeriodTabs + CalendarPicker, shared with HomeScreen via AppContext. Default from `config.homeDefaultPeriod` (Month by default). Custom range: Jan 1 → today.
 - Account selector with period total balance (green/red), updated by all active filters.
 - Sorting by date or amount with ASC/DESC toggle.
 - Recurring view chip (All / One-time / Recurring) in the controls row, filtering recurring-generated vs one-time transactions; the screen total reflects the view and the row scrolls horizontally when needed.

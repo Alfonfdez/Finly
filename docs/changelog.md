@@ -4297,3 +4297,8 @@
 - Consolidated week formatting around the shared week-lines helper, mapped the preset checkboxes and named the Month-row spacer height.
 - Changed the calendar modal cap to 94% with 12px overlay padding so the Period hint stays visible at 375x667.
 - Added year-page label coverage; test:all green (165 files / 1385 tests).
+
+[2026-10-23] docs | spec/features/001-home-screen/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, docs/programming-concepts.md
+- Updated Home spec 001 for the custom calendar modal, two-line headers, quick presets and derived checked state.
+- Documented the current calendar layout, Period presets/hint and Month/Year 3x4 alignment in 6-screens, and noted the shared presets in spec 015.
+- Corrected the All Transactions default period and refreshed the WeekPicker example in programming-concepts.
