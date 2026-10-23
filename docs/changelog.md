@@ -4250,3 +4250,18 @@
 [2026-10-23] fix | FinlyApp/src/i18n/ca.ts, FinlyApp/tests/i18n/encoding.test.ts, docs/harnesses.md
 - Corrected the Catalan Categories sort label from "?s" to "Ús".
 - Added an i18n source encoding test for replacement characters, mojibake and misplaced question marks, plus question-mark consistency with English; test:all green (164 files / 1375 tests).
+
+[2026-10-23] feat | FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/components/settings/CheckboxRow.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/PeriodPicker.test.tsx, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Replaced the custom period checkbox with the standard CheckboxRow checkbox and check mark.
+- Added quick ranges in a 2x2 grid: This year, 30 days, 90 days and 12 months, with one preset active at a time.
+- 30 and 90 days include today; 12 months uses a 12-month calendar shift. Pressing the active preset returns to the manual day picker.
+- Added PeriodPicker preset tests and browser-checked the checked state and ranges at 375px; test:all green (165 files / 1380 tests).
+
+[2026-10-23] fix | FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/utils/formatters.ts, FinlyApp/tests/utils/formatters.test.ts, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Reordered the quick-range presets into two centred rows: This year / 12 months, then 30 days / 90 days.
+- Fixed week modal subtitles to show both years when a week crosses a year boundary, e.g. 29 December 2025 - 4 January 2026.
+- Added cross-year week coverage; test:all green (165 files / 1381 tests).
+
+[2026-10-23] fix | FinlyApp/src/components/calendars/PeriodPicker.tsx, spec/constitution/3-roadmap.md
+- Switched the period presets from independently centred rows to equal-width columns, so both checkbox squares align horizontally while the grid stays centred.
+- Browser-verified the aligned 2x2 grid at 375px; test:all green (165 files / 1381 tests).

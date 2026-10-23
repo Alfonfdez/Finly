@@ -170,6 +170,16 @@ describe('date helpers', () => {
     expect(formatPeriodText(PERIODS.week, new Date(2026, 0, 5), months, FIRST_DAYS.sunday)).toBe('4 January – 10 January 2026');
   });
 
+  it('shows both years when a week crosses a year boundary', () => {
+    const week = new Date(2025, 11, 29);
+    expect(formatWeekRange(week, months, true, FIRST_DAYS.monday))
+      .toBe('29 December 2025 – 4 January 2026');
+    expect(formatPeriodText(PERIODS.week, week, months, FIRST_DAYS.monday))
+      .toBe('29 December 2025 – 4 January 2026');
+    expect(formatPeriodText(PERIODS.week, new Date(2026, 0, 1), months, FIRST_DAYS.monday))
+      .toBe('29 December 2025 – 4 January 2026');
+  });
+
   it('computes the day offset for Monday-first calendars', () => {
     // Monday -> 0, Sunday -> 6
     expect(dayOffset(new Date(2026, 0, 5), FIRST_DAYS.monday)).toBe(0);
