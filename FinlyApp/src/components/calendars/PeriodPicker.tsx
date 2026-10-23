@@ -6,8 +6,7 @@ import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
 import { calendarStyles } from './calendarStyles';
-import { CONTROL_BORDER_RADIUS } from '../componentStyles';
-import { formatDateRangeLines } from '../../utils/formatters';
+import { isSameDay } from '../../utils/formatters';
 import { shiftPeriod } from '../../utils/periodNavigation';
 import { PERIODS } from '../../constants/types';
 
@@ -36,6 +35,20 @@ function presetStart(preset: PeriodPreset, today: Date): Date {
   }
 }
 
+const PERIOD_PRESET_ORDER: PeriodPreset[] = [
+  PERIOD_PRESETS.thisYear,
+  PERIOD_PRESETS.last12Months,
+  PERIOD_PRESETS.last30Days,
+  PERIOD_PRESETS.last90Days,
+];
+
+function findPresetForRange(start: Date, end: Date, today: Date): PeriodPreset | null {
+  for (const preset of PERIOD_PRESET_ORDER) {
+    if (isSameDay(start, presetStart(preset, today)) && isSameDay(end, today)) return preset;
+  }
+  return null;
+}
+
 interface Props {
   tempStart: Date;
   tempEnd: Date;
@@ -43,26 +56,20 @@ interface Props {
 }
 
 export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: Props) {
-  const [activePreset, setActivePreset] = useState<PeriodPreset | null>(null);
   const [selecting, setSelecting] = useState<PickingPhase>(PICKING_PHASE.start);
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const months = labels.months;
 
   const today = useMemo(() => new Date(), []);
+  const activePreset = findPresetForRange(tempStart, tempEnd, today);
 
   const handlePreset = useCallback((preset: PeriodPreset) => {
-    const next = activePreset === preset ? null : preset;
-    setActivePreset(next);
+    onTempRangeChange(presetStart(preset, today), today);
     setSelecting(PICKING_PHASE.start);
-    if (next) {
-      onTempRangeChange(presetStart(next, today), today);
-    }
-  }, [activePreset, onTempRangeChange, today]);
+  }, [onTempRangeChange, today]);
 
   const handleDayPress = useCallback((d: Date) => {
-    setActivePreset(null);
     if (selecting === PICKING_PHASE.start) {
       onTempRangeChange(d, d);
       setSelecting(PICKING_PHASE.end);
@@ -70,23 +77,19 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
       const start = tempStart < d ? tempStart : d;
       const end = tempStart < d ? d : tempStart;
       onTempRangeChange(start, end);
+      setSelecting(PICKING_PHASE.start);
     }
   }, [selecting, tempStart, onTempRangeChange]);
 
-  const rangeLines = formatDateRangeLines(
-    tempStart,
-    tempEnd,
-    months,
-    labels.cal_range_start,
-    labels.cal_range_end,
-  );
-  const rangeText = !activePreset && selecting === PICKING_PHASE.end && tempStart.getTime() === tempEnd.getTime()
-    ? `${labels.cal_range_start(tempStart.getDate(), months[tempStart.getMonth()])}\n${labels.cal_period_to_hint}`
-    : `${rangeLines.start}\n${rangeLines.end}`;
-
   return (
     <View style={calendarStyles.container}>
-      <Text style={[styles.title, { color: c.textSecondary, fontSize: fs(13) }]}>{rangeText}</Text>
+      <DayPicker
+        date={selecting === PICKING_PHASE.start ? tempStart : tempEnd}
+        onSelect={handleDayPress}
+        rangeStart={tempStart}
+        rangeEnd={tempEnd}
+        initialView={new Date()}
+      />
 
       <View style={styles.presetGrid}>
         <CheckboxRow
@@ -115,31 +118,15 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
         />
       </View>
 
-      {!activePreset && (
-        <View style={[styles.indicator, { backgroundColor: c.surface }]}>
-          <Text style={[styles.indicatorText, { color: c.primary, fontSize: fs(13) }]}>
-            {selecting === PICKING_PHASE.start ? labels.cal_select_start : labels.cal_select_end}
-          </Text>
-        </View>
-      )}
-
-      {!activePreset && (
-        <DayPicker
-          date={selecting === PICKING_PHASE.start ? tempStart : tempEnd}
-          onSelect={handleDayPress}
-          rangeStart={tempStart}
-          rangeEnd={tempEnd}
-          initialView={new Date()}
-        />
-      )}
+      <Text style={[styles.hint, { color: c.textSecondary, fontSize: fs(12) }]}>
+        {selecting === PICKING_PHASE.start ? labels.cal_select_start : labels.cal_select_end}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  title: { marginBottom: 12, textAlign: 'center' },
-  presetGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', columnGap: 12, marginBottom: 12 },
+  presetGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', columnGap: 12, marginTop: 12, marginBottom: 12 },
   presetCell: { width: '45%', paddingVertical: 2 },
-  indicator: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: CONTROL_BORDER_RADIUS, marginBottom: 8, alignItems: 'center' },
-  indicatorText: { fontWeight: '600' },
+  hint: { marginTop: 8, marginBottom: 8, paddingHorizontal: 8, fontWeight: '500', textAlign: 'left' },
 });

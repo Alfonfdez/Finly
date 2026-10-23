@@ -24,6 +24,7 @@ export default function MonthGrid({ date, onSelect }: CalendarBaseProps) {
   return (
     <View style={calendarStyles.container}>
       <YearNav year={year} onChange={changeYear} />
+      <View style={calendarStyles.monthRowSpacer} />
       <View style={calendarStyles.grid}>
         {MONTHS.map(m => {
           const monthDate = new Date(year, m - 1, 1);

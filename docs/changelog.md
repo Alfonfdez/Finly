@@ -4265,3 +4265,29 @@
 [2026-10-23] fix | FinlyApp/src/components/calendars/PeriodPicker.tsx, spec/constitution/3-roadmap.md
 - Switched the period presets from independently centred rows to equal-width columns, so both checkbox squares align horizontally while the grid stays centred.
 - Browser-verified the aligned 2x2 grid at 375px; test:all green (165 files / 1381 tests).
+
+[2026-10-23] fix | FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/tests/component/PeriodPicker.test.tsx, spec/constitution/3-roadmap.md
+- Period presets now derive their checked state from the current range, so the calendar stays visible when a preset is applied.
+- Changing dates in the calendar unchecks the matching preset, while selecting a preset's exact range checks it automatically.
+- Added tests for automatic checking, visible calendar, unchecking after edits and reapplying an active preset; test:all green (165 files / 1381 tests).
+
+[2026-10-23] feat | FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/ModalShell.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/components/calendars/calendarStyles.ts, FinlyApp/tests/component/PeriodPicker.test.tsx, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Calendar modals now use a fixed 82% height with a fixed header, scrollable body and fixed Cancel/OK footer, so all picker modes share the same window height.
+- Month and Year pickers now use a 3x4 grid, filling more of the standard-height body.
+- The custom period indicator is always visible, and selecting an end date resets the next tap to choosing a new start date.
+- Added reset-phase coverage and browser-verified the custom and month modals at 375px and a shorter viewport; test:all green (165 files / 1382 tests).
+
+[2026-10-23] feat | FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/components/calendars/MonthGrid.tsx, FinlyApp/src/components/calendars/YearGrid.tsx, FinlyApp/src/components/calendars/calendarStyles.ts, FinlyApp/src/utils/formatters.ts, FinlyApp/tests/component/CalendarModal.test.tsx, FinlyApp/tests/utils/formatters.test.ts, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Calendar headers now always reserve two left-aligned information lines: Day/Month/Year keep one line plus a blank line, Week shows full start/end dates with both years, and Period shows its Desde/hasta range.
+- Period presets and the start/end indicator now sit below the calendar, while Month and Year reserve an empty Month-row spacer so all picker top areas align.
+- Added week-line and calendar-header tests and browser-checked Day, Week, Month and Period modals at 375px; test:all green (165 files / 1384 tests).
+
+[2026-10-23] fix | FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx, spec/constitution/3-roadmap.md
+- Reduced the standard calendar modal height from 82% to 73%, so the Period presets and instruction fill the lower area and other pickers keep a smaller residual gap.
+- Restyled the Period start/end instruction as muted, left-aligned 12px hint text with no surface or button-like padding.
+- Browser-checked the Period and Day modals at 375px; test:all green (165 files / 1384 tests).
+
+[2026-10-23] fix | FinlyApp/src/components/CalendarModal.tsx, spec/constitution/3-roadmap.md
+- Calendar modals now size to their content up to the 85% cap instead of using a fixed 73% height.
+- Day, Week, Month and Year are compact, while Period remains taller for its presets and start/end hint; the forced bottom gap is gone.
+- Browser-checked the content-fit Period and Day modals at 375px; test:all green (165 files / 1384 tests).

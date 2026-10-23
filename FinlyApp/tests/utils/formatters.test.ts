@@ -24,6 +24,7 @@ import {
   isDateWithinBounds,
   scaleFontSize,
   formatWeekRange,
+  formatWeekRangeLines,
   formatPeriodText,
 } from '../../src/utils/formatters';
 import {
@@ -178,6 +179,13 @@ describe('date helpers', () => {
       .toBe('29 December 2025 – 4 January 2026');
     expect(formatPeriodText(PERIODS.week, new Date(2026, 0, 1), months, FIRST_DAYS.monday))
       .toBe('29 December 2025 – 4 January 2026');
+  });
+
+  it('splits a week into full start/end lines with both years', () => {
+    expect(formatWeekRangeLines(new Date(2026, 6, 27), months, FIRST_DAYS.monday))
+      .toEqual({ start: '27 July 2026', end: '2 August 2026' });
+    expect(formatWeekRangeLines(new Date(2025, 11, 29), months, FIRST_DAYS.monday))
+      .toEqual({ start: '29 December 2025', end: '4 January 2026' });
   });
 
   it('computes the day offset for Monday-first calendars', () => {

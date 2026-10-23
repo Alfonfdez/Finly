@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import { formatPeriodText } from '../utils/formatters';
+import { formatDateRangeLines, formatPeriodText, formatWeekRangeLines } from '../utils/formatters';
 import type { Period } from './calendars/types';
 import { PERIODS } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
@@ -56,6 +56,29 @@ export default function CalendarModal({
   const fs = useFontSize();
   const labels = t();
 
+  const infoLines: [string, string] = (() => {
+    switch (period) {
+      case PERIODS.week: {
+        const lines = formatWeekRangeLines(tempDate, labels.months, config.firstDayOfWeek);
+        return [lines.start, lines.end];
+      }
+      case PERIODS.custom: {
+        const lines = formatDateRangeLines(
+          tempRangeStart,
+          tempRangeEnd,
+          labels.months,
+          labels.cal_range_start,
+          labels.cal_range_end,
+        );
+        return [lines.start, lines.end];
+      }
+      case PERIODS.day:
+      case PERIODS.month:
+      case PERIODS.year:
+        return [formatPeriodText(period, tempDate, labels.months, config.firstDayOfWeek), ''];
+    }
+  })();
+
   const resetOnOpen = useCallback(() => {
     setTempDate(date);
     setTempRangeStart(rangeStart ?? MIN_DATE);
@@ -99,10 +122,19 @@ export default function CalendarModal({
       backgroundColor={c.background}
       shadow
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <View style={styles.header}>
         <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>{labels[TITLE_KEYS[period]]}</Text>
-        {period !== PERIODS.custom && <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(13) }]}>{formatPeriodText(period, tempDate, labels.months, config.firstDayOfWeek)}</Text>}
+        <View style={styles.info}>
+          <Text style={[styles.infoLine, { color: c.textSecondary, fontSize: fs(13) }]} numberOfLines={1}>
+            {infoLines[0]}
+          </Text>
+          <Text style={[styles.infoLine, { color: c.textSecondary, fontSize: fs(13) }]} numberOfLines={1}>
+            {infoLines[1] || ' '}
+          </Text>
+        </View>
+      </View>
 
+      <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
         {period === PERIODS.day && (
           <DayPicker key={visible ? PICKER_KEY.open : PICKER_KEY.closed} date={tempDate} onSelect={handleSelect} minDate={minDate} maxDate={maxDate} />
         )}
@@ -138,9 +170,12 @@ export default function CalendarModal({
 }
 
 const styles = StyleSheet.create({
-  scrollContent: { flexGrow: 1 },
+  header: { marginBottom: 8, alignItems: 'flex-start' },
+  info: { width: '100%' },
+  body: { flexShrink: 1 },
+  bodyContent: { flexGrow: 1 },
   title: { fontWeight: '700', marginBottom: 2 },
-  subtitle: { marginBottom: 12 },
+  infoLine: { textAlign: 'left' },
   buttons: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
