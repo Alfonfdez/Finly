@@ -42,6 +42,22 @@ describe('CalendarModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('shows week start and end on separate lines with both years', async () => {
+    const week = new Date(2026, 6, 27);
+    const view = await render(
+      <CalendarModal
+        visible
+        period={PERIODS.week}
+        date={week}
+        onSelectDate={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+
+    expect(view.getByText('27 July 2026')).toBeTruthy();
+    expect(view.getByText('2 August 2026')).toBeTruthy();
+  });
+
   it('confirms a day picked in the grid', async () => {
     const onSelectDate = vi.fn();
     const view = await render(

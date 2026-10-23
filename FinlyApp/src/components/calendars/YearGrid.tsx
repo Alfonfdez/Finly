@@ -25,6 +25,7 @@ export default function YearGrid({ date, onSelect }: CalendarBaseProps) {
         />
         <Text style={{ color: c.text, fontSize: fs(18), fontWeight: '700' }}>{startYear} - {startYear + YEARS_PER_PAGE - 1}</Text>
       </View>
+      <View style={calendarStyles.monthRowSpacer} />
       <View style={calendarStyles.grid}>
         {years.map(y => {
           const isFuture = y > today.getFullYear();
@@ -51,5 +52,5 @@ export default function YearGrid({ date, onSelect }: CalendarBaseProps) {
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
 });
