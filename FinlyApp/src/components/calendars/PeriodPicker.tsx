@@ -1,12 +1,15 @@
 import { useState, useCallback, useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import DayPicker from './DayPicker';
+import CheckboxRow from '../settings/CheckboxRow';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
-import { calendarStyles, MIN_DATE } from './calendarStyles';
+import { calendarStyles } from './calendarStyles';
 import { CONTROL_BORDER_RADIUS } from '../componentStyles';
 import { formatDateRangeLines } from '../../utils/formatters';
+import { shiftPeriod } from '../../utils/periodNavigation';
+import { PERIODS } from '../../constants/types';
 
 const PICKING_PHASE = {
   start: 'start',
@@ -15,6 +18,24 @@ const PICKING_PHASE = {
 
 type PickingPhase = (typeof PICKING_PHASE)[keyof typeof PICKING_PHASE];
 
+const PERIOD_PRESETS = {
+  thisYear: 'thisYear',
+  last30Days: 'last30Days',
+  last90Days: 'last90Days',
+  last12Months: 'last12Months',
+} as const;
+
+type PeriodPreset = (typeof PERIOD_PRESETS)[keyof typeof PERIOD_PRESETS];
+
+function presetStart(preset: PeriodPreset, today: Date): Date {
+  switch (preset) {
+    case PERIOD_PRESETS.thisYear: return new Date(today.getFullYear(), 0, 1);
+    case PERIOD_PRESETS.last30Days: return shiftPeriod(PERIODS.day, today, -29);
+    case PERIOD_PRESETS.last90Days: return shiftPeriod(PERIODS.day, today, -89);
+    case PERIOD_PRESETS.last12Months: return shiftPeriod(PERIODS.month, today, -12);
+  }
+}
+
 interface Props {
   tempStart: Date;
   tempEnd: Date;
@@ -22,7 +43,7 @@ interface Props {
 }
 
 export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: Props) {
-  const [allTime, setAllTime] = useState(false);
+  const [activePreset, setActivePreset] = useState<PeriodPreset | null>(null);
   const [selecting, setSelecting] = useState<PickingPhase>(PICKING_PHASE.start);
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
@@ -31,17 +52,17 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
 
   const today = useMemo(() => new Date(), []);
 
-  const handleAllTime = useCallback(() => {
-    const nextAllTime = !allTime;
-    setAllTime(nextAllTime);
+  const handlePreset = useCallback((preset: PeriodPreset) => {
+    const next = activePreset === preset ? null : preset;
+    setActivePreset(next);
     setSelecting(PICKING_PHASE.start);
-    if (nextAllTime) {
-      onTempRangeChange(MIN_DATE, today);
+    if (next) {
+      onTempRangeChange(presetStart(next, today), today);
     }
-  }, [allTime, onTempRangeChange, today]);
+  }, [activePreset, onTempRangeChange, today]);
 
   const handleDayPress = useCallback((d: Date) => {
-    if (allTime) return;
+    setActivePreset(null);
     if (selecting === PICKING_PHASE.start) {
       onTempRangeChange(d, d);
       setSelecting(PICKING_PHASE.end);
@@ -50,7 +71,7 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
       const end = tempStart < d ? d : tempStart;
       onTempRangeChange(start, end);
     }
-  }, [selecting, tempStart, allTime, onTempRangeChange]);
+  }, [selecting, tempStart, onTempRangeChange]);
 
   const rangeLines = formatDateRangeLines(
     tempStart,
@@ -59,22 +80,42 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
     labels.cal_range_start,
     labels.cal_range_end,
   );
-  const rangeText = allTime
-    ? `${rangeLines.start}\n${rangeLines.end}`
-    : selecting === PICKING_PHASE.end && tempStart.getTime() === tempEnd.getTime()
-      ? `${labels.cal_range_start(tempStart.getDate(), months[tempStart.getMonth()])}\n${labels.cal_period_to_hint}`
-      : `${rangeLines.start}\n${rangeLines.end}`;
+  const rangeText = !activePreset && selecting === PICKING_PHASE.end && tempStart.getTime() === tempEnd.getTime()
+    ? `${labels.cal_range_start(tempStart.getDate(), months[tempStart.getMonth()])}\n${labels.cal_period_to_hint}`
+    : `${rangeLines.start}\n${rangeLines.end}`;
 
   return (
     <View style={calendarStyles.container}>
       <Text style={[styles.title, { color: c.textSecondary, fontSize: fs(13) }]}>{rangeText}</Text>
 
-      <TouchableOpacity style={styles.allTimeRow} onPress={handleAllTime} accessibilityRole="checkbox" accessibilityState={{ checked: allTime }}>
-        <View style={[styles.checkbox, { borderColor: c.textSecondary }, allTime && { backgroundColor: c.primary, borderColor: c.primary }]} />
-        <Text style={[styles.allTimeText, { color: c.text, fontSize: fs(14) }]}>{labels.cal_this_year}</Text>
-      </TouchableOpacity>
+      <View style={styles.presetGrid}>
+        <CheckboxRow
+          checked={activePreset === PERIOD_PRESETS.thisYear}
+          onToggle={() => handlePreset(PERIOD_PRESETS.thisYear)}
+          label={labels.cal_this_year}
+          style={styles.presetCell}
+        />
+        <CheckboxRow
+          checked={activePreset === PERIOD_PRESETS.last12Months}
+          onToggle={() => handlePreset(PERIOD_PRESETS.last12Months)}
+          label={labels.cal_12_months}
+          style={styles.presetCell}
+        />
+        <CheckboxRow
+          checked={activePreset === PERIOD_PRESETS.last30Days}
+          onToggle={() => handlePreset(PERIOD_PRESETS.last30Days)}
+          label={labels.cal_30_days}
+          style={styles.presetCell}
+        />
+        <CheckboxRow
+          checked={activePreset === PERIOD_PRESETS.last90Days}
+          onToggle={() => handlePreset(PERIOD_PRESETS.last90Days)}
+          label={labels.cal_90_days}
+          style={styles.presetCell}
+        />
+      </View>
 
-      {!allTime && (
+      {!activePreset && (
         <View style={[styles.indicator, { backgroundColor: c.surface }]}>
           <Text style={[styles.indicatorText, { color: c.primary, fontSize: fs(13) }]}>
             {selecting === PICKING_PHASE.start ? labels.cal_select_start : labels.cal_select_end}
@@ -82,7 +123,7 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
         </View>
       )}
 
-      {!allTime && (
+      {!activePreset && (
         <DayPicker
           date={selecting === PICKING_PHASE.start ? tempStart : tempEnd}
           onSelect={handleDayPress}
@@ -97,9 +138,8 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
 
 const styles = StyleSheet.create({
   title: { marginBottom: 12, textAlign: 'center' },
-  allTimeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, marginRight: 8 },
-  allTimeText: { fontWeight: '600' },
+  presetGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', columnGap: 12, marginBottom: 12 },
+  presetCell: { width: '45%', paddingVertical: 2 },
   indicator: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: CONTROL_BORDER_RADIUS, marginBottom: 8, alignItems: 'center' },
   indicatorText: { fontWeight: '600' },
 });

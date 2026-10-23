@@ -1275,3 +1275,13 @@ Applied 2026-10-23:
 - Period button horizontal padding reduced to 12px so short day/week strings remain safe on narrow screens and large text.
 - Renamed the custom "All" shortcut to "This year" and removed the redundant top title line; it selects 1 January to today.
 - Added formatter and calendar tests; browser-verified day, week, modal subtitle and this-year states at 375px; `npm run test:all` green (163 files / 1373 tests).
+
+## 2.2.0 period range presets
+Status: completed.
+
+Applied 2026-10-23:
+- Replaced the custom period square with the standard CheckboxRow checkbox and check mark.
+- Added quick ranges in a centred, equal-column grid: This year / 12 months, then 30 days / 90 days; one preset is active at a time and pressing it again returns to the manual day picker.
+- 30/90 days include today (29/89 days back); 12 months shifts the calendar by 12 months.
+- Week modal subtitles now show both years when a week crosses a year boundary, e.g. 29 December 2025 - 4 January 2026.
+- Added PeriodPicker preset tests and cross-year week tests; browser-verified the checked state, centred layout and cross-year subtitle at 375px; `npm run test:all` green (165 files / 1381 tests).

@@ -247,8 +247,11 @@ export function formatWeekRange(date: Date, shortMonths: string[], includeYear =
   const startMonth = shortMonths[start.getMonth()];
   const endDay = end.getDate();
   const endMonth = shortMonths[end.getMonth()];
-  const year = includeYear ? ` ${date.getFullYear()}` : '';
-  return `${startDay} ${startMonth} – ${endDay} ${endMonth}${year}`;
+  const startYear = start.getFullYear();
+  const endYear = end.getFullYear();
+  const startYearText = includeYear && startYear !== endYear ? ` ${startYear}` : '';
+  const endYearText = includeYear ? ` ${endYear}` : '';
+  return `${startDay} ${startMonth}${startYearText} – ${endDay} ${endMonth}${endYearText}`;
 }
 
 export function formatPeriodText(
