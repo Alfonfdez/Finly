@@ -53,9 +53,10 @@ interface Props {
   tempStart: Date;
   tempEnd: Date;
   onTempRangeChange: (start: Date, end: Date) => void;
+  onSelectingEndChange?: (selectingEnd: boolean) => void;
 }
 
-export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: Props) {
+export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange, onSelectingEndChange }: Props) {
   const [selecting, setSelecting] = useState<PickingPhase>(PICKING_PHASE.start);
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
@@ -63,6 +64,11 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
 
   const today = useMemo(() => new Date(), []);
   const activePreset = findPresetForRange(tempStart, tempEnd, today);
+
+  const setPhase = useCallback((phase: PickingPhase) => {
+    setSelecting(phase);
+    onSelectingEndChange?.(phase === PICKING_PHASE.end);
+  }, [onSelectingEndChange]);
 
   const presetLabels: Record<PeriodPreset, string> = {
     [PERIOD_PRESETS.thisYear]: labels.cal_this_year,
@@ -73,20 +79,20 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange }: 
 
   const handlePreset = useCallback((preset: PeriodPreset) => {
     onTempRangeChange(presetStart(preset, today), today);
-    setSelecting(PICKING_PHASE.start);
-  }, [onTempRangeChange, today]);
+    setPhase(PICKING_PHASE.start);
+  }, [onTempRangeChange, today, setPhase]);
 
   const handleDayPress = useCallback((d: Date) => {
     if (selecting === PICKING_PHASE.start) {
       onTempRangeChange(d, d);
-      setSelecting(PICKING_PHASE.end);
+      setPhase(PICKING_PHASE.end);
     } else {
       const start = tempStart < d ? tempStart : d;
       const end = tempStart < d ? d : tempStart;
       onTempRangeChange(start, end);
-      setSelecting(PICKING_PHASE.start);
+      setPhase(PICKING_PHASE.start);
     }
-  }, [selecting, tempStart, onTempRangeChange]);
+  }, [selecting, tempStart, onTempRangeChange, setPhase]);
 
   return (
     <View style={calendarStyles.container}>

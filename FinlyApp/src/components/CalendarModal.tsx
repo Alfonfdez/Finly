@@ -52,6 +52,7 @@ export default function CalendarModal({
   const [tempDate, setTempDate] = useState(date);
   const [tempRangeStart, setTempRangeStart] = useState(rangeStart ?? MIN_DATE);
   const [tempRangeEnd, setTempRangeEnd] = useState(rangeEnd ?? new Date());
+  const [customSelectingEnd, setCustomSelectingEnd] = useState(false);
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -70,7 +71,7 @@ export default function CalendarModal({
           labels.cal_range_start,
           labels.cal_range_end,
         );
-        return [lines.start, lines.end];
+        return [lines.start, customSelectingEnd ? '' : lines.end];
       }
       case PERIODS.day:
       case PERIODS.month:
@@ -83,6 +84,7 @@ export default function CalendarModal({
     setTempDate(date);
     setTempRangeStart(rangeStart ?? MIN_DATE);
     setTempRangeEnd(rangeEnd ?? new Date());
+    setCustomSelectingEnd(false);
   }, [date, rangeStart, rangeEnd]);
   useResetOnOpen(visible, resetOnOpen);
 
@@ -101,6 +103,7 @@ export default function CalendarModal({
     } else {
       onSelectDate(tempDate);
     }
+    setCustomSelectingEnd(false);
     onClose();
   }, [period, tempDate, tempRangeStart, tempRangeEnd, onSelectDate, onSelectRange, onClose]);
 
@@ -108,6 +111,7 @@ export default function CalendarModal({
     setTempDate(date);
     setTempRangeStart(rangeStart ?? MIN_DATE);
     setTempRangeEnd(rangeEnd ?? new Date());
+    setCustomSelectingEnd(false);
     onClose();
   }, [date, rangeStart, rangeEnd, onClose]);
 
@@ -153,6 +157,7 @@ export default function CalendarModal({
             tempStart={tempRangeStart}
             tempEnd={tempRangeEnd}
             onTempRangeChange={handleRangeChange}
+            onSelectingEndChange={setCustomSelectingEnd}
           />
         )}
       </ScrollView>

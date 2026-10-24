@@ -1290,5 +1290,6 @@ Applied 2026-10-23:
 - The start/end instruction uses the muted left-aligned hint style instead of a button-like surface.
 - Calendar headers now reserve two left-aligned information lines; Week shows both full start/end dates with years, and Period keeps its Desde/hasta range there.
 - Period presets and the indicator now sit below the calendar, while Month and Year reserve an empty Month-row spacer for vertical alignment.
-- Added year-page accessibility labels, consolidated week formatting around the shared week-lines helper, mapped the preset checkboxes and named the Month-row spacer.
-- The 94% cap keeps the Period hint visible on short screens; added preset, cross-year/week-line and modal header tests; browser-verified all pickers at 375px; `npm run test:all` green (165 files / 1385 tests).
+- Added year-page and week-row accessibility labels, consolidated week formatting around the shared week-lines helper, mapped the preset checkboxes and named the Month-row spacer.
+- The Period header hides the end line while choosing an end date, avoiding a duplicate date; removed the unused DateTimePicker dependency and config plugin.
+- The 94% cap keeps the Period hint visible on short screens; added preset, cross-year/week-line and modal header tests; browser-verified all pickers at 320/375px; `npm run test:all` green (165 files / 1386 tests).
