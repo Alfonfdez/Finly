@@ -33,7 +33,7 @@ A main screen in the app that displays the current Account, the Total (income/ex
      - The "Select start/end date" hint is always visible under the calendar; after an end date is chosen, the next tap starts a new start date.
      - The default range (before any pick) runs from January 1 to the **end of today**, so transactions recorded later today are part of it (the built-in periods already end at end-of-day).
 
-6. Donut chart (SVG) showing expenses/income for the selected period, broken down by categories with their color. Tapping the chart toggles it to a horizontal bar chart. The total is centered inside the donut hole: the text is constrained to the hole's inner diameter and its font size auto-shrinks (`fitFontSize`) so the full formatted amount always stays inside the hole. The bar chart shows the **same** formatted total, centered **above** the bar (same style as the donut centre: `c.text`, weight 700, auto-fit to the chart width), whether or not there are transactions; the legend below lists each category with its percentage.
+6. Donut chart (SVG) showing expenses/income for the selected period, broken down by categories with their color. Tapping the chart toggles it to a horizontal bar chart. The selected chart type is saved as a config preference (`homeChartType`, donut by default), so it survives navigation and restarts. The total is centered inside the donut hole: the text is constrained to the hole's inner diameter and its font size auto-shrinks (`fitFontSize`) so the full formatted amount always stays inside the hole. The bar chart shows the **same** formatted total, centered **above** the bar (same style as the donut centre: `c.text`, weight 700, auto-fit to the chart width), whether or not there are transactions; the legend below lists each category with its percentage.
 
 7. "+" button (Floating Action Button) centered at the bottom. Background: primary color (`c.primary`). Icon: `Ionicons "add"` with color `c.background` (theme-adaptive). Position: `position: absolute`, `bottom: 56`, `alignSelf: 'center'`. Navigates to the "Add Expense/Income" screen.
 
@@ -66,6 +66,7 @@ Cloud sync, authentication, offline usage (AsyncStorage is already local).
 [x] The donut chart is displayed correctly with period data.
 [x] The total in the center of the donut stays fully visible inside the hole even for large amounts (font auto-shrinks to fit).
 [x] Tapping the donut chart shows the bar chart, and vice versa.
+[x] The selected chart type survives navigation/restart and defaults to the donut chart.
 [x] The bar chart always shows the period total (centered above the bar, same style as the donut centre) with or without transactions.
 [x] The "+" button navigates to the "Add Expense/Income" screen.
 [x] The category list displays icon, name, percentage and total correctly.

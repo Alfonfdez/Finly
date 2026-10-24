@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
   ACCOUNT_SORT_BY,
   CATEGORY_SORT_BY,
+  CHART_TYPES,
   COMMENT_SORT_BY,
   CONFIG_ICON_SHAPES,
   DECIMAL_SEPARATORS,
@@ -27,6 +28,7 @@ const iconShapeSchema = z.enum([CONFIG_ICON_SHAPES.square, CONFIG_ICON_SHAPES.ci
 const firstDaySchema = z.union([z.literal(FIRST_DAYS.monday), z.literal(FIRST_DAYS.sunday)]);
 const decimalSeparatorSchema = z.union([z.literal(DECIMAL_SEPARATORS.comma), z.literal(DECIMAL_SEPARATORS.dot)]);
 const homePeriodSchema = z.enum([PERIODS.day, PERIODS.week, PERIODS.month, PERIODS.year]);
+const chartTypeSchema = z.enum([CHART_TYPES.donut, CHART_TYPES.bar]);
 const recurrenceFrequencySchema = z.enum([
   RECURRENCE_FREQUENCIES.daily,
   RECURRENCE_FREQUENCIES.weekly,
@@ -144,6 +146,7 @@ export const configSchema = z.object({
   accountIconShape: iconShapeSchema,
   homeDefaultAccountId: z.number().int().positive().nullable(),
   homeDefaultPeriod: homePeriodSchema,
+  homeChartType: chartTypeSchema,
   addDefaultAccountId: z.number().int().positive().nullable(),
   addShowLabels: z.boolean(),
   addShowComments: z.boolean(),

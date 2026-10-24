@@ -6,7 +6,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useBalanceVisibility } from '../hooks/useBalanceVisibility';
 import { usePeriodNavigation } from '../hooks/usePeriodNavigation';
 import { formatDateForDB, resolvePeriodRange } from '../utils/formatters';
-import { type NavigationProp, TRANSACTION_TYPES, CHART_TYPES, type ChartType } from '../constants/types';
+import { type NavigationProp, TRANSACTION_TYPES, CHART_TYPES } from '../constants/types';
 import { t } from '../i18n';
 import { transactionRepository as transactionRepo } from '../database';
 import { isTotalAccount } from '../database/helpers';
@@ -31,11 +31,11 @@ export default function HomeScreen() {
     totalIncome, totalExpenses, totalIncomeAll, totalExpensesAll, selectAccount, changeType,
     setSelectedDate, loading, tags, activeTagIds, toggleTagId, clearTagFilter,
   } = useApp();
-  const { config, activeColors: c } = useConfig();
+  const { config, activeColors: c, updateConfig } = useConfig();
   const labels = t();
+  const chartType = config.homeChartType;
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [chartType, setChartType] = useState<ChartType>(CHART_TYPES.donut);
   const [calendarVisible, setCalendarVisible] = useState(false);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<number>>(new Set());
   const [tagBreakdowns, setTagBreakdowns] = useState<Map<number, { tag_id: number; name: string; total: number }[]>>(new Map());
@@ -97,6 +97,12 @@ export default function HomeScreen() {
       tagIds: activeTagIds.length > 0 ? activeTagIds : undefined,
     });
   }, [navigation, activeType, activePeriod, customDate, selectedDate, activeTagIds, config.firstDayOfWeek]);
+
+  const handleToggleChart = useCallback(() => {
+    updateConfig({
+      homeChartType: chartType === CHART_TYPES.donut ? CHART_TYPES.bar : CHART_TYPES.donut,
+    });
+  }, [chartType, updateConfig]);
 
   const handleToggleExpand = useCallback((categoryId: number) => {
     setExpandedCategoryIds(prev => {
@@ -166,7 +172,7 @@ export default function HomeScreen() {
 
       <TouchableOpacity
         style={styles.chartContainer}
-        onPress={() => setChartType(chartType === CHART_TYPES.donut ? CHART_TYPES.bar : CHART_TYPES.donut)}
+        onPress={handleToggleChart}
         accessibilityRole="button"
         accessibilityLabel={labels.a11y_chart_toggle}
         activeOpacity={0.7}

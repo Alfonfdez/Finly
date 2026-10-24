@@ -4313,3 +4313,8 @@
 - Added accessibility labels, selected state and button roles to WeekPicker rows.
 - Removed the unused DateTimePicker dependency and Expo config plugin and updated the tech-stack doc.
 - Browser-checked the Period modal at 320px and the pending-end header; test:all green (165 files / 1386 tests).
+
+[2026-10-23] feat | FinlyApp/src/database/schemas.ts, FinlyApp/src/database/configDefaults.ts, FinlyApp/src/screens/HomeScreen.tsx, FinlyApp/tests/component/helpers/configStub.ts, FinlyApp/tests/database/schemas.test.ts, FinlyApp/tests/screens/HomeScreen.test.tsx, spec/features/001-home-screen/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Saved the Home chart type as the `homeChartType` config preference, defaulting to the donut chart.
+- Home now reads the saved chart type and persists toggles through ConfigContext; the existing chart toggle updates the preference.
+- Added schema sanitization and Home toggle coverage; browser-verified bar chart persistence across reload; test:all green (165 files / 1387 tests).

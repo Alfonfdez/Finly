@@ -26,6 +26,7 @@ const configTemplate: Config = {
   accountIconShape: 'square',
   homeDefaultAccountId: null,
   homeDefaultPeriod: 'month',
+  homeChartType: 'donut',
   addDefaultAccountId: null,
   addShowLabels: true,
   addShowComments: true,

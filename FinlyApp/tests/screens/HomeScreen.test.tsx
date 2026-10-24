@@ -3,7 +3,8 @@ import { render, fireEvent } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import HomeScreen from '../../src/screens/HomeScreen';
 import { buildAppMock, setAppData, setAppState, resetAppStub } from '../component/helpers/appStub';
-import { resetStub, setConfig } from '../component/helpers/configStub';
+import { resetStub, setConfig, getConfigStub } from '../component/helpers/configStub';
+import { CHART_TYPES } from '../../src/constants/types';
 import { HIDDEN_BALANCE } from '../../src/utils/formatters';
 import type { Account } from '../../src/database/types';
 
@@ -69,6 +70,15 @@ describe('HomeScreen', () => {
 
     await fireEvent.press(view.getByLabelText('Show amounts'));
     expect(view.queryByText(HIDDEN_BALANCE)).toBeNull();
+  });
+
+  it('saves the chart type preference when toggled', async () => {
+    const view = await render(<HomeScreen />);
+    await view.findByText('Wallet');
+
+    fireEvent.press(view.getByLabelText('Switch chart'));
+
+    expect(getConfigStub().config.homeChartType).toBe(CHART_TYPES.bar);
   });
 
   it('shows a loading state while no account is active', async () => {
