@@ -56,6 +56,7 @@ describe('CalendarModal', () => {
 
     expect(view.getByText('27 July 2026')).toBeTruthy();
     expect(view.getByText('2 August 2026')).toBeTruthy();
+    expect(view.getByLabelText('27 Jul – 2 Aug')).toBeTruthy();
   });
 
   it('labels year-page navigation for screen readers', async () => {

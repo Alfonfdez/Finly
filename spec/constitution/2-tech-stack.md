@@ -10,7 +10,6 @@
 - **@expo/vector-icons** (Ionicons) — icon library used throughout the app.
 - **react-native-svg** — custom donut chart and bar chart.
 - **reanimated-color-picker** — dynamic color picker (CreateCategoryScreen).
-- **@react-native-community/datetimepicker** — native date picker.
 - **React Context** — global app state (AppContext + ConfigContext).
 - **react-native-reanimated** — animations and worklets.
 - **react-native-gesture-handler** — gesture support (required by navigation and drawer).

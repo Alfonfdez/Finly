@@ -64,6 +64,9 @@ export default function WeekPicker({ date, onSelect }: CalendarBaseProps) {
               style={[styles.weekRow, { backgroundColor: c.surface }, isSelected && { backgroundColor: c.primary }, isFuture && { opacity: DISABLED_OPACITY }]}
               onPress={() => !isFuture && onSelect(week.start)}
               disabled={isFuture}
+              accessibilityRole="button"
+              accessibilityLabel={formatWeekRange(week.start, labels.months_short, firstDay)}
+              accessibilityState={{ selected: isSelected, disabled: isFuture }}
             >
               <Text style={{ color: isSelected ? c.background : c.text, fontWeight: isSelected ? '700' : '400', fontSize: fs(14) }}>
                 {formatWeekRange(week.start, labels.months_short, firstDay)}

@@ -4307,3 +4307,9 @@
 - Recurring rule rows now allow up to two frequency-summary lines and ellipsize after the second.
 - Added long-summary coverage and flushed pending deferred refreshes in ModifyCategoryScreen tests to prevent Vitest worker teardown errors.
 - test:all green (165 files / 1386 tests).
+
+[2026-10-23] refactor | FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/components/calendars/WeekPicker.tsx, FinlyApp/tests/component/CalendarModal.test.tsx, FinlyApp/app.json, FinlyApp/package.json, FinlyApp/package-lock.json, spec/constitution/2-tech-stack.md, spec/constitution/3-roadmap.md
+- Kept the Period header's second line blank while choosing an end date, avoiding a duplicated start date.
+- Added accessibility labels, selected state and button roles to WeekPicker rows.
+- Removed the unused DateTimePicker dependency and Expo config plugin and updated the tech-stack doc.
+- Browser-checked the Period modal at 320px and the pending-end header; test:all green (165 files / 1386 tests).
