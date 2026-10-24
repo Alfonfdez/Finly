@@ -1,6 +1,7 @@
 import {
   ACCOUNT_SORT_BY,
   CATEGORY_SORT_BY,
+  CHART_TYPES,
   COMMENT_SORT_BY,
   CONFIG_ICON_SHAPES,
   DECIMAL_SEPARATORS,
@@ -29,6 +30,7 @@ export const DEFAULT_CONFIG: Config = {
   accountIconShape: CONFIG_ICON_SHAPES.square,
   homeDefaultAccountId: null,
   homeDefaultPeriod: PERIODS.month,
+  homeChartType: CHART_TYPES.donut,
   addDefaultAccountId: null,
   addShowLabels: true,
   addShowComments: true,
@@ -69,6 +71,7 @@ export const DB_KEY_MAP: Record<string, keyof Config> = {
   account_icon_shape: 'accountIconShape',
   home_default_account_id: 'homeDefaultAccountId',
   home_default_period: 'homeDefaultPeriod',
+  home_chart_type: 'homeChartType',
   add_default_account_id: 'addDefaultAccountId',
   add_show_labels: 'addShowLabels',
   add_show_comments: 'addShowComments',

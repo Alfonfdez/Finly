@@ -102,6 +102,9 @@ describe('config schema + sanitizeConfig', () => {
     const corruptBoolean = { ...DEFAULT_CONFIG, addShowLabels: 'yes' } as unknown as Config;
     expect(sanitizeConfig(corruptBoolean)).toEqual(DEFAULT_CONFIG);
 
+    const corruptChart = { ...DEFAULT_CONFIG, homeChartType: 'pie' } as unknown as Config;
+    expect(sanitizeConfig(corruptChart)).toEqual(DEFAULT_CONFIG);
+
     const corruptAccountId = { ...DEFAULT_CONFIG, homeDefaultAccountId: -3 } as unknown as Config;
     expect(sanitizeConfig(corruptAccountId)).toEqual(DEFAULT_CONFIG);
 

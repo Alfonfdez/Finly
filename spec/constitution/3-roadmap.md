@@ -26,7 +26,7 @@ b) Bottom section:
 
 c) Chart section:
   - Donut chart (SVG) with expenses/income by category; the period total is centered inside the hole (auto-fit).
-  - Can switch to horizontal bar chart by tapping on it; the bar chart shows the same period total centered above the bar, with or without transactions.
+  - Can switch to horizontal bar chart by tapping on it; the bar chart shows the same period total centered above the bar, with or without transactions. The selected chart type is saved (`homeChartType`, donut by default).
 
 d) Floating "+" button (FAB) that navigates to the "Add Expense/Income" screen.
 
