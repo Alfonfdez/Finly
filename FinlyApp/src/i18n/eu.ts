@@ -163,11 +163,13 @@ export const eu: Language = {
 
   // Add transaction
   add_title: 'Transakzioa gehitu',
+  add_amount: 'Zenbatekoa',
   add_amount_error: 'Sartutako zenbatekoa ez da baliozkoa',
   add_account: 'Kontua',
   add_categories: 'Kategoriak',
   add_more: 'Gehiago',
   add_day: 'Eguna',
+  add_date: 'Data',
   add_today: 'Gaur',
   add_yesterday: 'Atzo',
   add_day_before: 'Atzo aurreko egunean',
@@ -179,6 +181,7 @@ export const eu: Language = {
   add_tag_name_placeholder: 'Etiketa-izena',
   add_comment: 'Iruzkina',
   add_photo: 'Argazkia',
+  add_photos: 'Argazkiak',
   add_photo_title: 'Argazkia gehitu',
   add_photo_camera: 'Argazkia atera',
   add_photo_gallery: 'Galeriatik gehitu',

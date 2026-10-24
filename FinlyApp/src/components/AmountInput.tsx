@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
@@ -20,9 +20,10 @@ interface Props {
    *  is not a number at all. Callers must not pass this for a field where 0 is
    *  valid (e.g. an account's initial balance). */
   error?: boolean;
+  header?: ReactNode;
 }
 
-export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label, accessibilityLabel, error }: Props) {
+export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label, accessibilityLabel, error, header }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -34,12 +35,13 @@ export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label,
 
   return (
     <>
+      {header}
       {label && (
         <Text style={[styles.label, { color: c.textSecondary, fontSize: fs(12) }]}>
           {label}
         </Text>
       )}
-      <View style={styles.amountRow}>
+      <View style={[styles.amountRow, header ? styles.amountRowAfterHeader : null]}>
         <TextInput
           style={[
             styles.amountInput,
@@ -91,6 +93,10 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 4,
     fontWeight: '600',
+  },
+  amountRowAfterHeader: {
+    marginTop: 0,
+    marginBottom: 0,
   },
   amountRow: {
     flexDirection: 'row',

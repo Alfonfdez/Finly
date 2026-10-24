@@ -22,6 +22,13 @@ Screen accessible from the Home "+" button that allows the user to record a new 
   2. Otherwise, fall back to the last type used on the main screen (activeType from AppContext).
 - When changing tabs, the transaction type to create is updated.
 
+### 2.1 Section headers
+
+- Every form group has a left-aligned subtitle with a decorative icon in the same text color: Amount, Account, Categories, Date, Tags, Comment and Photos.
+- Section icons: Amount `cash-outline`, Account `wallet-outline`, Categories `grid-outline`, Date `calendar-outline`, Tags `pricetag-outline`, Comment `chatbubble-ellipses-outline`, Photos `image-outline`.
+- The icon is not tappable and is hidden from accessibility; right-side actions such as the Date calendar and Tag search remain primary.
+- Amount and Account show explicit section titles; the Account card keeps only the account name and a chevron-down affordance.
+
 ### 3. Amount field
 
 - Numeric input with number keyboard.
@@ -119,9 +126,9 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - Multiline text input with placeholder "Comment" (multilingual).
 - Below: dynamic counter "0/4096" that updates as you type (maximum 4096 characters).
 
-### 9. Photo
+### 9. Photos
 
-- Title: "Photo" (multilingual).
+- Title: "Photos" (multilingual) — i18n key `add_photos`.
 - Large "+" icon in a square that, when tapped, opens a modal:
 
 **"Add photo" modal:**
@@ -129,7 +136,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - Option 1: "Take photo" (multilingual) — opens the camera (requires permissions).
 - Option 2: "Add from gallery" (multilingual) — opens the gallery (requires permissions).
 - **Implementation**: see spec `023-photo-attachment` for full functional requirements (camera, gallery, file persistence, platform guards).
-- **Web**: the entire PhotoSection is hidden on web (platform guard `Platform.OS !== 'web'`).
+- **Web**: the section is visible with the gallery/file picker only; camera capture stays native-only (specs 023/024).
 
 ### 10. Submit button
 

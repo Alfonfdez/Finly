@@ -7,6 +7,7 @@ import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import { DEBOUNCE_MS, MAX_COMMENT_LENGTH, MIN_COMMENT_SUGGESTION_LENGTH } from '../constants/types';
 import CharCounter from './form/CharCounter';
+import FormSectionHeader from './form/FormSectionHeader';
 import { CONTROL_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
@@ -97,36 +98,36 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
         </View>
       )}
       <View style={styles.container}>
-        <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>
-          {labels.add_comment}
-        </Text>
-        <TextInput
-          ref={ref}
-          style={[styles.input, { backgroundColor: c.surface, color: c.text, fontSize: fs(14) }]}
-          placeholder={labels.add_comment}
-          placeholderTextColor={c.textSecondary}
-          value={comment}
-          onChangeText={onChange}
-          onFocus={() => {
-            focusedRef.current = true;
-            setFocused(true);
-            onFocus?.();
-          }}
-          onBlur={() => {
-            if (isPressingSuggestion.current) return;
-            focusedRef.current = false;
-            debouncedSearch.cancel();
-            searchId.current += 1;
-            setSuggestions([]);
-            setFocused(false);
-            onBlur?.();
-          }}
-          multiline
-          maxLength={MAX_COMMENT_LENGTH}
-          textAlignVertical="top"
-          accessibilityLabel={labels.a11y_comment}
-        />
-        <CharCounter value={comment.length} maxLength={MAX_COMMENT_LENGTH} style={styles.counter} />
+        <FormSectionHeader title={labels.add_comment} icon="chatbubble-ellipses-outline" />
+        <View style={styles.inputWrap}>
+          <TextInput
+            ref={ref}
+            style={[styles.input, { backgroundColor: c.surface, color: c.text, fontSize: fs(14) }]}
+            placeholder={labels.add_comment}
+            placeholderTextColor={c.textSecondary}
+            value={comment}
+            onChangeText={onChange}
+            onFocus={() => {
+              focusedRef.current = true;
+              setFocused(true);
+              onFocus?.();
+            }}
+            onBlur={() => {
+              if (isPressingSuggestion.current) return;
+              focusedRef.current = false;
+              debouncedSearch.cancel();
+              searchId.current += 1;
+              setSuggestions([]);
+              setFocused(false);
+              onBlur?.();
+            }}
+            multiline
+            maxLength={MAX_COMMENT_LENGTH}
+            textAlignVertical="top"
+            accessibilityLabel={labels.a11y_comment}
+          />
+          <CharCounter value={comment.length} maxLength={MAX_COMMENT_LENGTH} style={styles.counter} />
+        </View>
       </View>
     </>
   );
@@ -136,21 +137,21 @@ export default CommentInput;
 
 CommentInput.displayName = 'CommentInput';
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  title: {
-    fontWeight: '600',
-    marginBottom: 10,
+  container: {},
+  inputWrap: {
+    position: 'relative',
   },
   input: {
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingTop: 10,
+    paddingBottom: 26,
     borderRadius: CONTROL_BORDER_RADIUS,
     minHeight: 80,
   },
   counter: {
-    marginTop: 4,
+    position: 'absolute',
+    right: 8,
+    bottom: 6,
     textAlign: 'right',
   },
   suggestionsPanel: {

@@ -116,6 +116,9 @@ describe('AddTransactionScreen', () => {
 
   it('shows the account picker for the active account', async () => {
     const view = await render(<AddTransactionScreen />);
+    expect(view.getByText('Amount')).toBeTruthy();
     expect(view.getByText('Account')).toBeTruthy();
+    expect(view.getByText('Categories')).toBeTruthy();
+    expect(view.getByText('Date')).toBeTruthy();
   });
 });

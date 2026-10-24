@@ -307,7 +307,7 @@ describe('TransactionForm', () => {
     const view = await renderForm();
     expect(view.getByText('Tags')).toBeTruthy();
     expect(view.getByText('Comment')).toBeTruthy();
-    expect(view.getByText('Photo')).toBeTruthy();
+    expect(view.getByText('Photos')).toBeTruthy();
   });
 
   it('flags an amount of 0 with a red border', async () => {
@@ -420,12 +420,12 @@ describe('TransactionForm', () => {
     const view = await renderForm({ transactionId: 5 });
     expect(view.getByText('Comment')).toBeTruthy();
     expect(view.getByText('Tags')).toBeTruthy();
-    expect(view.getByText('Photo')).toBeTruthy();
+    expect(view.getByText('Photos')).toBeTruthy();
   });
 
-  it('keeps the "Day" label and shows the photo section outside rule mode', async () => {
+  it('shows the "Date" label and the photo section outside rule mode', async () => {
     const view = await renderForm();
-    expect(view.getByText('Day')).toBeTruthy();
-    expect(view.getByText('Photo')).toBeTruthy();
+    expect(view.getByText('Date')).toBeTruthy();
+    expect(view.getByText('Photos')).toBeTruthy();
   });
 });

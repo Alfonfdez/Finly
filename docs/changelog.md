@@ -4318,3 +4318,34 @@
 - Saved the Home chart type as the `homeChartType` config preference, defaulting to the donut chart.
 - Home now reads the saved chart type and persists toggles through ConfigContext; the existing chart toggle updates the preference.
 - Added schema sanitization and Home toggle coverage; browser-verified bar chart persistence across reload; test:all green (165 files / 1387 tests).
+
+[2026-10-23] feat | FinlyApp/src/components/form/FormSectionHeader.tsx, FinlyApp/src/components/AmountInput.tsx, FinlyApp/src/components/CategoryGrid.tsx, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/components/DaySelector.tsx, FinlyApp/src/components/PhotoSection.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/TransactionForm.test.tsx, FinlyApp/tests/screens/AddTransactionScreen.test.tsx, FinlyApp/tests/screens/ModifyTransactionScreen.test.tsx, spec/features/004-add-transaction-screen/1-spec.md, spec/features/017-modify-transaction-screen/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/6-screens.md
+- Added a shared FormSectionHeader with a decorative text-colored icon and optional right-side action.
+- Added the missing Amount and Account headers, removed the duplicate label inside the account card and added a chevron-down affordance.
+- Added section icons to Categories, Date, Tags, Comment and Photo; changed the Recurring icon from primary to the title text color.
+- Updated form specs and screen documentation; test:all green (165 files / 1387 tests).
+
+[2026-10-23] fix | FinlyApp/src/components/form/FormSectionHeader.tsx, FinlyApp/src/components/AmountInput.tsx, FinlyApp/src/components/CategoryGrid.tsx, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/components/DaySelector.tsx, FinlyApp/src/components/PhotoSection.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/components/TransactionForm.tsx, spec/constitution/6-screens.md
+- Standardized the top gap of every form section header to 16px and removed the extra bottom margins that made Account and Photo spacing inconsistent.
+- Amount keeps an 8px top offset to combine with the TabBar's 8px margin, yielding the same 16px visual gap.
+- test:all green (165 files / 1387 tests).
+
+[2026-10-23] fix | FinlyApp/src/components/CommentInput.tsx, spec/constitution/6-screens.md
+- Moved the Comment counter inside the multiline comment box at the bottom-right, reserving bottom padding so it does not add a separate line.
+- This keeps the Photo section at the standard 16px header gap while preserving the counter below the comment text.
+- Browser-checked the Add transaction form; test:all green (165 files / 1387 tests).
+
+[2026-10-24] fix | FinlyApp/src/components/DaySelector.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/components/PhotoSection.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/navigation/AppNavigator.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/TransactionForm.test.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, spec/features/004-add-transaction-screen/1-spec.md, spec/features/017-modify-transaction-screen/1-spec.md, spec/constitution/6-screens.md
+- Aligned section icons everywhere: Date calendar-outline, Tags pricetag-outline, Comment chatbubble-ellipses-outline and Photos image-outline.
+- Renamed the form Photo section to Photos (add_photos) while keeping the add-photo action text singular.
+- Updated Transaction details, drawer/screen headers and Comments empty state; browser-verified the form and details at 375px.
+- Corrected the Add/Modify specs: the web photo section is visible with gallery-only picking.
+- test:all green (165 files / 1387 tests).
+
+[2026-10-24] docs | spec/features/023-photo-attachment/1-spec.md
+- Documented the Photos section title and image-outline icon in the photo-attachment spec.
+
+[2026-10-24] fix | FinlyApp/src/components/TransactionForm.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/6-screens.md
+- Aligned the recurring Name focus scroll with the Recurring header top, removing the strip of the previous Day section above it.
+- Updated the recurring and keyboard-handling specs to document the header-aligned reveal.
+- Verified on the finly_test Android emulator; test:all green (165 files / 1387 tests).

@@ -6,6 +6,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
 import { isSameDay } from '../utils/formatters';
 import { withAlpha } from '../utils/color';
+import FormSectionHeader from './form/FormSectionHeader';
 import { CARD_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
@@ -71,19 +72,20 @@ export default function DaySelector({ selectedDate, onSelect, onOpenCalendar, ti
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>
-          {title ?? labels.add_day}
-        </Text>
-        <TouchableOpacity
-          style={styles.calendarButton}
-          onPress={onOpenCalendar}
-          accessibilityRole="button"
-          accessibilityLabel={labels.cal_select_day}
-        >
-          <Ionicons name="calendar-outline" size={20} color={c.primary} />
-        </TouchableOpacity>
-      </View>
+      <FormSectionHeader
+        title={title ?? labels.add_date}
+        icon="calendar-outline"
+        right={
+          <TouchableOpacity
+            style={styles.calendarButton}
+            onPress={onOpenCalendar}
+            accessibilityRole="button"
+            accessibilityLabel={labels.cal_select_day}
+          >
+            <Ionicons name="calendar-outline" size={20} color={c.primary} />
+          </TouchableOpacity>
+        }
+      />
       <View style={styles.grid}>
         {renderOption(today, labels.add_today, isToday)}
         {renderOption(yesterday, labels.add_yesterday, isYesterday)}
@@ -99,18 +101,7 @@ export default function DaySelector({ selectedDate, onSelect, onOpenCalendar, ti
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  title: {
-    fontWeight: '600',
-  },
+  container: {},
   calendarButton: {
     padding: 4,
   },

@@ -163,11 +163,13 @@ export const de: Language = {
 
   // Add transaction
   add_title: 'Transaktion hinzufügen',
+  add_amount: 'Betrag',
   add_amount_error: 'Der eingegebene Betrag ist nicht gültig',
   add_account: 'Konto',
   add_categories: 'Kategorien',
   add_more: 'Mehr',
   add_day: 'Tag',
+  add_date: 'Datum',
   add_today: 'Heute',
   add_yesterday: 'Gestern',
   add_day_before: 'Vorgestern',
@@ -179,6 +181,7 @@ export const de: Language = {
   add_tag_name_placeholder: 'Tagname',
   add_comment: 'Kommentar',
   add_photo: 'Foto',
+  add_photos: 'Fotos',
   add_photo_title: 'Foto hinzufügen',
   add_photo_camera: 'Foto aufnehmen',
   add_photo_gallery: 'Aus Galerie hinzufügen',

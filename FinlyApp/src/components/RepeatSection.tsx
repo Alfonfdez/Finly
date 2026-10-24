@@ -9,12 +9,13 @@ import { formatDateLong } from '../utils/formatters';
 import { buildRecurrenceSchedule, lastDayAnchorUseful, ruleEditCursorFrom, todayDateOnly, type RecurrenceSchedule } from '../utils/recurrence';
 import { recurrenceFrequencyLabels } from '../utils/recurrenceSummary';
 import { recurrenceInfoLines } from '../utils/recurrenceInfo';
-import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, CONTROL_BORDER_RADIUS, DISABLED_CONTROL_OPACITY, PILL_RADIUS, SECTION_GAP, SECTION_GAP_SM, SECTION_TITLE_STYLE, recurringCardColors, recurringCardErrorColors } from './componentStyles';
+import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, CONTROL_BORDER_RADIUS, DISABLED_CONTROL_OPACITY, PILL_RADIUS, recurringCardColors, recurringCardErrorColors } from './componentStyles';
 import { TEST_IDS } from '../constants/testIds';
 import ClearButton from './ClearButton';
 import CheckboxRow from './settings/CheckboxRow';
 import RecurrenceInfo from './RecurrenceInfo';
 import CharCounter from './form/CharCounter';
+import FormSectionHeader from './form/FormSectionHeader';
 
 interface Props {
   frequency: RecurrenceFrequency;
@@ -127,12 +128,7 @@ export default function RepeatSection({
       style={styles.container}
       onLayout={onSectionLayout ? (e) => onSectionLayout(e.nativeEvent.layout.y) : undefined}
     >
-      <View style={styles.header}>
-        <View style={styles.titleRow}>
-          <Ionicons name="repeat-outline" size={16} color={c.primary} />
-          <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>{labels.recurring_chip}</Text>
-        </View>
-      </View>
+      <FormSectionHeader title={labels.recurring_chip} icon="repeat-outline" />
 
       <View
         testID={TEST_IDS.repeatOptions}
@@ -298,22 +294,7 @@ export default function RepeatSection({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginTop: SECTION_GAP_SM,
-    marginBottom: SECTION_GAP,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  title: SECTION_TITLE_STYLE,
+  container: {},
   options: {
     borderWidth: 1,
     borderRadius: CARD_BORDER_RADIUS,

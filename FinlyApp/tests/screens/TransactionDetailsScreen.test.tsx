@@ -180,7 +180,7 @@ describe('TransactionDetailsScreen', () => {
     await view.findByText('Wallet');
     for (const name of [
       'cash-outline', 'wallet-outline', 'grid-outline', 'calendar-outline',
-      'chatbubble-outline', 'pricetag-outline', 'repeat-outline', 'image-outline',
+      'chatbubble-ellipses-outline', 'pricetag-outline', 'repeat-outline', 'image-outline',
     ]) {
       expect(view.getByText(name)).toBeTruthy();
     }

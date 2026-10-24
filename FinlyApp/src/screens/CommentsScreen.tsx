@@ -156,7 +156,7 @@ export default function CommentsScreen() {
   }, [selectedComments, selectMode, toggleItem, navigation, c, labels, fs]);
 
   const renderEmpty = () => (
-    <EmptyState {...emptyStateProps(searchActive, 'chatbubble-outline', labels.comments_empty)} />
+    <EmptyState {...emptyStateProps(searchActive, 'chatbubble-ellipses-outline', labels.comments_empty)} />
   );
 
   return (
