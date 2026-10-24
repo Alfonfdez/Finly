@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react-native';
 import { resetStub, setConfig } from './helpers/configStub';
 import RecurringRow from '../../src/components/RecurringRow';
+import { setLanguage } from '../../src/i18n';
 import type { Category, RecurringRule } from '../../src/database/types';
 
 const category: Category = {
@@ -40,6 +41,7 @@ const rule: RecurringRule = {
 describe('RecurringRow', () => {
   beforeEach(() => {
     resetStub();
+    setLanguage('en');
     setConfig({ language: 'en' });
   });
 
@@ -49,7 +51,9 @@ describe('RecurringRow', () => {
     );
     expect(view.getByText('Rent')).toBeTruthy();
     expect(view.getByText('Rent').props.numberOfLines).toBe(2);
-    expect(view.getByText('Every month on day 5')).toBeTruthy();
+    const summary = view.getByText('Every month on day 5');
+    expect(summary.props.numberOfLines).toBe(2);
+    expect(summary.props.ellipsizeMode).toBe('tail');
     expect(view.getByText('Next: November 5, 2026')).toBeTruthy();
     expect(view.getByText('Food · 3 transactions')).toBeTruthy();
     expect(view.getByText('Created 5 Oct 2026')).toBeTruthy();
@@ -57,6 +61,24 @@ describe('RecurringRow', () => {
     expect(view.getByText('time-outline', { includeHiddenElements: true })).toBeTruthy();
     expect(view.getByText('-50,00 €')).toBeTruthy();
     expect(view.getByText('Active')).toBeTruthy();
+  });
+
+  it('keeps a long summary to two lines', async () => {
+    setLanguage('es');
+    setConfig({ language: 'es' });
+    const longRule: RecurringRule = {
+      ...rule,
+      frequency: 'weekly',
+      weekday: 3,
+      day_of_month: null,
+      end_date: '2026-12-31',
+    };
+
+    const view = await render(
+      <RecurringRow rule={longRule} category={category} count={3} today="2026-10-06" onPress={vi.fn()} onToggleActive={vi.fn()} />,
+    );
+
+    expect(view.getByText(/^Cada semana/).props.numberOfLines).toBe(2);
   });
 
   it('shows "Ended" on the toggle and disables it when the rule has finished', async () => {

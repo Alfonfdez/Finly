@@ -69,7 +69,11 @@ function RecurringRow({ rule, category, count, today, onPress, onToggleActive, b
         <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]} numberOfLines={2}>
           {rule.name}
         </Text>
-        <Text style={[styles.subtitle, { color: c.primary, fontSize: fs(12) }]} numberOfLines={1}>
+        <Text
+          style={[styles.subtitle, { color: c.primary, fontSize: fs(12) }]}
+          numberOfLines={2}
+          ellipsizeMode="tail"
+        >
           {recurrenceSummary(rule, config.language)}
         </Text>
         <View style={styles.dateRow}>

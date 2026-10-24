@@ -73,9 +73,13 @@ describe('ModifyCategoryScreen', () => {
     setAppData({ categories: [category] });
   });
 
-  afterEach(() => {
-    resetAppStub();
+  afterEach(async () => {
     vi.useRealTimers();
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    });
+    resetAppStub();
   });
 
   it('preloads the category and keeps Save disabled until something changes', async () => {
