@@ -4302,3 +4302,8 @@
 - Updated Home spec 001 for the custom calendar modal, two-line headers, quick presets and derived checked state.
 - Documented the current calendar layout, Period presets/hint and Month/Year 3x4 alignment in 6-screens, and noted the shared presets in spec 015.
 - Corrected the All Transactions default period and refreshed the WeekPicker example in programming-concepts.
+
+[2026-10-23] fix | FinlyApp/src/components/RecurringRow.tsx, FinlyApp/tests/component/RecurringRow.test.tsx, FinlyApp/tests/screens/ModifyCategoryScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, docs/harnesses.md
+- Recurring rule rows now allow up to two frequency-summary lines and ellipsize after the second.
+- Added long-summary coverage and flushed pending deferred refreshes in ModifyCategoryScreen tests to prevent Vitest worker teardown errors.
+- test:all green (165 files / 1386 tests).
