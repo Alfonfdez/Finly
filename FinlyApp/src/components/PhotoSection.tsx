@@ -8,6 +8,7 @@ import { MAX_PHOTOS } from '../constants/types';
 import { WHITE } from '../constants/themes';
 import { isNative } from '../utils/platform';
 import ConfirmationModal from './ConfirmationModal';
+import FormSectionHeader from './form/FormSectionHeader';
 import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
 import { CARD_BORDER_RADIUS, BUTTON_BORDER_RADIUS, CONTROL_BORDER_RADIUS } from './componentStyles';
@@ -54,9 +55,7 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>
-        {labels.add_photo}
-      </Text>
+      <FormSectionHeader title={labels.add_photos} icon="image-outline" />
       <View style={styles.photoRow}>
         {photos.map((uri, index) => (
           <View key={`${uri}-${index}`} style={styles.photoWrapper}>
@@ -137,10 +136,6 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
 const styles = StyleSheet.create({
   container: {
     marginBottom: 16,
-  },
-  title: {
-    fontWeight: '600',
-    marginBottom: 10,
   },
   photoRow: {
     flexDirection: 'row',

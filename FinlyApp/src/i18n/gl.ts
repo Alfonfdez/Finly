@@ -163,11 +163,13 @@ export const gl: Language = {
 
   // Add transaction
   add_title: 'Engadir transacción',
+  add_amount: 'Importe',
   add_amount_error: 'O importe introducido non é válido',
   add_account: 'Conta',
   add_categories: 'Categorías',
   add_more: 'Máis',
   add_day: 'Día',
+  add_date: 'Data',
   add_today: 'Hoxe',
   add_yesterday: 'Onte',
   add_day_before: 'Antonte',
@@ -179,6 +181,7 @@ export const gl: Language = {
   add_tag_name_placeholder: 'Nome da etiqueta',
   add_comment: 'Comentario',
   add_photo: 'Foto',
+  add_photos: 'Fotos',
   add_photo_title: 'Engadir foto',
   add_photo_camera: 'Facela foto',
   add_photo_gallery: 'Engadir desde a galería',

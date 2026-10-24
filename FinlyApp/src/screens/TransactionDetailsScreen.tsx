@@ -172,7 +172,7 @@ export default function TransactionDetailsScreen() {
             </Text>
           </DataRow>
 
-          <DataRow label={labels.details_comment} icon="chatbubble-outline">
+          <DataRow label={labels.details_comment} icon="chatbubble-ellipses-outline">
             <Text style={[styles.dataValue, { color: transaction.description ? c.text : c.textSecondary, fontSize: fs(15) }]}>
               {transaction.description || labels.details_none}
             </Text>

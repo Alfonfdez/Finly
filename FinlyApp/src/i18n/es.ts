@@ -163,11 +163,13 @@ export const es: Language = {
 
   // Add transaction
   add_title: 'Añadir transacción',
+  add_amount: 'Importe',
   add_amount_error: 'La cantidad que se ha introducido no es válida',
   add_account: 'Cuenta',
   add_categories: 'Categorías',
   add_more: 'Más',
   add_day: 'Día',
+  add_date: 'Fecha',
   add_today: 'Hoy',
   add_yesterday: 'Ayer',
   add_day_before: 'Anteayer',
@@ -179,6 +181,7 @@ export const es: Language = {
   add_tag_name_placeholder: 'Nombre de la etiqueta',
   add_comment: 'Comentario',
   add_photo: 'Foto',
+  add_photos: 'Fotos',
   add_photo_title: 'Añadir foto',
   add_photo_camera: 'Sacar foto',
   add_photo_gallery: 'Añadir desde galería',

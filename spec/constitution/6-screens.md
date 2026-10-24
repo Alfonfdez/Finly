@@ -144,7 +144,7 @@ The drawer is a custom `DrawerContentScrollView` in `AppNavigator.tsx` with this
 | `wallet-outline` | `nav_accounts` | `Accounts` |
 | `grid-outline` | `nav_categories` | `Categories` |
 | `pricetag-outline` | `nav_tags` | `Tags` |
-| `chatbubble-outline` | `nav_comments` | `Comments` |
+| `chatbubble-ellipses-outline` | `nav_comments` | `Comments` |
 | `repeat-outline` | `nav_recurring` | `Recurring` |
 | `settings-outline` | `nav_settings` | `Settings` |
 
@@ -260,6 +260,9 @@ Every form keeps its bottom action reachable while the keyboard is open, via the
   `onLayout` (the keyboard shrinks it), so it lands *after* the resize settles rather than short.
 - Only that field triggers it — focusing a field higher up (recurring Name, Amount, Category)
   must **not** jump to the end.
+- **Recurring Name exception:** it uses the same reveal mechanism with a custom action that
+  scrolls its section header to the top on native, so the keyboard never covers the input and
+  no strip of the previous section stays visible above the header.
 - `FormScrollView` (Account / Category / Comment forms) wraps its `ScrollView` in a
   `KeyboardAvoidingView` and exposes `scrollRef` + `onLayout`; `TransactionForm` uses its own
   `KeyboardAvoidingView`. The content keeps `paddingBottom: 112` so the revealed button clears the
@@ -396,6 +399,15 @@ fab: {
 
 ## Form Patterns
 
+### Section headers
+
+- The transaction and recurring forms use `components/form/FormSectionHeader` for every field group: Amount, Account, Categories, Date/Start date, Recurring, Tags, Comment and Photos.
+- The title is 15px/600 in `c.text`; the 16px decorative icon uses the same color and is hidden from accessibility.
+- Section icon vocabulary: Amount `cash-outline`, Account `wallet-outline`, Categories `grid-outline`, Date/Start date `calendar-outline`, Recurring `repeat-outline`, Tags `pricetag-outline`, Comment `chatbubble-ellipses-outline`, Photos `image-outline`. The same glyph is used in Transaction details, drawer/screen headers and empty states where the section applies.
+- Every header keeps a standard 16px top gap; preceding sections do not add extra bottom margin, so Amount, Account, Categories, Date, Recurring, Tags, Comment and Photos align consistently.
+- Optional right-side actions are passed separately and keep the primary color because they are tappable (Date calendar, Tag search).
+- The Account card shows only the account name plus a `chevron-down`; the section header carries the Account label.
+
 ### TextInput
 
 ```jsx
@@ -438,6 +450,7 @@ Every limited input (and the list headers that show a limit) renders `components
 - **One look**: `COUNTER_FONT_SIZE` (12, scaled by the text-size setting), `c.textSecondary`, `fontWeight: '500'`, right-aligned — centered for the list headers via `COUNTER_STYLE`.
 - **At the limit (`value >= maxLength`) the whole counter turns red and bold**: that is the only moment the field stops accepting input, so it reads as "you can't type more" rather than "this is invalid". The same rule flags the list headers (`100 of 100 tags`, `30 of 30 categories`).
 - `style` is for layout only (alignment, margins, padding); colour, weight and size always stay the component's, so a caller can never override the at-limit state.
+- **Comment exception:** the Comment counter sits inside the multiline input at the bottom-right, with reserved bottom padding. It stays below the text but does not add a separate line before the Photos section; other field counters remain below their inputs.
 
 **Counter style:** `{ textAlign: 'right', marginTop: 4, marginBottom: 4 }` for inputs; `{ textAlign: 'center', paddingTop: 12 }` (`COUNTER_STYLE`) for the list headers.
 

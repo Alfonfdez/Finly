@@ -19,7 +19,7 @@ Allow users to attach up to 3 photos (receipts, invoices, etc.) to a transaction
 
 ### 2. Photo section in Add/Modify Transaction
 
-- Title: "Photo" (i18n key `add_photo`, multilingual).
+- Title: "Photos" (i18n key `add_photos`, multilingual) with the `image-outline` section icon.
 - Displays a horizontal row of up to 3 photo thumbnails (80×80 each, `borderRadius: 12`).
 - When fewer than 3 photos exist, a dashed-border "+" button appears at the end of the row.
 - Each photo has a small "×" button (top-right corner overlay) for removal.

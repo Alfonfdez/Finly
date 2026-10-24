@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useCallback, useRef, type ReactNode } from 'react';
-import { Text, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView } from 'react-native';
+import { Text, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useConfig } from '../context/ConfigContext';
@@ -18,9 +19,10 @@ import TagSection from './TagSection';
 import CommentInput from './CommentInput';
 import PhotoSection from './PhotoSection';
 import FormActions from './form/FormActions';
+import FormSectionHeader from './form/FormSectionHeader';
 import CalendarModal from './CalendarModal';
 import CalculatorModal from './CalculatorModal';
-import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS } from './componentStyles';
+import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS, SECTION_GAP } from './componentStyles';
 import { type TransactionType, type RecurrenceFrequency, type RecurrenceScope, type RootStackParamList, RECURRENCE_SCOPES } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
@@ -124,14 +126,14 @@ export default function TransactionForm(props: TransactionFormProps) {
   // that follows it; focusing it scrolls the form so the button clears the keyboard.
   const { onBottomFieldFocus, onBottomFieldBlur, onScrollLayout } = useKeyboardReveal(scrollRef);
 
-  // Focusing the recurring Name brings the "Recurring" section to the top so the input
+  // Focusing the recurring Name brings the "Recurring" header to the top so the input
   // stays visible above the keyboard (native only — web has no software keyboard). Same
-  // reveal mechanism as the Comment field, with a scroll-to-section action instead of the end.
+  // reveal mechanism as the Comment field, with a scroll-to-header action instead of the end.
   const repeatSectionY = useRef(0);
   const handleRepeatSectionLayout = useCallback((y: number) => { repeatSectionY.current = y; }, []);
   const revealRepeatName = useCallback<RevealAction>((ref) => {
     if (isWeb) return;
-    ref.current?.scrollTo({ y: Math.max(0, repeatSectionY.current - 8), animated: true });
+    ref.current?.scrollTo({ y: Math.max(0, repeatSectionY.current + SECTION_GAP), animated: true });
   }, []);
   const {
     onBottomFieldFocus: onNameFocus,
@@ -280,18 +282,20 @@ export default function TransactionForm(props: TransactionFormProps) {
             onChangeRaw={setAmountRaw}
             onOpenCalculator={() => setCalculatorVisible(true)}
             error={amountRaw.length > 0 && (numericAmount === null || numericAmount <= 0)}
+            header={<FormSectionHeader title={labels.add_amount} icon="cash-outline" style={styles.amountHeader} />}
           />
 
+          <FormSectionHeader title={labels.add_account} icon="wallet-outline" />
           <TouchableOpacity
             style={[styles.accountContainer, { backgroundColor: c.surface }]}
             onPress={() => setModalAccountVisible(true)}
           >
-            <Text style={[styles.accountLabel, { color: c.textSecondary, fontSize: fs(12) }]}>
-              {labels.add_account}
-            </Text>
-            <Text style={[styles.accountName, { color: c.text, fontSize: fs(15) }]}>
-              {selectedAccount ? getDisplayAccountName(selectedAccount) : ''}
-            </Text>
+            <View style={styles.accountRow}>
+              <Text style={[styles.accountName, { color: c.text, fontSize: fs(15) }]}>
+                {selectedAccount ? getDisplayAccountName(selectedAccount) : ''}
+              </Text>
+              <Ionicons name="chevron-down" size={16} color={c.textSecondary} />
+            </View>
           </TouchableOpacity>
 
           <CategoryGrid
@@ -310,7 +314,7 @@ export default function TransactionForm(props: TransactionFormProps) {
             selectedDate={day}
             onSelect={setDay}
             onOpenCalendar={() => setModalCalendarVisible(true)}
-            title={props.ruleMode ? labels.repeat_start_date : undefined}
+            title={props.ruleMode ? labels.repeat_start_date : labels.add_date}
           />
 
           {props.ruleMode && (
@@ -440,17 +444,20 @@ const styles = StyleSheet.create({
   keyboardAvoid: { flex: 1 },
   container: { flex: 1, paddingHorizontal: 16 },
   scrollContent: { paddingBottom: 112 },
+  amountHeader: { marginTop: 8 },
   accountContainer: {
     borderRadius: CARD_BORDER_RADIUS,
     padding: 16,
-    marginTop: 16,
-    marginBottom: 16,
+    marginTop: 0,
+    marginBottom: 0,
   },
-  accountLabel: {
-    fontWeight: '500',
-    marginBottom: 4,
+  accountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   accountName: {
+    flex: 1,
     fontWeight: '600',
   },
   submitButton: {

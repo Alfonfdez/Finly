@@ -12,6 +12,7 @@ import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
 import { CONTROL_BORDER_RADIUS } from './componentStyles';
 import ClearButton from './ClearButton';
+import FormSectionHeader from './form/FormSectionHeader';
 import PrimaryButton from './form/PrimaryButton';
 import CharCounter from './form/CharCounter';
 
@@ -76,21 +77,22 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>
-          {labels.add_tags}
-        </Text>
-        <TouchableOpacity
-          onPress={() => {
-            if (showSearch) setSearch('');
-            setShowSearch(!showSearch);
-          }}
-          accessibilityRole="button"
-          accessibilityLabel={labels.add_tag_search}
-        >
-          <Ionicons name="search-outline" size={20} color={c.primary} />
-        </TouchableOpacity>
-      </View>
+      <FormSectionHeader
+        title={labels.add_tags}
+        icon="pricetag-outline"
+        right={
+          <TouchableOpacity
+            onPress={() => {
+              if (showSearch) setSearch('');
+              setShowSearch(!showSearch);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={labels.add_tag_search}
+          >
+            <Ionicons name="search-outline" size={20} color={c.primary} />
+          </TouchableOpacity>
+        }
+      />
 
       {showSearch && (
         <View style={styles.searchContainer}>
@@ -193,18 +195,7 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  title: {
-    fontWeight: '600',
-  },
+  container: {},
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -163,11 +163,13 @@ export const pt: Language = {
 
   // Add transaction
   add_title: 'Adicionar transação',
+  add_amount: 'Valor',
   add_amount_error: 'O valor informado não é válido',
   add_account: 'Conta',
   add_categories: 'Categorias',
   add_more: 'Mais',
   add_day: 'Dia',
+  add_date: 'Data',
   add_today: 'Hoje',
   add_yesterday: 'Ontem',
   add_day_before: 'Anteontem',
@@ -179,6 +181,7 @@ export const pt: Language = {
   add_tag_name_placeholder: 'Nome da etiqueta',
   add_comment: 'Comentário',
   add_photo: 'Foto',
+  add_photos: 'Fotos',
   add_photo_title: 'Adicionar foto',
   add_photo_camera: 'Tirar foto',
   add_photo_gallery: 'Adicionar da galeria',

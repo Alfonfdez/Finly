@@ -160,6 +160,7 @@ describe('ModifyTransactionScreen', () => {
   it('preloads the transaction into the form and keeps Save disabled until something changes', async () => {
     const view = await render(<ModifyTransactionScreen />);
     expect(await view.findByText('Save')).toBeDisabled();
+    expect(view.getByText('Amount')).toBeTruthy();
     expect(view.getByText('Account')).toBeTruthy();
 
     await fireEvent.changeText(view.getByPlaceholderText('0'), '99');

@@ -161,11 +161,13 @@ export const en = {
 
   // Add transaction
   add_title: 'Add transaction',
+  add_amount: 'Amount',
   add_amount_error: 'The amount entered is not valid',
   add_account: 'Account',
   add_categories: 'Categories',
   add_more: 'More',
   add_day: 'Day',
+  add_date: 'Date',
   add_today: 'Today',
   add_yesterday: 'Yesterday',
   add_day_before: 'Day before yesterday',
@@ -177,6 +179,7 @@ export const en = {
   add_tag_name_placeholder: 'Tag name',
   add_comment: 'Comment',
   add_photo: 'Photo',
+  add_photos: 'Photos',
   add_photo_title: 'Add photo',
   add_photo_camera: 'Take photo',
   add_photo_gallery: 'Add from gallery',

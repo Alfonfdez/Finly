@@ -20,6 +20,12 @@
 - When switching tabs, the type is updated, the selected category is reset, and the category grid is reloaded for that type.
 - The type is displayed as informational (the transaction stores the original type), but **changing the type is allowed** and will be updated when saving.
 
+### 2.1 Section headers
+
+- The shared form shows left-aligned section headers with decorative text-colored icons: Amount, Account, Categories, Date, Tags, Comment and (outside rule mode) Photos.
+- Section icons: Amount `cash-outline`, Account `wallet-outline`, Categories `grid-outline`, Date `calendar-outline`, Tags `pricetag-outline`, Comment `chatbubble-ellipses-outline`, Photos `image-outline`.
+- The Account card shows the selected account and a chevron-down affordance; right-side Date/Tag actions remain primary.
+
 ### 3. Amount field
 
 - Numeric input with number keyboard.
@@ -83,9 +89,9 @@
 - Dynamic counter "0/4096" that updates as you type (max 4096 characters).
 - Autocomplete: debounced search of existing comments (same logic as `AddTransactionScreen`).
 
-### 9. Photo
+### 9. Photos
 
-- Title: "Photo" (multilingual) — i18n key `add_photo` (existing).
+- Title: "Photos" (multilingual) — i18n key `add_photos`.
 - Large "+" icon in a square that, when tapped, opens a modal.
 - **"Add photo" modal:**
   - Title: "Add photo" (multilingual).
@@ -94,7 +100,7 @@
 - When editing a transaction that has an existing photo, the thumbnail is preloaded from `transaction.photo`.
 - The user can replace it (camera or gallery) or remove it (× button).
 - If the user replaces the photo, the old file is deleted from `documentDirectory`.
-- **Web**: the entire PhotoSection is hidden on web (platform guard `Platform.OS !== 'web'`).
+- **Web**: the section is visible with the gallery/file picker only; camera capture stays native-only (specs 023/024).
 - **Implementation**: see spec `023-photo-attachment` for full functional requirements.
 
 ### 10. Save button

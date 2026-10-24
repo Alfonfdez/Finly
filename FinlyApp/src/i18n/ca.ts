@@ -163,11 +163,13 @@ export const ca: Language = {
 
   // Add transaction
   add_title: 'Afegir transacció',
+  add_amount: 'Import',
   add_amount_error: 'L\'import introduït no és vàlid',
   add_account: 'Compte',
   add_categories: 'Categories',
   add_more: 'Més',
   add_day: 'Dia',
+  add_date: 'Data',
   add_today: 'Avui',
   add_yesterday: 'Ahir',
   add_day_before: 'Abans d\'ahir',
@@ -179,6 +181,7 @@ export const ca: Language = {
   add_tag_name_placeholder: 'Nom de l\'etiqueta',
   add_comment: 'Comentari',
   add_photo: 'Foto',
+  add_photos: 'Fotos',
   add_photo_title: 'Afegir foto',
   add_photo_camera: 'Fer foto',
   add_photo_gallery: 'Afegir des de la galeria',
