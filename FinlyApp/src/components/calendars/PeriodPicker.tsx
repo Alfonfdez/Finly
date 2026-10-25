@@ -1,9 +1,10 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import DayPicker from './DayPicker';
 import CheckboxRow from '../settings/CheckboxRow';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
+import { useToday } from '../../hooks/useToday';
 import { t } from '../../i18n';
 import { calendarStyles } from './calendarStyles';
 import { isSameDay } from '../../utils/formatters';
@@ -62,7 +63,7 @@ export default function PeriodPicker({ tempStart, tempEnd, onTempRangeChange, on
   const fs = useFontSize();
   const labels = t();
 
-  const today = useMemo(() => new Date(), []);
+  const today = useToday();
   const activePreset = findPresetForRange(tempStart, tempEnd, today);
 
   const setPhase = useCallback((phase: PickingPhase) => {

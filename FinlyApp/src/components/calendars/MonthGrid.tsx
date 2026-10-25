@@ -5,13 +5,14 @@ import type { CalendarBaseProps } from './types';
 import YearNav from './YearNav';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
+import { useToday } from '../../hooks/useToday';
 import { calendarStyles, DISABLED_OPACITY } from './calendarStyles';
 import { MONTHS_PER_YEAR } from '../../constants/calendar';
 
 const MONTHS = Array.from({ length: MONTHS_PER_YEAR }, (_, i) => i + 1);
 
 export default function MonthGrid({ date, onSelect }: CalendarBaseProps) {
-  const today = useMemo(() => new Date(), []);
+  const today = useToday();
   const [year, setYear] = useState(date.getFullYear());
   const { activeColors: c } = useConfig();
   const fs = useFontSize();

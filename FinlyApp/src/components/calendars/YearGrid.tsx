@@ -3,13 +3,14 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import type { CalendarBaseProps } from './types';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
+import { useToday } from '../../hooks/useToday';
 import { t } from '../../i18n';
 import NavArrows from './NavArrows';
 import { calendarStyles, DISABLED_OPACITY } from './calendarStyles';
 import { YEARS_PER_PAGE } from '../../constants/calendar';
 
 export default function YearGrid({ date, onSelect }: CalendarBaseProps) {
-  const today = useMemo(() => new Date(), []);
+  const today = useToday();
   const [startYear, setStartYear] = useState(date.getFullYear() - Math.floor((YEARS_PER_PAGE - 1) / 2));
   const { activeColors: c } = useConfig();
   const fs = useFontSize();

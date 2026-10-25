@@ -4368,3 +4368,9 @@
 [2026-10-25] test | FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/tests/hooks/useTransactionFilters.test.tsx
 - Guarded local tag-filter pruning until the tag list finishes loading, so route tag filters are not cleared on first render.
 - test:all green (168 files / 1410 tests).
+
+[2026-10-25] fix | FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/CalendarPicker.tsx, FinlyApp/src/components/DaySelector.tsx, FinlyApp/src/components/calendars/DayPicker.tsx, FinlyApp/src/components/calendars/WeekPicker.tsx, FinlyApp/src/components/calendars/MonthGrid.tsx, FinlyApp/src/components/calendars/YearGrid.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/components/calendars/MonthNav.tsx, FinlyApp/src/components/calendars/YearNav.tsx, FinlyApp/src/hooks/useToday.ts, FinlyApp/src/utils/formatters.ts, FinlyApp/tests/component/CalendarModal.test.tsx, FinlyApp/tests/component/CalendarPicker.test.tsx, FinlyApp/tests/component/PeriodPicker.test.tsx, FinlyApp/tests/hooks/useToday.test.tsx, FinlyApp/tests/utils/formatters.test.ts, spec/constitution/3-roadmap.md, spec/constitution/6-screens.md, docs/harnesses.md
+- Disabled custom-range OK until the end date is selected; tapping the same day twice still creates a one-day range.
+- Added both years to compact week labels when the week crosses a year boundary.
+- Added a shared useToday hook that refreshes at midnight and on app/tab activation for the calendar pickers and DaySelector.
+- Added 90-day/12-month preset, minDate forwarding and cross-year tests; browser-verified the custom-range OK state at 375px; test:all green (169 files / 1415 tests).

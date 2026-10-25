@@ -247,7 +247,10 @@ export function formatWeekRange(date: Date, shortMonths: string[], firstDay: Fir
   const startMonth = shortMonths[start.getMonth()];
   const endDay = end.getDate();
   const endMonth = shortMonths[end.getMonth()];
-  return `${startDay} ${startMonth} – ${endDay} ${endMonth}`;
+  const startYear = start.getFullYear();
+  const endYear = end.getFullYear();
+  const showYears = startYear !== endYear;
+  return `${startDay} ${startMonth}${showYears ? ` ${startYear}` : ''} – ${endDay} ${endMonth}${showYears ? ` ${endYear}` : ''}`;
 }
 
 export function formatWeekRangeLines(date: Date, months: string[], firstDay: FirstDay = FIRST_DAYS.monday): DateRangeLines {

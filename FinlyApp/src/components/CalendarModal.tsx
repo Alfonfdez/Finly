@@ -11,7 +11,7 @@ import type { Language } from '../i18n/en';
 import type { StringKeyOf } from '../constants/types';
 import DayPicker from './calendars/DayPicker';
 import WeekPicker from './calendars/WeekPicker';
-import { CONTROL_BORDER_RADIUS } from './componentStyles';
+import { CONTROL_BORDER_RADIUS, DISABLED_CONTROL_OPACITY } from './componentStyles';
 import MonthGrid from './calendars/MonthGrid';
 import YearGrid from './calendars/YearGrid';
 import PeriodPicker from './calendars/PeriodPicker';
@@ -97,7 +97,10 @@ export default function CalendarModal({
     setTempRangeEnd(end);
   }, []);
 
+  const okDisabled = period === PERIODS.custom && customSelectingEnd;
+
   const handleOk = useCallback(() => {
+    if (okDisabled) return;
     if (period === PERIODS.custom) {
       onSelectRange?.(tempRangeStart, tempRangeEnd);
     } else {
@@ -105,7 +108,7 @@ export default function CalendarModal({
     }
     setCustomSelectingEnd(false);
     onClose();
-  }, [period, tempDate, tempRangeStart, tempRangeEnd, onSelectDate, onSelectRange, onClose]);
+  }, [okDisabled, period, tempDate, tempRangeStart, tempRangeEnd, onSelectDate, onSelectRange, onClose]);
 
   const handleCancel = useCallback(() => {
     setTempDate(date);
@@ -166,7 +169,14 @@ export default function CalendarModal({
         <TouchableOpacity style={[styles.cancelButton, { backgroundColor: c.background, borderColor: c.border }]} onPress={handleCancel} accessibilityRole="button" accessibilityLabel={labels.cal_cancel}>
           <Text style={[styles.cancelButtonText, { color: c.text, fontSize: fs(14) }]}>{labels.cal_cancel}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.okButton, { backgroundColor: c.primary }]} onPress={handleOk}>
+        <TouchableOpacity
+          style={[styles.okButton, { backgroundColor: c.primary, opacity: okDisabled ? DISABLED_CONTROL_OPACITY : 1 }]}
+          onPress={handleOk}
+          disabled={okDisabled}
+          accessibilityRole="button"
+          accessibilityLabel={labels.cal_ok}
+          accessibilityState={{ disabled: okDisabled }}
+        >
           <Text style={[styles.okButtonText, { color: c.background, fontSize: fs(14) }]}>{labels.cal_ok}</Text>
         </TouchableOpacity>
       </View>
