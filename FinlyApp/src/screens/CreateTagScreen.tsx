@@ -66,7 +66,6 @@ export default function CreateTagScreen() {
           returnKeyType="done"
           error={isEmpty ? labels.create_tag_error_empty : nameError}
           showCounter
-          counterStyle={styles.counter}
           inputStyle={styles.input}
         />
 
@@ -96,9 +95,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 14,
     fontWeight: '500',
-  },
-  counter: {
-    marginTop: 6,
-    marginBottom: 12,
   },
 });

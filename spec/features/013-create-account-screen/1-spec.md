@@ -85,7 +85,7 @@
 
 - Title: "Note" (multilingual).
 - Multiline text input for an optional account description.
-- Maximum 200 characters with counter "0/200".
+- Maximum 200 characters with counter "0/200" inside the multiline input at the bottom-right.
 - Default value: empty.
 
 ### 6. "Create" button

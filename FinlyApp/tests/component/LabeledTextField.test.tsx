@@ -61,4 +61,46 @@ describe('LabeledTextField', () => {
     await fireEvent(view.getByPlaceholderText('Name'), 'blur');
     expect(blurred).toBe(true);
   });
+
+  it('keeps a single-line counter below the input', async () => {
+    const view = await render(
+      <LabeledTextField
+        placeholder="Name"
+        value="Cash"
+        onChangeText={() => {}}
+        maxLength={30}
+        showCounter
+      />,
+    );
+
+    const style = StyleSheet.flatten(view.getByText('4/30').props.style) as {
+      position?: string;
+      marginTop?: number;
+    };
+    expect(style.position).toBeUndefined();
+    expect(style.marginTop).toBe(4);
+  });
+
+  it('places a multiline counter inside the input when requested', async () => {
+    const view = await render(
+      <LabeledTextField
+        placeholder="Note"
+        value="Hi"
+        onChangeText={() => {}}
+        maxLength={200}
+        showCounter
+        inlineCounter
+        multiline
+      />,
+    );
+
+    const style = StyleSheet.flatten(view.getByText('2/200').props.style) as {
+      position?: string;
+      right?: number;
+      bottom?: number;
+    };
+    expect(style.position).toBe('absolute');
+    expect(style.right).toBe(8);
+    expect(style.bottom).toBe(6);
+  });
 });

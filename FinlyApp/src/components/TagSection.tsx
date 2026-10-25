@@ -15,6 +15,7 @@ import ClearButton from './ClearButton';
 import FormSectionHeader from './form/FormSectionHeader';
 import PrimaryButton from './form/PrimaryButton';
 import CharCounter from './form/CharCounter';
+import { formStyles } from './form/formStyles';
 
 interface Props {
   tags: Tag[];
@@ -162,7 +163,7 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
           onChangeText={handleNameChange}
           maxLength={MAX_TAG_NAME_LENGTH}
         />
-        <CharCounter value={newTag.length} maxLength={MAX_TAG_NAME_LENGTH} style={styles.modalCounter} />
+        <CharCounter value={newTag.length} maxLength={MAX_TAG_NAME_LENGTH} style={formStyles.counter} />
         {error ? (
           <Text style={[styles.modalError, { color: c.red, fontSize: fs(13) }]}>
             {error}
@@ -226,9 +227,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: CONTROL_BORDER_RADIUS,
-    marginBottom: 4,
-  },
-  modalCounter: {
     marginBottom: 4,
   },
   modalError: {

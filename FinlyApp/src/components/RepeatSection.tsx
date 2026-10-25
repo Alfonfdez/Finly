@@ -16,6 +16,7 @@ import CheckboxRow from './settings/CheckboxRow';
 import RecurrenceInfo from './RecurrenceInfo';
 import CharCounter from './form/CharCounter';
 import FormSectionHeader from './form/FormSectionHeader';
+import { formStyles } from './form/formStyles';
 
 interface Props {
   frequency: RecurrenceFrequency;
@@ -157,7 +158,7 @@ export default function RepeatSection({
           maxLength={Math.max(REPEAT_NAME_MAX_LENGTH, name.length)}
           accessibilityLabel={labels.repeat_name}
         />
-        <CharCounter value={name.length} maxLength={REPEAT_NAME_MAX_LENGTH} style={styles.nameCounter} />
+        <CharCounter value={name.length} maxLength={REPEAT_NAME_MAX_LENGTH} style={formStyles.counter} />
         <Text style={[styles.label, { color: c.textSecondary, fontSize: fs(12) }]}>
           {labels.repeat_frequency}
         </Text>
@@ -310,9 +311,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginTop: 8,
     fontWeight: '500',
-  },
-  nameCounter: {
-    marginTop: 4,
   },
   checkboxRow: {
     marginTop: 12,

@@ -78,7 +78,7 @@ export default function ModifyCommentScreen() {
           autoFocus
           error={isEmpty}
           showCounter
-          counterStyle={styles.counter}
+          inlineCounter
           inputStyle={styles.input}
           onFocus={onBottomFieldFocus}
           onBlur={onBottomFieldBlur}
@@ -123,10 +123,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 14,
     fontWeight: '500',
-  },
-  counter: {
-    marginTop: 6,
-    marginBottom: 12,
   },
   mergeHint: {
     marginTop: 12,
