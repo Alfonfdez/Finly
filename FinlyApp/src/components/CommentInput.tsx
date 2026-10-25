@@ -1,5 +1,5 @@
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
@@ -76,25 +76,23 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
       {suggestions.length > 0 && (
         <View style={[styles.suggestionsPanel, { backgroundColor: c.surface, borderColor: c.border }]}>
           {suggestions.map((item, i) => (
-            <View
+            <TouchableOpacity
               key={i}
-              role="button"
+              accessibilityRole="button"
               accessibilityLabel={item}
-              onAccessibilityTap={() => handleSelectSuggestion(item)}
               style={[
                 styles.suggestionItem,
                 { borderBottomColor: c.border },
                 i === suggestions.length - 1 && styles.suggestionItemLast,
               ]}
-              onStartShouldSetResponder={() => true}
-              onResponderGrant={() => { isPressingSuggestion.current = true; }}
-              onResponderRelease={() => { isPressingSuggestion.current = false; handleSelectSuggestion(item); }}
-              onResponderTerminate={() => { isPressingSuggestion.current = false; }}
+              onPressIn={() => { isPressingSuggestion.current = true; }}
+              onPressOut={() => { isPressingSuggestion.current = false; }}
+              onPress={() => handleSelectSuggestion(item)}
             >
               <Text style={[styles.suggestionText, { color: c.text, fontSize: fs(13) }]} numberOfLines={1}>
                 {item}
               </Text>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
       )}

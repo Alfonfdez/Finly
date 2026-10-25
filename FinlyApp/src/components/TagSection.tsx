@@ -89,8 +89,9 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
             }}
             accessibilityRole="button"
             accessibilityLabel={labels.add_tag_search}
+            hitSlop={12}
           >
-            <Ionicons name="search-outline" size={20} color={c.primary} />
+            <Ionicons name="search-outline" size={20} color={c.primary} accessible={false} />
           </TouchableOpacity>
         }
       />
@@ -123,6 +124,8 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
               { backgroundColor: selectedTags.includes(tag.id) ? c.primary : c.surface },
             ]}
             onPress={() => onToggle(tag.id)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: selectedTags.includes(tag.id) }}
           >
             <Text
               style={[
@@ -138,6 +141,7 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
           <TouchableOpacity
             style={[styles.tag, { backgroundColor: c.surface }]}
             onPress={() => setModalVisible(true)}
+            accessibilityRole="button"
           >
             <Text style={[styles.tagText, { color: c.primary, fontSize: fs(13) }]}>
               + {labels.add_tag_new}

@@ -80,7 +80,7 @@ describe('CommentInput', () => {
     expect(view.queryByText('coffee')).toBeNull();
     await focusInput(view);
     await flushDebounce();
-    expect(view.getByText('coffee')).toBeTruthy();
+    expect(view.getByRole('button', { name: 'coffee' })).toBeTruthy();
     expect(view.getByText('coffee shop')).toBeTruthy();
   });
 
@@ -102,8 +102,7 @@ describe('CommentInput', () => {
     await focusInput(view);
     await flushDebounce();
 
-    await act(async () => { fireEvent(view.getByText('coffee'), 'responderGrant'); });
-    await act(async () => { fireEvent(view.getByText('coffee'), 'responderRelease'); });
+    await act(async () => { fireEvent.press(view.getByText('coffee')); });
     expect(onChange).toHaveBeenCalledWith('coffee');
     expect(view.queryByText('coffee')).toBeNull();
     expect(view.queryByText('coffee shop')).toBeNull();
@@ -117,9 +116,9 @@ describe('CommentInput', () => {
     await flushDebounce();
 
     const suggestion = view.getByText('coffee');
-    await act(async () => { fireEvent(suggestion, 'responderGrant'); });
+    await act(async () => { fireEvent(suggestion, 'pressIn'); });
     await act(async () => { fireEvent(view.getByLabelText('Comment input'), 'blur'); });
-    await act(async () => { fireEvent(suggestion, 'responderRelease'); });
+    await act(async () => { fireEvent.press(suggestion); });
     expect(onChange).toHaveBeenCalledWith('coffee');
     expect(view.queryByText('coffee')).toBeNull();
   });

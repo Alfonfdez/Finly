@@ -28,7 +28,7 @@ export default function FormSectionHeader({ title, icon, right, style }: Props) 
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
       />
-      <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>{title}</Text>
+      <Text accessibilityRole="header" style={[styles.title, { color: c.text, fontSize: fs(15) }]}>{title}</Text>
       {right}
     </View>
   );

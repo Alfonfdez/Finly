@@ -193,23 +193,25 @@ export default function RepeatSection({
           </Text>
           <View style={styles.stepper}>
             <TouchableOpacity
-              style={[styles.stepperButton, { borderColor: c.border }]}
+              style={[styles.stepperButton, { borderColor: c.border, opacity: interval <= REPEAT_MIN_INTERVAL ? DISABLED_CONTROL_OPACITY : 1 }]}
               onPress={() => onChangeInterval(Math.max(REPEAT_MIN_INTERVAL, interval - 1))}
               disabled={interval <= REPEAT_MIN_INTERVAL}
               accessibilityRole="button"
               accessibilityLabel={labels.a11y_decrease}
+              accessibilityState={{ disabled: interval <= REPEAT_MIN_INTERVAL }}
             >
-              <Ionicons name="remove" size={18} color={c.text} />
+              <Ionicons name="remove" size={18} color={c.text} accessible={false} />
             </TouchableOpacity>
             <Text style={[styles.stepperValue, { color: c.text, fontSize: fs(15) }]}>{interval}</Text>
             <TouchableOpacity
-              style={[styles.stepperButton, { borderColor: c.border }]}
+              style={[styles.stepperButton, { borderColor: c.border, opacity: interval >= REPEAT_MAX_INTERVAL ? DISABLED_CONTROL_OPACITY : 1 }]}
               onPress={() => onChangeInterval(Math.min(REPEAT_MAX_INTERVAL, interval + 1))}
               disabled={interval >= REPEAT_MAX_INTERVAL}
               accessibilityRole="button"
               accessibilityLabel={labels.a11y_increase}
+              accessibilityState={{ disabled: interval >= REPEAT_MAX_INTERVAL }}
             >
-              <Ionicons name="add" size={18} color={c.text} />
+              <Ionicons name="add" size={18} color={c.text} accessible={false} />
             </TouchableOpacity>
           </View>
         </View>
@@ -267,7 +269,7 @@ export default function RepeatSection({
                     onPress={() => !disabled && onChangeScope?.(value)}
                     disabled={disabled}
                     accessibilityRole="button"
-                    accessibilityState={{ disabled }}
+                    accessibilityState={{ disabled, selected: active }}
                   >
                     <Text style={[styles.segmentText, { color: active ? c.background : c.textSecondary, fontSize: fs(13), fontWeight: active ? '700' : '600' }]}>
                       {label}

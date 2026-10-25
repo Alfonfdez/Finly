@@ -21,7 +21,7 @@ describe('DataRow', () => {
       </DataRow>,
     );
 
-    expect(view.getByText('pricetag-outline')).toBeTruthy();
+    expect(view.getByText('pricetag-outline', { includeHiddenElements: true })).toBeTruthy();
     expect(view.getByText('Tags')).toBeTruthy();
     expect(view.getByText('work')).toBeTruthy();
   });

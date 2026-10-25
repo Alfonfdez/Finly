@@ -62,6 +62,14 @@ describe('LabeledTextField', () => {
     expect(blurred).toBe(true);
   });
 
+  it('uses the visible label as the accessible name', async () => {
+    const view = await render(
+      <LabeledTextField label="Note" value="" onChangeText={() => {}} />,
+    );
+
+    expect(view.getByLabelText('Note')).toBeTruthy();
+  });
+
   it('keeps a single-line counter below the input', async () => {
     const view = await render(
       <LabeledTextField

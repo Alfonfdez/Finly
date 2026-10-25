@@ -4374,3 +4374,11 @@
 - Added both years to compact week labels when the week crosses a year boundary.
 - Added a shared useToday hook that refreshes at midnight and on app/tab activation for the calendar pickers and DaySelector.
 - Added 90-day/12-month preset, minDate forwarding and cross-year tests; browser-verified the custom-range OK state at 375px; test:all green (169 files / 1415 tests).
+
+[2026-10-25] fix | FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/components/form/LabeledTextField.tsx, FinlyApp/src/components/PhotoSection.tsx, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/components/form/FormSectionHeader.tsx, FinlyApp/src/components/AmountInput.tsx, FinlyApp/src/components/DataRow.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/components/DaySelector.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/form/PrimaryButton.tsx, FinlyApp/src/navigation/AppNavigator.tsx, FinlyApp/tests/component/TransactionForm.test.tsx, FinlyApp/tests/component/LabeledTextField.test.tsx, FinlyApp/tests/component/PhotoSection.test.tsx, FinlyApp/tests/component/CommentInput.test.tsx, FinlyApp/tests/component/FormSectionHeader.test.tsx, FinlyApp/tests/component/DataRow.test.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, spec/constitution/3-roadmap.md, spec/constitution/6-screens.md, docs/harnesses.md
+- Account picker now has a button role and Account: <name> label; its chevron is hidden.
+- LabeledTextField uses the visible label as the accessible name, covering the Account Note field.
+- Photo add/remove and source options expose button roles; the add tile is labelled Add photo.
+- Comment suggestions are pressable/focusable buttons while keeping the blur guard.
+- Section titles are headings; decorative icons/currency symbols are hidden; chips/options expose selected state and disabled steppers dim.
+- Added hit areas, tests and accessibility docs; browser-verified account/photo/heading labels at 375px; test:all green (170 files / 1418 tests).
