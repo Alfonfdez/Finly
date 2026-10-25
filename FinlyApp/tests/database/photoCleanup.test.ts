@@ -29,8 +29,11 @@ vi.mock('../../src/database/drizzle/engine', () => ({
   getDrizzle: mocks.getDrizzle,
 }));
 
-vi.mock('../../src/utils/photoUtils', () => ({
+vi.mock('../../src/utils/photoData', () => ({
   parsePhotos: mocks.parsePhotos,
+}));
+
+vi.mock('../../src/utils/photoUtils', () => ({
   deletePhotoFile: mocks.deletePhotoFile,
 }));
 

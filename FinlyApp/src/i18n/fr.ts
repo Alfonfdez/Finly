@@ -202,6 +202,8 @@ export const fr: Language = {
   error_boundary_title: 'Quelque chose s\'est mal passé',
   error_boundary_message: 'Une erreur inattendue est survenue.',
   error_boundary_retry: 'Réessayer',
+  web_tab_blocked_title: 'Finly est déjà ouvert',
+  web_tab_blocked_message: 'Finly ne peut enregistrer que depuis un seul onglet à la fois. Fermez l\'autre onglet et réessayez.',
 
   // Add category
   add_cat_title: 'Ajouter une catégorie',

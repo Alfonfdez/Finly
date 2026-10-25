@@ -44,7 +44,6 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   const saveQueue = useRef<Promise<void>>(Promise.resolve());
   const [loading, setLoading] = useState(true);
   const [activeColors, setActiveColors] = useState<ColorPalette>(darkColors);
-  const saveGeneration = useRef(0);
 
   useEffect(() => {
     (async () => {
@@ -97,7 +96,6 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     const previous = configRef.current;
     const updated = { ...previous, ...partial };
     configRef.current = updated;
-    const gen = ++saveGeneration.current;
     if (partial.language) setLanguage(partial.language);
     setConfig(updated);
     if (partial.theme) setActiveColors(resolveColors(partial.theme));
@@ -110,16 +108,31 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       await save;
     } catch (error) {
       logError(ERROR_PREFIXES.configSave, error);
-      if (gen !== saveGeneration.current) return;
-      // Roll back only the fields this call attempted, preserving newer updates.
-      const rolledBack = { ...configRef.current };
-      for (const key of Object.keys(partial) as (keyof Config)[]) {
-        (rolledBack as Record<string, unknown>)[key] = previous[key];
+      // A failed write may belong to an older update while a newer one is still
+      // queued. Wait for the queue, then trust the DB instead of leaving an
+      // optimistic value that was never persisted.
+      await saveQueue.current.catch(() => {});
+      try {
+        const persisted = await configRepository.get();
+        configRef.current = persisted;
+        setConfig(persisted);
+        setActiveColors(resolveColors(persisted.theme));
+        setLanguage(persisted.language);
+      } catch (reloadError) {
+        logError(ERROR_PREFIXES.configLoad, reloadError);
+        // The DB is unreadable: roll back only fields that still hold this
+        // update's optimistic value, preserving any newer updates.
+        const rolledBack = { ...configRef.current };
+        for (const key of Object.keys(partial) as (keyof Config)[]) {
+          if (rolledBack[key] === updated[key]) {
+            (rolledBack as Record<string, unknown>)[key] = previous[key];
+          }
+        }
+        configRef.current = rolledBack;
+        setConfig(rolledBack);
+        setActiveColors(resolveColors(rolledBack.theme));
+        setLanguage(rolledBack.language);
       }
-      configRef.current = rolledBack;
-      setConfig(rolledBack);
-      setActiveColors(resolveColors(rolledBack.theme));
-      setLanguage(rolledBack.language);
       showErrorAlert();
     }
   }, []);

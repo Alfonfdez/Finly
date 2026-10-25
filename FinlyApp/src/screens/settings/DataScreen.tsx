@@ -14,7 +14,7 @@ import {
   BackupValidationError,
   BACKUP_VALIDATION_CODES,
 } from '../../database';
-import { clearDataKeepSettings, resetDatabase } from '../../database/database';
+import { clearDataKeepSettingsWithCleanup, resetDatabaseWithCleanup } from '../../database/maintenance';
 import { saveBackupFile, pickBackupFile, saveBackupToDownloads } from '../../utils/backupIO';
 import { ERROR_PREFIXES, alertError, alertInfo, logError } from '../../utils/errors';
 import { ShareResult } from '../../constants/shareResult';
@@ -235,7 +235,7 @@ export default function DataScreen() {
     if (pendingAction !== null) return;
     setPendingAction(PENDING_DATA_ACTIONS.all);
     try {
-      await clearDataKeepSettings();
+      await clearDataKeepSettingsWithCleanup();
       await updateConfig(await configRepository.get());
       await resetAll();
     } catch (error) {
@@ -251,7 +251,7 @@ export default function DataScreen() {
     if (pendingAction !== null) return;
     setPendingAction(PENDING_DATA_ACTIONS.factory);
     try {
-      await resetDatabase();
+      await resetDatabaseWithCleanup();
       await updateConfig(await configRepository.get());
       await resetAll();
     } catch (error) {

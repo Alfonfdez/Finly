@@ -4,8 +4,8 @@ import type { ReactNode } from 'react';
 import { AppProvider, useApp } from '../../src/context/AppContext';
 import { materializeDueRecurring } from '../../src/database/recurringService';
 import { setConfig, resetStub } from '../component/helpers/configStub';
-import { TRANSACTION_TYPES } from '../../src/constants/types';
-import type { Account, Category, Transaction } from '../../src/database/types';
+import { TRANSACTION_TYPES, UNTAGGED_ID } from '../../src/constants/types';
+import type { Account, Category, Transaction, Tag } from '../../src/database/types';
 
 const mockAccountList = vi.fn();
 const mockCategoryList = vi.fn();
@@ -161,6 +161,60 @@ describe('AppProvider', () => {
     const travel = result.current.activeCategories.find(c => c.id === 2)!;
     expect(travel.total).toBe(20);
     expect(travel.percentage).toBeCloseTo(20);
+  });
+
+  it('refreshes the active account object when its row changes', async () => {
+    const { result } = await renderHook(() => useApp(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const renamed = { ...walletAccount, name: 'Renamed wallet', icon: 'cash-outline' };
+    mockAccountList.mockResolvedValue([renamed]);
+    await act(async () => { await result.current.refreshAccounts(); });
+
+    expect(result.current.activeAccount?.name).toBe('Renamed wallet');
+    expect(result.current.activeAccount?.icon).toBe('cash-outline');
+  });
+
+  it('prunes a deleted tag from the Home filter', async () => {
+    const tagA = { id: 10, user_id: 1, name: 'Work' } as Tag;
+    const tagB = { id: 20, user_id: 1, name: 'Home' } as Tag;
+    mockTagList.mockResolvedValue([tagA, tagB]);
+    const { result } = await renderHook(() => useApp(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => { result.current.toggleTagId(tagA.id); });
+    expect(result.current.activeTagIds).toEqual([tagA.id]);
+
+    mockTagList.mockResolvedValue([tagB]);
+    await act(async () => { await result.current.refreshTags(); });
+
+    expect(result.current.activeTagIds).toEqual([]);
+  });
+
+  it('keeps the untagged pseudo-filter when real tags disappear', async () => {
+    const { result } = await renderHook(() => useApp(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => { result.current.toggleTagId(UNTAGGED_ID); });
+    mockTagList.mockResolvedValue([]);
+    await act(async () => { await result.current.refreshTags(); });
+
+    expect(result.current.activeTagIds).toEqual([UNTAGGED_ID]);
+  });
+
+  it('exposes a retry path when the initial load fails', async () => {
+    mockAccountList.mockRejectedValueOnce(new Error('load failed'));
+    const { result } = await renderHook(() => useApp(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.loadError).toBe(true);
+    expect(result.current.activeAccount).toBeNull();
+
+    mockAccountList.mockResolvedValue([walletAccount]);
+    await act(async () => { await result.current.retryInitialLoad(); });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.loadError).toBe(false);
+    expect(result.current.activeAccount).toEqual(walletAccount);
   });
 
   it('starts the custom period at Jan 1 and the end of today', async () => {

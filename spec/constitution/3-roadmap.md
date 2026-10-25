@@ -1302,3 +1302,16 @@ Applied 2026-10-25:
 - Single-line name fields keep the counter below the input; their five spacing variants were normalized to the shared `formStyles.counter`.
 - Added a reusable `LabeledTextField` `inlineCounter` variant and shared inline tokens in `formStyles`; CommentInput uses the same tokens.
 - Updated the account/comment specs, `6-screens.md`, harness baseline and tests; browser-verified the account note and Modify comment at 375px; `npm run test:all` green (165 files / 1389 tests).
+
+## 2.2.0 post-audit data/state batch
+Status: completed.
+
+Applied 2026-10-25:
+- Config saves now recover the persisted values after a failed queued write, so an older failure cannot silently drop a newer preference.
+- Factory reset, delete-all-data and import collect old native photos first and delete them only after the write commits; import keeps URIs still referenced by the new snapshot.
+- Web holds an exclusive `finly-db` lock; a second tab is blocked with a Try again action instead of overwriting the first tab's IndexedDB snapshot.
+- Refreshing accounts replaces the active account object, and refreshing/deleting tags prunes invisible Home and local tag filters.
+- Recurring delete now reports failures and ignores a second confirm while the first is running.
+- Startup reference-data failure shows a retry screen instead of an infinite Home spinner.
+- WeekPicker, MonthGrid and YearGrid follow the date prop so reopening after a fast-arrow date change shows the correct page.
+- Updated specs, platform notes, harness baseline and changelog; browser-verified the two-tab guard at 375px; `npm run test:all` green (168 files / 1410 tests).

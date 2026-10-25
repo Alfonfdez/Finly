@@ -202,6 +202,8 @@ export const pt: Language = {
   error_boundary_title: 'Algo deu errado',
   error_boundary_message: 'Ocorreu um erro inesperado.',
   error_boundary_retry: 'Tentar novamente',
+  web_tab_blocked_title: 'O Finly já está aberto',
+  web_tab_blocked_message: 'O Finly só pode guardar dados a partir de um separador de cada vez. Feche o outro separador e tente novamente.',
 
   // Add category
   add_cat_title: 'Adicionar categoria',

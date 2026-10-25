@@ -14,8 +14,10 @@ interface AppStubState {
   transactions: Transaction[];
   tags: Tag[];
   loading: boolean;
+  loadError: boolean;
   categoriesById: Map<number, Category>;
   refresh: ReturnType<typeof vi.fn>;
+  retryInitialLoad: ReturnType<typeof vi.fn>;
   refreshAccounts: ReturnType<typeof vi.fn>;
   refreshCategories: ReturnType<typeof vi.fn>;
   refreshTags: ReturnType<typeof vi.fn>;
@@ -49,8 +51,10 @@ function createStub(): AppStubState {
     transactions: [],
     tags: [],
     loading: false,
+    loadError: false,
     categoriesById: new Map(),
     refresh: vi.fn(),
+    retryInitialLoad: vi.fn(async () => {}),
     refreshAccounts: vi.fn(async () => {}),
     refreshCategories: vi.fn(async () => {}),
     refreshTags: vi.fn(async () => {}),
@@ -75,8 +79,10 @@ function createStub(): AppStubState {
       state.transactions = fresh.transactions;
       state.tags = fresh.tags;
       state.loading = fresh.loading;
+      state.loadError = fresh.loadError;
       state.categoriesById = fresh.categoriesById;
       state.refresh.mockClear();
+      state.retryInitialLoad.mockClear();
       state.refreshAccounts.mockClear();
       state.refreshCategories.mockClear();
       state.refreshTags.mockClear();
@@ -122,8 +128,10 @@ export function buildAppMock() {
     transactions: s.transactions,
     tags: s.tags,
     loading: s.loading,
+    loadError: s.loadError,
     categoriesById: s.categoriesById,
     refresh: s.refresh,
+    retryInitialLoad: s.retryInitialLoad,
     refreshAccounts: s.refreshAccounts,
     refreshCategories: s.refreshCategories,
     refreshTags: s.refreshTags,
@@ -170,6 +178,7 @@ export function setAppState(data: Partial<{
   selectedDate: Date;
   customDate: { start: Date; end: Date };
   loading: boolean;
+  loadError: boolean;
 }>): void {
   const stub = currentStub();
   Object.assign(stub, data);

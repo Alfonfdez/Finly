@@ -202,6 +202,8 @@ export const de: Language = {
   error_boundary_title: 'Etwas ist schiefgelaufen',
   error_boundary_message: 'Ein unerwarteter Fehler ist aufgetreten.',
   error_boundary_retry: 'Erneut versuchen',
+  web_tab_blocked_title: 'Finly ist bereits geöffnet',
+  web_tab_blocked_message: 'Finly kann jeweils nur in einem Tab speichern. Schließen Sie den anderen Tab und versuchen Sie es erneut.',
 
   // Add category
   add_cat_title: 'Kategorie hinzufügen',

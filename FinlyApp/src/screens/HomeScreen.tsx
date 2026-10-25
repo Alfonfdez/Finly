@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
-import { View, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import { useConfig } from '../context/ConfigContext';
 import { useBalanceVisibility } from '../hooks/useBalanceVisibility';
+import { useFontSize } from '../hooks/useFontSize';
 import { usePeriodNavigation } from '../hooks/usePeriodNavigation';
 import { formatDateForDB, resolvePeriodRange } from '../utils/formatters';
 import { type NavigationProp, TRANSACTION_TYPES, CHART_TYPES } from '../constants/types';
@@ -29,9 +30,10 @@ export default function HomeScreen() {
   const {
     activeAccount, activeType, activePeriod, selectedDate, customDate, accountsWithBalance, activeCategories,
     totalIncome, totalExpenses, totalIncomeAll, totalExpensesAll, selectAccount, changeType,
-    setSelectedDate, loading, tags, activeTagIds, toggleTagId, clearTagFilter,
+    setSelectedDate, loading, loadError, retryInitialLoad, tags, activeTagIds, toggleTagId, clearTagFilter,
   } = useApp();
   const { config, activeColors: c, updateConfig } = useConfig();
+  const fs = useFontSize();
   const labels = t();
   const chartType = config.homeChartType;
 
@@ -129,6 +131,25 @@ export default function HomeScreen() {
     setModalVisible(false);
   }, [selectAccount, accountsWithBalance]);
 
+  if (loadError) {
+    return (
+      <ScreenShell>
+        <View style={[styles.errorContainer, { backgroundColor: c.background }]}>
+          <Text style={[styles.errorTitle, { color: c.text, fontSize: fs(18) }]}>{labels.error_title}</Text>
+          <Text style={[styles.errorMessage, { color: c.textSecondary, fontSize: fs(14) }]}>{labels.error_generic}</Text>
+          <TouchableOpacity
+            style={[styles.retryButton, { backgroundColor: c.primary }]}
+            onPress={retryInitialLoad}
+            accessibilityRole="button"
+            accessibilityLabel={labels.error_boundary_retry}
+          >
+            <Text style={[styles.retryText, { color: c.background, fontSize: fs(15) }]}>{labels.error_boundary_retry}</Text>
+          </TouchableOpacity>
+        </View>
+      </ScreenShell>
+    );
+  }
+
   if (loading || !activeAccount) {
     return (
       <ScreenShell>
@@ -218,5 +239,10 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24, gap: 10 },
+  errorTitle: { fontWeight: '700', textAlign: 'center' },
+  errorMessage: { textAlign: 'center' },
+  retryButton: { marginTop: 8, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10 },
+  retryText: { fontWeight: '600' },
   chartContainer: { alignItems: 'center', marginVertical: 8 },
 });

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import type { CalendarBaseProps } from './types';
 import { useConfig } from '../../context/ConfigContext';
@@ -15,6 +15,10 @@ export default function YearGrid({ date, onSelect }: CalendarBaseProps) {
   const fs = useFontSize();
   const labels = t();
   const years = useMemo(() => Array.from({ length: YEARS_PER_PAGE }, (_, i) => startYear + i), [startYear]);
+
+  useEffect(() => {
+    setStartYear(date.getFullYear() - Math.floor((YEARS_PER_PAGE - 1) / 2));
+  }, [date]);
 
   return (
     <View style={calendarStyles.container}>

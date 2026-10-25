@@ -12,6 +12,7 @@ import { t } from '../i18n';
 import { RECURRENCE_SCOPES, RULE_ACTIVE, USER_ID, type RecurrenceScope, type NavigationProp, type RootStackParamList } from '../constants/types';
 import { buildRecurrenceSchedule, fromDateOnly, isLastDayAnchor, planEdit, ruleEditCursor, todayDateOnly, type SkipWindow } from '../utils/recurrence';
 import { datePart, formatDateLong } from '../utils/formatters';
+import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import { recurringRepository } from '../database';
 import { saveRecurringRuleEdit } from '../database/recurringService';
 import type { TransactionDraft, RecurrenceDraft } from '../hooks/useTransactionForm';
@@ -29,6 +30,8 @@ export default function ModifyRecurringScreen() {
 
   const [scope, setScope] = useState<RecurrenceScope>(RECURRENCE_SCOPES.future);
   const [deleteVisible, setDeleteVisible] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const deletingRef = useRef(false);
   const [pastAffected, setPastAffected] = useState(false);
   const [skipWarning, setSkipWarning] = useState<SkipWindow | null>(null);
   const skipResolveRef = useRef<((proceed: boolean) => void) | null>(null);
@@ -105,10 +108,21 @@ export default function ModifyRecurringScreen() {
   }, []);
 
   const handleDelete = useCallback(async () => {
-    await recurringRepository.remove(ruleId);
-    setDeleteVisible(false);
-    navigation.goBack();
-  }, [ruleId, navigation]);
+    if (deletingRef.current) return;
+    deletingRef.current = true;
+    setDeleting(true);
+    const ok = await runWithErrorAlert(async () => {
+      await recurringRepository.remove(ruleId);
+      return true;
+    }, ERROR_PREFIXES.recurringDelete, labels);
+    if (ok) {
+      setDeleteVisible(false);
+      navigation.goBack();
+      return;
+    }
+    deletingRef.current = false;
+    setDeleting(false);
+  }, [ruleId, navigation, labels]);
 
   if (loading && !rule) {
     return (
@@ -199,6 +213,7 @@ export default function ModifyRecurringScreen() {
         cancelLabel={labels.cancel}
         onConfirm={handleDelete}
         onCancel={() => setDeleteVisible(false)}
+        busy={deleting}
       />
 
       <ConfirmationModal

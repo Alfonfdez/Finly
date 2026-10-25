@@ -25,8 +25,7 @@ platform fork of the repository layer.
   user can export a backup instead of silently losing the session).
 - **Fail closed:** an IndexedDB open/read error aborts startup (the app shows the DB
   error) instead of booting an empty database that would overwrite the unreadable data.
-- **Single tab:** each tab holds the full snapshot and last writer wins; do not use two
-  tabs against the same origin at the same time.
+- **Single tab:** each tab holds the full snapshot and last writer wins. The app now holds a Web Locks `finly-db` lock for its lifetime; a second tab is blocked with a Try again action until the first closes. Older browsers without Web Locks keep the previous single-tab behaviour.
 - **Impact**: photos are viable on web (feature 024). Picked images are stored as base64
   data URIs in the `transactions.photo` column, which the engine persists to IndexedDB —
   no separate blob store needed at the app's scale (max 3 photos, `quality: 0.7`).

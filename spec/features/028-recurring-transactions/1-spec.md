@@ -150,7 +150,7 @@ The recurring UI and code follow this lexicon — **dates are *occurrences*, rec
 
 ### 9. Deleting a rule
 
-- Deleting a rule (confirmation modal) removes the rule + its tag links but **keeps every transaction it generated** (the FK is `ON DELETE SET NULL`, so they remain as normal history). Batch/past edits are no longer possible after deletion.
+- Deleting a rule (confirmation modal) removes the rule + its tag links but **keeps every transaction it generated** (the FK is `ON DELETE SET NULL`, so they remain as normal history). Batch/past edits are no longer possible after deletion. The delete action is wrapped in the shared error alert, shows a busy state while running and ignores a second confirm; on failure the modal stays open.
 - **Deleting a category** deletes its rules too (`ON DELETE CASCADE`). The category delete confirmation says so explicitly, and its **"move" option moves the rules along with the transactions** to the target category (a rule is the template for that category's future transactions, so preserving the data preserves it). The last category of a type cannot be deleted at all. The same rules apply to the bulk category delete.
 - **Deleting an account** deletes its transactions and its rules (`ON DELETE CASCADE`); the account delete confirmation states both.
 

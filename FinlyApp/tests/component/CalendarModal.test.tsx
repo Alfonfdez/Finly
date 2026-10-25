@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { resetStub, setConfig } from './helpers/configStub';
 import CalendarModal from '../../src/components/CalendarModal';
 import { PERIODS } from '../../src/constants/types';
@@ -138,6 +138,39 @@ describe('CalendarModal', () => {
     await fireEvent.press(view.getByText(labels.cal_ok));
 
     expect(onSelectRange).toHaveBeenCalledWith(rangeStart, rangeEnd);
+  });
+
+  it('syncs the Month grid when the date changes while closed', async () => {
+    const onSelectDate = vi.fn();
+    const props = { period: PERIODS.month, onSelectDate, onClose: vi.fn() };
+    const view = await render(<CalendarModal {...props} date={new Date(2026, 0, 15)} visible={false} />);
+
+    await view.rerender(<CalendarModal {...props} date={new Date(2025, 11, 15)} visible={false} />);
+    await view.rerender(<CalendarModal {...props} date={new Date(2025, 11, 15)} visible />);
+
+    await waitFor(() => expect(view.getByText('December 2025')).toBeTruthy());
+  });
+
+  it('syncs the Week grid when the date changes while closed', async () => {
+    const onSelectDate = vi.fn();
+    const props = { period: PERIODS.week, onSelectDate, onClose: vi.fn() };
+    const view = await render(<CalendarModal {...props} date={new Date(2026, 0, 5)} visible={false} />);
+
+    await view.rerender(<CalendarModal {...props} date={new Date(2025, 11, 29)} visible={false} />);
+    await view.rerender(<CalendarModal {...props} date={new Date(2025, 11, 29)} visible />);
+
+    await waitFor(() => expect(view.getByText('December 2025')).toBeTruthy());
+  });
+
+  it('syncs the Year page when the date changes while closed', async () => {
+    const onSelectDate = vi.fn();
+    const props = { period: PERIODS.year, onSelectDate, onClose: vi.fn() };
+    const view = await render(<CalendarModal {...props} date={new Date(2026, 5, 15)} visible={false} />);
+
+    await view.rerender(<CalendarModal {...props} date={new Date(2020, 5, 15)} visible={false} />);
+    await view.rerender(<CalendarModal {...props} date={new Date(2020, 5, 15)} visible />);
+
+    await waitFor(() => expect(view.getByText('2015 - 2026')).toBeTruthy());
   });
 
   it('resets a pending change when it is reopened', async () => {

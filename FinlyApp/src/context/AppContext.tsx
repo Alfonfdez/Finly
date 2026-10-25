@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useMemo, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { AppState as RNAppState } from 'react-native';
 import type { Account, Category, Transaction, Tag } from '../database/types';
-import { TRANSACTION_TYPES, type FirstDay, type Period, type TransactionType, type CategoryWithTotal, DATE_MIN, DATE_MAX, USER_ID } from '../constants/types';
+import { TRANSACTION_TYPES, UNTAGGED_ID, type FirstDay, type Period, type TransactionType, type CategoryWithTotal, DATE_MIN, DATE_MAX, USER_ID } from '../constants/types';
 import { accountRepository as accountRepo, categoryRepository as categoryRepo, transactionRepository as transactionRepo, tagRepository as tagRepo } from '../database';
 import { materializeDueRecurring } from '../database/recurringService';
 import { isTotalAccount } from '../database/helpers';
@@ -22,6 +22,7 @@ interface AppState {
   transactions: Transaction[];
   tags: Tag[];
   loading: boolean;
+  loadError: boolean;
   categoriesById: Map<number, Category>;
 }
 
@@ -39,6 +40,7 @@ interface AppContextType extends AppState {
   totalIncomeAll: number;
   totalExpensesAll: number;
   refresh: () => void;
+  retryInitialLoad: () => Promise<void>;
   refreshAccounts: () => Promise<void>;
   refreshCategories: () => Promise<void>;
   refreshTags: () => Promise<void>;
@@ -99,6 +101,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [activeTagIds, setActiveTagIds] = useState<number[]>([]);
   const [tagsByTransaction, setTagsByTransaction] = useState<Map<number, number[]>>(new Map());
   const [transactionsVersion, setTransactionsVersion] = useState(0);
@@ -119,6 +122,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     period: appConfig.homeDefaultPeriod,
   });
   const bootstrapDone = useRef(false);
+  const loadRequestId = useRef(0);
 
   const applyHomeDefaults = useCallback((
     accountsData: Account[],
@@ -136,41 +140,44 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // One startup pass: materialize recurring rules and load the reference data.
   // Home-default changes must not repeat this work (and must not re-materialize).
+  const loadInitialData = useCallback(async () => {
+    const requestId = ++loadRequestId.current;
+    setLoading(true);
+    setLoadError(false);
+    try {
+      try {
+        await materializeDueRecurring();
+      } catch (error) {
+        logError(ERROR_PREFIXES.recurringMaterialize, error);
+      }
+      const [accountsData, categoriesData, tagsData] = await Promise.all([
+        accountRepo.list(USER_ID),
+        categoryRepo.list(USER_ID),
+        tagRepo.list(USER_ID),
+      ]);
+      if (requestId !== loadRequestId.current) return;
+      const cfg = configRef.current;
+      setAccounts(accountsData);
+      setCategories(categoriesData);
+      setTags(tagsData);
+      applyHomeDefaults(accountsData, cfg);
+      defaultsRef.current = { id: cfg.homeDefaultAccountId, period: cfg.homeDefaultPeriod };
+      bootstrapDone.current = true;
+    } catch (error) {
+      if (requestId !== loadRequestId.current) return;
+      logError(ERROR_PREFIXES.initialDataLoad, error);
+      setLoadError(true);
+      showErrorAlert();
+    } finally {
+      if (requestId === loadRequestId.current) setLoading(false);
+    }
+  }, [applyHomeDefaults]);
+
   useEffect(() => {
     if (configLoading) return;
-    let active = true;
-
-    async function loadData() {
-      try {
-        try {
-          await materializeDueRecurring();
-        } catch (error) {
-          logError(ERROR_PREFIXES.recurringMaterialize, error);
-        }
-        const [accountsData, categoriesData, tagsData] = await Promise.all([
-          accountRepo.list(USER_ID),
-          categoryRepo.list(USER_ID),
-          tagRepo.list(USER_ID),
-        ]);
-        if (!active) return;
-        const cfg = configRef.current;
-        setAccounts(accountsData);
-        setCategories(categoriesData);
-        setTags(tagsData);
-        applyHomeDefaults(accountsData, cfg);
-        defaultsRef.current = { id: cfg.homeDefaultAccountId, period: cfg.homeDefaultPeriod };
-        bootstrapDone.current = true;
-      } catch (error) {
-        logError(ERROR_PREFIXES.initialDataLoad, error);
-        showErrorAlert();
-      } finally {
-        if (active) setLoading(false);
-      }
-    }
-
-    loadData();
-    return () => { active = false; };
-  }, [configLoading, applyHomeDefaults]);
+    loadInitialData();
+    return () => { loadRequestId.current += 1; };
+  }, [configLoading, loadInitialData]);
 
   // Apply a later Home-default change without reloading reference data.
   useEffect(() => {
@@ -333,7 +340,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const accountsData = await accountRepo.list(USER_ID);
       setAccounts(accountsData);
       setActiveAccount(prev => {
-        if (prev && accountsData.some(a => a.id === prev.id)) return prev;
+        if (prev) {
+          const fresh = accountsData.find(a => a.id === prev.id);
+          if (fresh) return fresh;
+        }
         if (accountsData.length === 0) return null;
         if (appConfig.homeDefaultAccountId !== null) {
           const found = accountsData.find(a => a.id === appConfig.homeDefaultAccountId);
@@ -352,6 +362,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const tagsData = await tagRepo.list(USER_ID);
       setTags(tagsData);
+      setActiveTagIds(prev => {
+        const next = prev.filter(id => id === UNTAGGED_ID || tagsData.some(tag => tag.id === id));
+        return next.length === prev.length ? prev : next;
+      });
     } catch (error) {
       logError(ERROR_PREFIXES.tagsRefresh, error);
       showErrorAlert();
@@ -399,6 +413,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     transactions,
     tags,
     loading,
+    loadError,
     selectAccount: setActiveAccount,
     changeType: setActiveType,
     changePeriod: setActivePeriod,
@@ -412,6 +427,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     totalIncomeAll,
     totalExpensesAll,
     refresh,
+    retryInitialLoad: loadInitialData,
     refreshAccounts,
     refreshCategories,
     refreshTags,
@@ -424,9 +440,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }), [
     activeAccount, activeType, activePeriod, selectedDate, customDate,
     accounts, categories, transactions, tags, loading, categoriesById,
+    loadError,
     filteredTransactions, activeCategories, accountsWithBalance,
     totalIncome, totalExpenses, totalIncomeAll, totalExpensesAll,
-    refresh, refreshAccounts, refreshCategories, refreshTags, resetAll,
+    refresh, loadInitialData, refreshAccounts, refreshCategories, refreshTags, resetAll,
     activeTagIds, toggleTagId, clearTagFilter, tagsByTransaction,
   ]);
 

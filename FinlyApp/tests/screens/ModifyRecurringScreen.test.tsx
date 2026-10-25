@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import ModifyRecurringScreen from '../../src/screens/ModifyRecurringScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
 import { setConfig, resetStub } from '../component/helpers/configStub';
+import { TEST_IDS } from '../../src/constants/testIds';
 import type { Account, Category, RecurringRule, Tag } from '../../src/database/types';
 import type { TransactionType } from '../../src/constants/types';
 
@@ -334,6 +335,39 @@ describe('ModifyRecurringScreen', () => {
     await waitFor(() => expect(view.getByText('Save')).toBeEnabled());
     await fireEvent.press(view.getByRole('button', { name: 'Decrease' }));
     await waitFor(() => expect(view.getByText('Save')).toBeDisabled());
+  });
+
+  it('keeps the delete modal open when removing the rule fails', async () => {
+    mockRemove.mockRejectedValueOnce(new Error('delete failed'));
+    const view = await render(<ModifyRecurringScreen />);
+    await waitFor(() => expect(view.getByText('Save')).toBeTruthy());
+
+    await fireEvent.press(view.getByTestId(TEST_IDS.formDelete));
+    const confirm = await view.findByRole('button', { name: 'Delete' });
+    await fireEvent.press(confirm);
+
+    await waitFor(() => expect(mockRemove).toHaveBeenCalledTimes(1));
+    expect(nav.goBack).not.toHaveBeenCalled();
+    expect(view.getByRole('button', { name: 'Delete' })).toBeTruthy();
+  });
+
+  it('ignores a second delete confirmation while the first is running', async () => {
+    let finishRemove: (() => void) | undefined;
+    mockRemove.mockImplementationOnce(() => new Promise<void>((resolve) => {
+      finishRemove = resolve;
+    }));
+    const view = await render(<ModifyRecurringScreen />);
+    await waitFor(() => expect(view.getByText('Save')).toBeTruthy());
+
+    await fireEvent.press(view.getByTestId(TEST_IDS.formDelete));
+    const confirm = await view.findByRole('button', { name: 'Delete' });
+    fireEvent.press(confirm);
+    await waitFor(() => expect(finishRemove).toBeDefined());
+    fireEvent.press(confirm);
+
+    expect(mockRemove).toHaveBeenCalledTimes(1);
+    await act(async () => { finishRemove?.(); });
+    await waitFor(() => expect(nav.goBack).toHaveBeenCalledTimes(1));
   });
 
   it('enables Save when the last-day checkbox changes on a month-end start', async () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react-native';
 import { useTransactionFilters } from '../../src/hooks/useTransactionFilters';
-import type { Transaction, Account, Category } from '../../src/database/types';
+import type { Transaction, Account, Category, Tag } from '../../src/database/types';
 import { TYPE_FILTERS, SORT_BY, SORT_DIRECTIONS, RECURRING_VIEWS, TRANSACTION_SORT_SCOPES } from '../../src/constants/types';
 import { UNTAGGED_ID } from '../../src/database/helpers';
 import { getConfigStub, resetStub, setConfig } from '../component/helpers/configStub';
@@ -313,6 +313,42 @@ describe('useTransactionFilters', () => {
     expect(result.current.localTagIds).toEqual([20]);
 
     await act(async () => { rerender({ initialTagIds: [] }); });
+    expect(result.current.localTagIds).toEqual([]);
+  });
+
+  it('prunes a local tag filter when the tag disappears', async () => {
+    const tagA = { id: 10, user_id: 1, name: 'Work' } as Tag;
+    const transactions = [tx(1, {})];
+    const { result, rerender } = await renderHook(
+      (props: { tags: Tag[] }) => useTransactionFilters({
+        ...baseOptions(transactions),
+        initialTagIds: [10],
+        tags: props.tags,
+      }),
+      { initialProps: { tags: [tagA] } },
+    );
+    await act(async () => {});
+    expect(result.current.localTagIds).toEqual([10]);
+
+    await act(async () => { rerender({ tags: [] }); });
+    expect(result.current.localTagIds).toEqual([]);
+  });
+
+  it('does not prune route tags while the tag list is still loading', async () => {
+    const transactions = [tx(1, {})];
+    const { result, rerender } = await renderHook(
+      (props: { tagsLoaded: boolean }) => useTransactionFilters({
+        ...baseOptions(transactions),
+        initialTagIds: [10],
+        tags: [],
+        tagsLoaded: props.tagsLoaded,
+      }),
+      { initialProps: { tagsLoaded: false } },
+    );
+    await act(async () => {});
+    expect(result.current.localTagIds).toEqual([10]);
+
+    await act(async () => { rerender({ tagsLoaded: true }); });
     expect(result.current.localTagIds).toEqual([]);
   });
 

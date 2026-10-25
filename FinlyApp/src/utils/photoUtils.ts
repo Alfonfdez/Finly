@@ -1,15 +1,7 @@
 import { File } from 'expo-file-system';
 import { isWeb } from './platform';
 
-export function parsePhotos(photoField: string | null | undefined): string[] {
-  if (!photoField) return [];
-  try {
-    const parsed = JSON.parse(photoField);
-    return Array.isArray(parsed) ? parsed : [photoField];
-  } catch {
-    return [photoField];
-  }
-}
+export { parsePhotos } from './photoData';
 
 export async function deletePhotoFile(uri: string): Promise<void> {
   // Photo files are a native-only concern: web photos are data URIs in the DB row, and

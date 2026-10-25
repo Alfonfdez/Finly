@@ -39,7 +39,7 @@ import TransactionListBody from '../components/TransactionListBody';
 
 export default function AllTransactionsScreen() {
   const navigation = useNavigation<NavigationProp<'AllTransactions'>>();
-  const { categories, categoriesById, accounts, activeAccount, accountsWithBalance, tags, activePeriod, selectedDate, customDate, setSelectedDate, refresh, selectAccount } = useApp();
+  const { categories, categoriesById, accounts, activeAccount, accountsWithBalance, tags, loading: appLoading, activePeriod, selectedDate, customDate, setSelectedDate, refresh, selectAccount } = useApp();
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -90,6 +90,8 @@ export default function AllTransactionsScreen() {
       activeAccount,
       categoriesById,
       recurringNames,
+      tags,
+      tagsLoaded: !appLoading,
       typeTab,
       selectedCategoryIds,
       periodDates,
