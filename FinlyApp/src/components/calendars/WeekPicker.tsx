@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { weekStart, formatWeekRange } from '../../utils/formatters';
 import type { CalendarBaseProps } from './types';
@@ -26,6 +26,11 @@ export default function WeekPicker({ date, onSelect }: CalendarBaseProps) {
   const fs = useFontSize();
   const labels = t();
   const firstDay = config.firstDayOfWeek;
+
+  useEffect(() => {
+    setYear(date.getFullYear());
+    setActiveMonth(date.getMonth() + 1);
+  }, [date]);
 
   const weeks = useMemo(() => {
     const result: { start: Date; end: Date }[] = [];

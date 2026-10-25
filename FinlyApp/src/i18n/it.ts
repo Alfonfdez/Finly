@@ -202,6 +202,8 @@ export const it: Language = {
   error_boundary_title: 'Qualcosa è andato storto',
   error_boundary_message: 'Si è verificato un errore imprevisto.',
   error_boundary_retry: 'Riprova',
+  web_tab_blocked_title: 'Finly è già aperto',
+  web_tab_blocked_message: 'Finly può salvare i dati da una sola scheda alla volta. Chiudi l\'altra scheda e riprova.',
 
   // Add category
   add_cat_title: 'Aggiungi categoria',

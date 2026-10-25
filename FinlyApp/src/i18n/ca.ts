@@ -202,6 +202,8 @@ export const ca: Language = {
   error_boundary_title: 'Alguna cosa ha anat malament',
   error_boundary_message: 'S\'ha produït un error inesperat.',
   error_boundary_retry: 'Torna-ho a provar',
+  web_tab_blocked_title: 'Finly ja està obert',
+  web_tab_blocked_message: 'Finly només pot desar dades des d\'una pestanya alhora. Tanca l\'altra pestanya i torna-ho a provar.',
 
   // Add category
   add_cat_title: 'Afegir categoria',

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import HomeScreen from '../../src/screens/HomeScreen';
-import { buildAppMock, setAppData, setAppState, resetAppStub } from '../component/helpers/appStub';
+import { buildAppMock, setAppData, setAppState, resetAppStub, getAppStub } from '../component/helpers/appStub';
 import { resetStub, setConfig, getConfigStub } from '../component/helpers/configStub';
 import { CHART_TYPES } from '../../src/constants/types';
 import { HIDDEN_BALANCE } from '../../src/utils/formatters';
@@ -79,6 +79,15 @@ describe('HomeScreen', () => {
     fireEvent.press(view.getByLabelText('Switch chart'));
 
     expect(getConfigStub().config.homeChartType).toBe(CHART_TYPES.bar);
+  });
+
+  it('shows a retry action when the initial load failed', async () => {
+    setAppState({ activeAccount: null, loading: false, loadError: true });
+    const view = await render(<HomeScreen />);
+
+    expect(view.getByText('Error')).toBeTruthy();
+    await fireEvent.press(view.getByRole('button', { name: 'Try again' }));
+    expect(getAppStub().retryInitialLoad).toHaveBeenCalledTimes(1);
   });
 
   it('shows a loading state while no account is active', async () => {

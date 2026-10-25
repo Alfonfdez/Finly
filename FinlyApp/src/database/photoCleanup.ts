@@ -1,7 +1,7 @@
 import { sql, type Column } from 'drizzle-orm';
 import { getDrizzle } from './drizzle/engine';
 import { transactions } from './drizzle/schema';
-import { parsePhotos, deletePhotoFile } from '../utils/photoUtils';
+import { parsePhotos } from '../utils/photoData';
 import { ERROR_PREFIXES, logError } from '../utils/errors';
 
 const COLUMN_MAP: Record<string, Column> = {
@@ -58,7 +58,12 @@ export async function collectAllTransactionPhotos(): Promise<string[]> {
 }
 
 export async function deletePhotoUris(uris: string[]): Promise<void> {
-  for (const uri of uris) {
+  const fileUris = uris.filter(uri => !uri.startsWith('data:'));
+  if (fileUris.length === 0) return;
+  // Keep expo-file-system out of modules that only parse/collect photos (e.g. tests
+  // and the web bundle) until there is an actual native file to delete.
+  const { deletePhotoFile } = await import('../utils/photoUtils');
+  for (const uri of fileUris) {
     try {
       await deletePhotoFile(uri);
     } catch (error) {

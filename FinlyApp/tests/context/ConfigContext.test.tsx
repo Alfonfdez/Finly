@@ -98,6 +98,27 @@ describe('ConfigProvider', () => {
     expect(captured!.config.homeDefaultPeriod).toBe('week');
   });
 
+  it('recovers the persisted config when an older save fails behind a newer update', async () => {
+    mockConfigGet
+      .mockResolvedValueOnce(DEFAULT_CONFIG)
+      .mockResolvedValueOnce({ ...DEFAULT_CONFIG, homeDefaultPeriod: 'week' });
+    mockConfigSave
+      .mockRejectedValueOnce(new Error('first save failed'))
+      .mockResolvedValueOnce(undefined);
+    await renderProvider();
+    await waitFor(() => expect(captured?.loading).toBe(false));
+
+    await act(async () => {
+      const first = captured!.updateConfig({ firstDayOfWeek: 0 });
+      const second = captured!.updateConfig({ homeDefaultPeriod: 'week' });
+      await Promise.all([first, second]);
+    });
+
+    expect(captured!.config.firstDayOfWeek).toBe(DEFAULT_CONFIG.firstDayOfWeek);
+    expect(captured!.config.homeDefaultPeriod).toBe('week');
+    expect(mockConfigGet).toHaveBeenCalledTimes(2);
+  });
+
   it('updateConfig changes colors immediately when the theme changes', async () => {
     mockConfigGet.mockResolvedValue(DEFAULT_CONFIG);
     await renderProvider();

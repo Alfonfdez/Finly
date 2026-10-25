@@ -10,6 +10,8 @@ A main screen in the app that displays the current Account, the Total (income/ex
    c) "Settings": light/dark mode, customization (first day of week, decimal separator, currency, language).
 
 2. In the center of the header, a clickable "Total" text that opens a modal to select an account. Below the Total, a summary of Income and Expenses is displayed.
+   - Editing the active account's name/icon/color refreshes the header immediately after the accounts reload; a restart is not required.
+   - Deleting a tag selected in the Home tag filter prunes that id from the filter (the untagged pseudo-filter is preserved), so Home never stays invisibly empty.
 
 3. On the right side of the header, a button that navigates to the "Transactions" screen (transaction list filterable by type and period).
 

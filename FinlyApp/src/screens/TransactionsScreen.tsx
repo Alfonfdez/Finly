@@ -36,7 +36,7 @@ type TransactionsRouteProp = RouteProp<RootStackParamList, 'Transactions'>;
 export default function TransactionsScreen() {
   const navigation = useNavigation<NavigationProp<'Transactions'>>();
   const route = useRoute<TransactionsRouteProp>();
-  const { categories, categoriesById, accounts, activeAccount, accountsWithBalance, tags, refresh } = useApp();
+  const { categories, categoriesById, accounts, activeAccount, accountsWithBalance, tags, loading: appLoading, refresh } = useApp();
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const { isBalanceHidden, toggleReveal } = useBalanceVisibility(config.hideBalances);
@@ -82,6 +82,8 @@ export default function TransactionsScreen() {
       activeAccount,
       categoriesById,
       recurringNames,
+      tags,
+      tagsLoaded: !appLoading,
       initialTagIds: tagIds ?? [],
       onError: () => showErrorAlert(),
       sortScope: TRANSACTION_SORT_SCOPES.transactions,

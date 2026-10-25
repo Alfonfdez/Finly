@@ -202,6 +202,8 @@ export const eu: Language = {
   error_boundary_title: 'Zerbait gaizki atera da',
   error_boundary_message: 'Ustegabeko errorea gertatu da.',
   error_boundary_retry: 'Saiatu berriro',
+  web_tab_blocked_title: 'Finly jadanik irekita dago',
+  web_tab_blocked_message: 'Finlyk fitxa batetik soilik gorde ditzake datuak. Itxi beste fitxa eta saiatu berriro.',
 
   // Add category
   add_cat_title: 'Kategoria gehitu',

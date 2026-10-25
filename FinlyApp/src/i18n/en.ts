@@ -200,6 +200,8 @@ export const en = {
   error_boundary_title: 'Something went wrong',
   error_boundary_message: 'An unexpected error occurred.',
   error_boundary_retry: 'Try again',
+  web_tab_blocked_title: 'Finly is already open',
+  web_tab_blocked_message: 'Finly can only write from one tab at a time. Close the other tab and try again.',
 
   // Add category
   add_cat_title: 'Add category',

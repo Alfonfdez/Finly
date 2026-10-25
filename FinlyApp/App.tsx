@@ -8,6 +8,8 @@ import { AppProvider } from './src/context/AppContext';
 import { ConfigProvider , useConfig } from './src/context/ConfigContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import ErrorBoundary from './src/components/ErrorBoundary';
+import WebTabBlocked from './src/components/WebTabBlocked';
+import { TAB_LOCK_STATUS, useWebTabLock } from './src/hooks/useWebTabLock';
 import { initDatabase } from './src/database/database';
 import { ERROR_PREFIXES, logError } from './src/utils/errors';
 import { t } from './src/i18n';
@@ -67,8 +69,10 @@ export default function App() {
   const [exiting, setExiting] = useState(false);
   const [showApp, setShowApp] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
+  const { status: tabLockStatus, retry: retryTabLock } = useWebTabLock();
 
   useEffect(() => {
+    if (tabLockStatus !== TAB_LOCK_STATUS.acquired) return;
     async function setup() {
       try {
         await initDatabase();
@@ -79,7 +83,7 @@ export default function App() {
       }
     }
     setup();
-  }, []);
+  }, [tabLockStatus]);
 
   useEffect(() => {
     if (dbReady && !exiting && !showApp) {
@@ -87,6 +91,10 @@ export default function App() {
       setTimeout(() => setShowApp(true), EXIT_DURATION);
     }
   }, [dbReady, exiting, showApp]);
+
+  if (tabLockStatus === TAB_LOCK_STATUS.blocked) {
+    return <WebTabBlocked onRetry={retryTabLock} />;
+  }
 
   if (dbError) {
     const labels = t();

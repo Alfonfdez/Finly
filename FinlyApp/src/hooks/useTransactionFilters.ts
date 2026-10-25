@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import type { Transaction, Account, Category } from '../database/types';
-import { SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, RECURRING_VIEWS, TRANSACTION_SORT_SCOPES, type SortBy, type SortDirection, type TransactionTypeFilter, type RecurringView, type TransactionSortScope } from '../constants/types';
+import type { Transaction, Account, Category, Tag } from '../database/types';
+import { SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, RECURRING_VIEWS, TRANSACTION_SORT_SCOPES, UNTAGGED_ID, type SortBy, type SortDirection, type TransactionTypeFilter, type RecurringView, type TransactionSortScope } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
 import { nextSortPreference, toggleSortDirection } from '../utils/sortPreference';
 import { transactionRepository } from '../database';
@@ -16,6 +16,8 @@ export interface UseTransactionFiltersOptions {
   activeAccount: Account | null;
   categoriesById?: Map<number, Category>;
   recurringNames?: Map<number, string>;
+  tags?: Tag[];
+  tagsLoaded?: boolean;
   searchTerm?: string;
   initialTagIds?: number[];
   typeTab?: TransactionTypeFilter;
@@ -32,6 +34,8 @@ export function useTransactionFilters({
   activeAccount,
   categoriesById = new Map(),
   recurringNames = new Map(),
+  tags,
+  tagsLoaded = true,
   searchTerm = '',
   initialTagIds = [],
   typeTab,
@@ -65,6 +69,16 @@ export function useTransactionFilters({
   useEffect(() => {
     setLocalTagIds(initialTagKey === '' ? [] : initialTagKey.split(',').map(Number));
   }, [initialTagKey]);
+
+  // A deleted tag must not leave an invisible filter behind.
+  useEffect(() => {
+    if (!tags || !tagsLoaded) return;
+    const validIds = new Set(tags.map(tag => tag.id));
+    setLocalTagIds(prev => {
+      const next = prev.filter(id => id === UNTAGGED_ID || validIds.has(id));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [tags, tagsLoaded]);
 
   const isTotal = useMemo(
     () => {

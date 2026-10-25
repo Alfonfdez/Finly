@@ -202,6 +202,8 @@ export const gl: Language = {
   error_boundary_title: 'Algo foi mal',
   error_boundary_message: 'Produciuse un erro inesperado.',
   error_boundary_retry: 'Téntao de novo',
+  web_tab_blocked_title: 'Finly xa está aberto',
+  web_tab_blocked_message: 'Finly só pode gardar datos desde unha pestana á vez. Pecha a outra pestana e téntao de novo.',
 
   // Add category
   add_cat_title: 'Engadir categoría',
