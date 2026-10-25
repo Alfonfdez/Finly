@@ -1315,3 +1315,12 @@ Applied 2026-10-25:
 - Startup reference-data failure shows a retry screen instead of an infinite Home spinner.
 - WeekPicker, MonthGrid and YearGrid follow the date prop so reopening after a fast-arrow date change shows the correct page.
 - Updated specs, platform notes, harness baseline and changelog; browser-verified the two-tab guard at 375px; `npm run test:all` green (168 files / 1410 tests).
+
+## 2.2.0 calendar edge cases
+Status: completed.
+
+Applied 2026-10-25:
+- Custom-range OK is disabled while the picker is waiting for the end date; tapping the same day twice creates a one-day range.
+- Compact week labels add both years only when the week crosses a year boundary.
+- Added shared `useToday` hook: refreshes at midnight and when the app/tab becomes active, used by the calendar pickers and DaySelector.
+- Added 90-day/12-month preset, minDate forwarding and cross-year week tests; browser-verified the custom-range OK state at 375px; `npm run test:all` green (169 files / 1415 tests).

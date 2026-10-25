@@ -6,6 +6,7 @@ import MonthNav from './MonthNav';
 import YearNav from './YearNav';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
+import { useToday } from '../../hooks/useToday';
 import { t } from '../../i18n';
 import { calendarStyles, DISABLED_OPACITY } from './calendarStyles';
 import { type FirstDay } from '../../constants/types';
@@ -19,7 +20,7 @@ function sameWeek(a: Date, b: Date, firstDay: FirstDay): boolean {
 }
 
 export default function WeekPicker({ date, onSelect }: CalendarBaseProps) {
-  const today = useMemo(() => new Date(), []);
+  const today = useToday();
   const [year, setYear] = useState(date.getFullYear());
   const [activeMonth, setActiveMonth] = useState(date.getMonth() + 1);
   const { activeColors: c, config } = useConfig();

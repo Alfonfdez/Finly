@@ -8,6 +8,7 @@ import type { Period } from './calendars/types';
 import { PERIODS } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useToday } from '../hooks/useToday';
 import { t } from '../i18n';
 import DateIcon from './DateIcon';
 import { BUTTON_BORDER_RADIUS } from './componentStyles';
@@ -38,7 +39,7 @@ export default function CalendarPicker({
   const months = labels.months;
   const shortMonths = labels.months_short;
   // Read fresh on every render so "the current period" flips correctly after midnight.
-  const today = new Date();
+  const today = useToday();
   const showNavigation = period !== PERIODS.custom;
 
   const rangeLines = period === PERIODS.custom

@@ -140,6 +140,55 @@ describe('CalendarModal', () => {
     expect(onSelectRange).toHaveBeenCalledWith(rangeStart, rangeEnd);
   });
 
+  it('forwards minDate to the day grid', async () => {
+    const onSelectDate = vi.fn();
+    const minDate = new Date(base.getFullYear(), base.getMonth(), 10);
+    const view = await render(
+      <CalendarModal
+        visible
+        period={PERIODS.day}
+        date={base}
+        minDate={minDate}
+        onSelectDate={onSelectDate}
+        onClose={vi.fn()}
+      />,
+    );
+
+    await fireEvent.press(view.getByLabelText(`5 ${labels.months[base.getMonth()]}`));
+    expect(onSelectDate).not.toHaveBeenCalled();
+    await fireEvent.press(view.getByLabelText(`12 ${labels.months[base.getMonth()]}`));
+    await fireEvent.press(view.getByText(labels.cal_ok));
+    expect(onSelectDate).toHaveBeenCalledTimes(1);
+  });
+
+  it('disables OK while the custom range is waiting for its end date', async () => {
+    const onSelectRange = vi.fn();
+    const customDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const customDayLabel = `${customDay.getDate()} ${labels.months[customDay.getMonth()]}`;
+    const view = await render(
+      <CalendarModal
+        visible
+        period={PERIODS.custom}
+        date={base}
+        rangeStart={base}
+        rangeEnd={base}
+        onSelectDate={vi.fn()}
+        onSelectRange={onSelectRange}
+        onClose={vi.fn()}
+      />,
+    );
+
+    const ok = view.getByRole('button', { name: labels.cal_ok });
+    expect(ok).toBeEnabled();
+    await fireEvent.press(view.getByLabelText(customDayLabel));
+    expect(ok).toBeDisabled();
+
+    await fireEvent.press(view.getByLabelText(`${customDayLabel}, selected`));
+    expect(ok).toBeEnabled();
+    await fireEvent.press(ok);
+    expect(onSelectRange).toHaveBeenCalledTimes(1);
+  });
+
   it('syncs the Month grid when the date changes while closed', async () => {
     const onSelectDate = vi.fn();
     const props = { period: PERIODS.month, onSelectDate, onClose: vi.fn() };

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { getDaysInMonth, isSameDay, isDateWithinBounds, dayOffset } from '../../utils/formatters';
 import { resolveDateBounds } from '../../utils/calendarBounds';
@@ -9,6 +9,7 @@ import YearNav from './YearNav';
 import { useConfig } from '../../context/ConfigContext';
 import { t } from '../../i18n';
 import { useFontSize } from '../../hooks/useFontSize';
+import { useToday } from '../../hooks/useToday';
 import { calendarStyles, DISABLED_OPACITY } from './calendarStyles';
 import { FIRST_DAYS } from '../../constants/types';
 import { CALENDAR_GRID_CELLS, DAY_WIDTH_PERCENT } from '../../constants/calendar';
@@ -22,7 +23,7 @@ interface Props extends CalendarBaseProps {
 }
 
 export default function DayPicker({ date, onSelect, rangeStart, rangeEnd, initialView, minDate, maxDate }: Props) {
-  const today = useMemo(() => new Date(), []);
+  const today = useToday();
   const [year, setYear] = useState((initialView ?? date).getFullYear());
   const [month, setMonth] = useState((initialView ?? date).getMonth() + 1);
   const { activeColors: c, config } = useConfig();

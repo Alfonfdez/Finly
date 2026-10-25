@@ -49,6 +49,11 @@ describe('CalendarPicker fast arrows', () => {
     expect(view.getByText('22 Oct 2026')).toBeTruthy();
   });
 
+  it('shows both years for a cross-year week', async () => {
+    const { view } = await renderPicker(PERIODS.week, new Date(2025, 11, 29));
+    expect(view.getByText('29 Dec 2025 – 4 Jan 2026')).toBeTruthy();
+  });
+
   it('shows only the previous arrow on the current day', async () => {
     const { view } = await renderPicker(PERIODS.day, dayOffset(0));
 

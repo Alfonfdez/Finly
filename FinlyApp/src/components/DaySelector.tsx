@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useToday } from '../hooks/useToday';
 import { t } from '../i18n';
 import { isSameDay } from '../utils/formatters';
 import { withAlpha } from '../utils/color';
@@ -21,14 +22,14 @@ export default function DaySelector({ selectedDate, onSelect, onOpenCalendar, ti
   const fs = useFontSize();
   const labels = t();
 
-  const { today, yesterday, dayBeforeYesterday } = useMemo(() => {
-    const now = new Date();
-    const y = new Date(now);
-    y.setDate(now.getDate() - 1);
-    const d = new Date(now);
-    d.setDate(now.getDate() - 2);
-    return { today: now, yesterday: y, dayBeforeYesterday: d };
-  }, []);
+  const today = useToday();
+  const { yesterday, dayBeforeYesterday } = useMemo(() => {
+    const y = new Date(today);
+    y.setDate(today.getDate() - 1);
+    const d = new Date(today);
+    d.setDate(today.getDate() - 2);
+    return { yesterday: y, dayBeforeYesterday: d };
+  }, [today]);
 
   const isToday = isSameDay(selectedDate, today);
   const isYesterday = isSameDay(selectedDate, yesterday);

@@ -174,7 +174,7 @@ describe('date helpers', () => {
   it('shows both years when a week crosses a year boundary', () => {
     const week = new Date(2025, 11, 29);
     expect(formatWeekRange(week, months, FIRST_DAYS.monday))
-      .toBe('29 December – 4 January');
+      .toBe('29 December 2025 – 4 January 2026');
     expect(formatPeriodText(PERIODS.week, week, months, FIRST_DAYS.monday))
       .toBe('29 December 2025 – 4 January 2026');
     expect(formatPeriodText(PERIODS.week, new Date(2026, 0, 1), months, FIRST_DAYS.monday))

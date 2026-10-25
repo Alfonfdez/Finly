@@ -108,6 +108,21 @@ describe('PeriodPicker presets', () => {
     expect(lastEnd).toEqual(new Date(2026, 9, 20));
   });
 
+  it('selects the 90-day and 12-month presets from today', async () => {
+    const onChange = vi.fn();
+    const view = await renderPicker(undefined, undefined, onChange);
+
+    await fireEvent.press(view.getByText('90 days'));
+    let [start, end] = onChange.mock.calls[0];
+    expect(start).toEqual(new Date(2026, 6, 26));
+    expect(end).toEqual(TODAY);
+
+    await fireEvent.press(view.getByText('12 months'));
+    [start, end] = onChange.mock.calls[1];
+    expect(start).toEqual(new Date(2025, 9, 23));
+    expect(end).toEqual(TODAY);
+  });
+
   it('keeps an active preset checked when pressed again', async () => {
     const view = await renderPicker();
 

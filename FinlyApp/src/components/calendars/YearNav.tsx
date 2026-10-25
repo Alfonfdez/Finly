@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
+import { useToday } from '../../hooks/useToday';
 import { t } from '../../i18n';
 import { resolveDateBounds } from '../../utils/calendarBounds';
 import NavArrows from './NavArrows';
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export default function YearNav({ year, onChange, minDate, maxDate }: Props) {
-  const today = useMemo(() => new Date(), []);
+  const today = useToday();
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
