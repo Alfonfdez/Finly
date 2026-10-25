@@ -29,6 +29,7 @@ import PrimaryButton from '../components/form/PrimaryButton';
 import FormActions from '../components/form/FormActions';
 import CharCounter from '../components/form/CharCounter';
 import FormScrollView from '../components/form/FormScrollView';
+import { formStyles } from '../components/form/formStyles';
 
 type ModifyCategoryRouteProp = RouteProp<RootStackParamList, 'ModifyCategory'>;
 
@@ -226,7 +227,7 @@ export default function ModifyCategoryScreen() {
                 autoCapitalize="words"
                 autoCorrect={false}
               />
-              <CharCounter value={name.length} maxLength={MAX_CATEGORY_NAME_LENGTH} style={styles.counter} />
+              <CharCounter value={name.length} maxLength={MAX_CATEGORY_NAME_LENGTH} style={formStyles.counter} />
             </View>
           </View>
 
@@ -314,11 +315,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: BUTTON_BORDER_RADIUS,
     padding: 12,
-  },
-  counter: {
-    textAlign: 'right',
-    marginTop: 4,
-    marginBottom: 2,
   },
   typeText: {
     marginLeft: 4,

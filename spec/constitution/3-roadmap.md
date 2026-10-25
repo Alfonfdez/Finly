@@ -1293,3 +1293,12 @@ Applied 2026-10-23:
 - Added year-page and week-row accessibility labels, consolidated week formatting around the shared week-lines helper, mapped the preset checkboxes and named the Month-row spacer.
 - The Period header hides the end line while choosing an end date, avoiding a duplicate date; removed the unused DateTimePicker dependency and config plugin.
 - The 94% cap keeps the Period hint visible on short screens; added preset, cross-year/week-line and modal header tests; browser-verified all pickers at 320/375px; `npm run test:all` green (165 files / 1386 tests).
+
+## 2.2.0 multiline inline counters
+Status: completed.
+
+Applied 2026-10-25:
+- Multiline fields now place the counter inside the input at the bottom-right: transaction Comment, Modify comment and Account note.
+- Single-line name fields keep the counter below the input; their five spacing variants were normalized to the shared `formStyles.counter`.
+- Added a reusable `LabeledTextField` `inlineCounter` variant and shared inline tokens in `formStyles`; CommentInput uses the same tokens.
+- Updated the account/comment specs, `6-screens.md`, harness baseline and tests; browser-verified the account note and Modify comment at 375px; `npm run test:all` green (165 files / 1389 tests).

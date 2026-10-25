@@ -135,6 +135,7 @@ export default function AccountForm({
         textAlignVertical="top"
         maxLength={MAX_NOTE_LENGTH}
         showCounter
+        inlineCounter
         onFocus={onBottomFieldFocus}
         onBlur={onBottomFieldBlur}
       />

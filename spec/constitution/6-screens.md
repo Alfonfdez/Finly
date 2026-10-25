@@ -450,9 +450,8 @@ Every limited input (and the list headers that show a limit) renders `components
 - **One look**: `COUNTER_FONT_SIZE` (12, scaled by the text-size setting), `c.textSecondary`, `fontWeight: '500'`, right-aligned — centered for the list headers via `COUNTER_STYLE`.
 - **At the limit (`value >= maxLength`) the whole counter turns red and bold**: that is the only moment the field stops accepting input, so it reads as "you can't type more" rather than "this is invalid". The same rule flags the list headers (`100 of 100 tags`, `30 of 30 categories`).
 - `style` is for layout only (alignment, margins, padding); colour, weight and size always stay the component's, so a caller can never override the at-limit state.
-- **Comment exception:** the Comment counter sits inside the multiline input at the bottom-right, with reserved bottom padding. It stays below the text but does not add a separate line before the Photos section; other field counters remain below their inputs.
-
-**Counter style:** `{ textAlign: 'right', marginTop: 4, marginBottom: 4 }` for inputs; `{ textAlign: 'center', paddingTop: 12 }` (`COUNTER_STYLE`) for the list headers.
+- **Placement:** multiline fields (transaction Comment, Modify Comment, Account Note) place the counter inside the input at the bottom-right, reserving bottom padding. Single-line name fields keep the counter below the input. `LabeledTextField` exposes `inlineCounter` for the multiline variant; it is ignored for single-line fields.
+- **Counter style:** below-input counters use `{ textAlign: 'right', marginTop: 4, marginBottom: 4 }`; inline counters use `{ position: 'absolute', right: 8, bottom: 6, textAlign: 'right' }`; list headers use `{ textAlign: 'center', paddingTop: 12 }` (`COUNTER_STYLE`).
 
 ### Debounce Validation
 

@@ -25,7 +25,7 @@
 ### 2. Modify comment screen
 
 - `ModifyCommentScreen` receives `{ comment: string }` (already a trimmed, distinct value).
-- Multiline input preloaded with the comment, `0/4096` counter (`MAX_COMMENT_LENGTH`), auto-focus, aligned to the top like every other multiline field.
+- Multiline input preloaded with the comment, `0/4096` counter (`MAX_COMMENT_LENGTH`) inside the input at the bottom-right, auto-focus, aligned to the top like every other multiline field.
 - "Save" (`comments_save`) is disabled when the field is empty or unchanged; the "Comment cannot be empty" message (`comments_error_empty`) then appears in the bottom hint — a red line in a fixed-height slot **between Delete and Save** — and the field reddens only once it has been changed or blurred.
 - On save: `transactionRepository.updateComment(old, trimmed)` renames the comment on **all** matching transactions (matched by `TRIM(description)`), then `navigation.goBack()`.
 - The Delete button uses the generic `delete` label and opens a confirmation modal: "Delete this comment?" + "This will remove the comment from N transactions. This cannot be undone." (`comments_delete_confirm_title`, `comments_delete_confirm_message(n)`).

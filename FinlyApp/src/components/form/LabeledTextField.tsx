@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { TextInput } from 'react-native';
+import { TextInput, View } from 'react-native';
 import type { TextInputProps, StyleProp, TextStyle } from 'react-native';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
@@ -11,9 +11,10 @@ interface Props extends TextInputProps {
   label?: string;
   error?: string | boolean | null;
   showCounter?: boolean;
+  /** Multiline fields can place the counter inside the input (bottom-right). */
+  inlineCounter?: boolean;
   multiline?: boolean;
   inputStyle?: StyleProp<TextStyle>;
-  counterStyle?: StyleProp<TextStyle>;
 }
 
 /**
@@ -27,9 +28,9 @@ export default function LabeledTextField({
   label,
   error,
   showCounter = false,
+  inlineCounter = false,
   multiline = false,
   inputStyle,
-  counterStyle,
   value,
   maxLength,
   onChangeText,
@@ -40,42 +41,59 @@ export default function LabeledTextField({
   const fs = useFontSize();
   const [touched, setTouched] = useState(false);
   const markTouched = useCallback(() => setTouched(true), []);
+  const useInlineCounter = inlineCounter && multiline;
+
+  const input = (
+    <TextInput
+      style={[
+        formStyles.input,
+        {
+          backgroundColor: c.surface,
+          color: c.text,
+          borderColor: error && touched ? c.red : c.border,
+          fontSize: fs(14),
+        },
+        multiline && formStyles.textArea,
+        inputStyle,
+        useInlineCounter && formStyles.inlineInput,
+      ]}
+      value={value}
+      maxLength={maxLength}
+      multiline={multiline}
+      placeholderTextColor={c.textSecondary}
+      onChangeText={(text) => {
+        markTouched();
+        onChangeText?.(text);
+      }}
+      onBlur={(event) => {
+        markTouched();
+        onBlur?.(event);
+      }}
+      {...inputProps}
+    />
+  );
+
+  const counter = showCounter && maxLength != null ? (
+    <CharCounter
+      value={String(value ?? '').length}
+      maxLength={maxLength}
+      style={useInlineCounter ? formStyles.inlineCounter : formStyles.counter}
+    />
+  ) : null;
 
   return (
     <>
       {label != null && <SectionTitle text={label} />}
-      <TextInput
-        style={[
-          formStyles.input,
-          {
-            backgroundColor: c.surface,
-            color: c.text,
-            borderColor: error && touched ? c.red : c.border,
-            fontSize: fs(14),
-          },
-          multiline && formStyles.textArea,
-          inputStyle,
-        ]}
-        value={value}
-        maxLength={maxLength}
-        multiline={multiline}
-        placeholderTextColor={c.textSecondary}
-        onChangeText={(text) => {
-          markTouched();
-          onChangeText?.(text);
-        }}
-        onBlur={(event) => {
-          markTouched();
-          onBlur?.(event);
-        }}
-        {...inputProps}
-      />
-      {showCounter && maxLength != null && (
-        <CharCounter
-          value={String(value ?? '').length}
-          maxLength={maxLength}
-          style={[formStyles.counter, counterStyle]}
-        />
+      {useInlineCounter ? (
+        <View style={formStyles.inlineInputWrap}>
+          {input}
+          {counter}
+        </View>
+      ) : (
+        <>
+          {input}
+          {counter}
+        </>
       )}
     </>
   );

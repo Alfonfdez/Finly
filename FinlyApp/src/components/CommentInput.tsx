@@ -8,6 +8,7 @@ import { transactionRepository } from '../database';
 import { DEBOUNCE_MS, MAX_COMMENT_LENGTH, MIN_COMMENT_SUGGESTION_LENGTH } from '../constants/types';
 import CharCounter from './form/CharCounter';
 import FormSectionHeader from './form/FormSectionHeader';
+import { formStyles } from './form/formStyles';
 import { CONTROL_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
@@ -99,10 +100,10 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
       )}
       <View style={styles.container}>
         <FormSectionHeader title={labels.add_comment} icon="chatbubble-ellipses-outline" />
-        <View style={styles.inputWrap}>
+        <View style={formStyles.inlineInputWrap}>
           <TextInput
             ref={ref}
-            style={[styles.input, { backgroundColor: c.surface, color: c.text, fontSize: fs(14) }]}
+            style={[styles.input, formStyles.inlineInput, { backgroundColor: c.surface, color: c.text, fontSize: fs(14) }]}
             placeholder={labels.add_comment}
             placeholderTextColor={c.textSecondary}
             value={comment}
@@ -126,7 +127,7 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
             textAlignVertical="top"
             accessibilityLabel={labels.a11y_comment}
           />
-          <CharCounter value={comment.length} maxLength={MAX_COMMENT_LENGTH} style={styles.counter} />
+          <CharCounter value={comment.length} maxLength={MAX_COMMENT_LENGTH} style={formStyles.inlineCounter} />
         </View>
       </View>
     </>
@@ -138,21 +139,11 @@ export default CommentInput;
 CommentInput.displayName = 'CommentInput';
 const styles = StyleSheet.create({
   container: {},
-  inputWrap: {
-    position: 'relative',
-  },
   input: {
     paddingHorizontal: 12,
     paddingTop: 10,
-    paddingBottom: 26,
     borderRadius: CONTROL_BORDER_RADIUS,
     minHeight: 80,
-  },
-  counter: {
-    position: 'absolute',
-    right: 8,
-    bottom: 6,
-    textAlign: 'right',
   },
   suggestionsPanel: {
     borderWidth: 1,

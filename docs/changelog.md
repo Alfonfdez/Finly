@@ -4349,3 +4349,9 @@
 - Aligned the recurring Name focus scroll with the Recurring header top, removing the strip of the previous Day section above it.
 - Updated the recurring and keyboard-handling specs to document the header-aligned reveal.
 - Verified on the finly_test Android emulator; test:all green (165 files / 1387 tests).
+
+[2026-10-25] refactor | FinlyApp/src/components/form/formStyles.ts, FinlyApp/src/components/form/LabeledTextField.tsx, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/components/AccountForm.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx, FinlyApp/src/screens/CreateTagScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/tests/component/LabeledTextField.test.tsx, spec/features/012-modify-delete-account-screen/1-spec.md, spec/features/013-create-account-screen/1-spec.md, spec/features/027-comments-management/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Added a shared multiline inline counter placement; transaction Comment, Modify comment and Account note now render it inside the input at the bottom-right.
+- Kept single-line name counters below their inputs and normalized the five spacing variants to the shared formStyles.counter.
+- Reused the inline tokens in CommentInput and added LabeledTextField coverage for both placements.
+- Updated account/comment specs, design docs, roadmap and harness baseline; browser-verified at 375px; test:all green (165 files / 1389 tests).
