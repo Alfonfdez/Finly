@@ -21,7 +21,16 @@ export default function DataRow({
   const content = (
     <>
       <View style={styles.labelWrap}>
-        {icon && <Ionicons name={icon} size={15} color={c.primary} />}
+        {icon && (
+          <Ionicons
+            name={icon}
+            size={15}
+            color={c.primary}
+            accessible={false}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          />
+        )}
         <Text style={[styles.dataLabel, { color: c.textSecondary, fontSize: fs(13) }]}>{label}</Text>
       </View>
       {children}

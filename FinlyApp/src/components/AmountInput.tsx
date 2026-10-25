@@ -65,7 +65,7 @@ export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label,
           keyboardType="decimal-pad"
           accessibilityLabel={accessibilityLabel ?? labels.a11y_amount}
         />
-        <Text style={[styles.currencySymbol, { color: c.textSecondary, fontSize: fs(18) }]}>
+        <Text accessible={false} style={[styles.currencySymbol, { color: c.textSecondary, fontSize: fs(18) }]}>
           {getCurrencySymbol(config.currency)}
         </Text>
         {onOpenCalculator && (
@@ -75,7 +75,7 @@ export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label,
             accessibilityRole="button"
             accessibilityLabel={labels.a11y_calculator}
           >
-            <Ionicons name="calculator-outline" size={24} color={c.primary} />
+            <Ionicons name="calculator-outline" size={24} color={c.primary} accessible={false} />
           </TouchableOpacity>
         )}
       </View>

@@ -26,7 +26,7 @@ async function renderSection() {
 
 async function openSourceModal() {
   const view = await renderSection();
-  await fireEvent.press(view.getByLabelText('Photo'));
+  await fireEvent.press(view.getByRole('button', { name: 'Add photo' }));
   return view;
 }
 
@@ -78,7 +78,7 @@ describe('PhotoSection', () => {
       />,
     );
 
-    await fireEvent.press(view.getByLabelText('Remove photo'));
+    await fireEvent.press(view.getByRole('button', { name: 'Remove photo' }));
     expect(view.getByText('Delete photo')).toBeTruthy();
     expect(view.getByText('Are you sure you want to delete this photo?')).toBeTruthy();
 

@@ -1324,3 +1324,15 @@ Applied 2026-10-25:
 - Compact week labels add both years only when the week crosses a year boundary.
 - Added shared `useToday` hook: refreshes at midnight and when the app/tab becomes active, used by the calendar pickers and DaySelector.
 - Added 90-day/12-month preset, minDate forwarding and cross-year week tests; browser-verified the custom-range OK state at 375px; `npm run test:all` green (169 files / 1415 tests).
+
+## 2.2.0 form accessibility
+Status: completed.
+
+Applied 2026-10-25:
+- Account picker now exposes a button role and `Account: <name>` label; its chevron is decorative.
+- `LabeledTextField` uses the visible label as the accessible name, covering the Account Note field.
+- Photo add/remove and source options have button roles; the add tile is labelled "Add photo".
+- Comment suggestions are real pressable/focusable buttons, preserving the blur guard.
+- Section titles expose a heading role; decorative icons and the amount currency symbol are hidden.
+- Added selected/disabled states, disabled-stepper opacity and larger hit areas for small icon actions.
+- Updated form accessibility docs and tests; browser-verified the account/photo/heading labels at 375px; `npm run test:all` green (170 files / 1418 tests).

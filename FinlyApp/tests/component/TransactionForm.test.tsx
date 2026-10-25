@@ -202,6 +202,11 @@ describe('TransactionForm', () => {
     expect(view.getByText('Account')).toBeTruthy();
   });
 
+  it('labels the account picker with the selected account', async () => {
+    const view = await renderForm();
+    expect(view.getByRole('button', { name: 'Account: Wallet' })).toBeTruthy();
+  });
+
   it('keeps the submit button disabled until the form can submit', async () => {
     const view = await renderForm();
     expect(view.getByText('Save')).toBeDisabled();
@@ -369,7 +374,7 @@ describe('TransactionForm', () => {
   it('hides the photo section when addShowPhoto is off', async () => {
     mockFormState.config = { ...DEFAULT_CONFIG, addShowPhoto: false };
     const view = await renderForm();
-    expect(view.queryByText('Photo')).toBeNull();
+    expect(view.queryByText('Photos')).toBeNull();
     expect(view.getByText('Comment')).toBeTruthy();
   });
 
@@ -383,7 +388,7 @@ describe('TransactionForm', () => {
     const view = await renderForm({ ruleMode: true });
     expect(view.getByText('Start date')).toBeTruthy();
     expect(view.queryByText('Day')).toBeNull();
-    expect(view.queryByText('Photo')).toBeNull();
+    expect(view.queryByText('Photos')).toBeNull();
   });
 
   it('honours the create-rule flags when creating a rule', async () => {
@@ -412,7 +417,7 @@ describe('TransactionForm', () => {
     const view = await renderForm({ transactionId: 5 });
     expect(view.queryByText('Comment')).toBeNull();
     expect(view.queryByText('Tags')).toBeNull();
-    expect(view.queryByText('Photo')).toBeNull();
+    expect(view.queryByText('Photos')).toBeNull();
   });
 
   it('ignores the add-transaction flags when editing a transaction', async () => {

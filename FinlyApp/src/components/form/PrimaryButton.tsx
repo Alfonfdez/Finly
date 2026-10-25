@@ -37,6 +37,9 @@ export default function PrimaryButton({
       style={[formStyles.button, { backgroundColor }, style]}
       onPress={onPress}
       disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled }}
     >
       <Text style={[formStyles.buttonText, { color: textColor, fontSize: fs(textSize) }]}>
         {label}

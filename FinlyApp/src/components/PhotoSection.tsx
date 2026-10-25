@@ -65,9 +65,11 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
             <TouchableOpacity
               style={[styles.removeButton, { backgroundColor: c.red }]}
               onPress={() => handlePressDelete(uri)}
+              accessibilityRole="button"
               accessibilityLabel={labels.photo_remove}
+              hitSlop={12}
             >
-              <Ionicons name="close" size={14} color={WHITE} />
+              <Ionicons name="close" size={14} color={WHITE} accessible={false} />
             </TouchableOpacity>
           </View>
         ))}
@@ -75,9 +77,10 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
           <TouchableOpacity
             style={[styles.photoButton, styles.addButton, { backgroundColor: c.surface, borderColor: c.border }]}
             onPress={() => setSourceModalVisible(true)}
-            accessibilityLabel={labels.add_photo}
+            accessibilityRole="button"
+            accessibilityLabel={labels.add_photo_title}
           >
-            <Ionicons name="add" size={28} color={c.textSecondary} />
+            <Ionicons name="add" size={28} color={c.textSecondary} accessible={false} />
           </TouchableOpacity>
         )}
       </View>
@@ -92,8 +95,9 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
           <TouchableOpacity
             style={[styles.modalOption, { backgroundColor: c.surface }]}
             onPress={() => handleSourceOption(onTakePhoto)}
+            accessibilityRole="button"
           >
-            <Ionicons name="camera-outline" size={24} color={c.primary} />
+            <Ionicons name="camera-outline" size={24} color={c.primary} accessible={false} />
             <Text style={[styles.modalOptionText, { color: c.text, fontSize: fs(15) }]}>
               {labels.add_photo_camera}
             </Text>
@@ -102,8 +106,9 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
         <TouchableOpacity
           style={[styles.modalOption, { backgroundColor: c.surface }]}
           onPress={() => handleSourceOption(onPickFromGallery)}
+          accessibilityRole="button"
         >
-          <Ionicons name="images-outline" size={24} color={c.primary} />
+          <Ionicons name="images-outline" size={24} color={c.primary} accessible={false} />
           <Text style={[styles.modalOptionText, { color: c.text, fontSize: fs(15) }]}>
             {labels.add_photo_gallery}
           </Text>

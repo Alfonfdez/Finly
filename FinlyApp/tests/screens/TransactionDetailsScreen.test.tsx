@@ -182,7 +182,7 @@ describe('TransactionDetailsScreen', () => {
       'cash-outline', 'wallet-outline', 'grid-outline', 'calendar-outline',
       'chatbubble-ellipses-outline', 'pricetag-outline', 'repeat-outline', 'image-outline',
     ]) {
-      expect(view.getByText(name)).toBeTruthy();
+      expect(view.getByText(name, { includeHiddenElements: true })).toBeTruthy();
     }
     const cash = view.root!.queryAll((i) => i.type === 'RCTText' && i.children[0] === 'cash-outline')[0];
     expect(cash.props.color).toBe('#22D3EE');

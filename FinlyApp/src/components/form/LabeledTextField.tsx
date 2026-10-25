@@ -70,6 +70,7 @@ export default function LabeledTextField({
         onBlur?.(event);
       }}
       {...inputProps}
+      accessibilityLabel={inputProps.accessibilityLabel ?? label}
     />
   );
 

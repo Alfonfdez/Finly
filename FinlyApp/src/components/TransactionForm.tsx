@@ -289,12 +289,23 @@ export default function TransactionForm(props: TransactionFormProps) {
           <TouchableOpacity
             style={[styles.accountContainer, { backgroundColor: c.surface }]}
             onPress={() => setModalAccountVisible(true)}
+            accessibilityRole="button"
+            accessibilityLabel={selectedAccount
+              ? `${labels.add_account}: ${getDisplayAccountName(selectedAccount)}`
+              : labels.add_account}
           >
             <View style={styles.accountRow}>
               <Text style={[styles.accountName, { color: c.text, fontSize: fs(15) }]}>
                 {selectedAccount ? getDisplayAccountName(selectedAccount) : ''}
               </Text>
-              <Ionicons name="chevron-down" size={16} color={c.textSecondary} />
+              <Ionicons
+                name="chevron-down"
+                size={16}
+                color={c.textSecondary}
+                accessible={false}
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+              />
             </View>
           </TouchableOpacity>
 
@@ -394,6 +405,9 @@ export default function TransactionForm(props: TransactionFormProps) {
               ]}
               onPress={handleSubmit}
               disabled={saveDisabled}
+              accessibilityRole="button"
+              accessibilityLabel={props.submitLabel}
+              accessibilityState={{ disabled: saveDisabled, busy: submitting }}
             >
               <Text style={[styles.submitButtonText, { color: saveDisabled ? c.text : c.background, fontSize: fs(15) }]}>
                 {submitting ? '...' : props.submitLabel}

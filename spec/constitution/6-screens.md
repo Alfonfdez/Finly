@@ -408,6 +408,15 @@ fab: {
 - Optional right-side actions are passed separately and keep the primary color because they are tappable (Date calendar, Tag search).
 - The Account card shows only the account name plus a `chevron-down`; the section header carries the Account label.
 
+### Accessibility
+
+- `FormSectionHeader` exposes its title with `accessibilityRole="header"`; decorative icons are hidden from assistive technology.
+- `LabeledTextField` uses its visible `label` as the input's accessible name when the caller does not provide one.
+- The Account picker is a button labelled `Account: <name>`; its chevron is decorative.
+- The Photos add tile is labelled **Add photo** and exposes a button role; remove and source-modal options are buttons too.
+- Comment suggestions are real pressable/focusable buttons, not responder-only views.
+- Interactive chips/options expose selected state, disabled steppers expose disabled state and dim, and small icon actions keep a ~44px hit target via `hitSlop`.
+
 ### TextInput
 
 ```jsx

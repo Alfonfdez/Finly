@@ -69,7 +69,7 @@ const HeaderTitle = memo(function HeaderTitle({ icon, label, wide = false }: { i
   const { width } = useWindowDimensions();
   return (
     <View style={[styles.headerTitleRow, { maxWidth: Math.max(140, width - (wide ? 100 : 150)) }]}>
-      <Ionicons name={icon} size={20} color={c.text} />
+      <Ionicons name={icon} size={20} color={c.text} accessible={false} />
       <Text
         numberOfLines={2}
         ellipsizeMode="tail"
@@ -105,7 +105,7 @@ function DrawerNavItem({
         </Text>
       )}
       onPress={onPress}
-      icon={({ color, size }) => <Ionicons name={icon} size={size} color={color} />}
+      icon={({ color, size }) => <Ionicons name={icon} size={size} color={color} accessible={false} />}
       inactiveTintColor={c.textSecondary}
     />
   );
