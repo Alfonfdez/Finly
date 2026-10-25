@@ -125,6 +125,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - Title: "Comment" (multilingual).
 - Multiline text input with placeholder "Comment" (multilingual).
 - Below: dynamic counter "0/4096" that updates as you type (maximum 4096 characters).
+- Suggestions: while focused, matching previous comments appear inside the Comment section under a **Suggestions** header with a **Tap to reuse** hint; rows are 44px and fill the comment when pressed.
 
 ### 9. Photos
 

@@ -1,5 +1,6 @@
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
@@ -72,14 +73,25 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
   };
 
   return (
-    <>
+    <View style={styles.container}>
+      <FormSectionHeader title={labels.add_comment} icon="chatbubble-ellipses-outline" />
       {suggestions.length > 0 && (
         <View style={[styles.suggestionsPanel, { backgroundColor: c.surface, borderColor: c.border }]}>
+          <View style={[styles.suggestionsHeader, { borderBottomColor: c.border }]}>
+            <Ionicons name="bulb-outline" size={14} color={c.textSecondary} accessible={false} />
+            <Text accessibilityRole="header" style={[styles.suggestionsTitle, { color: c.textSecondary, fontSize: fs(12) }]}>
+              {labels.add_comment_suggestions}
+            </Text>
+            <Text style={[styles.suggestionsHint, { color: c.textSecondary, fontSize: fs(11) }]}>
+              {labels.add_comment_suggestions_hint}
+            </Text>
+          </View>
           {suggestions.map((item, i) => (
             <TouchableOpacity
               key={i}
               accessibilityRole="button"
               accessibilityLabel={item}
+              accessibilityHint={labels.add_comment_suggestions_hint}
               style={[
                 styles.suggestionItem,
                 { borderBottomColor: c.border },
@@ -96,39 +108,36 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
           ))}
         </View>
       )}
-      <View style={styles.container}>
-        <FormSectionHeader title={labels.add_comment} icon="chatbubble-ellipses-outline" />
-        <View style={formStyles.inlineInputWrap}>
-          <TextInput
-            ref={ref}
-            style={[styles.input, formStyles.inlineInput, { backgroundColor: c.surface, color: c.text, fontSize: fs(14) }]}
-            placeholder={labels.add_comment}
-            placeholderTextColor={c.textSecondary}
-            value={comment}
-            onChangeText={onChange}
-            onFocus={() => {
-              focusedRef.current = true;
-              setFocused(true);
-              onFocus?.();
-            }}
-            onBlur={() => {
-              if (isPressingSuggestion.current) return;
-              focusedRef.current = false;
-              debouncedSearch.cancel();
-              searchId.current += 1;
-              setSuggestions([]);
-              setFocused(false);
-              onBlur?.();
-            }}
-            multiline
-            maxLength={MAX_COMMENT_LENGTH}
-            textAlignVertical="top"
-            accessibilityLabel={labels.a11y_comment}
-          />
-          <CharCounter value={comment.length} maxLength={MAX_COMMENT_LENGTH} style={formStyles.inlineCounter} />
-        </View>
+      <View style={formStyles.inlineInputWrap}>
+        <TextInput
+          ref={ref}
+          style={[styles.input, formStyles.inlineInput, { backgroundColor: c.surface, color: c.text, fontSize: fs(14) }]}
+          placeholder={labels.add_comment}
+          placeholderTextColor={c.textSecondary}
+          value={comment}
+          onChangeText={onChange}
+          onFocus={() => {
+            focusedRef.current = true;
+            setFocused(true);
+            onFocus?.();
+          }}
+          onBlur={() => {
+            if (isPressingSuggestion.current) return;
+            focusedRef.current = false;
+            debouncedSearch.cancel();
+            searchId.current += 1;
+            setSuggestions([]);
+            setFocused(false);
+            onBlur?.();
+          }}
+          multiline
+          maxLength={MAX_COMMENT_LENGTH}
+          textAlignVertical="top"
+          accessibilityLabel={labels.a11y_comment}
+        />
+        <CharCounter value={comment.length} maxLength={MAX_COMMENT_LENGTH} style={formStyles.inlineCounter} />
       </View>
-    </>
+    </View>
   );
 });
 
@@ -146,9 +155,27 @@ const styles = StyleSheet.create({
   suggestionsPanel: {
     borderWidth: 1,
     borderRadius: CONTROL_BORDER_RADIUS,
-    marginBottom: 16,
+    marginBottom: 10,
+    overflow: 'hidden',
+  },
+  suggestionsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+  },
+  suggestionsTitle: {
+    fontWeight: '600',
+  },
+  suggestionsHint: {
+    marginLeft: 'auto',
+    fontWeight: '500',
   },
   suggestionItem: {
+    minHeight: 44,
+    justifyContent: 'center',
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,

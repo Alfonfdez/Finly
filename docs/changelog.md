@@ -4382,3 +4382,8 @@
 - Comment suggestions are pressable/focusable buttons while keeping the blur guard.
 - Section titles are headings; decorative icons/currency symbols are hidden; chips/options expose selected state and disabled steppers dim.
 - Added hit areas, tests and accessibility docs; browser-verified account/photo/heading labels at 375px; test:all green (170 files / 1418 tests).
+
+[2026-10-25] fix | FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/CommentInput.test.tsx, spec/features/004-add-transaction-screen/1-spec.md, spec/features/017-modify-transaction-screen/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Moved the comment suggestions panel inside the Comment section, below its header and above the input, so it no longer touches the Tags area.
+- Added a bulb icon, localized Suggestions heading and Tap to reuse hint; suggestion rows are 44px and expose an accessibility hint.
+- Updated tests and comment/accessibility specs; browser-verified the panel at 375px; test:all green (170 files / 1418 tests).

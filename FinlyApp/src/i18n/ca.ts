@@ -180,6 +180,8 @@ export const ca: Language = {
   add_tag_modal_title: 'Afegir etiqueta',
   add_tag_name_placeholder: 'Nom de l\'etiqueta',
   add_comment: 'Comentari',
+  add_comment_suggestions: 'Suggeriments',
+  add_comment_suggestions_hint: 'Toca per reutilitzar',
   add_photo: 'Foto',
   add_photos: 'Fotos',
   add_photo_title: 'Afegir foto',

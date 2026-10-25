@@ -1336,3 +1336,11 @@ Applied 2026-10-25:
 - Section titles expose a heading role; decorative icons and the amount currency symbol are hidden.
 - Added selected/disabled states, disabled-stepper opacity and larger hit areas for small icon actions.
 - Updated form accessibility docs and tests; browser-verified the account/photo/heading labels at 375px; `npm run test:all` green (170 files / 1418 tests).
+
+## 2.2.0 comment suggestions polish
+Status: completed.
+
+Applied 2026-10-25:
+- Moved the suggestions panel inside the Comment section, below its header and above the input, so it no longer touches the Tags area.
+- Added a bulb icon, localized **Suggestions** heading and **Tap to reuse** hint, plus 44px rows.
+- Updated Add/Modify comment specs and accessibility docs; browser-verified the panel at 375px; `npm run test:all` green (170 files / 1418 tests).

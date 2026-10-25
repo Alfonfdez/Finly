@@ -414,7 +414,7 @@ fab: {
 - `LabeledTextField` uses its visible `label` as the input's accessible name when the caller does not provide one.
 - The Account picker is a button labelled `Account: <name>`; its chevron is decorative.
 - The Photos add tile is labelled **Add photo** and exposes a button role; remove and source-modal options are buttons too.
-- Comment suggestions are real pressable/focusable buttons, not responder-only views.
+- Comment suggestions sit inside the Comment section, below its header and above the input. The panel has a bulb icon, a **Suggestions** heading, a muted **Tap to reuse** hint and 44px rows, so it is visually attached to the field and clearly actionable.
 - Interactive chips/options expose selected state, disabled steppers expose disabled state and dim, and small icon actions keep a ~44px hit target via `hitSlop`.
 
 ### TextInput

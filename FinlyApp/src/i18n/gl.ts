@@ -180,6 +180,8 @@ export const gl: Language = {
   add_tag_modal_title: 'Engadir etiqueta',
   add_tag_name_placeholder: 'Nome da etiqueta',
   add_comment: 'Comentario',
+  add_comment_suggestions: 'Suxestións',
+  add_comment_suggestions_hint: 'Toca para reutilizar',
   add_photo: 'Foto',
   add_photos: 'Fotos',
   add_photo_title: 'Engadir foto',

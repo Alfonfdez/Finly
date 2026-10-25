@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { StyleSheet } from 'react-native';
 import { render, fireEvent, act } from '@testing-library/react-native';
 import { resetStub } from './helpers/configStub';
 import { DEBOUNCE_MS } from '../../src/constants/types';
@@ -80,7 +81,11 @@ describe('CommentInput', () => {
     expect(view.queryByText('coffee')).toBeNull();
     await focusInput(view);
     await flushDebounce();
-    expect(view.getByRole('button', { name: 'coffee' })).toBeTruthy();
+    expect(view.getByText('Suggestions')).toBeTruthy();
+    expect(view.getByText('Tap to reuse')).toBeTruthy();
+    const suggestion = view.getByRole('button', { name: 'coffee' });
+    expect(suggestion.props.accessibilityHint).toBe('Tap to reuse');
+    expect(StyleSheet.flatten(suggestion.props.style).minHeight).toBe(44);
     expect(view.getByText('coffee shop')).toBeTruthy();
   });
 
