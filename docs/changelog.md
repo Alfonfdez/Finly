@@ -4387,3 +4387,8 @@
 - Moved the comment suggestions panel inside the Comment section, below its header and above the input, so it no longer touches the Tags area.
 - Added a bulb icon, localized Suggestions heading and Tap to reuse hint; suggestion rows are 44px and expose an accessibility hint.
 - Updated tests and comment/accessibility specs; browser-verified the panel at 375px; test:all green (170 files / 1418 tests).
+
+[2026-10-26] chore | FinlyApp/package.json, FinlyApp/package-lock.json
+- Bumped Expo to ~57.0.31 and expo-sharing to ~57.0.24.
+- expo install --check and expo-doctor (21/21) pass; test:all green (170 files / 1418 tests).
+- Prebuilt Android and rebuilt the release APK; browser smoke-tested Home and Add transaction.
