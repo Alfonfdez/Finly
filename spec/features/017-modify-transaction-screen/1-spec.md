@@ -87,7 +87,7 @@
 - Multiline text input that is **preloaded with the current comment** of the transaction (`transaction.description`).
 - Placeholder: "Comment" (multilingual).
 - Dynamic counter "0/4096" that updates as you type (max 4096 characters).
-- Autocomplete: debounced search of existing comments (same logic as `AddTransactionScreen`).
+- Autocomplete: debounced search of existing comments (same logic as `AddTransactionScreen`), shown inside the Comment section under a **Suggestions** header with a **Tap to reuse** hint.
 
 ### 9. Photos
 

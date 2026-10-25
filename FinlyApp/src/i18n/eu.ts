@@ -180,6 +180,8 @@ export const eu: Language = {
   add_tag_modal_title: 'Etiketa gehitu',
   add_tag_name_placeholder: 'Etiketa-izena',
   add_comment: 'Iruzkina',
+  add_comment_suggestions: 'Iradokizunak',
+  add_comment_suggestions_hint: 'Sakatu berrerabiltzeko',
   add_photo: 'Argazkia',
   add_photos: 'Argazkiak',
   add_photo_title: 'Argazkia gehitu',

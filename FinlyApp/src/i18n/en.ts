@@ -178,6 +178,8 @@ export const en = {
   add_tag_modal_title: 'Add tag',
   add_tag_name_placeholder: 'Tag name',
   add_comment: 'Comment',
+  add_comment_suggestions: 'Suggestions',
+  add_comment_suggestions_hint: 'Tap to reuse',
   add_photo: 'Photo',
   add_photos: 'Photos',
   add_photo_title: 'Add photo',

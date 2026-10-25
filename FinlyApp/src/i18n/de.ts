@@ -180,6 +180,8 @@ export const de: Language = {
   add_tag_modal_title: 'Tag hinzufügen',
   add_tag_name_placeholder: 'Tagname',
   add_comment: 'Kommentar',
+  add_comment_suggestions: 'Vorschläge',
+  add_comment_suggestions_hint: 'Zum Wiederverwenden tippen',
   add_photo: 'Foto',
   add_photos: 'Fotos',
   add_photo_title: 'Foto hinzufügen',
