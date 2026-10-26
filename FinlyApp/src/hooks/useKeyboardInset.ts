@@ -34,12 +34,12 @@ export function useKeyboardLift(visible: boolean): number {
   const [lift, setLift] = useState(0);
 
   useEffect(() => {
-    if (!visible) setLift(0);
-  }, [visible]);
-
-  useEffect(() => {
+    if (!visible) {
+      setLift(0);
+      return;
+    }
     if (keyboardInset > 0) setLift(prev => Math.max(prev, keyboardInset));
-  }, [keyboardInset]);
+  }, [visible, keyboardInset]);
 
   return lift;
 }

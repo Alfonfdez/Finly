@@ -47,6 +47,26 @@ describe('useKeyboardLift', () => {
     expect(result.current).toBe(0);
   });
 
+  it('ignores keyboard events while the modal is hidden', async () => {
+    let visible = false;
+    const { result, rerender } = await renderHook(() => useKeyboardLift(visible));
+
+    await emit('keyboardDidShow', { endCoordinates: { height: 300 } });
+    expect(result.current).toBe(0);
+    await emit('keyboardDidHide', {});
+
+    visible = true;
+    await act(async () => { rerender(undefined); });
+    expect(result.current).toBe(0);
+
+    await emit('keyboardDidShow', { endCoordinates: { height: 300 } });
+    expect(result.current).toBe(300);
+
+    visible = false;
+    await act(async () => { rerender(undefined); });
+    expect(result.current).toBe(0);
+  });
+
   it('keeps the tallest lift seen while open', async () => {
     const { result } = await renderHook(() => useKeyboardLift(true));
     await emit('keyboardDidShow', { endCoordinates: { height: 250 } });

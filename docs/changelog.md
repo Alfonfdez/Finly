@@ -4413,3 +4413,8 @@
 - Reproduced a direct write joining an open catch-up transaction and being rolled back with it.
 - Added runExclusiveWrite/serializeWrites and routed standalone account, category, tag, recurring and comment writes through the shared transaction queue.
 - Added a concurrency regression test; test:all green (170 files / 1428 tests).
+
+[2026-10-26] fix | FinlyApp/src/hooks/useKeyboardInset.ts, FinlyApp/tests/hooks/useKeyboardLift.test.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Hidden modals no longer accumulate keyboard height; useKeyboardLift only grows while visible and resets while hidden.
+- This fixes the Month/Week/Year picker opening clipped at the top after using a form keyboard.
+- Added a regression test and verified the Month modal centered on the Android release APK; test:all green (170 files / 1429 tests).
