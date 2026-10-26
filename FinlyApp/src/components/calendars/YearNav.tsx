@@ -1,10 +1,9 @@
-import { View, Text, StyleSheet } from 'react-native';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { useToday } from '../../hooks/useToday';
 import { t } from '../../i18n';
 import { resolveDateBounds } from '../../utils/calendarBounds';
-import NavArrows from './NavArrows';
+import CalendarNavRow from './CalendarNavRow';
 
 interface Props {
   year: number;
@@ -21,28 +20,22 @@ export default function YearNav({ year, onChange, minDate, maxDate }: Props) {
   const { min, max } = resolveDateBounds(minDate, maxDate, today);
   const nextDisabled = !!max && year >= max.getFullYear();
   const prevDisabled = !!min && year <= min.getFullYear();
+  const currentYear = Math.min(today.getFullYear(), max?.getFullYear() ?? today.getFullYear());
+  const showJump = year < currentYear - 1;
 
   return (
-    <View style={styles.container}>
-      <NavArrows
-        color={c.text}
-        onPrev={() => onChange(year - 1)}
-        onNext={() => onChange(year + 1)}
-        nextDisabled={nextDisabled}
-        prevDisabled={prevDisabled}
-        prevLabel={labels.a11y_previous_year}
-        nextLabel={labels.a11y_next_year}
-      />
-      <Text style={{ color: c.text, fontSize: fs(18), fontWeight: '700' }}>{year}</Text>
-    </View>
+    <CalendarNavRow
+      title={String(year)}
+      titleSize={fs(18)}
+      color={c.text}
+      onPrev={() => onChange(year - 1)}
+      onNext={() => onChange(year + 1)}
+      onJumpToCurrent={() => onChange(currentYear)}
+      showJump={showJump}
+      nextDisabled={nextDisabled}
+      prevDisabled={prevDisabled}
+      prevLabel={labels.a11y_previous_year}
+      nextLabel={labels.a11y_next_year}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-});

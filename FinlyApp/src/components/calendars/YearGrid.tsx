@@ -1,11 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import type { CalendarBaseProps } from './types';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { useToday } from '../../hooks/useToday';
 import { t } from '../../i18n';
-import NavArrows from './NavArrows';
+import CalendarNavRow from './CalendarNavRow';
 import { calendarStyles, DISABLED_OPACITY } from './calendarStyles';
 import { resolveDateBounds } from '../../utils/calendarBounds';
 import { CALENDAR_MIN_YEAR, YEARS_PER_PAGE } from '../../constants/calendar';
@@ -29,6 +29,8 @@ export default function YearGrid({ date, onSelect, minDate, maxDate }: Props) {
   const fs = useFontSize();
   const labels = t();
   const years = useMemo(() => Array.from({ length: YEARS_PER_PAGE }, (_, i) => startYear + i), [startYear]);
+  const currentPageStart = pageStartFor(today.getFullYear());
+  const showJump = startYear < currentPageStart - YEARS_PER_PAGE;
 
   // Follow the selected year, but snap to its fixed page: tapping a year on the
   // current page must not move the grid.
@@ -38,18 +40,19 @@ export default function YearGrid({ date, onSelect, minDate, maxDate }: Props) {
 
   return (
     <View style={calendarStyles.container}>
-      <View style={styles.header}>
-        <NavArrows
-          color={c.text}
-          onPrev={() => setStartYear(a => a - YEARS_PER_PAGE)}
-          onNext={() => setStartYear(a => a + YEARS_PER_PAGE)}
-          nextDisabled={maxYear != null && startYear + YEARS_PER_PAGE - 1 >= maxYear}
-          prevDisabled={startYear <= minYear}
-          prevLabel={labels.a11y_previous_years}
-          nextLabel={labels.a11y_next_years}
-        />
-        <Text style={{ color: c.text, fontSize: fs(18), fontWeight: '700' }}>{startYear} - {startYear + YEARS_PER_PAGE - 1}</Text>
-      </View>
+      <CalendarNavRow
+        title={`${startYear} - ${startYear + YEARS_PER_PAGE - 1}`}
+        titleSize={fs(18)}
+        color={c.text}
+        onPrev={() => setStartYear(a => a - YEARS_PER_PAGE)}
+        onNext={() => setStartYear(a => a + YEARS_PER_PAGE)}
+        onJumpToCurrent={() => setStartYear(currentPageStart)}
+        showJump={showJump}
+        nextDisabled={maxYear != null && startYear + YEARS_PER_PAGE - 1 >= maxYear}
+        prevDisabled={startYear <= minYear}
+        prevLabel={labels.a11y_previous_years}
+        nextLabel={labels.a11y_next_years}
+      />
       <View style={calendarStyles.monthRowSpacer} />
       <View style={calendarStyles.grid}>
         {years.map(y => {
@@ -76,7 +79,3 @@ export default function YearGrid({ date, onSelect, minDate, maxDate }: Props) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-});

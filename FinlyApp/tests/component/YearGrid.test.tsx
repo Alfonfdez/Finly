@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react-native';
 import YearGrid from '../../src/components/calendars/YearGrid';
 import { resetStub, setConfig } from './helpers/configStub';
+import { CALENDAR_MIN_YEAR, YEARS_PER_PAGE } from '../../src/constants/calendar';
 
 describe('YearGrid', () => {
   beforeEach(() => {
@@ -27,6 +28,22 @@ describe('YearGrid', () => {
 
     await view.rerender(<YearGrid date={new Date(2023, 5, 15)} onSelect={onSelect} />);
     expect(view.getByText('2020 - 2031')).toBeTruthy();
+  });
+
+  it('shows the current-page jump only before the penultimate page', async () => {
+    const currentPageStart = CALENDAR_MIN_YEAR
+      + Math.floor((new Date().getFullYear() - CALENDAR_MIN_YEAR) / YEARS_PER_PAGE) * YEARS_PER_PAGE;
+    const farStart = currentPageStart - YEARS_PER_PAGE * 2;
+    const view = await render(<YearGrid date={new Date(farStart, 0, 1)} onSelect={vi.fn()} />);
+
+    await fireEvent.press(view.getByLabelText('Go to the current period'));
+    expect(view.getByText(`${currentPageStart} - ${currentPageStart + YEARS_PER_PAGE - 1}`)).toBeTruthy();
+
+    const penultimate = await render(<YearGrid date={new Date(currentPageStart - YEARS_PER_PAGE, 0, 1)} onSelect={vi.fn()} />);
+    expect(penultimate.queryByLabelText('Go to the current period')).toBeNull();
+
+    const current = await render(<YearGrid date={new Date(currentPageStart, 0, 1)} onSelect={vi.fn()} />);
+    expect(current.queryByLabelText('Go to the current period')).toBeNull();
   });
 
   it('disables the previous page on 1900-1911', async () => {

@@ -1402,4 +1402,6 @@ Applied 2026-10-26:
 - `YearGrid` uses fixed 12-year pages anchored at 1900 (`1900–1911`, `1912–1923`, …); tapping a year no longer recenters the grid.
 - `WeekPicker` keeps six fixed row slots; weeks entirely outside the active month are blank, non-interactive placeholders that preserve height and spacing.
 - Tapping a shared week no longer jumps to the month where the week starts; reopening still opens the week's start month.
-- Added calendar bounds, MonthGrid, YearGrid and WeekPicker regression tests; test:all green (175 files / 1460 tests).
+- Added calendar bounds, MonthGrid, YearGrid and WeekPicker regression tests.
+- Improved modal nav rows: 22px icons, compact boxes with 44px+ effective tap targets, equal side slots for a perfectly centred title, separated double-arrow jump to the current year/month/page, and a 12px gap between year/month rows.
+- Added MonthNav/YearNav/YearGrid jump tests; test:all green (176 files / 1465 tests).
