@@ -60,7 +60,7 @@ const pickFromGallery = vi.fn();
 const removePhoto = vi.fn();
 
 const mockFormState = {
-  type: 'expense' as const,
+  type: 'expense' as 'expense' | 'income',
   amountRaw: '',
   numericAmount: null as number | null,
   accountId: 1 as number | undefined,
@@ -306,6 +306,14 @@ describe('TransactionForm', () => {
     mockFormState.repeatNameError = 'taken';
     const view = await renderForm({ ruleMode: true });
     expect(view.getByText('That name is already used by another recurring rule.')).toBeTruthy();
+  });
+
+  it('uses a salary placeholder for an income recurring rule', async () => {
+    mockFormState.type = 'income';
+    const view = await renderForm({ ruleMode: true });
+
+    expect(view.getByPlaceholderText('e.g. Salary')).toBeTruthy();
+    expect(view.queryByPlaceholderText('e.g. Rent')).toBeNull();
   });
 
   it('shows tag, comment and photo sections by default', async () => {

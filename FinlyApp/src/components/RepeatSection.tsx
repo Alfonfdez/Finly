@@ -31,6 +31,8 @@ interface Props {
   onChangeLastDay?: (value: boolean) => void;
   name: string;
   onChangeName: (value: string) => void;
+  /** Type-aware example shown while the name is empty. */
+  namePlaceholder?: string;
   nameError: RecurringNameError | null;
   /** The name field gained/lost focus (used to reveal the section and to arm its error). */
   onNameFocus?: () => void;
@@ -80,6 +82,7 @@ export default function RepeatSection({
   onChangeLastDay = () => {},
   name,
   onChangeName,
+  namePlaceholder,
   nameError,
   onNameFocus,
   onNameBlur,
@@ -151,7 +154,7 @@ export default function RepeatSection({
             styles.nameInput,
             { backgroundColor: c.background, borderColor: nameError ? c.red : c.border, color: c.text, fontSize: fs(14) },
           ]}
-          placeholder={labels.repeat_name_placeholder}
+          placeholder={namePlaceholder ?? labels.repeat_name_placeholder_expense}
           placeholderTextColor={c.textSecondary}
           value={name}
           onChangeText={onChangeName}

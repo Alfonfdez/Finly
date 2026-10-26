@@ -4473,4 +4473,12 @@
 
 [2026-10-26] test | FinlyApp/tests/utils/recurrenceInfo.matrix.test.ts, FinlyApp/tests/database/recurringService.lifecycle.test.ts, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, spec/constitution/3-roadmap.md
 - Expanded the recurring hint/lifecycle battery with future-start and ended-rule chains, start/end window cases, sequential edits and date-only scope assertions
-- test:all green (178 files / 1503 tests).
+- test:all green (178 files / 1504 tests).
+
+[2026-10-26] feat | FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/tests/component/TransactionForm.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Recurring: the name placeholder now follows the selected type: 'e.g. Rent' for expenses and 'e.g. Salary' for income
+- Added the income placeholder in the 9 languages and a type-aware form test; test:all green (178 files / 1504 tests).
+
+[2026-10-26] refactor | FinlyApp/src/i18n/*.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionForm.tsx
+- i18n: renamed the expense recurring-name placeholder key to repeat_name_placeholder_expense for symmetry with repeat_name_placeholder_income
+- test:all green (178 files / 1504 tests).
