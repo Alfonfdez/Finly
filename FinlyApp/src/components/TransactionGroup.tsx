@@ -8,6 +8,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { getDisplayCategoryName } from '../i18n';
 import { BADGE_SHAPES, TRANSACTION_TYPES } from '../constants/types';
 import ListItemRow from './ListItemRow';
+import SelectionCheckbox from './SelectionCheckbox';
 import DateIcon from './DateIcon';
 import TagChip from './TagChip';
 
@@ -29,14 +30,7 @@ export const TransactionRow = memo(function TransactionRow({ tx, category, tags,
 
   const handlePress = useCallback(() => onPress?.(tx.id), [onPress, tx.id]);
 
-  const checkbox = selectMode ? (
-    <Ionicons
-      name={selected ? 'checkbox' : 'checkbox-outline'}
-      size={22}
-      color={selected ? c.primary : c.textSecondary}
-      style={styles.checkbox}
-    />
-  ) : undefined;
+  const checkbox = selectMode ? <SelectionCheckbox selected={!!selected} /> : undefined;
 
   const hasRecurring = tx.recurring_rule_id != null;
   const hasTags = !!tags && tags.length > 0;
@@ -152,9 +146,6 @@ const styles = StyleSheet.create({
   recurringName: {
     fontWeight: '500',
     flexShrink: 1,
-  },
-  checkbox: {
-    marginRight: 10,
   },
   amount: { fontWeight: '700' },
 });

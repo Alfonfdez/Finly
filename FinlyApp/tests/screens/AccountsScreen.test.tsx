@@ -160,6 +160,25 @@ describe('AccountsScreen', () => {
     expect(nav.navigate).toHaveBeenCalledWith('ModifyAccount', { accountId: 1 });
   });
 
+  it('keeps balances visible and selects from the leading checkbox', async () => {
+    list.mockResolvedValue([totalAccount, account(1, 'Cash'), account(2, 'Savings')]);
+    getBalances.mockResolvedValue([
+      { account_id: 1, balance: 100 },
+      { account_id: 2, balance: 50 },
+    ]);
+    const view = await renderWithHeader();
+    await waitFor(() => expect(view.getByText('Cash')).toBeTruthy());
+
+    const ue = userEvent.setup();
+    await ue.press(view.getByLabelText('Enter select mode'));
+    await waitFor(() => expect(view.getByText('Delete (0)')).toBeTruthy());
+
+    expect(view.getByText(/100,00/)).toBeTruthy();
+    const boxes = view.getAllByText('checkbox-outline');
+    await ue.press(boxes[1]);
+    await waitFor(() => expect(view.getByText('Delete (1)')).toBeTruthy());
+  });
+
   it('selects all non-total accounts when Select all is pressed', async () => {
     list.mockResolvedValue([totalAccount, account(1, 'Cash'), account(2, 'Savings')]);
     getBalances.mockResolvedValue([

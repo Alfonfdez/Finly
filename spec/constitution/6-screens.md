@@ -286,6 +286,16 @@ Any `ScrollView` that is an **ancestor of a modal containing a `TextInput`** mus
 to dismiss the keyboard, so the modal's buttons would need two taps
 (e.g. `DataScreen`'s outer `ScrollView` wraps its typed-DELETE confirmation modals).
 
+## Selection mode
+
+List rows use the shared `SelectionCheckbox` (`components/SelectionCheckbox.tsx`): a 22px
+`checkbox-outline` / `checkbox` icon, first element on the **left**, primary when selected and
+secondary otherwise. The checkbox is inside the row's pressable area, so tapping the checkbox,
+the row text or the row badge toggles selection. The right side keeps the row's value or action
+(amount, balance, status); switches are hidden in selection mode. `SelectAllRow` uses the same
+checkbox. The **Categories grid** is the documented exception: its tiles show a checkmark badge
+over the icon.
+
 ## Empty lists
 
 Render a list through the shared `ListOrEmpty` component, which **unmounts the list when it

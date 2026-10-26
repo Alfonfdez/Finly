@@ -1,8 +1,8 @@
 import { Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { DISABLED_CONTROL_OPACITY } from './componentStyles';
+import SelectionCheckbox from './SelectionCheckbox';
 
 interface Props {
   allSelected: boolean;
@@ -32,11 +32,7 @@ export default function SelectAllRow({
       accessibilityRole="checkbox"
       accessibilityState={{ checked: allSelected, disabled }}
     >
-      <Ionicons
-        name={allSelected ? 'checkbox' : 'checkbox-outline'}
-        size={22}
-        color={allSelected ? c.primary : c.textSecondary}
-      />
+      <SelectionCheckbox selected={allSelected} />
       <Text style={[styles.label, { color: c.text, fontSize: fs(15) }]} numberOfLines={1}>
         {allSelected ? deselectAllLabel : selectAllLabel}
       </Text>

@@ -4439,3 +4439,8 @@
 [2026-10-26] fix | FinlyApp/src/components/ModalShell.tsx, FinlyApp/tests/component/ModalShell.test.tsx, spec/constitution/6-screens.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
 - ModalShell now dismisses the focused form input when it opens, so a modal's keyboard cannot re-trigger the form reveal scroll behind it (e.g. Recurring name then Add tag)
 - Added a ModalShell regression test; test:all green (171 files / 1445 tests).
+
+[2026-10-26] fix | FinlyApp/src/components/SelectionCheckbox.tsx, FinlyApp/src/components/RecurringRow.tsx, FinlyApp/src/components/SelectAllRow.tsx, FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/tests/component/SelectionCheckbox.test.tsx, FinlyApp/tests/component/RecurringRow.test.tsx, FinlyApp/tests/screens/AccountsScreen.test.tsx, FinlyApp/tests/screens/RecurringScreen.test.tsx, spec/constitution/6-screens.md, spec/features/011-accounts-screen/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Selection: added a shared leading SelectionCheckbox and standardized Accounts, Recurring, Tags, Comments, Transactions and Select all on it
+- Accounts keeps the balance visible in select mode; the Recurring checkbox, badge and text now share one tappable left area
+- Added selection regression tests; test:all green (172 files / 1449 tests).

@@ -169,6 +169,7 @@ Screen accessible from the Drawer that shows all accounts with their balance:
 - Floating "+" button (FAB) that navigates to create account (013).
 - Tapping an account navigates to modify account (012).
 - Fix (2026-10-14): the FlatList is now unmounted when empty (plain `View` + `EmptyState`), so an emptied list never keeps the old scroll extent — see the "Empty lists" convention in `6-screens.md`.
+- Fix (2026-10-26): the account selection checkbox now follows the shared list convention: leading `checkbox-outline` / `checkbox`, tappable with the row, while the balance stays visible on the right.
 
 Spec: spec/features/011-accounts-screen/.
 
@@ -447,6 +448,7 @@ Recurring expenses/income created once and materialized automatically:
 - Fix (2026-10-26): an ended rule's edit Summary showed a phantom `Next: <date>` one day past the end date because the "today already generated" anchor check treated the post-end cursor as a real occurrence. The anchor now requires an actual occurrence on today, so an ended rule keeps its post-end cursor and the Summary shows "This rule has ended: no future transactions will be created."; extending the end date revives it with the real next occurrence.
 - Fix (2026-10-26): extending a rule whose end date was shortened and saved still offered today as the next date even though its transaction already existed. The anchor now also checks the rule's generated occurrence dates, so the Summary starts at tomorrow and the cursor stays in sync.
 - Fix (2026-10-26): opening a modal from a form (e.g. Tags → Add tag) left the previous input focused, so the modal's keyboard re-triggered `useKeyboardReveal` and scrolled the form behind it. `ModalShell` now dismisses the underlying keyboard when it opens.
+- Fix (2026-10-26): the recurring selection checkbox sat outside the row pressable area, so only the text selected the rule. The checkbox, badge and info now share one left-side pressable area, using the shared `SelectionCheckbox`.
 - Spec: spec/features/028-recurring-transactions/.
 
 ## 033-bulk-delete-tags-comments
