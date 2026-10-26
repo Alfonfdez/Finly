@@ -88,6 +88,25 @@ describe('recurrenceInfoLines', () => {
     });
   });
 
+  it('edit: extending an ended rule skips today when its transaction already exists', () => {
+    const previous = schedule({ frequency: 'daily', day_of_month: null, start_date: '2026-10-01', end_date: '2026-10-25' });
+    const extended = schedule({ frequency: 'daily', day_of_month: null, start_date: '2026-10-01', end_date: '2026-10-31' });
+    expect(recurrenceInfoLines(
+      extended,
+      {
+        today: '2026-10-26',
+        cursor: '2026-10-27',
+        scope: 'future',
+        previousSchedule: previous,
+        existingOccurrences: new Set(['2026-10-26']),
+      },
+      LANGUAGES.en,
+    )).toMatchObject({
+      firstLine: 'Next: October 27, 2026',
+      detailLines: ['No transactions will be created now'],
+    });
+  });
+
   it('edit (Future + past): back-fills from the cursor', () => {
     const daily = schedule({ frequency: 'daily', day_of_month: null, start_date: '2026-09-01' });
     expect(recurrenceInfoLines(daily, { today: '2026-10-07', cursor: '2026-09-01', scope: 'futureAndPast' }, LANGUAGES.en)).toMatchObject({
