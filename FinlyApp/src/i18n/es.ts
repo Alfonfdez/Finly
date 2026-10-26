@@ -568,6 +568,8 @@ export const es: Language = {
   recurring_info_count: (n: number) => (n === 0 ? 'No se creará ninguna transacción ahora' : `Se crearán ${n} ${n === 1 ? 'transacción' : 'transacciones'}`),
   recurring_info_skipped: (n: number) => `Se omitirán ${n} ${n === 1 ? 'ocurrencia' : 'ocurrencias'}`,
   recurring_info_backfill: (n: number) => `Añade ${n} ${n === 1 ? 'transacción omitida' : 'transacciones omitidas'}`,
+  recurring_info_backfill_from: (date: string) => `Rellenar desde: ${date}`,
+  recurring_info_updates: (n: number) => (n === 1 ? 'Actualiza 1 transacción pasada' : `Actualiza ${n} transacciones pasadas`),
   recurring_too_many_occurrences: (limit: number) => `Esta regla crearía más de ${limit} transacciones. Mueve la fecha de inicio más adelante o añade una fecha de fin`,
   recurring_too_many_occurrences_end: (limit: number) => `Esta regla crearía más de ${limit} transacciones. Mueve la fecha de inicio más adelante o adelanta la fecha de fin`,
   recurring_info_paused: 'Esta regla está en pausa: no se creará ninguna transacción hasta que la reanudes.',

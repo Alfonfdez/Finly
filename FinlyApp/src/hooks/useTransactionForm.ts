@@ -302,7 +302,7 @@ export function useTransactionForm({
   // not recreate the past occurrences (the cursor floor keeps them skipped).
   const ruleStartMovedEarlier = initialRuleNextDue != null && !ruleUnmaterialized && toDateOnly(day) < toDateOnly(initialDay);
 
-  const { recurringPastAffected } = useRecurringEditScope({
+  const { recurringPastAffected, recurringDetailsChanged } = useRecurringEditScope({
     ruleMode,
     day,
     frequency: repeatFrequency,
@@ -430,6 +430,7 @@ export function useTransactionForm({
     repeatLastDay, setRepeatLastDay,
     repeatMinDate,
     recurringPastAffected,
+    recurringDetailsChanged,
     ruleUnmaterialized,
     ruleStartMovedEarlier,
     repeatName, setRepeatName, repeatNameError,

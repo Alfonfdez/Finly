@@ -568,6 +568,8 @@ export const fr: Language = {
   recurring_info_count: (n: number) => (n === 0 ? 'Aucune transaction ne sera créée maintenant' : `${n} transaction${n === 1 ? '' : 's'} ${n === 1 ? 'sera créée' : 'seront créées'}`),
   recurring_info_skipped: (n: number) => `${n} occurrence${n === 1 ? '' : 's'} ${n === 1 ? 'sera ignorée' : 'seront ignorées'}`,
   recurring_info_backfill: (n: number) => `Ajoute ${n} transaction${n === 1 ? '' : 's'} manquée${n === 1 ? '' : 's'}`,
+  recurring_info_backfill_from: (date: string) => `Remplir depuis : ${date}`,
+  recurring_info_updates: (n: number) => (n === 1 ? 'Met à jour 1 transaction passée' : `Met à jour ${n} transactions passées`),
   recurring_too_many_occurrences: (limit: number) => `Cette règle créerait plus de ${limit} transactions. Déplacez la date de début plus tard ou ajoutez une date de fin`,
   recurring_too_many_occurrences_end: (limit: number) => `Cette règle créerait plus de ${limit} transactions. Déplacez la date de début plus tard ou avancez la date de fin`,
   recurring_info_paused: 'Cette règle est en pause : aucune transaction ne sera créée tant que vous ne la réactivez pas.',

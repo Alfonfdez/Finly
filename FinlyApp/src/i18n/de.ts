@@ -568,6 +568,8 @@ export const de: Language = {
   recurring_info_count: (n: number) => (n === 0 ? 'Es wird jetzt keine Transaktion erstellt' : `Es ${n === 1 ? 'wird' : 'werden'} ${n} Transaktion${n === 1 ? '' : 'en'} erstellt`),
   recurring_info_skipped: (n: number) => `${n} Vorkommen ${n === 1 ? 'wird' : 'werden'} übersprungen`,
   recurring_info_backfill: (n: number) => `Ergänzt ${n} verpasste Transaktion${n === 1 ? '' : 'en'}`,
+  recurring_info_backfill_from: (date: string) => `Nachfüllen ab: ${date}`,
+  recurring_info_updates: (n: number) => (n === 1 ? 'Aktualisiert 1 vergangene Transaktion' : `Aktualisiert ${n} vergangene Transaktionen`),
   recurring_too_many_occurrences: (limit: number) => `Diese Regel würde mehr als ${limit} Transaktionen erzeugen. Wähle ein späteres Startdatum oder füge ein Enddatum hinzu`,
   recurring_too_many_occurrences_end: (limit: number) => `Diese Regel würde mehr als ${limit} Transaktionen erzeugen. Wähle ein späteres Startdatum oder ein früheres Enddatum`,
   recurring_info_paused: 'Diese Regel ist pausiert: Es werden keine Transaktionen erstellt, bis Sie sie fortsetzen.',

@@ -100,6 +100,7 @@ export default function TransactionForm(props: TransactionFormProps) {
     repeatLastDay, setRepeatLastDay,
     repeatMinDate,
     recurringPastAffected,
+    recurringDetailsChanged,
     ruleUnmaterialized,
     ruleStartMovedEarlier,
     repeatName, setRepeatName,
@@ -353,6 +354,7 @@ export default function TransactionForm(props: TransactionFormProps) {
               ruleUnmaterialized={ruleUnmaterialized}
               ruleStartMovedEarlier={ruleStartMovedEarlier}
               previousSchedule={previousSchedule}
+              pastDetailsChanged={recurringDetailsChanged}
               showScope={!!props.showRepeatScope}
               scope={props.repeatScope}
               onChangeScope={props.onChangeRepeatScope}

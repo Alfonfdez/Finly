@@ -4460,3 +4460,8 @@
 - Modal keyboard lift now releases 250ms after the keyboard hides, so blurring the currency/search field returns the modal to its normal centred size
 - The short hold still lets a footer-button tap finish before the modal moves; added a release-delay regression test
 - test:all green (176 files / 1466 tests).
+
+[2026-10-26] fix | FinlyApp/src/utils/recurrence.ts, FinlyApp/src/utils/recurrenceInfo.ts, FinlyApp/src/hooks/useRecurringEditScope.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/tests/utils/recurrenceInfo.matrix.test.ts, FinlyApp/tests/database/recurringService.lifecycle.test.ts, FinlyApp/tests/utils/recurrenceInfo.test.ts, FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/hooks/useRecurringEditScope.test.tsx, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, FinlyApp/tests/component/recurringSummary.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Recurring: Future + past now shows 'Back-fill from: <date>' when it creates missed occurrences and 'Updates N past transactions' when a past-affecting detail changed
+- Recurring: fixed shortening an end date moving a future cursor backwards; extending it later resumes from the correct occurrence
+- Added a broad hint/lifecycle battery across multiple rules, sequential type/date edits and both scopes; test:all green (178 files / 1490 tests).

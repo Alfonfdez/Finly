@@ -566,6 +566,8 @@ export const en = {
   recurring_info_count: (n: number) => (n === 0 ? 'No transactions will be created now' : `${n} ${n === 1 ? 'transaction' : 'transactions'} will be created`),
   recurring_info_skipped: (n: number) => `${n} ${n === 1 ? 'occurrence' : 'occurrences'} will be skipped`,
   recurring_info_backfill: (n: number) => `Adds ${n} missed ${n === 1 ? 'transaction' : 'transactions'}`,
+  recurring_info_backfill_from: (date: string) => `Back-fill from: ${date}`,
+  recurring_info_updates: (n: number) => (n === 1 ? 'Updates 1 past transaction' : `Updates ${n} past transactions`),
   recurring_too_many_occurrences: (limit: number) => `This rule would create more than ${limit} transactions. Move the start date later or add an end date`,
   recurring_too_many_occurrences_end: (limit: number) => `This rule would create more than ${limit} transactions. Move the start date later or set an earlier end date`,
   recurring_info_paused: 'This rule is paused: no transactions are created until you resume it.',

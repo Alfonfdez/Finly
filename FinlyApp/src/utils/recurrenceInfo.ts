@@ -26,6 +26,8 @@ export interface RecurrenceInfoOptions {
   previousSchedule?: RecurrenceSchedule | null;
   /** Dates that already have a generated transaction, so they aren't counted as missed. */
   existingOccurrences?: ReadonlySet<string>;
+  /** A past-affecting detail changed (type/account/category/amount/comment/tags). */
+  pastDetailsChanged?: boolean;
   /** The rule is paused: nothing is created until it is resumed (see `planEdit`). */
   ruleActive?: boolean;
 }
@@ -98,25 +100,39 @@ export function recurrenceInfoLines(
   });
 
   const ended = isRecurrenceEnded(schedule, plan.nextDue, options.today);
+  const backfill = options.scope === RECURRENCE_SCOPES.futureAndPast && plan.preview.count > 0;
   const firstLine = ended
     ? labels.recurring_info_ended
-    : labels.recurring_info_next(formatOccurrence(plan.preview.firstDate));
+    : backfill
+      ? labels.recurring_info_backfill_from(formatOccurrence(plan.preview.firstDate))
+      : labels.recurring_info_next(formatOccurrence(plan.preview.firstDate));
+  const existingCount = options.existingOccurrences?.size ?? 0;
+  const updatesLine = options.pastDetailsChanged && existingCount > 0
+    ? labels.recurring_info_updates(existingCount)
+    : null;
   const detailLines: string[] = [...patternLines];
   if (plan.preview.truncated) {
     // Over the run cap: the save is refused (the form blocks it), so never promise a count.
     detailLines.push(tooManyLine);
   } else if (ended) {
     // The ended line already says no future occurrence will be created. "Future + past"
-    // can still back-fill missed past ones, so keep that count when it applies.
+    // can still back-fill missed past ones and rewrite the existing ones.
     if (options.scope === RECURRENCE_SCOPES.futureAndPast && plan.preview.count > 0) {
       detailLines.push(labels.recurring_info_backfill(plan.preview.count));
+    }
+    if (options.scope === RECURRENCE_SCOPES.futureAndPast && updatesLine) {
+      detailLines.push(updatesLine);
     }
   } else if (!ruleActive) {
     // A paused rule creates nothing on save, whatever the scope; say so instead of
     // promising a back-fill (the "Future + past" save still rewrites its past rows).
     detailLines.push(labels.recurring_info_paused);
+    if (options.scope === RECURRENCE_SCOPES.futureAndPast && updatesLine) {
+      detailLines.push(updatesLine);
+    }
   } else if (options.scope === RECURRENCE_SCOPES.futureAndPast) {
     detailLines.push(plan.preview.count > 0 ? labels.recurring_info_backfill(plan.preview.count) : labels.recurring_info_count(0));
+    if (updatesLine) detailLines.push(updatesLine);
   } else {
     detailLines.push(labels.recurring_info_count(plan.preview.count));
     if (plan.skipWindow) detailLines.push(labels.recurring_info_skipped(plan.skipWindow.count));

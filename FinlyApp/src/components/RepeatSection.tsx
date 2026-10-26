@@ -50,6 +50,8 @@ interface Props {
   ruleStartMovedEarlier?: boolean;
   /** The rule's schedule before the edit (used to skip today's already-generated occurrence). */
   previousSchedule?: RecurrenceSchedule | null;
+  /** A past-affecting detail changed; Future + past updates existing transactions. */
+  pastDetailsChanged?: boolean;
   showScope?: boolean;
   scope?: RecurrenceScope;
   onChangeScope?: (scope: RecurrenceScope) => void;
@@ -89,6 +91,7 @@ export default function RepeatSection({
   ruleUnmaterialized = false,
   ruleStartMovedEarlier = false,
   previousSchedule = null,
+  pastDetailsChanged = false,
   showScope = false,
   scope = RECURRENCE_SCOPES.future,
   onChangeScope,
@@ -118,6 +121,7 @@ export default function RepeatSection({
       scope,
       skippedFrom: ruleSkippedFrom,
       previousSchedule,
+      pastDetailsChanged,
       existingOccurrences: occurrenceSet,
       ruleActive,
     },

@@ -107,10 +107,48 @@ describe('recurrenceInfoLines', () => {
     });
   });
 
+  it('edit (Future + past): reports updated past transactions when no back-fill is needed', () => {
+    const daily = schedule({ frequency: 'daily', day_of_month: null, start_date: '2026-09-01' });
+    const existing = new Set(['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06']);
+    expect(recurrenceInfoLines(
+      daily,
+      {
+        today: '2026-10-06',
+        cursor: '2026-10-07',
+        scope: 'futureAndPast',
+        pastDetailsChanged: true,
+        existingOccurrences: existing,
+      },
+      LANGUAGES.en,
+    )).toEqual({
+      summary: 'Every day',
+      firstLine: 'Next: October 7, 2026',
+      detailLines: ['No transactions will be created now', 'Updates 6 past transactions'],
+    });
+  });
+
+  it('edit (Future only): never reports past transaction updates', () => {
+    const daily = schedule({ frequency: 'daily', day_of_month: null, start_date: '2026-09-01' });
+    expect(recurrenceInfoLines(
+      daily,
+      {
+        today: '2026-10-06',
+        cursor: '2026-10-07',
+        scope: 'future',
+        pastDetailsChanged: true,
+        existingOccurrences: new Set(['2026-10-06']),
+      },
+      LANGUAGES.en,
+    )).toMatchObject({
+      firstLine: 'Next: October 7, 2026',
+      detailLines: ['No transactions will be created now'],
+    });
+  });
+
   it('edit (Future + past): back-fills from the cursor', () => {
     const daily = schedule({ frequency: 'daily', day_of_month: null, start_date: '2026-09-01' });
     expect(recurrenceInfoLines(daily, { today: '2026-10-07', cursor: '2026-09-01', scope: 'futureAndPast' }, LANGUAGES.en)).toMatchObject({
-      firstLine: 'Next: September 1, 2026',
+      firstLine: 'Back-fill from: September 1, 2026',
       detailLines: ['Adds 37 missed transactions'],
     });
   });
@@ -146,7 +184,7 @@ describe('recurrenceInfoLines', () => {
       },
       LANGUAGES.en,
     )).toMatchObject({
-      firstLine: 'Next: October 12, 2026',
+      firstLine: 'Back-fill from: October 12, 2026',
       detailLines: ['Adds 2 missed transactions'],
     });
   });

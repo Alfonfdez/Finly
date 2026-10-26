@@ -400,6 +400,11 @@ export function resolveEditAnchor(
     return nextDueOnOrAfter(schedule, base);
   }
   const anchor = nextDueOnOrAfter(schedule, today);
+  // Shortening the end date can move the probe to end+1, which may be before the
+  // rule's current cursor. Never move an ended rule's cursor backwards.
+  if (schedule.end_date != null && anchor > schedule.end_date) {
+    return cursor > anchor ? cursor : anchor;
+  }
   const todayAlreadyGenerated =
     anchor === today &&
     (existingOccurrences?.has(today) ||
