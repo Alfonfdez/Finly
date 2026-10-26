@@ -8,7 +8,8 @@ import { t, getDisplayCategoryName } from '../i18n';
 import SearchBar from './SearchBar';
 import EmptyState from './EmptyState';
 import HeaderCloseButton from './HeaderCloseButton';
-import { CARD_BORDER_RADIUS } from './componentStyles';
+import FormHintSlot from './form/FormHintSlot';
+import { CARD_BORDER_RADIUS, DISABLED_CONTROL_OPACITY } from './componentStyles';
 import { TRANSACTION_TYPES, TYPE_FILTERS, type TransactionTypeFilter } from '../constants/types';
 import { sortCategoriesWithOthersLast, categoriesOfType } from '../utils/categoryUtils';
 import { CATEGORY_SELECTION_KINDS, classifyCategorySelection } from '../utils/categoryFilterSelection';
@@ -32,13 +33,25 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
   const fs = useFontSize();
   const labels = t();
 
-  const [localSelectedIds, setLocalSelectedIds] = useState<number[]>(selectedIds);
+  const allIdsForType = useMemo(() => {
+    if (type === TRANSACTION_TYPES.expense) {
+      return categoriesOfType(categories, TRANSACTION_TYPES.expense).map(cat => cat.id);
+    }
+    if (type === TRANSACTION_TYPES.income) {
+      return categoriesOfType(categories, TRANSACTION_TYPES.income).map(cat => cat.id);
+    }
+    return categories.map(cat => cat.id);
+  }, [categories, type]);
+
+  const [localSelectedIds, setLocalSelectedIds] = useState<number[]>(
+    () => (selectedIds.length === 0 ? allIdsForType : selectedIds),
+  );
   const [searchText, setSearchText] = useState('');
 
   const resetOnOpen = useCallback(() => {
-    setLocalSelectedIds(selectedIds);
+    setLocalSelectedIds(selectedIds.length === 0 ? allIdsForType : selectedIds);
     setSearchText('');
-  }, [selectedIds]);
+  }, [selectedIds, allIdsForType]);
   useResetOnOpen(visible, resetOnOpen);
 
   const presets = useMemo(() => {
@@ -56,10 +69,13 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
     return list.filter(preset => preset.ids.length > 0);
   }, [categories, type, labels]);
 
-  const handlePresetPress = useCallback((ids: number[]) => {
-    const active = ids.length === localSelectedIds.length && ids.every(id => localSelectedIds.includes(id));
-    setLocalSelectedIds(active ? [] : [...ids]);
+  const isPresetActive = useCallback((ids: number[]) => {
+    return ids.length === localSelectedIds.length && ids.every(id => localSelectedIds.includes(id));
   }, [localSelectedIds]);
+
+  const handlePresetPress = useCallback((ids: number[]) => {
+    setLocalSelectedIds(isPresetActive(ids) ? [] : [...ids]);
+  }, [isPresetActive]);
 
   const handleToggleCategory = useCallback((id: number) => {
     setLocalSelectedIds(prev => {
@@ -83,7 +99,8 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
 
   const sections = useMemo(() => {
     if (type !== TYPE_FILTERS.all) {
-      return [{ label: null, data: sortCategoriesWithOthersLast(displayedCategories) }];
+      const label = type === TRANSACTION_TYPES.expense ? labels.filter_expenses : labels.filter_income;
+      return [{ label, data: sortCategoriesWithOthersLast(displayedCategories) }];
     }
     const expenses = sortCategoriesWithOthersLast(categoriesOfType(displayedCategories, TRANSACTION_TYPES.expense));
     const income = sortCategoriesWithOthersLast(categoriesOfType(displayedCategories, TRANSACTION_TYPES.income));
@@ -93,20 +110,47 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
     return result;
   }, [displayedCategories, type, labels.filter_expenses, labels.filter_income]);
 
-  // An empty selection means "no category filter" — the same as selecting every one —
-  // so Apply stays enabled and the label never reads "Apply (0)".
+  const noneSelected = localSelectedIds.length === 0;
+
   const applyLabel = useMemo(() => {
-    if (localSelectedIds.length === 0) {
-      if (type === TRANSACTION_TYPES.expense) return labels.filter_apply_all_expense;
-      if (type === TRANSACTION_TYPES.income) return labels.filter_apply_all_income;
-      return labels.filter_apply_all_categories;
-    }
+    if (noneSelected) return labels.filter_apply(0);
     const kind = classifyCategorySelection(localSelectedIds, categories);
     if (kind === CATEGORY_SELECTION_KINDS.all) return labels.filter_apply_all_categories;
     if (kind === CATEGORY_SELECTION_KINDS.allExpenses) return labels.filter_apply_all_expense;
     if (kind === CATEGORY_SELECTION_KINDS.allIncome) return labels.filter_apply_all_income;
     return labels.filter_apply(localSelectedIds.length);
-  }, [type, localSelectedIds, categories, labels]);
+  }, [noneSelected, localSelectedIds, categories, labels]);
+
+  const renderPreset = (preset: (typeof presets)[number]) => {
+    const active = isPresetActive(preset.ids);
+    return (
+      <TouchableOpacity
+        key={preset.key}
+        style={[
+          styles.presetChip,
+          {
+            backgroundColor: active ? c.primary : c.surface,
+            borderWidth: active ? 0 : 1,
+            borderColor: c.border,
+          },
+        ]}
+        onPress={() => handlePresetPress(preset.ids)}
+        testID={`${TEST_IDS.categoryFilterPresetPrefix}-${preset.key}`}
+        accessibilityRole="button"
+        accessibilityState={{ selected: active }}
+      >
+        <Text
+          style={{
+            color: active ? c.background : c.text,
+            fontSize: fs(14),
+            fontWeight: '600',
+          }}
+        >
+          {preset.label}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -124,38 +168,15 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
             onClose={() => setSearchText('')}
           />
 
-          <View style={styles.presetsRow}>
-            {presets.map((preset) => {
-              const active = preset.ids.length === localSelectedIds.length
-                && preset.ids.every(id => localSelectedIds.includes(id));
-              return (
-                <TouchableOpacity
-                  key={preset.key}
-                  style={[
-                    styles.presetChip,
-                    {
-                      backgroundColor: active ? c.primary : c.surface,
-                      borderWidth: active ? 0 : 1,
-                      borderColor: c.border,
-                    },
-                  ]}
-                  onPress={() => handlePresetPress(preset.ids)}
-                  testID={`${TEST_IDS.categoryFilterPresetPrefix}-${preset.key}`}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
-                >
-                  <Text
-                    style={{
-                      color: active ? c.background : c.text,
-                      fontSize: fs(14),
-                      fontWeight: '600',
-                    }}
-                  >
-                    {preset.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+          <View style={styles.presetsContainer}>
+            <View style={styles.presetsRow}>
+              {presets[0] && renderPreset(presets[0])}
+            </View>
+            {presets.length > 1 && (
+              <View style={styles.presetsRow}>
+                {presets.slice(1).map(preset => renderPreset(preset))}
+              </View>
+            )}
           </View>
 
           {sections.every(section => section.data.length === 0) ? (
@@ -189,10 +210,22 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
           )}
         </View>
 
+        <FormHintSlot message={noneSelected ? labels.filter_select_at_least_one : null} />
+
         <TouchableOpacity
-          style={[styles.applyButton, { backgroundColor: c.primary }]}
-          onPress={() => onApply(localSelectedIds)}
+          style={[
+            styles.applyButton,
+            {
+              backgroundColor: c.primary,
+              opacity: noneSelected ? DISABLED_CONTROL_OPACITY : 1,
+            },
+          ]}
+          onPress={() => {
+            if (!noneSelected) onApply(localSelectedIds);
+          }}
+          disabled={noneSelected}
           accessibilityRole="button"
+          accessibilityState={{ disabled: noneSelected }}
           testID={TEST_IDS.categoryFilterApply}
         >
           <Text style={[styles.applyText, { color: c.background, fontSize: fs(16) }]}>
@@ -224,11 +257,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
   },
+  presetsContainer: {
+    gap: 8,
+    marginBottom: 12,
+  },
   presetsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 12,
   },
   presetChip: {
     paddingHorizontal: 12,

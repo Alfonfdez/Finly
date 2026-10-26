@@ -112,6 +112,7 @@ export const ca: Language = {
   filter_apply_all_categories: 'Aplicar (Totes les categories)',
   filter_apply_all_expense: 'Aplicar (Totes les despeses)',
   filter_apply_all_income: 'Aplicar (Tots els ingressos)',
+  filter_select_at_least_one: 'Selecciona almenys una categoria.',
   filter_no_results: 'No s\'han trobat resultats',
   filter_expenses: 'Despeses',
   filter_income: 'Ingressos',

@@ -50,7 +50,7 @@
 - The modal receives the current `type` tab value so it adapts its category display.
 - When categories are selected, only transactions matching those categories are shown.
 - When "All" is selected (empty array), all categories are shown.
-- Selecting no category and applying is the same as "All categories": the filter can always be cleared (the Apply button stays enabled and reads "All categories" when nothing is selected).
+- The modal requires at least one category: clearing all disables Apply and shows the required-selection hint. The screen's empty filter state (nothing applied) still shows all categories.
 
 ### 5. Period selector
 
@@ -157,6 +157,7 @@
 - [x] A category filter button shows the type-aware "All categories" / "All expenses" / "All income" label by default (never ellipsized), names a full type set after applying it (All expenses / All income, even from the All tab), and shows "N categories" for any other selection.
 - [x] Tapping the category button opens the CategoryFilterModal (021).
 - [x] Selecting categories in the modal filters the transaction list.
+- [x] The category modal requires at least one category; clearing all disables Apply and shows the required-selection hint.
 - [x] PeriodTabs (Day/Week/Month/Year/Period) are shown with "Month" selected by default (from config).
 - [x] CalendarPicker updates when the period changes.
 - [x] The transaction list filters by the selected period's date range.

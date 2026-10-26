@@ -112,6 +112,7 @@ export const gl: Language = {
   filter_apply_all_categories: 'Aplicar (Todas as categorías)',
   filter_apply_all_expense: 'Aplicar (Todos os gastos)',
   filter_apply_all_income: 'Aplicar (Todos os ingresos)',
+  filter_select_at_least_one: 'Selecciona polo menos unha categoría.',
   filter_no_results: 'Non se encontraron resultados',
   filter_expenses: 'Gastos',
   filter_income: 'Ingresos',

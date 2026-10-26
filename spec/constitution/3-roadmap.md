@@ -1411,3 +1411,16 @@ Applied 2026-10-26:
 - Added calendar bounds, MonthGrid, YearGrid and WeekPicker regression tests.
 - Improved modal nav rows: 22px icons, compact boxes with 44px+ effective tap targets, equal side slots for a perfectly centred title, separated double-arrow jump to the current year/month/page, and a 12px gap between year/month rows.
 - Added MonthNav/YearNav/YearGrid jump tests; test:all green (176 files / 1465 tests).
+
+## 2.2.0 category filter selection state
+Status: completed.
+
+Applied 2026-10-26:
+- Opening the category filter with an empty screen filter preselects every category for the current tab and activates the matching preset (All categories / All expenses / All income).
+- Tapping the active preset clears every category; Apply becomes disabled and reads Apply (0), with a localized "Select at least one category." hint above it. Deselecting the last tile behaves the same, and selecting a tile re-enables Apply.
+- The screen's empty filter state still means no filter and shows the type-aware All label; the modal now requires at least one category before applying.
+- On the All tab, the All categories preset sits alone on the first row while All expenses and All income share the second row; a type tab keeps its single preset on the first row.
+- The Expenses and Income tabs keep their section title above the category grid, matching the All tab's section headers.
+- Updated specs 021/015, added the localized hint in all 9 languages, covered the three tabs and the clear/re-enable flow in modal tests, and browser-verified the preset rows and type headers at 375px; test:all green (178 files / 1509 tests).
+
+Spec: spec/features/021-category-filter-modal/, spec/features/015-all-transactions-screen/.
