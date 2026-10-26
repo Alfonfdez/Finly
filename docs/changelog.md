@@ -4426,4 +4426,8 @@
 
 [2026-10-26] fix | FinlyApp/src/components/CalculatorModal.tsx, FinlyApp/tests/component/CalculatorModal.test.tsx, spec/features/007-calculator/1-spec.md, spec/constitution/3-roadmap.md
 - Calculator: '=' now commits the rounded result, a following operator chains from it, a digit starts fresh, and reopening resets the modal
-- Calculator: added commit-on-equals and reset-on-open regression tests
+- Calculator: added commit-on-equals and reset-on-open regression tests.
+
+[2026-10-26] fix | FinlyApp/src/utils/recurrence.ts, FinlyApp/src/utils/recurrenceInfo.ts, FinlyApp/src/i18n/*.ts, FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/utils/recurrenceInfo.test.ts, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Recurring: an ended rule no longer shows a phantom Next date one day past its end date; the Summary says it has ended and the anchor keeps the post-end cursor
+- Recurring: added the ended-Summary message in the 9 languages and regression tests for the anchor, plan, Summary and edit screen

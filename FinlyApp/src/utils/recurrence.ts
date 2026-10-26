@@ -245,6 +245,17 @@ export function nextDueOnOrAfter(schedule: RecurrenceSchedule, today: string): s
 }
 
 /**
+ * Whether `date` is an actual occurrence of `schedule`. An ended schedule's
+ * `nextDueOnOrAfter` returns the first slot after the end date, which is a probe
+ * cursor, not a generated occurrence.
+ */
+function hasOccurrenceOn(schedule: RecurrenceSchedule, date: string): boolean {
+  if (date < schedule.start_date) return false;
+  if (schedule.end_date != null && date > schedule.end_date) return false;
+  return nextDueOnOrAfter(schedule, date) === date;
+}
+
+/**
  * The next occurrence a rule would generate from `nextDue`, ignoring a pause
  * freeze: if the cursor is already in the future it is used as-is, otherwise the
  * cursor advances to the first occurrence on/after `today`.
@@ -384,7 +395,7 @@ export function resolveEditAnchor(
   }
   const anchor = nextDueOnOrAfter(schedule, today);
   const todayAlreadyGenerated =
-    anchor === today && previousSchedule != null && nextDueOnOrAfter(previousSchedule, today) === today;
+    anchor === today && previousSchedule != null && hasOccurrenceOn(previousSchedule, today);
   return todayAlreadyGenerated ? advanceOccurrence(schedule, today) : anchor;
 }
 

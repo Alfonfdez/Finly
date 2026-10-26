@@ -571,6 +571,7 @@ export const eu: Language = {
   recurring_too_many_occurrences: (limit: number) => `Arau honek ${limit} transakzio baino gehiago sortuko lituzke. Mugitu hasiera-data beranduago edo gehitu amaiera-data`,
   recurring_too_many_occurrences_end: (limit: number) => `Arau honek ${limit} transakzio baino gehiago sortuko lituzke. Mugitu hasiera-data beranduago edo aurreratu amaiera-data`,
   recurring_info_paused: 'Arau hau pausatuta dago: ez da transakziorik sortuko berriro aktibatu arte.',
+  recurring_info_ended: 'Arau hau amaitu da: ez da etorkizuneko transakzio gehiagorik sortuko.',
 
   // Recurring skip warning
   recurring_skip_warning_title: 'Errepikapenak saihestu?',

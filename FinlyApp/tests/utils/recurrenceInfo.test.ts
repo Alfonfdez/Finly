@@ -63,6 +63,31 @@ describe('recurrenceInfoLines', () => {
     });
   });
 
+  it('edit: an ended rule shows the ended line instead of a phantom next date', () => {
+    const ended = schedule({ frequency: 'daily', day_of_month: null, start_date: '2026-10-01', end_date: '2026-10-25' });
+    expect(recurrenceInfoLines(
+      ended,
+      { today: '2026-10-26', cursor: '2026-10-26', scope: 'future' },
+      LANGUAGES.en,
+    )).toEqual({
+      summary: 'Every day until October 25, 2026',
+      firstLine: 'This rule has ended: no future transactions will be created.',
+      detailLines: [],
+    });
+  });
+
+  it('edit: an ended rule keeps a back-fill count under Future + past', () => {
+    const ended = schedule({ frequency: 'daily', day_of_month: null, start_date: '2026-10-01', end_date: '2026-10-25' });
+    expect(recurrenceInfoLines(
+      ended,
+      { today: '2026-10-26', cursor: '2026-10-26', scope: 'futureAndPast', skippedFrom: '2026-10-20' },
+      LANGUAGES.en,
+    )).toMatchObject({
+      firstLine: 'This rule has ended: no future transactions will be created.',
+      detailLines: ['Adds 6 missed transactions'],
+    });
+  });
+
   it('edit (Future + past): back-fills from the cursor', () => {
     const daily = schedule({ frequency: 'daily', day_of_month: null, start_date: '2026-09-01' });
     expect(recurrenceInfoLines(daily, { today: '2026-10-07', cursor: '2026-09-01', scope: 'futureAndPast' }, LANGUAGES.en)).toMatchObject({

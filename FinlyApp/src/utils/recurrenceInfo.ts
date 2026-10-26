@@ -1,7 +1,7 @@
 import { t } from '../i18n';
 import { RECURRENCE_SCOPES, type RecurrenceScope } from '../constants/types';
 import { formatDateLong } from './formatters';
-import { fromDateOnly, planEdit, recurrenceDayPattern, recurrencePreview, MAX_CATCH_UP_OCCURRENCES, type RecurrenceSchedule } from './recurrence';
+import { fromDateOnly, isRecurrenceEnded, planEdit, recurrenceDayPattern, recurrencePreview, MAX_CATCH_UP_OCCURRENCES, type RecurrenceSchedule } from './recurrence';
 import { recurrenceSummary } from './recurrenceSummary';
 import type { Language } from './language';
 
@@ -97,15 +97,24 @@ export function recurrenceInfoLines(
     ruleActive,
   });
 
-  const firstLine = labels.recurring_info_next(formatOccurrence(plan.preview.firstDate));
+  const ended = isRecurrenceEnded(schedule, plan.nextDue, options.today);
+  const firstLine = ended
+    ? labels.recurring_info_ended
+    : labels.recurring_info_next(formatOccurrence(plan.preview.firstDate));
   const detailLines: string[] = [...patternLines];
-  if (!ruleActive) {
+  if (plan.preview.truncated) {
+    // Over the run cap: the save is refused (the form blocks it), so never promise a count.
+    detailLines.push(tooManyLine);
+  } else if (ended) {
+    // The ended line already says no future occurrence will be created. "Future + past"
+    // can still back-fill missed past ones, so keep that count when it applies.
+    if (options.scope === RECURRENCE_SCOPES.futureAndPast && plan.preview.count > 0) {
+      detailLines.push(labels.recurring_info_backfill(plan.preview.count));
+    }
+  } else if (!ruleActive) {
     // A paused rule creates nothing on save, whatever the scope; say so instead of
     // promising a back-fill (the "Future + past" save still rewrites its past rows).
     detailLines.push(labels.recurring_info_paused);
-  } else if (plan.preview.truncated) {
-    // Over the run cap: the save is refused (the form blocks it), so never promise a count.
-    detailLines.push(tooManyLine);
   } else if (options.scope === RECURRENCE_SCOPES.futureAndPast) {
     detailLines.push(plan.preview.count > 0 ? labels.recurring_info_backfill(plan.preview.count) : labels.recurring_info_count(0));
   } else {

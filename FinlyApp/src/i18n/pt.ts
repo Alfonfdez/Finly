@@ -571,6 +571,7 @@ export const pt: Language = {
   recurring_too_many_occurrences: (limit: number) => `Esta regra criaria mais de ${limit} transações. Move a data de início mais para a frente ou adiciona uma data de fim`,
   recurring_too_many_occurrences_end: (limit: number) => `Esta regra criaria mais de ${limit} transações. Move a data de início mais para a frente ou antecipa a data de fim`,
   recurring_info_paused: 'Esta regra está em pausa: nenhuma transação será criada até você retomá-la.',
+  recurring_info_ended: 'Esta regra terminou: não serão criadas mais transações futuras.',
 
   // Recurring skip warning
   recurring_skip_warning_title: 'Ignorar ocorrências?',

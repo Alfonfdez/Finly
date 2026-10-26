@@ -232,6 +232,17 @@ describe('resolveEditAnchor (future only)', () => {
     expect(resolveEditAnchor(daily, { cursor: '2026-10-07', scope: 'future', today: '2026-10-06', previousSchedule: daily })).toBe('2026-10-07');
   });
 
+  it('keeps the post-end cursor when the previous schedule ended before today', () => {
+    const ended: RecurrenceSchedule = { ...daily, start_date: '2026-10-01', end_date: '2026-10-25' };
+    expect(resolveEditAnchor(ended, { cursor: '2026-10-26', scope: 'future', today: '2026-10-26', previousSchedule: ended })).toBe('2026-10-26');
+  });
+
+  it('anchors at the first occurrence when an ended rule is extended', () => {
+    const previous: RecurrenceSchedule = { ...daily, start_date: '2026-10-01', end_date: '2026-10-25' };
+    const extended: RecurrenceSchedule = { ...previous, end_date: '2026-10-31' };
+    expect(resolveEditAnchor(extended, { cursor: '2026-10-26', scope: 'future', today: '2026-10-26', previousSchedule: previous })).toBe('2026-10-26');
+  });
+
   it('does not skip today when the schedule change made it a new occurrence', () => {
     expect(resolveEditAnchor(daily, { cursor: '2026-11-01', scope: 'future', today: '2026-10-06', previousSchedule: monthly })).toBe('2026-10-06');
   });
@@ -398,6 +409,13 @@ describe('planEdit', () => {
     expect(plan.nextDue).toBe('2026-10-06');
     expect(plan.skippedFrom).toBeNull();
     expect(plan.preview).toEqual({ firstDate: '2026-10-06', count: 1, truncated: false });
+  });
+
+  it('keeps an ended rule at its post-end cursor instead of advancing a phantom occurrence', () => {
+    const ended: RecurrenceSchedule = { ...daily, start_date: '2026-10-01', end_date: '2026-10-25' };
+    const plan = planEdit({ schedule: ended, previousSchedule: ended, cursor: '2026-10-26', scope: 'future', today: '2026-10-26' });
+    expect(plan.nextDue).toBe('2026-10-26');
+    expect(plan.preview).toEqual({ firstDate: '2026-10-26', count: 0, truncated: false });
   });
 
   it('drops a recorded skip once the end date falls before it', () => {
