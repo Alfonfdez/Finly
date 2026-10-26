@@ -68,6 +68,10 @@
 - Failure (invalid file, wrong version, schema violation) shows an error and leaves data untouched.
 - **Incomplete snapshots are rejected before any write**: a backup must contain the app user (`id = USER_ID = 1`), at least one account, and one expense + one income category (a genuine export always does - the app cannot work without them). It fails with the dedicated "Incomplete backup" alert instead of importing and leaving the app unusable (previously the empty `users` table made category creation fail with an FK error until the next launch self-healed it).
 - **Imported recurring rules are validated**: `interval` within `1..REPEAT_MAX_INTERVAL`, every date field a real date-only string (`YYYY-MM-DD`), and `start_date <= end_date`; a violation rejects the file as invalid before any write.
+- **Recurring rule safety:** `next_due` must not precede `start_date`, `weekday` is 0..6, `day_of_month` 1..31, `month` 1..12 and `active` is 0/1; violations reject the file before any write.
+- **Referential integrity:** transaction/rule accounts and categories, generated transactions' rules, and both tag-link tables must resolve inside the snapshot. Transactions/rules pointing at the Total account are rejected.
+- **Generated transactions:** a transaction with `recurring_rule_id` must reference a rule in the snapshot and carry a valid date-only `recurrence_date`.
+- **Native photo deletion allowlist:** only files under the app documents/photo root are ever deleted; arbitrary `file://` URIs from an imported backup are ignored.
 - **`applyBackup()` re-checks completeness** even when called directly (defence in depth), and the service awaits `initDatabase()` before exporting/importing so the snapshot always comes from a migrated, self-healed database.
 
 ### 5. UI (DataScreen)

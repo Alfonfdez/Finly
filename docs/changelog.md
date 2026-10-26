@@ -4402,3 +4402,9 @@
 - Mocked the maintenance cleanup wrappers in DataScreen tests, removing the accidental getDatabase warning.
 - Silenced the expected recurring-delete console error while still asserting the failure path.
 - Reran the suite twice with no act, getDatabase or recurring-delete warnings; test:all green (170 files / 1425 tests).
+
+[2026-10-26] fix | FinlyApp/src/database/backup.ts, FinlyApp/src/utils/photoUtils.ts, FinlyApp/tests/database/backup.test.ts, FinlyApp/tests/utils/photoUtils.test.ts, spec/features/025-data-backup/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Backup import now rejects bad recurring next-due/anchor/active values, missing account/category/rule/tag references and Total-account rows before writing.
+- Generated transactions must reference a rule and carry a valid date-only recurrence date.
+- Native photo deletion is restricted to the app documents/photo root, ignoring arbitrary file URIs from imported backups.
+- Added validation/allowlist tests; test:all green (170 files / 1427 tests).

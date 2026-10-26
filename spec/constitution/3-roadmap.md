@@ -1352,3 +1352,12 @@ Applied 2026-10-26:
 - `LabeledTextField` now keeps legacy values above the configured limit editable (`maxLength = max(limit, value.length)`); the raw Comment and Modify Category inputs do the same.
 - Inline counter padding is derived from the scaled counter height (app text size and OS font scale), so Comment/Note counters do not overlap at Large text.
 - Added over-limit and large-text tests for LabeledTextField, CommentInput, ModifyCategory, CreateAccount Note and Modify Comment; test:all green (170 files / 1425 tests).
+
+## 2.2.0 backup safety
+Status: completed.
+
+Applied 2026-10-26:
+- Backup import now validates `next_due >= start_date`, recurrence anchor ranges, `active` flags, account/category/rule/tag references and generated-transaction recurrence dates before writing.
+- Transactions and rules that reference the Total account are rejected.
+- Native photo cleanup only deletes files under the app documents/photo root; arbitrary `file://` URIs from imported backups are ignored.
+- Added backup and photo allowlist tests; test:all green (170 files / 1427 tests).

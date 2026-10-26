@@ -138,16 +138,30 @@ function normalizeSnapshotDates(snapshot: BackupSnapshot): BackupSnapshot {
   };
 }
 
-function assertImportableRecurringRules(rules: RecurringRule[]): void {
+function assertImportableRecurringRules(rules: RecurringRule[], accountById: Map<number, Account>): void {
   const invalid = (reason: string) => new BackupValidationError(BACKUP_VALIDATION_CODES.invalidFormat, reason);
   for (const rule of rules) {
     if (!Number.isInteger(rule.interval) || rule.interval < 1 || rule.interval > REPEAT_MAX_INTERVAL) {
       throw invalid('Recurring rule interval is out of range');
     }
+    const account = accountById.get(rule.account_id);
+    if (!account) throw invalid('Recurring rule account is missing');
+    if (account.is_total === 1) throw invalid('Recurring rule uses the Total account');
+    if (rule.weekday != null && (!Number.isInteger(rule.weekday) || rule.weekday < 0 || rule.weekday > 6)) {
+      throw invalid('Recurring rule weekday is out of range');
+    }
+    if (rule.day_of_month != null && (!Number.isInteger(rule.day_of_month) || rule.day_of_month < 1 || rule.day_of_month > 31)) {
+      throw invalid('Recurring rule day is out of range');
+    }
+    if (rule.month != null && (!Number.isInteger(rule.month) || rule.month < 1 || rule.month > 12)) {
+      throw invalid('Recurring rule month is out of range');
+    }
+    if (rule.active !== 0 && rule.active !== 1) throw invalid('Recurring rule active flag is invalid');
     const dates = [rule.start_date, rule.next_due, rule.end_date, rule.skipped_from];
     if (dates.some(date => date != null && !isValidDateOnly(date))) {
       throw invalid('Recurring rule has an invalid date');
     }
+    if (rule.next_due < rule.start_date) throw invalid('Recurring rule next due is before its start');
     if (rule.end_date != null && rule.start_date > rule.end_date) {
       throw invalid('Recurring rule ends before it starts');
     }
@@ -155,7 +169,10 @@ function assertImportableRecurringRules(rules: RecurringRule[]): void {
 }
 
 export function assertImportableBackup(snapshot: BackupSnapshot): void {
-  const { users, accounts, categories, transactions, tags, recurring_rules: recurringRules } = snapshot.data;
+  const {
+    users, accounts, categories, transactions, tags, transaction_tags: transactionTags,
+    recurring_rules: recurringRules, recurring_rule_tags: recurringRuleTags,
+  } = snapshot.data;
   const invalid = (reason: string) => new BackupValidationError(BACKUP_VALIDATION_CODES.invalidFormat, reason);
   const hasAppUser = users.length === 1 && users[0].id === USER_ID;
   const userScopedRows = [...accounts, ...categories, ...tags, ...recurringRules];
@@ -169,17 +186,45 @@ export function assertImportableBackup(snapshot: BackupSnapshot): void {
     throw new BackupValidationError(BACKUP_VALIDATION_CODES.incomplete, 'Snapshot is missing required data');
   }
 
+  const accountById = new Map(accounts.map(account => [account.id, account]));
   const categoryById = new Map(categories.map(category => [category.id, category]));
+  const tagById = new Map(tags.map(tag => [tag.id, tag]));
+  const transactionById = new Map(transactions.map(transaction => [transaction.id, transaction]));
+  const ruleById = new Map(recurringRules.map(rule => [rule.id, rule]));
+
   for (const transaction of transactions) {
     if (!isValidTransactionDate(transaction.date)) throw invalid('Transaction has an invalid date');
+    const account = accountById.get(transaction.account_id);
+    if (!account) throw invalid('Transaction account is missing');
+    if (account.is_total === 1) throw invalid('Transaction uses the Total account');
     const category = categoryById.get(transaction.category_id);
     if (!category || category.type !== transaction.type) throw invalid('Transaction category type mismatch');
+    if (transaction.recurring_rule_id != null) {
+      if (!ruleById.has(transaction.recurring_rule_id)) throw invalid('Transaction recurring rule is missing');
+      if (transaction.recurrence_date == null || !isValidDateOnly(transaction.recurrence_date)) {
+        throw invalid('Generated transaction has an invalid recurrence date');
+      }
+    } else if (transaction.recurrence_date != null && !isValidDateOnly(transaction.recurrence_date)) {
+      throw invalid('Transaction has an invalid recurrence date');
+    }
   }
+
   for (const rule of recurringRules) {
     const category = categoryById.get(rule.category_id);
     if (!category || category.type !== rule.type) throw invalid('Recurring rule category type mismatch');
   }
-  assertImportableRecurringRules(recurringRules);
+  assertImportableRecurringRules(recurringRules, accountById);
+
+  for (const link of transactionTags) {
+    if (!transactionById.has(link.transaction_id) || !tagById.has(link.tag_id)) {
+      throw invalid('Transaction tag link references missing data');
+    }
+  }
+  for (const link of recurringRuleTags) {
+    if (!ruleById.has(link.rule_id) || !tagById.has(link.tag_id)) {
+      throw invalid('Recurring rule tag link references missing data');
+    }
+  }
 }
 
 export async function buildBackup(
