@@ -317,7 +317,58 @@ describe('ModifyRecurringScreen', () => {
     await waitFor(() => expect(view.getByRole('button', { name: 'Future + past' })).toBeEnabled());
     await fireEvent.press(view.getByRole('button', { name: 'Future + past' }));
 
+    await waitFor(() => expect(view.getByText('Back-fill from: October 4, 2026')).toBeTruthy());
     await waitFor(() => expect(view.getByText('Adds 2 missed transactions')).toBeTruthy());
+  });
+
+  it('shows past transaction updates for a detail change under Future + past', async () => {
+    mockGetById.mockResolvedValue({
+      ...rule,
+      frequency: 'daily',
+      day_of_month: null,
+      start_date: '2026-09-23',
+      end_date: '2026-10-10',
+      next_due: '2026-10-07',
+    });
+    mockListOccurrenceDates.mockResolvedValue([
+      '2026-09-23', '2026-09-24', '2026-09-25', '2026-09-26', '2026-09-27', '2026-09-28', '2026-09-29', '2026-09-30',
+      '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-06',
+    ]);
+
+    const view = await render(<ModifyRecurringScreen />);
+    await waitFor(() => expect(view.getByText('Future + past')).toBeTruthy());
+    await fireEvent.changeText(view.getByPlaceholderText('0'), '120');
+    await waitFor(() => expect(view.getByRole('button', { name: 'Future + past' })).toBeEnabled());
+    await fireEvent.press(view.getByRole('button', { name: 'Future + past' }));
+
+    await waitFor(() => expect(view.getByText('Next: October 7, 2026')).toBeTruthy());
+    await waitFor(() => expect(view.getByText('No transactions will be created now')).toBeTruthy());
+    await waitFor(() => expect(view.getByText('Updates 12 past transactions')).toBeTruthy());
+  });
+
+  it('counts past updates only inside a later start date', async () => {
+    mockGetById.mockResolvedValue({
+      ...rule,
+      frequency: 'daily',
+      day_of_month: null,
+      start_date: '2026-09-23',
+      end_date: '2026-10-10',
+      next_due: '2026-10-07',
+    });
+    mockListOccurrenceDates.mockResolvedValue([
+      '2026-09-23', '2026-09-24', '2026-09-25', '2026-09-26', '2026-09-27', '2026-09-28', '2026-09-29', '2026-09-30',
+      '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06',
+    ]);
+
+    const view = await render(<ModifyRecurringScreen />);
+    await waitFor(() => expect(view.getByText('Start date')).toBeTruthy());
+    await pickCalendarDay(view, '30 September');
+    await fireEvent.changeText(view.getByPlaceholderText('0'), '120');
+    await waitFor(() => expect(view.getByRole('button', { name: 'Future + past' })).toBeEnabled());
+    await fireEvent.press(view.getByRole('button', { name: 'Future + past' }));
+
+    await waitFor(() => expect(view.getByText('Updates 7 past transactions')).toBeTruthy());
+    expect(view.queryByText('Updates 14 past transactions')).toBeNull();
   });
 
   it('hints that past occurrences are not recreated when the start moves earlier', async () => {

@@ -106,7 +106,12 @@ export function recurrenceInfoLines(
     : backfill
       ? labels.recurring_info_backfill_from(formatOccurrence(plan.preview.firstDate))
       : labels.recurring_info_next(formatOccurrence(plan.preview.firstDate));
-  const existingCount = options.existingOccurrences?.size ?? 0;
+  const existingInWindow = options.existingOccurrences
+    ? [...options.existingOccurrences].filter(date =>
+      date >= schedule.start_date && (schedule.end_date == null || date <= schedule.end_date),
+    )
+    : [];
+  const existingCount = existingInWindow.length;
   const updatesLine = options.pastDetailsChanged && existingCount > 0
     ? labels.recurring_info_updates(existingCount)
     : null;

@@ -102,11 +102,12 @@ function hintFor(
   scope: 'future' | 'futureAndPast',
   occurrenceDates: string[],
   pastDetailsChanged = false,
+  today = TODAY_STR,
 ) {
   return recurrenceInfoLines(
     schedule,
     {
-      today: TODAY_STR,
+      today,
       cursor: ruleEditCursor(rule, schedule),
       scope,
       skippedFrom: rule.skipped_from,
@@ -259,6 +260,60 @@ describe('recurring rule hint lifecycle', () => {
     expect(afterFill.rule.skipped_from).toBeNull();
     expect(afterFill.dates).toHaveLength(36);
     expect(transactionsFor(await transactionRepo.list(), rule.id)).toHaveLength(36);
+  });
+
+  it('updates only transactions inside a later start window', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const today26 = new Date(2026, 9, 26, 12, 0, 0);
+    const today26Str = '2026-10-26';
+    const rule = await recurringRepo.createWithTags(
+      { ...dailyActive, name: 'Late start', start_date: '2026-10-01', next_due: '2026-10-01' },
+      [],
+    );
+    expect(await materializeDueRecurring(today26)).toBe(26);
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: { start_date: '2026-10-19' },
+      recurrence: { frequency: 'daily', interval: 1, endDate: null },
+      scope: 'future',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rule', type: 'expense' },
+      tagIds: [],
+      now: today26,
+    });
+
+    const afterStart = await ruleState(recurringRepo, rule.id);
+    expect(afterStart.rule.start_date).toBe('2026-10-19');
+    expect(afterStart.dates).toHaveLength(26);
+    expect(hintFor(afterStart.rule, scheduleOf(afterStart.rule), 'futureAndPast', afterStart.dates, true, today26Str)).toEqual({
+      summary: 'Every day',
+      firstLine: 'Next: October 27, 2026',
+      detailLines: ['No transactions will be created now', 'Updates 8 past transactions'],
+    });
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: { category_id: 4, amount: 150, description: 'Updated' },
+      recurrence: { frequency: 'daily', interval: 1, endDate: null },
+      scope: 'futureAndPast',
+      pastPatch: { account_id: 1, category_id: 4, amount: 150, description: 'Updated', type: 'expense' },
+      tagIds: [],
+      now: today26,
+    });
+
+    const transactions = await transactionRepo.list();
+    const byDate = new Map(transactions.map(transaction => [transaction.recurrence_date, transaction]));
+    for (let day = 1; day <= 18; day += 1) {
+      const key = `2026-10-${String(day).padStart(2, '0')}`;
+      expect(byDate.get(key)?.category_id).toBe(3);
+      expect(byDate.get(key)?.amount).toBe(100);
+    }
+    for (let day = 19; day <= 26; day += 1) {
+      const key = `2026-10-${String(day).padStart(2, '0')}`;
+      expect(byDate.get(key)?.category_id).toBe(4);
+      expect(byDate.get(key)?.amount).toBe(150);
+    }
+    expect(transactions.filter(transaction => transaction.recurring_rule_id === rule.id)).toHaveLength(26);
   });
 
   it('reports updates for monthly and yearly edge schedules', async () => {

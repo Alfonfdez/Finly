@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, isNotNull, isNull, lte, or, sql } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, isNotNull, isNull, lte, or, sql } from 'drizzle-orm';
 import { getDrizzle, withTransaction, type DrizzleDb } from '../drizzle/engine';
 import { recurringRules, recurringRuleTags, transactionTags, transactions } from '../drizzle/schema';
 import { runResultOf } from '../drizzle/proxy';
@@ -21,6 +21,12 @@ export interface GeneratedTransactionPatch {
   description?: string | null;
   type?: RecurringRule['type'];
   tagIds?: number[];
+}
+
+/** Only generated transactions inside this schedule window are rewritten. */
+export interface GeneratedTransactionScope {
+  startDate: string;
+  endDate: string | null;
 }
 
 /**
@@ -258,7 +264,7 @@ const recurringRepoBase = {
     }
   },
 
-  async updateGeneratedTransactions(ruleId: number, patch: GeneratedTransactionPatch, tx?: DrizzleDb): Promise<number> {
+  async updateGeneratedTransactions(ruleId: number, patch: GeneratedTransactionPatch, tx?: DrizzleDb, scope?: GeneratedTransactionScope): Promise<number> {
     const run = async (db: DrizzleDb): Promise<number> => {
       const set: Partial<typeof transactions.$inferInsert> = {};
       if (patch.account_id !== undefined) set.account_id = patch.account_id;
@@ -267,13 +273,21 @@ const recurringRepoBase = {
       if (patch.description !== undefined) set.description = patch.description;
       if (patch.type !== undefined) set.type = patch.type;
 
+      const where = scope
+        ? and(
+          eq(transactions.recurring_rule_id, ruleId),
+          gte(transactions.recurrence_date, scope.startDate),
+          scope.endDate != null ? lte(transactions.recurrence_date, scope.endDate) : undefined,
+        )
+        : eq(transactions.recurring_rule_id, ruleId);
+
       let changes = 0;
       // A tag-only rewrite still bumps `updated_at`, so an open modify form notices it.
       if (Object.keys(set).length > 0 || patch.tagIds) {
         const result = await db
           .update(transactions)
           .set({ ...set, updated_at: sql`datetime('now', 'localtime')` })
-          .where(eq(transactions.recurring_rule_id, ruleId))
+          .where(where)
           .run();
         changes = runResultOf(result).changes;
       }
@@ -282,7 +296,7 @@ const recurringRepoBase = {
         const rows = await db
           .select({ id: transactions.id })
           .from(transactions)
-          .where(eq(transactions.recurring_rule_id, ruleId))
+          .where(where)
           .all();
         const ids = rows.map(r => r.id);
         if (ids.length > 0) {
