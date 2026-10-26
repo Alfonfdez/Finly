@@ -4418,3 +4418,8 @@
 - Hidden modals no longer accumulate keyboard height; useKeyboardLift only grows while visible and resets while hidden.
 - This fixes the Month/Week/Year picker opening clipped at the top after using a form keyboard.
 - Added a regression test and verified the Month modal centered on the Android release APK; test:all green (170 files / 1429 tests).
+
+[2026-10-26] fix | FinlyApp/src/hooks/usePhotos.ts, FinlyApp/tests/hooks/usePhotos.test.tsx, spec/features/023-photo-attachment/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Awaited the asynchronous File.copy before appending a new photo URI to preview state.
+- This fixes the first camera/gallery photo rendering as a black square while later photos appeared normally.
+- Added a deferred-copy regression test; test:all green (170 files / 1430 tests).

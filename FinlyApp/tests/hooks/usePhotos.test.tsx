@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react-native';
+import { renderHook, act, waitFor } from '@testing-library/react-native';
 import * as ImagePicker from 'expo-image-picker';
 
 import { usePhotos } from '../../src/hooks/usePhotos';
@@ -44,7 +44,7 @@ function setPermission(kind: 'camera' | 'library', granted: boolean) {
 describe('usePhotos', () => {
   beforeEach(() => {
     mockFile.mockReset();
-    mockCopy.mockReset().mockImplementation(() => {});
+    mockCopy.mockReset().mockResolvedValue(undefined);
     const cam = ImagePicker.requestCameraPermissionsAsync as ReturnType<typeof vi.fn>;
     const lib = ImagePicker.requestMediaLibraryPermissionsAsync as ReturnType<typeof vi.fn>;
     cam.mockReset();
@@ -93,6 +93,27 @@ describe('usePhotos', () => {
     expect(mockFile).toHaveBeenCalledWith('file:///tmp/snap.jpg');
     expect(result.current.photos).toHaveLength(1);
     expect(result.current.photos[0]).toMatch(/photo_\d+_0\.jpg$/);
+  });
+
+  it('waits for the file copy before appending the photo', async () => {
+    setPermission('camera', true);
+    (ImagePicker.launchCameraAsync as ReturnType<typeof vi.fn>).mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///tmp/snap.jpg' }],
+    });
+    let resolveCopy: (() => void) | undefined;
+    mockCopy.mockImplementationOnce(() => new Promise<void>((resolve) => { resolveCopy = resolve; }));
+    const { result } = await renderHook(() => usePhotos());
+
+    const action = result.current.handleTakePhoto();
+    await waitFor(() => expect(mockCopy).toHaveBeenCalled());
+    expect(result.current.photos).toEqual([]);
+
+    await act(async () => {
+      resolveCopy?.();
+      await action;
+    });
+    expect(result.current.photos).toHaveLength(1);
   });
 
   it('does not pick when the media library permission is denied', async () => {

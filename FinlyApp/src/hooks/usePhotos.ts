@@ -25,11 +25,11 @@ async function webPhotoUri(asset: ImagePicker.ImagePickerAsset): Promise<string>
   return readAsDataUrl(blob);
 }
 
-function copyPhotoToStorage(src: string): string {
+async function copyPhotoToStorage(src: string): Promise<string> {
   const dest = Paths.document.uri + `photo_${Date.now()}_${photoCounter++}.jpg`;
   const srcFile = new File(src);
   const destFile = new File(dest);
-  srcFile.copy(destFile);
+  await srcFile.copy(destFile);
   return dest;
 }
 
@@ -44,7 +44,7 @@ export function usePhotos(initialPhotos: string[] = []) {
     if (!result.canceled && result.assets[0]) {
       const src = result.assets[0].uri;
       try {
-        const dest = copyPhotoToStorage(src);
+        const dest = await copyPhotoToStorage(src);
         setPhotos(prev => [...prev, dest]);
       } catch (err) {
         logError(ERROR_PREFIXES.photoCopy, err);
@@ -66,7 +66,7 @@ export function usePhotos(initialPhotos: string[] = []) {
       }
       const src = asset.uri;
       try {
-        const dest = copyPhotoToStorage(src);
+        const dest = await copyPhotoToStorage(src);
         setPhotos(prev => [...prev, dest]);
       } catch (err) {
         logError(ERROR_PREFIXES.photoCopy, err);
