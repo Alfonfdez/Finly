@@ -16,6 +16,11 @@ import { useFontSize } from '../../hooks/useFontSize';
  */
 export const COUNTER_FONT_SIZE = 12;
 
+/** Reserve enough bottom padding for the scaled inline counter plus its inset. */
+export function inlineCounterReserve(fontSize: number, fontScale: number): number {
+  return Math.ceil(fontSize * fontScale * 1.2) + 12;
+}
+
 const COUNTER_FONT_WEIGHT = '500';
 const AT_LIMIT_FONT_WEIGHT = '700';
 

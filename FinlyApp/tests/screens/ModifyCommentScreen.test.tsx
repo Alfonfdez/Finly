@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { StyleSheet } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import ModifyCommentScreen from '../../src/screens/ModifyCommentScreen';
 import { TEST_IDS } from '../../src/constants/testIds';
@@ -47,6 +48,12 @@ describe('ModifyCommentScreen', () => {
     const input = view.getByPlaceholderText('Comment');
     expect(input.props.value).toBe('Coffee');
     expect(view.getByText('Save')).toBeDisabled();
+  });
+
+  it('places the comment counter inside the multiline field', async () => {
+    const view = await render(<ModifyCommentScreen />);
+    const counter = view.getByText('6/4096');
+    expect(StyleSheet.flatten(counter.props.style).position).toBe('absolute');
   });
 
   it('enables Save once the comment is edited and saves the new value', async () => {

@@ -82,6 +82,16 @@ describe('ModifyCategoryScreen', () => {
     resetAppStub();
   });
 
+  it('keeps a legacy category name above the limit editable', async () => {
+    const longName = 'x'.repeat(45);
+    setAppData({ categories: [{ ...category, name: longName }] });
+    const view = await render(<ModifyCategoryScreen />);
+
+    const input = view.getByDisplayValue(longName);
+    expect(input.props.maxLength).toBe(45);
+    expect(view.getByText('45/30')).toBeTruthy();
+  });
+
   it('preloads the category and keeps Save disabled until something changes', async () => {
     const view = await render(<ModifyCategoryScreen />);
     expect(view.getByDisplayValue('Food')).toBeTruthy();

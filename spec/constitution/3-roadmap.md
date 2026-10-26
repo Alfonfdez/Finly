@@ -1344,3 +1344,11 @@ Applied 2026-10-25:
 - Moved the suggestions panel inside the Comment section, below its header and above the input, so it no longer touches the Tags area.
 - Added a bulb icon, localized **Suggestions** heading and **Tap to reuse** hint, plus 44px rows.
 - Updated Add/Modify comment specs and accessibility docs; browser-verified the panel at 375px; `npm run test:all` green (170 files / 1418 tests).
+
+## 2.2.0 input robustness
+Status: completed.
+
+Applied 2026-10-26:
+- `LabeledTextField` now keeps legacy values above the configured limit editable (`maxLength = max(limit, value.length)`); the raw Comment and Modify Category inputs do the same.
+- Inline counter padding is derived from the scaled counter height (app text size and OS font scale), so Comment/Note counters do not overlap at Large text.
+- Added over-limit and large-text tests for LabeledTextField, CommentInput, ModifyCategory, CreateAccount Note and Modify Comment; test:all green (170 files / 1425 tests).

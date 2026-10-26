@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react';
-import { TextInput, View } from 'react-native';
+import { TextInput, View, useWindowDimensions } from 'react-native';
 import type { TextInputProps, StyleProp, TextStyle } from 'react-native';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import SectionTitle from './SectionTitle';
-import CharCounter from './CharCounter';
+import CharCounter, { COUNTER_FONT_SIZE, inlineCounterReserve } from './CharCounter';
 import { formStyles } from './formStyles';
 
 interface Props extends TextInputProps {
@@ -39,6 +39,7 @@ export default function LabeledTextField({
 }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
+  const { fontScale } = useWindowDimensions();
   const [touched, setTouched] = useState(false);
   const markTouched = useCallback(() => setTouched(true), []);
   const useInlineCounter = inlineCounter && multiline;
@@ -55,10 +56,10 @@ export default function LabeledTextField({
         },
         multiline && formStyles.textArea,
         inputStyle,
-        useInlineCounter && formStyles.inlineInput,
+        useInlineCounter && { paddingBottom: inlineCounterReserve(fs(COUNTER_FONT_SIZE), fontScale) },
       ]}
       value={value}
-      maxLength={maxLength}
+      maxLength={maxLength == null ? undefined : Math.max(maxLength, String(value ?? '').length)}
       multiline={multiline}
       placeholderTextColor={c.textSecondary}
       onChangeText={(text) => {

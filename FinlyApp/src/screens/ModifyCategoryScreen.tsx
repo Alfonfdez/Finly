@@ -223,7 +223,7 @@ export default function ModifyCategoryScreen() {
                 value={name}
                 onChangeText={handleNameChangeLocal}
                 onBlur={() => setNameTouched(true)}
-                maxLength={MAX_CATEGORY_NAME_LENGTH}
+                maxLength={Math.max(MAX_CATEGORY_NAME_LENGTH, name.length)}
                 autoCapitalize="words"
                 autoCorrect={false}
               />

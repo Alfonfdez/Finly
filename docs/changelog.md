@@ -4392,3 +4392,8 @@
 - Bumped Expo to ~57.0.31 and expo-sharing to ~57.0.24.
 - expo install --check and expo-doctor (21/21) pass; test:all green (170 files / 1418 tests).
 - Prebuilt Android and rebuilt the release APK; browser smoke-tested Home and Add transaction.
+
+[2026-10-26] fix | FinlyApp/src/components/form/CharCounter.tsx, FinlyApp/src/components/form/LabeledTextField.tsx, FinlyApp/src/components/form/formStyles.ts, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/tests/component/LabeledTextField.test.tsx, FinlyApp/tests/component/CommentInput.test.tsx, FinlyApp/tests/screens/ModifyCategoryScreen.test.tsx, FinlyApp/tests/screens/CreateAccountScreen.test.tsx, FinlyApp/tests/screens/ModifyCommentScreen.test.tsx, spec/constitution/3-roadmap.md, spec/constitution/6-screens.md, docs/harnesses.md
+- LabeledTextField now keeps legacy values above the configured limit editable; raw Comment and Modify Category inputs follow the same max(limit, value.length) rule.
+- Inline counter reserve is derived from the scaled counter height and OS font scale, preventing overlap at Large text.
+- Added over-limit and large-text coverage for LabeledTextField, CommentInput, ModifyCategory, CreateAccount Note and Modify Comment; test:all green (170 files / 1425 tests).

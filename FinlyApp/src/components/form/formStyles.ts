@@ -7,7 +7,6 @@ export const formStyles = StyleSheet.create({
   textArea: { minHeight: 80 },
   counter: { textAlign: 'right', marginTop: 4, marginBottom: 4 },
   inlineInputWrap: { position: 'relative' },
-  inlineInput: { paddingBottom: 26 },
   inlineCounter: { position: 'absolute', right: 8, bottom: 6, textAlign: 'right' },
   button: { paddingVertical: 14, borderRadius: BUTTON_BORDER_RADIUS, alignItems: 'center', borderWidth: 1, borderColor: 'transparent' },
   buttonText: { fontWeight: '600' },

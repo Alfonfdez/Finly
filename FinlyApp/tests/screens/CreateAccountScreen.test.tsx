@@ -70,6 +70,12 @@ describe('CreateAccountScreen', () => {
     expect(view.queryByTestId(TEST_IDS.formMutedSlot)).toBeNull();
   });
 
+  it('places the Note counter inside the multiline field', async () => {
+    const view = await render(<CreateAccountScreen />);
+    const counter = view.getByText('0/200');
+    expect(StyleSheet.flatten(counter.props.style).position).toBe('absolute');
+  });
+
   it('shows the icon+color hint once a name is typed and keeps Create disabled', async () => {
     const view = await render(<CreateAccountScreen />);
     await fireEvent.changeText(view.getByPlaceholderText('Account name'), 'Wallet');
