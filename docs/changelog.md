@@ -4397,3 +4397,8 @@
 - LabeledTextField now keeps legacy values above the configured limit editable; raw Comment and Modify Category inputs follow the same max(limit, value.length) rule.
 - Inline counter reserve is derived from the scaled counter height and OS font scale, preventing overlap at Large text.
 - Added over-limit and large-text coverage for LabeledTextField, CommentInput, ModifyCategory, CreateAccount Note and Modify Comment; test:all green (170 files / 1425 tests).
+
+[2026-10-26] test | FinlyApp/tests/screens/DataScreen.test.tsx, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx
+- Mocked the maintenance cleanup wrappers in DataScreen tests, removing the accidental getDatabase warning.
+- Silenced the expected recurring-delete console error while still asserting the failure path.
+- Reran the suite twice with no act, getDatabase or recurring-delete warnings; test:all green (170 files / 1425 tests).
