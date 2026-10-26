@@ -103,6 +103,24 @@ describe('RecurringRow', () => {
     expect(view.getByText('+50,00 €')).toBeTruthy();
   });
 
+  it('selects the rule when the checkbox is pressed in select mode', async () => {
+    const onPress = vi.fn();
+    const view = await render(
+      <RecurringRow
+        rule={rule}
+        category={category}
+        count={0}
+        today="2026-10-06"
+        onPress={onPress}
+        onToggleActive={vi.fn()}
+        selectMode
+        selected={false}
+      />,
+    );
+    await fireEvent.press(view.getByText('checkbox-outline'));
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
   it('calls onPress on tap and onToggleActive on switch change', async () => {
     const onPress = vi.fn();
     const onToggleActive = vi.fn();

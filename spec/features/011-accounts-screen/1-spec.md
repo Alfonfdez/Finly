@@ -75,7 +75,7 @@
 
 - The header shows a "Select" (`accounts_select`) text button next to the search icon; pressing it toggles selection mode (label switches to "Done", `accounts_select_done`).
 - When there are 0 accounts (excluding Total), the header Select button is hidden.
-- In selection mode each account row shows a leading checkbox (`checkbox-outline` unchecked / `checkbox` checked in primary color); tapping a row toggles its selection instead of navigating to ModifyAccountScreen.
+- In selection mode each account row shows a leading checkbox (`checkbox-outline` unchecked / `checkbox` checked in primary color); tapping a row or its checkbox toggles its selection instead of navigating to ModifyAccountScreen. The balance stays visible on the right.
 - The Total account row cannot be selected (no checkbox shown).
 - The header search and search filtering keep working during selection mode; selection applies to the filtered list.
 - The floating "+" button is hidden in selection mode.
@@ -120,6 +120,7 @@
 - [x] The floating "+" button navigates to "Create account" (013).
 - [x] When there are no accounts (excluding Total), the header Select button is hidden.
 - [x] "Select" in the header enters selection mode; account rows show checkboxes and tapping toggles selection instead of navigating.
+- [x] In selection mode the checkbox is the leading element, the balance stays visible, and tapping either the row or the checkbox selects the account.
 - [x] The Total account row cannot be selected in selection mode.
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
 - [x] A guard prevents deleting all non-Total accounts.

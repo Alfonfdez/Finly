@@ -3,7 +3,6 @@ import {
   View, Text, FlatList, StyleSheet,
 } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -28,6 +27,7 @@ import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
 import ListOrEmpty from '../components/ListOrEmpty';
 import ListItemRow from '../components/ListItemRow';
+import SelectionCheckbox from '../components/SelectionCheckbox';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 import SelectionActionBar from '../components/SelectionActionBar';
@@ -188,28 +188,21 @@ export default function AccountsScreen() {
           badgeRadius={12}
           badgeAlpha={13}
           accessibilityState={selectMode && selectable ? { selected } : undefined}
+          leading={selectMode && selectable ? <SelectionCheckbox selected={selected} /> : undefined}
           right={
-            selectMode && selectable ? (
-              <Ionicons
-                name={selected ? 'checkbox' : 'square-outline'}
-                size={24}
-                color={selected ? c.primary : c.textSecondary}
-              />
-            ) : (
-              <Text
-                style={[
-                  styles.accountBalance,
-                  {
-                    color: isBalanceHidden ? c.textSecondary : (item.balance >= 0 ? c.green : c.red),
-                    fontSize: fs(15),
-                  },
-                ]}
-              >
-                {isBalanceHidden
-                  ? HIDDEN_BALANCE
-                  : formatSignedCurrency(item.balance, config.currency, config.decimalSeparator)}
-              </Text>
-            )
+            <Text
+              style={[
+                styles.accountBalance,
+                {
+                  color: isBalanceHidden ? c.textSecondary : (item.balance >= 0 ? c.green : c.red),
+                  fontSize: fs(15),
+                },
+              ]}
+            >
+              {isBalanceHidden
+                ? HIDDEN_BALANCE
+                : formatSignedCurrency(item.balance, config.currency, config.decimalSeparator)}
+            </Text>
           }
           style={[
             styles.accountRow,

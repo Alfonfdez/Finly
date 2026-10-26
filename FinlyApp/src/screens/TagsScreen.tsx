@@ -25,6 +25,7 @@ import { defaultTagSortDirection, sortTags } from '../utils/tagSort';
 import { nextSortPreference, toggleSortDirection } from '../utils/sortPreference';
 import Fab from '../components/Fab';
 import ListItemRow from '../components/ListItemRow';
+import SelectionCheckbox from '../components/SelectionCheckbox';
 import DateIcon from '../components/DateIcon';
 import ListOrEmpty from '../components/ListOrEmpty';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
@@ -127,13 +128,7 @@ export default function TagsScreen() {
             </Text>
           </View>
         }
-        leading={selectMode ? (
-          <Ionicons
-            name={selected ? 'checkbox' : 'checkbox-outline'}
-            size={22}
-            color={selected ? c.primary : c.textSecondary}
-          />
-        ) : undefined}
+        leading={selectMode ? <SelectionCheckbox selected={selected} /> : undefined}
         right={!selectMode ? <Ionicons name="chevron-forward" size={18} color={c.textSecondary} /> : undefined}
         divider
         accessibilityState={selectMode ? { selected } : undefined}

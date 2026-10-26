@@ -219,6 +219,19 @@ describe('RecurringScreen', () => {
     await waitFor(() => expect(mockDeleteMany).toHaveBeenCalledWith([1]));
   });
 
+  it('selects a rule when its checkbox is pressed', async () => {
+    const view = await renderWithHeader();
+    await waitFor(() => expect(view.getByText('Rent')).toBeTruthy());
+
+    const ue = userEvent.setup();
+    await ue.press(view.getByLabelText('Enter select mode'));
+    await waitFor(() => expect(view.getByText('Delete (0)')).toBeTruthy());
+
+    const boxes = view.getAllByText('checkbox-outline');
+    await ue.press(boxes[boxes.length - 1]);
+    await waitFor(() => expect(view.getByText('Delete (1)')).toBeTruthy());
+  });
+
   it('selects all visible rules and clears them again', async () => {
     mockList.mockResolvedValue([rule, { ...rule, id: 2, name: 'Gym' }]);
     const view = await renderWithHeader();

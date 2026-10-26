@@ -1,10 +1,10 @@
 import { memo } from 'react';
 import { View, Text, Switch, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
 import IconBadge from './IconBadge';
+import SelectionCheckbox from './SelectionCheckbox';
 import DateIcon from './DateIcon';
 import { DISABLED_CONTROL_OPACITY, switchColors } from './componentStyles';
 import { BADGE_SHAPES, RECURRING_STATUSES, TRANSACTION_TYPES } from '../constants/types';
@@ -41,61 +41,61 @@ function RecurringRow({ rule, category, count, today, onPress, onToggleActive, b
 
   return (
     <View style={[styles.row, { borderBottomColor: c.border }]}>
-      {selectMode && (
-        <Ionicons
-          name={selected ? 'checkbox' : 'checkbox-outline'}
-          size={22}
-          color={selected ? c.primary : c.textSecondary}
-          style={styles.checkbox}
-        />
-      )}
-      {category && (
-        <IconBadge
-          icon={category.icon}
-          color={category.color}
-          shape={BADGE_SHAPES.circle}
-          size={36}
-          iconSize={18}
-          backgroundAlpha={19}
-          style={styles.badge}
-        />
-      )}
       <TouchableOpacity
-        style={styles.info}
+        style={styles.left}
         onPress={onPress}
         accessibilityRole="button"
         accessibilityLabel={rule.name}
+        accessibilityState={selectMode ? { selected } : undefined}
       >
-        <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]} numberOfLines={2}>
-          {rule.name}
-        </Text>
-        <Text
-          style={[styles.subtitle, { color: c.primary, fontSize: fs(12) }]}
-          numberOfLines={2}
-          ellipsizeMode="tail"
-        >
-          {recurrenceSummary(rule, config.language)}
-        </Text>
-        <View style={styles.dateRow}>
-          <DateIcon kind="calendar" size={12} />
+        {selectMode && (
+          <View style={styles.checkbox}>
+            <SelectionCheckbox selected={!!selected} />
+          </View>
+        )}
+        {category && (
+          <IconBadge
+            icon={category.icon}
+            color={category.color}
+            shape={BADGE_SHAPES.circle}
+            size={36}
+            iconSize={18}
+            backgroundAlpha={19}
+            style={styles.badge}
+          />
+        )}
+        <View style={styles.info}>
+          <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]} numberOfLines={2}>
+            {rule.name}
+          </Text>
           <Text
-            style={[styles.dateText, { color: ended ? c.textSecondary : c.text, fontSize: fs(11) }]}
-            numberOfLines={1}
+            style={[styles.subtitle, { color: c.primary, fontSize: fs(12) }]}
+            numberOfLines={2}
+            ellipsizeMode="tail"
           >
-            {ended
-              ? labels.recurring_ended
-              : labels.recurring_next_due(formatDateLong(fromDateOnly(rule.next_due), config.language))}
+            {recurrenceSummary(rule, config.language)}
           </Text>
-        </View>
-        <Text style={[styles.meta, { color: c.textSecondary, fontSize: fs(11) }]} numberOfLines={1}>
-          {category ? `${getDisplayCategoryName(category)} · ` : ''}
-          {labels.recurring_transactions_count(count)}
-        </Text>
-        <View style={styles.dateRow}>
-          <DateIcon kind="time" size={11} />
-          <Text style={[styles.dateText, { color: c.textSecondary, fontSize: fs(11) }]} numberOfLines={1}>
-            {labels.recurring_created_on(createdText)}
+          <View style={styles.dateRow}>
+            <DateIcon kind="calendar" size={12} />
+            <Text
+              style={[styles.dateText, { color: ended ? c.textSecondary : c.text, fontSize: fs(11) }]}
+              numberOfLines={1}
+            >
+              {ended
+                ? labels.recurring_ended
+                : labels.recurring_next_due(formatDateLong(fromDateOnly(rule.next_due), config.language))}
+            </Text>
+          </View>
+          <Text style={[styles.meta, { color: c.textSecondary, fontSize: fs(11) }]} numberOfLines={1}>
+            {category ? `${getDisplayCategoryName(category)} · ` : ''}
+            {labels.recurring_transactions_count(count)}
           </Text>
+          <View style={styles.dateRow}>
+            <DateIcon kind="time" size={11} />
+            <Text style={[styles.dateText, { color: c.textSecondary, fontSize: fs(11) }]} numberOfLines={1}>
+              {labels.recurring_created_on(createdText)}
+            </Text>
+          </View>
         </View>
       </TouchableOpacity>
       <View style={styles.right}>
@@ -132,6 +132,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
+  },
+  left: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   badge: {
     marginRight: 12,

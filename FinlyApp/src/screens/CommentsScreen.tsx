@@ -20,6 +20,7 @@ import { defaultCommentSortDirection, sortComments } from '../utils/commentSort'
 import { nextSortPreference, toggleSortDirection } from '../utils/sortPreference';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import ListItemRow from '../components/ListItemRow';
+import SelectionCheckbox from '../components/SelectionCheckbox';
 import DateIcon from '../components/DateIcon';
 import ListOrEmpty from '../components/ListOrEmpty';
 import { useBulkDelete } from '../hooks/useBulkDelete';
@@ -139,13 +140,7 @@ export default function CommentsScreen() {
             </Text>
           </View>
         }
-        leading={selectMode ? (
-          <Ionicons
-            name={selected ? 'checkbox' : 'checkbox-outline'}
-            size={22}
-            color={selected ? c.primary : c.textSecondary}
-          />
-        ) : undefined}
+        leading={selectMode ? <SelectionCheckbox selected={selected} /> : undefined}
         right={!selectMode ? <Ionicons name="chevron-forward" size={18} color={c.textSecondary} /> : undefined}
         divider
         accessibilityState={selectMode ? { selected } : undefined}
