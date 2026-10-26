@@ -1424,3 +1424,13 @@ Applied 2026-10-26:
 - Updated specs 021/015, added the localized hint in all 9 languages, covered the three tabs and the clear/re-enable flow in modal tests, and browser-verified the preset rows and type headers at 375px; test:all green (178 files / 1509 tests).
 
 Spec: spec/features/021-category-filter-modal/, spec/features/015-all-transactions-screen/.
+
+## 2.2.0 CI test stability
+Status: completed.
+
+Applied 2026-10-26:
+- Pinned the GitHub Actions job to `ubuntu-24.04` with a 15-minute timeout, avoiding the `ubuntu-latest` migration to Ubuntu 26 while the test runtime is validated on it.
+- Wrapped config-stub notifications (`setConfig`, `setColors`, `resetStub`) in React `act`, removing the FormSectionHeader/SettingsRow/AppProvider update warnings.
+- `npm run test:all` green twice locally, including once with `CI=true` (178 files / 1509 tests).
+
+Spec: none (CI/test tooling).

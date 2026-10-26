@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import type { ReactNode } from 'react';
+import { act, type ReactNode } from 'react';
 import type { Config } from '../../../src/context/ConfigContext';
 import type { ColorPalette } from '../../../src/constants/themes';
 
@@ -127,17 +127,23 @@ export function getConfigStub(): ConfigStubState {
 }
 
 export function setConfig(partial: Partial<Config>): void {
-  const stub = currentStub();
-  stub.config = { ...stub.config, ...partial };
-  notifyConfigChanged();
+  act(() => {
+    const stub = currentStub();
+    stub.config = { ...stub.config, ...partial };
+    notifyConfigChanged();
+  });
 }
 
 export function setColors(partial: Partial<ColorPalette>): void {
-  const stub = currentStub();
-  stub.activeColors = { ...stub.activeColors, ...partial };
-  notifyConfigChanged();
+  act(() => {
+    const stub = currentStub();
+    stub.activeColors = { ...stub.activeColors, ...partial };
+    notifyConfigChanged();
+  });
 }
 
 export function resetStub(): void {
-  currentStub().reset();
+  act(() => {
+    currentStub().reset();
+  });
 }
