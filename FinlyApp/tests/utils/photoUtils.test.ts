@@ -11,6 +11,7 @@ const { mockFileDelete, mockFileCtor, platform } = vi.hoisted(() => ({
 vi.mock('../../src/utils/platform', () => platform);
 
 vi.mock('expo-file-system', () => ({
+  Paths: { document: { uri: 'file:///data/user/0/app/files/' } },
   File: class {
     exists = true;
     delete = mockFileDelete;
@@ -23,6 +24,7 @@ vi.mock('expo-file-system', () => ({
 const DATA_URI = 'data:image/jpeg;base64,/9j/4AAQSkZJRg==';
 const DATA_URI_2 = 'data:image/png;base64,iVBORw0KGgo=';
 const FILE_URI = 'file:///data/user/0/app/files/photo_1.jpg';
+const OUTSIDE_URI = 'file:///data/user/0/other-app/secret.jpg';
 
 describe('parsePhotos', () => {
   it('returns an empty array for null, undefined, and empty string', () => {
@@ -64,6 +66,12 @@ describe('deletePhotoFile', () => {
   it('deletes the physical file for a file URI (native)', async () => {
     await expect(deletePhotoFile(FILE_URI)).resolves.toBeUndefined();
     expect(mockFileDelete).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not delete a file outside the app photo directory', async () => {
+    await expect(deletePhotoFile(OUTSIDE_URI)).resolves.toBeUndefined();
+    expect(mockFileCtor).not.toHaveBeenCalled();
+    expect(mockFileDelete).not.toHaveBeenCalled();
   });
 
   it('propagates deletion failures so callers can log them', async () => {

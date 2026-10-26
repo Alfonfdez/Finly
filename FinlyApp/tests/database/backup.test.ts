@@ -318,6 +318,41 @@ describe('backup validation', () => {
     expectInvalid(copy => { copy.data.recurring_rules = [{ ...rule, interval: 100 }]; });
     expectInvalid(copy => { copy.data.recurring_rules = [{ ...rule, start_date: '2026-01-01 00:00:00' }]; });
     expectInvalid(copy => { copy.data.recurring_rules = [{ ...rule, end_date: '2025-12-31' }]; });
+    expectInvalid(copy => { copy.data.recurring_rules = [{ ...rule, next_due: '2025-12-31' }]; });
+    expectInvalid(copy => { copy.data.recurring_rules = [{ ...rule, weekday: 7 }]; });
+    expectInvalid(copy => { copy.data.recurring_rules = [{ ...rule, day_of_month: 0 }]; });
+    expectInvalid(copy => { copy.data.recurring_rules = [{ ...rule, month: 13 }]; });
+    expectInvalid(copy => { copy.data.recurring_rules = [{ ...rule, active: 2 }]; });
+    expectInvalid(copy => { copy.data.recurring_rules = [{ ...rule, account_id: 999 }]; });
+    const totalAccount = snapshot.data.accounts.find(account => account.is_total === 1)!;
+    expectInvalid(copy => { copy.data.recurring_rules = [{ ...rule, account_id: totalAccount.id }]; });
+  });
+
+  it('rejects missing foreign keys, Total-account transactions and broken tag links', async () => {
+    const db = await boot();
+    const tag = await db.runAsync("INSERT INTO tags (user_id, name, created_at) VALUES (1, 'test', '2026-08-08')");
+    const result = await db.runAsync(
+      "INSERT INTO transactions (account_id, category_id, type, amount, date, created_at) VALUES (1, 3, 'expense', 10, '2026-08-08', '2026-08-08')",
+    );
+    await db.runAsync('INSERT INTO transaction_tags (transaction_id, tag_id) VALUES (?, ?)', result.lastInsertRowId, tag.lastInsertRowId);
+    const snapshot = await buildBackup(db, SCHEMA_VERSION);
+    db.close();
+
+    const expectInvalid = (mutate: (copy: typeof snapshot) => void) => {
+      const copy = structuredClone(snapshot);
+      mutate(copy);
+      expect(() => assertImportableBackup(copy)).toThrow(BackupValidationError);
+    };
+    const totalAccount = snapshot.data.accounts.find(account => account.is_total === 1)!;
+    const transaction = snapshot.data.transactions[0];
+    const tagLink = snapshot.data.transaction_tags[0];
+
+    expectInvalid(copy => { copy.data.transactions[0].account_id = 999; });
+    expectInvalid(copy => { copy.data.transactions[0].account_id = totalAccount.id; });
+    expectInvalid(copy => { copy.data.transactions[0].recurring_rule_id = 999; copy.data.transactions[0].recurrence_date = transaction.date.slice(0, 10); });
+    expectInvalid(copy => { copy.data.transaction_tags = [{ ...tagLink, transaction_id: 999 }]; });
+    expectInvalid(copy => { copy.data.transaction_tags = [{ ...tagLink, tag_id: 999 }]; });
+    expectInvalid(copy => { copy.data.recurring_rule_tags = [{ rule_id: 999, tag_id: tagLink.tag_id }]; });
   });
 
   it('applyBackup refuses an incomplete snapshot even when called directly', async () => {
