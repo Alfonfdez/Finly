@@ -7,10 +7,11 @@ import { accountSchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
 import { existsByName } from './repoHelpers';
 import { collectTransactionPhotos, deletePhotoUris } from '../photoCleanup';
+import { serializeWrites } from '../transactionQueue';
 import { dbTimestamp } from '../../utils/formatters';
 import { TRANSACTION_TYPES } from '../../constants/types';
 
-export const accountRepo = {
+const accountRepoBase = {
   async list(userId: number): Promise<Account[]> {
     const db = await getDrizzle();
     const rows = await db
@@ -123,3 +124,5 @@ export const accountRepo = {
     );
   },
 };
+
+export const accountRepo = serializeWrites(accountRepoBase, ['create', 'update', 'deleteAll']);

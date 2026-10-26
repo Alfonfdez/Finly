@@ -4408,3 +4408,8 @@
 - Generated transactions must reference a rule and carry a valid date-only recurrence date.
 - Native photo deletion is restricted to the app documents/photo root, ignoring arbitrary file URIs from imported backups.
 - Added validation/allowlist tests; test:all green (170 files / 1427 tests).
+
+[2026-10-26] fix | FinlyApp/src/database/transactionQueue.ts, FinlyApp/src/database/repositories/accountRepo.ts, FinlyApp/src/database/repositories/categoryRepo.ts, FinlyApp/src/database/repositories/tagRepo.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/database/repositories/transactionRepo.writes.ts, FinlyApp/tests/database/transactionConcurrency.test.ts, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Reproduced a direct write joining an open catch-up transaction and being rolled back with it.
+- Added runExclusiveWrite/serializeWrites and routed standalone account, category, tag, recurring and comment writes through the shared transaction queue.
+- Added a concurrency regression test; test:all green (170 files / 1428 tests).

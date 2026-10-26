@@ -5,8 +5,9 @@ import { runResultOf } from '../drizzle/proxy';
 import type { Transaction } from '../types';
 import { dbTimestamp } from '../../utils/formatters';
 import { collectTransactionPhotos, collectAllTransactionPhotos, deletePhotoUris } from '../photoCleanup';
+import { serializeWrites } from '../transactionQueue';
 
-export const transactionWrites = {
+const transactionWritesBase = {
   async create(data: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>): Promise<Transaction> {
     const db = await getDrizzle();
     const result = await db
@@ -131,3 +132,5 @@ export const transactionWrites = {
     });
   },
 };
+
+export const transactionWrites = serializeWrites(transactionWritesBase, ['updateComment', 'deleteComment', 'deleteComments']);

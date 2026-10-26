@@ -93,6 +93,32 @@ describe('transactions are serialized with the reconciliation run', () => {
     expect(await count(db, 'transactions')).toBeGreaterThan(0);
   });
 
+  it('a direct write waits for an open transaction instead of joining it', async () => {
+    const { db } = await boot();
+    const { getDatabase } = await import('../../src/database/database');
+    const { tagRepo } = await import('../../src/database/repositories/tagRepo');
+    const handle = await getDatabase();
+    let release: (() => void) | undefined;
+    let markStarted: (() => void) | undefined;
+    const started = new Promise<void>((resolve) => { markStarted = resolve; });
+
+    const tx = handle.withTransactionAsync(async () => {
+      await handle.runAsync("INSERT INTO tags (user_id, name, created_at) VALUES (1, 'inside', '2026-10-19')");
+      markStarted?.();
+      await new Promise<void>((resolve) => { release = resolve; });
+      throw new Error('rollback');
+    });
+    await started;
+
+    const directWrite = tagRepo.create({ user_id: 1, name: 'direct' });
+    release?.();
+    await expect(tx).rejects.toThrow('rollback');
+    await expect(directWrite).resolves.toBeDefined();
+
+    const row = await db.getFirstAsync<{ count: number }>("SELECT COUNT(*) AS count FROM tags WHERE name = 'direct'");
+    expect(row?.count).toBe(1);
+  });
+
   it('an import during the catch-up completes without transaction errors', async () => {
     const { db, recurringRepo, materializeDueRecurring } = await boot();
     const { exportBackup, importBackup } = await import('../../src/database/backupService');

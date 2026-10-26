@@ -7,8 +7,9 @@ import { tagSchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
 import { dbTimestamp } from '../../utils/formatters';
 import { existsByName } from './repoHelpers';
+import { serializeWrites } from '../transactionQueue';
 
-export const tagRepo = {
+const tagRepoBase = {
   async list(userId: number): Promise<Tag[]> {
     const db = await getDrizzle();
     const rows = await db
@@ -66,3 +67,5 @@ export const tagRepo = {
     );
   },
 };
+
+export const tagRepo = serializeWrites(tagRepoBase, ['create', 'update', 'delete', 'deleteMany', 'deleteAll']);

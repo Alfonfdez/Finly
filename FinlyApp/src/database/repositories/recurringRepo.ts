@@ -7,6 +7,7 @@ import { recurringRuleSchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
 import { dbTimestamp } from '../../utils/formatters';
 import { RULE_ACTIVE, RULE_INACTIVE } from '../../constants/types';
+import { serializeWrites } from '../transactionQueue';
 
 /** Fields needed to create a rule. `skipped_from` is derived, so it is optional. */
 export type RecurringRuleInput = Omit<RecurringRule, 'id' | 'created_at' | 'updated_at' | 'skipped_from'> & {
@@ -58,7 +59,7 @@ async function writeRuleFields(
     .run();
 }
 
-export const recurringRepo = {
+const recurringRepoBase = {
   async list(userId: number): Promise<RecurringRule[]> {
     const db = await getDrizzle();
     const rows = await db
@@ -301,3 +302,5 @@ export const recurringRepo = {
     return tx ? run(tx) : withTransaction(run);
   },
 };
+
+export const recurringRepo = serializeWrites(recurringRepoBase, ['setActive', 'reactivate', 'remove', 'deleteMany']);

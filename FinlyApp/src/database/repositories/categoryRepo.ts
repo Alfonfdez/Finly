@@ -7,10 +7,11 @@ import type { TransactionType } from '../../constants/types';
 import { categorySchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
 import { collectTransactionPhotos, deletePhotoUris } from '../photoCleanup';
+import { serializeWrites } from '../transactionQueue';
 import { dbTimestamp } from '../../utils/formatters';
 import { existsByName } from './repoHelpers';
 
-export const categoryRepo = {
+const categoryRepoBase = {
   async list(userId: number, type?: TransactionType): Promise<Category[]> {
     const db = await getDrizzle();
     const rows = await db
@@ -155,3 +156,5 @@ export const categoryRepo = {
     );
   },
 };
+
+export const categoryRepo = serializeWrites(categoryRepoBase, ['create', 'update', 'deleteAll']);
