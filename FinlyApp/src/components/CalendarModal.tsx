@@ -146,13 +146,13 @@ export default function CalendarModal({
           <DayPicker key={visible ? PICKER_KEY.open : PICKER_KEY.closed} date={tempDate} onSelect={handleSelect} minDate={minDate} maxDate={maxDate} />
         )}
         {period === PERIODS.week && (
-          <WeekPicker key={visible ? PICKER_KEY.open : PICKER_KEY.closed} date={tempDate} onSelect={handleSelect} />
+          <WeekPicker key={visible ? PICKER_KEY.open : PICKER_KEY.closed} date={tempDate} onSelect={handleSelect} minDate={minDate} maxDate={maxDate} />
         )}
         {period === PERIODS.month && (
-          <MonthGrid key={visible ? PICKER_KEY.open : PICKER_KEY.closed} date={tempDate} onSelect={handleSelect} />
+          <MonthGrid key={visible ? PICKER_KEY.open : PICKER_KEY.closed} date={tempDate} onSelect={handleSelect} minDate={minDate} maxDate={maxDate} />
         )}
         {period === PERIODS.year && (
-          <YearGrid key={visible ? PICKER_KEY.open : PICKER_KEY.closed} date={tempDate} onSelect={handleSelect} />
+          <YearGrid key={visible ? PICKER_KEY.open : PICKER_KEY.closed} date={tempDate} onSelect={handleSelect} minDate={minDate} maxDate={maxDate} />
         )}
         {period === PERIODS.custom && (
           <PeriodPicker

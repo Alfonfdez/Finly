@@ -1,13 +1,14 @@
 /**
  * Shared calendar date-bound convention.
  *
- * - `undefined` keeps the historical default (no future: max = end of today).
- * - `null` means unbounded on that side.
+ * - the minimum is always 01 January 1900 (`minDate` omitted or null).
+ * - `undefined` for the maximum keeps the historical default (no future: max = end of today).
+ * - `null` for the maximum means unbounded in the future.
  * - a `Date` is an inclusive clamp.
  *
- * Centralizes the rule used by the calendar navs (`MonthNav`/`YearNav`) and the
- * day grid (`DayPicker`), so it only lives in one place.
+ * Centralizes the rule used by every calendar picker, so it only lives in one place.
  */
+import { CALENDAR_MIN_DATE } from '../constants/calendar';
 import { startOfDay } from './formatters';
 
 export interface ResolvedDateBounds {
@@ -21,7 +22,7 @@ export function resolveDateBounds(
   today: Date = new Date(),
 ): ResolvedDateBounds {
   return {
-    min: minDate ?? null,
+    min: minDate ?? CALENDAR_MIN_DATE,
     max: maxDate === undefined ? today : maxDate,
   };
 }

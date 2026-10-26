@@ -1392,3 +1392,14 @@ Applied 2026-10-26:
 - Fixed the first photo preview rendering black: `File.copy()` returns a promise in Expo SDK 57, and the URI was added to state before the copy completed.
 - Camera and gallery copies are now awaited before the preview URI is appended.
 - Added a deferred-copy regression test; test:all green (170 files / 1430 tests).
+
+## Calendar picker standard
+Status: completed.
+
+Applied 2026-10-26:
+- Inside Day/Week/Month pickers, arrows only browse; the selected value changes only by tapping (strict A).
+- Added the absolute 01 January 1900 calendar floor; `minDate` omitted or `null` both mean 1900, while `maxDate` keeps its existing semantics.
+- `YearGrid` uses fixed 12-year pages anchored at 1900 (`1900–1911`, `1912–1923`, …); tapping a year no longer recenters the grid.
+- `WeekPicker` keeps six fixed row slots; weeks entirely outside the active month are blank, non-interactive placeholders that preserve height and spacing.
+- Tapping a shared week no longer jumps to the month where the week starts; reopening still opens the week's start month.
+- Added calendar bounds, MonthGrid, YearGrid and WeekPicker regression tests; test:all green (175 files / 1460 tests).
