@@ -1361,3 +1361,12 @@ Applied 2026-10-26:
 - Transactions and rules that reference the Total account are rejected.
 - Native photo cleanup only deletes files under the app documents/photo root; arbitrary `file://` URIs from imported backups are ignored.
 - Added backup and photo allowlist tests; test:all green (170 files / 1427 tests).
+
+## 2.2.0 serialized direct writes
+Status: completed.
+
+Applied 2026-10-26:
+- Reproduced the direct-write/catch-up rollback at the SQL engine level: a tag write issued while a transaction awaited was rolled back with it.
+- Added `runExclusiveWrite`/`serializeWrites` and routed standalone account, category, tag, recurring and comment writes through the same queue as explicit transactions.
+- Transaction internals keep their non-queued repository calls, avoiding nested queue deadlocks.
+- Added a concurrency regression test; test:all green (170 files / 1428 tests).
