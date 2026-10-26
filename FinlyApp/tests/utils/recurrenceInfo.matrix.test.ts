@@ -151,6 +151,42 @@ describe('recurrenceInfoLines matrix', () => {
     });
   });
 
+  it('counts only occurrences inside a later start window', () => {
+    expect(recurrenceInfoLines(
+      schedule({ start_date: '2026-10-19' }),
+      {
+        today: '2026-10-26',
+        cursor: '2026-10-27',
+        scope: 'futureAndPast',
+        pastDetailsChanged: true,
+        existingOccurrences: dailyRange('2026-10-01', '2026-10-26'),
+      },
+      LANGUAGES.en,
+    )).toEqual({
+      summary: 'Every day',
+      firstLine: 'Next: October 27, 2026',
+      detailLines: ['No transactions will be created now', 'Updates 8 past transactions'],
+    });
+  });
+
+  it('counts only occurrences inside a shortened end window', () => {
+    expect(recurrenceInfoLines(
+      schedule({ end_date: '2026-10-10' }),
+      {
+        today: '2026-10-26',
+        cursor: '2026-10-27',
+        scope: 'futureAndPast',
+        pastDetailsChanged: true,
+        existingOccurrences: dailyRange('2026-10-01', '2026-10-26'),
+      },
+      LANGUAGES.en,
+    )).toEqual({
+      summary: 'Every day until October 10, 2026',
+      firstLine: 'This rule has ended: no future transactions will be created.',
+      detailLines: ['Updates 10 past transactions'],
+    });
+  });
+
   it('future only never reports past updates', () => {
     expect(recurrenceInfoLines(
       schedule(),

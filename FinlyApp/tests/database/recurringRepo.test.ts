@@ -150,6 +150,31 @@ describe('recurringRepo', () => {
     }
   });
 
+  it('bulk-updates only generated transactions inside a schedule window', async () => {
+    const { recurringRepo, transactionRepo, tagRepo } = await boot();
+    const tag = await tagRepo.create({ user_id: 1, name: 'Window' });
+    const rule = await recurringRepo.createWithTags(baseRule, []);
+    await recurringRepo.insertOccurrence(rule, '2026-01-02', []);
+    await recurringRepo.insertOccurrence(rule, '2026-02-02', []);
+    await recurringRepo.insertOccurrence(rule, '2026-03-02', []);
+
+    await recurringRepo.updateGeneratedTransactions(
+      rule.id,
+      { amount: 120, tagIds: [tag.id] },
+      undefined,
+      { startDate: '2026-02-01', endDate: '2026-02-28' },
+    );
+
+    const txs = await transactionRepo.list();
+    const byDate = new Map(txs.map(tx => [tx.recurrence_date, tx]));
+    expect(byDate.get('2026-01-02')?.amount).toBe(100);
+    expect(byDate.get('2026-02-02')?.amount).toBe(120);
+    expect(byDate.get('2026-03-02')?.amount).toBe(100);
+    expect(await transactionRepo.getTagsByTransactionId(byDate.get('2026-01-02')!.id)).toEqual([]);
+    expect(await transactionRepo.getTagsByTransactionId(byDate.get('2026-02-02')!.id)).toEqual([tag.id]);
+    expect(await transactionRepo.getTagsByTransactionId(byDate.get('2026-03-02')!.id)).toEqual([]);
+  });
+
   it('deleting a rule keeps its generated transactions but clears the link', async () => {
     const { recurringRepo, transactionRepo } = await boot();
     const rule = await recurringRepo.createWithTags(baseRule, []);

@@ -4465,3 +4465,8 @@
 - Recurring: Future + past now shows 'Back-fill from: <date>' when it creates missed occurrences and 'Updates N past transactions' when a past-affecting detail changed
 - Recurring: fixed shortening an end date moving a future cursor backwards; extending it later resumes from the correct occurrence
 - Added a broad hint/lifecycle battery across multiple rules, sequential type/date edits and both scopes; test:all green (178 files / 1490 tests).
+
+[2026-10-26] fix | FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/database/recurringService.ts, FinlyApp/src/utils/recurrenceInfo.ts, FinlyApp/tests/database/recurringRepo.test.ts, FinlyApp/tests/database/recurringService.lifecycle.test.ts, FinlyApp/tests/utils/recurrenceInfo.matrix.test.ts, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Recurring: Future + past now updates only generated transactions inside the new start/end window; transactions outside stay linked but unchanged
+- Recurring: the Summary's update count uses the same window, so moving the start to 19 Oct reports 8 updates from 1-26 Oct instead of 26
+- Added repository, hint-matrix, lifecycle and screen tests for the start/end window; test:all green (178 files / 1496 tests).

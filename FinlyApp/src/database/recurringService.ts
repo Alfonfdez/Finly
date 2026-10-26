@@ -319,7 +319,10 @@ export function saveRecurringRuleEdit(params: RecurringEditParams): Promise<numb
       const created = await materializeDueInTransaction(now);
 
       if (scope === RECURRENCE_SCOPES.futureAndPast) {
-        await recurringRepo.updateGeneratedTransactions(ruleId, { ...pastPatch, tagIds }, db);
+        await recurringRepo.updateGeneratedTransactions(ruleId, { ...pastPatch, tagIds }, db, {
+          startDate: schedule.start_date,
+          endDate: schedule.end_date,
+        });
       }
 
       return created;

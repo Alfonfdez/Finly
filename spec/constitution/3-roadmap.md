@@ -451,7 +451,8 @@ Recurring expenses/income created once and materialized automatically:
 - Fix (2026-10-26): the recurring selection checkbox sat outside the row pressable area, so only the text selected the rule. The checkbox, badge and info now share one left-side pressable area, using the shared `SelectionCheckbox`.
 - Update (2026-10-26): Future + past now starts the Summary with "Back-fill from: <date>" when it creates missed occurrences, and adds "Updates N past transactions" when a past-affecting detail changed.
 - Fix (2026-10-26): shortening a rule's end date no longer moves a future cursor backwards, so extending it later resumes from the correct next occurrence.
-- Added a broad hint/lifecycle battery covering multiple rules, sequential type/date edits, Future only vs Future + past, existing occurrences, paused/ended rules and month-end/leap-day schedules; test:all green (178 files / 1490 tests).
+- Update (2026-10-26): Future + past updates only generated transactions inside the new start/end window; transactions outside it stay linked but unchanged, and the Summary's update count uses the same window.
+- Added a broad hint/lifecycle battery covering multiple rules, sequential type/date edits, Future only vs Future + past, existing occurrences, paused/ended rules and month-end/leap-day schedules; test:all green (178 files / 1496 tests).
 - Spec: spec/features/028-recurring-transactions/.
 
 ## 033-bulk-delete-tags-comments
