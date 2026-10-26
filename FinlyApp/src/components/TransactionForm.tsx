@@ -23,7 +23,7 @@ import FormSectionHeader from './form/FormSectionHeader';
 import CalendarModal from './CalendarModal';
 import CalculatorModal from './CalculatorModal';
 import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS, SECTION_GAP } from './componentStyles';
-import { type TransactionType, type RecurrenceFrequency, type RecurrenceScope, type RootStackParamList, RECURRENCE_SCOPES } from '../constants/types';
+import { TRANSACTION_TYPES, type TransactionType, type RecurrenceFrequency, type RecurrenceScope, type RootStackParamList, RECURRENCE_SCOPES } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
 import { buildRecurrenceSchedule, recurrencePreview, ruleEditCursor, toDateOnly, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
@@ -343,6 +343,7 @@ export default function TransactionForm(props: TransactionFormProps) {
               onChangeLastDay={setRepeatLastDay}
               name={repeatName}
               onChangeName={setRepeatName}
+              namePlaceholder={type === TRANSACTION_TYPES.income ? labels.repeat_name_placeholder_income : labels.repeat_name_placeholder_expense}
               nameError={repeatNameErrorDisplay}
               onNameFocus={onNameFocus}
               onNameBlur={handleRepeatNameBlur}
