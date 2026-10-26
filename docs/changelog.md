@@ -4444,3 +4444,9 @@
 - Selection: added a shared leading SelectionCheckbox and standardized Accounts, Recurring, Tags, Comments, Transactions and Select all on it
 - Accounts keeps the balance visible in select mode; the Recurring checkbox, badge and text now share one tappable left area
 - Added selection regression tests; test:all green (172 files / 1449 tests).
+
+[2026-10-26] fix | FinlyApp/src/constants/calendar.ts, FinlyApp/src/utils/calendarBounds.ts, FinlyApp/src/components/calendars/YearGrid.tsx, FinlyApp/src/components/calendars/MonthGrid.tsx, FinlyApp/src/components/calendars/WeekPicker.tsx, FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/constants/testIds.ts, FinlyApp/tests/utils/calendarBounds.test.ts, FinlyApp/tests/component/CalendarModal.test.tsx, FinlyApp/tests/component/DayPicker.test.tsx, FinlyApp/tests/component/MonthGrid.test.tsx, FinlyApp/tests/component/YearGrid.test.tsx, FinlyApp/tests/component/WeekPicker.test.tsx, spec/constitution/6-screens.md, spec/features/001-home-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Calendar: added the absolute 1900-01-01 floor and made every picker use the shared bounds
+- Calendar: YearGrid now uses fixed 1900-anchored 12-year pages and no longer recenters when a year is selected
+- Calendar: WeekPicker keeps six fixed slots with blank placeholders and no longer jumps months when a shared week is tapped
+- Added calendar bounds, MonthGrid, YearGrid and WeekPicker regression tests; test:all green (175 files / 1460 tests).

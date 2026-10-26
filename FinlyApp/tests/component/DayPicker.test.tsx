@@ -40,6 +40,14 @@ describe('DayPicker year navigation + bounds', () => {
     expect(view.getByText('2100')).toBeTruthy();
   });
 
+  it('does not go before January 1900', async () => {
+    const view = await render(<DayPicker date={new Date(1900, 0, 1)} onSelect={vi.fn()} />);
+
+    await fireEvent.press(view.getByLabelText('Previous year'));
+
+    expect(view.getByText('1900')).toBeTruthy();
+  });
+
   it('follows the date prop when it changes (reopening on a different month)', async () => {
     const view = await render(<DayPicker date={new Date(2099, 8, 2)} onSelect={() => {}} maxDate={null} />);
     expect(view.getByText('September 2099')).toBeTruthy();

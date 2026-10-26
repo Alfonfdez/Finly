@@ -219,7 +219,7 @@ describe('CalendarModal', () => {
     await view.rerender(<CalendarModal {...props} date={new Date(2020, 5, 15)} visible={false} />);
     await view.rerender(<CalendarModal {...props} date={new Date(2020, 5, 15)} visible />);
 
-    await waitFor(() => expect(view.getByText('2015 - 2026')).toBeTruthy());
+    await waitFor(() => expect(view.getByText('2020 - 2031')).toBeTruthy());
   });
 
   it('resets a pending change when it is reopened', async () => {

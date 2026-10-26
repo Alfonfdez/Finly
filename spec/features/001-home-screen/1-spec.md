@@ -28,6 +28,7 @@ A main screen in the app that displays the current Account, the Total (income/ex
    - Year: year picker.
    - Period: custom date range picker.
 - **Fast period arrows** next to the period text (Day/Week/Month/Year only): `<` steps one period back and is always available, `>` steps forward and is hidden once the next period would be in the future (today / the current week, month or year), and a double-chevron `»` just left of `>` jumps to the current period - offered only from two or more periods back, since on the penultimate one a single `>` already reaches it. The `Period` (custom range) tab keeps its picker with no arrows. Steps follow the same period math as the pickers (weeks are Monday-based) and never step into the future.
+- **Calendar picker standard:** inside the modal, arrows only browse; the selected value changes only by tapping. The calendar floor is 01 January 1900, `YearGrid` pages are fixed 12-year ranges anchored at 1900, and `WeekPicker` keeps six fixed rows (weeks entirely outside the active month are blank placeholders).
      - The compact CalendarPicker box shows the concrete range with full month names and is centred; verbose languages wrap to two centred lines.
      - The calendar modal header has two left-aligned information lines: Day/Month/Year show the selected value plus a blank second line; Week shows both full start/end dates with their years; Period shows the localized start/end range.
      - The Period picker offers four quick presets: This year, 12 months, 30 days and 90 days. This year covers January 1 of the current year to today; 30/90 days include today; 12 months is a rolling 12-calendar-month range.
@@ -63,6 +64,7 @@ Cloud sync, authentication, offline usage (AsyncStorage is already local).
 [x] The 5 period tabs are displayed correctly.
 [x] When selecting a period, a date can be chosen with the calendar modal.
 [x] The date picker does not allow selecting future dates.
+[x] Calendar pickers cannot go before 01 January 1900; inside the modal, arrows only browse and YearGrid pages stay fixed when a year is selected.
 [x] The Period picker offers This year, 12 months, 30 days and 90 days, auto-checks a matching range, and unchecks after manual edits.
 [x] The calendar modal header keeps two information lines; Week shows both full dates with their years.
 [x] The donut chart is displayed correctly with period data.

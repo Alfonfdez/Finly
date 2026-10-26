@@ -1,15 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { resolveDateBounds, isEndAfterStart, dayAfter } from '../../src/utils/calendarBounds';
+import { CALENDAR_MIN_DATE } from '../../src/constants/calendar';
 
 describe('resolveDateBounds', () => {
   const today = new Date(2026, 9, 5);
 
-  it('defaults max to today (no future) and min to null when omitted', () => {
-    expect(resolveDateBounds(undefined, undefined, today)).toEqual({ min: null, max: today });
+  it('defaults max to today (no future) and min to 1900 when omitted', () => {
+    expect(resolveDateBounds(undefined, undefined, today)).toEqual({ min: CALENDAR_MIN_DATE, max: today });
   });
 
-  it('treats null as unbounded on that side', () => {
-    expect(resolveDateBounds(null, null, today)).toEqual({ min: null, max: null });
+  it('treats null min as 1900 and null max as unbounded', () => {
+    expect(resolveDateBounds(null, null, today)).toEqual({ min: CALENDAR_MIN_DATE, max: null });
   });
 
   it('passes explicit Date bounds through unchanged', () => {
