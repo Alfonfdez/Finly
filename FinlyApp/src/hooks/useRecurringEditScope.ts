@@ -70,8 +70,8 @@ export function useRecurringEditScope({
 }: UseRecurringEditScopeProps) {
   // Does the draft affect the past — either by touching a field the "past ones"
   // scope rewrites, or by opening a missed window the new schedule would back-fill?
-  const recurringPastAffected = useMemo(() => {
-    if (!ruleMode) return false;
+  const { recurringPastAffected, recurringDetailsChanged } = useMemo(() => {
+    if (!ruleMode) return { recurringPastAffected: false, recurringDetailsChanged: false };
     const initialAmountNum = initialAmount !== undefined ? parseAmountValue(initialAmount) : null;
     const tagsChanged = !areIdListsEqual(initialTagIds ?? [], tagIds);
     const detailChanged =
@@ -97,7 +97,7 @@ export function useRecurringEditScope({
       end ? toDateOnly(end) : null,
       todayDateOnly(),
     );
-    return detailChanged || missedWindow || skippedRecoverable;
+    return { recurringPastAffected: detailChanged || missedWindow || skippedRecoverable, recurringDetailsChanged: detailChanged };
   }, [
     ruleMode,
     accountId,
@@ -123,5 +123,5 @@ export function useRecurringEditScope({
     lastDay,
   ]);
 
-  return { recurringPastAffected };
+  return { recurringPastAffected, recurringDetailsChanged };
 }

@@ -81,7 +81,7 @@ describe('recurring Summary block', () => {
       ruleNextDue: '2026-01-02',
       scope: 'futureAndPast',
     });
-    expect(view.getByText('Next: January 2, 2026')).toBeTruthy();
+    expect(view.getByText('Back-fill from: January 2, 2026')).toBeTruthy();
     expect(view.getByText('Adds 10 missed transactions')).toBeTruthy();
   });
 

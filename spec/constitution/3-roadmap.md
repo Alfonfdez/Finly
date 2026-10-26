@@ -449,6 +449,9 @@ Recurring expenses/income created once and materialized automatically:
 - Fix (2026-10-26): extending a rule whose end date was shortened and saved still offered today as the next date even though its transaction already existed. The anchor now also checks the rule's generated occurrence dates, so the Summary starts at tomorrow and the cursor stays in sync.
 - Fix (2026-10-26): opening a modal from a form (e.g. Tags → Add tag) left the previous input focused, so the modal's keyboard re-triggered `useKeyboardReveal` and scrolled the form behind it. `ModalShell` now dismisses the underlying keyboard when it opens.
 - Fix (2026-10-26): the recurring selection checkbox sat outside the row pressable area, so only the text selected the rule. The checkbox, badge and info now share one left-side pressable area, using the shared `SelectionCheckbox`.
+- Update (2026-10-26): Future + past now starts the Summary with "Back-fill from: <date>" when it creates missed occurrences, and adds "Updates N past transactions" when a past-affecting detail changed.
+- Fix (2026-10-26): shortening a rule's end date no longer moves a future cursor backwards, so extending it later resumes from the correct next occurrence.
+- Added a broad hint/lifecycle battery covering multiple rules, sequential type/date edits, Future only vs Future + past, existing occurrences, paused/ended rules and month-end/leap-day schedules; test:all green (178 files / 1490 tests).
 - Spec: spec/features/028-recurring-transactions/.
 
 ## 033-bulk-delete-tags-comments

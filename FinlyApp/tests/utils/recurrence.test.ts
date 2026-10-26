@@ -237,6 +237,16 @@ describe('resolveEditAnchor (future only)', () => {
     expect(resolveEditAnchor(ended, { cursor: '2026-10-26', scope: 'future', today: '2026-10-26', previousSchedule: ended })).toBe('2026-10-26');
   });
 
+  it('does not move an ended rule cursor backwards when its end date is shortened', () => {
+    const ended: RecurrenceSchedule = { ...daily, start_date: '2026-09-01', end_date: '2026-09-30' };
+    expect(resolveEditAnchor(ended, {
+      cursor: '2026-10-07',
+      scope: 'future',
+      today: '2026-10-06',
+      previousSchedule: ended,
+    })).toBe('2026-10-07');
+  });
+
   it('skips today when its transaction exists even after the previous schedule ended earlier', () => {
     const previous: RecurrenceSchedule = { ...daily, start_date: '2026-10-01', end_date: '2026-10-25' };
     const extended: RecurrenceSchedule = { ...previous, end_date: '2026-10-31' };
