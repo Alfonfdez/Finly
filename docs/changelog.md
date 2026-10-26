@@ -4470,3 +4470,7 @@
 - Recurring: Future + past now updates only generated transactions inside the new start/end window; transactions outside stay linked but unchanged
 - Recurring: the Summary's update count uses the same window, so moving the start to 19 Oct reports 8 updates from 1-26 Oct instead of 26
 - Added repository, hint-matrix, lifecycle and screen tests for the start/end window; test:all green (178 files / 1496 tests).
+
+[2026-10-26] test | FinlyApp/tests/utils/recurrenceInfo.matrix.test.ts, FinlyApp/tests/database/recurringService.lifecycle.test.ts, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, spec/constitution/3-roadmap.md
+- Expanded the recurring hint/lifecycle battery with future-start and ended-rule chains, start/end window cases, sequential edits and date-only scope assertions
+- test:all green (178 files / 1503 tests).

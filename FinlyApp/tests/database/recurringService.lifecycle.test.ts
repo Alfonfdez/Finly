@@ -432,4 +432,147 @@ describe('recurring rule hint lifecycle', () => {
     expect(revived.dates).toHaveLength(36);
     expect(transactionsFor(await transactionRepo.list(), rule.id)).toHaveLength(36);
   });
+
+  it('chains a future-start rule through today, past details and a past start', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(
+      { ...dailyActive, name: 'Future start', start_date: '2026-10-20', next_due: '2026-10-20' },
+      [],
+    );
+    expect(await materializeDueRecurring(TODAY)).toBe(0);
+
+    const future = await ruleState(recurringRepo, rule.id);
+    expect(hintFor(future.rule, scheduleOf(future.rule, null), 'future', future.dates)).toEqual({
+      summary: 'Every day',
+      firstLine: 'Next: October 20, 2026',
+      detailLines: ['No transactions will be created now'],
+    });
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: { start_date: '2026-10-06' },
+      recurrence: { frequency: 'daily', interval: 1, endDate: null },
+      scope: 'future',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rule', type: 'expense' },
+      tagIds: [],
+      now: TODAY,
+    });
+
+    const todayRule = await ruleState(recurringRepo, rule.id);
+    expect(todayRule.rule.start_date).toBe('2026-10-06');
+    expect(todayRule.dates).toEqual(['2026-10-06']);
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: { amount: 150, description: 'Future updated' },
+      recurrence: { frequency: 'daily', interval: 1, endDate: null },
+      scope: 'futureAndPast',
+      pastPatch: { account_id: 1, category_id: 3, amount: 150, description: 'Future updated', type: 'expense' },
+      tagIds: [],
+      now: TODAY,
+    });
+
+    const updatedToday = await ruleState(recurringRepo, rule.id);
+    expect(hintFor(updatedToday.rule, scheduleOf(updatedToday.rule, null), 'futureAndPast', updatedToday.dates, true)).toEqual({
+      summary: 'Every day',
+      firstLine: 'Next: October 7, 2026',
+      detailLines: ['No transactions will be created now', 'Updates 1 past transaction'],
+    });
+    expect(transactionsFor(await transactionRepo.list(), rule.id).every(transaction => transaction.amount === 150)).toBe(true);
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: { start_date: '2026-09-01' },
+      recurrence: { frequency: 'daily', interval: 1, endDate: null },
+      scope: 'future',
+      pastPatch: { account_id: 1, category_id: 3, amount: 150, description: 'Future updated', type: 'expense' },
+      tagIds: [],
+      now: TODAY,
+    });
+
+    const earlier = await ruleState(recurringRepo, rule.id);
+    expect(earlier.rule.start_date).toBe('2026-09-01');
+    expect(earlier.dates).toEqual(['2026-10-06']);
+    expect(hintFor(earlier.rule, scheduleOf(earlier.rule, null), 'futureAndPast', earlier.dates, true)).toEqual({
+      summary: 'Every day',
+      firstLine: 'Next: October 7, 2026',
+      detailLines: ['No transactions will be created now', 'Updates 1 past transaction'],
+    });
+  });
+
+  it('chains an ended rule through skip, recovery, shortening and removing its end', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(dailyEnded, []);
+    await materializeDueRecurring(TODAY);
+
+    const before = await ruleState(recurringRepo, rule.id);
+    const extended = scheduleOf(before.rule, '2026-10-31');
+    expect(hintFor(before.rule, extended, 'future', before.dates)).toEqual({
+      summary: 'Every day until October 31, 2026',
+      firstLine: 'Next: October 6, 2026',
+      detailLines: ['1 transaction will be created', '5 occurrences will be skipped'],
+    });
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'daily', interval: 1, endDate: '2026-10-31' },
+      scope: 'future',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rule', type: 'expense' },
+      tagIds: [],
+      now: TODAY,
+    });
+
+    const skipped = await ruleState(recurringRepo, rule.id);
+    expect(skipped.rule.skipped_from).toBe('2026-10-01');
+    expect(skipped.dates).toHaveLength(31);
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'daily', interval: 1, endDate: '2026-10-31' },
+      scope: 'futureAndPast',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rule', type: 'expense' },
+      tagIds: [],
+      now: TODAY,
+    });
+
+    const recovered = await ruleState(recurringRepo, rule.id);
+    expect(recovered.rule.skipped_from).toBeNull();
+    expect(recovered.dates).toHaveLength(36);
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'daily', interval: 1, endDate: '2026-09-30' },
+      scope: 'future',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rule', type: 'expense' },
+      tagIds: [],
+      now: TODAY,
+    });
+
+    const shortened = await ruleState(recurringRepo, rule.id);
+    expect(shortened.rule.next_due).toBe('2026-10-07');
+    expect(hintFor(shortened.rule, scheduleOf(shortened.rule, '2026-09-30'), 'future', shortened.dates)).toEqual({
+      summary: 'Every day until September 30, 2026',
+      firstLine: 'This rule has ended: no future transactions will be created.',
+      detailLines: [],
+    });
+
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: {},
+      recurrence: { frequency: 'daily', interval: 1, endDate: null },
+      scope: 'futureAndPast',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rule', type: 'expense' },
+      tagIds: [],
+      now: TODAY,
+    });
+
+    const reopened = await ruleState(recurringRepo, rule.id);
+    expect(reopened.rule.end_date).toBeNull();
+    expect(reopened.rule.next_due).toBe('2026-10-07');
+    expect(reopened.dates).toHaveLength(36);
+    expect(transactionsFor(await transactionRepo.list(), rule.id)).toHaveLength(36);
+  });
 });
