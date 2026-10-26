@@ -1370,3 +1370,11 @@ Applied 2026-10-26:
 - Added `runExclusiveWrite`/`serializeWrites` and routed standalone account, category, tag, recurring and comment writes through the same queue as explicit transactions.
 - Transaction internals keep their non-queued repository calls, avoiding nested queue deadlocks.
 - Added a concurrency regression test; test:all green (170 files / 1428 tests).
+
+## 2.2.0 modal keyboard lift
+Status: completed.
+
+Applied 2026-10-26:
+- Fixed hidden modals accumulating keyboard height: `useKeyboardLift` now only grows while the modal is visible and resets while hidden.
+- This prevents the Month/Week/Year picker from opening clipped at the top after a form keyboard was used.
+- Added a regression test and verified the Month modal centered on the Android release APK; test:all green (170 files / 1429 tests).

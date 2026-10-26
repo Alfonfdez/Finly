@@ -277,6 +277,7 @@ remaining space). The lift is **held while the modal is open** — tapping a but
 and hides the keyboard, and dropping the card at that moment would move the button out from under
 the finger and swallow the tap (e.g. the typed-DELETE confirmation). It resets when the modal
 closes. `ConfirmationModal`'s scroll area uses `keyboardShouldPersistTaps="handled"`.
+- **Hidden modals ignore keyboard lift:** a modal that is mounted but not visible must not accumulate keyboard height. `useKeyboardLift` only grows while `visible`, so returning from a form with the keyboard open cannot push the next modal above the screen.
 
 Any `ScrollView` that is an **ancestor of a modal containing a `TextInput`** must also set
 `keyboardShouldPersistTaps="handled"`. With the default (`'never'`), RN's
