@@ -273,10 +273,7 @@ Every form keeps its bottom action reachable while the keyboard is open, via the
 A native `Modal` window does not always resize with the keyboard, so `ModalShell` lifts the
 centred card above it via `useKeyboardLift` (`hooks/useKeyboardInset.ts`): it measures the
 keyboard and adds it as the overlay's bottom padding (also capping the card's max height to the
-remaining space). The lift is **held while the modal is open** — tapping a button blurs the input
-and hides the keyboard, and dropping the card at that moment would move the button out from under
-the finger and swallow the tap (e.g. the typed-DELETE confirmation). It resets when the modal
-closes. `ConfirmationModal`'s scroll area uses `keyboardShouldPersistTaps="handled"`.
+remaining space). The lift is held for a short release delay (**250ms**) after the keyboard hides: this lets a button tap finish before the card moves, then the card returns to its normal centred size. It resets immediately when the modal closes. `ConfirmationModal`'s scroll area uses `keyboardShouldPersistTaps="handled"`.
 - **Hidden modals ignore keyboard lift:** a modal that is mounted but not visible must not accumulate keyboard height. `useKeyboardLift` only grows while `visible`, so returning from a form with the keyboard open cannot push the next modal above the screen.
 - **Opening a modal dismisses the underlying form input:** `ModalShell` calls `Keyboard.dismiss()` when it becomes visible, so the focused field blurs and `useKeyboardReveal` cannot scroll the form behind the modal when the modal's own input opens (e.g. Recurring Name → Tags → Add tag).
 

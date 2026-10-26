@@ -27,8 +27,11 @@ export function useKeyboardInset(): number {
  *
  * Used by `ModalShell`: tapping a button blurs the input and hides the keyboard, and letting
  * the modal drop at that moment would move the button out from under the finger and swallow
- * the tap — so the lift is *held* until the modal closes.
+ * the tap. The lift is therefore held for a short release delay after the keyboard hides,
+ * then dropped so a searchable modal returns to its centred size.
  */
+export const KEYBOARD_LIFT_RELEASE_MS = 250;
+
 export function useKeyboardLift(visible: boolean): number {
   const keyboardInset = useKeyboardInset();
   const [lift, setLift] = useState(0);
@@ -38,7 +41,12 @@ export function useKeyboardLift(visible: boolean): number {
       setLift(0);
       return;
     }
-    if (keyboardInset > 0) setLift(prev => Math.max(prev, keyboardInset));
+    if (keyboardInset > 0) {
+      setLift(prev => Math.max(prev, keyboardInset));
+      return;
+    }
+    const timer = setTimeout(() => setLift(0), KEYBOARD_LIFT_RELEASE_MS);
+    return () => clearTimeout(timer);
   }, [visible, keyboardInset]);
 
   return lift;

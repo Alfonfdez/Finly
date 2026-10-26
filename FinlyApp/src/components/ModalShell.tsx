@@ -31,9 +31,9 @@ export default function ModalShell({
   const { activeColors: c } = useConfig();
   const { height: windowHeight } = useWindowDimensions();
   // A native Modal window does not always resize with the keyboard, so lift the (centred)
-  // box above the keyboard ourselves. The lift is *held* while the modal is open: tapping a
-  // button blurs the input and hides the keyboard, and letting the box drop then would move
-  // the button out from under the finger and swallow the tap (see `useKeyboardLift`).
+  // box above the keyboard ourselves. The lift is held briefly after the keyboard hides so a
+  // button tap can finish before the box moves; it then drops back to the centred size (see
+  // `useKeyboardLift`).
   const liftedInset = useKeyboardLift(visible);
   // Opening a modal is a context switch: blur the form input first, otherwise its
   // reveal hook can scroll the form behind the modal when the modal's input opens.

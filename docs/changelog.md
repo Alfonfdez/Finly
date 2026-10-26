@@ -4455,3 +4455,8 @@
 - Calendar nav: replaced the cramped arrows with a shared row using 22px icons, compact boxes with 44px+ effective tap targets, equal side slots and a perfectly centred title
 - Calendar nav: added a separated double-arrow jump to the current year/month/page when it is at least two steps away
 - Calendar nav: increased the gap between year and month rows; added MonthNav/YearNav/YearGrid jump tests; test:all green (176 files / 1465 tests).
+
+[2026-10-26] fix | FinlyApp/src/hooks/useKeyboardInset.ts, FinlyApp/src/components/ModalShell.tsx, FinlyApp/tests/hooks/useKeyboardLift.test.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Modal keyboard lift now releases 250ms after the keyboard hides, so blurring the currency/search field returns the modal to its normal centred size
+- The short hold still lets a footer-button tap finish before the modal moves; added a release-delay regression test
+- test:all green (176 files / 1466 tests).
