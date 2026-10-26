@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react-native';
 import { Keyboard } from 'react-native';
-import { useKeyboardLift } from '../../src/hooks/useKeyboardInset';
+import { KEYBOARD_LIFT_RELEASE_MS, useKeyboardLift } from '../../src/hooks/useKeyboardInset';
 
 describe('useKeyboardLift', () => {
   let handlers: Record<string, ((e: unknown) => void)[]>;
@@ -23,17 +23,31 @@ describe('useKeyboardLift', () => {
 
   const emit = (type: string, event: unknown) =>
     act(async () => { handlers[type]?.forEach(h => h(event)); });
+  const waitForRelease = () => new Promise(resolve => setTimeout(resolve, KEYBOARD_LIFT_RELEASE_MS + 30));
 
-  it('lifts while the keyboard is shown and holds it when the keyboard hides', async () => {
+  it('lifts while the keyboard is shown and releases it shortly after the keyboard hides', async () => {
     const { result } = await renderHook(() => useKeyboardLift(true));
     expect(result.current).toBe(0);
 
     await emit('keyboardDidShow', { endCoordinates: { height: 300 } });
     expect(result.current).toBe(300);
 
-    // The keyboard hiding (e.g. tapping a button) must not drop the lift.
+    // The lift is held briefly so a button tap can finish, then released.
     await emit('keyboardDidHide', {});
     expect(result.current).toBe(300);
+    await act(async () => { await waitForRelease(); });
+    expect(result.current).toBe(0);
+  });
+
+  it('keeps the lift if the keyboard returns before the release delay', async () => {
+    const { result } = await renderHook(() => useKeyboardLift(true));
+    await emit('keyboardDidShow', { endCoordinates: { height: 300 } });
+    await emit('keyboardDidHide', {});
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 80)); });
+
+    await emit('keyboardDidShow', { endCoordinates: { height: 320 } });
+    await act(async () => { await waitForRelease(); });
+    expect(result.current).toBe(320);
   });
 
   it('resets the lift when the modal becomes hidden', async () => {
