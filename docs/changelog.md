@@ -4434,4 +4434,8 @@
 
 [2026-10-26] fix | FinlyApp/src/utils/recurrence.ts, FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/utils/recurrenceInfo.test.ts, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
 - Recurring: extending a shortened end date now checks the rule's generated occurrence dates, so an already-created today is skipped and the Summary starts at tomorrow
-- Recurring: added regression tests for the anchor, plan, Summary and edit screen
+- Recurring: added regression tests for the anchor, plan, Summary and edit screen.
+
+[2026-10-26] fix | FinlyApp/src/components/ModalShell.tsx, FinlyApp/tests/component/ModalShell.test.tsx, spec/constitution/6-screens.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- ModalShell now dismisses the focused form input when it opens, so a modal's keyboard cannot re-trigger the form reveal scroll behind it (e.g. Recurring name then Add tag)
+- Added a ModalShell regression test; test:all green (171 files / 1445 tests).
