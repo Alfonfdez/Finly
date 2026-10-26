@@ -41,6 +41,7 @@ On web the modal shows only "Add from gallery" and "Cancel": camera capture is n
   - `quality: 0.7` (compressed to reduce storage footprint)
   - `allowsEditing: false`
 - The captured image URI (cache directory) is copied to the app's `documentDirectory` with a unique filename: `photo_{Date.now()}.jpg` using `expo-file-system`.
+- The copy promise is awaited before the URI is added to the preview state, so the first photo cannot render against a file that is not written yet.
 - The permanent URI is appended to the photos array and displayed as a thumbnail.
 - If permission is denied, no action is taken (the modal closes silently).
 

@@ -1378,3 +1378,11 @@ Applied 2026-10-26:
 - Fixed hidden modals accumulating keyboard height: `useKeyboardLift` now only grows while the modal is visible and resets while hidden.
 - This prevents the Month/Week/Year picker from opening clipped at the top after a form keyboard was used.
 - Added a regression test and verified the Month modal centered on the Android release APK; test:all green (170 files / 1429 tests).
+
+## 2.2.0 first photo preview
+Status: completed.
+
+Applied 2026-10-26:
+- Fixed the first photo preview rendering black: `File.copy()` returns a promise in Expo SDK 57, and the URI was added to state before the copy completed.
+- Camera and gallery copies are now awaited before the preview URI is appended.
+- Added a deferred-copy regression test; test:all green (170 files / 1430 tests).
