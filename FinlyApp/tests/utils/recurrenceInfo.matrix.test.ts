@@ -332,3 +332,102 @@ describe('recurrenceInfoLines matrix', () => {
     });
   });
 });
+
+describe('recurrenceInfoLines scenario chains', () => {
+  beforeEach(() => setLanguage('en'));
+
+  it('future start with Future + past creates nothing and shows no update line', () => {
+    expect(recurrenceInfoLines(
+      schedule({ start_date: '2026-11-01' }),
+      {
+        today: '2026-10-26',
+        cursor: '2026-11-01',
+        scope: 'futureAndPast',
+        pastDetailsChanged: true,
+        existingOccurrences: new Set(),
+      },
+      LANGUAGES.en,
+    )).toEqual({
+      summary: 'Every day',
+      firstLine: 'Next: November 1, 2026',
+      detailLines: ['No transactions will be created now'],
+    });
+  });
+
+  it('start moved earlier includes all existing transactions in the update window', () => {
+    expect(recurrenceInfoLines(
+      schedule({ start_date: '2026-09-01' }),
+      {
+        today: '2026-10-26',
+        cursor: '2026-10-27',
+        scope: 'futureAndPast',
+        pastDetailsChanged: true,
+        existingOccurrences: dailyRange('2026-10-01', '2026-10-26'),
+      },
+      LANGUAGES.en,
+    )).toEqual({
+      summary: 'Every day',
+      firstLine: 'Next: October 27, 2026',
+      detailLines: ['No transactions will be created now', 'Updates 26 past transactions'],
+    });
+  });
+
+  it('removing an end date includes all existing transactions in the update window', () => {
+    expect(recurrenceInfoLines(
+      schedule({ start_date: '2026-10-01', end_date: null }),
+      {
+        today: '2026-10-26',
+        cursor: '2026-10-27',
+        scope: 'futureAndPast',
+        pastDetailsChanged: true,
+        existingOccurrences: dailyRange('2026-10-01', '2026-10-26'),
+      },
+      LANGUAGES.en,
+    )).toEqual({
+      summary: 'Every day',
+      firstLine: 'Next: October 27, 2026',
+      detailLines: ['No transactions will be created now', 'Updates 26 past transactions'],
+    });
+  });
+
+  it('monthly to daily Future only starts at today', () => {
+    const previous = schedule({ frequency: 'monthly', day_of_month: 1, start_date: '2026-09-01' });
+    expect(recurrenceInfoLines(
+      schedule({ start_date: '2026-09-01' }),
+      {
+        today: '2026-10-06',
+        cursor: '2026-11-01',
+        scope: 'future',
+        previousSchedule: previous,
+        existingOccurrences: new Set(['2026-09-01', '2026-10-01']),
+        pastDetailsChanged: true,
+      },
+      LANGUAGES.en,
+    )).toEqual({
+      summary: 'Every day',
+      firstLine: 'Next: October 6, 2026',
+      detailLines: ['1 transaction will be created'],
+    });
+  });
+
+  it('monthly to daily Future + past recovers the skipped window', () => {
+    const previous = schedule({ frequency: 'monthly', day_of_month: 1, start_date: '2026-09-01' });
+    expect(recurrenceInfoLines(
+      schedule({ start_date: '2026-09-01' }),
+      {
+        today: '2026-10-06',
+        cursor: '2026-11-01',
+        scope: 'futureAndPast',
+        skippedFrom: '2026-09-01',
+        previousSchedule: previous,
+        existingOccurrences: new Set(['2026-09-01', '2026-10-01']),
+        pastDetailsChanged: true,
+      },
+      LANGUAGES.en,
+    )).toEqual({
+      summary: 'Every day',
+      firstLine: 'Back-fill from: September 1, 2026',
+      detailLines: ['Adds 34 missed transactions', 'Updates 2 past transactions'],
+    });
+  });
+});
