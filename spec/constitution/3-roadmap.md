@@ -116,7 +116,8 @@ Status: completed.
 
 Basic calculator modal for the add transaction screen:
 - Numeric keypad with basic operations (+, -, *, /).
-- "=" button to evaluate the expression and show the result.
+- "=" button to evaluate the expression, show the result and commit it for chained operations.
+- Reopening the modal resets the expression to blank.
 - "Accept" and "Cancel" buttons.
 - On accept, pastes the result into the amount field.
 - Reusable component that can be used on other screens.

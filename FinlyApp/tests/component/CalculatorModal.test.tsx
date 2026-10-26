@@ -51,6 +51,56 @@ describe('CalculatorModal', () => {
     expect(view.getByText('= 24')).toBeTruthy();
   });
 
+  it('commits equals and chains the next operation from the result', async () => {
+    const view = await renderModal();
+    const press = async (...keys: string[]) => {
+      await act(async () => { for (const key of keys) fireEvent.press(view.getByLabelText(key)); });
+    };
+    await press('1', '0', '0', '-', '5', '0');
+    await press('=');
+    await press('/', '3');
+    await press('=');
+    expect(view.getByText('= 16.67')).toBeTruthy();
+  });
+
+  it('continues from the committed result when an operator follows equals', async () => {
+    const view = await renderModal();
+    const press = async (...keys: string[]) => {
+      await act(async () => { for (const key of keys) fireEvent.press(view.getByLabelText(key)); });
+    };
+    await press('5', '+', '5');
+    await press('=');
+    await press('+', '2');
+    await press('=');
+    expect(view.getByText('= 12')).toBeTruthy();
+  });
+
+  it('starts a fresh calculation when a digit follows equals', async () => {
+    const view = await renderModal();
+    const press = async (...keys: string[]) => {
+      await act(async () => { for (const key of keys) fireEvent.press(view.getByLabelText(key)); });
+    };
+    await press('5', '+', '5');
+    await press('=');
+    await press('3');
+    expect(view.getByText('= 3')).toBeTruthy();
+    expect(view.queryByText('= 10')).toBeNull();
+  });
+
+  it('resets the calculator when it is reopened', async () => {
+    const view = await renderModal(true);
+    await act(async () => {
+      for (const key of ['5', '+', '5']) fireEvent.press(view.getByLabelText(key));
+    });
+    expect(view.getByText('= 10')).toBeTruthy();
+
+    await act(async () => { view.rerender(<CalculatorModal visible={false} onAccept={mockOnAccept} onCancel={mockOnCancel} />); });
+    await act(async () => { view.rerender(<CalculatorModal visible onAccept={mockOnAccept} onCancel={mockOnCancel} />); });
+
+    expect(view.queryByText('= 10')).toBeNull();
+    expect(view.getByText('Accept')).toBeDisabled();
+  });
+
   it('calls onAccept with the result string', async () => {
     const view = await renderModal();
     await act(async () => {
