@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { StyleSheet } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
-import { resetStub } from './helpers/configStub';
+import { resetStub, setConfig } from './helpers/configStub';
 import LabeledTextField from '../../src/components/form/LabeledTextField';
 
 function borderColor(node: unknown): unknown {
@@ -87,6 +87,34 @@ describe('LabeledTextField', () => {
     };
     expect(style.position).toBeUndefined();
     expect(style.marginTop).toBe(4);
+  });
+
+  it('keeps a legacy value above the limit editable and flags the counter', async () => {
+    const value = 'x'.repeat(45);
+    const view = await render(
+      <LabeledTextField label="Name" value={value} onChangeText={() => {}} maxLength={30} showCounter />,
+    );
+
+    expect(view.getByLabelText('Name').props.maxLength).toBe(45);
+    expect(view.getByText('45/30')).toBeTruthy();
+  });
+
+  it('reserves more inline padding when the text size is large', async () => {
+    setConfig({ textSize: 'large' });
+    const view = await render(
+      <LabeledTextField
+        placeholder="Note"
+        value="Hi"
+        onChangeText={() => {}}
+        maxLength={200}
+        showCounter
+        inlineCounter
+        multiline
+      />,
+    );
+
+    const style = StyleSheet.flatten(view.getByPlaceholderText('Note').props.style) as { paddingBottom?: number };
+    expect(style.paddingBottom).toBeGreaterThan(26);
   });
 
   it('places a multiline counter inside the input when requested', async () => {

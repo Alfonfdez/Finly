@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { StyleSheet } from 'react-native';
 import { render, fireEvent, act } from '@testing-library/react-native';
-import { resetStub } from './helpers/configStub';
+import { resetStub, setConfig } from './helpers/configStub';
 import { DEBOUNCE_MS } from '../../src/constants/types';
 import CommentInput from '../../src/components/CommentInput';
 import { transactionRepository } from '../../src/database';
@@ -126,6 +126,22 @@ describe('CommentInput', () => {
     await act(async () => { fireEvent.press(suggestion); });
     expect(onChange).toHaveBeenCalledWith('coffee');
     expect(view.queryByText('coffee')).toBeNull();
+  });
+
+  it('does not clip a legacy comment above the maximum', async () => {
+    const comment = 'x'.repeat(4097);
+    const view = await renderInput(comment);
+
+    expect(view.getByLabelText('Comment input').props.maxLength).toBe(4097);
+    expect(view.getByText('4097/4096')).toBeTruthy();
+  });
+
+  it('reserves more inline padding when the text size is large', async () => {
+    setConfig({ textSize: 'large' });
+    const view = await renderInput('hi');
+    const style = StyleSheet.flatten(view.getByLabelText('Comment input').props.style) as { paddingBottom?: number };
+
+    expect(style.paddingBottom).toBeGreaterThan(26);
   });
 
   it('renders the character counter and the accessibility label', async () => {

@@ -1,5 +1,5 @@
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -7,7 +7,7 @@ import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import { DEBOUNCE_MS, MAX_COMMENT_LENGTH, MIN_COMMENT_SUGGESTION_LENGTH } from '../constants/types';
-import CharCounter from './form/CharCounter';
+import CharCounter, { COUNTER_FONT_SIZE, inlineCounterReserve } from './form/CharCounter';
 import FormSectionHeader from './form/FormSectionHeader';
 import { formStyles } from './form/formStyles';
 import { CONTROL_BORDER_RADIUS } from './componentStyles';
@@ -22,6 +22,7 @@ interface Props {
 const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus, onBlur }, ref) => {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
+  const { fontScale } = useWindowDimensions();
   const labels = t();
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [focused, setFocused] = useState(false);
@@ -111,7 +112,7 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
       <View style={formStyles.inlineInputWrap}>
         <TextInput
           ref={ref}
-          style={[styles.input, formStyles.inlineInput, { backgroundColor: c.surface, color: c.text, fontSize: fs(14) }]}
+          style={[styles.input, { paddingBottom: inlineCounterReserve(fs(COUNTER_FONT_SIZE), fontScale), backgroundColor: c.surface, color: c.text, fontSize: fs(14) }]}
           placeholder={labels.add_comment}
           placeholderTextColor={c.textSecondary}
           value={comment}
@@ -131,7 +132,7 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
             onBlur?.();
           }}
           multiline
-          maxLength={MAX_COMMENT_LENGTH}
+          maxLength={Math.max(MAX_COMMENT_LENGTH, comment.length)}
           textAlignVertical="top"
           accessibilityLabel={labels.a11y_comment}
         />
