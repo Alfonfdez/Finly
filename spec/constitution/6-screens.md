@@ -278,6 +278,7 @@ and hides the keyboard, and dropping the card at that moment would move the butt
 the finger and swallow the tap (e.g. the typed-DELETE confirmation). It resets when the modal
 closes. `ConfirmationModal`'s scroll area uses `keyboardShouldPersistTaps="handled"`.
 - **Hidden modals ignore keyboard lift:** a modal that is mounted but not visible must not accumulate keyboard height. `useKeyboardLift` only grows while `visible`, so returning from a form with the keyboard open cannot push the next modal above the screen.
+- **Opening a modal dismisses the underlying form input:** `ModalShell` calls `Keyboard.dismiss()` when it becomes visible, so the focused field blurs and `useKeyboardReveal` cannot scroll the form behind the modal when the modal's own input opens (e.g. Recurring Name → Tags → Add tag).
 
 Any `ScrollView` that is an **ancestor of a modal containing a `TextInput`** must also set
 `keyboardShouldPersistTaps="handled"`. With the default (`'never'`), RN's

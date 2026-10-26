@@ -446,6 +446,7 @@ Recurring expenses/income created once and materialized automatically:
 - Fix (2026-10-14): emptying the Recurring list (Select all → Delete from an overflowing list) left the old scroll extent; the list is now unmounted when empty and a plain `View` + `EmptyState` is rendered (see the "Empty lists" convention in `6-screens.md`).
 - Fix (2026-10-26): an ended rule's edit Summary showed a phantom `Next: <date>` one day past the end date because the "today already generated" anchor check treated the post-end cursor as a real occurrence. The anchor now requires an actual occurrence on today, so an ended rule keeps its post-end cursor and the Summary shows "This rule has ended: no future transactions will be created."; extending the end date revives it with the real next occurrence.
 - Fix (2026-10-26): extending a rule whose end date was shortened and saved still offered today as the next date even though its transaction already existed. The anchor now also checks the rule's generated occurrence dates, so the Summary starts at tomorrow and the cursor stays in sync.
+- Fix (2026-10-26): opening a modal from a form (e.g. Tags → Add tag) left the previous input focused, so the modal's keyboard re-triggered `useKeyboardReveal` and scrolled the form behind it. `ModalShell` now dismisses the underlying keyboard when it opens.
 - Spec: spec/features/028-recurring-transactions/.
 
 ## 033-bulk-delete-tags-comments

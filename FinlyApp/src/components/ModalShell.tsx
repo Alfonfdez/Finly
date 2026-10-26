@@ -1,5 +1,5 @@
-import { type ReactNode } from 'react';
-import { Modal, View, StyleSheet, useWindowDimensions, type DimensionValue } from 'react-native';
+import { type ReactNode, useEffect } from 'react';
+import { Keyboard, Modal, View, StyleSheet, useWindowDimensions, type DimensionValue } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useKeyboardLift } from '../hooks/useKeyboardInset';
 import { isWeb } from '../utils/platform';
@@ -35,6 +35,11 @@ export default function ModalShell({
   // button blurs the input and hides the keyboard, and letting the box drop then would move
   // the button out from under the finger and swallow the tap (see `useKeyboardLift`).
   const liftedInset = useKeyboardLift(visible);
+  // Opening a modal is a context switch: blur the form input first, otherwise its
+  // reveal hook can scroll the form behind the modal when the modal's input opens.
+  useEffect(() => {
+    if (visible) Keyboard.dismiss();
+  }, [visible]);
   const boundedMaxHeight =
     typeof maxHeight === 'number'
       ? maxHeight
