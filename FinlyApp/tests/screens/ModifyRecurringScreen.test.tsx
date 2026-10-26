@@ -189,6 +189,30 @@ describe('ModifyRecurringScreen', () => {
     expect(view.queryByText('Next: October 7, 2026')).toBeNull();
   });
 
+  it('skips today when extending a saved ended rule and today already has a transaction', async () => {
+    mockGetById.mockResolvedValue({
+      ...rule,
+      frequency: 'daily',
+      day_of_month: null,
+      start_date: '2026-10-01',
+      end_date: '2026-10-05',
+      next_due: '2026-10-07',
+    });
+    mockListOccurrenceDates.mockResolvedValue(['2026-10-06']);
+    const view = await render(<ModifyRecurringScreen />);
+
+    await waitFor(() =>
+      expect(view.getByText('This rule has ended: no future transactions will be created.')).toBeTruthy(),
+    );
+
+    await fireEvent.press(view.getByLabelText('End date'));
+    await fireEvent.press(view.getByLabelText('10 October'));
+    await fireEvent.press(view.getByText('Ok'));
+
+    await waitFor(() => expect(view.getByText('Next: October 7, 2026')).toBeTruthy());
+    expect(view.queryByText('Next: October 6, 2026')).toBeNull();
+  });
+
   it('saves with "Future + past" and the edited fields when selected', async () => {
     const view = await render(<ModifyRecurringScreen />);
     await waitFor(() => expect(view.getByText('Future + past')).toBeTruthy());

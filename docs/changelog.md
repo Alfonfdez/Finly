@@ -4430,4 +4430,8 @@
 
 [2026-10-26] fix | FinlyApp/src/utils/recurrence.ts, FinlyApp/src/utils/recurrenceInfo.ts, FinlyApp/src/i18n/*.ts, FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/utils/recurrenceInfo.test.ts, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
 - Recurring: an ended rule no longer shows a phantom Next date one day past its end date; the Summary says it has ended and the anchor keeps the post-end cursor
-- Recurring: added the ended-Summary message in the 9 languages and regression tests for the anchor, plan, Summary and edit screen
+- Recurring: added the ended-Summary message in the 9 languages and regression tests for the anchor, plan, Summary and edit screen.
+
+[2026-10-26] fix | FinlyApp/src/utils/recurrence.ts, FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/utils/recurrenceInfo.test.ts, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Recurring: extending a shortened end date now checks the rule's generated occurrence dates, so an already-created today is skipped and the Summary starts at tomorrow
+- Recurring: added regression tests for the anchor, plan, Summary and edit screen

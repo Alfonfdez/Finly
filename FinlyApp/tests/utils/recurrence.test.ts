@@ -237,6 +237,18 @@ describe('resolveEditAnchor (future only)', () => {
     expect(resolveEditAnchor(ended, { cursor: '2026-10-26', scope: 'future', today: '2026-10-26', previousSchedule: ended })).toBe('2026-10-26');
   });
 
+  it('skips today when its transaction exists even after the previous schedule ended earlier', () => {
+    const previous: RecurrenceSchedule = { ...daily, start_date: '2026-10-01', end_date: '2026-10-25' };
+    const extended: RecurrenceSchedule = { ...previous, end_date: '2026-10-31' };
+    expect(resolveEditAnchor(extended, {
+      cursor: '2026-10-27',
+      scope: 'future',
+      today: '2026-10-26',
+      previousSchedule: previous,
+      existingOccurrences: new Set(['2026-10-26']),
+    })).toBe('2026-10-27');
+  });
+
   it('anchors at the first occurrence when an ended rule is extended', () => {
     const previous: RecurrenceSchedule = { ...daily, start_date: '2026-10-01', end_date: '2026-10-25' };
     const extended: RecurrenceSchedule = { ...previous, end_date: '2026-10-31' };
@@ -416,6 +428,21 @@ describe('planEdit', () => {
     const plan = planEdit({ schedule: ended, previousSchedule: ended, cursor: '2026-10-26', scope: 'future', today: '2026-10-26' });
     expect(plan.nextDue).toBe('2026-10-26');
     expect(plan.preview).toEqual({ firstDate: '2026-10-26', count: 0, truncated: false });
+  });
+
+  it('skips today from the generated occurrences when extending a saved shortened rule', () => {
+    const previous: RecurrenceSchedule = { ...daily, start_date: '2026-10-01', end_date: '2026-10-25' };
+    const extended: RecurrenceSchedule = { ...previous, end_date: '2026-10-31' };
+    const plan = planEdit({
+      schedule: extended,
+      previousSchedule: previous,
+      cursor: '2026-10-27',
+      scope: 'future',
+      today: '2026-10-26',
+      existingOccurrences: new Set(['2026-10-26']),
+    });
+    expect(plan.nextDue).toBe('2026-10-27');
+    expect(plan.preview).toEqual({ firstDate: '2026-10-27', count: 0, truncated: false });
   });
 
   it('drops a recorded skip once the end date falls before it', () => {
