@@ -110,6 +110,7 @@ export const en = {
   filter_apply_all_categories: 'Apply (All categories)',
   filter_apply_all_expense: 'Apply (All expenses)',
   filter_apply_all_income: 'Apply (All income)',
+  filter_select_at_least_one: 'Select at least one category.',
   filter_no_results: 'No results found',
   filter_expenses: 'Expenses',
   filter_income: 'Income',

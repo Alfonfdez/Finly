@@ -112,6 +112,7 @@ export const de: Language = {
   filter_apply_all_categories: 'Anwenden (Alle Kategorien)',
   filter_apply_all_expense: 'Anwenden (Alle Ausgaben)',
   filter_apply_all_income: 'Anwenden (Alle Einnahmen)',
+  filter_select_at_least_one: 'Wähle mindestens eine Kategorie aus.',
   filter_no_results: 'Keine Ergebnisse gefunden',
   filter_expenses: 'Ausgaben',
   filter_income: 'Einnahmen',

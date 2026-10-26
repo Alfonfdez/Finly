@@ -4482,3 +4482,26 @@
 [2026-10-26] refactor | FinlyApp/src/i18n/*.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionForm.tsx
 - i18n: renamed the expense recurring-name placeholder key to repeat_name_placeholder_expense for symmetry with repeat_name_placeholder_income
 - test:all green (178 files / 1504 tests).
+
+[2026-10-26] fix | FinlyApp/src/components/CategoryFilterModal.tsx, FinlyApp/tests/component/CategoryFilterModal.test.tsx, spec/features/021-category-filter-modal/1-spec.md, spec/constitution/3-roadmap.md
+- Category filter modal now renders every visible tile and the type-matching preset as selected when the filter is empty, matching the Apply label and screen pill.
+- Tapping a category from the all-selected state removes it from the full type set; empty=no-filter semantics and preset toggling are unchanged.
+- Updated spec 021 and added modal tests for All/Expenses/Income, partial selections, search and deselect/reselect; test:all green (178 files / 1508 tests).
+
+[2026-10-26] fix | FinlyApp/src/components/CategoryFilterModal.tsx, FinlyApp/tests/component/CategoryFilterModal.test.tsx, FinlyApp/src/i18n/*.ts, spec/features/021-category-filter-modal/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Category filter modal now requires at least one category: opening with no filter preselects every category for the tab, tapping the active preset clears all, Apply is disabled and reads Apply (0), and a hint asks for at least one category.
+- Deselecting the last tile behaves the same, and selecting a tile re-enables Apply; the screen's empty filter state still means no filter.
+- Added filter_select_at_least_one in all 9 languages, updated specs 021/015 and modal tests; test:all green (178 files / 1509 tests).
+
+[2026-10-26] style | FinlyApp/src/components/CategoryFilterModal.tsx, spec/features/021-category-filter-modal/1-spec.md, spec/constitution/3-roadmap.md
+- On the All tab, the All categories preset now occupies its own first row, with All expenses and All income sharing the second row; type tabs keep one preset row.
+- Updated spec 021 and roadmap; test:all green (178 files / 1509 tests).
+
+[2026-10-26] fix | FinlyApp/src/components/CategoryFilterModal.tsx, FinlyApp/tests/component/CategoryFilterModal.test.tsx, spec/features/021-category-filter-modal/1-spec.md, spec/constitution/3-roadmap.md
+- The Expenses and Income tabs now keep their section title above the category grid, matching the All tab.
+- Updated spec 021 and modal tests; test:all green (178 files / 1509 tests).
+
+[2026-10-26] fix | .github/workflows/ci.yml, FinlyApp/tests/component/helpers/configStub.ts, spec/constitution/3-roadmap.md
+- CI now runs on pinned ubuntu-24.04 with a 15-minute timeout, avoiding the ubuntu-latest migration to Ubuntu 26.
+- Config-stub notifications now run inside React act, removing the FormSectionHeader/SettingsRow/AppProvider update warnings.
+- test:all green twice locally, including once with CI=true (178 files / 1509 tests).
