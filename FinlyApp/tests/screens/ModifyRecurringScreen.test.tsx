@@ -149,6 +149,7 @@ describe('ModifyRecurringScreen', () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     globalThis.requestAnimationFrame = originalRAF;
     resetAppStub();
     resetStub();
@@ -338,6 +339,7 @@ describe('ModifyRecurringScreen', () => {
   });
 
   it('keeps the delete modal open when removing the rule fails', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
     mockRemove.mockRejectedValueOnce(new Error('delete failed'));
     const view = await render(<ModifyRecurringScreen />);
     await waitFor(() => expect(view.getByText('Save')).toBeTruthy());
@@ -349,6 +351,7 @@ describe('ModifyRecurringScreen', () => {
     await waitFor(() => expect(mockRemove).toHaveBeenCalledTimes(1));
     expect(nav.goBack).not.toHaveBeenCalled();
     expect(view.getByRole('button', { name: 'Delete' })).toBeTruthy();
+    expect(consoleError).toHaveBeenCalled();
   });
 
   it('ignores a second delete confirmation while the first is running', async () => {

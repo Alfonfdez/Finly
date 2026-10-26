@@ -50,9 +50,9 @@ vi.mock('../../src/database', () => ({
   BACKUP_VALIDATION_CODES: validationMocks.BACKUP_VALIDATION_CODES,
 }));
 
-vi.mock('../../src/database/database', () => ({
-  clearDataKeepSettings: () => clearDataKeepSettings(),
-  resetDatabase: () => resetDatabase(),
+vi.mock('../../src/database/maintenance', () => ({
+  clearDataKeepSettingsWithCleanup: () => clearDataKeepSettings(),
+  resetDatabaseWithCleanup: () => resetDatabase(),
 }));
 
 vi.mock('../../src/utils/backupIO', () => ({
