@@ -569,6 +569,7 @@ export const en = {
   recurring_too_many_occurrences: (limit: number) => `This rule would create more than ${limit} transactions. Move the start date later or add an end date`,
   recurring_too_many_occurrences_end: (limit: number) => `This rule would create more than ${limit} transactions. Move the start date later or set an earlier end date`,
   recurring_info_paused: 'This rule is paused: no transactions are created until you resume it.',
+  recurring_info_ended: 'This rule has ended: no future transactions will be created.',
 
   // Recurring skip warning
   recurring_skip_warning_title: 'Skip occurrences?',

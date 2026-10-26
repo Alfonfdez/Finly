@@ -571,6 +571,7 @@ export const fr: Language = {
   recurring_too_many_occurrences: (limit: number) => `Cette règle créerait plus de ${limit} transactions. Déplacez la date de début plus tard ou ajoutez une date de fin`,
   recurring_too_many_occurrences_end: (limit: number) => `Cette règle créerait plus de ${limit} transactions. Déplacez la date de début plus tard ou avancez la date de fin`,
   recurring_info_paused: 'Cette règle est en pause : aucune transaction ne sera créée tant que vous ne la réactivez pas.',
+  recurring_info_ended: 'Cette règle est terminée : aucune transaction future ne sera créée.',
 
   // Recurring skip warning
   recurring_skip_warning_title: 'Ignorer des occurrences ?',

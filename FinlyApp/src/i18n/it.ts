@@ -571,6 +571,7 @@ export const it: Language = {
   recurring_too_many_occurrences: (limit: number) => `Questa regola creerebbe più di ${limit} transazioni. Sposta la data di inizio più avanti o aggiungi una data di fine`,
   recurring_too_many_occurrences_end: (limit: number) => `Questa regola creerebbe più di ${limit} transazioni. Sposta la data di inizio più avanti o anticipa la data di fine`,
   recurring_info_paused: 'Questa regola è in pausa: non verrà creata alcuna transazione finché non la riprendi.',
+  recurring_info_ended: 'Questa regola è terminata: non verranno create altre transazioni future.',
 
   // Recurring skip warning
   recurring_skip_warning_title: 'Ignorare le occorrenze?',

@@ -571,6 +571,7 @@ export const de: Language = {
   recurring_too_many_occurrences: (limit: number) => `Diese Regel würde mehr als ${limit} Transaktionen erzeugen. Wähle ein späteres Startdatum oder füge ein Enddatum hinzu`,
   recurring_too_many_occurrences_end: (limit: number) => `Diese Regel würde mehr als ${limit} Transaktionen erzeugen. Wähle ein späteres Startdatum oder ein früheres Enddatum`,
   recurring_info_paused: 'Diese Regel ist pausiert: Es werden keine Transaktionen erstellt, bis Sie sie fortsetzen.',
+  recurring_info_ended: 'Diese Regel ist beendet: Es werden keine zukünftigen Transaktionen mehr erstellt.',
 
   // Recurring skip warning
   recurring_skip_warning_title: 'Vorkommen überspringen?',

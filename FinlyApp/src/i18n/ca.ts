@@ -571,6 +571,7 @@ export const ca: Language = {
   recurring_too_many_occurrences: (limit: number) => `Aquesta regla crearia més de ${limit} transaccions. Mou la data d'inici més endavant o afegeix una data de fi`,
   recurring_too_many_occurrences_end: (limit: number) => `Aquesta regla crearia més de ${limit} transaccions. Mou la data d'inici més endavant o avança la data de fi`,
   recurring_info_paused: 'Aquesta regla està en pausa: no es crearà cap transacció fins que la reprenguis.',
+  recurring_info_ended: 'Aquesta regla ha finalitzat: no es crearan més transaccions futures.',
 
   // Recurring skip warning
   recurring_skip_warning_title: 'Ometre ocurrències?',
