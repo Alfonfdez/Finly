@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useResetOnOpen } from '../hooks/useResetOnOpen';
 import { t } from '../i18n';
 import { evaluate } from '../utils/calculator';
 import { isWeb } from '../utils/platform';
@@ -44,9 +45,17 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
   const fs = useFontSize();
   const [expression, setExpression] = useState('');
   const [hasError, setHasError] = useState(false);
+  const justEvaluated = useRef(false);
 
   const expressionRef = useRef('');
   expressionRef.current = expression;
+
+  const resetCalculator = useCallback(() => {
+    setExpression('');
+    setHasError(false);
+    justEvaluated.current = false;
+  }, []);
+  useResetOnOpen(visible, resetCalculator);
 
   const displayHeight = fs(16) * 1.4 * 2 + fs(28) * 1.4 + 32;
 
@@ -59,23 +68,32 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
 
   const handleButton = useCallback((btn: string) => {
     if (btn === CALC_KEYS.clear) {
-      setExpression('');
-      setHasError(false);
+      resetCalculator();
       return;
     }
     if (btn === CALC_KEYS.backspace) {
       setExpression(prev => prev.slice(0, -1));
       setHasError(false);
+      justEvaluated.current = false;
       return;
     }
     if (btn === CALC_KEYS.equals) {
-      const { error } = evaluate(expressionRef.current);
+      const { result, error } = evaluate(expressionRef.current);
       setHasError(error);
+      if (!error && result !== null) {
+        setExpression(String(result));
+        justEvaluated.current = true;
+      } else {
+        justEvaluated.current = false;
+      }
       return;
     }
 
+    const startsNew = justEvaluated.current && !OP_KEYS.has(btn);
     setHasError(false);
+    justEvaluated.current = false;
     setExpression(prev => {
+      if (startsNew) return btn === CALC_KEYS.decimal ? `0${btn}` : btn;
       const lastChar = prev.slice(-1);
       if (OP_KEYS.has(btn)) {
         if (!prev) return btn === CALC_KEYS.subtract ? prev + btn : prev;
@@ -89,7 +107,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
       }
       return prev + btn;
     });
-  }, []);
+  }, [resetCalculator]);
 
   const handleAccept = useCallback(() => {
     if (resultDisplay !== null && !hasError) {

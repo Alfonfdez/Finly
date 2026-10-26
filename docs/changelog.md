@@ -4423,3 +4423,7 @@
 - Awaited the asynchronous File.copy before appending a new photo URI to preview state.
 - This fixes the first camera/gallery photo rendering as a black square while later photos appeared normally.
 - Added a deferred-copy regression test; test:all green (170 files / 1430 tests).
+
+[2026-10-26] fix | FinlyApp/src/components/CalculatorModal.tsx, FinlyApp/tests/component/CalculatorModal.test.tsx, spec/features/007-calculator/1-spec.md, spec/constitution/3-roadmap.md
+- Calculator: '=' now commits the rounded result, a following operator chains from it, a digit starts fresh, and reopening resets the modal
+- Calculator: added commit-on-equals and reset-on-open regression tests
