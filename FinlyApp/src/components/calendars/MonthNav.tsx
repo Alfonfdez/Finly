@@ -1,10 +1,9 @@
-import { View, Text, StyleSheet } from 'react-native';
 import { getMonthName } from '../../utils/formatters';
 import { resolveDateBounds } from '../../utils/calendarBounds';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { useToday } from '../../hooks/useToday';
-import NavArrows from './NavArrows';
+import CalendarNavRow from './CalendarNavRow';
 import { MONTHS_PER_YEAR } from '../../constants/calendar';
 
 interface Props {
@@ -33,25 +32,23 @@ export default function MonthNav({ year, month, onChange, minDate, maxDate }: Pr
     onChange(newYear, newMonth);
   };
 
+  const targetYear = Math.min(today.getFullYear(), max?.getFullYear() ?? today.getFullYear());
+  const targetMonth = targetYear === today.getFullYear()
+    ? Math.min(today.getMonth() + 1, (max?.getMonth() ?? today.getMonth()) + 1)
+    : (max?.getMonth() ?? today.getMonth()) + 1;
+  const showJump = year === targetYear && month < targetMonth - 1;
+
   return (
-    <View style={styles.container}>
-      <NavArrows
-        color={c.text}
-        onPrev={() => goToMonth(-1)}
-        onNext={() => goToMonth(1)}
-        nextDisabled={atMax}
-        prevDisabled={atMin}
-      />
-      <Text style={{ color: c.text, fontSize: fs(16), fontWeight: '700' }}>{getMonthName(month)} {year}</Text>
-    </View>
+    <CalendarNavRow
+      title={`${getMonthName(month)} ${year}`}
+      titleSize={fs(15)}
+      color={c.text}
+      onPrev={() => goToMonth(-1)}
+      onNext={() => goToMonth(1)}
+      onJumpToCurrent={() => onChange(targetYear, targetMonth)}
+      showJump={showJump}
+      nextDisabled={atMax}
+      prevDisabled={atMin}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-});

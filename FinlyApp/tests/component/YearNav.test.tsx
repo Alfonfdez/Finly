@@ -29,6 +29,24 @@ describe('YearNav', () => {
     expect(onChange).toHaveBeenCalledWith(2037);
   });
 
+  it('shows the current-year jump only when it is at least two years away', async () => {
+    const onChange = vi.fn();
+    const currentYear = new Date().getFullYear();
+    const view = await render(<YearNav year={currentYear - 2} onChange={onChange} />);
+
+    await fireEvent.press(view.getByLabelText('Go to the current period'));
+    expect(onChange).toHaveBeenCalledWith(currentYear);
+  });
+
+  it('hides the current-year jump at the penultimate and current years', async () => {
+    const currentYear = new Date().getFullYear();
+    const penultimate = await render(<YearNav year={currentYear - 1} onChange={vi.fn()} />);
+    expect(penultimate.queryByLabelText('Go to the current period')).toBeNull();
+
+    const current = await render(<YearNav year={currentYear} onChange={vi.fn()} />);
+    expect(current.queryByLabelText('Go to the current period')).toBeNull();
+  });
+
   it('disables the back arrow at the minDate year', async () => {
     const onChange = vi.fn();
     const view = await render(

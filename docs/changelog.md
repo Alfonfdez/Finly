@@ -4450,3 +4450,8 @@
 - Calendar: YearGrid now uses fixed 1900-anchored 12-year pages and no longer recenters when a year is selected
 - Calendar: WeekPicker keeps six fixed slots with blank placeholders and no longer jumps months when a shared week is tapped
 - Added calendar bounds, MonthGrid, YearGrid and WeekPicker regression tests; test:all green (175 files / 1460 tests).
+
+[2026-10-26] fix | FinlyApp/src/components/calendars/CalendarNavRow.tsx, FinlyApp/src/components/calendars/MonthNav.tsx, FinlyApp/src/components/calendars/YearNav.tsx, FinlyApp/src/components/calendars/YearGrid.tsx, FinlyApp/src/components/calendars/NavArrows.tsx, FinlyApp/tests/component/MonthNav.test.tsx, FinlyApp/tests/component/YearNav.test.tsx, FinlyApp/tests/component/YearGrid.test.tsx, spec/constitution/6-screens.md, spec/features/001-home-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Calendar nav: replaced the cramped arrows with a shared row using 22px icons, compact boxes with 44px+ effective tap targets, equal side slots and a perfectly centred title
+- Calendar nav: added a separated double-arrow jump to the current year/month/page when it is at least two steps away
+- Calendar nav: increased the gap between year and month rows; added MonthNav/YearNav/YearGrid jump tests; test:all green (176 files / 1465 tests).
