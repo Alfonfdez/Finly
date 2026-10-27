@@ -44,6 +44,28 @@ describe('useKeyboardReveal', () => {
     expect(ref.current.scrollToEnd).not.toHaveBeenCalled();
   });
 
+  it('cancels a pending reveal when the field blurs before the timer fires', async () => {
+    const ref = makeRef();
+    const { result } = await renderHook(() => useReveal(ref));
+
+    await act(async () => { result.current.onBottomFieldFocus(); });
+    await act(async () => { result.current.onBottomFieldBlur(); });
+    await wait();
+
+    expect(ref.current.scrollToEnd).not.toHaveBeenCalled();
+  });
+
+  it('does not re-reveal on layout after blur', async () => {
+    const ref = makeRef();
+    const { result } = await renderHook(() => useReveal(ref));
+    await act(async () => { result.current.onBottomFieldFocus(); });
+    await act(async () => { result.current.onBottomFieldBlur(); });
+    await act(async () => { result.current.onScrollLayout(); });
+    await wait();
+
+    expect(ref.current.scrollToEnd).not.toHaveBeenCalled();
+  });
+
   it('re-reveals on layout while a bottom field is focused', async () => {
     const ref = makeRef();
     const { result } = await renderHook(() => useReveal(ref));

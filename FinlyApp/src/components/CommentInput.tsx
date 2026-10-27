@@ -11,6 +11,7 @@ import CharCounter, { COUNTER_FONT_SIZE, inlineCounterReserve } from './form/Cha
 import FormSectionHeader from './form/FormSectionHeader';
 import { formStyles } from './form/formStyles';
 import { CONTROL_BORDER_RADIUS } from './componentStyles';
+import { isWeb } from '../utils/platform';
 
 interface Props {
   comment: string;
@@ -28,8 +29,17 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
   const [focused, setFocused] = useState(false);
   const skipNextSearch = useRef(false);
   const isPressingSuggestion = useRef(false);
+  const refocusingInput = useRef(false);
   const focusedRef = useRef(false);
   const searchId = useRef(0);
+  const refocusTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const localInputRef = useRef<TextInput>(null);
+
+  const setInputRef = useCallback((node: TextInput | null) => {
+    localInputRef.current = node;
+    if (typeof ref === 'function') ref(node);
+    else if (ref) (ref as { current: TextInput | null }).current = node;
+  }, [ref]);
 
   const searchComments = useCallback(async (value: string) => {
     const id = ++searchId.current;
@@ -61,17 +71,58 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
   }, [comment, debouncedSearch, focused]);
 
   useEffect(() => () => {
+    if (refocusTimer.current != null) clearTimeout(refocusTimer.current);
     debouncedSearch.cancel();
     searchId.current += 1;
   }, [debouncedSearch]);
 
+  const commitBlur = useCallback(() => {
+    refocusingInput.current = false;
+    focusedRef.current = false;
+    debouncedSearch.cancel();
+    searchId.current += 1;
+    setSuggestions([]);
+    setFocused(false);
+    onBlur?.();
+  }, [debouncedSearch, onBlur]);
+
   const handleSelectSuggestion = (text: string) => {
     skipNextSearch.current = true;
+    isPressingSuggestion.current = false;
+    refocusingInput.current = true;
     debouncedSearch.cancel();
     searchId.current += 1;
     onChange(text);
     setSuggestions([]);
+    // Tapping a suggestion can blur the input on web. Refocus on the next task so the
+    // browser's own focus change has settled, keeping the keyboard open for editing.
+    if (refocusTimer.current != null) clearTimeout(refocusTimer.current);
+    refocusTimer.current = setTimeout(() => {
+      refocusTimer.current = null;
+      const input = localInputRef.current;
+      if (input) {
+        input.focus();
+        refocusingInput.current = false;
+        return;
+      }
+      commitBlur();
+    }, 0);
   };
+
+  // On web, a mousedown on the suggestion would blur the input before onPress runs and
+  // unmount the row. Prevent that default focus change; native keeps using onPressIn.
+  const webSuggestionPressProps = isWeb
+    ? {
+      onMouseDown: (event: { preventDefault?: () => void }) => {
+        event.preventDefault?.();
+        isPressingSuggestion.current = true;
+      },
+      onPointerDown: (event: { preventDefault?: () => void }) => {
+        event.preventDefault?.();
+        isPressingSuggestion.current = true;
+      },
+    }
+    : {};
 
   return (
     <View style={styles.container}>
@@ -98,6 +149,7 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
                 { borderBottomColor: c.border },
                 i === suggestions.length - 1 && styles.suggestionItemLast,
               ]}
+              {...webSuggestionPressProps}
               onPressIn={() => { isPressingSuggestion.current = true; }}
               onPressOut={() => { isPressingSuggestion.current = false; }}
               onPress={() => handleSelectSuggestion(item)}
@@ -111,7 +163,7 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
       )}
       <View style={formStyles.inlineInputWrap}>
         <TextInput
-          ref={ref}
+          ref={setInputRef}
           style={[styles.input, { paddingBottom: inlineCounterReserve(fs(COUNTER_FONT_SIZE), fontScale), backgroundColor: c.surface, color: c.text, fontSize: fs(14) }]}
           placeholder={labels.add_comment}
           placeholderTextColor={c.textSecondary}
@@ -123,13 +175,8 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
             onFocus?.();
           }}
           onBlur={() => {
-            if (isPressingSuggestion.current) return;
-            focusedRef.current = false;
-            debouncedSearch.cancel();
-            searchId.current += 1;
-            setSuggestions([]);
-            setFocused(false);
-            onBlur?.();
+            if (isPressingSuggestion.current || refocusingInput.current) return;
+            commitBlur();
           }}
           multiline
           maxLength={Math.max(MAX_COMMENT_LENGTH, comment.length)}

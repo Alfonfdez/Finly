@@ -1480,7 +1480,16 @@ Applied 2026-10-27:
 - Config booleans parse only true/false, config failure recovery no longer overwrites newer optimistic updates, and deleting the active account keeps the selected Home period.
 - Calculator Accept is disabled for zero/negative results; week/month/year calendar cells enforce the resolved min/max bounds.
 - Negative calculator results are valid intermediate values: unary minus is folded into the number, so `5 - 10 = -5`, then `+ 10 = 5` no longer errors.
-- Added database, config, context, calculator and calendar regressions; 
-npm run test:all green (179 files / 1554 tests).
+- Added database, config, context, calculator and calendar regressions; npm run test:all green (179 files / 1554 tests).
 
 Spec: spec/features/001-home-screen/, spec/features/002-db-design/, spec/features/007-calculator/.
+
+## 2.2.0 comment suggestion focus and keyboard reveal
+Status: completed.
+
+Applied 2026-10-27:
+- Selecting a comment suggestion keeps the input focused and the keyboard open; the suggestion panel clears and a later real blur still commits normally.
+- The keyboard-reveal timer is cancelled on blur and guarded before scrolling, so a quick focus/blur (including a suggestion tap) cannot move the form later.
+- Added CommentInput and useKeyboardReveal regressions; `npm run test:all` green (179 files / 1557 tests).
+
+Spec: spec/features/004-add-transaction-screen/, spec/features/017-modify-transaction-screen/.

@@ -14,8 +14,19 @@ vi.mock('../../src/database', () => ({
 
 const mockedSearchComments = vi.mocked(transactionRepository.searchComments);
 
-async function renderInput(comment: string, onChange = vi.fn()) {
-  return await render(<CommentInput comment={comment} onChange={onChange} />);
+async function renderInput(
+  comment: string,
+  onChange = vi.fn(),
+  callbacks: { onFocus?: () => void; onBlur?: () => void } = {},
+) {
+  return await render(
+    <CommentInput
+      comment={comment}
+      onChange={onChange}
+      onFocus={callbacks.onFocus}
+      onBlur={callbacks.onBlur}
+    />,
+  );
 }
 
 async function flushDebounce() {
@@ -126,6 +137,25 @@ describe('CommentInput', () => {
     await act(async () => { fireEvent.press(suggestion); });
     expect(onChange).toHaveBeenCalledWith('coffee');
     expect(view.queryByText('coffee')).toBeNull();
+  });
+
+  it('keeps a suggestion tap from committing blur, then commits a later real blur', async () => {
+    mockedSearchComments.mockResolvedValue(['coffee']);
+    const onBlur = vi.fn();
+    const view = await renderInput('cof', vi.fn(), { onBlur });
+    await focusInput(view);
+    await flushDebounce();
+
+    const input = view.getByLabelText('Comment input');
+    const suggestion = view.getByText('coffee');
+    await act(async () => { fireEvent(suggestion, 'pressIn'); });
+    await act(async () => { fireEvent(input, 'blur'); });
+    await act(async () => { fireEvent.press(suggestion); });
+    expect(onBlur).not.toHaveBeenCalled();
+
+    await act(async () => { vi.advanceTimersByTime(0); });
+    await act(async () => { fireEvent(input, 'blur'); });
+    expect(onBlur).toHaveBeenCalledTimes(1);
   });
 
   it('does not clip a legacy comment above the maximum', async () => {

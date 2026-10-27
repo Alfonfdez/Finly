@@ -30,16 +30,21 @@ export function useKeyboardReveal(externalRef?: ScrollViewRef, reveal: RevealAct
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bottomFieldFocused = useRef(false);
 
-  useEffect(() => () => {
-    if (timer.current != null) clearTimeout(timer.current);
+  const cancelScheduledReveal = useCallback(() => {
+    if (timer.current == null) return;
+    clearTimeout(timer.current);
+    timer.current = null;
   }, []);
 
+  useEffect(() => () => cancelScheduledReveal(), [cancelScheduledReveal]);
+
   const scheduleReveal = useCallback(() => {
-    if (timer.current != null) clearTimeout(timer.current);
+    cancelScheduledReveal();
     timer.current = setTimeout(() => {
-      reveal(scrollRef);
+      timer.current = null;
+      if (bottomFieldFocused.current) reveal(scrollRef);
     }, 300);
-  }, [reveal, scrollRef]);
+  }, [cancelScheduledReveal, reveal, scrollRef]);
 
   const onBottomFieldFocus = useCallback(() => {
     bottomFieldFocused.current = true;
@@ -48,7 +53,9 @@ export function useKeyboardReveal(externalRef?: ScrollViewRef, reveal: RevealAct
 
   const onBottomFieldBlur = useCallback(() => {
     bottomFieldFocused.current = false;
-  }, []);
+    // A focus/blur that happens before the 300ms reveal must not scroll later.
+    cancelScheduledReveal();
+  }, [cancelScheduledReveal]);
 
   const onScrollLayout = useCallback(() => {
     if (bottomFieldFocused.current) scheduleReveal();

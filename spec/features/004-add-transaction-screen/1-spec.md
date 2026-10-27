@@ -125,7 +125,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - Title: "Comment" (multilingual).
 - Multiline text input with placeholder "Comment" (multilingual).
 - Below: dynamic counter "0/4096" that updates as you type (maximum 4096 characters).
-- Suggestions: while focused, matching previous comments appear inside the Comment section under a **Suggestions** header with a **Tap to reuse** hint; rows are 44px and fill the comment when pressed.
+- Suggestions: while focused, matching previous comments appear inside the Comment section under a **Suggestions** header with a **Tap to reuse** hint; rows are 44px and fill the comment when pressed. Selecting a suggestion keeps the field focused and the keyboard open, clears the suggestion panel, and a later real blur still runs the normal blur handling.
 
 ### 9. Photos
 
@@ -174,6 +174,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - [x] The tags section allows searching, creating and selecting tags.
 - [x] The "Add tag" modal validates a maximum of 20 characters.
 - [x] The comment field allows up to 4096 characters with a counter.
+- [x] Selecting a comment suggestion fills the field, clears the suggestion panel, keeps focus/keyboard open and does not trigger a delayed form scroll.
 - [x] The photo button opens the modal with the two options (full implementation in 023).
 - [x] The "Add" button creates the transaction and returns to Home.
 - [x] All texts change when changing the language in settings.

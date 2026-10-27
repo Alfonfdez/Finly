@@ -4551,3 +4551,8 @@
 [2026-10-27] fix | FinlyApp/src/utils/calculator.ts, FinlyApp/tests/utils/calculator.test.ts, FinlyApp/tests/component/CalculatorModal.test.tsx, spec/features/007-calculator/1-spec.md
 - Treat a leading minus, or a minus after an operator, as a unary sign so negative intermediate results can be reused.
 - Add calculator regressions for negative chaining and the 5 - 10 = -5, + 10 = 5 flow.
+
+[2026-10-27] fix | FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/hooks/useKeyboardReveal.ts, FinlyApp/tests/component/CommentInput.test.tsx, FinlyApp/tests/hooks/useKeyboardReveal.test.tsx, spec/features/004-add-transaction-screen/1-spec.md, spec/features/017-modify-transaction-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Keep the comment input focused and the keyboard open after selecting a suggestion.
+- Cancel and guard the delayed keyboard-reveal scroll when the field blurs before it fires.
+- Add CommentInput and useKeyboardReveal regressions for the suggestion and blur paths.
