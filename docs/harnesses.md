@@ -341,6 +341,9 @@ and each suite calls `resetStub()` in `beforeEach`. i18n is NOT stubbed — the 
 | `tests/component/EmptyState.test.tsx` | `EmptyState` — icon, title, message |
 | `tests/component/Fab.test.tsx` | `Fab` — icon, onPress, a11y label |
 | `tests/component/CalculatorModal.test.tsx` | `CalculatorModal` — keypad input, expression evaluation, clear/backspace, trailing-operator rejection, zero/negative Accept guard, accept/cancel |
+| `tests/component/CommentInput.test.tsx` | `CommentInput` - debounced suggestions, focus/blur, suggestion selection keeps focus and clears the panel, legacy length and counter |
+| `tests/hooks/useKeyboardReveal.test.tsx` | `useKeyboardReveal` - reveal on focus, re-reveal on layout/keyboard, cancel a pending reveal on blur |
+| `tests/component/ModalShell.test.tsx` | `ModalShell` - dismisses the underlying keyboard when opened |
 | `tests/component/CategoryFilterModal.test.tsx` | `CategoryFilterModal` — type tabs, search, All/category multi-select, `Apply (N)`/`Apply (All)` labels, disabled Apply at 0 selected, close |
 | `tests/component/TransactionForm.test.tsx` | `TransactionForm` — type tabs, amount input, account picker, category grid + create tile, day selector, form submit/cancel |
 | `tests/component/RepeatSection.test.tsx` | `RepeatSection` — always-rendered options (no toggle), frequency chips, interval stepper, end date, rule-mode re-anchor (denser schedule from today, today not re-counted), start-moved-earlier hint, last-day |

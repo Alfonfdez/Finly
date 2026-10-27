@@ -87,7 +87,7 @@
 - Multiline text input that is **preloaded with the current comment** of the transaction (`transaction.description`).
 - Placeholder: "Comment" (multilingual).
 - Dynamic counter "0/4096" that updates as you type (max 4096 characters).
-- Autocomplete: debounced search of existing comments (same logic as `AddTransactionScreen`), shown inside the Comment section under a **Suggestions** header with a **Tap to reuse** hint.
+- Autocomplete: debounced search of existing comments (same logic as `AddTransactionScreen`), shown inside the Comment section under a **Suggestions** header with a **Tap to reuse** hint. Selecting a suggestion keeps the field focused and the keyboard open, clears the suggestion panel, and a later real blur still runs the normal blur handling.
 
 ### 9. Photos
 
@@ -156,6 +156,7 @@
 - [x] The comment field is preloaded with the current transaction's comment.
 - [x] The comment field allows up to 4096 characters with a counter.
 - [x] The comment autocomplete works the same as in AddTransaction.
+- [x] Selecting a comment suggestion fills the field, clears the suggestion panel, keeps focus/keyboard open and does not trigger a delayed form scroll.
 - [x] The photo section preloads existing photo and allows replacement/removal (full implementation in 023).
 - [x] The "Save" button is disabled if category, valid amount, day, or account is missing.
 - [x] The help text is shown when the button is disabled.
