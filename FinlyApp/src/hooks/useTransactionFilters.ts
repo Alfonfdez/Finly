@@ -59,7 +59,12 @@ export function useTransactionFilters({
   const usesOwnSort = sortScope === TRANSACTION_SORT_SCOPES.transactions;
   const sortBy = usesOwnSort ? config.transactionsSortBy : config.allTransactionsSortBy;
   const sortDirection = usesOwnSort ? config.transactionsSortDirection : config.allTransactionsSortDirection;
-  const [recurringView, setRecurringView] = useState<RecurringView>(RECURRING_VIEWS.all);
+  const recurringView = usesOwnSort ? config.transactionsRecurringView : config.allTransactionsRecurringView;
+  const setRecurringView = useCallback((value: RecurringView) => {
+    updateConfig(usesOwnSort
+      ? { transactionsRecurringView: value }
+      : { allTransactionsRecurringView: value });
+  }, [usesOwnSort, updateConfig]);
   const [tagsByTransaction, setTagsByTransaction] = useState<TagsByTransaction>(new Map());
   const [localTagIds, setLocalTagIds] = useState<number[]>(initialTagIds);
 

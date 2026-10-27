@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { UNTAGGED_ID } from '../../src/database/helpers';
-import { UNTAGGED_LABEL, MAX_SUGGESTIONS, THEMES, TRANSACTION_TYPES, TAG_SORT_BY, SORT_DIRECTIONS } from '../../src/constants/types';
+import { UNTAGGED_LABEL, MAX_SUGGESTIONS, THEMES, TRANSACTION_TYPES, TAG_SORT_BY, SORT_DIRECTIONS, RECURRING_VIEWS, RECURRING_STATUSES } from '../../src/constants/types';
 import { DEFAULT_CONFIG } from '../../src/database/configDefaults';
 import type { ContractBackend, NewAccount, NewCategory, NewTransaction } from './contractTypes';
 import type { Transaction } from '../../src/database/types';
@@ -736,6 +736,12 @@ export function runContractSuite(
           homeDefaultAccountId: 3,
           tagsSortBy: TAG_SORT_BY.usage,
           tagsSortDirection: SORT_DIRECTIONS.desc,
+          allTransactionsRecurringView: RECURRING_VIEWS.recurring,
+          transactionsRecurringView: RECURRING_VIEWS.oneTime,
+          allTransactionsCategoryIds: [1, 2],
+          allTransactionsExpenseCategoryIds: [1],
+          allTransactionsIncomeCategoryIds: [2],
+          recurringStatusFilter: [RECURRING_STATUSES.paused, RECURRING_STATUSES.ended],
         });
         const after = await backend.config.get();
         expect(after.theme).toBe(THEMES.light);
@@ -743,6 +749,12 @@ export function runContractSuite(
         expect(after.homeDefaultAccountId).toBe(3);
         expect(after.tagsSortBy).toBe(TAG_SORT_BY.usage);
         expect(after.tagsSortDirection).toBe(SORT_DIRECTIONS.desc);
+        expect(after.allTransactionsRecurringView).toBe(RECURRING_VIEWS.recurring);
+        expect(after.transactionsRecurringView).toBe(RECURRING_VIEWS.oneTime);
+        expect(after.allTransactionsCategoryIds).toEqual([1, 2]);
+        expect(after.allTransactionsExpenseCategoryIds).toEqual([1]);
+        expect(after.allTransactionsIncomeCategoryIds).toEqual([2]);
+        expect(after.recurringStatusFilter).toEqual([RECURRING_STATUSES.paused, RECURRING_STATUSES.ended]);
         expect(after.currency).toBe(DEFAULT_CONFIG.currency);
         expect(after.language).toBe(DEFAULT_CONFIG.language);
         expect(after.firstDayOfWeek).toBe(DEFAULT_CONFIG.firstDayOfWeek);

@@ -11,6 +11,8 @@ import {
   PERIODS,
   RECURRENCE_FREQUENCIES,
   RECURRING_SORT_BY,
+  RECURRING_STATUSES,
+  RECURRING_VIEWS,
   SORT_BY,
   SORT_DIRECTIONS,
   TAG_SORT_BY,
@@ -45,6 +47,8 @@ const recurringSortBySchema = z.enum([
   RECURRING_SORT_BY.amount,
   RECURRING_SORT_BY.created,
 ]);
+const recurringViewSchema = z.enum([RECURRING_VIEWS.all, RECURRING_VIEWS.oneTime, RECURRING_VIEWS.recurring]);
+const recurringStatusSchema = z.enum([RECURRING_STATUSES.active, RECURRING_STATUSES.paused, RECURRING_STATUSES.ended]);
 const accountSortBySchema = z.enum([ACCOUNT_SORT_BY.name, ACCOUNT_SORT_BY.balance]);
 const categorySortBySchema = z.enum([CATEGORY_SORT_BY.name, CATEGORY_SORT_BY.usage]);
 
@@ -160,6 +164,12 @@ export const configSchema = z.object({
   editRecurringShowLabels: z.boolean(),
   editRecurringShowComments: z.boolean(),
   hideBalances: z.boolean(),
+  allTransactionsRecurringView: recurringViewSchema,
+  transactionsRecurringView: recurringViewSchema,
+  allTransactionsCategoryIds: z.array(z.number().int().positive()).transform(ids => [...new Set(ids)]),
+  allTransactionsExpenseCategoryIds: z.array(z.number().int().positive()).transform(ids => [...new Set(ids)]),
+  allTransactionsIncomeCategoryIds: z.array(z.number().int().positive()).transform(ids => [...new Set(ids)]),
+  recurringStatusFilter: z.array(recurringStatusSchema).transform(statuses => [...new Set(statuses)]),
   tagsSortBy: tagSortBySchema,
   tagsSortDirection: sortDirectionSchema,
   commentsSortBy: commentSortBySchema,

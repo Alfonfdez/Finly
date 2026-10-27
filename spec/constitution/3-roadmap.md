@@ -1445,3 +1445,14 @@ Applied 2026-10-27:
 - Added regression tests for the form, screen and service; browser-verified the future-then-past flow at 375px; `npm run test:all` green (178 files / 1512 tests).
 
 Spec: spec/features/028-recurring-transactions/.
+
+## 2.2.0 persisted filter pills
+Status: completed.
+
+Applied 2026-10-27:
+- Persisted the All/One-time/Recurring pill independently per transaction screen (`allTransactionsRecurringView` / `transactionsRecurringView`).
+- Persisted a separate All-transactions category selection per type tab (`allTransactionsCategoryIds`, `allTransactionsExpenseCategoryIds`, `allTransactionsIncomeCategoryIds`), pruning deleted categories and normalizing a full selection to `[]`; switching tabs restores that tab's selection instead of clearing it.
+- Persisted the Recurring status filter (`recurringStatusFilter`); type/account, period, tag and search filters remain session-only.
+- Config arrays now round-trip as JSON; added schema/default/serialization/screen tests and browser-verified per-tab persistence across tab switches and reloads; `npm run test:all` green (178 files / 1520 tests).
+
+Spec: spec/features/014-transactions-screen-from-home/, spec/features/015-all-transactions-screen/, spec/features/028-recurring-transactions/.
