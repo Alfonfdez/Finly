@@ -4520,3 +4520,8 @@
 - All-transactions category filter is now remembered per type tab (All/Expenses/Income); switching tabs restores that tab's selection instead of clearing it.
 - Added expense/income category config keys, per-tab pruning and full-selection normalization, and tests for independent selections and persistence.
 - Browser-verified per-tab selections survive tab switches and reloads; test:all green (178 files / 1520 tests).
+
+[2026-10-27] refactor | FinlyApp/src/utils/categoryFilterSelection.ts, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/src/database/schemas.ts, FinlyApp/src/database/repositories/configRepo.ts, FinlyApp/tests/utils/categoryFilterSelection.test.ts, spec/constitution/3-roadmap.md
+- Derived the All-transactions category selections and Recurring status filter directly from config, removing duplicated local state and sync effects.
+- Centralized the per-tab category config keys/patch, added normalizeCategorySelection, deduplicated config array schemas and renamed usesOwnPreferences.
+- No behavior change; test:all green (178 files / 1522 tests) and browser-verified persisted per-tab selections plus the Recurring status filter.
