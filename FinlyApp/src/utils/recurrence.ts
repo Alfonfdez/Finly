@@ -349,6 +349,19 @@ export function ruleEditCursor(
 }
 
 /**
+ * Edit cursor that also accounts for the rule's generated history. A rule whose
+ * cursor happens to equal its start is only fresh when it never generated anything;
+ * a started rule moved to a future start must keep its future cursor.
+ */
+export function ruleEditCursorForEdit(
+  rule: { next_due: string; start_date: string },
+  schedule: RecurrenceSchedule,
+  hasGeneratedOccurrences: boolean,
+): string {
+  return hasGeneratedOccurrences ? rule.next_due : ruleEditCursor(rule, schedule);
+}
+
+/**
  * The same cursor rule when the caller already knows whether the rule is
  * unmaterialized (the form holds the flag, not the rule row). `nextDue` stays
  * `null` in create mode so the summary keeps reading the schedule.

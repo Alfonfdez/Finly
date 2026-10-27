@@ -56,6 +56,7 @@ type UseTransactionFormProps = {
   initialRuleNextDue?: string | null;
   initialRuleActive?: boolean;
   initialRuleSkippedFrom?: string | null;
+  initialRuleOccurrenceDates?: string[];
   initialRepeatName?: string;
   initialRepeatLastDay?: boolean;
   existingRepeatNames?: string[];
@@ -90,6 +91,7 @@ export function useTransactionForm({
   initialRuleNextDue,
   initialRuleActive,
   initialRuleSkippedFrom,
+  initialRuleOccurrenceDates,
   initialRepeatName,
   initialRepeatLastDay,
   existingRepeatNames,
@@ -292,11 +294,13 @@ export function useTransactionForm({
     editing, isDirty, repeatScope,
   ]);
 
-  // A rule whose cursor still equals its start has never generated/skipped an
-  // occurrence ("fresh"): editing the start date re-anchors it from the new start
+  // A rule whose cursor still equals its start and that has never generated a
+  // transaction is "fresh": editing the start date re-anchors it from the new start
   // instead of keeping the stale (future) cursor.
+  const hasGeneratedOccurrences = (initialRuleOccurrenceDates?.length ?? 0) > 0;
   const ruleUnmaterialized =
     initialRuleNextDue != null &&
+    !hasGeneratedOccurrences &&
     isRuleUnmaterialized({ next_due: initialRuleNextDue, start_date: toDateOnly(initialDay) });
   // Editing a rule that already generated transactions with an earlier start does
   // not recreate the past occurrences (the cursor floor keeps them skipped).

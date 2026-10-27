@@ -1434,3 +1434,14 @@ Applied 2026-10-26:
 - `npm run test:all` green twice locally, including once with `CI=true` (178 files / 1509 tests).
 
 Spec: none (CI/test tooling).
+
+## 2.2.0 recurring started-rule cursor
+Status: completed.
+
+Applied 2026-10-27:
+- A recurring rule is now treated as fresh only when its cursor still equals its start **and** it has no generated occurrence dates.
+- A started rule moved to a future start (`next_due === start_date`) stays started: moving its start back into the past no longer back-fills occurrences or enables "Future + past".
+- The rule is enforced in the form, the pre-save skip warning and the service layer; genuinely fresh future rules still re-anchor from their new start.
+- Added regression tests for the form, screen and service; browser-verified the future-then-past flow at 375px; `npm run test:all` green (178 files / 1512 tests).
+
+Spec: spec/features/028-recurring-transactions/.

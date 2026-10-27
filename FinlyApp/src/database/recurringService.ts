@@ -1,6 +1,6 @@
 import { withTransaction } from './drizzle/engine';
 import { recurringRepo, type RecurringRuleInput } from './repositories/recurringRepo';
-import { buildRecurrenceSchedule, isRecurrenceEnded, listDueOccurrences, nextDueOnOrAfter, planEdit, recurrencePreview, ruleEditCursor, fromDateOnly, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
+import { buildRecurrenceSchedule, isRecurrenceEnded, listDueOccurrences, nextDueOnOrAfter, planEdit, recurrencePreview, ruleEditCursorForEdit, fromDateOnly, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
 import { InvalidRecurringRuleError, validateRecurringRuleDraft, type RecurringRuleDraft } from '../utils/recurringRuleValidation';
 import { datePart } from '../utils/formatters';
 import { RECURRENCE_SCOPES, RECURRING_RULE_ERRORS, RULE_ACTIVE, USER_ID, type RecurrenceScope, type RecurrenceSpec } from '../constants/types';
@@ -294,7 +294,7 @@ export function saveRecurringRuleEdit(params: RecurringEditParams): Promise<numb
       const plan = planEdit({
         schedule,
         previousSchedule: current,
-        cursor: ruleEditCursor(current, schedule),
+        cursor: ruleEditCursorForEdit(current, schedule, existingOccurrences.size > 0),
         scope,
         today,
         skippedFrom: current.skipped_from,

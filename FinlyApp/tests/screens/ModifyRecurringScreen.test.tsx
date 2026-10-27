@@ -295,6 +295,26 @@ describe('ModifyRecurringScreen', () => {
     expect(params.updated.start_date).toBe('2026-10-06');
   });
 
+  it('keeps Future + past disabled after a future edit when the rule already generated', async () => {
+    mockGetById.mockResolvedValue({
+      ...rule,
+      frequency: 'daily',
+      day_of_month: null,
+      start_date: '2026-10-30',
+      next_due: '2026-10-30',
+    });
+    mockListOccurrenceDates.mockResolvedValue(['2026-10-05']);
+
+    const view = await render(<ModifyRecurringScreen />);
+    await waitFor(() => expect(view.getByText('Start date')).toBeTruthy());
+
+    await pickCalendarDay(view, '1 October');
+    await waitFor(() =>
+      expect(view.getByText('Changing the start date doesn\'t add earlier transactions.')).toBeTruthy(),
+    );
+    expect(view.getByRole('button', { name: 'Future + past' })).toBeDisabled();
+  });
+
   it('Future + past counts only the occurrences not already generated', async () => {
     // Daily rule ended 3 Oct, extended to 10 Oct by a "Future only" save: that skipped
     // 4-5 Oct and generated today (6 Oct). Back-filling must report 2, not 3.

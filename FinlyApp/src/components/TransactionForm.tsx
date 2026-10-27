@@ -26,7 +26,7 @@ import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS, SECTION_GAP } from './compone
 import { TRANSACTION_TYPES, type TransactionType, type RecurrenceFrequency, type RecurrenceScope, type RootStackParamList, RECURRENCE_SCOPES } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import { parseAmountInput } from '../utils/amountInput';
-import { buildRecurrenceSchedule, recurrencePreview, ruleEditCursor, toDateOnly, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
+import { buildRecurrenceSchedule, recurrencePreview, toDateOnly, todayDateOnly, MAX_CATCH_UP_OCCURRENCES } from '../utils/recurrence';
 import { formFieldVisibility, FORM_MODES, type FormMode } from '../utils/formFieldVisibility';
 import { isWeb } from '../utils/platform';
 import { showErrorAlert } from '../utils/errors';
@@ -204,7 +204,7 @@ export default function TransactionForm(props: TransactionFormProps) {
     }
     return recurrencePreview(schedule, {
       today,
-      cursor: ruleEditCursor({ next_due: props.initialRuleNextDue, start_date: toDateOnly(props.initialDay) }, schedule),
+      cursor: ruleUnmaterialized ? schedule.start_date : props.initialRuleNextDue,
       scope: props.repeatScope ?? RECURRENCE_SCOPES.future,
       skippedFrom: props.initialRuleSkippedFrom ?? null,
       previousSchedule,
@@ -216,13 +216,13 @@ export default function TransactionForm(props: TransactionFormProps) {
     props.initialRuleSkippedFrom,
     props.initialRuleOccurrenceDates,
     props.repeatScope,
-    props.initialDay,
     day,
     repeatFrequency,
     repeatInterval,
     repeatEnd,
     repeatLastDay,
     previousSchedule,
+    ruleUnmaterialized,
   ]);
   const saveDisabled = !canSubmit || submitting || tooManyOccurrences;
 

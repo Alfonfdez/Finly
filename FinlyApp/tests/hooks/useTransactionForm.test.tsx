@@ -27,6 +27,7 @@ interface UseTransactionFormProps {
   ruleMode?: boolean;
   initialTagIds?: number[];
   initialRuleNextDue?: string | null;
+  initialRuleOccurrenceDates?: string[];
   initialRepeatFrequency?: RecurrenceFrequency;
   initialRepeatInterval?: number;
   initialRepeatEnd?: Date | null;
@@ -318,6 +319,22 @@ describe('useTransactionForm', () => {
 
     const started = await setup({ ruleMode: true, initialRuleNextDue: '2026-10-14', initialDay: new Date(2026, 9, 13) });
     expect(started.result.current.ruleUnmaterialized).toBe(false);
+  });
+
+  it('keeps a rule started when a future edit made next_due equal its start', async () => {
+    const started = await setup({
+      ruleMode: true,
+      initialDay: new Date(2099, 9, 30),
+      initialRuleNextDue: '2099-10-30',
+      initialRuleOccurrenceDates: ['2099-10-27'],
+      initialRepeatFrequency: 'daily',
+      initialRepeatInterval: 1,
+    });
+    expect(started.result.current.ruleUnmaterialized).toBe(false);
+
+    await act(() => started.result.current.setDay(new Date(2099, 9, 20)));
+    expect(started.result.current.ruleStartMovedEarlier).toBe(true);
+    expect(started.result.current.recurringPastAffected).toBe(false);
   });
 
   it('flags a started rule whose start date is moved earlier', async () => {
