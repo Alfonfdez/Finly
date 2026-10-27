@@ -5,14 +5,15 @@ import type { Config } from '../types';
 import { FIRST_DAYS } from '../../constants/types';
 import { ARRAY_CONFIG_KEYS, DEFAULT_CONFIG, DB_KEY_MAP, CONFIG_NULL_SENTINEL, sanitizeConfig, toConfigRows } from '../configDefaults';
 
-const BOOLEAN_KEYS: (keyof Config)[] = [
+const BOOLEAN_KEYS = new Set<keyof Config>([
   'addShowLabels', 'addShowComments', 'addShowPhoto',
   'modifyShowLabels', 'modifyShowComments', 'modifyShowPhoto',
   'createRecurringShowLabels', 'createRecurringShowComments',
   'editRecurringShowLabels', 'editRecurringShowComments',
   'hideBalances',
-];
-const INT_OR_NULL_KEYS: (keyof Config)[] = ['homeDefaultAccountId', 'addDefaultAccountId', 'createRecurringDefaultAccountId'];
+]);
+const INT_OR_NULL_KEYS = new Set<keyof Config>(['homeDefaultAccountId', 'addDefaultAccountId', 'createRecurringDefaultAccountId']);
+const ARRAY_KEYS = new Set<keyof Config>(ARRAY_CONFIG_KEYS);
 
 function parseConfig(rows: { key: string; value: string }[]): Config {
   const map = Object.fromEntries(rows.map(r => [r.key, r.value]));
@@ -22,11 +23,11 @@ function parseConfig(rows: { key: string; value: string }[]): Config {
     if (raw === undefined) continue;
     if (configKey === 'firstDayOfWeek') {
       parsed[configKey] = raw === String(FIRST_DAYS.sunday) ? FIRST_DAYS.sunday : FIRST_DAYS.monday;
-    } else if (BOOLEAN_KEYS.includes(configKey)) {
+    } else if (BOOLEAN_KEYS.has(configKey)) {
       parsed[configKey] = raw === 'true';
-    } else if (INT_OR_NULL_KEYS.includes(configKey)) {
+    } else if (INT_OR_NULL_KEYS.has(configKey)) {
       parsed[configKey] = raw === CONFIG_NULL_SENTINEL ? null : Number(raw);
-    } else if (ARRAY_CONFIG_KEYS.includes(configKey)) {
+    } else if (ARRAY_KEYS.has(configKey)) {
       try {
         parsed[configKey] = JSON.parse(raw);
       } catch {

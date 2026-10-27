@@ -43,3 +43,8 @@ export function classifyCategorySelection(
 
   return CATEGORY_SELECTION_KINDS.custom;
 }
+
+/** Store a full category set as the canonical empty "no filter" selection. */
+export function normalizeCategorySelection(ids: readonly number[], categories: Category[]): number[] {
+  return classifyCategorySelection(ids, categories) === CATEGORY_SELECTION_KINDS.all ? [] : [...ids];
+}

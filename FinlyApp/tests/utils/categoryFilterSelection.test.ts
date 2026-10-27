@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CATEGORY_SELECTION_KINDS, classifyCategorySelection } from '../../src/utils/categoryFilterSelection';
+import { CATEGORY_SELECTION_KINDS, classifyCategorySelection, normalizeCategorySelection } from '../../src/utils/categoryFilterSelection';
 import type { Category } from '../../src/database/types';
 
 function category(id: number, type: 'expense' | 'income'): Category {
@@ -29,5 +29,18 @@ describe('classifyCategorySelection', () => {
     expect(classifyCategorySelection([1], categories)).toBe(CATEGORY_SELECTION_KINDS.custom);
     expect(classifyCategorySelection([1, 2, 3, 4], categories)).toBe(CATEGORY_SELECTION_KINDS.custom);
     expect(classifyCategorySelection([1, 3], categories)).toBe(CATEGORY_SELECTION_KINDS.custom);
+  });
+});
+
+describe('normalizeCategorySelection', () => {
+  it('stores a full category set as no filter', () => {
+    expect(normalizeCategorySelection([1, 2, 3], categories)).toEqual([]);
+    expect(normalizeCategorySelection([], categories)).toEqual([]);
+  });
+
+  it('keeps partial and full type sets', () => {
+    expect(normalizeCategorySelection([1], categories)).toEqual([1]);
+    expect(normalizeCategorySelection([1, 2], categories)).toEqual([1, 2]);
+    expect(normalizeCategorySelection([3], categories)).toEqual([3]);
   });
 });

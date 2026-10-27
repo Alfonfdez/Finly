@@ -22,7 +22,7 @@ import { formatSignedCurrency, HIDDEN_BALANCE, resolvePeriodRange } from '../uti
 import { netTransactionTotal } from '../utils/calculator';
 import { showErrorAlert } from '../utils/errors';
 import { isWeb } from '../utils/platform';
-import { CATEGORY_SELECTION_KINDS, classifyCategorySelection } from '../utils/categoryFilterSelection';
+import { CATEGORY_SELECTION_KINDS, classifyCategorySelection, normalizeCategorySelection } from '../utils/categoryFilterSelection';
 import { areIdListsEqual } from '../utils/arrays';
 import { t } from '../i18n';
 import AccountTrigger from '../components/AccountTrigger';
@@ -46,6 +46,23 @@ const CATEGORY_TABS: TransactionTypeFilter[] = [
   TRANSACTION_TYPES.income,
 ];
 
+const CATEGORY_IDS_CONFIG_KEYS = {
+  [TYPE_FILTERS.all]: 'allTransactionsCategoryIds',
+  [TRANSACTION_TYPES.expense]: 'allTransactionsExpenseCategoryIds',
+  [TRANSACTION_TYPES.income]: 'allTransactionsIncomeCategoryIds',
+} as const satisfies Record<TransactionTypeFilter, keyof Config>;
+
+function categoryIdsPatch(tab: TransactionTypeFilter, ids: number[]): Partial<Config> {
+  switch (tab) {
+    case TRANSACTION_TYPES.expense:
+      return { allTransactionsExpenseCategoryIds: ids };
+    case TRANSACTION_TYPES.income:
+      return { allTransactionsIncomeCategoryIds: ids };
+    default:
+      return { allTransactionsCategoryIds: ids };
+  }
+}
+
 export default function AllTransactionsScreen() {
   const navigation = useNavigation<NavigationProp<'AllTransactions'>>();
   const { categories, categoriesById, accounts, activeAccount, accountsWithBalance, tags, loading: appLoading, activePeriod, selectedDate, customDate, setSelectedDate, refresh, selectAccount } = useApp();
@@ -56,13 +73,14 @@ export default function AllTransactionsScreen() {
   const { isBalanceHidden, toggleReveal } = useBalanceVisibility(config.hideBalances);
 
   const [typeTab, setTypeTab] = useState<TransactionTypeFilter>(TYPE_FILTERS.all);
-  const [categoryIdsByTab, setCategoryIdsByTab] = useState<CategoryIdsByTab>(() => ({
-    [TYPE_FILTERS.all]: config.allTransactionsCategoryIds,
-    [TRANSACTION_TYPES.expense]: config.allTransactionsExpenseCategoryIds,
-    [TRANSACTION_TYPES.income]: config.allTransactionsIncomeCategoryIds,
-  }));
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
   const [calendarVisible, setCalendarVisible] = useState(false);
+
+  const categoryIdsByTab = useMemo<CategoryIdsByTab>(() => ({
+    [TYPE_FILTERS.all]: config[CATEGORY_IDS_CONFIG_KEYS[TYPE_FILTERS.all]],
+    [TRANSACTION_TYPES.expense]: config[CATEGORY_IDS_CONFIG_KEYS[TRANSACTION_TYPES.expense]],
+    [TRANSACTION_TYPES.income]: config[CATEGORY_IDS_CONFIG_KEYS[TRANSACTION_TYPES.income]],
+  }), [config]);
 
   const periodDates = useMemo(
     () => resolvePeriodRange(activePeriod, selectedDate, customDate, config.firstDayOfWeek),
@@ -76,37 +94,16 @@ export default function AllTransactionsScreen() {
   const { data: allTransactions, setData: setAllTransactions, loading } = useFocusLoad(loadTransactions, [] as Transaction[]);
 
   useEffect(() => {
-    if (configLoading) return;
-    setCategoryIdsByTab({
-      [TYPE_FILTERS.all]: config.allTransactionsCategoryIds,
-      [TRANSACTION_TYPES.expense]: config.allTransactionsExpenseCategoryIds,
-      [TRANSACTION_TYPES.income]: config.allTransactionsIncomeCategoryIds,
-    });
-  }, [
-    configLoading,
-    config.allTransactionsCategoryIds,
-    config.allTransactionsExpenseCategoryIds,
-    config.allTransactionsIncomeCategoryIds,
-  ]);
-
-  useEffect(() => {
     if (configLoading || appLoading || categories.length === 0) return;
-    const next = { ...categoryIdsByTab };
     const updates: Partial<Config> = {};
-    let changed = false;
     for (const tab of CATEGORY_TABS) {
-      const valid = categoryIdsByTab[tab].filter(id => categoriesById.has(id));
-      const normalized = classifyCategorySelection(valid, categories) === CATEGORY_SELECTION_KINDS.all ? [] : valid;
-      if (areIdListsEqual(normalized, categoryIdsByTab[tab])) continue;
-      next[tab] = normalized;
-      changed = true;
-      if (tab === TRANSACTION_TYPES.expense) updates.allTransactionsExpenseCategoryIds = normalized;
-      else if (tab === TRANSACTION_TYPES.income) updates.allTransactionsIncomeCategoryIds = normalized;
-      else updates.allTransactionsCategoryIds = normalized;
+      const current = categoryIdsByTab[tab];
+      const valid = current.filter(id => categoriesById.has(id));
+      const normalized = normalizeCategorySelection(valid, categories);
+      if (areIdListsEqual(normalized, current)) continue;
+      Object.assign(updates, categoryIdsPatch(tab, normalized));
     }
-    if (!changed) return;
-    setCategoryIdsByTab(next);
-    updateConfig(updates);
+    if (Object.keys(updates).length > 0) updateConfig(updates);
   }, [appLoading, categories, categoriesById, categoryIdsByTab, configLoading, updateConfig]);
 
   const selectedCategoryIds = categoryIdsByTab[typeTab];
@@ -181,15 +178,8 @@ export default function AllTransactionsScreen() {
   }, [selectedCategoryIds, typeTab, categories, labels]);
 
   const handleApplyCategoryFilter = useCallback((ids: number[]) => {
-    const normalized = classifyCategorySelection(ids, categories) === CATEGORY_SELECTION_KINDS.all ? [] : ids;
-    setCategoryIdsByTab(prev => ({ ...prev, [typeTab]: normalized }));
-    if (typeTab === TRANSACTION_TYPES.expense) {
-      updateConfig({ allTransactionsExpenseCategoryIds: normalized });
-    } else if (typeTab === TRANSACTION_TYPES.income) {
-      updateConfig({ allTransactionsIncomeCategoryIds: normalized });
-    } else {
-      updateConfig({ allTransactionsCategoryIds: normalized });
-    }
+    const normalized = normalizeCategorySelection(ids, categories);
+    updateConfig(categoryIdsPatch(typeTab, normalized));
     setCategoryModalVisible(false);
   }, [categories, typeTab, updateConfig]);
 

@@ -1456,3 +1456,14 @@ Applied 2026-10-27:
 - Config arrays now round-trip as JSON; added schema/default/serialization/screen tests and browser-verified per-tab persistence across tab switches and reloads; `npm run test:all` green (178 files / 1520 tests).
 
 Spec: spec/features/014-transactions-screen-from-home/, spec/features/015-all-transactions-screen/, spec/features/028-recurring-transactions/.
+
+## 2.2.0 persisted filter state refactor
+Status: completed.
+
+Applied 2026-10-27:
+- The All-transactions category selections and Recurring status filter are now derived directly from config, removing duplicated local state and config-sync effects.
+- Centralized the per-tab category config key map/patch and added `normalizeCategorySelection`; deduplicated the config array schemas and parser key sets.
+- Renamed `usesOwnSort` to `usesOwnPreferences` in `useTransactionFilters`.
+- No behavior change; `npm run test:all` green (178 files / 1522 tests) and browser-verified per-tab category selections plus the Recurring status filter.
+
+Spec: none (refactor only).

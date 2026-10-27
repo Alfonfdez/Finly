@@ -43,7 +43,7 @@ import type { RecurringRule } from '../database/types';
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Recurring'>;
 
 export default function RecurringScreen() {
-  const { activeColors: c, config, updateConfig, loading: configLoading } = useConfig();
+  const { activeColors: c, config, updateConfig } = useConfig();
   const labels = t();
   const navigation = useNavigation<NavigationProp>();
   const { accountsWithBalance, categoriesById, refresh } = useApp();
@@ -62,7 +62,7 @@ export default function RecurringScreen() {
 
   const sortBy = config.recurringSortBy;
   const sortDirection = config.recurringSortDirection;
-  const [statusFilter, setStatusFilter] = useState<RecurringStatus[]>(() => config.recurringStatusFilter);
+  const statusFilter = config.recurringStatusFilter;
   const [typeTab, setTypeTab] = useState<TransactionTypeFilter>(TYPE_FILTERS.all);
   const [selectedAccountId, setSelectedAccountId] = useState<number | undefined>(undefined);
   const [accountModalVisible, setAccountModalVisible] = useState(false);
@@ -85,13 +85,7 @@ export default function RecurringScreen() {
     if (fallback !== undefined) setSelectedAccountId(fallback);
   }, [selectedAccountId, totalAccountId, accountsWithBalance]);
 
-  useEffect(() => {
-    if (configLoading) return;
-    setStatusFilter(config.recurringStatusFilter);
-  }, [configLoading, config.recurringStatusFilter]);
-
   const handleStatusFilterChange = useCallback((next: RecurringStatus[]) => {
-    setStatusFilter(next);
     updateConfig({ recurringStatusFilter: next });
   }, [updateConfig]);
 

@@ -56,15 +56,15 @@ export function useTransactionFilters({
     }
   }, [activeAccountId]);
   const [accountModalVisible, setAccountModalVisible] = useState(false);
-  const usesOwnSort = sortScope === TRANSACTION_SORT_SCOPES.transactions;
-  const sortBy = usesOwnSort ? config.transactionsSortBy : config.allTransactionsSortBy;
-  const sortDirection = usesOwnSort ? config.transactionsSortDirection : config.allTransactionsSortDirection;
-  const recurringView = usesOwnSort ? config.transactionsRecurringView : config.allTransactionsRecurringView;
+  const usesOwnPreferences = sortScope === TRANSACTION_SORT_SCOPES.transactions;
+  const sortBy = usesOwnPreferences ? config.transactionsSortBy : config.allTransactionsSortBy;
+  const sortDirection = usesOwnPreferences ? config.transactionsSortDirection : config.allTransactionsSortDirection;
+  const recurringView = usesOwnPreferences ? config.transactionsRecurringView : config.allTransactionsRecurringView;
   const setRecurringView = useCallback((value: RecurringView) => {
-    updateConfig(usesOwnSort
+    updateConfig(usesOwnPreferences
       ? { transactionsRecurringView: value }
       : { allTransactionsRecurringView: value });
-  }, [usesOwnSort, updateConfig]);
+  }, [usesOwnPreferences, updateConfig]);
   const [tagsByTransaction, setTagsByTransaction] = useState<TagsByTransaction>(new Map());
   const [localTagIds, setLocalTagIds] = useState<number[]>(initialTagIds);
 
@@ -190,9 +190,9 @@ export function useTransactionFilters({
   }, [filtered]);
 
   const persistSort = useCallback((by: SortBy, direction: SortDirection) => {
-    if (usesOwnSort) updateConfig({ transactionsSortBy: by, transactionsSortDirection: direction });
+    if (usesOwnPreferences) updateConfig({ transactionsSortBy: by, transactionsSortDirection: direction });
     else updateConfig({ allTransactionsSortBy: by, allTransactionsSortDirection: direction });
-  }, [usesOwnSort, updateConfig]);
+  }, [usesOwnPreferences, updateConfig]);
 
   const handleToggleSort = useCallback((field: SortBy) => {
     const next = nextSortPreference({ by: sortBy, direction: sortDirection }, field, () => SORT_DIRECTIONS.desc);
