@@ -116,6 +116,13 @@ export const DB_KEY_MAP: Record<string, keyof Config> = {
 
 export const CONFIG_NULL_SENTINEL = 'null';
 
+/** Parse a stored boolean without turning corruption into `false`. */
+export function parseBooleanConfigValue(raw: string): boolean | null {
+  if (raw === 'true') return true;
+  if (raw === 'false') return false;
+  return null;
+}
+
 /** Config fields stored as JSON arrays in the key/value table. */
 export const ARRAY_CONFIG_KEYS: (keyof Config)[] = [
   'allTransactionsCategoryIds',

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { IDBFactory } from 'fake-indexeddb';
 import { DB_FILE_KEY } from '../../src/database/sqliteWeb';
+import { decodeStoredDatabase } from '../../src/database/storage/indexedDb';
 
 type GlobalWithIdb = typeof globalThis & { indexedDB?: IDBFactory };
 
@@ -122,5 +123,42 @@ describe('createIndexedDbStorage', () => {
 
     await expect(storage.get()).rejects.toThrow('IndexedDB is not available');
     await expect(storage.set(new Uint8Array([1]))).rejects.toThrow('IndexedDB is not available');
+  });
+
+  it('rejects a corrupt stored value instead of booting empty', async () => {
+    const storage = await loadStorage();
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open('Finly.db', 1);
+      request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains('sqlite')) request.result.createObjectStore('sqlite');
+      };
+      request.onsuccess = () => {
+        const db = request.result;
+        const tx = db.transaction('sqlite', 'readwrite');
+        tx.objectStore('sqlite').put('not-a-database', DB_FILE_KEY);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      };
+      request.onerror = () => reject(request.error);
+    });
+
+    await expect(storage.get()).rejects.toThrow('Stored database is not a Uint8Array');
+  });
+});
+
+describe('decodeStoredDatabase', () => {
+  it('treats a missing snapshot as an empty database', () => {
+    expect(decodeStoredDatabase(null)).toBeNull();
+    expect(decodeStoredDatabase(undefined)).toBeNull();
+  });
+
+  it('returns a stored Uint8Array', () => {
+    const bytes = new Uint8Array([1, 2, 3]);
+    expect(decodeStoredDatabase(bytes)).toBe(bytes);
+  });
+
+  it('rejects other stored values', () => {
+    expect(() => decodeStoredDatabase('not-a-database')).toThrow('Stored database is not a Uint8Array');
+    expect(() => decodeStoredDatabase([1, 2, 3])).toThrow('Stored database is not a Uint8Array');
   });
 });

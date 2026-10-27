@@ -175,6 +175,20 @@ describe('AppProvider', () => {
     expect(result.current.activeAccount?.icon).toBe('cash-outline');
   });
 
+  it('keeps the selected Home period when the active account is deleted', async () => {
+    const { result } = await renderHook(() => useApp(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => { result.current.changePeriod('year'); });
+    const replacement: Account = { ...walletAccount, id: 2, name: 'Savings' };
+    mockAccountList.mockResolvedValue([replacement]);
+
+    await act(async () => { await result.current.refreshAccounts(); });
+    await waitFor(() => expect(result.current.activeAccount?.id).toBe(2));
+
+    expect(result.current.activePeriod).toBe('year');
+  });
+
   it('prunes a deleted tag from the Home filter', async () => {
     const tagA = { id: 10, user_id: 1, name: 'Work' } as Tag;
     const tagB = { id: 20, user_id: 1, name: 'Home' } as Tag;

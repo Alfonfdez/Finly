@@ -110,7 +110,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
   }, [resetCalculator]);
 
   const handleAccept = useCallback(() => {
-    if (resultDisplay !== null && !hasError) {
+    if (resultDisplay !== null && resultDisplay > 0 && !hasError) {
       onAccept(String(resultDisplay));
     }
   }, [resultDisplay, hasError, onAccept]);
@@ -205,7 +205,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
         confirmLabel={labels.calc_accept}
         onCancel={onCancel}
         onConfirm={handleAccept}
-        confirmDisabled={resultDisplay === null || hasError}
+        confirmDisabled={resultDisplay === null || resultDisplay <= 0 || hasError}
         borderTop
         horizontalInset={16}
         containerPaddingBottom={12}

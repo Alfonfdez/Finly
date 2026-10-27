@@ -27,6 +27,10 @@ export default function MonthGrid({ date, onSelect, minDate, maxDate }: Props) {
     () => (max ? new Date(max.getFullYear(), max.getMonth(), 1) : null),
     [max],
   );
+  const pastMonthLimit = useMemo(
+    () => (min ? new Date(min.getFullYear(), min.getMonth(), 1) : null),
+    [min],
+  );
 
   useEffect(() => {
     setYear(date.getFullYear());
@@ -45,19 +49,21 @@ export default function MonthGrid({ date, onSelect, minDate, maxDate }: Props) {
       <View style={calendarStyles.grid}>
         {MONTHS.map(m => {
           const monthDate = new Date(year, m - 1, 1);
-          const isFuture = futureMonthLimit != null && monthDate > futureMonthLimit;
+          const isOutOfBounds =
+            (pastMonthLimit != null && monthDate < pastMonthLimit) ||
+            (futureMonthLimit != null && monthDate > futureMonthLimit);
           const isActive = year === date.getFullYear() && m === date.getMonth() + 1;
           return (
             <TouchableOpacity
               key={m}
-              style={[calendarStyles.gridItem, isFuture && { opacity: DISABLED_OPACITY }]}
-              onPress={() => !isFuture && onSelect(monthDate)}
-              disabled={isFuture}
+              style={[calendarStyles.gridItem, isOutOfBounds && { opacity: DISABLED_OPACITY }]}
+              onPress={() => !isOutOfBounds && onSelect(monthDate)}
+              disabled={isOutOfBounds}
               accessibilityLabel={getMonthName(m)}
-              accessibilityState={{ selected: isActive }}
+              accessibilityState={{ selected: isActive, disabled: isOutOfBounds }}
             >
               <View style={[calendarStyles.gridItemInner, { backgroundColor: c.surface }, isActive && { backgroundColor: c.primary }]}>
-                <Text style={[calendarStyles.gridItemText, { color: c.text, fontSize: fs(14) }, isActive && { color: c.background, fontWeight: '700' }, isFuture && { color: c.textSecondary }]}>
+                <Text style={[calendarStyles.gridItemText, { color: c.text, fontSize: fs(14) }, isActive && { color: c.background, fontWeight: '700' }, isOutOfBounds && { color: c.textSecondary }]}>
                   {getMonthName(m).slice(0, 3)}
                 </Text>
               </View>

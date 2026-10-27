@@ -42,6 +42,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<Config>(DEFAULT_CONFIG);
   const configRef = useRef<Config>(DEFAULT_CONFIG);
   const saveQueue = useRef<Promise<void>>(Promise.resolve());
+  const updateSeq = useRef(0);
   const [loading, setLoading] = useState(true);
   const [activeColors, setActiveColors] = useState<ColorPalette>(darkColors);
 
@@ -93,6 +94,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   }, [activeColors]);
 
   const updateConfig = useCallback(async (partial: Partial<Config>) => {
+    const seq = ++updateSeq.current;
     const previous = configRef.current;
     const updated = { ...previous, ...partial };
     configRef.current = updated;
@@ -104,6 +106,21 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     const save = saveQueue.current.then(() => configRepository.save(partial));
     saveQueue.current = save.catch(() => {});
 
+    const rollbackFailedFields = () => {
+      // Roll back only fields that still hold this update's optimistic value,
+      // preserving any newer updates.
+      const rolledBack = { ...configRef.current };
+      for (const key of Object.keys(partial) as (keyof Config)[]) {
+        if (rolledBack[key] === updated[key]) {
+          (rolledBack as Record<string, unknown>)[key] = previous[key];
+        }
+      }
+      configRef.current = rolledBack;
+      setConfig(rolledBack);
+      setActiveColors(resolveColors(rolledBack.theme));
+      setLanguage(rolledBack.language);
+    };
+
     try {
       await save;
     } catch (error) {
@@ -112,6 +129,14 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       // queued. Wait for the queue, then trust the DB instead of leaving an
       // optimistic value that was never persisted.
       await saveQueue.current.catch(() => {});
+      if (seq !== updateSeq.current) {
+        // A newer update owns the recovery now; reloading here could overwrite
+        // its optimistic value with an older snapshot, but this update's failed
+        // fields still need to be rolled back.
+        rollbackFailedFields();
+        showErrorAlert();
+        return;
+      }
       try {
         const persisted = await configRepository.get();
         configRef.current = persisted;
@@ -120,18 +145,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         setLanguage(persisted.language);
       } catch (reloadError) {
         logError(ERROR_PREFIXES.configLoad, reloadError);
-        // The DB is unreadable: roll back only fields that still hold this
-        // update's optimistic value, preserving any newer updates.
-        const rolledBack = { ...configRef.current };
-        for (const key of Object.keys(partial) as (keyof Config)[]) {
-          if (rolledBack[key] === updated[key]) {
-            (rolledBack as Record<string, unknown>)[key] = previous[key];
-          }
-        }
-        configRef.current = rolledBack;
-        setConfig(rolledBack);
-        setActiveColors(resolveColors(rolledBack.theme));
-        setLanguage(rolledBack.language);
+        rollbackFailedFields();
       }
       showErrorAlert();
     }

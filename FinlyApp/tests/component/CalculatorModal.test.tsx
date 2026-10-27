@@ -112,6 +112,43 @@ describe('CalculatorModal', () => {
     expect(mockOnAccept).toHaveBeenCalledWith('10');
   });
 
+  it('continues calculating from a negative intermediate result', async () => {
+    const view = await renderModal();
+    const press = async (...keys: string[]) => {
+      await act(async () => { for (const key of keys) fireEvent.press(view.getByLabelText(key)); });
+    };
+
+    await press('5', '-', '1', '0', '=');
+    expect(view.getByText('= -5')).toBeTruthy();
+    expect(view.getByText('Accept')).toBeDisabled();
+
+    await press('+', '1', '0');
+    expect(view.getByText('= 5')).toBeTruthy();
+    expect(view.getByText('Accept')).toBeEnabled();
+
+    fireEvent.press(view.getByText('Accept'));
+    expect(mockOnAccept).toHaveBeenCalledWith('5');
+  });
+
+  it('disables Accept for negative and zero results', async () => {
+    const view = await renderModal();
+    const press = async (...keys: string[]) => {
+      await act(async () => { for (const key of keys) fireEvent.press(view.getByLabelText(key)); });
+    };
+
+    await press('5', '-', '1', '0');
+    expect(view.getByText('= -5')).toBeTruthy();
+    expect(view.getByText('Accept')).toBeDisabled();
+
+    await press('C', '5', '-', '5');
+    expect(view.getByText('= 0')).toBeTruthy();
+    expect(view.getByText('Accept')).toBeDisabled();
+
+    await press('C', '0', '.', '5');
+    expect(view.getByText('= 0.5')).toBeTruthy();
+    expect(view.getByText('Accept')).toBeEnabled();
+  });
+
   it('clears the expression when C is pressed', async () => {
     const view = await renderModal();
     await act(async () => {

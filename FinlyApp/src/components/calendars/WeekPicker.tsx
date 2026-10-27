@@ -107,22 +107,22 @@ export default function WeekPicker({ date, onSelect, minDate, maxDate }: Props) 
               </View>
             );
           }
-          const isFuture = max != null && week.start > max;
+          const isOutOfBounds = (min != null && week.start < min) || (max != null && week.start > max);
           const isSelected = sameWeek(week.start, date, firstDay);
           return (
             <TouchableOpacity
               key={i}
               testID={TEST_IDS.weekPickerRow}
-              style={[styles.weekRow, { backgroundColor: c.surface }, isSelected && { backgroundColor: c.primary }, isFuture && { opacity: DISABLED_OPACITY }]}
+              style={[styles.weekRow, { backgroundColor: c.surface }, isSelected && { backgroundColor: c.primary }, isOutOfBounds && { opacity: DISABLED_OPACITY }]}
               onPress={() => {
-                if (isFuture) return;
+                if (isOutOfBounds) return;
                 lastSelectedWeek.current = week.start.getTime();
                 onSelect(week.start);
               }}
-              disabled={isFuture}
+              disabled={isOutOfBounds}
               accessibilityRole="button"
               accessibilityLabel={formatWeekRange(week.start, labels.months_short, firstDay)}
-              accessibilityState={{ selected: isSelected, disabled: isFuture }}
+              accessibilityState={{ selected: isSelected, disabled: isOutOfBounds }}
             >
               <Text style={{ color: isSelected ? c.background : c.text, fontWeight: isSelected ? '700' : '400', fontSize: fs(14) }}>
                 {formatWeekRange(week.start, labels.months_short, firstDay)}

@@ -98,7 +98,7 @@ describe('ConfigProvider', () => {
     expect(captured!.config.homeDefaultPeriod).toBe('week');
   });
 
-  it('recovers the persisted config when an older save fails behind a newer update', async () => {
+  it('rolls back only the failed field when an older save fails behind a newer update', async () => {
     mockConfigGet
       .mockResolvedValueOnce(DEFAULT_CONFIG)
       .mockResolvedValueOnce({ ...DEFAULT_CONFIG, homeDefaultPeriod: 'week' });
@@ -116,7 +116,8 @@ describe('ConfigProvider', () => {
 
     expect(captured!.config.firstDayOfWeek).toBe(DEFAULT_CONFIG.firstDayOfWeek);
     expect(captured!.config.homeDefaultPeriod).toBe('week');
-    expect(mockConfigGet).toHaveBeenCalledTimes(2);
+    // The older failure rolls back its own field instead of reloading an older snapshot.
+    expect(mockConfigGet).toHaveBeenCalledTimes(1);
   });
 
   it('updateConfig changes colors immediately when the theme changes', async () => {

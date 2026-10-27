@@ -47,6 +47,21 @@ describe('useWebTabLock', () => {
     await waitFor(() => expect(result.current.status).toBe(TAB_LOCK_STATUS.blocked));
   });
 
+  it('reports a failed lock request and can retry', async () => {
+    request
+      .mockImplementationOnce(() => Promise.reject(new Error('denied')))
+      .mockImplementationOnce((_name, _options, callback) => {
+        void callback({});
+        return Promise.resolve();
+      });
+    const { result, unmount } = await renderHook(() => useWebTabLock());
+    await waitFor(() => expect(result.current.status).toBe(TAB_LOCK_STATUS.failed));
+
+    await act(async () => { await result.current.retry(); });
+    await waitFor(() => expect(result.current.status).toBe(TAB_LOCK_STATUS.acquired));
+    unmount();
+  });
+
   it('can retry after the other tab releases the lock', async () => {
     request
       .mockImplementationOnce(async (_name, _options, callback) => {

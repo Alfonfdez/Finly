@@ -5,6 +5,7 @@ export const TAB_LOCK_STATUS = {
   checking: 'checking',
   acquired: 'acquired',
   blocked: 'blocked',
+  failed: 'failed',
 } as const;
 
 export type TabLockStatus = keyof typeof TAB_LOCK_STATUS;
@@ -54,6 +55,12 @@ export function useWebTabLock() {
       await new Promise<void>((resolve) => {
         releaseRef.current = resolve;
       });
+    }).catch(() => {
+      // A rejected lock request (permissions/security context) must not leave the
+      // app on the splash screen forever.
+      if (mountedRef.current && requestId === requestRef.current) {
+        setStatus(TAB_LOCK_STATUS.failed);
+      }
     });
   }, []);
 

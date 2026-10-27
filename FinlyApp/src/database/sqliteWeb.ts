@@ -73,16 +73,24 @@ export class SqlJsDatabase implements DatabaseHandle {
     // later persist would be skipped for the rest of the session.
     this.db.exec('BEGIN');
     this.inTransaction += 1;
+    let failure: { error: unknown } | null = null;
     try {
       await task();
       this.db.exec('COMMIT');
     } catch (error) {
+      failure = { error };
       this.db.exec('ROLLBACK');
-      throw error;
     } finally {
       this.inTransaction -= 1;
-      await this.persistIfCommitted();
     }
+
+    const persist = this.persistIfCommitted();
+    if (failure) {
+      // A persistence failure must not hide the transaction's own error.
+      await persist.catch(() => {});
+      throw failure.error;
+    }
+    await persist;
   }
 
   close(): void {
@@ -114,7 +122,7 @@ export class SqlJsDatabase implements DatabaseHandle {
     const bytes = this.db.export();
     this.db.exec('PRAGMA foreign_keys = ON;');
     const write = () => storage.set(bytes);
-    this.persistQueue = this.persistQueue.then(async () => {
+    const run = this.persistQueue.then(async () => {
       try {
         await write();
       } catch {
@@ -124,10 +132,14 @@ export class SqlJsDatabase implements DatabaseHandle {
           await write();
         } catch (error) {
           this.onPersistError?.(error);
+          throw error;
         }
       }
     });
-    return this.persistQueue;
+    // Keep the queue usable after a failed snapshot; the rejected operation still
+    // reaches its caller, while the next write can persist the full current DB.
+    this.persistQueue = run.catch(() => {});
+    return run;
   }
 }
 
