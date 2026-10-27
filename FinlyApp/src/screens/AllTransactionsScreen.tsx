@@ -22,7 +22,7 @@ import { formatSignedCurrency, HIDDEN_BALANCE, resolvePeriodRange } from '../uti
 import { netTransactionTotal } from '../utils/calculator';
 import { showErrorAlert } from '../utils/errors';
 import { isWeb } from '../utils/platform';
-import { CATEGORY_SELECTION_KINDS, classifyCategorySelection, normalizeCategorySelection } from '../utils/categoryFilterSelection';
+import { CATEGORY_SELECTION_KINDS, classifyCategorySelection, normalizeCategorySelectionForTab } from '../utils/categoryFilterSelection';
 import { areIdListsEqual } from '../utils/arrays';
 import { t } from '../i18n';
 import AccountTrigger from '../components/AccountTrigger';
@@ -65,7 +65,7 @@ function categoryIdsPatch(tab: TransactionTypeFilter, ids: number[]): Partial<Co
 
 export default function AllTransactionsScreen() {
   const navigation = useNavigation<NavigationProp<'AllTransactions'>>();
-  const { categories, categoriesById, accounts, activeAccount, accountsWithBalance, tags, loading: appLoading, activePeriod, selectedDate, customDate, setSelectedDate, refresh, selectAccount } = useApp();
+  const { categories, categoriesById, accounts, activeAccount, accountsWithBalance, tags, loading: appLoading, dataRefreshing, activePeriod, selectedDate, customDate, setSelectedDate, refresh, selectAccount } = useApp();
   const { activeColors: c, config, loading: configLoading, updateConfig } = useConfig();
   const fs = useFontSize();
   const labels = t();
@@ -94,17 +94,20 @@ export default function AllTransactionsScreen() {
   const { data: allTransactions, setData: setAllTransactions, loading } = useFocusLoad(loadTransactions, [] as Transaction[]);
 
   useEffect(() => {
-    if (configLoading || appLoading || categories.length === 0) return;
+    if (configLoading || appLoading || dataRefreshing || categories.length === 0) return;
     const updates: Partial<Config> = {};
     for (const tab of CATEGORY_TABS) {
       const current = categoryIdsByTab[tab];
-      const valid = current.filter(id => categoriesById.has(id));
-      const normalized = normalizeCategorySelection(valid, categories);
+      const valid = current.filter(id => {
+        const category = categoriesById.get(id);
+        return category != null && (tab === TYPE_FILTERS.all || category.type === tab);
+      });
+      const normalized = normalizeCategorySelectionForTab(valid, categories, tab);
       if (areIdListsEqual(normalized, current)) continue;
       Object.assign(updates, categoryIdsPatch(tab, normalized));
     }
     if (Object.keys(updates).length > 0) updateConfig(updates);
-  }, [appLoading, categories, categoriesById, categoryIdsByTab, configLoading, updateConfig]);
+  }, [appLoading, categories, categoriesById, categoryIdsByTab, configLoading, dataRefreshing, updateConfig]);
 
   const selectedCategoryIds = categoryIdsByTab[typeTab];
 
@@ -178,7 +181,7 @@ export default function AllTransactionsScreen() {
   }, [selectedCategoryIds, typeTab, categories, labels]);
 
   const handleApplyCategoryFilter = useCallback((ids: number[]) => {
-    const normalized = normalizeCategorySelection(ids, categories);
+    const normalized = normalizeCategorySelectionForTab(ids, categories, typeTab);
     updateConfig(categoryIdsPatch(typeTab, normalized));
     setCategoryModalVisible(false);
   }, [categories, typeTab, updateConfig]);

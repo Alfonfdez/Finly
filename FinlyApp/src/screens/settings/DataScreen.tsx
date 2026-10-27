@@ -89,7 +89,7 @@ type PendingDataAction = keyof typeof PENDING_DATA_ACTIONS | null;
 
 export default function DataScreen() {
   const { activeColors: c, updateConfig } = useConfig();
-  const { resetAll } = useApp();
+  const { resetAll, setDataRefreshing } = useApp();
   const labels = t();
 
   const [deleteTransactionsModal1, setDeleteTransactionsModal1] = useState(false);
@@ -157,6 +157,7 @@ export default function DataScreen() {
   const handleConfirmImport = async () => {
     if (pendingImport === null || pendingAction !== null) return;
     setPendingAction(PENDING_DATA_ACTIONS.import);
+    setDataRefreshing(true);
     try {
       await importBackup(pendingImport);
       await updateConfig(await configRepository.get());
@@ -177,6 +178,7 @@ export default function DataScreen() {
       }
     } finally {
       setPendingAction(null);
+      setDataRefreshing(false);
     }
     setImportModalVisible(false);
     setPendingImport(null);
@@ -234,6 +236,7 @@ export default function DataScreen() {
   const handleDeleteAll = async () => {
     if (pendingAction !== null) return;
     setPendingAction(PENDING_DATA_ACTIONS.all);
+    setDataRefreshing(true);
     try {
       await clearDataKeepSettingsWithCleanup();
       await updateConfig(await configRepository.get());
@@ -243,6 +246,7 @@ export default function DataScreen() {
       alertError(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
     } finally {
       setPendingAction(null);
+      setDataRefreshing(false);
     }
     hideDeleteAll();
   };
@@ -250,6 +254,7 @@ export default function DataScreen() {
   const handleFactoryReset = async () => {
     if (pendingAction !== null) return;
     setPendingAction(PENDING_DATA_ACTIONS.factory);
+    setDataRefreshing(true);
     try {
       await resetDatabaseWithCleanup();
       await updateConfig(await configRepository.get());
@@ -259,6 +264,7 @@ export default function DataScreen() {
       alertError(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
     } finally {
       setPendingAction(null);
+      setDataRefreshing(false);
     }
     hideFactoryReset();
   };

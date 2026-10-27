@@ -93,6 +93,8 @@ export default function ModifyRecurringScreen() {
       scope,
       today: todayDateOnly(),
       skippedFrom: rule.skipped_from,
+      existingOccurrences: new Set(occurrenceDates),
+      ruleActive: rule.active === RULE_ACTIVE,
     });
     if (!skipWindow) return true;
     return new Promise<boolean>(resolve => {

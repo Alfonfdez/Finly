@@ -773,6 +773,10 @@ recurring_rules: start_date=2026-10-01, frequency=daily, next_due=2026-10-14
 **Explanation:** "Future only" is reversible: the earliest skipped occurrence is recorded, and while it is within the end date the edit screen re-enables "Future + past" to back-fill it. Skips from pause/resume are intentional and not recorded.
 **Example:** Skipping Oct 1–12 with "Future only" stores `skipped_from=2026-10-01`; choosing "Future + past" later creates those transactions and clears the field.
 
+See the complete rule guide, scenario matrix and worked examples in
+[`recurring-rules.md`](recurring-rules.md). The normative source remains
+[`spec/features/028-recurring-transactions/1-spec.md`](../spec/features/028-recurring-transactions/1-spec.md).
+
 # App Icons (Expo)
 
 ## App icon

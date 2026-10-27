@@ -147,6 +147,7 @@ function renderForm(overrides: {
   ruleMode?: boolean;
   transactionId?: number;
   initialRuleNextDue?: string | null;
+  initialRuleActive?: boolean;
   repeatScope?: RecurrenceScope;
   deleteLabel?: string;
   onDeletePress?: () => void;
@@ -272,6 +273,24 @@ describe('TransactionForm', () => {
     const card = StyleSheet.flatten(view.getByTestId(TEST_IDS.repeatOptions).props.style);
     const c = getConfigStub().activeColors;
     expect(card.borderColor).toBe(recurringCardErrorColors(c).borderColor);
+  });
+
+  it('does not apply the catch-up limit to a paused rule', async () => {
+    mockFormState.canSubmit = true;
+    mockFormState.numericAmount = 10;
+    mockFormState.amountRaw = '10';
+    mockFormState.categoryId = 1;
+    mockFormState.day = new Date(1990, 0, 1);
+    mockFormState.repeatFrequency = 'daily';
+    const view = await renderForm({
+      ruleMode: true,
+      initialDay: new Date(1990, 0, 1),
+      initialRuleNextDue: '1990-01-01',
+      initialRuleActive: false,
+      repeatScope: 'futureAndPast',
+    });
+
+    expect(view.getByText('Save')).not.toBeDisabled();
   });
 
   it('asks for an earlier end date when the rule already has one', async () => {

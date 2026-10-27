@@ -234,6 +234,7 @@ Independent `AllTransactionsScreen` accessible from the hamburger menu (drawer) 
 - Category selection resets on type tab switch.
 - Type-aware button labels ("All categories" / "All expense categories" / "All income categories").
 - Apply button disabled when 0 categories selected.
+- Fix (2026-10-27): category filters are normalized against the active tab's universe (full expense/income sets stored as empty on their type tabs), wrong-type IDs are pruned, and backup import publishes the imported config and refreshed categories together so imported filters are not pruned against stale categories.
 
 Spec: spec/features/015-all-transactions-screen/.
 
@@ -454,6 +455,8 @@ Recurring expenses/income created once and materialized automatically:
 - Update (2026-10-26): Future + past updates only generated transactions inside the new start/end window; transactions outside it stay linked but unchanged, and the Summary's update count uses the same window.
 - Expanded the hint/lifecycle battery with future-start and ended-rule chains, start/end window cases, multiple sequential edits and date-only scope assertions; test:all green (178 files / 1504 tests).
 - Update (2026-10-26): the recurring name placeholder is type-aware: "e.g. Rent" for expenses and "e.g. Salary" for income.
+- Fix (2026-10-27): paused rules no longer recover skips, show the skip confirmation, apply the >5,000 guard or allow scope-only saves; Future + past rewrites existing transactions only when a detail changed. Future + past can no longer rewind an ended rule's cursor, skip counts ignore already-generated dates, and resume is atomic.
+- Docs (2026-10-27): added `docs/recurring-rules.md` with the complete lifecycle, invariants, scenario matrix and worked examples; linked it from the spec and programming concepts.
 - Spec: spec/features/028-recurring-transactions/.
 
 ## 033-bulk-delete-tags-comments

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CATEGORY_SELECTION_KINDS, classifyCategorySelection, normalizeCategorySelection } from '../../src/utils/categoryFilterSelection';
+import { CATEGORY_SELECTION_KINDS, classifyCategorySelection, normalizeCategorySelection, normalizeCategorySelectionForTab } from '../../src/utils/categoryFilterSelection';
 import type { Category } from '../../src/database/types';
 
 function category(id: number, type: 'expense' | 'income'): Category {
@@ -42,5 +42,25 @@ describe('normalizeCategorySelection', () => {
     expect(normalizeCategorySelection([1], categories)).toEqual([1]);
     expect(normalizeCategorySelection([1, 2], categories)).toEqual([1, 2]);
     expect(normalizeCategorySelection([3], categories)).toEqual([3]);
+  });
+});
+
+describe('normalizeCategorySelectionForTab', () => {
+  it('stores the full set of the active type tab as no filter', () => {
+    expect(normalizeCategorySelectionForTab([1, 2], categories, 'expense')).toEqual([]);
+    expect(normalizeCategorySelectionForTab([3], categories, 'income')).toEqual([]);
+  });
+
+  it('keeps the full expense set on the All tab as an explicit filter', () => {
+    expect(normalizeCategorySelectionForTab([1, 2], categories, 'all')).toEqual([1, 2]);
+  });
+
+  it('keeps partial type selections', () => {
+    expect(normalizeCategorySelectionForTab([1], categories, 'expense')).toEqual([1]);
+    expect(normalizeCategorySelectionForTab([1, 3], categories, 'all')).toEqual([1, 3]);
+  });
+
+  it('removes categories from the wrong type', () => {
+    expect(normalizeCategorySelectionForTab([1, 3], categories, 'expense')).toEqual([1]);
   });
 });

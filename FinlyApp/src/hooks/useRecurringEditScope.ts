@@ -92,7 +92,8 @@ export function useRecurringEditScope({
       missedWindow = firstDue <= todayDateOnly() && (schedule.end_date == null || firstDue <= schedule.end_date);
     }
     // A window a previous "Future only" edit skipped is recoverable via "Future + past".
-    const skippedRecoverable = isSkippedWindowRecoverable(
+    // A paused rule never back-fills, so it cannot recover a skip either.
+    const skippedRecoverable = (initialRuleActive ?? true) && isSkippedWindowRecoverable(
       initialRuleSkippedFrom,
       end ? toDateOnly(end) : null,
       todayDateOnly(),

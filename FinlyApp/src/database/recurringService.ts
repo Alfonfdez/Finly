@@ -50,15 +50,6 @@ async function materializeRuleInRun(rule: RecurringRule, today: string): Promise
   return created;
 }
 
-/** Catch up a single rule in its own transaction (resume path). */
-async function materializeRule(rule: RecurringRule, today: string): Promise<number> {
-  let created = 0;
-  await withTransaction(async () => {
-    created = await materializeRuleInRun(rule, today);
-  });
-  return created;
-}
-
 /** Reconcile every due rule inside an already open transaction (no transaction of its own). */
 async function materializeDueInTransaction(now: Date): Promise<number> {
   const today = todayDateOnly(now);
@@ -180,24 +171,29 @@ export async function createRecurringRule(params: CreateRecurringRuleParams): Pr
 
 /** Resume a paused rule (cursor jump + immediate catch-up), serialized with the runs. */
 async function resumeCore(ruleId: number, now: Date): Promise<number> {
-  const rule = await recurringRepo.getById(ruleId);
-  if (!rule) return 0;
-
   const today = todayDateOnly(now);
-  // A finished rule has no occurrence left within its end date — refuse to
-  // reactivate it (the toggle for such a rule is disabled in the UI).
-  if (isRecurrenceEnded(rule, rule.next_due, today)) return 0;
 
-  const nextDue = rule.next_due < today ? nextDueOnOrAfter(rule, today) : rule.next_due;
+  // Reactivation and the immediate catch-up must be one write: if generation
+  // fails, the rule stays paused instead of becoming active with a stale cursor.
+  return withTransaction(async () => {
+    const rule = await recurringRepo.getById(ruleId);
+    if (!rule || rule.active === RULE_ACTIVE) return 0;
 
-  // The pause window stays skipped forever, so a recovered-skip record from before
-  // the pause can no longer be back-filled faithfully — drop it when the cursor moves.
-  await recurringRepo.reactivate(ruleId, nextDue, nextDue !== rule.next_due);
+    // A finished rule has no occurrence left within its end date - refuse to
+    // reactivate it (the toggle for such a rule is disabled in the UI).
+    if (isRecurrenceEnded(rule, rule.next_due, today)) return 0;
 
-  // Materialize only this rule (its cursor is now on/after today); any other
-  // overdue rules are caught up by the app-start/foreground/midnight runs.
-  const resumed = await recurringRepo.getById(ruleId);
-  return resumed ? materializeRule(resumed, today) : 0;
+    const nextDue = rule.next_due < today ? nextDueOnOrAfter(rule, today) : rule.next_due;
+
+    // The pause window stays skipped forever, so a recovered-skip record from before
+    // the pause can no longer be back-filled faithfully - drop it when the cursor moves.
+    await recurringRepo.reactivate(ruleId, nextDue, nextDue !== rule.next_due);
+
+    // Materialize only this rule (its cursor is now on/after today); any other
+    // overdue rules are caught up by the app-start/foreground/midnight runs.
+    const resumed = await recurringRepo.getById(ruleId);
+    return resumed ? materializeRuleInRun(resumed, today) : 0;
+  });
 }
 
 /**

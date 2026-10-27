@@ -50,7 +50,7 @@
 - The modal receives the current `type` tab value so it adapts its category display.
 - When categories are selected, only transactions matching those categories are shown.
 - When "All" is selected (empty array), all categories are shown.
-- Each type tab keeps its own remembered category selection: `allTransactionsCategoryIds` (All), `allTransactionsExpenseCategoryIds` (Expenses) and `allTransactionsIncomeCategoryIds` (Income). Selections are restored when switching tabs and after restarting the app; deleted categories are pruned from every tab and a full selection for a tab is stored as the empty array.
+- Each type tab keeps its own remembered category selection: `allTransactionsCategoryIds` (All), `allTransactionsExpenseCategoryIds` (Expenses) and `allTransactionsIncomeCategoryIds` (Income). Selections are restored when switching tabs and after restarting the app. A full selection is normalized against that tab's universe: the full expense set on Expenses and the full income set on Income are stored as the empty array, while the full expense/income sets on All stay explicit IDs. Selections are pruned by existence and type (a wrong-type ID is removed from a type tab), and a backup import suspends pruning until the imported config and refreshed categories are published together.
 - Switching the type tab restores that tab's own selection; it never clears another tab's saved categories.
 - The modal requires at least one category: clearing all disables Apply and shows the required-selection hint. The screen's empty filter state (nothing applied) still shows all categories.
 
@@ -161,7 +161,7 @@
 - [x] Tapping the category button opens the CategoryFilterModal (021).
 - [x] Selecting categories in the modal filters the transaction list.
 - [x] The category modal requires at least one category; clearing all disables Apply and shows the required-selection hint.
-- [x] Each type tab remembers its own category filter across visits, tab switches and restarts; deleted categories are pruned and switching tabs never clears another tab's selection.
+- [x] Each type tab remembers its own category filter across visits, tab switches and restarts; full type sets are normalized per tab, wrong-type/deleted categories are pruned, switching tabs never clears another tab's selection, and a backup import does not prune imported filters against stale categories.
 - [x] PeriodTabs (Day/Week/Month/Year/Period) are shown with "Month" selected by default (from config).
 - [x] CalendarPicker updates when the period changes.
 - [x] The transaction list filters by the selected period's date range.

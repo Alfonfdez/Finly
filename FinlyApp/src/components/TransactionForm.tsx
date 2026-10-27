@@ -190,7 +190,7 @@ export default function TransactionForm(props: TransactionFormProps) {
   // Mirrors the service guard: a rule whose due backlog cannot finish in one run is
   // refused, so the form blocks Save and explains it in the bottom hint.
   const tooManyOccurrences = useMemo(() => {
-    if (!props.ruleMode) return false;
+    if (!props.ruleMode || props.initialRuleActive === false) return false;
     const schedule = buildRecurrenceSchedule(
       day,
       repeatFrequency,
@@ -212,6 +212,7 @@ export default function TransactionForm(props: TransactionFormProps) {
     }).truncated;
   }, [
     props.ruleMode,
+    props.initialRuleActive,
     props.initialRuleNextDue,
     props.initialRuleSkippedFrom,
     props.initialRuleOccurrenceDates,

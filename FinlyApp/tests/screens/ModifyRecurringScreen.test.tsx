@@ -262,6 +262,27 @@ describe('ModifyRecurringScreen', () => {
     expect(mockSaveEdit).not.toHaveBeenCalled();
   });
 
+  it('paused rule cannot recover skips or show the skip warning', async () => {
+    mockGetById.mockResolvedValue({
+      ...rule,
+      active: 0,
+      start_date: '2026-08-05',
+      next_due: '2026-09-05',
+      skipped_from: '2026-09-05',
+    });
+    const view = await render(<ModifyRecurringScreen />);
+    await waitFor(() => expect(view.getByText('Future + past')).toBeTruthy());
+    expect(view.getByRole('button', { name: 'Future + past' })).toBeDisabled();
+    expect(view.getByText('Save')).toBeDisabled();
+
+    await fireEvent.changeText(view.getByPlaceholderText('0'), '120');
+    await waitFor(() => expect(view.getByRole('button', { name: 'Future + past' })).toBeEnabled());
+    await fireEvent.press(view.getByText('Save'));
+
+    await waitFor(() => expect(mockSaveEdit).toHaveBeenCalledTimes(1));
+    expect(view.queryByText('Skip occurrences?')).toBeNull();
+  });
+
   it('saves after the skip warning is confirmed', async () => {
     mockGetById.mockResolvedValue({ ...rule, start_date: '2026-08-05', next_due: '2026-09-05' });
     const view = await render(<ModifyRecurringScreen />);

@@ -689,7 +689,8 @@ describe('materializeDueRecurring', () => {
     const txs = await transactionRepo.list();
     expect(txs).toHaveLength(35);
     expect(txs.some(t => t.recurrence_date === '2026-10-01')).toBe(true);
-    expect((await recurringRepo.list(1))[0].next_due).toBe('2026-10-01');
+    // Shortening must not rewind the cursor behind the transactions already generated.
+    expect((await recurringRepo.list(1))[0].next_due).toBe('2026-10-06');
   });
 
   it('futureAndPast rewrites past details; future leaves them unchanged', async () => {
@@ -880,8 +881,9 @@ describe('materializeDueRecurring', () => {
     expect(resumed.skipped_from).toBe('2026-10-01');
     expect(await transactionRepo.list()).toHaveLength(31); // Sep 1-30 + Oct 5
 
-    // Resumed later the cursor jumps over the pause window, so the recorded skip can
-    // no longer be back-filled faithfully: it is dropped (the resumed day is created).
+    // Paused again and resumed later: the cursor jumps over the pause window, so the
+    // recorded skip can no longer be back-filled faithfully (it is dropped).
+    await recurringRepo.setActive(rule.id, false);
     await resumeRecurringRule(rule.id, new Date(2026, 9, 10));
     const later = (await recurringRepo.list(1))[0];
     expect(later.next_due).toBe('2026-10-11');
@@ -996,6 +998,24 @@ describe('saveRecurringRuleEdit atomicity', () => {
     expect(saved?.name).toBe('Original');
     expect(saved?.amount).toBe(100);
     // The pre-catch-up ran inside the same transaction, so it rolled back too.
+    expect(await transactionRepo.list()).toHaveLength(0);
+  });
+
+  it('keeps a rule paused when the resume catch-up fails', async () => {
+    const { recurringRepo, transactionRepo, resumeRecurringRule } = await boot();
+    const rule = await recurringRepo.createWithTags(
+      { ...baseRule, frequency: 'daily', day_of_month: null, start_date: '2026-10-05', next_due: '2026-10-05' },
+      [],
+    );
+    await recurringRepo.setActive(rule.id, false);
+    const insertSpy = vi.spyOn(recurringRepo, 'insertOccurrence').mockRejectedValueOnce(new Error('insert failed'));
+
+    await expect(resumeRecurringRule(rule.id, new Date(2026, 9, 5))).rejects.toThrow('insert failed');
+    insertSpy.mockRestore();
+
+    const saved = await recurringRepo.getById(rule.id);
+    expect(saved?.active).toBe(0);
+    expect(saved?.next_due).toBe('2026-10-05');
     expect(await transactionRepo.list()).toHaveLength(0);
   });
 });

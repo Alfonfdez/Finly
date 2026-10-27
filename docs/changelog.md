@@ -4525,3 +4525,11 @@
 - Derived the All-transactions category selections and Recurring status filter directly from config, removing duplicated local state and sync effects.
 - Centralized the per-tab category config keys/patch, added normalizeCategorySelection, deduplicated config array schemas and renamed usesOwnPreferences.
 - No behavior change; test:all green (178 files / 1522 tests) and browser-verified persisted per-tab selections plus the Recurring status filter.
+
+[2026-10-27] ~ | FinlyApp/src/utils/categoryFilterSelection.ts, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/src/utils/recurrence.ts, FinlyApp/src/database/recurringService.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/hooks/useRecurringEditScope.ts, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/components/TransactionForm.tsx, docs/recurring-rules.md, docs/programming-concepts.md, docs/harnesses.md, spec/features/015-all-transactions-screen/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Normalize category filters against the active tab and prune wrong-type ids
+- Suspend category-filter pruning while an import publishes config and categories
+- Stop paused rules from recovering skips, showing the skip dialog, applying the catch-up guard or saving scope-only changes
+- Keep ended cursors from rewinding under Future + past and ignore existing dates in skip counts
+- Make resume atomic by reactivating and materializing in one transaction
+- Add the recurring rules behavior guide with scenarios and worked examples

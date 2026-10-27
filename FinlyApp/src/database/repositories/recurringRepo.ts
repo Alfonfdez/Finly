@@ -192,6 +192,8 @@ const recurringRepoBase = {
    * Reactivate a paused rule and jump its cursor forward (skips the pause window).
    * When the cursor actually moves, the recorded recoverable skip is dropped: a
    * back-fill from it would also fill the pause window, which stays skipped forever.
+   * Called inside the resume transaction, so it is intentionally not wrapped by
+   * `serializeWrites` (that would queue behind the open transaction).
    */
   async reactivate(id: number, nextDue: string, clearSkippedFrom = false): Promise<void> {
     return writeRuleFields(id, {
@@ -317,4 +319,4 @@ const recurringRepoBase = {
   },
 };
 
-export const recurringRepo = serializeWrites(recurringRepoBase, ['setActive', 'reactivate', 'remove', 'deleteMany']);
+export const recurringRepo = serializeWrites(recurringRepoBase, ['setActive', 'remove', 'deleteMany']);
