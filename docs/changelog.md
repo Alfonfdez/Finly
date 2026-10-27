@@ -4505,3 +4505,8 @@
 - CI now runs on pinned ubuntu-24.04 with a 15-minute timeout, avoiding the ubuntu-latest migration to Ubuntu 26.
 - Config-stub notifications now run inside React act, removing the FormSectionHeader/SettingsRow/AppProvider update warnings.
 - test:all green twice locally, including once with CI=true (178 files / 1509 tests).
+
+[2026-10-27] fix | FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/database/recurringService.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/utils/recurrence.ts, FinlyApp/tests/database/recurringService.test.ts, FinlyApp/tests/hooks/useTransactionForm.test.tsx, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Recurring rules now stay started after a Future-only edit moves their start to the future; moving the start back to the past no longer back-fills occurrences or enables Future + past.
+- The form, pre-save skip warning and service layer now use generated occurrence history to distinguish fresh rules from started ones; genuinely fresh future rules still re-anchor.
+- Added form, screen and service regressions; browser-verified the future-then-past flow at 375px; test:all green (178 files / 1512 tests).

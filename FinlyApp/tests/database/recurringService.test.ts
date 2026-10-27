@@ -530,6 +530,43 @@ describe('materializeDueRecurring', () => {
     expect(after.next_due).toBe('2026-10-14');
   });
 
+  it('does not back-fill a started rule after a future edit when the start moves to the past', async () => {
+    const { recurringRepo, transactionRepo, materializeDueRecurring, saveRecurringRuleEdit } = await boot();
+    const rule = await recurringRepo.createWithTags(
+      { ...baseRule, frequency: 'daily', day_of_month: null, start_date: '2026-10-13', next_due: '2026-10-13' },
+      [],
+    );
+    expect(await materializeDueRecurring(OCT_13)).toBe(1); // Oct 13 generated, cursor Oct 14
+
+    // A future-only edit moves the cursor to the new future start (next_due === start_date).
+    await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: { start_date: '2026-10-30' },
+      recurrence: { frequency: 'daily', interval: 1, endDate: null },
+      scope: 'future',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: OCT_13,
+    });
+
+    // Moving the start back to the past must keep the future cursor, not back-fill.
+    const created = await saveRecurringRuleEdit({
+      ruleId: rule.id,
+      updated: { start_date: '2026-10-01' },
+      recurrence: { frequency: 'daily', interval: 1, endDate: null },
+      scope: 'futureAndPast',
+      pastPatch: { account_id: 1, category_id: 3, amount: 100, description: 'Rent', type: 'expense' },
+      tagIds: [],
+      now: OCT_13,
+    });
+
+    expect(created).toBe(0);
+    expect((await transactionRepo.list()).map(t => t.recurrence_date).sort()).toEqual(['2026-10-13']);
+    const after = (await recurringRepo.list(1))[0];
+    expect(after.start_date).toBe('2026-10-01');
+    expect(after.next_due).toBe('2026-10-30');
+  });
+
   it('a denser schedule (monthly -> daily) takes effect today under "Future only"', async () => {
     const { recurringRepo, transactionRepo, saveRecurringRuleEdit } = await boot();
     // Caught up on the monthly schedule: cursor 1 Nov (future).

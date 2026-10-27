@@ -10,7 +10,7 @@ import { useApp } from '../context/AppContext';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { t } from '../i18n';
 import { RECURRENCE_SCOPES, RULE_ACTIVE, USER_ID, type RecurrenceScope, type NavigationProp, type RootStackParamList } from '../constants/types';
-import { buildRecurrenceSchedule, fromDateOnly, isLastDayAnchor, planEdit, ruleEditCursor, todayDateOnly, type SkipWindow } from '../utils/recurrence';
+import { buildRecurrenceSchedule, fromDateOnly, isLastDayAnchor, planEdit, ruleEditCursorForEdit, todayDateOnly, type SkipWindow } from '../utils/recurrence';
 import { datePart, formatDateLong } from '../utils/formatters';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import { recurringRepository } from '../database';
@@ -89,7 +89,7 @@ export default function ModifyRecurringScreen() {
     const { skipWindow } = planEdit({
       schedule,
       previousSchedule: rule,
-      cursor: ruleEditCursor(rule, schedule),
+      cursor: ruleEditCursorForEdit(rule, schedule, occurrenceDates.length > 0),
       scope,
       today: todayDateOnly(),
       skippedFrom: rule.skipped_from,
@@ -99,7 +99,7 @@ export default function ModifyRecurringScreen() {
       skipResolveRef.current = resolve;
       setSkipWarning(skipWindow);
     });
-  }, [scope, rule]);
+  }, [scope, rule, occurrenceDates]);
 
   const resolveSkipWarning = useCallback((proceed: boolean) => {
     setSkipWarning(null);
