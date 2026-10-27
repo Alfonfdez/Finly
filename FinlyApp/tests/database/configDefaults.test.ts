@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DEFAULT_CONFIG, sanitizeDefaultAccounts, toConfigRows } from '../../src/database/configDefaults';
+import { DEFAULT_CONFIG, parseBooleanConfigValue, sanitizeDefaultAccounts, toConfigRows } from '../../src/database/configDefaults';
 
 const ACCOUNTS = [
   { id: 1, is_total: 0 },
@@ -48,5 +48,12 @@ describe('sanitizeDefaultAccounts', () => {
       { key: 'all_transactions_income_category_ids', value: '[3]' },
       { key: 'recurring_status_filter', value: '["paused","ended"]' },
     ]);
+  });
+
+  it('parses booleans without turning corruption into false', () => {
+    expect(parseBooleanConfigValue('true')).toBe(true);
+    expect(parseBooleanConfigValue('false')).toBe(false);
+    expect(parseBooleanConfigValue('1')).toBeNull();
+    expect(parseBooleanConfigValue('yes')).toBeNull();
   });
 });

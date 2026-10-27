@@ -46,6 +46,27 @@ describe('WeekPicker', () => {
     expect(view.getByText('October 2026')).toBeTruthy();
   });
 
+  it('disables weeks before the minimum date', async () => {
+    const onSelect = vi.fn();
+    const view = await render(
+      <WeekPicker
+        date={new Date(2026, 9, 15)}
+        onSelect={onSelect}
+        minDate={new Date(2026, 9, 14)}
+      />,
+    );
+
+    const beforeMin = view.getByLabelText(/12 Oct .* 18 Oct/);
+    expect(beforeMin.props.accessibilityState).toMatchObject({ disabled: true });
+    await fireEvent.press(beforeMin);
+    expect(onSelect).not.toHaveBeenCalled();
+
+    const afterMin = view.getByLabelText(/19 Oct .* 25 Oct/);
+    expect(afterMin.props.accessibilityState).toMatchObject({ disabled: false });
+    await fireEvent.press(afterMin);
+    expect(onSelect).toHaveBeenCalledTimes(1);
+  });
+
   it('does not go before January 1900', async () => {
     const view = await render(<WeekPicker date={new Date(1900, 0, 1)} onSelect={vi.fn()} />);
 

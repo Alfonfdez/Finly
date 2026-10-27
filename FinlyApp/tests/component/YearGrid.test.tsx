@@ -46,6 +46,27 @@ describe('YearGrid', () => {
     expect(current.queryByLabelText('Go to the current period')).toBeNull();
   });
 
+  it('disables years before the minimum date', async () => {
+    const onSelect = vi.fn();
+    const view = await render(
+      <YearGrid
+        date={new Date(2026, 5, 15)}
+        onSelect={onSelect}
+        minDate={new Date(2023, 0, 1)}
+      />,
+    );
+
+    const beforeMin = view.getByLabelText('2020');
+    expect(beforeMin.props.accessibilityState).toMatchObject({ disabled: true });
+    await fireEvent.press(beforeMin);
+    expect(onSelect).not.toHaveBeenCalled();
+
+    const firstValid = view.getByLabelText('2023');
+    expect(firstValid.props.accessibilityState).toMatchObject({ disabled: false });
+    await fireEvent.press(firstValid);
+    expect(onSelect).toHaveBeenCalledTimes(1);
+  });
+
   it('disables the previous page on 1900-1911', async () => {
     const view = await render(<YearGrid date={new Date(1900, 0, 1)} onSelect={vi.fn()} />);
 

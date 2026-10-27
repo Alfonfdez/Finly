@@ -1470,3 +1470,17 @@ Applied 2026-10-27:
 - No behavior change; `npm run test:all` green (178 files / 1522 tests) and browser-verified per-tab category selections plus the Recurring status filter.
 
 Spec: none (refactor only).
+
+## 2.2.0 web data integrity and calculator/calendar UX
+Status: completed.
+
+Applied 2026-10-27:
+- Web IndexedDB snapshot failures now reject the originating operation after one retry, while later writes can still persist the full database; corrupt stored values fail closed instead of booting empty.
+- Failed database opens/inits can be retried, and a rejected Web Lock shows a retry screen instead of leaving the app on the splash.
+- Config booleans parse only true/false, config failure recovery no longer overwrites newer optimistic updates, and deleting the active account keeps the selected Home period.
+- Calculator Accept is disabled for zero/negative results; week/month/year calendar cells enforce the resolved min/max bounds.
+- Negative calculator results are valid intermediate values: unary minus is folded into the number, so `5 - 10 = -5`, then `+ 10 = 5` no longer errors.
+- Added database, config, context, calculator and calendar regressions; 
+npm run test:all green (179 files / 1554 tests).
+
+Spec: spec/features/001-home-screen/, spec/features/002-db-design/, spec/features/007-calculator/.

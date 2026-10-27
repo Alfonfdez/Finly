@@ -13,7 +13,11 @@ let dbPromise: Promise<DatabaseHandle> | null = null;
 
 export function getDatabase(): Promise<DatabaseHandle> {
   if (!dbPromise) {
-    dbPromise = openEngine(DATABASE_NAME);
+    dbPromise = openEngine(DATABASE_NAME).catch(error => {
+      // A failed open must not poison every later retry.
+      dbPromise = null;
+      throw error;
+    });
   }
   return dbPromise;
 }
@@ -90,7 +94,11 @@ export function initDatabase(): Promise<DatabaseHandle> {
       await migrate(database);
       await ensureSeedData(database);
       return database;
-    })();
+    })().catch(error => {
+      // The App retry path must be able to try the whole initialization again.
+      initPromise = null;
+      throw error;
+    });
   }
   return initPromise;
 }

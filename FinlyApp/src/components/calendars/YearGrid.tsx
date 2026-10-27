@@ -56,19 +56,19 @@ export default function YearGrid({ date, onSelect, minDate, maxDate }: Props) {
       <View style={calendarStyles.monthRowSpacer} />
       <View style={calendarStyles.grid}>
         {years.map(y => {
-          const isFuture = maxYear != null && y > maxYear;
+          const isOutOfBounds = y < minYear || (maxYear != null && y > maxYear);
           const isActive = y === date.getFullYear();
           return (
             <TouchableOpacity
               key={y}
-              style={[calendarStyles.gridItem, isFuture && { opacity: DISABLED_OPACITY }]}
-              onPress={() => !isFuture && onSelect(new Date(y, 0, 1))}
-              disabled={isFuture}
+              style={[calendarStyles.gridItem, isOutOfBounds && { opacity: DISABLED_OPACITY }]}
+              onPress={() => !isOutOfBounds && onSelect(new Date(y, 0, 1))}
+              disabled={isOutOfBounds}
               accessibilityLabel={String(y)}
-              accessibilityState={{ selected: isActive }}
+              accessibilityState={{ selected: isActive, disabled: isOutOfBounds }}
             >
               <View style={[calendarStyles.gridItemInner, { backgroundColor: c.surface }, isActive && { backgroundColor: c.primary }]}>
-                <Text style={[calendarStyles.gridItemText, { color: c.text, fontSize: fs(14) }, isActive && { color: c.background, fontWeight: '700' }, isFuture && { color: c.textSecondary }]}>
+                <Text style={[calendarStyles.gridItemText, { color: c.text, fontSize: fs(14) }, isActive && { color: c.background, fontWeight: '700' }, isOutOfBounds && { color: c.textSecondary }]}>
                   {y}
                 </Text>
               </View>

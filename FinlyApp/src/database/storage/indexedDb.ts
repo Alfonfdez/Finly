@@ -41,6 +41,17 @@ function objectStore(mode: IDBTransactionMode): Promise<IDBObjectStore> {
   return openDatabase().then(db => db.transaction(STORE_NAME, mode).objectStore(STORE_NAME));
 }
 
+/**
+ * Only a missing value means "start from an empty database". A value of the wrong
+ * type is corruption: booting empty would let the next save overwrite the real
+ * (merely unreadable) snapshot.
+ */
+export function decodeStoredDatabase(value: unknown): Uint8Array | null {
+  if (value == null) return null;
+  if (value instanceof Uint8Array) return value;
+  throw new Error('Stored database is not a Uint8Array');
+}
+
 export function createIndexedDbStorage(): DatabaseStorage {
   return {
     async get(): Promise<Uint8Array | null> {
@@ -48,8 +59,11 @@ export function createIndexedDbStorage(): DatabaseStorage {
       return new Promise((resolve, reject) => {
         const request = store.get(DB_FILE_KEY);
         request.onsuccess = () => {
-          const value = request.result;
-          resolve(value instanceof Uint8Array ? value : null);
+          try {
+            resolve(decodeStoredDatabase(request.result));
+          } catch (error) {
+            reject(error);
+          }
         };
         request.onerror = () => reject(request.error ?? new Error('Failed to read IndexedDB'));
       });

@@ -20,16 +20,26 @@ const precedence = (op: string) => (
 function tokenize(expr: string): (number | string)[] {
   const tokens: (number | string)[] = [];
   let num = '';
+  let expectOperand = true;
   for (const ch of expr) {
     if (ch === ' ') continue;
     if (OP_CHARS.includes(ch)) {
+      // A leading minus, or one directly after another operator, is a sign, not
+      // a binary operator: fold it into the following number so a negative
+      // intermediate result can keep being used in the expression.
+      if (ch === CALC_KEYS.subtract && expectOperand) {
+        num += ch;
+        continue;
+      }
       if (num) {
         tokens.push(parseFloat(num));
         num = '';
       }
       tokens.push(ch);
+      expectOperand = true;
     } else {
       num += ch;
+      expectOperand = false;
     }
   }
   if (num) tokens.push(parseFloat(num));

@@ -3,7 +3,7 @@ import { getDrizzle, withTransaction } from '../drizzle/engine';
 import { config } from '../drizzle/schema';
 import type { Config } from '../types';
 import { FIRST_DAYS } from '../../constants/types';
-import { ARRAY_CONFIG_KEYS, DEFAULT_CONFIG, DB_KEY_MAP, CONFIG_NULL_SENTINEL, sanitizeConfig, toConfigRows } from '../configDefaults';
+import { ARRAY_CONFIG_KEYS, DEFAULT_CONFIG, DB_KEY_MAP, CONFIG_NULL_SENTINEL, parseBooleanConfigValue, sanitizeConfig, toConfigRows } from '../configDefaults';
 
 const BOOLEAN_KEYS = new Set<keyof Config>([
   'addShowLabels', 'addShowComments', 'addShowPhoto',
@@ -24,7 +24,8 @@ function parseConfig(rows: { key: string; value: string }[]): Config {
     if (configKey === 'firstDayOfWeek') {
       parsed[configKey] = raw === String(FIRST_DAYS.sunday) ? FIRST_DAYS.sunday : FIRST_DAYS.monday;
     } else if (BOOLEAN_KEYS.has(configKey)) {
-      parsed[configKey] = raw === 'true';
+      const value = parseBooleanConfigValue(raw);
+      if (value !== null) parsed[configKey] = value;
     } else if (INT_OR_NULL_KEYS.has(configKey)) {
       parsed[configKey] = raw === CONFIG_NULL_SENTINEL ? null : Number(raw);
     } else if (ARRAY_KEYS.has(configKey)) {

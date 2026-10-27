@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Platform, Animated, Appearance , StyleSheet, View, Text, Image } from 'react-native';
+import { Platform, Animated, Appearance , StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
 import { enableFreeze } from 'react-native-screens';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
@@ -69,7 +69,16 @@ export default function App() {
   const [exiting, setExiting] = useState(false);
   const [showApp, setShowApp] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
+  const [dbAttempt, setDbAttempt] = useState(0);
   const { status: tabLockStatus, retry: retryTabLock } = useWebTabLock();
+
+  const retryDatabase = () => {
+    setDbError(null);
+    setDbReady(false);
+    setShowApp(false);
+    setExiting(false);
+    setDbAttempt(attempt => attempt + 1);
+  };
 
   useEffect(() => {
     if (tabLockStatus !== TAB_LOCK_STATUS.acquired) return;
@@ -83,7 +92,7 @@ export default function App() {
       }
     }
     setup();
-  }, [tabLockStatus]);
+  }, [tabLockStatus, dbAttempt]);
 
   useEffect(() => {
     if (dbReady && !exiting && !showApp) {
@@ -96,6 +105,20 @@ export default function App() {
     return <WebTabBlocked onRetry={retryTabLock} />;
   }
 
+  if (tabLockStatus === TAB_LOCK_STATUS.failed) {
+    const labels = t();
+    return (
+      <View style={styles.error}>
+        <StatusBar style="light" />
+        <Text style={styles.errorTitle}>{labels.error_title}</Text>
+        <Text style={styles.errorMessage}>{labels.error_generic}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={retryTabLock} accessibilityRole="button">
+          <Text style={styles.retryText}>{labels.error_boundary_retry}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   if (dbError) {
     const labels = t();
     return (
@@ -104,6 +127,9 @@ export default function App() {
         <Text style={styles.errorTitle}>{labels.error_title}</Text>
         <Text style={styles.errorMessage}>{labels.error_generic}</Text>
         <Text style={styles.errorDetail} numberOfLines={4}>{dbError}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={retryDatabase} accessibilityRole="button">
+          <Text style={styles.retryText}>{labels.error_boundary_retry}</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -161,5 +187,18 @@ const styles = StyleSheet.create({
   errorDetail: {
     color: '#94A3B8',
     fontSize: 12,
+  },
+  retryButton: {
+    alignSelf: 'flex-start',
+    marginTop: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: darkColors.primary,
+  },
+  retryText: {
+    color: darkColors.background,
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

@@ -27,6 +27,10 @@
   - Schema changes are versioned: `initDatabase()` applies the pending migrations from `PRAGMA user_version` up to `SCHEMA_VERSION = 4`, each step once inside a transaction. There is no manual reset requirement for schema upgrades.
   - Queries run through the shared `DatabaseHandle` async API — `expo-sqlite` on native, sql.js (WASM) on web — and screens never call synchronous storage APIs.
   - Data is persisted locally without an internet connection. On web, the exported SQLite bytes are stored in IndexedDB (sql.js), so the same schema, migrations, and repositories run on every platform.
+  - A failed IndexedDB snapshot write rejects the originating database operation after one retry; it never reports success. A later successful write snapshots the full current database and restores durability.
+  - A missing IndexedDB value means "new database"; any other non-`Uint8Array` value is corruption and fails closed, so an unreadable snapshot is never overwritten by an empty boot.
+  - A failed database open or initialization is not cached: the next attempt (including the App retry action) can reopen and migrate again.
+  - Config boolean values are parsed only from `true`/`false`; any other stored value falls back to that key's default instead of becoming `false`.
   - The structure supports cascading deletes (e.g., deleting a category removes its transactions; deleting a tag removes its junction links). The Total account (`is_total = 1`) is never deleted: `accountRepo.delete()`/`deleteMany()` skip it, so its transactions are never removed by an account delete.
   - The whole app shares one transaction queue (`runExclusiveDb`); explicit transactions are serialized and never nested.
   - `configRepository.get()` applies `sanitizeConfig()`, which validates every key separately and falls back per field to `DEFAULT_CONFIG`.
@@ -219,5 +223,8 @@ CREATE UNIQUE INDEX ux_transactions_recurrence ON transactions(recurring_rule_id
   - [x] An interrupted wipe is repaired on launch: `ensureSeedData()` re-seeds empty `users`/`accounts`/`categories`/`config` tables with `INSERT OR IGNORE`.
   - [x] Every explicit transaction is serialized through `runExclusiveDb`, and a task never nests a transaction.
   - [x] `sanitizeConfig()` keeps valid fields and resets only the corrupt ones; one bad value never resets the whole configuration.
+  - [x] A failed web snapshot write rejects the operation after one retry, and the next write can still persist the full database.
+  - [x] A corrupt IndexedDB value fails closed instead of booting an empty database.
+  - [x] A failed database open/init can be retried, and corrupt boolean config values fall back to their defaults.
   - [x] The Total account is never deleted, and an account delete never removes its transactions.
   - [x] `recurring_rules`, `recurring_rule_tags`, `transactions.recurring_rule_id` and `transactions.recurrence_date` exist after migration 4.

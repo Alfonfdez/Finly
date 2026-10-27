@@ -130,6 +130,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const applyHomeDefaults = useCallback((
     accountsData: Account[],
     cfg: Config = configRef.current,
+    { preservePeriod = false }: { preservePeriod?: boolean } = {},
   ) => {
     if (accountsData.length === 0) return;
     if (cfg.homeDefaultAccountId !== null) {
@@ -138,7 +139,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } else {
       setActiveAccount(accountsData[0]);
     }
-    setActivePeriod(cfg.homeDefaultPeriod);
+    if (!preservePeriod) setActivePeriod(cfg.homeDefaultPeriod);
   }, []);
 
   // One startup pass: materialize recurring rules and load the reference data.
@@ -199,7 +200,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const current = activeAccountRef.current;
     if (!current) return;
     if (accounts.some(account => account.id === current.id)) return;
-    applyHomeDefaults(accounts);
+    applyHomeDefaults(accounts, configRef.current, { preservePeriod: true });
   }, [accounts, applyHomeDefaults]);
 
   useEffect(() => {

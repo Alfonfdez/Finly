@@ -142,10 +142,42 @@ describe('sql.js web engine', () => {
     const broken = new FlakyStorage(Number.POSITIVE_INFINITY);
     const brokenErrors: unknown[] = [];
     const brokenDb = await createSqlJsDatabase(null, broken, undefined, e => brokenErrors.push(e));
-    await brokenDb.execAsync('CREATE TABLE t (id INTEGER PRIMARY KEY)');
+    await expect(brokenDb.execAsync('CREATE TABLE t (id INTEGER PRIMARY KEY)')).rejects.toThrow('quota');
     expect(broken.calls).toBe(2);
     expect(brokenErrors).toHaveLength(1);
     brokenDb.close();
+  });
+
+  it('keeps the persist queue usable after a failed write', async () => {
+    class FlakyStorage extends MemoryStorage {
+      calls = 0;
+      failures: number;
+      constructor(failures: number) {
+        super();
+        this.failures = failures;
+      }
+      override async set(data: Uint8Array): Promise<void> {
+        this.calls += 1;
+        if (this.failures > 0) {
+          this.failures -= 1;
+          throw new Error('quota');
+        }
+        await super.set(data);
+      }
+    }
+
+    const storage = new FlakyStorage(2);
+    const errors: unknown[] = [];
+    const db = await createSqlJsDatabase(null, storage, undefined, e => errors.push(e));
+
+    await expect(db.execAsync('CREATE TABLE t (id INTEGER PRIMARY KEY)')).rejects.toThrow('quota');
+    expect(storage.calls).toBe(2);
+    expect(errors).toHaveLength(1);
+
+    await db.execAsync('CREATE TABLE u (id INTEGER PRIMARY KEY)');
+    expect(storage.calls).toBe(3);
+    expect(storage.data).not.toBeNull();
+    db.close();
   });
   it('keeps foreign keys enabled after persisting (export must not reset the pragma)', async () => {
     const storage = new MemoryStorage();

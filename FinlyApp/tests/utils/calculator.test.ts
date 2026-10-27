@@ -38,7 +38,17 @@ describe('evaluate', () => {
     expect(evaluate('5/0')).toEqual({ result: null, error: true });
   });
 
-  it('returns an error for a leading operator', () => {
+  it('treats a leading minus as a negative number', () => {
+    expect(evaluate('-5')).toEqual({ result: -5, error: false });
+    expect(evaluate('-5+10')).toEqual({ result: 5, error: false });
+    expect(evaluate('-5-10')).toEqual({ result: -15, error: false });
+    expect(evaluate('-5*2')).toEqual({ result: -10, error: false });
+    expect(evaluate('5/-2')).toEqual({ result: -2.5, error: false });
+    expect(evaluate('5*-2')).toEqual({ result: -10, error: false });
+    expect(evaluate('-5*-2')).toEqual({ result: 10, error: false });
+  });
+
+  it('returns an error for other leading operators', () => {
     expect(evaluate('*5')).toEqual({ result: null, error: true });
     expect(evaluate('+2')).toEqual({ result: null, error: true });
   });
@@ -48,9 +58,8 @@ describe('evaluate', () => {
     expect(evaluate('5*')).toEqual({ result: null, error: true });
   });
 
-  it('returns an error for consecutive operators', () => {
+  it('returns an error for consecutive binary operators', () => {
     expect(evaluate('5++2')).toEqual({ result: null, error: true });
-    expect(evaluate('5*-2')).toEqual({ result: null, error: true });
   });
 
   it('rejects results above the maximum value', () => {

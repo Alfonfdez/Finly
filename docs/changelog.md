@@ -4532,4 +4532,22 @@
 - Stop paused rules from recovering skips, showing the skip dialog, applying the catch-up guard or saving scope-only changes
 - Keep ended cursors from rewinding under Future + past and ignore existing dates in skip counts
 - Make resume atomic by reactivating and materializing in one transaction
-- Add the recurring rules behavior guide with scenarios and worked examples
+- Add the recurring rules behavior guide with scenarios and worked examples.
+
+[2026-10-27] fix | FinlyApp/App.tsx, FinlyApp/src/database/sqliteWeb.ts, FinlyApp/src/database/storage/indexedDb.ts, FinlyApp/src/database/database.ts, FinlyApp/src/hooks/useWebTabLock.ts, FinlyApp/src/database/configDefaults.ts, FinlyApp/src/database/repositories/configRepo.ts, FinlyApp/src/context/ConfigContext.tsx, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/components/CalculatorModal.tsx, FinlyApp/src/components/calendars/WeekPicker.tsx, FinlyApp/src/components/calendars/MonthGrid.tsx, FinlyApp/src/components/calendars/YearGrid.tsx, spec/features/001-home-screen/1-spec.md, spec/features/002-db-design/1-spec.md, spec/features/007-calculator/1-spec.md, spec/constitution/3-roadmap.md
+- Reject failed web IndexedDB snapshots and keep the persist queue usable.
+- Fail closed on corrupt IndexedDB values and allow database init retries.
+- Recover from rejected Web Locks and show a retry screen.
+- Harden config boolean parsing and failed-save recovery.
+- Preserve the Home period when the active account is deleted.
+- Disable calculator Accept for zero or negative results.
+- Enforce min/max bounds on week, month and year calendar cells.
+
+[2026-10-27] test | FinlyApp/tests/database/sqliteWebEngine.test.ts, FinlyApp/tests/database/indexedDbStorage.test.ts, FinlyApp/tests/database/initRetry.test.ts, FinlyApp/tests/database/configDefaults.test.ts, FinlyApp/tests/hooks/useWebTabLock.test.tsx, FinlyApp/tests/context/ConfigContext.test.tsx, FinlyApp/tests/context/AppContext.test.tsx, FinlyApp/tests/component/CalculatorModal.test.tsx, FinlyApp/tests/component/WeekPicker.test.tsx, FinlyApp/tests/component/MonthGrid.test.tsx, FinlyApp/tests/component/YearGrid.test.tsx
+- Cover web persist rejection and queue recovery.
+- Cover corrupt IndexedDB values, init retry and Web Lock failure.
+- Cover config parsing/recovery, Home period preservation, calculator limits and calendar bounds.
+
+[2026-10-27] fix | FinlyApp/src/utils/calculator.ts, FinlyApp/tests/utils/calculator.test.ts, FinlyApp/tests/component/CalculatorModal.test.tsx, spec/features/007-calculator/1-spec.md
+- Treat a leading minus, or a minus after an operator, as a unary sign so negative intermediate results can be reused.
+- Add calculator regressions for negative chaining and the 5 - 10 = -5, + 10 = 5 flow.
