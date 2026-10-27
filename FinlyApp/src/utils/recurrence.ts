@@ -311,24 +311,30 @@ export interface SkipWindow {
 
 /**
  * Occurrences a "Future only" edit would skip: those the schedule has in
- * `[first on/after cursor, first on/after max(cursor, today))`. Returns `null`
- * when nothing is skipped (the cursor is already at/after the next occurrence).
+ * `[first on/after cursor, first on/after max(cursor, today))`, excluding dates
+ * that already have a generated transaction. Returns `null` when nothing is
+ * skipped (the cursor is already at/after the next occurrence).
  */
 export function recurrenceSkipWindow(
   schedule: RecurrenceSchedule,
   cursor: string,
   today: string,
+  existingOccurrences?: ReadonlySet<string>,
 ): SkipWindow | null {
   const from = nextDueOnOrAfter(schedule, cursor);
   const to = nextDueOnOrAfter(schedule, cursor > today ? cursor : today);
   if (from >= to) return null;
+  let firstMissing: string | null = null;
   let count = 0;
   let c = from;
   while (c < to) {
-    count += 1;
+    if (!existingOccurrences?.has(c)) {
+      firstMissing ??= c;
+      count += 1;
+    }
     c = advanceOccurrence(schedule, c);
   }
-  return { from, to, count };
+  return firstMissing == null ? null : { from: firstMissing, to, count };
 }
 
 /** True when a rule has never generated or skipped an occurrence (its cursor still equals its start). */
@@ -410,7 +416,10 @@ export function resolveEditAnchor(
 ): string {
   if (scope === RECURRENCE_SCOPES.futureAndPast) {
     const base = skippedFrom != null && skippedFrom < cursor ? skippedFrom : cursor;
-    return nextDueOnOrAfter(schedule, base);
+    const anchor = nextDueOnOrAfter(schedule, base);
+    // Shortening the end date can move the probe to end+1, which may be before the
+    // rule's current cursor. Never move an ended rule's cursor backwards.
+    return schedule.end_date != null && anchor > schedule.end_date && cursor > anchor ? cursor : anchor;
   }
   const anchor = nextDueOnOrAfter(schedule, today);
   // Shortening the end date can move the probe to end+1, which may be before the
@@ -528,7 +537,9 @@ export function planEdit({
     };
   }
 
-  const skipWindow = scope === RECURRENCE_SCOPES.future ? recurrenceSkipWindow(schedule, cursor, today) : null;
+  const skipWindow = scope === RECURRENCE_SCOPES.future
+    ? recurrenceSkipWindow(schedule, cursor, today, existingOccurrences)
+    : null;
   const nextDue = resolveEditAnchor(schedule, { cursor, scope, today, skippedFrom, previousSchedule, existingOccurrences });
   let nextSkippedFrom = scope === RECURRENCE_SCOPES.futureAndPast ? null : skippedFrom ?? skipWindow?.from ?? null;
   if (!isSkippedWindowRecoverable(nextSkippedFrom, schedule.end_date, today)) {

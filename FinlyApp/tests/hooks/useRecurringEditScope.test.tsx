@@ -49,6 +49,20 @@ describe('useRecurringEditScope', () => {
     expect(result.current.recurringPastAffected).toBe(true);
   });
 
+  it('does not recover a skipped window while the rule is paused', async () => {
+    const { result } = await renderHook(() =>
+      useRecurringEditScope({ ...base, initialRuleActive: false, initialRuleSkippedFrom: '2026-10-01' }),
+    );
+    expect(result.current.recurringPastAffected).toBe(false);
+  });
+
+  it('still allows a paused rule to rewrite changed details', async () => {
+    const { result } = await renderHook(() =>
+      useRecurringEditScope({ ...base, initialRuleActive: false, amount: 120 }),
+    );
+    expect(result.current.recurringPastAffected).toBe(true);
+  });
+
   it('uses the last-day schedule when checking the missed window', async () => {
     // Today is 2026-10-06. A monthly rule anchored on the 10th has next on Oct 10
     // (future → no missed window); the last-day variant is due Sep 30 (past → window).

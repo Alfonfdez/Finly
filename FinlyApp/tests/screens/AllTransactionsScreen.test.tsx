@@ -179,8 +179,8 @@ describe('AllTransactionsScreen', () => {
     ).toBeTruthy());
 
     expect(getConfigStub().config.allTransactionsCategoryIds).toEqual([1]);
-    expect(getConfigStub().config.allTransactionsExpenseCategoryIds).toEqual([1, 2]);
-    expect(getConfigStub().config.allTransactionsIncomeCategoryIds).toEqual([3]);
+    expect(getConfigStub().config.allTransactionsExpenseCategoryIds).toEqual([]);
+    expect(getConfigStub().config.allTransactionsIncomeCategoryIds).toEqual([]);
   });
 
   it('updates only the active tab category selection', async () => {
@@ -206,7 +206,7 @@ describe('AllTransactionsScreen', () => {
 
     await waitFor(() => expect(getConfigStub().config.allTransactionsExpenseCategoryIds).toEqual([1]));
     expect(getConfigStub().config.allTransactionsCategoryIds).toEqual([1]);
-    expect(getConfigStub().config.allTransactionsIncomeCategoryIds).toEqual([3]);
+    expect(getConfigStub().config.allTransactionsIncomeCategoryIds).toEqual([]);
   });
 
   it('prunes deleted categories from every tab selection', async () => {
@@ -226,7 +226,7 @@ describe('AllTransactionsScreen', () => {
     const view = await render(<AllTransactionsScreen />);
     await waitFor(() => expect(getConfigStub().config.allTransactionsCategoryIds).toEqual([1]));
     expect(getConfigStub().config.allTransactionsExpenseCategoryIds).toEqual([2]);
-    expect(getConfigStub().config.allTransactionsIncomeCategoryIds).toEqual([3]);
+    expect(getConfigStub().config.allTransactionsIncomeCategoryIds).toEqual([]);
     expect(within(view.getByTestId(TEST_IDS.allTransactionsCategoryFilter)).getByText('1 category')).toBeTruthy();
   });
 
@@ -248,9 +248,44 @@ describe('AllTransactionsScreen', () => {
     await fireEvent.press(view.getByText('Apply (All categories)'));
     await waitFor(() => expect(getConfigStub().config.allTransactionsCategoryIds).toEqual([]));
     expect(getConfigStub().config.allTransactionsExpenseCategoryIds).toEqual([1]);
-    expect(getConfigStub().config.allTransactionsIncomeCategoryIds).toEqual([3]);
+    expect(getConfigStub().config.allTransactionsIncomeCategoryIds).toEqual([]);
     expect(within(view.getByTestId(TEST_IDS.allTransactionsCategoryFilter)).getByText('All categories')).toBeTruthy();
   });
+
+  it('stores the full expense set as no filter on the Expenses tab', async () => {
+    const food: Category = { ...category };
+    const travel: Category = { ...category, id: 2, name: 'Travel' };
+    const salary: Category = { ...category, id: 3, name: 'Salary', type: 'income' };
+    setAppData({
+      categories: [food, travel, salary],
+      categoriesById: new Map([[1, food], [2, travel], [3, salary]]),
+    });
+    const view = await render(<AllTransactionsScreen />);
+
+    await fireEvent.press(view.getByRole('tab', { name: 'Show expenses' }));
+    await fireEvent.press(view.getByTestId(TEST_IDS.allTransactionsCategoryFilter));
+    await fireEvent.press(view.getByTestId(`${TEST_IDS.categoryFilterPresetPrefix}-expenses`));
+    await fireEvent.press(view.getByTestId(TEST_IDS.categoryFilterApply));
+
+    await waitFor(() => expect(getConfigStub().config.allTransactionsExpenseCategoryIds).toEqual([]));
+    expect(within(view.getByTestId(TEST_IDS.allTransactionsCategoryFilter)).getByText('All expenses')).toBeTruthy();
+  });
+
+  it('prunes categories of the wrong type from a type tab', async () => {
+    const food: Category = { ...category };
+    const travel: Category = { ...category, id: 2, name: 'Travel' };
+    const salary: Category = { ...category, id: 3, name: 'Salary', type: 'income' };
+    setAppData({
+      categories: [food, travel, salary],
+      categoriesById: new Map([[1, food], [2, travel], [3, salary]]),
+    });
+    setConfig({ allTransactionsExpenseCategoryIds: [1, 3] });
+
+    const view = await render(<AllTransactionsScreen />);
+    await waitFor(() => expect(getConfigStub().config.allTransactionsExpenseCategoryIds).toEqual([1]));
+    expect(within(view.getByTestId(TEST_IDS.allTransactionsCategoryFilter)).getByText('All categories')).toBeTruthy();
+  });
+
   it('loads transactions through the repository on focus', async () => {
     list.mockResolvedValue([tx(1, { description: 'Rent' })]);
     await render(<AllTransactionsScreen />);

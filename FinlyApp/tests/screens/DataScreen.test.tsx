@@ -250,6 +250,8 @@ describe('DataScreen', () => {
       t.settings_import_success_title,
       t.settings_import_success_message,
     );
+    expect(getAppStub().setDataRefreshing).toHaveBeenNthCalledWith(1, true);
+    expect(getAppStub().setDataRefreshing).toHaveBeenNthCalledWith(2, false);
   });
 
   it('shows the incomplete-backup alert and leaves the data untouched', async () => {

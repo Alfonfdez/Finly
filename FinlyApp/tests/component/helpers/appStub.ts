@@ -15,6 +15,7 @@ interface AppStubState {
   tags: Tag[];
   loading: boolean;
   loadError: boolean;
+  dataRefreshing: boolean;
   categoriesById: Map<number, Category>;
   refresh: ReturnType<typeof vi.fn>;
   retryInitialLoad: ReturnType<typeof vi.fn>;
@@ -22,6 +23,7 @@ interface AppStubState {
   refreshCategories: ReturnType<typeof vi.fn>;
   refreshTags: ReturnType<typeof vi.fn>;
   resetAll: ReturnType<typeof vi.fn>;
+  setDataRefreshing: ReturnType<typeof vi.fn>;
   selectAccount: ReturnType<typeof vi.fn>;
   changeType: ReturnType<typeof vi.fn>;
   changePeriod: ReturnType<typeof vi.fn>;
@@ -52,6 +54,7 @@ function createStub(): AppStubState {
     tags: [],
     loading: false,
     loadError: false,
+    dataRefreshing: false,
     categoriesById: new Map(),
     refresh: vi.fn(),
     retryInitialLoad: vi.fn(async () => {}),
@@ -59,6 +62,7 @@ function createStub(): AppStubState {
     refreshCategories: vi.fn(async () => {}),
     refreshTags: vi.fn(async () => {}),
     resetAll: vi.fn(async () => {}),
+    setDataRefreshing: vi.fn(),
     selectAccount: vi.fn(),
     changeType: vi.fn(),
     changePeriod: vi.fn(),
@@ -80,6 +84,7 @@ function createStub(): AppStubState {
       state.tags = fresh.tags;
       state.loading = fresh.loading;
       state.loadError = fresh.loadError;
+      state.dataRefreshing = fresh.dataRefreshing;
       state.categoriesById = fresh.categoriesById;
       state.refresh.mockClear();
       state.retryInitialLoad.mockClear();
@@ -87,6 +92,7 @@ function createStub(): AppStubState {
       state.refreshCategories.mockClear();
       state.refreshTags.mockClear();
       state.resetAll.mockClear();
+      state.setDataRefreshing.mockClear();
       state.selectAccount.mockClear();
       state.changeType.mockClear();
       state.changePeriod.mockClear();
@@ -129,6 +135,7 @@ export function buildAppMock() {
     tags: s.tags,
     loading: s.loading,
     loadError: s.loadError,
+    dataRefreshing: s.dataRefreshing,
     categoriesById: s.categoriesById,
     refresh: s.refresh,
     retryInitialLoad: s.retryInitialLoad,
@@ -136,6 +143,7 @@ export function buildAppMock() {
     refreshCategories: s.refreshCategories,
     refreshTags: s.refreshTags,
     resetAll: s.resetAll,
+    setDataRefreshing: s.setDataRefreshing,
     selectAccount: s.selectAccount,
     changeType: s.changeType,
     changePeriod: s.changePeriod,

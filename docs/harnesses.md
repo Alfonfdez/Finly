@@ -95,7 +95,7 @@ Regression seeds come from real bugs previously fixed in this project.
 | `tests/utils/formHints.test.ts` | `src/utils/formHints.ts` — comment/description hint selection |
 | `tests/utils/errors.test.ts` | `src/utils/errors.ts` — `showErrorAlert` + `runWithErrorAlert` |
 | `tests/utils/pendingCategory.test.ts` | `src/utils/pendingCategory.ts` — pending-category consume/clear |
-| `tests/utils/recurrence.test.ts` | `src/utils/recurrence.ts` — recurrence advancement (daily/weekly/monthly/yearly + interval), month-end/Feb-29 clamping, catch-up list, end-date and cap, and edit anchoring (`resolveEditAnchor`/`recurrencePreview`: Future only vs Future + past, today-generated skip, skip window) |
+| `tests/utils/recurrence.test.ts` | `src/utils/recurrence.ts` — recurrence advancement (daily/weekly/monthly/yearly + interval), month-end/Feb-29 clamping, catch-up list, end-date and cap, and edit anchoring (`resolveEditAnchor`/`recurrencePreview`: Future only vs Future + past, today-generated skip, ended-cursor guard, skip window excluding existing occurrences) |
 | `tests/utils/calendarBounds.test.ts` | `src/utils/calendarBounds.ts` — `resolveDateBounds` convention (undefined max → today, null → unbounded, Date → clamp) |
 
 ## Phase B — Unified SQLite engine + contract suite (implemented)
@@ -132,7 +132,7 @@ Test files (under `FinlyApp/tests/database/`):
 | `sqliteWebEngine.test.ts` | Engine semantics: results, persistence, transactions, schema boot + seed counts |
 | `dbDrift.test.ts` | Schema drift: 9 tables' `PRAGMA table_info` vs declared columns, every `types.ts` field covered by a migration column, `user_version` 4, seed counts (1 user / 2 accounts / 31 categories / 0 transactions / 0 recurring rules), config rows == `DB_KEY_MAP`, init idempotence |
 | `recurringRepo.test.ts` | `recurringRepo` over sql.js: rule CRUD + tags, `listDue`, occurrence insert + unique-index idempotency, bulk past update, delete keeps generated transactions |
-| `recurringService.test.ts` | `materializeDueRecurring` + `saveRecurringRuleEdit`: back-fill/idempotency/paused/end-date, plus edit scenarios (fresh-rule re-anchor, denser schedule taking effect today, skip recording/recovery) |
+| `recurringService.test.ts` | `materializeDueRecurring` + `saveRecurringRuleEdit` + `resumeRecurringRule`: back-fill/idempotency/paused/end-date, edit scenarios (fresh-rule re-anchor, denser schedule taking effect today, skip recording/recovery), and atomic resume rollback |
 | `recurringService.preview.test.ts` | Summary ↔ save invariant: for create/edit scenarios the transactions the save creates equal the `recurrencePreview` the form shows |
 
 Run the suite alone with `npx vitest run tests/database/` (or all harnesses with `npm run

@@ -45,6 +45,8 @@ interface AppContextType extends AppState {
   refreshCategories: () => Promise<void>;
   refreshTags: () => Promise<void>;
   resetAll: () => Promise<void>;
+  dataRefreshing: boolean;
+  setDataRefreshing: (refreshing: boolean) => void;
   activeTagIds: number[];
   toggleTagId: (id: number) => void;
   clearTagFilter: () => void;
@@ -105,6 +107,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [activeTagIds, setActiveTagIds] = useState<number[]>([]);
   const [tagsByTransaction, setTagsByTransaction] = useState<Map<number, number[]>>(new Map());
   const [transactionsVersion, setTransactionsVersion] = useState(0);
+  const [dataRefreshing, setDataRefreshing] = useState(false);
 
   const categoriesById = useMemo(
     () => new Map(categories.map(cat => [cat.id, cat])),
@@ -432,6 +435,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     refreshCategories,
     refreshTags,
     resetAll,
+    dataRefreshing,
+    setDataRefreshing,
     activeTagIds,
     toggleTagId,
     clearTagFilter,
@@ -439,7 +444,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     categoriesById,
   }), [
     activeAccount, activeType, activePeriod, selectedDate, customDate,
-    accounts, categories, transactions, tags, loading, categoriesById,
+    accounts, categories, transactions, tags, loading, dataRefreshing, categoriesById,
     loadError,
     filteredTransactions, activeCategories, accountsWithBalance,
     totalIncome, totalExpenses, totalIncomeAll, totalExpensesAll,

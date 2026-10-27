@@ -276,6 +276,16 @@ describe('resolveEditAnchor (future only)', () => {
   it('future + past back-fills from the cursor regardless of today', () => {
     expect(resolveEditAnchor(monthly, { cursor: '2026-09-01', scope: 'futureAndPast', today: '2026-10-06' })).toBe('2026-09-01');
   });
+
+  it('future + past does not move an ended rule cursor backwards', () => {
+    const ended: RecurrenceSchedule = { ...daily, start_date: '2026-09-01', end_date: '2026-09-30' };
+    expect(resolveEditAnchor(ended, {
+      cursor: '2026-10-07',
+      scope: 'futureAndPast',
+      today: '2026-10-06',
+      previousSchedule: ended,
+    })).toBe('2026-10-07');
+  });
 });
 
 describe('isSkippedWindowRecoverable', () => {
@@ -322,12 +332,34 @@ describe('recurrenceSkipWindow', () => {
   });
 
   it('respects a multi-unit interval when counting', () => {
-    // Occurrences every 2 days: Oct 1, 3, 5, 7 → the window [Oct 1, Oct 7) holds 3.
+    // Occurrences every 2 days: Oct 1, 3, 5, 7 �?" the window [Oct 1, Oct 7) holds 3.
     expect(recurrenceSkipWindow({ ...daily, interval: 2 }, '2026-10-01', '2026-10-07')).toEqual({
       from: '2026-10-01',
       to: '2026-10-07',
       count: 3,
     });
+  });
+
+  it('ignores dates that already have a generated transaction', () => {
+    expect(recurrenceSkipWindow(
+      daily,
+      '2026-10-01',
+      '2026-10-07',
+      new Set(['2026-10-01', '2026-10-02', '2026-10-04']),
+    )).toEqual({
+      from: '2026-10-03',
+      to: '2026-10-07',
+      count: 3,
+    });
+  });
+
+  it('returns null when every date in the window already exists', () => {
+    expect(recurrenceSkipWindow(
+      daily,
+      '2026-10-01',
+      '2026-10-03',
+      new Set(['2026-10-01', '2026-10-02']),
+    )).toBeNull();
   });
 });
 
@@ -459,6 +491,31 @@ describe('planEdit', () => {
     const ended: RecurrenceSchedule = { ...daily, end_date: '2026-08-15' };
     const plan = planEdit({ schedule: ended, cursor: '2026-09-01', scope: 'future', today: '2026-10-07', skippedFrom: '2026-09-01' });
     expect(plan.skippedFrom).toBeNull();
+  });
+
+  it('does not rewind an ended rule with Future + past', () => {
+    const ended: RecurrenceSchedule = { ...daily, start_date: '2026-09-01', end_date: '2026-09-30' };
+    const plan = planEdit({
+      schedule: ended,
+      previousSchedule: ended,
+      cursor: '2026-10-07',
+      scope: 'futureAndPast',
+      today: '2026-10-06',
+    });
+    expect(plan.nextDue).toBe('2026-10-07');
+    expect(plan.preview.count).toBe(0);
+  });
+
+  it('counts only dates the Future-only save actually skips', () => {
+    const plan = planEdit({
+      schedule: daily,
+      cursor: '2026-10-01',
+      scope: 'future',
+      today: '2026-10-07',
+      existingOccurrences: new Set(['2026-10-01', '2026-10-02']),
+    });
+    expect(plan.skipWindow).toEqual({ from: '2026-10-03', to: '2026-10-07', count: 4 });
+    expect(plan.skippedFrom).toBe('2026-10-03');
   });
 });
 

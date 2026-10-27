@@ -1,4 +1,4 @@
-import { TRANSACTION_TYPES } from '../constants/types';
+import { TRANSACTION_TYPES, TYPE_FILTERS, type TransactionTypeFilter } from '../constants/types';
 import type { Category } from '../database/types';
 
 /** What an applied category selection represents, for the pill/Apply labels. */
@@ -44,7 +44,27 @@ export function classifyCategorySelection(
   return CATEGORY_SELECTION_KINDS.custom;
 }
 
+/** Categories that belong to a type tab. The All tab uses every category. */
+export function categoriesForTypeTab(categories: Category[], type: TransactionTypeFilter): Category[] {
+  if (type === TYPE_FILTERS.all) return categories;
+  return categories.filter(category => category.type === type);
+}
+
 /** Store a full category set as the canonical empty "no filter" selection. */
 export function normalizeCategorySelection(ids: readonly number[], categories: Category[]): number[] {
   return classifyCategorySelection(ids, categories) === CATEGORY_SELECTION_KINDS.all ? [] : [...ids];
+}
+
+/**
+ * Normalize against the active tab's category universe: every category on All,
+ * every expense category on Expenses, every income category on Income.
+ */
+export function normalizeCategorySelectionForTab(
+  ids: readonly number[],
+  categories: Category[],
+  type: TransactionTypeFilter,
+): number[] {
+  const universe = categoriesForTypeTab(categories, type);
+  const universeIds = new Set(universe.map(category => category.id));
+  return normalizeCategorySelection(ids.filter(id => universeIds.has(id)), universe);
 }
