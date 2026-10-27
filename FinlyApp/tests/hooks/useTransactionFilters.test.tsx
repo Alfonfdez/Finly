@@ -135,6 +135,30 @@ describe('useTransactionFilters', () => {
     expect(result.current.filtered.map(t => t.id).sort()).toEqual([1, 2]);
   });
 
+  it('restores and persists the recurring view per screen', async () => {
+    setConfig({
+      transactionsRecurringView: RECURRING_VIEWS.oneTime,
+      allTransactionsRecurringView: RECURRING_VIEWS.recurring,
+    });
+    const transactions = [
+      tx(1, { id: 1, account_id: 3, recurring_rule_id: 5 }),
+      tx(2, { id: 2, account_id: 3 }),
+    ];
+
+    const transactionsView = await renderFilters(transactions);
+    expect(transactionsView.result.current.recurringView).toBe(RECURRING_VIEWS.oneTime);
+
+    await update(() => transactionsView.result.current.setRecurringView(RECURRING_VIEWS.all));
+    expect(getConfigStub().config.transactionsRecurringView).toBe(RECURRING_VIEWS.all);
+    expect(getConfigStub().config.allTransactionsRecurringView).toBe(RECURRING_VIEWS.recurring);
+
+    const allView = await renderFilters(transactions, {
+      activeAccount: totalAccount,
+      sortScope: TRANSACTION_SORT_SCOPES.allTransactions,
+    });
+    expect(allView.result.current.recurringView).toBe(RECURRING_VIEWS.recurring);
+  });
+
   it('filters to recurring-generated transactions', async () => {
     const transactions = [
       tx(1, { id: 1, account_id: 3, recurring_rule_id: 5 }),

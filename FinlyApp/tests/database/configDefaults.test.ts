@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DEFAULT_CONFIG, sanitizeDefaultAccounts } from '../../src/database/configDefaults';
+import { DEFAULT_CONFIG, sanitizeDefaultAccounts, toConfigRows } from '../../src/database/configDefaults';
 
 const ACCOUNTS = [
   { id: 1, is_total: 0 },
@@ -34,5 +34,19 @@ describe('sanitizeDefaultAccounts', () => {
     expect(sanitizeDefaultAccounts({ ...DEFAULT_CONFIG, createRecurringDefaultAccountId: 1 }, ACCOUNTS)).toEqual({});
     expect(sanitizeDefaultAccounts({ ...DEFAULT_CONFIG, createRecurringDefaultAccountId: 999 }, ACCOUNTS)).toEqual({ createRecurringDefaultAccountId: null });
     expect(sanitizeDefaultAccounts({ ...DEFAULT_CONFIG, createRecurringDefaultAccountId: 2 }, ACCOUNTS)).toEqual({ createRecurringDefaultAccountId: null });
+  });
+
+  it('serializes array config values as JSON', () => {
+    expect(toConfigRows({
+      allTransactionsCategoryIds: [1, 3],
+      allTransactionsExpenseCategoryIds: [1],
+      allTransactionsIncomeCategoryIds: [3],
+      recurringStatusFilter: ['paused', 'ended'],
+    })).toEqual([
+      { key: 'all_transactions_category_ids', value: '[1,3]' },
+      { key: 'all_transactions_expense_category_ids', value: '[1]' },
+      { key: 'all_transactions_income_category_ids', value: '[3]' },
+      { key: 'recurring_status_filter', value: '["paused","ended"]' },
+    ]);
   });
 });

@@ -3,7 +3,7 @@ import { fireEvent, render, waitFor, userEvent } from '@testing-library/react-na
 import type { ReactNode } from 'react';
 import TransactionsScreen from '../../src/screens/TransactionsScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
-import { setConfig, getConfigStub } from '../component/helpers/configStub';
+import { setConfig, getConfigStub, resetStub } from '../component/helpers/configStub';
 import { formatSignedCurrency, HIDDEN_BALANCE } from '../../src/utils/formatters';
 import type { Account, Category, Transaction } from '../../src/database/types';
 
@@ -75,6 +75,7 @@ const category: Category = { id: 1, user_id: 1, name: 'Food', type: 'expense' } 
 
 describe('TransactionsScreen', () => {
   beforeEach(() => {
+    resetStub();
     list.mockReset().mockResolvedValue([]);
     deleteMany.mockReset().mockResolvedValue(undefined);
     getTagsByTransactionIds.mockReset().mockResolvedValue([]);

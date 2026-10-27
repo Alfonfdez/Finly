@@ -50,6 +50,8 @@
 - The modal receives the current `type` tab value so it adapts its category display.
 - When categories are selected, only transactions matching those categories are shown.
 - When "All" is selected (empty array), all categories are shown.
+- Each type tab keeps its own remembered category selection: `allTransactionsCategoryIds` (All), `allTransactionsExpenseCategoryIds` (Expenses) and `allTransactionsIncomeCategoryIds` (Income). Selections are restored when switching tabs and after restarting the app; deleted categories are pruned from every tab and a full selection for a tab is stored as the empty array.
+- Switching the type tab restores that tab's own selection; it never clears another tab's saved categories.
 - The modal requires at least one category: clearing all disables Apply and shows the required-selection hint. The screen's empty filter state (nothing applied) still shows all categories.
 
 ### 5. Period selector
@@ -70,6 +72,7 @@
 #### Recurring view filter
 
 - Same as 014 (section 3): a compact chip in the first controls row, next to the category button, always shown; the balance reflects the selected view. The filters row scrolls horizontally when it does not fit (horizontal scrollbar shown on web); the sort toggle sits on a second row below it. The filters row keeps the standard **16px** separation from the account/balance block.
+- The choice is remembered independently for this screen (`allTransactionsRecurringView` in the `config` table) and restored on the next visit and after restarting the app.
 
 ### 7. Tag filter
 
@@ -158,11 +161,12 @@
 - [x] Tapping the category button opens the CategoryFilterModal (021).
 - [x] Selecting categories in the modal filters the transaction list.
 - [x] The category modal requires at least one category; clearing all disables Apply and shows the required-selection hint.
+- [x] Each type tab remembers its own category filter across visits, tab switches and restarts; deleted categories are pruned and switching tabs never clears another tab's selection.
 - [x] PeriodTabs (Day/Week/Month/Year/Period) are shown with "Month" selected by default (from config).
 - [x] CalendarPicker updates when the period changes.
 - [x] The transaction list filters by the selected period's date range.
 - [x] The sort toggle works (date/amount, ASC/DESC) and the choice is remembered independently from the Transactions screen.
-- [x] A recurring view chip (All / One-time / Recurring) in the first controls row, next to the category button, filters the list by recurring-generated vs one-time; the balance reflects it and the control is always shown.
+- [x] A recurring view chip (All / One-time / Recurring) in the first controls row, next to the category button, filters the list by recurring-generated vs one-time; the balance reflects it, the control is always shown, and the choice is remembered independently from the Transactions screen.
 - [x] TagFilterBar is shown and works with local state.
 - [x] A search icon is shown in the header; pressing it toggles a SearchBar.
 - [x] The search matches comment/description, category display name, tag names and account name, case-insensitive.

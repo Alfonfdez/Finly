@@ -8,6 +8,7 @@ import {
   FIRST_DAYS,
   PERIODS,
   RECURRING_SORT_BY,
+  RECURRING_VIEWS,
   SORT_BY,
   SORT_DIRECTIONS,
   TAG_SORT_BY,
@@ -44,6 +45,12 @@ export const DEFAULT_CONFIG: Config = {
   editRecurringShowLabels: true,
   editRecurringShowComments: true,
   hideBalances: false,
+  allTransactionsRecurringView: RECURRING_VIEWS.all,
+  transactionsRecurringView: RECURRING_VIEWS.all,
+  allTransactionsCategoryIds: [],
+  allTransactionsExpenseCategoryIds: [],
+  allTransactionsIncomeCategoryIds: [],
+  recurringStatusFilter: [],
   tagsSortBy: TAG_SORT_BY.created,
   tagsSortDirection: SORT_DIRECTIONS.asc,
   commentsSortBy: COMMENT_SORT_BY.name,
@@ -85,6 +92,12 @@ export const DB_KEY_MAP: Record<string, keyof Config> = {
   edit_recurring_show_labels: 'editRecurringShowLabels',
   edit_recurring_show_comments: 'editRecurringShowComments',
   hide_balances: 'hideBalances',
+  all_transactions_recurring_view: 'allTransactionsRecurringView',
+  transactions_recurring_view: 'transactionsRecurringView',
+  all_transactions_category_ids: 'allTransactionsCategoryIds',
+  all_transactions_expense_category_ids: 'allTransactionsExpenseCategoryIds',
+  all_transactions_income_category_ids: 'allTransactionsIncomeCategoryIds',
+  recurring_status_filter: 'recurringStatusFilter',
   tags_sort_by: 'tagsSortBy',
   tags_sort_direction: 'tagsSortDirection',
   comments_sort_by: 'commentsSortBy',
@@ -102,6 +115,14 @@ export const DB_KEY_MAP: Record<string, keyof Config> = {
 };
 
 export const CONFIG_NULL_SENTINEL = 'null';
+
+/** Config fields stored as JSON arrays in the key/value table. */
+export const ARRAY_CONFIG_KEYS: (keyof Config)[] = [
+  'allTransactionsCategoryIds',
+  'allTransactionsExpenseCategoryIds',
+  'allTransactionsIncomeCategoryIds',
+  'recurringStatusFilter',
+];
 
 const DB_KEY_OF: Record<string, string> = Object.fromEntries(
   Object.entries(DB_KEY_MAP).map(([dbKey, configKey]) => [configKey, dbKey]),
@@ -121,7 +142,10 @@ export function toConfigRows(partial: Partial<Config>): { key: string; value: st
   const rows: { key: string; value: string }[] = [];
   for (const [key, value] of Object.entries(partial)) {
     if (value === undefined) continue;
-    rows.push({ key: DB_KEY_OF[key] ?? key, value: String(value) });
+    rows.push({
+      key: DB_KEY_OF[key] ?? key,
+      value: Array.isArray(value) ? JSON.stringify(value) : String(value),
+    });
   }
   return rows;
 }

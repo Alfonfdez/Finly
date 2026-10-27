@@ -3,7 +3,7 @@ import { render, fireEvent, waitFor, userEvent } from '@testing-library/react-na
 import { useState, type ReactNode } from 'react';
 import RecurringScreen from '../../src/screens/RecurringScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
-import { getConfigStub, resetStub } from '../component/helpers/configStub';
+import { getConfigStub, resetStub, setConfig } from '../component/helpers/configStub';
 import { TEST_IDS } from '../../src/constants/testIds';
 import type { Account, Category, RecurringRule } from '../../src/database/types';
 
@@ -294,6 +294,20 @@ describe('RecurringScreen', () => {
     expect(view.getByText('PausedRule')).toBeTruthy();
     expect(view.getByText('EndedRule')).toBeTruthy();
     expect(view.getByLabelText('Paused + Ended')).toBeTruthy();
+    expect(getConfigStub().config.recurringStatusFilter).toEqual(['paused', 'ended']);
+  });
+
+  it('restores the persisted status filter', async () => {
+    setConfig({ recurringStatusFilter: ['paused'] });
+    mockList.mockResolvedValue([
+      { ...rule, id: 1, name: 'ActiveRule' },
+      { ...rule, id: 2, name: 'PausedRule', active: 0 },
+    ]);
+
+    const view = await render(<RecurringScreen />);
+    await waitFor(() => expect(view.getByRole('button', { name: 'Paused' })).toBeTruthy());
+    expect(view.queryByText('ActiveRule')).toBeNull();
+    expect(view.getByText('PausedRule')).toBeTruthy();
   });
 
   it('filters the rules by type through the type tabs', async () => {

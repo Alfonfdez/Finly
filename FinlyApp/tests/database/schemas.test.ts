@@ -113,5 +113,26 @@ describe('config schema + sanitizeConfig', () => {
 
     const corruptDirection = { ...DEFAULT_CONFIG, accountsSortDirection: 'up' } as unknown as Config;
     expect(sanitizeConfig(corruptDirection)).toEqual(DEFAULT_CONFIG);
+
+    const corruptCategoryIds = { ...DEFAULT_CONFIG, allTransactionsCategoryIds: '1,2' } as unknown as Config;
+    expect(sanitizeConfig(corruptCategoryIds)).toEqual(DEFAULT_CONFIG);
+
+    const corruptStatusFilter = { ...DEFAULT_CONFIG, recurringStatusFilter: ['active', 'unknown'] } as unknown as Config;
+    expect(sanitizeConfig(corruptStatusFilter)).toEqual(DEFAULT_CONFIG);
+  });
+
+  it('deduplicates persisted selector arrays', () => {
+    expect(configSchema.parse({
+      ...DEFAULT_CONFIG,
+      allTransactionsCategoryIds: [1, 1, 2],
+      allTransactionsExpenseCategoryIds: [1, 1],
+      allTransactionsIncomeCategoryIds: [2, 2],
+      recurringStatusFilter: ['paused', 'paused', 'ended'],
+    })).toMatchObject({
+      allTransactionsCategoryIds: [1, 2],
+      allTransactionsExpenseCategoryIds: [1],
+      allTransactionsIncomeCategoryIds: [2],
+      recurringStatusFilter: ['paused', 'ended'],
+    });
   });
 });

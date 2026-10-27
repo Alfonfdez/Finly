@@ -3,7 +3,7 @@ import { fireEvent, render, waitFor, userEvent, within } from '@testing-library/
 import type { ReactNode } from 'react';
 import AllTransactionsScreen from '../../src/screens/AllTransactionsScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
-import { setConfig, getConfigStub } from '../component/helpers/configStub';
+import { setConfig, getConfigStub, resetStub } from '../component/helpers/configStub';
 import { formatSignedCurrency, HIDDEN_BALANCE } from '../../src/utils/formatters';
 import type { Account, Category, Transaction } from '../../src/database/types';
 import { PERIODS } from '../../src/constants/types';
@@ -76,6 +76,7 @@ const category: Category = { id: 1, user_id: 1, name: 'Food', type: 'expense' } 
 
 describe('AllTransactionsScreen', () => {
   beforeEach(() => {
+    resetStub();
     list.mockReset().mockResolvedValue([]);
     deleteMany.mockReset().mockResolvedValue(undefined);
     getTagsByTransactionIds.mockReset().mockResolvedValue([]);
@@ -140,6 +141,115 @@ describe('AllTransactionsScreen', () => {
     await waitFor(() => expect(
       within(view.getByTestId(TEST_IDS.allTransactionsCategoryFilter)).getByText('All expenses'),
     ).toBeTruthy());
+    expect(getConfigStub().config.allTransactionsCategoryIds).toEqual([1, 2]);
+  });
+
+  it('restores a separate category selection per type tab', async () => {
+    const food: Category = { ...category };
+    const travel: Category = { ...category, id: 2, name: 'Travel' };
+    const salary: Category = { ...category, id: 3, name: 'Salary', type: 'income' };
+    setAppData({
+      categories: [food, travel, salary],
+      categoriesById: new Map([[1, food], [2, travel], [3, salary]]),
+    });
+    setConfig({
+      allTransactionsCategoryIds: [1],
+      allTransactionsExpenseCategoryIds: [1, 2],
+      allTransactionsIncomeCategoryIds: [3],
+    });
+
+    const view = await render(<AllTransactionsScreen />);
+    await waitFor(() => expect(
+      within(view.getByTestId(TEST_IDS.allTransactionsCategoryFilter)).getByText('1 category'),
+    ).toBeTruthy());
+
+    await fireEvent.press(view.getByRole('tab', { name: 'Show expenses' }));
+    await waitFor(() => expect(
+      within(view.getByTestId(TEST_IDS.allTransactionsCategoryFilter)).getByText('All expenses'),
+    ).toBeTruthy());
+
+    await fireEvent.press(view.getByRole('tab', { name: 'Show income' }));
+    await waitFor(() => expect(
+      within(view.getByTestId(TEST_IDS.allTransactionsCategoryFilter)).getByText('All income'),
+    ).toBeTruthy());
+
+    await fireEvent.press(view.getByRole('tab', { name: 'All' }));
+    await waitFor(() => expect(
+      within(view.getByTestId(TEST_IDS.allTransactionsCategoryFilter)).getByText('1 category'),
+    ).toBeTruthy());
+
+    expect(getConfigStub().config.allTransactionsCategoryIds).toEqual([1]);
+    expect(getConfigStub().config.allTransactionsExpenseCategoryIds).toEqual([1, 2]);
+    expect(getConfigStub().config.allTransactionsIncomeCategoryIds).toEqual([3]);
+  });
+
+  it('updates only the active tab category selection', async () => {
+    const food: Category = { ...category };
+    const travel: Category = { ...category, id: 2, name: 'Travel' };
+    const salary: Category = { ...category, id: 3, name: 'Salary', type: 'income' };
+    setAppData({
+      categories: [food, travel, salary],
+      categoriesById: new Map([[1, food], [2, travel], [3, salary]]),
+    });
+    setConfig({
+      allTransactionsCategoryIds: [1],
+      allTransactionsExpenseCategoryIds: [1, 2],
+      allTransactionsIncomeCategoryIds: [3],
+    });
+
+    const view = await render(<AllTransactionsScreen />);
+    await fireEvent.press(view.getByRole('tab', { name: 'Show expenses' }));
+    await fireEvent.press(view.getByTestId(TEST_IDS.allTransactionsCategoryFilter));
+    await fireEvent.press(view.getByTestId(`${TEST_IDS.categoryFilterPresetPrefix}-expenses`));
+    await fireEvent.press(view.getByLabelText('Food'));
+    await fireEvent.press(view.getByTestId(TEST_IDS.categoryFilterApply));
+
+    await waitFor(() => expect(getConfigStub().config.allTransactionsExpenseCategoryIds).toEqual([1]));
+    expect(getConfigStub().config.allTransactionsCategoryIds).toEqual([1]);
+    expect(getConfigStub().config.allTransactionsIncomeCategoryIds).toEqual([3]);
+  });
+
+  it('prunes deleted categories from every tab selection', async () => {
+    const food: Category = { ...category };
+    const travel: Category = { ...category, id: 2, name: 'Travel' };
+    const salary: Category = { ...category, id: 3, name: 'Salary', type: 'income' };
+    setAppData({
+      categories: [food, travel, salary],
+      categoriesById: new Map([[1, food], [2, travel], [3, salary]]),
+    });
+    setConfig({
+      allTransactionsCategoryIds: [1, 99],
+      allTransactionsExpenseCategoryIds: [2, 99],
+      allTransactionsIncomeCategoryIds: [3, 99],
+    });
+
+    const view = await render(<AllTransactionsScreen />);
+    await waitFor(() => expect(getConfigStub().config.allTransactionsCategoryIds).toEqual([1]));
+    expect(getConfigStub().config.allTransactionsExpenseCategoryIds).toEqual([2]);
+    expect(getConfigStub().config.allTransactionsIncomeCategoryIds).toEqual([3]);
+    expect(within(view.getByTestId(TEST_IDS.allTransactionsCategoryFilter)).getByText('1 category')).toBeTruthy();
+  });
+
+  it('stores a full category selection as no filter for that tab only', async () => {
+    const food: Category = { ...category };
+    const travel: Category = { ...category, id: 2, name: 'Travel' };
+    const salary: Category = { ...category, id: 3, name: 'Salary', type: 'income' };
+    setAppData({
+      categories: [food, travel, salary],
+      categoriesById: new Map([[1, food], [2, travel], [3, salary]]),
+    });
+    setConfig({
+      allTransactionsExpenseCategoryIds: [1],
+      allTransactionsIncomeCategoryIds: [3],
+    });
+    const view = await render(<AllTransactionsScreen />);
+
+    await fireEvent.press(view.getByTestId(TEST_IDS.allTransactionsCategoryFilter));
+    await fireEvent.press(view.getByText('Apply (All categories)'));
+    await waitFor(() => expect(getConfigStub().config.allTransactionsCategoryIds).toEqual([]));
+    expect(getConfigStub().config.allTransactionsExpenseCategoryIds).toEqual([1]);
+    expect(getConfigStub().config.allTransactionsIncomeCategoryIds).toEqual([3]);
+    expect(within(view.getByTestId(TEST_IDS.allTransactionsCategoryFilter)).getByText('All categories')).toBeTruthy();
   });
   it('loads transactions through the repository on focus', async () => {
     list.mockResolvedValue([tx(1, { description: 'Rent' })]);
