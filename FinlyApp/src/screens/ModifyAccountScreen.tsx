@@ -6,6 +6,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
+import { useBusyGuard } from '../hooks/useBusyGuard';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useColorSelection } from '../hooks/useColorSelection';
 import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
@@ -37,6 +38,7 @@ export default function ModifyAccountScreen() {
   const { accountId } = route.params;
 
   const deferredRefreshAccounts = useDeferredRefresh(refreshAccounts);
+  const { busy, run } = useBusyGuard();
 
   const { data: account, loading } = useFocusLoad(
     () => accountRepository.getById(accountId),
@@ -120,14 +122,19 @@ export default function ModifyAccountScreen() {
       updateData.name = englishDefault && trimmedName === displayDefault ? englishDefault : trimmedName;
       updateData.initial_balance = parseAmountValue(initialBalanceRaw) ?? 0;
     }
-    await runWithErrorAlert(async () => {
-      await accountRepository.update(accountId, updateData);
-      navigation.goBack();
-      deferredRefreshAccounts();
-    }, ERROR_PREFIXES.accountUpdate);
+    await run(async () => {
+      await runWithErrorAlert(async () => {
+        await accountRepository.update(accountId, updateData);
+        navigation.goBack();
+        deferredRefreshAccounts();
+      }, ERROR_PREFIXES.accountUpdate);
+    });
   };
 
-  const { visible: deleteModalVisible, open: openDeleteModal, close: closeDeleteModal, confirm: confirmDelete } = useDeleteConfirmation({
+  const {
+    visible: deleteModalVisible, busy: deleting, open: openDeleteModal,
+    close: closeDeleteModal, confirm: confirmDelete,
+  } = useDeleteConfirmation({
     deleteFn: async () => {
       await accountRepository.delete(accountId);
 
@@ -195,11 +202,11 @@ export default function ModifyAccountScreen() {
             onDescriptionChange={(value) => { markEdited(); setDescription(value); }}
             hintText={hintText}
             submitLabel={labels.modify_account_save}
-            isSubmitDisabled={!canSave}
+            isSubmitDisabled={!canSave || busy}
             onSubmit={handleSave}
             deleteLabel={isTotal ? undefined : labels.delete}
             onDeletePress={isTotal ? undefined : openDeleteModal}
-            deleteDisabled={isLastAccount}
+            deleteDisabled={isLastAccount || deleting}
             deleteLastHint={isLastAccount ? labels.modify_account_delete_last : null}
           />
         </View>
@@ -213,6 +220,7 @@ export default function ModifyAccountScreen() {
         cancelLabel={labels.modify_account_delete_confirm_cancel}
         onConfirm={confirmDelete}
         onCancel={closeDeleteModal}
+        busy={deleting}
       />
     </>
   );

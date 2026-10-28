@@ -9,6 +9,7 @@ import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
+import { useBusyGuard } from '../hooks/useBusyGuard';
 import { useColorSelection } from '../hooks/useColorSelection';
 import { useIsDirty } from '../hooks/useIsDirty';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
@@ -82,6 +83,7 @@ export default function ModifyCategoryScreen() {
 
   const deferredRefreshCategories = useDeferredRefresh(refreshCategories);
   const deferredRefresh = useDeferredRefresh(refresh);
+  const { busy, run } = useBusyGuard();
 
   const handleNameChangeLocal = (value: string) => {
     markEdited();
@@ -125,15 +127,17 @@ export default function ModifyCategoryScreen() {
     const englishDefault = getDefaultEnglishName(category.id);
     const localizedDefault = getDefaultCategoryName(category.id);
     const finalName = englishDefault && trimmedName === localizedDefault ? englishDefault : trimmedName;
-    await runWithErrorAlert(async () => {
-      await categoryRepository.update(categoryId, {
-        name: finalName,
-        icon: selectedIcon,
-        color: selectedColor,
-      });
-      navigation.goBack();
-      deferredRefreshCategories();
-    }, ERROR_PREFIXES.categoryUpdate);
+    await run(async () => {
+      await runWithErrorAlert(async () => {
+        await categoryRepository.update(categoryId, {
+          name: finalName,
+          icon: selectedIcon,
+          color: selectedColor,
+        });
+        navigation.goBack();
+        deferredRefreshCategories();
+      }, ERROR_PREFIXES.categoryUpdate);
+    });
   };
 
   const handleDeletePress = async () => {
@@ -161,23 +165,27 @@ export default function ModifyCategoryScreen() {
   const handlePermanentDelete = async () => {
     if (!category) return;
     setDeleteModalVisible(false);
-    await runWithErrorAlert(async () => {
-      await categoryRepository.delete(category.id);
-      navigation.goBack();
-      deferredRefreshCategories();
-      deferredRefresh();
-    }, ERROR_PREFIXES.categoryDelete);
+    await run(async () => {
+      await runWithErrorAlert(async () => {
+        await categoryRepository.delete(category.id);
+        navigation.goBack();
+        deferredRefreshCategories();
+        deferredRefresh();
+      }, ERROR_PREFIXES.categoryDelete);
+    });
   };
 
   const handleSelectTarget = async () => {
     if (targetCategoryId === null || !category) return;
-    await runWithErrorAlert(async () => {
-      await categoryRepository.reassignAndDelete(categoryId, targetCategoryId);
-      setSelectModalVisible(false);
-      navigation.goBack();
-      deferredRefreshCategories();
-      deferredRefresh();
-    }, ERROR_PREFIXES.categoryDelete);
+    await run(async () => {
+      await runWithErrorAlert(async () => {
+        await categoryRepository.reassignAndDelete(categoryId, targetCategoryId);
+        setSelectModalVisible(false);
+        navigation.goBack();
+        deferredRefreshCategories();
+        deferredRefresh();
+      }, ERROR_PREFIXES.categoryDelete);
+    });
   };
 
   if (!category) {
@@ -251,11 +259,11 @@ export default function ModifyCategoryScreen() {
           <FormActions
             deleteLabel={labels.delete}
             onDeletePress={handleDeletePress}
-            deleteDisabled={isLastOfType}
+            deleteDisabled={isLastOfType || busy}
             deleteHint={isLastOfType ? labels.modify_cat_delete_last : null}
             saveHint={validationError}
           >
-            <PrimaryButton label={labels.modify_cat_save} onPress={handleSave} disabled={!canSave} />
+            <PrimaryButton label={labels.modify_cat_save} onPress={handleSave} disabled={!canSave || busy} />
           </FormActions>
         </FormScrollView>
       </View>
@@ -276,6 +284,7 @@ export default function ModifyCategoryScreen() {
         onCancel={() => setDeleteModalVisible(false)}
         moveLabel={deleteRemovesData ? labels.modify_cat_delete_confirm_move : undefined}
         onMove={deleteRemovesData ? handleMoveTransactions : undefined}
+        busy={busy}
       />
 
       <CategoryTransferModal

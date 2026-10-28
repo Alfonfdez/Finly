@@ -8,6 +8,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useColorSelection } from '../hooks/useColorSelection';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
+import { useBusyGuard } from '../hooks/useBusyGuard';
 import { t, getDefaultCategoryIdByName, getDefaultEnglishName } from '../i18n';
 import { categoryRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, MAX_CATEGORIES_PER_TYPE, type TransactionType, USER_ID } from '../constants/types';
@@ -43,6 +44,7 @@ export default function CreateCategoryScreen() {
   const { selectedColor, customColor, handleColorSelect } = useColorSelection();
 
   const deferredRefreshCategories = useDeferredRefresh(refreshCategories);
+  const { busy, run } = useBusyGuard();
 
   const { nameError, checkingName, handleNameChange } = useNameDuplicateCheck({
     existsByName: (value, excludeId) => categoryRepository.existsByName(USER_ID, value, excludeId),
@@ -74,18 +76,20 @@ export default function CreateCategoryScreen() {
   const handleCreate = async () => {
     Keyboard.dismiss();
     if (!canCreate || selectedIcon === null || selectedColor === null) return;
-    await runWithErrorAlert(async () => {
-      const created = await categoryRepository.create({
-        user_id: USER_ID,
-        name: name.trim(),
-        icon: selectedIcon,
-        color: selectedColor,
-        type,
-      });
-      setPendingCategory(created.id, type);
-      navigation.goBack();
-      deferredRefreshCategories();
-    }, ERROR_PREFIXES.categoryCreate);
+    await run(async () => {
+      await runWithErrorAlert(async () => {
+        const created = await categoryRepository.create({
+          user_id: USER_ID,
+          name: name.trim(),
+          icon: selectedIcon,
+          color: selectedColor,
+          type,
+        });
+        setPendingCategory(created.id, type);
+        navigation.goBack();
+        deferredRefreshCategories();
+      }, ERROR_PREFIXES.categoryCreate);
+    });
   };
 
   return (
@@ -138,7 +142,7 @@ export default function CreateCategoryScreen() {
           <FormActions
             saveHint={atCategoryLimit ? labels.create_cat_error_limit(MAX_CATEGORIES_PER_TYPE) : hintText}
           >
-            <PrimaryButton label={labels.create_cat_add} onPress={handleCreate} disabled={!canCreate} />
+            <PrimaryButton label={labels.create_cat_add} onPress={handleCreate} disabled={!canCreate || busy} />
           </FormActions>
         </FormScrollView>
       </View>

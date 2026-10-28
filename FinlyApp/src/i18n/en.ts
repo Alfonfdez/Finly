@@ -50,6 +50,8 @@ export const en = {
   settings_import_success_message: 'Your data has been restored from the backup.',
   settings_import_error_title: 'Import failed',
   settings_import_error_message: 'The backup file could not be imported. Your data is unchanged.',
+  settings_import_refresh_error_title: 'Import applied, refresh failed',
+  settings_import_refresh_error_message: 'Your data was imported, but the app could not refresh. Reopen the app to see the imported data.',
   settings_import_invalid_title: 'Invalid backup',
   settings_import_invalid_message: 'The selected file is not a valid Finly backup.',
   settings_import_incomplete_title: 'Incomplete backup',

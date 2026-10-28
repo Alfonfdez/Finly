@@ -52,6 +52,8 @@ export const ca: Language = {
   settings_import_success_message: 'Les teves dades s\'han restaurat des de la còpia de seguretat.',
   settings_import_error_title: 'Error en importar',
   settings_import_error_message: 'No s\'ha pogut importar el fitxer de còpia de seguretat. Les teves dades no han canviat.',
+  settings_import_refresh_error_title: 'Dades importades, error en actualitzar',
+  settings_import_refresh_error_message: 'Les teves dades s\'han importat, però l\'aplicació no s\'ha pogut actualitzar. Torna a obrir-la per veure les dades importades.',
   settings_import_invalid_title: 'Còpia de seguretat no vàlida',
   settings_import_invalid_message: 'El fitxer seleccionat no és una còpia de seguretat vàlida de Finly.',
   settings_import_incomplete_title: 'Còpia de seguretat incompleta',

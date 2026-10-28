@@ -52,6 +52,8 @@ export const gl: Language = {
   settings_import_success_message: 'Os teus datos foron restaurados desde a copia de seguridade.',
   settings_import_error_title: 'Erro ao importar',
   settings_import_error_message: 'Non se puido importar o ficheiro de copia de seguridade. Os teus datos non cambiaron.',
+  settings_import_refresh_error_title: 'Datos importados, erro ao actualizar',
+  settings_import_refresh_error_message: 'Os teus datos importáronse, pero a aplicación non puido actualizarse. Volve abrila para ver os datos importados.',
   settings_import_invalid_title: 'Copia de seguridade non válida',
   settings_import_invalid_message: 'O ficheiro seleccionado non é unha copia de seguridade válida de Finly.',
   settings_import_incomplete_title: 'Copia de seguridade incompleta',

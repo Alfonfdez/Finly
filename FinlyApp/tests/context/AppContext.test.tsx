@@ -231,6 +231,19 @@ describe('AppProvider', () => {
     expect(result.current.activeAccount).toEqual(walletAccount);
   });
 
+  it('resetAll returns true on success and false when reloading fails', async () => {
+    const { result } = await renderHook(() => useApp(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    let ok = false;
+    await act(async () => { ok = await result.current.resetAll({ notifyOnError: false }); });
+    expect(ok).toBe(true);
+
+    mockAccountList.mockRejectedValueOnce(new Error('reload failed'));
+    await act(async () => { ok = await result.current.resetAll({ notifyOnError: false }); });
+    expect(ok).toBe(false);
+  });
+
   it('starts the custom period at Jan 1 and the end of today', async () => {
     const { result } = await renderHook(() => useApp(), { wrapper });
     await waitFor(() => expect(result.current.loading).toBe(false));

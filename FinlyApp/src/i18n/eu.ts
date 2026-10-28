@@ -52,6 +52,8 @@ export const eu: Language = {
   settings_import_success_message: 'Zure datuak babeskopia berreskuratu dira.',
   settings_import_error_title: 'Errorea inportatzean',
   settings_import_error_message: 'Ezin izan da babeskopia fitxategia inportatu. Zure datuak ez dira aldatu.',
+  settings_import_refresh_error_title: 'Datuak inportatu dira, eguneratze-errorea',
+  settings_import_refresh_error_message: 'Zure datuak inportatu dira, baina aplikazioa ezin izan da eguneratu. Ireki berriro datu inportatuak ikusteko.',
   settings_import_invalid_title: 'Babeskopia baliogabea',
   settings_import_invalid_message: 'Hautatutako fitxategia ez da Finly babeskopia baliodun bat.',
   settings_import_incomplete_title: 'Babes-kopia osatugabea',

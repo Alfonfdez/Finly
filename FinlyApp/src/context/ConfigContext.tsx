@@ -12,10 +12,15 @@ import { type Config } from '../database/types';
 
 export type { Config };
 
+export interface UpdateConfigOptions {
+  /** Show the generic save-failure alert. Defaults to true. */
+  notifyOnError?: boolean;
+}
+
 interface ConfigContextType {
   config: Config;
   activeColors: ColorPalette;
-  updateConfig: (partial: Partial<Config>) => Promise<void>;
+  updateConfig: (partial: Partial<Config>, options?: UpdateConfigOptions) => Promise<boolean>;
   loading: boolean;
 }
 
@@ -93,7 +98,8 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     return () => { style?.remove(); };
   }, [activeColors]);
 
-  const updateConfig = useCallback(async (partial: Partial<Config>) => {
+  const updateConfig = useCallback(async (partial: Partial<Config>, options: UpdateConfigOptions = {}) => {
+    const notifyOnError = options.notifyOnError ?? true;
     const seq = ++updateSeq.current;
     const previous = configRef.current;
     const updated = { ...previous, ...partial };
@@ -123,6 +129,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
 
     try {
       await save;
+      return true;
     } catch (error) {
       logError(ERROR_PREFIXES.configSave, error);
       // A failed write may belong to an older update while a newer one is still
@@ -134,8 +141,8 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         // its optimistic value with an older snapshot, but this update's failed
         // fields still need to be rolled back.
         rollbackFailedFields();
-        showErrorAlert();
-        return;
+        if (notifyOnError) showErrorAlert();
+        return false;
       }
       try {
         const persisted = await configRepository.get();
@@ -147,7 +154,8 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         logError(ERROR_PREFIXES.configLoad, reloadError);
         rollbackFailedFields();
       }
-      showErrorAlert();
+      if (notifyOnError) showErrorAlert();
+      return false;
     }
   }, []);
 

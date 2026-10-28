@@ -5,6 +5,7 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
+import { useBusyGuard } from '../hooks/useBusyGuard';
 import { useKeyboardReveal } from '../hooks/useKeyboardReveal';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
@@ -27,6 +28,7 @@ export default function ModifyCommentScreen() {
   const route = useRoute<ModifyCommentRouteProp>();
 
   const originalComment = route.params.comment;
+  const { busy, run } = useBusyGuard();
   const [comment, setComment] = useState(originalComment);
   const [count, setCount] = useState(0);
 
@@ -52,13 +54,18 @@ export default function ModifyCommentScreen() {
   const handleSave = async () => {
     Keyboard.dismiss();
     if (isDisabled) return;
-    await runWithErrorAlert(async () => {
-      await transactionRepository.updateComment(originalComment, trimmed);
-      navigation.goBack();
-    }, ERROR_PREFIXES.commentUpdate);
+    await run(async () => {
+      await runWithErrorAlert(async () => {
+        await transactionRepository.updateComment(originalComment, trimmed);
+        navigation.goBack();
+      }, ERROR_PREFIXES.commentUpdate);
+    });
   };
 
-  const { visible: deleteModalVisible, open: openDeleteModal, close: closeDeleteModal, confirm: confirmDelete } = useDeleteConfirmation({
+  const {
+    visible: deleteModalVisible, busy: deleting, open: openDeleteModal,
+    close: closeDeleteModal, confirm: confirmDelete,
+  } = useDeleteConfirmation({
     deleteFn: () => transactionRepository.deleteComment(originalComment),
     onSuccess: () => navigation.goBack(),
     errorPrefix: ERROR_PREFIXES.commentDelete,
@@ -92,7 +99,7 @@ export default function ModifyCommentScreen() {
           <PrimaryButton
             label={labels.comments_save}
             onPress={handleSave}
-            disabled={isDisabled}
+            disabled={isDisabled || busy || deleting}
             enabledTextColor={c.background}
             disabledBg={c.surface}
             disabledTextColor={c.textSecondary}
@@ -112,6 +119,7 @@ export default function ModifyCommentScreen() {
         cancelLabel={labels.comments_delete_confirm_cancel}
         onConfirm={confirmDelete}
         onCancel={closeDeleteModal}
+        busy={deleting}
       />
     </ScreenShell>
   );

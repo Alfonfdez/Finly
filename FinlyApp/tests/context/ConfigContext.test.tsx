@@ -34,7 +34,12 @@ vi.mock('react-native', async () => {
   };
 });
 
-let captured: { config: Config; activeColors: typeof darkColors; loading: boolean; updateConfig: (partial: Partial<Config>) => void } | null = null;
+let captured: {
+  config: Config;
+  activeColors: typeof darkColors;
+  loading: boolean;
+  updateConfig: (partial: Partial<Config>, options?: { notifyOnError?: boolean }) => Promise<boolean>;
+} | null = null;
 
 function Probe() {
   const ctx = useConfig();
@@ -78,7 +83,9 @@ describe('ConfigProvider', () => {
     await renderProvider();
     await waitFor(() => expect(captured?.loading).toBe(false));
 
-    await act(async () => { await captured!.updateConfig({ firstDayOfWeek: 0 }); });
+    let saved = false;
+    await act(async () => { saved = await captured!.updateConfig({ firstDayOfWeek: 0 }); });
+    expect(saved).toBe(true);
     expect(mockConfigSave).toHaveBeenCalledWith({ firstDayOfWeek: 0 });
     expect(captured!.config.firstDayOfWeek).toBe(0);
   });
@@ -135,7 +142,9 @@ describe('ConfigProvider', () => {
     await renderProvider();
     await waitFor(() => expect(captured?.loading).toBe(false));
 
-    await act(async () => { await captured!.updateConfig({ theme: THEMES.light }); });
+    let saved = true;
+    await act(async () => { saved = await captured!.updateConfig({ theme: THEMES.light }, { notifyOnError: false }); });
+    expect(saved).toBe(false);
     expect(captured!.config.theme).toBe(THEMES.dark);
     expect(captured!.activeColors).toEqual(darkColors);
   });

@@ -3,6 +3,8 @@ import { runWithErrorAlert } from '../utils/errors';
 
 interface UseBulkDeleteOptions<T> {
   selectedIds: ReadonlySet<T>;
+  /** IDs currently visible under the active filters. Hidden selections are never deleted. */
+  visibleIds?: readonly T[];
   exitSelectMode: () => void;
   deleteFn: (selected: T[]) => Promise<unknown>;
   afterDelete?: () => void | Promise<void>;
@@ -12,6 +14,7 @@ interface UseBulkDeleteOptions<T> {
 
 export function useBulkDelete<T extends number | string>({
   selectedIds,
+  visibleIds,
   exitSelectMode,
   deleteFn,
   afterDelete,
@@ -27,12 +30,15 @@ export function useBulkDelete<T extends number | string>({
 
   const confirmBulkDelete = useCallback(async () => {
     if (busyRef.current) return;
+    const visible = visibleIds ? new Set(visibleIds) : null;
+    const ids = visible ? [...selectedIds].filter(id => visible.has(id)) : [...selectedIds];
+    if (ids.length === 0) return;
     busyRef.current = true;
     setBusy(true);
     setDeleteModalVisible(false);
     try {
       await runWithErrorAlert(async () => {
-        await deleteFn([...selectedIds]);
+        await deleteFn(ids);
         exitSelectMode();
         await afterDelete?.();
       }, errorPrefix, labels);
@@ -40,7 +46,7 @@ export function useBulkDelete<T extends number | string>({
       busyRef.current = false;
       setBusy(false);
     }
-  }, [selectedIds, exitSelectMode, deleteFn, afterDelete, errorPrefix, labels]);
+  }, [selectedIds, visibleIds, exitSelectMode, deleteFn, afterDelete, errorPrefix, labels]);
 
   return {
     deleteModalVisible,

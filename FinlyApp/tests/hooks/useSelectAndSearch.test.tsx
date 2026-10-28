@@ -131,4 +131,23 @@ describe('useSelectAndSearch', () => {
     expect(result.current.allSelected([1, 2])).toBe(true);
     expect(result.current.allSelected([])).toBe(false);
   });
+
+  it('reconcileSelection drops IDs that are no longer visible', async () => {
+    const { result } = await setup();
+
+    await act(() => result.current.toggleItem(1));
+    await act(() => result.current.toggleItem(2));
+    await act(() => result.current.reconcileSelection([2, 3]));
+
+    expect([...result.current.selectedIds]).toEqual([2]);
+  });
+
+  it('reconcileSelection clears the selection when nothing is visible', async () => {
+    const { result } = await setup();
+
+    await act(() => result.current.toggleItem(1));
+    await act(() => result.current.reconcileSelection([]));
+
+    expect(result.current.selectedIds.size).toBe(0);
+  });
 });

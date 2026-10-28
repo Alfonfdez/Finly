@@ -77,7 +77,7 @@
 - When there are 0 accounts (excluding Total), the header Select button is hidden.
 - In selection mode each account row shows a leading checkbox (`checkbox-outline` unchecked / `checkbox` checked in primary color); tapping a row or its checkbox toggles its selection instead of navigating to ModifyAccountScreen. The balance stays visible on the right.
 - The Total account row cannot be selected (no checkbox shown).
-- The header search and search filtering keep working during selection mode; selection applies to the filtered list.
+- The header search and search filtering keep working during selection mode; selection applies to the filtered list. When a search change hides selected accounts, those IDs are pruned from the selection, and bulk delete only ever deletes currently visible selected accounts.
 - The floating "+" button is hidden in selection mode.
 - A bottom `SelectionActionBar` with "Cancel" and "Delete (N)" (`accounts_bulk_delete(n)`) appears; the delete button is disabled while no accounts are selected.
 - A **Select all** / **Deselect all** row sits above the list in selection mode (`select_all` / `deselect_all`, with the visible count `items_count`); tapping it selects every visible non-Total account in one tap (the Total account is never selected).
@@ -125,6 +125,7 @@
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
 - [x] A guard prevents deleting all non-Total accounts.
 - [x] Bulk delete confirms once for the whole batch, deletes linked transactions and the accounts, and the list reloads.
+- [x] Search changes prune hidden selections; bulk delete only deletes currently visible selected accounts.
 - [x] A Select all / Deselect all row above the list selects every visible non-Total account in one tap.
 - [x] All texts change when switching language.
 - [x] The screen respects the active theme and text size.

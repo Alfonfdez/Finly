@@ -26,6 +26,11 @@ interface AppState {
   categoriesById: Map<number, Category>;
 }
 
+export interface ResetAllOptions {
+  /** Show the generic reset-failure alert. Defaults to true. */
+  notifyOnError?: boolean;
+}
+
 interface AppContextType extends AppState {
   selectAccount: (account: Account) => void;
   changeType: (type: TransactionType) => void;
@@ -44,7 +49,7 @@ interface AppContextType extends AppState {
   refreshAccounts: () => Promise<void>;
   refreshCategories: () => Promise<void>;
   refreshTags: () => Promise<void>;
-  resetAll: () => Promise<void>;
+  resetAll: (options?: ResetAllOptions) => Promise<boolean>;
   dataRefreshing: boolean;
   setDataRefreshing: (refreshing: boolean) => void;
   activeTagIds: number[];
@@ -376,7 +381,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const resetAll = useCallback(async () => {
+  const resetAll = useCallback(async (options: ResetAllOptions = {}) => {
+    const notifyOnError = options.notifyOnError ?? true;
     try {
       const [accountsData, categoriesData, tagsData] = await Promise.all([
         accountRepo.list(USER_ID),
@@ -392,9 +398,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setSelectedDate(new Date());
       setCustomDateState(defaultCustomDate());
       setTransactionsVersion(v => v + 1);
+      return true;
     } catch (error) {
       logError(ERROR_PREFIXES.dataReset, error);
-      showErrorAlert();
+      if (notifyOnError) showErrorAlert();
+      return false;
     }
   }, [applyHomeDefaults]);
 

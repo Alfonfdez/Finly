@@ -116,7 +116,7 @@ export default function AllTransactionsScreen() {
   const {
     searchText,
     selectMode, selectedIds,
-    toggleItem, exitSelectMode,
+    toggleItem, reconcileSelection, exitSelectMode,
     toggleSelectMode, toggleSearch,
   } = select;
 
@@ -147,6 +147,12 @@ export default function AllTransactionsScreen() {
     onAfterDelete: refresh,
   });
   const { filters } = list;
+  const visibleIds = useMemo(() => filters.filtered.map(transaction => transaction.id), [filters.filtered]);
+
+  useEffect(() => {
+    if (loading || appLoading) return;
+    reconcileSelection(visibleIds);
+  }, [visibleIds, loading, appLoading, reconcileSelection]);
 
   useSelectableScreen({
     navigation,

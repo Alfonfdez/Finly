@@ -52,6 +52,8 @@ export const fr: Language = {
   settings_import_success_message: 'Vos données ont été restaurées depuis la sauvegarde.',
   settings_import_error_title: 'Échec de l\'importation',
   settings_import_error_message: 'Le fichier de sauvegarde n\'a pas pu être importé. Vos données sont inchangées.',
+  settings_import_refresh_error_title: 'Données importées, échec de l\'actualisation',
+  settings_import_refresh_error_message: 'Vos données ont été importées, mais l\'application n\'a pas pu s\'actualiser. Rouvrez-la pour voir les données importées.',
   settings_import_invalid_title: 'Sauvegarde invalide',
   settings_import_invalid_message: 'Le fichier sélectionné n\'est pas une sauvegarde Finly valide.',
   settings_import_incomplete_title: 'Sauvegarde incomplète',

@@ -125,4 +125,25 @@ describe('useBulkDelete', () => {
 
     expect(deleteFn).toHaveBeenCalledTimes(1);
   });
+
+  it('deletes only selected IDs that are currently visible', async () => {
+    const { result, deleteFn } = await setup({ visibleIds: [2] });
+
+    await act(async () => {
+      await result.current.confirmBulkDelete();
+    });
+
+    expect(deleteFn).toHaveBeenCalledWith([2]);
+  });
+
+  it('does nothing when no selected ID is visible', async () => {
+    const { result, deleteFn, exitSelectMode } = await setup({ visibleIds: [99] });
+
+    await act(async () => {
+      await result.current.confirmBulkDelete();
+    });
+
+    expect(deleteFn).not.toHaveBeenCalled();
+    expect(exitSelectMode).not.toHaveBeenCalled();
+  });
 });

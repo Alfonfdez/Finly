@@ -254,6 +254,46 @@ describe('DataScreen', () => {
     expect(getAppStub().setDataRefreshing).toHaveBeenNthCalledWith(2, false);
   });
 
+  it('shows the refresh-failure alert when the import applied but reset failed', async () => {
+    pickBackupFile.mockResolvedValue('{"app":"Finly","kind":"backup","formatVersion":1}');
+    getAppStub().resetAll.mockResolvedValueOnce(false);
+    const alertSpy = vi.spyOn(Alert, 'alert').mockImplementation(() => {});
+    const view = await render(<DataScreen />);
+    const ue = userEvent.setup();
+    fireEvent.press(view.getByText('Import data'));
+    await waitFor(() => expect(pickBackupFile).toHaveBeenCalledTimes(1));
+    const confirmButton = await view.findByRole('button', { name: t.settings_delete_confirm });
+    await ue.press(confirmButton);
+
+    await waitFor(() => expect(alertSpy).toHaveBeenCalledWith(
+      t.settings_import_refresh_error_title,
+      t.settings_import_refresh_error_message,
+    ));
+    expect(alertSpy).not.toHaveBeenCalledWith(
+      t.settings_import_success_title,
+      t.settings_import_success_message,
+    );
+    expect(importBackup).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the refresh-failure alert when config reload fails after import', async () => {
+    pickBackupFile.mockResolvedValue('{"app":"Finly","kind":"backup","formatVersion":1}');
+    configGet.mockRejectedValueOnce(new Error('config failed'));
+    const alertSpy = vi.spyOn(Alert, 'alert').mockImplementation(() => {});
+    const view = await render(<DataScreen />);
+    const ue = userEvent.setup();
+    fireEvent.press(view.getByText('Import data'));
+    await waitFor(() => expect(pickBackupFile).toHaveBeenCalledTimes(1));
+    const confirmButton = await view.findByRole('button', { name: t.settings_delete_confirm });
+    await ue.press(confirmButton);
+
+    await waitFor(() => expect(alertSpy).toHaveBeenCalledWith(
+      t.settings_import_refresh_error_title,
+      t.settings_import_refresh_error_message,
+    ));
+    expect(getAppStub().resetAll).not.toHaveBeenCalled();
+  });
+
   it('shows the incomplete-backup alert and leaves the data untouched', async () => {
     pickBackupFile.mockResolvedValue('{}');
     const importError = new validationMocks.BackupValidationError('incomplete');

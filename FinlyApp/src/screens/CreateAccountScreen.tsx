@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useColorSelection } from '../hooks/useColorSelection';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
+import { useBusyGuard } from '../hooks/useBusyGuard';
 import { t, getDefaultAccountIdByName, getDefaultEnglishAccountName } from '../i18n';
 import { accountRepository } from '../database';
 import { type NavigationProp, USER_ID } from '../constants/types';
@@ -23,6 +24,7 @@ export default function CreateAccountScreen() {
   const navigation = useNavigation<NavigationProp<'CreateAccount'>>();
 
   const deferredRefreshAccounts = useDeferredRefresh(refreshAccounts);
+  const { busy, run } = useBusyGuard();
 
   const [name, setName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
@@ -59,18 +61,20 @@ export default function CreateAccountScreen() {
   const handleCreate = async () => {
     Keyboard.dismiss();
     if (!canCreate || selectedIcon === null || selectedColor === null) return;
-    await runWithErrorAlert(async () => {
-      await accountRepository.create({
-        user_id: USER_ID,
-        name: name.trim(),
-        icon: selectedIcon,
-        color: selectedColor,
-        initial_balance: parseAmountValue(initialBalanceRaw) ?? 0,
-        description: description.trim(),
-      });
-      navigation.goBack();
-      deferredRefreshAccounts();
-    }, ERROR_PREFIXES.accountCreate);
+    await run(async () => {
+      await runWithErrorAlert(async () => {
+        await accountRepository.create({
+          user_id: USER_ID,
+          name: name.trim(),
+          icon: selectedIcon,
+          color: selectedColor,
+          initial_balance: parseAmountValue(initialBalanceRaw) ?? 0,
+          description: description.trim(),
+        });
+        navigation.goBack();
+        deferredRefreshAccounts();
+      }, ERROR_PREFIXES.accountCreate);
+    });
   };
 
   return (
@@ -102,7 +106,7 @@ export default function CreateAccountScreen() {
           onDescriptionChange={setDescription}
           hintText={hintText}
           submitLabel={labels.create_account_button}
-          isSubmitDisabled={!canCreate}
+          isSubmitDisabled={!canCreate || busy}
           onSubmit={handleCreate}
         />
       </View>

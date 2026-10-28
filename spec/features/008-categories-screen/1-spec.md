@@ -58,7 +58,7 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 ### 7. Multi-select bulk delete
 
 - The header shows a "Select" (`categories_select`) text button next to the search icon, only when the active type has at least one category; pressing it toggles selection mode (label switches to "Done", `categories_select_done`).
-- In selection mode each tile shows a checkmark and tapping toggles its selection instead of navigating to Modify category; the "Create" tile, the limit message and the counter are hidden; the header search keeps filtering during selection.
+- In selection mode each tile shows a checkmark and tapping toggles its selection instead of navigating to Modify category; the "Create" tile, the limit message and the counter are hidden; the header search keeps filtering during selection, and when a search change hides selected categories those IDs are pruned from the selection. Bulk delete only ever deletes currently visible selected categories.
 - Selection is scoped to the active type: switching the Expense/Income tabs exits selection mode and clears the selection.
 - In selection mode a bottom action bar (reuse `SelectionActionBar`) shows "Cancel" and `Delete (N)` (`categories_bulk_delete(n)`), where N is the number of selected categories; the delete button is disabled while no categories are selected.
 - A **Select all** / **Deselect all** row sits above the grid in selection mode (`select_all` / `deselect_all`, with the visible count `items_count`); tapping it selects every visible category of the active type in one tap.
@@ -109,6 +109,7 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 - [x] Bulk delete of categories with transactions or recurring rules offers "Move them to another category" (target limited to same-type categories not selected) or "Permanent delete".
 - [x] Bulk delete with data lets choosing a different destination per category ("Delete transactions" included) and confirms only once every category with data has a decision; moving a category also reassigns its recurring rules to the target.
 - [x] After a bulk delete, the category grid and transaction data update.
+- [x] Search changes prune hidden selections; bulk delete only deletes currently visible selected categories.
 - [x] All texts change when switching the language in settings.
 - [x] The screen respects the active theme (dark/light).
 - [x] The screen respects the configured text size.

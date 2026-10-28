@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { CONTROLS_GROUP_TOP_GAP } from '../components/componentStyles';
@@ -63,7 +63,7 @@ export default function TransactionsScreen() {
   const {
     searchText,
     selectMode, selectedIds,
-    toggleItem, exitSelectMode,
+    toggleItem, reconcileSelection, exitSelectMode,
     toggleSelectMode, toggleSearch,
   } = select;
 
@@ -92,6 +92,12 @@ export default function TransactionsScreen() {
     onAfterDelete: refresh,
   });
   const { filters } = list;
+  const visibleIds = useMemo(() => filters.filtered.map(transaction => transaction.id), [filters.filtered]);
+
+  useEffect(() => {
+    if (loading || appLoading) return;
+    reconcileSelection(visibleIds);
+  }, [visibleIds, loading, appLoading, reconcileSelection]);
 
   useSelectableScreen({
     navigation,

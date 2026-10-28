@@ -94,4 +94,21 @@ describe('CreateTagScreen', () => {
     expect(mockTagCreate).toHaveBeenCalledWith({ user_id: 1, name: 'NewTag' });
     expect(nav.goBack).toHaveBeenCalled();
   });
+
+  it('does not create twice on a rapid double press', async () => {
+    const view = await render(<CreateTagScreen />);
+    fireEvent.changeText(view.getByPlaceholderText('Tag name'), 'NewTag');
+    await waitFor(() => expect(view.getByText('Create')).toBeEnabled());
+
+    let release!: () => void;
+    mockTagCreate.mockImplementationOnce(() => new Promise<Tag>((resolve) => {
+      release = () => resolve({ id: 2, user_id: 1, name: 'NewTag', created_at: '2026-01-01' });
+    }));
+
+    fireEvent.press(view.getByText('Create'));
+    fireEvent.press(view.getByText('Create'));
+    release();
+    await waitFor(() => expect(mockTagCreate).toHaveBeenCalledTimes(1));
+    expect(nav.goBack).toHaveBeenCalledTimes(1);
+  });
 });

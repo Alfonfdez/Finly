@@ -411,6 +411,35 @@ describe('backup validation', () => {
     });
   });
 
+  it('accepts 2.1 photo values and rejects malicious photo paths', async () => {
+    const source = await boot();
+    await source.runAsync(
+      "INSERT INTO transactions (account_id, category_id, type, amount, description, date, created_at) VALUES (1, 3, 'expense', 5, 'Lunch', '2026-08-08 00:00:00', '2026-08-08 10:00:00')",
+    );
+    const snapshot = await buildBackup(source, SCHEMA_VERSION);
+    source.close();
+
+    const accept = (photo: string) => {
+      const copy = structuredClone(snapshot);
+      copy.data.transactions[0].photo = photo;
+      expect(() => assertImportableBackup(copy)).not.toThrow();
+    };
+    accept(JSON.stringify(['file:///data/user/0/app/files/photo_123_0.jpg']));
+    accept(JSON.stringify(['data:image/png;base64,AAAA']));
+    accept(JSON.stringify(['data:image/heic;base64,AAAA']));
+
+    const reject = (photo: string) => {
+      const copy = structuredClone(snapshot);
+      copy.data.transactions[0].photo = photo;
+      expect(() => assertImportableBackup(copy)).toThrow(BackupValidationError);
+    };
+    reject('file:///data/user/0/app/files/SQLite/Finly.db');
+    reject('file:///data/user/0/app/files/finly-backup-2026-10-28.json');
+    reject('https://example.com/photo.jpg');
+    reject(JSON.stringify([1]));
+    reject(JSON.stringify({ uri: 'file:///data/user/0/app/files/photo_1_0.jpg' }));
+  });
+
   it('rolls back on an FK-violating snapshot and leaves existing data unchanged', async () => {
     const source = await boot();
     const snapshot = await buildBackup(source, SCHEMA_VERSION);

@@ -34,6 +34,18 @@ export function useSelectAndSearch<T extends number | string = number>({
     );
   }, []);
 
+  const reconcileSelection = useCallback((visibleIds: readonly T[]) => {
+    setSelectedIds((prev) => {
+      if (prev.size === 0) return prev;
+      const visible = new Set(visibleIds);
+      const next = new Set<T>();
+      for (const id of prev) {
+        if (visible.has(id)) next.add(id);
+      }
+      return next.size === prev.size ? prev : next;
+    });
+  }, []);
+
   const exitSelectMode = useCallback(() => {
     setSelectedIds(new Set());
     setSelectMode(false);
@@ -68,6 +80,7 @@ export function useSelectAndSearch<T extends number | string = number>({
     toggleItem,
     allSelected,
     toggleSelectAll,
+    reconcileSelection,
     exitSelectMode,
     toggleSelectMode,
     toggleSearch,
