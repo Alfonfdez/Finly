@@ -1,11 +1,30 @@
 import { DECIMAL_PLACES, MAX_AMOUNT_INTEGER_DIGITS, type DecimalSeparator } from '../constants/types';
 
+function normalizeAmountDigits(raw: string): string {
+  const dotIndex = raw.indexOf('.');
+  if (dotIndex !== -1) {
+    let before = raw.slice(0, dotIndex);
+    let after = raw.slice(dotIndex + 1).replace(/\./g, '');
+    // Remove leading zeros from integer part (keep single "0")
+    before = before.replace(/^0+(?=\d)/, '') || '0';
+    // Limit integer digits
+    before = before.slice(0, MAX_AMOUNT_INTEGER_DIGITS);
+    // Max 2 decimal digits
+    after = after.slice(0, DECIMAL_PLACES);
+    return before + '.' + after;
+  }
+  // No dot - remove leading zeros
+  return (raw.replace(/^0+(?=\d)/, '') || '0').slice(0, MAX_AMOUNT_INTEGER_DIGITS);
+}
+
 /**
  * Parse user input into a clean raw amount string (digits + optional '.' separator).
- * Returns null if input is invalid (both separators present).
+ * Returns null if input is invalid (both separators present). A leading minus is
+ * kept only when `allowNegative` is set (account initial balances).
  */
-export function parseAmountInput(text: string): string | null {
+export function parseAmountInput(text: string, allowNegative = false): string | null {
   let raw = text.replace(/\s/g, '');
+  const negative = allowNegative && raw.startsWith('-');
 
   const hasComma = raw.includes(',');
   const hasDot = raw.includes('.');
@@ -21,26 +40,11 @@ export function parseAmountInput(text: string): string | null {
   // Remove all non-digit, non-dot characters
   raw = raw.replace(/[^0-9.]/g, '');
 
-  // Only allow one dot
-  const dotIndex = raw.indexOf('.');
-  if (dotIndex !== -1) {
-    let before = raw.slice(0, dotIndex);
-    let after = raw.slice(dotIndex + 1).replace(/\./g, '');
-    // Remove leading zeros from integer part (keep single "0")
-    before = before.replace(/^0+(?=\d)/, '') || '0';
-    // Limit integer digits
-    before = before.slice(0, MAX_AMOUNT_INTEGER_DIGITS);
-    // Max 2 decimal digits
-    after = after.slice(0, DECIMAL_PLACES);
-    raw = before + '.' + after;
-  } else {
-    // No dot - remove leading zeros
-    raw = raw.replace(/^0+(?=\d)/, '') || '0';
-    // Limit integer digits
-    raw = raw.slice(0, MAX_AMOUNT_INTEGER_DIGITS);
-  }
+  // A lone sign is a valid intermediate state while typing a negative amount.
+  if (negative && raw === '') return '-';
 
-  return raw;
+  const normalized = normalizeAmountDigits(raw);
+  return negative ? `-${normalized}` : normalized;
 }
 
 /**

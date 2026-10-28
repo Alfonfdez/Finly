@@ -146,6 +146,18 @@ describe('ModifyAccountScreen', () => {
     expect(nav.goBack).toHaveBeenCalled();
   });
 
+  it('saves a negative initial balance through the sign toggle', async () => {
+    const view = await render(<ModifyAccountScreen />);
+    await view.findByDisplayValue('Cash');
+
+    await fireEvent.press(view.getByLabelText('Toggle positive or negative'));
+    expect(view.getByDisplayValue('-100')).toBeTruthy();
+    await fireEvent.press(view.getByText('Save'));
+
+    await waitFor(() => expect(mockAccountUpdate).toHaveBeenCalledTimes(1));
+    expect(mockAccountUpdate).toHaveBeenCalledWith(5, expect.objectContaining({ initial_balance: -100 }));
+  });
+
   it('keeps what the user typed when the account is refetched on focus', async () => {
     const view = await render(<ModifyAccountScreen />);
     await view.findByDisplayValue('Cash');

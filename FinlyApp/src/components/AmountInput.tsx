@@ -20,18 +20,24 @@ interface Props {
    *  is not a number at all. Callers must not pass this for a field where 0 is
    *  valid (e.g. an account's initial balance). */
   error?: boolean;
+  /** Account initial balances may be negative; transaction amounts may not. */
+  allowNegative?: boolean;
   header?: ReactNode;
 }
 
-export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label, accessibilityLabel, error, header }: Props) {
+export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label, accessibilityLabel, error, allowNegative = false, header }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
   const [focused, setFocused] = useState(false);
 
   const displayAmount = formatAmountDisplay(raw, config.decimalSeparator);
-  const showError = raw.length > 0 && parseAmountValue(raw) === null;
+  const isNegative = raw.startsWith('-');
+  const showError = raw.length > 0 && raw !== '-' && parseAmountValue(raw) === null;
   const invalid = showError || !!error;
+  const toggleSign = () => {
+    onChangeRaw(isNegative ? raw.slice(1) : `-${raw}`);
+  };
 
   return (
     <>
@@ -56,7 +62,7 @@ export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label,
           placeholderTextColor={c.textSecondary}
           value={displayAmount}
           onChangeText={(text) => {
-            const clean = parseAmountInput(text);
+            const clean = parseAmountInput(text, allowNegative);
             if (clean === null) return;
             onChangeRaw(clean);
           }}
@@ -68,6 +74,19 @@ export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label,
         <Text accessible={false} style={[styles.currencySymbol, { color: c.textSecondary, fontSize: fs(18) }]}>
           {getCurrencySymbol(config.currency)}
         </Text>
+        {allowNegative && (
+          <TouchableOpacity
+            style={[styles.signButton, { backgroundColor: c.surface, borderColor: c.border }]}
+            onPress={toggleSign}
+            accessibilityRole="button"
+            accessibilityLabel={labels.a11y_toggle_sign}
+            accessibilityState={{ selected: isNegative }}
+          >
+            <Text style={[styles.signText, { color: c.primary, fontSize: fs(18) }]}>
+              {isNegative ? '+' : '-'}
+            </Text>
+          </TouchableOpacity>
+        )}
         {onOpenCalculator && (
           <TouchableOpacity
             style={styles.calculatorButton}
@@ -117,6 +136,17 @@ const styles = StyleSheet.create({
   currencySymbol: {
     marginRight: 8,
     fontWeight: '600',
+  },
+  signButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  signText: {
+    fontWeight: '700',
   },
   calculatorButton: {
     padding: 8,

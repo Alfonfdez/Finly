@@ -32,36 +32,36 @@ Alles läuft **auf dem Gerät**: Ihre Daten leben in einer lokalen SQLite-Datenb
 
 ## Screenshots
 
-![Startbildschirm](images/screenshots/v3.2-01-a-home-empty.png)<br>*Neue Installation ohne Transaktionen.*<br><br>
-![Startbildschirm](images/screenshots/v3.2-01-b-home.png)<br>*Startbildschirm mit Konten, Donut-Diagramm und Aufschlüsselung nach Kategorie.*<br><br>
-![Seitenmenü](images/screenshots/v3.2-02-hamburger.png)<br>*Seitenmenü mit Start, Alle Transaktionen, Wiederkehrend, Konten, Kategorien, Tags, Kommentare und Einstellungen.*<br><br>
-![Transaktion hinzufügen](images/screenshots/v3.2-03-add-transaction.png)<br>*Ausgabe oder Einnahme mit Betrag, Konto, Kategorie, Tag, Tags, Kommentar und Foto hinzufügen.*<br><br>
-![Datumsauswahl](images/screenshots/v3.2-04-date-picker.png)<br>*Kalenderauswahl, um einen Tag, eine Woche, einen Monat, ein Jahr oder einen freien Zeitraum zu wählen.*<br><br>
-![Alle Transaktionen, leer](images/screenshots/v3.2-05-a-all-transactions-empty-state.png)<br>*Alle Transaktionen im Leerzustand.*<br><br>
-![Alle Transaktionen](images/screenshots/v3.2-05-b-all-transactions.png)<br>*Alle Transaktionen mit Typ-, Kategorie-, Zeitraum- und Tag-Filtern sowie Sortierung und Suche.*<br><br>
-![Kategorie-Filter](images/screenshots/v3.2-05-c-category-filter.png)<br>*Kategoriefilter mit den Vorgaben Alle Kategorien, Alle Ausgaben und Alle Einnahmen.*<br><br>
-![Einnahmen-Details](images/screenshots/v3.2-05-d-details-income.png)<br>*Details einer Einnahmen-Transaktion mit Bearbeiten und Löschen.*<br><br>
-![Ausgaben-Details](images/screenshots/v3.2-05-e-details-expense.png)<br>*Details einer Ausgaben-Transaktion mit Bearbeiten und Löschen.*<br><br>
-![Transaktion bearbeiten](images/screenshots/v3.2-05-f-modify-transaction.png)<br>*Betrag, Konto, Kategorie, Tag, Tags, Kommentar und Foto einer Transaktion bearbeiten.*<br><br>
-![Wiederkehrend](images/screenshots/v3.2-06-recurring.png)<br>*Wiederkehrende Regeln mit nächsten Fälligkeiten, Beträgen und Aktiv/Pausiert-Schaltern.*<br><br>
-![Neue Wiederholungsregel](images/screenshots/v3.2-06-a-create-recurring.png)<br>*Eine Wiederholungsregel mit Name, Häufigkeit, Intervall und optionalem Enddatum einrichten.*<br><br>
-![Wiederholungsregel bearbeiten](images/screenshots/v3.2-06-b-modify-recurring.png)<br>*Den Zeitplan einer Wiederholungsregel bearbeiten und wählen, ob die Änderung nur für künftige oder auch für vergangene Vorkommen gilt.*<br><br>
-![Konten](images/screenshots/v3.2-07-accounts.png)<br>*Konten-Bildschirm mit Guthaben und aggregiertem Gesamt-Konto.*<br><br>
-![Konto erstellen](images/screenshots/v3.2-07-a-create-account.png)<br>*Ein Konto mit Name, Symbol, Farbe, Anfangssaldo und optionaler Notiz erstellen.*<br><br>
-![Konto bearbeiten](images/screenshots/v3.2-07-b-modify-account.png)<br>*Details, Anfangssaldo und Notiz eines Kontos bearbeiten oder es löschen.*<br><br>
-![Kategorien](images/screenshots/v3.2-08-categories.png)<br>*Kategorien nach Typ (Ausgaben/Einnahmen) in einem 4×N-Raster organisiert.*<br><br>
-![Kategorie erstellen](images/screenshots/v3.2-08-a-create-category.png)<br>*Eine Ausgaben- oder Einnahmenkategorie mit Name, Symbol und Farbe erstellen.*<br><br>
-![Kategorie bearbeiten](images/screenshots/v3.2-08-b-modify-category.png)<br>*Name, Symbol und Farbe einer Kategorie bearbeiten oder sie löschen.*<br><br>
-![Tags](images/screenshots/v3.2-09-tags.png)<br>*Tags-Bildschirm mit Suche und Massenauswahl.*<br><br>
-![Neues Tag](images/screenshots/v3.2-09-a-create-tag.png)<br>*Ein Tag zum Gruppieren von Transaktionen erstellen.*<br><br>
-![Tag bearbeiten](images/screenshots/v3.2-09-b-modify-tag.png)<br>*Ein Tag umbenennen oder löschen.*<br><br>
-![Kommentare](images/screenshots/v3.2-10-comments.png)<br>*Kommentaransicht mit Suche, Nutzungszählern und Mehrfachauswahl.*<br><br>
-![Kommentar bearbeiten](images/screenshots/v3.2-10-a-modify-comment.png)<br>*Einen Kommentar in allen Transaktionen bearbeiten, die ihn verwenden.*<br><br>
-![Einstellungen](images/screenshots/v3.2-11-settings.png)<br>*Einstellungen: Darstellung, Regional, Personalisierung und Daten.*<br><br>
-![Darstellungs-Einstellungen](images/screenshots/v3.2-11-a-appearance.png)<br>*Darstellung: Design, Textgröße und Icon-Formen.*<br><br>
-![Regionale Einstellungen](images/screenshots/v3.2-11-b-regional-en.png)<br>*Regionale Einstellungen: Sprache, Währung, Dezimaltrennzeichen und erster Tag der Woche.*<br><br>
-![Personalisierungs-Einstellungen](images/screenshots/v3.2-11-c-personalization.png)<br>*Personalisierung: Start- und Transaktion-hinzufügen-Standardwerte sowie Datenschutz.*<br><br>
-![Daten-Einstellungen](images/screenshots/v3.2-11-d-data.png)<br>*Daten: Sicherungs-Export/Import und Lösch-/Reset-Aktionen.*<br><br>
+![Startbildschirm](images/screenshots/v3.3-01-a-home-empty.png)<br>*Neue Installation ohne Transaktionen.*<br><br>
+![Startbildschirm](images/screenshots/v3.3-01-b-home.png)<br>*Startbildschirm mit Konten, Donut-Diagramm und Aufschlüsselung nach Kategorie.*<br><br>
+![Seitenmenü](images/screenshots/v3.3-02-hamburger.png)<br>*Seitenmenü mit Start, Alle Transaktionen, Wiederkehrend, Konten, Kategorien, Tags, Kommentare und Einstellungen.*<br><br>
+![Transaktion hinzufügen](images/screenshots/v3.3-03-add-transaction.png)<br>*Ausgabe oder Einnahme mit Betrag, Konto, Kategorie, Tag, Tags, Kommentar und Foto hinzufügen.*<br><br>
+![Datumsauswahl](images/screenshots/v3.3-04-date-picker.png)<br>*Kalenderauswahl, um einen Tag, eine Woche, einen Monat, ein Jahr oder einen freien Zeitraum zu wählen.*<br><br>
+![Alle Transaktionen, leer](images/screenshots/v3.3-05-a-all-transactions-empty-state.png)<br>*Alle Transaktionen im Leerzustand.*<br><br>
+![Alle Transaktionen](images/screenshots/v3.3-05-b-all-transactions.png)<br>*Alle Transaktionen mit Typ-, Kategorie-, Zeitraum- und Tag-Filtern sowie Sortierung und Suche.*<br><br>
+![Kategorie-Filter](images/screenshots/v3.3-05-c-category-filter.png)<br>*Kategoriefilter mit den Vorgaben Alle Kategorien, Alle Ausgaben und Alle Einnahmen.*<br><br>
+![Einnahmen-Details](images/screenshots/v3.3-05-d-details-income.png)<br>*Details einer Einnahmen-Transaktion mit Bearbeiten und Löschen.*<br><br>
+![Ausgaben-Details](images/screenshots/v3.3-05-e-details-expense.png)<br>*Details einer Ausgaben-Transaktion mit Bearbeiten und Löschen.*<br><br>
+![Transaktion bearbeiten](images/screenshots/v3.3-05-f-modify-transaction.png)<br>*Betrag, Konto, Kategorie, Tag, Tags, Kommentar und Foto einer Transaktion bearbeiten.*<br><br>
+![Wiederkehrend](images/screenshots/v3.3-06-recurring.png)<br>*Wiederkehrende Regeln mit nächsten Fälligkeiten, Beträgen und Aktiv/Pausiert-Schaltern.*<br><br>
+![Neue Wiederholungsregel](images/screenshots/v3.3-06-a-create-recurring.png)<br>*Eine Wiederholungsregel mit Name, Häufigkeit, Intervall und optionalem Enddatum einrichten.*<br><br>
+![Wiederholungsregel bearbeiten](images/screenshots/v3.3-06-b-modify-recurring.png)<br>*Den Zeitplan einer Wiederholungsregel bearbeiten und wählen, ob die Änderung nur für künftige oder auch für vergangene Vorkommen gilt.*<br><br>
+![Konten](images/screenshots/v3.3-07-accounts.png)<br>*Konten-Bildschirm mit Guthaben und aggregiertem Gesamt-Konto.*<br><br>
+![Konto erstellen](images/screenshots/v3.3-07-a-create-account.png)<br>*Ein Konto mit Name, Symbol, Farbe, Anfangssaldo und optionaler Notiz erstellen.*<br><br>
+![Konto bearbeiten](images/screenshots/v3.3-07-b-modify-account.png)<br>*Details, Anfangssaldo und Notiz eines Kontos bearbeiten oder es löschen.*<br><br>
+![Kategorien](images/screenshots/v3.3-08-categories.png)<br>*Kategorien nach Typ (Ausgaben/Einnahmen) in einem 4×N-Raster organisiert.*<br><br>
+![Kategorie erstellen](images/screenshots/v3.3-08-a-create-category.png)<br>*Eine Ausgaben- oder Einnahmenkategorie mit Name, Symbol und Farbe erstellen.*<br><br>
+![Kategorie bearbeiten](images/screenshots/v3.3-08-b-modify-category.png)<br>*Name, Symbol und Farbe einer Kategorie bearbeiten oder sie löschen.*<br><br>
+![Tags](images/screenshots/v3.3-09-tags.png)<br>*Tags-Bildschirm mit Suche und Massenauswahl.*<br><br>
+![Neues Tag](images/screenshots/v3.3-09-a-create-tag.png)<br>*Ein Tag zum Gruppieren von Transaktionen erstellen.*<br><br>
+![Tag bearbeiten](images/screenshots/v3.3-09-b-modify-tag.png)<br>*Ein Tag umbenennen oder löschen.*<br><br>
+![Kommentare](images/screenshots/v3.3-10-comments.png)<br>*Kommentaransicht mit Suche, Nutzungszählern und Mehrfachauswahl.*<br><br>
+![Kommentar bearbeiten](images/screenshots/v3.3-10-a-modify-comment.png)<br>*Einen Kommentar in allen Transaktionen bearbeiten, die ihn verwenden.*<br><br>
+![Einstellungen](images/screenshots/v3.3-11-settings.png)<br>*Einstellungen: Darstellung, Regional, Personalisierung und Daten.*<br><br>
+![Darstellungs-Einstellungen](images/screenshots/v3.3-11-a-appearance.png)<br>*Darstellung: Design, Textgröße und Icon-Formen.*<br><br>
+![Regionale Einstellungen](images/screenshots/v3.3-11-b-regional-en.png)<br>*Regionale Einstellungen: Sprache, Währung, Dezimaltrennzeichen und erster Tag der Woche.*<br><br>
+![Personalisierungs-Einstellungen](images/screenshots/v3.3-11-c-personalization.png)<br>*Personalisierung: Start- und Transaktion-hinzufügen-Standardwerte sowie Datenschutz.*<br><br>
+![Daten-Einstellungen](images/screenshots/v3.3-11-d-data.png)<br>*Daten: Sicherungs-Export/Import und Lösch-/Reset-Aktionen.*<br><br>
 
 ## Technologie-Stack
 

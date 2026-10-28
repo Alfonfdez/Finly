@@ -413,6 +413,7 @@ export const en = {
   a11y_period: 'Period',
   a11y_amount: 'Amount input',
   a11y_initial_balance: 'Initial balance input',
+  a11y_toggle_sign: 'Toggle positive or negative',
   a11y_calculator: 'Open calculator',
   a11y_comment: 'Comment input',
   a11y_search: 'Search',

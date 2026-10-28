@@ -39,7 +39,7 @@ export default function CreateAccountScreen() {
     duplicateErrorKey: labels.create_account_error_duplicate,
   });
 
-  const initialBalanceError = initialBalanceRaw.length > 0 && parseAmountValue(initialBalanceRaw) === null;
+  const initialBalanceError = initialBalanceRaw.length > 0 && initialBalanceRaw !== '-' && parseAmountValue(initialBalanceRaw) === null;
 
   const canCreate = name.trim().length > 0 && !nameError && !checkingName && selectedIcon !== null && selectedColor !== null && initialBalanceError === false;
 

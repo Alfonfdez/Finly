@@ -415,6 +415,7 @@ export const eu: Language = {
   a11y_period: 'Epea',
   a11y_amount: 'Zenbateko eremua',
   a11y_initial_balance: 'Hasierako saldo eremua',
+  a11y_toggle_sign: 'Aldatu positiboa edo negatiboa',
   a11y_calculator: 'Kalkulagailua ireki',
   a11y_comment: 'Iruzkina eremua',
   a11y_search: 'Bilaketa',

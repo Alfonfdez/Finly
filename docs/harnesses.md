@@ -83,7 +83,7 @@ Regression seeds come from real bugs previously fixed in this project.
 |-----------|-------------------|
 | `tests/utils/calculator.test.ts` | `src/utils/calculator.ts` — precedence, decimals, comma separator, `MAX_VALUE`, division by zero, invalid operator sequences |
 | `tests/utils/formatters.test.ts` | `src/utils/formatters.ts` — `formatCurrency` (2-decimal rounding / float artifacts), signed currency, DB date conversion, period ranges, font scaling, week/day helpers |
-| `tests/utils/amountInput.test.ts` | `src/utils/amountInput.ts` — 9-integer / 2-decimal rules, separator normalization, display formatting |
+| `tests/utils/amountInput.test.ts` | `src/utils/amountInput.ts` — 9-integer / 2-decimal rules, separator normalization, display formatting, signed parsing |
 | `tests/utils/categoryUtils.test.ts` | `src/utils/categoryUtils.ts` — `Others`/`Other` forced last, alphabetical order, no input mutation |
 | `tests/utils/transactionTags.test.ts` | `src/utils/transactionTags.ts` — tag grouping by transaction |
 | `tests/utils/color.test.ts` | `src/utils/color.ts` — `withAlpha` clamping and rounding |
@@ -335,7 +335,7 @@ and each suite calls `resetStub()` in `beforeEach`. i18n is NOT stubbed — the 
 | `tests/component/TabBar.test.tsx` | `TabBar<T>` — tabs, active styling, font scaling, onChange |
 | `tests/component/PeriodTabs.test.tsx` | `PeriodTabs` — period options, active highlight |
 | `tests/component/SortToggle.test.tsx` | `SortToggle` — date/amount, ASC/DESC arrow, direction toggle |
-| `tests/component/AmountInput.test.tsx` | `AmountInput` — decimal separator, formatting, error, calculator hook |
+| `tests/component/AmountInput.test.tsx` | `AmountInput` — decimal separator, formatting, error, calculator hook, negative sign toggle |
 | `tests/component/CategoryGrid.test.tsx` | `CategoryGrid` — selection, dashed add-more tile, onSelect/onAddMore |
 | `tests/component/TransactionGroup.test.tsx` | `TransactionRow` + `TransactionDateHeader` — formats, tag chips, divider, press |
 | `tests/component/RadioButton.test.tsx` | `RadioButton` — selection dot, custom color |

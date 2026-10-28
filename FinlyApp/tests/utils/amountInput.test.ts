@@ -41,6 +41,16 @@ describe('parseAmountInput', () => {
     expect(parseAmountInput('12.')).toBe('12.');
   });
 
+  it('strips a leading minus for positive-only amounts', () => {
+    expect(parseAmountInput('-12')).toBe('12');
+  });
+
+  it('keeps a leading minus when negative amounts are allowed', () => {
+    expect(parseAmountInput('-12', true)).toBe('-12');
+    expect(parseAmountInput('-1,5', true)).toBe('-1.5');
+    expect(parseAmountInput('-', true)).toBe('-');
+  });
+
   it('strips non-numeric characters', () => {
     expect(parseAmountInput('12a34')).toBe('1234');
   });
@@ -63,11 +73,17 @@ describe('formatAmountDisplay', () => {
   it('keeps a trailing decimal separator while typing', () => {
     expect(formatAmountDisplay('12.', DECIMAL_SEPARATORS.comma)).toBe('12,');
   });
+
+  it('formats negative amounts and keeps the minus sign', () => {
+    expect(formatAmountDisplay('-1234.5', DECIMAL_SEPARATORS.comma)).toBe('-1 234,5');
+    expect(formatAmountDisplay('-', DECIMAL_SEPARATORS.comma)).toBe('-');
+  });
 });
 
 describe('parseAmountValue', () => {
   it('parses a valid raw amount', () => {
     expect(parseAmountValue('12.5')).toBe(12.5);
+    expect(parseAmountValue('-12.5')).toBe(-12.5);
   });
 
   it('returns null for empty or invalid input', () => {

@@ -415,6 +415,7 @@ export const ca: Language = {
   a11y_period: 'Període',
   a11y_amount: 'Camp d\'import',
   a11y_initial_balance: 'Camp de saldo inicial',
+  a11y_toggle_sign: 'Alterna positiu o negatiu',
   a11y_calculator: 'Obrir calculadora',
   a11y_comment: 'Camp de comentari',
   a11y_search: 'Cerca',

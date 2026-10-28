@@ -123,6 +123,7 @@ export default function AccountForm({
           onChangeRaw={onInitialBalanceChange ?? (() => {})}
           label={initialBalanceLabel}
           accessibilityLabel={initialBalanceA11yLabel}
+          allowNegative
         />
       )}
 
