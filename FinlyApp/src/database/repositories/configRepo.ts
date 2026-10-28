@@ -3,39 +3,36 @@ import { getDrizzle, withTransaction } from '../drizzle/engine';
 import { config } from '../drizzle/schema';
 import type { Config } from '../types';
 import { FIRST_DAYS } from '../../constants/types';
-import { ARRAY_CONFIG_KEYS, DEFAULT_CONFIG, DB_KEY_MAP, CONFIG_NULL_SENTINEL, parseBooleanConfigValue, sanitizeConfig, toConfigRows } from '../configDefaults';
-
-const BOOLEAN_KEYS = new Set<keyof Config>([
-  'addShowLabels', 'addShowComments', 'addShowPhoto',
-  'modifyShowLabels', 'modifyShowComments', 'modifyShowPhoto',
-  'createRecurringShowLabels', 'createRecurringShowComments',
-  'editRecurringShowLabels', 'editRecurringShowComments',
-  'hideBalances',
-]);
-const INT_OR_NULL_KEYS = new Set<keyof Config>(['homeDefaultAccountId', 'addDefaultAccountId', 'createRecurringDefaultAccountId']);
-const ARRAY_KEYS = new Set<keyof Config>(ARRAY_CONFIG_KEYS);
+import { CONFIG_CODECS, CONFIG_METADATA } from '../configMetadata';
+import { DEFAULT_CONFIG, CONFIG_NULL_SENTINEL, parseBooleanConfigValue, sanitizeConfig, toConfigRows } from '../configDefaults';
 
 function parseConfig(rows: { key: string; value: string }[]): Config {
   const map = Object.fromEntries(rows.map(r => [r.key, r.value]));
   const parsed: Record<string, unknown> = {};
-  for (const [dbKey, configKey] of Object.entries(DB_KEY_MAP)) {
-    const raw = map[dbKey];
+  for (const [configKey, meta] of Object.entries(CONFIG_METADATA) as [keyof Config, typeof CONFIG_METADATA[keyof Config]][]) {
+    const raw = map[meta.dbKey];
     if (raw === undefined) continue;
-    if (configKey === 'firstDayOfWeek') {
-      parsed[configKey] = raw === String(FIRST_DAYS.sunday) ? FIRST_DAYS.sunday : FIRST_DAYS.monday;
-    } else if (BOOLEAN_KEYS.has(configKey)) {
-      const value = parseBooleanConfigValue(raw);
-      if (value !== null) parsed[configKey] = value;
-    } else if (INT_OR_NULL_KEYS.has(configKey)) {
-      parsed[configKey] = raw === CONFIG_NULL_SENTINEL ? null : Number(raw);
-    } else if (ARRAY_KEYS.has(configKey)) {
-      try {
-        parsed[configKey] = JSON.parse(raw);
-      } catch {
-        // Leave it unset so sanitizeConfig falls back to the default array.
+    switch (meta.codec) {
+      case CONFIG_CODECS.firstDay:
+        parsed[configKey] = raw === String(FIRST_DAYS.sunday) ? FIRST_DAYS.sunday : FIRST_DAYS.monday;
+        break;
+      case CONFIG_CODECS.boolean: {
+        const value = parseBooleanConfigValue(raw);
+        if (value !== null) parsed[configKey] = value;
+        break;
       }
-    } else {
-      parsed[configKey] = raw;
+      case CONFIG_CODECS.intOrNull:
+        parsed[configKey] = raw === CONFIG_NULL_SENTINEL ? null : Number(raw);
+        break;
+      case CONFIG_CODECS.array:
+        try {
+          parsed[configKey] = JSON.parse(raw);
+        } catch {
+          // Leave it unset so sanitizeConfig falls back to the default array.
+        }
+        break;
+      default:
+        parsed[configKey] = raw;
     }
   }
   return { ...DEFAULT_CONFIG, ...(parsed as Partial<Config>) };

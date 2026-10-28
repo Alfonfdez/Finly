@@ -132,6 +132,8 @@ Test files (under `FinlyApp/tests/database/`):
 | `sqliteWebEngine.test.ts` | Engine semantics: results, persistence, transactions, schema boot + seed counts, persist-failure rejection and queue recovery |
 | `indexedDbStorage.test.ts` | IndexedDB storage round-trip, fail-closed reads and corrupt-value rejection |
 | `initRetry.test.ts` | Failed database open/init is retried instead of cached |
+| `configMetadata.test.ts` | Every config key has metadata, DB keys are unique/valid, and array keys derive from the codec |
+| `wipe.test.ts` | Shared FK-safe wipe order and keep-config/keep-users flags |
 | `dbDrift.test.ts` | Schema drift: 9 tables' `PRAGMA table_info` vs declared columns, every `types.ts` field covered by a migration column, `user_version` 4, seed counts (1 user / 2 accounts / 31 categories / 0 transactions / 0 recurring rules), config rows == `DB_KEY_MAP`, init idempotence |
 | `recurringRepo.test.ts` | `recurringRepo` over sql.js: rule CRUD + tags, `listDue`, occurrence insert + unique-index idempotency, bulk past update, delete keeps generated transactions |
 | `recurringService.test.ts` | `materializeDueRecurring` + `saveRecurringRuleEdit` + `resumeRecurringRule`: back-fill/idempotency/paused/end-date, edit scenarios (fresh-rule re-anchor, denser schedule taking effect today, skip recording/recovery), and atomic resume rollback |
@@ -343,6 +345,7 @@ and each suite calls `resetStub()` in `beforeEach`. i18n is NOT stubbed — the 
 | `tests/component/CalculatorModal.test.tsx` | `CalculatorModal` — keypad input, expression evaluation, clear/backspace, trailing-operator rejection, zero/negative Accept guard, accept/cancel |
 | `tests/component/CommentInput.test.tsx` | `CommentInput` - debounced suggestions, focus/blur, suggestion selection keeps focus and clears the panel, legacy length and counter |
 | `tests/hooks/useKeyboardReveal.test.tsx` | `useKeyboardReveal` - reveal on focus, re-reveal on layout/keyboard, cancel a pending reveal on blur |
+| `tests/hooks/useSortPreference.test.tsx` | `useSortPreference` - switch field with its default direction, flip the active field, toggle direction |
 | `tests/component/ModalShell.test.tsx` | `ModalShell` - dismisses the underlying keyboard when opened |
 | `tests/component/CategoryFilterModal.test.tsx` | `CategoryFilterModal` — type tabs, search, All/category multi-select, `Apply (N)`/`Apply (All)` labels, disabled Apply at 0 selected, close |
 | `tests/component/TransactionForm.test.tsx` | `TransactionForm` — type tabs, amount input, account picker, category grid + create tile, day selector, form submit/cancel |

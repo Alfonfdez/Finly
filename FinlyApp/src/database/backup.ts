@@ -22,6 +22,7 @@ import type {
   User,
 } from './types';
 import { sanitizeDefaultAccountConfig } from './configDefaults';
+import { wipeUserData } from './wipe';
 import { REPEAT_MAX_INTERVAL, TRANSACTION_TYPES, USER_ID } from '../constants/types';
 
 interface ConfigRow {
@@ -276,15 +277,7 @@ export async function applyBackup(db: DatabaseHandle, snapshot: BackupSnapshot):
   // must never wipe the current data with an unusable snapshot.
   assertImportableBackup(snapshot);
   await db.withTransactionAsync(async () => {
-    await db.runAsync('DELETE FROM transactions');
-    await db.runAsync('DELETE FROM transaction_tags');
-    await db.runAsync('DELETE FROM recurring_rule_tags');
-    await db.runAsync('DELETE FROM recurring_rules');
-    await db.runAsync('DELETE FROM tags');
-    await db.runAsync('DELETE FROM categories');
-    await db.runAsync('DELETE FROM accounts');
-    await db.runAsync('DELETE FROM config');
-    await db.runAsync('DELETE FROM users');
+    await wipeUserData(db, { keepConfig: false, keepUsers: false });
 
     for (const user of snapshot.data.users) {
       await db.runAsync(

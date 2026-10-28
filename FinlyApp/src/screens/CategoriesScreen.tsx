@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { COUNTER_STYLE, LIMIT_TEXT_STYLE } from '../components/componentStyles';
@@ -9,6 +9,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
+import { useSortPreference } from '../hooks/useSortPreference';
 import { useApp } from '../context/AppContext';
 import { t, getDisplayCategoryName } from '../i18n';
 import { categoryRepository, recurringRepository, transactionRepository } from '../database';
@@ -24,12 +25,11 @@ import SortToggle, { categorySortFields } from '../components/SortToggle';
 import ConfirmationModal from '../components/ConfirmationModal';
 import BulkCategoryTransferModal, { type BulkCategoryItem } from '../components/BulkCategoryTransferModal';
 import type { TransferTargetId } from '../components/CategoryTransferModal';
-import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, type TransactionType, type CategorySortBy, type NavigationProp } from '../constants/types';
+import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, type TransactionType, type NavigationProp } from '../constants/types';
 import { LIST_BOTTOM_FAB_PADDING, LIST_TOP_GAP } from '../constants/layout';
 import { TEST_IDS } from '../constants/testIds';
 import { categoriesOfType, countCategoriesOfType } from '../utils/categoryUtils';
 import { defaultCategorySortDirection, sortCategories } from '../utils/categorySort';
-import { nextSortPreference, toggleSortDirection } from '../utils/sortPreference';
 import { countAtLimit } from '../utils/limits';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import SelectSearchHeader from '../components/SelectSearchHeader';
@@ -68,14 +68,12 @@ export default function CategoriesScreen() {
   // No memo: display names are localized, so the order must refresh with the language.
   const categoriesByType = sortCategories(categoriesOfType(categories, activeType), sortBy, sortDirection, usage);
 
-  const handleToggleSort = useCallback((field: CategorySortBy) => {
-    const next = nextSortPreference({ by: sortBy, direction: sortDirection }, field, defaultCategorySortDirection);
-    updateConfig({ categoriesSortBy: next.by, categoriesSortDirection: next.direction });
-  }, [sortBy, sortDirection, updateConfig]);
-
-  const handleToggleDirection = useCallback(() => {
-    updateConfig({ categoriesSortDirection: toggleSortDirection(sortDirection) });
-  }, [sortDirection, updateConfig]);
+  const { handleToggleSort, handleToggleDirection } = useSortPreference({
+    sortBy,
+    sortDirection,
+    defaultDirection: defaultCategorySortDirection,
+    onChange: next => updateConfig({ categoriesSortBy: next.by, categoriesSortDirection: next.direction }),
+  });
 
   const select = useSelectAndSearch({ hasItems: categoriesByType.length > 1 });
 
