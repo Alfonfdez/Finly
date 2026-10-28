@@ -415,6 +415,7 @@ export const it: Language = {
   a11y_period: 'Periodo',
   a11y_amount: 'Campo importo',
   a11y_initial_balance: 'Campo saldo iniziale',
+  a11y_toggle_sign: 'Alterna positivo o negativo',
   a11y_calculator: 'Apri calcolatrice',
   a11y_comment: 'Campo commento',
   a11y_search: 'Cerca',

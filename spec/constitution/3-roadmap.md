@@ -1514,3 +1514,25 @@ Applied 2026-10-28:
 - Documented the EAS 2.1.0 to 2.2.0 in-place upgrade procedure, including exporting the canonical 2.1.0 backup before upgrading.
 
 Spec: none (release testing assets).
+
+## 2.2.0 v3.3 screenshot refresh
+Status: completed.
+
+Applied 2026-10-28:
+- Recaptured all 30 screens as `v3.3-*` from the committed fixture at 375x812, English/dark/EUR, fixed clock.
+- Updated all 9 READMEs and `docs/screenshots.md` to the new set; the old `v3.2-*` images remain for history.
+- Updated the screenshot harness to wait for the current Home total, which now includes account initial balances (`4.923,06` for the fixture).
+- `npm run test:all` green (183 files / 1569 tests).
+
+Spec: none (documentation/assets).
+
+## 2.2.0 category tile and negative balance fixes
+Status: completed.
+
+Applied 2026-10-28:
+- Category tiles reserve a minimum height and the selected border on every tile, so one-line labels are not clipped on web or native, including large text.
+- Account initial balances accept negative values through a localized `+`/`-` sign toggle; `parseAmountInput` preserves a leading minus only when enabled, and transaction amounts remain positive-only.
+- Added category-tile, signed-parsing, sign-toggle and ModifyAccount regressions; recaptured the v3.3 screenshots.
+- `npm run test:all` green (183 files / 1577 tests).
+
+Spec: spec/features/004-add-transaction-screen/, spec/features/017-modify-transaction-screen/, spec/features/026-account-initial-balance/.

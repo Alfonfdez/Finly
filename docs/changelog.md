@@ -4567,3 +4567,13 @@
 - Add a pure schema-3 2.1.0 fixture with realistic multi-month data, tags, comments, photo and 2.1.0-only config.
 - Add a tooling test validating the fixture with the current backup parser and import invariants.
 - Document the EAS 2.1.0 to 2.2.0 in-place upgrade procedure.
+
+[2026-10-28] docs | FinlyApp/scripts/screenshots/manifest.mjs, FinlyApp/scripts/screenshots/capture.mjs, README.md, README.ca.md, README.de.md, README.es.md, README.eu.md, README.fr.md, README.gl.md, README.it.md, README.pt.md, docs/screenshots.md, images/screenshots/v3.3-*
+- Recapture the 30-screen set as v3.3 from the committed fixture.
+- Update all 9 READMEs and the screenshot docs to the new set, keeping v3.2 for history.
+- Update the screenshot harness to wait for the current Home total including initial balances.
+
+[2026-10-28] fix | FinlyApp/src/components/CategoryTile.tsx, FinlyApp/src/components/AmountInput.tsx, FinlyApp/src/utils/amountInput.ts, FinlyApp/src/components/AccountForm.tsx, FinlyApp/src/screens/CreateAccountScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/CategoryTile.test.tsx, FinlyApp/tests/component/AmountInput.test.tsx, FinlyApp/tests/utils/amountInput.test.ts, FinlyApp/tests/screens/ModifyAccountScreen.test.tsx, spec/features/004-add-transaction-screen/1-spec.md, spec/features/017-modify-transaction-screen/1-spec.md, spec/features/026-account-initial-balance/1-spec.md, images/screenshots/v3.3-*
+- Reserve category tile height and border so labels are not clipped on web or native.
+- Allow negative account initial balances through a sign toggle and signed amount parsing; transaction amounts remain positive-only.
+- Add regressions and recapture the v3.3 screenshots.

@@ -415,6 +415,7 @@ export const fr: Language = {
   a11y_period: 'Période',
   a11y_amount: 'Champ de montant',
   a11y_initial_balance: 'Champ de solde initial',
+  a11y_toggle_sign: 'Basculer entre positif et négatif',
   a11y_calculator: 'Ouvrir la calculatrice',
   a11y_comment: 'Champ de commentaire',
   a11y_search: 'Rechercher',

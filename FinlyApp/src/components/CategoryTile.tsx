@@ -83,7 +83,14 @@ function CategoryTile({
         )}
       </View>
       <Text
-        style={[styles.name, { color: dashed ? c.textSecondary : c.text, fontSize: fs(11) }]}
+        style={[
+          styles.name,
+          {
+            color: dashed ? c.textSecondary : c.text,
+            fontSize: fs(11),
+            lineHeight: fs(11) * 1.2,
+          },
+        ]}
         numberOfLines={1}
       >
         {label}
@@ -97,10 +104,14 @@ export default memo(CategoryTile);
 const styles = StyleSheet.create({
   item: {
     width: '22%',
-    aspectRatio: 1,
+    minHeight: 80,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 8,
+    // Reserve the selected border so selecting a tile never changes its size.
+    borderWidth: 2,
+    borderColor: TRANSPARENT,
   },
   dashedItem: {
     borderWidth: 1.5,
@@ -136,5 +147,6 @@ const styles = StyleSheet.create({
   name: {
     fontWeight: '500',
     textAlign: 'center',
+    includeFontPadding: false,
   },
 });

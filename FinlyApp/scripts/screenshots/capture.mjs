@@ -172,7 +172,7 @@ async function main() {
       await page.waitForTimeout(300);
     },
     async waitTotal() {
-      await page.getByText(/973[.,]06/).first().waitFor({ timeout: 30000 });
+      await page.getByText(/4[.,]923[.,]06/).first().waitFor({ timeout: 30000 });
       await page.waitForTimeout(300);
     },
     async openDrawer() {

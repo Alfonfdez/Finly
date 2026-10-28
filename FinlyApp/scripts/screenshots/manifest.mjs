@@ -4,7 +4,7 @@
  * The filenames are `<set>-<index>-<slug>.png`. The README screenshots section
  * must follow this order exactly; tests/tooling/screenshots.test.ts enforces it.
  */
-export const SET = 'v3.2';
+export const SET = 'v3.3';
 
 /** Frozen browser clock so every capture shows the same dates. */
 export const FIXED_TIME = '2026-10-21T12:00:00+02:00';

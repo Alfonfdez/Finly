@@ -32,36 +32,36 @@ Tot funciona **al dispositiu**: les teves dades viuen en una base de dades SQLit
 
 ## Captures de pantalla
 
-![Pantalla d'inici](images/screenshots/v3.2-01-a-home-empty.png)<br>*Instal·lació nova sense transaccions.*<br><br>
-![Pantalla d'inici](images/screenshots/v3.2-01-b-home.png)<br>*Pantalla d'inici amb comptes, gràfic de dònut i desglossament per categories.*<br><br>
-![Menú hamburguesa](images/screenshots/v3.2-02-hamburger.png)<br>*Menú lateral amb Inici, Totes les transaccions, Recurrents, Comptes, Categories, Etiquetes, Comentaris i Ajustos.*<br><br>
-![Afegeix transacció](images/screenshots/v3.2-03-add-transaction.png)<br>*Afegeix una despesa o ingrés amb import, compte, categoria, dia, etiquetes, comentari i foto.*<br><br>
-![Selector de data](images/screenshots/v3.2-04-date-picker.png)<br>*Selector de calendari per triar un dia, setmana, mes, any o rang de període personalitzat.*<br><br>
-![Totes les transaccions, buit](images/screenshots/v3.2-05-a-all-transactions-empty-state.png)<br>*Totes les transaccions en estat buit.*<br><br>
-![Totes les transaccions](images/screenshots/v3.2-05-b-all-transactions.png)<br>*Totes les transaccions amb filtres de tipus, categoria, període i etiquetes, a més d'ordenació i cerca.*<br><br>
-![Filtre de categories](images/screenshots/v3.2-05-c-category-filter.png)<br>*Filtre de categories amb els predefinits Totes les categories, Totes les despeses i Tots els ingressos.*<br><br>
-![Detalls d'ingrés](images/screenshots/v3.2-05-d-details-income.png)<br>*Detalls d'una transacció d'ingrés amb edició i eliminació.*<br><br>
-![Detalls de despesa](images/screenshots/v3.2-05-e-details-expense.png)<br>*Detalls d'una transacció de despesa amb edició i eliminació.*<br><br>
-![Modificar transacció](images/screenshots/v3.2-05-f-modify-transaction.png)<br>*Edita l'import, el compte, la categoria, el dia, les etiquetes, el comentari i la foto d'una transacció.*<br><br>
-![Recurrents](images/screenshots/v3.2-06-recurring.png)<br>*Regles recurrents amb properes dates, imports i interruptors d'activa/pausada.*<br><br>
-![Nova regla recurrent](images/screenshots/v3.2-06-a-create-recurring.png)<br>*Configura una regla recurrent amb el nom, la freqüència, l'interval i una data de final opcional.*<br><br>
-![Editar regla recurrent](images/screenshots/v3.2-06-b-modify-recurring.png)<br>*Edita la programació d'una regla recurrent i tria si el canvi s'aplica només a les properes repeticions o també a les passades.*<br><br>
-![Comptes](images/screenshots/v3.2-07-accounts.png)<br>*Pantalla de comptes amb saldos i el compte Total agregat.*<br><br>
-![Crear compte](images/screenshots/v3.2-07-a-create-account.png)<br>*Crea un compte amb nom, icona, color, saldo inicial i nota opcional.*<br><br>
-![Modificar compte](images/screenshots/v3.2-07-b-modify-account.png)<br>*Edita les dades, el saldo inicial i la nota d'un compte, o elimina'l.*<br><br>
-![Categories](images/screenshots/v3.2-08-categories.png)<br>*Categories organitzades per tipus (despeses/ingressos) en una graella de 4×N.*<br><br>
-![Crear categoria](images/screenshots/v3.2-08-a-create-category.png)<br>*Crea una categoria de despesa o ingrés amb nom, icona i color.*<br><br>
-![Modificar categoria](images/screenshots/v3.2-08-b-modify-category.png)<br>*Edita el nom, la icona i el color d'una categoria, o elimina-la.*<br><br>
-![Etiquetes](images/screenshots/v3.2-09-tags.png)<br>*Pantalla d'etiquetes amb cerca i selecció massiva.*<br><br>
-![Nova etiqueta](images/screenshots/v3.2-09-a-create-tag.png)<br>*Crea una etiqueta per agrupar transaccions.*<br><br>
-![Editar etiqueta](images/screenshots/v3.2-09-b-modify-tag.png)<br>*Canvia el nom o elimina una etiqueta.*<br><br>
-![Comentaris](images/screenshots/v3.2-10-comments.png)<br>*Pantalla de comentaris amb cerca, recompte d'ús i selecció múltiple.*<br><br>
-![Editar comentari](images/screenshots/v3.2-10-a-modify-comment.png)<br>*Edita un comentari a totes les transaccions que l'utilitzen.*<br><br>
-![Configuració](images/screenshots/v3.2-11-settings.png)<br>*Configuració: Aparença, Regional, Personalització i Dades.*<br><br>
-![Configuració d'aparença](images/screenshots/v3.2-11-a-appearance.png)<br>*Aparença: tema, mida del text i formes d'icones.*<br><br>
-![Configuració regional](images/screenshots/v3.2-11-b-regional-en.png)<br>*Configuració regional: idioma, moneda, separador decimal i primer dia de la setmana.*<br><br>
-![Configuració de personalització](images/screenshots/v3.2-11-c-personalization.png)<br>*Personalització: valors per defecte d'inici i d'afegir transacció, i privadesa.*<br><br>
-![Configuració de dades](images/screenshots/v3.2-11-d-data.png)<br>*Dades: exportació/importació de còpia de seguretat i accions d'esborrat/reinici.*<br><br>
+![Pantalla d'inici](images/screenshots/v3.3-01-a-home-empty.png)<br>*Instal·lació nova sense transaccions.*<br><br>
+![Pantalla d'inici](images/screenshots/v3.3-01-b-home.png)<br>*Pantalla d'inici amb comptes, gràfic de dònut i desglossament per categories.*<br><br>
+![Menú hamburguesa](images/screenshots/v3.3-02-hamburger.png)<br>*Menú lateral amb Inici, Totes les transaccions, Recurrents, Comptes, Categories, Etiquetes, Comentaris i Ajustos.*<br><br>
+![Afegeix transacció](images/screenshots/v3.3-03-add-transaction.png)<br>*Afegeix una despesa o ingrés amb import, compte, categoria, dia, etiquetes, comentari i foto.*<br><br>
+![Selector de data](images/screenshots/v3.3-04-date-picker.png)<br>*Selector de calendari per triar un dia, setmana, mes, any o rang de període personalitzat.*<br><br>
+![Totes les transaccions, buit](images/screenshots/v3.3-05-a-all-transactions-empty-state.png)<br>*Totes les transaccions en estat buit.*<br><br>
+![Totes les transaccions](images/screenshots/v3.3-05-b-all-transactions.png)<br>*Totes les transaccions amb filtres de tipus, categoria, període i etiquetes, a més d'ordenació i cerca.*<br><br>
+![Filtre de categories](images/screenshots/v3.3-05-c-category-filter.png)<br>*Filtre de categories amb els predefinits Totes les categories, Totes les despeses i Tots els ingressos.*<br><br>
+![Detalls d'ingrés](images/screenshots/v3.3-05-d-details-income.png)<br>*Detalls d'una transacció d'ingrés amb edició i eliminació.*<br><br>
+![Detalls de despesa](images/screenshots/v3.3-05-e-details-expense.png)<br>*Detalls d'una transacció de despesa amb edició i eliminació.*<br><br>
+![Modificar transacció](images/screenshots/v3.3-05-f-modify-transaction.png)<br>*Edita l'import, el compte, la categoria, el dia, les etiquetes, el comentari i la foto d'una transacció.*<br><br>
+![Recurrents](images/screenshots/v3.3-06-recurring.png)<br>*Regles recurrents amb properes dates, imports i interruptors d'activa/pausada.*<br><br>
+![Nova regla recurrent](images/screenshots/v3.3-06-a-create-recurring.png)<br>*Configura una regla recurrent amb el nom, la freqüència, l'interval i una data de final opcional.*<br><br>
+![Editar regla recurrent](images/screenshots/v3.3-06-b-modify-recurring.png)<br>*Edita la programació d'una regla recurrent i tria si el canvi s'aplica només a les properes repeticions o també a les passades.*<br><br>
+![Comptes](images/screenshots/v3.3-07-accounts.png)<br>*Pantalla de comptes amb saldos i el compte Total agregat.*<br><br>
+![Crear compte](images/screenshots/v3.3-07-a-create-account.png)<br>*Crea un compte amb nom, icona, color, saldo inicial i nota opcional.*<br><br>
+![Modificar compte](images/screenshots/v3.3-07-b-modify-account.png)<br>*Edita les dades, el saldo inicial i la nota d'un compte, o elimina'l.*<br><br>
+![Categories](images/screenshots/v3.3-08-categories.png)<br>*Categories organitzades per tipus (despeses/ingressos) en una graella de 4×N.*<br><br>
+![Crear categoria](images/screenshots/v3.3-08-a-create-category.png)<br>*Crea una categoria de despesa o ingrés amb nom, icona i color.*<br><br>
+![Modificar categoria](images/screenshots/v3.3-08-b-modify-category.png)<br>*Edita el nom, la icona i el color d'una categoria, o elimina-la.*<br><br>
+![Etiquetes](images/screenshots/v3.3-09-tags.png)<br>*Pantalla d'etiquetes amb cerca i selecció massiva.*<br><br>
+![Nova etiqueta](images/screenshots/v3.3-09-a-create-tag.png)<br>*Crea una etiqueta per agrupar transaccions.*<br><br>
+![Editar etiqueta](images/screenshots/v3.3-09-b-modify-tag.png)<br>*Canvia el nom o elimina una etiqueta.*<br><br>
+![Comentaris](images/screenshots/v3.3-10-comments.png)<br>*Pantalla de comentaris amb cerca, recompte d'ús i selecció múltiple.*<br><br>
+![Editar comentari](images/screenshots/v3.3-10-a-modify-comment.png)<br>*Edita un comentari a totes les transaccions que l'utilitzen.*<br><br>
+![Configuració](images/screenshots/v3.3-11-settings.png)<br>*Configuració: Aparença, Regional, Personalització i Dades.*<br><br>
+![Configuració d'aparença](images/screenshots/v3.3-11-a-appearance.png)<br>*Aparença: tema, mida del text i formes d'icones.*<br><br>
+![Configuració regional](images/screenshots/v3.3-11-b-regional-en.png)<br>*Configuració regional: idioma, moneda, separador decimal i primer dia de la setmana.*<br><br>
+![Configuració de personalització](images/screenshots/v3.3-11-c-personalization.png)<br>*Personalització: valors per defecte d'inici i d'afegir transacció, i privadesa.*<br><br>
+![Configuració de dades](images/screenshots/v3.3-11-d-data.png)<br>*Dades: exportació/importació de còpia de seguretat i accions d'esborrat/reinici.*<br><br>
 
 ## Stack tecnològic
 

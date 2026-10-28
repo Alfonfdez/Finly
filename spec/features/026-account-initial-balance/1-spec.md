@@ -13,6 +13,7 @@
 - Title: "Initial balance" (multilingual).
 - It reuses the existing `AmountInput` component (currency symbol, decimal separator aware, thousand separators, localized parsing).
 - No calculator button is shown.
+- It accepts negative balances through a `+`/`-` sign toggle, because the mobile decimal keyboard does not expose a minus key.
 - The field is optional: leaving it empty stores `initial_balance = 0`.
 - **Validation**: if the field is non-empty and does not parse to a valid amount, the amount error text is shown and the "Create" button is disabled.
 - On "Create", the account is inserted with `initial_balance = parseAmountValue(raw) ?? 0`.
@@ -20,8 +21,9 @@
 ### 2. Modify account screen (012)
 
 - The "Initial balance" field appears on `ModifyAccountScreen` between the color section and the Note field.
-- On load, the field is preloaded with the account's current `initial_balance` (formatted with the active decimal separator).
-- The same validation rules apply: non-empty invalid input disables "Save".
+- On load, the field is preloaded with the account's current `initial_balance` (formatted with the active decimal separator), including a negative value.
+- The same validation rules apply: non-empty invalid input disables "Save". A lone `-` is treated as an intermediate value, not an error.
+- The same `+`/`-` sign toggle is available to change the sign.
 - On "Save", `initial_balance` is updated via `accountRepository.update()` (the column is already in the update whitelist).
 
 ### 3. Total account exclusion
@@ -55,5 +57,6 @@
 - [x] A non-empty invalid value shows the amount error and disables Create/Save.
 - [x] Creating an account with initial balance 100 shows 100 in the Accounts list and Total.
 - [x] Modifying an account's initial balance updates the account and Total balances.
+- [x] Create/Modify accept a negative initial balance through a sign toggle; transaction amounts remain positive-only.
 - [x] The Total account does not show the field.
 - [x] All texts are multilingual and respect theme + text size.

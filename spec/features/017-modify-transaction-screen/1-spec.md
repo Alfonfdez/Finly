@@ -48,7 +48,7 @@
 ### 5. Category selection
 
 - Title: "Categories" (multilingual) — i18n key `add_categories` (existing).
-- 4-column × 2-row grid (8 positions) — existing `CategoryGrid` component.
+- 4-column × 2-row grid (8 positions) — existing `CategoryGrid` component. Tiles reserve enough height for the icon and one-line label (including the selected border), so category names are never clipped on web or native.
 - **The first grid position shows the transaction's current category** (icon + name), regardless of its priority. The remaining positions are filled with the next most-used categories or alphabetically, excluding the one already displayed.
 - The eighth position always shows the "+" button with text "More" (multilingual) — i18n key `add_more` (existing).
 - Tapping "More":
@@ -147,7 +147,7 @@
 - [x] The displayed account is the current transaction's account.
 - [x] The account modal allows changing the selected account.
 - [x] The category grid shows the current category in the first position.
-- [x] 7 categories + "More" button are shown in the grid.
+- [x] 7 categories + "More" button are shown in the grid; category labels are never clipped on web or native.
 - [x] The "More" button navigates to Add/Create category based on the number of categories.
 - [x] The day selector is preloaded with the current transaction's day.
 - [x] The 3 days show the correct dates and the initial selection matches.

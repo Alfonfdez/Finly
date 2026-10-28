@@ -1,6 +1,6 @@
 # Release screenshots
 
-The `v3.2` screenshot set (30 screens) in `images/screenshots/` is generated from a committed mock backup, so every release can be re-shot with the same data and layout.
+The `v3.3` screenshot set (30 screens) in `images/screenshots/` is generated from a committed mock backup, so every release can be re-shot with the same data and layout.
 
 ## Run it
 
@@ -17,7 +17,7 @@ The script:
 3. opens a fresh browser context (new IndexedDB) at `375x812`, DPR 1, English, dark theme, `Europe/Madrid`;
 4. freezes the browser clock at **2026-10-21 12:00**;
 5. captures the two empty-state screens first, imports `scripts/screenshots/fixture.json` through Settings -> Data -> Import, then captures the populated screens in manifest order;
-6. writes `images/screenshots/v3.2-*.png` and fails on unexpected console errors.
+6. writes `images/screenshots/v3.3-*.png` and fails on unexpected console errors.
 
 Options:
 
@@ -49,8 +49,8 @@ Rules:
 
 ## Naming and versioning
 
-- Every file is `<set>-<index>-<slug>.png`, e.g. `v3.2-01-b-home.png`; sub-screens use `<index><letter>` (`05-a`, `05-b`, ...).
-- A set is tied to a release (`v3.2` for 2.2.0); bump `SET` in `manifest.mjs` for the next release, and every image gets a new name so GitHub renders it as a new file.
+- Every file is `<set>-<index>-<slug>.png`, e.g. `v3.3-01-b-home.png`; sub-screens use `<index><letter>` (`05-a`, `05-b`, ...).
+- A set is tied to a release (`v3.3` for 2.2.0); bump `SET` in `manifest.mjs` for the next release, and every image gets a new name so GitHub renders it as a new file.
 - The README screenshot order must match `SCREENS` exactly; the tooling test enforces it.
 - Old sets stay in the repo for history; READMEs point at the current one.
 

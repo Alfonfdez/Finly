@@ -76,7 +76,7 @@ export default function ModifyAccountScreen() {
   });
 
   const isTotal = account ? isTotalAccount(account) : false;
-  const initialBalanceError = initialBalanceRaw.length > 0 && parseAmountValue(initialBalanceRaw) === null;
+  const initialBalanceError = initialBalanceRaw.length > 0 && initialBalanceRaw !== '-' && parseAmountValue(initialBalanceRaw) === null;
 
   /** The values the form opened with; a re-focus refetch must not move the baseline. */
   const baseline = useMemo(() => (account ? {

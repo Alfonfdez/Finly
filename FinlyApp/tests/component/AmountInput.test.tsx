@@ -108,6 +108,33 @@ describe('AmountInput', () => {
     expect(flattenStyle(input.props.style).color).toBe('#E2E8F0');
   });
 
+  it('shows the sign toggle only for fields that allow negative values', async () => {
+    const positiveOnly = await render(<AmountInput raw="10" onChangeRaw={() => {}} />);
+    expect(positiveOnly.queryByLabelText('Toggle positive or negative')).toBeNull();
+
+    const signed = await render(<AmountInput raw="10" onChangeRaw={() => {}} allowNegative />);
+    expect(signed.getByLabelText('Toggle positive or negative')).toBeTruthy();
+  });
+
+  it('toggles a negative amount and displays its sign', async () => {
+    const onChangeRaw = vi.fn();
+    const view = await render(<AmountInput raw="250" onChangeRaw={onChangeRaw} allowNegative />);
+
+    await fireEvent.press(view.getByLabelText('Toggle positive or negative'));
+    expect(onChangeRaw).toHaveBeenCalledWith('-250');
+
+    await view.rerender(<AmountInput raw="-250" onChangeRaw={onChangeRaw} allowNegative />);
+    expect(view.getByDisplayValue('-250')).toBeTruthy();
+    await fireEvent.press(view.getByLabelText('Toggle positive or negative'));
+    expect(onChangeRaw).toHaveBeenLastCalledWith('250');
+  });
+
+  it('treats a lone minus as an intermediate value, not an error', async () => {
+    const view = await render(<AmountInput raw="-" onChangeRaw={() => {}} allowNegative />);
+    expect(view.getByDisplayValue('-')).toBeTruthy();
+    expect(view.queryByText('The amount entered is not valid')).toBeNull();
+  });
+
   it('keeps the red border while focused', async () => {
     const view = await render(<AmountInput raw="0" onChangeRaw={() => {}} error />);
     const input = view.getByPlaceholderText('0');

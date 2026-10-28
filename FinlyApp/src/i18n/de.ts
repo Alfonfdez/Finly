@@ -415,6 +415,7 @@ export const de: Language = {
   a11y_period: 'Zeitraum',
   a11y_amount: 'Betrageingabe',
   a11y_initial_balance: 'Anfangsguthaben-Eingabe',
+  a11y_toggle_sign: 'Positiv oder negativ umschalten',
   a11y_calculator: 'Taschenrechner öffnen',
   a11y_comment: 'Kommentareingabe',
   a11y_search: 'Suchen',
