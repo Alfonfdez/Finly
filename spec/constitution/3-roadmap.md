@@ -1493,3 +1493,14 @@ Applied 2026-10-27:
 - Added CommentInput and useKeyboardReveal regressions; `npm run test:all` green (179 files / 1557 tests).
 
 Spec: spec/features/004-add-transaction-screen/, spec/features/017-modify-transaction-screen/.
+
+## 2.2.0 post-audit refactors
+Status: completed.
+
+Applied 2026-10-28:
+- Extracted `useSortPreference` and adopted it in Accounts, Tags, Comments, Categories and Recurring; behavior unchanged.
+- Centralized config DB keys and codecs in `configMetadata`; `configDefaults` and `configRepo` now derive the key map, array keys and parsing/serialization from it.
+- Extracted the FK-safe wipe sequence into `wipeUserData`, shared by reset, delete-all and backup import.
+- Added sort/config/wipe regressions; `npm run test:all` green (182 files / 1566 tests).
+
+Spec: none (refactor only).

@@ -18,7 +18,10 @@ import {
 import { LANGUAGES } from '../utils/language';
 import { DEFAULT_CURRENCY } from '../constants/currencies';
 import { configSchema } from './schemas';
+import { CONFIG_CODECS, CONFIG_METADATA } from './configMetadata';
 import type { Config, DatabaseHandle } from './types';
+
+export { ARRAY_CONFIG_KEYS, DB_KEY_MAP } from './configMetadata';
 
 export const DEFAULT_CONFIG: Config = {
   theme: THEMES.dark,
@@ -67,53 +70,6 @@ export const DEFAULT_CONFIG: Config = {
   categoriesSortDirection: SORT_DIRECTIONS.asc,
 };
 
-export const DB_KEY_MAP: Record<string, keyof Config> = {
-  theme: 'theme',
-  first_day_of_week: 'firstDayOfWeek',
-  currency: 'currency',
-  decimal_separator: 'decimalSeparator',
-  language: 'language',
-  text_size: 'textSize',
-  category_icon_shape: 'categoryIconShape',
-  account_icon_shape: 'accountIconShape',
-  home_default_account_id: 'homeDefaultAccountId',
-  home_default_period: 'homeDefaultPeriod',
-  home_chart_type: 'homeChartType',
-  add_default_account_id: 'addDefaultAccountId',
-  add_show_labels: 'addShowLabels',
-  add_show_comments: 'addShowComments',
-  add_show_photo: 'addShowPhoto',
-  modify_show_labels: 'modifyShowLabels',
-  modify_show_comments: 'modifyShowComments',
-  modify_show_photo: 'modifyShowPhoto',
-  create_recurring_default_account_id: 'createRecurringDefaultAccountId',
-  create_recurring_show_labels: 'createRecurringShowLabels',
-  create_recurring_show_comments: 'createRecurringShowComments',
-  edit_recurring_show_labels: 'editRecurringShowLabels',
-  edit_recurring_show_comments: 'editRecurringShowComments',
-  hide_balances: 'hideBalances',
-  all_transactions_recurring_view: 'allTransactionsRecurringView',
-  transactions_recurring_view: 'transactionsRecurringView',
-  all_transactions_category_ids: 'allTransactionsCategoryIds',
-  all_transactions_expense_category_ids: 'allTransactionsExpenseCategoryIds',
-  all_transactions_income_category_ids: 'allTransactionsIncomeCategoryIds',
-  recurring_status_filter: 'recurringStatusFilter',
-  tags_sort_by: 'tagsSortBy',
-  tags_sort_direction: 'tagsSortDirection',
-  comments_sort_by: 'commentsSortBy',
-  comments_sort_direction: 'commentsSortDirection',
-  recurring_sort_by: 'recurringSortBy',
-  recurring_sort_direction: 'recurringSortDirection',
-  transactions_sort_by: 'transactionsSortBy',
-  transactions_sort_direction: 'transactionsSortDirection',
-  all_transactions_sort_by: 'allTransactionsSortBy',
-  all_transactions_sort_direction: 'allTransactionsSortDirection',
-  accounts_sort_by: 'accountsSortBy',
-  accounts_sort_direction: 'accountsSortDirection',
-  categories_sort_by: 'categoriesSortBy',
-  categories_sort_direction: 'categoriesSortDirection',
-};
-
 export const CONFIG_NULL_SENTINEL = 'null';
 
 /** Parse a stored boolean without turning corruption into `false`. */
@@ -123,23 +79,11 @@ export function parseBooleanConfigValue(raw: string): boolean | null {
   return null;
 }
 
-/** Config fields stored as JSON arrays in the key/value table. */
-export const ARRAY_CONFIG_KEYS: (keyof Config)[] = [
-  'allTransactionsCategoryIds',
-  'allTransactionsExpenseCategoryIds',
-  'allTransactionsIncomeCategoryIds',
-  'recurringStatusFilter',
-];
-
-const DB_KEY_OF: Record<string, string> = Object.fromEntries(
-  Object.entries(DB_KEY_MAP).map(([dbKey, configKey]) => [configKey, dbKey]),
-);
-
 const DB_KEY_RE = /^[a-z_]+$/;
 
 function dbKeyFor(configKey: keyof Config): string {
-  const key = DB_KEY_OF[configKey];
-  if (!key || !DB_KEY_RE.test(key)) {
+  const key = CONFIG_METADATA[configKey].dbKey;
+  if (!DB_KEY_RE.test(key)) {
     throw new Error(`Invalid config DB key for '${configKey}'`);
   }
   return key;
@@ -147,11 +91,12 @@ function dbKeyFor(configKey: keyof Config): string {
 
 export function toConfigRows(partial: Partial<Config>): { key: string; value: string }[] {
   const rows: { key: string; value: string }[] = [];
-  for (const [key, value] of Object.entries(partial)) {
+  for (const [key, value] of Object.entries(partial) as [keyof Config, unknown][]) {
     if (value === undefined) continue;
+    const meta = CONFIG_METADATA[key];
     rows.push({
-      key: DB_KEY_OF[key] ?? key,
-      value: Array.isArray(value) ? JSON.stringify(value) : String(value),
+      key: meta.dbKey,
+      value: meta.codec === CONFIG_CODECS.array ? JSON.stringify(value) : String(value),
     });
   }
   return rows;

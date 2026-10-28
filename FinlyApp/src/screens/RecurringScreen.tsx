@@ -22,17 +22,17 @@ import ScreenSearchBar from '../components/ScreenSearchBar';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFocusLoad } from '../hooks/useFocusLoad';
+import { useSortPreference } from '../hooks/useSortPreference';
 import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { t, getDisplayCategoryName } from '../i18n';
-import { USER_ID, RULE_INACTIVE, TYPE_FILTERS, type RootStackParamList, type RecurringSortBy, type RecurringStatus, type TransactionTypeFilter } from '../constants/types';
+import { USER_ID, RULE_INACTIVE, TYPE_FILTERS, type RootStackParamList, type RecurringStatus, type TransactionTypeFilter } from '../constants/types';
 import { TEST_IDS } from '../constants/testIds';
 import { isRecurrenceEnded, recurringStatus, todayDateOnly } from '../utils/recurrence';
 import { recurrenceFrequencyLabels } from '../utils/recurrenceSummary';
 import { defaultRecurringSortDirection, sortRecurringRules } from '../utils/recurringSort';
-import { nextSortPreference, toggleSortDirection } from '../utils/sortPreference';
 import { filterRecurringRules } from '../utils/recurringFilter';
 import { isTotalAccount } from '../database/helpers';
 import { recurringRepository } from '../database';
@@ -99,14 +99,12 @@ export default function RecurringScreen() {
     setAccountModalVisible(false);
   }, []);
 
-  const handleToggleSort = useCallback((field: RecurringSortBy) => {
-    const next = nextSortPreference({ by: sortBy, direction: sortDirection }, field, defaultRecurringSortDirection);
-    updateConfig({ recurringSortBy: next.by, recurringSortDirection: next.direction });
-  }, [sortBy, sortDirection, updateConfig]);
-
-  const handleToggleDirection = useCallback(() => {
-    updateConfig({ recurringSortDirection: toggleSortDirection(sortDirection) });
-  }, [sortDirection, updateConfig]);
+  const { handleToggleSort, handleToggleDirection } = useSortPreference({
+    sortBy,
+    sortDirection,
+    defaultDirection: defaultRecurringSortDirection,
+    onChange: next => updateConfig({ recurringSortBy: next.by, recurringSortDirection: next.direction }),
+  });
 
   const select = useSelectAndSearch({ hasItems: rules.length > 0 });
   const {

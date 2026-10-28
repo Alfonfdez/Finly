@@ -10,11 +10,12 @@ import { useFontSize } from '../hooks/useFontSize';
 import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
+import { useSortPreference } from '../hooks/useSortPreference';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository, transactionRepository } from '../database';
 import { type Tag } from '../database/types';
-import { type NavigationProp, MAX_TAGS, type TagSortBy } from '../constants/types';
+import { type NavigationProp, MAX_TAGS } from '../constants/types';
 import { TEST_IDS } from '../constants/testIds';
 import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import { countAtLimit } from '../utils/limits';
@@ -22,7 +23,6 @@ import { parseDbDate } from '../utils/formatters';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { ERROR_PREFIXES } from '../utils/errors';
 import { defaultTagSortDirection, sortTags } from '../utils/tagSort';
-import { nextSortPreference, toggleSortDirection } from '../utils/sortPreference';
 import Fab from '../components/Fab';
 import ListItemRow from '../components/ListItemRow';
 import SelectionCheckbox from '../components/SelectionCheckbox';
@@ -83,14 +83,12 @@ export default function TagsScreen() {
     return () => { active = false; };
   }, [tags]);
 
-  const handleToggleSort = useCallback((field: TagSortBy) => {
-    const next = nextSortPreference({ by: sortBy, direction: sortDirection }, field, defaultTagSortDirection);
-    updateConfig({ tagsSortBy: next.by, tagsSortDirection: next.direction });
-  }, [sortBy, sortDirection, updateConfig]);
-
-  const handleToggleDirection = useCallback(() => {
-    updateConfig({ tagsSortDirection: toggleSortDirection(sortDirection) });
-  }, [sortDirection, updateConfig]);
+  const { handleToggleSort, handleToggleDirection } = useSortPreference({
+    sortBy,
+    sortDirection,
+    defaultDirection: defaultTagSortDirection,
+    onChange: next => updateConfig({ tagsSortBy: next.by, tagsSortDirection: next.direction }),
+  });
 
   const sortedTags = useMemo(
     () => sortTags(filteredTags, sortBy, sortDirection, usage),

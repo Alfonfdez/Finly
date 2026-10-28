@@ -5,6 +5,7 @@ import { seedDataInner } from './migrations/002_seed';
 import { seedConfigInner } from './migrations/003_config';
 import { createRecurringSchema } from './migrations/004_recurring';
 import { sanitizeDefaultAccountConfig } from './configDefaults';
+import { wipeUserData } from './wipe';
 
 const DATABASE_NAME = 'Finly.db';
 export const SCHEMA_VERSION = 4;
@@ -106,14 +107,7 @@ export function initDatabase(): Promise<DatabaseHandle> {
 export async function resetDatabase(): Promise<void> {
   const database = await getDatabase();
   await database.withTransactionAsync(async () => {
-    await database.runAsync('DELETE FROM transactions');
-    await database.runAsync('DELETE FROM transaction_tags');
-    await database.runAsync('DELETE FROM recurring_rule_tags');
-    await database.runAsync('DELETE FROM recurring_rules');
-    await database.runAsync('DELETE FROM accounts');
-    await database.runAsync('DELETE FROM categories');
-    await database.runAsync('DELETE FROM tags');
-    await database.runAsync('DELETE FROM config');
+    await wipeUserData(database, { keepConfig: false, keepUsers: true });
     await seedDataInner(database);
     await seedConfigInner(database);
   });
@@ -122,13 +116,7 @@ export async function resetDatabase(): Promise<void> {
 export async function clearDataKeepSettings(): Promise<void> {
   const database = await getDatabase();
   await database.withTransactionAsync(async () => {
-    await database.runAsync('DELETE FROM transactions');
-    await database.runAsync('DELETE FROM transaction_tags');
-    await database.runAsync('DELETE FROM recurring_rule_tags');
-    await database.runAsync('DELETE FROM recurring_rules');
-    await database.runAsync('DELETE FROM accounts');
-    await database.runAsync('DELETE FROM categories');
-    await database.runAsync('DELETE FROM tags');
+    await wipeUserData(database, { keepConfig: true, keepUsers: true });
     await seedDataInner(database);
     await sanitizeDefaultAccountConfig(database);
   });

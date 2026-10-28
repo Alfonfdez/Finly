@@ -10,14 +10,14 @@ import { useFontSize } from '../hooks/useFontSize';
 import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
+import { useSortPreference } from '../hooks/useSortPreference';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import type { CommentUsage } from '../database/repositories/transactionRepo';
-import { type NavigationProp, type CommentSortBy } from '../constants/types';
+import { type NavigationProp } from '../constants/types';
 import { TEST_IDS } from '../constants/testIds';
 import { parseDbDate } from '../utils/formatters';
 import { defaultCommentSortDirection, sortComments } from '../utils/commentSort';
-import { nextSortPreference, toggleSortDirection } from '../utils/sortPreference';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import ListItemRow from '../components/ListItemRow';
 import SelectionCheckbox from '../components/SelectionCheckbox';
@@ -96,14 +96,12 @@ export default function CommentsScreen() {
   const sortBy = config.commentsSortBy;
   const sortDirection = config.commentsSortDirection;
 
-  const handleToggleSort = useCallback((field: CommentSortBy) => {
-    const next = nextSortPreference({ by: sortBy, direction: sortDirection }, field, defaultCommentSortDirection);
-    updateConfig({ commentsSortBy: next.by, commentsSortDirection: next.direction });
-  }, [sortBy, sortDirection, updateConfig]);
-
-  const handleToggleDirection = useCallback(() => {
-    updateConfig({ commentsSortDirection: toggleSortDirection(sortDirection) });
-  }, [sortDirection, updateConfig]);
+  const { handleToggleSort, handleToggleDirection } = useSortPreference({
+    sortBy,
+    sortDirection,
+    defaultDirection: defaultCommentSortDirection,
+    onChange: next => updateConfig({ commentsSortBy: next.by, commentsSortDirection: next.direction }),
+  });
 
   const sortedComments = useMemo(
     () => sortComments(filteredComments, sortBy, sortDirection),

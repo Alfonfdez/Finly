@@ -4556,3 +4556,9 @@
 - Keep the comment input focused and the keyboard open after selecting a suggestion.
 - Cancel and guard the delayed keyboard-reveal scroll when the field blurs before it fires.
 - Add CommentInput and useKeyboardReveal regressions for the suggestion and blur paths.
+
+[2026-10-28] refactor | FinlyApp/src/hooks/useSortPreference.ts, FinlyApp/tests/hooks/useSortPreference.test.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/database/configMetadata.ts, FinlyApp/src/database/configDefaults.ts, FinlyApp/src/database/repositories/configRepo.ts, FinlyApp/tests/database/configMetadata.test.ts, FinlyApp/src/database/wipe.ts, FinlyApp/src/database/database.ts, FinlyApp/src/database/backup.ts, FinlyApp/tests/database/wipe.test.ts, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Extract useSortPreference and adopt it across the five sortable list screens.
+- Centralize config DB keys and codecs in configMetadata and derive parsing/serialization from it.
+- Share the FK-safe wipe sequence across reset, delete-all and backup import.
+- No behavior change; add sort, config-metadata and wipe regressions.
