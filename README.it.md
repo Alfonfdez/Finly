@@ -16,7 +16,7 @@ Tutto funziona **sul dispositivo**: i tuoi dati vivono in un database SQLite loc
 
 ## Funzionalità
 
-- **Più conti** — crea, modifica ed elimina conti, ognuno con la propria icona, colore e saldo iniziale facoltativo. Un conto speciale **Totale** aggrega tutto.
+- **Più conti** — crea, modifica ed elimina conti, ognuno con la propria icona, colore e saldo iniziale facoltativo (inclusi i saldi negativi). Un conto speciale **Totale** aggrega tutto.
 - **Tracciamento di entrate e uscite** — aggiungi transazioni in un giorno specifico con importo, conto, categoria, etichette, commento e una foto facoltativa.
 - **Categorie personalizzate** — scegli da una libreria di icone e colori, e crea le tue categorie di uscite e entrate.
 - **Grafici** — grafico a ciambella con il totale al centro e grafico a barre impilate orizzontale, con una ripartizione per categorie che mostra le percentuali.

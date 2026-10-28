@@ -36,9 +36,9 @@ All commands run from the `FinlyApp/` directory.
 
 ### Current suite baseline
 
-Verified 2026-10-25: **170 test files / 1430 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
+Verified 2026-10-28: **183 test files / 1580 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
 
-Native E2E baseline (2026-09-09, SDK 57 + v2.0.0 release package): all 10 Maestro flows PASS on the `finly_test` emulator against `com.finly.app` after `expo prebuild` + `assembleDebug`.
+Native E2E baseline (2026-09-09, SDK 57 + v2.0.0 release package): the then-current 10 Maestro flows PASS on the `finly_test` emulator against `com.finly.app` after `expo prebuild` + `assembleDebug`. The suite now has 15 flows + 4 helpers; see the current inventory under Mobile mode.
 
 ## Verification loop (what "done" means)
 
@@ -66,7 +66,7 @@ acceptance criteria in a real browser.
 | Dual-storage contract suite | Vitest + sql.js (real SQLite in Node) | ✅ Implemented (Phase B) | One shared SQLite engine (native parity via expo-sqlite mock + web via sql.js/IndexedDB), repo contract + DB drift vs types |
 | Backup round-trip | Vitest + sql.js (`tests/database/backup.test.ts`) | ✅ Implemented (025) | Snapshot build/parse/apply round-trips (photos + tag links), empty-DB export, invalid / FK / newer-version rejection with rollback, facade round-trip |
 | UI / E2E verification | Playwright MCP + `verification-loop` skill | ✅ Implemented (Phase C) | Spec acceptance criteria in a live Expo web app |
-| Release screenshots | Playwright Core + installed Chrome | ✅ Implemented | 30-screen `v3.2` README set from the committed fixture (375×812, fixed clock, empty + populated states, manifest order enforced) |
+| Release screenshots | Playwright Core + installed Chrome | ✅ Implemented | 30-screen `v3.3` README set from the committed fixture (375×812, fixed clock, empty + populated states, manifest order enforced) |
 | CI pipeline | GitHub Actions (`.github/workflows/ci.yml`) | ✅ Implemented | `npm run test:all` on every PR to `develop`/`main` and push to those branches |
 | SDD alignment | `spec/` + changelog + test mapping | ✅ In use | Every feature spec maps to tests + changelog entries |
 
@@ -194,9 +194,11 @@ on web, so Finly added a **Maestro** harness for the Android emulator:
 - Flows live in `FinlyApp/.maestro/` (`flow-smoke`, `flow-004-add-transaction`,
   `flow-007-amount-calculator`, `flow-008-categories`, `flow-015-all-transactions`,
   `flow-016-transaction-details`, `flow-017-modify-transaction`,
-  `flow-021-category-filter`, `flow-022-total-account`, `flow-023-photo-attachment`)
+  `flow-021-category-filter`, `flow-022-total-account`, `flow-023-photo-attachment`,
+  `flow-028-recurring`, `flow-028-recurring-dirty-form`, `flow-028-recurring-hints`,
+  `flow-forms-standard`, `flow-debug`)
   plus `helpers/`
-  (`state-reset.yaml`, `open-drawer.yaml`, `dismiss-dev-menu.yaml`).
+  (`state-reset.yaml`, `open-drawer.yaml`, `dismiss-dev-menu.yaml`, `create-daily-rule.yaml`).
 - The app is verified on the **dev-client debug build** (`com.finly.app`, built
   with `npx expo run:android`), not Expo Go — the dev-client does not register the
   `exp://` scheme, so every flow starts with `helpers/state-reset.yaml`
@@ -206,7 +208,7 @@ on web, so Finly added a **Maestro** harness for the Android emulator:
   gallery), and the Settings → Personalization "Photo" toggle at the modal/UI level.
   Camera capture and gallery picking open system UIs Maestro cannot drive reliably on an
   emulator, so the full capture path is reported "not automatable on emulator".
-- All ten flows PASS on the emulator (2026-08-05 for smoke/022/008/023,
+- The original ten flows PASS on the emulator (2026-08-05 for smoke/022/008/023,
   2026-08-06 for flow-015-all-transactions and flow-021-category-filter,
   2026-08-07 for flow-004-add-transaction, flow-007-amount-calculator,
   flow-016-transaction-details and flow-017-modify-transaction).
@@ -266,15 +268,15 @@ Android / Maestro notes found and fixed while writing them:
 
 ### Phase D+ — Native E2E re-run on Expo SDK 57 (2026-09-09)
 
-After the upgrade to Expo SDK 57 / RN 0.86.3 (merged via PR #163) the native build and all
-ten Maestro flows were re-validated from scratch. Current SDK patch: `expo ~57.0.28`
+After the upgrade to Expo SDK 57 / RN 0.86.3 (merged via PR #163) the native build and the
+then-current ten Maestro flows were re-validated from scratch. Current SDK patch: `expo ~57.0.28`
 (applied 2026-10-12; JS-level patches within SDK 57 — no native regeneration needed;
 `npx expo install --check` reports "Dependencies are up to date" and `expo-doctor` 21/21).
 
 Re-run on the release package (2026-09-09, required by the Task-3 release pass): the
 application id changed to `com.finly.app` (v2.0.0), so `android/` was regenerated with
-`expo prebuild`, the debug APK was rebuilt (`versionName 2.0.0`), all 14 `appId` entries
-in `.maestro/` were updated, and **all 10 flows re-run PASS on `com.finly.app`**.
+`expo prebuild`, the debug APK was rebuilt (`versionName 2.0.0`), every `appId` entry
+in `.maestro/` was updated, and **all ten then-current flows re-ran PASS on `com.finly.app`**.
 
 - `npx expo prebuild --platform android` regenerated the CNG `android/` folder on SDK 57
   (package stays `com.finly.app`, matching the flows' `appId`); the folder remains
@@ -282,9 +284,9 @@ in `.maestro/` were updated, and **all 10 flows re-run PASS on `com.finly.app`**
 - `gradlew app:assembleDebug` (5m52s first build — compiles reanimated/screens/
   gesture-handler/expo-modules-core C++ for all 4 ABIs) → `adb install -r` → launched on
   the `finly_test` emulator with Metro over `adb reverse tcp:8081 tcp:8081`.
-- **All 10 flows PASS** on the SDK 57 build: flow-smoke, flow-004, flow-007, flow-008,
-  flow-015, flow-016, flow-017, flow-021, flow-022, flow-023 (plus the 3 helpers
-  state-reset / open-drawer / dismiss-dev-menu).
+- **All ten then-current flows PASS** on the SDK 57 build: flow-smoke, flow-004, flow-007,
+  flow-008, flow-015, flow-016, flow-017, flow-021, flow-022, flow-023 (plus the 3 helpers
+  that existed at the time: state-reset / open-drawer / dismiss-dev-menu).
 - **Flow fixes aligned to the current UI (spec 015 is drawer-only):**
   - `flow-015`: removed the stale stats-icon (`c1b` "View transactions") entry that the 015
     spec removed; the header assertion changed from the removed back arrow to the "Open

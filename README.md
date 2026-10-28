@@ -16,7 +16,7 @@ Everything runs **on-device**: your data lives in a local SQLite database (sql.j
 
 ## Features
 
-- **Multiple accounts** — create, edit, and delete accounts, each with its own icon, color, and optional starting balance. A special **Total** account aggregates everything.
+- **Multiple accounts** — create, edit, and delete accounts, each with its own icon, color, and optional starting balance (including negative balances). A special **Total** account aggregates everything.
 - **Income & expense tracking** — add transactions on a specific day with an amount, account, category, tags, a comment, and an optional photo.
 - **Custom categories** — pick from a library of icons and colors, and create your own categories for expenses and income.
 - **Charts** — donut chart with total in the center and a horizontal stacked bar chart, with a per-category breakdown showing percentages.

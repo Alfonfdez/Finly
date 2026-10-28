@@ -16,7 +16,7 @@ Tudo funciona **no dispositivo**: seus dados vivem em um banco de dados SQLite l
 
 ## Funcionalidades
 
-- **Várias contas** — crie, edite e exclua contas, cada uma com seu próprio ícone, cor e saldo inicial opcional. Uma conta especial **Total** agrega tudo.
+- **Várias contas** — crie, edite e exclua contas, cada uma com seu próprio ícone, cor e saldo inicial opcional (incluindo saldos negativos). Uma conta especial **Total** agrega tudo.
 - **Acompanhamento de receitas e despesas** — adicione transações em um dia específico com valor, conta, categoria, etiquetas, comentário e uma foto opcional.
 - **Categorias personalizadas** — escolha em uma biblioteca de ícones e cores, e crie suas próprias categorias de despesas e receitas.
 - **Gráficos** — gráfico de rosca com o total no centro e gráfico de barras empilhadas horizontal, com um detalhamento por categorias mostrando porcentagens.

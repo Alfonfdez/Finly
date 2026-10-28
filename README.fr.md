@@ -16,7 +16,7 @@ Tout fonctionne **sur l'appareil** : vos données vivent dans une base de donné
 
 ## Fonctionnalités
 
-- **Plusieurs comptes** — créez, modifiez et supprimez des comptes, chacun avec sa propre icône, sa couleur et un solde initial facultatif. Un compte spécial **Total** agrège tout.
+- **Plusieurs comptes** — créez, modifiez et supprimez des comptes, chacun avec sa propre icône, sa couleur et un solde initial facultatif (y compris les soldes négatifs). Un compte spécial **Total** agrège tout.
 - **Suivi des revenus et dépenses** — ajoutez des transactions un jour précis avec montant, compte, catégorie, étiquettes, commentaire et une photo facultative.
 - **Catégories personnalisées** — choisissez dans une bibliothèque d'icônes et de couleurs, et créez vos propres catégories de dépenses et de revenus.
 - **Graphiques** — camembert en anneau avec le total au centre et graphique à barres empilées horizontales, avec une répartition par catégorie affichant les pourcentages.

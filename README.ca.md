@@ -16,7 +16,7 @@ Tot funciona **al dispositiu**: les teves dades viuen en una base de dades SQLit
 
 ## Funcions
 
-- **Diversos comptes** — crea, edita i esborra comptes, cada un amb la seva icona, color i saldo inicial opcional. Un compte especial **Total** ho agrega tot.
+- **Diversos comptes** — crea, edita i esborra comptes, cada un amb la seva icona, color i saldo inicial opcional (incloent-hi els saldos negatius). Un compte especial **Total** ho agrega tot.
 - **Control d'ingressos i despeses** — afegeix transaccions en un dia concret amb import, compte, categoria, etiquetes, comentari i una foto opcional.
 - **Categories personalitzades** — tria entre una biblioteca d'icones i colors, i crea les teves pròpies categories de despeses i ingressos.
 - **Gràfics** — gràfic de dònut amb el total al centre i gràfic de barres apilades horitzontal, amb un desglossament per categories que mostra percentatges.
