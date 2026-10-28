@@ -1504,3 +1504,13 @@ Applied 2026-10-28:
 - Added sort/config/wipe regressions; `npm run test:all` green (182 files / 1566 tests).
 
 Spec: none (refactor only).
+
+## 2.2.0 upgrade fixture
+Status: completed.
+
+Applied 2026-10-28:
+- Added a pure schema-3 `fixture-2.1.0.json`: 4 accounts, 31 categories, 53 transactions across 10 months, 5 tags, 53 tag links, one data-URI photo and only the 15 config keys that existed in 2.1.0.
+- Added a generator and a tooling test that parses the fixture with the current backup parser, verifies no recurring data, checks the 2.1.0 config key set and validates every FK reference.
+- Documented the EAS 2.1.0 to 2.2.0 in-place upgrade procedure, including exporting the canonical 2.1.0 backup before upgrading.
+
+Spec: none (release testing assets).
