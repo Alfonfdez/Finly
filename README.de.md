@@ -16,7 +16,7 @@ Alles läuft **auf dem Gerät**: Ihre Daten leben in einer lokalen SQLite-Datenb
 
 ## Funktionen
 
-- **Mehrere Konten** — Konten erstellen, bearbeiten und löschen, jedes mit eigenem Icon, eigener Farbe und optionalem Startguthaben. Ein spezielles **Gesamt**-Konto summiert alles.
+- **Mehrere Konten** — Konten erstellen, bearbeiten und löschen, jedes mit eigenem Icon, eigener Farbe und optionalem Startguthaben (auch bei negativen Salden). Ein spezielles **Gesamt**-Konto summiert alles.
 - **Einnahmen- und Ausgabenerfassung** — Transaktionen an einem bestimmten Tag mit Betrag, Konto, Kategorie, Tags, Kommentar und optionalem Foto hinzufügen.
 - **Eigene Kategorien** — aus einer Bibliothek von Icons und Farben wählen und eigene Ausgaben- und Einnahmen-Kategorien erstellen.
 - **Diagramme** — Donut-Diagramm mit dem Gesamtbetrag in der Mitte und horizontales gestapeltes Balkendiagramm, mit einer Aufschlüsselung nach Kategorie, die Prozentsätze anzeigt.

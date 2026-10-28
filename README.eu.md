@@ -16,7 +16,7 @@ Dena **gailuan** exekutatzen da: zure datuak tokiko SQLite datu-base batean bizi
 
 ## Funtzioak
 
-- **Hainbat kontu** — sortu, editatu eta ezabatu kontuak, bakoitza bere ikono, kolore eta hasierako saldo aukerakoarekin. **Total** kontu berezi batek dena biltzen du.
+- **Hainbat kontu** — sortu, editatu eta ezabatu kontuak, bakoitza bere ikono, kolore eta hasierako saldo aukerakoarekin (saldo negatiboak barne). **Total** kontu berezi batek dena biltzen du.
 - **Sarreren eta gastuen jarraipena** — gehitu transakzioak egun jakin batean, zenbateko, kontu, kategoria, etiketa, iruzkin eta aukerako argazki batekin.
 - **Kategoria pertsonalizatuak** — aukeratu ikono eta koloreen liburutegi batetik, eta sortu zeure gastu eta sarrera kategoriak.
 - **Grafikoak** — donut grafikoa erdian totalarekin eta barra metatu horizontaleko grafikoa, kategoria bakoitzeko ehunekoak erakusten dituen sailkapenarekin.

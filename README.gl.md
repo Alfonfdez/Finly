@@ -16,7 +16,7 @@ Todo funciona **no dispositivo**: os teus datos viven nunha base de datos SQLite
 
 ## Funcionalidades
 
-- **Varias contas** — crea, edita e elimina contas, cada unha coa súa propia icona, cor e saldo inicial opcional. Unha conta especial **Total** agrega todo.
+- **Varias contas** — crea, edita e elimina contas, cada unha coa súa propia icona, cor e saldo inicial opcional (incluíndo os saldos negativos). Unha conta especial **Total** agrega todo.
 - **Rexistro de ingresos e gastos** — engade transaccións nun día concreto cun importe, conta, categoría, etiquetas, un comentario e unha foto opcional.
 - **Categorías personalizadas** — escolle dunha biblioteca de iconas e cores, e crea as túas propias categorías de gastos e ingresos.
 - **Gráficos** — gráfico de donut co total no centro e un gráfico de barras apiladas horizontal, cun desglose por categoría que mostra porcentaxes.

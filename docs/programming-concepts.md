@@ -1039,11 +1039,11 @@ eas build --platform android --profile preview   # cloud build, download the res
 
 ## Git tag
 **Definition:** An immutable named pointer to a specific commit, used to mark release points.
-**Explanation:** A tag (e.g. `v2.1.0`) permanently labels the exact commit that was released, so the code can be reproduced later. In Finly's git flow the tag is created on the `main` merge commit AFTER `develop` is merged, so the released code matches what ships.
+**Explanation:** A tag (e.g. `v2.2.0`) permanently labels the exact commit that was released, so the code can be reproduced later. In Finly's git flow the tag is created on the `main` merge commit AFTER `develop` is merged, so the released code matches what ships.
 **Example:**
 ```bash
-git tag -a v2.1.0 -m "Finly 2.1.0 release"
-git push origin v2.1.0
+git tag -a v2.2.0 -m "Finly 2.2.0 release"
+git push origin v2.2.0
 ```
 
 ## GitHub Release
@@ -1051,7 +1051,7 @@ git push origin v2.1.0
 **Explanation:** Releases are how open-source/project apps hand installable builds to users. You point a Release at a tag, write the notes, and attach binaries. GitHub also archives the source at that tag so the release is fully reproducible.
 **Example:**
 ```text
-Tag v2.1.0 → GitHub Release "Finly 2.1.0" → notes + attached Finly-preview-2.1.0.apk
+Tag v2.2.0 → GitHub Release "Finly 2.2.0" → notes + attached Finly-preview-2.2.0.apk
 ```
 
 ## Release notes
@@ -1059,21 +1059,21 @@ Tag v2.1.0 → GitHub Release "Finly 2.1.0" → notes + attached Finly-preview-2
 **Explanation:** Release notes summarize new features, fixes, and assets for users comparing against the previous release. They are the description field on the GitHub Release page (not a file in the repo), and are written from the roadmap/changelog highlights.
 **Example:**
 ```markdown
-## Finly 2.1.0
-- Version 2.1.0 — android.versionCode 2 (updates 2.0.0 in place)
-- Android export: backup saved to Downloads with an optional Share action
-- New languages: Galician and Basque (9 total)
-- Settings UI polish, new data icons, regenerated icons and splash
-- Attached: Finly-preview-2.1.0.apk (sideload)
+## Finly 2.2.0
+- Version 2.2.0 — android.versionCode 3 (updates 2.1.0 in place)
+- Recurring rules with future-only or future + past edits
+- Negative account starting balances plus calculator and calendar fixes
+- Web SQLite/IndexedDB parity and data-safety hardening
+- Attached: Finly-preview-2.2.0.apk (sideload)
 ```
 
 ## Semantic versioning (semver)
 **Definition:** Versioning scheme `MAJOR.MINOR.PATCH` where each bump has a meaning.
-**Explanation:** MAJOR changes break compatibility (2.0 → new major), MINOR adds features backwards-compatibly, PATCH fixes bugs. The version also maps to Android identifiers (`versionName "2.1.0"`, `versionCode 2`) — `versionCode` is the unique integer Play uses to detect upgrades, while `versionName` is what users see.
+**Explanation:** MAJOR changes break compatibility (2.0 → new major), MINOR adds features backwards-compatibly, PATCH fixes bugs. The version also maps to Android identifiers (`versionName "2.2.0"`, `versionCode 3`) — `versionCode` is the unique integer Play uses to detect upgrades, while `versionName` is what users see.
 **Example:**
 ```json
 // app.json / android/app/build.gradle
-"version": "2.1.0"      →   versionName "2.1.0", versionCode 2
+"version": "2.2.0"      →   versionName "2.2.0", versionCode 3
 ```
 
 # Databases / ORM
