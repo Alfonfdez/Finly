@@ -63,7 +63,7 @@
 - The write runs inside a single transaction: delete all rows in FK-safe order, then insert in dependency order (users → accounts/categories/tags → transactions → transaction_tags → config).
 - Referential integrity is enforced by `PRAGMA foreign_keys = ON`: a snapshot with missing parent rows or duplicate PKs fails the transaction and **rolls back** — existing data is unchanged.
 - Import uses the same serialized transaction queue as reconciliation (`runExclusiveDb`), so it can never interleave with a catch-up run; the Data screen keeps the confirmation dialog open (spinner, no cancel, no second confirm) until the import settles.
-- On success the app state is reloaded: `resetAll()` (accounts/categories/tags/transactions) and `updateConfig(await configRepository.get())` so theme, language, currency, and default selections reflect the backup.
+- On success the app state is reloaded: `resetAll()` (accounts/categories/tags/transactions) and `updateConfig(await configRepository.get())` so theme, language, currency, and default selections reflect the backup. If the database import applied but this refresh fails, the app shows a dedicated "import applied, refresh failed" alert instead of a false success or a false "import failed"; the user is told to reopen the app.
 - **Native photo cleanup:** factory reset, delete-all-data and import collect the old photo URIs before the destructive write and delete those files only after it commits. Import keeps any URI still referenced by the imported snapshot, so a same-device backup never loses a reused file.
 - Failure (invalid file, wrong version, schema violation) shows an error and leaves data untouched.
 - **Incomplete snapshots are rejected before any write**: a backup must contain the app user (`id = USER_ID = 1`), at least one account, and one expense + one income category (a genuine export always does - the app cannot work without them). It fails with the dedicated "Incomplete backup" alert instead of importing and leaving the app unusable (previously the empty `users` table made category creation fail with an FK error until the next launch self-healed it).
@@ -71,7 +71,8 @@
 - **Recurring rule safety:** `next_due` must not precede `start_date`, `weekday` is 0..6, `day_of_month` 1..31, `month` 1..12 and `active` is 0/1; violations reject the file before any write.
 - **Referential integrity:** transaction/rule accounts and categories, generated transactions' rules, and both tag-link tables must resolve inside the snapshot. Transactions/rules pointing at the Total account are rejected.
 - **Generated transactions:** a transaction with `recurring_rule_id` must reference a rule in the snapshot and carry a valid date-only `recurrence_date`.
-- **Native photo deletion allowlist:** only files under the app documents/photo root are ever deleted; arbitrary `file://` URIs from an imported backup are ignored.
+- **Photo values are validated before import:** each parsed `photo` entry must be a base64 image data URI (broad `data:image/*;base64,...` so 2.1 web backups with HEIC/GIF remain importable) or an app-created file URI named `photo_<timestamp>_<counter>.(jpg|jpeg|png|webp)`. Remote URLs, arbitrary file paths, DB/backup filenames and traversal paths are rejected. Both legacy root photos and the new `photos/` directory are accepted.
+- **Native photo deletion allowlist:** only app-created photo files directly under the app documents root (legacy 2.1 layout) or under `documents/photos/` are ever deleted; arbitrary `file://` URIs from an imported backup are ignored.
 - **`applyBackup()` re-checks completeness** even when called directly (defence in depth), and the service awaits `initDatabase()` before exporting/importing so the snapshot always comes from a migrated, self-healed database.
 
 ### 5. UI (DataScreen)
@@ -100,6 +101,9 @@
 - [x] Export of an empty database is valid.
 - [x] Import replaces all data: accounts, categories, tags, transactions (with photos), tag links, config, and users.
 - [x] Web photo data URIs survive an export → import round-trip; native photos keep working only while their files still exist (same installation), because native backups store URI references rather than bytes.
+- [x] 2.1 backups with native `photo_<timestamp>_<counter>.jpg` file URIs or web base64 image data URIs remain importable; broad image MIME subtypes are accepted.
+- [x] Imported photo values are validated per parsed entry; remote URLs, DB/backup filenames, traversal paths and arbitrary file paths are rejected before any write.
+- [x] If the database import applied but the config/state refresh fails, the app reports "import applied, refresh failed" instead of success or "import failed".
 - [x] Import is gated by an explicit confirmation modal.
 - [x] An invalid / corrupt / wrong-version / future-schema backup is rejected with an error and existing data is unchanged (transaction rollback).
 - [x] A valid backup that is missing the required rows (the app user `id = 1`, accounts, or a category of each type) is rejected as "incomplete" before any write, with the current data untouched.

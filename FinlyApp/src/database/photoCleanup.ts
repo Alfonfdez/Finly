@@ -58,7 +58,7 @@ export async function collectAllTransactionPhotos(): Promise<string[]> {
 }
 
 export async function deletePhotoUris(uris: string[]): Promise<void> {
-  const fileUris = uris.filter(uri => !uri.startsWith('data:'));
+  const fileUris = uris.filter(uri => typeof uri === 'string' && !uri.startsWith('data:'));
   if (fileUris.length === 0) return;
   // Keep expo-file-system out of modules that only parse/collect photos (e.g. tests
   // and the web bundle) until there is an actual native file to delete.

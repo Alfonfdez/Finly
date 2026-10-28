@@ -23,6 +23,8 @@ import type {
 } from './types';
 import { sanitizeDefaultAccountConfig } from './configDefaults';
 import { wipeUserData } from './wipe';
+import { parsePhotoFieldStrict } from '../utils/photoData';
+import { isImportablePhotoUri } from '../utils/photoUri';
 import { REPEAT_MAX_INTERVAL, TRANSACTION_TYPES, USER_ID } from '../constants/types';
 
 interface ConfigRow {
@@ -195,6 +197,10 @@ export function assertImportableBackup(snapshot: BackupSnapshot): void {
 
   for (const transaction of transactions) {
     if (!isValidTransactionDate(transaction.date)) throw invalid('Transaction has an invalid date');
+    const photos = parsePhotoFieldStrict(transaction.photo);
+    if (photos === null || photos.some(photo => !isImportablePhotoUri(photo))) {
+      throw invalid('Transaction has an invalid photo');
+    }
     const account = accountById.get(transaction.account_id);
     if (!account) throw invalid('Transaction account is missing');
     if (account.is_total === 1) throw invalid('Transaction uses the Total account');

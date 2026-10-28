@@ -17,14 +17,25 @@ vi.mock('expo-image-picker', () => ({
 
 vi.mock('expo-file-system', () => ({
   Paths: { document: { uri: 'file:///doc/' } },
+  Directory: class MockDirectory {
+    uri: string;
+    create = vi.fn();
+    constructor(...parts: (string | { uri: string })[]) {
+      const [first, ...rest] = parts;
+      const base = typeof first === 'string' ? first : first.uri;
+      this.uri = `${base}${rest.join('/')}/`;
+    }
+  },
   File: class MockFile {
     uri: string;
     copy = mockCopy;
     exists = false;
     delete = vi.fn();
-    constructor(uri: string) {
-      this.uri = uri;
-      mockFile(uri);
+    constructor(...parts: (string | { uri: string })[]) {
+      const [first, ...rest] = parts;
+      const base = typeof first === 'string' ? first : first.uri;
+      this.uri = rest.length > 0 ? `${base}${rest.join('/')}` : base;
+      mockFile(this.uri);
     }
   },
 }));
@@ -92,7 +103,7 @@ describe('usePhotos', () => {
     await act(() => result.current.handleTakePhoto());
     expect(mockFile).toHaveBeenCalledWith('file:///tmp/snap.jpg');
     expect(result.current.photos).toHaveLength(1);
-    expect(result.current.photos[0]).toMatch(/photo_\d+_0\.jpg$/);
+    expect(result.current.photos[0]).toMatch(/\/photos\/photo_\d+_0\.jpg$/);
   });
 
   it('waits for the file copy before appending the photo', async () => {

@@ -158,11 +158,10 @@ export default function DataScreen() {
     if (pendingImport === null || pendingAction !== null) return;
     setPendingAction(PENDING_DATA_ACTIONS.import);
     setDataRefreshing(true);
+    let applied = false;
     try {
       await importBackup(pendingImport);
-      await updateConfig(await configRepository.get());
-      await resetAll();
-      alertInfo(labels.settings_import_success_title, labels.settings_import_success_message);
+      applied = true;
     } catch (error) {
       logError(ERROR_PREFIXES.backupImport, error);
       if (error instanceof BackupValidationError) {
@@ -176,10 +175,26 @@ export default function DataScreen() {
       } else {
         alertError(labels.settings_import_error_title, labels.settings_import_error_message);
       }
-    } finally {
-      setPendingAction(null);
-      setDataRefreshing(false);
     }
+    if (applied) {
+      try {
+        const persistedConfig = await configRepository.get();
+        const configSaved = await updateConfig(persistedConfig, { notifyOnError: false });
+        const dataRefreshed = await resetAll({ notifyOnError: false });
+        if (configSaved === false || dataRefreshed === false) {
+          throw new Error('Import applied but the app could not refresh');
+        }
+        alertInfo(labels.settings_import_success_title, labels.settings_import_success_message);
+      } catch (error) {
+        logError(ERROR_PREFIXES.backupImport, error);
+        alertError(
+          labels.settings_import_refresh_error_title,
+          labels.settings_import_refresh_error_message,
+        );
+      }
+    }
+    setPendingAction(null);
+    setDataRefreshing(false);
     setImportModalVisible(false);
     setPendingImport(null);
   };

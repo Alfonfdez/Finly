@@ -1,11 +1,23 @@
 import { File, Paths } from 'expo-file-system';
 import { isWeb } from './platform';
+import { PHOTO_DIRECTORY, fileUriPath, isPhotoFileName } from './photoUri';
 
 export { parsePhotos } from './photoData';
 
 function isAppPhotoUri(uri: string): boolean {
+  const path = fileUriPath(uri);
+  if (!path) return false;
+  const segments = path.split('/');
+  if (segments.some(segment => segment === '.' || segment === '..')) return false;
+  const name = segments[segments.length - 1] ?? '';
+  if (!isPhotoFileName(name)) return false;
+
   const root = Paths.document.uri.endsWith('/') ? Paths.document.uri : `${Paths.document.uri}/`;
-  return uri.startsWith(root) && uri !== root;
+  const rootPath = fileUriPath(root);
+  if (!rootPath) return false;
+  const rootWithSlash = rootPath.endsWith('/') ? rootPath : `${rootPath}/`;
+  return path === `${rootWithSlash}${name}`
+    || path === `${rootWithSlash}${PHOTO_DIRECTORY}/${name}`;
 }
 
 export async function deletePhotoFile(uri: string): Promise<void> {

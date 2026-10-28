@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   View, Text, FlatList, StyleSheet,
 } from 'react-native';
@@ -64,7 +64,7 @@ export default function AccountsScreen() {
   const {
     searchActive, searchText, setSearchText,
     selectMode, selectedIds,
-    deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
+    deleteModalVisible, setDeleteModalVisible, toggleItem, reconcileSelection, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
   } = select;
 
@@ -121,6 +121,10 @@ export default function AccountsScreen() {
     [visibleAccounts],
   );
 
+  useEffect(() => {
+    reconcileSelection(visibleIds);
+  }, [visibleIds, reconcileSelection]);
+
   const { handleToggleSort, handleToggleDirection } = useSortPreference({
     sortBy,
     sortDirection,
@@ -144,11 +148,19 @@ export default function AccountsScreen() {
     bulkDeletingRef.current = true;
     setBulkDeleting(true);
     setDeleteModalVisible(false);
+    const visible = new Set(visibleIds);
+    const ids = [...selectedIds].filter(id => visible.has(id));
+    if (ids.length === 0) {
+      bulkDeletingRef.current = false;
+      setBulkDeleting(false);
+      return;
+    }
     try {
       await runWithErrorAlert(async () => {
-        await accountRepository.deleteMany([...selectedIds]);
+        await accountRepository.deleteMany(ids);
 
-        const remaining = accounts.filter(a => !selectedIds.has(a.id));
+        const deleted = new Set(ids);
+        const remaining = accounts.filter(a => !deleted.has(a.id));
         const updates = sanitizeDefaultAccounts(config, remaining);
         if (Object.keys(updates).length > 0) {
           await updateConfig(updates);
@@ -165,7 +177,7 @@ export default function AccountsScreen() {
       bulkDeletingRef.current = false;
       setBulkDeleting(false);
     }
-  }, [selectedIds, config, accounts, exitSelectMode, loadData, refreshAccounts, refresh, updateConfig, setDeleteModalVisible]);
+  }, [selectedIds, visibleIds, config, accounts, exitSelectMode, loadData, refreshAccounts, refresh, updateConfig, setDeleteModalVisible]);
 
   const renderItem = useCallback(({ item }: { item: AccountWithBalance }) => {
     const isTotal = isTotalAccount(item);

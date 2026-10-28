@@ -52,6 +52,8 @@ export const it: Language = {
   settings_import_success_message: 'I tuoi dati sono stati ripristinati dal backup.',
   settings_import_error_title: 'Errore nell\'importazione',
   settings_import_error_message: 'Impossibile importare il file di backup. I tuoi dati non sono stati modificati.',
+  settings_import_refresh_error_title: 'Dati importati, aggiornamento non riuscito',
+  settings_import_refresh_error_message: 'I tuoi dati sono stati importati, ma l\'app non è riuscita ad aggiornarsi. Riaprila per vedere i dati importati.',
   settings_import_invalid_title: 'Backup non valido',
   settings_import_invalid_message: 'Il file selezionato non è un backup Finly valido.',
   settings_import_incomplete_title: 'Backup incompleto',

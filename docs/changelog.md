@@ -4586,3 +4586,12 @@
 - Refresh the harness baseline to 183 files / 1580 tests, the v3.3 screenshot set and the 15-flow Maestro inventory.
 - Update the release examples to 2.2.0 / versionCode 3 and document negative starting balances in all 9 READMEs.
 - Repair 7 corrupted replacement characters in historical changelog entries.
+
+[2026-10-28] fix | FinlyApp/src/hooks/useSelectAndSearch.tsx, FinlyApp/src/hooks/useBulkDelete.ts, FinlyApp/src/hooks/useTransactionListScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/utils/photoUri.ts, FinlyApp/src/utils/photoUtils.ts, FinlyApp/src/utils/photoData.ts, FinlyApp/src/hooks/usePhotos.ts, FinlyApp/src/database/backup.ts, FinlyApp/src/database/photoCleanup.ts, FinlyApp/src/components/ErrorBoundary.tsx, FinlyApp/src/context/ConfigContext.tsx, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/src/hooks/useBusyGuard.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/hooks/useDeleteConfirmation.ts, FinlyApp/src/screens/CreateAccountScreen.tsx, FinlyApp/src/screens/CreateTagScreen.tsx, FinlyApp/src/screens/CreateCategoryScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/i18n/, FinlyApp/tests/, docs/harnesses.md, spec/constitution/3-roadmap.md, spec/features/008-categories-screen/1-spec.md, spec/features/011-accounts-screen/1-spec.md, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/features/018-tag-management/1-spec.md, spec/features/025-data-backup/1-spec.md, spec/features/027-comments-management/1-spec.md
+- Reconcile bulk selection with visible rows and filter delete targets.
+- Validate imported photos, keep 2.1 file/data URIs, and restrict file deletion to app-created photos.
+- Make ErrorBoundary recoverable, split import apply/refresh, and add ref-backed busy guards.
+- Add P0 regressions; test:all green (185 files / 1608 tests).
+
+[2026-10-28] test | FinlyApp/tests/utils/recurrence.test.ts
+- Repair a corrupted em dash in a recurrence test comment.

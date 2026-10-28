@@ -101,4 +101,21 @@ describe('useDeleteConfirmation', () => {
     expect(deleteFn).toHaveBeenCalledTimes(1);
     expect(onSuccess).not.toHaveBeenCalled();
   });
+
+  it('ignores a second confirm while the first delete is in flight', async () => {
+    let finish!: () => void;
+    const deleteFn = vi.fn(() => new Promise<void>((resolve) => { finish = resolve; }));
+    const { result } = await setup({ deleteFn });
+
+    let first!: Promise<void>;
+    let second!: Promise<void>;
+    await act(async () => {
+      first = result.current.confirm();
+      second = result.current.confirm();
+      finish();
+      await Promise.all([first, second]);
+    });
+
+    expect(deleteFn).toHaveBeenCalledTimes(1);
+  });
 });

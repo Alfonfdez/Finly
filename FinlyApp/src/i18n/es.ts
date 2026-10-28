@@ -52,6 +52,8 @@ export const es: Language = {
   settings_import_success_message: 'Tus datos se han restaurado desde la copia de seguridad.',
   settings_import_error_title: 'Error al importar',
   settings_import_error_message: 'No se pudo importar el archivo de copia de seguridad. Tus datos no han cambiado.',
+  settings_import_refresh_error_title: 'Datos importados, error al actualizar',
+  settings_import_refresh_error_message: 'Tus datos se importaron, pero la app no pudo actualizarse. Vuelve a abrirla para ver los datos importados.',
   settings_import_invalid_title: 'Copia de seguridad no válida',
   settings_import_invalid_message: 'El archivo seleccionado no es una copia de seguridad válida de Finly.',
   settings_import_incomplete_title: 'Copia de seguridad incompleta',

@@ -219,6 +219,25 @@ describe('RecurringScreen', () => {
     await waitFor(() => expect(mockDeleteMany).toHaveBeenCalledWith([1]));
   });
 
+  it('drops hidden selections when the type tab changes', async () => {
+    mockList.mockResolvedValue([
+      { ...rule, id: 1, name: 'ExpenseRule', type: 'expense' },
+      { ...rule, id: 2, name: 'IncomeRule', type: 'income' },
+    ]);
+    const view = await renderWithHeader();
+    await waitFor(() => expect(view.getByText('ExpenseRule')).toBeTruthy());
+
+    const ue = userEvent.setup();
+    await ue.press(view.getByLabelText('Enter select mode'));
+    await ue.press(view.getByLabelText('ExpenseRule'));
+    await waitFor(() => expect(view.getByText('Delete (1)')).toBeTruthy());
+
+    await ue.press(view.getByText('Income'));
+    await waitFor(() => expect(view.getByText('Delete (0)')).toBeTruthy());
+    expect(view.queryByText('ExpenseRule')).toBeNull();
+    expect(mockDeleteMany).not.toHaveBeenCalled();
+  });
+
   it('selects a rule when its checkbox is pressed', async () => {
     const view = await renderWithHeader();
     await waitFor(() => expect(view.getByText('Rent')).toBeTruthy());

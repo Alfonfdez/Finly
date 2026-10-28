@@ -118,6 +118,7 @@ export function useTransactionForm({
   const [selectedTags, setSelectedTags] = useState<number[]>(initialTagIds ?? []);
   const [comment, setComment] = useState(initialComment);
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
   const { photos, handleTakePhoto, handlePickFromGallery, handleRemovePhoto, finalizePhotos } = usePhotos(initialPhotos);
 
   const {
@@ -361,8 +362,9 @@ export function useTransactionForm({
   }, []);
 
   const handleSubmit = useCallback(async () => {
-    if (!canSubmit || submitting) return;
+    if (!canSubmit || submittingRef.current) return;
     if (categoryId === null || numericAmount === null || accountId === undefined) return;
+    submittingRef.current = true;
     setSubmitting(true);
 
     try {
@@ -392,9 +394,10 @@ export function useTransactionForm({
       logError(ERROR_PREFIXES.transactionSubmit, describeError(err));
       alertError(errorTitle, errorMessage);
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
-  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, buildRecurrence, ruleMode, onSubmit, onSubmitRule, onBeforeSubmitRule, finalizePhotos, deferredRefresh, navigation, errorTitle, errorMessage]);
+  }, [canSubmit, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, buildRecurrence, ruleMode, onSubmit, onSubmitRule, onBeforeSubmitRule, finalizePhotos, deferredRefresh, navigation, errorTitle, errorMessage]);
 
   const categoriesByType = useMemo(() => {
     const byType = categoriesOfType(categories, type);

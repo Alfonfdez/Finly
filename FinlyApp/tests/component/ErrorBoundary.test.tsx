@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react-native';
+import { Text } from 'react-native';
 import type { ReactNode } from 'react';
 import { resetStub, setColors } from './helpers/configStub';
 import ErrorBoundary from '../../src/components/ErrorBoundary';
@@ -73,17 +74,36 @@ describe('ErrorBoundary', () => {
     expect(flattenStyle(view.root!.props.style).backgroundColor).toBe('#FFFFFF');
   });
 
-  it('renders the retry button when onRetry is provided and uses primary as its color', async () => {
-    const onRetry = vi.fn();
+  it('renders the retry button without onRetry and uses primary as its color', async () => {
     const view = await render(
-      <ErrorBoundary onRetry={onRetry}>
+      <ErrorBoundary>
         <ThrowingChild />
       </ErrorBoundary>,
     );
     const button = view.getByText('Try again');
     expect(button).toBeTruthy();
     expect(flattenStyle(button.parent?.props.style).backgroundColor).toBe('#22D3EE');
-    await fireEvent.press(button);
-    expect(onRetry).toHaveBeenCalled();
+  });
+
+  it('retries the failed subtree and calls onRetry', async () => {
+    let shouldThrow = true;
+    const onRetry = vi.fn();
+    function FlakyChild() {
+      if (shouldThrow) throw new Error('boom');
+      return <Text>Recovered</Text>;
+    }
+
+    const view = await render(
+      <ErrorBoundary onRetry={onRetry}>
+        <FlakyChild />
+      </ErrorBoundary>,
+    );
+    expect(view.getByText('Something went wrong')).toBeTruthy();
+
+    shouldThrow = false;
+    await fireEvent.press(view.getByText('Try again'));
+
+    expect(onRetry).toHaveBeenCalledTimes(1);
+    expect(view.getByText('Recovered')).toBeTruthy();
   });
 });

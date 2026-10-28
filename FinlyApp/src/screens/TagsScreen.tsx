@@ -49,7 +49,7 @@ export default function TagsScreen() {
   const {
     searchActive, searchText, setSearchText,
     selectMode, selectedIds,
-    toggleItem, exitSelectMode,
+    toggleItem, reconcileSelection, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
   } = select;
 
@@ -97,12 +97,17 @@ export default function TagsScreen() {
 
   const visibleIds = useMemo(() => sortedTags.map(t => t.id), [sortedTags]);
 
+  useEffect(() => {
+    reconcileSelection(visibleIds);
+  }, [visibleIds, reconcileSelection]);
+
   const atTagLimit = countAtLimit(tags.length, MAX_TAGS);
 
   const {
     deleteModalVisible, busy, openDeleteModal, closeDeleteModal, confirmBulkDelete,
   } = useBulkDelete({
     selectedIds,
+    visibleIds,
     exitSelectMode,
     deleteFn: (ids) => tagRepository.deleteMany(ids),
     afterDelete: refreshTags,

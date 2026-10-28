@@ -277,6 +277,23 @@ describe('useTransactionForm', () => {
     expect(getAppStub().refresh).toHaveBeenCalled();
   });
 
+  it('handleSubmit ignores a second call before the first render settles', async () => {
+    let release!: () => void;
+    const onSubmit = vi.fn(() => new Promise<void>((resolve) => { release = resolve; }));
+    const { result } = await setup({ initialAmount: '9.99', onSubmit });
+
+    let first!: Promise<void>;
+    let second!: Promise<void>;
+    await act(async () => {
+      first = result.current.handleSubmit();
+      second = result.current.handleSubmit();
+      release();
+      await Promise.all([first, second]);
+    });
+
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
   it('handleSubmit is guarded when canSubmit is false', async () => {
     const { result, props } = await setup({ initialAccountId: undefined });
     await act(async () => {

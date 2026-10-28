@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
+import { useBusyGuard } from '../hooks/useBusyGuard';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
@@ -24,6 +25,7 @@ export default function CreateTagScreen() {
   const { refreshTags, tags } = useApp();
 
   const deferredRefreshTags = useDeferredRefresh(refreshTags);
+  const { busy, run } = useBusyGuard();
 
   const [name, setName] = useState('');
 
@@ -37,16 +39,18 @@ export default function CreateTagScreen() {
     Keyboard.dismiss();
     const trimmed = name.trim();
     if (!trimmed || nameError || checkingName) return;
-    await runWithErrorAlert(async () => {
-      await tagRepository.create({ user_id: USER_ID, name: trimmed });
-      navigation.goBack();
-      deferredRefreshTags();
-    }, ERROR_PREFIXES.tagCreate);
+    await run(async () => {
+      await runWithErrorAlert(async () => {
+        await tagRepository.create({ user_id: USER_ID, name: trimmed });
+        navigation.goBack();
+        deferredRefreshTags();
+      }, ERROR_PREFIXES.tagCreate);
+    });
   };
 
   const isEmpty = !name.trim();
   const atTagLimit = countAtLimit(tags.length, MAX_TAGS);
-  const isDisabled = isEmpty || !!nameError || checkingName || atTagLimit;
+  const isDisabled = isEmpty || !!nameError || checkingName || atTagLimit || busy;
 
   // One red line above Save: every reason the tag cannot be created.
   const hintText = joinHints([

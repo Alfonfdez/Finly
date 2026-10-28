@@ -1537,3 +1537,17 @@ Applied 2026-10-28:
 - `npm run test:all` green (183 files / 1580 tests).
 
 Spec: spec/features/004-add-transaction-screen/, spec/features/017-modify-transaction-screen/, spec/features/026-account-initial-balance/.
+
+## 2.2.0 pre-release P0 audit fixes
+Status: completed.
+
+Applied 2026-10-28:
+- Bulk selection is reconciled against the visible filtered list; hidden selected IDs are pruned on tab/filter/search changes and are never passed to delete.
+- Imported photo values are validated per parsed entry: broad base64 `data:image/*` values and app-created `photo_<timestamp>_<counter>.jpg` file URIs remain importable, while remote URLs, DB/backup filenames, traversal paths and arbitrary file paths are rejected.
+- Photo deletion now only accepts app-created filenames directly under the document root (legacy 2.1) or under `documents/photos/`; new photos are copied into that directory.
+- `ErrorBoundary` retries by remounting the failed subtree and logs in production instead of only under `__DEV__`.
+- Import is split into apply and refresh phases; `updateConfig`/`resetAll` report failure, and an applied-but-unrefreshed import shows a dedicated alert instead of a false success/failure.
+- Transaction save, create/modify forms, and delete confirmations use ref-backed in-flight guards; rapid double taps execute once.
+- `npm run test:all` green (185 files / 1608 tests).
+
+Spec: spec/features/014-transactions-screen-from-home/, spec/features/015-all-transactions-screen/, spec/features/008-categories-screen/, spec/features/011-accounts-screen/, spec/features/018-tag-management/, spec/features/027-comments-management/, spec/features/025-data-backup/.

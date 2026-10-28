@@ -74,7 +74,7 @@
 
 - The header shows a "Select" (`tags_select`) text button next to the search icon; pressing it toggles selection mode (label switches to "Done", `tags_select_done`).
 - In selection mode each row shows a leading checkbox (`checkbox-outline` unchecked / `checkbox` checked in primary color); tapping a row toggles its selection instead of navigating.
-- The header search and search filtering keep working during selection mode; selection applies to the filtered list.
+- The header search and search filtering keep working during selection mode; selection applies to the filtered list. When a search change hides selected tags, those IDs are pruned from the selection, and bulk delete only ever deletes currently visible selected tags.
 - In selection mode the "+" FAB (and the "Maximum of 100 tags reached" message) is replaced by a bottom action bar with "Cancel" and `Delete (N)` (`tags_bulk_delete(n)`), where N is the number of selected tags.
 - The delete button is disabled while no tags are selected; "Cancel" exits selection mode and clears the selection.
 - A **Select all** / **Deselect all** row sits above the list in selection mode (`select_all` / `deselect_all`, with the visible count `items_count`); tapping it selects every visible tag in one tap.
@@ -123,6 +123,7 @@
 - [x] "Select" in the header enters selection mode; rows show checkboxes and tapping toggles selection instead of navigating.
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
 - [x] Bulk delete confirms once for the whole batch and removes all selected tags at once.
+- [x] Search changes prune hidden selections; bulk delete only deletes currently visible selected tags.
 - [x] A Select all / Deselect all row above the list selects every visible tag in one tap.
 - [x] After create/modify/delete, `refreshTags()` is called and the list updates.
 - [x] All texts change when switching language.

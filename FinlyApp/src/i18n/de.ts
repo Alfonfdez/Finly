@@ -52,6 +52,8 @@ export const de: Language = {
   settings_import_success_message: 'Ihre Daten wurden aus der Sicherung wiederhergestellt.',
   settings_import_error_title: 'Import fehlgeschlagen',
   settings_import_error_message: 'Die Sicherungsdatei konnte nicht importiert werden. Ihre Daten bleiben unverändert.',
+  settings_import_refresh_error_title: 'Daten importiert, Aktualisierung fehlgeschlagen',
+  settings_import_refresh_error_message: 'Ihre Daten wurden importiert, aber die App konnte nicht aktualisiert werden. Öffnen Sie sie erneut, um die importierten Daten zu sehen.',
   settings_import_invalid_title: 'Ungültige Sicherung',
   settings_import_invalid_message: 'Die ausgewählte Datei ist keine gültige Finly-Sicherung.',
   settings_import_incomplete_title: 'Unvollständige Sicherung',

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { COUNTER_STYLE } from '../components/componentStyles';
@@ -47,7 +47,7 @@ export default function CommentsScreen() {
   const {
     searchActive, searchText, setSearchText,
     selectMode, selectedIds: selectedComments,
-    toggleItem, exitSelectMode,
+    toggleItem, reconcileSelection, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
   } = select;
 
@@ -110,10 +110,16 @@ export default function CommentsScreen() {
 
   const visibleIds = useMemo(() => sortedComments.map((c) => c.description), [sortedComments]);
 
+  useEffect(() => {
+    if (loading) return;
+    reconcileSelection(visibleIds);
+  }, [visibleIds, loading, reconcileSelection]);
+
   const {
     deleteModalVisible, busy, openDeleteModal, closeDeleteModal, confirmBulkDelete,
   } = useBulkDelete({
     selectedIds: selectedComments,
+    visibleIds,
     exitSelectMode,
     deleteFn: (ids) => transactionRepository.deleteComments(ids),
     afterDelete: () => { loadComments(); },

@@ -86,4 +86,9 @@ describe('photoCleanup', () => {
     await expect(deletePhotoUris(['a', 'b', 'c'])).resolves.toBeUndefined();
     expect(mocks.deletePhotoFile).toHaveBeenCalledTimes(3);
   });
+
+  it('deletePhotoUris ignores non-string values from malformed photo fields', async () => {
+    await expect(deletePhotoUris(['a', 1 as unknown as string, 'b'])).resolves.toBeUndefined();
+    expect(mocks.deletePhotoFile).toHaveBeenCalledTimes(2);
+  });
 });

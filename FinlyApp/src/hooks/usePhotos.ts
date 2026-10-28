@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { File, Paths } from 'expo-file-system';
+import { Directory, File, Paths } from 'expo-file-system';
 import { isWeb } from '../utils/platform';
+import { PHOTO_DIRECTORY } from '../utils/photoUri';
 import { deletePhotoFile } from '../utils/photoUtils';
 import { t } from '../i18n';
 import { ERROR_PREFIXES, logError, showErrorAlert } from '../utils/errors';
@@ -26,11 +27,12 @@ async function webPhotoUri(asset: ImagePicker.ImagePickerAsset): Promise<string>
 }
 
 async function copyPhotoToStorage(src: string): Promise<string> {
-  const dest = Paths.document.uri + `photo_${Date.now()}_${photoCounter++}.jpg`;
+  const photosDir = new Directory(Paths.document, PHOTO_DIRECTORY);
+  photosDir.create({ idempotent: true, intermediates: true });
+  const destFile = new File(photosDir, `photo_${Date.now()}_${photoCounter++}.jpg`);
   const srcFile = new File(src);
-  const destFile = new File(dest);
   await srcFile.copy(destFile);
-  return dest;
+  return destFile.uri;
 }
 
 export function usePhotos(initialPhotos: string[] = []) {

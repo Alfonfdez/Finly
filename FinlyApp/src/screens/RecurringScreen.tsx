@@ -110,7 +110,7 @@ export default function RecurringScreen() {
   const {
     searchActive, searchText, setSearchText,
     selectMode, selectedIds,
-    toggleItem, exitSelectMode,
+    toggleItem, reconcileSelection, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
   } = select;
 
@@ -151,6 +151,11 @@ export default function RecurringScreen() {
 
   const visibleIds = useMemo(() => filteredRules.map((rule) => rule.id), [filteredRules]);
 
+  useEffect(() => {
+    if (loading) return;
+    reconcileSelection(visibleIds);
+  }, [visibleIds, loading, reconcileSelection]);
+
   const sortedRules = useMemo(
     () => sortRecurringRules(filteredRules, sortBy, sortDirection),
     [filteredRules, sortBy, sortDirection],
@@ -189,6 +194,7 @@ export default function RecurringScreen() {
     deleteModalVisible, busy, openDeleteModal, closeDeleteModal, confirmBulkDelete,
   } = useBulkDelete({
     selectedIds,
+    visibleIds,
     exitSelectMode,
     deleteFn: (ids) => recurringRepository.deleteMany(ids),
     afterDelete: async () => { setData(await loadRules()); refresh(); },

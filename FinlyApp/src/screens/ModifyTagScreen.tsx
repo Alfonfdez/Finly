@@ -5,6 +5,7 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import { useConfig } from '../context/ConfigContext';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
+import { useBusyGuard } from '../hooks/useBusyGuard';
 import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
 import { useIsDirty } from '../hooks/useIsDirty';
 import { t } from '../i18n';
@@ -29,6 +30,7 @@ export default function ModifyTagScreen() {
   const { tagId } = route.params;
 
   const deferredRefreshTags = useDeferredRefresh(refreshTags);
+  const { busy, run } = useBusyGuard();
 
   const tag = useMemo(
     () => tags.find(t => t.id === tagId),
@@ -62,14 +64,19 @@ export default function ModifyTagScreen() {
     const trimmed = name.trim();
     if (!trimmed || nameError || checkingName) return;
 
-    await runWithErrorAlert(async () => {
-      await tagRepository.update(tagId, { name: trimmed });
-      navigation.goBack();
-      deferredRefreshTags();
-    }, ERROR_PREFIXES.tagUpdate);
+    await run(async () => {
+      await runWithErrorAlert(async () => {
+        await tagRepository.update(tagId, { name: trimmed });
+        navigation.goBack();
+        deferredRefreshTags();
+      }, ERROR_PREFIXES.tagUpdate);
+    });
   };
 
-  const { visible: deleteModalVisible, open: openDeleteModal, close: closeDeleteModal, confirm: confirmDelete } = useDeleteConfirmation({
+  const {
+    visible: deleteModalVisible, busy: deleting, open: openDeleteModal,
+    close: closeDeleteModal, confirm: confirmDelete,
+  } = useDeleteConfirmation({
     deleteFn: () => tagRepository.delete(tagId),
     onSuccess: async () => {
       navigation.goBack();
@@ -110,7 +117,7 @@ export default function ModifyTagScreen() {
           <PrimaryButton
             label={labels.modify_tag_save}
             onPress={handleSave}
-            disabled={isDisabled}
+            disabled={isDisabled || busy || deleting}
             enabledTextColor={c.background}
             disabledBg={c.surface}
             disabledTextColor={c.textSecondary}
@@ -126,6 +133,7 @@ export default function ModifyTagScreen() {
         cancelLabel={labels.modify_tag_delete_confirm_cancel}
         onConfirm={confirmDelete}
         onCancel={closeDeleteModal}
+        busy={deleting}
       />
     </ScreenShell>
   );
