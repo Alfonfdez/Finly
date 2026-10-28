@@ -4577,3 +4577,7 @@
 - Reserve category tile height and border so labels are not clipped on web or native.
 - Allow negative account initial balances through a sign toggle and signed amount parsing; transaction amounts remain positive-only.
 - Add regressions and recapture the v3.3 screenshots.
+
+[2026-10-28] fix | FinlyApp/src/components/AmountInput.tsx, FinlyApp/tests/component/AmountInput.test.tsx, spec/features/026-account-initial-balance/1-spec.md, spec/constitution/3-roadmap.md
+- Disable the initial-balance sign toggle for empty and zero values and normalize negative zero to zero.
+- Add sign-toggle state and negative-zero regressions.
