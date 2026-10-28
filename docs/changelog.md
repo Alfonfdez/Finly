@@ -4562,3 +4562,8 @@
 - Centralize config DB keys and codecs in configMetadata and derive parsing/serialization from it.
 - Share the FK-safe wipe sequence across reset, delete-all and backup import.
 - No behavior change; add sort, config-metadata and wipe regressions.
+
+[2026-10-28] test | FinlyApp/scripts/upgrade/build-fixture-2.1.0.mjs, FinlyApp/scripts/upgrade/fixture-2.1.0.json, FinlyApp/tests/tooling/upgradeFixture.test.ts, docs/upgrade-testing.md, spec/constitution/3-roadmap.md
+- Add a pure schema-3 2.1.0 fixture with realistic multi-month data, tags, comments, photo and 2.1.0-only config.
+- Add a tooling test validating the fixture with the current backup parser and import invariants.
+- Document the EAS 2.1.0 to 2.2.0 in-place upgrade procedure.
