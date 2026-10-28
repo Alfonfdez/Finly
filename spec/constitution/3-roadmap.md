@@ -1533,6 +1533,7 @@ Applied 2026-10-28:
 - Category tiles reserve a minimum height and the selected border on every tile, so one-line labels are not clipped on web or native, including large text.
 - Account initial balances accept negative values through a localized `+`/`-` sign toggle; `parseAmountInput` preserves a leading minus only when enabled, and transaction amounts remain positive-only.
 - Added category-tile, signed-parsing, sign-toggle and ModifyAccount regressions; recaptured the v3.3 screenshots.
-- `npm run test:all` green (183 files / 1577 tests).
+- The sign toggle is disabled for empty/zero balances and negative zero is normalized to zero.
+- `npm run test:all` green (183 files / 1580 tests).
 
 Spec: spec/features/004-add-transaction-screen/, spec/features/017-modify-transaction-screen/, spec/features/026-account-initial-balance/.

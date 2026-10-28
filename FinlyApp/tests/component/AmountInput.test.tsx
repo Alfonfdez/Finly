@@ -129,6 +129,29 @@ describe('AmountInput', () => {
     expect(onChangeRaw).toHaveBeenLastCalledWith('250');
   });
 
+  it('disables the sign toggle for empty and zero values', async () => {
+    const empty = await render(<AmountInput raw="" onChangeRaw={() => {}} allowNegative />);
+    expect(empty.getByLabelText('Toggle positive or negative')).toBeDisabled();
+
+    const zero = await render(<AmountInput raw="0" onChangeRaw={() => {}} allowNegative />);
+    expect(zero.getByLabelText('Toggle positive or negative')).toBeDisabled();
+  });
+
+  it('enables the sign toggle for any non-zero amount', async () => {
+    const small = await render(<AmountInput raw="0.01" onChangeRaw={() => {}} allowNegative />);
+    expect(small.getByLabelText('Toggle positive or negative')).toBeEnabled();
+
+    const negative = await render(<AmountInput raw="-250" onChangeRaw={() => {}} allowNegative />);
+    expect(negative.getByLabelText('Toggle positive or negative')).toBeEnabled();
+  });
+
+  it('normalizes negative zero to zero on blur', async () => {
+    const onChangeRaw = vi.fn();
+    const view = await render(<AmountInput raw="-0" onChangeRaw={onChangeRaw} allowNegative />);
+    await fireEvent(view.getByDisplayValue('-0'), 'blur');
+    expect(onChangeRaw).toHaveBeenCalledWith('0');
+  });
+
   it('treats a lone minus as an intermediate value, not an error', async () => {
     const view = await render(<AmountInput raw="-" onChangeRaw={() => {}} allowNegative />);
     expect(view.getByDisplayValue('-')).toBeTruthy();

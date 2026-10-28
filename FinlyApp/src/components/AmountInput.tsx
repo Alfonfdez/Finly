@@ -33,9 +33,12 @@ export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label,
 
   const displayAmount = formatAmountDisplay(raw, config.decimalSeparator);
   const isNegative = raw.startsWith('-');
-  const showError = raw.length > 0 && raw !== '-' && parseAmountValue(raw) === null;
+  const numericValue = parseAmountValue(raw);
+  const canToggleSign = allowNegative && numericValue !== null && numericValue !== 0;
+  const showError = raw.length > 0 && raw !== '-' && numericValue === null;
   const invalid = showError || !!error;
   const toggleSign = () => {
+    if (!canToggleSign) return;
     onChangeRaw(isNegative ? raw.slice(1) : `-${raw}`);
   };
 
@@ -67,7 +70,13 @@ export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label,
             onChangeRaw(clean);
           }}
           onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          onBlur={() => {
+            setFocused(false);
+            // A zero balance has no meaningful negative representation.
+            if (allowNegative && raw.startsWith('-') && parseAmountValue(raw) === 0) {
+              onChangeRaw('0');
+            }
+          }}
           keyboardType="decimal-pad"
           accessibilityLabel={accessibilityLabel ?? labels.a11y_amount}
         />
@@ -76,11 +85,16 @@ export default function AmountInput({ raw, onChangeRaw, onOpenCalculator, label,
         </Text>
         {allowNegative && (
           <TouchableOpacity
-            style={[styles.signButton, { backgroundColor: c.surface, borderColor: c.border }]}
+            style={[
+              styles.signButton,
+              { backgroundColor: c.surface, borderColor: c.border },
+              !canToggleSign && styles.signButtonDisabled,
+            ]}
             onPress={toggleSign}
+            disabled={!canToggleSign}
             accessibilityRole="button"
             accessibilityLabel={labels.a11y_toggle_sign}
-            accessibilityState={{ selected: isNegative }}
+            accessibilityState={{ selected: isNegative, disabled: !canToggleSign }}
           >
             <Text style={[styles.signText, { color: c.primary, fontSize: fs(18) }]}>
               {isNegative ? '+' : '-'}
@@ -144,6 +158,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  signButtonDisabled: {
+    opacity: 0.4,
   },
   signText: {
     fontWeight: '700',
