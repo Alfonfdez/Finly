@@ -317,7 +317,7 @@ export default function TransactionForm(props: TransactionFormProps) {
             onSelect={setCategoryId}
             onAddMore={() => hasMore
               ? navigation.navigate('AddCategory', { type })
-              : navigation.navigate('CreateCategory', { type })
+              : navigation.navigate('CreateCategory', { type, fromTransaction: true })
             }
             showAddMore
             addMoreLabel={hasMore ? labels.add_more : labels.add_cat_create}

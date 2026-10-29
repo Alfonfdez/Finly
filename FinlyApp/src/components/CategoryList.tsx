@@ -2,7 +2,7 @@ import { useCallback, memo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { type CategoryWithTotal, MAX_VISIBLE_TAGS } from '../constants/types';
 import { isUntaggedTag } from '../utils/tagFilter';
-import { formatAmount, HIDDEN_BALANCE } from '../utils/formatters';
+import { formatAmount, formatPercentage, HIDDEN_BALANCE } from '../utils/formatters';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import { useConfig } from '../context/ConfigContext';
@@ -94,11 +94,11 @@ function CategoryListInner({
               <Text style={[styles.total, { color: hidden ? c.textSecondary : c.text, fontSize: fs(14) }]}>
                 {hidden ? HIDDEN_BALANCE : formatAmount(item.total, config)}
               </Text>
-              <Text style={[styles.percentage, { color: c.textSecondary, fontSize: fs(12) }]}>{item.percentage.toFixed(1)}%</Text>
+              <Text style={[styles.percentage, { color: c.textSecondary, fontSize: fs(12) }]}>{formatPercentage(item.percentage, config.decimalSeparator)}%</Text>
             </View>
           }
           onPress={() => onPress?.(item)}
-          accessibilityLabel={`${labels.a11y_category} ${displayName}, ${item.percentage.toFixed(1)}%`}
+          accessibilityLabel={`${labels.a11y_category} ${displayName}, ${formatPercentage(item.percentage, config.decimalSeparator)}%`}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         />
         {renderTagChips(item.id)}

@@ -30,6 +30,7 @@ import RecurringViewChip from '../components/RecurringViewChip';
 import Fab from '../components/Fab';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import TransactionListBody from '../components/TransactionListBody';
+import LoadErrorState from '../components/LoadErrorState';
 
 type TransactionsRouteProp = RouteProp<RootStackParamList, 'Transactions'>;
 
@@ -56,7 +57,9 @@ export default function TransactionsScreen() {
     return await transactionRepository.list(query);
   }, [categoryId, startDate, endDate]);
 
-  const { data: allTransactions, setData, loading } = useFocusLoad(loadTransactions, [] as Transaction[]);
+  const {
+    data: allTransactions, setData, loading, error, retry,
+  } = useFocusLoad(loadTransactions, [] as Transaction[]);
 
   const select = useSelectAndSearch<number>({ hasItems: allTransactions.length > 0 });
 
@@ -140,6 +143,14 @@ export default function TransactionsScreen() {
     }
     return `${typeLabel} · ${formatDateLong(start, lang)}`;
   }, [route.params?.period, startDate, endDate, config.language, labels]);
+
+  if (error && !loading) {
+    return (
+      <ScreenShell>
+        <LoadErrorState onRetry={retry} />
+      </ScreenShell>
+    );
+  }
 
   return (
     <ScreenShell>

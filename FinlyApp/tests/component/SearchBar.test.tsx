@@ -28,6 +28,7 @@ describe('SearchBar', () => {
 
     const input = view.getByPlaceholderText('Search transactions');
     expect(input.props.value).toBe('grocer');
+    expect(input.props.accessibilityLabel).toBe('Search transactions');
   });
 
   it('renders search and close icons', async () => {

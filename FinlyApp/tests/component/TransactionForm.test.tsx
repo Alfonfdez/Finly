@@ -208,6 +208,12 @@ describe('TransactionForm', () => {
     expect(view.getByRole('button', { name: 'Account: Wallet' })).toBeTruthy();
   });
 
+  it('opens Create category with the transaction flow flag when there are few categories', async () => {
+    const view = await renderForm();
+    fireEvent.press(view.getByText('Create'));
+    expect(nav.navigate).toHaveBeenCalledWith('CreateCategory', { type: 'expense', fromTransaction: true });
+  });
+
   it('keeps the submit button disabled until the form can submit', async () => {
     const view = await renderForm();
     expect(view.getByText('Save')).toBeDisabled();

@@ -50,6 +50,25 @@ describe('useKeyboardLift', () => {
     expect(result.current).toBe(320);
   });
 
+  it('ignores a keyboard that was already open when the modal opens', async () => {
+    let visible = false;
+    const { result, rerender } = await renderHook(() => useKeyboardLift(visible));
+
+    await emit('keyboardDidShow', { endCoordinates: { height: 300 } });
+    expect(result.current).toBe(0);
+
+    visible = true;
+    await act(async () => { rerender(undefined); });
+    expect(result.current).toBe(0);
+
+    await emit('keyboardDidHide', {});
+    await act(async () => { await waitForRelease(); });
+    expect(result.current).toBe(0);
+
+    await emit('keyboardDidShow', { endCoordinates: { height: 280 } });
+    expect(result.current).toBe(280);
+  });
+
   it('resets the lift when the modal becomes hidden', async () => {
     let visible = true;
     const { result, rerender } = await renderHook(() => useKeyboardLift(visible));

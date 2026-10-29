@@ -46,6 +46,11 @@ describe('DonutChart', () => {
     expect(flattenStyle(view.getByText(formatAmount(100, config)).props.style).color).toBe('#E2E8F0');
   });
 
+  it('exposes a text alternative for the chart', async () => {
+    const view = await render(<DonutChart data={data} total={100} />);
+    expect(view.getByLabelText(/Groceries 60,0%/)).toBeTruthy();
+  });
+
   it('shows the mask instead of the total when hidden', async () => {
     const view = await render(<DonutChart data={data} total={100} hidden />);
     expect(view.getByText(HIDDEN_BALANCE)).toBeTruthy();

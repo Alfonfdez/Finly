@@ -326,6 +326,38 @@ describe('backup validation', () => {
     expectInvalid(copy => { copy.data.recurring_rules = [{ ...rule, account_id: 999 }]; });
     const totalAccount = snapshot.data.accounts.find(account => account.is_total === 1)!;
     expectInvalid(copy => { copy.data.recurring_rules = [{ ...rule, account_id: totalAccount.id }]; });
+    expectInvalid(copy => {
+      copy.data.recurring_rules = [{
+        ...rule,
+        frequency: 'weekly',
+        next_due: '2026-01-02',
+      }];
+    });
+    expectInvalid(copy => {
+      copy.data.recurring_rules = [{
+        ...rule,
+        start_date: '2020-01-01',
+        next_due: '2020-01-01',
+      }];
+    });
+  });
+
+  it('rejects duplicate rows, config keys and multiple Total accounts', async () => {
+    const db = await boot();
+    const snapshot = await buildBackup(db, SCHEMA_VERSION);
+    db.close();
+
+    const expectInvalid = (mutate: (copy: typeof snapshot) => void) => {
+      const copy = structuredClone(snapshot);
+      mutate(copy);
+      expect(() => assertImportableBackup(copy)).toThrow(BackupValidationError);
+    };
+
+    expectInvalid(copy => { copy.data.accounts.push({ ...copy.data.accounts[0] }); });
+    expectInvalid(copy => { copy.data.config.push({ ...copy.data.config[0] }); });
+    expectInvalid(copy => { copy.data.config.push({ key: 'unknown_key', value: 'x' }); });
+    expectInvalid(copy => { copy.data.config[0].value = 'x'.repeat(100_001); });
+    expectInvalid(copy => { copy.data.accounts = copy.data.accounts.map(account => ({ ...account, is_total: 1 })); });
   });
 
   it('rejects missing foreign keys, Total-account transactions and broken tag links', async () => {
@@ -403,6 +435,7 @@ describe('backup validation', () => {
       expect(() => assertImportableBackup(copy)).toThrow(BackupValidationError);
     };
     expectInvalid(copy => { copy.data.transactions[0].date = '08/08/2026'; });
+    expectInvalid(copy => { copy.data.transactions[0].date = '2026-08-08 25:00:00'; });
     expectInvalid(copy => {
       const income = copy.data.categories.find(category => category.type === 'income');
       if (!income) throw new Error('missing income category');

@@ -204,7 +204,7 @@ const HomeStack = memo(function HomeStack() {
     { name: 'AddTransaction', component: AddTransactionScreen, icon: 'add-circle-outline', label: labels.add_title,
       options: { headerTitle: () => <HeaderTitle icon="add-circle-outline" label={labels.add_title} wide /> } },
     { name: 'AddCategory', component: AddCategoryScreen, icon: 'grid-outline', label: labels.add_cat_title,
-      options: { headerTitle: () => <HeaderTitle icon="grid-outline" label={labels.add_cat_title} wide /> } },
+      options: { headerTitle: () => <HeaderTitle icon="grid-outline" label={labels.add_cat_title} /> } },
     { name: 'CreateCategory', component: CreateCategoryScreen, icon: 'grid-outline', label: labels.create_cat_title,
       options: { headerTitle: () => <HeaderTitle icon="grid-outline" label={labels.create_cat_title} wide /> } },
     { name: 'ModifyCategory', component: ModifyCategoryScreen, icon: 'create-outline', label: labels.modify_cat_title,

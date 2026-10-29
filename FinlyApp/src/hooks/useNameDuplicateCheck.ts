@@ -7,6 +7,8 @@ interface UseNameDuplicateCheckOptions {
   existsByName: (name: string, excludeId?: number) => Promise<boolean>;
   resolveDefaultEnglishName: (value: string) => string | null;
   duplicateErrorKey: string;
+  /** Message shown when the check itself fails; defaults to the duplicate message. */
+  checkErrorKey?: string;
   excludeId?: number;
 }
 
@@ -19,7 +21,9 @@ export function useNameDuplicateCheck(options: UseNameDuplicateCheckOptions) {
   const checkId = useRef(0);
 
   const checkNameDuplicate = useCallback(async (value: string) => {
-    const { existsByName, resolveDefaultEnglishName, duplicateErrorKey, excludeId } = optionsRef.current;
+    const {
+      existsByName, resolveDefaultEnglishName, duplicateErrorKey, checkErrorKey, excludeId,
+    } = optionsRef.current;
     const id = ++checkId.current;
     if (!value.trim()) {
       setNameError(null);
@@ -43,7 +47,7 @@ export function useNameDuplicateCheck(options: UseNameDuplicateCheckOptions) {
     } catch (error) {
       if (id !== checkId.current) return;
       logError(ERROR_PREFIXES.duplicateCheck, error);
-      setNameError(null);
+      setNameError(checkErrorKey ?? duplicateErrorKey);
     } finally {
       if (id === checkId.current) setCheckingName(false);
     }

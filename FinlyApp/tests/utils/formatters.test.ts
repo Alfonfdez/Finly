@@ -6,6 +6,7 @@ import {
   formatCurrency,
   formatSignedCurrency,
   formatAmount,
+  formatPercentage,
   fitFontSize,
   formatDate,
   formatDayShort,
@@ -84,6 +85,13 @@ describe('formatAmount', () => {
   it('keeps the minus sign for negative amounts', () => {
     const config = { currency: '€', decimalSeparator: DECIMAL_SEPARATORS.comma };
     expect(formatAmount(-50, config)).toBe('-50,00 €');
+  });
+});
+
+describe('formatPercentage', () => {
+  it('uses the configured decimal separator', () => {
+    expect(formatPercentage(12.5, DECIMAL_SEPARATORS.comma)).toBe('12,5');
+    expect(formatPercentage(12.5, DECIMAL_SEPARATORS.dot)).toBe('12.5');
   });
 });
 

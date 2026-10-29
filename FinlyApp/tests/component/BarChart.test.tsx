@@ -46,12 +46,17 @@ describe('BarChart', () => {
     expect(view.getByText(formatAmount(0, config))).toBeTruthy();
   });
 
+  it('exposes a text alternative for the chart', async () => {
+    const view = await render(<BarChart data={data} total={100} />);
+    expect(view.getByLabelText(/Groceries 60,0%/)).toBeTruthy();
+  });
+
   it('lists each category with its percentage', async () => {
     const view = await render(<BarChart data={data} total={100} />);
     expect(view.getByText('Groceries')).toBeTruthy();
-    expect(view.getByText('60.0%')).toBeTruthy();
+    expect(view.getByText('60,0%')).toBeTruthy();
     expect(view.getByText('Clothing')).toBeTruthy();
-    expect(view.getByText('40.0%')).toBeTruthy();
+    expect(view.getByText('40,0%')).toBeTruthy();
   });
 
   it('renders no legend rows without data', async () => {

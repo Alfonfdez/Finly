@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { t } from '../../src/i18n';
 import { backupFileName } from '../../src/utils/formatters';
 import { ShareResult } from '../../src/constants/shareResult';
+import { MAX_BACKUP_BYTES } from '../../src/constants/types';
 
 const files = new Map<string, string>();
 const mockWrite = vi.fn(async (uri: string, data: string) => {
@@ -39,7 +40,7 @@ vi.mock('../../modules/finly-share/src/index', () => ({
   saveToDownloadsAsync: (name: string, json: string) => mockSaveToDownloads(name, json),
 }));
 
-const mockPick = vi.fn(async () => ({ canceled: true, assets: [] as { uri: string }[] }));
+const mockPick = vi.fn(async () => ({ canceled: true, assets: [] as { uri: string; size?: number }[] }));
 vi.mock('expo-document-picker', () => ({
   getDocumentAsync: () => mockPick(),
 }));
@@ -101,6 +102,16 @@ describe('backupIO (native)', () => {
     const { pickBackupFile } = await import('../../src/utils/backupIO');
 
     expect(await pickBackupFile()).toBe('{"picked":true}');
+  });
+
+  it('rejects an oversized picked file before reading it', async () => {
+    mockPick.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///big.json', size: MAX_BACKUP_BYTES + 1 }],
+    });
+    const { pickBackupFile } = await import('../../src/utils/backupIO');
+
+    await expect(pickBackupFile()).rejects.toMatchObject({ code: 'invalid_format' });
   });
 
   it('returns null when the picker is cancelled or returns no asset', async () => {

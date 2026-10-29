@@ -1,9 +1,10 @@
-import { t } from '../i18n';
+import { t, tFor } from '../i18n';
 import { roundTo2 } from './calculator';
 import { PERIODS, TEXT_SIZES, DECIMAL_SEPARATORS, FIRST_DAYS, type DecimalSeparator, type FirstDay, type Period, type TextSize } from '../constants/types';
 import { DAYS_PER_WEEK } from '../constants/calendar';
 import { LANGUAGES, type Language } from './language';
 import { DEFAULT_CURRENCY, getCurrencySymbol } from '../constants/currencies';
+import { BACKUP_FILE_EXTENSION, BACKUP_FILE_PREFIX } from '../constants/backup';
 import type { Config } from '../database/types';
 
 export const HIDDEN_BALANCE = '•••••';
@@ -69,6 +70,16 @@ export function formatDayShort(date: Date, shortMonths: string[]): string {
 
 export function getMonthName(month: number): string {
   return t().months[month - 1] ?? '';
+}
+
+export function getMonthNameFor(month: number, language: Language): string {
+  return tFor(language).months[month - 1] ?? '';
+}
+
+/** Percentage text using the configured decimal separator. */
+export function formatPercentage(value: number, separator: DecimalSeparator = DECIMAL_SEPARATORS.comma): string {
+  const text = value.toFixed(1);
+  return separator === DECIMAL_SEPARATORS.dot ? text : text.replace('.', DECIMAL_SEPARATORS.comma);
 }
 
 export function startOfDay(date: Date): Date {
@@ -158,7 +169,7 @@ export function isSameDay(a: Date, b: Date): boolean {
 export function formatDateLong(date: Date, language: Language): string {
   const day = date.getDate();
   const year = date.getFullYear();
-  const monthName = getMonthName(date.getMonth() + 1);
+  const monthName = getMonthNameFor(date.getMonth() + 1, language);
 
   if (language === LANGUAGES.en) {
     return `${monthName} ${day}, ${year}`;
@@ -316,5 +327,5 @@ export function escapeLikePattern(term: string): string {
 
 export function backupFileName(): string {
   const stamp = datePart(new Date().toISOString());
-  return `finly-backup-${stamp}.json`;
+  return `${BACKUP_FILE_PREFIX}${stamp}${BACKUP_FILE_EXTENSION}`;
 }

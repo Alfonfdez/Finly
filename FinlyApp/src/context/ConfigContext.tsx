@@ -52,19 +52,24 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   const [activeColors, setActiveColors] = useState<ColorPalette>(darkColors);
 
   useEffect(() => {
+    let active = true;
     (async () => {
       try {
         const loaded = await configRepository.get();
+        if (!active) return;
         configRef.current = loaded;
         setConfig(loaded);
         setActiveColors(resolveColors(loaded.theme));
         setLanguage(loaded.language);
       } catch (error) {
+        if (!active) return;
         logError(ERROR_PREFIXES.configLoad, error);
         setActiveColors(resolveColors(DEFAULT_CONFIG.theme));
+      } finally {
+        if (active) setLoading(false);
       }
-      setLoading(false);
     })();
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {

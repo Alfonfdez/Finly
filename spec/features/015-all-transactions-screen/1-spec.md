@@ -186,5 +186,6 @@
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
 - [x] Bulk delete confirms once for the whole batch and permanently deletes the selected transactions (including photos and tag links).
 - [x] Changing a filter/search prunes hidden selections; bulk delete only deletes currently visible selected transactions.
+- [x] A failed load shows the shared error state with a retry action instead of an empty list.
 - [x] A Select all / Deselect all row above the list selects every currently visible transaction in one tap.
 - [x] After returning from AddTransaction, the type tab matches the added transaction's type (except when "All" was selected, which stays "All").

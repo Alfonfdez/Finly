@@ -2,7 +2,7 @@ import initSqlJs from 'sql.js';
 import type { Database, SqlJsStatic } from 'sql.js';
 import type { DatabaseBindValue, DatabaseHandle, DatabaseRunResult } from './types';
 
-export const DB_FILE_KEY = 'sqlite';
+export { DB_FILE_KEY } from '../constants/storage';
 
 export interface DatabaseStorage {
   get(): Promise<Uint8Array | null>;
@@ -14,10 +14,16 @@ let sqlPromise: Promise<SqlJsStatic> | null = null;
 
 export function initSqlJsEngine(locateFile?: (file: string) => string): Promise<SqlJsStatic> {
   if (!sqlPromise) {
-    sqlPromise = (locateFile ? initSqlJs({ locateFile }) : initSqlJs()).then((sql) => {
-      sqlReady = sql;
-      return sql;
-    });
+    sqlPromise = (locateFile ? initSqlJs({ locateFile }) : initSqlJs())
+      .then((sql) => {
+        sqlReady = sql;
+        return sql;
+      })
+      .catch((error) => {
+        // A transient WASM load failure must not poison every later retry.
+        sqlPromise = null;
+        throw error;
+      });
   }
   return sqlPromise;
 }
@@ -32,6 +38,8 @@ export class SqlJsDatabase implements DatabaseHandle {
   private readonly onPersistError?: (error: unknown) => void;
   private inTransaction = 0;
   private persistQueue: Promise<void> = Promise.resolve();
+  private pendingBytes: Uint8Array | null = null;
+  private persistScheduled = false;
 
   constructor(
     db: Database,
@@ -97,6 +105,11 @@ export class SqlJsDatabase implements DatabaseHandle {
     this.db.close();
   }
 
+  /** Wait for all queued snapshots to reach IndexedDB. */
+  flush(): Promise<void> {
+    return this.persistQueue;
+  }
+
   private lastInsertRowId(): number {
     const rows = this.db.exec('SELECT last_insert_rowid() AS id');
     return rows.length > 0 ? (rows[0].values[0][0] as number) : 0;
@@ -119,27 +132,40 @@ export class SqlJsDatabase implements DatabaseHandle {
   private persistIfCommitted(): Promise<void> {
     const storage = this.storage;
     if (this.inTransaction > 0 || !storage) return Promise.resolve();
-    const bytes = this.db.export();
+
+    // Coalesce writes: only the latest full snapshot matters. A failed persist is
+    // reported through onPersistError, but never rejects a committed operation.
+    this.pendingBytes = this.db.export();
     this.db.exec('PRAGMA foreign_keys = ON;');
-    const write = () => storage.set(bytes);
-    const run = this.persistQueue.then(async () => {
+    if (!this.persistScheduled) {
+      this.persistScheduled = true;
+      this.persistQueue = this.drainPersistQueue(storage);
+    }
+    return this.persistQueue;
+  }
+
+  private async drainPersistQueue(storage: DatabaseStorage): Promise<void> {
+    while (this.pendingBytes) {
+      const bytes = this.pendingBytes;
+      this.pendingBytes = null;
+      const write = () => storage.set(bytes);
       try {
         await write();
       } catch {
-        // Retry once (transient quota/failure), then surface it instead of
-        // pretending the change was saved.
+        // Retry once (transient quota/failure), then report it. The SQLite commit
+        // already happened, so callers must not roll back their in-memory state.
         try {
           await write();
         } catch (error) {
           this.onPersistError?.(error);
-          throw error;
         }
       }
-    });
-    // Keep the queue usable after a failed snapshot; the rejected operation still
-    // reaches its caller, while the next write can persist the full current DB.
-    this.persistQueue = run.catch(() => {});
-    return run;
+    }
+    this.persistScheduled = false;
+    if (this.pendingBytes) {
+      this.persistScheduled = true;
+      this.persistQueue = this.drainPersistQueue(storage);
+    }
   }
 }
 

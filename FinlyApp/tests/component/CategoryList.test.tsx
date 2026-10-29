@@ -36,7 +36,7 @@ describe('CategoryList', () => {
     expect(flattenStyle(view.getByText(HIDDEN_BALANCE).props.style).color).toBe('#94A3B8');
     // The category name and its percentage stay visible: only the money is masked.
     expect(view.getByText('Food')).toBeTruthy();
-    expect(view.getByText('100.0%')).toBeTruthy();
+    expect(view.getByText('100,0%')).toBeTruthy();
   });
 
   it('keeps the normal total color when visible', async () => {

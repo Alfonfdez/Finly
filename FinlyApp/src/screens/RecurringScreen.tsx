@@ -19,6 +19,7 @@ import SortRow from '../components/SortRow';
 import ConfirmationModal from '../components/ConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
+import LoadErrorState from '../components/LoadErrorState';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFocusLoad } from '../hooks/useFocusLoad';
@@ -53,7 +54,9 @@ export default function RecurringScreen() {
     const counts = await recurringRepository.countOccurrencesByRuleIds(rules.map(r => r.id));
     return { rules, counts };
   }, []);
-  const { data, setData, loading } = useFocusLoad(
+  const {
+    data, setData, loading, error, retry,
+  } = useFocusLoad(
     loadRules,
     { rules: [] as RecurringRule[], counts: new Map<number, number>() },
   );
@@ -214,6 +217,14 @@ export default function RecurringScreen() {
       selected={selectedIds.has(item.id)}
     />
   ), [categoriesById, counts, today, handleRulePress, handleToggleActive, busyRuleIds, selectMode, selectedIds]);
+
+  if (error && !loading) {
+    return (
+      <ScreenShell>
+        <LoadErrorState onRetry={retry} />
+      </ScreenShell>
+    );
+  }
 
   if (loading && rules.length === 0) {
     return (

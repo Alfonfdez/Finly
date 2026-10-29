@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Keyboard } from 'react-native';
 
 /**
@@ -29,18 +29,39 @@ export function useKeyboardInset(): number {
  * the modal drop at that moment would move the button out from under the finger and swallow
  * the tap. The lift is therefore held for a short release delay after the keyboard hides,
  * then dropped so a searchable modal returns to its centred size.
+ *
+ * A keyboard that was already open in the underlying form is ignored when the modal opens:
+ * `ModalShell` dismisses it, and lifting for it first would make the card jump from the top
+ * to the centre. Only a keyboard shown after the modal opens lifts it.
  */
 export const KEYBOARD_LIFT_RELEASE_MS = 250;
 
 export function useKeyboardLift(visible: boolean): number {
   const keyboardInset = useKeyboardInset();
   const [lift, setLift] = useState(0);
+  const wasVisible = useRef(false);
+  const ignoreStaleInset = useRef(false);
 
   useEffect(() => {
     if (!visible) {
+      wasVisible.current = false;
+      ignoreStaleInset.current = false;
       setLift(0);
       return;
     }
+
+    if (!wasVisible.current) {
+      wasVisible.current = true;
+      ignoreStaleInset.current = keyboardInset > 0;
+      setLift(0);
+    }
+
+    if (keyboardInset === 0) {
+      ignoreStaleInset.current = false;
+    }
+
+    if (ignoreStaleInset.current) return;
+
     if (keyboardInset > 0) {
       setLift(prev => Math.max(prev, keyboardInset));
       return;

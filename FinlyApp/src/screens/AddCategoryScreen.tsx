@@ -87,7 +87,7 @@ export default function AddCategoryScreen() {
               categories={filteredCategories}
               selectedCategory={null}
               onSelect={handleSelectCategory}
-              onAddMore={() => navigation.navigate('CreateCategory', { type })}
+              onAddMore={() => navigation.navigate('CreateCategory', { type, fromTransaction: true })}
               showAddMore={!atCategoryLimit}
               addMoreLabel={labels.add_cat_create}
               hideTitle

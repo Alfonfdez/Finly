@@ -1,7 +1,7 @@
 import { memo, useState } from 'react';
 import { View, Text, StyleSheet, type LayoutChangeEvent } from 'react-native';
 import type { CategoryWithTotal } from '../constants/types';
-import { formatAmount, fitFontSize, HIDDEN_BALANCE } from '../utils/formatters';
+import { formatAmount, formatPercentage, fitFontSize, HIDDEN_BALANCE } from '../utils/formatters';
 import { getDisplayCategoryName } from '../i18n';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -26,9 +26,12 @@ function BarChartInner({ data, total = 0, hidden = false }: Props) {
   const totalFontSize = width > 0 ? fitFontSize(formatted, fs(18), width - H_PADDING * 2) : fs(18);
 
   const handleLayout = (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width);
+  const accessibleLabel = hidden
+    ? formatted
+    : `${formatted}: ${data.map(item => `${getDisplayCategoryName(item)} ${formatPercentage(item.percentage, config.decimalSeparator)}%`).join(', ')}`;
 
   return (
-    <View style={styles.container} onLayout={handleLayout}>
+    <View style={styles.container} onLayout={handleLayout} accessible accessibilityLabel={accessibleLabel}>
       <Text style={[styles.total, { color: hidden ? c.textSecondary : c.text, fontSize: totalFontSize }]} numberOfLines={1}>
         {formatted}
       </Text>
@@ -50,7 +53,7 @@ function BarChartInner({ data, total = 0, hidden = false }: Props) {
           <View key={item.id} style={styles.legendItem}>
             <View style={[styles.legendColor, { backgroundColor: item.color }]} />
             <Text style={{ color: c.text, fontSize: fs(12) }}>{getDisplayCategoryName(item)}</Text>
-            <Text style={{ color: c.textSecondary, fontSize: fs(11) }}>{item.percentage.toFixed(1)}%</Text>
+            <Text style={{ color: c.textSecondary, fontSize: fs(11) }}>{formatPercentage(item.percentage, config.decimalSeparator)}%</Text>
           </View>
         ))}
       </View>

@@ -21,6 +21,8 @@ describe('FormHintSlot', () => {
 
     const text = view.getByText('Select a category');
     expect(StyleSheet.flatten(text.props.style).color).toBe('#F87171');
+    expect(text.props.accessibilityLiveRegion).toBe('polite');
+    expect(text.props.accessibilityRole).toBe('alert');
     expect(view.getByTestId(TEST_IDS.formHintSlot)).toBeTruthy();
   });
 

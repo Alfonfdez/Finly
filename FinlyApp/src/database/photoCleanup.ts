@@ -42,15 +42,19 @@ export async function collectTransactionPhotos(column: string, ...values: (strin
   }
 }
 
+export async function collectAllTransactionPhotosStrict(): Promise<string[]> {
+  const db = await getDrizzle();
+  const rows = await db
+    .select({ photo: transactions.photo })
+    .from(transactions)
+    .where(sql`${transactions.photo} IS NOT NULL`)
+    .all();
+  return photoUrisOf(rows);
+}
+
 export async function collectAllTransactionPhotos(): Promise<string[]> {
   try {
-    const db = await getDrizzle();
-    const rows = await db
-      .select({ photo: transactions.photo })
-      .from(transactions)
-      .where(sql`${transactions.photo} IS NOT NULL`)
-      .all();
-    return photoUrisOf(rows);
+    return await collectAllTransactionPhotosStrict();
   } catch (error) {
     logError(ERROR_PREFIXES.photoCollect, error);
     return [];
@@ -70,4 +74,18 @@ export async function deletePhotoUris(uris: string[]): Promise<void> {
       logError(ERROR_PREFIXES.photoDelete, error);
     }
   }
+}
+
+/** Delete files only when no remaining transaction still references them. */
+export async function deleteUnreferencedPhotoUris(uris: string[]): Promise<void> {
+  if (uris.length === 0) return;
+  let referenced: Set<string>;
+  try {
+    referenced = new Set(await collectAllTransactionPhotosStrict());
+  } catch (error) {
+    // Fail safe: leaving an orphaned file is better than deleting a referenced one.
+    logError(ERROR_PREFIXES.photoCollect, error);
+    return;
+  }
+  await deletePhotoUris([...new Set(uris)].filter(uri => !referenced.has(uri)));
 }

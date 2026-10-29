@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
   accountSchema,
   categorySchema,
+  configSchema,
   recurringRuleSchema,
   recurringRuleTagSchema,
   tagSchema,
@@ -21,18 +22,50 @@ import type {
   TransactionTag,
   User,
 } from './types';
-import { sanitizeDefaultAccountConfig } from './configDefaults';
+import { CONFIG_NULL_SENTINEL, parseBooleanConfigValue, sanitizeDefaultAccountConfig } from './configDefaults';
+import { CONFIG_CODECS, CONFIG_METADATA, DB_KEY_MAP } from './configMetadata';
 import { wipeUserData } from './wipe';
 import { parsePhotoFieldStrict } from '../utils/photoData';
 import { isImportablePhotoUri } from '../utils/photoUri';
-import { REPEAT_MAX_INTERVAL, TRANSACTION_TYPES, USER_ID } from '../constants/types';
+import {
+  FIRST_DAYS,
+  MAX_BACKUP_BYTES,
+  MAX_BACKUP_ROWS,
+  MAX_CONFIG_VALUE_LENGTH,
+  MAX_PHOTOS,
+  MAX_PHOTO_URI_LENGTH,
+  REPEAT_MAX_INTERVAL,
+  RULE_ACTIVE,
+  RULE_INACTIVE,
+  TRANSACTION_TYPES,
+  USER_ID,
+  isTotalAccount,
+} from '../constants/types';
+import {
+  BACKUP_APP_NAME,
+  BACKUP_ERRORS,
+  BACKUP_FORMAT_VERSION,
+  BACKUP_KIND,
+  BACKUP_VALIDATION_REASONS,
+  TOTAL_ACCOUNT_COUNT,
+} from '../constants/backup';
+import {
+  MAX_CATCH_UP_OCCURRENCES,
+  buildRecurrenceSchedule,
+  fromDateOnly,
+  isLastDayAnchor,
+  listDueOccurrences,
+  nextDueOnOrAfter,
+  todayDateOnly,
+} from '../utils/recurrence';
+import { BACKUP_VALIDATION_CODES, BackupValidationError } from '../utils/backupValidation';
 
 interface ConfigRow {
   key: string;
   value: string;
 }
 
-export const BACKUP_FORMAT_VERSION = 1;
+export { BACKUP_FORMAT_VERSION } from '../constants/backup';
 
 const configRowSchema = z.object({
   key: z.string(),
@@ -40,8 +73,8 @@ const configRowSchema = z.object({
 });
 
 const snapshotSchema = z.object({
-  app: z.literal('Finly'),
-  kind: z.literal('backup'),
+  app: z.literal(BACKUP_APP_NAME),
+  kind: z.literal(BACKUP_KIND),
   formatVersion: z.literal(BACKUP_FORMAT_VERSION),
   exportedAt: z.string(),
   schema: z.number().int(),
@@ -61,37 +94,21 @@ const snapshotSchema = z.object({
 
 type BackupSnapshot = z.infer<typeof snapshotSchema>;
 
-/** Why a backup file was rejected; `newer_version` is also branched on by the UI. */
-export const BACKUP_VALIDATION_CODES = {
-  invalidJson: 'invalid_json',
-  invalidFormat: 'invalid_format',
-  newerVersion: 'newer_version',
-  /** Valid JSON/schema, but missing data the app needs to work (e.g. no user). */
-  incomplete: 'incomplete',
-} as const;
-
-export type BackupValidationCode = (typeof BACKUP_VALIDATION_CODES)[keyof typeof BACKUP_VALIDATION_CODES];
-
-export class BackupValidationError extends Error {
-  readonly code: BackupValidationCode;
-
-  constructor(code: BackupValidationCode, message: string) {
-    super(message);
-    this.name = 'BackupValidationError';
-    this.code = code;
-  }
-}
+export { BACKUP_VALIDATION_CODES, BackupValidationError, type BackupValidationCode } from '../utils/backupValidation';
 
 export function parseBackup(json: string): BackupSnapshot {
+  if (json.length > MAX_BACKUP_BYTES) {
+    throw new BackupValidationError(BACKUP_VALIDATION_CODES.invalidFormat, BACKUP_ERRORS.fileTooLarge);
+  }
   let raw: unknown;
   try {
     raw = JSON.parse(json);
   } catch {
-    throw new BackupValidationError(BACKUP_VALIDATION_CODES.invalidJson, 'Not valid JSON');
+    throw new BackupValidationError(BACKUP_VALIDATION_CODES.invalidJson, BACKUP_ERRORS.invalidJson);
   }
   const result = snapshotSchema.safeParse(raw);
   if (!result.success) {
-    throw new BackupValidationError(BACKUP_VALIDATION_CODES.invalidFormat, 'Snapshot does not match the backup format');
+    throw new BackupValidationError(BACKUP_VALIDATION_CODES.invalidFormat, BACKUP_ERRORS.formatMismatch);
   }
   return normalizeSnapshotDates(result.data);
 }
@@ -116,11 +133,16 @@ function isValidDateOnly(value: string): boolean {
   return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
 }
 
-const TRANSACTION_DATE_RE = /^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2})?$/;
+const TRANSACTION_DATE_RE = /^(\d{4}-\d{2}-\d{2})(?: (\d{2}):(\d{2}):(\d{2}))?$/;
 
 function isValidTransactionDate(value: string): boolean {
-  if (!TRANSACTION_DATE_RE.test(value)) return false;
-  return isValidDateOnly(value.slice(0, 10));
+  const match = TRANSACTION_DATE_RE.exec(value);
+  if (!match || !isValidDateOnly(match[1])) return false;
+  if (match[2] == null) return true;
+  const hours = Number(match[2]);
+  const minutes = Number(match[3]);
+  const seconds = Number(match[4]);
+  return hours <= 23 && minutes <= 59 && seconds <= 59;
 }
 
 /** Legacy backups may store the date without a time; the app compares full timestamps. */
@@ -141,32 +163,109 @@ function normalizeSnapshotDates(snapshot: BackupSnapshot): BackupSnapshot {
   };
 }
 
+function assertUnique<T>(values: T[], reason: string): void {
+  const seen = new Set<T>();
+  for (const value of values) {
+    if (seen.has(value)) throw new BackupValidationError(BACKUP_VALIDATION_CODES.invalidFormat, reason);
+    seen.add(value);
+  }
+}
+
+function assertImportableConfig(rows: ConfigRow[]): void {
+  const invalid = (reason: string) => new BackupValidationError(BACKUP_VALIDATION_CODES.invalidFormat, reason);
+  const seen = new Set<string>();
+  for (const row of rows) {
+    if (seen.has(row.key)) throw invalid(BACKUP_VALIDATION_REASONS.duplicateConfigKey);
+    seen.add(row.key);
+    if (row.value.length > MAX_CONFIG_VALUE_LENGTH) throw invalid(BACKUP_VALIDATION_REASONS.configValueTooLarge);
+
+    const key = DB_KEY_MAP[row.key];
+    if (!key) throw invalid(BACKUP_VALIDATION_REASONS.unknownConfigKey);
+    const meta = CONFIG_METADATA[key];
+    switch (meta.codec) {
+      case CONFIG_CODECS.firstDay:
+        if (row.value !== String(FIRST_DAYS.sunday) && row.value !== String(FIRST_DAYS.monday)) {
+          throw invalid(BACKUP_VALIDATION_REASONS.invalidFirstDayConfig);
+        }
+        break;
+      case CONFIG_CODECS.boolean:
+        if (parseBooleanConfigValue(row.value) === null) throw invalid(BACKUP_VALIDATION_REASONS.invalidBooleanConfig);
+        break;
+      case CONFIG_CODECS.intOrNull: {
+        if (row.value === CONFIG_NULL_SENTINEL) break;
+        const value = Number(row.value);
+        if (!/^\d+$/.test(row.value) || !Number.isSafeInteger(value) || value <= 0) {
+          throw invalid(BACKUP_VALIDATION_REASONS.invalidAccountIdConfig);
+        }
+        break;
+      }
+      case CONFIG_CODECS.array: {
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(row.value);
+        } catch {
+          throw invalid(BACKUP_VALIDATION_REASONS.invalidArrayConfig);
+        }
+        if (!configSchema.shape[key].safeParse(parsed).success) throw invalid(BACKUP_VALIDATION_REASONS.invalidArrayConfig);
+        break;
+      }
+      default:
+        if (!configSchema.shape[key].safeParse(row.value).success) throw invalid(BACKUP_VALIDATION_REASONS.invalidConfigValue);
+    }
+  }
+}
+
 function assertImportableRecurringRules(rules: RecurringRule[], accountById: Map<number, Account>): void {
   const invalid = (reason: string) => new BackupValidationError(BACKUP_VALIDATION_CODES.invalidFormat, reason);
   for (const rule of rules) {
     if (!Number.isInteger(rule.interval) || rule.interval < 1 || rule.interval > REPEAT_MAX_INTERVAL) {
-      throw invalid('Recurring rule interval is out of range');
+      throw invalid(BACKUP_VALIDATION_REASONS.recurringIntervalOutOfRange);
     }
     const account = accountById.get(rule.account_id);
-    if (!account) throw invalid('Recurring rule account is missing');
-    if (account.is_total === 1) throw invalid('Recurring rule uses the Total account');
+    if (!account) throw invalid(BACKUP_VALIDATION_REASONS.recurringAccountMissing);
+    if (isTotalAccount(account)) throw invalid(BACKUP_VALIDATION_REASONS.recurringUsesTotalAccount);
     if (rule.weekday != null && (!Number.isInteger(rule.weekday) || rule.weekday < 0 || rule.weekday > 6)) {
-      throw invalid('Recurring rule weekday is out of range');
+      throw invalid(BACKUP_VALIDATION_REASONS.recurringWeekdayOutOfRange);
     }
     if (rule.day_of_month != null && (!Number.isInteger(rule.day_of_month) || rule.day_of_month < 1 || rule.day_of_month > 31)) {
-      throw invalid('Recurring rule day is out of range');
+      throw invalid(BACKUP_VALIDATION_REASONS.recurringDayOutOfRange);
     }
     if (rule.month != null && (!Number.isInteger(rule.month) || rule.month < 1 || rule.month > 12)) {
-      throw invalid('Recurring rule month is out of range');
+      throw invalid(BACKUP_VALIDATION_REASONS.recurringMonthOutOfRange);
     }
-    if (rule.active !== 0 && rule.active !== 1) throw invalid('Recurring rule active flag is invalid');
+    if (rule.active !== RULE_INACTIVE && rule.active !== RULE_ACTIVE) {
+      throw invalid(BACKUP_VALIDATION_REASONS.recurringActiveInvalid);
+    }
     const dates = [rule.start_date, rule.next_due, rule.end_date, rule.skipped_from];
     if (dates.some(date => date != null && !isValidDateOnly(date))) {
-      throw invalid('Recurring rule has an invalid date');
+      throw invalid(BACKUP_VALIDATION_REASONS.recurringInvalidDate);
     }
-    if (rule.next_due < rule.start_date) throw invalid('Recurring rule next due is before its start');
+    if (rule.next_due < rule.start_date) throw invalid(BACKUP_VALIDATION_REASONS.recurringNextBeforeStart);
     if (rule.end_date != null && rule.start_date > rule.end_date) {
-      throw invalid('Recurring rule ends before it starts');
+      throw invalid(BACKUP_VALIDATION_REASONS.recurringEndBeforeStart);
+    }
+
+    const schedule = buildRecurrenceSchedule(
+      fromDateOnly(rule.start_date),
+      rule.frequency,
+      rule.interval,
+      rule.end_date,
+      isLastDayAnchor(rule.day_of_month),
+    );
+    const cursorOnSchedule = nextDueOnOrAfter(schedule, rule.next_due) === rule.next_due;
+    const endedCursor = rule.end_date != null && rule.next_due > rule.end_date;
+    if (!cursorOnSchedule && !endedCursor) throw invalid(BACKUP_VALIDATION_REASONS.recurringNextOffSchedule);
+    if (rule.skipped_from != null && nextDueOnOrAfter(schedule, rule.skipped_from) !== rule.skipped_from) {
+      throw invalid(BACKUP_VALIDATION_REASONS.recurringSkippedOffSchedule);
+    }
+    if (rule.active === RULE_ACTIVE && rule.next_due <= todayDateOnly()) {
+      const { truncated } = listDueOccurrences(
+        rule,
+        rule.next_due,
+        todayDateOnly(),
+        MAX_CATCH_UP_OCCURRENCES,
+      );
+      if (truncated) throw invalid(BACKUP_VALIDATION_REASONS.recurringTooManyDue);
     }
   }
 }
@@ -177,17 +276,38 @@ export function assertImportableBackup(snapshot: BackupSnapshot): void {
     recurring_rules: recurringRules, recurring_rule_tags: recurringRuleTags,
   } = snapshot.data;
   const invalid = (reason: string) => new BackupValidationError(BACKUP_VALIDATION_CODES.invalidFormat, reason);
+  const totalRows = Object.values(snapshot.data).reduce((sum, rows) => sum + rows.length, 0);
+  if (totalRows > MAX_BACKUP_ROWS) throw invalid(BACKUP_VALIDATION_REASONS.backupTooManyRows);
+
   const hasAppUser = users.length === 1 && users[0].id === USER_ID;
   const userScopedRows = [...accounts, ...categories, ...tags, ...recurringRules];
   const hasWrongUser = userScopedRows.some(row => row.user_id !== USER_ID);
   const hasExpense = categories.some(category => category.type === TRANSACTION_TYPES.expense);
   const hasIncome = categories.some(category => category.type === TRANSACTION_TYPES.income);
-  const hasRealAccount = accounts.some(account => (account.is_total ?? 0) === 0);
+  const hasRealAccount = accounts.some(account => !isTotalAccount(account));
+  const totalAccounts = accounts.filter(isTotalAccount).length;
   // Every repository query is scoped to USER_ID: a snapshot without that user would
   // import "successfully" and then show an empty app (and self-heal cannot add it).
-  if (!hasAppUser || hasWrongUser || !hasRealAccount || !hasExpense || !hasIncome) {
-    throw new BackupValidationError(BACKUP_VALIDATION_CODES.incomplete, 'Snapshot is missing required data');
+  if (
+    !hasAppUser
+    || hasWrongUser
+    || !hasRealAccount
+    || !hasExpense
+    || !hasIncome
+    || totalAccounts !== TOTAL_ACCOUNT_COUNT
+  ) {
+    throw new BackupValidationError(BACKUP_VALIDATION_CODES.incomplete, BACKUP_ERRORS.incomplete);
   }
+
+  assertUnique(users.map(user => user.id), 'Duplicate user id');
+  assertUnique(accounts.map(account => account.id), 'Duplicate account id');
+  assertUnique(categories.map(category => category.id), 'Duplicate category id');
+  assertUnique(transactions.map(transaction => transaction.id), 'Duplicate transaction id');
+  assertUnique(tags.map(tag => tag.id), 'Duplicate tag id');
+  assertUnique(recurringRules.map(rule => rule.id), 'Duplicate recurring rule id');
+  assertUnique(transactionTags.map(link => `${link.transaction_id}:${link.tag_id}`), 'Duplicate transaction tag link');
+  assertUnique(recurringRuleTags.map(link => `${link.rule_id}:${link.tag_id}`), 'Duplicate recurring rule tag link');
+  assertImportableConfig(snapshot.data.config);
 
   const accountById = new Map(accounts.map(account => [account.id, account]));
   const categoryById = new Map(categories.map(category => [category.id, category]));
@@ -196,40 +316,44 @@ export function assertImportableBackup(snapshot: BackupSnapshot): void {
   const ruleById = new Map(recurringRules.map(rule => [rule.id, rule]));
 
   for (const transaction of transactions) {
-    if (!isValidTransactionDate(transaction.date)) throw invalid('Transaction has an invalid date');
+    if (!isValidTransactionDate(transaction.date)) throw invalid(BACKUP_VALIDATION_REASONS.transactionInvalidDate);
     const photos = parsePhotoFieldStrict(transaction.photo);
-    if (photos === null || photos.some(photo => !isImportablePhotoUri(photo))) {
-      throw invalid('Transaction has an invalid photo');
+    if (
+      photos === null
+      || photos.length > MAX_PHOTOS
+      || photos.some(photo => photo.length > MAX_PHOTO_URI_LENGTH || !isImportablePhotoUri(photo))
+    ) {
+      throw invalid(BACKUP_VALIDATION_REASONS.transactionInvalidPhoto);
     }
     const account = accountById.get(transaction.account_id);
-    if (!account) throw invalid('Transaction account is missing');
-    if (account.is_total === 1) throw invalid('Transaction uses the Total account');
+    if (!account) throw invalid(BACKUP_VALIDATION_REASONS.transactionAccountMissing);
+    if (isTotalAccount(account)) throw invalid(BACKUP_VALIDATION_REASONS.transactionUsesTotalAccount);
     const category = categoryById.get(transaction.category_id);
-    if (!category || category.type !== transaction.type) throw invalid('Transaction category type mismatch');
+    if (!category || category.type !== transaction.type) throw invalid(BACKUP_VALIDATION_REASONS.transactionCategoryTypeMismatch);
     if (transaction.recurring_rule_id != null) {
-      if (!ruleById.has(transaction.recurring_rule_id)) throw invalid('Transaction recurring rule is missing');
+      if (!ruleById.has(transaction.recurring_rule_id)) throw invalid(BACKUP_VALIDATION_REASONS.transactionRecurringRuleMissing);
       if (transaction.recurrence_date == null || !isValidDateOnly(transaction.recurrence_date)) {
-        throw invalid('Generated transaction has an invalid recurrence date');
+        throw invalid(BACKUP_VALIDATION_REASONS.generatedTransactionInvalidRecurrenceDate);
       }
     } else if (transaction.recurrence_date != null && !isValidDateOnly(transaction.recurrence_date)) {
-      throw invalid('Transaction has an invalid recurrence date');
+      throw invalid(BACKUP_VALIDATION_REASONS.transactionInvalidRecurrenceDate);
     }
   }
 
   for (const rule of recurringRules) {
     const category = categoryById.get(rule.category_id);
-    if (!category || category.type !== rule.type) throw invalid('Recurring rule category type mismatch');
+    if (!category || category.type !== rule.type) throw invalid(BACKUP_VALIDATION_REASONS.recurringCategoryTypeMismatch);
   }
   assertImportableRecurringRules(recurringRules, accountById);
 
   for (const link of transactionTags) {
     if (!transactionById.has(link.transaction_id) || !tagById.has(link.tag_id)) {
-      throw invalid('Transaction tag link references missing data');
+      throw invalid(BACKUP_VALIDATION_REASONS.transactionTagLinkMissing);
     }
   }
   for (const link of recurringRuleTags) {
     if (!ruleById.has(link.rule_id) || !tagById.has(link.tag_id)) {
-      throw invalid('Recurring rule tag link references missing data');
+      throw invalid(BACKUP_VALIDATION_REASONS.recurringTagLinkMissing);
     }
   }
 }
@@ -256,8 +380,8 @@ export async function buildBackup(
       ]);
 
     snapshot = {
-      app: 'Finly',
-      kind: 'backup',
+      app: BACKUP_APP_NAME,
+      kind: BACKUP_KIND,
       formatVersion: BACKUP_FORMAT_VERSION,
       exportedAt: new Date().toISOString(),
       schema: schemaVersion,
@@ -274,7 +398,7 @@ export async function buildBackup(
       },
     };
   });
-  if (snapshot == null) throw new Error('Backup snapshot was not built');
+  if (snapshot == null) throw new Error(BACKUP_ERRORS.snapshotNotBuilt);
   return snapshot;
 }
 

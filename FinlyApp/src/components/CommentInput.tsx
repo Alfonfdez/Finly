@@ -12,6 +12,7 @@ import FormSectionHeader from './form/FormSectionHeader';
 import { formStyles } from './form/formStyles';
 import { CONTROL_BORDER_RADIUS } from './componentStyles';
 import { isWeb } from '../utils/platform';
+import { ERROR_PREFIXES, logError, showErrorAlert } from '../utils/errors';
 
 interface Props {
   comment: string;
@@ -43,9 +44,16 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
 
   const searchComments = useCallback(async (value: string) => {
     const id = ++searchId.current;
-    const results = await transactionRepository.searchComments(value);
-    if (id !== searchId.current || !focusedRef.current) return;
-    setSuggestions(results);
+    try {
+      const results = await transactionRepository.searchComments(value);
+      if (id !== searchId.current || !focusedRef.current) return;
+      setSuggestions(results);
+    } catch (error) {
+      if (id !== searchId.current || !focusedRef.current) return;
+      logError(ERROR_PREFIXES.commentsLoad, error);
+      setSuggestions([]);
+      showErrorAlert();
+    }
   }, []);
 
   const debouncedSearch = useDebouncedCallback(searchComments, DEBOUNCE_MS);

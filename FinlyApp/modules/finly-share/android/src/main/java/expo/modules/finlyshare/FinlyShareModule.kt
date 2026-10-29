@@ -42,7 +42,12 @@ class FinlyShareModule : Module() {
         dialogTitle
       )
       pendingPromise = promise
-      appContext.throwingActivity.startActivityForResult(intent, REQUEST_CODE)
+      try {
+        appContext.throwingActivity.startActivityForResult(intent, REQUEST_CODE)
+      } catch (error: Exception) {
+        pendingPromise = null
+        throw ShareStartException()
+      }
     }
 
     AsyncFunction("saveToDownloadsAsync") { fileName: String, content: String, promise: Promise ->
@@ -62,17 +67,22 @@ class FinlyShareModule : Module() {
         promise.resolve(false)
         return@AsyncFunction
       }
-      val stream = resolver.openOutputStream(uri)
-      if (stream == null) {
+      try {
+        val stream = resolver.openOutputStream(uri)
+        if (stream == null) {
+          resolver.delete(uri, null, null)
+          promise.resolve(false)
+          return@AsyncFunction
+        }
+        stream.use { it.write(content.toByteArray(Charsets.UTF_8)) }
+        values.clear()
+        values.put(MediaStore.Downloads.IS_PENDING, 0)
+        resolver.update(uri, values, null, null)
+        promise.resolve(true)
+      } catch (error: Exception) {
         resolver.delete(uri, null, null)
-        promise.resolve(false)
-        return@AsyncFunction
+        promise.reject(ShareWriteException())
       }
-      stream.use { it.write(content.toByteArray(Charsets.UTF_8)) }
-      values.clear()
-      values.put(MediaStore.Downloads.IS_PENDING, 0)
-      resolver.update(uri, values, null, null)
-      promise.resolve(true)
     }
 
     OnActivityResult { _, (requestCode) ->
@@ -108,3 +118,5 @@ class FinlyShareModule : Module() {
 internal class ShareInProgressException : CodedException("Another sharing request is already in progress.")
 internal class ShareInvalidUrlException : CodedException("Only local file URLs are supported.")
 internal class ShareFileNotFoundException : CodedException("The file to share does not exist.")
+internal class ShareStartException : CodedException("The share sheet could not be opened.")
+internal class ShareWriteException : CodedException("The backup could not be written to Downloads.")

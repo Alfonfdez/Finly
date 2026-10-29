@@ -37,6 +37,7 @@ import PeriodTabs from '../components/PeriodTabs';
 import CalendarPicker from '../components/CalendarPicker';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import TransactionListBody from '../components/TransactionListBody';
+import LoadErrorState from '../components/LoadErrorState';
 
 type CategoryIdsByTab = Record<TransactionTypeFilter, number[]>;
 
@@ -91,7 +92,9 @@ export default function AllTransactionsScreen() {
     return await transactionRepository.list({});
   }, []);
 
-  const { data: allTransactions, setData: setAllTransactions, loading } = useFocusLoad(loadTransactions, [] as Transaction[]);
+  const {
+    data: allTransactions, setData: setAllTransactions, loading, error, retry,
+  } = useFocusLoad(loadTransactions, [] as Transaction[]);
 
   useEffect(() => {
     if (configLoading || appLoading || dataRefreshing || categories.length === 0) return;
@@ -193,6 +196,14 @@ export default function AllTransactionsScreen() {
   }, [categories, typeTab, updateConfig]);
 
   const { handlePeriodChange, handleRangeChange } = usePeriodNavigation(() => setCalendarVisible(true));
+
+  if (error && !loading) {
+    return (
+      <ScreenShell>
+        <LoadErrorState onRetry={retry} />
+      </ScreenShell>
+    );
+  }
 
   return (
     <ScreenShell>

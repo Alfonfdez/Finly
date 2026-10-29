@@ -72,6 +72,9 @@
 - **Referential integrity:** transaction/rule accounts and categories, generated transactions' rules, and both tag-link tables must resolve inside the snapshot. Transactions/rules pointing at the Total account are rejected.
 - **Generated transactions:** a transaction with `recurring_rule_id` must reference a rule in the snapshot and carry a valid date-only `recurrence_date`.
 - **Photo values are validated before import:** each parsed `photo` entry must be a base64 image data URI (broad `data:image/*;base64,...` so 2.1 web backups with HEIC/GIF remain importable) or an app-created file URI named `photo_<timestamp>_<counter>.(jpg|jpeg|png|webp)`. Remote URLs, arbitrary file paths, DB/backup filenames and traversal paths are rejected. Both legacy root photos and the new `photos/` directory are accepted.
+- **Import limits:** reject backups above the file-size limit, total-row limit, per-transaction `MAX_PHOTOS` count, per-photo URI length or per-config-value length.
+- **Strict import shape:** IDs must be positive safe integers; collection IDs, tag links and config keys must be unique; unknown config keys are rejected; transaction time components must be valid; recurring `next_due`/`skipped_from` must be on schedule and a rule's catch-up backlog must not exceed the materialization cap.
+- **Photo lifecycle:** destructive operations delete a photo file only when no remaining transaction references it; a reference-read failure leaves files untouched. Photos created in a form are deleted if the form is cancelled/unmounted, while removed existing photos are cleaned by the repository after a successful update.
 - **Native photo deletion allowlist:** only app-created photo files directly under the app documents root (legacy 2.1 layout) or under `documents/photos/` are ever deleted; arbitrary `file://` URIs from an imported backup are ignored.
 - **`applyBackup()` re-checks completeness** even when called directly (defence in depth), and the service awaits `initDatabase()` before exporting/importing so the snapshot always comes from a migrated, self-healed database.
 
@@ -104,6 +107,8 @@
 - [x] 2.1 backups with native `photo_<timestamp>_<counter>.jpg` file URIs or web base64 image data URIs remain importable; broad image MIME subtypes are accepted.
 - [x] Imported photo values are validated per parsed entry; remote URLs, DB/backup filenames, traversal paths and arbitrary file paths are rejected before any write.
 - [x] If the database import applied but the config/state refresh fails, the app reports "import applied, refresh failed" instead of success or "import failed".
+- [x] Oversized backups, duplicate rows/config keys, unsafe IDs, invalid times, off-schedule recurring cursors and oversized catch-up backlogs are rejected before any write.
+- [x] Destructive photo cleanup keeps files still referenced by another transaction; cancelled forms delete their unsaved new photos and failed reference reads leave files untouched.
 - [x] Import is gated by an explicit confirmation modal.
 - [x] An invalid / corrupt / wrong-version / future-schema backup is rejected with an error and existing data is unchanged (transaction rollback).
 - [x] A valid backup that is missing the required rows (the app user `id = 1`, accounts, or a category of each type) is rejected as "incomplete" before any write, with the current data untouched.

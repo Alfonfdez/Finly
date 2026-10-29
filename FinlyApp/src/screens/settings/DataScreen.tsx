@@ -17,6 +17,7 @@ import {
 import { clearDataKeepSettingsWithCleanup, resetDatabaseWithCleanup } from '../../database/maintenance';
 import { saveBackupFile, pickBackupFile, saveBackupToDownloads } from '../../utils/backupIO';
 import { ERROR_PREFIXES, alertError, alertInfo, logError } from '../../utils/errors';
+import { BACKUP_ERRORS } from '../../constants/backup';
 import { ShareResult } from '../../constants/shareResult';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import SettingsRow from '../../components/settings/SettingsRow';
@@ -71,6 +72,7 @@ function ConfirmWithTextModal({
         value={text}
         onChangeText={onTextChange}
         editable={!busy}
+        accessibilityLabel={labels.settings_delete_data_confirm_placeholder}
         autoCapitalize="characters"
         autoCorrect={false}
       />
@@ -150,7 +152,11 @@ export default function DataScreen() {
       setImportModalVisible(true);
     } catch (error) {
       logError(ERROR_PREFIXES.backupRead, error);
-      alertError(labels.settings_import_error_title, labels.settings_import_error_message);
+      if (error instanceof BackupValidationError) {
+        alertError(labels.settings_import_invalid_title, labels.settings_import_invalid_message);
+      } else {
+        alertError(labels.settings_import_error_title, labels.settings_import_error_message);
+      }
     }
   };
 
@@ -182,7 +188,7 @@ export default function DataScreen() {
         const configSaved = await updateConfig(persistedConfig, { notifyOnError: false });
         const dataRefreshed = await resetAll({ notifyOnError: false });
         if (configSaved === false || dataRefreshed === false) {
-          throw new Error('Import applied but the app could not refresh');
+          throw new Error(BACKUP_ERRORS.refreshFailed);
         }
         alertInfo(labels.settings_import_success_title, labels.settings_import_success_message);
       } catch (error) {

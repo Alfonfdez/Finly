@@ -6,7 +6,7 @@ import type { Category } from '../types';
 import type { TransactionType } from '../../constants/types';
 import { categorySchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
-import { collectTransactionPhotos, deletePhotoUris } from '../photoCleanup';
+import { collectTransactionPhotos, deleteUnreferencedPhotoUris } from '../photoCleanup';
 import { serializeWrites } from '../transactionQueue';
 import { dbTimestamp } from '../../utils/formatters';
 import { existsByName } from './repoHelpers';
@@ -66,7 +66,7 @@ const categoryRepoBase = {
       await db.delete(transactions).where(eq(transactions.category_id, id)).run();
       await db.delete(categories).where(eq(categories.id, id)).run();
     });
-    await deletePhotoUris(uris);
+    await deleteUnreferencedPhotoUris(uris);
   },
 
   async reassignAndDelete(oldCategoryId: number, newCategoryId: number): Promise<void> {
@@ -94,7 +94,7 @@ const categoryRepoBase = {
       await db.delete(transactions).where(inArray(transactions.category_id, ids)).run();
       await db.delete(categories).where(inArray(categories.id, ids)).run();
     });
-    await deletePhotoUris(uris);
+    await deleteUnreferencedPhotoUris(uris);
   },
 
   async reassignManyAndDelete(ids: number[], targetId: number): Promise<void> {
@@ -138,7 +138,7 @@ const categoryRepoBase = {
       }
       await db.delete(categories).where(inArray(categories.id, items.map((item) => item.id))).run();
     });
-    await deletePhotoUris(uris);
+    await deleteUnreferencedPhotoUris(uris);
   },
 
   async deleteAll(): Promise<void> {

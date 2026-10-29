@@ -39,6 +39,7 @@ export default function CreateAccountScreen() {
       return defaultId !== null ? getDefaultEnglishAccountName(defaultId) : null;
     },
     duplicateErrorKey: labels.create_account_error_duplicate,
+    checkErrorKey: labels.error_generic,
   });
 
   const initialBalanceError = initialBalanceRaw.length > 0 && initialBalanceRaw !== '-' && parseAmountValue(initialBalanceRaw) === null;

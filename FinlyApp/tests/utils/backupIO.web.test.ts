@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { backupFileName } from '../../src/utils/formatters';
 import { ShareResult } from '../../src/constants/shareResult';
+import { MAX_BACKUP_BYTES } from '../../src/constants/types';
 import { saveBackupFile, saveBackupToDownloads, pickBackupFile } from '../../src/utils/backupIO.web';
 
 interface FakeAnchor {
@@ -38,14 +39,21 @@ describe('backupIO (web)', () => {
   });
 
   it('downloads the JSON through an anchor', async () => {
-    const result = await saveBackupFile('{"version":1}');
+    vi.useFakeTimers();
+    try {
+      const result = await saveBackupFile('{"version":1}');
 
-    expect(createObjectUrl).toHaveBeenCalledTimes(1);
-    expect(anchor.download).toBe(backupFileName());
-    expect(anchor.click).toHaveBeenCalledTimes(1);
-    expect(anchor.remove).toHaveBeenCalledTimes(1);
-    expect(revokeObjectUrl).toHaveBeenCalledWith('blob:finly');
-    expect(result).toBe(ShareResult.SAVED);
+      expect(createObjectUrl).toHaveBeenCalledTimes(1);
+      expect(anchor.download).toBe(backupFileName());
+      expect(anchor.click).toHaveBeenCalledTimes(1);
+      expect(anchor.remove).toHaveBeenCalledTimes(1);
+      expect(revokeObjectUrl).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(revokeObjectUrl).toHaveBeenCalledWith('blob:finly');
+      expect(result).toBe(ShareResult.SAVED);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('reports a saved file for Downloads', async () => {
@@ -66,6 +74,18 @@ describe('backupIO (web)', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('rejects an oversized selected file before reading it', async () => {
+    const pick = pickBackupFile();
+    window.dispatchEvent(new Event('focus'));
+    Object.defineProperty(input!, 'files', {
+      value: [{ size: MAX_BACKUP_BYTES + 1 }],
+      configurable: true,
+    });
+    input!.onchange?.(new Event('change'));
+
+    await expect(pick).rejects.toMatchObject({ code: 'invalid_format' });
   });
 
   it('resolves to null when the file dialog is dismissed', async () => {

@@ -10,6 +10,7 @@ vi.mock('../../src/database/photoCleanup', () => ({
   collectTransactionPhotos: vi.fn(async () => []),
   collectAllTransactionPhotos: vi.fn(async () => []),
   deletePhotoUris: vi.fn(async () => {}),
+  deleteUnreferencedPhotoUris: vi.fn(async () => {}),
 }));
 
 vi.mock('expo-sqlite', async () => {

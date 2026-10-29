@@ -1,7 +1,5 @@
-import { DB_FILE_KEY, type DatabaseStorage } from '../sqliteWeb';
-
-const DATABASE_NAME = 'Finly.db';
-const STORE_NAME = 'sqlite';
+import type { DatabaseStorage } from '../sqliteWeb';
+import { DATABASE_NAME, DB_FILE_KEY, DB_STORE_NAME } from '../../constants/storage';
 
 interface OpenHandle {
   promise: Promise<IDBDatabase>;
@@ -19,17 +17,31 @@ function openDatabase(): Promise<IDBDatabase> {
       const request = indexedDB.open(DATABASE_NAME, 1);
       request.onupgradeneeded = () => {
         const db = request.result;
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.createObjectStore(STORE_NAME);
+        if (!db.objectStoreNames.contains(DB_STORE_NAME)) {
+          db.createObjectStore(DB_STORE_NAME);
         }
       };
-      request.onsuccess = () => resolve(request.result);
+      request.onsuccess = () => {
+        const db = request.result;
+        db.onversionchange = () => {
+          db.close();
+          open = null;
+        };
+        db.onclose = () => {
+          open = null;
+        };
+        resolve(db);
+      };
       // Fail closed: booting an empty database after a read failure would let the
       // next save overwrite the real (merely unreadable) data. Clear the cache so
       // a later attempt can retry instead of reusing a rejected promise forever.
       request.onerror = () => {
         open = null;
         reject(request.error ?? new Error('Failed to open IndexedDB'));
+      };
+      request.onblocked = () => {
+        open = null;
+        reject(new Error('IndexedDB open blocked'));
       };
     });
     open = handle;
@@ -38,7 +50,7 @@ function openDatabase(): Promise<IDBDatabase> {
 }
 
 function objectStore(mode: IDBTransactionMode): Promise<IDBObjectStore> {
-  return openDatabase().then(db => db.transaction(STORE_NAME, mode).objectStore(STORE_NAME));
+  return openDatabase().then(db => db.transaction(DB_STORE_NAME, mode).objectStore(DB_STORE_NAME));
 }
 
 /**

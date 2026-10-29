@@ -20,12 +20,15 @@ platform fork of the repository layer.
 
 - **Typical quota**: ~50 MB+ per origin (browser-dependent, far above the old 5 MB
   `localStorage` ceiling).
-- **Persistence**: the engine writes the exported SQLite bytes once per committed
-  transaction (retried once on failure; a final failure shows a one-time alert so the
-  user can export a backup instead of silently losing the session).
+- **Persistence**: the engine writes the exported SQLite bytes after committed
+  transactions, coalescing pending snapshots (retried once on failure). A final failure
+  shows a one-time alert so the user can export a backup; it does not reject the already
+  committed SQLite operation or roll back UI state. `flush()` waits for the queue.
 - **Fail closed:** an IndexedDB open/read error aborts startup (the app shows the DB
   error) instead of booting an empty database that would overwrite the unreadable data.
-- **Single tab:** each tab holds the full snapshot and last writer wins. The app now holds a Web Locks `finly-db` lock for its lifetime; a second tab is blocked with a Try again action until the first closes. Older browsers without Web Locks keep the previous single-tab behaviour.
+  A rejected WASM init promise and closed/blocked IndexedDB handles are reset so a retry
+  can reopen them.
+- **Single tab:** each tab holds the full snapshot and last writer wins. The app holds a Web Locks `finly-db` lock for its lifetime; a second tab is blocked with a Try again action until the first closes. A retry from the owning tab stays acquired instead of reporting itself blocked. Older browsers without Web Locks keep the previous single-tab behaviour.
 - **Impact**: photos are viable on web (feature 024). Picked images are stored as base64
   data URIs in the `transactions.photo` column, which the engine persists to IndexedDB —
   no separate blob store needed at the app's scale (max 3 photos, `quality: 0.7`).
@@ -126,7 +129,7 @@ Ruling:
 | **Native (023)** | Camera or gallery via `expo-image-picker`; file copied to `documentDirectory` via `expo-file-system` for persistence |
 | **Web (024)** | Gallery/file-picker only (camera stays native-only). Picked image read as a base64 data URI (`FileReader`) and stored in `transactions.photo`; persisted via the sql.js/IndexedDB engine, so it survives reloads |
 | **Storage** | Native: file URI in `transactions.photo` (TEXT, nullable, JSON array). Web: data URIs in the same column |
-| **Cleanup** | Native: file deleted from disk. Web: `deletePhotoFile` no-ops on `data:` URIs — removal happens by deleting the string/row |
+| **Cleanup** | Native: file deleted from disk only when no remaining transaction references the URI. Web: `deletePhotoFile` no-ops on `data:` URIs — removal happens by deleting the string/row |
 | **Setting** | `add_show_photo` config key controls section visibility on all platforms |
 | **Camera on web** | Out of scope: `capture="camera"` only works on mobile browsers and cannot be verified in a desktop browser at 375px |
 

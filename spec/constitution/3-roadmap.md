@@ -1551,3 +1551,32 @@ Applied 2026-10-28:
 - `npm run test:all` green (185 files / 1608 tests).
 
 Spec: spec/features/014-transactions-screen-from-home/, spec/features/015-all-transactions-screen/, spec/features/008-categories-screen/, spec/features/011-accounts-screen/, spec/features/018-tag-management/, spec/features/027-comments-management/, spec/features/025-data-backup/.
+
+## 2.2.0 pre-release P1a audit hardening
+Status: completed.
+
+Applied 2026-10-28:
+- Backup import now enforces file-size, total-row, photo-count/length and config-value limits; validates positive safe IDs, duplicate rows/config keys, `is_total`, transaction time components, recurring schedule cursors and catch-up backlog.
+- Photo lifecycle now deletes only unreferenced files after destructive operations; form-created photos are cleaned on cancel/unmount, existing removals are cleaned by the repository after update, and web/comment-search failures are handled.
+- Web persistence no longer rejects a committed operation when IndexedDB persistence fails; it reports through the existing warning, retries once, coalesces snapshots and exposes `flush()`. WASM init failures and closed/blocked IndexedDB handles can retry.
+- Load failures now expose an error and retry state in `useFocusLoad`; list/form/detail screens show a shared retry state, and `AppContext` surfaces refresh failures.
+- `npm run test:all` green (186 files / 1622 tests).
+
+Spec: spec/features/025-data-backup/, spec/features/014-transactions-screen-from-home/, spec/features/015-all-transactions-screen/.
+
+## 2.2.0 pre-release P1b audit hardening
+Status: completed.
+
+Applied 2026-10-29:
+- Centralized audit literals in `constants/backup`, `constants/photo`, `constants/storage` and `constants/validation`: backup format/mime/file names, validation reasons/errors, photo directory/prefix/quality, database/IndexedDB/lock names and safe-integer messages.
+- Accessibility: modal focus containment, live validation alerts, search/delete/tag input labels, radio labels and chart text alternatives.
+- Header: the Add category search screen uses the narrower title bound, so "Add category" is not clipped under the search button.
+- Categories: creating from the transaction flow locks the type to the transaction and shows it read-only; standalone creation keeps both radios and no longer leaks a pending category into a later transaction.
+- Modals: a keyboard already open in the underlying form no longer lifts the opening modal, preventing the Add photo card from jumping from the top to the centre.
+- Correctness: untouched forms adopt a new dirty baseline after external refresh; duplicate-name check failures now fail closed; app/config timers are cleaned up.
+- Deferred refreshes now survive the initiating screen navigating back, so created/edited/deleted accounts, categories, tags and transactions appear without restarting the app.
+- Web backup download revokes its object URL after the click and the file picker handles cancel/overall timeout; Android share clears pending promises and MediaStore rows on failures.
+- Locale: long dates resolve month names for the requested language, date headers keep language casing, and percentages use the configured decimal separator.
+- `npm run test:all` green (186 files / 1633 tests).
+
+Spec: spec/features/025-data-backup/, spec/features/014-transactions-screen-from-home/, spec/features/015-all-transactions-screen/.

@@ -166,6 +166,7 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
           value={newTag}
           onChangeText={handleNameChange}
           maxLength={MAX_TAG_NAME_LENGTH}
+          accessibilityLabel={labels.add_tag_name_placeholder}
         />
         <CharCounter value={newTag.length} maxLength={MAX_TAG_NAME_LENGTH} style={formStyles.counter} />
         {error ? (

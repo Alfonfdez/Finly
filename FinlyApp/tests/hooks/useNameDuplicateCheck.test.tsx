@@ -31,6 +31,7 @@ describe('useNameDuplicateCheck', () => {
         existsByName: options.existsByName,
         resolveDefaultEnglishName: options.resolveDefaultEnglishName,
         duplicateErrorKey: 'duplicate',
+        checkErrorKey: 'check-failed',
       }),
     );
   }
@@ -103,7 +104,7 @@ describe('useNameDuplicateCheck', () => {
     expect(result.current.nameError).toBeNull();
   });
 
-  it('treats a rejected check as no duplicate (clears the error)', async () => {
+  it('fails closed when the check itself rejects', async () => {
     vi.useFakeTimers();
     const options = makeOptions();
     options.existsByName.mockRejectedValue(new Error('db down'));
@@ -112,7 +113,7 @@ describe('useNameDuplicateCheck', () => {
     await act(() => result.current.handleNameChange('Fail', vi.fn()));
     await flushDebounce();
 
-    expect(result.current.nameError).toBeNull();
+    expect(result.current.nameError).toBe('check-failed');
     expect(result.current.checkingName).toBe(false);
   });
 

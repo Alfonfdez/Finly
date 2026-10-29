@@ -3,6 +3,7 @@ import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRoute, useNavigation, type RouteProp } from '@react-navigation/native';
 import ScreenShell from '../components/ScreenShell';
 import EmptyState from '../components/EmptyState';
+import LoadErrorState from '../components/LoadErrorState';
 import ConfirmationModal from '../components/ConfirmationModal';
 import TransactionForm from '../components/TransactionForm';
 import { useConfig } from '../context/ConfigContext';
@@ -53,7 +54,9 @@ export default function ModifyRecurringScreen() {
     return { rule, tagIds, otherNames, occurrenceDates } as { rule: RecurringRule | null; tagIds: number[]; otherNames: string[]; occurrenceDates: string[] };
   }, [ruleId]);
 
-  const { data, loading } = useFocusLoad(load, { rule: null, tagIds: [], otherNames: [], occurrenceDates: [] } as { rule: RecurringRule | null; tagIds: number[]; otherNames: string[]; occurrenceDates: string[] });
+  const {
+    data, loading, error, retry,
+  } = useFocusLoad(load, { rule: null, tagIds: [], otherNames: [], occurrenceDates: [] } as { rule: RecurringRule | null; tagIds: number[]; otherNames: string[]; occurrenceDates: string[] });
   const { rule, tagIds, otherNames, occurrenceDates } = data;
 
   const persist = useCallback(async (
@@ -125,6 +128,14 @@ export default function ModifyRecurringScreen() {
     deletingRef.current = false;
     setDeleting(false);
   }, [ruleId, navigation, labels]);
+
+  if (error && !loading) {
+    return (
+      <ScreenShell>
+        <LoadErrorState onRetry={retry} />
+      </ScreenShell>
+    );
+  }
 
   if (loading && !rule) {
     return (

@@ -74,15 +74,15 @@ describe('TransactionRow', () => {
     const view = await render(<TransactionRow tx={makeTx({})} category={category} showDate />);
 
     expect(view.getByText('calendar-outline', { includeHiddenElements: true })).toBeTruthy();
-    const date = view.getByText('5 august');
+    const date = view.getByText('5 August');
     expect(flattenStyle(date.props.style).fontWeight).toBe('600');
     const json = JSON.stringify(view.toJSON());
-    expect(json.indexOf('5 august')).toBeLessThan(json.indexOf('Lunch'));
+    expect(json.indexOf('5 August')).toBeLessThan(json.indexOf('Lunch'));
   });
 
   it('does not render the row date without showDate', async () => {
     const view = await render(<TransactionRow tx={makeTx({})} category={category} />);
-    expect(view.queryByText('5 august')).toBeNull();
+    expect(view.queryByText('5 August')).toBeNull();
   });
 
   it('renders tag chips for the transaction', async () => {
@@ -175,7 +175,7 @@ describe('TransactionDateHeader', () => {
     const year = new Date().getFullYear();
     const view = await render(<TransactionDateHeader date={`${year}-08-05 12:00:00`} />);
 
-    expect(view.getByText('5 august')).toBeTruthy();
+    expect(view.getByText('5 August')).toBeTruthy();
     expect(view.getByText('calendar-outline', { includeHiddenElements: true })).toBeTruthy();
   });
 
@@ -183,6 +183,6 @@ describe('TransactionDateHeader', () => {
     const year = new Date().getFullYear() - 1;
     const view = await render(<TransactionDateHeader date={`${year}-08-05 12:00:00`} />);
 
-    expect(view.getByText(`5 august ${year}`)).toBeTruthy();
+    expect(view.getByText(`5 August ${year}`)).toBeTruthy();
   });
 });

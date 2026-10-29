@@ -3,7 +3,9 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
   collectTransactionPhotos,
   collectAllTransactionPhotos,
+  collectAllTransactionPhotosStrict,
   deletePhotoUris,
+  deleteUnreferencedPhotoUris,
 } from '../../src/database/photoCleanup';
 
 const mocks = vi.hoisted(() => {
@@ -90,5 +92,27 @@ describe('photoCleanup', () => {
   it('deletePhotoUris ignores non-string values from malformed photo fields', async () => {
     await expect(deletePhotoUris(['a', 1 as unknown as string, 'b'])).resolves.toBeUndefined();
     expect(mocks.deletePhotoFile).toHaveBeenCalledTimes(2);
+  });
+
+  it('collectAllTransactionPhotosStrict propagates read failures', async () => {
+    mocks.fakeDb.select.mockImplementation(() => {
+      throw new Error('db down');
+    });
+    await expect(collectAllTransactionPhotosStrict()).rejects.toThrow('db down');
+  });
+
+  it('deleteUnreferencedPhotoUris keeps files still referenced by another row', async () => {
+    mocks.fakeDb.select.mockImplementation(() => rowsFor([{ photo: 'shared.jpg' }]));
+    await deleteUnreferencedPhotoUris(['shared.jpg', 'orphan.jpg']);
+    expect(mocks.deletePhotoFile).toHaveBeenCalledTimes(1);
+    expect(mocks.deletePhotoFile).toHaveBeenCalledWith('orphan.jpg');
+  });
+
+  it('deleteUnreferencedPhotoUris does not delete when the reference read fails', async () => {
+    mocks.fakeDb.select.mockImplementation(() => {
+      throw new Error('db down');
+    });
+    await deleteUnreferencedPhotoUris(['a.jpg']);
+    expect(mocks.deletePhotoFile).not.toHaveBeenCalled();
   });
 });

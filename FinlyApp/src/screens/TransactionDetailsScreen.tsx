@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +19,7 @@ import { TEST_IDS } from '../constants/testIds';
 import { badgeShapeFor } from '../utils/badgeShape';
 import ConfirmationModal from '../components/ConfirmationModal';
 import EmptyState from '../components/EmptyState';
+import LoadErrorState from '../components/LoadErrorState';
 import IconBadge from '../components/IconBadge';
 import TagChip from '../components/TagChip';
 import DataRow from '../components/DataRow';
@@ -45,17 +46,25 @@ export default function TransactionDetailsScreen() {
 
   // Refresh transaction data when screen gains focus (after editing)
   const loadTransaction = useCallback(async () => {
-    const tx = await transactionRepository.getById(transactionId);
-    if (tx?.recurring_rule_id != null) {
-      const rule = await recurringRepository.getById(tx.recurring_rule_id);
-      setRuleName(rule ? rule.name : null);
-    } else {
-      setRuleName(null);
-    }
-    return tx;
+    return await transactionRepository.getById(transactionId);
   }, [transactionId]);
 
-  const { data: transaction, loading } = useFocusLoad(loadTransaction, null);
+  const {
+    data: transaction, loading, error, retry,
+  } = useFocusLoad(loadTransaction, null);
+
+  useEffect(() => {
+    let active = true;
+    const ruleId = transaction?.recurring_rule_id;
+    if (ruleId == null) {
+      setRuleName(null);
+      return;
+    }
+    recurringRepository.getById(ruleId)
+      .then(rule => { if (active) setRuleName(rule?.name ?? null); })
+      .catch(() => { if (active) setRuleName(null); });
+    return () => { active = false; };
+  }, [transaction?.recurring_rule_id]);
 
   // Parse photos from DB (supports both old single URI and new JSON array)
   const parsedPhotos = useMemo(() => parsePhotos(transaction?.photo), [transaction?.photo]);
@@ -103,6 +112,14 @@ export default function TransactionDetailsScreen() {
     },
     errorPrefix: ERROR_PREFIXES.transactionsDelete,
   });
+
+  if (error && !loading) {
+    return (
+      <ScreenShell>
+        <LoadErrorState onRetry={retry} />
+      </ScreenShell>
+    );
+  }
 
   if (loading && !transaction) {
     return (

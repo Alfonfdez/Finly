@@ -8,8 +8,13 @@ export const USER_ID = 1;
 
 export const UNTAGGED_ID = -1;
 
+export const TOTAL_ACCOUNT_FLAGS = {
+  regular: 0,
+  total: 1,
+} as const;
+
 export function isTotalAccount(account: { is_total?: number }): boolean {
-  return (account.is_total ?? 0) === 1;
+  return (account.is_total ?? TOTAL_ACCOUNT_FLAGS.regular) === TOTAL_ACCOUNT_FLAGS.total;
 }
 
 export const OTHERS_CATEGORY_ID = 15;
@@ -22,6 +27,12 @@ export const DATE_MAX = '2100-12-31';
 export const MAX_VISIBLE_CATEGORIES = 7;
 export const DEBOUNCE_MS = 300;
 export const MAX_PHOTOS = 3;
+
+/** Backup import guards (bytes, total rows, per-photo URI, config value). */
+export const MAX_BACKUP_BYTES = 50 * 1024 * 1024;
+export const MAX_BACKUP_ROWS = 250_000;
+export const MAX_PHOTO_URI_LENGTH = 8 * 1024 * 1024;
+export const MAX_CONFIG_VALUE_LENGTH = 100_000;
 
 export const MAX_CATEGORY_NAME_LENGTH = 30;
 export const MAX_ACCOUNT_NAME_LENGTH = 30;
@@ -302,7 +313,7 @@ export type RootStackParamList = {
   Home: undefined;
   AddTransaction: { categoryId?: number; type?: TransactionType } | undefined;
   AddCategory: { type: TransactionType };
-  CreateCategory: { type?: TransactionType };
+  CreateCategory: { type?: TransactionType; fromTransaction?: boolean };
   ModifyCategory: { categoryId: number };
   Accounts: undefined;
   CreateAccount: undefined;

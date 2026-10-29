@@ -22,6 +22,7 @@ import { ACCOUNT_ICONS } from '../constants/accountIcons';
 import { QUICK_COLORS } from '../constants/colors';
 import ConfirmationModal from '../components/ConfirmationModal';
 import EmptyState from '../components/EmptyState';
+import LoadErrorState from '../components/LoadErrorState';
 import AccountForm from '../components/AccountForm';
 import { getNameHintText } from '../utils/formHints';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
@@ -40,7 +41,9 @@ export default function ModifyAccountScreen() {
   const deferredRefreshAccounts = useDeferredRefresh(refreshAccounts);
   const { busy, run } = useBusyGuard();
 
-  const { data: account, loading } = useFocusLoad(
+  const {
+    data: account, loading, error, retry,
+  } = useFocusLoad(
     () => accountRepository.getById(accountId),
     null as Account | null,
   );
@@ -74,6 +77,7 @@ export default function ModifyAccountScreen() {
       return defaultId !== null ? getDefaultEnglishAccountName(defaultId) : null;
     },
     duplicateErrorKey: labels.create_account_error_duplicate,
+    checkErrorKey: labels.error_generic,
     excludeId: accountId,
   });
 
@@ -89,13 +93,18 @@ export default function ModifyAccountScreen() {
     balance: account.initial_balance ?? 0,
   } : null), [account]);
 
-  const isDirty = useIsDirty(baseline, {
+  const { isDirty, resetBaseline } = useIsDirty(baseline, {
     name: name.trim(),
     icon: selectedIcon,
     color: selectedColor,
     description: description.trim(),
     balance: parseAmountValue(initialBalanceRaw) ?? 0,
   });
+
+  useEffect(() => {
+    if (!account || userEditedRef.current) return;
+    resetBaseline(baseline);
+  }, [account, baseline, resetBaseline]);
 
   const canSave = (isTotal
     ? !checkingName
@@ -150,6 +159,14 @@ export default function ModifyAccountScreen() {
     },
     errorPrefix: ERROR_PREFIXES.accountDelete,
   });
+
+  if (error && !loading) {
+    return (
+      <ScreenShell>
+        <LoadErrorState onRetry={retry} />
+      </ScreenShell>
+    );
+  }
 
   if (loading && !account) {
     return (
