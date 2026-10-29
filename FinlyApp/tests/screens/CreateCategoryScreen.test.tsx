@@ -66,11 +66,11 @@ describe('CreateCategoryScreen', () => {
     resetAppStub();
   });
 
-  it('renders the category name field with Expense/Income options and Add disabled', async () => {
+  it('renders the category name field with the fixed type and Add disabled', async () => {
     const view = await render(<CreateCategoryScreen />);
     expect(view.getByPlaceholderText('Category name')).toBeTruthy();
     expect(view.getByText('Expense')).toBeTruthy();
-    expect(view.getByText('Income')).toBeTruthy();
+    expect(view.queryByText('Income')).toBeNull();
     expect(view.getByText('Add')).toBeDisabled();
   });
 
@@ -98,12 +98,12 @@ describe('CreateCategoryScreen', () => {
     expect(view.queryByText('Income')).toBeNull();
   });
 
-  it('keeps both type options when opened from category management', async () => {
-    routeParams.type = 'expense';
+  it('locks the type when opened from category management', async () => {
+    routeParams.type = 'income';
     const view = await render(<CreateCategoryScreen />);
 
-    expect(view.getByText('Expense')).toBeTruthy();
     expect(view.getByText('Income')).toBeTruthy();
+    expect(view.queryByText('Expense')).toBeNull();
   });
 
   it('sets the pending category when returning to the transaction flow', async () => {

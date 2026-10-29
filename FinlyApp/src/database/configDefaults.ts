@@ -68,6 +68,8 @@ export const DEFAULT_CONFIG: Config = {
   accountsSortDirection: SORT_DIRECTIONS.asc,
   categoriesSortBy: CATEGORY_SORT_BY.name,
   categoriesSortDirection: SORT_DIRECTIONS.asc,
+  addCategorySortBy: CATEGORY_SORT_BY.usage,
+  addCategorySortDirection: SORT_DIRECTIONS.desc,
 };
 
 export const CONFIG_NULL_SENTINEL = 'null';

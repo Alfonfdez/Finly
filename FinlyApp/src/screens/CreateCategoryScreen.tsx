@@ -11,7 +11,7 @@ import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
 import { useBusyGuard } from '../hooks/useBusyGuard';
 import { t, getDefaultCategoryIdByName, getDefaultEnglishName } from '../i18n';
 import { categoryRepository } from '../database';
-import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, MAX_CATEGORIES_PER_TYPE, type TransactionType, USER_ID } from '../constants/types';
+import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, MAX_CATEGORIES_PER_TYPE, USER_ID } from '../constants/types';
 import { setPendingCategory } from '../utils/pendingCategory';
 import { countCategoriesOfType } from '../utils/categoryUtils';
 import { countAtLimit } from '../utils/limits';
@@ -19,7 +19,6 @@ import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import { getIconColorHintText } from '../utils/formHints';
 import { CATEGORY_ICONS } from '../components/IconGrid';
 import IconColorSection from '../components/IconColorSection';
-import RadioButton from '../components/RadioButton';
 import LabeledTextField from '../components/form/LabeledTextField';
 import SectionTitle from '../components/form/SectionTitle';
 import PrimaryButton from '../components/form/PrimaryButton';
@@ -36,11 +35,10 @@ export default function CreateCategoryScreen() {
   const navigation = useNavigation<NavigationProp<'CreateCategory'>>();
   const route = useRoute<CreateCategoryRouteProp>();
 
-  const initialType = route.params?.type ?? TRANSACTION_TYPES.expense;
+  const type = route.params?.type ?? TRANSACTION_TYPES.expense;
   const fromTransaction = route.params?.fromTransaction === true;
 
   const [name, setName] = useState('');
-  const [type, setType] = useState<TransactionType>(initialType);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const { selectedColor, customColor, handleColorSelect } = useColorSelection();
 
@@ -112,31 +110,9 @@ export default function CreateCategoryScreen() {
           />
 
           <SectionTitle text={labels.create_cat_type} />
-          {fromTransaction ? (
-            <Text style={[styles.typeText, { color: c.textSecondary, fontSize: fs(14) }]}>
-              {typeLabel}
-            </Text>
-          ) : (
-            <View style={styles.typeRow}>
-              <RadioButton
-                selected={type === TRANSACTION_TYPES.expense}
-                onPress={() => setType(TRANSACTION_TYPES.expense)}
-                accessibilityLabel={labels.create_cat_expense}
-              />
-              <Text style={[styles.radioLabel, { color: c.text, fontSize: fs(14) }]}>
-                {labels.create_cat_expense}
-              </Text>
-
-              <RadioButton
-                selected={type === TRANSACTION_TYPES.income}
-                onPress={() => setType(TRANSACTION_TYPES.income)}
-                accessibilityLabel={labels.create_cat_income}
-              />
-              <Text style={[styles.radioLabel, { color: c.text, fontSize: fs(14) }]}>
-                {labels.create_cat_income}
-              </Text>
-            </View>
-          )}
+          <Text style={[styles.typeText, { color: c.textSecondary, fontSize: fs(14) }]}>
+            {typeLabel}
+          </Text>
 
           <IconColorSection
             icons={CATEGORY_ICONS}
@@ -164,14 +140,6 @@ export default function CreateCategoryScreen() {
 const styles = StyleSheet.create({
   content: {
     flex: 1,
-  },
-  typeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  radioLabel: {
-    marginRight: 12,
   },
   typeText: {
     marginLeft: 4,

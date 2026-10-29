@@ -192,4 +192,6 @@ export const configSchema = z.object({
   accountsSortDirection: sortDirectionSchema,
   categoriesSortBy: categorySortBySchema,
   categoriesSortDirection: sortDirectionSchema,
+  addCategorySortBy: categorySortBySchema,
+  addCategorySortDirection: sortDirectionSchema,
 });

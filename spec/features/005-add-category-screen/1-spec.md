@@ -40,7 +40,15 @@ Screen accessible from the "More" button in the categories section of `AddTransa
 - The grid is vertically scrollable if there are many categories.
 - When pressing a category, navigation returns to `AddTransactionScreen` with the selected category as the first category in the categories grid.
 
-### 5. "Create" Button
+### 5. Counter, Sort and Usage
+
+- A counter below the search bar shows the active type total out of the maximum, e.g. "21 of 30 categories" (`categories_counter`).
+- A `SortToggle` sits below the counter with **Name** and **Usage** fields. Name is alphabetical; Usage is lifetime transaction count. Others/Other stay last in both modes; ties break by display name.
+- The Add category default is **Usage descending**. The chosen field and direction are persisted independently from the Categories screen (`addCategorySortBy` / `addCategorySortDirection`).
+- Each tile shows its lifetime transaction count as the same small badge used on the Categories screen; a zero count hides the badge and the accessibility label appends the count.
+- Search filters the sorted active-type list; the counter continues to show the total type count.
+
+### 6. "Create" Button
 
 - In the last position of the grid, a "Create" button (multilingual) with a "+" icon is displayed.
 - When pressing the "Create" button, navigation goes to the "Create category" screen (006) with the active type and `fromTransaction: true`, so the type stays locked to the transaction.
@@ -69,6 +77,9 @@ Screen accessible from the "More" button in the categories section of `AddTransa
 - [x] Search filters categories by characters contained in the name (case-insensitive).
 - [x] If there are no matches, a "search not found" icon + "Nothing found" is displayed.
 - [x] The "x" button clears and closes the search without selecting a category.
+- [x] A counter shows the active type total out of the maximum.
+- [x] Name/Usage sorting works, Usage is the default descending order, Others/Other stay last, and the choice persists independently from Categories.
+- [x] Each tile shows its lifetime usage count when greater than zero.
 - [x] Categories are displayed in a 4×N grid with icon and name.
 - [x] The "Create" button is in the last position of the grid.
 - [x] When the type has 30 categories, the "Create" button is hidden and "Maximum of 30 categories per type reached" is shown below the grid.
