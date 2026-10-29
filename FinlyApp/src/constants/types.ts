@@ -295,6 +295,7 @@ export const FOOTER_LAYOUTS = {
   row: 'row',
   single: 'single',
   stacked: 'stacked',
+  compact: 'compact',
 } as const;
 
 export type FooterLayout = (typeof FOOTER_LAYOUTS)[keyof typeof FOOTER_LAYOUTS];

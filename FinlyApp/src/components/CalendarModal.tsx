@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { formatDateRangeLines, formatPeriodText, formatWeekRangeLines } from '../utils/formatters';
 import type { Period } from './calendars/types';
-import { PERIODS } from '../constants/types';
+import { FOOTER_LAYOUTS, PERIODS } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useResetOnOpen } from '../hooks/useResetOnOpen';
@@ -11,12 +12,12 @@ import type { Language } from '../i18n/en';
 import type { StringKeyOf } from '../constants/types';
 import DayPicker from './calendars/DayPicker';
 import WeekPicker from './calendars/WeekPicker';
-import { CONTROL_BORDER_RADIUS, DISABLED_CONTROL_OPACITY } from './componentStyles';
 import MonthGrid from './calendars/MonthGrid';
 import YearGrid from './calendars/YearGrid';
 import PeriodPicker from './calendars/PeriodPicker';
 import { MIN_DATE } from './calendars/calendarStyles';
 import ModalShell from './ModalShell';
+import ModalFooter from './ModalFooter';
 
 interface Props {
   visible: boolean;
@@ -130,7 +131,17 @@ export default function CalendarModal({
       shadow
     >
       <View style={styles.header}>
-        <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>{labels[TITLE_KEYS[period]]}</Text>
+        <View style={styles.titleRow}>
+          <Ionicons
+            name="calendar-outline"
+            size={fs(18)}
+            color={c.text}
+            accessible={false}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          />
+          <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>{labels[TITLE_KEYS[period]]}</Text>
+        </View>
         <View style={styles.info}>
           <Text style={[styles.infoLine, { color: c.textSecondary, fontSize: fs(13) }]} numberOfLines={1}>
             {infoLines[0]}
@@ -165,42 +176,32 @@ export default function CalendarModal({
         )}
       </ScrollView>
 
-      <View style={[styles.buttons, { borderTopColor: c.border }]}>
-        <TouchableOpacity style={[styles.cancelButton, { backgroundColor: c.background, borderColor: c.border }]} onPress={handleCancel} accessibilityRole="button" accessibilityLabel={labels.cal_cancel}>
-          <Text style={[styles.cancelButtonText, { color: c.text, fontSize: fs(14) }]}>{labels.cal_cancel}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.okButton, { backgroundColor: c.primary, opacity: okDisabled ? DISABLED_CONTROL_OPACITY : 1 }]}
-          onPress={handleOk}
-          disabled={okDisabled}
-          accessibilityRole="button"
-          accessibilityLabel={labels.cal_ok}
-          accessibilityState={{ disabled: okDisabled }}
-        >
-          <Text style={[styles.okButtonText, { color: c.background, fontSize: fs(14) }]}>{labels.cal_ok}</Text>
-        </TouchableOpacity>
-      </View>
+      <ModalFooter
+        layout={FOOTER_LAYOUTS.compact}
+        cancelLabel={labels.cancel}
+        confirmLabel={labels.cal_ok}
+        onCancel={handleCancel}
+        onConfirm={handleOk}
+        confirmDisabled={okDisabled}
+        borderTop
+        verticalPadding={12}
+        textSize={14}
+        containerStyle={styles.buttons}
+      />
     </ModalShell>
   );
 }
 
 const styles = StyleSheet.create({
   header: { marginBottom: 8, alignItems: 'flex-start' },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   info: { width: '100%' },
   body: { flexShrink: 1 },
   bodyContent: { flexGrow: 1 },
   title: { fontWeight: '700', marginBottom: 2 },
   infoLine: { textAlign: 'left' },
   buttons: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 10,
     marginTop: 12,
     paddingTop: 12,
-    borderTopWidth: 1,
   },
-  cancelButton: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: CONTROL_BORDER_RADIUS, borderWidth: 1 },
-  cancelButtonText: { fontWeight: '600' },
-  okButton: { paddingHorizontal: 28, paddingVertical: 10, borderRadius: CONTROL_BORDER_RADIUS },
-  okButtonText: { fontWeight: '700' },
 });

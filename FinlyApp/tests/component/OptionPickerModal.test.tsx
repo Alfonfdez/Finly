@@ -43,7 +43,7 @@ describe('OptionPickerModal', () => {
   it('renders the title, every option and the current selection', async () => {
     const { view } = await renderPicker();
 
-    expect(view.getByText('Pick one')).toBeTruthy();
+    expect(view.getByText('Pick one', { exact: false })).toBeTruthy();
     expect(view.getByText('Alpha')).toBeTruthy();
     expect(view.getByText('Beta')).toBeTruthy();
     expect(view.getByText('Gamma')).toBeTruthy();
@@ -87,7 +87,7 @@ describe('OptionPickerModal', () => {
     const { view, onSelect, onClose } = await renderPicker();
 
     await fireEvent.press(view.getByText('Gamma'));
-    await fireEvent.press(view.getByText(t().transactions_cancel));
+    await fireEvent.press(view.getByText(t().cancel));
 
     expect(onSelect).not.toHaveBeenCalled();
     expect(onClose).toHaveBeenCalledTimes(1);

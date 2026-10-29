@@ -12,6 +12,8 @@ const routeParams: Record<string, unknown> = { categoryId: 7 };
 
 const mockCategoryExists = vi.fn(async (_userId: number, name: string, _excludeId?: number) => false);
 const mockCategoryUpdate = vi.fn(async (_id: number, data: unknown) => {});
+const mockCategoryDelete = vi.fn(async (_id: number) => {});
+const mockReassignAndDelete = vi.fn(async (_id: number, _targetId: number) => {});
 const mockTxList = vi.fn(async (_filter: unknown) => [] as Transaction[]);
 const mockRuleCounts = vi.fn(async (_ids: number[]) => ({} as Record<number, number>));
 
@@ -28,6 +30,8 @@ vi.mock('../../src/database', () => ({
     existsByName: (userId: number, name: string, excludeId?: number) =>
       mockCategoryExists(userId, name, excludeId),
     update: (id: number, data: unknown) => mockCategoryUpdate(id, data),
+    delete: (id: number) => mockCategoryDelete(id),
+    reassignAndDelete: (id: number, targetId: number) => mockReassignAndDelete(id, targetId),
   },
   recurringRepository: {
     countByCategoryIds: (ids: number[]) => mockRuleCounts(ids),
@@ -68,6 +72,8 @@ describe('ModifyCategoryScreen', () => {
     nav.goBack.mockClear();
     mockCategoryExists.mockClear().mockResolvedValue(false);
     mockCategoryUpdate.mockClear();
+    mockCategoryDelete.mockClear();
+    mockReassignAndDelete.mockClear();
     mockTxList.mockClear().mockResolvedValue([]);
     mockRuleCounts.mockClear().mockResolvedValue({});
     setAppData({ categories: [category] });
@@ -180,11 +186,36 @@ describe('ModifyCategoryScreen', () => {
     await fireEvent.press(view.getByText('Delete'));
 
     await waitFor(() => expect(mockRuleCounts).toHaveBeenCalledWith([7]));
+    expect(view.getByText('Delete 1 category?', { exact: false })).toBeTruthy();
+    expect(within(view.getByTestId(TEST_IDS.modalEntitySubject)).getByText('Food')).toBeTruthy();
     expect(view.getByText(
       'Deleting this category will also delete its recurring rules, unless you choose to move them to another category',
     )).toBeTruthy();
     expect(view.getByText('Move them to another category')).toBeTruthy();
     expect(view.queryByText('This category will be permanently deleted.')).toBeNull();
+  });
+
+  it('moves to a target using the same move modal as the bulk flow', async () => {
+    const travel = { ...category, id: 8, name: 'Travel' } as Category;
+    setAppData({ categories: [category, travel] });
+    mockTxList.mockResolvedValue([{ id: 1 } as Transaction]);
+    const view = await render(<ModifyCategoryScreen />);
+    await view.findByDisplayValue('Food');
+
+    await fireEvent.press(view.getByText('Delete'));
+    await waitFor(() => expect(view.getByText('Move them to another category')).toBeTruthy());
+    await fireEvent.press(view.getByText('Move them to another category'));
+
+    expect(view.getByText('Move transactions', { exact: false })).toBeTruthy();
+    expect(view.getByText('Travel')).toBeTruthy();
+    expect(view.getByText('Move & delete')).toBeDisabled();
+
+    await fireEvent.press(view.getByText('Travel'));
+    expect(view.getByText('Move & delete')).not.toBeDisabled();
+    await fireEvent.press(view.getByText('Move & delete'));
+
+    await waitFor(() => expect(mockReassignAndDelete).toHaveBeenCalledWith(7, 8));
+    expect(nav.goBack).toHaveBeenCalled();
   });
 
   it('warns that the transactions are deleted too', async () => {
@@ -259,3 +290,4 @@ describe('ModifyCategoryScreen', () => {
     expect(mockCategoryUpdate).toHaveBeenCalledWith(7, expect.objectContaining({ name: 'Food' }));
   });
 });
+

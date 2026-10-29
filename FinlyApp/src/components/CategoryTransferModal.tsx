@@ -10,7 +10,9 @@ import ModalHeader from './ModalHeader';
 import RadioButton from './RadioButton';
 import ListItemRow from './ListItemRow';
 import ModalFooter from './ModalFooter';
+import ModalEntitySubject from './ModalEntitySubject';
 import { WHITE, TRANSPARENT } from '../constants/themes';
+import type { IconName } from '../constants/types';
 import { CONTROL_BORDER_RADIUS } from './componentStyles';
 
 export type TransferTargetId = number | 'delete';
@@ -91,6 +93,8 @@ export function CategoryTransferBody({
 interface Props {
   visible: boolean;
   title: string;
+  sourceCategory?: Category;
+  sourceSubtitle?: string;
   categories: Category[];
   selectedId: TransferTargetId | null;
   confirmLabel: string;
@@ -104,6 +108,8 @@ interface Props {
 export default function CategoryTransferModal({
   visible,
   title,
+  sourceCategory,
+  sourceSubtitle,
   categories,
   selectedId,
   confirmLabel,
@@ -113,11 +119,22 @@ export default function CategoryTransferModal({
   onConfirm,
   onCancel,
 }: Props) {
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config } = useConfig();
 
   return (
     <ModalShell visible={visible} onClose={onCancel}>
-      <ModalHeader title={title} size={16} />
+      <ModalHeader title={title} icon="swap-horizontal-outline" />
+      {sourceCategory ? (
+        <View style={styles.subject}>
+          <ModalEntitySubject
+            name={getDisplayCategoryName(sourceCategory)}
+            icon={sourceCategory.icon as IconName}
+            color={sourceCategory.color}
+            shape={badgeShapeFor(config, 'category')}
+            subtitle={sourceSubtitle}
+          />
+        </View>
+      ) : null}
       <CategoryTransferBody
         categories={categories}
         selectedId={selectedId}
@@ -139,6 +156,9 @@ export default function CategoryTransferModal({
 }
 
 const styles = StyleSheet.create({
+  subject: {
+    marginBottom: 8,
+  },
   list: {
     maxHeight: 300,
     marginBottom: 16,

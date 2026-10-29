@@ -313,9 +313,9 @@ An eye icon appears next to every masked value. The icon represents the current 
 - Title: "Are you sure?" (multilingual).
 - Message: "Type DELETE to confirm" (multilingual).
 - Text input: placeholder "Type DELETE here" (multilingual). Only the word "DELETE" (case-insensitive) enables the confirm button.
-- Buttons: "Cancel" (neutral) and "Confirm" (red, disabled until correct text is typed).
+- Buttons: "Cancel" (neutral) and "Delete" (red, disabled until correct text is typed).
 - When tapping "Cancel": both modals close.
-- When tapping "Confirm":
+- When tapping "Delete":
   1. All rows from `transactions` table are deleted.
   2. All rows from `transaction_tags` junction table are deleted (cleanup).
   3. **Recurring rules are kept** (`recurring_rules` + `recurring_rule_tags` are not touched) — they are managed separately from the Recurring screen or removed by "Delete all data".
@@ -339,9 +339,9 @@ An eye icon appears next to every masked value. The icon represents the current 
 - Title: "Are you sure?" (multilingual).
 - Message: "Type DELETE to confirm" (multilingual).
 - Text input: placeholder "Type DELETE here" (multilingual). Only the word "DELETE" (case-insensitive) enables the confirm button.
-- Buttons: "Cancel" (neutral) and "Confirm" (red, disabled until correct text is typed).
+- Buttons: "Cancel" (neutral) and "Delete all" (red, disabled until correct text is typed).
 - When tapping "Cancel": both modals close.
-- When tapping "Confirm":
+- When tapping "Delete all":
   1. All data is cleared (transactions, transaction_tags, recurring_rules, recurring_rule_tags, accounts, categories, tags).
   2. Default data is re-seeded: My Wallet, Total, 31 categories, 4 tags.
   3. The `config` table is **preserved**: language, theme, currency and all other settings are kept.
@@ -366,9 +366,9 @@ An eye icon appears next to every masked value. The icon represents the current 
 - Title: "Are you sure?" (multilingual).
 - Message: "Type DELETE to confirm" (multilingual).
 - Text input: placeholder "Type DELETE here" (multilingual). Only the word "DELETE" (case-insensitive) enables the confirm button.
-- Buttons: "Cancel" (neutral) and "Confirm" (red, disabled until correct text is typed).
+- Buttons: "Cancel" (neutral) and "Reset" (red, disabled until correct text is typed).
 - When tapping "Cancel": both modals close.
-- When tapping "Confirm":
+- When tapping "Reset":
   1. All data is cleared (transactions, transaction_tags, recurring_rules, recurring_rule_tags, accounts, categories, tags).
   2. The `config` table is cleared and re-seeded with default values: language English, dark theme, EUR, comma separator, Monday, and all default account/period settings.
   3. Default data is re-seeded: My Wallet, Total, 31 categories, 4 tags.

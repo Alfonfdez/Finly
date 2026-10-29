@@ -111,7 +111,7 @@ describe('CalendarModal', () => {
     );
 
     await fireEvent.press(view.getByLabelText(pickedLabel));
-    await fireEvent.press(view.getByText(labels.cal_cancel));
+    await fireEvent.press(view.getByText(labels.cancel));
 
     expect(onSelectDate).not.toHaveBeenCalled();
     expect(onClose).toHaveBeenCalledTimes(1);

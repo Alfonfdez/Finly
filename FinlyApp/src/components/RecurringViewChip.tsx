@@ -43,6 +43,7 @@ export default function RecurringViewChip({ value, onChange }: Props) {
       <OptionPickerModal
         visible={visible}
         title={labels.recurring_chip}
+        icon="repeat-outline"
         options={options}
         selected={value}
         onSelect={onChange}

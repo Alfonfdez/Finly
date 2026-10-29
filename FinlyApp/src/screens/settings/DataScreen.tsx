@@ -23,12 +23,13 @@ import ConfirmationModal from '../../components/ConfirmationModal';
 import SettingsRow from '../../components/settings/SettingsRow';
 import { BUTTON_BORDER_RADIUS } from '../../components/componentStyles';
 import { settingsStyles } from '../../components/settings/settingsStyles';
-import { DELETE_ALL_CONFIRMATION } from '../../constants/types';
+import { DELETE_ALL_CONFIRMATION, type IconName } from '../../constants/types';
 
 interface ConfirmWithTextModalProps {
   visible: boolean;
   title: string;
   message: string;
+  icon?: IconName;
   confirmLabel: string;
   cancelLabel: string;
   text: string;
@@ -42,6 +43,7 @@ function ConfirmWithTextModal({
   visible,
   title,
   message,
+  icon = 'warning-outline',
   confirmLabel,
   cancelLabel,
   text,
@@ -57,6 +59,7 @@ function ConfirmWithTextModal({
     <ConfirmationModal
       visible={visible}
       title={title}
+      icon={icon}
       message={message}
       confirmLabel={confirmLabel}
       cancelLabel={cancelLabel}
@@ -341,6 +344,7 @@ export default function DataScreen() {
         <ConfirmationModal
           visible={deleteTransactionsModal1}
           title={labels.settings_delete_transactions_confirm_title}
+          icon="trash-outline"
           message={labels.settings_delete_transactions_confirm_message}
           confirmLabel={labels.delete}
           cancelLabel={labels.cancel}
@@ -351,8 +355,9 @@ export default function DataScreen() {
         <ConfirmWithTextModal
           visible={deleteTransactionsModal2}
           title={labels.settings_delete_data_confirm_title2}
+          icon="trash-outline"
           message={labels.settings_delete_data_confirm_message2}
-          confirmLabel={labels.settings_delete_confirm}
+          confirmLabel={labels.delete}
           cancelLabel={labels.cancel}
           text={deleteTransactionsText}
           onTextChange={setDeleteTransactionsText}
@@ -364,8 +369,9 @@ export default function DataScreen() {
         <ConfirmationModal
           visible={importModalVisible}
           title={labels.settings_import_confirm_title}
+          icon="cloud-download-outline"
           message={labels.settings_import_confirm_message}
-          confirmLabel={labels.settings_delete_confirm}
+          confirmLabel={labels.settings_import_confirm}
           cancelLabel={labels.cancel}
           onConfirm={handleConfirmImport}
           onCancel={() => {
@@ -379,6 +385,7 @@ export default function DataScreen() {
         <ConfirmationModal
           visible={deleteAllModal1}
           title={labels.settings_delete_data_confirm_title}
+          icon="warning-outline"
           message={labels.settings_delete_data_confirm_message}
           confirmLabel={labels.settings_delete_all_data_confirm}
           cancelLabel={labels.cancel}
@@ -390,7 +397,7 @@ export default function DataScreen() {
           visible={deleteAllModal2}
           title={labels.settings_delete_data_confirm_title2}
           message={labels.settings_delete_data_confirm_message2}
-          confirmLabel={labels.settings_delete_confirm}
+          confirmLabel={labels.settings_delete_all_data_confirm}
           cancelLabel={labels.cancel}
           text={deleteAllText}
           onTextChange={setDeleteAllText}
@@ -402,6 +409,7 @@ export default function DataScreen() {
         <ConfirmationModal
           visible={factoryResetModal1}
           title={labels.settings_factory_reset_confirm_title}
+          icon="warning-outline"
           message={labels.settings_factory_reset_confirm_message}
           confirmLabel={labels.settings_factory_reset_confirm}
           cancelLabel={labels.cancel}
@@ -413,7 +421,7 @@ export default function DataScreen() {
           visible={factoryResetModal2}
           title={labels.settings_delete_data_confirm_title2}
           message={labels.settings_delete_data_confirm_message2}
-          confirmLabel={labels.settings_delete_confirm}
+          confirmLabel={labels.settings_factory_reset_confirm}
           cancelLabel={labels.cancel}
           text={factoryResetText}
           onTextChange={setFactoryResetText}

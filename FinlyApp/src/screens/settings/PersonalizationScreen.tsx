@@ -79,6 +79,7 @@ export default function PersonalizationScreen() {
             selected={homeSelected}
             onSelect={(v) => updateConfig({ homeDefaultAccountId: v === HOME_TOTAL_OPTION ? null : Number(v) })}
             title={labels.settings_default_account}
+            icon="wallet-outline"
           />
           <SettingsSelectRow
             label={labels.settings_default_period}
@@ -95,6 +96,7 @@ export default function PersonalizationScreen() {
             selected={addSelected}
             onSelect={(v) => updateConfig({ addDefaultAccountId: v === CONFIG_NULL_SENTINEL ? null : Number(v) })}
             title={labels.settings_default_account}
+            icon="wallet-outline"
           />
           <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
             <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_optional_fields}</Text>
@@ -144,6 +146,7 @@ export default function PersonalizationScreen() {
             selected={createRecurringSelected}
             onSelect={(v) => updateConfig({ createRecurringDefaultAccountId: v === CONFIG_NULL_SENTINEL ? null : Number(v) })}
             title={labels.settings_default_account}
+            icon="wallet-outline"
           />
           <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
             <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_optional_fields}</Text>

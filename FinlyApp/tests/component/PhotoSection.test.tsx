@@ -79,7 +79,7 @@ describe('PhotoSection', () => {
     );
 
     await fireEvent.press(view.getByRole('button', { name: 'Remove photo' }));
-    expect(view.getByText('Delete photo')).toBeTruthy();
+    expect(view.getByText('Delete photo', { exact: false })).toBeTruthy();
     expect(view.getByText('Are you sure you want to delete this photo?')).toBeTruthy();
 
     await fireEvent.press(view.getByText('Delete'));

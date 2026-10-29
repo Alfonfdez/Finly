@@ -64,8 +64,9 @@ Every row is always present so the card is uniform; when a field has no value th
 
 **Confirmation modal:**
 - Title: `"Delete this transaction?"` (key `details_delete_title`, multilingual).
-- Left button: "No" (key `details_delete_no`, multilingual) — closes the modal.
-- Right button: "Yes" (key `details_delete_yes`, multilingual) — deletes the transaction, refreshes data, and navigates back to the previous screen.
+- Message: "This transaction will be permanently deleted. This cannot be undone." (key `details_delete_message`, multilingual).
+- Left button: "Cancel" (generic `cancel`) — closes the modal.
+- Right button: "Delete" (generic `delete`) — deletes the transaction, refreshes data, and navigates back to the previous screen.
 
 ### 6. "Edit" button (TODO)
 

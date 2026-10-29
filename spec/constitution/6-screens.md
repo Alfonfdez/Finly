@@ -361,7 +361,7 @@ fab: {
 <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={() => setModalVisible(false)}>
   <View style={styles.modalOverlay}>
     <View style={[styles.modalContent, { backgroundColor: c.surface }]}>
-      <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(16) }]}>
+      <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(18) }]}>
         {labels.modal_title}
       </Text>
       <Text style={[styles.modalMessage, { color: c.textSecondary, fontSize: fs(14) }]}>
@@ -402,8 +402,12 @@ fab: {
 | `modalButton` | `{ flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center' }` |
 | `modalButtonText` | `{ fontWeight: '600' }` |
 
-- **Header:** `ModalHeader` keeps the title centered and accepts an optional decorative icon placed immediately to its left and an optional right slot (counters/actions).
+- **Header:** `ModalHeader` keeps the 18px/700 title centered and accepts an optional decorative icon and an optional right slot (counters/actions). The icon is rendered inline at the start of the title text, so it stays on the first line when a long title wraps; it is hidden from accessibility.
+- **Modal icon vocabulary:** confirmation icons are caller-specific and fall back to `alert-circle-outline`: destructive deletes use `trash-outline`, reset/wipe flows use `warning-outline`, import uses `cloud-download-outline`, and edits use their entity icon. Option pickers fall back to `options-outline`; language, currency, default account, recurring view, status, photo source and category transfer use `language-outline`, `cash-outline`, `wallet-outline`, `repeat-outline`, `funnel-outline`, `image-outline` and `swap-horizontal-outline`.
+- **Entity subject row:** when a modal acts on one entity, keep the title short and one line and put the entity below it as a subject row (`ModalEntitySubject`): icon + name, up to two lines, with the icon aligned to the first line. Account, category and tag delete modals use this pattern, as do category transfers; user-entered names never appear in a modal title. The bulk destination picker repeats the source category row under the same `Move transactions` title.
 - **Action row gap:** modal action rows keep the shared `ModalFooter` rhythm: `marginTop: 16` (`SECTION_GAP`) above the row and `gap: 12` between buttons. The compact Add tag modal reserves a fixed one-line error band with 8px vertical padding and centered text above the row, so showing a validation message never moves the buttons.
+- **Button labels:** simple destructive confirmations always use the generic `cancel` / `delete` keys. Special destructive actions use action-specific labels: `Permanent delete` for categories (because moving is the alternative), `Delete all`, `Reset`, `Import`, and `Skip them`. Non-destructive modals use their semantic action: `Select`, `Apply`, `Add`, `Ok` or `Accept`; their cancel button still uses the generic `cancel`. The Guard alert uses `Close` as its single action.
+- **Compact exceptions:** Calendar and Add tag use `FOOTER_LAYOUTS.compact`: both buttons share the same **128px** width, capped at **47%** each on narrow screens, in a right-aligned row with a 12px gap instead of stretching full width. They keep the standard 12px vertical padding and 14px label size, so their height matches the full-width footers; text stays centered and single-line. The Photo source picker keeps its full-width Cancel menu, and Calendar is the only modal whose header title is left-aligned (next to its `calendar-outline` icon).
 
 ### Button Colors
 
@@ -559,7 +563,7 @@ Every form — Create, Edit, and the transaction/recurring forms — shares one 
 ## Calendar (date pickers)
 
 - `CalendarModal` renders the picker; the day grid is `calendars/DayPicker`, with **year navigation** (`calendars/YearNav`) above **month navigation** (`calendars/MonthNav`) — the same two-arrow layout as `WeekPicker`, so a year can be jumped to quickly (e.g. a recurring end date 10 years ahead).
-- **Modal layout:** fixed header (title + two left-aligned information lines), scrollable body, fixed Cancel/OK footer. The modal sizes to its content with a 94% height cap.
+- **Modal layout:** fixed header with a leading `calendar-outline` icon and left-aligned title, two left-aligned information lines, scrollable body and fixed compact Cancel/OK footer with a 12px gap. The modal sizes to its content with a 94% height cap.
 - **Navigation standard (strict A):** inside every picker, arrows only browse the visible page; the selected value changes only by tapping. The header keeps showing the selection when it is off-screen. The outer `CalendarPicker` arrows still select the previous/next period.
 - **Modal nav controls:** each modal nav row is `[<] title [»] [>]`, with the title perfectly centred and 22px icons. The arrow boxes are compact but keep a 44px+ effective tap target through `hitSlop`; the double arrow is separated from the single next arrow. Equal side slots keep the title centred whether the double arrow is visible or not. The double arrow jumps to the current value only when one next step is not enough: year rows from two or more years back, month rows from two or more months back in the current year, and YearGrid pages before the penultimate page.
 - **Header information:** Day/Month/Year show their selected value plus a reserved blank second line; Week shows both full start/end dates with years; Period shows its localized Desde/hasta range. Compact week labels (trigger and week rows) add both years only when the week crosses a year boundary.

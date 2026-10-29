@@ -82,7 +82,7 @@
 
 - Two rows are added above the existing delete rows:
   - **Export data** (`share-outline`, primary color) — Android: saves the backup to Downloads and alerts with optional **Share**; iOS: runs the share and reports truthfully; web: downloads the file. Failures show the error alert.
-  - **Import data** (`cloud-upload-outline`) — opens the file picker, then a `ConfirmationModal` warning that all current data will be replaced, then imports.
+  - **Import data** (`cloud-upload-outline`) — opens the file picker, then a `ConfirmationModal` warning that all current data will be replaced, then imports. Buttons: **Cancel** / **Import**.
 - The rows reuse `SettingsRow` and follow the existing DataScreen styling, theme (`useConfig().activeColors`) and text size (`useFontSize()`).
 
 ---

@@ -195,7 +195,7 @@ export default function TagsScreen() {
         <SelectionActionBar
           selectedCount={selectedIds.size}
           deleteLabel={labels.tags_bulk_delete(selectedIds.size)}
-          cancelLabel={labels.modify_tag_delete_confirm_cancel}
+          cancelLabel={labels.cancel}
           onDelete={openDeleteModal}
           onCancel={exitSelectMode}
         />
@@ -215,9 +215,10 @@ export default function TagsScreen() {
       <ConfirmationModal
         visible={deleteModalVisible}
         title={labels.tags_bulk_delete_confirm_title(selectedIds.size)}
+        icon="trash-outline"
         message={labels.tags_bulk_delete_confirm_message}
-        confirmLabel={labels.modify_tag_delete_confirm_delete}
-        cancelLabel={labels.modify_tag_delete_confirm_cancel}
+        confirmLabel={labels.delete}
+        cancelLabel={labels.cancel}
         onConfirm={confirmBulkDelete}
         onCancel={closeDeleteModal}
         busy={busy}

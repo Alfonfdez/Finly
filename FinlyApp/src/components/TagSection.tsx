@@ -6,14 +6,14 @@ import { useFontSize } from '../hooks/useFontSize';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { t } from '../i18n';
 import type { Tag } from '../database/types';
-import { DEBOUNCE_MS, MAX_TAG_NAME_LENGTH, MAX_TAGS } from '../constants/types';
+import { DEBOUNCE_MS, FOOTER_LAYOUTS, MAX_TAG_NAME_LENGTH, MAX_TAGS } from '../constants/types';
 import { countAtLimit } from '../utils/limits';
 import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
+import ModalFooter from './ModalFooter';
 import { CONTROL_BORDER_RADIUS } from './componentStyles';
 import ClearButton from './ClearButton';
 import FormSectionHeader from './form/FormSectionHeader';
-import PrimaryButton from './form/PrimaryButton';
 import CharCounter from './form/CharCounter';
 
 interface Props {
@@ -182,27 +182,18 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
             </Text>
           ) : null}
         </View>
-        <View style={styles.modalButtons}>
-          <TouchableOpacity
-            style={[styles.modalButton, { backgroundColor: c.background, borderColor: c.border, borderWidth: 1 }]}
-            onPress={handleCancel}
-            accessibilityRole="button"
-            accessibilityLabel={labels.cal_cancel}
-          >
-            <Text style={[styles.modalButtonText, { color: c.text, fontSize: fs(14) }]}>
-              {labels.cal_cancel}
-            </Text>
-          </TouchableOpacity>
-          <PrimaryButton
-            label={labels.add_submit}
-            onPress={handleCreate}
-            disabled={isDisabled}
-            enabledTextColor={c.background}
-            disabledBg={c.surface}
-            disabledTextColor={c.textSecondary}
-            style={styles.modalButton}
-          />
-        </View>
+        <ModalFooter
+          layout={FOOTER_LAYOUTS.compact}
+          cancelLabel={labels.cancel}
+          confirmLabel={labels.add_submit}
+          onCancel={handleCancel}
+          onConfirm={handleCreate}
+          confirmDisabled={isDisabled}
+          disabledBg={c.surface}
+          disabledTextColor={c.textSecondary}
+          verticalPadding={12}
+          textSize={14}
+        />
       </ModalShell>
     </View>
   );
@@ -248,18 +239,5 @@ const styles = StyleSheet.create({
   modalErrorText: {
     fontWeight: '500',
     textAlign: 'center',
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 12,
-  },
-  modalButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: CONTROL_BORDER_RADIUS,
-  },
-  modalButtonText: {
-    fontWeight: '600',
   },
 });

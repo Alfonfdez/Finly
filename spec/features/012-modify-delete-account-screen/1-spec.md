@@ -111,7 +111,8 @@
 - When tapped (and not the last account), a confirmation modal opens:
 
 **Confirmation Modal — "Delete account?"**
-- Title: "Delete account "{accountName}"" (multilingual, interpolates the account name).
+- Title: "Delete 1 account?" (`accounts_bulk_delete_confirm_title(1)`, the same one-line title as the bulk flow).
+- Under the title, an account subject row shows the account icon, color and display name (`ModalEntitySubject`); the account name never appears in the title.
 - Message: "All transactions and recurring rules linked to this account will also be deleted" (multilingual).
 - Buttons: "Cancel" (multilingual) and "Delete" (multilingual, red color).
 - When tapping "Cancel", the modal closes.
@@ -166,7 +167,7 @@
 - [x] "Note" is shown with a multiline input, maximum 200 characters, counter 0/200.
 - [x] The "Save" button is disabled if the name is empty or is a duplicate.
 - [x] When tapping "Save", the account is updated and navigation returns.
-- [x] The red "Delete" button opens a confirmation modal with "Cancel" and "Delete".
+- [x] The red "Delete" button opens a "Delete 1 account?" confirmation with the account in a subject row, plus "Cancel" and "Delete".
 - [x] When tapping "Delete" in the modal, the account transactions are deleted, the account is deleted, the list is refreshed, and navigation returns.
 - [x] When the account is the last one remaining, the "Delete" button is disabled (secondary color, reduced opacity, not tappable) and a hint explaining it cannot be deleted is shown.
 - [x] When the account is the Total account (id=2, `is_total=1`), the name field is read-only, the "Delete" button is hidden, and save updates only icon/color/note.

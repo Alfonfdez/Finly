@@ -11,10 +11,12 @@ import SearchBar from './SearchBar';
 import ModalFooter from './ModalFooter';
 import RadioButton from './RadioButton';
 import type { Option } from './SelectorInline';
+import type { IconName } from '../constants/types';
 
 interface Props<T extends string> {
   visible: boolean;
   title: string;
+  icon?: IconName;
   options: Option<T>[];
   selected: T;
   onSelect: (value: T) => void;
@@ -25,6 +27,7 @@ interface Props<T extends string> {
 export default function OptionPickerModal<T extends string>({
   visible,
   title,
+  icon = 'options-outline',
   options,
   selected,
   onSelect,
@@ -78,7 +81,7 @@ export default function OptionPickerModal<T extends string>({
 
   return (
     <ModalShell visible={visible} onClose={onClose} maxHeight="85%">
-      <ModalHeader title={title} />
+      <ModalHeader title={title} icon={icon} />
       {isSearchable && (
         <SearchBar
           placeholder={labels.settings_picker_search}
@@ -100,7 +103,7 @@ export default function OptionPickerModal<T extends string>({
         />
       )}
       <ModalFooter
-        cancelLabel={labels.transactions_cancel}
+        cancelLabel={labels.cancel}
         confirmLabel={labels.transactions_confirm}
         onCancel={onClose}
         onConfirm={handleConfirm}

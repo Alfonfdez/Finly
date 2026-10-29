@@ -1,7 +1,13 @@
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { BUTTON_BORDER_RADIUS, ACTION_BUTTON_HEIGHT } from './componentStyles';
+import {
+  BUTTON_BORDER_RADIUS,
+  ACTION_BUTTON_HEIGHT,
+  COMPACT_FOOTER_BUTTON_WIDTH,
+  COMPACT_FOOTER_BUTTON_MAX_WIDTH,
+} from './componentStyles';
 import { WHITE } from '../constants/themes';
 import { FOOTER_LAYOUTS, type FooterLayout } from '../constants/types';
 
@@ -25,6 +31,7 @@ interface Props {
   disabledTextColor?: string;
   horizontalInset?: number;
   containerPaddingBottom?: number;
+  containerStyle?: StyleProp<ViewStyle>;
   moveLabel?: string;
   onMove?: () => void;
 }
@@ -47,6 +54,7 @@ export default function ModalFooter({
   disabledTextColor,
   horizontalInset = 0,
   containerPaddingBottom = 0,
+  containerStyle,
   moveLabel,
   onMove,
 }: Props) {
@@ -72,6 +80,7 @@ export default function ModalFooter({
         <TouchableOpacity
           style={[
             styles.button,
+            styles.stretchButton,
             { backgroundColor: confirmBg, paddingVertical: verticalPadding, minHeight },
           ]}
           onPress={onConfirm}
@@ -141,6 +150,58 @@ export default function ModalFooter({
     );
   }
 
+  if (layout === FOOTER_LAYOUTS.compact) {
+    return (
+      <View
+        style={[
+          styles.compactRow,
+          borderTop && styles.borderTop,
+          borderTop && { borderTopColor: c.border },
+          { paddingHorizontal: horizontalInset, paddingBottom: containerPaddingBottom },
+          containerStyle,
+        ]}
+      >
+        {cancelLabel && onCancel ? (
+          <TouchableOpacity
+            style={[
+              styles.button,
+              styles.compactButton,
+              { backgroundColor: c.background, borderColor: c.border, paddingVertical: verticalPadding, minHeight },
+            ]}
+            onPress={onCancel}
+            disabled={cancelDisabled}
+            accessibilityRole="button"
+            accessibilityLabel={cancelLabel}
+            accessibilityState={{ disabled: cancelDisabled }}
+          >
+            <Text numberOfLines={1} style={[styles.buttonText, { color: c.text, fontSize: fs(textSize) }]}>
+              {cancelLabel}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
+        <TouchableOpacity
+          style={[
+            styles.button,
+            styles.compactButton,
+            { backgroundColor: confirmBg, paddingVertical: verticalPadding, minHeight },
+          ]}
+          onPress={onConfirm}
+          disabled={confirmInactive}
+          accessibilityRole="button"
+          accessibilityLabel={confirmLabel}
+          accessibilityState={{ disabled: confirmInactive, busy: confirmLoading }}
+        >
+          <View style={styles.confirmContent}>
+            {confirmLoading ? <ActivityIndicator size="small" color={confirmFg} /> : null}
+            <Text numberOfLines={1} style={[styles.buttonText, { color: confirmFg, fontSize: fs(textSize) }]}>
+              {confirmLabel}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View
       style={[
@@ -152,7 +213,7 @@ export default function ModalFooter({
     >
       {cancelLabel && onCancel ? (
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: c.background, borderColor: c.border, paddingVertical: verticalPadding, minHeight }]}
+          style={[styles.button, styles.stretchButton, { backgroundColor: c.background, borderColor: c.border, paddingVertical: verticalPadding, minHeight }]}
           onPress={onCancel}
           disabled={cancelDisabled}
           accessibilityRole="button"
@@ -165,6 +226,7 @@ export default function ModalFooter({
       <TouchableOpacity
         style={[
           styles.button,
+          styles.stretchButton,
           { backgroundColor: confirmBg, paddingVertical: verticalPadding, minHeight },
         ]}
         onPress={onConfirm}
@@ -195,6 +257,11 @@ const styles = StyleSheet.create({
     gap: 12,
     marginTop: 16,
   },
+  compactRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
   column: {
     gap: 12,
   },
@@ -204,13 +271,22 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   button: {
-    flex: 1,
     paddingVertical: 12,
     borderRadius: BUTTON_BORDER_RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'transparent',
+  },
+  stretchButton: {
+    flex: 1,
+  },
+  compactButton: {
+    flexGrow: 0,
+    flexShrink: 1,
+    flexBasis: COMPACT_FOOTER_BUTTON_WIDTH,
+    maxWidth: COMPACT_FOOTER_BUTTON_MAX_WIDTH,
+    paddingHorizontal: 0,
   },
   actionRow: {
     flexDirection: 'row',
