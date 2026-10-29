@@ -52,7 +52,7 @@
 ### 5. Create tag screen
 
 - Header with back arrow + "Create tag" title (multilingual).
-- Name input with max 20 characters, counter (0/20), placeholder "Tag name".
+- `Name` section (multilingual `form_name`) with an `id-card-outline` icon and the `0/20` counter in the header's right slot, then the input with max 20 characters and placeholder "Tag name".
 - Case-insensitive duplicate validation with 300ms debounce.
 - Empty name error: "Enter a tag name".
 - Duplicate error: "A tag with this name already exists".
@@ -62,7 +62,7 @@
 ### 6. Modify/delete tag screen
 
 - Header with back arrow + "Modify tag" title (multilingual).
-- Name input preloaded, max 20 characters, counter, same validation as create, and the same **empty** error (`create_tag_error_empty`): the bottom hint shows "Enter a tag name" (or the duplicate message) between Delete and Save, and the input reddens only once it has been changed or blurred.
+- `Name` section (multilingual `form_name`) with an `id-card-outline` icon and the counter in the header's right slot, then the preloaded input with max 20 characters, same validation as create, and the same **empty** error (`create_tag_error_empty`): the bottom hint shows "Enter a tag name" (or the duplicate message) between Delete and Save, and the input reddens only once it has been changed or blurred.
 - "Delete" button (generic `delete` label, like every form) with confirmation modal:
   - Title: `Delete tag "TagName"` (interpolated).
   - Message: "Transactions with this tag will keep it. The tag link will be removed."

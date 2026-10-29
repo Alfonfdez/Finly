@@ -14,6 +14,7 @@ import { tagRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, USER_ID, MAX_TAG_NAME_LENGTH } from '../constants/types';
 import ConfirmationModal from '../components/ConfirmationModal';
 import LabeledTextField from '../components/form/LabeledTextField';
+import { formStyles } from '../components/form/formStyles';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormActions from '../components/form/FormActions';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
@@ -105,6 +106,9 @@ export default function ModifyTagScreen() {
     <ScreenShell>
       <View style={styles.content}>
         <LabeledTextField
+          label={labels.form_name}
+          labelIcon="id-card-outline"
+          labelStyle={formStyles.firstSection}
           placeholder={labels.create_tag_name_placeholder}
           accessibilityLabel={labels.create_tag_name_placeholder}
           value={name}
@@ -113,6 +117,7 @@ export default function ModifyTagScreen() {
           returnKeyType="done"
           error={hintText}
           showCounter
+          counterInHeader
           inputStyle={styles.input}
         />
 

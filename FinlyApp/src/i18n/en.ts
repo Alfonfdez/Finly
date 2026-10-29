@@ -527,6 +527,7 @@ export const en = {
   repeat_yearly: 'Yearly',
   repeat_frequency: 'Frequency',
   repeat_name: 'Name',
+  form_name: 'Name',
   repeat_name_placeholder_expense: 'e.g. Rent',
   repeat_name_placeholder_income: 'e.g. Salary',
   repeat_interval: 'Interval',

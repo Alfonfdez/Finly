@@ -529,6 +529,7 @@ export const gl: Language = {
   repeat_yearly: 'Anual',
   repeat_frequency: 'Frecuencia',
   repeat_name: 'Nome',
+  form_name: 'Nome',
   repeat_name_placeholder_expense: 'p. ex. Aluguer',
   repeat_name_placeholder_income: 'p. ex. Salario',
   repeat_interval: 'Intervalo',

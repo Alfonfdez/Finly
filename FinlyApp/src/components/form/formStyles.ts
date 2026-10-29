@@ -2,12 +2,10 @@ import { StyleSheet } from 'react-native';
 import { BUTTON_BORDER_RADIUS } from '../componentStyles';
 
 export const formStyles = StyleSheet.create({
-  sectionTitle: { fontWeight: '600', marginBottom: 4, marginTop: 10 },
+  firstSection: { marginTop: 0 },
   input: { borderWidth: 1, borderRadius: BUTTON_BORDER_RADIUS, padding: 12 },
   textArea: { minHeight: 80 },
   counter: { textAlign: 'right', marginTop: 4, marginBottom: 4 },
-  inlineInputWrap: { position: 'relative' },
-  inlineCounter: { position: 'absolute', right: 8, bottom: 6, textAlign: 'right' },
   button: { paddingVertical: 14, borderRadius: BUTTON_BORDER_RADIUS, alignItems: 'center', borderWidth: 1, borderColor: 'transparent' },
   buttonText: { fontWeight: '600' },
   scrollView: { flex: 1 },

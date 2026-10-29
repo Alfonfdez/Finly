@@ -402,6 +402,9 @@ fab: {
 | `modalButton` | `{ flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center' }` |
 | `modalButtonText` | `{ fontWeight: '600' }` |
 
+- **Header:** `ModalHeader` keeps the title centered and accepts an optional decorative icon placed immediately to its left and an optional right slot (counters/actions).
+- **Action row gap:** modal action rows keep the shared `ModalFooter` rhythm: `marginTop: 16` (`SECTION_GAP`) above the row and `gap: 12` between buttons. The compact Add tag modal reserves a fixed one-line error band with 8px vertical padding and centered text above the row, so showing a validation message never moves the buttons.
+
 ### Button Colors
 
 | Button | Background | Text |
@@ -413,10 +416,12 @@ fab: {
 
 ### Section headers
 
-- The transaction and recurring forms use `components/form/FormSectionHeader` for every field group: Amount, Account, Categories, Date/Start date, Recurring, Tags, Comment and Photos.
+- Every form uses `components/form/FormSectionHeader` for every field group: Amount, Account, Categories, Date/Start date, Recurring, Tags, Comment, Photos, Name, Type, Symbols, Color, Initial balance and Note.
 - The title is 15px/600 in `c.text`; the 16px decorative icon uses the same color and is hidden from accessibility.
-- Section icon vocabulary: Amount `cash-outline`, Account `wallet-outline`, Categories `grid-outline`, Date/Start date `calendar-outline`, Recurring `repeat-outline`, Tags `pricetag-outline`, Comment `chatbubble-ellipses-outline`, Photos `image-outline`. The same glyph is used in Transaction details, drawer/screen headers and empty states where the section applies.
-- Every header keeps a standard 16px top gap; preceding sections do not add extra bottom margin, so Amount, Account, Categories, Date, Recurring, Tags, Comment and Photos align consistently.
+- Section icon vocabulary: Amount/Initial balance `cash-outline`, Account `wallet-outline`, Categories `grid-outline`, Date/Start date `calendar-outline`, Recurring `repeat-outline`, Tags `pricetag-outline`, Comment `chatbubble-ellipses-outline`, Photos `image-outline`, Name `id-card-outline`, Type `swap-horizontal-outline`, Symbols `shapes-outline`, Color `color-palette-outline`, Note `document-text-outline`. The same glyph is used in Transaction details, drawer/screen headers and empty states where the section applies.
+- Every header keeps a standard 16px top gap and 10px bottom gap; the first section in a form removes only its top gap (`formStyles.firstSection`), so fields align consistently without doubling the form's top padding.
+- `LabeledTextField` renders its label through `FormSectionHeader`; callers pass `labelIcon` when the default `text-outline` is not the right semantic icon.
+- **Counters:** every form field with a section header puts its counter in the header's right slot (Name, Note, Comment, Recurring rule). The compact Add tag modal puts its counter in the modal header's right slot. No field counter is rendered inside an input. List/item counters stay above their lists.
 - Optional right-side actions are passed separately and keep the primary color because they are tappable (Date calendar, Tag search).
 - The Account card shows only the account name plus a `chevron-down`; the section header carries the Account label.
 
@@ -471,8 +476,8 @@ Every limited input (and the list headers that show a limit) renders `components
 - **One look**: `COUNTER_FONT_SIZE` (12, scaled by the text-size setting), `c.textSecondary`, `fontWeight: '500'`, right-aligned — centered for the list headers via `COUNTER_STYLE`.
 - **At the limit (`value >= maxLength`) the whole counter turns red and bold**: that is the only moment the field stops accepting input, so it reads as "you can't type more" rather than "this is invalid". The same rule flags the list headers (`100 of 100 tags`, `30 of 30 categories`).
 - `style` is for layout only (alignment, margins, padding); colour, weight and size always stay the component's, so a caller can never override the at-limit state.
-- **Placement:** multiline fields (transaction Comment, Modify Comment, Account Note) place the counter inside the input at the bottom-right. The reserved padding is derived from the scaled counter height (app text size × OS font scale) plus its inset, so it does not overlap at Large text. Single-line name fields keep the counter below the input. `LabeledTextField` exposes `inlineCounter` for the multiline variant; it is ignored for single-line fields.
-- **Counter style:** below-input counters use `{ textAlign: 'right', marginTop: 4, marginBottom: 4 }`; inline counters use `{ position: 'absolute', right: 8, bottom: 6, textAlign: 'right' }`; list headers use `{ textAlign: 'center', paddingTop: 12 }` (`COUNTER_STYLE`).
+- **Placement:** every field counter sits in the section header's right slot; the compact Add tag modal uses the modal header's right slot. No field counter is absolutely positioned inside an input, so multiline fields do not reserve extra bottom padding.
+- **Counter style:** header/modal counters use `{ textAlign: 'right' }`; list headers use `{ textAlign: 'center', paddingTop: 12 }` (`COUNTER_STYLE`).
 
 ### Debounce Validation
 

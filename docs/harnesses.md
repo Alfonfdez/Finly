@@ -36,7 +36,7 @@ All commands run from the `FinlyApp/` directory.
 
 ### Current suite baseline
 
-Verified 2026-10-29: **187 test files / 1641 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
+Verified 2026-10-29: **187 test files / 1639 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
 
 Dependency baseline (2026-10-29): `npx expo install --check` reports all dependencies up to date, `npx expo-doctor` passes 21/21 checks, and `npm audit` reports 8 remaining issues (5 low, 3 high), all in Expo CLI/tooling transitive dependencies. The direct high/critical issues in `zod`, `sharp`, `vitest`, `eslint-plugin-boundaries` and `happy-dom` were fixed.
 

@@ -94,6 +94,10 @@ describe('ModifyCategoryScreen', () => {
 
   it('preloads the category and keeps Save disabled until something changes', async () => {
     const view = await render(<ModifyCategoryScreen />);
+    expect(view.getByText('Name')).toBeTruthy();
+    expect(view.getByText('Type')).toBeTruthy();
+    expect(view.getByText('Symbols')).toBeTruthy();
+    expect(view.getByText('Color')).toBeTruthy();
     expect(view.getByDisplayValue('Food')).toBeTruthy();
     expect(view.getByText('Save')).toBeDisabled();
   });

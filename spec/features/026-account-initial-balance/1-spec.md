@@ -10,7 +10,7 @@
 ### 1. Create account screen (013)
 
 - The "Initial balance" field appears on `CreateAccountScreen` between the color section and the Note field.
-- Title: "Initial balance" (multilingual).
+- Title: "Initial balance" (multilingual) rendered with the standard `FormSectionHeader` (same font as the other sections) and a `cash-outline` icon.
 - It reuses the existing `AmountInput` component (currency symbol, decimal separator aware, thousand separators, localized parsing).
 - No calculator button is shown.
 - It accepts negative balances through a `+`/`-` sign toggle, because the mobile decimal keyboard does not expose a minus key. The toggle is disabled while the value is empty or exactly `0`; negative zero is normalized to `0`.

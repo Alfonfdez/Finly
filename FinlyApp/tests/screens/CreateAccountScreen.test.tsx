@@ -56,9 +56,14 @@ describe('CreateAccountScreen', () => {
     resetAppStub();
   });
 
-  it('renders the account name field and keeps Create disabled', async () => {
+  it('renders the Name section and keeps Create disabled', async () => {
     const view = await render(<CreateAccountScreen />);
-    expect(view.getByText('Account name')).toBeTruthy();
+    expect(view.getByText('Name')).toBeTruthy();
+    expect(view.getByPlaceholderText('Account name')).toBeTruthy();
+    expect(view.getByText('Symbols')).toBeTruthy();
+    expect(view.getByText('Color')).toBeTruthy();
+    expect(view.getByText('Initial balance')).toBeTruthy();
+    expect(view.getByText('Note')).toBeTruthy();
     expect(view.getByText('Create')).toBeDisabled();
   });
 
@@ -70,10 +75,10 @@ describe('CreateAccountScreen', () => {
     expect(view.queryByTestId(TEST_IDS.formMutedSlot)).toBeNull();
   });
 
-  it('places the Note counter inside the multiline field', async () => {
+  it('shows the Note counter in its section header', async () => {
     const view = await render(<CreateAccountScreen />);
     const counter = view.getByText('0/200');
-    expect(StyleSheet.flatten(counter.props.style).position).toBe('absolute');
+    expect(StyleSheet.flatten(counter.props.style).position).toBeUndefined();
   });
 
   it('shows the icon+color hint once a name is typed and keeps Create disabled', async () => {

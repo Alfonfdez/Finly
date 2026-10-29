@@ -13,6 +13,7 @@ import { type NavigationProp, USER_ID, MAX_TAG_NAME_LENGTH, MAX_TAGS } from '../
 import { countAtLimit } from '../utils/limits';
 import { getNameHintText, joinHints } from '../utils/formHints';
 import LabeledTextField from '../components/form/LabeledTextField';
+import { formStyles } from '../components/form/formStyles';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormActions from '../components/form/FormActions';
 import { CARD_BORDER_RADIUS } from '../components/componentStyles';
@@ -63,6 +64,9 @@ export default function CreateTagScreen() {
     <ScreenShell>
       <View style={styles.content}>
         <LabeledTextField
+          label={labels.form_name}
+          labelIcon="id-card-outline"
+          labelStyle={formStyles.firstSection}
           placeholder={labels.create_tag_name_placeholder}
           accessibilityLabel={labels.create_tag_name_placeholder}
           value={name}
@@ -72,6 +76,7 @@ export default function CreateTagScreen() {
           returnKeyType="done"
           error={isEmpty ? labels.create_tag_error_empty : nameError}
           showCounter
+          counterInHeader
           inputStyle={styles.input}
         />
 

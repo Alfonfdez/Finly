@@ -193,7 +193,8 @@ export default function ModifyAccountScreen() {
       <ScreenShell>
         <View style={styles.content}>
           <AccountForm
-            nameLabel={labels.modify_account_name}
+            nameLabel={labels.form_name}
+            namePlaceholder={labels.modify_account_name}
             showNameField
             nameDisabled={isTotal}
             name={name}

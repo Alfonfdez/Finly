@@ -16,7 +16,6 @@ import CheckboxRow from './settings/CheckboxRow';
 import RecurrenceInfo from './RecurrenceInfo';
 import CharCounter from './form/CharCounter';
 import FormSectionHeader from './form/FormSectionHeader';
-import { formStyles } from './form/formStyles';
 
 interface Props {
   frequency: RecurrenceFrequency;
@@ -145,9 +144,12 @@ export default function RepeatSection({
           tooMany ? recurringCardErrorColors(c) : recurringCardColors(c),
         ]}
       >
-        <Text style={[styles.firstLabel, { color: c.textSecondary, fontSize: fs(12) }]}>
-          {labels.repeat_name}
-        </Text>
+        <View style={styles.nameLabelRow}>
+          <Text style={[styles.firstLabel, { color: c.textSecondary, fontSize: fs(12) }]}>
+            {labels.repeat_name}
+          </Text>
+          <CharCounter value={name.length} maxLength={REPEAT_NAME_MAX_LENGTH} />
+        </View>
         <TextInput
           testID={TEST_IDS.repeatName}
           style={[
@@ -165,7 +167,6 @@ export default function RepeatSection({
           maxLength={Math.max(REPEAT_NAME_MAX_LENGTH, name.length)}
           accessibilityLabel={labels.repeat_name}
         />
-        <CharCounter value={name.length} maxLength={REPEAT_NAME_MAX_LENGTH} style={formStyles.counter} />
         <Text style={[styles.label, { color: c.textSecondary, fontSize: fs(12) }]}>
           {labels.repeat_frequency}
         </Text>
@@ -309,6 +310,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: CARD_BORDER_RADIUS,
     padding: 14,
+  },
+  nameLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   firstLabel: {
     fontWeight: '500',

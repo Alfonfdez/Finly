@@ -1,5 +1,5 @@
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
@@ -7,9 +7,8 @@ import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import { DEBOUNCE_MS, MAX_COMMENT_LENGTH, MIN_COMMENT_SUGGESTION_LENGTH } from '../constants/types';
-import CharCounter, { COUNTER_FONT_SIZE, inlineCounterReserve } from './form/CharCounter';
+import CharCounter from './form/CharCounter';
 import FormSectionHeader from './form/FormSectionHeader';
-import { formStyles } from './form/formStyles';
 import { CONTROL_BORDER_RADIUS } from './componentStyles';
 import { isWeb } from '../utils/platform';
 import { ERROR_PREFIXES, logError, showErrorAlert } from '../utils/errors';
@@ -24,7 +23,6 @@ interface Props {
 const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus, onBlur }, ref) => {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const { fontScale } = useWindowDimensions();
   const labels = t();
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [focused, setFocused] = useState(false);
@@ -134,7 +132,11 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
 
   return (
     <View style={styles.container}>
-      <FormSectionHeader title={labels.add_comment} icon="chatbubble-ellipses-outline" />
+      <FormSectionHeader
+        title={labels.add_comment}
+        icon="chatbubble-ellipses-outline"
+        right={<CharCounter value={comment.length} maxLength={MAX_COMMENT_LENGTH} />}
+      />
       {suggestions.length > 0 && (
         <View style={[styles.suggestionsPanel, { backgroundColor: c.surface, borderColor: c.border }]}>
           <View style={[styles.suggestionsHeader, { borderBottomColor: c.border }]}>
@@ -169,30 +171,27 @@ const CommentInput = forwardRef<TextInput, Props>(({ comment, onChange, onFocus,
           ))}
         </View>
       )}
-      <View style={formStyles.inlineInputWrap}>
-        <TextInput
-          ref={setInputRef}
-          style={[styles.input, { paddingBottom: inlineCounterReserve(fs(COUNTER_FONT_SIZE), fontScale), backgroundColor: c.surface, color: c.text, fontSize: fs(14) }]}
-          placeholder={labels.add_comment}
-          placeholderTextColor={c.textSecondary}
-          value={comment}
-          onChangeText={onChange}
-          onFocus={() => {
-            focusedRef.current = true;
-            setFocused(true);
-            onFocus?.();
-          }}
-          onBlur={() => {
-            if (isPressingSuggestion.current || refocusingInput.current) return;
-            commitBlur();
-          }}
-          multiline
-          maxLength={Math.max(MAX_COMMENT_LENGTH, comment.length)}
-          textAlignVertical="top"
-          accessibilityLabel={labels.a11y_comment}
-        />
-        <CharCounter value={comment.length} maxLength={MAX_COMMENT_LENGTH} style={formStyles.inlineCounter} />
-      </View>
+      <TextInput
+        ref={setInputRef}
+        style={[styles.input, { backgroundColor: c.surface, color: c.text, fontSize: fs(14) }]}
+        placeholder={labels.add_comment}
+        placeholderTextColor={c.textSecondary}
+        value={comment}
+        onChangeText={onChange}
+        onFocus={() => {
+          focusedRef.current = true;
+          setFocused(true);
+          onFocus?.();
+        }}
+        onBlur={() => {
+          if (isPressingSuggestion.current || refocusingInput.current) return;
+          commitBlur();
+        }}
+        multiline
+        maxLength={Math.max(MAX_COMMENT_LENGTH, comment.length)}
+        textAlignVertical="top"
+        accessibilityLabel={labels.a11y_comment}
+      />
     </View>
   );
 });

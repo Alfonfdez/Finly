@@ -19,8 +19,9 @@ import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import { getIconColorHintText } from '../utils/formHints';
 import { CATEGORY_ICONS } from '../components/IconGrid';
 import IconColorSection from '../components/IconColorSection';
+import FormSectionHeader from '../components/form/FormSectionHeader';
+import { formStyles } from '../components/form/formStyles';
 import LabeledTextField from '../components/form/LabeledTextField';
-import SectionTitle from '../components/form/SectionTitle';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormActions from '../components/form/FormActions';
 import FormScrollView from '../components/form/FormScrollView';
@@ -98,7 +99,9 @@ export default function CreateCategoryScreen() {
       <View style={styles.content}>
         <FormScrollView>
           <LabeledTextField
-            label={labels.create_cat_name}
+            label={labels.form_name}
+            labelIcon="id-card-outline"
+            labelStyle={formStyles.firstSection}
             placeholder={labels.create_cat_name_placeholder}
             value={name}
             onChangeText={(v) => handleNameChange(v, setName)}
@@ -107,9 +110,10 @@ export default function CreateCategoryScreen() {
             autoCorrect={false}
             error={name.trim().length === 0 ? labels.create_cat_error_name_empty : nameError}
             showCounter
+            counterInHeader
           />
 
-          <SectionTitle text={labels.create_cat_type} />
+          <FormSectionHeader title={labels.create_cat_type} icon="swap-horizontal-outline" />
           <Text style={[styles.typeText, { color: c.textSecondary, fontSize: fs(14) }]}>
             {typeLabel}
           </Text>

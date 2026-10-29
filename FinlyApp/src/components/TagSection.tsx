@@ -15,7 +15,6 @@ import ClearButton from './ClearButton';
 import FormSectionHeader from './form/FormSectionHeader';
 import PrimaryButton from './form/PrimaryButton';
 import CharCounter from './form/CharCounter';
-import { formStyles } from './form/formStyles';
 
 interface Props {
   tags: Tag[];
@@ -158,7 +157,11 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
         overlayPadding={24}
         backgroundColor={c.background}
       >
-        <ModalHeader title={labels.add_tag_modal_title} />
+        <ModalHeader
+          title={labels.add_tag_modal_title}
+          icon="pricetag-outline"
+          right={<CharCounter value={newTag.length} maxLength={MAX_TAG_NAME_LENGTH} />}
+        />
         <TextInput
           style={[styles.modalInput, { backgroundColor: c.surface, color: c.text, fontSize: fs(14), borderColor: error ? c.red : c.border }]}
           placeholder={labels.add_tag_name_placeholder}
@@ -168,12 +171,17 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
           maxLength={MAX_TAG_NAME_LENGTH}
           accessibilityLabel={labels.add_tag_name_placeholder}
         />
-        <CharCounter value={newTag.length} maxLength={MAX_TAG_NAME_LENGTH} style={formStyles.counter} />
-        {error ? (
-          <Text style={[styles.modalError, { color: c.red, fontSize: fs(13) }]}>
-            {error}
-          </Text>
-        ) : null}
+        <View style={[styles.modalErrorSlot, { minHeight: fs(34) }]}>
+          {error ? (
+            <Text
+              accessibilityLiveRegion="polite"
+              accessibilityRole="alert"
+              style={[styles.modalErrorText, { color: c.red, fontSize: fs(13) }]}
+            >
+              {error}
+            </Text>
+          ) : null}
+        </View>
         <View style={styles.modalButtons}>
           <TouchableOpacity
             style={[styles.modalButton, { backgroundColor: c.background, borderColor: c.border, borderWidth: 1 }]}
@@ -232,16 +240,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: CONTROL_BORDER_RADIUS,
-    marginBottom: 4,
   },
-  modalError: {
-    marginBottom: 12,
+  modalErrorSlot: {
+    justifyContent: 'center',
+    paddingVertical: 8,
+  },
+  modalErrorText: {
     fontWeight: '500',
+    textAlign: 'center',
   },
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: 10,
+    gap: 12,
   },
   modalButton: {
     paddingHorizontal: 20,

@@ -13,11 +13,11 @@
 - The screen has a back button (left arrow) in the header to return to `AccountsScreen`.
 - The header title is "Modify account" (multilingual).
 
-### 2. Account Name
+### 2. Name
 
-- Title: "Account name" (multilingual).
+- Title: "Name" (multilingual, `form_name`) with an `id-card-outline` icon and the `0/30` counter in the header's right slot.
 - Text input with the current account name.
-- Maximum 30 characters with a "0/30" counter.
+- Maximum 30 characters.
 - **Total account (id=2, `is_total=1`)**: the name field is **read-only** (disabled). Shows the i18n "Total" in the active language. Validation and duplicate checks are skipped.
 - **Validation**: empty name is not allowed. If empty, the "Save" button remains disabled and "Enter an account name" appears in the form's bottom hint; the input reddens once it has been changed or blurred (never on a freshly-opened form).
 - **Save is enabled only when the account actually changed**: name, icon, color, note and initial balance are compared by value with the preloaded account, so an untouched screen keeps Save disabled (empty hint band) and putting the original value back disables it again. Once the user touches any of those fields a re-focus refetch no longer overwrites the form (on the Total account only icon/color/note apply — its name is read-only).
@@ -29,7 +29,7 @@
 
 ### 3. Symbols (Icons)
 
-- Title: "Symbols" (multilingual).
+- Title: "Symbols" (multilingual) with a `shapes-outline` icon.
 - Grid of 4 columns × dynamic rows (vertical ScrollView if they don't all fit).
 - List of predefined Ionicons icons for accounts (~20 finance/bank/wallet related icons).
 - The current account icon must appear preselected when opening the screen.
@@ -54,7 +54,7 @@
 
 ### 4. Color
 
-- Title: "Color" (multilingual).
+- Title: "Color" (multilingual) with a `color-palette-outline` icon; the standard 16px section gap separates it from Symbols.
 - Grid of 1 row × 8 columns (same structure as in 009).
 - The first 6 positions are predefined circular colors.
 - The 7th position shows the custom color chosen from the picker (if the current account color is not among the 6 predefined) **or** the current account color if it is a custom color.
@@ -87,9 +87,9 @@
 
 ### 5. Note (Description)
 
-- Title: "Note" (multilingual).
+- Title: "Note" (multilingual) with a `document-text-outline` icon.
 - Multiline text input for an optional account description.
-- Maximum 200 characters with a "0/200" counter inside the multiline input at the bottom-right.
+- Maximum 200 characters with the `0/200` counter in the Note header's right slot.
 - Default value: empty or the current `description` value if the account has one.
 
 #### Default Descriptions (multilingual)
@@ -153,7 +153,7 @@
 ## Acceptance Criteria
 
 - [x] The header shows a back arrow and title "Modify account" in the active language.
-- [x] "Account name" is shown with an editable input, counter 0/30.
+- [x] The `Name` section is shown with an `id-card-outline` icon, the counter in the header, and an editable input.
 - [x] If the name is empty, a red error is shown and "Save" is disabled.
 - [x] Duplicate validation excludes the current account (keeping the same name does not cause an error).
 - [x] Renaming to a reserved default name is blocked with the duplicate error only when the corresponding default account still exists in the DB (language-aware check via `getDefaultAccountIdByName`), including for the default account (id 1) itself. Deleted default names can be reused.

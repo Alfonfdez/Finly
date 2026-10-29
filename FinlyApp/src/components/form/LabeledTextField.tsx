@@ -1,18 +1,21 @@
 import { useCallback, useState } from 'react';
-import { TextInput, View, useWindowDimensions } from 'react-native';
-import type { TextInputProps, StyleProp, TextStyle } from 'react-native';
+import { TextInput } from 'react-native';
+import type { StyleProp, TextStyle, TextInputProps, ViewStyle } from 'react-native';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
-import SectionTitle from './SectionTitle';
-import CharCounter, { COUNTER_FONT_SIZE, inlineCounterReserve } from './CharCounter';
+import type { IconName } from '../../constants/types';
+import FormSectionHeader from './FormSectionHeader';
+import CharCounter from './CharCounter';
 import { formStyles } from './formStyles';
 
 interface Props extends TextInputProps {
   label?: string;
+  labelIcon?: IconName;
+  labelStyle?: StyleProp<ViewStyle>;
   error?: string | boolean | null;
   showCounter?: boolean;
-  /** Multiline fields can place the counter inside the input (bottom-right). */
-  inlineCounter?: boolean;
+  /** Fields with a section header place the counter in its right slot. */
+  counterInHeader?: boolean;
   multiline?: boolean;
   inputStyle?: StyleProp<TextStyle>;
 }
@@ -26,9 +29,11 @@ interface Props extends TextInputProps {
  */
 export default function LabeledTextField({
   label,
+  labelIcon,
+  labelStyle,
   error,
   showCounter = false,
-  inlineCounter = false,
+  counterInHeader = false,
   multiline = false,
   inputStyle,
   value,
@@ -39,10 +44,8 @@ export default function LabeledTextField({
 }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const { fontScale } = useWindowDimensions();
   const [touched, setTouched] = useState(false);
   const markTouched = useCallback(() => setTouched(true), []);
-  const useInlineCounter = inlineCounter && multiline;
 
   const input = (
     <TextInput
@@ -56,7 +59,6 @@ export default function LabeledTextField({
         },
         multiline && formStyles.textArea,
         inputStyle,
-        useInlineCounter && { paddingBottom: inlineCounterReserve(fs(COUNTER_FONT_SIZE), fontScale) },
       ]}
       value={value}
       maxLength={maxLength == null ? undefined : Math.max(maxLength, String(value ?? '').length)}
@@ -75,28 +77,29 @@ export default function LabeledTextField({
     />
   );
 
-  const counter = showCounter && maxLength != null ? (
+  const headerCounter = showCounter && maxLength != null && counterInHeader && label != null;
+  const counter = showCounter && maxLength != null && !headerCounter ? (
     <CharCounter
       value={String(value ?? '').length}
       maxLength={maxLength}
-      style={useInlineCounter ? formStyles.inlineCounter : formStyles.counter}
+      style={formStyles.counter}
     />
   ) : null;
 
   return (
     <>
-      {label != null && <SectionTitle text={label} />}
-      {useInlineCounter ? (
-        <View style={formStyles.inlineInputWrap}>
-          {input}
-          {counter}
-        </View>
-      ) : (
-        <>
-          {input}
-          {counter}
-        </>
+      {label != null && (
+        <FormSectionHeader
+          title={label}
+          icon={labelIcon ?? 'text-outline'}
+          style={labelStyle}
+          right={headerCounter
+            ? <CharCounter value={String(value ?? '').length} maxLength={maxLength} />
+            : undefined}
+        />
       )}
+      {input}
+      {counter}
     </>
   );
 }
