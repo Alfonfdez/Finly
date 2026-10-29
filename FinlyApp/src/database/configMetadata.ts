@@ -64,6 +64,8 @@ export const CONFIG_METADATA = {
   accountsSortDirection: { dbKey: 'accounts_sort_direction', codec: CONFIG_CODECS.string },
   categoriesSortBy: { dbKey: 'categories_sort_by', codec: CONFIG_CODECS.string },
   categoriesSortDirection: { dbKey: 'categories_sort_direction', codec: CONFIG_CODECS.string },
+  addCategorySortBy: { dbKey: 'add_category_sort_by', codec: CONFIG_CODECS.string },
+  addCategorySortDirection: { dbKey: 'add_category_sort_direction', codec: CONFIG_CODECS.string },
 } as const satisfies Record<keyof Config, ConfigFieldMeta>;
 
 export const DB_KEY_MAP: Record<string, keyof Config> = Object.fromEntries(

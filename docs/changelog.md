@@ -4675,3 +4675,9 @@
 - Keep the spacer in the dynamic select/search hook when a list is empty, and use it in Add category when the search icon is hidden.
 - Verify Home, Settings, Add transaction, Add category with search and the two-line German Modify recurring header; the title center now matches the screen center. test:all green (187 files / 1639 tests).
 - Android release APK rebuilt (SHA-256 D3B774A5046A749A9E23DBBD1B7B2B5C8793F57F6ACD0F381725368E7C0481EB).
+
+[2026-10-29] feat | FinlyApp/src/constants/types.ts, FinlyApp/src/screens/CreateCategoryScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/screens/AddCategoryScreen.tsx, FinlyApp/src/hooks/useCategoryUsage.ts, FinlyApp/src/database/schemas.ts, FinlyApp/src/database/configDefaults.ts, FinlyApp/src/database/configMetadata.ts, FinlyApp/tests/component/helpers/configStub.ts, FinlyApp/tests/screens/AddCategoryScreen.test.tsx, FinlyApp/tests/screens/CreateCategoryScreen.test.tsx, spec/features/005-add-category-screen/1-spec.md, spec/features/006-create-category-screen/1-spec.md, spec/features/008-categories-screen/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Lock Create category to the active Categories tab and remove the type radios; the transaction flow keeps its pending-category behavior.
+- Add the Add category type counter, Name/Usage sorting with independent persisted keys (Usage descending by default), and lifetime usage badges through a shared category-usage hook.
+- Cover the type lock, counter, usage order and persisted sort; test:all green (187 files / 1641 tests).
+- Android release APK rebuilt (SHA-256 174AEC9CCA9851A9B8F36CA375062A66D5EE019F99B043B1D5303A0F360362D2).

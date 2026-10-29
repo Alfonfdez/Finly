@@ -60,6 +60,8 @@ const configTemplate: Config = {
   accountsSortDirection: 'asc',
   categoriesSortBy: 'name',
   categoriesSortDirection: 'asc',
+  addCategorySortBy: 'usage',
+  addCategorySortDirection: 'desc',
 };
 
 const colorsTemplate: ColorPalette = {

@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { useState, type ReactNode } from 'react';
 import AddCategoryScreen from '../../src/screens/AddCategoryScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
+import { getConfigStub, resetStub } from '../component/helpers/configStub';
 import { consumePendingCategory } from '../../src/utils/pendingCategory';
 import type { Category } from '../../src/database/types';
 
@@ -34,6 +35,14 @@ vi.mock('@react-navigation/native', async () => {
   };
 });
 
+const mockCountByCategoryIdsMap = vi.fn();
+
+vi.mock('../../src/database', () => ({
+  transactionRepository: {
+    countByCategoryIdsMap: (ids: number[]) => mockCountByCategoryIdsMap(ids),
+  },
+}));
+
 vi.mock('../../src/context/AppContext', () => ({
   useApp: () => buildAppMock(),
   AppProvider: ({ children }: { children: ReactNode }) => children as ReactNode,
@@ -51,9 +60,11 @@ const expenseCategory: Category = {
 
 describe('AddCategoryScreen', () => {
   beforeEach(() => {
+    resetStub();
     nav.setOptions.mockClear();
     nav.navigate.mockClear();
     nav.goBack.mockClear();
+    mockCountByCategoryIdsMap.mockReset().mockResolvedValue({});
     setAppData({ categories: [expenseCategory] });
   });
 
@@ -63,9 +74,54 @@ describe('AddCategoryScreen', () => {
     setHeaderNode = null;
   });
 
-  it('renders the categories of the route type', async () => {
+  it('renders the categories of the route type and the type counter', async () => {
     const view = await render(<AddCategoryScreen />);
     expect(view.getByText('Food')).toBeTruthy();
+    expect(view.getByText('1 of 30 categories')).toBeTruthy();
+  });
+
+  it('shows lifetime usage and sorts by usage by default', async () => {
+    setAppData({
+      categories: [
+        expenseCategory,
+        { ...expenseCategory, id: 2, name: 'Salary' },
+      ],
+    });
+    mockCountByCategoryIdsMap.mockResolvedValue({ 1: 5, 2: 10 });
+    const view = await render(<AddCategoryScreen />);
+
+    await waitFor(() => {
+      const names = view.getAllByText(/^(Food|Salary)$/).map(node => String(node.props.children));
+      expect(names).toEqual(['Salary', 'Food']);
+    });
+    expect(view.getByText('10')).toBeTruthy();
+    expect(view.getByText('5')).toBeTruthy();
+  });
+
+  it('persists the Add category sort independently from Categories', async () => {
+    setAppData({
+      categories: [
+        expenseCategory,
+        { ...expenseCategory, id: 2, name: 'Salary' },
+      ],
+    });
+    mockCountByCategoryIdsMap.mockResolvedValue({ 1: 5, 2: 10 });
+    const view = await render(<AddCategoryScreen />);
+
+    await waitFor(() => {
+      const names = view.getAllByText(/^(Food|Salary)$/).map(node => String(node.props.children));
+      expect(names).toEqual(['Salary', 'Food']);
+    });
+
+    await fireEvent.press(view.getByText('Name'));
+    expect(getConfigStub().updateConfig).toHaveBeenCalledWith({
+      addCategorySortBy: 'name',
+      addCategorySortDirection: 'asc',
+    });
+    await waitFor(() => {
+      const names = view.getAllByText(/^(Food|Salary)$/).map(node => String(node.props.children));
+      expect(names).toEqual(['Food', 'Salary']);
+    });
   });
 
   it('does not show income categories when the type is expense', async () => {

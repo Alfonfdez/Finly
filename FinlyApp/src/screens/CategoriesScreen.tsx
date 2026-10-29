@@ -9,6 +9,7 @@ import { useFontSize } from '../hooks/useFontSize';
 import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
+import { useCategoryUsage } from '../hooks/useCategoryUsage';
 import { useSortPreference } from '../hooks/useSortPreference';
 import { useApp } from '../context/AppContext';
 import { t, getDisplayCategoryName } from '../i18n';
@@ -53,19 +54,8 @@ export default function CategoriesScreen() {
 
   const sortBy = config.categoriesSortBy;
   const sortDirection = config.categoriesSortDirection;
-  const [usage, setUsage] = useState<ReadonlyMap<number, number>>(() => new Map());
-
   // Lifetime usage per category, used by the "Usage" sort and the tile count.
-  useEffect(() => {
-    let active = true;
-    transactionRepository.countByCategoryIdsMap(categories.map(category => category.id))
-      .then((counts) => {
-        if (!active) return;
-        setUsage(new Map(Object.entries(counts).map(([id, count]) => [Number(id), Number(count)])));
-      })
-      .catch(() => { if (active) setUsage(new Map()); });
-    return () => { active = false; };
-  }, [categories]);
+  const usage = useCategoryUsage(categories);
 
   // No memo: display names are localized, so the order must refresh with the language.
   const categoriesByType = sortCategories(categoriesOfType(categories, activeType), sortBy, sortDirection, usage);

@@ -1,7 +1,7 @@
 # 006 — Create Category Page
 
 - **Goal**
-Screen accessible from the "Create" button in the last position of the grid in `AddCategoryScreen` that allows the user to create a new custom category with name, type, icon and color. All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it).
+Screen accessible from the "Create" button in the last position of the grid in `AddCategoryScreen` or in the active tab of `CategoriesScreen` that allows the user to create a new custom category with name, type, icon and color. All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it).
 
 ---
 
@@ -9,8 +9,8 @@ Screen accessible from the "Create" button in the last position of the grid in `
 
 ### 1. Access and Navigation
 
-- The screen is accessed from the "Create" button in the grid on `AddCategoryScreen`.
-- The screen has a back button (left arrow) in the header to return to `AddCategoryScreen`.
+- The screen is accessed from the "Create" button in the grid on `AddCategoryScreen` or from the "Create" tile on `CategoriesScreen`.
+- The screen has a back button (left arrow) in the header to return to the previous screen.
 - The header title is "Create category" (multilingual).
 
 ### 2. Category Name
@@ -26,9 +26,10 @@ Screen accessible from the "Create" button in the last position of the grid in `
 
 ### 3. Type (expense / income)
 
-- When opened from the transaction flow (`fromTransaction: true`), the type is fixed to the route type and shown as a read-only value (`Type: Expense`/`Type: Income`); no radios are shown.
-- When opened from the Categories screen, two radio buttons: "Expenses" and "Incomes" (multilingual).
-- In the standalone flow, "Expenses" is selected by default; the selected radio shows a filled circle with the primary color and the unselected one an empty circle.
+- The type is always fixed to the route type and shown as a read-only value (`Type: Expense`/`Type: Income`); no radios are shown.
+- From the transaction flow (`fromTransaction: true`), the route type is the active transaction type.
+- From the Categories screen, the route type is the active Categories tab, so creating from the Expense tab can only create an Expense category and creating from the Income tab can only create an Income category.
+- To create the other type, the user switches the Categories tab first.
 
 ### 4. Symbols (icons)
 
@@ -130,7 +131,7 @@ Screen accessible from the "Create" button in the last position of the grid in `
 - There is a maximum of 30 categories per type (expense/income), defined by `MAX_CATEGORIES_PER_TYPE` in `src/constants/types.ts`.
 - The limit counts the existing categories of the selected type only (the other type is independent). Default seed data ships 21 expense and 10 income categories, so a fresh install can add up to 9 more expense categories.
 - When the selected type already has 30 categories, the "Add" button is disabled and the message "Maximum of 30 categories per type reached" is shown in red.
-- The check is reactive: switching the type radio re-evaluates the limit for the other type.
+- The check uses the fixed route type; the other type has its own independent limit.
 - No database constraint is added; the limit is enforced at the UI layer.
 - As a complement, the entry points to this screen (the "Create" tile on the Categories page, spec 008, and on the Add Category screen, spec 005) are hidden when the type is at the cap, so the user never lands on a dead-end disabled form. This screen's guard remains as a safety net.
 
@@ -158,9 +159,8 @@ Screen accessible from the "Create" button in the last position of the grid in `
 - [x] If the name is empty, "Enter a category name" is shown in red.
 - [x] Duplicate validation checks case-insensitive against existing categories (regardless of type).
 - [x] If there is a duplicate, "A category with this name already exists" is shown in red and the button is disabled.
-- [x] When changing the type, the name duplicate validation re-runs.
 - [x] From the transaction flow, the type is fixed and shown read-only; the other type is not selectable.
-- [x] From the Categories screen, the "Expenses"/"Incomes" radios work correctly, "Expenses" selected by default.
+- [x] From the Categories screen, the type is fixed to the active tab and shown read-only; the other type is not selectable.
 - [x] ~40 icons are shown in a 4-column grid with vertical scroll.
 - [x] When tapping an icon, it is selected and visually highlighted.
 - [x] Only one icon can be selected at a time.
@@ -173,7 +173,7 @@ Screen accessible from the "Create" button in the last position of the grid in `
 - [x] When pressing "Add" from the transaction flow, the category is created and left pending for the transaction form to select.
 - [x] When pressing "Add" from Categories, the category is created and no pending category is set.
 - [x] When the selected type already has 30 categories, the "Add" button is disabled and "Maximum of 30 categories per type reached" is shown in red.
-- [x] Switching the type radio re-evaluates the limit (the other type can still add categories if below 30).
+- [x] The fixed type uses its own per-type limit; the other type remains independently available from its tab.
 - [x] All texts change when changing the language in settings.
 - [x] The screen respects the active theme (dark/light).
 - [x] The screen respects the configured text size.
