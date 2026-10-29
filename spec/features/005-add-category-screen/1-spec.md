@@ -21,10 +21,10 @@ Screen accessible from the "More" button in the categories section of `AddTransa
 
 ### 3. Search
 
-- To the right of the title, a search button (magnifying glass icon).
-- When pressing the search button, a text input appears below the title.
+- A search icon is shown in the header right when the type has more than one category.
+- Pressing the search icon reveals the input below the title and focuses it; pressing the icon again closes the search.
 - The input has placeholder "Search category" (multilingual).
-- To the right of the input, an "x" button to close the search without selecting a category.
+- To the right of the input, an "x" button clears the search, closes the input and restores the full grid without selecting a category.
 
 **Search Logic:**
 - Search is by characters contained in the category name.
@@ -35,7 +35,7 @@ Screen accessible from the "More" button in the categories section of `AddTransa
 
 ### 4. Category Grid
 
-- Below the title bar (and the search bar if open), the active type categories are displayed in a 4-column × N-row grid.
+- Below the title bar (and the search bar when open), the active type categories are displayed in a 4-column × N-row grid.
 - Each category is displayed as: icon with category color background + name below.
 - The grid is vertically scrollable if there are many categories.
 - When pressing a category, navigation returns to `AddTransactionScreen` with the selected category as the first category in the categories grid.
@@ -64,10 +64,11 @@ Screen accessible from the "More" button in the categories section of `AddTransa
 - [x] The "More" button in `AddTransactionScreen` navigates to the add category screen.
 - [x] The header shows a back arrow and title "Add category" in the active language.
 - [x] Only categories of the active type (expense or income) are displayed.
-- [x] The search button opens/closes the search input below the title.
+- [x] The header shows a search icon when there is more than one category and hides it otherwise.
+- [x] Pressing the search icon reveals and focuses the input below the title; pressing it again closes the search.
 - [x] Search filters categories by characters contained in the name (case-insensitive).
 - [x] If there are no matches, a "search not found" icon + "Nothing found" is displayed.
-- [x] The "x" button on the input closes the search without selecting a category.
+- [x] The "x" button clears and closes the search without selecting a category.
 - [x] Categories are displayed in a 4×N grid with icon and name.
 - [x] The "Create" button is in the last position of the grid.
 - [x] When the type has 30 categories, the "Create" button is hidden and "Maximum of 30 categories per type reached" is shown below the grid.

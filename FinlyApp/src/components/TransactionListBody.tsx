@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { View, SectionList, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
@@ -55,7 +55,7 @@ export default function TransactionListBody({
   const labels = t();
 
   const {
-    filters, keyExtractor, handleTransactionPress,
+    filters, visibleIds, keyExtractor, handleTransactionPress,
     deleteModalVisible, busy, openDeleteModal, closeDeleteModal, confirmBulkDelete,
   } = list;
   const {
@@ -63,8 +63,6 @@ export default function TransactionListBody({
     selectMode, selectedIds, exitSelectMode,
   } = select;
   const isSearching = searchActive && !!searchText.trim();
-
-  const visibleIds = useMemo(() => filters.filtered.map(t => t.id), [filters.filtered]);
 
   const renderItem = useCallback(({ item }: { item: Transaction }) => (
     <TransactionRow

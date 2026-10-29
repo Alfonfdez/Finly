@@ -67,6 +67,16 @@ export function useTransactionFilters({
   }, [usesOwnPreferences, updateConfig]);
   const [tagsByTransaction, setTagsByTransaction] = useState<TagsByTransaction>(new Map());
   const [localTagIds, setLocalTagIds] = useState<number[]>(initialTagIds);
+  const accountsById = useMemo(() => new Map(accounts.map(acc => [acc.id, acc])), [accounts]);
+  const tagIdsByTransaction = useMemo(() => {
+    const map = new Map<number, number[]>();
+    for (const [transactionId, tags] of tagsByTransaction) {
+      map.set(transactionId, tags.map(tag => tag.tag_id));
+    }
+    return map;
+  }, [tagsByTransaction]);
+  const selectedCategoryIdSet = useMemo(() => new Set(selectedCategoryIds), [selectedCategoryIds]);
+  const trimmedSearch = searchTerm.trim();
 
   // Re-navigating with a new tag selection (e.g. from the Home tag chips) must replace
   // the previous one: the params only seed the state, so keep them in sync by value.
@@ -126,9 +136,8 @@ export function useTransactionFilters({
       list = list.filter(t => t.type === typeTab);
     }
 
-    if (selectedCategoryIds.length > 0) {
-      const catSet = new Set(selectedCategoryIds);
-      list = list.filter(t => catSet.has(t.category_id));
+    if (selectedCategoryIdSet.size > 0) {
+      list = list.filter(t => selectedCategoryIdSet.has(t.category_id));
     }
 
     if (recurringView === RECURRING_VIEWS.recurring) {
@@ -144,11 +153,10 @@ export function useTransactionFilters({
     }
 
     if (localTagIds.length > 0) {
-      list = list.filter(tx => matchesTagFilter(localTagIds, (tagsByTransaction.get(tx.id) ?? []).map(t => t.tag_id)));
+      list = list.filter(tx => matchesTagFilter(localTagIds, tagIdsByTransaction.get(tx.id) ?? []));
     }
 
-    if (searchTerm.trim()) {
-      const accountsById = new Map(accounts.map(acc => [acc.id, acc]));
+    if (trimmedSearch) {
       list = list.filter(tx =>
         matchesTransactionSearch(
           tx,
@@ -158,7 +166,7 @@ export function useTransactionFilters({
             accountName: accountsById.get(tx.account_id)?.name,
             recurringName: tx.recurring_rule_id != null ? recurringNames.get(tx.recurring_rule_id) : undefined,
           },
-          searchTerm,
+          trimmedSearch,
         ),
       );
     }
@@ -173,7 +181,7 @@ export function useTransactionFilters({
       return sortDirection === SORT_DIRECTIONS.desc ? -diff : diff;
     });
     return sorted;
-  }, [transactions, selectedAccountId, isTotal, typeTab, selectedCategoryIds, periodDates, recurringView, sortBy, sortDirection, localTagIds, tagsByTransaction, searchTerm, categoriesById, accounts, recurringNames]);
+  }, [transactions, selectedAccountId, isTotal, typeTab, selectedCategoryIdSet, periodDates, recurringView, sortBy, sortDirection, localTagIds, tagIdsByTransaction, tagsByTransaction, trimmedSearch, categoriesById, accountsById, recurringNames]);
 
   const sections = useMemo(() => {
     const grouped = new Map<string, Transaction[]>();

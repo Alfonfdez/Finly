@@ -1580,3 +1580,17 @@ Applied 2026-10-29:
 - `npm run test:all` green (186 files / 1633 tests).
 
 Spec: spec/features/025-data-backup/, spec/features/014-transactions-screen-from-home/, spec/features/015-all-transactions-screen/.
+
+## 2.2.0 pre-release P2 performance and dependency hardening
+Status: completed.
+
+Applied 2026-10-29:
+- Transaction list screens and `TransactionListBody` now reuse the visible IDs computed once by `useTransactionListScreen`, removing duplicate array construction.
+- `useTransactionFilters` precomputes the accounts map, tag-ID map, category-ID set and trimmed search term once per render, so the filter chain no longer rebuilds them for every transaction.
+- Applied safe dependency updates: React Navigation 7 latest patches, `drizzle-orm` 0.45.4, `react-native-web` 0.21.4, `reanimated-color-picker` 5.1.3, `sql.js` 1.15.2, `zod` 4.6.7, `sharp` 0.35.5, `vitest` 4.1.12, `eslint-plugin-boundaries` 7.4.0, `happy-dom` 21.0.4 and `@testing-library/react-native` 14.1.0.
+- Security/tooling gate: `npx expo install --check` up to date, `npx expo-doctor` 21/21, `npm audit` down to 8 issues (5 low, 3 high) from 27; all remaining issues are Expo CLI/tooling transitive dependencies.
+- Drawer: All transactions is a primary destination again (stack reset, hamburger, drawer closes); Settings stays pushed with the native back button and now closes the drawer on selection.
+- Headers: titles ignore the OS font scale (the app text-size setting remains the only scale); the icon and label render as one inline text run so Android measures the full centered title. Add category and Settings use the wide bound, and Add category was verified in English, French, at a 1.3 system font scale and at the Large app text size. On web the title uses a larger line height so descenders stay visible under the two-line clamp. On Android, screens without a right action use a symmetric 56dp spacer so the native header centers titles against the full screen.
+- Add category: the search action is back in the header right, and the body field stays hidden until pressed, focuses on open and closes with its clear button. The header title reserves the action width so the inline centered title stays complete; pushed sub-screens otherwise keep back only.
+- P2b: no further low-risk extraction was found; the transaction screens already share `TransactionListBody`, and deeper screen/context splits were deferred as release risk.
+- `npm run test:all` green (187 files / 1639 tests); Android release APK builds.

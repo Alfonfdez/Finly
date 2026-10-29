@@ -36,7 +36,9 @@ All commands run from the `FinlyApp/` directory.
 
 ### Current suite baseline
 
-Verified 2026-10-29: **186 test files / 1633 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
+Verified 2026-10-29: **187 test files / 1639 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
+
+Dependency baseline (2026-10-29): `npx expo install --check` reports all dependencies up to date, `npx expo-doctor` passes 21/21 checks, and `npm audit` reports 8 remaining issues (5 low, 3 high), all in Expo CLI/tooling transitive dependencies. The direct high/critical issues in `zod`, `sharp`, `vitest`, `eslint-plugin-boundaries` and `happy-dom` were fixed.
 
 Native E2E baseline (2026-09-09, SDK 57 + v2.0.0 release package): the then-current 10 Maestro flows PASS on the `finly_test` emulator against `com.finly.app` after `expo prebuild` + `assembleDebug`. The suite now has 15 flows + 4 helpers; see the current inventory under Mobile mode.
 
@@ -187,6 +189,8 @@ Both features kept `npm run test:all` green (138 tests / 10 files) after each fi
 per-criterion evidence is in the changelog entry.
 
 ### Mobile mode — Maestro on Android emulator (2026-08-05)
+
+- Keep the emulator at the normal system font scale (`adb shell settings put system font_scale 1.0`) for standard verification. Large-font checks are explicit one-off tests; reset the scale and relaunch the app afterwards.
 
 Native-only criteria (camera capture, native pickers) cannot be checked
 on web, so Finly added a **Maestro** harness for the Android emulator:

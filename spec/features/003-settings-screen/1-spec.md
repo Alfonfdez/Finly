@@ -11,7 +11,7 @@
 
 - The Drawer includes a "Settings" item with `settings-outline` icon.
 - When tapped, it navigates to the `SettingsScreen` within the Stack.
-- The screen has a native back button to return to Home.
+- The screen has a native back button to return to the previous screen; opening Settings from the drawer closes the drawer first.
 - The main settings screen shows a list of subsection rows. Each row is tappable and navigates to a detail screen.
 
 ### 2. Main Settings Screen
