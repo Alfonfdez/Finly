@@ -80,6 +80,6 @@ describe('AddCategoryScreen', () => {
   it('offers an add-more tile to create a category of the same type', async () => {
     const view = await render(<AddCategoryScreen />);
     fireEvent.press(view.getByText('Create'));
-    expect(nav.navigate).toHaveBeenCalledWith('CreateCategory', { type: 'expense' });
+    expect(nav.navigate).toHaveBeenCalledWith('CreateCategory', { type: 'expense', fromTransaction: true });
   });
 });

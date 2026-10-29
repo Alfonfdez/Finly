@@ -38,6 +38,18 @@ describe('useWebTabLock', () => {
     unmount();
   });
 
+  it('keeps the owner tab acquired when retry is called again', async () => {
+    const { result, unmount } = await renderHook(() => useWebTabLock());
+    await waitFor(() => expect(result.current.status).toBe(TAB_LOCK_STATUS.acquired));
+    request.mockClear();
+
+    await act(async () => { await result.current.retry(); });
+
+    expect(result.current.status).toBe(TAB_LOCK_STATUS.acquired);
+    expect(request).not.toHaveBeenCalled();
+    unmount();
+  });
+
   it('blocks a second tab when the lock is unavailable', async () => {
     request.mockImplementationOnce(async (_name, _options, callback) => {
       await callback(null);

@@ -33,6 +33,7 @@ export default function CreateTagScreen() {
     existsByName: (value, excludeId) => tagRepository.existsByName(USER_ID, value, excludeId),
     resolveDefaultEnglishName: () => null,
     duplicateErrorKey: labels.create_tag_error_duplicate,
+    checkErrorKey: labels.error_generic,
   });
 
   const handleCreate = async () => {
@@ -63,6 +64,7 @@ export default function CreateTagScreen() {
       <View style={styles.content}>
         <LabeledTextField
           placeholder={labels.create_tag_name_placeholder}
+          accessibilityLabel={labels.create_tag_name_placeholder}
           value={name}
           onChangeText={(v) => handleNameChange(v, setName)}
           autoFocus

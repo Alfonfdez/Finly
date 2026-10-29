@@ -37,6 +37,7 @@ export default function CreateCategoryScreen() {
   const route = useRoute<CreateCategoryRouteProp>();
 
   const initialType = route.params?.type ?? TRANSACTION_TYPES.expense;
+  const fromTransaction = route.params?.fromTransaction === true;
 
   const [name, setName] = useState('');
   const [type, setType] = useState<TransactionType>(initialType);
@@ -53,10 +54,12 @@ export default function CreateCategoryScreen() {
       return defaultId !== null ? getDefaultEnglishName(defaultId) : null;
     },
     duplicateErrorKey: labels.create_cat_error_name_duplicate,
+    checkErrorKey: labels.error_generic,
   });
 
   const typeCount = countCategoriesOfType(categories, type);
   const atCategoryLimit = countAtLimit(typeCount, MAX_CATEGORIES_PER_TYPE);
+  const typeLabel = type === TRANSACTION_TYPES.expense ? labels.create_cat_expense : labels.create_cat_income;
 
   const canCreate = name.trim().length > 0 && !nameError && !checkingName && selectedIcon !== null && selectedColor !== null && !atCategoryLimit;
 
@@ -85,7 +88,7 @@ export default function CreateCategoryScreen() {
           color: selectedColor,
           type,
         });
-        setPendingCategory(created.id, type);
+        if (fromTransaction) setPendingCategory(created.id, type);
         navigation.goBack();
         deferredRefreshCategories();
       }, ERROR_PREFIXES.categoryCreate);
@@ -109,23 +112,31 @@ export default function CreateCategoryScreen() {
           />
 
           <SectionTitle text={labels.create_cat_type} />
-          <View style={styles.typeRow}>
-            <RadioButton
-              selected={type === TRANSACTION_TYPES.expense}
-              onPress={() => setType(TRANSACTION_TYPES.expense)}
-            />
-            <Text style={[styles.radioLabel, { color: c.text, fontSize: fs(14) }]}>
-              {labels.create_cat_expense}
+          {fromTransaction ? (
+            <Text style={[styles.typeText, { color: c.textSecondary, fontSize: fs(14) }]}>
+              {typeLabel}
             </Text>
+          ) : (
+            <View style={styles.typeRow}>
+              <RadioButton
+                selected={type === TRANSACTION_TYPES.expense}
+                onPress={() => setType(TRANSACTION_TYPES.expense)}
+                accessibilityLabel={labels.create_cat_expense}
+              />
+              <Text style={[styles.radioLabel, { color: c.text, fontSize: fs(14) }]}>
+                {labels.create_cat_expense}
+              </Text>
 
-            <RadioButton
-              selected={type === TRANSACTION_TYPES.income}
-              onPress={() => setType(TRANSACTION_TYPES.income)}
-            />
-            <Text style={[styles.radioLabel, { color: c.text, fontSize: fs(14) }]}>
-              {labels.create_cat_income}
-            </Text>
-          </View>
+              <RadioButton
+                selected={type === TRANSACTION_TYPES.income}
+                onPress={() => setType(TRANSACTION_TYPES.income)}
+                accessibilityLabel={labels.create_cat_income}
+              />
+              <Text style={[styles.radioLabel, { color: c.text, fontSize: fs(14) }]}>
+                {labels.create_cat_income}
+              </Text>
+            </View>
+          )}
 
           <IconColorSection
             icons={CATEGORY_ICONS}
@@ -161,5 +172,8 @@ const styles = StyleSheet.create({
   },
   radioLabel: {
     marginRight: 12,
+  },
+  typeText: {
+    marginLeft: 4,
   },
 });

@@ -6,7 +6,7 @@ import type { Account } from '../types';
 import { accountSchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
 import { existsByName } from './repoHelpers';
-import { collectTransactionPhotos, deletePhotoUris } from '../photoCleanup';
+import { collectTransactionPhotos, deleteUnreferencedPhotoUris } from '../photoCleanup';
 import { serializeWrites } from '../transactionQueue';
 import { dbTimestamp } from '../../utils/formatters';
 import { TRANSACTION_TYPES } from '../../constants/types';
@@ -73,7 +73,7 @@ const accountRepoBase = {
       await db.delete(accounts).where(eq(accounts.id, id)).run();
       return photos;
     });
-    await deletePhotoUris(uris);
+    await deleteUnreferencedPhotoUris(uris);
   },
 
   async deleteMany(ids: number[]): Promise<void> {
@@ -91,7 +91,7 @@ const accountRepoBase = {
       await db.delete(accounts).where(inArray(accounts.id, deletable)).run();
       return photos;
     });
-    await deletePhotoUris(uris);
+    await deleteUnreferencedPhotoUris(uris);
   },
 
   async deleteAll(): Promise<void> {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isWeb } from '../utils/platform';
+import { WEB_LOCK_NAME } from '../constants/storage';
 
 export const TAB_LOCK_STATUS = {
   checking: 'checking',
@@ -9,8 +10,6 @@ export const TAB_LOCK_STATUS = {
 } as const;
 
 export type TabLockStatus = keyof typeof TAB_LOCK_STATUS;
-
-const LOCK_NAME = 'finly-db';
 
 interface LockManagerLike {
   request(
@@ -28,6 +27,7 @@ interface LockManagerLike {
 export function useWebTabLock() {
   const [status, setStatus] = useState<TabLockStatus>(isWeb ? TAB_LOCK_STATUS.checking : TAB_LOCK_STATUS.acquired);
   const releaseRef = useRef<(() => void) | null>(null);
+  const acquiringRef = useRef(false);
   const requestRef = useRef(0);
   const mountedRef = useRef(true);
 
@@ -43,9 +43,16 @@ export function useWebTabLock() {
       return;
     }
 
+    if (releaseRef.current) {
+      setStatus(TAB_LOCK_STATUS.acquired);
+      return;
+    }
+    if (acquiringRef.current) return;
+
     const requestId = ++requestRef.current;
+    acquiringRef.current = true;
     setStatus(TAB_LOCK_STATUS.checking);
-    void locks.request(LOCK_NAME, { ifAvailable: true }, async (lock) => {
+    void locks.request(WEB_LOCK_NAME, { ifAvailable: true }, async (lock) => {
       if (!mountedRef.current || requestId !== requestRef.current) return;
       if (!lock) {
         setStatus(TAB_LOCK_STATUS.blocked);
@@ -61,6 +68,8 @@ export function useWebTabLock() {
       if (mountedRef.current && requestId === requestRef.current) {
         setStatus(TAB_LOCK_STATUS.failed);
       }
+    }).finally(() => {
+      acquiringRef.current = false;
     });
   }, []);
 

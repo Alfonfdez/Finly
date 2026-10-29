@@ -39,7 +39,11 @@ export default function FormHintSlot({ message, tone = HINT_TONES.error, style }
       style={[styles.slot, { minHeight: Math.round(fs(12) * LINE_HEIGHT * HINT_SLOT_LINES) }, style]}
     >
       {text !== '' && (
-        <Text style={[styles.text, { color: muted ? c.textSecondary : c.red, fontSize: fs(12) }]}>
+        <Text
+          accessibilityLiveRegion="polite"
+          accessibilityRole="alert"
+          style={[styles.text, { color: muted ? c.textSecondary : c.red, fontSize: fs(12) }]}
+        >
           {text}
         </Text>
       )}

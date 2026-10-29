@@ -1,8 +1,10 @@
-/** Photo storage directory under the app document root. */
-export const PHOTO_DIRECTORY = 'photos';
+import { MAX_PHOTO_URI_LENGTH } from '../constants/types';
+import { PHOTO_FILE_PREFIX } from '../constants/photo';
+
+export { PHOTO_DIRECTORY } from '../constants/photo';
 
 /** Files created by the app: photo_<timestamp>_<counter>.<ext>. */
-const PHOTO_FILE_RE = /^photo_\d+_\d+\.(?:jpe?g|png|webp)$/i;
+const PHOTO_FILE_RE = new RegExp(`^${PHOTO_FILE_PREFIX}\\d+_\\d+\\.(?:jpe?g|png|webp)$`, 'i');
 
 /**
  * Web photos are embedded as base64 data URIs. Keep the check broad for image
@@ -42,5 +44,5 @@ export function isFilePhotoUri(uri: string): boolean {
 
 /** Whether a photo value from a backup is safe to accept. */
 export function isImportablePhotoUri(uri: string): boolean {
-  return isDataPhotoUri(uri) || isFilePhotoUri(uri);
+  return uri.length <= MAX_PHOTO_URI_LENGTH && (isDataPhotoUri(uri) || isFilePhotoUri(uri));
 }

@@ -6,8 +6,8 @@ import { seedConfigInner } from './migrations/003_config';
 import { createRecurringSchema } from './migrations/004_recurring';
 import { sanitizeDefaultAccountConfig } from './configDefaults';
 import { wipeUserData } from './wipe';
+import { DATABASE_NAME } from '../constants/storage';
 
-const DATABASE_NAME = 'Finly.db';
 export const SCHEMA_VERSION = 4;
 
 let dbPromise: Promise<DatabaseHandle> | null = null;

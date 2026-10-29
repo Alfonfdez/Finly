@@ -15,7 +15,10 @@ const mocks = vi.hoisted(() => {
       return { where: vi.fn(() => ({ run })), run };
     }),
     insert: vi.fn(() => ({ values: vi.fn(() => ({ run })) })),
-    update: vi.fn(() => ({ set: vi.fn(() => ({ where: vi.fn(() => ({ run })) })) })),
+    update: vi.fn(() => {
+      calls.push('update');
+      return { set: vi.fn(() => ({ where: vi.fn(() => ({ run })) })) };
+    }),
     select: vi.fn(() => ({ from: vi.fn(() => ({ where: vi.fn(() => ({ all: vi.fn(async () => []) })) })) })),
   };
   return {
@@ -32,7 +35,7 @@ const mocks = vi.hoisted(() => {
       calls.push('collectAll');
       return collectResult;
     }),
-    deletePhotoUris: vi.fn(async (uris: string[]) => {
+    deleteUnreferencedPhotoUris: vi.fn(async (uris: string[]) => {
       calls.push(`cleanup:${uris.join(',')}`);
     }),
     withTransaction: vi.fn(async (task: (db: unknown) => Promise<unknown>) => {
@@ -50,7 +53,7 @@ vi.mock('../../src/database/drizzle/engine', () => ({
 vi.mock('../../src/database/photoCleanup', () => ({
   collectTransactionPhotos: mocks.collectTransactionPhotos,
   collectAllTransactionPhotos: mocks.collectAllTransactionPhotos,
-  deletePhotoUris: mocks.deletePhotoUris,
+  deleteUnreferencedPhotoUris: mocks.deleteUnreferencedPhotoUris,
 }));
 
 describe('transaction photo cleanup ordering', () => {
@@ -59,7 +62,7 @@ describe('transaction photo cleanup ordering', () => {
     mocks.setCollectResult([]);
     mocks.collectTransactionPhotos.mockClear();
     mocks.collectAllTransactionPhotos.mockClear();
-    mocks.deletePhotoUris.mockClear();
+    mocks.deleteUnreferencedPhotoUris.mockClear();
     mocks.withTransaction.mockClear();
   });
 
@@ -87,12 +90,27 @@ describe('transaction photo cleanup ordering', () => {
     });
     await expect(transactionWrites.delete(3)).rejects.toThrow('db boom');
     expect(mocks.calls).toEqual(['collect:id,3', 'withTransaction']);
-    expect(mocks.deletePhotoUris).not.toHaveBeenCalled();
+    expect(mocks.deleteUnreferencedPhotoUris).not.toHaveBeenCalled();
+  });
+
+  it('updateWithTags cleans old photos only after the update commits', async () => {
+    mocks.setCollectResult(['old.jpg']);
+    await transactionWrites.updateWithTags(7, { photo: null }, []);
+
+    expect(mocks.calls).toEqual([
+      'collect:id,7',
+      'withTransaction',
+      'update',
+      'run',
+      'delete',
+      'run',
+      'cleanup:old.jpg',
+    ]);
   });
 
   it('skips photo bookkeeping entirely when there are no rows to delete', async () => {
     await transactionWrites.deleteMany([]);
     expect(mocks.calls).toEqual([]);
-    expect(mocks.deletePhotoUris).not.toHaveBeenCalled();
+    expect(mocks.deleteUnreferencedPhotoUris).not.toHaveBeenCalled();
   });
 });

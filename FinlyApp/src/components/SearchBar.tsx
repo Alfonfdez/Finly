@@ -29,6 +29,7 @@ export default function SearchBar({ placeholder, value, onChangeText, onClose, a
         value={value}
         onChangeText={onChangeText}
         autoFocus={autoFocus}
+        accessibilityLabel={placeholder}
       />
       <ClearButton onPress={onClose} accessibilityLabel={labels.a11y_close_search} />
     </View>

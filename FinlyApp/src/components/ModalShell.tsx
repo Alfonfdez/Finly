@@ -56,6 +56,7 @@ export default function ModalShell({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={[styles.overlay, { padding: overlayPadding, paddingBottom: overlayPadding + liftedInset }]}>
         <View
+          accessibilityViewIsModal
           style={[
             styles.modal,
             { backgroundColor: backgroundColor ?? c.surface, maxWidth, padding, maxHeight: effectiveMaxHeight },

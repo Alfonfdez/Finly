@@ -18,9 +18,11 @@ import {
   TAG_SORT_BY,
   TEXT_SIZES,
   THEMES,
+  TOTAL_ACCOUNT_FLAGS,
   TRANSACTION_TYPES,
 } from '../constants/types';
 import { LANGUAGES } from '../constants/languages';
+import { VALIDATION_MESSAGES } from '../constants/validation';
 
 const transactionTypeSchema = z.enum([TRANSACTION_TYPES.expense, TRANSACTION_TYPES.income]);
 const themeSchema = z.enum([THEMES.dark, THEMES.light, THEMES.system]);
@@ -53,9 +55,10 @@ const uniqueCategoryIdsSchema = z.array(z.number().int().positive()).transform(i
 const uniqueRecurringStatusesSchema = z.array(recurringStatusSchema).transform(statuses => [...new Set(statuses)]);
 const accountSortBySchema = z.enum([ACCOUNT_SORT_BY.name, ACCOUNT_SORT_BY.balance]);
 const categorySortBySchema = z.enum([CATEGORY_SORT_BY.name, CATEGORY_SORT_BY.usage]);
+const positiveId = z.number().int().positive().refine(Number.isSafeInteger, VALIDATION_MESSAGES.safeInteger);
 
 export const userSchema = z.object({
-  id: z.number().int(),
+  id: positiveId,
   name: z.string(),
   email: z.string().nullable(),
   avatar: z.string().nullable(),
@@ -64,20 +67,23 @@ export const userSchema = z.object({
 });
 
 export const accountSchema = z.object({
-  id: z.number().int(),
-  user_id: z.number().int(),
+  id: positiveId,
+  user_id: positiveId,
   name: z.string(),
   initial_balance: z.number(),
   icon: z.string(),
   color: z.string(),
   description: z.string().optional(),
-  is_total: z.number().int().optional(),
+  is_total: z.union([
+    z.literal(TOTAL_ACCOUNT_FLAGS.regular),
+    z.literal(TOTAL_ACCOUNT_FLAGS.total),
+  ]).optional(),
   created_at: z.string(),
 });
 
 export const categorySchema = z.object({
-  id: z.number().int(),
-  user_id: z.number().int(),
+  id: positiveId,
+  user_id: positiveId,
   name: z.string(),
   icon: z.string(),
   color: z.string(),
@@ -86,9 +92,9 @@ export const categorySchema = z.object({
 });
 
 export const transactionSchema = z.object({
-  id: z.number().int(),
-  account_id: z.number().int(),
-  category_id: z.number().int(),
+  id: positiveId,
+  account_id: positiveId,
+  category_id: positiveId,
   type: transactionTypeSchema,
   amount: z.number().positive(),
   description: z.string().nullable(),
@@ -97,17 +103,17 @@ export const transactionSchema = z.object({
   created_at: z.string(),
   updated_at: z.string().nullable(),
   // Added in migration 004. Optional keeps pre-028 backups (no such keys) importable.
-  recurring_rule_id: z.number().int().nullable().optional(),
+  recurring_rule_id: positiveId.nullable().optional(),
   recurrence_date: z.string().nullable().optional(),
 });
 
 export const recurringRuleSchema = z.object({
-  id: z.number().int(),
-  user_id: z.number().int(),
+  id: positiveId,
+  user_id: positiveId,
   name: z.string(),
   type: transactionTypeSchema,
-  account_id: z.number().int(),
-  category_id: z.number().int(),
+  account_id: positiveId,
+  category_id: positiveId,
   amount: z.number().positive(),
   description: z.string().nullable(),
   frequency: recurrenceFrequencySchema,
@@ -125,20 +131,20 @@ export const recurringRuleSchema = z.object({
 });
 
 export const recurringRuleTagSchema = z.object({
-  rule_id: z.number().int(),
-  tag_id: z.number().int(),
+  rule_id: positiveId,
+  tag_id: positiveId,
 });
 
 export const tagSchema = z.object({
-  id: z.number().int(),
-  user_id: z.number().int(),
+  id: positiveId,
+  user_id: positiveId,
   name: z.string(),
   created_at: z.string(),
 });
 
 export const transactionTagSchema = z.object({
-  transaction_id: z.number().int(),
-  tag_id: z.number().int(),
+  transaction_id: positiveId,
+  tag_id: positiveId,
 });
 
 export const configSchema = z.object({

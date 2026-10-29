@@ -28,6 +28,33 @@ describe('useDeferredRefresh', () => {
     expect(fn).toHaveBeenCalledWith(21);
   });
 
+  it('runs the refresh after the hook unmounts', async () => {
+    let frame: FrameRequestCallback | null = null;
+    globalThis.requestAnimationFrame = ((cb: FrameRequestCallback) => {
+      frame = cb;
+      return 1;
+    }) as typeof globalThis.requestAnimationFrame;
+
+    const fn = vi.fn(async () => undefined);
+    const { result, unmount } = await renderHook(() => useDeferredRefresh(fn as (...args: unknown[]) => unknown));
+
+    let pending!: Promise<void>;
+    await act(async () => {
+      pending = result.current() as Promise<void>;
+    });
+
+    await act(async () => {
+      unmount();
+    });
+
+    await act(async () => {
+      if (frame) frame(Date.now());
+      await pending;
+    });
+
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
   it('resolves even when the underlying function throws', async () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const fn = vi.fn(async () => {

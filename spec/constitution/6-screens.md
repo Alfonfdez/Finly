@@ -275,6 +275,7 @@ centred card above it via `useKeyboardLift` (`hooks/useKeyboardInset.ts`): it me
 keyboard and adds it as the overlay's bottom padding (also capping the card's max height to the
 remaining space). The lift is held for a short release delay (**250ms**) after the keyboard hides: this lets a button tap finish before the card moves, then the card returns to its normal centred size. It resets immediately when the modal closes. `ConfirmationModal`'s scroll area uses `keyboardShouldPersistTaps="handled"`.
 - **Hidden modals ignore keyboard lift:** a modal that is mounted but not visible must not accumulate keyboard height. `useKeyboardLift` only grows while `visible`, so returning from a form with the keyboard open cannot push the next modal above the screen.
+- **Opening ignores the form's keyboard:** the keyboard that was already open when the modal appears is treated as stale and does not lift the card; `ModalShell` dismisses it, and only a keyboard shown after the modal opens (for example its own search field) lifts it. This prevents the card from jumping from the top to the centre.
 - **Opening a modal dismisses the underlying form input:** `ModalShell` calls `Keyboard.dismiss()` when it becomes visible, so the focused field blurs and `useKeyboardReveal` cannot scroll the form behind the modal when the modal's own input opens (e.g. Recurring Name → Tags → Add tag).
 
 Any `ScrollView` that is an **ancestor of a modal containing a `TextInput`** must also set

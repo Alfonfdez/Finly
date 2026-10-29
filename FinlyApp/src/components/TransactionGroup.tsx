@@ -106,7 +106,7 @@ export const TransactionDateHeader = memo(function TransactionDateHeader({ date 
 function formatDateHeader(dateStr: string): string {
   const d = parseDbDate(dateStr);
   const day = d.getDate();
-  const month = getMonthName(d.getMonth() + 1).toLowerCase();
+  const month = getMonthName(d.getMonth() + 1);
   const year = d.getFullYear();
   const currentYear = new Date().getFullYear();
   if (year === currentYear) {

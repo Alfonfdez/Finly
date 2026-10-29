@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
+import { Alert } from 'react-native';
 import type { ReactNode } from 'react';
 import { AppProvider, useApp } from '../../src/context/AppContext';
 import { materializeDueRecurring } from '../../src/database/recurringService';
@@ -242,6 +243,18 @@ describe('AppProvider', () => {
     mockAccountList.mockRejectedValueOnce(new Error('reload failed'));
     await act(async () => { ok = await result.current.resetAll({ notifyOnError: false }); });
     expect(ok).toBe(false);
+  });
+
+  it('surfaces a refresh failure to the user', async () => {
+    const alertSpy = vi.spyOn(Alert, 'alert').mockImplementation(() => {});
+    const { result } = await renderHook(() => useApp(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockGetBalances.mockRejectedValueOnce(new Error('refresh failed'));
+    await act(async () => { result.current.refresh(); });
+    await waitFor(() => expect(alertSpy).toHaveBeenCalled());
+
+    alertSpy.mockRestore();
   });
 
   it('starts the custom period at Jan 1 and the end of today', async () => {

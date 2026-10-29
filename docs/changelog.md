@@ -4595,3 +4595,35 @@
 
 [2026-10-28] test | FinlyApp/tests/utils/recurrence.test.ts
 - Repair a corrupted em dash in a recurrence test comment.
+
+[2026-10-28] fix | FinlyApp/src/constants/types.ts, FinlyApp/src/database/schemas.ts, FinlyApp/src/database/backup.ts, FinlyApp/src/utils/backupValidation.ts, FinlyApp/src/utils/backupIO.ts, FinlyApp/src/utils/backupIO.web.ts, FinlyApp/src/utils/photoUri.ts, FinlyApp/src/database/photoCleanup.ts, FinlyApp/src/database/repositories/transactionRepo.writes.ts, FinlyApp/src/database/repositories/categoryRepo.ts, FinlyApp/src/database/repositories/accountRepo.ts, FinlyApp/src/database/backupService.ts, FinlyApp/src/hooks/usePhotos.ts, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/database/sqliteWeb.ts, FinlyApp/src/database/storage/indexedDb.ts, FinlyApp/src/hooks/useWebTabLock.ts, FinlyApp/src/hooks/useFocusLoad.ts, FinlyApp/src/components/LoadErrorState.tsx, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/screens/ModifyTransactionScreen.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/tests/, docs/harnesses.md, spec/constitution/3-roadmap.md, spec/constitution/7-platform-differences.md, spec/features/025-data-backup/1-spec.md
+- Add backup size/row/photo/config limits, duplicate-ID/config checks and recurring schedule/backlog validation.
+- Delete photo files only when unreferenced; clean form-created photos on cancel and repository removals after update.
+- Keep committed web writes successful when IndexedDB persistence fails; coalesce snapshots, flush and recover closed/WASM handles.
+- Surface load failures with retry states and alerts.
+- Add P1a regressions; test:all green (186 files / 1622 tests).
+
+[2026-10-29] refactor | FinlyApp/src/constants/backup.ts, FinlyApp/src/constants/photo.ts, FinlyApp/src/constants/storage.ts, FinlyApp/src/constants/validation.ts, FinlyApp/src/database/backup.ts, FinlyApp/src/database/backupService.ts, FinlyApp/src/database/schemas.ts, FinlyApp/src/database/database.ts, FinlyApp/src/database/sqliteWeb.ts, FinlyApp/src/database/storage/indexedDb.ts, FinlyApp/src/utils/backupIO.ts, FinlyApp/src/utils/backupIO.web.ts, FinlyApp/src/utils/backupValidation.ts, FinlyApp/src/utils/photoUri.ts, FinlyApp/src/utils/formatters.ts, FinlyApp/src/hooks/usePhotos.ts, FinlyApp/src/hooks/useWebTabLock.ts, FinlyApp/src/hooks/useIsDirty.ts, FinlyApp/src/hooks/useNameDuplicateCheck.ts, FinlyApp/src/hooks/useDeferredRefresh.ts, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/components/ModalShell.tsx, FinlyApp/src/components/form/FormHintSlot.tsx, FinlyApp/src/components/SearchBar.tsx, FinlyApp/src/components/RadioButton.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/components/DonutChart.tsx, FinlyApp/src/components/BarChart.tsx, FinlyApp/src/components/CategoryList.tsx, FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/context/ConfigContext.tsx, FinlyApp/src/i18n/index.ts, FinlyApp/App.tsx, FinlyApp/modules/finly-share/android/src/main/java/expo/modules/finlyshare/FinlyShareModule.kt, FinlyApp/tests/, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Centralize backup/photo/storage/validation literals and remove audit magic strings.
+- Improve accessibility labels, modal focus, live hints and chart alternatives.
+- Fix dirty baselines, duplicate-check fail-closed, timer cleanup, locale formatting and backup/share I/O edge cases.
+- Add P1b regressions; test:all green (186 files / 1626 tests).
+
+[2026-10-29] fix | FinlyApp/src/hooks/useDeferredRefresh.ts, FinlyApp/tests/hooks/useDeferredRefresh.test.tsx, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Let deferred refreshes run after the initiating screen navigates back, so created and edited records appear without restarting the app.
+- Add a regression test for a refresh scheduled before unmount; test:all green (186 files / 1627 tests).
+
+[2026-10-29] fix | FinlyApp/src/navigation/AppNavigator.tsx, spec/constitution/3-roadmap.md
+- Use the narrower header-title bound on the Add category search screen so the full title is not clipped under the search button.
+
+[2026-10-29] fix | FinlyApp/src/hooks/useKeyboardInset.ts, FinlyApp/tests/hooks/useKeyboardLift.test.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Ignore the keyboard that was already open when a modal appears, so the Add photo card no longer jumps from the top to the centre.
+- Add a regression test for the modal-open transition; test:all green (186 files / 1628 tests).
+
+[2026-10-29] docs | docs/harnesses.md
+- Refresh the harness baseline to 186 files / 1628 tests.
+
+[2026-10-29] fix | FinlyApp/src/constants/types.ts, FinlyApp/src/screens/CreateCategoryScreen.tsx, FinlyApp/src/screens/AddCategoryScreen.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/tests/screens/CreateCategoryScreen.test.tsx, FinlyApp/tests/screens/AddCategoryScreen.test.tsx, FinlyApp/tests/component/TransactionForm.test.tsx, spec/features/004-add-transaction-screen/1-spec.md, spec/features/005-add-category-screen/1-spec.md, spec/features/006-create-category-screen/1-spec.md, spec/features/008-categories-screen/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Lock the category type to the active transaction type when creating from the transaction flow and show it read-only.
+- Keep both type radios for standalone Categories creation and stop setting a pending category there.
+- Add regressions for both flows; test:all green (186 files / 1633 tests).

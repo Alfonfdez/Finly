@@ -78,6 +78,7 @@ export default function ModifyCategoryScreen() {
       return defaultId !== null ? getDefaultEnglishName(defaultId) : null;
     },
     duplicateErrorKey: labels.create_cat_error_name_duplicate,
+    checkErrorKey: labels.error_generic,
     excludeId: categoryId,
   });
 
@@ -100,11 +101,16 @@ export default function ModifyCategoryScreen() {
     color: category.color,
   } : null), [category]);
 
-  const isDirty = useIsDirty(baseline, {
+  const { isDirty, resetBaseline } = useIsDirty(baseline, {
     name: name.trim(),
     icon: selectedIcon,
     color: selectedColor,
   });
+
+  useEffect(() => {
+    if (!category || userEditedRef.current) return;
+    resetBaseline(baseline);
+  }, [category, baseline, resetBaseline]);
 
   const canSave = name.trim().length > 0 && !nameError && !checkingName && isDirty;
 

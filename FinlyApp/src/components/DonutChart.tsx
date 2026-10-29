@@ -2,7 +2,7 @@ import { memo, useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { G, Circle, Path } from 'react-native-svg';
 import type { CategoryWithTotal } from '../constants/types';
-import { formatAmount, fitFontSize, HIDDEN_BALANCE } from '../utils/formatters';
+import { formatAmount, formatPercentage, fitFontSize, HIDDEN_BALANCE } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 
@@ -52,9 +52,12 @@ function DonutChartInner({ data, total, hidden = false }: Props) {
   }, [data]);
 
   const isSingleSegment = data.length === 1;
+  const accessibleLabel = hidden
+    ? formatted
+    : `${formatted}: ${data.map(item => `${item.name} ${formatPercentage(item.percentage, config.decimalSeparator)}%`).join(', ')}`;
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} accessible accessibilityLabel={accessibleLabel}>
       <Svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
         <G transform={`rotate(-90, ${CENTER}, ${CENTER})`}>
           <Circle cx={CENTER} cy={CENTER} r={RADIUS} stroke={c.surface} strokeWidth={STROKE_WIDTH} fill="none" />

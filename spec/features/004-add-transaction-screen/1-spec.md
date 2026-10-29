@@ -66,6 +66,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - When tapping "More":
   - If the active type has **more than 7 categories**: the "Add category" screen opens to select from existing ones.
   - If the active type has **7 or fewer categories**: the "Create category" screen opens directly to create a new one.
+  - In both cases the create screen receives `fromTransaction: true`, so its type is locked to the active transaction type.
 
 ### 6. Day selection
 

@@ -44,6 +44,7 @@ export default function ModifyTagScreen() {
     existsByName: (value, excludeId) => tagRepository.existsByName(USER_ID, value, excludeId),
     resolveDefaultEnglishName: () => null,
     duplicateErrorKey: labels.create_tag_error_duplicate,
+    checkErrorKey: labels.error_generic,
     excludeId: tagId,
   });
 
@@ -89,7 +90,12 @@ export default function ModifyTagScreen() {
 
   /** The name the form opened with — Save only applies an actual change. */
   const baseline = useMemo(() => (tag ? { name: tag.name.trim() } : null), [tag]);
-  const isDirty = useIsDirty(baseline, { name: name.trim() });
+  const { isDirty, resetBaseline } = useIsDirty(baseline, { name: name.trim() });
+
+  useEffect(() => {
+    if (!tag || userEditedRef.current) return;
+    resetBaseline(baseline);
+  }, [tag, baseline, resetBaseline]);
 
   const isDisabled = isEmpty || !!nameError || checkingName || !isDirty;
 
@@ -100,6 +106,7 @@ export default function ModifyTagScreen() {
       <View style={styles.content}>
         <LabeledTextField
           placeholder={labels.create_tag_name_placeholder}
+          accessibilityLabel={labels.create_tag_name_placeholder}
           value={name}
           onChangeText={handleNameChangeLocal}
           maxLength={MAX_TAG_NAME_LENGTH}

@@ -31,7 +31,7 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 ### 4. "Create" button
 
 - In the last position of the grid, a "+" button with the text "Create" (multilingual) is displayed.
-- Tapping the "Create" button navigates to the existing "Create category" screen (006), passing the active type as a parameter.
+- Tapping the "Create" button navigates to the existing "Create category" screen (006), passing the active type as a parameter. This is the standalone flow: the type radios stay available and no pending category is set.
 - The limit is per type (30, `MAX_CATEGORIES_PER_TYPE`): when the active tab's type already has 30 categories, the "Create" button is hidden and the message "Maximum of 30 categories per type reached" (reuse `create_cat_error_limit`) is shown centered below the grid, so the user understands why the button is missing.
 - The check is reactive: switching tabs re-evaluates the limit for the other type (if income is below 30, the "Create" button is shown on the Income tab even when expense is at the cap).
 - The "Create category" screen (006) keeps its own guard (Add button disabled + message) as a safety net for other entry points.
@@ -90,7 +90,7 @@ Screen accessible from the Drawer (hamburger menu) that displays all existing ca
 - [x] Each category shows an icon with a colored background + name below.
 - [x] The grid is vertically scrollable if there are many categories.
 - [x] The "Create" button (icon "+" + text) is in the last position of the grid.
-- [x] Tapping "Create" navigates to "Create category" (006) with the active type.
+- [x] Tapping "Create" navigates to "Create category" (006) with the active type, keeping both type radios and not setting a pending category.
 - [x] When the active tab's type has 30 categories, the "Create" button is hidden and "Maximum of 30 categories per type reached" is shown below the grid.
 - [x] Switching to a type below the cap restores the "Create" button.
 - [x] A counter below the tabs shows how many categories the active type has out of the maximum and updates when switching tabs.

@@ -4,7 +4,7 @@ import { importBackup } from '../../src/database/backupService';
 const parseBackup = vi.fn();
 const applyBackup = vi.fn(async (_db: unknown, _snapshot: unknown) => {});
 const collectAllTransactionPhotos = vi.fn(async () => [] as string[]);
-const deletePhotoUris = vi.fn(async (_uris: string[]) => {});
+const deleteUnreferencedPhotoUris = vi.fn(async (_uris: string[]) => {});
 
 vi.mock('../../src/database/backup', () => ({
   applyBackup: (db: unknown, snapshot: unknown) => applyBackup(db, snapshot),
@@ -28,7 +28,7 @@ vi.mock('../../src/database/database', () => ({
 
 vi.mock('../../src/database/photoCleanup', () => ({
   collectAllTransactionPhotos: () => collectAllTransactionPhotos(),
-  deletePhotoUris: (uris: string[]) => deletePhotoUris(uris),
+  deleteUnreferencedPhotoUris: (uris: string[]) => deleteUnreferencedPhotoUris(uris),
 }));
 
 vi.mock('../../src/utils/photoData', () => ({
@@ -40,7 +40,7 @@ describe('importBackup photo cleanup', () => {
     parseBackup.mockReset();
     applyBackup.mockClear();
     collectAllTransactionPhotos.mockReset().mockResolvedValue([]);
-    deletePhotoUris.mockClear();
+    deleteUnreferencedPhotoUris.mockClear();
   });
 
   it('deletes old photos that the imported snapshot no longer references', async () => {
@@ -56,7 +56,7 @@ describe('importBackup photo cleanup', () => {
     await importBackup('{}');
 
     expect(applyBackup).toHaveBeenCalledTimes(1);
-    expect(deletePhotoUris).toHaveBeenCalledWith(['file:///old.jpg']);
+    expect(deleteUnreferencedPhotoUris).toHaveBeenCalledWith(['file:///old.jpg']);
   });
 
   it('keeps old photos when the import fails', async () => {
@@ -65,6 +65,6 @@ describe('importBackup photo cleanup', () => {
     applyBackup.mockRejectedValueOnce(new Error('import failed'));
 
     await expect(importBackup('{}')).rejects.toThrow('import failed');
-    expect(deletePhotoUris).not.toHaveBeenCalled();
+    expect(deleteUnreferencedPhotoUris).not.toHaveBeenCalled();
   });
 });

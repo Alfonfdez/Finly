@@ -15,6 +15,7 @@ import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useExternalRowRefresh } from '../hooks/useExternalRowRefresh';
 import TransactionForm from '../components/TransactionForm';
 import EmptyState from '../components/EmptyState';
+import LoadErrorState from '../components/LoadErrorState';
 import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS, SECTION_GAP, recurringCardColors } from '../components/componentStyles';
 
 type ModifyRouteProp = RouteProp<RootStackParamList, 'ModifyTransaction'>;
@@ -36,7 +37,9 @@ export default function ModifyTransactionScreen() {
     return { transaction, tagIds };
   }, [transactionId]);
 
-  const { data, loading } = useFocusLoad(loadTransaction, null);
+  const {
+    data, loading, error, retry,
+  } = useFocusLoad(loadTransaction, null);
   const transaction = data?.transaction ?? null;
   const tagIds = data?.tagIds ?? [];
 
@@ -47,6 +50,14 @@ export default function ModifyTransactionScreen() {
   const { formKey, updated, adopt, onDirtyChange } = useExternalRowRefresh(transaction?.updated_at, {
     warnWhenDirty: transaction?.recurring_rule_id != null,
   });
+
+  if (error && !loading) {
+    return (
+      <ScreenShell>
+        <LoadErrorState onRetry={retry} />
+      </ScreenShell>
+    );
+  }
 
   if (loading && !transaction) {
     return (

@@ -95,11 +95,11 @@ export default function App() {
   }, [tabLockStatus, dbAttempt]);
 
   useEffect(() => {
-    if (dbReady && !exiting && !showApp) {
-      setExiting(true);
-      setTimeout(() => setShowApp(true), EXIT_DURATION);
-    }
-  }, [dbReady, exiting, showApp]);
+    if (!dbReady) return;
+    setExiting(true);
+    const timer = setTimeout(() => setShowApp(true), EXIT_DURATION);
+    return () => clearTimeout(timer);
+  }, [dbReady]);
 
   if (tabLockStatus === TAB_LOCK_STATUS.blocked) {
     return <WebTabBlocked onRetry={retryTabLock} />;

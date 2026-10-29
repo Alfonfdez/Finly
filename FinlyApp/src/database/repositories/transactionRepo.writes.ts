@@ -4,7 +4,7 @@ import { transactionTags, transactions } from '../drizzle/schema';
 import { runResultOf } from '../drizzle/proxy';
 import type { Transaction } from '../types';
 import { dbTimestamp } from '../../utils/formatters';
-import { collectTransactionPhotos, collectAllTransactionPhotos, deletePhotoUris } from '../photoCleanup';
+import { collectTransactionPhotos, collectAllTransactionPhotos, deleteUnreferencedPhotoUris } from '../photoCleanup';
 import { serializeWrites } from '../transactionQueue';
 
 const transactionWritesBase = {
@@ -48,7 +48,7 @@ const transactionWritesBase = {
     await withTransaction(async (db) => {
       await db.delete(transactions).where(eq(transactions.id, id)).run();
     });
-    await deletePhotoUris(uris);
+    await deleteUnreferencedPhotoUris(uris);
   },
 
   async deleteMany(ids: number[]): Promise<void> {
@@ -57,7 +57,7 @@ const transactionWritesBase = {
     await withTransaction(async (db) => {
       await db.delete(transactions).where(inArray(transactions.id, ids)).run();
     });
-    await deletePhotoUris(uris);
+    await deleteUnreferencedPhotoUris(uris);
   },
 
   async deleteAllTransactions(): Promise<void> {
@@ -65,7 +65,7 @@ const transactionWritesBase = {
     await withTransaction(async (db) => {
       await db.delete(transactions).run();
     });
-    await deletePhotoUris(uris);
+    await deleteUnreferencedPhotoUris(uris);
   },
 
   async updateComment(oldComment: string, newComment: string): Promise<number> {
@@ -120,6 +120,7 @@ const transactionWritesBase = {
     data: Partial<Omit<Transaction, 'id' | 'created_at' | 'updated_at'>>,
     tagIds: number[],
   ): Promise<void> {
+    const oldPhotos = await collectTransactionPhotos('id', id);
     await withTransaction(async (db) => {
       await transactionWrites.update(id, data);
       await db.delete(transactionTags).where(eq(transactionTags.transaction_id, id)).run();
@@ -130,6 +131,7 @@ const transactionWritesBase = {
           .run();
       }
     });
+    await deleteUnreferencedPhotoUris(oldPhotos);
   },
 };
 

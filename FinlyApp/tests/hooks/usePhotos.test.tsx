@@ -175,16 +175,42 @@ describe('usePhotos', () => {
     errorSpy.mockRestore();
   });
 
-  it('defers the file deletion until the form is saved', async () => {
+  it('leaves an existing photo file for the repository to clean up', async () => {
     const { result } = await renderHook(() => usePhotos(['x.jpg', 'y.jpg']));
     await act(() => result.current.handleRemovePhoto('x.jpg'));
-    expect(mockDeletePhotoFile).not.toHaveBeenCalled();
     expect(result.current.photos).toEqual(['y.jpg']);
 
     await act(() => result.current.finalizePhotos());
-    expect(mockDeletePhotoFile).toHaveBeenCalledWith('x.jpg');
+    expect(mockDeletePhotoFile).not.toHaveBeenCalled();
+  });
 
+  it('deletes a newly added photo that is removed before save', async () => {
+    setPermission('camera', true);
+    (ImagePicker.launchCameraAsync as ReturnType<typeof vi.fn>).mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///tmp/snap.jpg' }],
+    });
+    const { result } = await renderHook(() => usePhotos());
+    await act(() => result.current.handleTakePhoto());
+    const created = result.current.photos[0];
+
+    await act(() => result.current.handleRemovePhoto(created));
     await act(() => result.current.finalizePhotos());
-    expect(mockDeletePhotoFile).toHaveBeenCalledTimes(1);
+    expect(mockDeletePhotoFile).toHaveBeenCalledWith(created);
+  });
+
+  it('deletes unsaved new photos when the form unmounts', async () => {
+    setPermission('camera', true);
+    (ImagePicker.launchCameraAsync as ReturnType<typeof vi.fn>).mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///tmp/snap.jpg' }],
+    });
+    const { result, unmount } = await renderHook(() => usePhotos());
+    await act(() => result.current.handleTakePhoto());
+    expect(result.current.photos).toHaveLength(1);
+    const created = result.current.photos[0];
+
+    await unmount();
+    expect(mockDeletePhotoFile).toHaveBeenCalledWith(created);
   });
 });

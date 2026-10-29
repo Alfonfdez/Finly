@@ -26,9 +26,9 @@ Screen accessible from the "Create" button in the last position of the grid in `
 
 ### 3. Type (expense / income)
 
-- Two radio buttons: "Expenses" and "Incomes" (multilingual).
-- "Expenses" selected by default.
-- The icon of the selected radio button must show a filled circle with the primary color; the unselected one shows an empty circle.
+- When opened from the transaction flow (`fromTransaction: true`), the type is fixed to the route type and shown as a read-only value (`Type: Expense`/`Type: Income`); no radios are shown.
+- When opened from the Categories screen, two radio buttons: "Expenses" and "Incomes" (multilingual).
+- In the standalone flow, "Expenses" is selected by default; the selected radio shows a filled circle with the primary color and the unselected one an empty circle.
 
 ### 4. Symbols (icons)
 
@@ -112,7 +112,7 @@ Screen accessible from the "Create" button in the last position of the grid in `
   4. "Select a color" (if color missing)
   5. "Select an icon and a color" (if both missing)
   6. "Maximum of 30 categories per type reached" (if the per-type limit is reached)
-- When pressing "Add", the category is created in the database (native SQLite, sql.js + IndexedDB on web) and navigation returns to `AddCategoryScreen` with the newly created category selected.
+- When pressing "Add", the category is created in the database (native SQLite, sql.js + IndexedDB on web) and navigation returns to the previous screen.
 
 ### 7. Behavior on Creation
 
@@ -122,7 +122,8 @@ Screen accessible from the "Create" button in the last position of the grid in `
   - `icon`: the selected icon.
   - `color`: the selected color.
   - `type`: the selected type (expense/income).
-- After insertion, navigation goes to `AddCategoryScreen` with `{ type, categoryId }` so that the new category appears selected (using the same `setPendingCategory` pattern from `AddTransactionScreen`).
+- In the transaction flow (`fromTransaction: true`), the new category is left pending so the transaction form selects it when it regains focus.
+- In the standalone Categories flow, no pending category is set: returning to Categories must not auto-select the category in a later transaction.
 
 ### 8. Limit of categories per type
 
@@ -158,7 +159,8 @@ Screen accessible from the "Create" button in the last position of the grid in `
 - [x] Duplicate validation checks case-insensitive against existing categories (regardless of type).
 - [x] If there is a duplicate, "A category with this name already exists" is shown in red and the button is disabled.
 - [x] When changing the type, the name duplicate validation re-runs.
-- [x] The "Expenses"/"Incomes" radios work correctly, "Expenses" selected by default.
+- [x] From the transaction flow, the type is fixed and shown read-only; the other type is not selectable.
+- [x] From the Categories screen, the "Expenses"/"Incomes" radios work correctly, "Expenses" selected by default.
 - [x] ~40 icons are shown in a 4-column grid with vertical scroll.
 - [x] When tapping an icon, it is selected and visually highlighted.
 - [x] Only one icon can be selected at a time.
@@ -168,7 +170,8 @@ Screen accessible from the "Create" button in the last position of the grid in `
 - [x] When selecting a color in the modal, it closes and the color remains selected.
 - [x] The "Add" button is disabled if name, icon or color is missing (or name is duplicate).
 - [x] The red help text appears with the appropriate message based on what is missing (only the first unmet requirement).
-- [x] When pressing "Add", the category is created and navigation returns with the category selected.
+- [x] When pressing "Add" from the transaction flow, the category is created and left pending for the transaction form to select.
+- [x] When pressing "Add" from Categories, the category is created and no pending category is set.
 - [x] When the selected type already has 30 categories, the "Add" button is disabled and "Maximum of 30 categories per type reached" is shown in red.
 - [x] Switching the type radio re-evaluates the limit (the other type can still add categories if below 30).
 - [x] All texts change when changing the language in settings.

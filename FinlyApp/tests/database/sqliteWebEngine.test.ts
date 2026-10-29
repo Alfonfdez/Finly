@@ -142,7 +142,7 @@ describe('sql.js web engine', () => {
     const broken = new FlakyStorage(Number.POSITIVE_INFINITY);
     const brokenErrors: unknown[] = [];
     const brokenDb = await createSqlJsDatabase(null, broken, undefined, e => brokenErrors.push(e));
-    await expect(brokenDb.execAsync('CREATE TABLE t (id INTEGER PRIMARY KEY)')).rejects.toThrow('quota');
+    await expect(brokenDb.execAsync('CREATE TABLE t (id INTEGER PRIMARY KEY)')).resolves.toBeUndefined();
     expect(broken.calls).toBe(2);
     expect(brokenErrors).toHaveLength(1);
     brokenDb.close();
@@ -170,15 +170,43 @@ describe('sql.js web engine', () => {
     const errors: unknown[] = [];
     const db = await createSqlJsDatabase(null, storage, undefined, e => errors.push(e));
 
-    await expect(db.execAsync('CREATE TABLE t (id INTEGER PRIMARY KEY)')).rejects.toThrow('quota');
+    await expect(db.execAsync('CREATE TABLE t (id INTEGER PRIMARY KEY)')).resolves.toBeUndefined();
     expect(storage.calls).toBe(2);
     expect(errors).toHaveLength(1);
 
     await db.execAsync('CREATE TABLE u (id INTEGER PRIMARY KEY)');
     expect(storage.calls).toBe(3);
     expect(storage.data).not.toBeNull();
+    await db.flush();
     db.close();
   });
+  it('does not reject a committed transaction when persistence fails', async () => {
+    class ToggleStorage extends MemoryStorage {
+      failures = 0;
+      override async set(data: Uint8Array): Promise<void> {
+        if (this.failures > 0) {
+          this.failures -= 1;
+          throw new Error('quota');
+        }
+        await super.set(data);
+      }
+    }
+
+    const storage = new ToggleStorage();
+    const errors: unknown[] = [];
+    const db = await createSqlJsDatabase(null, storage, undefined, e => errors.push(e));
+    await db.execAsync('CREATE TABLE t (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)');
+
+    storage.failures = Number.POSITIVE_INFINITY;
+    await expect(db.withTransactionAsync(async () => {
+      await db.runAsync('INSERT INTO t (name) VALUES (?)', 'committed');
+    })).resolves.toBeUndefined();
+
+    expect(errors).toHaveLength(1);
+    expect(await db.getAllAsync<{ name: string }>('SELECT name FROM t')).toEqual([{ name: 'committed' }]);
+    db.close();
+  });
+
   it('keeps foreign keys enabled after persisting (export must not reset the pragma)', async () => {
     const storage = new MemoryStorage();
     const db = await createSqlJsDatabase(null, storage);

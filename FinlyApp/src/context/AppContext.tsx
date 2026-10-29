@@ -244,6 +244,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         );
       } catch (error) {
         logError(ERROR_PREFIXES.dataRefresh, error);
+        if (active) showErrorAlert();
       }
     }
     refreshAll();
@@ -319,19 +320,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Materialize recurring occurrences when the app stays open across midnight.
   useEffect(() => {
+    let active = true;
     let timer: ReturnType<typeof setTimeout>;
     const schedule = () => {
+      if (!active) return;
       const now = new Date();
       const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1, 0);
       timer = setTimeout(() => {
         materializeDueRecurring()
           .then(() => setTransactionsVersion(v => v + 1))
           .catch(error => logError(ERROR_PREFIXES.recurringMaterialize, error))
-          .finally(schedule);
+          .finally(() => { if (active) schedule(); });
       }, nextMidnight.getTime() - now.getTime());
     };
     schedule();
-    return () => clearTimeout(timer);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
   }, []);
 
   const refreshCategories = useCallback(async () => {
