@@ -26,6 +26,7 @@ function makeList(): Props['list'] {
       handleToggleDirection: vi.fn(),
       filtered: [],
     },
+    visibleIds: [],
     keyExtractor: (t: { id: number }) => String(t.id),
     handleTransactionPress: vi.fn(),
     deleteModalVisible: false,
@@ -104,7 +105,7 @@ describe('TransactionListBody', () => {
     const toggleSelectAll = vi.fn();
     (props.select as { selectMode: boolean }).selectMode = true;
     (props.select as unknown as { toggleSelectAll: typeof toggleSelectAll }).toggleSelectAll = toggleSelectAll;
-    (props.list as unknown as { filters: { filtered: unknown } }).filters.filtered = [{ id: 1 }, { id: 2 }];
+    (props.list as unknown as { visibleIds: number[] }).visibleIds = [1, 2];
     const view = await render(<TransactionListBody {...props} />);
     await fireEvent.press(view.getByText('Select all'));
     expect(toggleSelectAll).toHaveBeenCalledWith([1, 2]);
@@ -114,7 +115,7 @@ describe('TransactionListBody', () => {
     const props = makeProps();
     (props.select as { selectMode: boolean }).selectMode = true;
     (props.select as unknown as { allSelected: () => boolean }).allSelected = () => true;
-    (props.list as unknown as { filters: { filtered: unknown } }).filters.filtered = [{ id: 1 }];
+    (props.list as unknown as { visibleIds: number[] }).visibleIds = [1];
     const view = await render(<TransactionListBody {...props} />);
     expect(view.getByText('Deselect all')).toBeTruthy();
   });

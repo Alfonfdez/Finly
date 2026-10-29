@@ -1,16 +1,15 @@
-import { useMemo } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { LIMIT_TEXT_STYLE } from '../components/componentStyles';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useApp } from '../context/AppContext';
-import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
-import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
 import { t, getDisplayCategoryName } from '../i18n';
+import HeaderSearchButton from '../components/HeaderSearchButton';
+import HeaderSpacer from '../components/HeaderSpacer';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 import CategoryGrid from '../components/CategoryGrid';
 import EmptyState from '../components/EmptyState';
@@ -18,6 +17,7 @@ import type { RootStackParamList, NavigationProp } from '../constants/types';
 import { MAX_CATEGORIES_PER_TYPE } from '../constants/types';
 import { sortCategoriesWithOthersLast, categoriesOfType, countCategoriesOfType } from '../utils/categoryUtils';
 import { countAtLimit } from '../utils/limits';
+import { isAndroid } from '../utils/platform';
 import { setPendingCategory } from '../utils/pendingCategory';
 
 type AddCategoryRouteProp = RouteProp<RootStackParamList, 'AddCategory'>;
@@ -36,26 +36,27 @@ export default function AddCategoryScreen() {
     return sortCategoriesWithOthersLast(categoriesOfType(categories, type));
   }, [categories, type]);
 
-  const select = useSelectAndSearch({ hasItems: categoriesByType.length > 0 });
+  const [searchActive, setSearchActive] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const canSearch = categoriesByType.length > 1;
 
-  const {
-    searchActive, searchText, setSearchText,
-    toggleSearch, closeSearch,
-  } = select;
+  const closeSearch = useCallback(() => {
+    setSearchActive(false);
+    setSearchText('');
+  }, []);
 
-  useSelectableScreen({
-    navigation,
-    showHeader: true,
-    selectMode: select.selectMode,
-    headerRight: () => (
-      <TouchableOpacity
-        onPress={toggleSearch}
-        style={styles.searchButton}
-      >
-        <Ionicons name="search-outline" size={22} color={c.text} />
-      </TouchableOpacity>
-    ),
-  });
+  const toggleSearch = useCallback(() => {
+    if (searchActive) closeSearch();
+    else setSearchActive(true);
+  }, [closeSearch, searchActive]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: canSearch
+        ? () => <HeaderSearchButton active={searchActive} onPress={toggleSearch} />
+        : isAndroid ? () => <HeaderSpacer /> : undefined,
+    });
+  }, [canSearch, navigation, searchActive, toggleSearch]);
 
   const filteredCategories = useSearchFilter(categoriesByType, searchText, (cat) => [getDisplayCategoryName(cat)]);
 
@@ -71,7 +72,7 @@ export default function AddCategoryScreen() {
     <ScreenShell>
       <View style={styles.content}>
         <ScreenSearchBar
-          visible={searchActive}
+          visible={canSearch && searchActive}
           placeholder={labels.add_cat_search}
           value={searchText}
           onChangeText={setSearchText}
@@ -119,9 +120,5 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 16,
-  },
-  searchButton: {
-    marginRight: 8,
-    padding: 4,
   },
 });

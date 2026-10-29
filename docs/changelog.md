@@ -4627,3 +4627,51 @@
 - Lock the category type to the active transaction type when creating from the transaction flow and show it read-only.
 - Keep both type radios for standalone Categories creation and stop setting a pending category there.
 - Add regressions for both flows; test:all green (186 files / 1633 tests).
+
+[2026-10-29] refactor | FinlyApp/package.json, FinlyApp/package-lock.json, FinlyApp/src/hooks/useTransactionListScreen.tsx, FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/src/components/TransactionListBody.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/tests/component/TransactionListBody.test.tsx, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Reuse one visible-ID list across the transaction list screens and precompute filter maps/sets once per render.
+- Apply safe React Navigation, Drizzle, React Native Web, SQL.js, Zod, Sharp, Vitest, ESLint and test-tooling updates.
+- Expo dependency check and doctor pass; audit reduced from 27 to 8 remaining Expo CLI/tooling transitive issues.
+- test:all green (186 files / 1633 tests); Android release APK builds.
+
+[2026-10-29] fix | FinlyApp/src/navigation/AppNavigator.tsx, FinlyApp/src/navigation/drawerNavigation.ts, FinlyApp/tests/navigation/drawerNavigation.test.ts, spec/features/003-settings-screen/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Close the drawer for every drawer item; All transactions is a primary destination again and resets the stack.
+- Keep Settings as a pushed screen with the native back button; selecting it now closes the drawer.
+- Add drawer navigation regressions; test:all green (187 files / 1636 tests).
+
+[2026-10-29] docs | docs/harnesses.md
+- Record that the Android emulator must use the normal font scale for standard verification.
+
+[2026-10-29] fix | FinlyApp/src/navigation/AppNavigator.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Make header titles ignore the OS font scale so the app text-size setting is the only scale; restore the wide bound for Add category and Settings.
+- Add category now shows its full title on narrow phones; test:all green (187 files / 1636 tests).
+
+[2026-10-29] fix | FinlyApp/src/screens/AddCategoryScreen.tsx, FinlyApp/src/components/ScreenSearchBar.tsx, FinlyApp/tests/screens/AddCategoryScreen.test.tsx, spec/features/005-add-category-screen/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Move the Add category search into an always-visible body field, removing the header action that triggered the Android centered-title truncation.
+- Pushed sub-screens now consistently use back only; the search field does not autofocus and its clear button restores the full grid.
+- Add search regression coverage; test:all green (187 files / 1637 tests).
+
+[2026-10-29] fix | FinlyApp/src/navigation/AppNavigator.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Render the header icon and label as one inline text run so Android measures the full centered title.
+- Verify Add category in English, French and at a 1.3 system font scale; the title stays complete and centered on first open and reopen.
+- test:all green (187 files / 1637 tests); Android release APK rebuilt (SHA-256 4BE566B02EBFC04F50BB7E2F4368AD626ADF3D901235666B5E227F02F708B892).
+
+[2026-10-29] test | FinlyApp/src/navigation/AppNavigator.tsx, spec/constitution/3-roadmap.md
+- Verify the Add category header at the Large app text size; the title stays complete and centered.
+
+[2026-10-29] feat | FinlyApp/src/screens/AddCategoryScreen.tsx, FinlyApp/src/components/HeaderSearchButton.tsx, FinlyApp/src/navigation/AppNavigator.tsx, FinlyApp/tests/screens/AddCategoryScreen.test.tsx, spec/features/005-add-category-screen/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Restore the Add category search action in the native header; the body field stays hidden until pressed, focuses on open and closes with its clear button.
+- Reserve the header action width in HeaderTitle so the inline centered title remains complete with the search icon present.
+- Cover header visibility, open/filter/close and header-toggle close; test:all green (187 files / 1639 tests).
+- Verified on Android in English and German at Large text, including the two-line German Modify recurring header; APK rebuilt (SHA-256 E9109890FC03859EEF15485913E18FF06792F157B51100FB64284D5D2C81673A).
+
+[2026-10-29] fix | FinlyApp/src/navigation/AppNavigator.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Use a larger web-only header title line height so descenders such as g, p, y, q and j are not clipped by the two-line clamp.
+- Verify Categories at desktop and 375px, French Add category at 375px with Large text, and French Modify recurring as two lines at 320px; test:all green (187 files / 1639 tests).
+- Native line height is unchanged, so the verified Android header behavior is unaffected.
+
+[2026-10-29] fix | FinlyApp/src/constants/layout.ts, FinlyApp/src/components/HeaderSpacer.tsx, FinlyApp/src/navigation/AppNavigator.tsx, FinlyApp/src/hooks/useSelectableScreen.tsx, FinlyApp/src/screens/AddCategoryScreen.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Add an Android-only symmetric right spacer to headers without a right action, so native-stack centers titles against the full screen instead of the space after the back button.
+- Keep the spacer in the dynamic select/search hook when a list is empty, and use it in Add category when the search icon is hidden.
+- Verify Home, Settings, Add transaction, Add category with search and the two-line German Modify recurring header; the title center now matches the screen center. test:all green (187 files / 1639 tests).
+- Android release APK rebuilt (SHA-256 D3B774A5046A749A9E23DBBD1B7B2B5C8793F57F6ACD0F381725368E7C0481EB).

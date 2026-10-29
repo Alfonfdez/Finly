@@ -94,8 +94,7 @@ export default function TransactionsScreen() {
     deleteFn: (ids) => transactionRepository.deleteMany(ids),
     onAfterDelete: refresh,
   });
-  const { filters } = list;
-  const visibleIds = useMemo(() => filters.filtered.map(transaction => transaction.id), [filters.filtered]);
+  const { filters, visibleIds } = list;
 
   useEffect(() => {
     if (loading || appLoading) return;

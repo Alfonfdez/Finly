@@ -62,6 +62,7 @@ export function useTransactionListScreen({
 
   return {
     filters,
+    visibleIds,
     deleteModalVisible, busy, openDeleteModal, closeDeleteModal, confirmBulkDelete,
     handleTransactionPress,
     keyExtractor,

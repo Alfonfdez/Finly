@@ -150,6 +150,8 @@ The drawer is a custom `DrawerContentScrollView` in `AppNavigator.tsx` with this
 
 **Labels:** long translations wrap to **two lines** (`numberOfLines={2}`) before ellipsizing; short labels stay on one line, so no item is clipped for a long language or a large text size. The library clamps *string* labels to one line, so `DrawerNavItem` passes a label node instead.
 
+**Stack behavior:** Home, All transactions, Accounts, Categories, Tags, Comments and Recurring are primary drawer destinations: selecting one resets the stack, shows the hamburger and closes the drawer. Settings is a pushed screen: selecting it closes the drawer and shows the native back button; its subsections keep the back button too. Other pushed sub-screens have the back button only; Add category is the exception, with a header search action that reveals its body search field on demand.
+
 **Version footer:**
 - Reads version from `Constants.expoConfig?.version` (expo-constants, sourced from `app.json`).
 - Style: `fs(11)`, `c.textSecondary`, centered, pushed to bottom of scroll view.
@@ -163,7 +165,7 @@ Rely on React Navigation's default header with back button. Never call `setOptio
 
 All headers are centered via `headerTitleAlign: 'center'` in `screenOptions` (AppNavigator.tsx). No per-screen override needed.
 
-- **Titles:** every header uses the same size (`fs(17)`, scaled only by the Settings text size - no per-language size changes). Long titles wrap to up to **2 lines** inside a bounded width and never overlap the header buttons; the tail ellipsizes only if a title would need a third line. Back-only sub-screens get a wider bound than list screens with Select/Search, so longer titles still fit within two lines.
+- **Titles:** every header uses the same size (`fs(17)`, scaled only by the Settings text size - no per-language size changes and no OS font-scale multiplication). The icon and label render as one inline text run so Android measures the full centered title. Long titles wrap to up to **2 lines** inside a bounded width and never overlap the header buttons; the tail ellipsizes only if a title would need a third line. Back-only sub-screens get a wider bound than list screens with Select/Search, so longer titles still fit within two lines; Add category reserves the width of its header search action. On web the title uses a larger line height so descenders stay visible under the two-line clamp. On Android, screens without a right-side action render a symmetric 56dp spacer so the native header centers the title against the full screen instead of the space after the back button.
 
 ## Loading States
 

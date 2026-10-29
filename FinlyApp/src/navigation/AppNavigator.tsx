@@ -3,7 +3,7 @@ import type { ComponentType } from 'react';
 import { useEffect, useMemo, memo } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
-import { NavigationContainer, useNavigation, CommonActions } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator, type NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   createDrawerNavigator,
@@ -13,6 +13,7 @@ import {
 } from '@react-navigation/drawer';
 import type { RootStackParamList } from '../constants/types';
 import { BUTTON_BORDER_RADIUS } from '../components/componentStyles';
+import { HEADER_ACTION_WIDTH } from '../constants/layout';
 import HomeScreen from '../screens/HomeScreen';
 import AddTransactionScreen from '../screens/AddTransactionScreen';
 import AddCategoryScreen from '../screens/AddCategoryScreen';
@@ -42,7 +43,10 @@ import ModifyRecurringScreen from '../screens/ModifyRecurringScreen';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t } from '../i18n';
+import { isAndroid, isWeb } from '../utils/platform';
 import DrawerMenuButton from '../components/DrawerMenuButton';
+import HeaderSpacer from '../components/HeaderSpacer';
+import { openDrawerScreen, type DrawerScreenName } from './drawerNavigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator();
@@ -54,30 +58,44 @@ type ScreenDef = {
   component: ComponentType<any>;
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
-  options: Record<string, unknown>;
+  wide?: boolean;
+  headerLeft?: boolean;
+  reserveRight?: boolean;
+  options?: Record<string, unknown>;
 };
 
-type DrawerScreenName = 'Home' | 'AllTransactions' | 'Accounts' | 'Categories' | 'Tags' | 'Comments' | 'Recurring' | 'Settings';
+const HEADER_TITLE_LINE_HEIGHT = 20;
+const HEADER_TITLE_WEB_LINE_HEIGHT = 24;
 
 type DrawerItemDef =
   | { label: string; icon: keyof typeof Ionicons.glyphMap; screen: DrawerScreenName }
   | { separator: true };
 
-const HeaderTitle = memo(function HeaderTitle({ icon, label, wide = false }: { icon: keyof typeof Ionicons.glyphMap; label: string; wide?: boolean }) {
+const HeaderTitle = memo(function HeaderTitle({
+  icon, label, wide = false, reserveRight = false,
+}: { icon: keyof typeof Ionicons.glyphMap; label: string; wide?: boolean; reserveRight?: boolean }) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const { width } = useWindowDimensions();
+  const maxWidth = Math.max(140, width - (wide ? 100 : 150) - (reserveRight ? HEADER_ACTION_WIDTH : 0));
   return (
-    <View style={[styles.headerTitleRow, { maxWidth: Math.max(140, width - (wide ? 100 : 150)) }]}>
-      <Ionicons name={icon} size={20} color={c.text} accessible={false} />
-      <Text
-        numberOfLines={2}
-        ellipsizeMode="tail"
-        style={[styles.headerTitleText, { color: c.text, fontSize: fs(17), lineHeight: fs(20) }]}
-      >
-        {label}
-      </Text>
-    </View>
+    <Text
+      numberOfLines={2}
+      ellipsizeMode="tail"
+      allowFontScaling={false}
+      style={[
+        styles.headerTitleText,
+        {
+          color: c.text,
+          fontSize: fs(17),
+          lineHeight: fs(isWeb ? HEADER_TITLE_WEB_LINE_HEIGHT : HEADER_TITLE_LINE_HEIGHT),
+          maxWidth,
+          textAlign: 'center',
+        },
+      ]}
+    >
+      <Ionicons name={icon} size={20} color={c.text} accessible={false} /> {label}
+    </Text>
   );
 });
 
@@ -109,31 +127,6 @@ function DrawerNavItem({
       inactiveTintColor={c.textSecondary}
     />
   );
-}
-
-const ROOT_DRAWER_SCREENS: DrawerScreenName[] = [
-  'Home',
-  'Accounts',
-  'Categories',
-  'Tags',
-  'Comments',
-  'Recurring',
-];
-
-function openDrawerScreen(navigation: DrawerContentComponentProps['navigation'], screen: DrawerScreenName) {
-  if (ROOT_DRAWER_SCREENS.includes(screen)) {
-    if (_stackNav) {
-      _stackNav.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: screen as keyof RootStackParamList }],
-        }),
-      );
-    }
-    navigation.closeDrawer();
-    return;
-  }
-  navigation.navigate('Main', { screen });
 }
 
 function CustomDrawerContent(props: DrawerContentComponentProps) {
@@ -168,7 +161,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
               key={item.screen}
               label={item.label}
               icon={item.icon}
-              onPress={() => openDrawerScreen(props.navigation, item.screen)}
+              onPress={() => openDrawerScreen(props.navigation, _stackNav, item.screen)}
             />
           ),
         )}
@@ -194,73 +187,54 @@ const HomeStack = memo(function HomeStack() {
     headerStyle: { backgroundColor: c.surface },
     headerTintColor: c.text,
     headerTitleAlign: 'center' as const,
+    headerRight: isAndroid ? () => <HeaderSpacer /> : undefined,
     animationTypeForReplace: 'push' as const,
     freezeOnBlur: true,
   }), [c.surface, c.text]);
 
   const screens = useMemo<ScreenDef[]>(() => [
-    { name: 'Home', component: HomeNavCapture, icon: 'home-outline', label: labels.nav_home,
-      options: { headerTitle: () => <HeaderTitle icon="home-outline" label={labels.nav_home} />, headerLeft: () => <StackHeaderLeft /> } },
-    { name: 'AddTransaction', component: AddTransactionScreen, icon: 'add-circle-outline', label: labels.add_title,
-      options: { headerTitle: () => <HeaderTitle icon="add-circle-outline" label={labels.add_title} wide /> } },
-    { name: 'AddCategory', component: AddCategoryScreen, icon: 'grid-outline', label: labels.add_cat_title,
-      options: { headerTitle: () => <HeaderTitle icon="grid-outline" label={labels.add_cat_title} /> } },
-    { name: 'CreateCategory', component: CreateCategoryScreen, icon: 'grid-outline', label: labels.create_cat_title,
-      options: { headerTitle: () => <HeaderTitle icon="grid-outline" label={labels.create_cat_title} wide /> } },
-    { name: 'ModifyCategory', component: ModifyCategoryScreen, icon: 'create-outline', label: labels.modify_cat_title,
-      options: { headerTitle: () => <HeaderTitle icon="create-outline" label={labels.modify_cat_title} wide /> } },
-    { name: 'Categories', component: CategoriesScreen, icon: 'grid-outline', label: labels.nav_categories,
-      options: { headerTitle: () => <HeaderTitle icon="grid-outline" label={labels.nav_categories} />, headerLeft: () => <StackHeaderLeft /> } },
-    { name: 'Accounts', component: AccountsScreen, icon: 'wallet-outline', label: labels.nav_accounts,
-      options: { headerTitle: () => <HeaderTitle icon="wallet-outline" label={labels.nav_accounts} />, headerLeft: () => <StackHeaderLeft /> } },
-    { name: 'ModifyAccount', component: ModifyAccountScreen, icon: 'create-outline', label: labels.modify_account_title,
-      options: { headerTitle: () => <HeaderTitle icon="create-outline" label={labels.modify_account_title} wide /> } },
-    { name: 'CreateAccount', component: CreateAccountScreen, icon: 'wallet-outline', label: labels.create_account_title,
-      options: { headerTitle: () => <HeaderTitle icon="wallet-outline" label={labels.create_account_title} wide /> } },
-    { name: 'Transactions', component: TransactionsScreen, icon: 'document-text-outline', label: labels.nav_transactions,
-      options: { headerTitle: () => <HeaderTitle icon="document-text-outline" label={labels.nav_transactions} /> } },
-    { name: 'AllTransactions', component: AllTransactionsScreen, icon: 'receipt-outline', label: labels.nav_all_transactions,
-      options: { headerTitle: () => <HeaderTitle icon="receipt-outline" label={labels.nav_all_transactions} />, headerLeft: () => <StackHeaderLeft /> } },
-    { name: 'Settings', component: SettingsScreen, icon: 'settings-outline', label: labels.nav_settings,
-      options: { headerTitle: () => <HeaderTitle icon="settings-outline" label={labels.nav_settings} /> } },
-    { name: 'SettingsAppearance', component: AppearanceScreen, icon: 'color-palette-outline', label: labels.settings_appearance,
-      options: { headerTitle: () => <HeaderTitle icon="color-palette-outline" label={labels.settings_appearance} wide /> } },
-    { name: 'SettingsRegional', component: RegionalScreen, icon: 'globe-outline', label: labels.settings_regional,
-      options: { headerTitle: () => <HeaderTitle icon="globe-outline" label={labels.settings_regional} wide /> } },
-    { name: 'SettingsPersonalization', component: PersonalizationScreen, icon: 'options-outline', label: labels.settings_personalization,
-      options: { headerTitle: () => <HeaderTitle icon="options-outline" label={labels.settings_personalization} wide /> } },
-    { name: 'SettingsData', component: DataScreen, icon: 'server-outline', label: labels.settings_data,
-      options: { headerTitle: () => <HeaderTitle icon="server-outline" label={labels.settings_data} wide /> } },
-    { name: 'TransactionDetails', component: TransactionDetailsScreen, icon: 'information-circle-outline', label: labels.details_title,
-      options: { headerTitle: () => <HeaderTitle icon="information-circle-outline" label={labels.details_title} wide /> } },
-    { name: 'ModifyTransaction', component: ModifyTransactionScreen, icon: 'create-outline', label: labels.modify_title,
-      options: { headerTitle: () => <HeaderTitle icon="create-outline" label={labels.modify_title} wide /> } },
-    { name: 'Tags', component: TagsScreen, icon: 'pricetag-outline', label: labels.nav_tags,
-      options: { headerTitle: () => <HeaderTitle icon="pricetag-outline" label={labels.nav_tags} />, headerLeft: () => <StackHeaderLeft /> } },
-    { name: 'CreateTag', component: CreateTagScreen, icon: 'pricetag-outline', label: labels.create_tag_title,
-      options: { headerTitle: () => <HeaderTitle icon="pricetag-outline" label={labels.create_tag_title} wide /> } },
-    { name: 'ModifyTag', component: ModifyTagScreen, icon: 'create-outline', label: labels.modify_tag_title,
-      options: { headerTitle: () => <HeaderTitle icon="create-outline" label={labels.modify_tag_title} wide /> } },
-    { name: 'Comments', component: CommentsScreen, icon: 'chatbubble-ellipses-outline', label: labels.nav_comments,
-      options: { headerTitle: () => <HeaderTitle icon="chatbubble-ellipses-outline" label={labels.nav_comments} />, headerLeft: () => <StackHeaderLeft /> } },
-    { name: 'ModifyComment', component: ModifyCommentScreen, icon: 'create-outline', label: labels.comments_modify_title,
-      options: { headerTitle: () => <HeaderTitle icon="create-outline" label={labels.comments_modify_title} wide /> } },
-    { name: 'Recurring', component: RecurringScreen, icon: 'repeat-outline', label: labels.nav_recurring,
-      options: { headerTitle: () => <HeaderTitle icon="repeat-outline" label={labels.nav_recurring} />, headerLeft: () => <StackHeaderLeft /> } },
-    { name: 'CreateRecurring', component: CreateRecurringScreen, icon: 'repeat-outline', label: labels.recurring_create_title,
-      options: { headerTitle: () => <HeaderTitle icon="repeat-outline" label={labels.recurring_create_title} wide /> } },
-    { name: 'ModifyRecurring', component: ModifyRecurringScreen, icon: 'create-outline', label: labels.recurring_edit_title,
-      options: { headerTitle: () => <HeaderTitle icon="create-outline" label={labels.recurring_edit_title} wide /> } },
+    { name: 'Home', component: HomeNavCapture, icon: 'home-outline', label: labels.nav_home, headerLeft: true },
+    { name: 'AddTransaction', component: AddTransactionScreen, icon: 'add-circle-outline', label: labels.add_title, wide: true },
+    { name: 'AddCategory', component: AddCategoryScreen, icon: 'grid-outline', label: labels.add_cat_title, wide: true, reserveRight: true },
+    { name: 'CreateCategory', component: CreateCategoryScreen, icon: 'grid-outline', label: labels.create_cat_title, wide: true },
+    { name: 'ModifyCategory', component: ModifyCategoryScreen, icon: 'create-outline', label: labels.modify_cat_title, wide: true },
+    { name: 'Categories', component: CategoriesScreen, icon: 'grid-outline', label: labels.nav_categories, headerLeft: true },
+    { name: 'Accounts', component: AccountsScreen, icon: 'wallet-outline', label: labels.nav_accounts, headerLeft: true },
+    { name: 'ModifyAccount', component: ModifyAccountScreen, icon: 'create-outline', label: labels.modify_account_title, wide: true },
+    { name: 'CreateAccount', component: CreateAccountScreen, icon: 'wallet-outline', label: labels.create_account_title, wide: true },
+    { name: 'Transactions', component: TransactionsScreen, icon: 'document-text-outline', label: labels.nav_transactions },
+    { name: 'AllTransactions', component: AllTransactionsScreen, icon: 'receipt-outline', label: labels.nav_all_transactions, headerLeft: true },
+    { name: 'Settings', component: SettingsScreen, icon: 'settings-outline', label: labels.nav_settings, wide: true },
+    { name: 'SettingsAppearance', component: AppearanceScreen, icon: 'color-palette-outline', label: labels.settings_appearance, wide: true },
+    { name: 'SettingsRegional', component: RegionalScreen, icon: 'globe-outline', label: labels.settings_regional, wide: true },
+    { name: 'SettingsPersonalization', component: PersonalizationScreen, icon: 'options-outline', label: labels.settings_personalization, wide: true },
+    { name: 'SettingsData', component: DataScreen, icon: 'server-outline', label: labels.settings_data, wide: true },
+    { name: 'TransactionDetails', component: TransactionDetailsScreen, icon: 'information-circle-outline', label: labels.details_title, wide: true },
+    { name: 'ModifyTransaction', component: ModifyTransactionScreen, icon: 'create-outline', label: labels.modify_title, wide: true },
+    { name: 'Tags', component: TagsScreen, icon: 'pricetag-outline', label: labels.nav_tags, headerLeft: true },
+    { name: 'CreateTag', component: CreateTagScreen, icon: 'pricetag-outline', label: labels.create_tag_title, wide: true },
+    { name: 'ModifyTag', component: ModifyTagScreen, icon: 'create-outline', label: labels.modify_tag_title, wide: true },
+    { name: 'Comments', component: CommentsScreen, icon: 'chatbubble-ellipses-outline', label: labels.nav_comments, headerLeft: true },
+    { name: 'ModifyComment', component: ModifyCommentScreen, icon: 'create-outline', label: labels.comments_modify_title, wide: true },
+    { name: 'Recurring', component: RecurringScreen, icon: 'repeat-outline', label: labels.nav_recurring, headerLeft: true },
+    { name: 'CreateRecurring', component: CreateRecurringScreen, icon: 'repeat-outline', label: labels.recurring_create_title, wide: true },
+    { name: 'ModifyRecurring', component: ModifyRecurringScreen, icon: 'create-outline', label: labels.recurring_edit_title, wide: true },
   ], [labels]);
 
   return (
     <Stack.Navigator screenOptions={screenOptions}>
-      {screens.map(({ name, component, options }) => (
+      {screens.map(({ name, component, icon, label, wide, headerLeft, reserveRight, options }) => (
         <Stack.Screen
           key={name}
           name={name}
           component={component}
-          options={options}
+          options={({ route }) => ({
+            headerTitle: () => (
+              <HeaderTitle key={route.key} icon={icon} label={label} wide={wide} reserveRight={reserveRight} />
+            ),
+            ...(headerLeft ? { headerLeft: () => <StackHeaderLeft /> } : {}),
+            ...options,
+          })}
         />
       ))}
     </Stack.Navigator>
@@ -335,12 +309,6 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     paddingVertical: 12,
     paddingRight: 16,
-  },
-  headerTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    maxWidth: '100%',
   },
   headerTitleText: {
     fontWeight: '600',
