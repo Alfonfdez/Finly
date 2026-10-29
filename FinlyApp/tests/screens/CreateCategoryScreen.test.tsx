@@ -69,6 +69,10 @@ describe('CreateCategoryScreen', () => {
   it('renders the category name field with the fixed type and Add disabled', async () => {
     const view = await render(<CreateCategoryScreen />);
     expect(view.getByPlaceholderText('Category name')).toBeTruthy();
+    expect(view.getByText('Name')).toBeTruthy();
+    expect(view.getByText('Type')).toBeTruthy();
+    expect(view.getByText('Symbols')).toBeTruthy();
+    expect(view.getByText('Color')).toBeTruthy();
     expect(view.getByText('Expense')).toBeTruthy();
     expect(view.queryByText('Income')).toBeNull();
     expect(view.getByText('Add')).toBeDisabled();

@@ -82,7 +82,8 @@ export default function CreateAccountScreen() {
     <ScreenShell>
       <View style={styles.content}>
         <AccountForm
-          nameLabel={labels.create_account_name}
+          nameLabel={labels.form_name}
+          namePlaceholder={labels.create_account_name}
           showNameField
           name={name}
           onNameChange={(v) => handleNameChange(v, setName)}

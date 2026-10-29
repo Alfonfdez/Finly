@@ -54,6 +54,7 @@ describe('ModifyTagScreen', () => {
 
   it('preloads the tag name into the field', async () => {
     const view = await render(<ModifyTagScreen />);
+    expect(view.getByText('Name')).toBeTruthy();
     expect(view.getByDisplayValue('Travel')).toBeTruthy();
   });
 

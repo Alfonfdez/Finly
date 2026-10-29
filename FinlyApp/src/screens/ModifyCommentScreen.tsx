@@ -12,6 +12,7 @@ import { transactionRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, MAX_COMMENT_LENGTH } from '../constants/types';
 import ConfirmationModal from '../components/ConfirmationModal';
 import LabeledTextField from '../components/form/LabeledTextField';
+import { formStyles } from '../components/form/formStyles';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormActions from '../components/form/FormActions';
 import FormScrollView from '../components/form/FormScrollView';
@@ -76,6 +77,8 @@ export default function ModifyCommentScreen() {
       <FormScrollView scrollRef={scrollRef} onLayout={onScrollLayout}>
         <LabeledTextField
           label={labels.add_comment}
+          labelIcon="chatbubble-ellipses-outline"
+          labelStyle={formStyles.firstSection}
           placeholder={labels.add_comment}
           value={comment}
           onChangeText={setComment}
@@ -85,7 +88,7 @@ export default function ModifyCommentScreen() {
           autoFocus
           error={isEmpty}
           showCounter
-          inlineCounter
+          counterInHeader
           inputStyle={styles.input}
           onFocus={onBottomFieldFocus}
           onBlur={onBottomFieldBlur}

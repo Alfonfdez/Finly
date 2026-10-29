@@ -529,6 +529,7 @@ export const es: Language = {
   repeat_yearly: 'Anual',
   repeat_frequency: 'Frecuencia',
   repeat_name: 'Nombre',
+  form_name: 'Nombre',
   repeat_name_placeholder_expense: 'p. ej. Alquiler',
   repeat_name_placeholder_income: 'p. ej. Salario',
   repeat_interval: 'Intervalo',

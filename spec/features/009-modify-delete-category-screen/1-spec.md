@@ -13,9 +13,10 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 - The screen has a back button (left arrow) in the header to return to `CategoriesScreen`.
 - The header title is "Edit category" (multilingual).
 
-### 2. Category Icon and Name
+### 2. Name and Icon
 
-- Horizontal row: on the left, the category icon with its current background color. On the right, a text input with the current category name.
+- A `Name` section (multilingual `form_name`) with an `id-card-outline` icon and the `0/30` counter in the header's right slot appears above the full-width input.
+- The category icon is not repeated beside the input; the Symbols grid below is the only place that shows and edits the selected icon/color.
 - The name is editable. Maximum 30 characters with a "0/30" counter.
 - **Duplicate validation**: when editing the name, it checks that no other category already exists with the same name (case-insensitive), **excluding the current category**. That is, keeping the same name should not trigger an error; only if the new name matches a different category.
   - "Food", "food" and "FOOD" are considered duplicates.
@@ -26,13 +27,13 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 
 ### 3. Type
 
-- Title: "Type" (multilingual).
+- Title: "Type" (multilingual) with a `swap-horizontal-outline` icon.
 - Shows the category type: "Expenses" if `expense`, "Income" if `income`.
 - The type is not editable (informational only).
 
 ### 4. Symbols (Icons)
 
-- Title: "Symbols" (multilingual).
+- Title: "Symbols" (multilingual) with a `shapes-outline` icon.
 - Grid of 4 columns × dynamic rows (vertical ScrollView if not all fit).
 - Same ~40 predefined Ionicons as on the create category screen (006), with gray background.
 - The current category icon must appear pre-selected when opening the screen.
@@ -43,7 +44,7 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 
 ### 5. Color
 
-- Title: "Color" (multilingual).
+- Title: "Color" (multilingual) with a `color-palette-outline` icon; the standard 16px section gap separates it from Symbols.
 - Grid of 1 row × 8 columns.
 - The first 6 positions are predefined circular colors.
 - The 7th position shows the custom color chosen from the picker (if the current category color is not among the 6 predefined) **or** the current category color if it is a custom color.

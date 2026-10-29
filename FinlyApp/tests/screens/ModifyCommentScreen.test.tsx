@@ -45,15 +45,16 @@ describe('ModifyCommentScreen', () => {
   it('preloads the comment and keeps Save disabled while unchanged', async () => {
     const view = await render(<ModifyCommentScreen />);
     expect(mockCountByDescription).toHaveBeenCalledWith('Coffee');
+    expect(view.getByText('Comment')).toBeTruthy();
     const input = view.getByPlaceholderText('Comment');
     expect(input.props.value).toBe('Coffee');
     expect(view.getByText('Save')).toBeDisabled();
   });
 
-  it('places the comment counter inside the multiline field', async () => {
+  it('shows the comment counter in its section header', async () => {
     const view = await render(<ModifyCommentScreen />);
     const counter = view.getByText('6/4096');
-    expect(StyleSheet.flatten(counter.props.style).position).toBe('absolute');
+    expect(StyleSheet.flatten(counter.props.style).position).toBeUndefined();
   });
 
   it('enables Save once the comment is edited and saves the new value', async () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { StyleSheet } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
-import { resetStub, setConfig } from './helpers/configStub';
+import { resetStub } from './helpers/configStub';
 import LabeledTextField from '../../src/components/form/LabeledTextField';
 
 function borderColor(node: unknown): unknown {
@@ -99,44 +99,24 @@ describe('LabeledTextField', () => {
     expect(view.getByText('45/30')).toBeTruthy();
   });
 
-  it('reserves more inline padding when the text size is large', async () => {
-    setConfig({ textSize: 'large' });
+  it('places the counter in the header when requested', async () => {
     const view = await render(
       <LabeledTextField
-        placeholder="Note"
-        value="Hi"
+        label="Name"
+        value="Cash"
         onChangeText={() => {}}
-        maxLength={200}
+        maxLength={30}
         showCounter
-        inlineCounter
-        multiline
+        counterInHeader
       />,
     );
 
-    const style = StyleSheet.flatten(view.getByPlaceholderText('Note').props.style) as { paddingBottom?: number };
-    expect(style.paddingBottom).toBeGreaterThan(26);
-  });
-
-  it('places a multiline counter inside the input when requested', async () => {
-    const view = await render(
-      <LabeledTextField
-        placeholder="Note"
-        value="Hi"
-        onChangeText={() => {}}
-        maxLength={200}
-        showCounter
-        inlineCounter
-        multiline
-      />,
-    );
-
-    const style = StyleSheet.flatten(view.getByText('2/200').props.style) as {
+    expect(view.getByText('Name')).toBeTruthy();
+    const style = StyleSheet.flatten(view.getByText('4/30').props.style) as {
       position?: string;
-      right?: number;
-      bottom?: number;
+      marginTop?: number;
     };
-    expect(style.position).toBe('absolute');
-    expect(style.right).toBe(8);
-    expect(style.bottom).toBe(6);
+    expect(style.position).toBeUndefined();
+    expect(style.marginTop).toBeUndefined();
   });
 });

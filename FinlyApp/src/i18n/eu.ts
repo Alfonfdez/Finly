@@ -529,6 +529,7 @@ export const eu: Language = {
   repeat_yearly: 'Urtero',
   repeat_frequency: 'Maiztasuna',
   repeat_name: 'Izena',
+  form_name: 'Izena',
   repeat_name_placeholder_expense: 'adib. Alokairua',
   repeat_name_placeholder_income: 'adib. Soldata',
   repeat_interval: 'Tartea',

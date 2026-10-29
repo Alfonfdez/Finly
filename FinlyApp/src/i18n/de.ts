@@ -529,6 +529,7 @@ export const de: Language = {
   repeat_yearly: 'Jährlich',
   repeat_frequency: 'Häufigkeit',
   repeat_name: 'Name',
+  form_name: 'Name',
   repeat_name_placeholder_expense: 'z. B. Miete',
   repeat_name_placeholder_income: 'z. B. Gehalt',
   repeat_interval: 'Intervall',

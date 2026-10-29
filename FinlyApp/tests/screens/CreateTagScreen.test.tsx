@@ -51,6 +51,7 @@ describe('CreateTagScreen', () => {
 
   it('renders the name field and disables Create until a name is entered', async () => {
     const view = await render(<CreateTagScreen />);
+    expect(view.getByText('Name')).toBeTruthy();
     expect(view.getByPlaceholderText('Tag name')).toBeTruthy();
     expect(view.getByText('Create')).toBeDisabled();
   });

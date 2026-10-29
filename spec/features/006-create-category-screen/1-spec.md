@@ -13,9 +13,9 @@ Screen accessible from the "Create" button in the last position of the grid in `
 - The screen has a back button (left arrow) in the header to return to the previous screen.
 - The header title is "Create category" (multilingual).
 
-### 2. Category Name
+### 2. Name
 
-- The first element below the header is a text input with placeholder "Category name" (multilingual).
+- The first element below the header is a `Name` section (multilingual `form_name`) with an `id-card-outline` icon and the `0/30` counter in the header's right slot, followed by a text input with placeholder "Category name" (multilingual).
 - The name is required: if empty, the "Add" button is disabled.
 - If the name is empty and the user tries to press "Add" (or while the input is empty), a red help text is shown: "Enter a category name" (multilingual).
 - **Duplicate validation**: while typing, it verifies that no category with the same name (case-insensitive) already exists in the database, regardless of type (expense/income).
@@ -26,14 +26,14 @@ Screen accessible from the "Create" button in the last position of the grid in `
 
 ### 3. Type (expense / income)
 
-- The type is always fixed to the route type and shown as a read-only value (`Type: Expense`/`Type: Income`); no radios are shown.
+- The type is always fixed to the route type and shown under a `Type` section with a `swap-horizontal-outline` icon, as a read-only value (`Type: Expense`/`Type: Income`); no radios are shown.
 - From the transaction flow (`fromTransaction: true`), the route type is the active transaction type.
 - From the Categories screen, the route type is the active Categories tab, so creating from the Expense tab can only create an Expense category and creating from the Income tab can only create an Income category.
 - To create the other type, the user switches the Categories tab first.
 
 ### 4. Symbols (icons)
 
-- Title: "Symbols" (multilingual).
+- Title: "Symbols" (multilingual) with a `shapes-outline` icon.
 - Grid of 4 columns × dynamic rows (vertical ScrollView if they don't all fit).
 - ~40 predefined Ionicons shown with flat gray background (`#334155` in dark theme).
 - When tapping an icon, it is highlighted with a primary color border and the background changes slightly.
@@ -65,7 +65,7 @@ Screen accessible from the "Create" button in the last position of the grid in `
 
 ### 5. Color
 
-- Title: "Color" (multilingual).
+- Title: "Color" (multilingual) with a `color-palette-outline` icon; the standard 16px section gap separates it from Symbols.
 - Grid of 1 row × 8 columns.
 - The first 6 positions are predefined circular colors.
 - The 7th position shows the custom color chosen from the picker (if any) with a checkmark.

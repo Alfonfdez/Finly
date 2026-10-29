@@ -116,16 +116,17 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - To the right, a "+ Add tag" button (multilingual) that opens a modal:
 
 **"Add tag" modal:**
-- Title: "Add tag" (multilingual).
+- Centered title "Add tag" (multilingual) with a `pricetag-outline` icon on its left and the dynamic "0/20" counter in the modal header's right slot.
 - Text input with placeholder "Tag name" (multilingual).
-- Below the input: dynamic counter "0/20" that updates as you type (maximum 20 characters).
+- Maximum 20 characters.
+- Duplicate-name errors are centered in a reserved one-line band with 8px vertical padding, so Cancel/Add never move when the error appears.
 - Buttons: "Cancel" / "Add" (multilingual).
 
 ### 8. Comment
 
-- Title: "Comment" (multilingual).
+- Title: "Comment" (multilingual), with the dynamic "0/4096" counter in the section header's right slot.
 - Multiline text input with placeholder "Comment" (multilingual).
-- Below: dynamic counter "0/4096" that updates as you type (maximum 4096 characters).
+- Maximum 4096 characters.
 - Suggestions: while focused, matching previous comments appear inside the Comment section under a **Suggestions** header with a **Tap to reuse** hint; rows are 44px and fill the comment when pressed. Selecting a suggestion keeps the field focused and the keyboard open, clears the suggestion panel, and a later real blur still runs the normal blur handling.
 
 ### 9. Photos

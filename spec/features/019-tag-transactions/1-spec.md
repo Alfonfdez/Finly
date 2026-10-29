@@ -19,7 +19,7 @@
 
 ### 2. Inline tag creation (modal)
 
-- Modal with "Add tag" title, name input (max 20 chars, counter), Cancel / Submit buttons.
+- Modal with a centered "Add tag" title, `pricetag-outline` icon and the counter in its header's right slot, name input (max 20 chars), a centered reserved error band with 8px padding so validation never moves the buttons, and Cancel / Submit buttons.
 - Case-insensitive duplicate check before creation.
 - On create: `tagRepo.create()` → `refreshTags()` → auto-select the new tag → close modal.
 - Empty name and duplicate validation same as 018 CreateTagScreen.

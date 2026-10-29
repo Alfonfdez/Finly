@@ -2,6 +2,8 @@ import { useConfig } from '../context/ConfigContext';
 import { useKeyboardReveal } from '../hooks/useKeyboardReveal';
 import { MAX_ACCOUNT_NAME_LENGTH, MAX_NOTE_LENGTH, type ConfigIconShape, type IconName } from '../constants/types';
 import IconColorSection from './IconColorSection';
+import FormSectionHeader from './form/FormSectionHeader';
+import { formStyles } from './form/formStyles';
 import LabeledTextField from './form/LabeledTextField';
 import PrimaryButton from './form/PrimaryButton';
 import FormActions from './form/FormActions';
@@ -10,6 +12,7 @@ import AmountInput from './AmountInput';
 
 interface AccountFormProps {
   nameLabel: string;
+  namePlaceholder?: string;
   name: string;
   onNameChange: (value: string) => void;
   /** The duplicate-name message (or null) — the empty case comes from `nameEmptyError`. */
@@ -48,6 +51,7 @@ interface AccountFormProps {
 
 export default function AccountForm({
   nameLabel,
+  namePlaceholder,
   name,
   onNameChange,
   nameError,
@@ -92,7 +96,9 @@ export default function AccountForm({
       {showNameField && (
         <LabeledTextField
           label={nameLabel}
-          placeholder={nameLabel}
+          labelIcon="id-card-outline"
+          labelStyle={formStyles.firstSection}
+          placeholder={namePlaceholder ?? nameLabel}
           value={name}
           onChangeText={onNameChange}
           maxLength={MAX_ACCOUNT_NAME_LENGTH}
@@ -100,6 +106,7 @@ export default function AccountForm({
           autoCorrect={false}
           error={nameValidationError}
           showCounter
+          counterInHeader
           editable={!nameDisabled}
           inputStyle={nameDisabled ? { color: c.textSecondary } : undefined}
         />
@@ -121,7 +128,9 @@ export default function AccountForm({
         <AmountInput
           raw={initialBalanceRaw}
           onChangeRaw={onInitialBalanceChange ?? (() => {})}
-          label={initialBalanceLabel}
+          header={initialBalanceLabel
+            ? <FormSectionHeader title={initialBalanceLabel} icon="cash-outline" />
+            : undefined}
           accessibilityLabel={initialBalanceA11yLabel}
           allowNegative
         />
@@ -129,6 +138,7 @@ export default function AccountForm({
 
       <LabeledTextField
         label={noteLabel}
+        labelIcon="document-text-outline"
         value={description}
         onChangeText={onDescriptionChange}
         multiline
@@ -136,7 +146,7 @@ export default function AccountForm({
         textAlignVertical="top"
         maxLength={MAX_NOTE_LENGTH}
         showCounter
-        inlineCounter
+        counterInHeader
         onFocus={onBottomFieldFocus}
         onBlur={onBottomFieldBlur}
       />

@@ -16,16 +16,14 @@ import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { t, getDefaultCategoryName, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdByName } from '../i18n';
 import { categoryRepository, recurringRepository, transactionRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, USER_ID } from '../constants/types';
-import { badgeShapeFor } from '../utils/badgeShape';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import { BUTTON_BORDER_RADIUS } from '../components/componentStyles';
 import { CATEGORY_ICONS } from '../components/IconGrid';
 import { QUICK_COLORS } from '../constants/colors';
-import IconBadge from '../components/IconBadge';
 import IconColorSection from '../components/IconColorSection';
 import ConfirmationModal from '../components/ConfirmationModal';
 import CategoryTransferModal from '../components/CategoryTransferModal';
-import SectionTitle from '../components/form/SectionTitle';
+import FormSectionHeader from '../components/form/FormSectionHeader';
 import PrimaryButton from '../components/form/PrimaryButton';
 import FormActions from '../components/form/FormActions';
 import CharCounter from '../components/form/CharCounter';
@@ -210,42 +208,33 @@ export default function ModifyCategoryScreen() {
     <ScreenShell>
       <View style={styles.content}>
         <FormScrollView>
-          <View style={styles.nameRow}>
-            <IconBadge
-              icon={selectedIcon || category.icon}
-              color={selectedColor || category.color}
-              shape={badgeShapeFor(config, 'category')}
-              size={48}
-              iconSize={28}
-              roundedRadius={12}
-              backgroundAlpha={13}
-              style={styles.previewIcon}
-            />
-            <View style={styles.nameInputWrapper}>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: c.surface,
-                    color: c.text,
-                    borderColor: nameTouched && validationError ? c.red : c.border,
-                    fontSize: fs(14),
-                  },
-                ]}
-                placeholder={labels.create_cat_name_placeholder}
-                placeholderTextColor={c.textSecondary}
-                value={name}
-                onChangeText={handleNameChangeLocal}
-                onBlur={() => setNameTouched(true)}
-                maxLength={Math.max(MAX_CATEGORY_NAME_LENGTH, name.length)}
-                autoCapitalize="words"
-                autoCorrect={false}
-              />
-              <CharCounter value={name.length} maxLength={MAX_CATEGORY_NAME_LENGTH} style={formStyles.counter} />
-            </View>
-          </View>
+          <FormSectionHeader
+            title={labels.form_name}
+            icon="id-card-outline"
+            style={formStyles.firstSection}
+            right={<CharCounter value={name.length} maxLength={MAX_CATEGORY_NAME_LENGTH} />}
+          />
+          <TextInput
+            style={[
+              styles.input,
+              {
+                backgroundColor: c.surface,
+                color: c.text,
+                borderColor: nameTouched && validationError ? c.red : c.border,
+                fontSize: fs(14),
+              },
+            ]}
+            placeholder={labels.create_cat_name_placeholder}
+            placeholderTextColor={c.textSecondary}
+            value={name}
+            onChangeText={handleNameChangeLocal}
+            onBlur={() => setNameTouched(true)}
+            maxLength={Math.max(MAX_CATEGORY_NAME_LENGTH, name.length)}
+            autoCapitalize="words"
+            autoCorrect={false}
+          />
 
-          <SectionTitle text={labels.modify_cat_type} />
+          <FormSectionHeader title={labels.modify_cat_type} icon="swap-horizontal-outline" />
           <Text style={[styles.typeText, { color: c.textSecondary, fontSize: fs(14) }]}>
             {category.type === TRANSACTION_TYPES.expense ? labels.tab_expenses : labels.tab_income}
           </Text>
@@ -312,18 +301,6 @@ export default function ModifyCategoryScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    flex: 1,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  previewIcon: {
-    marginTop: 4,
-    marginRight: 12,
-  },
-  nameInputWrapper: {
     flex: 1,
   },
   input: {
