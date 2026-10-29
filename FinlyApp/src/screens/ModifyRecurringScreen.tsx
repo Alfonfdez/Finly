@@ -221,6 +221,7 @@ export default function ModifyRecurringScreen() {
       <ConfirmationModal
         visible={deleteVisible}
         title={labels.recurring_delete_confirm_title}
+        icon="trash-outline"
         message={labels.recurring_delete_confirm_message}
         confirmLabel={labels.delete}
         cancelLabel={labels.cancel}

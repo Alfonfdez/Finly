@@ -258,7 +258,7 @@ describe('ModifyRecurringScreen', () => {
     // The save awaits the user's choice, so don't await the press itself.
     void fireEvent.press(view.getByText('Save'));
 
-    await waitFor(() => expect(view.getByText('Skip occurrences?')).toBeTruthy());
+    await waitFor(() => expect(view.getByText('Skip occurrences?', { exact: false })).toBeTruthy());
     expect(mockSaveEdit).not.toHaveBeenCalled();
   });
 
@@ -292,7 +292,7 @@ describe('ModifyRecurringScreen', () => {
     await fireEvent.changeText(view.getByPlaceholderText('0'), '120');
 
     void fireEvent.press(view.getByText('Save'));
-    await waitFor(() => expect(view.getByText('Skip occurrences?')).toBeTruthy());
+    await waitFor(() => expect(view.getByText('Skip occurrences?', { exact: false })).toBeTruthy());
     await fireEvent.press(view.getByText('Skip them'));
 
     await waitFor(() => expect(mockSaveEdit).toHaveBeenCalledTimes(1));

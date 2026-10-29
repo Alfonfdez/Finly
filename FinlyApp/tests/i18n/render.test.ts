@@ -65,3 +65,46 @@ describe('i18n function keys render', () => {
     },
   );
 });
+
+describe('i18n transaction plurals', () => {
+  it('uses the correct Spanish singular and plural forms', () => {
+    expect(es.transactions_bulk_delete_confirm_title(1)).toBe('¿Eliminar 1 transacción?');
+    expect(es.transactions_bulk_delete_confirm_title(2)).toBe('¿Eliminar 2 transacciones?');
+    expect(es.comments_used_in(1)).toBe('Usado en 1 transacción');
+    expect(es.comments_used_in(2)).toBe('Usado en 2 transacciones');
+    expect(es.tags_used_in(1)).toBe('Usada en 1 transacción');
+    expect(es.tags_used_in(2)).toBe('Usada en 2 transacciones');
+    expect(es.comments_delete_confirm_message(1)).toBe('Se eliminará de 1 transacción. Esta acción no se puede deshacer.');
+    expect(es.comments_delete_confirm_message(2)).toBe('Se eliminará de 2 transacciones. Esta acción no se puede deshacer.');
+  });
+
+  it('uses the correct Catalan singular and plural forms', () => {
+    expect(ca.transactions_bulk_delete_confirm_title(1)).toBe('Vols eliminar 1 transacció?');
+    expect(ca.transactions_bulk_delete_confirm_title(2)).toBe('Vols eliminar 2 transaccions?');
+    expect(ca.comments_used_in(1)).toBe('Usat en 1 transacció');
+    expect(ca.comments_used_in(2)).toBe('Usat en 2 transaccions');
+    expect(ca.tags_used_in(1)).toBe('Usada en 1 transacció');
+    expect(ca.tags_used_in(2)).toBe('Usada en 2 transaccions');
+    expect(ca.comments_delete_confirm_message(1)).toBe("S'eliminarà de 1 transacció. Aquesta acció no es pot desfer.");
+    expect(ca.comments_delete_confirm_message(2)).toBe("S'eliminarà de 2 transaccions. Aquesta acció no es pot desfer.");
+  });
+
+  it('uses the correct Italian singular and plural forms', () => {
+    expect(itLocale.transactions_bulk_delete_confirm_title(1)).toBe('Eliminare 1 transazione?');
+    expect(itLocale.transactions_bulk_delete_confirm_title(2)).toBe('Eliminare 2 transazioni?');
+    expect(itLocale.tags_bulk_delete_confirm_title(1)).toBe('Eliminare 1 etichetta?');
+    expect(itLocale.tags_bulk_delete_confirm_title(2)).toBe('Eliminare 2 etichette?');
+    expect(itLocale.recurring_bulk_delete_confirm_title(1)).toBe('Eliminare 1 regola ricorrente?');
+    expect(itLocale.recurring_bulk_delete_confirm_title(2)).toBe('Eliminare 2 regole ricorrenti?');
+    expect(itLocale.comments_used_in(2)).toBe('Usato in 2 transazioni');
+    expect(itLocale.tags_used_in(2)).toBe('Usata in 2 transazioni');
+    expect(itLocale.comments_delete_confirm_message(2)).toBe('Questo rimuoverà il commento da 2 transazioni. Questa azione non può essere annullata.');
+  });
+
+  it('uses the correct Catalan category and recurring plurals', () => {
+    expect(ca.categories_bulk_delete_confirm_title(1)).toBe('Vols eliminar 1 categoria?');
+    expect(ca.categories_bulk_delete_confirm_title(2)).toBe('Vols eliminar 2 categories?');
+    expect(ca.recurring_bulk_delete_confirm_title(1)).toBe('Vols eliminar 1 regla recurrent?');
+    expect(ca.recurring_bulk_delete_confirm_title(2)).toBe('Vols eliminar 2 regles recurrents?');
+  });
+});

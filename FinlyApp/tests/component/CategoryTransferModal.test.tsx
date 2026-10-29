@@ -7,6 +7,7 @@ import type { Category } from '../../src/database/types';
 
 const food: Category = { id: 7, user_id: 1, name: 'Food', icon: 'fast-food', color: '#F87171', type: 'expense', created_at: '' } as Category;
 const travel: Category = { id: 8, user_id: 1, name: 'Travel', icon: 'airplane', color: '#22D3EE', type: 'expense', created_at: '' } as Category;
+const source: Category = { id: 11, user_id: 1, name: 'Source', icon: 'pricetag', color: '#A78BFA', type: 'expense', created_at: '' } as Category;
 
 const labels = t();
 
@@ -22,6 +23,7 @@ async function renderModal(overrides: Partial<{
     <CategoryTransferModal
       visible
       title="Move them to another category"
+      sourceCategory={source}
       categories={[food, travel]}
       selectedId={null}
       confirmLabel="Move"
@@ -45,7 +47,8 @@ describe('CategoryTransferModal', () => {
   it('lists the categories and the delete option', async () => {
     const { view } = await renderModal();
 
-    expect(view.getByText('Move them to another category')).toBeTruthy();
+    expect(view.getByText('Move them to another category', { exact: false })).toBeTruthy();
+    expect(view.getByText('Source')).toBeTruthy();
     expect(view.getByText('Food')).toBeTruthy();
     expect(view.getByText('Travel')).toBeTruthy();
     expect(view.getByText('Delete them')).toBeTruthy();

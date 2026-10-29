@@ -69,7 +69,8 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 
 
 **Confirmation Modal — "Delete category?"**
-- Title: "Delete category "{categoryName}"" (multilingual, interpolates the category name).
+- Title: "Delete 1 category?" (`categories_bulk_delete_confirm_title(1)`, the same one-line title as the bulk flow).
+- Under the title, a category subject row shows the category icon and name (`ModalEntitySubject`), so a long name never wraps the header or pushes the header icon away from the first line.
 - Buttons:
   - "Cancel" (multilingual) → closes the modal.
   - "Permanent delete" (multilingual, red) → deletes the category, then navigates back.
@@ -82,16 +83,17 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 **Scenario A2 — Category is the only one of its type**
 - The Delete button is disabled (see above): there is no other category of the same type to move its data to, so the screen never reaches the confirmation modal.
 
-**Confirmation Modal — "Select target category"** (only reached via the move option)
-- Title: "Select category" (multilingual).
+**Confirmation Modal — "Move transactions"** (only reached via the move option)
+- Title: "Move transactions" (`categories_bulk_move_title`, the same title as the bulk flow).
+- Under the title, the same category subject row shows the category being deleted.
 - List of categories of the **same type** as the category to be deleted (excluding the current category), with:
   - Radio button (single selection).
   - Category icon.
   - Category name.
 - Only one category can be selected at a time.
-- Buttons: "Cancel" (multilingual) and "Select" (multilingual).
+- Buttons: "Cancel" (multilingual) and "Move & delete" (`categories_bulk_move_confirm`, the same label as the bulk flow).
 - When tapping "Cancel", the modal closes and returns to the edit screen.
-- When tapping "Select":
+- When tapping "Move & delete":
   1. All transactions with `category_id = {deletedCategory}` are updated to `category_id = {selectedCategory}`.
   2. All recurring rules with `category_id = {deletedCategory}` are updated to `category_id = {selectedCategory}`, in the same transaction, so they keep generating into the target category.
   3. The category is deleted from the `categories` table.
@@ -152,11 +154,11 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 - [x] The 7th color circle shows the custom color if the current one is not among the 6 predefined.
 - [x] The "+" opens the existing `ColorPickerModal`.
 - [x] The "Save" button is disabled if the name is empty or is a duplicate.
-- [x] The red "Delete" button opens a confirmation modal with "Cancel", "Permanent delete", and (when the category has transactions and/or recurring rules) "Move them to another category".
+- [x] The red "Delete" button opens a "Delete 1 category?" confirmation with a category subject row below the title, plus "Cancel", "Permanent delete", and (when the category has transactions and/or recurring rules) "Move them to another category".
 - [x] The "Delete" button is disabled with an explanation when the category is the only one of its type.
-- [x] When the category has transactions and/or recurring rules, the modal message names what is lost (transactions, rules, or both) and the move option opens the target category selection modal.
+- [x] When the category has transactions and/or recurring rules, the modal message names what is lost (transactions, rules, or both) and the move option opens the "Move transactions" modal with the source category row.
 - [x] When the category has neither transactions nor recurring rules, the modal message is "This category will be permanently deleted." and the move option is not shown.
-- [x] When tapping "Select" in the target modal, transactions **and recurring rules** are reassigned and the category is deleted.
+- [x] When tapping "Move & delete" in the target modal, transactions **and recurring rules** are reassigned and the category is deleted.
 - [x] Tapping "Permanent delete" deletes the category (and its transactions and recurring rules) and navigates back; transactions are reloaded via refresh().
 - [x] When tapping "Save", the category is updated and navigation returns to CategoriesScreen.
 - [x] All texts change when switching the language in settings.

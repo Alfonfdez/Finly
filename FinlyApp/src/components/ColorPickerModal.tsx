@@ -59,7 +59,7 @@ export default function ColorPickerModal({ visible, selectedColor, onSelect, onC
       </View>
 
       <ModalFooter
-        cancelLabel={labels.create_cat_color_picker_cancel}
+        cancelLabel={labels.cancel}
         confirmLabel={labels.create_cat_color_picker_ok}
         onCancel={onClose}
         onConfirm={handleConfirm}

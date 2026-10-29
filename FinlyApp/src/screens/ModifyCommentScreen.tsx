@@ -117,9 +117,10 @@ export default function ModifyCommentScreen() {
       <ConfirmationModal
         visible={deleteModalVisible}
         title={labels.comments_delete_confirm_title}
+        icon="trash-outline"
         message={labels.comments_delete_confirm_message(count)}
-        confirmLabel={labels.comments_delete_confirm_delete}
-        cancelLabel={labels.comments_delete_confirm_cancel}
+        confirmLabel={labels.delete}
+        cancelLabel={labels.cancel}
         onConfirm={confirmDelete}
         onCancel={closeDeleteModal}
         busy={deleting}

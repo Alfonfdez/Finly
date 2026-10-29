@@ -68,7 +68,7 @@ describe('BulkCategoryTransferModal', () => {
   it('lists every category with its data and no decision yet', async () => {
     const { view } = await renderBulk();
 
-    expect(view.getByText(labels.categories_bulk_move_title)).toBeTruthy();
+    expect(view.getByText(labels.categories_bulk_move_title, { exact: false })).toBeTruthy();
     expect(view.getByText('Food')).toBeTruthy();
     expect(view.getByText(labels.categories_bulk_move_data(2, 1))).toBeTruthy();
     // A category without data has no subtitle at all.
@@ -81,7 +81,9 @@ describe('BulkCategoryTransferModal', () => {
     const { view, onDecide } = await renderBulk();
 
     await fireEvent.press(view.getByText('Food'));
-    expect(view.getByText(`${labels.categories_bulk_move_title}: Food`)).toBeTruthy();
+    expect(view.getByText(labels.categories_bulk_move_title, { exact: false })).toBeTruthy();
+    expect(view.getByText('Food')).toBeTruthy();
+    expect(view.getByText(labels.categories_bulk_move_data(2, 1))).toBeTruthy();
 
     await fireEvent.press(view.getByText('Home'));
     expect(onDecide).toHaveBeenCalledWith(7, 9);
@@ -113,7 +115,7 @@ describe('BulkCategoryTransferModal', () => {
   it('cancels', async () => {
     const { view, onCancel } = await renderBulk();
 
-    await fireEvent.press(view.getByText(labels.modify_cat_select_cancel));
+    await fireEvent.press(view.getByText(labels.cancel));
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 });

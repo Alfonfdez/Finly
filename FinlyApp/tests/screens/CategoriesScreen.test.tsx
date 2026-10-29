@@ -40,6 +40,7 @@ function gridPaddingTop(view: unknown): number | undefined {
 }
 
 const mockCountByCategoryIdsMap = vi.fn();
+const mockCountByCategoryIds = vi.fn();
 
 vi.mock('../../src/database', () => ({
   categoryRepository: {
@@ -48,6 +49,9 @@ vi.mock('../../src/database', () => ({
   },
   transactionRepository: {
     countByCategoryIdsMap: (ids: number[]) => mockCountByCategoryIdsMap(ids),
+  },
+  recurringRepository: {
+    countByCategoryIds: (ids: number[]) => mockCountByCategoryIds(ids),
   },
 }));
 
@@ -90,6 +94,7 @@ describe('CategoriesScreen', () => {
     nav.setOptions.mockClear();
     nav.navigate.mockClear();
     mockCountByCategoryIdsMap.mockReset().mockResolvedValue({});
+    mockCountByCategoryIds.mockReset().mockResolvedValue({});
     setAppData({ categories: [] });
   });
 
@@ -170,6 +175,18 @@ describe('CategoriesScreen', () => {
     const view = await render(<CategoriesScreen />);
     fireEvent.press(view.getByText('Food'));
     expect(nav.navigate).toHaveBeenCalledWith('ModifyCategory', { categoryId: 1 });
+  });
+
+  it('uses the shared one-line title when deleting one selected category', async () => {
+    setAppData({ categories: [expenseCategory(1, 'Food'), expenseCategory(2, 'Transport')] });
+    const view = await renderWithHeader();
+    await view.findByText('Food');
+
+    await fireEvent.press(view.getByLabelText('Enter select mode'));
+    await fireEvent.press(view.getByText('Food'));
+    await fireEvent.press(view.getByText('Delete (1)'));
+
+    await waitFor(() => expect(view.getByText('Delete 1 category?', { exact: false })).toBeTruthy());
   });
 
   it('switches the grid when the Income tab is selected', async () => {

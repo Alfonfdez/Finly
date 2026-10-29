@@ -213,7 +213,7 @@ export default function CommentsScreen() {
         <SelectionActionBar
           selectedCount={selectedComments.size}
           deleteLabel={labels.comments_bulk_delete(selectedComments.size)}
-          cancelLabel={labels.comments_delete_confirm_cancel}
+          cancelLabel={labels.cancel}
           onDelete={openDeleteModal}
           onCancel={exitSelectMode}
         />
@@ -222,9 +222,10 @@ export default function CommentsScreen() {
       <ConfirmationModal
         visible={deleteModalVisible}
         title={labels.comments_bulk_delete_confirm_title(selectedComments.size)}
+        icon="trash-outline"
         message={labels.comments_bulk_delete_confirm_message}
-        confirmLabel={labels.comments_delete_confirm_delete}
-        cancelLabel={labels.comments_delete_confirm_cancel}
+        confirmLabel={labels.delete}
+        cancelLabel={labels.cancel}
         onConfirm={confirmBulkDelete}
         onCancel={closeDeleteModal}
         busy={busy}

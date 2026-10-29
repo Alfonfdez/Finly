@@ -208,6 +208,19 @@ describe('ModifyAccountScreen', () => {
     expect(view.getByTestId(TEST_IDS.formDelete)).toBeEnabled();
   });
 
+  it('uses a short delete title with the account in a subject row', async () => {
+    setAppData({ accounts: [account, { ...account, id: 6, name: 'Bank' } as Account] });
+    const view = await render(<ModifyAccountScreen />);
+    await view.findByDisplayValue('Cash');
+
+    await fireEvent.press(view.getByTestId(TEST_IDS.formDelete));
+
+    expect(await view.findByText('Delete 1 account?', { exact: false })).toBeTruthy();
+    const subject = view.getByTestId(TEST_IDS.modalEntitySubject);
+    expect(within(subject).getByText('Cash')).toBeTruthy();
+    expect(view.queryByText('Delete account "Cash"')).toBeNull();
+  });
+
   it('only reddens the name field once the user touched it', async () => {
     const view = await render(<ModifyAccountScreen />);
     const input = await view.findByDisplayValue('Cash');

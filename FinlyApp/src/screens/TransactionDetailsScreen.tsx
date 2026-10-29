@@ -292,8 +292,10 @@ export default function TransactionDetailsScreen() {
       <ConfirmationModal
         visible={deleteModalVisible}
         title={labels.details_delete_title}
-        confirmLabel={labels.details_delete_yes}
-        cancelLabel={labels.details_delete_no}
+        icon="trash-outline"
+        message={labels.details_delete_message}
+        confirmLabel={labels.delete}
+        cancelLabel={labels.cancel}
         onConfirm={confirmDelete}
         onCancel={closeDeleteModal}
       />

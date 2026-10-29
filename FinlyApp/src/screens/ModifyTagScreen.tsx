@@ -13,6 +13,7 @@ import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, USER_ID, MAX_TAG_NAME_LENGTH } from '../constants/types';
 import ConfirmationModal from '../components/ConfirmationModal';
+import ModalEntitySubject from '../components/ModalEntitySubject';
 import LabeledTextField from '../components/form/LabeledTextField';
 import { formStyles } from '../components/form/formStyles';
 import PrimaryButton from '../components/form/PrimaryButton';
@@ -139,10 +140,12 @@ export default function ModifyTagScreen() {
 
       <ConfirmationModal
         visible={deleteModalVisible}
-        title={labels.modify_tag_delete_confirm_title(tag?.name ?? '')}
+        title={labels.tags_bulk_delete_confirm_title(1)}
+        icon="trash-outline"
+        subject={tag ? <ModalEntitySubject name={tag.name} icon="pricetag-outline" /> : undefined}
         message={labels.modify_tag_delete_confirm_message}
-        confirmLabel={labels.modify_tag_delete_confirm_delete}
-        cancelLabel={labels.modify_tag_delete_confirm_cancel}
+        confirmLabel={labels.delete}
+        cancelLabel={labels.cancel}
         onConfirm={confirmDelete}
         onCancel={closeDeleteModal}
         busy={deleting}

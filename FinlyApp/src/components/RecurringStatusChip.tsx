@@ -78,7 +78,7 @@ export default function RecurringStatusChip({ selected, onChange }: Props) {
       </TouchableOpacity>
 
       <ModalShell visible={visible} onClose={() => setVisible(false)} maxHeight="70%">
-        <ModalHeader title={labels.recurring_status_title} />
+        <ModalHeader title={labels.recurring_status_title} icon="funnel-outline" />
         <View style={styles.options}>
           <CheckboxRow checked={temp.length === 0} onToggle={() => setTemp([])} label={labels.tab_all} />
           {ALL_STATUSES.map(status => (

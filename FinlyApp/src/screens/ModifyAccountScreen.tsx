@@ -16,7 +16,7 @@ import { accountRepository } from '../database';
 import { sanitizeDefaultAccounts } from '../database/configDefaults';
 import { isTotalAccount } from '../database/helpers';
 import type { Account } from '../database/types';
-import type { RootStackParamList, NavigationProp } from '../constants/types';
+import type { RootStackParamList, NavigationProp, IconName } from '../constants/types';
 import { USER_ID } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
 import { QUICK_COLORS } from '../constants/colors';
@@ -24,7 +24,9 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import EmptyState from '../components/EmptyState';
 import LoadErrorState from '../components/LoadErrorState';
 import AccountForm from '../components/AccountForm';
+import ModalEntitySubject from '../components/ModalEntitySubject';
 import { getNameHintText } from '../utils/formHints';
+import { badgeShapeFor } from '../utils/badgeShape';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import { parseAmountValue } from '../utils/amountInput';
 
@@ -232,10 +234,19 @@ export default function ModifyAccountScreen() {
 
       <ConfirmationModal
         visible={deleteModalVisible}
-        title={labels.modify_account_delete_confirm_title(getDisplayAccountName(account))}
+        title={labels.accounts_bulk_delete_confirm_title(1)}
+        icon="trash-outline"
+        subject={(
+          <ModalEntitySubject
+            name={getDisplayAccountName(account)}
+            icon={account.icon as IconName}
+            color={account.color}
+            shape={badgeShapeFor(config, 'account')}
+          />
+        )}
         message={labels.modify_account_delete_confirm_message}
-        confirmLabel={labels.modify_account_delete_confirm_delete}
-        cancelLabel={labels.modify_account_delete_confirm_cancel}
+        confirmLabel={labels.delete}
+        cancelLabel={labels.cancel}
         onConfirm={confirmDelete}
         onCancel={closeDeleteModal}
         busy={deleting}

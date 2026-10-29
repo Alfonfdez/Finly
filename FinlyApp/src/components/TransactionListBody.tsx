@@ -175,6 +175,7 @@ export default function TransactionListBody({
       <ConfirmationModal
         visible={deleteModalVisible}
         title={labels.transactions_bulk_delete_confirm_title(selectedIds.size)}
+        icon="trash-outline"
         message={labels.transactions_bulk_delete_confirm_message}
         confirmLabel={labels.delete}
         cancelLabel={labels.cancel}

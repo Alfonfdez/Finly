@@ -15,13 +15,15 @@ import { useIsDirty } from '../hooks/useIsDirty';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { t, getDefaultCategoryName, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdByName } from '../i18n';
 import { categoryRepository, recurringRepository, transactionRepository } from '../database';
-import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, USER_ID } from '../constants/types';
+import { type RootStackParamList, type NavigationProp, type IconName, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, USER_ID } from '../constants/types';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
+import { badgeShapeFor } from '../utils/badgeShape';
 import { BUTTON_BORDER_RADIUS } from '../components/componentStyles';
 import { CATEGORY_ICONS } from '../components/IconGrid';
 import { QUICK_COLORS } from '../constants/colors';
 import IconColorSection from '../components/IconColorSection';
 import ConfirmationModal from '../components/ConfirmationModal';
+import ModalEntitySubject from '../components/ModalEntitySubject';
 import CategoryTransferModal from '../components/CategoryTransferModal';
 import FormSectionHeader from '../components/form/FormSectionHeader';
 import PrimaryButton from '../components/form/PrimaryButton';
@@ -265,7 +267,16 @@ export default function ModifyCategoryScreen() {
 
       <ConfirmationModal
         visible={deleteModalVisible}
-        title={labels.modify_cat_delete_confirm_title(getDisplayCategoryName(category))}
+        title={labels.categories_bulk_delete_confirm_title(1)}
+        icon="trash-outline"
+        subject={(
+          <ModalEntitySubject
+            name={getDisplayCategoryName(category)}
+            icon={category.icon as IconName}
+            color={category.color}
+            shape={badgeShapeFor(config, 'category')}
+          />
+        )}
         message={deleteHasTransactions && deleteHasRules
           ? labels.modify_cat_delete_confirm_message_tx_rules
           : deleteHasTransactions
@@ -274,7 +285,7 @@ export default function ModifyCategoryScreen() {
               ? labels.modify_cat_delete_confirm_message_rules
               : labels.modify_cat_delete_confirm_message_empty}
         confirmLabel={labels.modify_cat_delete_confirm_delete}
-        cancelLabel={labels.modify_cat_delete_confirm_cancel}
+        cancelLabel={labels.cancel}
         onConfirm={handlePermanentDelete}
         onCancel={() => setDeleteModalVisible(false)}
         moveLabel={deleteRemovesData ? labels.modify_cat_delete_confirm_move : undefined}
@@ -284,11 +295,12 @@ export default function ModifyCategoryScreen() {
 
       <CategoryTransferModal
         visible={selectModalVisible}
-        title={labels.modify_cat_select_title}
+        title={labels.categories_bulk_move_title}
+        sourceCategory={category}
         categories={sameTypeCategories}
         selectedId={targetCategoryId}
-        confirmLabel={labels.modify_cat_select_confirm}
-        cancelLabel={labels.modify_cat_select_cancel}
+        confirmLabel={labels.categories_bulk_move_confirm}
+        cancelLabel={labels.cancel}
         onSelect={(id) => {
           if (typeof id === 'number') setTargetCategoryId(id);
         }}

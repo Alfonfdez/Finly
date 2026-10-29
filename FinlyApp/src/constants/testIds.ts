@@ -20,6 +20,7 @@ export const TEST_IDS = {
   categoryFilterPresetPrefix: 'category-filter-preset',
   categoryFilterApply: 'category-filter-apply',
   listLoading: 'list-loading',
+  modalEntitySubject: 'modal-entity-subject',
   weekPickerRow: 'week-picker-row',
   weekPickerEmptyRow: 'week-picker-empty-row',
 } as const;

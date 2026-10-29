@@ -9,8 +9,10 @@ import type { Category } from '../database/types';
 import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
 import ListItemRow from './ListItemRow';
+import ModalEntitySubject from './ModalEntitySubject';
 import { CategoryTransferBody, type TransferTargetId } from './CategoryTransferModal';
 import ModalFooter from './ModalFooter';
+import type { IconName } from '../constants/types';
 import { WHITE } from '../constants/themes';
 
 export interface BulkCategoryItem {
@@ -69,14 +71,18 @@ export default function BulkCategoryTransferModal({
     <ModalShell visible={visible} onClose={pickerFor !== null ? () => setPickerFor(null) : onCancel}>
       {pickerFor !== null ? (
         <>
-          <ModalHeader
-            title={
-              pickerCategory
-                ? `${labels.categories_bulk_move_title}: ${getDisplayCategoryName(pickerCategory.category)}`
-                : labels.categories_bulk_move_title
-            }
-            size={16}
-          />
+          <ModalHeader title={labels.categories_bulk_move_title} icon="swap-horizontal-outline" />
+          {pickerCategory ? (
+            <View style={styles.subject}>
+              <ModalEntitySubject
+                name={getDisplayCategoryName(pickerCategory.category)}
+                icon={pickerCategory.category.icon as IconName}
+                color={pickerCategory.category.color}
+                shape={badgeShapeFor(config, 'category')}
+                subtitle={labels.categories_bulk_move_data(pickerCategory.txCount, pickerCategory.ruleCount)}
+              />
+            </View>
+          ) : null}
           <CategoryTransferBody
             categories={targets}
             selectedId={pickerDecision}
@@ -84,7 +90,7 @@ export default function BulkCategoryTransferModal({
             onSelect={(id) => onDecide(pickerFor, id)}
           />
           <ModalFooter
-            cancelLabel={labels.modify_cat_select_cancel}
+            cancelLabel={labels.cancel}
             confirmLabel={labels.modify_cat_select_confirm}
             onCancel={() => setPickerFor(null)}
             onConfirm={() => setPickerFor(null)}
@@ -96,7 +102,7 @@ export default function BulkCategoryTransferModal({
         </>
       ) : (
         <>
-          <ModalHeader title={labels.categories_bulk_move_title} size={16} />
+          <ModalHeader title={labels.categories_bulk_move_title} icon="swap-horizontal-outline" />
           <ScrollView style={styles.list}>
             {categories.map(({ category, txCount, ruleCount }) => {
               const decision = decisions[category.id] ?? null;
@@ -142,7 +148,7 @@ export default function BulkCategoryTransferModal({
             </Text>
           </ScrollView>
           <ModalFooter
-            cancelLabel={labels.modify_cat_select_cancel}
+            cancelLabel={labels.cancel}
             confirmLabel={labels.categories_bulk_move_confirm}
             onCancel={onCancel}
             onConfirm={onConfirm}
@@ -158,6 +164,9 @@ export default function BulkCategoryTransferModal({
 }
 
 const styles = StyleSheet.create({
+  subject: {
+    marginBottom: 8,
+  },
   list: {
     maxHeight: 300,
     marginBottom: 16,

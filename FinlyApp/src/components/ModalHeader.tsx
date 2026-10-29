@@ -18,21 +18,22 @@ export default function ModalHeader({ title, size = 18, icon, right }: ModalHead
 
   return (
     <View style={styles.row}>
-      <View style={styles.titleRow}>
+      <Text style={[styles.title, { color: c.text, fontSize: fs(size) }]}>
         {icon != null && (
-          <Ionicons
-            name={icon}
-            size={fs(size)}
-            color={c.text}
-            accessible={false}
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-          />
+          <>
+            <Ionicons
+              name={icon}
+              size={fs(size)}
+              color={c.text}
+              accessible={false}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            />
+            {' '}
+          </>
         )}
-        <Text style={[styles.title, { color: c.text, fontSize: fs(size) }]}>
-          {title}
-        </Text>
-      </View>
+        {title}
+      </Text>
       {right != null && <View style={styles.right}>{right}</View>}
     </View>
   );
@@ -44,12 +45,6 @@ const styles = StyleSheet.create({
     minHeight: 24,
     marginBottom: 12,
     justifyContent: 'center',
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
   },
   title: {
     fontWeight: '700',

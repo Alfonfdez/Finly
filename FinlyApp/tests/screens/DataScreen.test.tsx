@@ -128,10 +128,10 @@ describe('DataScreen', () => {
     await ue.press(step1);
     const input = await view.findByPlaceholderText('Type DELETE here');
     await ue.type(input, 'no');
-    await ue.press(view.getByText('Confirm'));
+    await ue.press(view.getAllByRole('button', { name: 'Delete' }).at(-1)!);
     expect(deleteAllTransactions).not.toHaveBeenCalled();
     await fireEvent.changeText(input, 'DELETE');
-    await ue.press(view.getByText('Confirm'));
+    await ue.press(view.getAllByRole('button', { name: 'Delete' }).at(-1)!);
     expect(deleteAllTransactions).toHaveBeenCalledTimes(1);
     expect(getAppStub().resetAll).toHaveBeenCalled();
   });
@@ -144,10 +144,10 @@ describe('DataScreen', () => {
     await ue.press(step1);
     const input = await view.findByPlaceholderText('Type DELETE here');
     await ue.type(input, 'no');
-    await ue.press(view.getByText('Confirm'));
+    await ue.press(view.getAllByRole('button', { name: 'Delete all' }).at(-1)!);
     expect(clearDataKeepSettings).not.toHaveBeenCalled();
     await fireEvent.changeText(input, 'DELETE');
-    await ue.press(view.getByText('Confirm'));
+    await ue.press(view.getAllByRole('button', { name: 'Delete all' }).at(-1)!);
     expect(clearDataKeepSettings).toHaveBeenCalledTimes(1);
     expect(getAppStub().resetAll).toHaveBeenCalled();
   });
@@ -164,10 +164,10 @@ describe('DataScreen', () => {
     await ue.press(await view.findByRole('button', { name: 'Reset' }));
     const input = await view.findByPlaceholderText('Type DELETE here');
     await fireEvent.changeText(input, 'DELETE');
-    await ue.press(view.getByText('Confirm'));
+    await ue.press(view.getAllByRole('button', { name: 'Reset' }).at(-1)!);
 
     // In flight: spinner state, no second confirm, no cancel, read-only input.
-    const confirm = view.getByRole('button', { name: 'Confirm' });
+    const confirm = view.getAllByRole('button', { name: 'Reset' }).at(-1)!;
     expect(confirm).toBeDisabled();
     expect(confirm.props.accessibilityState?.busy).toBe(true);
     // The first (still mounted) step also has a Cancel; the busy modal is the last one.
@@ -183,7 +183,7 @@ describe('DataScreen', () => {
       release();
     });
     await waitFor(() => {
-      const confirms = view.getAllByRole('button', { name: 'Confirm' });
+      const confirms = view.getAllByRole('button', { name: 'Reset' });
       expect(confirms.every(btn => btn.props.accessibilityState?.busy !== true)).toBe(true);
     });
     expect(getAppStub().resetAll).toHaveBeenCalled();
@@ -243,7 +243,7 @@ describe('DataScreen', () => {
     const ue = userEvent.setup();
     fireEvent.press(view.getByText('Import data'));
     await waitFor(() => expect(pickBackupFile).toHaveBeenCalledTimes(1));
-    const confirmButton = await view.findByRole('button', { name: t.settings_delete_confirm });
+    const confirmButton = await view.findByRole('button', { name: t.settings_import_confirm });
     await ue.press(confirmButton);
     await waitFor(() => expect(importBackup).toHaveBeenCalledTimes(1));
     expect(alertSpy).toHaveBeenCalledWith(
@@ -262,7 +262,7 @@ describe('DataScreen', () => {
     const ue = userEvent.setup();
     fireEvent.press(view.getByText('Import data'));
     await waitFor(() => expect(pickBackupFile).toHaveBeenCalledTimes(1));
-    const confirmButton = await view.findByRole('button', { name: t.settings_delete_confirm });
+    const confirmButton = await view.findByRole('button', { name: t.settings_import_confirm });
     await ue.press(confirmButton);
 
     await waitFor(() => expect(alertSpy).toHaveBeenCalledWith(
@@ -284,7 +284,7 @@ describe('DataScreen', () => {
     const ue = userEvent.setup();
     fireEvent.press(view.getByText('Import data'));
     await waitFor(() => expect(pickBackupFile).toHaveBeenCalledTimes(1));
-    const confirmButton = await view.findByRole('button', { name: t.settings_delete_confirm });
+    const confirmButton = await view.findByRole('button', { name: t.settings_import_confirm });
     await ue.press(confirmButton);
 
     await waitFor(() => expect(alertSpy).toHaveBeenCalledWith(
@@ -304,7 +304,7 @@ describe('DataScreen', () => {
     const ue = userEvent.setup();
     fireEvent.press(view.getByText('Import data'));
     await waitFor(() => expect(pickBackupFile).toHaveBeenCalledTimes(1));
-    const confirmButton = await view.findByRole('button', { name: t.settings_delete_confirm });
+    const confirmButton = await view.findByRole('button', { name: t.settings_import_confirm });
     await ue.press(confirmButton);
 
     await waitFor(() => expect(alertSpy).toHaveBeenCalledWith(

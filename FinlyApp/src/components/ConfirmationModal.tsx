@@ -6,12 +6,14 @@ import { ACTION_BUTTON_HEIGHT } from './componentStyles';
 import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
 import ModalFooter from './ModalFooter';
-import { FOOTER_LAYOUTS } from '../constants/types';
+import { FOOTER_LAYOUTS, type IconName } from '../constants/types';
 
 interface Props {
   visible: boolean;
   title: string;
   message?: string;
+  subject?: ReactNode;
+  icon?: IconName;
   confirmLabel: string;
   cancelLabel?: string;
   onConfirm: () => void;
@@ -26,7 +28,7 @@ interface Props {
 }
 
 export default function ConfirmationModal({
-  visible, title, message, confirmLabel, cancelLabel,
+  visible, title, message, subject, icon = 'alert-circle-outline', confirmLabel, cancelLabel,
   onConfirm, onCancel, confirmDisabled = false, busy = false, destructive = true, children,
   moveLabel, onMove,
 }: Props) {
@@ -35,7 +37,7 @@ export default function ConfirmationModal({
   const { height: windowHeight } = useWindowDimensions();
   const hasMove = !!moveLabel && !!onMove;
 
-  const headerBudget = Math.round(fs(16) * 1.6) * 3 + 12 + 8;
+  const headerBudget = Math.round(fs(18) * 1.6) * 3 + 12 + 8;
   const footerHeight = hasMove
     ? ACTION_BUTTON_HEIGHT + 12 + ACTION_BUTTON_HEIGHT
     : ACTION_BUTTON_HEIGHT;
@@ -47,13 +49,14 @@ export default function ConfirmationModal({
 
   return (
     <ModalShell visible={visible} onClose={onCancel}>
-      <ModalHeader title={title} size={16} />
+      <ModalHeader title={title} icon={icon} />
       <ScrollView
         style={[styles.scroll, { maxHeight: scrollMaxHeight }]}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: footerClearance }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
+        {subject ? <View style={styles.subject}>{subject}</View> : null}
         {message ? (
           <Text style={[styles.message, { color: c.textSecondary, fontSize: fs(14) }]}>{message}</Text>
         ) : null}
@@ -85,6 +88,9 @@ export default function ConfirmationModal({
 }
 
 const styles = StyleSheet.create({
+  subject: {
+    marginBottom: 8,
+  },
   message: {
     marginBottom: 20,
     textAlign: 'center',

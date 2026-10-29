@@ -61,6 +61,10 @@ describe('ModifyTagScreen', () => {
   it('deletes the tag after confirmation and goes back', async () => {
     const view = await render(<ModifyTagScreen />);
     await ue.press(view.getByTestId(TEST_IDS.formDelete));
+    expect(await view.findByText('Delete 1 tag?', { exact: false })).toBeTruthy();
+    const subject = view.getByTestId(TEST_IDS.modalEntitySubject);
+    expect(within(subject).getByText('Travel')).toBeTruthy();
+    expect(view.queryByText('Delete tag "Travel"?')).toBeNull();
     const confirm = await view.findByRole('button', { name: 'Delete' });
     await ue.press(confirm);
     await waitFor(() => expect(mockTagDelete).toHaveBeenCalledWith(1));

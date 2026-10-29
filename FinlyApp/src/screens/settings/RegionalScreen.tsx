@@ -216,6 +216,7 @@ export default function RegionalScreen() {
             selected={config.language}
             onSelect={(v) => updateConfig({ language: v })}
             title={labels.settings_language}
+            icon="language-outline"
           />
         </SettingsSection>
 
@@ -226,6 +227,7 @@ export default function RegionalScreen() {
             selected={config.currency}
             onSelect={(v) => updateConfig({ currency: v })}
             title={labels.settings_currency}
+            icon="cash-outline"
             searchable
           />
           <SettingsSelectRow

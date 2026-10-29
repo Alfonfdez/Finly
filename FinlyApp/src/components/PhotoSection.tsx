@@ -90,7 +90,7 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
         onClose={() => setSourceModalVisible(false)}
         backgroundColor={c.background}
       >
-        <ModalHeader title={labels.add_photo_title} />
+        <ModalHeader title={labels.add_photo_title} icon="image-outline" />
         {isNative && (
           <TouchableOpacity
             style={[styles.modalOption, { backgroundColor: c.surface }]}
@@ -117,10 +117,10 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
           style={[styles.modalCancelButton, { backgroundColor: c.background, borderColor: c.border, borderWidth: 1 }]}
           onPress={() => setSourceModalVisible(false)}
           accessibilityRole="button"
-          accessibilityLabel={labels.cal_cancel}
+          accessibilityLabel={labels.cancel}
         >
           <Text style={[styles.modalCancelText, { color: c.text, fontSize: fs(14) }]}>
-            {labels.cal_cancel}
+            {labels.cancel}
           </Text>
         </TouchableOpacity>
       </ModalShell>
@@ -128,6 +128,7 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
       <ConfirmationModal
         visible={deleteModalVisible}
         title={labels.photo_delete_title}
+        icon="trash-outline"
         message={labels.photo_delete_message}
         confirmLabel={labels.delete}
         cancelLabel={labels.cancel}

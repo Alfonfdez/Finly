@@ -64,7 +64,7 @@
 - Header with back arrow + "Modify tag" title (multilingual).
 - `Name` section (multilingual `form_name`) with an `id-card-outline` icon and the counter in the header's right slot, then the preloaded input with max 20 characters, same validation as create, and the same **empty** error (`create_tag_error_empty`): the bottom hint shows "Enter a tag name" (or the duplicate message) between Delete and Save, and the input reddens only once it has been changed or blurred.
 - "Delete" button (generic `delete` label, like every form) with confirmation modal:
-  - Title: `Delete tag "TagName"` (interpolated).
+  - Title: `Delete 1 tag?` (`tags_bulk_delete_confirm_title(1)`, the same one-line title as the bulk flow), with a tag subject row below it showing the tag icon and name (`ModalEntitySubject`). The tag name never appears in the title.
   - Message: "Transactions with this tag will keep it. The tag link will be removed."
   - Cancel / Delete buttons.
   - On confirm: `tagRepo.delete(id)`, `refreshTags()`, navigate back.
@@ -118,7 +118,7 @@
 - [x] Creating a tag with more than 20 characters is prevented.
 - [x] Creating a tag when the maximum of 100 tags has been reached is prevented (button disabled + "Maximum of 100 tags reached").
 - [x] Modifying a tag name with a duplicate shows an error (excluding current).
-- [x] Deleting a tag shows a confirmation modal with the tag name.
+- [x] Deleting a tag shows a "Delete 1 tag?" confirmation with the tag in a subject row.
 - [x] After deleting, the tag is removed and junction rows are cascade-deleted.
 - [x] "Select" in the header enters selection mode; rows show checkboxes and tapping toggles selection instead of navigating.
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.

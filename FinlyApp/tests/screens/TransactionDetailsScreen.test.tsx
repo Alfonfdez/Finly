@@ -123,8 +123,9 @@ describe('TransactionDetailsScreen', () => {
     const view = await render(<TransactionDetailsScreen />);
     await view.findByText('Wallet');
     await ue.press(view.getByText('Delete'));
-    const confirm = await view.findByRole('button', { name: 'Yes' });
-    await ue.press(confirm);
+    expect(await view.findByText('This transaction will be permanently deleted. This cannot be undone.')).toBeTruthy();
+    const confirms = view.getAllByRole('button', { name: 'Delete' });
+    await ue.press(confirms[confirms.length - 1]);
     expect(remove).toHaveBeenCalledWith(5);
     expect(nav.goBack).toHaveBeenCalled();
   });

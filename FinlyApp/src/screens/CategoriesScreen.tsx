@@ -273,7 +273,7 @@ export default function CategoriesScreen() {
         <SelectionActionBar
           selectedCount={selectedIds.size}
           deleteLabel={labels.categories_bulk_delete(selectedIds.size)}
-          cancelLabel={labels.modify_cat_delete_confirm_cancel}
+          cancelLabel={labels.cancel}
           onDelete={handleDeletePress}
           onCancel={exitSelectMode}
         />
@@ -282,11 +282,12 @@ export default function CategoriesScreen() {
       <ConfirmationModal
         visible={deleteModalVisible}
         title={labels.categories_bulk_delete_confirm_title(selectedIds.size)}
+        icon="trash-outline"
         message={deleteHasData
           ? labels.categories_bulk_delete_confirm_message_data(inUseCategories.length, selectedIds.size)
           : labels.categories_bulk_delete_confirm_message_empty}
         confirmLabel={labels.categories_bulk_delete_confirm_delete}
-        cancelLabel={labels.modify_cat_delete_confirm_cancel}
+        cancelLabel={labels.cancel}
         onConfirm={handlePermanentDelete}
         onCancel={() => setDeleteModalVisible(false)}
         moveLabel={deleteHasData ? labels.categories_bulk_delete_confirm_move : undefined}

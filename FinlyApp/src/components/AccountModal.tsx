@@ -72,7 +72,7 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
         renderItem={renderItem}
       />
       <ModalFooter
-        cancelLabel={labels.transactions_cancel}
+        cancelLabel={labels.cancel}
         confirmLabel={labels.transactions_confirm}
         onCancel={onClose}
         onConfirm={() => { if (tempId != null) onSelect(tempId); }}
