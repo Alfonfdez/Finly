@@ -4771,3 +4771,9 @@
 - Share one internal FooterButton across row, single, stacked and compact ModalFooter layouts.
 - Remove unused modal/form code and the obsolete i18n keys cal_period_to_hint, add_day, add_photo and create_cat_name.
 - test:all green (191 files / 1653 tests); Android APK rebuilt (SHA-256 5719E4E0245DF0F797D713C42379FE8FB0087FDB9FE9496273209889BBA12D40).
+
+[2026-10-30] refactor | FinlyApp/src/hooks/useBulkDelete.ts, FinlyApp/src/hooks/useDeleteConfirmation.ts, FinlyApp/src/hooks/useSelectAndSearch.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/tests/hooks/useBulkDelete.test.tsx, FinlyApp/tests/hooks/useSelectAndSearch.test.tsx, FinlyApp/tests/screens/AccountsScreen.test.tsx, FinlyApp/tests/screens/CategoriesScreen.test.tsx
+- Compose useBusyGuard into useBulkDelete and useDeleteConfirmation, removing the duplicated busy refs and state.
+- Move Accounts and Categories bulk deletion onto useBulkDelete, preserving default-account sanitization, category failure semantics and the transfer flow.
+- Remove the unused delete-modal state from useSelectAndSearch and extend the hook and screen coverage.
+- test:all green (191 files / 1659 tests); Android APK rebuilt (SHA-256 75515923E835285148B9B29BB48913F9DE5E5B9300479FE886440533AE008D48).

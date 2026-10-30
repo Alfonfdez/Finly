@@ -1,5 +1,6 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { runWithErrorAlert } from '../utils/errors';
+import { useBusyGuard } from './useBusyGuard';
 
 interface UseDeleteConfirmationOptions {
   deleteFn: () => Promise<unknown>;
@@ -15,28 +16,21 @@ export function useDeleteConfirmation({
   labels,
 }: UseDeleteConfirmationOptions) {
   const [visible, setVisible] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const busyRef = useRef(false);
+  const { busy, run } = useBusyGuard();
 
   const open = useCallback(() => setVisible(true), []);
   const close = useCallback(() => setVisible(false), []);
 
   const confirm = useCallback(async () => {
-    if (busyRef.current) return;
-    busyRef.current = true;
-    setBusy(true);
-    setVisible(false);
-    try {
+    await run(async () => {
+      setVisible(false);
       const ok = await runWithErrorAlert(async () => {
         await deleteFn();
         return true;
       }, errorPrefix, labels);
       if (ok) await onSuccess?.();
-    } finally {
-      busyRef.current = false;
-      setBusy(false);
-    }
-  }, [deleteFn, onSuccess, errorPrefix, labels]);
+    });
+  }, [deleteFn, onSuccess, errorPrefix, labels, run]);
 
   return { visible, busy, open, close, confirm };
 }

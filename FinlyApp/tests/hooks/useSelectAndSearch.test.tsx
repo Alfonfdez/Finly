@@ -14,7 +14,6 @@ describe('useSelectAndSearch', () => {
     expect(result.current.searchText).toBe('');
     expect(result.current.selectMode).toBe(false);
     expect(result.current.selectedIds.size).toBe(0);
-    expect(result.current.deleteModalVisible).toBe(false);
     expect(result.current.hasItems).toBe(false);
   });
 
