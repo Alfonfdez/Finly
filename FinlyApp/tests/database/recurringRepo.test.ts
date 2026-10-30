@@ -37,6 +37,32 @@ const baseRule = {
 };
 
 describe('recurringRepo', () => {
+  it('moves recurring rules when their category is reassigned', async () => {
+    const { categoryRepo, recurringRepo } = await boot();
+    const oldCategory = await categoryRepo.create({
+      user_id: 1,
+      name: 'Old category',
+      icon: 'cart',
+      color: '#22D3EE',
+      type: 'expense',
+    });
+    const targetCategory = await categoryRepo.create({
+      user_id: 1,
+      name: 'Target category',
+      icon: 'cart',
+      color: '#22D3EE',
+      type: 'expense',
+    });
+    const rule = await recurringRepo.createWithTags(
+      { ...baseRule, category_id: oldCategory.id },
+      [],
+    );
+
+    await categoryRepo.reassignAndDelete(oldCategory.id, targetCategory.id);
+
+    expect((await recurringRepo.getById(rule.id))?.category_id).toBe(targetCategory.id);
+  });
+
   it('creates a rule with tags and reads it back', async () => {
     const { recurringRepo, tagRepo } = await boot();
     const tag = await tagRepo.create({ user_id: 1, name: 'Home' });

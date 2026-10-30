@@ -37,6 +37,7 @@ export async function bootSqliteDb() {
   const { recurringRepo } = await import('../../../src/database/repositories/recurringRepo');
   const { transactionRepo } = await import('../../../src/database/repositories/transactionRepo');
   const { tagRepo } = await import('../../../src/database/repositories/tagRepo');
+  const { categoryRepo } = await import('../../../src/database/repositories/categoryRepo');
   const {
     createRecurringRule,
     materializeDueRecurring,
@@ -49,6 +50,7 @@ export async function bootSqliteDb() {
     recurringRepo,
     transactionRepo,
     tagRepo,
+    categoryRepo,
     createRecurringRule,
     materializeDueRecurring,
     resumeRecurringRule,

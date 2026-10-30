@@ -1,5 +1,5 @@
 import { and, eq, inArray, sql } from 'drizzle-orm';
-import { getDrizzle, withTransaction } from '../drizzle/engine';
+import { getDrizzle, withTransaction, type DrizzleDb } from '../drizzle/engine';
 import { categories, recurringRules, transactions } from '../drizzle/schema';
 import { runResultOf } from '../drizzle/proxy';
 import type { Category } from '../types';
@@ -10,6 +10,34 @@ import { collectTransactionPhotos, deleteUnreferencedPhotoUris } from '../photoC
 import { serializeWrites } from '../transactionQueue';
 import { dbTimestamp } from '../../utils/formatters';
 import { existsByName, pickDefined } from './repoHelpers';
+
+async function moveCategoryData(
+  db: DrizzleDb,
+  categoryIds: number[],
+  targetId: number,
+): Promise<void> {
+  await db
+    .update(transactions)
+    .set({ category_id: targetId })
+    .where(inArray(transactions.category_id, categoryIds))
+    .run();
+  // Recurring rules are the template for the category's future transactions, so
+  // moving the data must move them too (otherwise the CASCADE deletes them).
+  await db
+    .update(recurringRules)
+    .set({ category_id: targetId })
+    .where(inArray(recurringRules.category_id, categoryIds))
+    .run();
+}
+
+async function deleteCategoryRows(db: DrizzleDb, categoryIds: number[]): Promise<void> {
+  await db.delete(categories).where(inArray(categories.id, categoryIds)).run();
+}
+
+async function deleteCategoryData(db: DrizzleDb, categoryIds: number[]): Promise<void> {
+  await db.delete(transactions).where(inArray(transactions.category_id, categoryIds)).run();
+  await deleteCategoryRows(db, categoryIds);
+}
 
 const categoryRepoBase = {
   async list(userId: number, type?: TransactionType): Promise<Category[]> {
@@ -59,27 +87,15 @@ const categoryRepoBase = {
   async delete(id: number): Promise<void> {
     const uris = await collectTransactionPhotos('category_id', id);
     await withTransaction(async (db) => {
-      await db.delete(transactions).where(eq(transactions.category_id, id)).run();
-      await db.delete(categories).where(eq(categories.id, id)).run();
+      await deleteCategoryData(db, [id]);
     });
     await deleteUnreferencedPhotoUris(uris);
   },
 
   async reassignAndDelete(oldCategoryId: number, newCategoryId: number): Promise<void> {
     await withTransaction(async (db) => {
-      await db
-        .update(transactions)
-        .set({ category_id: newCategoryId })
-        .where(eq(transactions.category_id, oldCategoryId))
-        .run();
-      // Recurring rules are the template for the category's future transactions, so
-      // moving the data must move them too (otherwise the CASCADE deletes them).
-      await db
-        .update(recurringRules)
-        .set({ category_id: newCategoryId })
-        .where(eq(recurringRules.category_id, oldCategoryId))
-        .run();
-      await db.delete(categories).where(eq(categories.id, oldCategoryId)).run();
+      await moveCategoryData(db, [oldCategoryId], newCategoryId);
+      await deleteCategoryRows(db, [oldCategoryId]);
     });
   },
 
@@ -87,8 +103,7 @@ const categoryRepoBase = {
     if (ids.length === 0) return;
     const uris = await collectTransactionPhotos('category_id', ...ids);
     await withTransaction(async (db) => {
-      await db.delete(transactions).where(inArray(transactions.category_id, ids)).run();
-      await db.delete(categories).where(inArray(categories.id, ids)).run();
+      await deleteCategoryData(db, ids);
     });
     await deleteUnreferencedPhotoUris(uris);
   },
@@ -96,17 +111,8 @@ const categoryRepoBase = {
   async reassignManyAndDelete(ids: number[], targetId: number): Promise<void> {
     if (ids.length === 0) return;
     await withTransaction(async (db) => {
-      await db
-        .update(transactions)
-        .set({ category_id: targetId })
-        .where(inArray(transactions.category_id, ids))
-        .run();
-      await db
-        .update(recurringRules)
-        .set({ category_id: targetId })
-        .where(inArray(recurringRules.category_id, ids))
-        .run();
-      await db.delete(categories).where(inArray(categories.id, ids)).run();
+      await moveCategoryData(db, ids, targetId);
+      await deleteCategoryRows(db, ids);
     });
   },
 
@@ -120,19 +126,10 @@ const categoryRepoBase = {
     await withTransaction(async (db) => {
       for (const item of items) {
         if (item.targetId !== null) {
-          await db
-            .update(transactions)
-            .set({ category_id: item.targetId })
-            .where(eq(transactions.category_id, item.id))
-            .run();
-          await db
-            .update(recurringRules)
-            .set({ category_id: item.targetId })
-            .where(eq(recurringRules.category_id, item.id))
-            .run();
+          await moveCategoryData(db, [item.id], item.targetId);
         }
       }
-      await db.delete(categories).where(inArray(categories.id, items.map((item) => item.id))).run();
+      await deleteCategoryRows(db, items.map((item) => item.id));
     });
     await deleteUnreferencedPhotoUris(uris);
   },

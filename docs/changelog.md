@@ -4781,3 +4781,7 @@
 [2026-10-30] refactor | FinlyApp/src/database/repositories/repoHelpers.ts, FinlyApp/src/database/repositories/accountRepo.ts, FinlyApp/src/database/repositories/categoryRepo.ts, FinlyApp/src/database/repositories/tagRepo.ts, FinlyApp/src/database/repositories/transactionRepo.writes.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/tests/database/repoHelpers.test.ts
 - Add pickDefined and share partial update field selection across the account, category, tag, transaction and recurring repositories.
 - Cover defined, falsy, allowlist and immutability behavior; test:all green (192 files / 1664 tests).
+
+[2026-10-30] refactor | FinlyApp/src/database/repositories/categoryRepo.ts, FinlyApp/tests/database/categoryWrites.test.ts, FinlyApp/tests/database/helpers/sqliteHarness.ts, FinlyApp/tests/database/recurringRepo.test.ts
+- Extract moveCategoryData, deleteCategoryRows and deleteCategoryData so category delete and reassign methods share one mutation path.
+- Add mutation-order and photo-cleanup coverage plus a recurring-rule reassignment regression; test:all green (193 files / 1673 tests).
