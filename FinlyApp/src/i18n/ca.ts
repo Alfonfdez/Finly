@@ -143,7 +143,6 @@ export const ca: Language = {
   cal_range_end: (day: number, month: string, year: number) => `${day === 1 ? 'fins a l\'1' : `fins al ${day}`} ${/^[AEIOU]/.test(month) ? `d'${month}` : `de ${month}`} de ${year}`,
 
   // Calendar picker display
-  cal_period_to_hint: 'seleccioneu fi',
 
   // Day abbreviations (Sunday-first)
   days_short_sun: ['Dg', 'Dl', 'Dt', 'Dc', 'Dj', 'Dv', 'Ds'],
@@ -170,7 +169,6 @@ export const ca: Language = {
   add_account: 'Compte',
   add_categories: 'Categories',
   add_more: 'Més',
-  add_day: 'Dia',
   add_date: 'Data',
   add_today: 'Avui',
   add_yesterday: 'Ahir',
@@ -184,7 +182,6 @@ export const ca: Language = {
   add_comment: 'Comentari',
   add_comment_suggestions: 'Suggeriments',
   add_comment_suggestions_hint: 'Toca per reutilitzar',
-  add_photo: 'Foto',
   add_photos: 'Fotos',
   add_photo_title: 'Afegir foto',
   add_photo_camera: 'Fer foto',
@@ -232,7 +229,6 @@ export const ca: Language = {
 
   // Create category
   create_cat_title: 'Crear categoria',
-  create_cat_name: 'Nom de la categoria',
   create_cat_name_placeholder: 'Nom de la categoria',
   create_cat_type: 'Tipus',
   create_cat_expense: 'Despesa',

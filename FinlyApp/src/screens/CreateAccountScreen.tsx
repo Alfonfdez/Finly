@@ -84,7 +84,6 @@ export default function CreateAccountScreen() {
         <AccountForm
           nameLabel={labels.form_name}
           namePlaceholder={labels.create_account_name}
-          showNameField
           name={name}
           onNameChange={(v) => handleNameChange(v, setName)}
           nameError={nameError}

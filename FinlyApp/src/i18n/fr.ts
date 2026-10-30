@@ -143,7 +143,6 @@ export const fr: Language = {
   cal_range_end: (day: number, month: string, year: number) => `au ${day === 1 ? '1er' : day} ${month} ${year}`,
 
   // Calendar picker display
-  cal_period_to_hint: 'sélectionner la fin',
 
   // Day abbreviations (Sunday-first)
   days_short_sun: ['Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa'],
@@ -170,7 +169,6 @@ export const fr: Language = {
   add_account: 'Compte',
   add_categories: 'Catégories',
   add_more: 'Plus',
-  add_day: 'Jour',
   add_date: 'Date',
   add_today: 'Aujourd\'hui',
   add_yesterday: 'Hier',
@@ -184,7 +182,6 @@ export const fr: Language = {
   add_comment: 'Commentaire',
   add_comment_suggestions: 'Suggestions',
   add_comment_suggestions_hint: 'Touchez pour réutiliser',
-  add_photo: 'Photo',
   add_photos: 'Photos',
   add_photo_title: 'Ajouter une photo',
   add_photo_camera: 'Prendre une photo',
@@ -232,7 +229,6 @@ export const fr: Language = {
 
   // Create category
   create_cat_title: 'Créer une catégorie',
-  create_cat_name: 'Nom de la catégorie',
   create_cat_name_placeholder: 'Nom de la catégorie',
   create_cat_type: 'Type',
   create_cat_expense: 'Dépense',

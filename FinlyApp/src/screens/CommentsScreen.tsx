@@ -29,7 +29,7 @@ import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
 import SortToggle, { commentSortFields } from '../components/SortToggle';
 import SortRow from '../components/SortRow';
-import ConfirmationModal from '../components/ConfirmationModal';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 
@@ -219,13 +219,10 @@ export default function CommentsScreen() {
         />
       )}
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.comments_bulk_delete_confirm_title(selectedComments.size)}
-        icon="trash-outline"
         message={labels.comments_bulk_delete_confirm_message}
-        confirmLabel={labels.delete}
-        cancelLabel={labels.cancel}
         onConfirm={confirmBulkDelete}
         onCancel={closeDeleteModal}
         busy={busy}

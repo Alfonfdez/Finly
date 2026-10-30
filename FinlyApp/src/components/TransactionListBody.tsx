@@ -16,7 +16,7 @@ import ScreenSearchBar from './ScreenSearchBar';
 import EmptyState, { emptyStateProps } from './EmptyState';
 import ListOrEmpty from './ListOrEmpty';
 import SelectionActionBar from './SelectionActionBar';
-import ConfirmationModal from './ConfirmationModal';
+import DeleteConfirmationModal from './DeleteConfirmationModal';
 import { TransactionRow, TransactionDateHeader } from './TransactionGroup';
 
 type ListController = ReturnType<typeof useTransactionListScreen>;
@@ -172,13 +172,10 @@ export default function TransactionListBody({
         fab
       )}
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.transactions_bulk_delete_confirm_title(selectedIds.size)}
-        icon="trash-outline"
         message={labels.transactions_bulk_delete_confirm_message}
-        confirmLabel={labels.delete}
-        cancelLabel={labels.cancel}
         onConfirm={confirmBulkDelete}
         onCancel={closeDeleteModal}
         busy={busy}

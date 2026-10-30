@@ -289,8 +289,6 @@ export const CHART_TYPES = {
   bar: 'bar',
 } as const;
 
-export type ChartType = (typeof CHART_TYPES)[keyof typeof CHART_TYPES];
-
 export const FOOTER_LAYOUTS = {
   row: 'row',
   single: 'single',

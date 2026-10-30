@@ -23,7 +23,7 @@ import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
 import SortRow from '../components/SortRow';
 import SortToggle, { categorySortFields } from '../components/SortToggle';
-import ConfirmationModal from '../components/ConfirmationModal';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import BulkCategoryTransferModal, { type BulkCategoryItem } from '../components/BulkCategoryTransferModal';
 import type { TransferTargetId } from '../components/CategoryTransferModal';
 import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, type TransactionType, type NavigationProp } from '../constants/types';
@@ -279,15 +279,13 @@ export default function CategoriesScreen() {
         />
       )}
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.categories_bulk_delete_confirm_title(selectedIds.size)}
-        icon="trash-outline"
         message={deleteHasData
           ? labels.categories_bulk_delete_confirm_message_data(inUseCategories.length, selectedIds.size)
           : labels.categories_bulk_delete_confirm_message_empty}
         confirmLabel={labels.categories_bulk_delete_confirm_delete}
-        cancelLabel={labels.cancel}
         onConfirm={handlePermanentDelete}
         onCancel={() => setDeleteModalVisible(false)}
         moveLabel={deleteHasData ? labels.categories_bulk_delete_confirm_move : undefined}

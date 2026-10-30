@@ -35,7 +35,7 @@ import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
 import SortRow from '../components/SortRow';
 import SortToggle, { accountSortFields } from '../components/SortToggle';
-import ConfirmationModal from '../components/ConfirmationModal';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import GuardModal from '../components/GuardModal';
 import { CARD_BORDER_RADIUS } from '../components/componentStyles';
 import { defaultAccountSortDirection, sortAccounts, type AccountWithBalance } from '../utils/accountSort';
@@ -323,13 +323,10 @@ export default function AccountsScreen() {
         />
       )}
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.accounts_bulk_delete_confirm_title(selectedIds.size)}
-        icon="trash-outline"
         message={labels.accounts_bulk_delete_confirm_message}
-        confirmLabel={labels.delete}
-        cancelLabel={labels.cancel}
         onConfirm={handleBulkDelete}
         onCancel={() => setDeleteModalVisible(false)}
         busy={bulkDeleting}

@@ -143,7 +143,6 @@ export const gl: Language = {
   cal_range_end: (day: number, month: string, year: number) => `ata o ${day} de ${month} de ${year}`,
 
   // Calendar picker display
-  cal_period_to_hint: 'selecciona fin',
 
   // Day abbreviations (Sunday-first)
   days_short_sun: ['Do', 'Lu', 'Ma', 'Mi', 'Xo', 'Vi', 'Sa'],
@@ -170,7 +169,6 @@ export const gl: Language = {
   add_account: 'Conta',
   add_categories: 'Categorías',
   add_more: 'Máis',
-  add_day: 'Día',
   add_date: 'Data',
   add_today: 'Hoxe',
   add_yesterday: 'Onte',
@@ -184,7 +182,6 @@ export const gl: Language = {
   add_comment: 'Comentario',
   add_comment_suggestions: 'Suxestións',
   add_comment_suggestions_hint: 'Toca para reutilizar',
-  add_photo: 'Foto',
   add_photos: 'Fotos',
   add_photo_title: 'Engadir foto',
   add_photo_camera: 'Facela foto',
@@ -232,7 +229,6 @@ export const gl: Language = {
 
   // Create category
   create_cat_title: 'Crear categoría',
-  create_cat_name: 'Nome da categoría',
   create_cat_name_placeholder: 'Nome da categoría',
   create_cat_type: 'Tipo',
   create_cat_expense: 'Gasto',

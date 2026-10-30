@@ -39,9 +39,6 @@ export const SECTION_GAP_SM = 8;
 /** Extra top margin that, on top of the 8px controls stack gap, separates a new
  *  control group (filters vs account/balance header) by the standard 16px. */
 export const CONTROLS_GROUP_TOP_GAP: ViewStyle = { marginTop: SECTION_GAP_SM };
-export const SECTION_TITLE_STYLE = {
-  fontWeight: '600' as const,
-};
 
 /** Standard colors for every RN `Switch` (dark + light), from theme tokens.
  *  `activeTrackColor`/`activeThumbColor` are react-native-web's ON-state props

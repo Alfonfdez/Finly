@@ -20,6 +20,7 @@ import { ERROR_PREFIXES, alertError, alertInfo, logError } from '../../utils/err
 import { BACKUP_ERRORS } from '../../constants/backup';
 import { ShareResult } from '../../constants/shareResult';
 import ConfirmationModal from '../../components/ConfirmationModal';
+import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 import SettingsRow from '../../components/settings/SettingsRow';
 import { BUTTON_BORDER_RADIUS } from '../../components/componentStyles';
 import { settingsStyles } from '../../components/settings/settingsStyles';
@@ -341,13 +342,10 @@ export default function DataScreen() {
           onPress={() => setFactoryResetModal1(true)}
         />
 
-        <ConfirmationModal
+        <DeleteConfirmationModal
           visible={deleteTransactionsModal1}
           title={labels.settings_delete_transactions_confirm_title}
-          icon="trash-outline"
           message={labels.settings_delete_transactions_confirm_message}
-          confirmLabel={labels.delete}
-          cancelLabel={labels.cancel}
           onConfirm={() => setDeleteTransactionsModal2(true)}
           onCancel={() => setDeleteTransactionsModal1(false)}
         />

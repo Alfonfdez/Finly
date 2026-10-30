@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { formatDateRangeLines, formatPeriodText, formatWeekRangeLines } from '../utils/formatters';
 import type { Period } from './calendars/types';
 import { FOOTER_LAYOUTS, PERIODS } from '../constants/types';
@@ -18,6 +17,7 @@ import PeriodPicker from './calendars/PeriodPicker';
 import { MIN_DATE } from './calendars/calendarStyles';
 import ModalShell from './ModalShell';
 import ModalFooter from './ModalFooter';
+import ModalTitle from './ModalTitle';
 
 interface Props {
   visible: boolean;
@@ -131,17 +131,7 @@ export default function CalendarModal({
       shadow
     >
       <View style={styles.header}>
-        <View style={styles.titleRow}>
-          <Ionicons
-            name="calendar-outline"
-            size={fs(18)}
-            color={c.text}
-            accessible={false}
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-          />
-          <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>{labels[TITLE_KEYS[period]]}</Text>
-        </View>
+        <ModalTitle title={labels[TITLE_KEYS[period]]} icon="calendar-outline" align="left" style={styles.title} />
         <View style={styles.info}>
           <Text style={[styles.infoLine, { color: c.textSecondary, fontSize: fs(13) }]} numberOfLines={1}>
             {infoLines[0]}
@@ -194,11 +184,10 @@ export default function CalendarModal({
 
 const styles = StyleSheet.create({
   header: { marginBottom: 8, alignItems: 'flex-start' },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   info: { width: '100%' },
   body: { flexShrink: 1 },
   bodyContent: { flexGrow: 1 },
-  title: { fontWeight: '700', marginBottom: 2 },
+  title: { marginBottom: 2 },
   infoLine: { textAlign: 'left' },
   buttons: {
     marginTop: 12,

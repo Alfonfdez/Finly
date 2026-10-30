@@ -7,7 +7,7 @@ import { t } from '../i18n';
 import { MAX_PHOTOS } from '../constants/types';
 import { WHITE } from '../constants/themes';
 import { isNative } from '../utils/platform';
-import ConfirmationModal from './ConfirmationModal';
+import DeleteConfirmationModal from './DeleteConfirmationModal';
 import FormSectionHeader from './form/FormSectionHeader';
 import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
@@ -125,13 +125,10 @@ export default function PhotoSection({ photos, onTakePhoto, onPickFromGallery, o
         </TouchableOpacity>
       </ModalShell>
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.photo_delete_title}
-        icon="trash-outline"
         message={labels.photo_delete_message}
-        confirmLabel={labels.delete}
-        cancelLabel={labels.cancel}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />

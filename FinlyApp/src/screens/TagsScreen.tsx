@@ -33,7 +33,7 @@ import SelectionActionBar from '../components/SelectionActionBar';
 import SelectAllRow from '../components/SelectAllRow';
 import SortToggle, { tagSortFields } from '../components/SortToggle';
 import SortRow from '../components/SortRow';
-import ConfirmationModal from '../components/ConfirmationModal';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 
@@ -212,13 +212,10 @@ export default function TagsScreen() {
         />
       )}
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.tags_bulk_delete_confirm_title(selectedIds.size)}
-        icon="trash-outline"
         message={labels.tags_bulk_delete_confirm_message}
-        confirmLabel={labels.delete}
-        cancelLabel={labels.cancel}
         onConfirm={confirmBulkDelete}
         onCancel={closeDeleteModal}
         busy={busy}
