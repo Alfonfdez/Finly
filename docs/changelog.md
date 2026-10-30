@@ -4806,3 +4806,7 @@
 [2026-10-30] refactor | FinlyApp/src/utils/photoUri.ts, FinlyApp/src/utils/photoUtils.ts, FinlyApp/tests/utils/photoUri.test.ts
 - Extract parsePhotoFilePath so isFilePhotoUri and isAppPhotoUri share the same file URI, traversal and photo-name validation.
 - Add direct parser coverage; test:all green (195 files / 1691 tests).
+
+[2026-10-30] refactor | FinlyApp/src/hooks/useToday.ts
+- Reuse isSameDay from formatters in useToday instead of keeping a duplicate day comparison.
+- test:all green (195 files / 1691 tests).
