@@ -306,10 +306,38 @@ describe('useTransactionFilters', () => {
     expect(result.current.sortBy).toBe(SORT_BY.amount);
     expect(result.current.sortDirection).toBe(SORT_DIRECTIONS.desc);
     expect(result.current.filtered.map(t => t.id)).toEqual([2, 1]);
+    expect(getConfigStub().updateConfig).toHaveBeenLastCalledWith({
+      transactionsSortBy: SORT_BY.amount,
+      transactionsSortDirection: SORT_DIRECTIONS.desc,
+    });
 
     await update(() => result.current.handleToggleSort(SORT_BY.amount));
     expect(result.current.sortDirection).toBe(SORT_DIRECTIONS.asc);
     expect(result.current.filtered.map(t => t.id)).toEqual([1, 2]);
+    expect(getConfigStub().updateConfig).toHaveBeenLastCalledWith({
+      transactionsSortBy: SORT_BY.amount,
+      transactionsSortDirection: SORT_DIRECTIONS.asc,
+    });
+  });
+
+  it('persists field changes in the allTransactions scope', async () => {
+    const transactions = [
+      tx(1, { id: 1, amount: 50, account_id: 3 }),
+      tx(2, { id: 2, amount: 150, account_id: 3 }),
+    ];
+    const { result } = await renderFilters(transactions, {
+      activeAccount: totalAccount,
+      sortScope: TRANSACTION_SORT_SCOPES.allTransactions,
+    });
+
+    await update(() => result.current.handleToggleSort(SORT_BY.amount));
+
+    expect(result.current.sortBy).toBe(SORT_BY.amount);
+    expect(result.current.sortDirection).toBe(SORT_DIRECTIONS.desc);
+    expect(getConfigStub().updateConfig).toHaveBeenLastCalledWith({
+      allTransactionsSortBy: SORT_BY.amount,
+      allTransactionsSortDirection: SORT_DIRECTIONS.desc,
+    });
   });
 
   it('handleClearTagFilter resets the local tag selection', async () => {

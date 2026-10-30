@@ -1,14 +1,17 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import type { Transaction, Account, Category, Tag } from '../database/types';
-import { SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, RECURRING_VIEWS, TRANSACTION_SORT_SCOPES, UNTAGGED_ID, type SortBy, type SortDirection, type TransactionTypeFilter, type RecurringView, type TransactionSortScope } from '../constants/types';
+import { SORT_BY, SORT_DIRECTIONS, TYPE_FILTERS, RECURRING_VIEWS, TRANSACTION_SORT_SCOPES, UNTAGGED_ID, type SortBy, type TransactionTypeFilter, type RecurringView, type TransactionSortScope } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
-import { nextSortPreference, toggleSortDirection } from '../utils/sortPreference';
+import { useSortPreference } from './useSortPreference';
+import type { SortPreference } from '../utils/sortPreference';
 import { transactionRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
 import { formatDateForDB } from '../utils/formatters';
 import { buildTagsByTransactionMap, type TagsByTransaction } from '../utils/transactionTags';
 import { matchesTransactionSearch } from '../utils/transactionSearch';
 import { matchesTagFilter, toggleTagInArray } from '../utils/tagFilter';
+
+const defaultTransactionSortDirection = () => SORT_DIRECTIONS.desc;
 
 export interface UseTransactionFiltersOptions {
   transactions: Transaction[];
@@ -197,19 +200,26 @@ export function useTransactionFilters({
     return Array.from(grouped.entries()).map(([date, data]) => ({ date, data }));
   }, [filtered]);
 
-  const persistSort = useCallback((by: SortBy, direction: SortDirection) => {
-    if (usesOwnPreferences) updateConfig({ transactionsSortBy: by, transactionsSortDirection: direction });
-    else updateConfig({ allTransactionsSortBy: by, allTransactionsSortDirection: direction });
+  const handleSortChange = useCallback((next: SortPreference<SortBy>) => {
+    if (usesOwnPreferences) {
+      updateConfig({
+        transactionsSortBy: next.by,
+        transactionsSortDirection: next.direction,
+      });
+    } else {
+      updateConfig({
+        allTransactionsSortBy: next.by,
+        allTransactionsSortDirection: next.direction,
+      });
+    }
   }, [usesOwnPreferences, updateConfig]);
 
-  const handleToggleSort = useCallback((field: SortBy) => {
-    const next = nextSortPreference({ by: sortBy, direction: sortDirection }, field, () => SORT_DIRECTIONS.desc);
-    persistSort(next.by, next.direction);
-  }, [sortBy, sortDirection, persistSort]);
-
-  const handleToggleDirection = useCallback(() => {
-    persistSort(sortBy, toggleSortDirection(sortDirection));
-  }, [sortBy, sortDirection, persistSort]);
+  const { handleToggleSort, handleToggleDirection } = useSortPreference({
+    sortBy,
+    sortDirection,
+    defaultDirection: defaultTransactionSortDirection,
+    onChange: handleSortChange,
+  });
 
   const openAccountModal = useCallback(() => setAccountModalVisible(true), []);
   const closeAccountModal = useCallback(() => setAccountModalVisible(false), []);

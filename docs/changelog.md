@@ -4790,3 +4790,7 @@
 - Extract useCategoryBulkDelete to own in-use counts, guard state, permanent deletion and transfer decisions, reducing CategoriesScreen to presentation and selection.
 - Move TransferTargetId and BulkCategoryItem to shared modules and replace the raw delete target literal with CATEGORY_TRANSFER_TARGETS.
 - test:all green (194 files / 1681 tests).
+
+[2026-10-30] refactor | FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/tests/hooks/useTransactionFilters.test.tsx
+- Reuse useSortPreference in useTransactionFilters instead of duplicating field and direction toggle logic.
+- Cover persistence for both transactions sort scopes; test:all green (194 files / 1682 tests).
