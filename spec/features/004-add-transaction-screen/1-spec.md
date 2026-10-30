@@ -40,7 +40,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
   - The input border is displayed in red.
   - The error text is shown: "The amount entered is not valid" (multilingual).
 - To the right of the input, the currency symbol selected in settings is displayed (resolved dynamically from the configured currency).
-- To the right of the currency symbol, a calculator icon that opens a "Calculator" screen (TODO: future implementation).
+- To the right of the currency symbol, a calculator icon that opens the full-screen `CalculatorModal`; its keypad and Cancel/Accept footer are anchored to the bottom, with the display area flexing above them.
 
 ### 4. Account selection
 
@@ -50,7 +50,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
   1. If `config.addDefaultAccountId` is set (from Settings > Personalization), that account is pre-selected.
   2. Otherwise, the account selected on the main screen (HomeScreen) is used.
   3. **Fallback**: if the active account is the Total account (`is_total=1`), the first non-Total account is pre-selected instead.
-- When tapping on the account name, a modal (`AccountModal`) opens to select another account. The Total account is excluded from the modal.
+- When tapping on the account name, `AccountModal` opens with the standard centered `wallet-outline` header, the balance eye toggle on the right, and the account list. The Total account is excluded from the modal.
 
 ### 5. Category selection
 

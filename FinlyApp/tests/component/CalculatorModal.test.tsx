@@ -24,7 +24,7 @@ describe('CalculatorModal', () => {
 
   it('renders the title and keypad when visible', async () => {
     const view = await renderModal();
-    expect(view.getByText('Calculator')).toBeTruthy();
+    expect(view.getByRole('header', { name: /Calculator/ })).toBeTruthy();
     expect(view.getByText('7')).toBeTruthy();
     expect(view.getByText('0')).toBeTruthy();
     expect(view.getByText('+')).toBeTruthy();

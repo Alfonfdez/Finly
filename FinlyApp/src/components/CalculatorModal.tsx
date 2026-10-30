@@ -18,6 +18,7 @@ import { CALC_KEYS } from '../constants/types';
 import { WHITE } from '../constants/themes';
 import ModalShell from './ModalShell';
 import ModalFooter from './ModalFooter';
+import FullScreenModalHeader from './FullScreenModalHeader';
 
 interface Props {
   visible: boolean;
@@ -161,13 +162,14 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
 
   const content = (
     <>
-      <View style={[styles.header, { borderBottomColor: c.border }]}>
-        <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>
-          {labels.calc_title}
-        </Text>
-      </View>
+      <FullScreenModalHeader title={labels.calc_title} icon="calculator-outline" />
 
-      <View style={[styles.displayArea, { height: displayHeight }]}>
+      <View
+        style={[
+          styles.displayArea,
+          isWeb ? { height: displayHeight } : { flex: 1, minHeight: displayHeight },
+        ]}
+      >
         <Text
           style={[styles.expression, { color: c.textSecondary, fontSize: fs(16) }]}
           numberOfLines={2}
@@ -234,14 +236,6 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-  },
-  title: { fontWeight: '600' },
   displayArea: {
     justifyContent: 'flex-end',
     alignItems: 'flex-end',

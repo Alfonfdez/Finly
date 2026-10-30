@@ -8,6 +8,7 @@ import { t, getDisplayCategoryName } from '../i18n';
 import SearchBar from './SearchBar';
 import EmptyState from './EmptyState';
 import HeaderCloseButton from './HeaderCloseButton';
+import FullScreenModalHeader from './FullScreenModalHeader';
 import FormHintSlot from './form/FormHintSlot';
 import { CARD_BORDER_RADIUS, DISABLED_CONTROL_OPACITY } from './componentStyles';
 import { TRANSACTION_TYPES, TYPE_FILTERS, type TransactionTypeFilter } from '../constants/types';
@@ -155,10 +156,11 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['top', 'bottom']}>
-        <View style={[styles.header, { borderBottomColor: c.border }]}>
-          <Text style={[styles.title, { color: c.text, fontSize: fs(16) }]}>{labels.filter_categories}</Text>
-          <HeaderCloseButton onPress={onClose} accessibilityLabel={labels.common_close} />
-        </View>
+        <FullScreenModalHeader
+          title={labels.filter_categories}
+          icon="grid-outline"
+          right={<HeaderCloseButton onPress={onClose} accessibilityLabel={labels.common_close} />}
+        />
 
         <View style={styles.content}>
           <SearchBar
@@ -240,17 +242,6 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  title: {
-    fontWeight: '700',
   },
   content: {
     flex: 1,

@@ -25,7 +25,7 @@
 ### 2. Header and close
 
 - Full-screen modal with `SafeAreaView`.
-- Header with "Select categories" title (multilingual) and close (X) button at top right.
+- Full-screen header with a centered "Select categories" title, inline `grid-outline` icon on the left, and close (X) button at top right.
 - Pressing X calls `onClose()` without applying changes.
 
 ### 3. Search bar
@@ -95,7 +95,7 @@
 ## Acceptance criteria
 
 - [x] The modal opens as a full-screen overlay when triggered.
-- [x] The header shows "Select categories" and a close (X) button.
+- [x] The header shows a centered "Select categories" title with a `grid-outline` icon and a close (X) button.
 - [x] Pressing X closes the modal without applying changes.
 - [x] A SearchBar filters categories by name (case-insensitive).
 - [x] Empty state shows when search returns no results.
