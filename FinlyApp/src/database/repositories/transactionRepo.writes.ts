@@ -6,6 +6,7 @@ import type { Transaction } from '../types';
 import { dbTimestamp } from '../../utils/formatters';
 import { collectTransactionPhotos, collectAllTransactionPhotos, deleteUnreferencedPhotoUris } from '../photoCleanup';
 import { serializeWrites } from '../transactionQueue';
+import { pickDefined } from './repoHelpers';
 
 const transactionWritesBase = {
   async create(data: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>): Promise<Transaction> {
@@ -27,14 +28,15 @@ const transactionWritesBase = {
 
   async update(id: number, data: Partial<Omit<Transaction, 'id' | 'created_at' | 'updated_at'>>): Promise<void> {
     const db = await getDrizzle();
-    const set: Partial<typeof transactions.$inferInsert> = {};
-    if (data.account_id !== undefined) set.account_id = data.account_id;
-    if (data.category_id !== undefined) set.category_id = data.category_id;
-    if (data.type !== undefined) set.type = data.type;
-    if (data.amount !== undefined) set.amount = data.amount;
-    if (data.description !== undefined) set.description = data.description;
-    if (data.photo !== undefined) set.photo = data.photo;
-    if (data.date !== undefined) set.date = data.date;
+    const set = pickDefined(data, [
+      'account_id',
+      'category_id',
+      'type',
+      'amount',
+      'description',
+      'photo',
+      'date',
+    ]);
     if (Object.keys(set).length === 0) return;
     await db
       .update(transactions)

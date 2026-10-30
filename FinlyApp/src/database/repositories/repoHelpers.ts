@@ -8,6 +8,19 @@ export interface ExistsByNameColumns {
   id: AnySQLiteColumn;
 }
 
+export function pickDefined<T, K extends keyof T>(
+  data: T,
+  keys: readonly K[],
+): Partial<Pick<T, K>> {
+  const picked: Partial<Pick<T, K>> = {};
+  for (const key of keys) {
+    if (data[key] !== undefined) {
+      picked[key] = data[key];
+    }
+  }
+  return picked;
+}
+
 export async function existsByName(
   table: SQLiteTable,
   columns: ExistsByNameColumns,

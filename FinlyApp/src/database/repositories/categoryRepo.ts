@@ -9,7 +9,7 @@ import { parseRowOrNull, parseRows } from '../validate';
 import { collectTransactionPhotos, deleteUnreferencedPhotoUris } from '../photoCleanup';
 import { serializeWrites } from '../transactionQueue';
 import { dbTimestamp } from '../../utils/formatters';
-import { existsByName } from './repoHelpers';
+import { existsByName, pickDefined } from './repoHelpers';
 
 const categoryRepoBase = {
   async list(userId: number, type?: TransactionType): Promise<Category[]> {
@@ -51,11 +51,7 @@ const categoryRepoBase = {
 
   async update(id: number, data: Partial<Omit<Category, 'id' | 'created_at'>>): Promise<void> {
     const db = await getDrizzle();
-    const set: Partial<typeof categories.$inferInsert> = {};
-    if (data.name !== undefined) set.name = data.name;
-    if (data.icon !== undefined) set.icon = data.icon;
-    if (data.color !== undefined) set.color = data.color;
-    if (data.type !== undefined) set.type = data.type;
+    const set = pickDefined(data, ['name', 'icon', 'color', 'type']);
     if (Object.keys(set).length === 0) return;
     await db.update(categories).set(set).where(eq(categories.id, id)).run();
   },

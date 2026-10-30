@@ -5,7 +5,7 @@ import { runResultOf } from '../drizzle/proxy';
 import type { Account } from '../types';
 import { accountSchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
-import { existsByName } from './repoHelpers';
+import { existsByName, pickDefined } from './repoHelpers';
 import { collectTransactionPhotos, deleteUnreferencedPhotoUris } from '../photoCleanup';
 import { serializeWrites } from '../transactionQueue';
 import { dbTimestamp } from '../../utils/formatters';
@@ -48,12 +48,7 @@ const accountRepoBase = {
 
   async update(id: number, data: Partial<Omit<Account, 'id' | 'created_at'>>): Promise<void> {
     const db = await getDrizzle();
-    const set: Partial<typeof accounts.$inferInsert> = {};
-    if (data.name !== undefined) set.name = data.name;
-    if (data.initial_balance !== undefined) set.initial_balance = data.initial_balance;
-    if (data.icon !== undefined) set.icon = data.icon;
-    if (data.color !== undefined) set.color = data.color;
-    if (data.description !== undefined) set.description = data.description;
+    const set = pickDefined(data, ['name', 'initial_balance', 'icon', 'color', 'description']);
     if (Object.keys(set).length === 0) return;
     await db.update(accounts).set(set).where(eq(accounts.id, id)).run();
   },
