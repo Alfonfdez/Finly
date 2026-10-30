@@ -52,7 +52,8 @@ export default function ModalEntitySubject({ name, icon, color, shape, subtitle 
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 12,
     paddingVertical: 8,
   },
@@ -64,13 +65,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   info: {
-    flex: 1,
-    paddingTop: 1,
+    flexShrink: 1,
+    alignItems: 'flex-start',
   },
   name: {
     fontWeight: '600',
+    textAlign: 'left',
   },
   subtitle: {
     marginTop: 2,
+    textAlign: 'left',
   },
 });

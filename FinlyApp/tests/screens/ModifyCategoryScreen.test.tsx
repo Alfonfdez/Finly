@@ -187,7 +187,9 @@ describe('ModifyCategoryScreen', () => {
 
     await waitFor(() => expect(mockRuleCounts).toHaveBeenCalledWith([7]));
     expect(view.getByText('Delete 1 category?', { exact: false })).toBeTruthy();
-    expect(within(view.getByTestId(TEST_IDS.modalEntitySubject)).getByText('Food')).toBeTruthy();
+    const subject = view.getByTestId(TEST_IDS.modalEntitySubject);
+    expect(within(subject).getByText('Food')).toBeTruthy();
+    expect(within(subject).getByText('2 recurring rules')).toBeTruthy();
     expect(view.getByText(
       'Deleting this category will also delete its recurring rules, unless you choose to move them to another category',
     )).toBeTruthy();
@@ -207,6 +209,7 @@ describe('ModifyCategoryScreen', () => {
     await fireEvent.press(view.getByText('Move them to another category'));
 
     expect(view.getByText('Move transactions', { exact: false })).toBeTruthy();
+    expect(view.getAllByText('1 transaction').length).toBeGreaterThan(0);
     expect(view.getByText('Travel')).toBeTruthy();
     expect(view.getByText('Move & delete')).toBeDisabled();
 
@@ -257,6 +260,7 @@ describe('ModifyCategoryScreen', () => {
 
     await waitFor(() => expect(view.getByText('This category will be permanently deleted.')).toBeTruthy());
     expect(view.queryByText('Move them to another category')).toBeNull();
+    expect(within(view.getByTestId(TEST_IDS.modalEntitySubject)).queryByText(/transactions?|rules?/i)).toBeNull();
   });
 
   it('assumes data when the linked-data check fails', async () => {
@@ -271,6 +275,7 @@ describe('ModifyCategoryScreen', () => {
     await waitFor(() => expect(view.getByText(
       'Deleting this category will also delete its transactions and its recurring rules, unless you choose to move them to another category',
     )).toBeTruthy());
+    expect(within(view.getByTestId(TEST_IDS.modalEntitySubject)).queryByText(/transactions?|rules?/i)).toBeNull();
   });
   it('keeps a custom name when only the icon changes', async () => {
     const view = await render(<ModifyCategoryScreen />);

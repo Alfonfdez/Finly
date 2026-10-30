@@ -70,7 +70,7 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 
 **Confirmation Modal — "Delete category?"**
 - Title: "Delete 1 category?" (`categories_bulk_delete_confirm_title(1)`, the same one-line title as the bulk flow).
-- Under the title, a category subject row shows the category icon and name (`ModalEntitySubject`), so a long name never wraps the header or pushes the header icon away from the first line.
+- Under the title, a centered category subject row shows the category icon and name (`ModalEntitySubject`), plus transaction/rule counts when known, so a long name never wraps the header.
 - Buttons:
   - "Cancel" (multilingual) → closes the modal.
   - "Permanent delete" (multilingual, red) → deletes the category, then navigates back.
@@ -85,7 +85,7 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 
 **Confirmation Modal — "Move transactions"** (only reached via the move option)
 - Title: "Move transactions" (`categories_bulk_move_title`, the same title as the bulk flow).
-- Under the title, the same category subject row shows the category being deleted.
+- Under the title, the same centered category subject row shows the category being deleted and its transaction/rule counts when known.
 - List of categories of the **same type** as the category to be deleted (excluding the current category), with:
   - Radio button (single selection).
   - Category icon.
@@ -154,9 +154,9 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 - [x] The 7th color circle shows the custom color if the current one is not among the 6 predefined.
 - [x] The "+" opens the existing `ColorPickerModal`.
 - [x] The "Save" button is disabled if the name is empty or is a duplicate.
-- [x] The red "Delete" button opens a "Delete 1 category?" confirmation with a category subject row below the title, plus "Cancel", "Permanent delete", and (when the category has transactions and/or recurring rules) "Move them to another category".
+- [x] The red "Delete" button opens a "Delete 1 category?" confirmation with a centered category subject row and counts below the title, plus "Cancel", "Permanent delete", and (when the category has transactions and/or recurring rules) "Move them to another category".
 - [x] The "Delete" button is disabled with an explanation when the category is the only one of its type.
-- [x] When the category has transactions and/or recurring rules, the modal message names what is lost (transactions, rules, or both) and the move option opens the "Move transactions" modal with the source category row.
+- [x] When the category has transactions and/or recurring rules, the modal message names what is lost (transactions, rules, or both) and the move option opens the "Move transactions" modal with the centered source category row and counts.
 - [x] When the category has neither transactions nor recurring rules, the modal message is "This category will be permanently deleted." and the move option is not shown.
 - [x] When tapping "Move & delete" in the target modal, transactions **and recurring rules** are reassigned and the category is deleted.
 - [x] Tapping "Permanent delete" deletes the category (and its transactions and recurring rules) and navigates back; transactions are reloaded via refresh().

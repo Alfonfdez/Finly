@@ -4754,3 +4754,13 @@
 - Use standard centered headers for the shared account selector, color picker, category filter and calculator.
 - Keep the native calculator full screen but anchor the keypad and Cancel/Accept footer to the bottom, with the display flexing above them.
 - test:all green (189 files / 1649 tests); Android APK rebuilt (SHA-256 334A430DC122E081082ACF1571481F892F44EF869F36A9CC2AB6016BF554709B).
+
+[2026-10-30] fix | FinlyApp/src/components/ModalEntitySubject.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/tests/component/ModalEntitySubject.test.tsx, FinlyApp/tests/screens/ModifyCategoryScreen.test.tsx, spec/features/009-modify-delete-category-screen/1-spec.md, spec/features/012-modify-delete-account-screen/1-spec.md, spec/features/018-tag-management/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Center modal entity subject rows horizontally, with the icon centered against the name and subtitle/counts.
+- Show transaction and recurring-rule counts in the Modify category delete and move subject rows, omitting them when counts are unknown or zero.
+- Keep the top-level bulk category resolution list left-aligned for scanning and its right-side action.
+- test:all green (190 files / 1651 tests); Android APK rebuilt (SHA-256 D597E3133591951318A00284ACFBFCA8F0FD68FE16844D411BE8ABFC307E4DC6).
+
+[2026-10-30] fix | FinlyApp/src/components/ModalEntitySubject.tsx, FinlyApp/tests/component/ModalEntitySubject.test.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Keep the modal entity subject group centered while left-aligning the name and subtitle/counts with each other.
+- test:all green (190 files / 1651 tests); Android APK rebuilt (SHA-256 55234CA5CC024720ABF609DBFE2EBDB18F89CD3C86208AD8726CD2D7676F4D8F).
