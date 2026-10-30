@@ -56,8 +56,8 @@ export default function ModifyCategoryScreen() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectModalVisible, setSelectModalVisible] = useState(false);
   const [targetCategoryId, setTargetCategoryId] = useState<number | null>(null);
-  const [deleteHasTransactions, setDeleteHasTransactions] = useState(false);
-  const [deleteHasRules, setDeleteHasRules] = useState(false);
+  const [deleteCounts, setDeleteCounts] = useState<{ tx: number; rules: number } | null>(null);
+  const [deleteCountsUnknown, setDeleteCountsUnknown] = useState(false);
   const { selectedColor, customColor, setSelectedColor, setCustomColor, handleColorSelect } = useColorSelection();
 
   useEffect(() => {
@@ -121,7 +121,12 @@ export default function ModifyCategoryScreen() {
 
   /** The last category of its type can't be deleted (an income/expense needs one). */
   const isLastOfType = sameTypeCategories.length === 0;
+  const deleteHasTransactions = deleteCountsUnknown || (deleteCounts?.tx ?? 0) > 0;
+  const deleteHasRules = deleteCountsUnknown || (deleteCounts?.rules ?? 0) > 0;
   const deleteRemovesData = deleteHasTransactions || deleteHasRules;
+  const deleteSubjectSubtitle = deleteCounts
+    ? labels.categories_bulk_move_data(deleteCounts.tx, deleteCounts.rules) || undefined
+    : undefined;
 
   const handleSave = async () => {
     Keyboard.dismiss();
@@ -153,11 +158,14 @@ export default function ModifyCategoryScreen() {
         transactionRepository.list({ category_id: category.id }),
         recurringRepository.countByCategoryIds([category.id]),
       ]);
-      setDeleteHasTransactions(linkedTransactions.length > 0);
-      setDeleteHasRules((ruleCounts[category.id] ?? 0) > 0);
+      setDeleteCounts({
+        tx: linkedTransactions.length,
+        rules: ruleCounts[category.id] ?? 0,
+      });
+      setDeleteCountsUnknown(false);
     } catch {
-      setDeleteHasTransactions(true);
-      setDeleteHasRules(true);
+      setDeleteCounts(null);
+      setDeleteCountsUnknown(true);
     }
     setDeleteModalVisible(true);
   };
@@ -275,6 +283,7 @@ export default function ModifyCategoryScreen() {
             icon={category.icon as IconName}
             color={category.color}
             shape={badgeShapeFor(config, 'category')}
+            subtitle={deleteSubjectSubtitle}
           />
         )}
         message={deleteHasTransactions && deleteHasRules
@@ -297,6 +306,7 @@ export default function ModifyCategoryScreen() {
         visible={selectModalVisible}
         title={labels.categories_bulk_move_title}
         sourceCategory={category}
+        sourceSubtitle={deleteSubjectSubtitle}
         categories={sameTypeCategories}
         selectedId={targetCategoryId}
         confirmLabel={labels.categories_bulk_move_confirm}
