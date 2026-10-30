@@ -4,6 +4,7 @@ import {
   isFilePhotoUri,
   isImportablePhotoUri,
   isPhotoFileName,
+  parsePhotoFilePath,
 } from '../../src/utils/photoUri';
 
 describe('photoUri', () => {
@@ -26,6 +27,25 @@ describe('photoUri', () => {
     expect(isDataPhotoUri('data:text/plain;base64,AAAA')).toBe(false);
     expect(isDataPhotoUri('data:image/svg+xml,<svg/>')).toBe(false);
     expect(isDataPhotoUri('https://example.com/photo.jpg')).toBe(false);
+  });
+
+  it('parses safe photo file paths', () => {
+    expect(parsePhotoFilePath('file:///data/user/0/app/files/photo_1_0.jpg')).toEqual({
+      path: '/data/user/0/app/files/photo_1_0.jpg',
+      name: 'photo_1_0.jpg',
+    });
+    expect(parsePhotoFilePath('file:///data/user/0/app/files/photos/photo_1_0.jpg')).toEqual({
+      path: '/data/user/0/app/files/photos/photo_1_0.jpg',
+      name: 'photo_1_0.jpg',
+    });
+  });
+
+  it('rejects unsafe or non-photo file paths', () => {
+    expect(parsePhotoFilePath('file:///data/user/0/app/files/SQLite/Finly.db')).toBeNull();
+    expect(parsePhotoFilePath('file:///data/user/0/app/files/photos/../SQLite/Finly.db')).toBeNull();
+    expect(parsePhotoFilePath('file:///data/user/0/app/files/photo_1_0.jpg%00')).toBeNull();
+    expect(parsePhotoFilePath('file:///%E0%A4%A')).toBeNull();
+    expect(parsePhotoFilePath('https://example.com/photo_1_0.jpg')).toBeNull();
   });
 
   it('accepts legacy root and new photos/ file URIs', () => {

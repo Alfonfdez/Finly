@@ -32,14 +32,24 @@ export function isDataPhotoUri(uri: string): boolean {
   return DATA_PHOTO_RE.test(uri);
 }
 
+export interface PhotoFilePath {
+  path: string;
+  name: string;
+}
+
+/** Safe file URI path whose basename is an app-created photo name. */
+export function parsePhotoFilePath(uri: string): PhotoFilePath | null {
+  const path = fileUriPath(uri);
+  if (!path || path.includes('\0')) return null;
+  const segments = path.split('/');
+  if (segments.some(segment => segment === '.' || segment === '..')) return null;
+  const name = segments[segments.length - 1] ?? '';
+  return isPhotoFileName(name) ? { path, name } : null;
+}
+
 /** File URI whose basename is an app-created photo name. */
 export function isFilePhotoUri(uri: string): boolean {
-  const path = fileUriPath(uri);
-  if (!path || path.includes('\0')) return false;
-  const segments = path.split('/');
-  if (segments.some(segment => segment === '.' || segment === '..')) return false;
-  const name = segments[segments.length - 1] ?? '';
-  return isPhotoFileName(name);
+  return parsePhotoFilePath(uri) !== null;
 }
 
 /** Whether a photo value from a backup is safe to accept. */
