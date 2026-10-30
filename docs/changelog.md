@@ -4748,3 +4748,9 @@
 - Normalize every plain cancel label to the generic cancel key and every simple delete to Delete; keep Permanent delete, Delete all, Reset, Import, Skip them and picker actions semantic.
 - Import now confirms with Import and typed confirmations use Delete/Delete all/Reset; remove the obsolete labels across the 9 locales.
 - test:all green (188 files / 1647 tests); Android APK rebuilt (SHA-256 BC0FF79812D59834BC1F52D093A68D2712355631958EE59336B4149C721F4AF8).
+
+[2026-10-30] feat | FinlyApp/src/components/FullScreenModalHeader.tsx, FinlyApp/src/components/AccountModal.tsx, FinlyApp/src/components/CalculatorModal.tsx, FinlyApp/src/components/ColorPickerModal.tsx, FinlyApp/src/components/CategoryFilterModal.tsx, FinlyApp/tests/component/AccountModal.test.tsx, FinlyApp/tests/component/CalculatorModal.test.tsx, FinlyApp/tests/component/CategoryFilterModal.test.tsx, spec/features/004-add-transaction-screen/1-spec.md, spec/features/021-category-filter-modal/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Add FullScreenModalHeader with a centered inline icon title and optional right action.
+- Use standard centered headers for the shared account selector, color picker, category filter and calculator.
+- Keep the native calculator full screen but anchor the keypad and Cancel/Accept footer to the bottom, with the display flexing above them.
+- test:all green (189 files / 1649 tests); Android APK rebuilt (SHA-256 334A430DC122E081082ACF1571481F892F44EF869F36A9CC2AB6016BF554709B).

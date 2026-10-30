@@ -42,6 +42,8 @@ describe('CategoryFilterModal', () => {
 
   it('renders categories in sections when type is all', async () => {
     const view = await renderFilter();
+    expect(view.getByText('Select categories', { exact: false })).toBeTruthy();
+    expect(view.getByText('grid-outline', { includeHiddenElements: true })).toBeTruthy();
     expect(view.getByText('Food')).toBeTruthy();
     expect(view.getByText('Salary')).toBeTruthy();
     expect(view.getByText('Expenses')).toBeTruthy();

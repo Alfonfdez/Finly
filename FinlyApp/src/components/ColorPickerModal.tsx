@@ -1,12 +1,12 @@
 import { useState, useCallback } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import ColorPicker, { Panel1, HueSlider, OpacitySlider, Preview } from 'reanimated-color-picker';
 import { useConfig } from '../context/ConfigContext';
-import { useFontSize } from '../hooks/useFontSize';
 import { useResetOnOpen } from '../hooks/useResetOnOpen';
 import { t } from '../i18n';
 import { CARD_BORDER_RADIUS } from './componentStyles';
 import ModalShell from './ModalShell';
+import ModalHeader from './ModalHeader';
 import ModalFooter from './ModalFooter';
 
 interface Props {
@@ -18,7 +18,6 @@ interface Props {
 
 export default function ColorPickerModal({ visible, selectedColor, onSelect, onClose }: Props) {
   const { activeColors: c } = useConfig();
-  const fs = useFontSize();
   const labels = t();
   const [tempColor, setTempColor] = useState(selectedColor ?? c.primary);
 
@@ -38,11 +37,10 @@ export default function ColorPickerModal({ visible, selectedColor, onSelect, onC
 
   return (
     <ModalShell visible={visible} onClose={onClose} padding={20} overlayPadding={0}>
-      <View style={[styles.header, { borderBottomColor: c.border }]}>
-        <Text style={[styles.title, { color: c.text, fontSize: fs(16) }]}>
-          {labels.create_cat_color_picker_title}
-        </Text>
-      </View>
+      <ModalHeader
+        title={labels.create_cat_color_picker_title}
+        icon="color-palette-outline"
+      />
 
       <View style={styles.pickerContainer}>
         <ColorPicker
@@ -70,15 +68,6 @@ export default function ColorPickerModal({ visible, selectedColor, onSelect, onC
 }
 
 const styles = StyleSheet.create({
-  header: {
-    borderBottomWidth: 1,
-    paddingBottom: 12,
-    marginBottom: 16,
-  },
-  title: {
-    fontWeight: '600',
-    textAlign: 'center',
-  },
   pickerContainer: {
     alignItems: 'center',
     marginBottom: 16,
