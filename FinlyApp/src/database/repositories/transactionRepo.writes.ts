@@ -4,9 +4,11 @@ import { transactionTags, transactions } from '../drizzle/schema';
 import { runResultOf } from '../drizzle/proxy';
 import type { Transaction } from '../types';
 import { dbTimestamp } from '../../utils/formatters';
-import { collectTransactionPhotos, collectAllTransactionPhotos, deletePhotoUris } from '../photoCleanup';
+import { collectTransactionPhotos, collectAllTransactionPhotos, deleteUnreferencedPhotoUris } from '../photoCleanup';
+import { serializeWrites } from '../transactionQueue';
+import { pickDefined } from './repoHelpers';
 
-export const transactionWrites = {
+const transactionWritesBase = {
   async create(data: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>): Promise<Transaction> {
     const db = await getDrizzle();
     const result = await db
@@ -26,14 +28,15 @@ export const transactionWrites = {
 
   async update(id: number, data: Partial<Omit<Transaction, 'id' | 'created_at' | 'updated_at'>>): Promise<void> {
     const db = await getDrizzle();
-    const set: Partial<typeof transactions.$inferInsert> = {};
-    if (data.account_id !== undefined) set.account_id = data.account_id;
-    if (data.category_id !== undefined) set.category_id = data.category_id;
-    if (data.type !== undefined) set.type = data.type;
-    if (data.amount !== undefined) set.amount = data.amount;
-    if (data.description !== undefined) set.description = data.description;
-    if (data.photo !== undefined) set.photo = data.photo;
-    if (data.date !== undefined) set.date = data.date;
+    const set = pickDefined(data, [
+      'account_id',
+      'category_id',
+      'type',
+      'amount',
+      'description',
+      'photo',
+      'date',
+    ]);
     if (Object.keys(set).length === 0) return;
     await db
       .update(transactions)
@@ -47,7 +50,7 @@ export const transactionWrites = {
     await withTransaction(async (db) => {
       await db.delete(transactions).where(eq(transactions.id, id)).run();
     });
-    await deletePhotoUris(uris);
+    await deleteUnreferencedPhotoUris(uris);
   },
 
   async deleteMany(ids: number[]): Promise<void> {
@@ -56,7 +59,7 @@ export const transactionWrites = {
     await withTransaction(async (db) => {
       await db.delete(transactions).where(inArray(transactions.id, ids)).run();
     });
-    await deletePhotoUris(uris);
+    await deleteUnreferencedPhotoUris(uris);
   },
 
   async deleteAllTransactions(): Promise<void> {
@@ -64,7 +67,7 @@ export const transactionWrites = {
     await withTransaction(async (db) => {
       await db.delete(transactions).run();
     });
-    await deletePhotoUris(uris);
+    await deleteUnreferencedPhotoUris(uris);
   },
 
   async updateComment(oldComment: string, newComment: string): Promise<number> {
@@ -100,7 +103,7 @@ export const transactionWrites = {
 
   async createWithTags(
     data: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>,
-    tagIds: number[]
+    tagIds: number[],
   ): Promise<Transaction> {
     return await withTransaction(async (db) => {
       const created = await transactionWrites.create(data);
@@ -117,8 +120,9 @@ export const transactionWrites = {
   async updateWithTags(
     id: number,
     data: Partial<Omit<Transaction, 'id' | 'created_at' | 'updated_at'>>,
-    tagIds: number[]
+    tagIds: number[],
   ): Promise<void> {
+    const oldPhotos = await collectTransactionPhotos('id', id);
     await withTransaction(async (db) => {
       await transactionWrites.update(id, data);
       await db.delete(transactionTags).where(eq(transactionTags.transaction_id, id)).run();
@@ -129,5 +133,8 @@ export const transactionWrites = {
           .run();
       }
     });
+    await deleteUnreferencedPhotoUris(oldPhotos);
   },
 };
+
+export const transactionWrites = serializeWrites(transactionWritesBase, ['updateComment', 'deleteComment', 'deleteComments']);

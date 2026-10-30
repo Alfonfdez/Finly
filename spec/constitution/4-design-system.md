@@ -30,6 +30,8 @@ interface ColorPalette {
 | `green` | `#34D399` | Positive values, income |
 | `red` | `#F87171` | Negative values, errors, delete |
 | `border` | `#334155` | Input borders, dividers |
+| `switchTrackOff` | `#475569` | Off-state switch track |
+| `switchThumb` | `#F8FAFC` | Switch thumb (both states) |
 
 ### Light Palette
 
@@ -44,11 +46,14 @@ interface ColorPalette {
 | `green` | `#059669` | Positive values, income |
 | `red` | `#DC2626` | Negative values, errors, delete |
 | `border` | `#E2E8F0` | Input borders, dividers |
+| `switchTrackOff` | `#94A3B8` | Off-state switch track |
+| `switchThumb` | `#FFFFFF` | Switch thumb (both states) |
 
 ### Usage Rules
 - Always use tokens via `useConfig()` → `activeColors` (`c.background`, `c.primary`, etc.).
 - Never hardcode hex values in components.
 - Theme switchable from Settings (Dark / Light / System) with real-time switching.
+- Every React Native `Switch` uses the shared `switchColors(c)` helper (`componentStyles.ts`): off track = `c.switchTrackOff`, on track = `c.primary`, thumb = `c.switchThumb` — so all toggles look the same in both themes.
 
 ## Typography
 
@@ -69,7 +74,7 @@ interface ColorPalette {
 | `fs(15)` | List item names, search input | AccountScreen names, SearchBar, TypeTabs |
 | `fs(16)` | Screen titles, modal titles | Modal titles, TransactionsScreen header |
 | `fs(17)` | Stack navigator header titles | All `headerTitle` in AppNavigator.tsx |
-| `fs(18)` | Modal totals, chart center text | DonutChart total, CalculatorModal display |
+| `fs(18)` | Modal totals, chart center text | DonutChart total, BarChart total, CalculatorModal display |
 | `fs(20)` | Calculator display (result) | CalculatorModal result |
 | `fs(22)` | Screen totals (balance, category total) | AccountsScreen total, TransactionsScreen categoryTotal |
 | `fs(24)` | Large screen titles | AddTransactionScreen title |
@@ -100,11 +105,24 @@ interface ColorPalette {
 - **Category icons:** defined in `components/IconGrid.tsx` (`CATEGORY_ICONS`).
 - **Account icons:** defined in `constants/accountIcons.ts` (`ACCOUNT_ICONS`).
 
+### Close / clear affordances
+Three distinct patterns — never mix them:
+- **Inline clear** (clearing a value in a field/input): shared `ClearButton` (`components/ClearButton.tsx`) — `close-circle`, size `CLEAR_ICON_SIZE` (20), `textSecondary`. It always occupies the same 20×20 box (pass `visible={false}` to reserve the space when empty), so a field's width never changes when the value appears or clears.
+- **Modal / overlay close** (dismissing a modal header): shared `HeaderCloseButton` (`components/HeaderCloseButton.tsx`) — line `close`, size `MODAL_CLOSE_ICON_SIZE` (24), `text`, with a comfortable hit target.
+- **Remove-item badge** (destructive, e.g. removing a photo): a line `close` on a `red` circular badge — see `PhotoSection`.
+- Variants: the full-bleed photo viewer uses a white `close` (28) on its always-dark overlay (`PhotoViewer`); `SelectToggleButton`'s `close-outline` is a select-mode toggle, not a clear.
+
 ## Layout & Spacing
 - **Screen padding:** `paddingHorizontal: 16`
 - **Section spacing:** `marginTop: 16` between sections
 - **Border radius:** `10` for inputs/buttons, `12` for cards, `16` for modals, `999` for pill/circle
 - **Grid gap:** `12` for icon/color grids
+- **Horizontal chip/filter rows** (e.g., `TagFilterBar`, the transaction controls row) scroll horizontally when they don't fit; on web show the scrollbar (`showsHorizontalScrollIndicator={isWeb}` + a web-only content `paddingBottom`) so overflow stays reachable with a mouse — see `spec/constitution/7-platform-differences.md`.
+
+## Buttons
+- **Full-width action buttons** (Save / Delete / Edit on screens): `paddingVertical: 14`, `borderRadius: BUTTON_BORDER_RADIUS` (10), `fontWeight: '600'`, `fontSize: fs(15)`; outlined variants add `borderWidth: 1`.
+- Use the shared components `components/form/PrimaryButton.tsx` (filled) and `components/form/DeleteButton.tsx` (outlined, red) — never override their `borderRadius`/`paddingVertical` per screen, so a Save and a Delete next to each other always match.
+- **Compact buttons** (modal footers, calendar/period pickers) are a separate, smaller variant (`paddingVertical` ~10–12, radius 8–10).
 
 ## Header
 - All stack navigator header titles are centered (`headerTitleAlign: 'center'` in `screenOptions`).

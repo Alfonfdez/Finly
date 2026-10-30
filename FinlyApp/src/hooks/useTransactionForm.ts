@@ -1,32 +1,34 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Alert, type TextInput, type ScrollView } from 'react-native';
+import { type TextInput, type ScrollView } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { usePhotos } from './usePhotos';
 import { useDeferredRefresh } from './useDeferredRefresh';
+import { useRecurringDraft } from './useRecurringDraft';
+import { useRecurringEditScope } from './useRecurringEditScope';
 import {
   type TransactionType,
+  type RecurrenceFrequency,
+  type TransactionDraft,
+  type RecurrenceDraft,
+  type RecurrenceScope,
   CATEGORY_USAGE_WINDOW_DAYS,
   USER_ID,
   MAX_VISIBLE_CATEGORIES,
+  RECURRENCE_SCOPES,
 } from '../constants/types';
 import { formatDateForDB } from '../utils/formatters';
+import { isRuleUnmaterialized, lastDayAnchorUseful, toDateOnly } from '../utils/recurrence';
 import { categoriesOfType } from '../utils/categoryUtils';
 import { parseAmountValue } from '../utils/amountInput';
+import { areIdListsEqual } from '../utils/arrays';
 import { transactionRepository, tagRepository } from '../database';
 import { isTotalAccount } from '../database/helpers';
 import { consumePendingCategory } from '../utils/pendingCategory';
+import { ERROR_PREFIXES, alertError, describeError, logError } from '../utils/errors';
 
-export type TransactionDraft = {
-  account_id: number;
-  category_id: number;
-  type: TransactionType;
-  amount: number;
-  description: string | null;
-  photo: string | null;
-  date: string;
-};
+export type { TransactionDraft, RecurrenceDraft } from '../constants/types';
 
 type UseTransactionFormProps = {
   initialType: TransactionType;
@@ -40,9 +42,28 @@ type UseTransactionFormProps = {
   initialAmount?: string;
   errorTitle: string;
   errorMessage: string;
-  onSubmit: (data: TransactionDraft, tagIds: number[]) => Promise<void>;
+  onSubmit?: (data: TransactionDraft, tagIds: number[]) => Promise<void>;
+  onSubmitRule?: (data: TransactionDraft, tagIds: number[], recurrence: RecurrenceDraft) => Promise<void>;
+  /** Runs before `onSubmitRule`; returning false aborts the save (e.g. a confirmation dialog). */
+  onBeforeSubmitRule?: (data: TransactionDraft, recurrence: RecurrenceDraft) => Promise<boolean>;
   resetTagsOnFirstFocus?: boolean;
   onError?: () => void;
+  ruleMode?: boolean;
+  initialRepeatFrequency?: RecurrenceFrequency;
+  initialRepeatInterval?: number;
+  initialRepeatEnd?: Date | null;
+  initialTagIds?: number[];
+  initialRuleNextDue?: string | null;
+  initialRuleActive?: boolean;
+  initialRuleSkippedFrom?: string | null;
+  initialRuleOccurrenceDates?: string[];
+  initialRepeatName?: string;
+  initialRepeatLastDay?: boolean;
+  existingRepeatNames?: string[];
+  /** The form edits an existing transaction/rule: Save requires an actual change. */
+  editing?: boolean;
+  /** Recurring edit scope; outside the default (`future`) it counts as a change. */
+  repeatScope?: RecurrenceScope;
 };
 
 export function useTransactionForm({
@@ -58,8 +79,24 @@ export function useTransactionForm({
   errorTitle,
   errorMessage,
   onSubmit,
+  onSubmitRule,
+  onBeforeSubmitRule,
   resetTagsOnFirstFocus = false,
   onError,
+  ruleMode = false,
+  initialRepeatFrequency,
+  initialRepeatInterval,
+  initialRepeatEnd,
+  initialTagIds,
+  initialRuleNextDue,
+  initialRuleActive,
+  initialRuleSkippedFrom,
+  initialRuleOccurrenceDates,
+  initialRepeatName,
+  initialRepeatLastDay,
+  existingRepeatNames,
+  editing = false,
+  repeatScope,
 }: UseTransactionFormProps) {
   const { config } = useConfig();
   const { accounts, categories, accountsWithBalance, tags, refresh: refreshAll, refreshTags } = useApp();
@@ -78,10 +115,34 @@ export function useTransactionForm({
   const [reorderedCategory, setReorderedCategory] = useState<number | null>(initialReorderedCategory);
   const [day, setDay] = useState<Date>(initialDay);
   const [categoryUsage, setCategoryUsage] = useState<Map<number, number>>(new Map());
-  const [selectedTags, setSelectedTags] = useState<number[]>([]);
+  const [selectedTags, setSelectedTags] = useState<number[]>(initialTagIds ?? []);
   const [comment, setComment] = useState(initialComment);
   const [submitting, setSubmitting] = useState(false);
-  const { photos, handleTakePhoto, handlePickFromGallery, handleRemovePhoto } = usePhotos(initialPhotos);
+  const submittingRef = useRef(false);
+  const { photos, handleTakePhoto, handlePickFromGallery, handleRemovePhoto, finalizePhotos } = usePhotos(initialPhotos);
+
+  const {
+    repeatFrequency, setRepeatFrequency,
+    repeatInterval, setRepeatInterval,
+    repeatEnd, setRepeatEnd,
+    repeatLastDay, setRepeatLastDay,
+    repeatName, setRepeatName,
+    repeatMinDate,
+    repeatNameError,
+    repeatNameErrorDisplay,
+    markNameTouched,
+    modalRepeatEndVisible, setModalRepeatEndVisible,
+    buildRecurrence,
+  } = useRecurringDraft({
+    day,
+    ruleMode,
+    existingRepeatNames,
+    initialRepeatFrequency,
+    initialRepeatInterval,
+    initialRepeatEnd,
+    initialRepeatName,
+    initialRepeatLastDay,
+  });
 
   const [modalAccountVisible, setModalAccountVisible] = useState(false);
   const [modalCalendarVisible, setModalCalendarVisible] = useState(false);
@@ -90,17 +151,28 @@ export function useTransactionForm({
   const inputRef = useRef<TextInput>(null);
   const scrollRef = useRef<ScrollView>(null);
   const prevType = useRef(type);
+  /** Type applied by a pending (newly created) category: the switch must not clear it. */
+  const pendingTypeRef = useRef<TransactionType | null>(null);
   const isFirstFocus = useRef(true);
 
-  useEffect(() => {
-    if (transactionId === undefined) return;
-    let active = true;
-    transactionRepository.getTagsByTransactionId(transactionId).then(ids => {
-      if (active) setSelectedTags(ids);
-    }).catch(onError ?? (() => {}));
-    return () => { active = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- onError is stable
-  }, [transactionId]);
+  // What the draft is measured against: the row as stored right now. Building it from the
+  // props (instead of freezing it at mount) means an external rewrite — e.g. a
+  // "Future + past" rule edit touching this row — re-baselines the comparison, so the
+  // draft is compared with what is actually stored and picking the stored value back
+  // leaves nothing to save.
+  const baseline = useMemo(() => ({
+    type: initialType,
+    amount: initialAmount !== undefined ? parseAmountValue(initialAmount) : null,
+    accountId: initialAccountId,
+    categoryId: initialCategoryId,
+    day: toDateOnly(initialDay),
+    comment: initialComment.trim() || null,
+    tagIds: initialTagIds ?? [],
+    photos: initialPhotos,
+  }), [
+    initialType, initialAmount, initialAccountId, initialCategoryId, initialDay,
+    initialComment, initialTagIds, initialPhotos,
+  ]);
 
   useFocusEffect(useCallback(() => {
     let active = true;
@@ -110,7 +182,12 @@ export function useTransactionForm({
     }
     const pending = consumePendingCategory();
     if (pending) {
-      if (pending.type !== type) setType(pending.type);
+      if (pending.type !== type) {
+        // The type change comes from the newly created category: the effect below must
+        // not clear the category it is about to select.
+        pendingTypeRef.current = pending.type;
+        setType(pending.type);
+      }
       setCategoryId(pending.categoryId);
       const allByType = categoriesOfType(categories, pending.type);
       const isVisible = allByType.slice(0, MAX_VISIBLE_CATEGORIES).some(c => c.id === pending.categoryId);
@@ -134,20 +211,126 @@ export function useTransactionForm({
   useEffect(() => {
     if (prevType.current !== type) {
       prevType.current = type;
+      if (pendingTypeRef.current === type) {
+        // The switch came from a freshly created category of the other type: keep it.
+        pendingTypeRef.current = null;
+        return;
+      }
       setCategoryId(null);
       setReorderedCategory(null);
     }
   }, [type]);
 
+  // The last-day checkbox is only offered on a month-end date (see spec 028 §4).
+  // Clearing the flag when it is hidden keeps "checkbox visible" and "rule anchored
+  // on the last day" in sync — otherwise changing the start to an ordinary day would
+  // silently keep anchoring the rule on that month's end.
+  useEffect(() => {
+    if (repeatLastDay && !lastDayAnchorUseful(repeatFrequency, day)) {
+      setRepeatLastDay(false);
+    }
+  }, [repeatFrequency, day, repeatLastDay, setRepeatLastDay]);
+
   const numericAmount = useMemo(() => parseAmountValue(amountRaw), [amountRaw]);
+
+  /** Whether the transaction fields differ from what is stored (see `baseline`). */
+  const transactionDirty = useMemo(() => (
+    type !== baseline.type ||
+    numericAmount !== baseline.amount ||
+    accountId !== baseline.accountId ||
+    categoryId !== baseline.categoryId ||
+    toDateOnly(day) !== baseline.day ||
+    (comment.trim() || null) !== baseline.comment ||
+    !areIdListsEqual(selectedTags, baseline.tagIds) ||
+    photos.length !== baseline.photos.length ||
+    photos.some((p, i) => p !== baseline.photos[i])
+  ), [type, numericAmount, accountId, categoryId, day, comment, selectedTags, photos, baseline]);
+
+  /**
+   * Rule mode only: whether the recurring draft differs from the loaded rule — the
+   * name (trimmed, as it is stored), frequency, interval, end date and the last-day
+   * anchor. Without these an editor that only changes the rule would keep Save
+   * disabled, since they are not transaction fields.
+   */
+  const ruleDraftChanged = useMemo(() => {
+    if (!ruleMode) return false;
+    const initialEnd = initialRepeatEnd ? toDateOnly(initialRepeatEnd) : null;
+    const currentEnd = repeatEnd ? toDateOnly(repeatEnd) : null;
+    // The flag is cleared when the start date makes the control hidden, so compare
+    // against the effective initial intent: a 31-based last-day rule reads as
+    // "not last day" on load and must not look changed.
+    const initialLastDay = (initialRepeatLastDay ?? false)
+      && lastDayAnchorUseful(initialRepeatFrequency ?? repeatFrequency, initialDay);
+    return (
+      repeatName.trim() !== (initialRepeatName ?? '').trim() ||
+      repeatFrequency !== (initialRepeatFrequency ?? repeatFrequency) ||
+      repeatInterval !== (initialRepeatInterval ?? repeatInterval) ||
+      currentEnd !== initialEnd ||
+      repeatLastDay !== initialLastDay
+    );
+  }, [
+    ruleMode, repeatName, initialRepeatName, repeatFrequency, initialRepeatFrequency,
+    repeatInterval, initialRepeatInterval, repeatEnd, initialRepeatEnd,
+    repeatLastDay, initialRepeatLastDay, initialDay,
+  ]);
+
+  /** Whether the draft differs from what is stored (see `baseline`). */
+  const isDirty = transactionDirty || ruleDraftChanged;
 
   const canSubmit = useMemo(() => {
     if (categoryId === null) return false;
     if (numericAmount === null || numericAmount <= 0) return false;
     if (day === null) return false;
     if (accountId === undefined) return false;
+    if (ruleMode && repeatNameError) return false;
+    if (ruleMode && repeatEnd && repeatEnd < repeatMinDate) return false;
+    // On an edit screen Save only applies a real change — and picking the original
+    // value back counts as "no change". Switching the rule edit scope away from the
+    // default is itself a change (it back-fills/handles the past).
+    const scopeChanged = ruleMode && repeatScope !== undefined && repeatScope !== RECURRENCE_SCOPES.future;
+    if (editing && !isDirty && !scopeChanged) return false;
     return true;
-  }, [categoryId, numericAmount, day, accountId]);
+  }, [
+    categoryId, numericAmount, day, accountId, ruleMode, repeatNameError, repeatEnd, repeatMinDate,
+    editing, isDirty, repeatScope,
+  ]);
+
+  // A rule whose cursor still equals its start and that has never generated a
+  // transaction is "fresh": editing the start date re-anchors it from the new start
+  // instead of keeping the stale (future) cursor.
+  const hasGeneratedOccurrences = (initialRuleOccurrenceDates?.length ?? 0) > 0;
+  const ruleUnmaterialized =
+    initialRuleNextDue != null &&
+    !hasGeneratedOccurrences &&
+    isRuleUnmaterialized({ next_due: initialRuleNextDue, start_date: toDateOnly(initialDay) });
+  // Editing a rule that already generated transactions with an earlier start does
+  // not recreate the past occurrences (the cursor floor keeps them skipped).
+  const ruleStartMovedEarlier = initialRuleNextDue != null && !ruleUnmaterialized && toDateOnly(day) < toDateOnly(initialDay);
+
+  const { recurringPastAffected, recurringDetailsChanged } = useRecurringEditScope({
+    ruleMode,
+    day,
+    frequency: repeatFrequency,
+    interval: repeatInterval,
+    end: repeatEnd,
+    lastDay: repeatLastDay,
+    accountId,
+    categoryId,
+    amount: numericAmount,
+    comment,
+    type,
+    tagIds: selectedTags,
+    initialAccountId,
+    initialCategoryId,
+    initialAmount,
+    initialComment,
+    initialType,
+    initialTagIds,
+    initialRuleNextDue,
+    ruleUnmaterialized,
+    initialRuleActive,
+    initialRuleSkippedFrom,
+  });
 
   const handleToggleTag = useCallback((id: number) => {
     setSelectedTags(prev =>
@@ -179,14 +362,14 @@ export function useTransactionForm({
   }, []);
 
   const handleSubmit = useCallback(async () => {
-    if (!canSubmit || submitting) return;
+    if (!canSubmit || submittingRef.current) return;
     if (categoryId === null || numericAmount === null || accountId === undefined) return;
+    submittingRef.current = true;
     setSubmitting(true);
 
     try {
       const dateStr = formatDateForDB(day);
-
-      await onSubmit({
+      const draft: TransactionDraft = {
         account_id: accountId,
         category_id: categoryId,
         type,
@@ -194,16 +377,27 @@ export function useTransactionForm({
         description: comment.trim() || null,
         photo: photos.length > 0 ? JSON.stringify(photos) : null,
         date: dateStr,
-      }, selectedTags);
+      };
+
+      if (ruleMode && onSubmitRule) {
+        const recurrence = buildRecurrence();
+        if (onBeforeSubmitRule && !(await onBeforeSubmitRule(draft, recurrence))) return;
+        await onSubmitRule(draft, selectedTags, recurrence);
+      } else {
+        await onSubmit?.(draft, selectedTags);
+      }
+      await finalizePhotos();
 
       navigation.goBack();
       deferredRefresh();
-    } catch {
-      Alert.alert(errorTitle, errorMessage);
+    } catch (err) {
+      logError(ERROR_PREFIXES.transactionSubmit, describeError(err));
+      alertError(errorTitle, errorMessage);
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
-  }, [canSubmit, submitting, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, onSubmit, deferredRefresh, navigation, errorTitle, errorMessage]);
+  }, [canSubmit, categoryId, numericAmount, accountId, type, day, comment, photos, selectedTags, buildRecurrence, ruleMode, onSubmit, onSubmitRule, onBeforeSubmitRule, finalizePhotos, deferredRefresh, navigation, errorTitle, errorMessage]);
 
   const categoriesByType = useMemo(() => {
     const byType = categoriesOfType(categories, type);
@@ -237,14 +431,27 @@ export function useTransactionForm({
     selectedTags, comment, setComment,
     submitting,
     photos,
+    repeatFrequency, setRepeatFrequency,
+    repeatInterval, setRepeatInterval,
+    repeatEnd, setRepeatEnd,
+    repeatLastDay, setRepeatLastDay,
+    repeatMinDate,
+    recurringPastAffected,
+    recurringDetailsChanged,
+    ruleUnmaterialized,
+    ruleStartMovedEarlier,
+    repeatName, setRepeatName, repeatNameError,
+    repeatNameErrorDisplay, markNameTouched,
     modalAccountVisible, setModalAccountVisible,
     modalCalendarVisible, setModalCalendarVisible,
+    modalRepeatEndVisible, setModalRepeatEndVisible,
     calculatorVisible, setCalculatorVisible,
     handleToggleTag, handleCreateTag,
     handleSelectAccount, handleSelectDate,
     handleSubmit,
     handleTakePhoto, handlePickFromGallery, handleRemovePhoto,
     canSubmit, visibleCategories, hasMore, selectedAccount, selectableAccounts, numericAmount,
+    isDirty,
     inputRef, scrollRef,
     config, tags,
   };

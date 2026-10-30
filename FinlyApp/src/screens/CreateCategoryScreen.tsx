@@ -8,9 +8,10 @@ import { useFontSize } from '../hooks/useFontSize';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useColorSelection } from '../hooks/useColorSelection';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
+import { useBusyGuard } from '../hooks/useBusyGuard';
 import { t, getDefaultCategoryIdByName, getDefaultEnglishName } from '../i18n';
 import { categoryRepository } from '../database';
-import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, MAX_CATEGORIES_PER_TYPE, type TransactionType, USER_ID } from '../constants/types';
+import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, MAX_CATEGORIES_PER_TYPE, USER_ID } from '../constants/types';
 import { setPendingCategory } from '../utils/pendingCategory';
 import { countCategoriesOfType } from '../utils/categoryUtils';
 import { countAtLimit } from '../utils/limits';
@@ -18,11 +19,11 @@ import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import { getIconColorHintText } from '../utils/formHints';
 import { CATEGORY_ICONS } from '../components/IconGrid';
 import IconColorSection from '../components/IconColorSection';
-import RadioButton from '../components/RadioButton';
+import FormSectionHeader from '../components/form/FormSectionHeader';
+import { formStyles } from '../components/form/formStyles';
 import LabeledTextField from '../components/form/LabeledTextField';
-import SectionTitle from '../components/form/SectionTitle';
 import PrimaryButton from '../components/form/PrimaryButton';
-import FormError from '../components/form/FormError';
+import FormActions from '../components/form/FormActions';
 import FormScrollView from '../components/form/FormScrollView';
 
 type CreateCategoryRouteProp = RouteProp<RootStackParamList, 'CreateCategory'>;
@@ -35,14 +36,15 @@ export default function CreateCategoryScreen() {
   const navigation = useNavigation<NavigationProp<'CreateCategory'>>();
   const route = useRoute<CreateCategoryRouteProp>();
 
-  const initialType = route.params?.type ?? TRANSACTION_TYPES.expense;
+  const type = route.params?.type ?? TRANSACTION_TYPES.expense;
+  const fromTransaction = route.params?.fromTransaction === true;
 
   const [name, setName] = useState('');
-  const [type, setType] = useState<TransactionType>(initialType);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const { selectedColor, customColor, handleColorSelect } = useColorSelection();
 
   const deferredRefreshCategories = useDeferredRefresh(refreshCategories);
+  const { busy, run } = useBusyGuard();
 
   const { nameError, checkingName, handleNameChange } = useNameDuplicateCheck({
     existsByName: (value, excludeId) => categoryRepository.existsByName(USER_ID, value, excludeId),
@@ -51,11 +53,12 @@ export default function CreateCategoryScreen() {
       return defaultId !== null ? getDefaultEnglishName(defaultId) : null;
     },
     duplicateErrorKey: labels.create_cat_error_name_duplicate,
+    checkErrorKey: labels.error_generic,
   });
-
 
   const typeCount = countCategoriesOfType(categories, type);
   const atCategoryLimit = countAtLimit(typeCount, MAX_CATEGORIES_PER_TYPE);
+  const typeLabel = type === TRANSACTION_TYPES.expense ? labels.create_cat_expense : labels.create_cat_income;
 
   const canCreate = name.trim().length > 0 && !nameError && !checkingName && selectedIcon !== null && selectedColor !== null && !atCategoryLimit;
 
@@ -69,24 +72,26 @@ export default function CreateCategoryScreen() {
       iconColor: labels.create_cat_hint_icon_color,
       icon: labels.create_cat_hint_icon,
       color: labels.create_cat_hint_color,
-    }
+    },
   );
 
   const handleCreate = async () => {
     Keyboard.dismiss();
     if (!canCreate || selectedIcon === null || selectedColor === null) return;
-    await runWithErrorAlert(async () => {
-      const created = await categoryRepository.create({
-        user_id: USER_ID,
-        name: name.trim(),
-        icon: selectedIcon,
-        color: selectedColor,
-        type,
-      });
-      setPendingCategory(created.id, type);
-      navigation.goBack();
-      deferredRefreshCategories();
-    }, ERROR_PREFIXES.categoryCreate);
+    await run(async () => {
+      await runWithErrorAlert(async () => {
+        const created = await categoryRepository.create({
+          user_id: USER_ID,
+          name: name.trim(),
+          icon: selectedIcon,
+          color: selectedColor,
+          type,
+        });
+        if (fromTransaction) setPendingCategory(created.id, type);
+        navigation.goBack();
+        deferredRefreshCategories();
+      }, ERROR_PREFIXES.categoryCreate);
+    });
   };
 
   return (
@@ -94,35 +99,24 @@ export default function CreateCategoryScreen() {
       <View style={styles.content}>
         <FormScrollView>
           <LabeledTextField
-            label={labels.create_cat_name}
+            label={labels.form_name}
+            labelIcon="id-card-outline"
+            labelStyle={formStyles.firstSection}
             placeholder={labels.create_cat_name_placeholder}
             value={name}
             onChangeText={(v) => handleNameChange(v, setName)}
             maxLength={MAX_CATEGORY_NAME_LENGTH}
             autoCapitalize="words"
             autoCorrect={false}
-            error={nameError}
+            error={name.trim().length === 0 ? labels.create_cat_error_name_empty : nameError}
             showCounter
+            counterInHeader
           />
 
-          <SectionTitle text={labels.create_cat_type} />
-          <View style={styles.typeRow}>
-            <RadioButton
-              selected={type === TRANSACTION_TYPES.expense}
-              onPress={() => setType(TRANSACTION_TYPES.expense)}
-            />
-            <Text style={[styles.radioLabel, { color: c.text, fontSize: fs(14) }]}>
-              {labels.create_cat_expense}
-            </Text>
-
-            <RadioButton
-              selected={type === TRANSACTION_TYPES.income}
-              onPress={() => setType(TRANSACTION_TYPES.income)}
-            />
-            <Text style={[styles.radioLabel, { color: c.text, fontSize: fs(14) }]}>
-              {labels.create_cat_income}
-            </Text>
-          </View>
+          <FormSectionHeader title={labels.create_cat_type} icon="swap-horizontal-outline" />
+          <Text style={[styles.typeText, { color: c.textSecondary, fontSize: fs(14) }]}>
+            {typeLabel}
+          </Text>
 
           <IconColorSection
             icons={CATEGORY_ICONS}
@@ -136,18 +130,11 @@ export default function CreateCategoryScreen() {
             onSelectColor={handleColorSelect}
           />
 
-          {atCategoryLimit ? (
-            <FormError message={labels.create_cat_error_limit(MAX_CATEGORIES_PER_TYPE)} fontSize={fs(12)} style={styles.limit} />
-          ) : (
-            <FormError message={hintText} fontSize={fs(12)} style={styles.hint} />
-          )}
-
-          <PrimaryButton
-            label={labels.create_cat_add}
-            onPress={handleCreate}
-            disabled={!canCreate}
-            style={styles.button}
-          />
+          <FormActions
+            saveHint={atCategoryLimit ? labels.create_cat_error_limit(MAX_CATEGORIES_PER_TYPE) : hintText}
+          >
+            <PrimaryButton label={labels.create_cat_add} onPress={handleCreate} disabled={!canCreate || busy} />
+          </FormActions>
         </FormScrollView>
       </View>
     </ScreenShell>
@@ -158,23 +145,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  typeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  radioLabel: {
-    marginRight: 12,
-  },
-  hint: {
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  limit: {
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  button: {
-    marginTop: 16,
+  typeText: {
+    marginLeft: 4,
   },
 });

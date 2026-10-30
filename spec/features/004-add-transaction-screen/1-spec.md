@@ -1,7 +1,7 @@
 # 004 — Add transaction page
 
 - **Goal**
-Screen accessible from the Home "+" button that allows the user to record a new expense or income. The transaction is created with type (expense/income), amount, account, category, day, tags, comment and optional photo. All texts are multilingual (en/es/ca).
+Screen accessible from the Home "+" button that allows the user to record a new expense or income. The transaction is created with type (expense/income), amount, account, category, day, tags, comment and optional photo. All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it).
 
 ---
 
@@ -22,6 +22,13 @@ Screen accessible from the Home "+" button that allows the user to record a new 
   2. Otherwise, fall back to the last type used on the main screen (activeType from AppContext).
 - When changing tabs, the transaction type to create is updated.
 
+### 2.1 Section headers
+
+- Every form group has a left-aligned subtitle with a decorative icon in the same text color: Amount, Account, Categories, Date, Tags, Comment and Photos.
+- Section icons: Amount `cash-outline`, Account `wallet-outline`, Categories `grid-outline`, Date `calendar-outline`, Tags `pricetag-outline`, Comment `chatbubble-ellipses-outline`, Photos `image-outline`.
+- The icon is not tappable and is hidden from accessibility; right-side actions such as the Date calendar and Tag search remain primary.
+- Amount and Account show explicit section titles; the Account card keeps only the account name and a chevron-down affordance.
+
 ### 3. Amount field
 
 - Numeric input with number keyboard.
@@ -33,7 +40,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
   - The input border is displayed in red.
   - The error text is shown: "The amount entered is not valid" (multilingual).
 - To the right of the input, the currency symbol selected in settings is displayed (resolved dynamically from the configured currency).
-- To the right of the currency symbol, a calculator icon that opens a "Calculator" screen (TODO: future implementation).
+- To the right of the currency symbol, a calculator icon that opens the full-screen `CalculatorModal`; its keypad and Cancel/Accept footer are anchored to the bottom, with the display area flexing above them.
 
 ### 4. Account selection
 
@@ -43,12 +50,12 @@ Screen accessible from the Home "+" button that allows the user to record a new 
   1. If `config.addDefaultAccountId` is set (from Settings > Personalization), that account is pre-selected.
   2. Otherwise, the account selected on the main screen (HomeScreen) is used.
   3. **Fallback**: if the active account is the Total account (`is_total=1`), the first non-Total account is pre-selected instead.
-- When tapping on the account name, a modal (`AccountModal`) opens to select another account. The Total account is excluded from the modal.
+- When tapping on the account name, `AccountModal` opens with the standard centered `wallet-outline` header, the balance eye toggle on the right, and the account list. The Total account is excluded from the modal.
 
 ### 5. Category selection
 
 - Title: "Categories" (multilingual).
-- 4-column × 2-row grid (8 positions):
+- 4-column × 2-row grid (8 positions). Tiles reserve enough height for the icon and one-line label (including the selected border), so category names are never clipped on web or native.
   - The first 7 positions show categories sorted by **usage frequency** (most used first) within a **90-day window** from today, **scoped to the selected account**. This means the sort order adapts when the user switches accounts, showing the most relevant categories for that specific account.
   - Categories with 0 transactions in the last 90 days for the selected account appear after used categories, sorted alphabetically among themselves.
   - The eighth position always shows a "+" icon with the text "More" (multilingual).
@@ -59,6 +66,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - When tapping "More":
   - If the active type has **more than 7 categories**: the "Add category" screen opens to select from existing ones.
   - If the active type has **7 or fewer categories**: the "Create category" screen opens directly to create a new one.
+  - In both cases the create screen receives `fromTransaction: true`, so its type is locked to the active transaction type.
 
 ### 6. Day selection
 
@@ -108,20 +116,22 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - To the right, a "+ Add tag" button (multilingual) that opens a modal:
 
 **"Add tag" modal:**
-- Title: "Add tag" (multilingual).
+- Centered title "Add tag" (multilingual) with a `pricetag-outline` icon on its left and the dynamic "0/20" counter in the modal header's right slot.
 - Text input with placeholder "Tag name" (multilingual).
-- Below the input: dynamic counter "0/20" that updates as you type (maximum 20 characters).
+- Maximum 20 characters.
+- Duplicate-name errors are centered in a reserved one-line band with 8px vertical padding, so Cancel/Add never move when the error appears.
 - Buttons: "Cancel" / "Add" (multilingual).
 
 ### 8. Comment
 
-- Title: "Comment" (multilingual).
+- Title: "Comment" (multilingual), with the dynamic "0/4096" counter in the section header's right slot.
 - Multiline text input with placeholder "Comment" (multilingual).
-- Below: dynamic counter "0/4096" that updates as you type (maximum 4096 characters).
+- Maximum 4096 characters.
+- Suggestions: while focused, matching previous comments appear inside the Comment section under a **Suggestions** header with a **Tap to reuse** hint; rows are 44px and fill the comment when pressed. Selecting a suggestion keeps the field focused and the keyboard open, clears the suggestion panel, and a later real blur still runs the normal blur handling.
 
-### 9. Photo
+### 9. Photos
 
-- Title: "Photo" (multilingual).
+- Title: "Photos" (multilingual) — i18n key `add_photos`.
 - Large "+" icon in a square that, when tapped, opens a modal:
 
 **"Add photo" modal:**
@@ -129,7 +139,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - Option 1: "Take photo" (multilingual) — opens the camera (requires permissions).
 - Option 2: "Add from gallery" (multilingual) — opens the gallery (requires permissions).
 - **Implementation**: see spec `023-photo-attachment` for full functional requirements (camera, gallery, file persistence, platform guards).
-- **Web**: the entire PhotoSection is hidden on web (platform guard `Platform.OS !== 'web'`).
+- **Web**: the section is visible with the gallery/file picker only; camera capture stays native-only (specs 023/024).
 
 ### 10. Submit button
 
@@ -141,7 +151,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 ## Non-functional requirements
 
 - **Multilingual**: all visible texts (titles, placeholders, errors, buttons, day names) must use `t()` from the existing i18n system. No hardcoded strings are allowed.
-- **Persistence**: the transaction is saved in the `transacciones` table in SQLite (native) or localStorage (web).
+- **Persistence**: the transaction is saved in the `transacciones` table in SQLite (native) or sql.js + IndexedDB (web).
 - **Configuration**: the currency, decimal separator and language are read from the existing `ConfigContext`.
 - **Theme**: the screen must use `useConfig().coloresActivos` for colors (not hardcoded).
 - **Text**: the screen must use `useFontSize()` for text scaling.
@@ -157,7 +167,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - [x] The calculator icon is visible but not functional (TODO).
 - [x] The displayed account matches the one from the config default (Settings > Personalization) or the one selected in Home.
 - [x] The account modal allows changing the selected account.
-- [x] 7 categories sorted by usage frequency (last 90 days, per-account) are displayed in a 4×2 grid + "More" button.
+- [x] 7 categories sorted by usage frequency (last 90 days, per-account) are displayed in a 4×2 grid + "More" button; category labels are never clipped on web or native.
 - [x] Categories with 0 transactions for the selected account appear after used ones, alphabetically sorted.
 - [x] "Other" and "Others" follow the same usage-based ranking (no special position).
 - [x] The "More" button is always visible: with >7 categories navigates to Add category, with ≤7 navigates directly to Create category.
@@ -166,6 +176,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - [x] The tags section allows searching, creating and selecting tags.
 - [x] The "Add tag" modal validates a maximum of 20 characters.
 - [x] The comment field allows up to 4096 characters with a counter.
+- [x] Selecting a comment suggestion fills the field, clears the suggestion panel, keeps focus/keyboard open and does not trigger a delayed form scroll.
 - [x] The photo button opens the modal with the two options (full implementation in 023).
 - [x] The "Add" button creates the transaction and returns to Home.
 - [x] All texts change when changing the language in settings.

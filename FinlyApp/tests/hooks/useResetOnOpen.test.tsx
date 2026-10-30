@@ -33,7 +33,7 @@ describe('useResetOnOpen', () => {
     expect(secondReset).not.toHaveBeenCalled();
   });
 
-  it('re-runs the reset when the callback changes while visible', async () => {
+  it('does not reset when the callback changes while visible', async () => {
     const firstReset = vi.fn();
     const { rerender } = await renderHook(useHook, { initialProps: { visible: true, reset: firstReset } });
     expect(firstReset).toHaveBeenCalledTimes(1);
@@ -42,7 +42,7 @@ describe('useResetOnOpen', () => {
       rerender({ visible: true, reset: secondReset });
     });
     expect(firstReset).toHaveBeenCalledTimes(1);
-    expect(secondReset).toHaveBeenCalledTimes(1);
+    expect(secondReset).not.toHaveBeenCalled();
   });
 
   it('does not re-run when nothing changed while visible', async () => {

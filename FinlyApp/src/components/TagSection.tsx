@@ -6,12 +6,15 @@ import { useFontSize } from '../hooks/useFontSize';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { t } from '../i18n';
 import type { Tag } from '../database/types';
-import { DEBOUNCE_MS, MAX_TAG_NAME_LENGTH, MAX_TAGS } from '../constants/types';
+import { DEBOUNCE_MS, FOOTER_LAYOUTS, MAX_TAG_NAME_LENGTH, MAX_TAGS } from '../constants/types';
 import { countAtLimit } from '../utils/limits';
 import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
+import ModalFooter from './ModalFooter';
 import { CONTROL_BORDER_RADIUS } from './componentStyles';
-import PrimaryButton from './form/PrimaryButton';
+import ClearButton from './ClearButton';
+import FormSectionHeader from './form/FormSectionHeader';
+import CharCounter from './form/CharCounter';
 
 interface Props {
   tags: Tag[];
@@ -31,7 +34,7 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
   const labels = t();
 
   const filteredTags = useMemo(() => tags.filter(tag =>
-    tag.name.toLowerCase().includes(search.toLowerCase())
+    tag.name.toLowerCase().includes(search.toLowerCase()),
   ), [tags, search]);
 
   const checkDuplicate = useCallback((value: string) => {
@@ -74,17 +77,23 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>
-          {labels.add_tags}
-        </Text>
-        <TouchableOpacity
-          onPress={() => setShowSearch(!showSearch)}
-          accessibilityLabel={labels.add_tag_search}
-        >
-          <Ionicons name="search-outline" size={20} color={c.primary} />
-        </TouchableOpacity>
-      </View>
+      <FormSectionHeader
+        title={labels.add_tags}
+        icon="pricetag-outline"
+        right={
+          <TouchableOpacity
+            onPress={() => {
+              if (showSearch) setSearch('');
+              setShowSearch(!showSearch);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={labels.add_tag_search}
+            hitSlop={12}
+          >
+            <Ionicons name="search-outline" size={20} color={c.primary} accessible={false} />
+          </TouchableOpacity>
+        }
+      />
 
       {showSearch && (
         <View style={styles.searchContainer}>
@@ -95,15 +104,13 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
             value={search}
             onChangeText={setSearch}
           />
-          <TouchableOpacity
-            style={styles.searchClose}
+          <ClearButton
             onPress={() => {
               setSearch('');
               setShowSearch(false);
             }}
-          >
-            <Ionicons name="close" size={16} color={c.textSecondary} />
-          </TouchableOpacity>
+            accessibilityLabel={labels.a11y_close_search}
+          />
         </View>
       )}
 
@@ -116,6 +123,8 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
               { backgroundColor: selectedTags.includes(tag.id) ? c.primary : c.surface },
             ]}
             onPress={() => onToggle(tag.id)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: selectedTags.includes(tag.id) }}
           >
             <Text
               style={[
@@ -131,6 +140,7 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
           <TouchableOpacity
             style={[styles.tag, { backgroundColor: c.surface }]}
             onPress={() => setModalVisible(true)}
+            accessibilityRole="button"
           >
             <Text style={[styles.tagText, { color: c.primary, fontSize: fs(13) }]}>
               + {labels.add_tag_new}
@@ -147,7 +157,11 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
         overlayPadding={24}
         backgroundColor={c.background}
       >
-        <ModalHeader title={labels.add_tag_modal_title} />
+        <ModalHeader
+          title={labels.add_tag_modal_title}
+          icon="pricetag-outline"
+          right={<CharCounter value={newTag.length} maxLength={MAX_TAG_NAME_LENGTH} />}
+        />
         <TextInput
           style={[styles.modalInput, { backgroundColor: c.surface, color: c.text, fontSize: fs(14), borderColor: error ? c.red : c.border }]}
           placeholder={labels.add_tag_name_placeholder}
@@ -155,57 +169,42 @@ export default function TagSection({ tags, selectedTags, onToggle, onCreate }: P
           value={newTag}
           onChangeText={handleNameChange}
           maxLength={MAX_TAG_NAME_LENGTH}
+          accessibilityLabel={labels.add_tag_name_placeholder}
         />
-        <Text style={[styles.modalCounter, { color: c.textSecondary, fontSize: fs(12) }]}>
-          {newTag.length}/{MAX_TAG_NAME_LENGTH}
-        </Text>
-        {error ? (
-          <Text style={[styles.modalError, { color: c.red, fontSize: fs(13) }]}>
-            {error}
-          </Text>
-        ) : null}
-        <View style={styles.modalButtons}>
-          <TouchableOpacity
-            style={[styles.modalButton, { backgroundColor: c.background, borderColor: c.border, borderWidth: 1 }]}
-            onPress={handleCancel}
-            accessibilityRole="button"
-            accessibilityLabel={labels.cal_cancel}
-          >
-            <Text style={[styles.modalButtonText, { color: c.text, fontSize: fs(14) }]}>
-              {labels.cal_cancel}
+        <View style={[styles.modalErrorSlot, { minHeight: fs(34) }]}>
+          {error ? (
+            <Text
+              accessibilityLiveRegion="polite"
+              accessibilityRole="alert"
+              style={[styles.modalErrorText, { color: c.red, fontSize: fs(13) }]}
+            >
+              {error}
             </Text>
-          </TouchableOpacity>
-          <PrimaryButton
-            label={labels.add_submit}
-            onPress={handleCreate}
-            disabled={isDisabled}
-            enabledTextColor={c.background}
-            disabledBg={c.surface}
-            disabledTextColor={c.textSecondary}
-            style={styles.modalButton}
-          />
+          ) : null}
         </View>
+        <ModalFooter
+          layout={FOOTER_LAYOUTS.compact}
+          cancelLabel={labels.cancel}
+          confirmLabel={labels.add_submit}
+          onCancel={handleCancel}
+          onConfirm={handleCreate}
+          confirmDisabled={isDisabled}
+          disabledBg={c.surface}
+          disabledTextColor={c.textSecondary}
+          verticalPadding={12}
+          textSize={14}
+        />
       </ModalShell>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  title: {
-    fontWeight: '600',
-  },
+  container: {},
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
     marginBottom: 10,
   },
   searchInput: {
@@ -213,9 +212,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: CONTROL_BORDER_RADIUS,
-  },
-  searchClose: {
-    padding: 8,
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -235,26 +231,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: CONTROL_BORDER_RADIUS,
-    marginBottom: 4,
   },
-  modalCounter: {
-    marginBottom: 4,
+  modalErrorSlot: {
+    justifyContent: 'center',
+    paddingVertical: 8,
   },
-  modalError: {
-    marginBottom: 12,
+  modalErrorText: {
     fontWeight: '500',
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 10,
-  },
-  modalButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: CONTROL_BORDER_RADIUS,
-  },
-  modalButtonText: {
-    fontWeight: '600',
+    textAlign: 'center',
   },
 });

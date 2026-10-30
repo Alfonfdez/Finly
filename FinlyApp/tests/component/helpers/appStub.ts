@@ -1,5 +1,4 @@
 import { vi } from 'vitest';
-import type { ReactNode } from 'react';
 import type { Account, Category, Tag, Transaction } from '../../../src/database/types';
 import { PERIODS, TRANSACTION_TYPES, type Period, type TransactionType, type CategoryWithTotal } from '../../../src/constants/types';
 
@@ -10,16 +9,21 @@ interface AppStubState {
   selectedDate: Date;
   customDate: { start: Date; end: Date };
   accounts: Account[];
+  balances: Record<number, number>;
   categories: Category[];
   transactions: Transaction[];
   tags: Tag[];
   loading: boolean;
+  loadError: boolean;
+  dataRefreshing: boolean;
   categoriesById: Map<number, Category>;
   refresh: ReturnType<typeof vi.fn>;
+  retryInitialLoad: ReturnType<typeof vi.fn>;
   refreshAccounts: ReturnType<typeof vi.fn>;
   refreshCategories: ReturnType<typeof vi.fn>;
   refreshTags: ReturnType<typeof vi.fn>;
   resetAll: ReturnType<typeof vi.fn>;
+  setDataRefreshing: ReturnType<typeof vi.fn>;
   selectAccount: ReturnType<typeof vi.fn>;
   changeType: ReturnType<typeof vi.fn>;
   changePeriod: ReturnType<typeof vi.fn>;
@@ -44,16 +48,21 @@ function createStub(): AppStubState {
     selectedDate: now,
     customDate: { start: new Date(now.getFullYear(), 0, 1), end: now },
     accounts: [],
+    balances: {},
     categories: [],
     transactions: [],
     tags: [],
     loading: false,
+    loadError: false,
+    dataRefreshing: false,
     categoriesById: new Map(),
     refresh: vi.fn(),
+    retryInitialLoad: vi.fn(async () => {}),
     refreshAccounts: vi.fn(async () => {}),
     refreshCategories: vi.fn(async () => {}),
     refreshTags: vi.fn(async () => {}),
     resetAll: vi.fn(async () => {}),
+    setDataRefreshing: vi.fn(),
     selectAccount: vi.fn(),
     changeType: vi.fn(),
     changePeriod: vi.fn(),
@@ -69,16 +78,21 @@ function createStub(): AppStubState {
       state.selectedDate = fresh.selectedDate;
       state.customDate = fresh.customDate;
       state.accounts = fresh.accounts;
+      state.balances = fresh.balances;
       state.categories = fresh.categories;
       state.transactions = fresh.transactions;
       state.tags = fresh.tags;
       state.loading = fresh.loading;
+      state.loadError = fresh.loadError;
+      state.dataRefreshing = fresh.dataRefreshing;
       state.categoriesById = fresh.categoriesById;
       state.refresh.mockClear();
+      state.retryInitialLoad.mockClear();
       state.refreshAccounts.mockClear();
       state.refreshCategories.mockClear();
       state.refreshTags.mockClear();
       state.resetAll.mockClear();
+      state.setDataRefreshing.mockClear();
       state.selectAccount.mockClear();
       state.changeType.mockClear();
       state.changePeriod.mockClear();
@@ -108,7 +122,7 @@ const EMPTY_TAGS_BY_TX = new Map<number, number[]>();
 // references that could be touched before this module initializes.
 export function buildAppMock() {
   const s = currentStub();
-  const accountsWithBalance = s.accounts.map((a) => ({ ...a, balance: 0 }));
+  const accountsWithBalance = s.accounts.map((a) => ({ ...a, balance: s.balances[a.id] ?? 0 }));
   return {
     activeAccount: s.activeAccount,
     activeType: s.activeType,
@@ -120,12 +134,16 @@ export function buildAppMock() {
     transactions: s.transactions,
     tags: s.tags,
     loading: s.loading,
+    loadError: s.loadError,
+    dataRefreshing: s.dataRefreshing,
     categoriesById: s.categoriesById,
     refresh: s.refresh,
+    retryInitialLoad: s.retryInitialLoad,
     refreshAccounts: s.refreshAccounts,
     refreshCategories: s.refreshCategories,
     refreshTags: s.refreshTags,
     resetAll: s.resetAll,
+    setDataRefreshing: s.setDataRefreshing,
     selectAccount: s.selectAccount,
     changeType: s.changeType,
     changePeriod: s.changePeriod,
@@ -168,6 +186,7 @@ export function setAppState(data: Partial<{
   selectedDate: Date;
   customDate: { start: Date; end: Date };
   loading: boolean;
+  loadError: boolean;
 }>): void {
   const stub = currentStub();
   Object.assign(stub, data);

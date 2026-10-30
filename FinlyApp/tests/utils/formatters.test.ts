@@ -1,11 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import {
   HIDDEN_BALANCE,
+  datePart,
+  formatDateRangeLines,
   formatCurrency,
   formatSignedCurrency,
   formatAmount,
+  formatPercentage,
   fitFontSize,
   formatDate,
+  formatDayShort,
   getMonthName,
   startOfDay,
   endOfDay,
@@ -18,9 +22,10 @@ import {
   formatDateForDB,
   parseDbDate,
   dbTimestamp,
-  isFutureDate,
+  isDateWithinBounds,
   scaleFontSize,
   formatWeekRange,
+  formatWeekRangeLines,
   formatPeriodText,
 } from '../../src/utils/formatters';
 import {
@@ -83,6 +88,13 @@ describe('formatAmount', () => {
   });
 });
 
+describe('formatPercentage', () => {
+  it('uses the configured decimal separator', () => {
+    expect(formatPercentage(12.5, DECIMAL_SEPARATORS.comma)).toBe('12,5');
+    expect(formatPercentage(12.5, DECIMAL_SEPARATORS.dot)).toBe('12.5');
+  });
+});
+
 describe('fitFontSize', () => {
   it('keeps the base size when the text fits', () => {
     expect(fitFontSize('1.234,56 €', 18, 119)).toBe(18);
@@ -121,6 +133,11 @@ describe('date helpers', () => {
     expect(formatDate(new Date(2026, 7, 3))).toBe('03/08/2026');
   });
 
+  it('formats the day period compactly', () => {
+    expect(formatDayShort(new Date(2026, 9, 22), ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']))
+      .toBe('22 Oct 2026');
+  });
+
   it('returns the localized month name for a month index', () => {
     expect(getMonthName(8)).toBe('August');
   });
@@ -141,6 +158,42 @@ describe('date helpers', () => {
     expect(start.getFullYear()).toBe(2026);
     expect(start.getMonth()).toBe(0);
     expect(start.getDate()).toBe(5);
+  });
+
+  it('computes week ranges with Sunday as first day', () => {
+    // 2026-01-07 is a Wednesday; its Sunday-first week is 2026-01-04..10
+    const start = weekStart(new Date(2026, 0, 7), FIRST_DAYS.sunday);
+    expect(start.getDate()).toBe(4);
+    const range = resolvePeriodRange(
+      PERIODS.week,
+      new Date(2026, 0, 7),
+      { start: new Date(), end: new Date() },
+      FIRST_DAYS.sunday,
+    );
+    expect(range.start.getDate()).toBe(4);
+    expect(range.end.getDate()).toBe(10);
+  });
+
+  it('formats Sunday-first week ranges', () => {
+    expect(formatWeekRange(new Date(2026, 0, 5), shortMonths, FIRST_DAYS.sunday)).toBe('4 Jan – 10 Jan');
+    expect(formatPeriodText(PERIODS.week, new Date(2026, 0, 5), months, FIRST_DAYS.sunday)).toBe('4 January 2026 – 10 January 2026');
+  });
+
+  it('shows both years when a week crosses a year boundary', () => {
+    const week = new Date(2025, 11, 29);
+    expect(formatWeekRange(week, months, FIRST_DAYS.monday))
+      .toBe('29 December 2025 – 4 January 2026');
+    expect(formatPeriodText(PERIODS.week, week, months, FIRST_DAYS.monday))
+      .toBe('29 December 2025 – 4 January 2026');
+    expect(formatPeriodText(PERIODS.week, new Date(2026, 0, 1), months, FIRST_DAYS.monday))
+      .toBe('29 December 2025 – 4 January 2026');
+  });
+
+  it('splits a week into full start/end lines with both years', () => {
+    expect(formatWeekRangeLines(new Date(2026, 6, 27), months, FIRST_DAYS.monday))
+      .toEqual({ start: '27 July 2026', end: '2 August 2026' });
+    expect(formatWeekRangeLines(new Date(2025, 11, 29), months, FIRST_DAYS.monday))
+      .toEqual({ start: '29 December 2025', end: '4 January 2026' });
   });
 
   it('computes the day offset for Monday-first calendars', () => {
@@ -237,10 +290,25 @@ describe('DB date conversion', () => {
   });
 });
 
-describe('future dates', () => {
-  it('flags dates beyond today', () => {
-    expect(isFutureDate(new Date(Date.now() + 24 * 60 * 60 * 1000))).toBe(true);
-    expect(isFutureDate(new Date(Date.now() - 24 * 60 * 60 * 1000))).toBe(false);
+describe('isDateWithinBounds', () => {
+  const min = new Date(2026, 9, 6); // Oct 6 2026
+  const max = new Date(2026, 9, 20); // Oct 20 2026
+
+  it('is inclusive and ignores time of day', () => {
+    expect(isDateWithinBounds(new Date(2026, 9, 6, 23, 59), min, max)).toBe(true);
+    expect(isDateWithinBounds(new Date(2026, 9, 20, 0, 1), min, max)).toBe(true);
+    expect(isDateWithinBounds(new Date(2026, 9, 13), min, max)).toBe(true);
+  });
+
+  it('rejects days outside the window', () => {
+    expect(isDateWithinBounds(new Date(2026, 9, 5), min, max)).toBe(false);
+    expect(isDateWithinBounds(new Date(2026, 9, 21), min, max)).toBe(false);
+  });
+
+  it('treats null/undefined bounds as open', () => {
+    expect(isDateWithinBounds(new Date(2099, 0, 1), min, null)).toBe(true);
+    expect(isDateWithinBounds(new Date(2026, 9, 21), undefined, undefined)).toBe(true);
+    expect(isDateWithinBounds(new Date(2026, 9, 5), min, undefined)).toBe(false);
   });
 });
 
@@ -260,8 +328,63 @@ describe('period text', () => {
 
   it('formats day, month and year period labels', () => {
     const date = new Date(2026, 7, 3);
-    expect(formatPeriodText(PERIODS.day, date, months, shortMonths)).toBe('3 August 2026');
-    expect(formatPeriodText(PERIODS.month, date, months, shortMonths)).toBe('August 2026');
-    expect(formatPeriodText(PERIODS.year, date, months, shortMonths)).toBe('2026');
+    expect(formatPeriodText(PERIODS.day, date, months)).toBe('3 August 2026');
+    expect(formatPeriodText(PERIODS.month, date, months)).toBe('August 2026');
+    expect(formatPeriodText(PERIODS.year, date, months)).toBe('2026');
+  });
+});
+
+describe('datePart', () => {
+  it('takes the date out of a DB timestamp', () => {
+    expect(datePart('2026-06-15 10:00:00')).toBe('2026-06-15');
+  });
+
+  it('takes the date out of an ISO string', () => {
+    expect(datePart('2026-06-15T10:00:00.000Z')).toBe('2026-06-15');
+  });
+
+  it('leaves an already date-only value untouched', () => {
+    expect(datePart('2026-06-15')).toBe('2026-06-15');
+  });
+});
+
+describe('formatDateRangeLines', () => {
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ];
+  const formatStart = (day: number, month: string, year?: number) =>
+    `From ${day} ${month}${year ? ` ${year}` : ''}`;
+  const formatEnd = (day: number, month: string, year: number) =>
+    `to ${day} ${month} ${year}`;
+
+  it('splits the range into start and end lines with the end year', () => {
+    expect(formatDateRangeLines(
+      new Date(2026, 0, 1),
+      new Date(2026, 9, 17),
+      months,
+      formatStart,
+      formatEnd,
+    )).toEqual({ start: 'From 1 January', end: 'to 17 October 2026' });
+  });
+
+  it('keeps the start year only when the range crosses a year boundary', () => {
+    expect(formatDateRangeLines(
+      new Date(2025, 11, 20),
+      new Date(2026, 0, 5),
+      months,
+      formatStart,
+      formatEnd,
+    )).toEqual({ start: 'From 20 December 2025', end: 'to 5 January 2026' });
+  });
+
+  it('works within the same month', () => {
+    expect(formatDateRangeLines(
+      new Date(2026, 4, 3),
+      new Date(2026, 4, 9),
+      months,
+      formatStart,
+      formatEnd,
+    )).toEqual({ start: 'From 3 May', end: 'to 9 May 2026' });
   });
 });

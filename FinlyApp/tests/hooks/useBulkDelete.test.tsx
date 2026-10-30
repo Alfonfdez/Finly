@@ -28,7 +28,7 @@ async function setup(overrides: Partial<Parameters<typeof useBulkDelete>[0]> = {
       afterDelete,
       errorPrefix: 'Failed to delete items',
       ...overrides,
-    })
+    }),
   );
 
   return { result, selectedIds, exitSelectMode, deleteFn, afterDelete };
@@ -83,6 +83,22 @@ describe('useBulkDelete', () => {
     expect(afterDelete).not.toHaveBeenCalled();
   });
 
+  it('exits select mode on failure when exitSelectOnError is true', async () => {
+    const { result, exitSelectMode, afterDelete } = await setup({
+      exitSelectOnError: true,
+      deleteFn: vi.fn(async () => {
+        throw new Error('boom');
+      }),
+    });
+
+    await act(async () => {
+      await result.current.confirmBulkDelete();
+    });
+
+    expect(exitSelectMode).toHaveBeenCalledTimes(1);
+    expect(afterDelete).not.toHaveBeenCalled();
+  });
+
   it('skips afterDelete when not provided', async () => {
     const { result, afterDelete } = await setup({ afterDelete: undefined });
 
@@ -105,5 +121,45 @@ describe('useBulkDelete', () => {
     });
 
     expect(runWithErrorAlert).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores a second confirm while the first delete is in flight', async () => {
+    let finish!: () => void;
+    const deleteFn = vi.fn(() => new Promise<void>((resolve) => {
+      finish = resolve;
+    }));
+    const { result } = await setup({ deleteFn });
+
+    let first!: Promise<void>;
+    let second!: Promise<void>;
+    await act(async () => {
+      first = result.current.confirmBulkDelete();
+      second = result.current.confirmBulkDelete();
+      finish();
+      await Promise.all([first, second]);
+    });
+
+    expect(deleteFn).toHaveBeenCalledTimes(1);
+  });
+
+  it('deletes only selected IDs that are currently visible', async () => {
+    const { result, deleteFn } = await setup({ visibleIds: [2] });
+
+    await act(async () => {
+      await result.current.confirmBulkDelete();
+    });
+
+    expect(deleteFn).toHaveBeenCalledWith([2]);
+  });
+
+  it('does nothing when no selected ID is visible', async () => {
+    const { result, deleteFn, exitSelectMode } = await setup({ visibleIds: [99] });
+
+    await act(async () => {
+      await result.current.confirmBulkDelete();
+    });
+
+    expect(deleteFn).not.toHaveBeenCalled();
+    expect(exitSelectMode).not.toHaveBeenCalled();
   });
 });

@@ -10,10 +10,13 @@
 ### 1. Comments screen
 
 - New "Comments" Drawer item (icon `chatbubble-outline`, label `nav_comments`) placed after "Tags".
-- `CommentsScreen` lists every distinct comment grouped by its trimmed value, sorted alphabetically (case-insensitive).
-- Each row shows the comment and "Used in N transactions" (`comments_used_in(n)`).
+- `CommentsScreen` lists every distinct comment grouped by its trimmed value, sorted alphabetically by default (case-insensitive).
+- Each row shows the comment (up to **2 lines**, then ellipsized), "Used in N transactions" (`comments_used_in(n)`) and "Last used <date>" (`comments_last_used(date)`, the most recent transaction date using that comment).
+- A sort strip (`SortToggle` in a `SortRow`) above the list sorts by **name**, **last used** or **usage** (number of transactions); each field has a natural default direction (name ascending, last used/usage descending) and tapping the active field flips it. The choice is **remembered** (`commentsSortBy` / `commentsSortDirection` in the `config` table) and restored on the next visit and after restarting the app.
+- Comments have **no count cap** (unlike tags): they are derived from transaction descriptions rather than created on their own screen, so a limit would block writing a comment on a transaction. Only a single comment's length is bounded (`MAX_COMMENT_LENGTH` = 4096).
 - Tapping a row navigates to `ModifyComment` with `{ comment }`.
 - Header has a search toggle button: opens a `SearchBar` that filters the list client-side (case-insensitive substring on the comment).
+- A counter above the list (`comments_counter(n)`, e.g. "2 comments") always shows the number of **visible** comments and updates as the search filters the list; it is hidden only during selection mode. Like the Tags counter it is **permanent**, so an empty list reads "0 comments" and the sort strip keeps the same layout as the Tags screen.
 - Empty state: `comments_empty` ("No comments yet").
 - When there are no comments, the header Select button and search icon are hidden; they appear as soon as a comment exists.
 - The list reloads on focus via `useFocusEffect` → `transactionRepository.getDistinctComments()`.
@@ -22,13 +25,13 @@
 ### 2. Modify comment screen
 
 - `ModifyCommentScreen` receives `{ comment: string }` (already a trimmed, distinct value).
-- Multiline input preloaded with the comment, `0/4096` counter (`MAX_COMMENT_LENGTH`), auto-focus.
-- "Save" (`comments_save`) is disabled when the field is empty or unchanged.
+- `Comment` section with a `chatbubble-ellipses-outline` icon and the `0/4096` counter (`MAX_COMMENT_LENGTH`) in its right slot, then the multiline input preloaded with the comment, auto-focus, aligned to the top like every other multiline field.
+- "Save" (`comments_save`) is disabled when the field is empty or unchanged; the "Comment cannot be empty" message (`comments_error_empty`) then appears in the bottom hint — a red line in a fixed-height slot **between Delete and Save** — and the field reddens only once it has been changed or blurred.
 - On save: `transactionRepository.updateComment(old, trimmed)` renames the comment on **all** matching transactions (matched by `TRIM(description)`), then `navigation.goBack()`.
-- "Delete comment" (`comments_delete`) opens a confirmation modal: "Delete this comment?" + "This will remove the comment from N transactions. This cannot be undone." (`comments_delete_confirm_title`, `comments_delete_confirm_message(n)`).
+- The Delete button uses the generic `delete` label and opens a confirmation modal: "Delete this comment?" + "This will remove the comment from N transactions. This cannot be undone." (`comments_delete_confirm_title`, `comments_delete_confirm_message(n)`).
 - On confirm: `transactionRepository.deleteComment(comment)` sets `description = NULL` on all matching transactions, then `navigation.goBack()`.
 - The usage count for the delete message comes from `transactionRepository.countByDescription(comment)` loaded on mount.
-- Small hint at the bottom (`comments_merge_hint`): comments that differ only by case or extra spaces are merged into one.
+- Small informational hint **below Save** (`comments_merge_hint`): comments that differ only by case or extra spaces are merged into one.
 
 ### 3. Comment normalization and merge semantics
 
@@ -48,8 +51,9 @@
 
 - The header shows a "Select" (`comments_select`) text button next to the search icon; pressing it toggles selection mode (label switches to "Done", `comments_select_done`).
 - In selection mode each row shows a leading checkbox (`checkbox-outline` unchecked / `checkbox` checked in primary color); tapping a row toggles its selection instead of navigating.
-- The header search and search filtering keep working during selection mode; selection applies to the filtered list.
+- The header search and search filtering keep working during selection mode; selection applies to the filtered list. When a search change hides selected comments, those IDs are pruned from the selection, and bulk delete only ever deletes currently visible selected comments.
 - A bottom action bar with "Cancel" and `Delete (N)` (`comments_bulk_delete(n)`) appears; the delete button is disabled while no comments are selected.
+- A **Select all** / **Deselect all** row sits above the list in selection mode (`select_all` / `deselect_all`, with the visible count `items_count`); tapping it selects every visible comment in one tap.
 - Deleting opens a single `ConfirmationModal`: `Delete N comments?` (`comments_bulk_delete_confirm_title(n)`) with message "The selected comments will be removed from their transactions. This cannot be undone." (`comments_bulk_delete_confirm_message`) and Cancel / Delete buttons.
 - On confirm: `transactionRepository.deleteComments(values)` sets `description = NULL` on every matching transaction, the selection and selection mode reset, and the list reloads via `getDistinctComments()`.
 
@@ -57,8 +61,8 @@
 
 ## Non-functional requirements
 
-- **Multilingual**: all new texts go through `t()` (en/es/ca).
-- **Reuse**: `SearchBar`, `EmptyState`, `LabeledTextField`, `PrimaryButton`, `DeleteButton`, `FormError`, `ConfirmationModal`, `SelectionActionBar`, `useFocusEffect`.
+- **Multilingual**: all new texts go through `t()` (en/es/ca/gl/eu/fr/de/pt/it).
+- **Reuse**: `SearchBar`, `EmptyState`, `LabeledTextField`, `PrimaryButton`, `DeleteButton`, `ConfirmationModal`, `SelectionActionBar`, `useFocusEffect`.
 - **No schema/migration changes**: comments live in the existing `transactions.description` column.
 - **Theme/text size**: all screens/components use `useConfig().activeColors` and `useFontSize()`.
 - **Tests**: new Phase B contract tests for the four repo methods + merge regression; new component test for `CommentInput` min-length and suggestion flow.
@@ -68,10 +72,11 @@
 ## Acceptance criteria
 
 - [x] "Comments" appears in the Drawer between "Tags" and the separator, with a chat bubble icon.
-- [x] The Comments screen lists every distinct comment with its "Used in N transactions" count, sorted alphabetically.
+- [x] The Comments screen lists every distinct comment with its "Used in N transactions" count, sorted alphabetically by default; long comments use up to 2 lines and then ellipsize.
+- [x] Each row also shows "Last used <date>", and a sort strip sorts by name, last used or usage (the choice is remembered across visits and restarts).
 - [x] Whitespace/case variants of the same comment collapse into one row with a summed count.
 - [x] The search toggle filters the list client-side; empty state shows when there are no comments.
-- [x] A counter above the list shows the number of visible comments (e.g., "2 comments"); it updates when a search filters the list.
+- [x] A counter above the list shows the number of visible comments (e.g., "2 comments"); it updates when a search filters the list, and it stays visible when the list is empty ("0 comments") so the sort strip keeps the Tags layout.
 - [x] When there are no comments, the header Select and Search actions are hidden.
 - [x] Tapping a comment opens the modify screen with the comment preloaded and the counter showing `N/4096`.
 - [x] Save is disabled when the comment is empty or unchanged.
@@ -81,6 +86,8 @@
 - [x] "Select" in the header enters selection mode; rows show checkboxes and tapping toggles selection instead of navigating.
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
 - [x] Bulk delete confirms once for the whole batch and removes all selected comments from their transactions.
+- [x] Search changes prune hidden selections; bulk delete only deletes currently visible selected comments.
+- [x] A Select all / Deselect all row above the list selects every visible comment in one tap.
 - [x] In Add/Modify transaction, saving a comment trims it; whitespace-only comments are saved as none.
 - [x] Autocomplete suggestions appear only from 2 trimmed characters, prefix matches first.
 - [x] All texts are multilingual and respect theme + text size.

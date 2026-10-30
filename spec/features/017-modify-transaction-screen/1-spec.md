@@ -20,6 +20,12 @@
 - When switching tabs, the type is updated, the selected category is reset, and the category grid is reloaded for that type.
 - The type is displayed as informational (the transaction stores the original type), but **changing the type is allowed** and will be updated when saving.
 
+### 2.1 Section headers
+
+- The shared form shows left-aligned section headers with decorative text-colored icons: Amount, Account, Categories, Date, Tags, Comment and (outside rule mode) Photos.
+- Section icons: Amount `cash-outline`, Account `wallet-outline`, Categories `grid-outline`, Date `calendar-outline`, Tags `pricetag-outline`, Comment `chatbubble-ellipses-outline`, Photos `image-outline`.
+- The Account card shows the selected account and a chevron-down affordance; right-side Date/Tag actions remain primary.
+
 ### 3. Amount field
 
 - Numeric input with number keyboard.
@@ -42,7 +48,7 @@
 ### 5. Category selection
 
 - Title: "Categories" (multilingual) — i18n key `add_categories` (existing).
-- 4-column × 2-row grid (8 positions) — existing `CategoryGrid` component.
+- 4-column × 2-row grid (8 positions) — existing `CategoryGrid` component. Tiles reserve enough height for the icon and one-line label (including the selected border), so category names are never clipped on web or native.
 - **The first grid position shows the transaction's current category** (icon + name), regardless of its priority. The remaining positions are filled with the next most-used categories or alphabetically, excluding the one already displayed.
 - The eighth position always shows the "+" button with text "More" (multilingual) — i18n key `add_more` (existing).
 - Tapping "More":
@@ -71,7 +77,7 @@
 
 - Title: "Tags" (multilingual) — i18n key `add_tags` (existing).
 - **The tags currently associated with the transaction appear pre-selected** when the screen loads.
-- NOTE: Tags are not currently persisted in the database. The section is included for visual consistency with `AddTransactionScreen`, but the selected tags state does not affect saving. This will be marked as TODO in the spec.
+- Tags are persisted in `transaction_tags`: saving the transaction replaces its junction rows with the selected set (see 019).
 - Search button that shows/hides an input with placeholder "Search and create tags".
 - "+ Add tag" button that opens a modal to create a new tag (same behavior as 004).
 
@@ -81,11 +87,11 @@
 - Multiline text input that is **preloaded with the current comment** of the transaction (`transaction.description`).
 - Placeholder: "Comment" (multilingual).
 - Dynamic counter "0/4096" that updates as you type (max 4096 characters).
-- Autocomplete: debounced search of existing comments (same logic as `AddTransactionScreen`).
+- Autocomplete: debounced search of existing comments (same logic as `AddTransactionScreen`), shown inside the Comment section under a **Suggestions** header with a **Tap to reuse** hint. Selecting a suggestion keeps the field focused and the keyboard open, clears the suggestion panel, and a later real blur still runs the normal blur handling.
 
-### 9. Photo
+### 9. Photos
 
-- Title: "Photo" (multilingual) — i18n key `add_photo` (existing).
+- Title: "Photos" (multilingual) — i18n key `add_photos`.
 - Large "+" icon in a square that, when tapped, opens a modal.
 - **"Add photo" modal:**
   - Title: "Add photo" (multilingual).
@@ -94,7 +100,7 @@
 - When editing a transaction that has an existing photo, the thumbnail is preloaded from `transaction.photo`.
 - The user can replace it (camera or gallery) or remove it (× button).
 - If the user replaces the photo, the old file is deleted from `documentDirectory`.
-- **Web**: the entire PhotoSection is hidden on web (platform guard `Platform.OS !== 'web'`).
+- **Web**: the section is visible with the gallery/file picker only; camera capture stays native-only (specs 023/024).
 - **Implementation**: see spec `023-photo-attachment` for full functional requirements.
 
 ### 10. Save button
@@ -105,7 +111,9 @@
   - The amount must be a valid number greater than 0 (`numericAmount > 0`).
   - A day must be selected.
   - An account must be selected.
-- If the button is disabled, a dynamic help text is shown in red (reuse existing hint from 004).
+- If the button is disabled, a dynamic help text is shown in red (reuse existing hint from 004). An **amount of 0** additionally gets a red border on the amount input (the digits keep their normal color; the field is not red while it is still empty).
+- **Save is enabled only when the transaction actually changed**: the draft is compared by value with the values the screen loaded (amount, type, account, category, day, comment, tags, photos), so re-picking the original category — or retyping the same amount — disables Save again. An untouched edit screen keeps Save disabled with no hint message.
+- The baseline is **the stored row**, not the row as it looked when the screen opened: when a rule edit rewrites this transaction underneath ("Future + past"), the form keeps the user's unsaved input but re-measures it against the rewritten row — so picking the category the rule just wrote leaves nothing to save (Save stays disabled), while keeping a different value still enables it.
 - Tapping "Save":
   1. Collects all form data.
   2. Calls `transactionRepository.update(transactionId, data)` with the modified fields.
@@ -118,7 +126,7 @@
 ## Non-functional requirements
 
 - **Multilingual**: all visible texts must use `t()` from the existing i18n system. No hardcoded strings allowed.
-- **Persistence**: the modification is saved in the `transactions` table of SQLite (native) or localStorage (web) via `transactionRepository.update()`.
+- **Persistence**: the modification is saved in the `transactions` table of SQLite (native) or sql.js + IndexedDB (web) via `transactionRepository.update()`.
 - **Configuration**: currency, decimal separator, and language are read from the existing `ConfigContext`.
 - **Theme**: the screen must use `useConfig().activeColors` for colors (not hardcoded).
 - **Text**: the screen must use `useFontSize()` for text scaling.
@@ -139,7 +147,7 @@
 - [x] The displayed account is the current transaction's account.
 - [x] The account modal allows changing the selected account.
 - [x] The category grid shows the current category in the first position.
-- [x] 7 categories + "More" button are shown in the grid.
+- [x] 7 categories + "More" button are shown in the grid; category labels are never clipped on web or native.
 - [x] The "More" button navigates to Add/Create category based on the number of categories.
 - [x] The day selector is preloaded with the current transaction's day.
 - [x] The 3 days show the correct dates and the initial selection matches.
@@ -148,6 +156,7 @@
 - [x] The comment field is preloaded with the current transaction's comment.
 - [x] The comment field allows up to 4096 characters with a counter.
 - [x] The comment autocomplete works the same as in AddTransaction.
+- [x] Selecting a comment suggestion fills the field, clears the suggestion panel, keeps focus/keyboard open and does not trigger a delayed form scroll.
 - [x] The photo section preloads existing photo and allows replacement/removal (full implementation in 023).
 - [x] The "Save" button is disabled if category, valid amount, day, or account is missing.
 - [x] The help text is shown when the button is disabled.

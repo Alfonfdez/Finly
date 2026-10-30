@@ -1,27 +1,35 @@
-import { Text, StyleSheet } from 'react-native';
-import { useConfig } from '../context/ConfigContext';
-import { useFontSize } from '../hooks/useFontSize';
+import type { ReactNode } from 'react';
+import { View, StyleSheet } from 'react-native';
+import type { IconName } from '../constants/types';
+import ModalTitle from './ModalTitle';
 
 interface ModalHeaderProps {
   title: string;
-  size?: number;
+  icon?: IconName;
+  right?: ReactNode;
 }
 
-export default function ModalHeader({ title, size = 18 }: ModalHeaderProps) {
-  const { activeColors: c } = useConfig();
-  const fs = useFontSize();
-
+export default function ModalHeader({ title, icon, right }: ModalHeaderProps) {
   return (
-    <Text style={[styles.title, { color: c.text, fontSize: fs(size) }]}>
-      {title}
-    </Text>
+    <View style={styles.row}>
+      <ModalTitle title={title} icon={icon} />
+      {right != null && <View style={styles.right}>{right}</View>}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  title: {
-    fontWeight: '700',
+  row: {
+    position: 'relative',
+    minHeight: 24,
     marginBottom: 12,
-    textAlign: 'center',
+    justifyContent: 'center',
+  },
+  right: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
   },
 });

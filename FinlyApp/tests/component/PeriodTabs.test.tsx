@@ -48,6 +48,18 @@ describe('PeriodTabs', () => {
     expect(flattenStyle(view.getByText('Week').props.style).color).toBe('#94A3B8');
   });
 
+  it('exposes the tab role and the selected state', async () => {
+    const view = await render(<PeriodTabs active={PERIODS.month} onChange={() => {}} />);
+
+    const active = view.getByLabelText('Period Month');
+    expect(active.props.accessibilityRole).toBe('tab');
+    expect(active.props.accessibilityState).toEqual({ selected: true });
+
+    const inactive = view.getByLabelText('Period Week');
+    expect(inactive.props.accessibilityRole).toBe('tab');
+    expect(inactive.props.accessibilityState).toEqual({ selected: false });
+  });
+
   it('exposes an accessibility label combining role and label', async () => {
     const view = await render(<PeriodTabs active={PERIODS.day} onChange={() => {}} />);
 

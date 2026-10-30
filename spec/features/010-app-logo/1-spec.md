@@ -32,6 +32,7 @@
 
 ### 3. Configuration in app.json
 
+- `expo.name` → `"Finly"` — the app's display name / launcher label on iOS and Android (and the initial web document title). `expo.slug` stays `"FinlyApp"` (internal Expo project identifier, not user-visible).
 - `expo.icon` → `"./assets/icon.png"`
 - `expo.android.adaptiveIcon.foregroundImage` → `"./assets/android-icon-foreground.png"`
 - `expo.android.adaptiveIcon.backgroundImage` → `"./assets/android-icon-background.png"`
@@ -72,6 +73,7 @@
 
 ## Acceptance criteria
 
+- [x] The app is named **"Finly"** on the device home screen (iOS and Android) — no "App" suffix.
 - [x] `assets/icon.png` is displayed as the app icon on the device home screen (iOS and Android).
 - [x] `assets/android-icon-foreground.png` + `assets/android-icon-background.png` form the adaptive icon correctly on Android 8+.
 - [x] `assets/android-icon-monochrome.png` is displayed correctly on Android devices with themed icons (API 33+).

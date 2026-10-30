@@ -1,7 +1,7 @@
 # 009 — Edit/Delete Category Page
 
 - **Objective**
-Screen accessible from the categories screen (008) that allows the user to edit an existing category (name, icon, color), as well as delete it with transaction reassignment to another category of the same type. All texts are multilingual (en/es/ca).
+Screen accessible from the categories screen (008) that allows the user to edit an existing category (name, icon, color), as well as delete it with transaction reassignment to another category of the same type. All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it).
 
 ---
 
@@ -13,25 +13,27 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 - The screen has a back button (left arrow) in the header to return to `CategoriesScreen`.
 - The header title is "Edit category" (multilingual).
 
-### 2. Category Icon and Name
+### 2. Name and Icon
 
-- Horizontal row: on the left, the category icon with its current background color. On the right, a text input with the current category name.
+- A `Name` section (multilingual `form_name`) with an `id-card-outline` icon and the `0/30` counter in the header's right slot appears above the full-width input.
+- The category icon is not repeated beside the input; the Symbols grid below is the only place that shows and edits the selected icon/color.
 - The name is editable. Maximum 30 characters with a "0/30" counter.
 - **Duplicate validation**: when editing the name, it checks that no other category already exists with the same name (case-insensitive), **excluding the current category**. That is, keeping the same name should not trigger an error; only if the new name matches a different category.
   - "Food", "food" and "FOOD" are considered duplicates.
-  - If there is a duplicate, a red error text is shown below the input and the "Save" button remains disabled.
+  - If there is a duplicate, the "Save" button remains disabled and the message ("Enter a category name" when blank, the duplicate message otherwise) appears in the form's bottom hint — a single red line **between Delete and Save** — not below the input. The input itself only turns red once the field has been changed or blurred (a freshly-opened form is never red). See `spec/constitution/6-screens.md` (Form validation & bottom action area).
   - The check runs with a 300ms debounce.
-- If the name is empty, the "Save" button is disabled.
+- If the name is empty, the "Save" button is disabled (same bottom hint, `create_cat_error_name_empty`).
+- **Save is enabled only when the category actually changed**: name, icon and color are compared by value with the preloaded category, so an untouched screen keeps Save disabled (empty hint band) and putting the original value back disables it again. Once the user touches any of them a data refresh no longer overwrites the form.
 
 ### 3. Type
 
-- Title: "Type" (multilingual).
+- Title: "Type" (multilingual) with a `swap-horizontal-outline` icon.
 - Shows the category type: "Expenses" if `expense`, "Income" if `income`.
 - The type is not editable (informational only).
 
 ### 4. Symbols (Icons)
 
-- Title: "Symbols" (multilingual).
+- Title: "Symbols" (multilingual) with a `shapes-outline` icon.
 - Grid of 4 columns × dynamic rows (vertical ScrollView if not all fit).
 - Same ~40 predefined Ionicons as on the create category screen (006), with gray background.
 - The current category icon must appear pre-selected when opening the screen.
@@ -42,7 +44,7 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 
 ### 5. Color
 
-- Title: "Color" (multilingual).
+- Title: "Color" (multilingual) with a `color-palette-outline` icon; the standard 16px section gap separates it from Symbols.
 - Grid of 1 row × 8 columns.
 - The first 6 positions are predefined circular colors.
 - The 7th position shows the custom color chosen from the picker (if the current category color is not among the 6 predefined) **or** the current category color if it is a custom color.
@@ -62,47 +64,47 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 ### 6. "Delete" Button
 
 - "Delete" button (multilingual) with red style (`c.red`), located before the "Save" button.
-- When tapped, a confirmation modal opens. The modal offers the user a **choice**: either move the category's transactions to another category, or delete the category **and its transactions** permanently. Which buttons are shown depends on whether the category has linked transactions and whether another category of the same type exists to move them to.
+- **The last category of its type cannot be deleted**: the button is disabled (dimmed) and the muted band above it explains why ("You need at least one category of each type, so this one cannot be deleted.", `modify_cat_delete_last`) ? an income/expense always needs at least one category.
+- When tapped, a confirmation modal opens. The modal offers the user a **choice**: either move the category's data to another category, or delete the category **permanently**. Which buttons are shown depends on whether the category has linked **transactions or recurring rules** (a rule is the template for the category's future transactions, so moving the data means moving both).
+
 
 **Confirmation Modal — "Delete category?"**
-- Title: "Delete category "{categoryName}"" (multilingual, interpolates the category name).
+- Title: "Delete 1 category?" (`categories_bulk_delete_confirm_title(1)`, the same one-line title as the bulk flow).
+- Under the title, a centered category subject row shows the category icon and name (`ModalEntitySubject`), plus transaction/rule counts when known, so a long name never wraps the header.
 - Buttons:
   - "Cancel" (multilingual) → closes the modal.
   - "Permanent delete" (multilingual, red) → deletes the category, then navigates back.
 
-**Scenario A — Category HAS transactions AND there is another category of the same type**
-- Message: "Deleting this category will also delete its transactions, unless you choose to move them to another category." (multilingual).
+**Scenario A — Category HAS transactions and/or recurring rules (and it is not the last of its type)**
+- Message: it spells out what is lost, per case (multilingual): rules only → "Deleting this category will also delete its recurring rules, unless you choose to move them to another category" (`modify_cat_delete_confirm_message_rules`); transactions only → the existing transactions message; both → "…its transactions and its recurring rules…" (`modify_cat_delete_confirm_message_tx_rules`).
 - Buttons (in addition to Cancel / Permanent delete):
-  - "Move transactions first" (multilingual) → opens the target category selection modal, then deletes the category.
+  - "Move them to another category" (multilingual, `modify_cat_delete_confirm_move`) → opens the target category selection modal, then deletes the category.
 
-**Scenario A2 — Category HAS transactions but is the only category of its type**
-- There is no other category of the same type to move transactions to, so the "Move transactions first" option is meaningless.
-- Treated exactly like Scenario B: the modal shows the "no transactions" message and only the "Permanent delete" button (no "Move transactions first").
-- Message: "This category will be permanently deleted." (multilingual).
-- Buttons:
-  - "Cancel" (multilingual) → closes the modal.
-  - "Permanent delete" (multilingual, red) → deletes the category and its transactions, then navigates back.
+**Scenario A2 — Category is the only one of its type**
+- The Delete button is disabled (see above): there is no other category of the same type to move its data to, so the screen never reaches the confirmation modal.
 
-**Confirmation Modal — "Select target category"** (only reached via "Move transactions first")
-- Title: "Select category" (multilingual).
+**Confirmation Modal — "Move transactions"** (only reached via the move option)
+- Title: "Move transactions" (`categories_bulk_move_title`, the same title as the bulk flow).
+- Under the title, the same centered category subject row shows the category being deleted and its transaction/rule counts when known.
 - List of categories of the **same type** as the category to be deleted (excluding the current category), with:
   - Radio button (single selection).
   - Category icon.
   - Category name.
 - Only one category can be selected at a time.
-- Buttons: "Cancel" (multilingual) and "Select" (multilingual).
+- Buttons: "Cancel" (multilingual) and "Move & delete" (`categories_bulk_move_confirm`, the same label as the bulk flow).
 - When tapping "Cancel", the modal closes and returns to the edit screen.
-- When tapping "Select":
+- When tapping "Move & delete":
   1. All transactions with `category_id = {deletedCategory}` are updated to `category_id = {selectedCategory}`.
-  2. The category is deleted from the `categories` table.
-  3. Navigation returns to `CategoriesScreen` (008).
+  2. All recurring rules with `category_id = {deletedCategory}` are updated to `category_id = {selectedCategory}`, in the same transaction, so they keep generating into the target category.
+  3. The category is deleted from the `categories` table.
+  4. Navigation returns to `CategoriesScreen` (008).
 
-**Scenario B — Category has NO transactions**
+**Scenario B — Category has NO transactions and NO recurring rules**
 - Message: "This category will be permanently deleted." (multilingual).
 - Buttons:
   - "Cancel" (multilingual) → closes the modal.
-  - "Permanent delete" (multilingual, red) → deletes the category (and, trivially, has no transactions to move), then navigates back.
-  - The "Move transactions first" button is NOT shown, since there are no transactions to move.
+  - "Permanent delete" (multilingual, red) → deletes the category, then navigates back. Its recurring rules go with it (`ON DELETE CASCADE`).
+  - The move option is NOT shown, since there is nothing to move.
 
 - After deletion (either path), transactions are reloaded via `refresh()` so the HomeScreen chart and breakdown reflect the change.
 
@@ -131,7 +133,7 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 - **Configuration**: the screen must use `useConfig().activeColors` for colors (not hardcoded).
 - **Text**: the screen must use `useFontSize()` for text scaling.
 - **Navigation**: the screen is added to `HomeStack` in `AppNavigator.tsx`.
-- **Persistence**: the category is updated/deleted in the `categoryRepository` (native SQLite or web localStorage).
+- **Persistence**: the category is updated/deleted in the `categoryRepository` (native SQLite, sql.js + IndexedDB on web).
 - **Reassignment**: when deleting, transactions are reassigned via `transactionRepository` and then the category is deleted.
 - **Icons**: use `@expo/vector-icons` (Ionicons) as in the rest of the app.
 
@@ -152,11 +154,12 @@ Screen accessible from the categories screen (008) that allows the user to edit 
 - [x] The 7th color circle shows the custom color if the current one is not among the 6 predefined.
 - [x] The "+" opens the existing `ColorPickerModal`.
 - [x] The "Save" button is disabled if the name is empty or is a duplicate.
-- [x] The red "Delete" button opens a confirmation modal with "Cancel", "Permanent delete", and (when the category has transactions AND another same-type category exists) "Move transactions first".
-- [x] When the category has transactions and another same-type category exists, the modal message is "Deleting this category will also delete its transactions, unless you choose to move them to another category." and tapping "Move transactions first" opens the target category selection modal.
-- [x] When the category has no transactions, or is the only category of its type, the modal message is "This category will be permanently deleted." and the "Move transactions first" button is not shown.
-- [x] When tapping "Select" in the target modal, transactions are reassigned and the category is deleted.
-- [x] Tapping "Permanent delete" deletes the category (and its transactions) and navigates back; transactions are reloaded via refresh().
+- [x] The red "Delete" button opens a "Delete 1 category?" confirmation with a centered category subject row and counts below the title, plus "Cancel", "Permanent delete", and (when the category has transactions and/or recurring rules) "Move them to another category".
+- [x] The "Delete" button is disabled with an explanation when the category is the only one of its type.
+- [x] When the category has transactions and/or recurring rules, the modal message names what is lost (transactions, rules, or both) and the move option opens the "Move transactions" modal with the centered source category row and counts.
+- [x] When the category has neither transactions nor recurring rules, the modal message is "This category will be permanently deleted." and the move option is not shown.
+- [x] When tapping "Move & delete" in the target modal, transactions **and recurring rules** are reassigned and the category is deleted.
+- [x] Tapping "Permanent delete" deletes the category (and its transactions and recurring rules) and navigates back; transactions are reloaded via refresh().
 - [x] When tapping "Save", the category is updated and navigation returns to CategoriesScreen.
 - [x] All texts change when switching the language in settings.
 - [x] The screen respects the active theme (dark/light).

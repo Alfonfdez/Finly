@@ -18,6 +18,7 @@
 
 - Three tabs shown at the top of the screen: **All | Expenses | Income**.
 - "All" is selected by default (shows both expense and income transactions).
+- The tab is **local to this screen** and is not overridden by the Home type switcher: adding or switching a type elsewhere never changes the filter the user picked here.
 - Uses the new `AllTypeTabs` component (separate from the 2-tab `TypeTabs` used on HomeScreen).
 - Selecting a tab filters the transaction list by `type` field:
   - "All" → no type filter (shows all).
@@ -35,16 +36,23 @@
   - Formatted with `formatCurrency()`.
   - Green color with "+" prefix if positive, red with "-" prefix if negative.
   - Balance reflects **all active filters** (type, category, period, tags).
+  - The total follows the privacy setting ("Hide balances and totals", spec 003 §5.6): when it is on the figure is masked and an eye icon next to it reveals it temporarily (reset when the screen regains focus). Individual transaction amounts stay visible.
 
 ### 4. Category filter
 
 - A trigger button/pill in the controls area shows the current category filter state:
-  - Default: "All categories" (multilingual).
-  - When categories are selected: "N categories" (multilingual, where N is the count).
-- Tapping the button opens the `CategoryFilterModal` (spec 021).
+  - Default (nothing selected): the type-aware label - **All categories** (All tab), **All expenses** (Expenses tab) or **All income** (Income tab), multilingual.
+  - When a full set is selected: **All categories** (every category), **All expenses** (every expense category, even when selected manually on the All tab) or **All income** (every income category).
+  - Any other selection: "N categories" (multilingual, where N is the count).
+- The filter modal offers preset chips (see spec 021): All categories / All expenses / All income on the All tab, only the matching one on a type tab.
+- The button sits next to the recurring view chip in the first controls row; tapping it opens the `CategoryFilterModal` (spec 021).
+- The label is always shown in full (no ellipsis; `maxWidth: 160`); the filters row scrolls horizontally only when a long language or a large text size needs it.
 - The modal receives the current `type` tab value so it adapts its category display.
 - When categories are selected, only transactions matching those categories are shown.
 - When "All" is selected (empty array), all categories are shown.
+- Each type tab keeps its own remembered category selection: `allTransactionsCategoryIds` (All), `allTransactionsExpenseCategoryIds` (Expenses) and `allTransactionsIncomeCategoryIds` (Income). Selections are restored when switching tabs and after restarting the app. A full selection is normalized against that tab's universe: the full expense set on Expenses and the full income set on Income are stored as the empty array, while the full expense/income sets on All stay explicit IDs. Selections are pruned by existence and type (a wrong-type ID is removed from a type tab), and a backup import suspends pruning until the imported config and refreshed categories are published together.
+- Switching the type tab restores that tab's own selection; it never clears another tab's saved categories.
+- The modal requires at least one category: clearing all disables Apply and shows the required-selection hint. The screen's empty filter state (nothing applied) still shows all categories.
 
 ### 5. Period selector
 
@@ -52,12 +60,19 @@
 - Default: **Month** (from `config.homeDefaultPeriod`, same as HomeScreen).
 - Selecting "Period" auto-opens the calendar picker, matching HomeScreen behavior.
 - `CalendarPicker` shown below the period tabs, same as HomeScreen.
+- The custom Period picker shares Home's quick presets (This year, 12 months, 30 days, 90 days), derived checked state and two-line calendar header.
 - Period date ranges computed the same way as HomeScreen (day/week/month/year/custom).
+- **Fast period arrows** around the period text: `‹` steps back, `›` steps forward (hidden on the current period) and the double-chevron `»` jumps to the current period (offered two or more periods back). Same rules, visibility and stepping as HomeScreen; the `Period` (custom) tab shows no arrows.
 - The transaction list filters by the selected period's start/end dates.
 
 ### 6. Sorting
 
-- Same as 014 (section 3).
+- Same as 014 (section 3), with its own independent saved preference (`allTransactionsSortBy` / `allTransactionsSortDirection`), so each transaction screen remembers its own sort.
+
+#### Recurring view filter
+
+- Same as 014 (section 3): a compact chip in the first controls row, next to the category button, always shown; the balance reflects the selected view. The filters row scrolls horizontally when it does not fit (horizontal scrollbar shown on web); the sort toggle sits on a second row below it. The filters row keeps the standard **16px** separation from the account/balance block.
+- The choice is remembered independently for this screen (`allTransactionsRecurringView` in the `config` table) and restored on the next visit and after restarting the app.
 
 ### 7. Tag filter
 
@@ -102,9 +117,10 @@
 - The header shows a "Select" (`transactions_select`) text button next to the search icon; pressing it toggles selection mode (label switches to "Done", `transactions_select_done`).
 - When there are 0 transactions, the header Select and Search buttons are both hidden.
 - In selection mode each transaction row shows a leading checkbox (`checkbox-outline` unchecked / `checkbox` checked in primary color); tapping a row toggles its selection instead of navigating to transaction details.
-- The header search and search filtering keep working during selection mode; selection applies to the filtered list. All other filters (type tab, account, categories, period, tags) also keep working; selection persists across filter changes.
+- The header search and search filtering keep working during selection mode; selection applies to the filtered list. All other filters (type tab, account, categories, period, tags) also keep working; when a filter/search change hides selected rows, those IDs are pruned from the selection and bulk delete only ever deletes currently visible selected rows.
 - The floating "+" button is hidden in selection mode.
 - A bottom `SelectionActionBar` with "Cancel" and `Delete (N)` (`transactions_bulk_delete(n)`) appears; the delete button is disabled while no transactions are selected.
+- A **Select all** / **Deselect all** row sits above the list in selection mode (`select_all` / `deselect_all`, with the visible count `items_count`); tapping it selects every currently visible transaction in one tap (and clears them again).
 - Deleting opens a single `ConfirmationModal`: `Delete N transactions?` (`transactions_bulk_delete_confirm_title(n)`) with message "The selected transactions will be permanently deleted. This cannot be undone." (`transactions_bulk_delete_confirm_message`) and Cancel / Delete buttons.
 - On confirm: `transactionRepository.deleteMany(ids)` cleans up photos, removes junction rows, and deletes the transactions in a single database transaction; the selection and selection mode reset, and the list reloads.
 
@@ -121,7 +137,7 @@
 ## Non-functional requirements
 
 - **Screen:** `AllTransactionsScreen.tsx` (standalone screen).
-- **Layout structure:** `SafeAreaView > [AllTypeTabs, SearchBar(conditional), controls(AccountSelector+Balance+CategoryButton+SortToggle), PeriodTabs, CalendarPicker, TagFilterBar, SectionList, FAB(absolute)]`.
+- **Layout structure:** `SafeAreaView > [AllTypeTabs, SearchBar(conditional), controls(AccountSelector+Balance / RecurringViewChip+CategoryButton / SortToggle), PeriodTabs, CalendarPicker, TagFilterBar, SectionList, FAB(absolute)]` - the recurring view and category controls share the first row and the sort toggle has its own row.
 - **Shared components:** reuses `AccountModal`, `SortToggle`, `TransactionGroup`, `TagFilterBar`, `PeriodTabs`, `CalendarPicker`.
 - **New components:** `AllTypeTabs`, `CategoryFilterModal` (spec 021).
 - **Repository:** `transactionRepository.list()` extended with `category_ids` filter.
@@ -140,13 +156,17 @@
 - [x] The Total account is shown in the account selector modal.
 - [x] When the active account is Total, the account filter is skipped and all transactions matching other filters are shown.
 - [x] The balance updates dynamically based on all active filters (type, category, period, tags).
-- [x] A category filter button shows "All categories" by default or "N categories" when filtered.
+- [x] The period total follows the privacy setting (masked with an eye icon to reveal it temporarily; reset on refocus), while the transaction rows keep their amounts visible.
+- [x] A category filter button shows the type-aware "All categories" / "All expenses" / "All income" label by default (never ellipsized), names a full type set after applying it (All expenses / All income, even from the All tab), and shows "N categories" for any other selection.
 - [x] Tapping the category button opens the CategoryFilterModal (021).
 - [x] Selecting categories in the modal filters the transaction list.
+- [x] The category modal requires at least one category; clearing all disables Apply and shows the required-selection hint.
+- [x] Each type tab remembers its own category filter across visits, tab switches and restarts; full type sets are normalized per tab, wrong-type/deleted categories are pruned, switching tabs never clears another tab's selection, and a backup import does not prune imported filters against stale categories.
 - [x] PeriodTabs (Day/Week/Month/Year/Period) are shown with "Month" selected by default (from config).
 - [x] CalendarPicker updates when the period changes.
 - [x] The transaction list filters by the selected period's date range.
-- [x] The sort toggle works (date/amount, ASC/DESC).
+- [x] The sort toggle works (date/amount, ASC/DESC) and the choice is remembered independently from the Transactions screen.
+- [x] A recurring view chip (All / One-time / Recurring) in the first controls row, next to the category button, filters the list by recurring-generated vs one-time; the balance reflects it, the control is always shown, and the choice is remembered independently from the Transactions screen.
 - [x] TagFilterBar is shown and works with local state.
 - [x] A search icon is shown in the header; pressing it toggles a SearchBar.
 - [x] The search matches comment/description, category display name, tag names and account name, case-insensitive.
@@ -165,4 +185,7 @@
 - [x] "Select" in the header enters selection mode; transaction rows show checkboxes and tapping toggles selection instead of navigating.
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
 - [x] Bulk delete confirms once for the whole batch and permanently deletes the selected transactions (including photos and tag links).
+- [x] Changing a filter/search prunes hidden selections; bulk delete only deletes currently visible selected transactions.
+- [x] A failed load shows the shared error state with a retry action instead of an empty list.
+- [x] A Select all / Deselect all row above the list selects every currently visible transaction in one tap.
 - [x] After returning from AddTransaction, the type tab matches the added transaction's type (except when "All" was selected, which stays "All").

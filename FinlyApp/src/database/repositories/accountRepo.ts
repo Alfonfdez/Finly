@@ -5,12 +5,13 @@ import { runResultOf } from '../drizzle/proxy';
 import type { Account } from '../types';
 import { accountSchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
-import { existsByName } from './repoHelpers';
-import { collectTransactionPhotos, deletePhotoUris } from '../photoCleanup';
+import { existsByName, pickDefined } from './repoHelpers';
+import { collectTransactionPhotos, deleteUnreferencedPhotoUris } from '../photoCleanup';
+import { serializeWrites } from '../transactionQueue';
 import { dbTimestamp } from '../../utils/formatters';
 import { TRANSACTION_TYPES } from '../../constants/types';
 
-export const accountRepo = {
+const accountRepoBase = {
   async list(userId: number): Promise<Account[]> {
     const db = await getDrizzle();
     const rows = await db
@@ -47,33 +48,45 @@ export const accountRepo = {
 
   async update(id: number, data: Partial<Omit<Account, 'id' | 'created_at'>>): Promise<void> {
     const db = await getDrizzle();
-    const set: Partial<typeof accounts.$inferInsert> = {};
-    if (data.name !== undefined) set.name = data.name;
-    if (data.initial_balance !== undefined) set.initial_balance = data.initial_balance;
-    if (data.icon !== undefined) set.icon = data.icon;
-    if (data.color !== undefined) set.color = data.color;
-    if (data.description !== undefined) set.description = data.description;
+    const set = pickDefined(data, ['name', 'initial_balance', 'icon', 'color', 'description']);
     if (Object.keys(set).length === 0) return;
     await db.update(accounts).set(set).where(eq(accounts.id, id)).run();
   },
 
   async delete(id: number): Promise<void> {
-    const uris = await collectTransactionPhotos('account_id', id);
-    await withTransaction(async (db) => {
+    const uris = await withTransaction(async (db) => {
+      // Guard before touching the linked rows: deleting the pseudo-total account
+      // must never delete its transactions (the account itself is not deletable).
+      const account = await db
+        .select({ is_total: accounts.is_total })
+        .from(accounts)
+        .where(eq(accounts.id, id))
+        .get();
+      if (!account || account.is_total === 1) return [];
+      const photos = await collectTransactionPhotos('account_id', id);
       await db.delete(transactions).where(eq(transactions.account_id, id)).run();
-      await db.delete(accounts).where(and(eq(accounts.id, id), eq(accounts.is_total, 0))).run();
+      await db.delete(accounts).where(eq(accounts.id, id)).run();
+      return photos;
     });
-    await deletePhotoUris(uris);
+    await deleteUnreferencedPhotoUris(uris);
   },
 
   async deleteMany(ids: number[]): Promise<void> {
     if (ids.length === 0) return;
-    const uris = await collectTransactionPhotos('account_id', ...ids);
-    await withTransaction(async (db) => {
-      await db.delete(transactions).where(inArray(transactions.account_id, ids)).run();
-      await db.delete(accounts).where(and(inArray(accounts.id, ids), eq(accounts.is_total, 0))).run();
+    const uris = await withTransaction(async (db) => {
+      const rows = await db
+        .select({ id: accounts.id })
+        .from(accounts)
+        .where(and(inArray(accounts.id, ids), eq(accounts.is_total, 0)))
+        .all();
+      const deletable = rows.map(row => row.id);
+      if (deletable.length === 0) return [];
+      const photos = await collectTransactionPhotos('account_id', ...deletable);
+      await db.delete(transactions).where(inArray(transactions.account_id, deletable)).run();
+      await db.delete(accounts).where(inArray(accounts.id, deletable)).run();
+      return photos;
     });
-    await deletePhotoUris(uris);
+    await deleteUnreferencedPhotoUris(uris);
   },
 
   async deleteAll(): Promise<void> {
@@ -102,7 +115,9 @@ export const accountRepo = {
       { name: accounts.name, userId: accounts.user_id, id: accounts.id },
       userId,
       name,
-      excludeId
+      excludeId,
     );
   },
 };
+
+export const accountRepo = serializeWrites(accountRepoBase, ['create', 'update', 'deleteAll']);

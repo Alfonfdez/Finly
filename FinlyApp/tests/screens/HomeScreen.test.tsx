@@ -2,7 +2,10 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import HomeScreen from '../../src/screens/HomeScreen';
-import { buildAppMock, setAppData, setAppState, resetAppStub } from '../component/helpers/appStub';
+import { buildAppMock, setAppData, setAppState, resetAppStub, getAppStub } from '../component/helpers/appStub';
+import { resetStub, setConfig, getConfigStub } from '../component/helpers/configStub';
+import { CHART_TYPES } from '../../src/constants/types';
+import { HIDDEN_BALANCE } from '../../src/utils/formatters';
 import type { Account } from '../../src/database/types';
 
 vi.mock('react-native-svg', () => {
@@ -17,7 +20,7 @@ vi.mock('react-native-svg', () => {
 });
 
 const breakdown = vi.fn(
-  async () => new Map<number, { tag_id: number; name: string; total: number }[]>()
+  async () => new Map<number, { tag_id: number; name: string; total: number }[]>(),
 );
 
 vi.mock('../../src/database', () => ({
@@ -47,6 +50,7 @@ const account: Account = { id: 1, user_id: 1, name: 'Wallet', icon: 'wallet-outl
 
 describe('HomeScreen', () => {
   beforeEach(() => {
+    resetStub();
     breakdown.mockReset().mockResolvedValue(new Map());
     nav.setOptions.mockClear();
     nav.navigate.mockClear();
@@ -55,6 +59,35 @@ describe('HomeScreen', () => {
 
   afterEach(() => {
     resetAppStub();
+  });
+
+  it('masks the header, chart and category totals when hide balances is on, and the eye reveals them', async () => {
+    setConfig({ hideBalances: true });
+    const view = await render(<HomeScreen />);
+
+    // Header masks + the donut centre: the totals follow the setting too.
+    expect(view.getAllByText(HIDDEN_BALANCE).length).toBeGreaterThanOrEqual(2);
+
+    await fireEvent.press(view.getByLabelText('Show amounts'));
+    expect(view.queryByText(HIDDEN_BALANCE)).toBeNull();
+  });
+
+  it('saves the chart type preference when toggled', async () => {
+    const view = await render(<HomeScreen />);
+    await view.findByText('Wallet');
+
+    fireEvent.press(view.getByLabelText('Switch chart'));
+
+    expect(getConfigStub().config.homeChartType).toBe(CHART_TYPES.bar);
+  });
+
+  it('shows a retry action when the initial load failed', async () => {
+    setAppState({ activeAccount: null, loading: false, loadError: true });
+    const view = await render(<HomeScreen />);
+
+    expect(view.getByText('Error')).toBeTruthy();
+    await fireEvent.press(view.getByRole('button', { name: 'Try again' }));
+    expect(getAppStub().retryInitialLoad).toHaveBeenCalledTimes(1);
   });
 
   it('shows a loading state while no account is active', async () => {
@@ -68,6 +101,13 @@ describe('HomeScreen', () => {
     expect(await view.findByText('Wallet')).toBeTruthy();
     expect(view.getAllByText('Expenses').length).toBeGreaterThan(0);
     expect(view.getAllByText('Income').length).toBeGreaterThan(0);
+  });
+
+  it('uses the account balance, including initial_balance, for the headline', async () => {
+    setAppData({ balances: { [account.id]: 100 } });
+    const view = await render(<HomeScreen />);
+    await view.findByText('Wallet');
+    expect(view.getByText(/100,00/)).toBeTruthy();
   });
 
   it('opens the Add transaction screen from the fab', async () => {

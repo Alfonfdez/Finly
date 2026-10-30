@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
+import { render, fireEvent, waitFor, act, within } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import ModifyCategoryScreen from '../../src/screens/ModifyCategoryScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
+import { TEST_IDS } from '../../src/constants/testIds';
 import type { Category, Transaction } from '../../src/database/types';
 
 const nav = { setOptions: vi.fn(), navigate: vi.fn(), goBack: vi.fn() };
@@ -10,7 +12,10 @@ const routeParams: Record<string, unknown> = { categoryId: 7 };
 
 const mockCategoryExists = vi.fn(async (_userId: number, name: string, _excludeId?: number) => false);
 const mockCategoryUpdate = vi.fn(async (_id: number, data: unknown) => {});
+const mockCategoryDelete = vi.fn(async (_id: number) => {});
+const mockReassignAndDelete = vi.fn(async (_id: number, _targetId: number) => {});
 const mockTxList = vi.fn(async (_filter: unknown) => [] as Transaction[]);
+const mockRuleCounts = vi.fn(async (_ids: number[]) => ({} as Record<number, number>));
 
 vi.mock('reanimated-color-picker', () => ({
   default: ({ children }: { children?: ReactNode }) => children ?? null,
@@ -25,6 +30,11 @@ vi.mock('../../src/database', () => ({
     existsByName: (userId: number, name: string, excludeId?: number) =>
       mockCategoryExists(userId, name, excludeId),
     update: (id: number, data: unknown) => mockCategoryUpdate(id, data),
+    delete: (id: number) => mockCategoryDelete(id),
+    reassignAndDelete: (id: number, targetId: number) => mockReassignAndDelete(id, targetId),
+  },
+  recurringRepository: {
+    countByCategoryIds: (ids: number[]) => mockRuleCounts(ids),
   },
   transactionRepository: {
     list: (filter: unknown) => mockTxList(filter),
@@ -62,19 +72,68 @@ describe('ModifyCategoryScreen', () => {
     nav.goBack.mockClear();
     mockCategoryExists.mockClear().mockResolvedValue(false);
     mockCategoryUpdate.mockClear();
+    mockCategoryDelete.mockClear();
+    mockReassignAndDelete.mockClear();
     mockTxList.mockClear().mockResolvedValue([]);
+    mockRuleCounts.mockClear().mockResolvedValue({});
     setAppData({ categories: [category] });
   });
 
-  afterEach(() => {
-    resetAppStub();
+  afterEach(async () => {
     vi.useRealTimers();
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    });
+    resetAppStub();
   });
 
-  it('preloads the category into the form', async () => {
+  it('keeps a legacy category name above the limit editable', async () => {
+    const longName = 'x'.repeat(45);
+    setAppData({ categories: [{ ...category, name: longName }] });
     const view = await render(<ModifyCategoryScreen />);
+
+    const input = view.getByDisplayValue(longName);
+    expect(input.props.maxLength).toBe(45);
+    expect(view.getByText('45/30')).toBeTruthy();
+  });
+
+  it('preloads the category and keeps Save disabled until something changes', async () => {
+    const view = await render(<ModifyCategoryScreen />);
+    expect(view.getByText('Name')).toBeTruthy();
+    expect(view.getByText('Type')).toBeTruthy();
+    expect(view.getByText('Symbols')).toBeTruthy();
+    expect(view.getByText('Color')).toBeTruthy();
     expect(view.getByDisplayValue('Food')).toBeTruthy();
+    expect(view.getByText('Save')).toBeDisabled();
+  });
+
+  it('keeps what the user typed when the category data refreshes underneath', async () => {
+    const view = await render(<ModifyCategoryScreen />);
+    const input = await view.findByDisplayValue('Food');
+    await fireEvent.changeText(input, 'Food edited');
+
+    // A refresh from AppContext must not reset the form (the userEdited guard).
+    setAppData({ categories: [{ ...category }] });
+    expect(view.getByDisplayValue('Food edited')).toBeTruthy();
+  });
+
+  it('enables Save only while the form differs from the loaded category', async () => {
+    vi.useFakeTimers();
+    const view = await render(<ModifyCategoryScreen />);
+    const nameInput = await view.findByDisplayValue('Food');
+
+    await fireEvent.changeText(nameInput, 'Food2');
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300);
+    });
     expect(view.getByText('Save')).toBeEnabled();
+
+    await fireEvent.changeText(nameInput, 'Food');
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300);
+    });
+    expect(view.getByText('Save')).toBeDisabled();
   });
 
   it('saves the edited category and goes back', async () => {
@@ -91,4 +150,149 @@ describe('ModifyCategoryScreen', () => {
     expect(mockCategoryUpdate).toHaveBeenCalledWith(7, expect.objectContaining({ name: 'Food2' }));
     expect(nav.goBack).toHaveBeenCalled();
   });
+
+  it('shows the name error in the slot above Save, not under the field', async () => {
+    const view = await render(<ModifyCategoryScreen />);
+    const input = await view.findByDisplayValue('Food');
+    await fireEvent.changeText(input, '');
+
+    const slot = view.getByTestId(TEST_IDS.formHintSlot);
+    expect(within(slot).getByText('Enter a category name')).toBeTruthy();
+  });
+
+  it('only reddens the name field once the user touched it', async () => {
+    const view = await render(<ModifyCategoryScreen />);
+    const input = await view.findByDisplayValue('Food');
+    expect(StyleSheet.flatten(input.props.style).borderColor).toBe('#334155');
+
+    await fireEvent.changeText(input, '');
+    expect(StyleSheet.flatten(input.props.style).borderColor).toBe('#F87171');
+  });
+
+  it('disables Delete when the category is the only one of its type', async () => {
+    const view = await render(<ModifyCategoryScreen />);
+    await view.findByDisplayValue('Food');
+
+    expect(view.getByText('Delete')).toBeDisabled();
+    expect(view.getByText('You need at least one category of each type, so this one cannot be deleted.')).toBeTruthy();
+  });
+
+  it('warns that the category rules are deleted too and offers moving them', async () => {
+    setAppData({ categories: [category, { ...category, id: 8, name: 'Travel' } as Category] });
+    mockRuleCounts.mockResolvedValue({ 7: 2 });
+    const view = await render(<ModifyCategoryScreen />);
+    await view.findByDisplayValue('Food');
+
+    await fireEvent.press(view.getByText('Delete'));
+
+    await waitFor(() => expect(mockRuleCounts).toHaveBeenCalledWith([7]));
+    expect(view.getByText('Delete 1 category?', { exact: false })).toBeTruthy();
+    const subject = view.getByTestId(TEST_IDS.modalEntitySubject);
+    expect(within(subject).getByText('Food')).toBeTruthy();
+    expect(within(subject).getByText('2 recurring rules')).toBeTruthy();
+    expect(view.getByText(
+      'Deleting this category will also delete its recurring rules, unless you choose to move them to another category',
+    )).toBeTruthy();
+    expect(view.getByText('Move them to another category')).toBeTruthy();
+    expect(view.queryByText('This category will be permanently deleted.')).toBeNull();
+  });
+
+  it('moves to a target using the same move modal as the bulk flow', async () => {
+    const travel = { ...category, id: 8, name: 'Travel' } as Category;
+    setAppData({ categories: [category, travel] });
+    mockTxList.mockResolvedValue([{ id: 1 } as Transaction]);
+    const view = await render(<ModifyCategoryScreen />);
+    await view.findByDisplayValue('Food');
+
+    await fireEvent.press(view.getByText('Delete'));
+    await waitFor(() => expect(view.getByText('Move them to another category')).toBeTruthy());
+    await fireEvent.press(view.getByText('Move them to another category'));
+
+    expect(view.getByText('Move transactions', { exact: false })).toBeTruthy();
+    expect(view.getAllByText('1 transaction').length).toBeGreaterThan(0);
+    expect(view.getByText('Travel')).toBeTruthy();
+    expect(view.getByText('Move & delete')).toBeDisabled();
+
+    await fireEvent.press(view.getByText('Travel'));
+    expect(view.getByText('Move & delete')).not.toBeDisabled();
+    await fireEvent.press(view.getByText('Move & delete'));
+
+    await waitFor(() => expect(mockReassignAndDelete).toHaveBeenCalledWith(7, 8));
+    expect(nav.goBack).toHaveBeenCalled();
+  });
+
+  it('warns that the transactions are deleted too', async () => {
+    setAppData({ categories: [category, { ...category, id: 8, name: 'Travel' } as Category] });
+    mockTxList.mockResolvedValue([{ id: 1 } as Transaction]);
+    const view = await render(<ModifyCategoryScreen />);
+    await view.findByDisplayValue('Food');
+
+    await fireEvent.press(view.getByText('Delete'));
+
+    await waitFor(() => expect(mockTxList).toHaveBeenCalled());
+    expect(view.getByText(
+      'Deleting this category will also delete its transactions, unless you choose to move them to another category',
+    )).toBeTruthy();
+    expect(view.getByText('Move them to another category')).toBeTruthy();
+  });
+
+  it('warns about transactions and rules together', async () => {
+    setAppData({ categories: [category, { ...category, id: 8, name: 'Travel' } as Category] });
+    mockTxList.mockResolvedValue([{ id: 1 } as Transaction]);
+    mockRuleCounts.mockResolvedValue({ 7: 1 });
+    const view = await render(<ModifyCategoryScreen />);
+    await view.findByDisplayValue('Food');
+
+    await fireEvent.press(view.getByText('Delete'));
+
+    await waitFor(() => expect(mockRuleCounts).toHaveBeenCalledWith([7]));
+    expect(view.getByText(
+      'Deleting this category will also delete its transactions and its recurring rules, unless you choose to move them to another category',
+    )).toBeTruthy();
+  });
+
+  it('does not offer to move a category without data', async () => {
+    setAppData({ categories: [category, { ...category, id: 8, name: 'Travel' } as Category] });
+    const view = await render(<ModifyCategoryScreen />);
+    await view.findByDisplayValue('Food');
+
+    await fireEvent.press(view.getByText('Delete'));
+
+    await waitFor(() => expect(view.getByText('This category will be permanently deleted.')).toBeTruthy());
+    expect(view.queryByText('Move them to another category')).toBeNull();
+    expect(within(view.getByTestId(TEST_IDS.modalEntitySubject)).queryByText(/transactions?|rules?/i)).toBeNull();
+  });
+
+  it('assumes data when the linked-data check fails', async () => {
+    setAppData({ categories: [category, { ...category, id: 8, name: 'Travel' } as Category] });
+    mockTxList.mockRejectedValue(new Error('offline'));
+    mockRuleCounts.mockRejectedValue(new Error('offline'));
+    const view = await render(<ModifyCategoryScreen />);
+    await view.findByDisplayValue('Food');
+
+    await fireEvent.press(view.getByText('Delete'));
+
+    await waitFor(() => expect(view.getByText(
+      'Deleting this category will also delete its transactions and its recurring rules, unless you choose to move them to another category',
+    )).toBeTruthy());
+    expect(within(view.getByTestId(TEST_IDS.modalEntitySubject)).queryByText(/transactions?|rules?/i)).toBeNull();
+  });
+  it('keeps a custom name when only the icon changes', async () => {
+    const view = await render(<ModifyCategoryScreen />);
+    await view.findByDisplayValue('Food');
+
+    // The icon grid only renders its cells once it knows its width.
+    await act(async () => {
+      fireEvent(view.getByTestId(TEST_IDS.iconGrid), 'layout', {
+        nativeEvent: { layout: { width: 320, height: 320 } },
+      });
+    });
+    await fireEvent.press(view.getByLabelText('airplane-outline'));
+    await fireEvent.press(view.getByText('Save'));
+
+    await waitFor(() => expect(mockCategoryUpdate).toHaveBeenCalledTimes(1));
+    // "Food" is not the seeded default for this id, so it must be stored as typed.
+    expect(mockCategoryUpdate).toHaveBeenCalledWith(7, expect.objectContaining({ name: 'Food' }));
+  });
 });
+

@@ -6,9 +6,10 @@ import type { Tag } from '../types';
 import { tagSchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
 import { dbTimestamp } from '../../utils/formatters';
-import { existsByName } from './repoHelpers';
+import { existsByName, pickDefined } from './repoHelpers';
+import { serializeWrites } from '../transactionQueue';
 
-export const tagRepo = {
+const tagRepoBase = {
   async list(userId: number): Promise<Tag[]> {
     const db = await getDrizzle();
     const rows = await db
@@ -34,8 +35,7 @@ export const tagRepo = {
 
   async update(id: number, data: Partial<Omit<Tag, 'id' | 'created_at'>>): Promise<void> {
     const db = await getDrizzle();
-    const set: Partial<typeof tags.$inferInsert> = {};
-    if (data.name !== undefined) set.name = data.name;
+    const set = pickDefined(data, ['name']);
     if (Object.keys(set).length === 0) return;
     await db.update(tags).set(set).where(eq(tags.id, id)).run();
   },
@@ -62,7 +62,9 @@ export const tagRepo = {
       { name: tags.name, userId: tags.user_id, id: tags.id },
       userId,
       name,
-      excludeId
+      excludeId,
     );
   },
 };
+
+export const tagRepo = serializeWrites(tagRepoBase, ['create', 'update', 'delete', 'deleteMany', 'deleteAll']);

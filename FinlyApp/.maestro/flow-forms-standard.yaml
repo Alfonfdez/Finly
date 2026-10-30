@@ -1,0 +1,115 @@
+appId: com.finly.app
+---
+# Verifies the form-validation + bottom-action standard across Create and Edit
+# screens: amount 0 red border, the muted Delete note above the button, the red
+# hint in its reserved slot between Delete and Save, and no red on a fresh field.
+- runFlow:
+    file: "helpers/state-reset.yaml"
+- runFlow:
+    file: "helpers/dismiss-dev-menu.yaml"
+
+# 1) Add transaction: an amount of 0 gets a red border + the checklist hint
+- tapOn: "Add expense or income"
+- waitForAnimationToEnd
+- assertVisible: "Add transaction"
+- tapOn: "Amount input"
+- inputText: "0"
+# A small drag dismisses the keypad (the form dismisses it on scroll begin).
+- scroll
+- scrollUntilVisible:
+    element:
+      text: ".*Enter a valid amount greater than 0.*"
+    direction: DOWN
+- takeScreenshot: forms-1-add-amount-zero
+- back
+- waitForAnimationToEnd
+
+# 2) Modify account: muted note above Delete, reserved red-hint slot, then Save
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- tapOn: "Accounts"
+- waitForAnimationToEnd
+- tapOn: "My Wallet"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: ".*You need at least one account.*"
+    direction: DOWN
+- assertVisible: ".*You need at least one account.*"
+- takeScreenshot: forms-2-modify-account-clean
+- scrollUntilVisible:
+    element:
+      text: "Account name"
+    direction: UP
+- tapOn: "Account name"
+- eraseText: 50
+- scroll
+- scrollUntilVisible:
+    element:
+      text: ".*Enter an account name.*"
+    direction: DOWN
+- takeScreenshot: forms-3-modify-account-hint
+- back
+- waitForAnimationToEnd
+
+# 3) Edit recurring rule: the red hint sits between Delete and Save
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- tapOn: "Recurring"
+- waitForAnimationToEnd
+- tapOn: "Add recurring rule"
+- waitForAnimationToEnd
+- assertVisible: "New recurring rule"
+- tapOn: "Amount input"
+- inputText: "7"
+- tapOn: "Groceries"
+- scrollUntilVisible:
+    element:
+      id: "repeat-name"
+    direction: DOWN
+- tapOn:
+    id: "repeat-name"
+- inputText: "E2E Daily"
+# The drag dismisses the keypad so the frequency chips are tappable.
+- scroll
+- scrollUntilVisible:
+    element:
+      text: "Daily"
+    direction: DOWN
+- tapOn: "Daily"
+- scrollUntilVisible:
+    element:
+      text: "Create"
+    direction: DOWN
+- tapOn: "Create"
+- waitForAnimationToEnd
+- assertVisible: "E2E Daily"
+- tapOn: "E2E Daily"
+- waitForAnimationToEnd
+- assertVisible: "Edit recurring rule"
+- tapOn: "Amount input"
+- eraseText: 50
+- inputText: "0"
+- scroll
+- scrollUntilVisible:
+    element:
+      text: ".*Enter a valid amount greater than 0.*"
+    direction: DOWN
+- takeScreenshot: forms-4-edit-recurring-hint
+- back
+- waitForAnimationToEnd
+
+# 4) Create tag: the empty-name hint shows, the fresh field is not red
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- tapOn: "Tags"
+- waitForAnimationToEnd
+- tapOn: "Add"
+- waitForAnimationToEnd
+- assertVisible: "New tag"
+- takeScreenshot: forms-5-create-tag-clean
+- tapOn: "Tag name"
+- inputText: "x"
+- eraseText: 50
+- scroll
+- takeScreenshot: forms-6-create-tag-touched

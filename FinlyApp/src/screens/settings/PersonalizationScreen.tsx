@@ -1,4 +1,5 @@
 import { View, Text, ScrollView } from 'react-native';
+import ScreenShell from '../../components/ScreenShell';
 import { useConfig, type Config } from '../../context/ConfigContext';
 import { useApp } from '../../context/AppContext';
 import { useFontSize } from '../../hooks/useFontSize';
@@ -25,7 +26,7 @@ export default function PersonalizationScreen() {
   const labels = t();
 
   const allAccounts = accounts.filter(a => isTotalAccount(a)).concat(
-    accounts.filter(a => !isTotalAccount(a)).sort((a, b) => a.name.localeCompare(b.name))
+    accounts.filter(a => !isTotalAccount(a)).sort((a, b) => a.name.localeCompare(b.name)),
   );
 
   const homeAccounts: Option<string>[] = [
@@ -37,7 +38,7 @@ export default function PersonalizationScreen() {
     })),
   ];
 
-  const addAccounts: Option<string>[] = [
+  const notSelectedAccounts: Option<string>[] = [
     { label: labels.settings_not_selected, value: CONFIG_NULL_SENTINEL },
     ...allAccounts.filter(a => !isTotalAccount(a)).sort((a, b) => a.name.localeCompare(b.name)).map(a => ({
       label: getDisplayAccountName(a),
@@ -52,8 +53,13 @@ export default function PersonalizationScreen() {
       : HOME_TOTAL_OPTION;
 
   const addSelected =
-    config.addDefaultAccountId !== null && addAccounts.some(o => o.value === String(config.addDefaultAccountId))
+    config.addDefaultAccountId !== null && notSelectedAccounts.some(o => o.value === String(config.addDefaultAccountId))
       ? String(config.addDefaultAccountId)
+      : CONFIG_NULL_SENTINEL;
+
+  const createRecurringSelected =
+    config.createRecurringDefaultAccountId !== null && notSelectedAccounts.some(o => o.value === String(config.createRecurringDefaultAccountId))
+      ? String(config.createRecurringDefaultAccountId)
       : CONFIG_NULL_SENTINEL;
 
   const PERIOD_OPTIONS: Option<Period>[] = [
@@ -64,60 +70,125 @@ export default function PersonalizationScreen() {
   ];
 
   return (
-    <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
-      <SettingsSection title={labels.settings_home_screen} card={false}>
-        <SettingsPickerRow
-          label={labels.settings_default_account}
-          options={homeAccounts}
-          selected={homeSelected}
-          onSelect={(v) => updateConfig({ homeDefaultAccountId: v === HOME_TOTAL_OPTION ? null : Number(v) })}
-          title={labels.settings_default_account}
-        />
-        <SettingsSelectRow
-          label={labels.settings_default_period}
-          options={PERIOD_OPTIONS}
-          selected={config.homeDefaultPeriod}
-          onSelect={(v) => updateConfig({ homeDefaultPeriod: v as Config['homeDefaultPeriod'] })}
-        />
-      </SettingsSection>
+    <ScreenShell>
+      <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
+        <SettingsSection title={labels.settings_home_screen} card={false}>
+          <SettingsPickerRow
+            label={labels.settings_default_account}
+            options={homeAccounts}
+            selected={homeSelected}
+            onSelect={(v) => updateConfig({ homeDefaultAccountId: v === HOME_TOTAL_OPTION ? null : Number(v) })}
+            title={labels.settings_default_account}
+            icon="wallet-outline"
+          />
+          <SettingsSelectRow
+            label={labels.settings_default_period}
+            options={PERIOD_OPTIONS}
+            selected={config.homeDefaultPeriod}
+            onSelect={(v) => updateConfig({ homeDefaultPeriod: v as Config['homeDefaultPeriod'] })}
+          />
+        </SettingsSection>
 
-      <SettingsSection title={labels.settings_add_transaction} card={false}>
-        <SettingsPickerRow
-          label={labels.settings_default_account}
-          options={addAccounts}
-          selected={addSelected}
-          onSelect={(v) => updateConfig({ addDefaultAccountId: v === CONFIG_NULL_SENTINEL ? null : Number(v) })}
-          title={labels.settings_default_account}
-        />
-        <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
-          <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_optional_fields}</Text>
-          <CheckboxRow
-            checked={config.addShowLabels}
-            onToggle={() => updateConfig({ addShowLabels: !config.addShowLabels })}
-            label={labels.settings_labels}
+        <SettingsSection title={labels.add_title} card={false}>
+          <SettingsPickerRow
+            label={labels.settings_default_account}
+            options={notSelectedAccounts}
+            selected={addSelected}
+            onSelect={(v) => updateConfig({ addDefaultAccountId: v === CONFIG_NULL_SENTINEL ? null : Number(v) })}
+            title={labels.settings_default_account}
+            icon="wallet-outline"
           />
-          <CheckboxRow
-            checked={config.addShowComments}
-            onToggle={() => updateConfig({ addShowComments: !config.addShowComments })}
-            label={labels.settings_comments}
-          />
-          <CheckboxRow
-            checked={config.addShowPhoto}
-            onToggle={() => updateConfig({ addShowPhoto: !config.addShowPhoto })}
-            label={labels.settings_photo}
-          />
-        </View>
-      </SettingsSection>
+          <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
+            <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_optional_fields}</Text>
+            <CheckboxRow
+              checked={config.addShowLabels}
+              onToggle={() => updateConfig({ addShowLabels: !config.addShowLabels })}
+              label={labels.settings_labels}
+            />
+            <CheckboxRow
+              checked={config.addShowComments}
+              onToggle={() => updateConfig({ addShowComments: !config.addShowComments })}
+              label={labels.settings_comments}
+            />
+            <CheckboxRow
+              checked={config.addShowPhoto}
+              onToggle={() => updateConfig({ addShowPhoto: !config.addShowPhoto })}
+              label={labels.settings_photo}
+            />
+          </View>
+        </SettingsSection>
 
-      <SettingsSection title={labels.settings_privacy} card={false}>
-        <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
-          <ToggleRow
-            checked={config.hideBalances}
-            onToggle={() => updateConfig({ hideBalances: !config.hideBalances })}
-            label={labels.settings_hide_balances}
+        <SettingsSection title={labels.modify_title} card={false}>
+          <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
+            <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_optional_fields}</Text>
+            <CheckboxRow
+              checked={config.modifyShowLabels}
+              onToggle={() => updateConfig({ modifyShowLabels: !config.modifyShowLabels })}
+              label={labels.settings_labels}
+            />
+            <CheckboxRow
+              checked={config.modifyShowComments}
+              onToggle={() => updateConfig({ modifyShowComments: !config.modifyShowComments })}
+              label={labels.settings_comments}
+            />
+            <CheckboxRow
+              checked={config.modifyShowPhoto}
+              onToggle={() => updateConfig({ modifyShowPhoto: !config.modifyShowPhoto })}
+              label={labels.settings_photo}
+            />
+          </View>
+        </SettingsSection>
+
+        <SettingsSection title={labels.recurring_create_title} card={false}>
+          <SettingsPickerRow
+            label={labels.settings_default_account}
+            options={notSelectedAccounts}
+            selected={createRecurringSelected}
+            onSelect={(v) => updateConfig({ createRecurringDefaultAccountId: v === CONFIG_NULL_SENTINEL ? null : Number(v) })}
+            title={labels.settings_default_account}
+            icon="wallet-outline"
           />
-        </View>
-      </SettingsSection>
-    </ScrollView>
+          <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
+            <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_optional_fields}</Text>
+            <CheckboxRow
+              checked={config.createRecurringShowLabels}
+              onToggle={() => updateConfig({ createRecurringShowLabels: !config.createRecurringShowLabels })}
+              label={labels.settings_labels}
+            />
+            <CheckboxRow
+              checked={config.createRecurringShowComments}
+              onToggle={() => updateConfig({ createRecurringShowComments: !config.createRecurringShowComments })}
+              label={labels.settings_comments}
+            />
+          </View>
+        </SettingsSection>
+
+        <SettingsSection title={labels.recurring_edit_title} card={false}>
+          <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
+            <Text style={[settingsStyles.label, { color: c.text, fontSize: fs(15) }]}>{labels.settings_optional_fields}</Text>
+            <CheckboxRow
+              checked={config.editRecurringShowLabels}
+              onToggle={() => updateConfig({ editRecurringShowLabels: !config.editRecurringShowLabels })}
+              label={labels.settings_labels}
+            />
+            <CheckboxRow
+              checked={config.editRecurringShowComments}
+              onToggle={() => updateConfig({ editRecurringShowComments: !config.editRecurringShowComments })}
+              label={labels.settings_comments}
+            />
+          </View>
+        </SettingsSection>
+
+        <SettingsSection title={labels.settings_privacy} card={false}>
+          <View style={[settingsStyles.card, { backgroundColor: c.surface }]}>
+            <ToggleRow
+              checked={config.hideBalances}
+              onToggle={() => updateConfig({ hideBalances: !config.hideBalances })}
+              label={labels.settings_hide_balances}
+            />
+          </View>
+        </SettingsSection>
+      </ScrollView>
+    </ScreenShell>
   );
 }

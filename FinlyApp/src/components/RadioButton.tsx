@@ -7,6 +7,7 @@ interface RadioButtonProps {
   color?: string;
   borderColor?: string;
   size?: number;
+  accessibilityLabel?: string;
 }
 
 export default function RadioButton({
@@ -15,6 +16,7 @@ export default function RadioButton({
   color,
   borderColor,
   size = 22,
+  accessibilityLabel,
 }: RadioButtonProps) {
   const { activeColors: c } = useConfig();
   const activeColor = color ?? c.primary;
@@ -49,7 +51,16 @@ export default function RadioButton({
     return circle;
   }
 
-  return <TouchableOpacity onPress={onPress} accessibilityRole="radio" accessibilityState={{ selected }}>{circle}</TouchableOpacity>;
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      accessibilityRole="radio"
+      accessibilityState={{ selected }}
+      accessibilityLabel={accessibilityLabel}
+    >
+      {circle}
+    </TouchableOpacity>
+  );
 }
 
 const styles = StyleSheet.create({

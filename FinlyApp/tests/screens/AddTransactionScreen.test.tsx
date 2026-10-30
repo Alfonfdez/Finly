@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import AddTransactionScreen from '../../src/screens/AddTransactionScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
 import { setConfig, resetStub } from '../component/helpers/configStub';
-import type { Account, Category, Transaction, Tag } from '../../src/database/types';
+import type { Account, Category, Tag } from '../../src/database/types';
 import type { TransactionType } from '../../src/constants/types';
 
 const nav = { setOptions: vi.fn(), navigate: vi.fn(), goBack: vi.fn() };
@@ -13,7 +13,7 @@ const routeParams: Record<string, unknown> = {};
 const mockGetTagsByTransactionId = vi.fn(async (_id: number) => [] as number[]);
 const mockGetCategoryUsageCounts = vi.fn(
   async (_userId: number, _type: TransactionType, _start: string, _accountId: number) =>
-    [] as { id: number; name: string; icon: string; color: string; count: number }[]
+    [] as { id: number; name: string; icon: string; color: string; count: number }[],
 );
 const mockTagCreate = vi.fn(async (_data: unknown) => ({ id: 900 }) as Tag);
 const mockCreateWithTags = vi.fn(async (_data: unknown, _tagIds: number[]) => {});
@@ -52,6 +52,13 @@ vi.mock('../../src/database', () => ({
   tagRepository: {
     create: (data: unknown) => mockTagCreate(data),
   },
+  recurringRepository: {
+    list: vi.fn(async () => []),
+  },
+}));
+
+vi.mock('../../src/database/recurringService', () => ({
+  createRecurringRule: vi.fn(async () => 0),
 }));
 
 vi.mock('@react-navigation/native', async () => {
@@ -103,12 +110,15 @@ describe('AddTransactionScreen', () => {
 
   it('renders the transaction form with the submit button and hint', async () => {
     const view = await render(<AddTransactionScreen />);
-    expect(view.getByText('Select a category and enter an amount')).toBeTruthy();
+    expect(view.getByText('Select a category. Enter a valid amount greater than 0.')).toBeTruthy();
     expect(view.getByText('Add')).toBeDisabled();
   });
 
   it('shows the account picker for the active account', async () => {
     const view = await render(<AddTransactionScreen />);
+    expect(view.getByText('Amount')).toBeTruthy();
     expect(view.getByText('Account')).toBeTruthy();
+    expect(view.getByText('Categories')).toBeTruthy();
+    expect(view.getByText('Date')).toBeTruthy();
   });
 });

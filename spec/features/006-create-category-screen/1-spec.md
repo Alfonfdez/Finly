@@ -1,7 +1,7 @@
 # 006 — Create Category Page
 
 - **Goal**
-Screen accessible from the "Create" button in the last position of the grid in `AddCategoryScreen` that allows the user to create a new custom category with name, type, icon and color. All texts are multilingual (en/es/ca).
+Screen accessible from the "Create" button in the last position of the grid in `AddCategoryScreen` or in the active tab of `CategoriesScreen` that allows the user to create a new custom category with name, type, icon and color. All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it).
 
 ---
 
@@ -9,13 +9,13 @@ Screen accessible from the "Create" button in the last position of the grid in `
 
 ### 1. Access and Navigation
 
-- The screen is accessed from the "Create" button in the grid on `AddCategoryScreen`.
-- The screen has a back button (left arrow) in the header to return to `AddCategoryScreen`.
+- The screen is accessed from the "Create" button in the grid on `AddCategoryScreen` or from the "Create" tile on `CategoriesScreen`.
+- The screen has a back button (left arrow) in the header to return to the previous screen.
 - The header title is "Create category" (multilingual).
 
-### 2. Category Name
+### 2. Name
 
-- The first element below the header is a text input with placeholder "Category name" (multilingual).
+- The first element below the header is a `Name` section (multilingual `form_name`) with an `id-card-outline` icon and the `0/30` counter in the header's right slot, followed by a text input with placeholder "Category name" (multilingual).
 - The name is required: if empty, the "Add" button is disabled.
 - If the name is empty and the user tries to press "Add" (or while the input is empty), a red help text is shown: "Enter a category name" (multilingual).
 - **Duplicate validation**: while typing, it verifies that no category with the same name (case-insensitive) already exists in the database, regardless of type (expense/income).
@@ -26,13 +26,14 @@ Screen accessible from the "Create" button in the last position of the grid in `
 
 ### 3. Type (expense / income)
 
-- Two radio buttons: "Expenses" and "Incomes" (multilingual).
-- "Expenses" selected by default.
-- The icon of the selected radio button must show a filled circle with the primary color; the unselected one shows an empty circle.
+- The type is always fixed to the route type and shown under a `Type` section with a `swap-horizontal-outline` icon, as a read-only value (`Type: Expense`/`Type: Income`); no radios are shown.
+- From the transaction flow (`fromTransaction: true`), the route type is the active transaction type.
+- From the Categories screen, the route type is the active Categories tab, so creating from the Expense tab can only create an Expense category and creating from the Income tab can only create an Income category.
+- To create the other type, the user switches the Categories tab first.
 
 ### 4. Symbols (icons)
 
-- Title: "Symbols" (multilingual).
+- Title: "Symbols" (multilingual) with a `shapes-outline` icon.
 - Grid of 4 columns × dynamic rows (vertical ScrollView if they don't all fit).
 - ~40 predefined Ionicons shown with flat gray background (`#334155` in dark theme).
 - When tapping an icon, it is highlighted with a primary color border and the background changes slightly.
@@ -64,7 +65,7 @@ Screen accessible from the "Create" button in the last position of the grid in `
 
 ### 5. Color
 
-- Title: "Color" (multilingual).
+- Title: "Color" (multilingual) with a `color-palette-outline` icon; the standard 16px section gap separates it from Symbols.
 - Grid of 1 row × 8 columns.
 - The first 6 positions are predefined circular colors.
 - The 7th position shows the custom color chosen from the picker (if any) with a checkmark.
@@ -112,7 +113,7 @@ Screen accessible from the "Create" button in the last position of the grid in `
   4. "Select a color" (if color missing)
   5. "Select an icon and a color" (if both missing)
   6. "Maximum of 30 categories per type reached" (if the per-type limit is reached)
-- When pressing "Add", the category is created in the database (native SQLite / web localStorage) and navigation returns to `AddCategoryScreen` with the newly created category selected.
+- When pressing "Add", the category is created in the database (native SQLite, sql.js + IndexedDB on web) and navigation returns to the previous screen.
 
 ### 7. Behavior on Creation
 
@@ -122,14 +123,15 @@ Screen accessible from the "Create" button in the last position of the grid in `
   - `icon`: the selected icon.
   - `color`: the selected color.
   - `type`: the selected type (expense/income).
-- After insertion, navigation goes to `AddCategoryScreen` with `{ type, categoryId }` so that the new category appears selected (using the same `setPendingCategory` pattern from `AddTransactionScreen`).
+- In the transaction flow (`fromTransaction: true`), the new category is left pending so the transaction form selects it when it regains focus.
+- In the standalone Categories flow, no pending category is set: returning to Categories must not auto-select the category in a later transaction.
 
 ### 8. Limit of categories per type
 
 - There is a maximum of 30 categories per type (expense/income), defined by `MAX_CATEGORIES_PER_TYPE` in `src/constants/types.ts`.
 - The limit counts the existing categories of the selected type only (the other type is independent). Default seed data ships 21 expense and 10 income categories, so a fresh install can add up to 9 more expense categories.
 - When the selected type already has 30 categories, the "Add" button is disabled and the message "Maximum of 30 categories per type reached" is shown in red.
-- The check is reactive: switching the type radio re-evaluates the limit for the other type.
+- The check uses the fixed route type; the other type has its own independent limit.
 - No database constraint is added; the limit is enforced at the UI layer.
 - As a complement, the entry points to this screen (the "Create" tile on the Categories page, spec 008, and on the Add Category screen, spec 005) are hidden when the type is at the cap, so the user never lands on a dead-end disabled form. This screen's guard remains as a safety net.
 
@@ -141,9 +143,9 @@ Screen accessible from the "Create" button in the last position of the grid in `
 - **Configuration**: the screen must use `useConfig().activeColors` for colors (not hardcoded).
 - **Text**: the screen must use `useFontSize()` for text scaling.
 - **Navigation**: the screen is added to the `HomeStack` in `AppNavigator.tsx`.
-- **Persistence**: the category is saved in the `categoryRepository` (native SQLite or web localStorage).
+- **Persistence**: the category is saved in the `categoryRepository` (native SQLite, sql.js + IndexedDB on web).
 - **Icons**: use `@expo/vector-icons` (Ionicons) as in the rest of the app.
-- **Duplicate validation**: an `existsByName(userId: number, name: string, excludeId?: number)` function must be added to `categoryRepo` and `webCategoryRepo` that returns `true` if a category with that name (case-insensitive) already exists for the same type and user.
+- **Duplicate validation**: an `existsByName(userId: number, name: string, excludeId?: number)` function must be added to `categoryRepo` that returns `true` if a category with that name (case-insensitive) already exists for the same type and user.
 
 ---
 
@@ -157,8 +159,8 @@ Screen accessible from the "Create" button in the last position of the grid in `
 - [x] If the name is empty, "Enter a category name" is shown in red.
 - [x] Duplicate validation checks case-insensitive against existing categories (regardless of type).
 - [x] If there is a duplicate, "A category with this name already exists" is shown in red and the button is disabled.
-- [x] When changing the type, the name duplicate validation re-runs.
-- [x] The "Expenses"/"Incomes" radios work correctly, "Expenses" selected by default.
+- [x] From the transaction flow, the type is fixed and shown read-only; the other type is not selectable.
+- [x] From the Categories screen, the type is fixed to the active tab and shown read-only; the other type is not selectable.
 - [x] ~40 icons are shown in a 4-column grid with vertical scroll.
 - [x] When tapping an icon, it is selected and visually highlighted.
 - [x] Only one icon can be selected at a time.
@@ -168,9 +170,10 @@ Screen accessible from the "Create" button in the last position of the grid in `
 - [x] When selecting a color in the modal, it closes and the color remains selected.
 - [x] The "Add" button is disabled if name, icon or color is missing (or name is duplicate).
 - [x] The red help text appears with the appropriate message based on what is missing (only the first unmet requirement).
-- [x] When pressing "Add", the category is created and navigation returns with the category selected.
+- [x] When pressing "Add" from the transaction flow, the category is created and left pending for the transaction form to select.
+- [x] When pressing "Add" from Categories, the category is created and no pending category is set.
 - [x] When the selected type already has 30 categories, the "Add" button is disabled and "Maximum of 30 categories per type reached" is shown in red.
-- [x] Switching the type radio re-evaluates the limit (the other type can still add categories if below 30).
+- [x] The fixed type uses its own per-type limit; the other type remains independently available from its tab.
 - [x] All texts change when changing the language in settings.
 - [x] The screen respects the active theme (dark/light).
 - [x] The screen respects the configured text size.

@@ -1,7 +1,8 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { COUNTER_STYLE } from '../components/componentStyles';
+import CharCounter from '../components/form/CharCounter';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
@@ -9,25 +10,35 @@ import { useFontSize } from '../hooks/useFontSize';
 import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
 import { useSearchFilter } from '../hooks/useSearchFilter';
+import { useSortPreference } from '../hooks/useSortPreference';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
-import { tagRepository } from '../database';
+import { tagRepository, transactionRepository } from '../database';
 import { type Tag } from '../database/types';
 import { type NavigationProp, MAX_TAGS } from '../constants/types';
+import { TEST_IDS } from '../constants/testIds';
 import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import { countAtLimit } from '../utils/limits';
+import { parseDbDate } from '../utils/formatters';
 import { useBulkDelete } from '../hooks/useBulkDelete';
 import { ERROR_PREFIXES } from '../utils/errors';
+import { defaultTagSortDirection, sortTags } from '../utils/tagSort';
 import Fab from '../components/Fab';
 import ListItemRow from '../components/ListItemRow';
+import SelectionCheckbox from '../components/SelectionCheckbox';
+import DateIcon from '../components/DateIcon';
+import ListOrEmpty from '../components/ListOrEmpty';
 import EmptyState, { emptyStateProps } from '../components/EmptyState';
 import SelectionActionBar from '../components/SelectionActionBar';
-import BulkDeleteConfirmationModal from '../components/BulkDeleteConfirmationModal';
+import SelectAllRow from '../components/SelectAllRow';
+import SortToggle, { tagSortFields } from '../components/SortToggle';
+import SortRow from '../components/SortRow';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 
 export default function TagsScreen() {
-  const { activeColors: c } = useConfig();
+  const { activeColors: c, config, updateConfig } = useConfig();
   const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp<'Tags'>>();
@@ -38,7 +49,7 @@ export default function TagsScreen() {
   const {
     searchActive, searchText, setSearchText,
     selectMode, selectedIds,
-    toggleItem, exitSelectMode,
+    toggleItem, reconcileSelection, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
   } = select;
 
@@ -57,12 +68,46 @@ export default function TagsScreen() {
 
   const filteredTags = useSearchFilter(tags, searchText, (tag) => [tag.name]);
 
+  const [usage, setUsage] = useState<Map<number, number>>(new Map());
+  // Creation order ascending (oldest first) keeps the list's historical order.
+  const sortBy = config.tagsSortBy;
+  const sortDirection = config.tagsSortDirection;
+
+  useEffect(() => {
+    let active = true;
+    transactionRepository.countByTagIdsMap(tags.map(t => t.id))
+      .then(map => {
+        if (active) setUsage(new Map(Object.entries(map).map(([id, count]) => [Number(id), count])));
+      })
+      .catch(() => { if (active) setUsage(new Map()); });
+    return () => { active = false; };
+  }, [tags]);
+
+  const { handleToggleSort, handleToggleDirection } = useSortPreference({
+    sortBy,
+    sortDirection,
+    defaultDirection: defaultTagSortDirection,
+    onChange: next => updateConfig({ tagsSortBy: next.by, tagsSortDirection: next.direction }),
+  });
+
+  const sortedTags = useMemo(
+    () => sortTags(filteredTags, sortBy, sortDirection, usage),
+    [filteredTags, sortBy, sortDirection, usage],
+  );
+
+  const visibleIds = useMemo(() => sortedTags.map(t => t.id), [sortedTags]);
+
+  useEffect(() => {
+    reconcileSelection(visibleIds);
+  }, [visibleIds, reconcileSelection]);
+
   const atTagLimit = countAtLimit(tags.length, MAX_TAGS);
 
   const {
-    deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
+    deleteModalVisible, busy, openDeleteModal, closeDeleteModal, confirmBulkDelete,
   } = useBulkDelete({
     selectedIds,
+    visibleIds,
     exitSelectMode,
     deleteFn: (ids) => tagRepository.deleteMany(ids),
     afterDelete: refreshTags,
@@ -71,24 +116,30 @@ export default function TagsScreen() {
 
   const renderItem = useCallback(({ item }: { item: Tag }) => {
     const selected = selectedIds.has(item.id);
+    const created = parseDbDate(item.created_at);
+    const createdText = `${created.getDate()} ${labels.months_short[created.getMonth()]} ${created.getFullYear()}`;
     return (
       <ListItemRow
         title={item.name}
         titleSize={15}
-        leading={selectMode ? (
-          <Ionicons
-            name={selected ? 'checkbox' : 'checkbox-outline'}
-            size={22}
-            color={selected ? c.primary : c.textSecondary}
-          />
-        ) : undefined}
+        subtitle={labels.tags_used_in(usage.get(item.id) ?? 0)}
+        middle={
+          <View style={styles.dateRow}>
+            <DateIcon kind="time" size={12} />
+            <Text style={[styles.dateText, { color: c.textSecondary, fontSize: fs(12) }]}>
+              {labels.tags_created_on(createdText)}
+            </Text>
+          </View>
+        }
+        leading={selectMode ? <SelectionCheckbox selected={selected} /> : undefined}
         right={!selectMode ? <Ionicons name="chevron-forward" size={18} color={c.textSecondary} /> : undefined}
         divider
+        accessibilityState={selectMode ? { selected } : undefined}
         style={[styles.row, { backgroundColor: c.surface }]}
         onPress={() => (selectMode ? toggleItem(item.id) : navigation.navigate('ModifyTag', { tagId: item.id }))}
       />
     );
-  }, [selectedIds, selectMode, toggleItem, navigation, c]);
+  }, [selectedIds, selectMode, toggleItem, navigation, c, usage, labels, fs]);
 
   const renderEmpty = () => (
     <EmptyState {...emptyStateProps(searchActive, 'pricetag-outline', labels.tags_empty)} />
@@ -105,24 +156,46 @@ export default function TagsScreen() {
       />
 
       {!selectMode && (
-        <Text style={[COUNTER_STYLE, { color: c.textSecondary, fontSize: fs(13) }]}>
+        <CharCounter value={tags.length} maxLength={MAX_TAGS} style={COUNTER_STYLE}>
           {labels.tags_counter(tags.length, MAX_TAGS)}
-        </Text>
+        </CharCounter>
       )}
 
-      <FlatList
-        data={filteredTags}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={renderItem}
-        ListEmptyComponent={renderEmpty}
-        contentContainerStyle={filteredTags.length === 0 ? styles.emptyList : styles.list}
-      />
+      <SortRow bordered>
+        <SortToggle
+          fields={tagSortFields(labels)}
+          sortBy={sortBy}
+          direction={sortDirection}
+          onToggleSort={handleToggleSort}
+          onToggleDirection={handleToggleDirection}
+        />
+      </SortRow>
+
+      {selectMode && visibleIds.length > 0 && (
+        <SelectAllRow
+          allSelected={select.allSelected(visibleIds)}
+          countLabel={labels.items_count(visibleIds.length)}
+          selectAllLabel={labels.select_all}
+          deselectAllLabel={labels.deselect_all}
+          onToggle={() => select.toggleSelectAll(visibleIds)}
+        />
+      )}
+
+      <ListOrEmpty empty={sortedTags.length === 0} emptyState={renderEmpty()}>
+        <FlatList
+          testID={TEST_IDS.tagsList}
+          data={sortedTags}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={renderItem}
+          contentContainerStyle={styles.list}
+        />
+      </ListOrEmpty>
 
       {selectMode ? (
         <SelectionActionBar
           selectedCount={selectedIds.size}
           deleteLabel={labels.tags_bulk_delete(selectedIds.size)}
-          cancelLabel={labels.modify_tag_delete_confirm_cancel}
+          cancelLabel={labels.cancel}
           onDelete={openDeleteModal}
           onCancel={exitSelectMode}
         />
@@ -139,14 +212,13 @@ export default function TagsScreen() {
         />
       )}
 
-      <BulkDeleteConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.tags_bulk_delete_confirm_title(selectedIds.size)}
         message={labels.tags_bulk_delete_confirm_message}
-        confirmLabel={labels.modify_tag_delete_confirm_delete}
-        cancelLabel={labels.modify_tag_delete_confirm_cancel}
         onConfirm={confirmBulkDelete}
         onCancel={closeDeleteModal}
+        busy={busy}
       />
     </ScreenShell>
   );
@@ -157,12 +229,11 @@ const styles = StyleSheet.create({
     padding: 16,
     ...LIST_BOTTOM_FAB_PADDING,
   },
-  emptyList: {
-    flex: 1,
-  },
   row: {
     padding: 14,
   },
+  dateRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  dateText: { flexShrink: 1 },
   limitWrap: {
     position: 'absolute',
     bottom: 56,

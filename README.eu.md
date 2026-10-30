@@ -9,14 +9,14 @@ Dena **gailuan** exekutatzen da: zure datuak tokiko SQLite datu-base batean bizi
 | | |
 |---|---|
 | **Plataformak** | iOS, Android eta Web |
-| **Bertsioa** | 2.1.0 |
+| **Bertsioa** | 2.2.0 |
 | **Hizkuntzak** | Ingelesa, Gaztelania, Katalana, Galiziera, Euskara, Frantsesa, Alemana, Portugesa eta Italiera |
 | **Datuak** | % 100 tokikoak (SQLite natiboan, sql.js + IndexedDB webgunean) |
 | **Gaiak** | Iluna, Argia eta Automatikoa (sistemari jarraitzen dio) |
 
 ## Funtzioak
 
-- **Hainbat kontu** — sortu, editatu eta ezabatu kontuak, bakoitza bere ikono, kolore eta hasierako saldo aukerakoarekin. **Total** kontu berezi batek dena biltzen du.
+- **Hainbat kontu** — sortu, editatu eta ezabatu kontuak, bakoitza bere ikono, kolore eta hasierako saldo aukerakoarekin (saldo negatiboak barne). **Total** kontu berezi batek dena biltzen du.
 - **Sarreren eta gastuen jarraipena** — gehitu transakzioak egun jakin batean, zenbateko, kontu, kategoria, etiketa, iruzkin eta aukerako argazki batekin.
 - **Kategoria pertsonalizatuak** — aukeratu ikono eta koloreen liburutegi batetik, eta sortu zeure gastu eta sarrera kategoriak.
 - **Grafikoak** — donut grafikoa erdian totalarekin eta barra metatu horizontaleko grafikoa, kategoria bakoitzeko ehunekoak erakusten dituen sailkapenarekin.
@@ -24,6 +24,7 @@ Dena **gailuan** exekutatzen da: zure datuak tokiko SQLite datu-base batean bizi
 - **Transakzio guztiak** — iragazki konbinatuak: mota, kategoriak (hautaketa anizkoitza), aldia, kontua, etiketak eta bilaketa, data edo zenbatekoaren araberako ordenarekin.
 - **Etiketak eta iruzkinak** — etiketatu transakzioak eta gero iragazi etiketaren arabera; kudeatu aplikazioko iruzkin guztiak eta aplikatu aldaketak edo ezabaketa masiboak transakzio askori aldi berean.
 - **Argazkiak** — erantsi argazki bat transakzio bati galeriatik plataforma guztietan (kamera iOS eta Androiden).
+- **Arau errepikakorrak** — bihurtu transakzio bat errepikatzen den programazio bat (egunero, astero, hilero edo urtero, tartea eta amaiera-data aukerakoarekin); falta diren ocurrentziak berez sortzen dira eta arau bakoitza pausatu, berrekin edo editatu daiteke aldaketa etorkizunari soilik edo iraganari ere aplikatuz.
 - **Ekintza masiboak** — hautatu anitz eta ezabatu transakzioak, etiketak, iruzkinak eta kategoriak batera.
 - **Datuen babeskopia** — esportatu zure datu-base osoa JSON argazki gisa eta inportatu berriro nahi duzunean.
 - **Ezarpenak** — gaia, testu-tamaina, moneta, hamartar bereizlea, hizkuntza, asteko lehen eguna, ikono-formak, hasiera eta transakzio-gehiketa lehenetsiak, eta saldoak ezkutatzeko pribatutasun-aukerak.
@@ -31,23 +32,36 @@ Dena **gailuan** exekutatzen da: zure datuak tokiko SQLite datu-base batean bizi
 
 ## Pantaila-argazkiak
 
-![Hasierako pantaila](images/screenshots/v2-01-a-home-empty.png)<br>*Hasierako pantaila edozein kontu konfiguratu aurretik.*<br><br>
-![Hasierako pantaila](images/screenshots/v2-01-b-home.png)<br>*Hasierako pantaila kontuekin, donut grafikoarekin eta kategoria-sailkapenarekin.*<br><br>
-![Alboko menua](images/screenshots/v2-02-hamburger.png)<br>*Alboko menua: Hasiera, Kontuak, Kategoriak, Etiketak, Iruzkinak, Transakzio guztiak eta Ezarpenak.*<br><br>
-![Transakzioa gehitu](images/screenshots/v2-03-add-transaction.png)<br>*Gehitu gastu edo sarrera bat zenbateko, kontu, kategoria, egun, etiketa, iruzkin eta argazkiarekin.*<br><br>
-![Data-hautatzailea](images/screenshots/v2-04-date-picker.png)<br>*Egutegi-hautatzailea egun, aste, hilabete, urte edo aldi-tarte pertsonalizatua aukeratzeko.*<br><br>
-![Kategoriak](images/screenshots/v2-05-categories.png)<br>*Kategoriak motaren arabera antolatuta (gastuak/sarrerak) 4×N sare batean.*<br><br>
-![Etiketak](images/screenshots/v2-06-tags.png)<br>*Etiketa-pantaila bilaketarekin eta hautaketa masiboarekin.*<br><br>
-![Transakzio guztiak, hutsik](images/screenshots/v2-07-a-all-transactions-empty-state.png)<br>*Transakzio guztiak egoera hutsean.*<br><br>
-![Transakzio guztiak](images/screenshots/v2-07-b-all-transactions.png)<br>*Transakzio guztiak mota, kategoria, aldi eta etiketa iragazkiekin, ordenarekin eta bilaketarekin.*<br><br>
-![Kontuak](images/screenshots/v2-08-accounts.png)<br>*Kontuen pantaila saldoekin eta Total kontu agregatuarekin.*<br><br>
-![Sarrera-xehetasunak](images/screenshots/v2-09-a-details-income.png)<br>*Sarrera-transakzio baten xehetasunak, edizio eta ezabaketarekin.*<br><br>
-![Gastu-xehetasunak](images/screenshots/v2-09-b-details-expense.png)<br>*Gastu-transakzio baten xehetasunak, edizio eta ezabaketarekin.*<br><br>
-![Ezarpenak](images/screenshots/v2-10-settings.png)<br>*Ezarpenak: Itxura, Eskualdea, Pertsonalizazioa eta Datuak.*<br><br>
-![Eskualde-ezarpenak](images/screenshots/v2-11-regional-en.png)<br>*Eskualde-ezarpenak: hizkuntza, moneta, hamartar bereizlea eta asteko lehen eguna.*<br><br>
-![Itxura-ezarpenak](images/screenshots/v2-12-settings-appearance.png)<br>*Itxura: gaia, testu-tamaina eta ikono-formak.*<br><br>
-![Pertsonalizazio-ezarpenak](images/screenshots/v2-13-settings-personalization.png)<br>*Pertsonalizazioa: hasiera eta transakzio-gehiketa lehenetsiak eta pribatutasuna.*<br><br>
-![Datu-ezarpenak](images/screenshots/v2-14-settings-data.png)<br>*Datuak: babeskopia esportatu/inportatu eta ezabatu/berrezarri ekintzak.*<br><br>
+![Hasierako pantaila](images/screenshots/v3.4-01-a-home-empty.png)<br>*Instalazio berria transakziorik gabe.*<br><br>
+![Hasierako pantaila](images/screenshots/v3.4-01-b-home.png)<br>*Hasierako pantaila kontuekin, donut grafikoarekin eta kategoria-sailkapenarekin.*<br><br>
+![Alboko menua](images/screenshots/v3.4-02-hamburger.png)<br>*Alboko menua: Hasiera, Transakzio guztiak, Errepikariak, Kontuak, Kategoriak, Etiketak, Iruzkinak eta Ezarpenak.*<br><br>
+![Transakzioa gehitu](images/screenshots/v3.4-03-add-transaction.png)<br>*Gehitu gastu edo sarrera bat zenbateko, kontu, kategoria, egun, etiketa, iruzkin eta argazkiarekin.*<br><br>
+![Data-hautatzailea](images/screenshots/v3.4-04-date-picker.png)<br>*Egutegi-hautatzailea egun, aste, hilabete, urte edo aldi-tarte pertsonalizatua aukeratzeko.*<br><br>
+![Transakzio guztiak, hutsik](images/screenshots/v3.4-05-a-all-transactions-empty-state.png)<br>*Transakzio guztiak egoera hutsean.*<br><br>
+![Transakzio guztiak](images/screenshots/v3.4-05-b-all-transactions.png)<br>*Transakzio guztiak mota, kategoria, aldi eta etiketa iragazkiekin, ordenarekin eta bilaketarekin.*<br><br>
+![Kategoria-iragazkia](images/screenshots/v3.4-05-c-category-filter.png)<br>*Kategoria-iragazkia Kategoria guztiak, Gastu guztiak eta Sarrera guztiak aurre-ezarpenekin.*<br><br>
+![Sarrera-xehetasunak](images/screenshots/v3.4-05-d-details-income.png)<br>*Sarrera-transakzio baten xehetasunak, edizio eta ezabaketarekin.*<br><br>
+![Gastu-xehetasunak](images/screenshots/v3.4-05-e-details-expense.png)<br>*Gastu-transakzio baten xehetasunak, edizio eta ezabaketarekin.*<br><br>
+![Transakzioa editatu](images/screenshots/v3.4-05-f-modify-transaction.png)<br>*Editatu transakzio baten zenbatekoa, kontua, kategoria, eguna, etiketak, iruzkina eta argazkia.*<br><br>
+![Errepikariak](images/screenshots/v3.4-06-recurring.png)<br>*Errepikapen-arauak hurrengo epemugekin, zenbatekoekin eta aktibo/pausatuta etengailuekin.*<br><br>
+![Errepikapen-arau berria](images/screenshots/v3.4-06-a-create-recurring.png)<br>*Konfiguratu errepikapen-arau bat izenarekin, maiztasunarekin, tartearekin eta aukerako amaiera-datearekin.*<br><br>
+![Errepikapen-araua editatu](images/screenshots/v3.4-06-b-modify-recurring.png)<br>*Editatu errepikapen-arau baten programazioa eta aukeratu aldaketa hurrengo errepikapenei soilik edo aurrekoei ere aplikatzen zaien.*<br><br>
+![Kontuak](images/screenshots/v3.4-07-accounts.png)<br>*Kontuen pantaila saldoekin eta Total kontu agregatuarekin.*<br><br>
+![Kontua sortu](images/screenshots/v3.4-07-a-create-account.png)<br>*Sortu kontu bat izenarekin, ikonoarekin, kolorearekin, hasierako saldoarekin eta aukerako oharrarekin.*<br><br>
+![Kontua editatu](images/screenshots/v3.4-07-b-modify-account.png)<br>*Editatu kontu baten datuak, hasierako saldoa eta oharra, edo ezabatu.*<br><br>
+![Kategoriak](images/screenshots/v3.4-08-categories.png)<br>*Kategoriak motaren arabera antolatuta (gastuak/sarrerak) 4×N sare batean.*<br><br>
+![Kategoria sortu](images/screenshots/v3.4-08-a-create-category.png)<br>*Sortu gastu edo sarrera kategoria bat izenarekin, ikonoarekin eta kolorearekin.*<br><br>
+![Kategoria editatu](images/screenshots/v3.4-08-b-modify-category.png)<br>*Editatu kategoria baten izena, ikonoa eta kolorea, edo ezabatu.*<br><br>
+![Etiketak](images/screenshots/v3.4-09-tags.png)<br>*Etiketa-pantaila bilaketarekin eta hautaketa masiboarekin.*<br><br>
+![Etiketa berria](images/screenshots/v3.4-09-a-create-tag.png)<br>*Sortu etiketa bat transakzioak elkartzeko.*<br><br>
+![Etiketa editatu](images/screenshots/v3.4-09-b-modify-tag.png)<br>*Aldatu etiketa baten izena edo ezabatu.*<br><br>
+![Iruzkinak](images/screenshots/v3.4-10-comments.png)<br>*Iruzkinen pantaila bilaketarekin, erabilera-kontagailuekin eta hautapen anitzarekin.*<br><br>
+![Iruzkina editatu](images/screenshots/v3.4-10-a-modify-comment.png)<br>*Editatu iruzkin bat hura erabiltzen duten transakzio guztietan.*<br><br>
+![Ezarpenak](images/screenshots/v3.4-11-settings.png)<br>*Ezarpenak: Itxura, Eskualdea, Pertsonalizazioa eta Datuak.*<br><br>
+![Itxura-ezarpenak](images/screenshots/v3.4-11-a-appearance.png)<br>*Itxura: gaia, testu-tamaina eta ikono-formak.*<br><br>
+![Eskualde-ezarpenak](images/screenshots/v3.4-11-b-regional-en.png)<br>*Eskualde-ezarpenak: hizkuntza, moneta, hamartar bereizlea eta asteko lehen eguna.*<br><br>
+![Pertsonalizazio-ezarpenak](images/screenshots/v3.4-11-c-personalization.png)<br>*Pertsonalizazioa: hasiera eta transakzio-gehiketa lehenetsiak eta pribatutasuna.*<br><br>
+![Datu-ezarpenak](images/screenshots/v3.4-11-d-data.png)<br>*Datuak: babeskopia esportatu/inportatu eta ezabatu/berrezarri ekintzak.*<br><br>
 
 ## Teknologia-pila
 
@@ -105,11 +119,13 @@ Honek Metro Bundler abiarazten du. Ondoren:
 | `npm test` | Vitest suitea exekutatu |
 | `npm run test:watch` | Vitest watch moduan exekutatu |
 | `npm run test:all` | typecheck + lint + tests (tokiko ate osoa) |
+| `npm run lint:fix` | Konpondu automatikoki lint/format arazoak (koska, komatxoak, amaierako komak, fitxategi amaierako lerro-jauzia) |
+| `npm run i18n` | Gehitu, eguneratu, ezabatu edo zerrendatu itzulpen-gakoak 9 hizkuntzetan |
 
 ### Probak
 
 - **Unitarioak / integrazioa** — Vitest. Suiteak datu-basearen biltegiratze-guneak estaltzen ditu bi SQLite backendetan (natiboa + sql.js), babeskopiaren joan-etorriak eta `@testing-library/react-native`-rekin errendatutako osagaiak.
-- **E2E natiboak** — `FinlyApp/.maestro/`-ko Maestro fluxuak (10 fluxu + laguntzaileak) debug APKaren aurka exekutatzen dira Android emuladore batean; ikusi `docs/harnesses.md`.
+- **E2E natiboak** — `FinlyApp/.maestro/`-ko Maestro fluxuak (15 fluxu + laguntzaileak) debug APKaren aurka exekutatzen dira Android emuladore batean; ikusi `docs/harnesses.md`.
 - **Web egiaztapena** — funtzionalitate bakoitzaren onarpen-irizpideak benetako nabigatzaile batean egiaztatzen dira 375px-an Playwright-ekin.
 - CI pipelineak (`.github/workflows/ci.yml`) `npm run test:all` ate osoa exekutatzen du `develop` eta `main` adarretako push eta pull request bakoitzean.
 
@@ -135,7 +151,7 @@ FinlyApp/
 ### Datu-basea
 
 - Motor-interfaze bakarra (`DatabaseHandle`) plataforma guztietan: expo-sqlite natiboan, sql.js (WASM) IndexedDB iraunkortasunarekin webgunean.
-- Migrazioak `PRAGMA user_version`-ekin bertsionatzen dira (`001_initial`, `002_seed`, `003_config`) eta behin bakarrik aplikatzen dira, transakzio baten barruan.
+- Migrazioak `PRAGMA user_version`-ekin bertsionatzen dira (`001_initial`, `002_seed`, `003_config`, `004_recurring`) eta behin bakarrik aplikatzen dira, transakzio baten barruan.
 - Biltegiratze-guneak Drizzle ORM-rekin idatzita daude handle partekatuaren gainean; gordetako errenkadak Zod eskemen bidez balidatzen dira.
 - Webgunean, esportatutako SQLite byteak IndexedDBn gordetzen dira, beraz datu berak berriz kargatu ondoren ere irauten dute.
 

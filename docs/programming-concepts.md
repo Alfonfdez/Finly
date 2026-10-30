@@ -333,6 +333,14 @@ if (isCatalan(language)) {
 />
 ```
 
+## ScrollView / overflow
+**Definition:** React Native component that makes content larger than its container reachable by scrolling.
+**Explanation:** `ScrollView` renders all its children and lets the user scroll through them (use `FlatList` for long, virtualized lists). What "scrolling" looks like differs by platform:
+- **Native (iOS/Android):** you scroll with a finger drag. The scrollbar is not persistent — React Native only flashes the indicator while scrolling, and hides it entirely when `showsHorizontalScrollIndicator` / `showsVerticalScrollIndicator` is `false`.
+- **Web (react-native-web):** the browser paints a real scrollbar; the app themes it globally (6px, primary-tinted) via a `::-webkit-scrollbar` rule injected in `ConfigContext`. Overflow is reached with the wheel, the trackpad, or by dragging the scrollbar.
+
+Key nuance: on web a **vertical** overflow is still reachable with the wheel even when the scrollbar is hidden, but a **horizontal** overflow is not — the wheel scrolls vertically, so a horizontal row needs a visible scrollbar. That is why horizontal chip rows set `showsHorizontalScrollIndicator={isWeb}` (indicator on web, off on native). See `spec/constitution/7-platform-differences.md`.
+
 ## Modal
 **Definition:** React Native component that displays content overlaid on the current screen.
 **Explanation:** Useful for dialogs, selectors, or forms without changing screens. In Finly, it is used for the account selector (AccountModal) and the date selector (CalendarModal).
@@ -380,6 +388,25 @@ if (isCatalan(language)) {
     <Text style={styles.note}>{note}</Text>
   ) : null}
 </View>
+```
+
+## Calendar date bounds (min/max)
+**Definition:** Optional `minDate`/`maxDate` props on the calendar that restrict which days can be selected, instead of hardcoding "no future dates".
+**Explanation:** Finly's day picker was originally past-only (future days dimmed and disabled). To reuse the same calendar for a recurring rule's **end date** — which must fall after the rule's start day (it may be in the past) — the bound is parameterized: `undefined` keeps the historical default (`maxDate` = end of today, so no future), `null` means unbounded on that side, and a `Date` is an inclusive clamp. Disabled days are dimmed and not pressable, and both the year and month arrows disable at the bounds. The day picker shows a year selector (`YearNav`) above the month selector (`MonthNav`) — the same two-arrow layout as the week picker — so far-future years (e.g. a recurring end date 10 years ahead) are quick to reach. The shared convention is `resolveDateBounds(minDate, maxDate)` in `utils/calendarBounds.ts` (used by both navs and the grid); the day predicate is the pure `isDateWithinBounds(date, minDate, maxDate)` in `utils/formatters.ts`, so both are unit-testable without the real clock.
+**Example:**
+```tsx
+// Transaction date: today or past (default, no bounds passed)
+<CalendarModal period="day" date={day} onSelectDate={setDay} ... />
+
+// Recurring end date: strictly after the selected transaction day, unbounded
+<CalendarModal
+  period="day"
+  date={repeatEnd ?? dayAfter(day)}
+  minDate={dayAfter(day)}
+  maxDate={null}
+  onSelectDate={setRepeatEnd}
+  ...
+/>
 ```
 
 # Design Principles
@@ -519,7 +546,8 @@ import { ComponentProps } from 'react';
 **Example:**
 ```tsx
 // ❌ Recreated on every render
-function WeekPicker({ date, firstDay }) {
+function WeekPicker({ date, onSelect }) {
+  const firstDay = useConfig().config.firstDayOfWeek;
   function sameWeek(a, b) {
     return weekStart(a, firstDay).getTime() === weekStart(b, firstDay).getTime();
   }
@@ -530,8 +558,8 @@ function sameWeek(a: Date, b: Date, firstDay: 0 | 1): boolean {
   return weekStart(a, firstDay).getTime() === weekStart(b, firstDay).getTime();
 }
 
-function WeekPicker({ date, firstDay }) {
-  // sameWeek is called with firstDay as an argument
+function WeekPicker({ date, onSelect }) {
+  const firstDay = useConfig().config.firstDayOfWeek;
   const isSelected = sameWeek(week.start, date, firstDay);
 }
 ```
@@ -589,7 +617,7 @@ await db.getAllAsync('SELECT * FROM transactions WHERE date >= ?', startDate);
 
 ## PRAGMA user_version
 **Definition:** Integer metadata that SQLite stores in the database header to control which migrations have been executed.
-**Explanation:** Used as a schema version counter. Each migration checks if `user_version` is less than its number, runs the necessary SQL changes, and then increments the value with `PRAGMA user_version = N`. This way, the app knows at each startup which migrations are missing without needing additional control tables. In Finly, the current approach uses a single initial schema (createSchema → seedData → seedConfig) with no versioned migrations — the developer resets the DB manually during development.
+**Explanation:** Used as a schema version counter. Each migration checks if `user_version` is less than its number, runs the necessary SQL changes, and then increments the value with `PRAGMA user_version = N`. This way, the app knows at each startup which migrations are missing without needing additional control tables. In Finly, `src/database/database.ts` reads the version and applies each pending step inside one transaction; `SCHEMA_VERSION` is 4 (`001_initial` schema, `002_seed` data, `003_config` defaults, `004_recurring` recurring rules). New features append migrations instead of editing the first one, so already-installed databases are upgraded in place (feature 028 added `004_recurring` and raised the version to 4).
 **Example:**
 ```tsx
 let { user_version: v } = await db.getFirstAsync('PRAGMA user_version');
@@ -647,6 +675,107 @@ if (row.user_version < 1) {
   await database.execAsync('PRAGMA user_version = 1');
 }
 ```
+
+## Additive schema migration (backward-safe)
+**Definition:** A migration that only adds new structures (tables, nullable columns, indexes) so a database created by an older app version is upgraded without rewriting or deleting existing rows.
+**Explanation:** Once an app is released, users already hold data, so a migration must never assume it can recreate the schema. Editing the very first migration (`001_initial`) only affects brand-new installs; existing databases never re-run it. The safe pattern is to append a new migration whose branch runs once for databases that are behind, and to keep the changes additive. In Finly, `004_recurring` (feature 028) adds two tables, two **nullable** `transactions` columns and an index; users on `user_version = 3` run only that new branch, so their rows are untouched.
+**Example:**
+```tsx
+// migrations/004_recurring.ts — additive only
+await db.execAsync(`
+  CREATE TABLE IF NOT EXISTS recurring_rules (...);
+  ALTER TABLE transactions ADD COLUMN recurring_rule_id INTEGER REFERENCES recurring_rules(id) ON DELETE SET NULL;
+`);
+// database.ts — runs once, for any DB below version 4
+if (currentVersion < 4) {
+  await createRecurringSchema(database);
+  await database.execAsync('PRAGMA user_version = 4');
+}
+```
+
+## Backward-compatible snapshot format
+**Definition:** Keep files written by older app versions importable by adding new optional fields instead of making them required or bumping the format version.
+**Explanation:** Finly's backup is a versioned JSON snapshot validated by a Zod schema. If a new collection is added as a required field, a backup exported by an older app would fail validation and become impossible to import. Making the new collections optional with an empty default (`.optional().default([])`) preserves "old files still work". The forward direction is handled separately by the `schema > SCHEMA_VERSION` guard, which refuses backups from a newer app. In Finly, feature 028 adds the `recurring_rules`/`recurring_rule_tags` collections while keeping `BACKUP_FORMAT_VERSION = 1`.
+**Example:**
+```ts
+// backup.ts — new collections optional so old backups still parse
+data: z.object({
+  // ...existing collections...
+  recurring_rules: z.array(recurringRuleSchema).optional().default([]),
+  recurring_rule_tags: z.array(recurringRuleTagSchema).optional().default([]),
+}),
+```
+
+# Recurring transactions
+
+## Recurrence rule
+**Definition:** A stored definition of a repeating expense/income (schedule + template) from which individual transactions are generated later.
+**Explanation:** Instead of pre-creating every future transaction, Finly stores one rule (`recurring_rules`) with the account, category, amount, comment, tags and a schedule, plus a `next_due` cursor. Transactions are generated only when they become due. This keeps the database small and lets the rule be edited/paused without touching history.
+**Example:**
+```text
+recurring_rules: type=expense, amount=100, category=Housing,
+                 frequency=monthly, interval=1, day_of_month=2,
+                 start_date=2026-10-02, next_due=2026-11-02, active=1
+```
+
+## Reconciliation (catch-up)
+**Definition:** On startup/foreground, walking a rule from its `next_due` up to today and creating every occurrence that should exist but does not.
+**Explanation:** A local-only app cannot run while it is closed, so it "catches up" the next time it opens. Because the loop starts at `next_due` (not at "today"), opening the app after a long gap back-fills every missed occurrence, each dated on its real scheduled day, so totals and history stay correct.
+**Example:**
+```tsx
+while (rule.next_due <= today && withinEnd(rule) && n++ < CAP) {
+  await insertTransaction({ ...rule.template, date: rule.next_due });
+  rule.next_due = advanceOccurrence(rule, rule.next_due);
+}
+```
+
+## Idempotent materialization
+**Definition:** Generating occurrences in a way that running the process twice produces the same result (no duplicates).
+**Explanation:** Catch-up can run many times (every app open, every foreground). A partial unique index on `(recurring_rule_id, recurrence_date)` makes the database reject a second transaction for the same rule occurrence, so the whole reconciliation can be wrapped in a transaction and safely re-run.
+**Example:**
+```sql
+CREATE UNIQUE INDEX ux_transactions_recurrence
+  ON transactions(recurring_rule_id, recurrence_date)
+  WHERE recurring_rule_id IS NOT NULL;
+```
+
+## Occurrence vs transaction
+**Definition:** An *occurrence* is a scheduled **date** a rule fires on; a *transaction* is the database **record** generated for it.
+**Explanation:** Keeping the two apart avoids confusion: the schedule is a set of dates (an occurrence can be skipped, missed or back-filled without any record existing), while a transaction is real history that is counted, kept and never re-dated. Reconciliation generates one transaction per due occurrence.
+**Example:** A daily rule's occurrence on 2026-10-06 that a "Future only" edit skipped has no transaction; the same date under "Future + past" is back-filled into one.
+
+## Recurrence cursor (`next_due`)
+**Definition:** The stored pointer to the next occurrence a rule still has to materialize.
+**Explanation:** The cursor makes catch-up incremental: reconciliation walks from `next_due` to today and advances it, so a later run never re-scans the past. After a normal run it is the first occurrence **after** today; a rule that has never run keeps it equal to `start_date`.
+**Example:**
+```text
+recurring_rules: start_date=2026-10-01, frequency=daily, next_due=2026-10-14
+-- generated through 2026-10-13; the next occurrence to create is 2026-10-14
+```
+
+## Future start date
+**Definition:** A rule whose `start_date` is after today.
+**Explanation:** Because the start date accepts any date, a rule can be scheduled ahead. Creation and reconciliation only materialize occurrences up to today, so a future start creates nothing yet and the cursor stays on the start date until it becomes due.
+**Example:** A daily rule starting 2026-10-30 (today 2026-10-13) shows "Next: October 30, 2026" and "No transactions will be created now".
+
+## Edit scope (Future only / Future + past)
+**Definition:** The "Apply changes to" choice when editing a rule: whether the change also touches the past.
+**Explanation:** *Future only* anchors the new schedule at the first occurrence on/after **today** (so a schedule change, e.g. monthly → daily, takes effect today) and leaves existing transactions alone. *Future + past* additionally back-fills the missed occurrences and rewrites the details (account/category/amount/comment/tags/type) of every transaction the rule already generated — dates are never changed and nothing is deleted.
+**Example:** Changing a monthly rule to daily with "Future only" starts generating daily today; with "Future + past" it also fills the missed window.
+
+## Fresh (unstarted) rule
+**Definition:** A rule that has never generated or skipped an occurrence — its cursor still equals its start date.
+**Explanation:** It has no history to protect, so editing its start date re-anchors the schedule from the new start: moving the start to today makes it due and generates from there. A rule that already generated transactions keeps its cursor position (moving the start earlier does not recreate the past), and the form shows a hint.
+**Example:** A rule starting 2026-10-30 (never run), edited to start today, generates today's occurrence.
+
+## Recoverable skip window
+**Definition:** A past range a "Future only" edit skipped, remembered on the rule (`skipped_from`) so it can be filled later.
+**Explanation:** "Future only" is reversible: the earliest skipped occurrence is recorded, and while it is within the end date the edit screen re-enables "Future + past" to back-fill it. Skips from pause/resume are intentional and not recorded.
+**Example:** Skipping Oct 1–12 with "Future only" stores `skipped_from=2026-10-01`; choosing "Future + past" later creates those transactions and clears the field.
+
+See the complete rule guide, scenario matrix and worked examples in
+[`recurring-rules.md`](recurring-rules.md). The normative source remains
+[`spec/features/028-recurring-transactions/1-spec.md`](../spec/features/028-recurring-transactions/1-spec.md).
 
 # App Icons (Expo)
 
@@ -910,11 +1039,11 @@ eas build --platform android --profile preview   # cloud build, download the res
 
 ## Git tag
 **Definition:** An immutable named pointer to a specific commit, used to mark release points.
-**Explanation:** A tag (e.g. `v2.1.0`) permanently labels the exact commit that was released, so the code can be reproduced later. In Finly's git flow the tag is created on the `main` merge commit AFTER `develop` is merged, so the released code matches what ships.
+**Explanation:** A tag (e.g. `v2.2.0`) permanently labels the exact commit that was released, so the code can be reproduced later. In Finly's git flow the tag is created on the `main` merge commit AFTER `develop` is merged, so the released code matches what ships.
 **Example:**
 ```bash
-git tag -a v2.1.0 -m "Finly 2.1.0 release"
-git push origin v2.1.0
+git tag -a v2.2.0 -m "Finly 2.2.0 release"
+git push origin v2.2.0
 ```
 
 ## GitHub Release
@@ -922,7 +1051,7 @@ git push origin v2.1.0
 **Explanation:** Releases are how open-source/project apps hand installable builds to users. You point a Release at a tag, write the notes, and attach binaries. GitHub also archives the source at that tag so the release is fully reproducible.
 **Example:**
 ```text
-Tag v2.1.0 → GitHub Release "Finly 2.1.0" → notes + attached Finly-preview-2.1.0.apk
+Tag v2.2.0 → GitHub Release "Finly 2.2.0" → notes + attached Finly-preview-2.2.0.apk
 ```
 
 ## Release notes
@@ -930,21 +1059,21 @@ Tag v2.1.0 → GitHub Release "Finly 2.1.0" → notes + attached Finly-preview-2
 **Explanation:** Release notes summarize new features, fixes, and assets for users comparing against the previous release. They are the description field on the GitHub Release page (not a file in the repo), and are written from the roadmap/changelog highlights.
 **Example:**
 ```markdown
-## Finly 2.1.0
-- Version 2.1.0 — android.versionCode 2 (updates 2.0.0 in place)
-- Android export: backup saved to Downloads with an optional Share action
-- New languages: Galician and Basque (9 total)
-- Settings UI polish, new data icons, regenerated icons and splash
-- Attached: Finly-preview-2.1.0.apk (sideload)
+## Finly 2.2.0
+- Version 2.2.0 — android.versionCode 3 (updates 2.1.0 in place)
+- Recurring rules with future-only or future + past edits
+- Negative account starting balances plus calculator and calendar fixes
+- Web SQLite/IndexedDB parity and data-safety hardening
+- Attached: Finly-preview-2.2.0.apk (sideload)
 ```
 
 ## Semantic versioning (semver)
 **Definition:** Versioning scheme `MAJOR.MINOR.PATCH` where each bump has a meaning.
-**Explanation:** MAJOR changes break compatibility (2.0 → new major), MINOR adds features backwards-compatibly, PATCH fixes bugs. The version also maps to Android identifiers (`versionName "2.1.0"`, `versionCode 2`) — `versionCode` is the unique integer Play uses to detect upgrades, while `versionName` is what users see.
+**Explanation:** MAJOR changes break compatibility (2.0 → new major), MINOR adds features backwards-compatibly, PATCH fixes bugs. The version also maps to Android identifiers (`versionName "2.2.0"`, `versionCode 3`) — `versionCode` is the unique integer Play uses to detect upgrades, while `versionName` is what users see.
 **Example:**
 ```json
 // app.json / android/app/build.gradle
-"version": "2.1.0"      →   versionName "2.1.0", versionCode 2
+"version": "2.2.0"      →   versionName "2.2.0", versionCode 3
 ```
 
 # Databases / ORM

@@ -1,7 +1,13 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
-import { BUTTON_BORDER_RADIUS, ACTION_BUTTON_HEIGHT } from './componentStyles';
+import {
+  BUTTON_BORDER_RADIUS,
+  ACTION_BUTTON_HEIGHT,
+  COMPACT_FOOTER_BUTTON_WIDTH,
+  COMPACT_FOOTER_BUTTON_MAX_WIDTH,
+} from './componentStyles';
 import { WHITE } from '../constants/themes';
 import { FOOTER_LAYOUTS, type FooterLayout } from '../constants/types';
 
@@ -11,6 +17,10 @@ interface Props {
   onCancel?: () => void;
   onConfirm: () => void;
   confirmDisabled?: boolean;
+  /** The action is running: show a spinner and block a second press. */
+  confirmLoading?: boolean;
+  /** Block cancelling while the action is in flight. */
+  cancelDisabled?: boolean;
   destructive?: boolean;
   layout?: FooterLayout;
   borderTop?: boolean;
@@ -21,8 +31,53 @@ interface Props {
   disabledTextColor?: string;
   horizontalInset?: number;
   containerPaddingBottom?: number;
+  containerStyle?: StyleProp<ViewStyle>;
   moveLabel?: string;
   onMove?: () => void;
+}
+
+interface FooterButtonProps {
+  label: string;
+  onPress?: () => void;
+  disabled?: boolean;
+  loading?: boolean;
+  backgroundColor: string;
+  textColor: string;
+  fontSize: number;
+  style?: StyleProp<ViewStyle>;
+  borderColor?: string;
+  numberOfLines?: number;
+}
+
+function FooterButton({
+  label,
+  onPress,
+  disabled = false,
+  loading = false,
+  backgroundColor,
+  textColor,
+  fontSize,
+  style,
+  borderColor,
+  numberOfLines,
+}: FooterButtonProps) {
+  return (
+    <TouchableOpacity
+      style={[style, { backgroundColor }, borderColor != null && { borderColor }]}
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled, busy: loading }}
+    >
+      <View style={styles.confirmContent}>
+        {loading ? <ActivityIndicator size="small" color={textColor} /> : null}
+        <Text numberOfLines={numberOfLines} style={[styles.buttonText, { color: textColor, fontSize }]}>
+          {label}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
 }
 
 export default function ModalFooter({
@@ -31,6 +86,8 @@ export default function ModalFooter({
   onCancel,
   onConfirm,
   confirmDisabled = false,
+  confirmLoading = false,
+  cancelDisabled = false,
   destructive = false,
   layout = FOOTER_LAYOUTS.row,
   borderTop = false,
@@ -41,39 +98,42 @@ export default function ModalFooter({
   disabledTextColor,
   horizontalInset = 0,
   containerPaddingBottom = 0,
+  containerStyle,
   moveLabel,
   onMove,
 }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
 
-  const confirmBg = destructive
-    ? c.red
-    : confirmDisabled
-      ? (disabledBg ?? c.surface)
+  const confirmInactive = confirmDisabled || confirmLoading;
+  const confirmBg = confirmInactive
+    ? (disabledBg ?? c.surface)
+    : destructive
+      ? c.red
       : c.primary;
-  const confirmFg = destructive
-    ? WHITE
-    : confirmDisabled
-      ? (disabledTextColor ?? c.textSecondary)
+  const confirmFg = confirmInactive
+    ? (disabledTextColor ?? c.textSecondary)
+    : destructive
+      ? WHITE
       : c.background;
-  const buttonTextStyle = { fontSize: fs(textSize) };
 
   if (layout === FOOTER_LAYOUTS.single) {
     return (
       <View style={[styles.column, { paddingHorizontal: horizontalInset, paddingBottom: containerPaddingBottom }]}>
-        <TouchableOpacity
+        <FooterButton
+          label={confirmLabel}
+          onPress={onConfirm}
+          disabled={confirmInactive}
+          loading={confirmLoading}
+          backgroundColor={confirmBg}
+          textColor={confirmFg}
+          fontSize={fs(textSize)}
           style={[
             styles.button,
-            { backgroundColor: confirmBg, paddingVertical: verticalPadding, minHeight },
+            styles.stretchButton,
+            { paddingVertical: verticalPadding, minHeight },
           ]}
-          onPress={onConfirm}
-          disabled={confirmDisabled}
-          accessibilityRole="button"
-          accessibilityLabel={confirmLabel}
-        >
-          <Text style={[styles.buttonText, { color: confirmFg }, buttonTextStyle]}>{confirmLabel}</Text>
-        </TouchableOpacity>
+        />
       </View>
     );
   }
@@ -82,86 +142,130 @@ export default function ModalFooter({
     return (
       <View style={[styles.column, { paddingHorizontal: horizontalInset, paddingBottom: containerPaddingBottom }]}>
         <View style={styles.actionRow}>
-          <TouchableOpacity
-            style={[styles.stackedButton, { backgroundColor: c.primary }]}
+          <FooterButton
+            label={moveLabel ?? ''}
             onPress={onMove}
-            accessibilityRole="button"
-            accessibilityLabel={moveLabel}
-          >
-            <Text numberOfLines={2} style={[styles.buttonText, { color: c.background }, buttonTextStyle]}>
-              {moveLabel}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.stackedButton, { backgroundColor: confirmBg }]}
+            backgroundColor={c.primary}
+            textColor={c.background}
+            fontSize={fs(textSize)}
+            style={styles.stackedButton}
+            numberOfLines={2}
+          />
+          <FooterButton
+            label={confirmLabel}
             onPress={onConfirm}
-            disabled={confirmDisabled}
-            accessibilityRole="button"
-            accessibilityLabel={confirmLabel}
-          >
-            <Text numberOfLines={2} style={[styles.buttonText, { color: confirmFg }, buttonTextStyle]}>
-              {confirmLabel}
-            </Text>
-          </TouchableOpacity>
+            disabled={confirmInactive}
+            loading={confirmLoading}
+            backgroundColor={confirmBg}
+            textColor={confirmFg}
+            fontSize={fs(textSize)}
+            style={styles.stackedButton}
+            numberOfLines={2}
+          />
         </View>
         {cancelLabel && onCancel ? (
-          <TouchableOpacity
-            style={[
-              styles.stackedButton,
-              styles.stackedCancel,
-              { backgroundColor: c.background, borderColor: c.border },
-            ]}
+          <FooterButton
+            label={cancelLabel}
             onPress={onCancel}
-            accessibilityRole="button"
-            accessibilityLabel={cancelLabel}
-          >
-            <Text style={[styles.buttonText, { color: c.text }, buttonTextStyle]} numberOfLines={2}>
-              {cancelLabel}
-            </Text>
-          </TouchableOpacity>
+            disabled={cancelDisabled}
+            backgroundColor={c.background}
+            textColor={c.text}
+            fontSize={fs(textSize)}
+            style={[styles.stackedButton, styles.stackedCancel]}
+            borderColor={c.border}
+            numberOfLines={2}
+          />
         ) : null}
       </View>
     );
   }
 
-  return (
-<View
+  if (layout === FOOTER_LAYOUTS.compact) {
+    return (
+      <View
         style={[
-          styles.row,
+          styles.compactRow,
           borderTop && styles.borderTop,
           borderTop && { borderTopColor: c.border },
           { paddingHorizontal: horizontalInset, paddingBottom: containerPaddingBottom },
+          containerStyle,
         ]}
       >
+        {cancelLabel && onCancel ? (
+          <FooterButton
+            label={cancelLabel}
+            onPress={onCancel}
+            disabled={cancelDisabled}
+            backgroundColor={c.background}
+            textColor={c.text}
+            fontSize={fs(textSize)}
+            style={[
+              styles.button,
+              styles.compactButton,
+              { paddingVertical: verticalPadding, minHeight },
+            ]}
+            borderColor={c.border}
+            numberOfLines={1}
+          />
+        ) : null}
+        <FooterButton
+          label={confirmLabel}
+          onPress={onConfirm}
+          disabled={confirmInactive}
+          loading={confirmLoading}
+          backgroundColor={confirmBg}
+          textColor={confirmFg}
+          fontSize={fs(textSize)}
+          style={[
+            styles.button,
+            styles.compactButton,
+            { paddingVertical: verticalPadding, minHeight },
+          ]}
+          numberOfLines={1}
+        />
+      </View>
+    );
+  }
+
+  return (
+    <View
+      style={[
+        styles.row,
+        borderTop && styles.borderTop,
+        borderTop && { borderTopColor: c.border },
+        { paddingHorizontal: horizontalInset, paddingBottom: containerPaddingBottom },
+      ]}
+    >
       {cancelLabel && onCancel ? (
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: c.background, borderColor: c.border, paddingVertical: verticalPadding, minHeight }]}
+        <FooterButton
+          label={cancelLabel}
           onPress={onCancel}
-          accessibilityRole="button"
-          accessibilityLabel={cancelLabel}
-        >
-          <Text style={[styles.buttonText, { color: c.text, fontSize: fs(textSize) }]}>{cancelLabel}</Text>
-        </TouchableOpacity>
+          disabled={cancelDisabled}
+          backgroundColor={c.background}
+          textColor={c.text}
+          fontSize={fs(textSize)}
+          style={[
+            styles.button,
+            styles.stretchButton,
+            { paddingVertical: verticalPadding, minHeight },
+          ]}
+          borderColor={c.border}
+        />
       ) : null}
-      <TouchableOpacity
+      <FooterButton
+        label={confirmLabel}
+        onPress={onConfirm}
+        disabled={confirmInactive}
+        loading={confirmLoading}
+        backgroundColor={confirmBg}
+        textColor={confirmFg}
+        fontSize={fs(textSize)}
         style={[
           styles.button,
-          { backgroundColor: confirmBg, paddingVertical: verticalPadding, minHeight },
+          styles.stretchButton,
+          { paddingVertical: verticalPadding, minHeight },
         ]}
-        onPress={onConfirm}
-        disabled={confirmDisabled}
-        accessibilityRole="button"
-        accessibilityLabel={confirmLabel}
-      >
-        <Text
-          style={[
-            styles.buttonText,
-            { color: confirmFg, fontSize: fs(textSize) },
-          ]}
-        >
-          {confirmLabel}
-        </Text>
-      </TouchableOpacity>
+      />
     </View>
   );
 }
@@ -172,6 +276,11 @@ const styles = StyleSheet.create({
     gap: 12,
     marginTop: 16,
   },
+  compactRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
   column: {
     gap: 12,
   },
@@ -181,13 +290,22 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   button: {
-    flex: 1,
     paddingVertical: 12,
     borderRadius: BUTTON_BORDER_RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'transparent',
+  },
+  stretchButton: {
+    flex: 1,
+  },
+  compactButton: {
+    flexGrow: 0,
+    flexShrink: 1,
+    flexBasis: COMPACT_FOOTER_BUTTON_WIDTH,
+    maxWidth: COMPACT_FOOTER_BUTTON_MAX_WIDTH,
+    paddingHorizontal: 0,
   },
   actionRow: {
     flexDirection: 'row',
@@ -210,5 +328,11 @@ const styles = StyleSheet.create({
   buttonText: {
     fontWeight: '600',
     textAlign: 'center',
+  },
+  confirmContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
 });

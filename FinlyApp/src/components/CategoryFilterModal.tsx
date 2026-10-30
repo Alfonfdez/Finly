@@ -1,20 +1,24 @@
 import { useState, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useResetOnOpen } from '../hooks/useResetOnOpen';
 import { t, getDisplayCategoryName } from '../i18n';
 import SearchBar from './SearchBar';
 import EmptyState from './EmptyState';
-import { CARD_BORDER_RADIUS } from './componentStyles';
+import HeaderCloseButton from './HeaderCloseButton';
+import FullScreenModalHeader from './FullScreenModalHeader';
+import FormHintSlot from './form/FormHintSlot';
+import { CARD_BORDER_RADIUS, DISABLED_CONTROL_OPACITY } from './componentStyles';
 import { TRANSACTION_TYPES, TYPE_FILTERS, type TransactionTypeFilter } from '../constants/types';
 import { sortCategoriesWithOthersLast, categoriesOfType } from '../utils/categoryUtils';
+import { CATEGORY_SELECTION_KINDS, classifyCategorySelection } from '../utils/categoryFilterSelection';
 import { matchesAllTerms } from '../utils/search';
 import type { Category } from '../database/types';
 import { badgeShapeFor } from '../utils/badgeShape';
 import CategoryTile from './CategoryTile';
+import { TEST_IDS } from '../constants/testIds';
 
 interface Props {
   visible: boolean;
@@ -30,29 +34,49 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
   const fs = useFontSize();
   const labels = t();
 
-  const [localSelectedIds, setLocalSelectedIds] = useState<number[]>(selectedIds);
+  const allIdsForType = useMemo(() => {
+    if (type === TRANSACTION_TYPES.expense) {
+      return categoriesOfType(categories, TRANSACTION_TYPES.expense).map(cat => cat.id);
+    }
+    if (type === TRANSACTION_TYPES.income) {
+      return categoriesOfType(categories, TRANSACTION_TYPES.income).map(cat => cat.id);
+    }
+    return categories.map(cat => cat.id);
+  }, [categories, type]);
+
+  const [localSelectedIds, setLocalSelectedIds] = useState<number[]>(
+    () => (selectedIds.length === 0 ? allIdsForType : selectedIds),
+  );
   const [searchText, setSearchText] = useState('');
 
   const resetOnOpen = useCallback(() => {
-    setLocalSelectedIds(selectedIds);
+    setLocalSelectedIds(selectedIds.length === 0 ? allIdsForType : selectedIds);
     setSearchText('');
-  }, [selectedIds]);
+  }, [selectedIds, allIdsForType]);
   useResetOnOpen(visible, resetOnOpen);
 
-  const allCategoryIds = useMemo(() => categories.map(cat => cat.id), [categories]);
-  const visibleCategoryIds = useMemo(() => {
-    if (type === TYPE_FILTERS.all) return allCategoryIds;
-    return categoriesOfType(categories, type).map(cat => cat.id);
-  }, [categories, type, allCategoryIds]);
-  const allSelected = visibleCategoryIds.length > 0 && visibleCategoryIds.every(id => localSelectedIds.includes(id));
+  const presets = useMemo(() => {
+    const expenseIds = categoriesOfType(categories, TRANSACTION_TYPES.expense).map(cat => cat.id);
+    const incomeIds = categoriesOfType(categories, TRANSACTION_TYPES.income).map(cat => cat.id);
+    const list = type === TRANSACTION_TYPES.expense
+      ? [{ key: 'expenses', label: labels.filter_all_expense_categories, ids: expenseIds }]
+      : type === TRANSACTION_TYPES.income
+        ? [{ key: 'income', label: labels.filter_all_income_categories, ids: incomeIds }]
+        : [
+          { key: 'all', label: labels.filter_all_categories, ids: categories.map(cat => cat.id) },
+          { key: 'expenses', label: labels.filter_all_expense_categories, ids: expenseIds },
+          { key: 'income', label: labels.filter_all_income_categories, ids: incomeIds },
+        ];
+    return list.filter(preset => preset.ids.length > 0);
+  }, [categories, type, labels]);
 
-  const handleToggleAll = useCallback(() => {
-    if (allSelected) {
-      setLocalSelectedIds([]);
-    } else {
-      setLocalSelectedIds([...visibleCategoryIds]);
-    }
-  }, [allSelected, visibleCategoryIds]);
+  const isPresetActive = useCallback((ids: number[]) => {
+    return ids.length === localSelectedIds.length && ids.every(id => localSelectedIds.includes(id));
+  }, [localSelectedIds]);
+
+  const handlePresetPress = useCallback((ids: number[]) => {
+    setLocalSelectedIds(isPresetActive(ids) ? [] : [...ids]);
+  }, [isPresetActive]);
 
   const handleToggleCategory = useCallback((id: number) => {
     setLocalSelectedIds(prev => {
@@ -76,36 +100,67 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
 
   const sections = useMemo(() => {
     if (type !== TYPE_FILTERS.all) {
-      return [{ label: null, data: sortCategoriesWithOthersLast(displayedCategories) }];
+      const label = type === TRANSACTION_TYPES.expense ? labels.filter_expenses : labels.filter_income;
+      return [{ label, data: sortCategoriesWithOthersLast(displayedCategories) }];
     }
-  const expenses = sortCategoriesWithOthersLast(categoriesOfType(displayedCategories, TRANSACTION_TYPES.expense));
-  const income = sortCategoriesWithOthersLast(categoriesOfType(displayedCategories, TRANSACTION_TYPES.income));
+    const expenses = sortCategoriesWithOthersLast(categoriesOfType(displayedCategories, TRANSACTION_TYPES.expense));
+    const income = sortCategoriesWithOthersLast(categoriesOfType(displayedCategories, TRANSACTION_TYPES.income));
     const result: { label: string | null; data: Category[] }[] = [];
     if (expenses.length > 0) result.push({ label: labels.filter_expenses, data: expenses });
     if (income.length > 0) result.push({ label: labels.filter_income, data: income });
     return result;
   }, [displayedCategories, type, labels.filter_expenses, labels.filter_income]);
 
-  const applyLabel = useMemo(() => {
-    if (allSelected) {
-      if (type === TRANSACTION_TYPES.expense) return labels.filter_apply_all_expense;
-      if (type === TRANSACTION_TYPES.income) return labels.filter_apply_all_income;
-      return labels.filter_apply_all;
-    }
-    return labels.filter_apply(localSelectedIds.length);
-  }, [allSelected, type, localSelectedIds.length, labels]);
+  const noneSelected = localSelectedIds.length === 0;
 
-  const applyDisabled = localSelectedIds.length === 0;
+  const applyLabel = useMemo(() => {
+    if (noneSelected) return labels.filter_apply(0);
+    const kind = classifyCategorySelection(localSelectedIds, categories);
+    if (kind === CATEGORY_SELECTION_KINDS.all) return labels.filter_apply_all_categories;
+    if (kind === CATEGORY_SELECTION_KINDS.allExpenses) return labels.filter_apply_all_expense;
+    if (kind === CATEGORY_SELECTION_KINDS.allIncome) return labels.filter_apply_all_income;
+    return labels.filter_apply(localSelectedIds.length);
+  }, [noneSelected, localSelectedIds, categories, labels]);
+
+  const renderPreset = (preset: (typeof presets)[number]) => {
+    const active = isPresetActive(preset.ids);
+    return (
+      <TouchableOpacity
+        key={preset.key}
+        style={[
+          styles.presetChip,
+          {
+            backgroundColor: active ? c.primary : c.surface,
+            borderWidth: active ? 0 : 1,
+            borderColor: c.border,
+          },
+        ]}
+        onPress={() => handlePresetPress(preset.ids)}
+        testID={`${TEST_IDS.categoryFilterPresetPrefix}-${preset.key}`}
+        accessibilityRole="button"
+        accessibilityState={{ selected: active }}
+      >
+        <Text
+          style={{
+            color: active ? c.background : c.text,
+            fontSize: fs(14),
+            fontWeight: '600',
+          }}
+        >
+          {preset.label}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <SafeAreaView style={[styles.container, { backgroundColor: c.background }]} edges={['top', 'bottom']}>
-        <View style={[styles.header, { borderBottomColor: c.border }]}>
-          <Text style={[styles.title, { color: c.text, fontSize: fs(16) }]}>{labels.filter_categories}</Text>
-          <TouchableOpacity onPress={onClose} accessibilityLabel={labels.common_close} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color={c.text} />
-          </TouchableOpacity>
-        </View>
+        <FullScreenModalHeader
+          title={labels.filter_categories}
+          icon="grid-outline"
+          right={<HeaderCloseButton onPress={onClose} accessibilityLabel={labels.common_close} />}
+        />
 
         <View style={styles.content}>
           <SearchBar
@@ -115,27 +170,16 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
             onClose={() => setSearchText('')}
           />
 
-          <TouchableOpacity
-            style={[
-              styles.allChip,
-              {
-                backgroundColor: allSelected ? c.primary : c.surface,
-                borderWidth: allSelected ? 0 : 1,
-                borderColor: c.border,
-              },
-            ]}
-            onPress={handleToggleAll}
-          >
-            <Text
-              style={{
-                color: allSelected ? c.background : c.text,
-                fontSize: fs(14),
-                fontWeight: '600',
-              }}
-            >
-              {labels.home_tag_all}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.presetsContainer}>
+            <View style={styles.presetsRow}>
+              {presets[0] && renderPreset(presets[0])}
+            </View>
+            {presets.length > 1 && (
+              <View style={styles.presetsRow}>
+                {presets.slice(1).map(preset => renderPreset(preset))}
+              </View>
+            )}
+          </View>
 
           {sections.every(section => section.data.length === 0) ? (
             <EmptyState icon="search-outline" message={labels.filter_no_results} />
@@ -168,12 +212,25 @@ export default function CategoryFilterModal({ visible, categories, selectedIds, 
           )}
         </View>
 
+        <FormHintSlot message={noneSelected ? labels.filter_select_at_least_one : null} />
+
         <TouchableOpacity
-          style={[styles.applyButton, { backgroundColor: applyDisabled ? c.surface : c.primary }]}
-          disabled={applyDisabled}
-          onPress={() => onApply(localSelectedIds)}
+          style={[
+            styles.applyButton,
+            {
+              backgroundColor: c.primary,
+              opacity: noneSelected ? DISABLED_CONTROL_OPACITY : 1,
+            },
+          ]}
+          onPress={() => {
+            if (!noneSelected) onApply(localSelectedIds);
+          }}
+          disabled={noneSelected}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: noneSelected }}
+          testID={TEST_IDS.categoryFilterApply}
         >
-          <Text style={[styles.applyText, { color: applyDisabled ? c.textSecondary : c.background, fontSize: fs(16) }]}>
+          <Text style={[styles.applyText, { color: c.background, fontSize: fs(16) }]}>
             {applyLabel}
           </Text>
         </TouchableOpacity>
@@ -186,31 +243,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  title: {
-    fontWeight: '700',
-  },
-  closeButton: {
-    padding: 4,
-  },
   content: {
     flex: 1,
     paddingHorizontal: 16,
     paddingTop: 12,
   },
-  allChip: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 16,
+  presetsContainer: {
+    gap: 8,
+    marginBottom: 12,
+  },
+  presetsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  presetChip: {
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 16,
-    marginBottom: 12,
   },
   scrollView: {
     flex: 1,

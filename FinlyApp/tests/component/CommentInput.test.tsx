@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { StyleSheet } from 'react-native';
 import { render, fireEvent, act } from '@testing-library/react-native';
 import { resetStub } from './helpers/configStub';
 import { DEBOUNCE_MS } from '../../src/constants/types';
@@ -13,8 +14,19 @@ vi.mock('../../src/database', () => ({
 
 const mockedSearchComments = vi.mocked(transactionRepository.searchComments);
 
-async function renderInput(comment: string, onChange = vi.fn()) {
-  return await render(<CommentInput comment={comment} onChange={onChange} />);
+async function renderInput(
+  comment: string,
+  onChange = vi.fn(),
+  callbacks: { onFocus?: () => void; onBlur?: () => void } = {},
+) {
+  return await render(
+    <CommentInput
+      comment={comment}
+      onChange={onChange}
+      onFocus={callbacks.onFocus}
+      onBlur={callbacks.onBlur}
+    />,
+  );
 }
 
 async function flushDebounce() {
@@ -80,8 +92,23 @@ describe('CommentInput', () => {
     expect(view.queryByText('coffee')).toBeNull();
     await focusInput(view);
     await flushDebounce();
-    expect(view.getByText('coffee')).toBeTruthy();
+    expect(view.getByText('Suggestions')).toBeTruthy();
+    expect(view.getByText('Tap to reuse')).toBeTruthy();
+    const suggestion = view.getByRole('button', { name: 'coffee' });
+    expect(suggestion.props.accessibilityHint).toBe('Tap to reuse');
+    expect(StyleSheet.flatten(suggestion.props.style).minHeight).toBe(44);
     expect(view.getByText('coffee shop')).toBeTruthy();
+  });
+
+  it('does not reopen suggestions when the debounce fires after blur', async () => {
+    mockedSearchComments.mockResolvedValue(['coffee']);
+    const view = await renderInput('cof');
+
+    await focusInput(view);
+    await act(async () => { fireEvent(view.getByLabelText('Comment input'), 'blur'); });
+    await flushDebounce();
+
+    expect(view.queryByText('coffee')).toBeNull();
   });
 
   it('selecting a suggestion fills the comment and clears the suggestions', async () => {
@@ -91,8 +118,7 @@ describe('CommentInput', () => {
     await focusInput(view);
     await flushDebounce();
 
-    await act(async () => { fireEvent(view.getByText('coffee'), 'responderGrant'); });
-    await act(async () => { fireEvent(view.getByText('coffee'), 'responderRelease'); });
+    await act(async () => { fireEvent.press(view.getByText('coffee')); });
     expect(onChange).toHaveBeenCalledWith('coffee');
     expect(view.queryByText('coffee')).toBeNull();
     expect(view.queryByText('coffee shop')).toBeNull();
@@ -106,11 +132,38 @@ describe('CommentInput', () => {
     await flushDebounce();
 
     const suggestion = view.getByText('coffee');
-    await act(async () => { fireEvent(suggestion, 'responderGrant'); });
+    await act(async () => { fireEvent(suggestion, 'pressIn'); });
     await act(async () => { fireEvent(view.getByLabelText('Comment input'), 'blur'); });
-    await act(async () => { fireEvent(suggestion, 'responderRelease'); });
+    await act(async () => { fireEvent.press(suggestion); });
     expect(onChange).toHaveBeenCalledWith('coffee');
     expect(view.queryByText('coffee')).toBeNull();
+  });
+
+  it('keeps a suggestion tap from committing blur, then commits a later real blur', async () => {
+    mockedSearchComments.mockResolvedValue(['coffee']);
+    const onBlur = vi.fn();
+    const view = await renderInput('cof', vi.fn(), { onBlur });
+    await focusInput(view);
+    await flushDebounce();
+
+    const input = view.getByLabelText('Comment input');
+    const suggestion = view.getByText('coffee');
+    await act(async () => { fireEvent(suggestion, 'pressIn'); });
+    await act(async () => { fireEvent(input, 'blur'); });
+    await act(async () => { fireEvent.press(suggestion); });
+    expect(onBlur).not.toHaveBeenCalled();
+
+    await act(async () => { vi.advanceTimersByTime(0); });
+    await act(async () => { fireEvent(input, 'blur'); });
+    expect(onBlur).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not clip a legacy comment above the maximum', async () => {
+    const comment = 'x'.repeat(4097);
+    const view = await renderInput(comment);
+
+    expect(view.getByLabelText('Comment input').props.maxLength).toBe(4097);
+    expect(view.getByText('4097/4096')).toBeTruthy();
   });
 
   it('renders the character counter and the accessibility label', async () => {

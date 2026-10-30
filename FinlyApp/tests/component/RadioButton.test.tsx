@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react-native';
 import type { TestInstance } from 'test-renderer';
 import { resetStub } from './helpers/configStub';
@@ -74,10 +74,13 @@ describe('RadioButton', () => {
     expect(view.root!.props.onPress).toBeUndefined();
   });
 
-  it('exposes a radio role with the selected state when pressable', async () => {
-    const view = await render(<RadioButton selected onPress={() => {}} />);
+  it('exposes a radio role with the selected state and label when pressable', async () => {
+    const view = await render(
+      <RadioButton selected onPress={() => {}} accessibilityLabel="Expense" />,
+    );
 
     expect(view.getByRole('radio', { selected: true })).toBeTruthy();
+    expect(view.getByLabelText('Expense')).toBeTruthy();
   });
 
   it('fires onPress when the radio is pressed', async () => {

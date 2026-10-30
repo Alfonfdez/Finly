@@ -2,7 +2,7 @@ import initSqlJs from 'sql.js';
 import type { Database, SqlJsStatic } from 'sql.js';
 import type { DatabaseBindValue, DatabaseHandle, DatabaseRunResult } from './types';
 
-export const DB_FILE_KEY = 'sqlite';
+export { DB_FILE_KEY } from '../constants/storage';
 
 export interface DatabaseStorage {
   get(): Promise<Uint8Array | null>;
@@ -14,10 +14,16 @@ let sqlPromise: Promise<SqlJsStatic> | null = null;
 
 export function initSqlJsEngine(locateFile?: (file: string) => string): Promise<SqlJsStatic> {
   if (!sqlPromise) {
-    sqlPromise = (locateFile ? initSqlJs({ locateFile }) : initSqlJs()).then((sql) => {
-      sqlReady = sql;
-      return sql;
-    });
+    sqlPromise = (locateFile ? initSqlJs({ locateFile }) : initSqlJs())
+      .then((sql) => {
+        sqlReady = sql;
+        return sql;
+      })
+      .catch((error) => {
+        // A transient WASM load failure must not poison every later retry.
+        sqlPromise = null;
+        throw error;
+      });
   }
   return sqlPromise;
 }
@@ -29,12 +35,20 @@ export function getSqlJsStatic(): SqlJsStatic | null {
 export class SqlJsDatabase implements DatabaseHandle {
   private readonly db: Database;
   private readonly storage: DatabaseStorage | null;
+  private readonly onPersistError?: (error: unknown) => void;
   private inTransaction = 0;
   private persistQueue: Promise<void> = Promise.resolve();
+  private pendingBytes: Uint8Array | null = null;
+  private persistScheduled = false;
 
-  constructor(db: Database, storage: DatabaseStorage | null = null) {
+  constructor(
+    db: Database,
+    storage: DatabaseStorage | null = null,
+    onPersistError?: (error: unknown) => void,
+  ) {
     this.db = db;
     this.storage = storage;
+    this.onPersistError = onPersistError;
     this.db.exec('PRAGMA foreign_keys = ON;');
   }
 
@@ -63,22 +77,37 @@ export class SqlJsDatabase implements DatabaseHandle {
   }
 
   async withTransactionAsync(task: () => Promise<void>): Promise<void> {
-    this.inTransaction += 1;
+    // BEGIN first: a failed BEGIN must not leave the counter raised, or every
+    // later persist would be skipped for the rest of the session.
     this.db.exec('BEGIN');
+    this.inTransaction += 1;
+    let failure: { error: unknown } | null = null;
     try {
       await task();
       this.db.exec('COMMIT');
     } catch (error) {
+      failure = { error };
       this.db.exec('ROLLBACK');
-      throw error;
     } finally {
       this.inTransaction -= 1;
-      await this.persistIfCommitted();
     }
+
+    const persist = this.persistIfCommitted();
+    if (failure) {
+      // A persistence failure must not hide the transaction's own error.
+      await persist.catch(() => {});
+      throw failure.error;
+    }
+    await persist;
   }
 
   close(): void {
     this.db.close();
+  }
+
+  /** Wait for all queued snapshots to reach IndexedDB. */
+  flush(): Promise<void> {
+    return this.persistQueue;
   }
 
   private lastInsertRowId(): number {
@@ -101,23 +130,51 @@ export class SqlJsDatabase implements DatabaseHandle {
   }
 
   private persistIfCommitted(): Promise<void> {
-    if (this.inTransaction > 0 || !this.storage) return Promise.resolve();
-    const bytes = this.db.export();
+    const storage = this.storage;
+    if (this.inTransaction > 0 || !storage) return Promise.resolve();
+
+    // Coalesce writes: only the latest full snapshot matters. A failed persist is
+    // reported through onPersistError, but never rejects a committed operation.
+    this.pendingBytes = this.db.export();
     this.db.exec('PRAGMA foreign_keys = ON;');
-    this.persistQueue = this.persistQueue
-      .then(() => this.storage!.set(bytes))
-      .catch((error) => {
-        console.error('Failed to persist web database:', error);
-      });
+    if (!this.persistScheduled) {
+      this.persistScheduled = true;
+      this.persistQueue = this.drainPersistQueue(storage);
+    }
     return this.persistQueue;
+  }
+
+  private async drainPersistQueue(storage: DatabaseStorage): Promise<void> {
+    while (this.pendingBytes) {
+      const bytes = this.pendingBytes;
+      this.pendingBytes = null;
+      const write = () => storage.set(bytes);
+      try {
+        await write();
+      } catch {
+        // Retry once (transient quota/failure), then report it. The SQLite commit
+        // already happened, so callers must not roll back their in-memory state.
+        try {
+          await write();
+        } catch (error) {
+          this.onPersistError?.(error);
+        }
+      }
+    }
+    this.persistScheduled = false;
+    if (this.pendingBytes) {
+      this.persistScheduled = true;
+      this.persistQueue = this.drainPersistQueue(storage);
+    }
   }
 }
 
 export async function createSqlJsDatabase(
   bytes: Uint8Array | null,
   storage: DatabaseStorage | null = null,
-  locateFile?: (file: string) => string
+  locateFile?: (file: string) => string,
+  onPersistError?: (error: unknown) => void,
 ): Promise<SqlJsDatabase> {
   const SQL = await initSqlJsEngine(locateFile);
-  return new SqlJsDatabase(new SQL.Database(bytes ?? undefined), storage);
+  return new SqlJsDatabase(new SQL.Database(bytes ?? undefined), storage, onPersistError);
 }

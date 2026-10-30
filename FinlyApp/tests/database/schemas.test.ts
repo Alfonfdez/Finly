@@ -76,6 +76,22 @@ describe('config schema + sanitizeConfig', () => {
     expect(sanitizeConfig(custom)).toEqual(custom);
   });
 
+  it('sanitizeConfig drops only the corrupt field and keeps the rest', () => {
+    const custom = {
+      ...DEFAULT_CONFIG,
+      theme: 'neon',
+      language: 'ca',
+      tagsSortBy: 'usage',
+      hideBalances: true,
+    } as unknown as Config;
+
+    expect(sanitizeConfig(custom)).toEqual({
+      ...DEFAULT_CONFIG,
+      language: 'ca',
+      tagsSortBy: 'usage',
+      hideBalances: true,
+    });
+  });
   it('sanitizeConfig falls back to defaults on corrupt values', () => {
     const corruptTheme = { ...DEFAULT_CONFIG, theme: 'neon' } as unknown as Config;
     expect(sanitizeConfig(corruptTheme)).toEqual(DEFAULT_CONFIG);
@@ -86,7 +102,37 @@ describe('config schema + sanitizeConfig', () => {
     const corruptBoolean = { ...DEFAULT_CONFIG, addShowLabels: 'yes' } as unknown as Config;
     expect(sanitizeConfig(corruptBoolean)).toEqual(DEFAULT_CONFIG);
 
+    const corruptChart = { ...DEFAULT_CONFIG, homeChartType: 'pie' } as unknown as Config;
+    expect(sanitizeConfig(corruptChart)).toEqual(DEFAULT_CONFIG);
+
     const corruptAccountId = { ...DEFAULT_CONFIG, homeDefaultAccountId: -3 } as unknown as Config;
     expect(sanitizeConfig(corruptAccountId)).toEqual(DEFAULT_CONFIG);
+
+    const corruptSort = { ...DEFAULT_CONFIG, tagsSortBy: 'price' } as unknown as Config;
+    expect(sanitizeConfig(corruptSort)).toEqual(DEFAULT_CONFIG);
+
+    const corruptDirection = { ...DEFAULT_CONFIG, accountsSortDirection: 'up' } as unknown as Config;
+    expect(sanitizeConfig(corruptDirection)).toEqual(DEFAULT_CONFIG);
+
+    const corruptCategoryIds = { ...DEFAULT_CONFIG, allTransactionsCategoryIds: '1,2' } as unknown as Config;
+    expect(sanitizeConfig(corruptCategoryIds)).toEqual(DEFAULT_CONFIG);
+
+    const corruptStatusFilter = { ...DEFAULT_CONFIG, recurringStatusFilter: ['active', 'unknown'] } as unknown as Config;
+    expect(sanitizeConfig(corruptStatusFilter)).toEqual(DEFAULT_CONFIG);
+  });
+
+  it('deduplicates persisted selector arrays', () => {
+    expect(configSchema.parse({
+      ...DEFAULT_CONFIG,
+      allTransactionsCategoryIds: [1, 1, 2],
+      allTransactionsExpenseCategoryIds: [1, 1],
+      allTransactionsIncomeCategoryIds: [2, 2],
+      recurringStatusFilter: ['paused', 'paused', 'ended'],
+    })).toMatchObject({
+      allTransactionsCategoryIds: [1, 2],
+      allTransactionsExpenseCategoryIds: [1],
+      allTransactionsIncomeCategoryIds: [2],
+      recurringStatusFilter: ['paused', 'ended'],
+    });
   });
 });

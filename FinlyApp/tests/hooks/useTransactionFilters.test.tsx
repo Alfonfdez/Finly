@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react-native';
 import { useTransactionFilters } from '../../src/hooks/useTransactionFilters';
-import type { Transaction, Account, Category } from '../../src/database/types';
-import { TYPE_FILTERS, SORT_BY, SORT_DIRECTIONS } from '../../src/constants/types';
+import type { Transaction, Account, Category, Tag } from '../../src/database/types';
+import { TYPE_FILTERS, SORT_BY, SORT_DIRECTIONS, RECURRING_VIEWS, TRANSACTION_SORT_SCOPES } from '../../src/constants/types';
 import { UNTAGGED_ID } from '../../src/database/helpers';
+import { getConfigStub, resetStub, setConfig } from '../component/helpers/configStub';
 
 const getTagsByTransactionIds = vi.fn(async () => [] as { transaction_id: number; tag_id: number; name: string }[]);
 
@@ -44,6 +45,7 @@ function baseOptions(transactions: Transaction[]): Options {
     accounts: [account1, account2, totalAccount],
     activeAccount: null,
     categoriesById: new Map([[1, category1], [2, category2]]),
+    sortScope: TRANSACTION_SORT_SCOPES.transactions,
   };
 }
 
@@ -68,6 +70,7 @@ describe('useTransactionFilters', () => {
   beforeEach(() => {
     getTagsByTransactionIds.mockReset();
     getTagsByTransactionIds.mockResolvedValue([]);
+    resetStub();
   });
 
   it('defaults selectedAccountId to the first non-total account', async () => {
@@ -120,6 +123,60 @@ describe('useTransactionFilters', () => {
     ];
     const { result } = await renderAll(transactions, { typeTab: TYPE_FILTERS.all });
     expect(result.current.filtered.map(t => t.id).sort()).toEqual([1, 2]);
+  });
+
+  it('shows recurring and one-time transactions by default', async () => {
+    const transactions = [
+      tx(1, { id: 1, account_id: 3, recurring_rule_id: 5 }),
+      tx(2, { id: 2, account_id: 3 }),
+    ];
+    const { result } = await renderAll(transactions);
+    expect(result.current.recurringView).toBe(RECURRING_VIEWS.all);
+    expect(result.current.filtered.map(t => t.id).sort()).toEqual([1, 2]);
+  });
+
+  it('restores and persists the recurring view per screen', async () => {
+    setConfig({
+      transactionsRecurringView: RECURRING_VIEWS.oneTime,
+      allTransactionsRecurringView: RECURRING_VIEWS.recurring,
+    });
+    const transactions = [
+      tx(1, { id: 1, account_id: 3, recurring_rule_id: 5 }),
+      tx(2, { id: 2, account_id: 3 }),
+    ];
+
+    const transactionsView = await renderFilters(transactions);
+    expect(transactionsView.result.current.recurringView).toBe(RECURRING_VIEWS.oneTime);
+
+    await update(() => transactionsView.result.current.setRecurringView(RECURRING_VIEWS.all));
+    expect(getConfigStub().config.transactionsRecurringView).toBe(RECURRING_VIEWS.all);
+    expect(getConfigStub().config.allTransactionsRecurringView).toBe(RECURRING_VIEWS.recurring);
+
+    const allView = await renderFilters(transactions, {
+      activeAccount: totalAccount,
+      sortScope: TRANSACTION_SORT_SCOPES.allTransactions,
+    });
+    expect(allView.result.current.recurringView).toBe(RECURRING_VIEWS.recurring);
+  });
+
+  it('filters to recurring-generated transactions', async () => {
+    const transactions = [
+      tx(1, { id: 1, account_id: 3, recurring_rule_id: 5 }),
+      tx(2, { id: 2, account_id: 3 }),
+    ];
+    const { result } = await renderAll(transactions);
+    await update(() => result.current.setRecurringView(RECURRING_VIEWS.recurring));
+    expect(result.current.filtered.map(t => t.id)).toEqual([1]);
+  });
+
+  it('filters to one-time (non-recurring) transactions', async () => {
+    const transactions = [
+      tx(1, { id: 1, account_id: 3, recurring_rule_id: 5 }),
+      tx(2, { id: 2, account_id: 3 }),
+    ];
+    const { result } = await renderAll(transactions);
+    await update(() => result.current.setRecurringView(RECURRING_VIEWS.oneTime));
+    expect(result.current.filtered.map(t => t.id)).toEqual([2]);
   });
 
   it('filters by selected category ids', async () => {
@@ -177,6 +234,35 @@ describe('useTransactionFilters', () => {
     expect(result.current.filtered.map(t => t.id)).toEqual([1]);
   });
 
+  it('composes every filter at once', async () => {
+    const transactions = [
+      tx(1, { id: 1, category_id: 1, account_id: 1, date: '2026-01-10 00:00:00', description: 'Lunch with the team' }),
+      tx(2, { id: 2, category_id: 1, account_id: 1, date: '2026-01-20 00:00:00', description: 'Lunch alone' }),
+      tx(3, { id: 3, category_id: 1, account_id: 1, date: '2026-02-10 00:00:00', description: 'Lunch with the team' }),
+      tx(4, { id: 4, category_id: 2, account_id: 1, type: 'income', date: '2026-01-15 00:00:00', description: 'Lunch with the team' }),
+      tx(5, { id: 5, category_id: 1, account_id: 2, date: '2026-01-15 00:00:00', description: 'Lunch with the team' }),
+      tx(6, { id: 6, category_id: 1, account_id: 1, date: '2026-01-15 00:00:00', description: 'Lunch with the team' }),
+    ];
+    getTagsByTransactionIds.mockResolvedValue([
+      { transaction_id: 1, tag_id: 10, name: 'Work' },
+      { transaction_id: 2, tag_id: 10, name: 'Work' },
+      { transaction_id: 3, tag_id: 10, name: 'Work' },
+      { transaction_id: 4, tag_id: 10, name: 'Work' },
+      { transaction_id: 5, tag_id: 10, name: 'Work' },
+    ]);
+
+    const { result } = await renderFilters(transactions, {
+      activeAccount: account1,
+      typeTab: TYPE_FILTERS.expense,
+      selectedCategoryIds: [1],
+      initialTagIds: [10],
+      searchTerm: 'team',
+      periodDates: { start: new Date(2026, 0, 1), end: new Date(2026, 0, 31) },
+    });
+
+    // Only #1 is an expense, in Food, in Wallet, tagged Work, matching 'team' in January.
+    expect(result.current.filtered.map(t => t.id)).toEqual([1]);
+  });
   it('sorts by date descending by default', async () => {
     const transactions = [
       tx(1, { id: 1, date: '2026-01-10 00:00:00', account_id: 3 }),
@@ -186,6 +272,29 @@ describe('useTransactionFilters', () => {
     expect(result.current.filtered.map(t => t.id)).toEqual([2, 1]);
   });
 
+  it('reads and persists the sort preference of its own list', async () => {
+    setConfig({ allTransactionsSortBy: SORT_BY.amount, allTransactionsSortDirection: SORT_DIRECTIONS.asc });
+    const transactions = [
+      tx(1, { id: 1, amount: 150, account_id: 3 }),
+      tx(2, { id: 2, amount: 50, account_id: 3 }),
+    ];
+    const { result } = await renderFilters(transactions, {
+      activeAccount: totalAccount,
+      sortScope: TRANSACTION_SORT_SCOPES.allTransactions,
+    });
+
+    expect(result.current.sortBy).toBe(SORT_BY.amount);
+    expect(result.current.sortDirection).toBe(SORT_DIRECTIONS.asc);
+    expect(result.current.filtered.map(t => t.id)).toEqual([2, 1]);
+
+    await update(() => result.current.handleToggleDirection());
+    expect(result.current.sortDirection).toBe(SORT_DIRECTIONS.desc);
+    expect(result.current.filtered.map(t => t.id)).toEqual([1, 2]);
+    expect(getConfigStub().updateConfig).toHaveBeenCalledWith({
+      allTransactionsSortBy: SORT_BY.amount,
+      allTransactionsSortDirection: SORT_DIRECTIONS.desc,
+    });
+  });
   it('handleToggleSort switches field and toggles direction', async () => {
     const transactions = [
       tx(1, { id: 1, amount: 50, account_id: 3 }),
@@ -197,10 +306,38 @@ describe('useTransactionFilters', () => {
     expect(result.current.sortBy).toBe(SORT_BY.amount);
     expect(result.current.sortDirection).toBe(SORT_DIRECTIONS.desc);
     expect(result.current.filtered.map(t => t.id)).toEqual([2, 1]);
+    expect(getConfigStub().updateConfig).toHaveBeenLastCalledWith({
+      transactionsSortBy: SORT_BY.amount,
+      transactionsSortDirection: SORT_DIRECTIONS.desc,
+    });
 
     await update(() => result.current.handleToggleSort(SORT_BY.amount));
     expect(result.current.sortDirection).toBe(SORT_DIRECTIONS.asc);
     expect(result.current.filtered.map(t => t.id)).toEqual([1, 2]);
+    expect(getConfigStub().updateConfig).toHaveBeenLastCalledWith({
+      transactionsSortBy: SORT_BY.amount,
+      transactionsSortDirection: SORT_DIRECTIONS.asc,
+    });
+  });
+
+  it('persists field changes in the allTransactions scope', async () => {
+    const transactions = [
+      tx(1, { id: 1, amount: 50, account_id: 3 }),
+      tx(2, { id: 2, amount: 150, account_id: 3 }),
+    ];
+    const { result } = await renderFilters(transactions, {
+      activeAccount: totalAccount,
+      sortScope: TRANSACTION_SORT_SCOPES.allTransactions,
+    });
+
+    await update(() => result.current.handleToggleSort(SORT_BY.amount));
+
+    expect(result.current.sortBy).toBe(SORT_BY.amount);
+    expect(result.current.sortDirection).toBe(SORT_DIRECTIONS.desc);
+    expect(getConfigStub().updateConfig).toHaveBeenLastCalledWith({
+      allTransactionsSortBy: SORT_BY.amount,
+      allTransactionsSortDirection: SORT_DIRECTIONS.desc,
+    });
   });
 
   it('handleClearTagFilter resets the local tag selection', async () => {
@@ -208,6 +345,62 @@ describe('useTransactionFilters', () => {
     expect(result.current.localTagIds).toEqual([10]);
 
     await update(() => result.current.handleClearTagFilter());
+    expect(result.current.localTagIds).toEqual([]);
+  });
+
+  it('re-applies the route tag selection when it changes', async () => {
+    const transactions = [tx(1, {})];
+    const { result, rerender } = await renderHook(
+      (props: { initialTagIds: number[] }) => useTransactionFilters({
+        ...baseOptions(transactions),
+        initialTagIds: props.initialTagIds,
+      }),
+      { initialProps: { initialTagIds: [10] } },
+    );
+    await act(async () => {});
+    expect(result.current.localTagIds).toEqual([10]);
+
+    // Navigating here again with another tag set must replace the previous one.
+    await act(async () => { rerender({ initialTagIds: [20] }); });
+    expect(result.current.localTagIds).toEqual([20]);
+
+    await act(async () => { rerender({ initialTagIds: [] }); });
+    expect(result.current.localTagIds).toEqual([]);
+  });
+
+  it('prunes a local tag filter when the tag disappears', async () => {
+    const tagA = { id: 10, user_id: 1, name: 'Work' } as Tag;
+    const transactions = [tx(1, {})];
+    const { result, rerender } = await renderHook(
+      (props: { tags: Tag[] }) => useTransactionFilters({
+        ...baseOptions(transactions),
+        initialTagIds: [10],
+        tags: props.tags,
+      }),
+      { initialProps: { tags: [tagA] } },
+    );
+    await act(async () => {});
+    expect(result.current.localTagIds).toEqual([10]);
+
+    await act(async () => { rerender({ tags: [] }); });
+    expect(result.current.localTagIds).toEqual([]);
+  });
+
+  it('does not prune route tags while the tag list is still loading', async () => {
+    const transactions = [tx(1, {})];
+    const { result, rerender } = await renderHook(
+      (props: { tagsLoaded: boolean }) => useTransactionFilters({
+        ...baseOptions(transactions),
+        initialTagIds: [10],
+        tags: [],
+        tagsLoaded: props.tagsLoaded,
+      }),
+      { initialProps: { tagsLoaded: false } },
+    );
+    await act(async () => {});
+    expect(result.current.localTagIds).toEqual([10]);
+
+    await act(async () => { rerender({ tagsLoaded: true }); });
     expect(result.current.localTagIds).toEqual([]);
   });
 

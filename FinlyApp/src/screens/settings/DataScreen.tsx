@@ -1,90 +1,50 @@
 import { useState } from 'react';
-import { TextInput, ScrollView, StyleSheet, Alert, type TextStyle } from 'react-native';
+import { ScrollView, Alert } from 'react-native';
+import ScreenShell from '../../components/ScreenShell';
 import { useConfig } from '../../context/ConfigContext';
 import { useApp } from '../../context/AppContext';
-import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
-import { isAndroidPlatform, isWeb } from '../../utils/platform';
+import { isAndroidPlatform } from '../../utils/platform';
 import {
   transactionRepository,
   configRepository,
   exportBackup,
   importBackup,
   BackupValidationError,
+  BACKUP_VALIDATION_CODES,
 } from '../../database';
-import { clearDataKeepSettings, resetDatabase } from '../../database/database';
+import { clearDataKeepSettingsWithCleanup, resetDatabaseWithCleanup } from '../../database/maintenance';
 import { saveBackupFile, pickBackupFile, saveBackupToDownloads } from '../../utils/backupIO';
+import { ERROR_PREFIXES, alertError, alertInfo, logError } from '../../utils/errors';
+import { BACKUP_ERRORS } from '../../constants/backup';
 import { ShareResult } from '../../constants/shareResult';
 import ConfirmationModal from '../../components/ConfirmationModal';
+import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 import SettingsRow from '../../components/settings/SettingsRow';
-import { BUTTON_BORDER_RADIUS } from '../../components/componentStyles';
+import ConfirmWithTextModal from '../../components/settings/ConfirmWithTextModal';
 import { settingsStyles } from '../../components/settings/settingsStyles';
-import { DELETE_ALL_CONFIRMATION } from '../../constants/types';
+import { useTwoStepConfirmation } from '../../hooks/useTwoStepConfirmation';
 
-interface ConfirmWithTextModalProps {
-  visible: boolean;
-  title: string;
-  message: string;
-  confirmLabel: string;
-  cancelLabel: string;
-  text: string;
-  onTextChange: (value: string) => void;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
+const PENDING_DATA_ACTIONS = {
+  transactions: 'transactions',
+  all: 'all',
+  factory: 'factory',
+  import: 'import',
+} as const;
 
-function ConfirmWithTextModal({
-  visible,
-  title,
-  message,
-  confirmLabel,
-  cancelLabel,
-  text,
-  onTextChange,
-  onConfirm,
-  onCancel,
-}: ConfirmWithTextModalProps) {
-  const { activeColors: c } = useConfig();
-  const fs = useFontSize();
-  const labels = t();
-  return (
-    <ConfirmationModal
-      visible={visible}
-      title={title}
-      message={message}
-      confirmLabel={confirmLabel}
-      cancelLabel={cancelLabel}
-      onConfirm={onConfirm}
-      onCancel={onCancel}
-      confirmDisabled={text.toUpperCase() !== DELETE_ALL_CONFIRMATION}
-    >
-      <TextInput
-        style={[styles.input, { backgroundColor: c.background, color: c.text, borderColor: c.border, fontSize: fs(14) }, webInputFocusReset]}
-        placeholder={labels.settings_delete_data_confirm_placeholder}
-        placeholderTextColor={c.textSecondary}
-        value={text}
-        onChangeText={onTextChange}
-        autoCapitalize="characters"
-        autoCorrect={false}
-      />
-    </ConfirmationModal>
-  );
-}
+type PendingDataAction = keyof typeof PENDING_DATA_ACTIONS | null;
 
 export default function DataScreen() {
   const { activeColors: c, updateConfig } = useConfig();
-  const { resetAll } = useApp();
+  const { resetAll, setDataRefreshing } = useApp();
   const labels = t();
 
-  const [deleteTransactionsModal, setDeleteTransactionsModal] = useState(false);
-  const [deleteAllModal1, setDeleteAllModal1] = useState(false);
-  const [deleteAllModal2, setDeleteAllModal2] = useState(false);
-  const [deleteAllText, setDeleteAllText] = useState('');
-  const [factoryResetModal1, setFactoryResetModal1] = useState(false);
-  const [factoryResetModal2, setFactoryResetModal2] = useState(false);
-  const [factoryResetText, setFactoryResetText] = useState('');
   const [importModalVisible, setImportModalVisible] = useState(false);
   const [pendingImport, setPendingImport] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingDataAction>(null);
+  const deleteTransactionsConfirm = useTwoStepConfirmation({ canClose: pendingAction === null });
+  const deleteAllConfirm = useTwoStepConfirmation({ canClose: pendingAction === null });
+  const factoryResetConfirm = useTwoStepConfirmation({ canClose: pendingAction === null });
 
   const handleExport = async () => {
     try {
@@ -100,8 +60,8 @@ export default function DataScreen() {
             text: labels.settings_export_share_action,
             onPress: () => {
               runShareFlow(json).catch((error) => {
-                console.error('Failed to share data:', error);
-                Alert.alert(labels.settings_export_error_title, labels.settings_export_error_message);
+                logError(ERROR_PREFIXES.backupShare, error);
+                alertError(labels.settings_export_error_title, labels.settings_export_error_message);
               });
             },
           },
@@ -111,15 +71,15 @@ export default function DataScreen() {
       }
       await runShareFlow(json);
     } catch (error) {
-      console.error('Failed to export data:', error);
-      Alert.alert(labels.settings_export_error_title, labels.settings_export_error_message);
+      logError(ERROR_PREFIXES.backupExport, error);
+      alertError(labels.settings_export_error_title, labels.settings_export_error_message);
     }
   };
 
   const runShareFlow = async (json: string) => {
     const result = await saveBackupFile(json);
     if (result === ShareResult.SAVED) {
-      Alert.alert(labels.settings_export_success_title, labels.settings_export_success_message);
+      alertInfo(labels.settings_export_success_title, labels.settings_export_success_message);
     }
   };
 
@@ -130,201 +90,246 @@ export default function DataScreen() {
       setPendingImport(json);
       setImportModalVisible(true);
     } catch (error) {
-      console.error('Failed to read backup file:', error);
-      Alert.alert(labels.settings_import_error_title, labels.settings_import_error_message);
+      logError(ERROR_PREFIXES.backupRead, error);
+      if (error instanceof BackupValidationError) {
+        alertError(labels.settings_import_invalid_title, labels.settings_import_invalid_message);
+      } else {
+        alertError(labels.settings_import_error_title, labels.settings_import_error_message);
+      }
     }
   };
 
   const handleConfirmImport = async () => {
-    if (pendingImport === null) return;
+    if (pendingImport === null || pendingAction !== null) return;
+    setPendingAction(PENDING_DATA_ACTIONS.import);
+    setDataRefreshing(true);
+    let applied = false;
     try {
       await importBackup(pendingImport);
-      await resetAll();
-      updateConfig(await configRepository.get());
-      Alert.alert(labels.settings_import_success_title, labels.settings_import_success_message);
+      applied = true;
     } catch (error) {
-      console.error('Failed to import data:', error);
+      logError(ERROR_PREFIXES.backupImport, error);
       if (error instanceof BackupValidationError) {
-        if (error.code === 'newer_version') {
-          Alert.alert(labels.settings_import_newer_title, labels.settings_import_newer_message);
+        if (error.code === BACKUP_VALIDATION_CODES.newerVersion) {
+          alertError(labels.settings_import_newer_title, labels.settings_import_newer_message);
+        } else if (error.code === BACKUP_VALIDATION_CODES.incomplete) {
+          alertError(labels.settings_import_incomplete_title, labels.settings_import_incomplete_message);
         } else {
-          Alert.alert(labels.settings_import_invalid_title, labels.settings_import_invalid_message);
+          alertError(labels.settings_import_invalid_title, labels.settings_import_invalid_message);
         }
       } else {
-        Alert.alert(labels.settings_import_error_title, labels.settings_import_error_message);
+        alertError(labels.settings_import_error_title, labels.settings_import_error_message);
       }
     }
+    if (applied) {
+      try {
+        const persistedConfig = await configRepository.get();
+        const configSaved = await updateConfig(persistedConfig, { notifyOnError: false });
+        const dataRefreshed = await resetAll({ notifyOnError: false });
+        if (configSaved === false || dataRefreshed === false) {
+          throw new Error(BACKUP_ERRORS.refreshFailed);
+        }
+        alertInfo(labels.settings_import_success_title, labels.settings_import_success_message);
+      } catch (error) {
+        logError(ERROR_PREFIXES.backupImport, error);
+        alertError(
+          labels.settings_import_refresh_error_title,
+          labels.settings_import_refresh_error_message,
+        );
+      }
+    }
+    setPendingAction(null);
+    setDataRefreshing(false);
     setImportModalVisible(false);
     setPendingImport(null);
   };
 
-  const closeDeleteAll = () => {
-    setDeleteAllModal1(false);
-    setDeleteAllModal2(false);
-    setDeleteAllText('');
-  };
-
-  const closeFactoryReset = () => {
-    setFactoryResetModal1(false);
-    setFactoryResetModal2(false);
-    setFactoryResetText('');
-  };
-
   const handleDeleteTransactions = async () => {
+    if (pendingAction !== null) return;
+    setPendingAction(PENDING_DATA_ACTIONS.transactions);
     try {
       await transactionRepository.deleteAllTransactions();
       await resetAll();
     } catch (error) {
-      console.error('Failed to delete all transactions:', error);
-      Alert.alert(labels.settings_delete_transactions_error_title, labels.settings_delete_transactions_error_message);
+      logError(ERROR_PREFIXES.transactionsDeleteAll, error);
+      alertError(labels.settings_delete_transactions_error_title, labels.settings_delete_transactions_error_message);
+    } finally {
+      setPendingAction(null);
     }
-    setDeleteTransactionsModal(false);
+    deleteTransactionsConfirm.reset();
   };
 
   const handleDeleteAll = async () => {
+    if (pendingAction !== null) return;
+    setPendingAction(PENDING_DATA_ACTIONS.all);
+    setDataRefreshing(true);
     try {
-      await clearDataKeepSettings();
+      await clearDataKeepSettingsWithCleanup();
+      await updateConfig(await configRepository.get());
       await resetAll();
-      updateConfig(await configRepository.get());
     } catch (error) {
-      console.error('Failed to delete all data:', error);
-      Alert.alert(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
+      logError(ERROR_PREFIXES.dataDeleteAll, error);
+      alertError(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
+    } finally {
+      setPendingAction(null);
+      setDataRefreshing(false);
     }
-    closeDeleteAll();
+    deleteAllConfirm.reset();
   };
 
   const handleFactoryReset = async () => {
+    if (pendingAction !== null) return;
+    setPendingAction(PENDING_DATA_ACTIONS.factory);
+    setDataRefreshing(true);
     try {
-      await resetDatabase();
+      await resetDatabaseWithCleanup();
+      await updateConfig(await configRepository.get());
       await resetAll();
-      updateConfig(await configRepository.get());
     } catch (error) {
-      console.error('Failed to reset to factory state:', error);
-      Alert.alert(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
+      logError(ERROR_PREFIXES.factoryReset, error);
+      alertError(labels.settings_delete_data_error_title, labels.settings_delete_data_error_message);
+    } finally {
+      setPendingAction(null);
+      setDataRefreshing(false);
     }
-    closeFactoryReset();
+    factoryResetConfirm.reset();
   };
 
   return (
-    <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
-      <SettingsRow
-        icon="share-outline"
-        iconColor={c.primary}
-        label={labels.settings_export_data}
-        onPress={handleExport}
-      />
+    <ScreenShell>
+      <ScrollView
+        style={[settingsStyles.container, { backgroundColor: c.background }]}
+        contentContainerStyle={settingsStyles.content}
+        keyboardShouldPersistTaps="handled"
+      >
+        <SettingsRow
+          icon="share-outline"
+          iconColor={c.primary}
+          label={labels.settings_export_data}
+          onPress={handleExport}
+        />
 
-      <SettingsRow
-        icon="download-outline"
-        iconColor={c.primary}
-        label={labels.settings_import_data}
-        onPress={handlePickImport}
-      />
+        <SettingsRow
+          icon="download-outline"
+          iconColor={c.primary}
+          label={labels.settings_import_data}
+          onPress={handlePickImport}
+        />
 
-      <SettingsRow
-        icon="trash-outline"
-        iconColor={c.red}
-        label={labels.settings_delete_all_transactions}
-        description={labels.settings_delete_all_transactions_description}
-        labelColor={c.red}
-        onPress={() => setDeleteTransactionsModal(true)}
-      />
+        <SettingsRow
+          icon="trash-outline"
+          iconColor={c.red}
+          label={labels.settings_delete_all_transactions}
+          description={labels.settings_delete_all_transactions_description}
+          labelColor={c.red}
+          onPress={deleteTransactionsConfirm.open}
+        />
 
-      <SettingsRow
-        icon="warning-outline"
-        iconColor={c.red}
-        label={labels.settings_delete_all_data}
-        description={labels.settings_delete_all_data_description}
-        labelColor={c.red}
-        onPress={() => setDeleteAllModal1(true)}
-      />
+        <SettingsRow
+          icon="warning-outline"
+          iconColor={c.red}
+          label={labels.settings_delete_all_data}
+          description={labels.settings_delete_all_data_description}
+          labelColor={c.red}
+          onPress={deleteAllConfirm.open}
+        />
 
-      <SettingsRow
-        icon="refresh-outline"
-        iconColor={c.red}
-        label={labels.settings_factory_reset}
-        description={labels.settings_factory_reset_description}
-        labelColor={c.red}
-        onPress={() => setFactoryResetModal1(true)}
-      />
+        <SettingsRow
+          icon="refresh-outline"
+          iconColor={c.red}
+          label={labels.settings_factory_reset}
+          description={labels.settings_factory_reset_description}
+          labelColor={c.red}
+          onPress={factoryResetConfirm.open}
+        />
 
-      <ConfirmationModal
-        visible={deleteTransactionsModal}
-        title={labels.settings_delete_transactions_confirm_title}
-        message={labels.settings_delete_transactions_confirm_message}
-        confirmLabel={labels.delete}
-        cancelLabel={labels.cancel}
-        onConfirm={handleDeleteTransactions}
-        onCancel={() => setDeleteTransactionsModal(false)}
-      />
+        <DeleteConfirmationModal
+          visible={deleteTransactionsConfirm.firstVisible}
+          title={labels.settings_delete_transactions_confirm_title}
+          message={labels.settings_delete_transactions_confirm_message}
+          onConfirm={deleteTransactionsConfirm.advance}
+          onCancel={deleteTransactionsConfirm.cancelFirst}
+        />
 
-      <ConfirmationModal
-        visible={importModalVisible}
-        title={labels.settings_import_confirm_title}
-        message={labels.settings_import_confirm_message}
-        confirmLabel={labels.settings_delete_confirm}
-        cancelLabel={labels.cancel}
-        onConfirm={handleConfirmImport}
-        onCancel={() => {
-          setImportModalVisible(false);
-          setPendingImport(null);
-        }}
-      />
+        <ConfirmWithTextModal
+          visible={deleteTransactionsConfirm.secondVisible}
+          title={labels.settings_delete_data_confirm_title2}
+          icon="trash-outline"
+          message={labels.settings_delete_data_confirm_message2}
+          confirmLabel={labels.delete}
+          cancelLabel={labels.cancel}
+          text={deleteTransactionsConfirm.text}
+          onTextChange={deleteTransactionsConfirm.setText}
+          onConfirm={handleDeleteTransactions}
+          onCancel={deleteTransactionsConfirm.cancelSecond}
+          busy={pendingAction === PENDING_DATA_ACTIONS.transactions}
+        />
 
-      <ConfirmationModal
-        visible={deleteAllModal1}
-        title={labels.settings_delete_data_confirm_title}
-        message={labels.settings_delete_data_confirm_message}
-        confirmLabel={labels.settings_delete_all_data_confirm}
-        cancelLabel={labels.cancel}
-        onConfirm={() => setDeleteAllModal2(true)}
-        onCancel={() => setDeleteAllModal1(false)}
-      />
+        <ConfirmationModal
+          visible={importModalVisible}
+          title={labels.settings_import_confirm_title}
+          icon="cloud-download-outline"
+          message={labels.settings_import_confirm_message}
+          confirmLabel={labels.settings_import_confirm}
+          cancelLabel={labels.cancel}
+          onConfirm={handleConfirmImport}
+          onCancel={() => {
+            if (pendingAction !== null) return;
+            setImportModalVisible(false);
+            setPendingImport(null);
+          }}
+          busy={pendingAction === PENDING_DATA_ACTIONS.import}
+        />
 
-      <ConfirmWithTextModal
-        visible={deleteAllModal2}
-        title={labels.settings_delete_data_confirm_title2}
-        message={labels.settings_delete_data_confirm_message2}
-        confirmLabel={labels.settings_delete_confirm}
-        cancelLabel={labels.cancel}
-        text={deleteAllText}
-        onTextChange={setDeleteAllText}
-        onConfirm={handleDeleteAll}
-        onCancel={closeDeleteAll}
-      />
+        <ConfirmationModal
+          visible={deleteAllConfirm.firstVisible}
+          title={labels.settings_delete_data_confirm_title}
+          icon="warning-outline"
+          message={labels.settings_delete_data_confirm_message}
+          confirmLabel={labels.settings_delete_all_data_confirm}
+          cancelLabel={labels.cancel}
+          onConfirm={deleteAllConfirm.advance}
+          onCancel={deleteAllConfirm.cancelFirst}
+        />
 
-      <ConfirmationModal
-        visible={factoryResetModal1}
-        title={labels.settings_factory_reset_confirm_title}
-        message={labels.settings_factory_reset_confirm_message}
-        confirmLabel={labels.settings_factory_reset_confirm}
-        cancelLabel={labels.cancel}
-        onConfirm={() => setFactoryResetModal2(true)}
-        onCancel={() => setFactoryResetModal1(false)}
-      />
+        <ConfirmWithTextModal
+          visible={deleteAllConfirm.secondVisible}
+          title={labels.settings_delete_data_confirm_title2}
+          message={labels.settings_delete_data_confirm_message2}
+          confirmLabel={labels.settings_delete_all_data_confirm}
+          cancelLabel={labels.cancel}
+          text={deleteAllConfirm.text}
+          onTextChange={deleteAllConfirm.setText}
+          onConfirm={handleDeleteAll}
+          onCancel={deleteAllConfirm.cancelSecond}
+          busy={pendingAction === PENDING_DATA_ACTIONS.all}
+        />
 
-      <ConfirmWithTextModal
-        visible={factoryResetModal2}
-        title={labels.settings_delete_data_confirm_title2}
-        message={labels.settings_delete_data_confirm_message2}
-        confirmLabel={labels.settings_delete_confirm}
-        cancelLabel={labels.cancel}
-        text={factoryResetText}
-        onTextChange={setFactoryResetText}
-        onConfirm={handleFactoryReset}
-        onCancel={closeFactoryReset}
-      />
-    </ScrollView>
+        <ConfirmationModal
+          visible={factoryResetConfirm.firstVisible}
+          title={labels.settings_factory_reset_confirm_title}
+          icon="warning-outline"
+          message={labels.settings_factory_reset_confirm_message}
+          confirmLabel={labels.settings_factory_reset_confirm}
+          cancelLabel={labels.cancel}
+          onConfirm={factoryResetConfirm.advance}
+          onCancel={factoryResetConfirm.cancelFirst}
+        />
+
+        <ConfirmWithTextModal
+          visible={factoryResetConfirm.secondVisible}
+          title={labels.settings_delete_data_confirm_title2}
+          message={labels.settings_delete_data_confirm_message2}
+          confirmLabel={labels.settings_factory_reset_confirm}
+          cancelLabel={labels.cancel}
+          text={factoryResetConfirm.text}
+          onTextChange={factoryResetConfirm.setText}
+          onConfirm={handleFactoryReset}
+          onCancel={factoryResetConfirm.cancelSecond}
+          busy={pendingAction === PENDING_DATA_ACTIONS.factory}
+        />
+      </ScrollView>
+    </ScreenShell>
   );
 }
 
-const webInputFocusReset = isWeb ? ({ outlineStyle: 'none' } as unknown as TextStyle) : null;
-
-const styles = StyleSheet.create({
-  input: {
-    borderWidth: 1,
-    borderRadius: BUTTON_BORDER_RADIUS,
-    padding: 12,
-    marginBottom: 16,
-  },
-});

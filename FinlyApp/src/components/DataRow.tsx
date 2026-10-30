@@ -1,31 +1,75 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import type { IconName } from '../constants/types';
 
 export default function DataRow({
-  label, children, noBorder,
+  label, icon, children, noBorder, onPress, accessibilityLabel,
 }: {
   label: string;
+  icon?: IconName;
   children: React.ReactNode;
   noBorder?: boolean;
+  /** When set, the whole row becomes a button (e.g. to open a related screen). */
+  onPress?: () => void;
+  accessibilityLabel?: string;
 }) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  return (
-    <View style={[styles.dataRow, noBorder ? null : { borderBottomWidth: 1, borderBottomColor: c.border }]}>
-      <Text style={[styles.dataLabel, { color: c.textSecondary, fontSize: fs(13) }]}>{label}</Text>
+
+  const content = (
+    <>
+      <View style={styles.labelWrap}>
+        {icon && (
+          <Ionicons
+            name={icon}
+            size={15}
+            color={c.primary}
+            accessible={false}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          />
+        )}
+        <Text style={[styles.dataLabel, { color: c.textSecondary, fontSize: fs(13) }]}>{label}</Text>
+      </View>
       {children}
-    </View>
+    </>
+  );
+  const rowStyle = [styles.dataRow, noBorder ? null : { borderBottomWidth: 1, borderBottomColor: c.border }];
+
+  if (!onPress) {
+    return <View style={rowStyle}>{content}</View>;
+  }
+
+  return (
+    <TouchableOpacity
+      style={rowStyle}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+    >
+      {content}
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   dataRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    // Top-aligned: a wrapping value (comment, tags) keeps its label on the first
+    // line instead of centring it in the middle of the block. Single-line rows are
+    // visually unchanged.
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     paddingVertical: 14,
     paddingHorizontal: 16,
   },
-  dataLabel: { fontWeight: '500', flex: 1 },
+  labelWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  dataLabel: { fontWeight: '500', flexShrink: 1 },
 });

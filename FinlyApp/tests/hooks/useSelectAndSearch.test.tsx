@@ -14,7 +14,6 @@ describe('useSelectAndSearch', () => {
     expect(result.current.searchText).toBe('');
     expect(result.current.selectMode).toBe(false);
     expect(result.current.selectedIds.size).toBe(0);
-    expect(result.current.deleteModalVisible).toBe(false);
     expect(result.current.hasItems).toBe(false);
   });
 
@@ -91,5 +90,63 @@ describe('useSelectAndSearch', () => {
 
     expect(result.current.searchActive).toBe(false);
     expect(result.current.searchText).toBe('');
+  });
+
+  it('toggleSelectAll selects every id, then clears on the second call', async () => {
+    const { result } = await setup();
+    expect(result.current.selectedIds.size).toBe(0);
+
+    await act(() => result.current.toggleSelectAll([1, 2, 3]));
+    expect([...result.current.selectedIds].sort()).toEqual([1, 2, 3]);
+
+    await act(() => result.current.toggleSelectAll([1, 2, 3]));
+    expect(result.current.selectedIds.size).toBe(0);
+  });
+
+  it('toggleSelectAll replaces a partial selection with all ids', async () => {
+    const { result } = await setup();
+
+    await act(() => result.current.toggleItem(1));
+    await act(() => result.current.toggleSelectAll([1, 2, 3]));
+    expect([...result.current.selectedIds].sort()).toEqual([1, 2, 3]);
+  });
+
+  it('toggleSelectAll with an empty list clears the selection', async () => {
+    const { result } = await setup();
+
+    await act(() => result.current.toggleItem(1));
+    await act(() => result.current.toggleSelectAll([]));
+    expect(result.current.selectedIds.size).toBe(0);
+  });
+
+  it('allSelected is true only when every id is selected', async () => {
+    const { result } = await setup();
+    expect(result.current.allSelected([1, 2])).toBe(false);
+
+    await act(() => result.current.toggleItem(1));
+    expect(result.current.allSelected([1, 2])).toBe(false);
+
+    await act(() => result.current.toggleItem(2));
+    expect(result.current.allSelected([1, 2])).toBe(true);
+    expect(result.current.allSelected([])).toBe(false);
+  });
+
+  it('reconcileSelection drops IDs that are no longer visible', async () => {
+    const { result } = await setup();
+
+    await act(() => result.current.toggleItem(1));
+    await act(() => result.current.toggleItem(2));
+    await act(() => result.current.reconcileSelection([2, 3]));
+
+    expect([...result.current.selectedIds]).toEqual([2]);
+  });
+
+  it('reconcileSelection clears the selection when nothing is visible', async () => {
+    const { result } = await setup();
+
+    await act(() => result.current.toggleItem(1));
+    await act(() => result.current.reconcileSelection([]));
+
+    expect(result.current.selectedIds.size).toBe(0);
   });
 });

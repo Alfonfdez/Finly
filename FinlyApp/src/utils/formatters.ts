@@ -1,9 +1,10 @@
-import { t } from '../i18n';
+import { t, tFor } from '../i18n';
 import { roundTo2 } from './calculator';
 import { PERIODS, TEXT_SIZES, DECIMAL_SEPARATORS, FIRST_DAYS, type DecimalSeparator, type FirstDay, type Period, type TextSize } from '../constants/types';
 import { DAYS_PER_WEEK } from '../constants/calendar';
 import { LANGUAGES, type Language } from './language';
 import { DEFAULT_CURRENCY, getCurrencySymbol } from '../constants/currencies';
+import { BACKUP_FILE_EXTENSION, BACKUP_FILE_PREFIX } from '../constants/backup';
 import type { Config } from '../database/types';
 
 export const HIDDEN_BALANCE = '•••••';
@@ -63,8 +64,22 @@ export function formatDate(date: Date): string {
   return `${day}/${month}/${year}`;
 }
 
+export function formatDayShort(date: Date, shortMonths: string[]): string {
+  return `${date.getDate()} ${shortMonths[date.getMonth()]} ${date.getFullYear()}`;
+}
+
 export function getMonthName(month: number): string {
   return t().months[month - 1] ?? '';
+}
+
+export function getMonthNameFor(month: number, language: Language): string {
+  return tFor(language).months[month - 1] ?? '';
+}
+
+/** Percentage text using the configured decimal separator. */
+export function formatPercentage(value: number, separator: DecimalSeparator = DECIMAL_SEPARATORS.comma): string {
+  const text = value.toFixed(1);
+  return separator === DECIMAL_SEPARATORS.dot ? text : text.replace('.', DECIMAL_SEPARATORS.comma);
 }
 
 export function startOfDay(date: Date): Date {
@@ -102,7 +117,7 @@ export function dayOffset(dayDate: Date, firstDay: FirstDay): number {
   return weekDay;
 }
 
-function getPeriodRange(period: Period, date: Date): { start: Date; end: Date } {
+function getPeriodRange(period: Period, date: Date, firstDay: FirstDay = FIRST_DAYS.monday): { start: Date; end: Date } {
   switch (period) {
     case PERIODS.day: {
       const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -110,8 +125,8 @@ function getPeriodRange(period: Period, date: Date): { start: Date; end: Date } 
       return { start, end };
     }
     case PERIODS.week: {
-      const start = weekStart(date);
-      const end = weekEnd(date);
+      const start = weekStart(date, firstDay);
+      const end = weekEnd(date, firstDay);
       return { start, end };
     }
     case PERIODS.month: {
@@ -135,9 +150,10 @@ function getPeriodRange(period: Period, date: Date): { start: Date; end: Date } 
 export function resolvePeriodRange(
   period: Period,
   date: Date,
-  custom: { start: Date; end: Date }
+  custom: { start: Date; end: Date },
+  firstDay: FirstDay = FIRST_DAYS.monday,
 ): { start: Date; end: Date } {
-  return period === PERIODS.custom ? custom : getPeriodRange(period, date);
+  return period === PERIODS.custom ? custom : getPeriodRange(period, date, firstDay);
 }
 
 export function getDaysInMonth(year: number, month: number): number {
@@ -153,7 +169,7 @@ export function isSameDay(a: Date, b: Date): boolean {
 export function formatDateLong(date: Date, language: Language): string {
   const day = date.getDate();
   const year = date.getFullYear();
-  const monthName = getMonthName(date.getMonth() + 1);
+  const monthName = getMonthNameFor(date.getMonth() + 1, language);
 
   if (language === LANGUAGES.en) {
     return `${monthName} ${day}, ${year}`;
@@ -187,6 +203,11 @@ export function formatDateForDB(date: Date): string {
   return `${y}-${m}-${d} ${h}:${min}:${s}`;
 }
 
+/** The date part (`YYYY-MM-DD`) of a DB timestamp or an ISO string. */
+export function datePart(timestamp: string): string {
+  return timestamp.slice(0, 10);
+}
+
 export function formatDateTimeShort(date: Date, shortMonths: string[]): string {
   const h = String(date.getHours()).padStart(2, '0');
   const min = String(date.getMinutes()).padStart(2, '0');
@@ -212,9 +233,12 @@ export function dbTimestamp(): string {
   return formatDateForDB(new Date());
 }
 
-export function isFutureDate(date: Date): boolean {
-  const today = endOfDay(new Date());
-  return date.getTime() > today.getTime();
+/** Whether a day is selectable within an inclusive [minDate, maxDate] window. Null/undefined bounds are open. */
+export function isDateWithinBounds(date: Date, minDate?: Date | null, maxDate?: Date | null): boolean {
+  const day = startOfDay(date).getTime();
+  if (minDate && day < startOfDay(minDate).getTime()) return false;
+  if (maxDate && day > endOfDay(maxDate).getTime()) return false;
+  return true;
 }
 
 const FACTORS: Record<TextSize, number> = {
@@ -227,26 +251,74 @@ export function scaleFontSize(size: number, textSize: TextSize): number {
   return Math.round(size * FACTORS[textSize]);
 }
 
-export function formatWeekRange(date: Date, shortMonths: string[], includeYear = false, firstDay: FirstDay = FIRST_DAYS.monday): string {
+export function formatWeekRange(date: Date, shortMonths: string[], firstDay: FirstDay = FIRST_DAYS.monday): string {
   const start = weekStart(date, firstDay);
   const end = weekEnd(date, firstDay);
   const startDay = start.getDate();
   const startMonth = shortMonths[start.getMonth()];
   const endDay = end.getDate();
   const endMonth = shortMonths[end.getMonth()];
-  const year = includeYear ? ` ${date.getFullYear()}` : '';
-  return `${startDay} ${startMonth} – ${endDay} ${endMonth}${year}`;
+  const startYear = start.getFullYear();
+  const endYear = end.getFullYear();
+  const showYears = startYear !== endYear;
+  return `${startDay} ${startMonth}${showYears ? ` ${startYear}` : ''} – ${endDay} ${endMonth}${showYears ? ` ${endYear}` : ''}`;
 }
 
-export function formatPeriodText(period: Period, date: Date, months: string[], shortMonths: string[]): string {
+export function formatWeekRangeLines(date: Date, months: string[], firstDay: FirstDay = FIRST_DAYS.monday): DateRangeLines {
+  const start = weekStart(date, firstDay);
+  const end = weekEnd(date, firstDay);
+  return {
+    start: `${start.getDate()} ${months[start.getMonth()]} ${start.getFullYear()}`,
+    end: `${end.getDate()} ${months[end.getMonth()]} ${end.getFullYear()}`,
+  };
+}
+
+export function formatPeriodText(
+  period: Period,
+  date: Date,
+  months: string[],
+  firstDay: FirstDay = FIRST_DAYS.monday,
+): string {
   const m = months[date.getMonth()];
   switch (period) {
     case PERIODS.day: return `${date.getDate()} ${m} ${date.getFullYear()}`;
-    case PERIODS.week: return formatWeekRange(date, shortMonths, true);
+    case PERIODS.week: {
+      const lines = formatWeekRangeLines(date, months, firstDay);
+      return `${lines.start} – ${lines.end}`;
+    }
     case PERIODS.month: return `${m} ${date.getFullYear()}`;
     case PERIODS.year: return date.getFullYear().toString();
     default: return '';
   }
+}
+
+export interface DateRangeLines {
+  start: string;
+  end: string;
+}
+
+/**
+ * The custom period range split into two lines: the start date and the end date.
+ * Full month names keep the range clear; the start year is only included when
+ * the range crosses a year boundary.
+ */
+export function formatDateRangeLines(
+  start: Date,
+  end: Date,
+  months: string[],
+  formatStart: (day: number, month: string, year?: number) => string,
+  formatEnd: (day: number, month: string, year: number) => string,
+): DateRangeLines {
+  const startYear = start.getFullYear();
+  const endYear = end.getFullYear();
+  return {
+    start: formatStart(
+      start.getDate(),
+      months[start.getMonth()],
+      startYear === endYear ? undefined : startYear,
+    ),
+    end: formatEnd(end.getDate(), months[end.getMonth()], endYear),
+  };
 }
 
 export function escapeLikePattern(term: string): string {
@@ -254,6 +326,6 @@ export function escapeLikePattern(term: string): string {
 }
 
 export function backupFileName(): string {
-  const stamp = new Date().toISOString().slice(0, 10);
-  return `finly-backup-${stamp}.json`;
+  const stamp = datePart(new Date().toISOString());
+  return `${BACKUP_FILE_PREFIX}${stamp}${BACKUP_FILE_EXTENSION}`;
 }

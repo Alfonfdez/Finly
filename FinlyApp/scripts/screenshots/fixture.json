@@ -1,0 +1,890 @@
+{
+  "app": "Finly",
+  "kind": "backup",
+  "formatVersion": 1,
+  "exportedAt": "2026-10-21T12:00:00+02:00",
+  "schema": 4,
+  "data": {
+    "users": [
+      {
+        "id": 1,
+        "name": "User",
+        "email": null,
+        "avatar": null,
+        "currency": "currency_euro",
+        "created_at": "2026-01-01 09:00:00"
+      }
+    ],
+    "accounts": [
+      {
+        "id": 1,
+        "user_id": 1,
+        "name": "My Wallet",
+        "initial_balance": 1200,
+        "icon": "wallet-outline",
+        "color": "#22D3EE",
+        "description": "Your default account for everyday transactions",
+        "is_total": 0,
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 2,
+        "user_id": 1,
+        "name": "Total",
+        "initial_balance": 0,
+        "icon": "layers-outline",
+        "color": "#475569",
+        "description": "Combined balance and transactions from all your accounts",
+        "is_total": 1,
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 3,
+        "user_id": 1,
+        "name": "Savings",
+        "initial_balance": 3000,
+        "icon": "shield-checkmark-outline",
+        "color": "#34D399",
+        "description": "Money set aside for the future",
+        "is_total": 0,
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 4,
+        "user_id": 1,
+        "name": "Credit Card",
+        "initial_balance": -250,
+        "icon": "card-outline",
+        "color": "#F87171",
+        "description": "Everyday card spending",
+        "is_total": 0,
+        "created_at": "2026-01-01 09:00:00"
+      }
+    ],
+    "categories": [
+      {
+        "id": 1,
+        "user_id": 1,
+        "name": "Salary",
+        "icon": "briefcase-outline",
+        "color": "#22D3EE",
+        "type": "income",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 2,
+        "user_id": 1,
+        "name": "Freelance",
+        "icon": "code-slash-outline",
+        "color": "#A78BFA",
+        "type": "income",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 3,
+        "user_id": 1,
+        "name": "Groceries",
+        "icon": "basket-outline",
+        "color": "#F87171",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 4,
+        "user_id": 1,
+        "name": "Transport",
+        "icon": "bus-outline",
+        "color": "#FBBF24",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 5,
+        "user_id": 1,
+        "name": "Leisure",
+        "icon": "musical-notes-outline",
+        "color": "#F472B6",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 6,
+        "user_id": 1,
+        "name": "Housing",
+        "icon": "home-outline",
+        "color": "#60A5FA",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 7,
+        "user_id": 1,
+        "name": "Health",
+        "icon": "heart-outline",
+        "color": "#34D399",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 8,
+        "user_id": 1,
+        "name": "Investments",
+        "icon": "trending-up-outline",
+        "color": "#34D399",
+        "type": "income",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 9,
+        "user_id": 1,
+        "name": "Travel",
+        "icon": "airplane-outline",
+        "color": "#38BDF8",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 10,
+        "user_id": 1,
+        "name": "Education",
+        "icon": "school-outline",
+        "color": "#34D399",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 11,
+        "user_id": 1,
+        "name": "Family",
+        "icon": "people-outline",
+        "color": "#F472B6",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 12,
+        "user_id": 1,
+        "name": "Shopping",
+        "icon": "bag-outline",
+        "color": "#FBBF24",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 13,
+        "user_id": 1,
+        "name": "Clothing",
+        "icon": "shirt-outline",
+        "color": "#C084FC",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 14,
+        "user_id": 1,
+        "name": "Workout",
+        "icon": "barbell-outline",
+        "color": "#22D3EE",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 15,
+        "user_id": 1,
+        "name": "Others",
+        "icon": "ellipsis-horizontal-outline",
+        "color": "#94A3B8",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 16,
+        "user_id": 1,
+        "name": "Entertainment",
+        "icon": "film-outline",
+        "color": "#E879F9",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 17,
+        "user_id": 1,
+        "name": "Gift",
+        "icon": "gift-outline",
+        "color": "#FB7185",
+        "type": "income",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 18,
+        "user_id": 1,
+        "name": "Other",
+        "icon": "ellipsis-horizontal-outline",
+        "color": "#94A3B8",
+        "type": "income",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 19,
+        "user_id": 1,
+        "name": "Restaurants",
+        "icon": "restaurant-outline",
+        "color": "#FB923C",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 20,
+        "user_id": 1,
+        "name": "Rent",
+        "icon": "key-outline",
+        "color": "#818CF8",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 21,
+        "user_id": 1,
+        "name": "Games",
+        "icon": "game-controller-outline",
+        "color": "#2DD4BF",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 22,
+        "user_id": 1,
+        "name": "Gifts",
+        "icon": "gift-outline",
+        "color": "#EC4899",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 23,
+        "user_id": 1,
+        "name": "Subscriptions",
+        "icon": "card-outline",
+        "color": "#10B981",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 24,
+        "user_id": 1,
+        "name": "Pets",
+        "icon": "paw-outline",
+        "color": "#F59E0B",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 25,
+        "user_id": 1,
+        "name": "Insurance",
+        "icon": "shield-checkmark-outline",
+        "color": "#6366F1",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 26,
+        "user_id": 1,
+        "name": "Utilities",
+        "icon": "flash-outline",
+        "color": "#EF4444",
+        "type": "expense",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 27,
+        "user_id": 1,
+        "name": "Interest",
+        "icon": "pulse-outline",
+        "color": "#0EA5E9",
+        "type": "income",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 28,
+        "user_id": 1,
+        "name": "Sales",
+        "icon": "cash-outline",
+        "color": "#EAB308",
+        "type": "income",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 29,
+        "user_id": 1,
+        "name": "Refund",
+        "icon": "return-down-back-outline",
+        "color": "#8B5CF6",
+        "type": "income",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 30,
+        "user_id": 1,
+        "name": "Bonus",
+        "icon": "trophy-outline",
+        "color": "#D946EF",
+        "type": "income",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 31,
+        "user_id": 1,
+        "name": "Allowance",
+        "icon": "wallet-outline",
+        "color": "#22C55E",
+        "type": "income",
+        "created_at": "2026-01-01 09:00:00"
+      }
+    ],
+    "transactions": [
+      {
+        "id": 1,
+        "account_id": 1,
+        "category_id": 1,
+        "type": "income",
+        "amount": 2000,
+        "description": "October salary",
+        "photo": null,
+        "date": "2026-10-01 00:00:00",
+        "created_at": "2026-10-01 09:00:00",
+        "updated_at": null,
+        "recurring_rule_id": null,
+        "recurrence_date": null
+      },
+      {
+        "id": 2,
+        "account_id": 1,
+        "category_id": 20,
+        "type": "expense",
+        "amount": 850,
+        "description": "October rent",
+        "photo": null,
+        "date": "2026-10-02 00:00:00",
+        "created_at": "2026-10-02 09:00:00",
+        "updated_at": null,
+        "recurring_rule_id": 1,
+        "recurrence_date": "2026-10-02"
+      },
+      {
+        "id": 3,
+        "account_id": 1,
+        "category_id": 3,
+        "type": "expense",
+        "amount": 92.35,
+        "description": "Weekly groceries",
+        "photo": null,
+        "date": "2026-10-03 00:00:00",
+        "created_at": "2026-10-03 10:00:00",
+        "updated_at": null,
+        "recurring_rule_id": null,
+        "recurrence_date": null
+      },
+      {
+        "id": 4,
+        "account_id": 1,
+        "category_id": 4,
+        "type": "expense",
+        "amount": 45,
+        "description": "Bus pass",
+        "photo": null,
+        "date": "2026-10-04 00:00:00",
+        "created_at": "2026-10-04 08:30:00",
+        "updated_at": null,
+        "recurring_rule_id": null,
+        "recurrence_date": null
+      },
+      {
+        "id": 5,
+        "account_id": 4,
+        "category_id": 19,
+        "type": "expense",
+        "amount": 62.8,
+        "description": "Dinner with friends",
+        "photo": null,
+        "date": "2026-10-05 00:00:00",
+        "created_at": "2026-10-05 21:15:00",
+        "updated_at": null,
+        "recurring_rule_id": null,
+        "recurrence_date": null
+      },
+      {
+        "id": 6,
+        "account_id": 1,
+        "category_id": 26,
+        "type": "expense",
+        "amount": 74.2,
+        "description": "Electricity bill",
+        "photo": null,
+        "date": "2026-10-06 00:00:00",
+        "created_at": "2026-10-06 12:00:00",
+        "updated_at": null,
+        "recurring_rule_id": null,
+        "recurrence_date": null
+      },
+      {
+        "id": 7,
+        "account_id": 4,
+        "category_id": 23,
+        "type": "expense",
+        "amount": 12.99,
+        "description": "Streaming",
+        "photo": null,
+        "date": "2026-10-07 00:00:00",
+        "created_at": "2026-10-07 18:00:00",
+        "updated_at": null,
+        "recurring_rule_id": 2,
+        "recurrence_date": "2026-10-07"
+      },
+      {
+        "id": 8,
+        "account_id": 1,
+        "category_id": 7,
+        "type": "expense",
+        "amount": 35,
+        "description": "Gym membership",
+        "photo": null,
+        "date": "2026-10-08 00:00:00",
+        "created_at": "2026-10-08 07:45:00",
+        "updated_at": null,
+        "recurring_rule_id": null,
+        "recurrence_date": null
+      },
+      {
+        "id": 9,
+        "account_id": 1,
+        "category_id": 3,
+        "type": "expense",
+        "amount": 54.2,
+        "description": "Weekly groceries",
+        "photo": null,
+        "date": "2026-10-10 00:00:00",
+        "created_at": "2026-10-10 11:20:00",
+        "updated_at": null,
+        "recurring_rule_id": null,
+        "recurrence_date": null
+      },
+      {
+        "id": 10,
+        "account_id": 4,
+        "category_id": 16,
+        "type": "expense",
+        "amount": 28,
+        "description": "Cinema night",
+        "photo": null,
+        "date": "2026-10-11 00:00:00",
+        "created_at": "2026-10-11 20:30:00",
+        "updated_at": null,
+        "recurring_rule_id": null,
+        "recurrence_date": null
+      },
+      {
+        "id": 11,
+        "account_id": 4,
+        "category_id": 12,
+        "type": "expense",
+        "amount": 78.5,
+        "description": "New shoes",
+        "photo": null,
+        "date": "2026-10-12 00:00:00",
+        "created_at": "2026-10-12 16:10:00",
+        "updated_at": null,
+        "recurring_rule_id": null,
+        "recurrence_date": null
+      },
+      {
+        "id": 12,
+        "account_id": 1,
+        "category_id": 10,
+        "type": "expense",
+        "amount": 49,
+        "description": "Online course",
+        "photo": null,
+        "date": "2026-10-13 00:00:00",
+        "created_at": "2026-10-13 19:00:00",
+        "updated_at": null,
+        "recurring_rule_id": null,
+        "recurrence_date": null
+      },
+      {
+        "id": 13,
+        "account_id": 3,
+        "category_id": 2,
+        "type": "income",
+        "amount": 450,
+        "description": "Logo project",
+        "photo": null,
+        "date": "2026-10-16 00:00:00",
+        "created_at": "2026-10-16 14:30:00",
+        "updated_at": null,
+        "recurring_rule_id": null,
+        "recurrence_date": null
+      },
+      {
+        "id": 14,
+        "account_id": 1,
+        "category_id": 3,
+        "type": "expense",
+        "amount": 41.8,
+        "description": "Weekly groceries",
+        "photo": null,
+        "date": "2026-10-17 00:00:00",
+        "created_at": "2026-10-17 10:05:00",
+        "updated_at": null,
+        "recurring_rule_id": null,
+        "recurrence_date": null
+      },
+      {
+        "id": 15,
+        "account_id": 4,
+        "category_id": 19,
+        "type": "expense",
+        "amount": 34.5,
+        "description": "Dinner with friends",
+        "photo": null,
+        "date": "2026-10-18 00:00:00",
+        "created_at": "2026-10-18 21:00:00",
+        "updated_at": null,
+        "recurring_rule_id": null,
+        "recurrence_date": null
+      },
+      {
+        "id": 16,
+        "account_id": 1,
+        "category_id": 4,
+        "type": "expense",
+        "amount": 18.6,
+        "description": "Bus pass",
+        "photo": null,
+        "date": "2026-10-19 00:00:00",
+        "created_at": "2026-10-19 08:15:00",
+        "updated_at": null,
+        "recurring_rule_id": null,
+        "recurrence_date": null
+      }
+    ],
+    "tags": [
+      {
+        "id": 1,
+        "user_id": 1,
+        "name": "work",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 2,
+        "user_id": 1,
+        "name": "food",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 3,
+        "user_id": 1,
+        "name": "home",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 4,
+        "user_id": 1,
+        "name": "commute",
+        "created_at": "2026-01-01 09:00:00"
+      },
+      {
+        "id": 5,
+        "user_id": 1,
+        "name": "fun",
+        "created_at": "2026-01-01 09:00:00"
+      }
+    ],
+    "transaction_tags": [
+      {
+        "transaction_id": 1,
+        "tag_id": 1
+      },
+      {
+        "transaction_id": 2,
+        "tag_id": 3
+      },
+      {
+        "transaction_id": 3,
+        "tag_id": 2
+      },
+      {
+        "transaction_id": 4,
+        "tag_id": 4
+      },
+      {
+        "transaction_id": 5,
+        "tag_id": 2
+      },
+      {
+        "transaction_id": 6,
+        "tag_id": 3
+      },
+      {
+        "transaction_id": 7,
+        "tag_id": 5
+      },
+      {
+        "transaction_id": 9,
+        "tag_id": 2
+      },
+      {
+        "transaction_id": 10,
+        "tag_id": 5
+      },
+      {
+        "transaction_id": 11,
+        "tag_id": 5
+      },
+      {
+        "transaction_id": 13,
+        "tag_id": 1
+      },
+      {
+        "transaction_id": 14,
+        "tag_id": 2
+      },
+      {
+        "transaction_id": 15,
+        "tag_id": 2
+      },
+      {
+        "transaction_id": 16,
+        "tag_id": 4
+      }
+    ],
+    "recurring_rules": [
+      {
+        "id": 1,
+        "user_id": 1,
+        "name": "Rent",
+        "type": "expense",
+        "account_id": 1,
+        "category_id": 20,
+        "amount": 850,
+        "description": "Monthly rent",
+        "frequency": "monthly",
+        "interval": 1,
+        "weekday": null,
+        "day_of_month": 2,
+        "month": null,
+        "start_date": "2026-10-02",
+        "end_date": null,
+        "next_due": "2026-11-02",
+        "skipped_from": null,
+        "active": 1,
+        "created_at": "2026-10-02 09:00:00",
+        "updated_at": null
+      },
+      {
+        "id": 2,
+        "user_id": 1,
+        "name": "Subscriptions",
+        "type": "expense",
+        "account_id": 4,
+        "category_id": 23,
+        "amount": 12.99,
+        "description": "Monthly streaming",
+        "frequency": "monthly",
+        "interval": 1,
+        "weekday": null,
+        "day_of_month": 7,
+        "month": null,
+        "start_date": "2026-10-07",
+        "end_date": null,
+        "next_due": "2026-11-07",
+        "skipped_from": null,
+        "active": 1,
+        "created_at": "2026-10-07 18:00:00",
+        "updated_at": null
+      },
+      {
+        "id": 3,
+        "user_id": 1,
+        "name": "Gym membership",
+        "type": "expense",
+        "account_id": 1,
+        "category_id": 7,
+        "amount": 35,
+        "description": "Monthly gym",
+        "frequency": "monthly",
+        "interval": 1,
+        "weekday": null,
+        "day_of_month": 8,
+        "month": null,
+        "start_date": "2026-10-08",
+        "end_date": null,
+        "next_due": "2026-11-08",
+        "skipped_from": null,
+        "active": 0,
+        "created_at": "2026-10-08 07:45:00",
+        "updated_at": null
+      }
+    ],
+    "recurring_rule_tags": [
+      {
+        "rule_id": 1,
+        "tag_id": 3
+      },
+      {
+        "rule_id": 2,
+        "tag_id": 5
+      }
+    ],
+    "config": [
+      {
+        "key": "theme",
+        "value": "dark"
+      },
+      {
+        "key": "first_day_of_week",
+        "value": "1"
+      },
+      {
+        "key": "currency",
+        "value": "currency_euro"
+      },
+      {
+        "key": "decimal_separator",
+        "value": ","
+      },
+      {
+        "key": "language",
+        "value": "en"
+      },
+      {
+        "key": "text_size",
+        "value": "medium"
+      },
+      {
+        "key": "category_icon_shape",
+        "value": "square"
+      },
+      {
+        "key": "account_icon_shape",
+        "value": "square"
+      },
+      {
+        "key": "home_default_account_id",
+        "value": "null"
+      },
+      {
+        "key": "home_default_period",
+        "value": "month"
+      },
+      {
+        "key": "add_default_account_id",
+        "value": "1"
+      },
+      {
+        "key": "add_show_labels",
+        "value": "true"
+      },
+      {
+        "key": "add_show_comments",
+        "value": "true"
+      },
+      {
+        "key": "add_show_photo",
+        "value": "true"
+      },
+      {
+        "key": "modify_show_labels",
+        "value": "true"
+      },
+      {
+        "key": "modify_show_comments",
+        "value": "true"
+      },
+      {
+        "key": "modify_show_photo",
+        "value": "true"
+      },
+      {
+        "key": "create_recurring_default_account_id",
+        "value": "1"
+      },
+      {
+        "key": "create_recurring_show_labels",
+        "value": "true"
+      },
+      {
+        "key": "create_recurring_show_comments",
+        "value": "true"
+      },
+      {
+        "key": "edit_recurring_show_labels",
+        "value": "true"
+      },
+      {
+        "key": "edit_recurring_show_comments",
+        "value": "true"
+      },
+      {
+        "key": "hide_balances",
+        "value": "false"
+      },
+      {
+        "key": "tags_sort_by",
+        "value": "created"
+      },
+      {
+        "key": "tags_sort_direction",
+        "value": "asc"
+      },
+      {
+        "key": "comments_sort_by",
+        "value": "usage"
+      },
+      {
+        "key": "comments_sort_direction",
+        "value": "desc"
+      },
+      {
+        "key": "recurring_sort_by",
+        "value": "nextDue"
+      },
+      {
+        "key": "recurring_sort_direction",
+        "value": "asc"
+      },
+      {
+        "key": "transactions_sort_by",
+        "value": "date"
+      },
+      {
+        "key": "transactions_sort_direction",
+        "value": "desc"
+      },
+      {
+        "key": "all_transactions_sort_by",
+        "value": "date"
+      },
+      {
+        "key": "all_transactions_sort_direction",
+        "value": "desc"
+      },
+      {
+        "key": "accounts_sort_by",
+        "value": "name"
+      },
+      {
+        "key": "accounts_sort_direction",
+        "value": "asc"
+      },
+      {
+        "key": "categories_sort_by",
+        "value": "name"
+      },
+      {
+        "key": "categories_sort_direction",
+        "value": "asc"
+      }
+    ]
+  }
+}

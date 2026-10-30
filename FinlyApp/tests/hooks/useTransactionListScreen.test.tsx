@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react-native';
 import { useTransactionListScreen } from '../../src/hooks/useTransactionListScreen';
 import type { Transaction, Account, Category } from '../../src/database/types';
-import type { NavigationProp } from '../../src/constants/types';
+import { TRANSACTION_SORT_SCOPES, type NavigationProp } from '../../src/constants/types';
 
 const getTagsByTransactionIds = vi.fn(async () => [] as { transaction_id: number; tag_id: number; name: string }[]);
 
@@ -56,6 +56,7 @@ async function setup(overrides: Partial<Parameters<typeof useTransactionListScre
       accounts: [account1],
       activeAccount: null,
       categoriesById: new Map([[1, category1]]),
+      sortScope: TRANSACTION_SORT_SCOPES.transactions,
     },
     deleteFn,
     onAfterDelete,

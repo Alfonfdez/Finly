@@ -3,13 +3,15 @@ import type { ConfigIconShape, IconName } from '../constants/types';
 import IconGrid from './IconGrid';
 import ColorGrid from './ColorGrid';
 import ColorPickerModal from './ColorPickerModal';
-import SectionTitle from './form/SectionTitle';
+import FormSectionHeader from './form/FormSectionHeader';
 
 interface IconColorSectionProps {
   icons: readonly IconName[];
   shape: ConfigIconShape;
   symbolTitle: string;
   colorTitle: string;
+  symbolIcon?: IconName;
+  colorIcon?: IconName;
   selectedIcon: string | null;
   onSelectIcon: (icon: string) => void;
   selectedColor: string | null;
@@ -22,6 +24,8 @@ export default function IconColorSection({
   shape,
   symbolTitle,
   colorTitle,
+  symbolIcon = 'shapes-outline',
+  colorIcon = 'color-palette-outline',
   selectedIcon,
   onSelectIcon,
   selectedColor,
@@ -32,7 +36,7 @@ export default function IconColorSection({
 
   return (
     <>
-      <SectionTitle text={symbolTitle} />
+      <FormSectionHeader title={symbolTitle} icon={symbolIcon} />
       <IconGrid
         icons={icons}
         selectedIcon={selectedIcon}
@@ -41,7 +45,7 @@ export default function IconColorSection({
         onSelect={onSelectIcon}
       />
 
-      <SectionTitle text={colorTitle} />
+      <FormSectionHeader title={colorTitle} icon={colorIcon} />
       <ColorGrid
         selectedColor={selectedColor}
         customColor={customColor}

@@ -1,36 +1,41 @@
-import { View, Text, StyleSheet } from 'react-native';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
-import NavArrows from './NavArrows';
+import { useToday } from '../../hooks/useToday';
+import { t } from '../../i18n';
+import { resolveDateBounds } from '../../utils/calendarBounds';
+import CalendarNavRow from './CalendarNavRow';
 
 interface Props {
   year: number;
-  maxYear?: number;
   onChange: (newYear: number) => void;
+  minDate?: Date | null;
+  maxDate?: Date | null;
 }
 
-export default function YearNav({ year, maxYear = new Date().getFullYear(), onChange }: Props) {
+export default function YearNav({ year, onChange, minDate, maxDate }: Props) {
+  const today = useToday();
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
+  const labels = t();
+  const { min, max } = resolveDateBounds(minDate, maxDate, today);
+  const nextDisabled = !!max && year >= max.getFullYear();
+  const prevDisabled = !!min && year <= min.getFullYear();
+  const currentYear = Math.min(today.getFullYear(), max?.getFullYear() ?? today.getFullYear());
+  const showJump = year < currentYear - 1;
 
   return (
-    <View style={styles.container}>
-      <NavArrows
-        color={c.text}
-        onPrev={() => onChange(year - 1)}
-        onNext={() => onChange(year + 1)}
-        nextDisabled={year >= maxYear}
-      />
-      <Text style={{ color: c.text, fontSize: fs(18), fontWeight: '700' }}>{year}</Text>
-    </View>
+    <CalendarNavRow
+      title={String(year)}
+      titleSize={fs(18)}
+      color={c.text}
+      onPrev={() => onChange(year - 1)}
+      onNext={() => onChange(year + 1)}
+      onJumpToCurrent={() => onChange(currentYear)}
+      showJump={showJump}
+      nextDisabled={nextDisabled}
+      prevDisabled={prevDisabled}
+      prevLabel={labels.a11y_previous_year}
+      nextLabel={labels.a11y_next_year}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-});

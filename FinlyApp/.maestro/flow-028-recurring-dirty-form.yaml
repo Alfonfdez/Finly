@@ -1,0 +1,83 @@
+appId: com.finly.app
+---
+- runFlow:
+    file: "helpers/state-reset.yaml"
+- runFlow:
+    file: "helpers/dismiss-dev-menu.yaml"
+# --- Create a daily recurring rule (materializes today's transaction) ---
+- runFlow:
+    file: "helpers/create-daily-rule.yaml"
+# --- Open the generated transaction and make the form dirty ---
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- tapOn: "All transactions"
+- waitForAnimationToEnd
+- tapOn: "E2E Daily"
+- waitForAnimationToEnd
+- assertVisible: "Transaction details"
+- tapOn: "Edit"
+- waitForAnimationToEnd
+- assertVisible: "Modify transaction"
+- scrollUntilVisible:
+    element:
+      text: "Comment input"
+    direction: DOWN
+- tapOn: "Comment input"
+- inputText: "MY DRAFT"
+- assertVisible: "MY DRAFT"
+# --- Edit the recurring rule from the notice button ---
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Edit recurring rule"
+    direction: UP
+- tapOn: "Edit recurring rule"
+- waitForAnimationToEnd
+- assertVisible: "Edit recurring rule"
+- scrollUntilVisible:
+    element:
+      text: "Comment input"
+    direction: DOWN
+- tapOn: "Comment input"
+- inputText: "RULE v2"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Future + past"
+    direction: UP
+- tapOn: "Future + past"
+- scrollUntilVisible:
+    element:
+      text: "Save"
+    direction: DOWN
+- tapOn: "Save"
+- waitForAnimationToEnd
+# --- Back on the modify form: the notice is shown and the draft is kept ---
+- assertVisible: "Modify transaction"
+- assertVisible: "This transaction was updated by its recurring rule. Saving here overwrites those changes for this transaction only."
+- assertVisible: "Use the rule's values"
+- scrollUntilVisible:
+    element:
+      text: "MY DRAFT"
+    direction: DOWN
+- assertVisible: "MY DRAFT"
+# --- Adopting the rule's values replaces the draft and clears the notice ---
+- scrollUntilVisible:
+    element:
+      text: "Use the rule's values"
+    direction: UP
+- tapOn: "Use the rule's values"
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "RULE v2"
+    direction: DOWN
+- assertVisible: "RULE v2"
+- assertNotVisible: "MY DRAFT"
+# The notice block is cleared (back at the top of the form)
+- swipe:
+    direction: DOWN
+- swipe:
+    direction: DOWN
+- assertNotVisible: "This transaction was updated by its recurring rule. Saving here overwrites those changes for this transaction only."
+- assertNotVisible: "Use the rule's values"

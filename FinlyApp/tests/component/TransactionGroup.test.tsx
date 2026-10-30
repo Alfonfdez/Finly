@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, within } from '@testing-library/react-native';
 import { resetStub } from './helpers/configStub';
 import { TransactionRow, TransactionDateHeader } from '../../src/components/TransactionGroup';
 import type { Transaction, Category } from '../../src/database/types';
@@ -53,6 +53,7 @@ describe('TransactionRow', () => {
 
     expect(view.getByText('Restaurants')).toBeTruthy();
     expect(view.getByText('Lunch')).toBeTruthy();
+    expect(view.getByText('Lunch').props.numberOfLines).toBe(2);
   });
 
   it('formats an expense with a minus sign and the red color', async () => {
@@ -69,10 +70,72 @@ describe('TransactionRow', () => {
     expect(flattenStyle(amount.props.style).color).toBe('#34D399');
   });
 
+  it('renders a calendar date before the comment when showDate is set', async () => {
+    const view = await render(<TransactionRow tx={makeTx({})} category={category} showDate />);
+
+    expect(view.getByText('calendar-outline', { includeHiddenElements: true })).toBeTruthy();
+    const date = view.getByText('5 August');
+    expect(flattenStyle(date.props.style).fontWeight).toBe('600');
+    const json = JSON.stringify(view.toJSON());
+    expect(json.indexOf('5 August')).toBeLessThan(json.indexOf('Lunch'));
+  });
+
+  it('does not render the row date without showDate', async () => {
+    const view = await render(<TransactionRow tx={makeTx({})} category={category} />);
+    expect(view.queryByText('5 August')).toBeNull();
+  });
+
   it('renders tag chips for the transaction', async () => {
     const view = await render(<TransactionRow tx={makeTx({})} category={category} tags={[{ tag_id: 7, name: 'lunch' }]} />);
 
     expect(view.getByText('lunch')).toBeTruthy();
+  });
+
+  it('renders the recurring icon and rule name', async () => {
+    const view = await render(
+      <TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} recurringName="MyRule" />,
+    );
+
+    expect(view.getByText('repeat-outline')).toBeTruthy();
+    expect(view.getByText('MyRule')).toBeTruthy();
+  });
+
+  it('renders the recurring icon without a name when none is given', async () => {
+    const view = await render(<TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} />);
+
+    expect(view.getByText('repeat-outline')).toBeTruthy();
+    expect(view.queryByText('MyRule')).toBeNull();
+  });
+
+  it('renders the recurring icon in the primary color', async () => {
+    const view = await render(
+      <TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} recurringName="MyRule" />,
+    );
+
+    const icon = view.root!.queryAll((i) => i.type === 'RCTText' && i.children[0] === 'repeat-outline')[0];
+    expect(icon.props.color).toBe('#22D3EE');
+  });
+
+  it('renders the tag chips before the recurring rule name', async () => {
+    const view = await render(
+      <TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} tags={[{ tag_id: 7, name: 'lunch' }]} recurringName="MyRule" />,
+    );
+
+    const json = JSON.stringify(view.toJSON());
+    expect(json.indexOf('lunch')).toBeGreaterThanOrEqual(0);
+    expect(json.indexOf('lunch')).toBeLessThan(json.indexOf('MyRule'));
+  });
+
+  it('renders tags and recurring on separate rows', async () => {
+    const view = await render(
+      <TransactionRow tx={makeTx({ recurring_rule_id: 7 })} category={category} tags={[{ tag_id: 7, name: 'lunch' }]} recurringName="MyRule" />,
+    );
+
+    // The tag chip's row must not contain the recurring name (it lives on its own row below).
+    const tagsRow = view.getByText('lunch').parent?.parent;
+    expect(tagsRow).toBeTruthy();
+    expect(within(tagsRow!).queryByText('lunch')).toBeTruthy();
+    expect(within(tagsRow!).queryByText('MyRule')).toBeNull();
   });
 
   it('omits tag chips when no tags are present', async () => {
@@ -112,13 +175,14 @@ describe('TransactionDateHeader', () => {
     const year = new Date().getFullYear();
     const view = await render(<TransactionDateHeader date={`${year}-08-05 12:00:00`} />);
 
-    expect(view.getByText('5 august')).toBeTruthy();
+    expect(view.getByText('5 August')).toBeTruthy();
+    expect(view.getByText('calendar-outline', { includeHiddenElements: true })).toBeTruthy();
   });
 
   it('includes the year for other years', async () => {
     const year = new Date().getFullYear() - 1;
     const view = await render(<TransactionDateHeader date={`${year}-08-05 12:00:00`} />);
 
-    expect(view.getByText(`5 august ${year}`)).toBeTruthy();
+    expect(view.getByText(`5 August ${year}`)).toBeTruthy();
   });
 });

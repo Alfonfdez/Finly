@@ -1,22 +1,24 @@
-import { Text, StyleSheet } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
-import { useFontSize } from '../hooks/useFontSize';
+import { useKeyboardReveal } from '../hooks/useKeyboardReveal';
 import { MAX_ACCOUNT_NAME_LENGTH, MAX_NOTE_LENGTH, type ConfigIconShape, type IconName } from '../constants/types';
 import IconColorSection from './IconColorSection';
+import FormSectionHeader from './form/FormSectionHeader';
+import { formStyles } from './form/formStyles';
 import LabeledTextField from './form/LabeledTextField';
 import PrimaryButton from './form/PrimaryButton';
-import FormError from './form/FormError';
-import DeleteButton from './form/DeleteButton';
+import FormActions from './form/FormActions';
 import FormScrollView from './form/FormScrollView';
 import AmountInput from './AmountInput';
-import { BUTTON_BORDER_RADIUS } from './componentStyles';
 
 interface AccountFormProps {
   nameLabel: string;
+  namePlaceholder?: string;
   name: string;
   onNameChange: (value: string) => void;
-  nameErrorDisplay: string | null;
-  showNameField: boolean;
+  /** The duplicate-name message (or null) — the empty case comes from `nameEmptyError`. */
+  nameError: string | null;
+  /** Shown when the name is blank; the red border waits for the field to be touched. */
+  nameEmptyError: string;
   nameDisabled?: boolean;
   icons: readonly IconName[];
   iconShape: ConfigIconShape;
@@ -42,15 +44,17 @@ interface AccountFormProps {
   deleteLabel?: string;
   onDeletePress?: () => void;
   deleteDisabled?: boolean;
+  /** Muted explanation for a disabled Delete; shown directly above the button. */
   deleteLastHint?: string | null;
 }
 
 export default function AccountForm({
   nameLabel,
+  namePlaceholder,
   name,
   onNameChange,
-  nameErrorDisplay,
-  showNameField,
+  nameError,
+  nameEmptyError,
   nameDisabled = false,
   icons,
   iconShape,
@@ -79,25 +83,30 @@ export default function AccountForm({
   deleteLastHint,
 }: AccountFormProps) {
   const { activeColors: c } = useConfig();
-  const fs = useFontSize();
+  // The Note is the bottom-most field, so focusing it scrolls the form to keep the
+  // submit button (below it) above the keyboard.
+  const { scrollRef, onBottomFieldFocus, onBottomFieldBlur, onScrollLayout } = useKeyboardReveal();
+
+  const nameValidationError = nameDisabled ? null : name.trim() === '' ? nameEmptyError : nameError;
 
   return (
-    <FormScrollView>
-      {showNameField && (
-        <LabeledTextField
-          label={nameLabel}
-          placeholder={nameLabel}
-          value={name}
-          onChangeText={onNameChange}
-          maxLength={MAX_ACCOUNT_NAME_LENGTH}
-          autoCapitalize="words"
-          autoCorrect={false}
-          error={nameErrorDisplay}
-          showCounter
-          editable={!nameDisabled}
-          inputStyle={nameDisabled ? { color: c.textSecondary } : undefined}
-        />
-      )}
+    <FormScrollView scrollRef={scrollRef} onLayout={onScrollLayout}>
+      <LabeledTextField
+        label={nameLabel}
+        labelIcon="id-card-outline"
+        labelStyle={formStyles.firstSection}
+        placeholder={namePlaceholder ?? nameLabel}
+        value={name}
+        onChangeText={onNameChange}
+        maxLength={MAX_ACCOUNT_NAME_LENGTH}
+        autoCapitalize="words"
+        autoCorrect={false}
+        error={nameValidationError}
+        showCounter
+        counterInHeader
+        editable={!nameDisabled}
+        inputStyle={nameDisabled ? { color: c.textSecondary } : undefined}
+      />
 
       <IconColorSection
         icons={icons}
@@ -115,13 +124,17 @@ export default function AccountForm({
         <AmountInput
           raw={initialBalanceRaw}
           onChangeRaw={onInitialBalanceChange ?? (() => {})}
-          label={initialBalanceLabel}
+          header={initialBalanceLabel
+            ? <FormSectionHeader title={initialBalanceLabel} icon="cash-outline" />
+            : undefined}
           accessibilityLabel={initialBalanceA11yLabel}
+          allowNegative
         />
       )}
 
       <LabeledTextField
         label={noteLabel}
+        labelIcon="document-text-outline"
         value={description}
         onChangeText={onDescriptionChange}
         multiline
@@ -129,48 +142,20 @@ export default function AccountForm({
         textAlignVertical="top"
         maxLength={MAX_NOTE_LENGTH}
         showCounter
+        counterInHeader
+        onFocus={onBottomFieldFocus}
+        onBlur={onBottomFieldBlur}
       />
 
-      <FormError message={hintText} fontSize={fs(12)} style={styles.hint} />
-
-      {deleteLabel && onDeletePress && (
-        <>
-          <DeleteButton
-            label={deleteLabel}
-            onPress={onDeletePress}
-            disabled={deleteDisabled}
-            style={styles.deleteButton}
-          />
-
-          {deleteLastHint && (
-            <Text style={[styles.hint, { color: c.textSecondary, fontSize: fs(12) }]}>
-              {deleteLastHint}
-            </Text>
-          )}
-        </>
-      )}
-
-      <PrimaryButton
-        label={submitLabel}
-        onPress={onSubmit}
-        disabled={isSubmitDisabled}
-        style={styles.button}
-      />
+      <FormActions
+        deleteHint={deleteLastHint}
+        deleteLabel={deleteLabel}
+        onDeletePress={onDeletePress}
+        deleteDisabled={deleteDisabled}
+        saveHint={hintText}
+      >
+        <PrimaryButton label={submitLabel} onPress={onSubmit} disabled={isSubmitDisabled} />
+      </FormActions>
     </FormScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  hint: {
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  deleteButton: {
-    marginTop: 24,
-    paddingVertical: 12,
-    borderRadius: BUTTON_BORDER_RADIUS,
-  },
-  button: {
-    marginTop: 16,
-  },
-});

@@ -19,7 +19,7 @@ function flattenStyle(style: unknown): Record<string, unknown> {
 describe('IconBadge', () => {
   it('renders the icon inside a sized, tinted badge', async () => {
     const result = await render(
-      <IconBadge icon="wallet" color="#22D3EE" shape={BADGE_SHAPES.circle} size={40} iconSize={20} />
+      <IconBadge icon="wallet" color="#22D3EE" shape={BADGE_SHAPES.circle} size={40} iconSize={20} />,
     );
 
     const badge = result.root!;
@@ -38,7 +38,7 @@ describe('IconBadge', () => {
 
   it('uses a rounded corner radius for the square shape', async () => {
     const result = await render(
-      <IconBadge icon="home" color="#FFFFFF" shape={BADGE_SHAPES.rounded} size={32} iconSize={16} roundedRadius={8} />
+      <IconBadge icon="home" color="#FFFFFF" shape={BADGE_SHAPES.rounded} size={32} iconSize={16} roundedRadius={8} />,
     );
 
     const badge = result.root!;

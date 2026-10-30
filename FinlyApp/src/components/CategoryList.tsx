@@ -1,9 +1,10 @@
 import { useCallback, memo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { type CategoryWithTotal, MAX_VISIBLE_TAGS } from '../constants/types';
-import { UNTAGGED_ID } from '../database/helpers';
-import { formatAmount } from '../utils/formatters';
+import { isUntaggedTag } from '../utils/tagFilter';
+import { formatAmount, formatPercentage, HIDDEN_BALANCE } from '../utils/formatters';
 import { badgeShapeFor } from '../utils/badgeShape';
+import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { t, getDisplayCategoryName } from '../i18n';
@@ -22,11 +23,14 @@ interface Props {
   tagBreakdowns?: Map<number, TagBreakdown[]>;
   expandedCategoryIds?: Set<number>;
   onToggleExpand?: (id: number) => void;
+  /** "Hide balances and totals" is on: show the mask instead of each category total. */
+  hidden?: boolean;
 }
 
 function CategoryListInner({
   categories, onPress,
   tagBreakdowns, expandedCategoryIds, onToggleExpand,
+  hidden = false,
 }: Props) {
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
@@ -44,13 +48,16 @@ function CategoryListInner({
     return (
       <View style={styles.tagSection}>
         <View style={styles.tagChips}>
-          {visibleTags.map((tag) => (
-            <TagChip
-              key={tag.tag_id}
-              label={tag.tag_id === UNTAGGED_ID ? labels.home_tag_untagged : tag.name}
-              variant="neutral"
-            />
-          ))}
+          {visibleTags.map((tag) => {
+            const untagged = isUntaggedTag(tag.tag_id);
+            return (
+              <TagChip
+                key={tag.tag_id}
+                label={untagged ? labels.home_tag_untagged : tag.name}
+                variant={untagged ? 'neutral' : 'primary'}
+              />
+            );
+          })}
         </View>
         {hasMore && (
           <TouchableOpacity onPress={() => onToggleExpand(categoryId)}>
@@ -84,24 +91,27 @@ function CategoryListInner({
           }
           right={
             <View style={styles.amounts}>
-              <Text style={[styles.total, { color: c.text, fontSize: fs(14) }]}>{formatAmount(item.total, config)}</Text>
-              <Text style={[styles.percentage, { color: c.textSecondary, fontSize: fs(12) }]}>{item.percentage.toFixed(1)}%</Text>
+              <Text style={[styles.total, { color: hidden ? c.textSecondary : c.text, fontSize: fs(14) }]}>
+                {hidden ? HIDDEN_BALANCE : formatAmount(item.total, config)}
+              </Text>
+              <Text style={[styles.percentage, { color: c.textSecondary, fontSize: fs(12) }]}>{formatPercentage(item.percentage, config.decimalSeparator)}%</Text>
             </View>
           }
           onPress={() => onPress?.(item)}
-          accessibilityLabel={`${labels.a11y_category} ${displayName}, ${item.percentage.toFixed(1)}%`}
+          accessibilityLabel={`${labels.a11y_category} ${displayName}, ${formatPercentage(item.percentage, config.decimalSeparator)}%`}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         />
         {renderTagChips(item.id)}
       </View>
     );
-  }, [c, labels, fs, config, onPress, renderTagChips]);
+  }, [c, labels, fs, config, onPress, renderTagChips, hidden]);
 
   return (
     <FlatList
       data={categories}
       keyExtractor={keyExtractor}
       renderItem={renderItem}
+      contentContainerStyle={LIST_BOTTOM_FAB_PADDING}
     />
   );
 }

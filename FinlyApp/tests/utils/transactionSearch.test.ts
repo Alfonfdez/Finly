@@ -60,6 +60,13 @@ describe('matchesTransactionSearch', () => {
     expect(matchesTransactionSearch(t, ctx, 'travel')).toBe(false);
   });
 
+  it('matches the recurring rule name', () => {
+    const t = tx({ recurring_rule_id: 7 });
+    const ctx = { recurringName: 'Rent' };
+    expect(matchesTransactionSearch(t, ctx, 'rent')).toBe(true);
+    expect(matchesTransactionSearch(t, ctx, 'salary')).toBe(false);
+  });
+
   it('requires every term to match (AND across all fields)', () => {
     const t = tx({ description: 'Lunch at the office' });
     const ctx = { tags: [{ name: 'Meal' }], accountName: 'Cash' };

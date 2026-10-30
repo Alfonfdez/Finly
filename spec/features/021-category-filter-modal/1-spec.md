@@ -25,7 +25,7 @@
 ### 2. Header and close
 
 - Full-screen modal with `SafeAreaView`.
-- Header with "Select categories" title (multilingual) and close (X) button at top right.
+- Full-screen header with a centered "Select categories" title, inline `grid-outline` icon on the left, and close (X) button at top right.
 - Pressing X calls `onClose()` without applying changes.
 
 ### 3. Search bar
@@ -35,19 +35,21 @@
 - Filters categories by name (case-insensitive substring match).
 - When search is active and returns no results, show empty state with search icon + "No results found" text.
 
-### 4. "All" chip
+### 4. Preset chips
 
-- Always shown as the first element above the category grid.
-- Label: "All" (multilingual, reuse `home_tag_all`).
-- When tapped: selects ALL categories (clears individual selections, sets selectedIds to all category IDs).
-- Visually: selected = `c.primary` background + `c.background` text; unselected = `surface` background + `text` text.
-- The "All" chip is considered active when `selectedIds` contains all category IDs.
+- Preset chips above the category grid, replacing the old "All" chip:
+  - `type = all`: **All categories** (`filter_all_categories`) sits alone on the first row; **All expenses** (`filter_all_expense_categories`) and **All income** (`filter_all_income_categories`) share the second row.
+  - `type = expense`: only **All expenses**; `type = income`: only **All income** (never a preset of a type hidden by the tab), each alone on the first row.
+- Tapping a preset selects its exact set: all category IDs, the expense IDs or the income IDs (it replaces any individual selection). Tapping the active preset again clears every category; no preset stays active.
+- Opening the modal with an empty filter preselects every category for the current tab and activates the matching preset: **All categories** on the All tab, **All expenses** on the Expenses tab and **All income** on the Income tab.
+- Visually: selected = `c.primary` background + `c.background` text; unselected = `surface` background + `text` text. Chips expose `accessibilityRole="button"` and `accessibilityState.selected`.
 
 ### 5. Category grid
 
 - 4×N grid of categories (same layout as AddCategoryScreen).
 - Each item shows: icon (with category color) + name.
 - **Multi-select**: tapping a category toggles its selection state.
+- Deselecting the last selected category leaves none selected; Apply is disabled and the required-selection hint is shown.
 - Selected categories show a checkmark overlay (Ionicons `checkmark-circle`) in the top-right corner of the icon.
 - Selected item background: `cat.color + '33'` with 2px border of `cat.color` (same as CategoryGrid selected style).
 
@@ -56,17 +58,22 @@
 - When `type = 'all'`: categories are grouped into two sections with headers:
   - "Expenses" header → expense categories sorted with `sortCategoriesWithOthersLast`.
   - "Income" header → income categories sorted with `sortCategoriesWithOthersLast`.
-- When `type = 'expense'`: only expense categories shown, no section header.
-- When `type = 'income'`: only income categories shown, no section header.
+- When `type = 'expense'`: only expense categories shown under the **Expenses** header.
+- When `type = 'income'`: only income categories shown under the **Income** header.
 - Section headers use `fs(13)`, `fontWeight: '600'`, `c.textSecondary` color, with 16px top margin.
 
 ### 7. Apply button
 
 - Fixed at the bottom of the modal (inside SafeAreaView).
-- Label: "Apply (N)" where N is the number of selected categories (multilingual).
-- When all categories are selected (or "All" is active), label shows "Apply (All)".
+- Label is based on the **selection**, not the type tab:
+  - Nothing selected: "Apply (0)".
+  - Every category selected: "Apply (All categories)".
+  - Exactly every expense category selected (even when chosen manually, or from the All tab): "Apply (All expenses)".
+  - Exactly every income category selected: "Apply (All income)".
+  - Any other selection: "Apply (N)" with the selected count.
+- Nothing selected disables Apply (disabled opacity, `accessibilityState.disabled`) and shows the required-selection hint `filter_select_at_least_one` above it.
 - Background: `c.primary`. Text: `c.background`, `fontWeight: '700'`.
-- Pressing Apply calls `onApply(selectedIds)` and closes the modal.
+- Pressing an enabled Apply calls `onApply(selectedIds)` and closes the modal.
 
 ### 8. Empty state
 
@@ -88,19 +95,20 @@
 ## Acceptance criteria
 
 - [x] The modal opens as a full-screen overlay when triggered.
-- [x] The header shows "Select categories" and a close (X) button.
+- [x] The header shows a centered "Select categories" title with a `grid-outline` icon and a close (X) button.
 - [x] Pressing X closes the modal without applying changes.
 - [x] A SearchBar filters categories by name (case-insensitive).
 - [x] Empty state shows when search returns no results.
-- [x] The "All" chip is shown above the grid and is visually distinct.
-- [x] Tapping "All" selects all categories.
-- [x] When all categories are individually selected, "All" appears active.
+- [x] The All tab shows All categories alone on the first row, with All expenses and All income on the second row; a type tab shows only its matching preset.
+- [x] Tapping a preset selects its exact set; tapping the active preset clears every category.
+- [x] Manually selecting every category of one type shows the matching "Apply (All expenses)" / "Apply (All income)" label.
 - [x] The category grid shows icon + color + name in a 4×N layout.
 - [x] Multi-select works: tapping toggles selection, checkmark shown on selected items.
 - [x] When type='all', categories are grouped under "Expenses" and "Income" headers.
-- [x] When type='expense' or 'income', only that type's categories are shown without headers.
+- [x] When type='expense' or 'income', only that type's categories are shown under the matching Expenses/Income header.
 - [x] The Apply button shows the count of selected categories.
-- [x] When all are selected, Apply shows "Apply (All)".
-- [x] Pressing Apply calls onApply with the selected IDs and closes the modal.
+- [x] No selection shows "Apply (0)", disables Apply and displays the required-selection hint.
+- [x] Opening with no category filter selects every visible tile and the type-matching preset; deselecting the last tile leaves none selected.
+- [x] Pressing an enabled Apply calls onApply with the selected IDs and closes the modal.
 - [x] The modal respects the active theme and text size.
 - [x] All texts change when switching language.

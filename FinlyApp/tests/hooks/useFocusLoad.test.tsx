@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react-native';
 
+import { useFocusLoad } from '../../src/hooks/useFocusLoad';
+
 vi.mock('@react-navigation/native', async () => {
   const React = await import('react');
   return {
@@ -9,8 +11,6 @@ vi.mock('@react-navigation/native', async () => {
     },
   };
 });
-
-import { useFocusLoad } from '../../src/hooks/useFocusLoad';
 
 describe('useFocusLoad', () => {
   beforeEach(() => {
@@ -70,6 +70,28 @@ describe('useFocusLoad', () => {
     await act(async () => {});
     expect(errorSpy).toHaveBeenCalled();
     expect(result.current.data).toBe('initial');
+    expect(result.current.loading).toBe(false);
+    expect(result.current.error).toBeInstanceOf(Error);
+    errorSpy.mockRestore();
+  });
+
+  it('retries after a failed load and clears the error', async () => {
+    let fail = true;
+    const loader = vi.fn(async () => {
+      if (fail) throw new Error('boom');
+      return 'loaded';
+    });
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { result } = await renderHook(() => useFocusLoad(loader, 'initial'));
+    await act(async () => {});
+    expect(result.current.error).toBeInstanceOf(Error);
+
+    fail = false;
+    await act(() => result.current.retry());
+    await act(async () => {});
+
+    expect(result.current.error).toBeNull();
+    expect(result.current.data).toBe('loaded');
     expect(result.current.loading).toBe(false);
     errorSpy.mockRestore();
   });

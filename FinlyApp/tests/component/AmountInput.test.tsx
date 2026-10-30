@@ -93,4 +93,76 @@ describe('AmountInput', () => {
     await fireEvent(input, 'focus');
     expect(flattenStyle(input.props.style).borderColor).toBe('#22D3EE');
   });
+
+  it('leaves a plain zero untouched (a balance may legitimately be 0)', async () => {
+    const view = await render(<AmountInput raw="0" onChangeRaw={() => {}} />);
+
+    expect(flattenStyle(view.getByPlaceholderText('0').props.style).borderColor).toBe('transparent');
+  });
+
+  it('flags an unacceptable value with a red border but keeps the digits readable', async () => {
+    const view = await render(<AmountInput raw="0" onChangeRaw={() => {}} error />);
+    const input = view.getByPlaceholderText('0');
+
+    expect(flattenStyle(input.props.style).borderColor).toBe('#F87171');
+    expect(flattenStyle(input.props.style).color).toBe('#E2E8F0');
+  });
+
+  it('shows the sign toggle only for fields that allow negative values', async () => {
+    const positiveOnly = await render(<AmountInput raw="10" onChangeRaw={() => {}} />);
+    expect(positiveOnly.queryByLabelText('Toggle positive or negative')).toBeNull();
+
+    const signed = await render(<AmountInput raw="10" onChangeRaw={() => {}} allowNegative />);
+    expect(signed.getByLabelText('Toggle positive or negative')).toBeTruthy();
+  });
+
+  it('toggles a negative amount and displays its sign', async () => {
+    const onChangeRaw = vi.fn();
+    const view = await render(<AmountInput raw="250" onChangeRaw={onChangeRaw} allowNegative />);
+
+    await fireEvent.press(view.getByLabelText('Toggle positive or negative'));
+    expect(onChangeRaw).toHaveBeenCalledWith('-250');
+
+    await view.rerender(<AmountInput raw="-250" onChangeRaw={onChangeRaw} allowNegative />);
+    expect(view.getByDisplayValue('-250')).toBeTruthy();
+    await fireEvent.press(view.getByLabelText('Toggle positive or negative'));
+    expect(onChangeRaw).toHaveBeenLastCalledWith('250');
+  });
+
+  it('disables the sign toggle for empty and zero values', async () => {
+    const empty = await render(<AmountInput raw="" onChangeRaw={() => {}} allowNegative />);
+    expect(empty.getByLabelText('Toggle positive or negative')).toBeDisabled();
+
+    const zero = await render(<AmountInput raw="0" onChangeRaw={() => {}} allowNegative />);
+    expect(zero.getByLabelText('Toggle positive or negative')).toBeDisabled();
+  });
+
+  it('enables the sign toggle for any non-zero amount', async () => {
+    const small = await render(<AmountInput raw="0.01" onChangeRaw={() => {}} allowNegative />);
+    expect(small.getByLabelText('Toggle positive or negative')).toBeEnabled();
+
+    const negative = await render(<AmountInput raw="-250" onChangeRaw={() => {}} allowNegative />);
+    expect(negative.getByLabelText('Toggle positive or negative')).toBeEnabled();
+  });
+
+  it('normalizes negative zero to zero on blur', async () => {
+    const onChangeRaw = vi.fn();
+    const view = await render(<AmountInput raw="-0" onChangeRaw={onChangeRaw} allowNegative />);
+    await fireEvent(view.getByDisplayValue('-0'), 'blur');
+    expect(onChangeRaw).toHaveBeenCalledWith('0');
+  });
+
+  it('treats a lone minus as an intermediate value, not an error', async () => {
+    const view = await render(<AmountInput raw="-" onChangeRaw={() => {}} allowNegative />);
+    expect(view.getByDisplayValue('-')).toBeTruthy();
+    expect(view.queryByText('The amount entered is not valid')).toBeNull();
+  });
+
+  it('keeps the red border while focused', async () => {
+    const view = await render(<AmountInput raw="0" onChangeRaw={() => {}} error />);
+    const input = view.getByPlaceholderText('0');
+
+    await fireEvent(input, 'focus');
+    expect(flattenStyle(input.props.style).borderColor).toBe('#F87171');
+  });
 });

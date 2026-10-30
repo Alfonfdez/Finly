@@ -6,6 +6,8 @@ import {
   accounts,
   categories,
   config,
+  recurringRules,
+  recurringRuleTags,
   tags,
   transactionTags,
   transactions,
@@ -38,6 +40,8 @@ const DRIZZLE_TABLES: Record<string, Table> = {
   accounts,
   categories,
   transactions,
+  recurring_rules: recurringRules,
+  recurring_rule_tags: recurringRuleTags,
   tags,
   transaction_tags: transactionTags,
   config,
@@ -53,7 +57,7 @@ interface InfoCol {
 describe('Drizzle schema drift', () => {
   it('drizzle table columns exactly match the migrated schema', async () => {
     const db = await freshDb();
-    for (const [tableName, table] of Object.entries(DRIZZLE_TABLES)) {
+    for (const tableName of Object.keys(DRIZZLE_TABLES)) {
       const info = await db.getAllAsync<InfoCol>(`PRAGMA table_info(${tableName})`);
       const drizzleCols = getTableColumns(DRIZZLE_TABLES[tableName]);
       const colList = Object.values(drizzleCols as Record<string, Column>);

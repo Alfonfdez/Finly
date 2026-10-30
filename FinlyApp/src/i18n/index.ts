@@ -22,6 +22,11 @@ export function t(): Language {
   return currentLanguage;
 }
 
+/** Resolve a language object without changing the active language. */
+export function tFor(language: LanguageType): Language {
+  return languages[language] ?? en;
+}
+
 // Map category IDs to i18n keys for default categories.
 // IMPORTANT: These IDs must stay in sync with 002_seed.sql.
 // If you add/remove/reorder seed categories, update this map accordingly.
@@ -119,6 +124,11 @@ const accountDescriptionResolver = createDefaultResolver(ACCOUNT_DESCRIPTION_I18
 
 export function getDefaultEnglishName(categoryId: number): string | null {
   return categoryResolver.getDefaultEnglishName(categoryId);
+}
+
+/** The category's localized default name (by id), regardless of what is stored. */
+export function getDefaultCategoryName(categoryId: number): string {
+  return categoryResolver.getName(categoryId);
 }
 
 export function getDisplayCategoryName(category: { id: number; name: string }): string {

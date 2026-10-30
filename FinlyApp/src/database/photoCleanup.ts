@@ -1,7 +1,8 @@
 import { sql, type Column } from 'drizzle-orm';
 import { getDrizzle } from './drizzle/engine';
 import { transactions } from './drizzle/schema';
-import { parsePhotos, deletePhotoFile } from '../utils/photoUtils';
+import { parsePhotos } from '../utils/photoData';
+import { ERROR_PREFIXES, logError } from '../utils/errors';
 
 const COLUMN_MAP: Record<string, Column> = {
   id: transactions.id,
@@ -36,32 +37,55 @@ export async function collectTransactionPhotos(column: string, ...values: (strin
   try {
     return await selectPhotoRows(column, values);
   } catch (error) {
-    console.error('Failed to collect transaction photos:', error);
+    logError(ERROR_PREFIXES.photoCollect, error);
     return [];
   }
 }
 
+export async function collectAllTransactionPhotosStrict(): Promise<string[]> {
+  const db = await getDrizzle();
+  const rows = await db
+    .select({ photo: transactions.photo })
+    .from(transactions)
+    .where(sql`${transactions.photo} IS NOT NULL`)
+    .all();
+  return photoUrisOf(rows);
+}
+
 export async function collectAllTransactionPhotos(): Promise<string[]> {
   try {
-    const db = await getDrizzle();
-    const rows = await db
-      .select({ photo: transactions.photo })
-      .from(transactions)
-      .where(sql`${transactions.photo} IS NOT NULL`)
-      .all();
-    return photoUrisOf(rows);
+    return await collectAllTransactionPhotosStrict();
   } catch (error) {
-    console.error('Failed to collect transaction photos:', error);
+    logError(ERROR_PREFIXES.photoCollect, error);
     return [];
   }
 }
 
 export async function deletePhotoUris(uris: string[]): Promise<void> {
-  for (const uri of uris) {
+  const fileUris = uris.filter(uri => typeof uri === 'string' && !uri.startsWith('data:'));
+  if (fileUris.length === 0) return;
+  // Keep expo-file-system out of modules that only parse/collect photos (e.g. tests
+  // and the web bundle) until there is an actual native file to delete.
+  const { deletePhotoFile } = await import('../utils/photoUtils');
+  for (const uri of fileUris) {
     try {
       await deletePhotoFile(uri);
     } catch (error) {
-      console.error('Failed to delete transaction photo:', error);
+      logError(ERROR_PREFIXES.photoDelete, error);
     }
   }
+}
+
+/** Delete files only when no remaining transaction still references them. */
+export async function deleteUnreferencedPhotoUris(uris: string[]): Promise<void> {
+  if (uris.length === 0) return;
+  let referenced: Set<string>;
+  try {
+    referenced = new Set(await collectAllTransactionPhotosStrict());
+  } catch (error) {
+    // Fail safe: leaving an orphaned file is better than deleting a referenced one.
+    logError(ERROR_PREFIXES.photoCollect, error);
+    return;
+  }
+  await deletePhotoUris([...new Set(uris)].filter(uri => !referenced.has(uri)));
 }

@@ -13,22 +13,23 @@
 - The screen has a back button (left arrow) in the header to return to `AccountsScreen`.
 - The header title is "Modify account" (multilingual).
 
-### 2. Account Name
+### 2. Name
 
-- Title: "Account name" (multilingual).
+- Title: "Name" (multilingual, `form_name`) with an `id-card-outline` icon and the `0/30` counter in the header's right slot.
 - Text input with the current account name.
-- Maximum 30 characters with a "0/30" counter.
+- Maximum 30 characters.
 - **Total account (id=2, `is_total=1`)**: the name field is **read-only** (disabled). Shows the i18n "Total" in the active language. Validation and duplicate checks are skipped.
-- **Validation**: empty name is not allowed. If empty, a red error text is shown and the "Save" button remains disabled.
+- **Validation**: empty name is not allowed. If empty, the "Save" button remains disabled and "Enter an account name" appears in the form's bottom hint; the input reddens once it has been changed or blurred (never on a freshly-opened form).
+- **Save is enabled only when the account actually changed**: name, icon, color, note and initial balance are compared by value with the preloaded account, so an untouched screen keeps Save disabled (empty hint band) and putting the original value back disables it again. Once the user touches any of those fields a re-focus refetch no longer overwrites the form (on the Total account only icon/color/note apply — its name is read-only).
 - **Duplicate validation**: when editing the name, it checks that no other account already exists with the same name (case-insensitive), **excluding the current account**. Keeping the same name should not trigger an error; only if the new name matches a different account.
   - "Account", "account" and "ACCOUNT" are considered duplicates.
   - **Reserved default name**: the default account name is checked via a language-aware guard. The entered name is mapped to a default account ID using the current language (`getDefaultAccountIdByName`). If a match is found, the English name for that default is checked against the DB (`existsByName`, excluding the current account). If the default account still exists in the DB, the name is blocked. If the default was deleted, the name is allowed. This applies even when editing the default account (id 1) itself.
-  - If there is a duplicate, a red error text is shown below the input: "An account with this name already exists" (multilingual) and the "Save" button remains disabled.
+  - If there is a duplicate, the "Save" button remains disabled and "An account with this name already exists" (multilingual, the same `create_account_error_duplicate` key as the create screen) appears in the bottom hint between Delete and Save.
   - The check is executed with a 300ms debounce to avoid querying on every keystroke.
 
 ### 3. Symbols (Icons)
 
-- Title: "Symbols" (multilingual).
+- Title: "Symbols" (multilingual) with a `shapes-outline` icon.
 - Grid of 4 columns × dynamic rows (vertical ScrollView if they don't all fit).
 - List of predefined Ionicons icons for accounts (~20 finance/bank/wallet related icons).
 - The current account icon must appear preselected when opening the screen.
@@ -53,7 +54,7 @@
 
 ### 4. Color
 
-- Title: "Color" (multilingual).
+- Title: "Color" (multilingual) with a `color-palette-outline` icon; the standard 16px section gap separates it from Symbols.
 - Grid of 1 row × 8 columns (same structure as in 009).
 - The first 6 positions are predefined circular colors.
 - The 7th position shows the custom color chosen from the picker (if the current account color is not among the 6 predefined) **or** the current account color if it is a custom color.
@@ -86,9 +87,9 @@
 
 ### 5. Note (Description)
 
-- Title: "Note" (multilingual).
+- Title: "Note" (multilingual) with a `document-text-outline` icon.
 - Multiline text input for an optional account description.
-- Maximum 200 characters with a "0/200" counter.
+- Maximum 200 characters with the `0/200` counter in the Note header's right slot.
 - Default value: empty or the current `description` value if the account has one.
 
 #### Default Descriptions (multilingual)
@@ -106,12 +107,13 @@
 - **Last account protection**: when the account being edited is the only account in the database (account count ≤ 1), the "Delete" button is **disabled**:
   - The button border and icon/text use the secondary text color (`c.textSecondary`) and the button has reduced opacity (`0.5`).
   - The button is not tappable (`disabled` + `accessibilityState.disabled`).
-  - A helper hint is shown below the button: "You need at least one account, so this one cannot be deleted" (multilingual, `modify_account_delete_last`).
+  - A helper hint is shown **above** the button: "You need at least one account, so this one cannot be deleted" (multilingual, `modify_account_delete_last`). It is muted (secondary color) because it explains a disabled action rather than an error, and it lives in the **reserved muted band** of the shared bottom block — so the Delete sits at exactly the same place whether the hint shows (last account) or not (2+ accounts), and the red "why you can't save" hint sits **between** Delete and Save (see `spec/constitution/6-screens.md`, Form validation & bottom action area).
 - When tapped (and not the last account), a confirmation modal opens:
 
 **Confirmation Modal — "Delete account?"**
-- Title: "Delete account "{accountName}"" (multilingual, interpolates the account name).
-- Message: "All transactions linked to this account will also be deleted" (multilingual).
+- Title: "Delete 1 account?" (`accounts_bulk_delete_confirm_title(1)`, the same one-line title as the bulk flow).
+- Under the title, a centered account subject row shows the account icon, color and display name (`ModalEntitySubject`); the account name never appears in the title.
+- Message: "All transactions and recurring rules linked to this account will also be deleted" (multilingual).
 - Buttons: "Cancel" (multilingual) and "Delete" (multilingual, red color).
 - When tapping "Cancel", the modal closes.
 - When tapping "Delete":
@@ -141,18 +143,18 @@
 - **Configuration**: use `useConfig().activeColors`.
 - **Text**: use `useFontSize()`.
 - **Navigation**: added to `HomeStack` in `AppNavigator.tsx`.
-- **Persistence**: `accountRepository.update()` and `accountRepository.delete()` (SQLite / localStorage).
+- **Persistence**: `accountRepository.update()` and `accountRepository.delete()` (SQLite native, sql.js + IndexedDB web).
 - **Cascade deletion**: when deleting an account, all its transactions are deleted first (`transactionRepository.deleteByAccountId`) and then the account itself. Refresh the account list after deletion.
 - **Icons**: `@expo/vector-icons` (Ionicons).
 - **DB**: add `description TEXT` column to the `accounts` table via migration.
-- **Duplicate validation**: use `existsByName(userId: number, name: string, excludeId?: number)` function from `accountRepo` and `webAccountRepo` (created in 013). The `excludeId` parameter excludes the current account from the check.
+- **Duplicate validation**: use `existsByName(userId: number, name: string, excludeId?: number)` function from `accountRepo` (created in 013). The `excludeId` parameter excludes the current account from the check.
 
 ---
 
 ## Acceptance Criteria
 
 - [x] The header shows a back arrow and title "Modify account" in the active language.
-- [x] "Account name" is shown with an editable input, counter 0/30.
+- [x] The `Name` section is shown with an `id-card-outline` icon, the counter in the header, and an editable input.
 - [x] If the name is empty, a red error is shown and "Save" is disabled.
 - [x] Duplicate validation excludes the current account (keeping the same name does not cause an error).
 - [x] Renaming to a reserved default name is blocked with the duplicate error only when the corresponding default account still exists in the DB (language-aware check via `getDefaultAccountIdByName`), including for the default account (id 1) itself. Deleted default names can be reused.
@@ -165,7 +167,7 @@
 - [x] "Note" is shown with a multiline input, maximum 200 characters, counter 0/200.
 - [x] The "Save" button is disabled if the name is empty or is a duplicate.
 - [x] When tapping "Save", the account is updated and navigation returns.
-- [x] The red "Delete" button opens a confirmation modal with "Cancel" and "Delete".
+- [x] The red "Delete" button opens a "Delete 1 account?" confirmation with the account in a centered subject row, plus "Cancel" and "Delete".
 - [x] When tapping "Delete" in the modal, the account transactions are deleted, the account is deleted, the list is refreshed, and navigation returns.
 - [x] When the account is the last one remaining, the "Delete" button is disabled (secondary color, reduced opacity, not tappable) and a hint explaining it cannot be deleted is shown.
 - [x] When the account is the Total account (id=2, `is_total=1`), the name field is read-only, the "Delete" button is hidden, and save updates only icon/color/note.

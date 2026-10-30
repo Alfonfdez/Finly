@@ -1,44 +1,69 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { getMonthName } from '../../utils/formatters';
 import type { CalendarBaseProps } from './types';
 import YearNav from './YearNav';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
-import { calendarStyles, FUTURE_OPACITY } from './calendarStyles';
+import { useToday } from '../../hooks/useToday';
+import { calendarStyles, DISABLED_OPACITY } from './calendarStyles';
+import { resolveDateBounds } from '../../utils/calendarBounds';
 import { MONTHS_PER_YEAR } from '../../constants/calendar';
 
 const MONTHS = Array.from({ length: MONTHS_PER_YEAR }, (_, i) => i + 1);
 
-export default function MonthGrid({ date, onSelect }: CalendarBaseProps) {
-  const today = useMemo(() => new Date(), []);
+interface Props extends CalendarBaseProps {
+  minDate?: Date | null;
+  maxDate?: Date | null;
+}
+
+export default function MonthGrid({ date, onSelect, minDate, maxDate }: Props) {
+  const today = useToday();
+  const { min, max } = resolveDateBounds(minDate, maxDate, today);
   const [year, setYear] = useState(date.getFullYear());
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
-  const futureMonthLimit = useMemo(() => new Date(today.getFullYear(), today.getMonth(), 1), [today]);
+  const futureMonthLimit = useMemo(
+    () => (max ? new Date(max.getFullYear(), max.getMonth(), 1) : null),
+    [max],
+  );
+  const pastMonthLimit = useMemo(
+    () => (min ? new Date(min.getFullYear(), min.getMonth(), 1) : null),
+    [min],
+  );
+
+  useEffect(() => {
+    setYear(date.getFullYear());
+  }, [date]);
+
   const changeYear = useCallback((newYear: number) => {
-    if (newYear > today.getFullYear()) return;
+    if (max && newYear > max.getFullYear()) return;
+    if (min && newYear < min.getFullYear()) return;
     setYear(newYear);
-  }, [today]);
+  }, [min, max]);
 
   return (
     <View style={calendarStyles.container}>
-      <YearNav year={year} onChange={changeYear} />
+      <YearNav year={year} onChange={changeYear} minDate={min} maxDate={max} />
+      <View style={calendarStyles.monthRowSpacer} />
       <View style={calendarStyles.grid}>
         {MONTHS.map(m => {
           const monthDate = new Date(year, m - 1, 1);
-          const isFuture = monthDate > futureMonthLimit;
-          const isActive = m === date.getMonth() + 1;
+          const isOutOfBounds =
+            (pastMonthLimit != null && monthDate < pastMonthLimit) ||
+            (futureMonthLimit != null && monthDate > futureMonthLimit);
+          const isActive = year === date.getFullYear() && m === date.getMonth() + 1;
           return (
             <TouchableOpacity
               key={m}
-              style={[calendarStyles.gridItem, isFuture && { opacity: FUTURE_OPACITY }]}
-              onPress={() => !isFuture && onSelect(monthDate)}
-              disabled={isFuture}
+              style={[calendarStyles.gridItem, isOutOfBounds && { opacity: DISABLED_OPACITY }]}
+              onPress={() => !isOutOfBounds && onSelect(monthDate)}
+              disabled={isOutOfBounds}
               accessibilityLabel={getMonthName(m)}
+              accessibilityState={{ selected: isActive, disabled: isOutOfBounds }}
             >
               <View style={[calendarStyles.gridItemInner, { backgroundColor: c.surface }, isActive && { backgroundColor: c.primary }]}>
-                <Text style={[calendarStyles.gridItemText, { color: c.text, fontSize: fs(14) }, isActive && { color: c.background, fontWeight: '700' }, isFuture && { color: c.textSecondary }]}>
+                <Text style={[calendarStyles.gridItemText, { color: c.text, fontSize: fs(14) }, isActive && { color: c.background, fontWeight: '700' }, isOutOfBounds && { color: c.textSecondary }]}>
                   {getMonthName(m).slice(0, 3)}
                 </Text>
               </View>

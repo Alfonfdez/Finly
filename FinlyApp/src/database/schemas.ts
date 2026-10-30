@@ -1,15 +1,28 @@
 import { z } from 'zod';
 
 import {
+  ACCOUNT_SORT_BY,
+  CATEGORY_SORT_BY,
+  CHART_TYPES,
+  COMMENT_SORT_BY,
   CONFIG_ICON_SHAPES,
   DECIMAL_SEPARATORS,
   FIRST_DAYS,
   PERIODS,
+  RECURRENCE_FREQUENCIES,
+  RECURRING_SORT_BY,
+  RECURRING_STATUSES,
+  RECURRING_VIEWS,
+  SORT_BY,
+  SORT_DIRECTIONS,
+  TAG_SORT_BY,
   TEXT_SIZES,
   THEMES,
+  TOTAL_ACCOUNT_FLAGS,
   TRANSACTION_TYPES,
 } from '../constants/types';
 import { LANGUAGES } from '../constants/languages';
+import { VALIDATION_MESSAGES } from '../constants/validation';
 
 const transactionTypeSchema = z.enum([TRANSACTION_TYPES.expense, TRANSACTION_TYPES.income]);
 const themeSchema = z.enum([THEMES.dark, THEMES.light, THEMES.system]);
@@ -19,9 +32,33 @@ const iconShapeSchema = z.enum([CONFIG_ICON_SHAPES.square, CONFIG_ICON_SHAPES.ci
 const firstDaySchema = z.union([z.literal(FIRST_DAYS.monday), z.literal(FIRST_DAYS.sunday)]);
 const decimalSeparatorSchema = z.union([z.literal(DECIMAL_SEPARATORS.comma), z.literal(DECIMAL_SEPARATORS.dot)]);
 const homePeriodSchema = z.enum([PERIODS.day, PERIODS.week, PERIODS.month, PERIODS.year]);
+const chartTypeSchema = z.enum([CHART_TYPES.donut, CHART_TYPES.bar]);
+const recurrenceFrequencySchema = z.enum([
+  RECURRENCE_FREQUENCIES.daily,
+  RECURRENCE_FREQUENCIES.weekly,
+  RECURRENCE_FREQUENCIES.monthly,
+  RECURRENCE_FREQUENCIES.yearly,
+]);
+const sortDirectionSchema = z.enum([SORT_DIRECTIONS.asc, SORT_DIRECTIONS.desc]);
+const transactionSortBySchema = z.enum([SORT_BY.date, SORT_BY.amount]);
+const tagSortBySchema = z.enum([TAG_SORT_BY.name, TAG_SORT_BY.created, TAG_SORT_BY.usage]);
+const commentSortBySchema = z.enum([COMMENT_SORT_BY.name, COMMENT_SORT_BY.lastUsed, COMMENT_SORT_BY.usage]);
+const recurringSortBySchema = z.enum([
+  RECURRING_SORT_BY.nextDue,
+  RECURRING_SORT_BY.name,
+  RECURRING_SORT_BY.amount,
+  RECURRING_SORT_BY.created,
+]);
+const recurringViewSchema = z.enum([RECURRING_VIEWS.all, RECURRING_VIEWS.oneTime, RECURRING_VIEWS.recurring]);
+const recurringStatusSchema = z.enum([RECURRING_STATUSES.active, RECURRING_STATUSES.paused, RECURRING_STATUSES.ended]);
+const uniqueCategoryIdsSchema = z.array(z.number().int().positive()).transform(ids => [...new Set(ids)]);
+const uniqueRecurringStatusesSchema = z.array(recurringStatusSchema).transform(statuses => [...new Set(statuses)]);
+const accountSortBySchema = z.enum([ACCOUNT_SORT_BY.name, ACCOUNT_SORT_BY.balance]);
+const categorySortBySchema = z.enum([CATEGORY_SORT_BY.name, CATEGORY_SORT_BY.usage]);
+const positiveId = z.number().int().positive().refine(Number.isSafeInteger, VALIDATION_MESSAGES.safeInteger);
 
 export const userSchema = z.object({
-  id: z.number().int(),
+  id: positiveId,
   name: z.string(),
   email: z.string().nullable(),
   avatar: z.string().nullable(),
@@ -30,20 +67,23 @@ export const userSchema = z.object({
 });
 
 export const accountSchema = z.object({
-  id: z.number().int(),
-  user_id: z.number().int(),
+  id: positiveId,
+  user_id: positiveId,
   name: z.string(),
   initial_balance: z.number(),
   icon: z.string(),
   color: z.string(),
   description: z.string().optional(),
-  is_total: z.number().int().optional(),
+  is_total: z.union([
+    z.literal(TOTAL_ACCOUNT_FLAGS.regular),
+    z.literal(TOTAL_ACCOUNT_FLAGS.total),
+  ]).optional(),
   created_at: z.string(),
 });
 
 export const categorySchema = z.object({
-  id: z.number().int(),
-  user_id: z.number().int(),
+  id: positiveId,
+  user_id: positiveId,
   name: z.string(),
   icon: z.string(),
   color: z.string(),
@@ -52,9 +92,9 @@ export const categorySchema = z.object({
 });
 
 export const transactionSchema = z.object({
-  id: z.number().int(),
-  account_id: z.number().int(),
-  category_id: z.number().int(),
+  id: positiveId,
+  account_id: positiveId,
+  category_id: positiveId,
   type: transactionTypeSchema,
   amount: z.number().positive(),
   description: z.string().nullable(),
@@ -62,18 +102,49 @@ export const transactionSchema = z.object({
   date: z.string(),
   created_at: z.string(),
   updated_at: z.string().nullable(),
+  // Added in migration 004. Optional keeps pre-028 backups (no such keys) importable.
+  recurring_rule_id: positiveId.nullable().optional(),
+  recurrence_date: z.string().nullable().optional(),
+});
+
+export const recurringRuleSchema = z.object({
+  id: positiveId,
+  user_id: positiveId,
+  name: z.string(),
+  type: transactionTypeSchema,
+  account_id: positiveId,
+  category_id: positiveId,
+  amount: z.number().positive(),
+  description: z.string().nullable(),
+  frequency: recurrenceFrequencySchema,
+  interval: z.number().int().positive(),
+  weekday: z.number().int().nullable(),
+  day_of_month: z.number().int().nullable(),
+  month: z.number().int().nullable(),
+  start_date: z.string(),
+  end_date: z.string().nullable(),
+  next_due: z.string(),
+  skipped_from: z.string().nullable(),
+  active: z.number().int(),
+  created_at: z.string(),
+  updated_at: z.string().nullable(),
+});
+
+export const recurringRuleTagSchema = z.object({
+  rule_id: positiveId,
+  tag_id: positiveId,
 });
 
 export const tagSchema = z.object({
-  id: z.number().int(),
-  user_id: z.number().int(),
+  id: positiveId,
+  user_id: positiveId,
   name: z.string(),
   created_at: z.string(),
 });
 
 export const transactionTagSchema = z.object({
-  transaction_id: z.number().int(),
-  tag_id: z.number().int(),
+  transaction_id: positiveId,
+  tag_id: positiveId,
 });
 
 export const configSchema = z.object({
@@ -87,9 +158,40 @@ export const configSchema = z.object({
   accountIconShape: iconShapeSchema,
   homeDefaultAccountId: z.number().int().positive().nullable(),
   homeDefaultPeriod: homePeriodSchema,
+  homeChartType: chartTypeSchema,
   addDefaultAccountId: z.number().int().positive().nullable(),
   addShowLabels: z.boolean(),
   addShowComments: z.boolean(),
   addShowPhoto: z.boolean(),
+  modifyShowLabels: z.boolean(),
+  modifyShowComments: z.boolean(),
+  modifyShowPhoto: z.boolean(),
+  createRecurringDefaultAccountId: z.number().int().positive().nullable(),
+  createRecurringShowLabels: z.boolean(),
+  createRecurringShowComments: z.boolean(),
+  editRecurringShowLabels: z.boolean(),
+  editRecurringShowComments: z.boolean(),
   hideBalances: z.boolean(),
+  allTransactionsRecurringView: recurringViewSchema,
+  transactionsRecurringView: recurringViewSchema,
+  allTransactionsCategoryIds: uniqueCategoryIdsSchema,
+  allTransactionsExpenseCategoryIds: uniqueCategoryIdsSchema,
+  allTransactionsIncomeCategoryIds: uniqueCategoryIdsSchema,
+  recurringStatusFilter: uniqueRecurringStatusesSchema,
+  tagsSortBy: tagSortBySchema,
+  tagsSortDirection: sortDirectionSchema,
+  commentsSortBy: commentSortBySchema,
+  commentsSortDirection: sortDirectionSchema,
+  recurringSortBy: recurringSortBySchema,
+  recurringSortDirection: sortDirectionSchema,
+  transactionsSortBy: transactionSortBySchema,
+  transactionsSortDirection: sortDirectionSchema,
+  allTransactionsSortBy: transactionSortBySchema,
+  allTransactionsSortDirection: sortDirectionSchema,
+  accountsSortBy: accountSortBySchema,
+  accountsSortDirection: sortDirectionSchema,
+  categoriesSortBy: categorySortBySchema,
+  categoriesSortDirection: sortDirectionSchema,
+  addCategorySortBy: categorySortBySchema,
+  addCategorySortDirection: sortDirectionSchema,
 });

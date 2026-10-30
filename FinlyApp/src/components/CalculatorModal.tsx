@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useResetOnOpen } from '../hooks/useResetOnOpen';
 import { t } from '../i18n';
 import { evaluate } from '../utils/calculator';
 import { isWeb } from '../utils/platform';
@@ -17,7 +18,7 @@ import { CALC_KEYS } from '../constants/types';
 import { WHITE } from '../constants/themes';
 import ModalShell from './ModalShell';
 import ModalFooter from './ModalFooter';
-
+import FullScreenModalHeader from './FullScreenModalHeader';
 
 interface Props {
   visible: boolean;
@@ -45,9 +46,17 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
   const fs = useFontSize();
   const [expression, setExpression] = useState('');
   const [hasError, setHasError] = useState(false);
+  const justEvaluated = useRef(false);
 
   const expressionRef = useRef('');
   expressionRef.current = expression;
+
+  const resetCalculator = useCallback(() => {
+    setExpression('');
+    setHasError(false);
+    justEvaluated.current = false;
+  }, []);
+  useResetOnOpen(visible, resetCalculator);
 
   const displayHeight = fs(16) * 1.4 * 2 + fs(28) * 1.4 + 32;
 
@@ -60,23 +69,32 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
 
   const handleButton = useCallback((btn: string) => {
     if (btn === CALC_KEYS.clear) {
-      setExpression('');
-      setHasError(false);
+      resetCalculator();
       return;
     }
     if (btn === CALC_KEYS.backspace) {
       setExpression(prev => prev.slice(0, -1));
       setHasError(false);
+      justEvaluated.current = false;
       return;
     }
     if (btn === CALC_KEYS.equals) {
-      const { error } = evaluate(expressionRef.current);
+      const { result, error } = evaluate(expressionRef.current);
       setHasError(error);
+      if (!error && result !== null) {
+        setExpression(String(result));
+        justEvaluated.current = true;
+      } else {
+        justEvaluated.current = false;
+      }
       return;
     }
 
+    const startsNew = justEvaluated.current && !OP_KEYS.has(btn);
     setHasError(false);
+    justEvaluated.current = false;
     setExpression(prev => {
+      if (startsNew) return btn === CALC_KEYS.decimal ? `0${btn}` : btn;
       const lastChar = prev.slice(-1);
       if (OP_KEYS.has(btn)) {
         if (!prev) return btn === CALC_KEYS.subtract ? prev + btn : prev;
@@ -90,10 +108,10 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
       }
       return prev + btn;
     });
-  }, []);
+  }, [resetCalculator]);
 
   const handleAccept = useCallback(() => {
-    if (resultDisplay !== null && !hasError) {
+    if (resultDisplay !== null && resultDisplay > 0 && !hasError) {
       onAccept(String(resultDisplay));
     }
   }, [resultDisplay, hasError, onAccept]);
@@ -144,13 +162,14 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
 
   const content = (
     <>
-      <View style={[styles.header, { borderBottomColor: c.border }]}>
-        <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>
-          {labels.calc_title}
-        </Text>
-      </View>
+      <FullScreenModalHeader title={labels.calc_title} icon="calculator-outline" />
 
-      <View style={[styles.displayArea, { height: displayHeight }]}>
+      <View
+        style={[
+          styles.displayArea,
+          isWeb ? { height: displayHeight } : { flex: 1, minHeight: displayHeight },
+        ]}
+      >
         <Text
           style={[styles.expression, { color: c.textSecondary, fontSize: fs(16) }]}
           numberOfLines={2}
@@ -188,7 +207,7 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
         confirmLabel={labels.calc_accept}
         onCancel={onCancel}
         onConfirm={handleAccept}
-        confirmDisabled={resultDisplay === null || hasError}
+        confirmDisabled={resultDisplay === null || resultDisplay <= 0 || hasError}
         borderTop
         horizontalInset={16}
         containerPaddingBottom={12}
@@ -217,14 +236,6 @@ export default function CalculatorModal({ visible, onAccept, onCancel }: Props) 
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-  },
-  title: { fontWeight: '600' },
   displayArea: {
     justifyContent: 'flex-end',
     alignItems: 'flex-end',

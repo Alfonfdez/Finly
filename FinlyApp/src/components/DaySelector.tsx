@@ -3,30 +3,33 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
+import { useToday } from '../hooks/useToday';
 import { t } from '../i18n';
 import { isSameDay } from '../utils/formatters';
 import { withAlpha } from '../utils/color';
+import FormSectionHeader from './form/FormSectionHeader';
 import { CARD_BORDER_RADIUS } from './componentStyles';
 
 interface Props {
   selectedDate: Date;
   onSelect: (date: Date) => void;
   onOpenCalendar: () => void;
+  title?: string;
 }
 
-export default function DaySelector({ selectedDate, onSelect, onOpenCalendar }: Props) {
+export default function DaySelector({ selectedDate, onSelect, onOpenCalendar, title }: Props) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const labels = t();
 
-  const { today, yesterday, dayBeforeYesterday } = useMemo(() => {
-    const now = new Date();
-    const y = new Date(now);
-    y.setDate(now.getDate() - 1);
-    const d = new Date(now);
-    d.setDate(now.getDate() - 2);
-    return { today: now, yesterday: y, dayBeforeYesterday: d };
-  }, []);
+  const today = useToday();
+  const { yesterday, dayBeforeYesterday } = useMemo(() => {
+    const y = new Date(today);
+    y.setDate(today.getDate() - 1);
+    const d = new Date(today);
+    d.setDate(today.getDate() - 2);
+    return { yesterday: y, dayBeforeYesterday: d };
+  }, [today]);
 
   const isToday = isSameDay(selectedDate, today);
   const isYesterday = isSameDay(selectedDate, yesterday);
@@ -57,6 +60,8 @@ export default function DaySelector({ selectedDate, onSelect, onOpenCalendar }: 
         isSelected && { borderWidth: 2, borderColor: c.primary },
       ]}
       onPress={() => onSelect(date)}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isSelected }}
     >
       <Text style={[styles.date, { color: c.text, fontSize: fs(14) }]}>
         {isDynamic ? formatLongDate(date) : formatShortDate(date)}
@@ -69,18 +74,21 @@ export default function DaySelector({ selectedDate, onSelect, onOpenCalendar }: 
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: c.text, fontSize: fs(15) }]}>
-          {labels.add_day}
-        </Text>
-        <TouchableOpacity
-          style={styles.calendarButton}
-          onPress={onOpenCalendar}
-          accessibilityLabel={labels.cal_select_day}
-        >
-          <Ionicons name="calendar-outline" size={20} color={c.primary} />
-        </TouchableOpacity>
-      </View>
+      <FormSectionHeader
+        title={title ?? labels.add_date}
+        icon="calendar-outline"
+        right={
+          <TouchableOpacity
+            style={styles.calendarButton}
+            onPress={onOpenCalendar}
+            accessibilityRole="button"
+            accessibilityLabel={labels.cal_select_day}
+            hitSlop={8}
+          >
+            <Ionicons name="calendar-outline" size={20} color={c.primary} accessible={false} />
+          </TouchableOpacity>
+        }
+      />
       <View style={styles.grid}>
         {renderOption(today, labels.add_today, isToday)}
         {renderOption(yesterday, labels.add_yesterday, isYesterday)}
@@ -96,18 +104,7 @@ export default function DaySelector({ selectedDate, onSelect, onOpenCalendar }: 
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  title: {
-    fontWeight: '600',
-  },
+  container: {},
   calendarButton: {
     padding: 4,
   },

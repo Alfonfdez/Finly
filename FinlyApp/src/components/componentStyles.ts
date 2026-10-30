@@ -1,13 +1,22 @@
+import type { ViewStyle } from 'react-native';
 import { isWeb } from '../utils/platform';
+import { withAlpha } from '../utils/color';
+import type { ColorPalette } from '../constants/themes';
 
 export const PRESSED_OPACITY = 0.7;
+/** Opacity for a disabled control (button, switch, selectable segment). */
+export const DISABLED_CONTROL_OPACITY = 0.5;
 export const OVERLAY_BG = 'rgba(0,0,0,0.6)';
 export const MODAL_BORDER_RADIUS = 16;
 export const BUTTON_BORDER_RADIUS = 10;
 export const CONTROL_BORDER_RADIUS = 8;
 export const ACTION_BUTTON_HEIGHT = 56;
+export const COMPACT_FOOTER_BUTTON_WIDTH = 128;
+export const COMPACT_FOOTER_BUTTON_MAX_WIDTH = '47%' as const;
 export const CARD_BORDER_RADIUS = 12;
 export const PILL_RADIUS = 999;
+export const CLEAR_ICON_SIZE = 20;
+export const MODAL_CLOSE_ICON_SIZE = 24;
 export const LIMIT_TEXT_STYLE = {
   fontWeight: '500' as const,
   textAlign: 'center' as const,
@@ -25,3 +34,38 @@ export const HEADER_BUTTONS = {
   gap: 8,
   paddingRight: isWeb ? 16 : 0,
 };
+export const SECTION_GAP = 16;
+export const SECTION_GAP_SM = 8;
+/** Extra top margin that, on top of the 8px controls stack gap, separates a new
+ *  control group (filters vs account/balance header) by the standard 16px. */
+export const CONTROLS_GROUP_TOP_GAP: ViewStyle = { marginTop: SECTION_GAP_SM };
+
+/** Standard colors for every RN `Switch` (dark + light), from theme tokens.
+ *  `activeTrackColor`/`activeThumbColor` are react-native-web's ON-state props
+ *  (harmless on native, where `thumbColor` already covers both states). */
+export function switchColors(c: ColorPalette) {
+  return {
+    trackColor: { false: c.switchTrackOff, true: c.primary },
+    thumbColor: c.switchThumb,
+    ios_backgroundColor: c.switchTrackOff,
+    activeTrackColor: c.primary,
+    activeThumbColor: c.switchThumb,
+  };
+}
+
+/** Primary-tinted card colors (background + border) shared by the recurring
+ *  repeat-options, scope and notice cards so they stay visually in sync. */
+export function recurringCardColors(c: ColorPalette) {
+  return {
+    backgroundColor: withAlpha(c.primary, 10),
+    borderColor: withAlpha(c.primary, 30),
+  };
+}
+
+/** Same card, in the error palette: an over-limit rule is not saveable. */
+export function recurringCardErrorColors(c: ColorPalette) {
+  return {
+    backgroundColor: withAlpha(c.red, 10),
+    borderColor: withAlpha(c.red, 30),
+  };
+}

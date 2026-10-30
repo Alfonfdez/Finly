@@ -4,11 +4,12 @@
 - **React Native** (Expo managed workflow, SDK 57) — main framework for iOS and Android.
 - **TypeScript** — static typing for the codebase.
 - **React Navigation** (native-stack + drawer) — screen navigation.
-- **SQLite** (expo-sqlite) — local persistence on native. Versioned migrations (`PRAGMA user_version`, SCHEMA_VERSION 3): initial schema (`001_initial`), seed (`002_seed`), and config defaults (`003_config`), each applied once inside a transaction.
+- **SQLite** (expo-sqlite) — local persistence on native. Versioned migrations (`PRAGMA user_version`, `SCHEMA_VERSION 4`): initial schema (`001_initial`), seed (`002_seed`), config defaults (`003_config`), and recurring rules (`004_recurring`), each applied once inside a transaction.
+- **Drizzle ORM** (`drizzle-orm/sqlite-proxy` over the shared `DatabaseHandle`) — repository query layer on native and web; migrations stay on `PRAGMA user_version` (no `drizzle-kit`).
+  - **Migration policy:** adding a feature creates a new **additive** migration (next available number) and bumps `SCHEMA_VERSION`; existing user data is never rewritten or deleted. Schema changes must use only SQLite-safe forms (new tables; `ALTER TABLE ... ADD COLUMN` nullable or with a constant default; new indexes). Every schema surface is updated in lockstep — `schemas.ts` (Zod), `types.ts` (`z.infer`), `drizzle/schema.ts` — and the drift tests (`dbDrift`/`drizzleDrift`) plus `backup.ts` and `resetDatabase`/`clearDataKeepSettings` are updated in the same change. Feature **028-recurring-transactions** applied this policy with `004_recurring` (raising `SCHEMA_VERSION` to 4).
 - **@expo/vector-icons** (Ionicons) — icon library used throughout the app.
 - **react-native-svg** — custom donut chart and bar chart.
 - **reanimated-color-picker** — dynamic color picker (CreateCategoryScreen).
-- **@react-native-community/datetimepicker** — native date picker.
 - **React Context** — global app state (AppContext + ConfigContext).
 - **react-native-reanimated** — animations and worklets.
 - **react-native-gesture-handler** — gesture support (required by navigation and drawer).
@@ -19,7 +20,7 @@
 
 ```
 FinlyApp/
-+-- app.json                          <- Expo config (name, version 2.1.0, package com.finly.app)
++-- app.json                          <- Expo config (name, version 2.2.0, package com.finly.app)
 +-- App.tsx                           <- main entry: DB init + splash + providers
 +-- tsconfig.json
 +-- package.json
@@ -35,7 +36,7 @@ FinlyApp/
 |   |   +-- TransactionDetailsScreen.tsx <- transaction details (016)
 |   |   +-- AddTransactionScreen.tsx  <- add expense/income
 |   |   +-- ModifyTransactionScreen.tsx <- modify transaction (017)
-|   |   +-- CommentsScreen.tsx        <- comments list (024)
+|   |   +-- CommentsScreen.tsx        <- comments list (027)
 |   |   +-- ModifyCommentScreen.tsx   <- edit/delete comment
 |   |   +-- AccountsScreen.tsx        <- account list
 |   |   +-- CreateAccountScreen.tsx   <- create account
@@ -47,6 +48,9 @@ FinlyApp/
 |   |   +-- TagsScreen.tsx            <- tags list
 |   |   +-- CreateTagScreen.tsx       <- create tag
 |   |   +-- ModifyTagScreen.tsx       <- edit tag
+|   |   +-- RecurringScreen.tsx        <- recurring rules list (028)
+|   |   +-- CreateRecurringScreen.tsx  <- create a recurring rule
+|   |   +-- ModifyRecurringScreen.tsx  <- edit a recurring rule
 |   |   +-- settings/                 <- settings sub-screens
 |   |       +-- SettingsScreen.tsx    <- settings root
 |   |       +-- AppearanceScreen.tsx  <- theme, text size, icon shapes
@@ -82,19 +86,18 @@ FinlyApp/
 |   |   +-- TransactionGroup.tsx      <- transactions grouped by date
 |   |   +-- form/                     <- form building blocks (048)
 |   |   |   +-- DeleteButton.tsx      <- destructive action row
-|   |   |   +-- FormError.tsx         <- inline validation error
 |   |   |   +-- FormScrollView.tsx    <- scrollable form wrapper
 |   |   |   +-- LabeledTextField.tsx  <- label + TextInput + counter
 |   |   |   +-- PrimaryButton.tsx     <- primary CTA
 |   |   |   +-- SectionTitle.tsx      <- form section heading
 |   |   +-- calendars/                <- date pickers
-|   |   |   +-- DayPicker.tsx         <- monthly day grid
+|   |   |   +-- DayPicker.tsx         <- monthly day grid (year + month navigation)
 |   |   |   +-- MonthGrid.tsx         <- 12-month grid
-|   |   |   +-- MonthNav.tsx          <- previous/next month navigation
+|   |   |   +-- MonthNav.tsx          <- previous/next month navigation (bounds-aware)
 |   |   |   +-- PeriodPicker.tsx      <- date range selector
 |   |   |   +-- WeekPicker.tsx        <- week selector
 |   |   |   +-- YearGrid.tsx          <- 12-year grid
-|   |   |   +-- YearNav.tsx           <- year navigation
+|   |   |   +-- YearNav.tsx           <- previous/next year navigation (bounds-aware)
 |   |   +-- settings/                 <- settings rows and toggles
 |   |       +-- SettingsRow.tsx       <- labelled row
 |   |       +-- SettingsSelectRow.tsx <- selector row
@@ -105,31 +108,36 @@ FinlyApp/
 |   |   +-- ConfigContext.tsx         <- user preferences (theme, currency, language)
 |   |
 |   +-- database/
-|   |   +-- database.ts               <- shared init: applies migrations (PRAGMA user_version, SCHEMA_VERSION 3)
+|   |   +-- database.ts               <- shared init: applies migrations (PRAGMA user_version, SCHEMA_VERSION 4)
 |   |   +-- engine.ts                 <- native engine: opens the expo-sqlite database
 |   |   +-- engine.web.ts             <- web engine: sql.js (WASM) + IndexedDB persistence
 |   |   +-- sqliteWeb.ts              <- sql.js engine with autocommit + export/import
 |   |   +-- storage/indexedDb.ts      <- IndexedDB persistence for the exported SQLite bytes
 |   |   +-- types.ts                  <- TypeScript entity interfaces
 |   |   +-- index.ts                  <- exports repositories for all platforms (single DatabaseHandle)
-|   |   +-- schemas.ts                <- Drizzle table definitions
+|   |   +-- schemas.ts                <- Zod row schemas (types derived with z.infer)
 |   |   +-- seedData.ts               <- seed entities (accounts, categories, tags)
 |   |   +-- configDefaults.ts         <- default config values
 |   |   +-- backup.ts + backupService.ts <- backup / restore logic
+|   |   +-- photoCleanup.ts           <- photo cleanup for deleted transactions/accounts/categories
+|   |   +-- transactionQueue.ts       <- one queue for every explicit SQLite transaction
 |   |   +-- drizzle/
 |   |   |   +-- schema.ts             <- Drizzle schema over DatabaseHandle
 |   |   |   +-- proxy.ts              <- sqlite-proxy adapter
 |   |   |   +-- engine.ts             <- Drizzle engine
 |   |   +-- migrations/
 |   |   |   +-- 001_initial.ts        <- CREATE TABLE (users, accounts, categories, transactions, tags, transaction_tags, config) + indexes
-|   |   |   +-- 002_seed.ts           <- default user, 1 account, 31 categories
+|   |   |   +-- 002_seed.ts           <- default user, 2 accounts (My Wallet + Total), 31 categories
 |   |   |   +-- 003_config.ts         <- config default values (table created in 001)
+|   |   |   +-- 004_recurring.ts      <- recurring_rules + recurring_rule_tags; transactions.recurring_rule_id / recurrence_date + unique occurrence index
 |   |   +-- repositories/
 |   |       +-- accountRepo.ts        <- account CRUD + balance calculation + deleteAll()
 |   |       +-- categoryRepo.ts       <- category CRUD + deleteAll()
 |   |       +-- tagRepo.ts            <- tag CRUD + deleteAll()
 |   |       +-- configRepo.ts         <- config persistence
 |   |       +-- transactionRepo.ts (+ .reads.ts / .writes.ts) <- transaction CRUD + aggregations + deleteAll()
+|   |       +-- recurringRepo.ts      <- recurring rule CRUD + tags + due query + occurrence materialization
+|   |   +-- recurringService.ts        <- materializeDueRecurring() reconciliation + rule create/edit/pause flows
 |   |
 |   +-- i18n/
 |   |   +-- index.ts                 <- language selector + getCategoryName helper
@@ -140,6 +148,8 @@ FinlyApp/
 |   |   +-- de.ts                    <- German translations
 |   |   +-- pt.ts                    <- Portuguese translations
 |   |   +-- it.ts                    <- Italian translations
+|   |   +-- gl.ts                    <- Galician translations
+|   |   +-- eu.ts                    <- Basque translations
 |   |
 |   +-- hooks/
 |   |   +-- useFontSize.ts           <- text scaling hook
@@ -165,6 +175,9 @@ FinlyApp/
 |   |
 |   +-- utils/
 |       +-- formatters.ts            <- format currency, dates, etc.
+|       +-- calendarBounds.ts        <- shared min/max calendar date-bound convention
+|       +-- recurrence.ts            <- recurrence date math (advance / catch-up)
+|       +-- recurrenceSummary.ts     <- recurrence human-readable summary
 |       +-- calculator.ts            <- calculator logic
 |       +-- platform.ts              <- centralized platform checks
 |       +-- language.ts              <- language re-exports + isCatalan() / isGalician() / isBasque()
@@ -187,3 +200,9 @@ See **`4-design-system.md`** for colors, typography, icons, and layout conventio
 - Clean code with single-responsibility components.
 - i18n: all user-facing strings go through the translation system (i18n/).
 - Persistence: one SQLite engine on all platforms — expo-sqlite on native, sql.js (WASM) + IndexedDB on web — selected per platform by `engine.ts` / `engine.web.ts`.
+- **String unions are named constants, never raw literals** (and never a TS `enum`):
+  ```ts
+  export const TRANSACTION_TYPES = { expense: 'expense', income: 'income' } as const;
+  export type TransactionType = keyof typeof TRANSACTION_TYPES;
+  ```
+  Domain-wide vocabularies live in `constants/types.ts` (`TRANSACTION_TYPES`, `RECURRENCE_SCOPES`, `RECURRING_NAME_ERRORS`, `SORT_BY`, …); a union owned by one component is colocated with it (`PICKING_PHASE` in `calendars/PeriodPicker.tsx`, `HINT_TONES` in `components/form/FormHintSlot.tsx`, `ShareResult` in `utils/shareResult.ts`). Limits (max lengths, max counts) follow the same rule: define the constant once, consume it — never a literal at the call site.

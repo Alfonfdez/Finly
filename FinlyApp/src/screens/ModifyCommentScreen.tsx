@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Keyboard } from 'react-native';
+import { Text, StyleSheet, Keyboard } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
+import { useBusyGuard } from '../hooks/useBusyGuard';
+import { useKeyboardReveal } from '../hooks/useKeyboardReveal';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, MAX_COMMENT_LENGTH } from '../constants/types';
-import ConfirmationModal from '../components/ConfirmationModal';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import LabeledTextField from '../components/form/LabeledTextField';
+import { formStyles } from '../components/form/formStyles';
 import PrimaryButton from '../components/form/PrimaryButton';
-import FormError from '../components/form/FormError';
-import DeleteButton from '../components/form/DeleteButton';
+import FormActions from '../components/form/FormActions';
+import FormScrollView from '../components/form/FormScrollView';
 import { CARD_BORDER_RADIUS } from '../components/componentStyles';
 import { ERROR_PREFIXES, runWithErrorAlert, showErrorAlert } from '../utils/errors';
 
@@ -26,8 +29,13 @@ export default function ModifyCommentScreen() {
   const route = useRoute<ModifyCommentRouteProp>();
 
   const originalComment = route.params.comment;
+  const { busy, run } = useBusyGuard();
   const [comment, setComment] = useState(originalComment);
   const [count, setCount] = useState(0);
+
+  // The multiline field is at the top; the reveal keeps the Save button above the keyboard
+  // on short screens without moving the field off-screen.
+  const { scrollRef, onBottomFieldFocus, onBottomFieldBlur, onScrollLayout } = useKeyboardReveal();
 
   useEffect(() => {
     let active = true;
@@ -47,13 +55,18 @@ export default function ModifyCommentScreen() {
   const handleSave = async () => {
     Keyboard.dismiss();
     if (isDisabled) return;
-    await runWithErrorAlert(async () => {
-      await transactionRepository.updateComment(originalComment, trimmed);
-      navigation.goBack();
-    }, ERROR_PREFIXES.commentUpdate);
+    await run(async () => {
+      await runWithErrorAlert(async () => {
+        await transactionRepository.updateComment(originalComment, trimmed);
+        navigation.goBack();
+      }, ERROR_PREFIXES.commentUpdate);
+    });
   };
 
-  const { visible: deleteModalVisible, open: openDeleteModal, close: closeDeleteModal, confirm: confirmDelete } = useDeleteConfirmation({
+  const {
+    visible: deleteModalVisible, busy: deleting, open: openDeleteModal,
+    close: closeDeleteModal, confirm: confirmDelete,
+  } = useDeleteConfirmation({
     deleteFn: () => transactionRepository.deleteComment(originalComment),
     onSuccess: () => navigation.goBack(),
     errorPrefix: ERROR_PREFIXES.commentDelete,
@@ -61,83 +74,64 @@ export default function ModifyCommentScreen() {
 
   return (
     <ScreenShell>
-      <View style={styles.content}>
+      <FormScrollView scrollRef={scrollRef} onLayout={onScrollLayout}>
         <LabeledTextField
           label={labels.add_comment}
+          labelIcon="chatbubble-ellipses-outline"
+          labelStyle={formStyles.firstSection}
           placeholder={labels.add_comment}
           value={comment}
           onChangeText={setComment}
           multiline
+          textAlignVertical="top"
           maxLength={MAX_COMMENT_LENGTH}
           autoFocus
           error={isEmpty}
           showCounter
-          counterFontSize={fs(12)}
-          counterStyle={styles.counter}
+          counterInHeader
           inputStyle={styles.input}
+          onFocus={onBottomFieldFocus}
+          onBlur={onBottomFieldBlur}
         />
 
-        <FormError message={isEmpty ? labels.comments_error_empty : null} style={styles.error} />
-
-        <DeleteButton
-          label={labels.comments_delete}
-          onPress={openDeleteModal}
-          style={styles.deleteButton}
-        />
-
-        <PrimaryButton
-          label={labels.comments_save}
-          onPress={handleSave}
-          disabled={isDisabled}
-          enabledTextColor={c.background}
-          disabledBg={c.surface}
-          disabledTextColor={c.textSecondary}
-          style={styles.button}
-        />
+        <FormActions
+          deleteLabel={labels.delete}
+          onDeletePress={openDeleteModal}
+          saveHint={isEmpty ? labels.comments_error_empty : ''}
+        >
+          <PrimaryButton
+            label={labels.comments_save}
+            onPress={handleSave}
+            disabled={isDisabled || busy || deleting}
+            enabledTextColor={c.background}
+            disabledBg={c.surface}
+            disabledTextColor={c.textSecondary}
+          />
+        </FormActions>
 
         <Text style={[styles.mergeHint, { color: c.textSecondary, fontSize: fs(12) }]}>
           {labels.comments_merge_hint}
         </Text>
-      </View>
+      </FormScrollView>
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.comments_delete_confirm_title}
         message={labels.comments_delete_confirm_message(count)}
-        confirmLabel={labels.comments_delete_confirm_delete}
-        cancelLabel={labels.comments_delete_confirm_cancel}
         onConfirm={confirmDelete}
         onCancel={closeDeleteModal}
+        busy={deleting}
       />
     </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
   input: {
     borderRadius: CARD_BORDER_RADIUS,
     paddingHorizontal: 14,
     paddingVertical: 14,
     fontWeight: '500',
-  },
-  counter: {
-    marginTop: 6,
-    marginBottom: 12,
-  },
-  error: {
-    marginBottom: 12,
-    fontWeight: '500',
-  },
-  deleteButton: {
-    marginBottom: 12,
-  },
-  button: {
-    borderRadius: CARD_BORDER_RADIUS,
   },
   mergeHint: {
     marginTop: 12,

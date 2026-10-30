@@ -36,12 +36,14 @@ function TagFilterBarInner({ tags, activeTagIds, onToggle, onClear, style }: Pro
         },
       ]}
       onPress={onPress ?? (() => onToggle(id))}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isSelected }}
     >
       <Text
         style={[
           styles.chipText,
           {
-            color: isSelected && isSpecial ? withAlpha(c.background, 80) : isSelected ? c.background : isSpecial ? c.textSecondary : c.text,
+            color: isSelected && isSpecial ? withAlpha(c.background, 80) : isSelected ? c.background : isSpecial ? c.textSecondary : c.primary,
             fontSize: fs(13),
           },
         ]}
@@ -61,7 +63,7 @@ function TagFilterBarInner({ tags, activeTagIds, onToggle, onClear, style }: Pro
         {renderChip(labels.home_tag_all, -2, activeTagIds.length === 0, onClear, true)}
         {renderChip(labels.home_tag_untagged, UNTAGGED_ID, activeTagIds.includes(UNTAGGED_ID), undefined, true)}
         {tags.map(tag =>
-          renderChip(tag.name, tag.id, activeTagIds.includes(tag.id))
+          renderChip(tag.name, tag.id, activeTagIds.includes(tag.id)),
         )}
       </ScrollView>
     </View>

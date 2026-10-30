@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image } from 'react-native';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
@@ -10,19 +10,22 @@ import { useFocusLoad } from '../hooks/useFocusLoad';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
 import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
 import { formatAmount, formatDateLong, formatDateTimeShort, parseDbDate, AMOUNT_SIGNS } from '../utils/formatters';
-import { deletePhotoFile, parsePhotos } from '../utils/photoUtils';
+import { parsePhotos } from '../utils/photoUtils';
 import { ERROR_PREFIXES } from '../utils/errors';
 import { t, getDisplayCategoryName, getDisplayAccountName } from '../i18n';
-import { transactionRepository } from '../database';
+import { transactionRepository, recurringRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES } from '../constants/types';
+import { TEST_IDS } from '../constants/testIds';
 import { badgeShapeFor } from '../utils/badgeShape';
-import ConfirmationModal from '../components/ConfirmationModal';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import EmptyState from '../components/EmptyState';
+import LoadErrorState from '../components/LoadErrorState';
 import IconBadge from '../components/IconBadge';
 import TagChip from '../components/TagChip';
 import DataRow from '../components/DataRow';
+import DateIcon from '../components/DateIcon';
 import PhotoViewer from '../components/PhotoViewer';
-import { CARD_BORDER_RADIUS, CONTROL_BORDER_RADIUS } from '../components/componentStyles';
+import { BUTTON_BORDER_RADIUS, CARD_BORDER_RADIUS, CONTROL_BORDER_RADIUS } from '../components/componentStyles';
 
 type DetailsRouteProp = RouteProp<RootStackParamList, 'TransactionDetails'>;
 
@@ -39,36 +42,54 @@ export default function TransactionDetailsScreen() {
 
   const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+  const [ruleName, setRuleName] = useState<string | null>(null);
 
   // Refresh transaction data when screen gains focus (after editing)
   const loadTransaction = useCallback(async () => {
     return await transactionRepository.getById(transactionId);
   }, [transactionId]);
 
-  const { data: transaction } = useFocusLoad(loadTransaction, null);
+  const {
+    data: transaction, loading, error, retry,
+  } = useFocusLoad(loadTransaction, null);
+
+  useEffect(() => {
+    let active = true;
+    const ruleId = transaction?.recurring_rule_id;
+    if (ruleId == null) {
+      setRuleName(null);
+      return;
+    }
+    recurringRepository.getById(ruleId)
+      .then(rule => { if (active) setRuleName(rule?.name ?? null); })
+      .catch(() => { if (active) setRuleName(null); });
+    return () => { active = false; };
+  }, [transaction?.recurring_rule_id]);
 
   // Parse photos from DB (supports both old single URI and new JSON array)
   const parsedPhotos = useMemo(() => parsePhotos(transaction?.photo), [transaction?.photo]);
 
   const category = useMemo(
     () => categories.find(cat => cat.id === transaction?.category_id),
-    [categories, transaction]
+    [categories, transaction],
   );
 
   const account = useMemo(
     () => accounts.find(acc => acc.id === transaction?.account_id),
-    [accounts, transaction]
+    [accounts, transaction],
   );
 
   const transactionDate = useMemo(
     () => transaction ? parseDbDate(transaction.date) : null,
-    [transaction]
+    [transaction],
   );
 
   const createdDate = useMemo(() => {
-    if (!transactionDate) return '';
-    return `${labels.details_created}: ${formatDateTimeShort(transactionDate, labels.months_short)}`;
-  }, [transactionDate, labels]);
+    // The footer is the record's creation timestamp, not the transaction's own
+    // date (a backdated transaction is still created today).
+    if (!transaction?.created_at) return null;
+    return `${labels.details_created}: ${formatDateTimeShort(parseDbDate(transaction.created_at), labels.months_short)}`;
+  }, [transaction, labels]);
 
   const updatedDate = useMemo(() => {
     if (!transaction?.updated_at) return null;
@@ -83,9 +104,6 @@ export default function TransactionDetailsScreen() {
 
   const { visible: deleteModalVisible, open: openDeleteModal, close: closeDeleteModal, confirm: confirmDelete } = useDeleteConfirmation({
     deleteFn: async () => {
-      for (const uri of parsedPhotos) {
-        await deletePhotoFile(uri);
-      }
       await transactionRepository.delete(transactionId);
     },
     onSuccess: async () => {
@@ -94,6 +112,24 @@ export default function TransactionDetailsScreen() {
     },
     errorPrefix: ERROR_PREFIXES.transactionsDelete,
   });
+
+  if (error && !loading) {
+    return (
+      <ScreenShell>
+        <LoadErrorState onRetry={retry} />
+      </ScreenShell>
+    );
+  }
+
+  if (loading && !transaction) {
+    return (
+      <ScreenShell>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={c.primary} />
+        </View>
+      </ScreenShell>
+    );
+  }
 
   if (!transaction) {
     return (
@@ -108,18 +144,20 @@ export default function TransactionDetailsScreen() {
   const isExpense = transaction.type === TRANSACTION_TYPES.expense;
   const typeColor = isExpense ? c.red : c.green;
   const catName = category ? getDisplayCategoryName(category) : '';
+  const hasPhoto = parsedPhotos.length > 0;
+  const ruleId = transaction.recurring_rule_id ?? null;
 
   return (
     <ScreenShell>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.dataSection}>
-          <DataRow label={labels.details_amount}>
+          <DataRow label={labels.details_amount} icon="cash-outline">
             <Text style={[styles.dataValue, { color: typeColor, fontSize: fs(15) }]}>
               {`${isExpense ? AMOUNT_SIGNS.negative : AMOUNT_SIGNS.positive}${formatAmount(transaction.amount, config)}`}
             </Text>
           </DataRow>
 
-          <DataRow label={labels.details_account}>
+          <DataRow label={labels.details_account} icon="wallet-outline">
             {account && (
               <NamedEntityBadge
                 icon={account.icon}
@@ -132,7 +170,7 @@ export default function TransactionDetailsScreen() {
             )}
           </DataRow>
 
-          <DataRow label={labels.details_category}>
+          <DataRow label={labels.details_category} icon="grid-outline">
             {category && (
               <NamedEntityBadge
                 icon={category.icon}
@@ -145,43 +183,68 @@ export default function TransactionDetailsScreen() {
             )}
           </DataRow>
 
-          <DataRow label={labels.details_date}>
+          <DataRow label={labels.details_date} icon="calendar-outline">
             <Text style={[styles.dataValue, { color: c.text, fontSize: fs(15) }]}>
               {transactionDate ? formatDateLong(transactionDate, config.language) : ''}
             </Text>
           </DataRow>
 
-          <DataRow label={labels.details_comment}>
+          <DataRow label={labels.details_comment} icon="chatbubble-ellipses-outline">
             <Text style={[styles.dataValue, { color: transaction.description ? c.text : c.textSecondary, fontSize: fs(15) }]}>
-              {transaction.description || labels.details_no_comment}
+              {transaction.description || labels.details_none}
             </Text>
           </DataRow>
 
-          <DataRow label={labels.details_tags} noBorder>
+          <DataRow label={labels.details_tags} icon="pricetag-outline">
             {tagNames.length > 0 ? (
-              <View style={styles.tagsContainer}>
+              <View style={styles.tagsContainer} testID={TEST_IDS.detailsTags}>
                 {tagNames.map(tag => (
                   <TagChip key={tag.tag_id} label={tag.name} size={13} />
                 ))}
               </View>
             ) : (
               <Text style={[styles.dataValue, { color: c.textSecondary, fontSize: fs(15) }]}>
-                {labels.details_no_tags}
+                {labels.details_none}
               </Text>
             )}
           </DataRow>
 
-          {parsedPhotos.length > 0 && (
-            <DataRow label={labels.details_photo} noBorder>
+          <DataRow
+            label={labels.recurring_chip}
+            icon="repeat-outline"
+            onPress={ruleId != null ? () => navigation.navigate('ModifyRecurring', { ruleId }) : undefined}
+            accessibilityLabel={ruleId != null ? labels.recurring_edit_rule : undefined}
+          >
+            <View style={styles.iconRow}>
+              <Text
+                style={[styles.nameValue, { color: ruleName ? c.text : c.textSecondary, fontSize: fs(15) }]}
+              >
+                {ruleName ?? labels.details_none}
+              </Text>
+              {ruleId != null && <Ionicons name="create-outline" size={18} color={c.primary} />}
+            </View>
+          </DataRow>
+
+          <DataRow label={labels.details_photo} icon="image-outline" noBorder>
+            {hasPhoto ? (
               <View style={styles.photoGrid}>
                 {parsedPhotos.map((uri, index) => (
-                  <TouchableOpacity key={`${uri}-${index}`} onPress={() => { setSelectedPhotoIndex(index); setPhotoViewerVisible(true); }}>
+                  <TouchableOpacity
+                    key={`${uri}-${index}`}
+                    onPress={() => { setSelectedPhotoIndex(index); setPhotoViewerVisible(true); }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${labels.details_photo} ${index + 1}`}
+                  >
                     <Image source={{ uri }} style={styles.photoThumbnail} />
                   </TouchableOpacity>
                 ))}
               </View>
-            </DataRow>
-          )}
+            ) : (
+              <Text style={[styles.dataValue, { color: c.textSecondary, fontSize: fs(15) }]}>
+                {labels.details_none}
+              </Text>
+            )}
+          </DataRow>
         </View>
 
         <View style={styles.actionSection}>
@@ -207,22 +270,29 @@ export default function TransactionDetailsScreen() {
         </View>
 
         <View style={styles.timestamps}>
-          <Text style={[styles.timestampText, { color: c.textSecondary, fontSize: fs(11) }]}>
-            {createdDate}
-          </Text>
+          {createdDate && (
+            <View style={styles.timestampRow}>
+              <DateIcon kind="time" size={11} />
+              <Text style={[styles.timestampText, { color: c.textSecondary, fontSize: fs(11) }]}>
+                {createdDate}
+              </Text>
+            </View>
+          )}
           {updatedDate && (
-            <Text style={[styles.timestampText, { color: c.textSecondary, fontSize: fs(11) }]}>
-              {updatedDate}
-            </Text>
+            <View style={styles.timestampRow}>
+              <DateIcon kind="updated" size={11} />
+              <Text style={[styles.timestampText, { color: c.textSecondary, fontSize: fs(11) }]}>
+                {updatedDate}
+              </Text>
+            </View>
           )}
         </View>
       </ScrollView>
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.details_delete_title}
-        confirmLabel={labels.details_delete_yes}
-        cancelLabel={labels.details_delete_no}
+        message={labels.details_delete_message}
         onConfirm={confirmDelete}
         onCancel={closeDeleteModal}
       />
@@ -247,7 +317,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   dataValue: { fontWeight: '600', flex: 2, textAlign: 'right' },
-  nameValue: { fontWeight: '600' },
+  nameValue: { fontWeight: '600', flexShrink: 1, textAlign: 'right' },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 2, justifyContent: 'flex-end' },
   actionSection: {
     flexDirection: 'row',
@@ -262,11 +332,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 14,
-    borderRadius: CARD_BORDER_RADIUS,
+    borderRadius: BUTTON_BORDER_RADIUS,
     borderWidth: 1,
   },
   actionButtonText: { fontWeight: '600' },
   tagsContainer: {
+    // Same 1:2 split as the other values: the chip block wraps inside the value
+    // column instead of demanding the full row width (which collapsed the label).
+    flex: 2,
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
@@ -286,7 +359,14 @@ const styles = StyleSheet.create({
     marginTop: 24,
     gap: 2,
   },
-  timestampText: {},
+  timestampRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  timestampText: {
+    flexShrink: 1,
+  },
 });
 
 interface NamedEntityBadgeProps {

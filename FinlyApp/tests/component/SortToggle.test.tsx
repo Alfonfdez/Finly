@@ -1,9 +1,14 @@
-﻿import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react-native';
 import type { TestInstance } from 'test-renderer';
 import { resetStub } from './helpers/configStub';
 import SortToggle from '../../src/components/SortToggle';
 import { SORT_BY, SORT_DIRECTIONS } from '../../src/constants/types';
+
+const fields = [
+  { key: SORT_BY.date, label: 'By date' },
+  { key: SORT_BY.amount, label: 'By amount' },
+];
 
 function flattenStyle(style: unknown): Record<string, unknown> {
   const out: Record<string, unknown> = {};
@@ -27,9 +32,19 @@ describe('SortToggle', () => {
     resetStub();
   });
 
-  it('renders the date and amount sort options', async () => {
+  it('exposes the active field and the direction to assistive tech', async () => {
     const view = await render(
-      <SortToggle sortBy={SORT_BY.date} direction={SORT_DIRECTIONS.desc} onToggleSort={() => {}} onToggleDirection={() => {}} />
+      <SortToggle fields={fields} sortBy={SORT_BY.date} direction={SORT_DIRECTIONS.desc} onToggleSort={() => {}} onToggleDirection={() => {}} />,
+    );
+
+    expect(view.getByRole('button', { name: 'By date' }).props.accessibilityState).toEqual({ selected: true });
+    expect(view.getByRole('button', { name: 'By amount' }).props.accessibilityState).toEqual({ selected: false });
+    expect(view.getByLabelText('Sort ascending')).toBeTruthy();
+  });
+
+  it('renders a label for every field', async () => {
+    const view = await render(
+      <SortToggle fields={fields} sortBy={SORT_BY.date} direction={SORT_DIRECTIONS.desc} onToggleSort={() => {}} onToggleDirection={() => {}} />,
     );
 
     expect(view.getByText('By date')).toBeTruthy();
@@ -38,7 +53,7 @@ describe('SortToggle', () => {
 
   it('marks the active sort option with the primary color', async () => {
     const view = await render(
-      <SortToggle sortBy={SORT_BY.amount} direction={SORT_DIRECTIONS.asc} onToggleSort={() => {}} onToggleDirection={() => {}} />
+      <SortToggle fields={fields} sortBy={SORT_BY.amount} direction={SORT_DIRECTIONS.asc} onToggleSort={() => {}} onToggleDirection={() => {}} />,
     );
 
     expect(flattenStyle(view.getByText('By amount').props.style).color).toBe('#22D3EE');
@@ -47,7 +62,7 @@ describe('SortToggle', () => {
 
   it('shows a descending arrow for desc direction', async () => {
     const view = await render(
-      <SortToggle sortBy={SORT_BY.date} direction={SORT_DIRECTIONS.desc} onToggleSort={() => {}} onToggleDirection={() => {}} />
+      <SortToggle fields={fields} sortBy={SORT_BY.date} direction={SORT_DIRECTIONS.desc} onToggleSort={() => {}} onToggleDirection={() => {}} />,
     );
 
     expect(iconNames(view.root!)).toContain('arrow-down');
@@ -56,7 +71,7 @@ describe('SortToggle', () => {
 
   it('shows an ascending arrow for asc direction', async () => {
     const view = await render(
-      <SortToggle sortBy={SORT_BY.date} direction={SORT_DIRECTIONS.asc} onToggleSort={() => {}} onToggleDirection={() => {}} />
+      <SortToggle fields={fields} sortBy={SORT_BY.date} direction={SORT_DIRECTIONS.asc} onToggleSort={() => {}} onToggleDirection={() => {}} />,
     );
 
     expect(iconNames(view.root!)).toContain('arrow-up');
@@ -64,7 +79,7 @@ describe('SortToggle', () => {
 
   it('only renders the direction arrow next to the active option', async () => {
     const view = await render(
-      <SortToggle sortBy={SORT_BY.date} direction={SORT_DIRECTIONS.desc} onToggleSort={() => {}} onToggleDirection={() => {}} />
+      <SortToggle fields={fields} sortBy={SORT_BY.date} direction={SORT_DIRECTIONS.desc} onToggleSort={() => {}} onToggleDirection={() => {}} />,
     );
 
     expect(iconNames(view.root!).filter((n) => n.startsWith('arrow-'))).toHaveLength(1);
@@ -73,7 +88,7 @@ describe('SortToggle', () => {
   it('fires onToggleDirection when the arrow is pressed', async () => {
     const onToggleDirection = vi.fn();
     const view = await render(
-      <SortToggle sortBy={SORT_BY.date} direction={SORT_DIRECTIONS.asc} onToggleSort={() => {}} onToggleDirection={onToggleDirection} />
+      <SortToggle fields={fields} sortBy={SORT_BY.date} direction={SORT_DIRECTIONS.asc} onToggleSort={() => {}} onToggleDirection={onToggleDirection} />,
     );
 
     await fireEvent.press(view.getByText('arrow-up'));
@@ -83,7 +98,7 @@ describe('SortToggle', () => {
   it('switches the sort field on option press', async () => {
     const onToggleSort = vi.fn();
     const view = await render(
-      <SortToggle sortBy={SORT_BY.date} direction={SORT_DIRECTIONS.desc} onToggleSort={onToggleSort} onToggleDirection={() => {}} />
+      <SortToggle fields={fields} sortBy={SORT_BY.date} direction={SORT_DIRECTIONS.desc} onToggleSort={onToggleSort} onToggleDirection={() => {}} />,
     );
 
     await fireEvent.press(view.getByText('By amount'));
@@ -93,4 +108,3 @@ describe('SortToggle', () => {
     expect(onToggleSort).toHaveBeenCalledWith(SORT_BY.date);
   });
 });
-

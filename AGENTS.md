@@ -21,6 +21,7 @@
 
 ## ENVIRONMENT
 - Host: Windows, PowerShell 5.1 shell. There is NO ripgrep in the shell — use the grep/glob/read tools for searching.
+- **Never write non-ASCII text through the shell**: a PowerShell here-string piped to a program (`@'…'@ | node`, `Set-Content` from a here-string, `>` redirects) is re-encoded with the console codepage and turns `á é í ñ ç ü · —` into `?`. Write such files with the Write/Edit tools (UTF-8), or put the text in a JSON/values file written with Write and have the script read it. `scripts/i18n.mjs` only covers `FinlyApp/src/i18n/*.ts` — not the READMEs or any other file.
 - Web verification uses the Playwright MCP browser against the Expo web dev server at `http://localhost:8081`.
 - Dev-server lifecycle: start `npx expo start --web` (port 8081) in the background, poll the URL until it serves HTML, and always terminate it when done (free port 8081). Concrete commands are in `docs/harnesses.md` and the `verification-loop` skill.
 
@@ -42,16 +43,45 @@ Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`
 - Description in English, imperative mood, lowercase, no period
 - Max 50 chars for subject line
 
+## CHANGELOG
+Every code/asset change appends an entry to `docs/changelog.md`. **Always use the script** (never hand-edit):
+```bash
+node scripts/append-changelog.mjs --type <type> --files "<paths>" --bullet "<line>"
+```
+- `--type`: `+` (added), `~` (modified), `-` (removed), or `feat`/`fix`/`docs`/`refactor`/`style`/`test`/`chore`.
+- `--bullet` repeatable (one line each); `--dry-run` to preview; `--date` optional.
+- The script guarantees a blank line between entries, CRLF, and refuses to write if the existing tail looks truncated. See the `changelog` skill.
+
 ## RUN
 ```bash
 cd FinlyApp
 npx expo start
 ```
 
+## ANDROID BUILD & RELEASE (EAS)
+The **official** artifact is an EAS Build; local `gradlew` is a dev smoke-test path only.
+
+```bash
+cd FinlyApp
+npx eas-cli login                     # once
+npx eas-cli build --platform android --profile preview                  # installable APK (internal)
+npx eas-cli build --platform android --profile production --no-wait     # store AAB
+```
+- `FinlyApp/eas.json` defines three profiles (`development`, `preview`, `production`) with `cli.appVersionSource: "local"` — EAS reads `version` / `android.versionCode` / `ios.buildNumber` straight from `app.json`.
+- **Bump `android.versionCode` (and `ios.buildNumber`) for every release**: `versionCode` must strictly increase or Google Play rejects the upload; it is what makes an update install *over* the previous one.
+- **Signing keys are managed by EAS** (generated on the first production build, stored on Expo's servers for the project's `projectId`), so consecutive releases share one signature and update in place — no uninstall. Keep an offline backup: `npx eas-cli credentials` → Android → download the keystore + passwords. Never commit a keystore (`.jks`/`.p12`/`.key` are gitignored; `.easignore` also excludes them).
+- A locally built `gradlew assembleRelease` APK is signed with the **debug** keystore, so it has a different signature than the EAS release — use it only for local smoke tests, and expect to uninstall the debug APK before installing an EAS build.
+- **After changing anything under `assets/` (or the icon/splash config in `app.json`), run `npx expo prebuild --platform android` before the next build** — Expo bakes assets into native resources only during prebuild; Gradle will not regenerate them. The web favicon is injected only at export: `npx expo export --platform web`.
+- **Android auto-backup stays off** (`expo.android.allowBackup: false` in `app.json` → `android:allowBackup="false"` in the packaged manifest). The DB is app-private, so with Android's default `true` the OS cloud backup copied it and **restored it on reinstall**, resurrecting a snapshot older than an in-app Factory Reset. With it off a reinstall always starts from the seed, and data moves only through the in-app JSON export/import (025). Anything touching that flag needs `npx expo prebuild --platform android` (the generated `android/` is gitignored) plus a rebuild.
+
 ## LINT
 ```bash
-npx expo lint
+npm run lint       # expo lint . --max-warnings 0  (src, tests, scripts, root configs)
+npm run lint:fix   # the same with --fix: indent, quotes, trailing commas, EOF newlines
 ```
+- Formatting is enforced by **`@stylistic/eslint-plugin`** in `FinlyApp/eslint.config.mjs` (ESM; `expo lint` accepts `.mjs`). 2-space indent, `case` indented one level, single quotes, semicolons, no trailing whitespace, final newline.
+- The repo-root `.editorconfig` mirrors the style for editors; ESLint is the gate (CI runs `test:all`).
+- Run `npm run lint:fix` before committing style changes; never hand-fix indentation.
 
 ## VERIFICATION
 - A change is only "done" when `npm run test:all` passes (typecheck + lint + tests).
@@ -61,16 +91,39 @@ npx expo lint
 - Spec-docs convention: a code change updates only `spec/features/<NNN>/1-spec.md` (requirement bullets) + `spec/constitution/3-roadmap.md` (entry + Status), and flips the feature's acceptance criteria `[ ]` → `[x]` after verification. Never edit `2-plan.md` or `3-tasks.md` for feature updates.
 
 ## DATABASE
-- 3 idempotent migrations in `src/database/migrations/`: `001_initial` (schema), `002_seed` (seed data), `003_config` (config defaults)
-- Version counter: `src/database/database.ts` runs migrations from `PRAGMA user_version` (`SCHEMA_VERSION = 3`), applying each step (schema -> seed data -> config defaults) once inside a transaction
+- 4 idempotent migrations in `src/database/migrations/`: `001_initial` (schema), `002_seed` (seed data), `003_config` (config defaults), `004_recurring` (recurring rules + `transactions` recurrence columns)
+- Version counter: `src/database/database.ts` runs migrations from `PRAGMA user_version` (`SCHEMA_VERSION = 4`), applying each step (schema -> seed data -> config defaults -> recurring) once inside a transaction
 - SQLite for native, sql.js (WASM) for web — one `DatabaseHandle` interface, same migrations and repositories on both platforms; web persists the database bytes to IndexedDB
 - Repositories are written with Drizzle ORM (`drizzle-orm/sqlite-proxy` over `DatabaseHandle`; schema in `src/database/drizzle/schema.ts`); no `drizzle-kit`, migrations stay on `PRAGMA user_version`
-- 5 repositories: account, category, tag, transaction, config
+- **One transaction queue**: every explicit SQLite transaction goes through `runExclusiveDb` (`src/database/transactionQueue.ts`, wired into both engines). One connection means only one `BEGIN` at a time — reconciliation, rule edits, config saves, delete-all, factory reset and import are serialized through it. Never nest transactions (a nested call would queue behind itself).
+- **UI preferences** (theme, default accounts, hide balances, and each list's sort field/direction) live in the `config` table. `parseConfig` merges `DEFAULT_CONFIG`, so a new key needs no migration: add the Zod field, the default value and the `DB_KEY_MAP` entry (the drift tests compare all three).
+- `initDatabase` self-heals empty seeded tables (`users`/`accounts`/`categories`/`config`) with the idempotent `INSERT OR IGNORE` seeds, so an interrupted wipe repairs itself on the next launch without touching existing rows.
+- 6 repositories: account, category, tag, transaction, config, recurring
 
 ## I18N
 - Languages: English, Spanish, Catalan, Galician, Basque, French, German, Portuguese, Italian
 - `t()` returns full language object
 - All UI strings go through `src/i18n/`
+
+## I18N KEYS
+Every key must exist in all 9 language files (`src/i18n/{en,es,ca,gl,eu,fr,de,pt,it}.ts`) with the same key set — `tests/i18n/parity.test.ts` enforces it. **Always use the script** (never hand-edit the 9 files):
+```bash
+cd FinlyApp
+npm run i18n -- list --check                                    # key counts + parity problems
+npm run i18n -- list --key add_hint                             # show matching keys per language
+npm run i18n -- add --key foo --value "Foo" --after bar --dry-run
+npm run i18n -- add --key foo --values-file keys.json --after bar
+npm run i18n -- set --key foo --value "Foo" --lang es
+npm run i18n -- remove --key foo
+```
+- `--after <existingKey>` inserts at the same anchor in every file (multi-line values are handled); without it the key is appended before the closing `};`. `--dry-run` previews and writes nothing.
+- Values with a quote, a backslash, `$` or a backtick MUST come from `--values-file`, never from `--value` on the command line. Each entry is either a plain string (escaped for you) or a raw TS expression:
+```json
+{ "en": "Text", "es": "Texto", "ca": { "raw": "(n: number) => `1 de ${n}`" } }
+```
+- Languages missing from the file fall back to English and are reported as untranslated.
+- The script is all-or-nothing (it validates every file before writing), keeps comments/section grouping/CRLF intact, and is covered by `tests/tooling/i18n.test.ts`.
+- After any i18n change run `npm run test:all` (the parity test must pass).
 
 ## PROJECT STRUCTURE
 ```
@@ -97,3 +150,14 @@ FinlyApp/
 - Repositories: `camelCaseRepo.ts` (e.g., `accountRepo.ts`)
 - Hooks: `useHookName.ts`
 - i18n keys: `lowercase.with.dots`
+
+## CODE STYLE
+- **No raw string unions and no TS `enum`** — declare a named constant and derive the type:
+  ```ts
+  export const RECURRING_NAME_ERRORS = { required: 'required', taken: 'taken' } as const;
+  export type RecurringNameError = keyof typeof RECURRING_NAME_ERRORS;
+  ```
+  Domain vocabularies go in `src/constants/types.ts` (`TRANSACTION_TYPES`, `RECURRENCE_SCOPES`, `RECURRING_NAME_ERRORS`, `SORT_BY`, …); a union owned by a single component is colocated with it (`HINT_TONES` in `components/form/FormHintSlot.tsx`, `PICKING_PHASE` in `calendars/PeriodPicker.tsx`).
+- **Limits are constants, never literals at the call site**: max lengths/counts live in `src/constants/types.ts` (`MAX_*`, `REPEAT_NAME_MAX_LENGTH`) and are passed down as props.
+- **Formatting is machine-enforced**: 2-space indentation (`case` one level deeper), single quotes, semicolons, trailing commas in multiline literals, a final newline and no trailing whitespace. `npm run lint:fix` applies it; `npm run lint` must report 0 errors and 0 warnings (`--max-warnings 0`).
+- Design tokens (spacing, radii, opacity, counter font size) live in `src/components/componentStyles.ts` or the component that owns them — no duplicated magic numbers.

@@ -95,7 +95,7 @@ const { categories, accounts, tags, refreshCategories, refreshAccounts, refreshT
 
 ### Drawer Menu Button
 
-Primary tab screens (HomeScreen, AccountsScreen, CategoriesScreen, AllTransactionsScreen, TagsScreen) show a hamburger menu button:
+Primary tab screens (HomeScreen, AccountsScreen, CategoriesScreen, AllTransactionsScreen, TagsScreen, CommentsScreen, RecurringScreen) show a hamburger menu button:
 
 ```typescript
 useFocusEffect(
@@ -131,7 +131,7 @@ The drawer is a custom `DrawerContentScrollView` in `AppNavigator.tsx` with this
 │─────────────────────────│  ← Separator
 │  ⚙️ Settings            │
 │                         │
-│       v2.1.0            │  ← Version footer (expo-constants)
+│       v2.2.0            │  ← Version footer (expo-constants)
 └─────────────────────────┘
 ```
 
@@ -140,16 +140,22 @@ The drawer is a custom `DrawerContentScrollView` in `AppNavigator.tsx` with this
 | Icon | Label key | Target screen |
 |------|-----------|---------------|
 | `home-outline` | `nav_home` | `Home` |
-| `stats-chart-outline` | `nav_all_transactions` | `AllTransactions` |
+| `receipt-outline` | `nav_all_transactions` | `AllTransactions` |
 | `wallet-outline` | `nav_accounts` | `Accounts` |
 | `grid-outline` | `nav_categories` | `Categories` |
 | `pricetag-outline` | `nav_tags` | `Tags` |
+| `chatbubble-ellipses-outline` | `nav_comments` | `Comments` |
+| `repeat-outline` | `nav_recurring` | `Recurring` |
 | `settings-outline` | `nav_settings` | `Settings` |
+
+**Labels:** long translations wrap to **two lines** (`numberOfLines={2}`) before ellipsizing; short labels stay on one line, so no item is clipped for a long language or a large text size. The library clamps *string* labels to one line, so `DrawerNavItem` passes a label node instead.
+
+**Stack behavior:** Home, All transactions, Accounts, Categories, Tags, Comments and Recurring are primary drawer destinations: selecting one resets the stack, shows the hamburger and closes the drawer. Settings is a pushed screen: selecting it closes the drawer and shows the native back button; its subsections keep the back button too. Other pushed sub-screens have the back button only; Add category is the exception, with a header search action that reveals its body search field on demand.
 
 **Version footer:**
 - Reads version from `Constants.expoConfig?.version` (expo-constants, sourced from `app.json`).
 - Style: `fs(11)`, `c.textSecondary`, centered, pushed to bottom of scroll view.
-- Format: `v{version}` (e.g., `v2.1.0`).
+- Format: `v{version}` (e.g., `v2.2.0`).
 
 ### Sub-screens (Create, Modify, Detail)
 
@@ -158,6 +164,8 @@ Rely on React Navigation's default header with back button. Never call `setOptio
 ### Header Title Alignment
 
 All headers are centered via `headerTitleAlign: 'center'` in `screenOptions` (AppNavigator.tsx). No per-screen override needed.
+
+- **Titles:** every header uses the same size (`fs(17)`, scaled only by the Settings text size - no per-language size changes and no OS font-scale multiplication). The icon and label render as one inline text run so Android measures the full centered title. Long titles wrap to up to **2 lines** inside a bounded width and never overlap the header buttons; the tail ellipsizes only if a title would need a third line. Back-only sub-screens get a wider bound than list screens with Select/Search, so longer titles still fit within two lines; Add category reserves the width of its header search action. On web the title uses a larger line height so descenders stay visible under the two-line clamp. On Android, screens without a right-side action render a symmetric 56dp spacer so the native header centers the title against the full screen instead of the space after the back button.
 
 ## Loading States
 
@@ -174,6 +182,8 @@ All headers are centered via `headerTitleAlign: 'center'` in `screenOptions` (Ap
 ```
 
 **Loading container style:** `{ flex: 1, justifyContent: 'center', alignItems: 'center' }`
+
+**List body loading:** while a list's data is still loading, render the centered `ActivityIndicator` inside the list body instead of the empty state, so users never see a "no results" flash before the data arrives (`TransactionListBody`). Do not use `removeClippedSubviews` on the transaction list: it produced blank rows on iOS.
 
 ### Loading Guard (for screens with async data)
 
@@ -240,15 +250,74 @@ if (!entity) {
 - `keyboardShouldPersistTaps`: always `"handled"`
 - `onScrollBeginDrag`: dismiss keyboard on scroll (for form screens)
 
-### Android KeyboardSpacer
+### Bottom action above the keyboard
+
+Every form keeps its bottom action reachable while the keyboard is open, via the shared
+`hooks/useKeyboardReveal.ts`:
+
+- The **bottom-most field** — Comment in `TransactionForm`, Note in `AccountForm`, the multiline
+  input in `ModifyCommentScreen` — is wired to `onBottomFieldFocus` / `onBottomFieldBlur`.
+  Focusing it scrolls the form to the end (`scrollRef.current?.scrollToEnd`) after a short delay.
+- The reveal is re-run on `Keyboard.addListener('keyboardDidShow')` and on the ScrollView's
+  `onLayout` (the keyboard shrinks it), so it lands *after* the resize settles rather than short.
+- Only that field triggers it — focusing a field higher up (recurring Name, Amount, Category)
+  must **not** jump to the end.
+- **Recurring Name exception:** it uses the same reveal mechanism with a custom action that
+  scrolls its section header to the top on native, so the keyboard never covers the input and
+  no strip of the previous section stays visible above the header.
+- `FormScrollView` (Account / Category / Comment forms) wraps its `ScrollView` in a
+  `KeyboardAvoidingView` and exposes `scrollRef` + `onLayout`; `TransactionForm` uses its own
+  `KeyboardAvoidingView`. The content keeps `paddingBottom: 112` so the revealed button clears the
+  keyboard, and `keyboardShouldPersistTaps="handled"` keeps it tappable in one tap.
+
+### Modals and the keyboard
+
+A native `Modal` window does not always resize with the keyboard, so `ModalShell` lifts the
+centred card above it via `useKeyboardLift` (`hooks/useKeyboardInset.ts`): it measures the
+keyboard and adds it as the overlay's bottom padding (also capping the card's max height to the
+remaining space). The lift is held for a short release delay (**250ms**) after the keyboard hides: this lets a button tap finish before the card moves, then the card returns to its normal centred size. It resets immediately when the modal closes. `ConfirmationModal`'s scroll area uses `keyboardShouldPersistTaps="handled"`.
+- **Hidden modals ignore keyboard lift:** a modal that is mounted but not visible must not accumulate keyboard height. `useKeyboardLift` only grows while `visible`, so returning from a form with the keyboard open cannot push the next modal above the screen.
+- **Opening ignores the form's keyboard:** the keyboard that was already open when the modal appears is treated as stale and does not lift the card; `ModalShell` dismisses it, and only a keyboard shown after the modal opens (for example its own search field) lifts it. This prevents the card from jumping from the top to the centre.
+- **Opening a modal dismisses the underlying form input:** `ModalShell` calls `Keyboard.dismiss()` when it becomes visible, so the focused field blurs and `useKeyboardReveal` cannot scroll the form behind the modal when the modal's own input opens (e.g. Recurring Name → Tags → Add tag).
+
+Any `ScrollView` that is an **ancestor of a modal containing a `TextInput`** must also set
+`keyboardShouldPersistTaps="handled"`. With the default (`'never'`), RN's
+`ScrollView._handleStartShouldSetResponderCapture` captures the first tap on a non-input target
+to dismiss the keyboard, so the modal's buttons would need two taps
+(e.g. `DataScreen`'s outer `ScrollView` wraps its typed-DELETE confirmation modals).
+
+## Selection mode
+
+List rows use the shared `SelectionCheckbox` (`components/SelectionCheckbox.tsx`): a 22px
+`checkbox-outline` / `checkbox` icon, first element on the **left**, primary when selected and
+secondary otherwise. The checkbox is inside the row's pressable area, so tapping the checkbox,
+the row text or the row badge toggles selection. The right side keeps the row's value or action
+(amount, balance, status); switches are hidden in selection mode. `SelectAllRow` uses the same
+checkbox. The **Categories grid** is the documented exception: its tiles show a checkmark badge
+over the icon.
+
+## Empty lists
+
+Render a list through the shared `ListOrEmpty` component, which **unmounts the list when it
+is empty** and shows an `EmptyState` instead — never a `ListEmptyComponent` combined with a
+conditional `contentContainerStyle`:
 
 ```jsx
-{Platform.OS === 'android' && <View style={styles.keyboardSpacer} />}
+<ListOrEmpty empty={items.length === 0} emptyState={renderEmpty()}>
+  <FlatList data={items} ... contentContainerStyle={styles.list} />
+</ListOrEmpty>
 ```
 
-**Style:** `{ height: 200 }`
+Why: when the data jumps from a list that overflows the screen to empty in a single update
+(e.g. Select all → Delete), a still-mounted `FlatList` keeps the old (tall) native content
+size on Android, so the emptied screen stays vertically scrollable and the empty state is
+not centred. Unmounting the list forces a fresh measure.
 
-Place at the bottom of scrollable content in Create/Modify screens.
+Used by `TagsScreen`, `CommentsScreen`, `RecurringScreen`, `AccountsScreen`,
+`TransactionListBody` (transactions) and `CategoriesScreen`.
+
+`testID`s shared by a component and its test live in `src/constants/testIds.ts` (`TEST_IDS`);
+the rest of the test hooks are i18n accessibility labels queried with `getByLabelText`.
 
 ## FAB (Floating Action Button)
 
@@ -292,7 +361,7 @@ fab: {
 <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={() => setModalVisible(false)}>
   <View style={styles.modalOverlay}>
     <View style={[styles.modalContent, { backgroundColor: c.surface }]}>
-      <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(16) }]}>
+      <Text style={[styles.modalTitle, { color: c.text, fontSize: fs(18) }]}>
         {labels.modal_title}
       </Text>
       <Text style={[styles.modalMessage, { color: c.textSecondary, fontSize: fs(14) }]}>
@@ -333,6 +402,15 @@ fab: {
 | `modalButton` | `{ flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center' }` |
 | `modalButtonText` | `{ fontWeight: '600' }` |
 
+- **Header:** `ModalHeader` keeps the 18px/700 title centered and accepts an optional decorative icon and an optional right slot (counters/actions). The icon is rendered inline at the start of the title text, so it stays on the first line when a long title wraps; it is hidden from accessibility.
+- **Modal icon vocabulary:** confirmation icons are caller-specific and fall back to `alert-circle-outline`: destructive deletes use `trash-outline`, reset/wipe flows use `warning-outline`, import uses `cloud-download-outline`, and edits use their entity icon. Option pickers fall back to `options-outline`; language, currency, default account, recurring view, status, photo source and category transfer use `language-outline`, `cash-outline`, `wallet-outline`, `repeat-outline`, `funnel-outline`, `image-outline` and `swap-horizontal-outline`.
+- **Entity subject row:** when a modal acts on one entity, keep the title short and one line and put the entity below it as a centered subject group (`ModalEntitySubject`): icon + name (+ optional subtitle/counts), up to two lines. The icon and text block are centered horizontally as one group; the icon is centered vertically against the text block, while the name and subtitle stay left-aligned with each other. Account, category and tag delete modals use this pattern, as do category transfers; user-entered names never appear in a modal title. Category subjects show their transaction/rule counts when known; the bulk destination picker repeats the source category row under the same `Move transactions` title, while the top-level bulk resolution list stays left-aligned for scanning and its right-side action.
+- **Action row gap:** modal action rows keep the shared `ModalFooter` rhythm: `marginTop: 16` (`SECTION_GAP`) above the row and `gap: 12` between buttons. The compact Add tag modal reserves a fixed one-line error band with 8px vertical padding and centered text above the row, so showing a validation message never moves the buttons.
+- **Button labels:** simple destructive confirmations always use the generic `cancel` / `delete` keys. Special destructive actions use action-specific labels: `Permanent delete` for categories (because moving is the alternative), `Delete all`, `Reset`, `Import`, and `Skip them`. Non-destructive modals use their semantic action: `Select`, `Apply`, `Add`, `Ok` or `Accept`; their cancel button still uses the generic `cancel`. The Guard alert uses `Close` as its single action.
+- **Compact exceptions:** Calendar and Add tag use `FOOTER_LAYOUTS.compact`: both buttons share the same **128px** width, capped at **47%** each on narrow screens, in a right-aligned row with a 12px gap instead of stretching full width. They keep the standard 12px vertical padding and 14px label size, so their height matches the full-width footers; text stays centered and single-line. The Photo source picker keeps its full-width Cancel menu, and Calendar is the only modal whose header title is left-aligned (next to its `calendar-outline` icon).
+- **Full-screen modals:** `CalculatorModal` and `CategoryFilterModal` use `FullScreenModalHeader`: centered 18px/700 title, inline leading icon, optional right slot, and a bottom border. Category filter uses `grid-outline` plus the close button; Calculator uses `calculator-outline` with no right action.
+- **Calculator layout:** natively the full-screen calculator keeps the header fixed, lets the display area flex, and anchors the keypad + Cancel/Accept footer to the bottom safe area. The web calculator remains a centered card with the footer after the keypad.
+
 ### Button Colors
 
 | Button | Background | Text |
@@ -341,6 +419,26 @@ fab: {
 | Destructive | `c.red` | `'#FFFFFF'` |
 
 ## Form Patterns
+
+### Section headers
+
+- Every form uses `components/form/FormSectionHeader` for every field group: Amount, Account, Categories, Date/Start date, Recurring, Tags, Comment, Photos, Name, Type, Symbols, Color, Initial balance and Note.
+- The title is 15px/600 in `c.text`; the 16px decorative icon uses the same color and is hidden from accessibility.
+- Section icon vocabulary: Amount/Initial balance `cash-outline`, Account `wallet-outline`, Categories `grid-outline`, Date/Start date `calendar-outline`, Recurring `repeat-outline`, Tags `pricetag-outline`, Comment `chatbubble-ellipses-outline`, Photos `image-outline`, Name `id-card-outline`, Type `swap-horizontal-outline`, Symbols `shapes-outline`, Color `color-palette-outline`, Note `document-text-outline`. The same glyph is used in Transaction details, drawer/screen headers and empty states where the section applies.
+- Every header keeps a standard 16px top gap and 10px bottom gap; the first section in a form removes only its top gap (`formStyles.firstSection`), so fields align consistently without doubling the form's top padding.
+- `LabeledTextField` renders its label through `FormSectionHeader`; callers pass `labelIcon` when the default `text-outline` is not the right semantic icon.
+- **Counters:** every form field with a section header puts its counter in the header's right slot (Name, Note, Comment, Recurring rule). The compact Add tag modal puts its counter in the modal header's right slot. No field counter is rendered inside an input. List/item counters stay above their lists.
+- Optional right-side actions are passed separately and keep the primary color because they are tappable (Date calendar, Tag search).
+- The Account card shows only the account name plus a `chevron-down`; the section header carries the Account label.
+
+### Accessibility
+
+- `FormSectionHeader` exposes its title with `accessibilityRole="header"`; decorative icons are hidden from assistive technology.
+- `LabeledTextField` uses its visible `label` as the input's accessible name when the caller does not provide one.
+- The Account picker is a button labelled `Account: <name>`; its chevron is decorative.
+- The Photos add tile is labelled **Add photo** and exposes a button role; remove and source-modal options are buttons too.
+- Comment suggestions sit inside the Comment section, below its header and above the input. The panel has a bulb icon, a **Suggestions** heading, a muted **Tap to reuse** hint and 44px rows, so it is visually attached to the field and clearly actionable.
+- Interactive chips/options expose selected state, disabled steppers expose disabled state and dim, and small icon actions keep a ~44px hit target via `hitSlop`.
 
 ### TextInput
 
@@ -369,13 +467,23 @@ fab: {
 
 ### Character Counter
 
+Every limited input (and the list headers that show a limit) renders `components/form/CharCounter`:
+
 ```jsx
-<Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
-  {value.length}/{MAX_LENGTH}
-</Text>
+<CharCounter value={value.length} maxLength={MAX_LENGTH} />
+
+// A localized list header (not "n/max"): the text goes in as the child.
+<CharCounter value={tags.length} maxLength={MAX_TAGS} style={COUNTER_STYLE}>
+  {labels.tags_counter(tags.length, MAX_TAGS)}
+</CharCounter>
 ```
 
-**Counter style:** `{ textAlign: 'right', marginTop: 4, marginBottom: 4 }`
+- **Limits come from `constants/types.ts`, never a literal**: `MAX_TAG_NAME_LENGTH`, `MAX_ACCOUNT_NAME_LENGTH`, `MAX_CATEGORY_NAME_LENGTH`, `MAX_NOTE_LENGTH`, `MAX_COMMENT_LENGTH`, `MAX_TAGS`, `MAX_CATEGORIES_PER_TYPE`, `REPEAT_NAME_MAX_LENGTH`. A field whose value may already exceed the limit (legacy/imported data, e.g. a recurring rule name) passes `maxLength={Math.max(LIMIT, value.length)}` so the value is never clipped, while the counter flags it. `LabeledTextField` applies this centrally; the raw Comment and Modify Category inputs do the same.
+- **One look**: `COUNTER_FONT_SIZE` (12, scaled by the text-size setting), `c.textSecondary`, `fontWeight: '500'`, right-aligned — centered for the list headers via `COUNTER_STYLE`.
+- **At the limit (`value >= maxLength`) the whole counter turns red and bold**: that is the only moment the field stops accepting input, so it reads as "you can't type more" rather than "this is invalid". The same rule flags the list headers (`100 of 100 tags`, `30 of 30 categories`).
+- `style` is for layout only (alignment, margins, padding); colour, weight and size always stay the component's, so a caller can never override the at-limit state.
+- **Placement:** every field counter sits in the section header's right slot; the compact Add tag modal uses the modal header's right slot. No field counter is absolutely positioned inside an input, so multiline fields do not reserve extra bottom padding.
+- **Counter style:** header/modal counters use `{ textAlign: 'right' }`; list headers use `{ textAlign: 'center', paddingTop: 12 }` (`COUNTER_STYLE`).
 
 ### Debounce Validation
 
@@ -412,8 +520,31 @@ useEffect(() => {
 </TouchableOpacity>
 ```
 
-**Button style:** `{ marginTop: 16, paddingVertical: 14, borderRadius: 10, alignItems: 'center' }`
+**Button style:** `{ paddingVertical: 14, borderRadius: 10, alignItems: 'center' }` — the form's hint slot (below) owns the gap above it.
 **Button text style:** `{ fontWeight: '600' }`
+
+### Form validation & bottom action area
+
+Every form — Create, Edit, and the transaction/recurring forms — shares one rule set:
+
+1. **The bottom hint says why Save is disabled.** It is shown whenever the button is disabled, uses the **same wording in Create and Edit** (shared i18n keys) and is the **only** place the message appears — never duplicated under the field. The recurring form lists **every** unmet condition at once (one sentence each).
+2. **Save is enabled only when the form changed *and* every rule passes.** On an **edit** screen (`editing`) the button stays disabled while the draft equals what the screen loaded — with an **empty hint band**, since "nothing changed" is not a field error: the grey button is the signal. The comparison is by **value**, so returning a field to its original value (picking the original category back, retyping the same amount, adding and removing the same tag) disables Save again; the helper is `hooks/useIsDirty.ts` (a value comparison against the first loaded baseline; the transaction/rule form reuses `useTransactionForm`'s `isDirty`). The transaction form's baseline is **what is stored right now** (derived from the row props, tags included): an external rewrite — a "Future + past" rule edit that bulk-updates this row — re-baselines it, so picking the value the rule just wrote leaves nothing to save (the draft is compared with the row, not with the row as it looked when the screen opened). **Exception:** on the rule editor, moving the "Apply changes to" scope away from its default counts as a change (that scope is what back-fills/handles the past occurrences). Create/Add screens have no baseline and keep their own rules.
+3. **A field is only painted red for a value the user invalidated.** The red border is held back until the field has been **changed or blurred**, so a freshly-opened form never greets the user in red (`LabeledTextField` owns this gating; a screen with its own input, like the category name, repeats the same two-line pattern). `AmountInput` takes an optional `error` prop: an amount of **0** is flagged with a red border (the digits keep their normal color) while an account's initial balance of **0** stays valid; its red *text* is reserved for a value that is not a number at all.
+**A section-level error tints the section, not just a field.** When the recurring draft would create more than the 5,000-occurrence limit, the recurring card switches from the primary tint to the red error tint (border + background) in both create and edit, and returns as soon as the draft is valid.
+
+4. **The bottom block is one shared component** (`components/form/FormActions`), so its layout cannot drift:
+
+   ```
+   ⟨field area⟩
+   [muted band]   reserved 2 lines — the "you cannot delete this" explanation, blank when there is none
+   [Delete]       only in forms that can delete; label is always the generic `Delete`
+   [red band]     reserved 2 lines — why the save is blocked
+   [Save]
+   ```
+
+   Both bands are **reserved even when empty** (2 lines, 8/8 margins, scaling with the text size), so neither the Delete nor Save ever moves when a message appears or disappears — and the separation from the field area is identical in every screen, whether or not a hint is showing. The **muted band doubles as the standard separator above the destructive button**, which is why every delete form (not just the account, whose note uses it) reserves it. The caller passes only the messages and the Save node (each form keeps its own Save styling).
+5. **The Delete button always reads the generic `Delete`.** Only the confirmation modal spells out what is being deleted.
+6. Purely **informative** notes (e.g. the comment merge note) stay **below Save** — they explain, they do not block.
 
 ### Delete Button (Modify screens)
 
@@ -424,12 +555,30 @@ useEffect(() => {
 >
   <Ionicons name="trash-outline" size={18} color={c.red} />
   <Text style={[styles.deleteButtonText, { color: c.red, fontSize: fs(15) }]}>
-    {labels.delete_button}
+    {labels.delete}
   </Text>
 </TouchableOpacity>
 ```
 
-**Delete button style:** `{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingVertical: 12, marginTop: 24 }`
+**Delete button style:** `{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderWidth: 1, borderRadius: 10, paddingVertical: 12, marginTop: 24 }` (`marginTop: 8` when the muted hint sits directly above it). The shared `components/form/DeleteButton.tsx` carries `testID: TEST_IDS.formDelete`, and `components/form/FormHintSlot.tsx` is the reserved red-hint slot (`TEST_IDS.formHintSlot`).
+
+## Calendar (date pickers)
+
+- `CalendarModal` renders the picker; the day grid is `calendars/DayPicker`, with **year navigation** (`calendars/YearNav`) above **month navigation** (`calendars/MonthNav`) — the same two-arrow layout as `WeekPicker`, so a year can be jumped to quickly (e.g. a recurring end date 10 years ahead).
+- **Modal layout:** fixed header with a leading `calendar-outline` icon and left-aligned title, two left-aligned information lines, scrollable body and fixed compact Cancel/OK footer with a 12px gap. The modal sizes to its content with a 94% height cap.
+- **Navigation standard (strict A):** inside every picker, arrows only browse the visible page; the selected value changes only by tapping. The header keeps showing the selection when it is off-screen. The outer `CalendarPicker` arrows still select the previous/next period.
+- **Modal nav controls:** each modal nav row is `[<] title [»] [>]`, with the title perfectly centred and 22px icons. The arrow boxes are compact but keep a 44px+ effective tap target through `hitSlop`; the double arrow is separated from the single next arrow. Equal side slots keep the title centred whether the double arrow is visible or not. The double arrow jumps to the current value only when one next step is not enough: year rows from two or more years back, month rows from two or more months back in the current year, and YearGrid pages before the penultimate page.
+- **Header information:** Day/Month/Year show their selected value plus a reserved blank second line; Week shows both full start/end dates with years; Period shows its localized Desde/hasta range. Compact week labels (trigger and week rows) add both years only when the week crosses a year boundary.
+- **Today refresh:** calendar components share `hooks/useToday.ts`, which refreshes at midnight and when the app/tab becomes active, so an open picker does not keep yesterday's current/future state.
+- **Period picker:** quick presets are This year / 12 months / 30 days / 90 days, below the calendar, followed by the muted start/end hint. The checked preset is derived from the current range; manual edits uncheck it and a matching manual range checks it. While the picker is waiting for the end date, OK is disabled (dimmed, not pressable); tapping the same day twice creates a one-day range.
+- **Month/Year:** both use a 3x4 grid; their empty Month-row spacer keeps the Year row and Calendar area aligned with Day/Week/Period. `YearGrid` pages are fixed 12-year ranges anchored at 1900 (`1900–1911`, `1912–1923`, …); tapping a year selects it without moving the page, and the previous page is disabled on the first range. `YearGrid` arrows carry Previous years / Next years accessibility labels. Month year arrows only browse.
+- **WeekPicker:** always renders six row slots. A week is kept when it contains at least one day of the active month; a week entirely outside it is a completely blank, non-interactive placeholder that preserves height and spacing, so the modal never resizes. A shared week stays in the month where the user tapped it; tapping it selects the week without changing the visible month/year. Reopening shows the week's start month.
+- **Date bounds:** every picker accepts optional `minDate` / `maxDate`. The minimum is always **01 January 1900** when `minDate` is omitted or `null`; `maxDate === undefined` means no future dates (end of today), while `maxDate === null` means unbounded in the future. A `Date` is an inclusive clamp. The convention lives in `resolveDateBounds(minDate, maxDate)` (`utils/calendarBounds.ts`); the day predicate is `isDateWithinBounds(date, minDate, maxDate)` (`utils/formatters.ts`). Disabled days are dimmed (`DISABLED_OPACITY`) and not pressable, and navigation disables at the bounds.
+- **Reopen sync:** DayPicker, MonthGrid and YearGrid follow the `date` prop; reopening shows the month/page containing the selected value. WeekPicker opens the week's start month. While a picker is open, browsing does not change the selection.
+- **Default:** the transaction date and period pickers pass no bounds, so they stay "today or past only" and cannot go before 1900 (see feature 001).
+- **Recurring start date (feature 028):** in **rule mode** the transaction date picker (the recurring form's **Start date**) passes `maxDate = null`, so any date — past, present or future — can anchor the rule; outside rule mode the same picker stays "today or past only".
+- **Recurring end date (feature 028):** the recurring **End date** picker passes `minDate = dayAfter(start date)` and `maxDate = null`, so the end date must be strictly after the rule's start date — it may be in the past when the start is in the past (e.g. start 01/09, end 30/09) — and `maxDate = null` keeps it open-ended.
+- `MonthGrid` / `YearGrid` (month/year period grids) are **not** parameterized yet; they remain past-only.
 
 ## Export Pattern
 
@@ -444,8 +593,10 @@ Never use arrow functions or `export default` on a variable assignment.
 
 | Category | Examples | Key Features |
 |----------|----------|--------------|
-| Tab/List | HomeScreen, AccountsScreen, TagsScreen | SafeAreaView, FAB, FlatList, empty states |
-| Form/Create | CreateAccountScreen, CreateCategoryScreen, CreateTagScreen | SafeAreaView + ScrollView, input validation, icon/color grids, Android keyboardSpacer |
-| Form/Modify | ModifyAccountScreen, ModifyCategoryScreen, ModifyTagScreen | Same as Create + pre-populated data, delete button + modal |
+| Tab/List | HomeScreen, AccountsScreen, TagsScreen, CommentsScreen, RecurringScreen, AllTransactionsScreen | SafeAreaView, FAB, FlatList, centered loading state, empty states |
+| Form/Create | CreateAccountScreen, CreateCategoryScreen, CreateTagScreen, CreateRecurringScreen | SafeAreaView + ScrollView, input validation, icon/color grids, Android keyboardSpacer |
+| Form/Modify | ModifyAccountScreen, ModifyCategoryScreen, ModifyTagScreen, ModifyRecurringScreen | Same as Create + pre-populated data, delete button + modal |
 | Transaction Form | AddTransactionScreen, ModifyTransactionScreen | Complex: TypeTabs, calculator, category grid, tags, comment, photo |
 | Detail | TransactionDetailsScreen | Read-only data display, action buttons (delete, edit) |
+| Settings | SettingsScreen + Appearance/Regional/Personalization/Data | Section rows, pickers, toggles, privacy (hide balances), backup/import, reset flows |
+| Modal/overlay | CategoryFilterModal, CalendarModal, ConfirmationModal, SelectionActionBar | Filter presets, multi-select, confirmation dialogs, bulk actions |

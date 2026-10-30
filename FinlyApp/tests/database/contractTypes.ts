@@ -43,6 +43,7 @@ export interface ContractAccountRepo {
   getById(id: number): Promise<Account | null>;
   update(id: number, data: UpdateAccount): Promise<void>;
   delete(id: number): Promise<void>;
+  deleteMany(ids: number[]): Promise<void>;
   deleteAll(): Promise<void>;
   getBalances(): Promise<{ account_id: number; balance: number }[]>;
   existsByName(userId: number, name: string, excludeId?: number): Promise<boolean>;
@@ -99,6 +100,7 @@ export interface ContractTransactionRepo {
   countByDescription(comment: string): Promise<number>;
   countByCategoryIds(ids: number[]): Promise<number>;
   countByCategoryIdsMap(ids: number[]): Promise<Record<number, number>>;
+  countByTagIdsMap(ids: number[]): Promise<Record<number, number>>;
   breakdownByCategoriesAndTags(
     accountId: number | null,
     categoryIds: number[],

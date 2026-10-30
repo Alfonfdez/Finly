@@ -1,7 +1,7 @@
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Text, TouchableOpacity, Switch, StyleSheet } from 'react-native';
 import { useConfig } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
+import { switchColors } from '../componentStyles';
 
 interface Props {
   checked: boolean;
@@ -16,15 +16,20 @@ export default function ToggleRow({ checked, onToggle, label }: Props) {
     <TouchableOpacity
       style={styles.row}
       onPress={onToggle}
+      activeOpacity={0.8}
       accessibilityRole="switch"
       accessibilityState={{ checked }}
       accessibilityLabel={label}
     >
       <Text style={[styles.label, { color: c.text, fontSize: fs(14) }]}>{label}</Text>
-      <Ionicons
-        name={checked ? 'toggle' : 'toggle-outline'}
-        size={32}
-        color={checked ? c.primary : c.textSecondary}
+      <Switch
+        value={checked}
+        onValueChange={onToggle}
+        pointerEvents="none"
+        accessible={false}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        {...switchColors(c)}
       />
     </TouchableOpacity>
   );
@@ -32,5 +37,5 @@ export default function ToggleRow({ checked, onToggle, label }: Props) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  label: { fontWeight: '500' },
+  label: { fontWeight: '500', flex: 1, paddingRight: 12 },
 });

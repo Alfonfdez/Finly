@@ -1,6 +1,7 @@
-import { type ReactNode } from 'react';
-import { Modal, View, StyleSheet, useWindowDimensions, type DimensionValue } from 'react-native';
+import { type ReactNode, useEffect } from 'react';
+import { Keyboard, Modal, View, StyleSheet, useWindowDimensions, type DimensionValue } from 'react-native';
 import { useConfig } from '../context/ConfigContext';
+import { useKeyboardLift } from '../hooks/useKeyboardInset';
 import { isWeb } from '../utils/platform';
 import { OVERLAY_BG, MODAL_BORDER_RADIUS } from './componentStyles';
 
@@ -29,21 +30,36 @@ export default function ModalShell({
 }: Props) {
   const { activeColors: c } = useConfig();
   const { height: windowHeight } = useWindowDimensions();
+  // A native Modal window does not always resize with the keyboard, so lift the (centred)
+  // box above the keyboard ourselves. The lift is held briefly after the keyboard hides so a
+  // button tap can finish before the box moves; it then drops back to the centred size (see
+  // `useKeyboardLift`).
+  const liftedInset = useKeyboardLift(visible);
+  // Opening a modal is a context switch: blur the form input first, otherwise its
+  // reveal hook can scroll the form behind the modal when the modal's input opens.
+  useEffect(() => {
+    if (visible) Keyboard.dismiss();
+  }, [visible]);
   const boundedMaxHeight =
     typeof maxHeight === 'number'
       ? maxHeight
       : Math.round(windowHeight * (parseFloat(String(maxHeight)) / 100));
+  const availableHeight = Math.max(0, windowHeight - liftedInset - overlayPadding * 2);
+  const effectiveMaxHeight = liftedInset > 0
+    ? Math.min(boundedMaxHeight, availableHeight)
+    : boundedMaxHeight;
   const shadowStyle = isWeb
     ? { boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }
     : { elevation: 10 };
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={[styles.overlay, { padding: overlayPadding }]}>
+      <View style={[styles.overlay, { padding: overlayPadding, paddingBottom: overlayPadding + liftedInset }]}>
         <View
+          accessibilityViewIsModal
           style={[
             styles.modal,
-            { backgroundColor: backgroundColor ?? c.surface, maxWidth, padding, maxHeight: boundedMaxHeight },
+            { backgroundColor: backgroundColor ?? c.surface, maxWidth, padding, maxHeight: effectiveMaxHeight },
             shadow && shadowStyle,
           ]}
         >

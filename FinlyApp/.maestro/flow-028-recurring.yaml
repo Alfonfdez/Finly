@@ -1,0 +1,87 @@
+appId: com.finly.app
+---
+- runFlow:
+    file: "helpers/state-reset.yaml"
+- runFlow:
+    file: "helpers/dismiss-dev-menu.yaml"
+# --- Create a daily recurring rule (materializes today's transaction) ---
+- runFlow:
+    file: "helpers/create-daily-rule.yaml"
+- assertVisible: "Every day"
+# --- The generated transaction exists ---
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- tapOn: "All transactions"
+- waitForAnimationToEnd
+- assertVisible: "E2E Daily"
+- tapOn: "E2E Daily"
+- waitForAnimationToEnd
+- assertVisible: "Transaction details"
+- assertVisible: "E2E Daily"
+- back
+- waitForAnimationToEnd
+# --- Edit the rule: rewrite the comment for the past transactions too ---
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- tapOn: "Recurring"
+- waitForAnimationToEnd
+- tapOn: "E2E Daily"
+- waitForAnimationToEnd
+- assertVisible: "Edit recurring rule"
+- scrollUntilVisible:
+    element:
+      text: "Comment input"
+    direction: DOWN
+- tapOn: "Comment input"
+- inputText: "Rule v2"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Future + past"
+    direction: UP
+- tapOn: "Future + past"
+- scrollUntilVisible:
+    element:
+      text: "Save"
+    direction: DOWN
+- tapOn: "Save"
+- waitForAnimationToEnd
+# --- "Future + past" rewrote the generated transaction ---
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- tapOn: "All transactions"
+- waitForAnimationToEnd
+- tapOn: "E2E Daily"
+- waitForAnimationToEnd
+- assertVisible: "Rule v2"
+- back
+- waitForAnimationToEnd
+# --- Pause / resume ---
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- tapOn: "Recurring"
+- waitForAnimationToEnd
+- tapOn: "Active"
+- waitForAnimationToEnd
+- assertVisible: "Paused"
+- tapOn: "Paused"
+- waitForAnimationToEnd
+- assertVisible: "Active"
+# --- Delete the rule (bulk delete); its transactions are kept ---
+- tapOn: "Enter select mode"
+- waitForAnimationToEnd
+- tapOn: "E2E Daily"
+- waitForAnimationToEnd
+- tapOn: "Delete (1)"
+- waitForAnimationToEnd
+- assertVisible: "Delete 1 recurring rule?"
+- tapOn: "Delete"
+- waitForAnimationToEnd
+- assertNotVisible: "E2E Daily"
+# --- The rule's transaction is kept (the rule link is cleared) ---
+- runFlow:
+    file: "helpers/open-drawer.yaml"
+- tapOn: "All transactions"
+- waitForAnimationToEnd
+- assertVisible: "Rule v2"
+- assertVisible: "-7,00 €"

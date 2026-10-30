@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useColorSelection } from '../hooks/useColorSelection';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
+import { useBusyGuard } from '../hooks/useBusyGuard';
 import { t, getDefaultAccountIdByName, getDefaultEnglishAccountName } from '../i18n';
 import { accountRepository } from '../database';
 import { type NavigationProp, USER_ID } from '../constants/types';
@@ -23,6 +24,7 @@ export default function CreateAccountScreen() {
   const navigation = useNavigation<NavigationProp<'CreateAccount'>>();
 
   const deferredRefreshAccounts = useDeferredRefresh(refreshAccounts);
+  const { busy, run } = useBusyGuard();
 
   const [name, setName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
@@ -37,9 +39,10 @@ export default function CreateAccountScreen() {
       return defaultId !== null ? getDefaultEnglishAccountName(defaultId) : null;
     },
     duplicateErrorKey: labels.create_account_error_duplicate,
+    checkErrorKey: labels.error_generic,
   });
 
-  const initialBalanceError = initialBalanceRaw.length > 0 && parseAmountValue(initialBalanceRaw) === null;
+  const initialBalanceError = initialBalanceRaw.length > 0 && initialBalanceRaw !== '-' && parseAmountValue(initialBalanceRaw) === null;
 
   const canCreate = name.trim().length > 0 && !nameError && !checkingName && selectedIcon !== null && selectedColor !== null && initialBalanceError === false;
 
@@ -53,35 +56,38 @@ export default function CreateAccountScreen() {
       iconColor: labels.create_account_error_icon_color,
       icon: labels.create_account_error_icon,
       color: labels.create_account_error_color,
-    }
+    },
   );
 
   const handleCreate = async () => {
     Keyboard.dismiss();
     if (!canCreate || selectedIcon === null || selectedColor === null) return;
-    await runWithErrorAlert(async () => {
-      await accountRepository.create({
-        user_id: USER_ID,
-        name: name.trim(),
-        icon: selectedIcon,
-        color: selectedColor,
-        initial_balance: parseAmountValue(initialBalanceRaw) ?? 0,
-        description: description.trim(),
-      });
-      navigation.goBack();
-      deferredRefreshAccounts();
-    }, ERROR_PREFIXES.accountCreate);
+    await run(async () => {
+      await runWithErrorAlert(async () => {
+        await accountRepository.create({
+          user_id: USER_ID,
+          name: name.trim(),
+          icon: selectedIcon,
+          color: selectedColor,
+          initial_balance: parseAmountValue(initialBalanceRaw) ?? 0,
+          description: description.trim(),
+        });
+        navigation.goBack();
+        deferredRefreshAccounts();
+      }, ERROR_PREFIXES.accountCreate);
+    });
   };
 
   return (
     <ScreenShell>
       <View style={styles.content}>
         <AccountForm
-          nameLabel={labels.create_account_name}
-          showNameField
+          nameLabel={labels.form_name}
+          namePlaceholder={labels.create_account_name}
           name={name}
           onNameChange={(v) => handleNameChange(v, setName)}
-          nameErrorDisplay={nameError}
+          nameError={nameError}
+          nameEmptyError={labels.create_account_error_empty}
           icons={ACCOUNT_ICONS}
           iconShape={config.accountIconShape}
           symbolTitle={labels.create_account_symbols}
@@ -101,7 +107,7 @@ export default function CreateAccountScreen() {
           onDescriptionChange={setDescription}
           hintText={hintText}
           submitLabel={labels.create_account_button}
-          isSubmitDisabled={!canCreate}
+          isSubmitDisabled={!canCreate || busy}
           onSubmit={handleCreate}
         />
       </View>

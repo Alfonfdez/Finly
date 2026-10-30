@@ -9,14 +9,14 @@ Todo funciona **en el dispositivo**: tus datos viven en una base de datos SQLite
 | | |
 |---|---|
 | **Plataformas** | iOS, Android y Web |
-| **Versión** | 2.1.0 |
+| **Versión** | 2.2.0 |
 | **Idiomas** | Inglés, Español, Catalán, Gallego, Euskera, Francés, Alemán, Portugués e Italiano |
 | **Datos** | 100 % locales (SQLite en nativo, sql.js + IndexedDB en web) |
 | **Temas** | Oscuro, Claro y Automático (sigue el sistema) |
 
 ## Funciones
 
-- **Varias cuentas** — crea, edita y elimina cuentas, cada una con su propio icono, color y saldo inicial opcional. Una cuenta especial **Total** agrega todo.
+- **Varias cuentas** — crea, edita y elimina cuentas, cada una con su propio icono, color y saldo inicial opcional (incluidos los saldos negativos). Una cuenta especial **Total** agrega todo.
 - **Control de ingresos y gastos** — añade transacciones en un día concreto con importe, cuenta, categoría, etiquetas, comentario y una foto opcional.
 - **Categorías personalizadas** — elige entre una biblioteca de iconos y colores, y crea tus propias categorías de gastos e ingresos.
 - **Gráficos** — gráfico de donut con el total en el centro y gráfico de barras apiladas horizontal, con desglose por categorías que muestra porcentajes.
@@ -24,6 +24,7 @@ Todo funciona **en el dispositivo**: tus datos viven en una base de datos SQLite
 - **Todas las transacciones** — filtros combinados: tipo, categorías (multiselección), período, cuenta, etiquetas y búsqueda con ordenación por fecha o importe.
 - **Etiquetas y comentarios** — etiqueta transacciones y filtra por etiqueta; gestiona todos los comentarios de la app y aplica ediciones o borrados masivos a varias transacciones a la vez.
 - **Fotos** — adjunta una foto a una transacción desde la galería en todas las plataformas (cámara en iOS y Android).
+- **Reglas recurrentes** — convierte una transacción en una programación que se repite (diaria, semanal, mensual o anual, con intervalo y fecha de fin opcional); las ocurrencias vencidas se generan solas y cada regla se puede pausar, reanudar o editar aplicando el cambio solo al futuro o también al pasado.
 - **Acciones masivas** — multiselecciona y elimina transacciones, etiquetas, comentarios y categorías de una vez.
 - **Copia de seguridad** — exporta toda tu base de datos como instantánea JSON e impórtala cuando quieras.
 - **Ajustes** — tema, tamaño de texto, moneda, separador decimal, idioma, primer día de la semana, formas de iconos, valores predeterminados de inicio y de añadir transacción, y opciones de privacidad para ocultar saldos.
@@ -31,23 +32,36 @@ Todo funciona **en el dispositivo**: tus datos viven en una base de datos SQLite
 
 ## Capturas de pantalla
 
-![Pantalla de inicio](images/screenshots/v2-01-a-home-empty.png)<br>*Pantalla de inicio antes de configurar ninguna cuenta.*<br><br>
-![Pantalla de inicio](images/screenshots/v2-01-b-home.png)<br>*Pantalla de inicio con cuentas, gráfico de donut y desglose por categorías.*<br><br>
-![Menú hamburguesa](images/screenshots/v2-02-hamburger.png)<br>*Menú lateral con Inicio, Cuentas, Categorías, Etiquetas, Comentarios, Todas las transacciones y Ajustes.*<br><br>
-![Añadir transacción](images/screenshots/v2-03-add-transaction.png)<br>*Añade un gasto o ingreso con importe, cuenta, categoría, día, etiquetas, comentario y foto.*<br><br>
-![Selector de fecha](images/screenshots/v2-04-date-picker.png)<br>*Selector de calendario para elegir un día, semana, mes, año o rango de período personalizado.*<br><br>
-![Categorías](images/screenshots/v2-05-categories.png)<br>*Categorías organizadas por tipo (gastos/ingresos) en una cuadrícula de 4×N.*<br><br>
-![Etiquetas](images/screenshots/v2-06-tags.png)<br>*Pantalla de etiquetas con búsqueda y selección masiva.*<br><br>
-![Todas las transacciones, vacío](images/screenshots/v2-07-a-all-transactions-empty-state.png)<br>*Todas las transacciones en estado vacío.*<br><br>
-![Todas las transacciones](images/screenshots/v2-07-b-all-transactions.png)<br>*Todas las transacciones con filtros de tipo, categoría, período y etiquetas, además de ordenación y búsqueda.*<br><br>
-![Cuentas](images/screenshots/v2-08-accounts.png)<br>*Pantalla de cuentas con saldos y la cuenta Total agregada.*<br><br>
-![Detalles de ingreso](images/screenshots/v2-09-a-details-income.png)<br>*Detalles de una transacción de ingreso con edición y eliminación.*<br><br>
-![Detalles de gasto](images/screenshots/v2-09-b-details-expense.png)<br>*Detalles de una transacción de gasto con edición y eliminación.*<br><br>
-![Ajustes](images/screenshots/v2-10-settings.png)<br>*Ajustes: Apariencia, Regional, Personalización y Datos.*<br><br>
-![Ajustes regionales](images/screenshots/v2-11-regional-en.png)<br>*Ajustes regionales: idioma, moneda, separador decimal y primer día de la semana.*<br><br>
-![Ajustes de apariencia](images/screenshots/v2-12-settings-appearance.png)<br>*Apariencia: tema, tamaño de texto y formas de iconos.*<br><br>
-![Ajustes de personalización](images/screenshots/v2-13-settings-personalization.png)<br>*Personalización: valores predeterminados de inicio y de añadir transacción, y privacidad.*<br><br>
-![Ajustes de datos](images/screenshots/v2-14-settings-data.png)<br>*Datos: exportación/importación de copia de seguridad y acciones de borrado/reinicio.*<br><br>
+![Pantalla de inicio](images/screenshots/v3.4-01-a-home-empty.png)<br>*Instalación nueva sin transacciones.*<br><br>
+![Pantalla de inicio](images/screenshots/v3.4-01-b-home.png)<br>*Pantalla de inicio con cuentas, gráfico de donut y desglose por categorías.*<br><br>
+![Menú hamburguesa](images/screenshots/v3.4-02-hamburger.png)<br>*Menú lateral con Inicio, Todas las transacciones, Recurrentes, Cuentas, Categorías, Etiquetas, Comentarios y Ajustes.*<br><br>
+![Añadir transacción](images/screenshots/v3.4-03-add-transaction.png)<br>*Añade un gasto o ingreso con importe, cuenta, categoría, día, etiquetas, comentario y foto.*<br><br>
+![Selector de fecha](images/screenshots/v3.4-04-date-picker.png)<br>*Selector de calendario para elegir un día, semana, mes, año o rango de período personalizado.*<br><br>
+![Todas las transacciones, vacío](images/screenshots/v3.4-05-a-all-transactions-empty-state.png)<br>*Todas las transacciones en estado vacío.*<br><br>
+![Todas las transacciones](images/screenshots/v3.4-05-b-all-transactions.png)<br>*Todas las transacciones con filtros de tipo, categoría, período y etiquetas, además de ordenación y búsqueda.*<br><br>
+![Filtro de categorías](images/screenshots/v3.4-05-c-category-filter.png)<br>*Filtro de categorías con los preajustes Todas las categorías, Todos los gastos y Todos los ingresos.*<br><br>
+![Detalles de ingreso](images/screenshots/v3.4-05-d-details-income.png)<br>*Detalles de una transacción de ingreso con edición y eliminación.*<br><br>
+![Detalles de gasto](images/screenshots/v3.4-05-e-details-expense.png)<br>*Detalles de una transacción de gasto con edición y eliminación.*<br><br>
+![Modificar transacción](images/screenshots/v3.4-05-f-modify-transaction.png)<br>*Edita el importe, la cuenta, la categoría, el día, las etiquetas, el comentario y la foto de una transacción.*<br><br>
+![Recurrentes](images/screenshots/v3.4-06-recurring.png)<br>*Reglas recurrentes con próximas fechas, importes e interruptores de activa/pausada.*<br><br>
+![Nueva regla recurrente](images/screenshots/v3.4-06-a-create-recurring.png)<br>*Configura una regla recurrente con su nombre, frecuencia, intervalo y fecha de fin opcional.*<br><br>
+![Editar regla recurrente](images/screenshots/v3.4-06-b-modify-recurring.png)<br>*Edita la programación de una regla recurrente y elige si el cambio se aplica solo a las próximas repeticiones o también a las pasadas.*<br><br>
+![Cuentas](images/screenshots/v3.4-07-accounts.png)<br>*Pantalla de cuentas con saldos y la cuenta Total agregada.*<br><br>
+![Crear cuenta](images/screenshots/v3.4-07-a-create-account.png)<br>*Crea una cuenta con nombre, icono, color, saldo inicial y nota opcional.*<br><br>
+![Modificar cuenta](images/screenshots/v3.4-07-b-modify-account.png)<br>*Edita los datos, el saldo inicial y la nota de una cuenta, o elimínala.*<br><br>
+![Categorías](images/screenshots/v3.4-08-categories.png)<br>*Categorías organizadas por tipo (gastos/ingresos) en una cuadrícula de 4×N.*<br><br>
+![Crear categoría](images/screenshots/v3.4-08-a-create-category.png)<br>*Crea una categoría de gasto o ingreso con nombre, icono y color.*<br><br>
+![Modificar categoría](images/screenshots/v3.4-08-b-modify-category.png)<br>*Edita el nombre, el icono y el color de una categoría, o elimínala.*<br><br>
+![Etiquetas](images/screenshots/v3.4-09-tags.png)<br>*Pantalla de etiquetas con búsqueda y selección masiva.*<br><br>
+![Nueva etiqueta](images/screenshots/v3.4-09-a-create-tag.png)<br>*Crea una etiqueta para agrupar transacciones.*<br><br>
+![Editar etiqueta](images/screenshots/v3.4-09-b-modify-tag.png)<br>*Cambia el nombre o elimina una etiqueta.*<br><br>
+![Comentarios](images/screenshots/v3.4-10-comments.png)<br>*Pantalla de comentarios con búsqueda, recuento de uso y selección múltiple.*<br><br>
+![Editar comentario](images/screenshots/v3.4-10-a-modify-comment.png)<br>*Edita un comentario en todas las transacciones que lo usan.*<br><br>
+![Ajustes](images/screenshots/v3.4-11-settings.png)<br>*Ajustes: Apariencia, Regional, Personalización y Datos.*<br><br>
+![Ajustes de apariencia](images/screenshots/v3.4-11-a-appearance.png)<br>*Apariencia: tema, tamaño de texto y formas de iconos.*<br><br>
+![Ajustes regionales](images/screenshots/v3.4-11-b-regional-en.png)<br>*Ajustes regionales: idioma, moneda, separador decimal y primer día de la semana.*<br><br>
+![Ajustes de personalización](images/screenshots/v3.4-11-c-personalization.png)<br>*Personalización: valores predeterminados de inicio y de añadir transacción, y privacidad.*<br><br>
+![Ajustes de datos](images/screenshots/v3.4-11-d-data.png)<br>*Datos: exportación/importación de copia de seguridad y acciones de borrado/reinicio.*<br><br>
 
 ## Stack tecnológico
 
@@ -105,11 +119,13 @@ Esto inicia Metro Bundler. Después:
 | `npm test` | Ejecuta la suite de Vitest |
 | `npm run test:watch` | Ejecuta Vitest en modo watch |
 | `npm run test:all` | typecheck + lint + tests (la verificación local completa) |
+| `npm run lint:fix` | Corrige automáticamente los problemas de lint/formato (sangría, comillas, comas finales, salto de línea final) |
+| `npm run i18n` | Añade, actualiza, elimina o lista claves de traducción en los 9 idiomas |
 
 ### Pruebas
 
 - **Unitarias / integración** — Vitest. La suite cubre los repositorios de base de datos en ambos backends SQLite (nativo + sql.js), los round-trips de copia de seguridad y los componentes renderizados con `@testing-library/react-native`.
-- **E2E nativas** — los flujos de Maestro en `FinlyApp/.maestro/` (10 flujos + helpers) se ejecutan contra el APK de depuración en un emulador de Android; ver `docs/harnesses.md`.
+- **E2E nativas** — los flujos de Maestro en `FinlyApp/.maestro/` (15 flujos + helpers) se ejecutan contra el APK de depuración en un emulador de Android; ver `docs/harnesses.md`.
 - **Verificación web** — los criterios de aceptación de cada función se verifican en un navegador real a 375px con Playwright.
 - El pipeline de CI (`.github/workflows/ci.yml`) ejecuta el gate completo `npm run test:all` en cada push y pull request de `develop` y `main`.
 
@@ -135,7 +151,7 @@ FinlyApp/
 ### Base de datos
 
 - Una única interfaz de motor (`DatabaseHandle`) en todas las plataformas: expo-sqlite en nativo, sql.js (WASM) con persistencia en IndexedDB en web.
-- Las migraciones se versionan con `PRAGMA user_version` (`001_initial`, `002_seed`, `003_config`) y se aplican una sola vez, dentro de una transacción.
+- Las migraciones se versionan con `PRAGMA user_version` (`001_initial`, `002_seed`, `003_config`, `004_recurring`) y se aplican una sola vez, dentro de una transacción.
 - Los repositorios están escritos con Drizzle ORM sobre el manejo compartido; las filas almacenadas se validan con esquemas Zod.
 - En web, los bytes SQLite exportados se persisten en IndexedDB, así que los mismos datos sobreviven a las recargas.
 

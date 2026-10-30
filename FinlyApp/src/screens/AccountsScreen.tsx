@@ -1,40 +1,45 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View, Text, FlatList, StyleSheet,
 } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useBalanceVisibility } from '../hooks/useBalanceVisibility';
+import { useSortPreference } from '../hooks/useSortPreference';
 import { useSelectAndSearch } from '../hooks/useSelectAndSearch';
 import { useSelectableScreen } from '../hooks/useSelectableScreen';
+import { useBulkDelete } from '../hooks/useBulkDelete';
 import { useApp } from '../context/AppContext';
 import { t, getDisplayAccountName, getDisplayAccountDescription } from '../i18n';
 import { accountRepository } from '../database';
 import { sanitizeDefaultAccounts } from '../database/configDefaults';
-import { ERROR_PREFIXES, runWithErrorAlert, showErrorAlert } from '../utils/errors';
+import { ERROR_PREFIXES, showErrorAlert } from '../utils/errors';
 import { isTotalAccount } from '../database/helpers';
-import type { Account } from '../database/types';
 import { formatAmount, formatSignedCurrency, HIDDEN_BALANCE } from '../utils/formatters';
 import { withAlpha } from '../utils/color';
 import { badgeShapeFor } from '../utils/badgeShape';
 import { matchesAccountSearch } from '../utils/accountSearch';
 import { type NavigationProp, USER_ID } from '../constants/types';
+import { TEST_IDS } from '../constants/testIds';
 import { LIST_BOTTOM_FAB_PADDING } from '../constants/layout';
 import EyeToggle from '../components/EyeToggle';
 import Fab from '../components/Fab';
 import EmptyState from '../components/EmptyState';
+import ListOrEmpty from '../components/ListOrEmpty';
 import ListItemRow from '../components/ListItemRow';
+import SelectionCheckbox from '../components/SelectionCheckbox';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 import SelectionActionBar from '../components/SelectionActionBar';
-import ConfirmationModal from '../components/ConfirmationModal';
+import SelectAllRow from '../components/SelectAllRow';
+import SortRow from '../components/SortRow';
+import SortToggle, { accountSortFields } from '../components/SortToggle';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import GuardModal from '../components/GuardModal';
 import { CARD_BORDER_RADIUS } from '../components/componentStyles';
-
-type AccountWithBalance = Account & { balance: number };
+import { defaultAccountSortDirection, sortAccounts, type AccountWithBalance } from '../utils/accountSort';
 
 export default function AccountsScreen() {
   const { activeColors: c, config, updateConfig } = useConfig();
@@ -46,11 +51,13 @@ export default function AccountsScreen() {
   const [accounts, setAccounts] = useState<AccountWithBalance[]>([]);
   const [total, setTotal] = useState(0);
   const [guardVisible, setGuardVisible] = useState(false);
+  const sortBy = config.accountsSortBy;
+  const sortDirection = config.accountsSortDirection;
   const { isBalanceHidden, toggleReveal } = useBalanceVisibility(config.hideBalances);
 
   const nonTotalCount = useMemo(
     () => accounts.filter(a => !isTotalAccount(a)).length,
-    [accounts]
+    [accounts],
   );
 
   const select = useSelectAndSearch({ hasItems: nonTotalCount > 1 });
@@ -58,7 +65,7 @@ export default function AccountsScreen() {
   const {
     searchActive, searchText, setSearchText,
     selectMode, selectedIds,
-    deleteModalVisible, setDeleteModalVisible, toggleItem, exitSelectMode,
+    toggleItem, reconcileSelection, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
   } = select;
 
@@ -78,7 +85,7 @@ export default function AccountsScreen() {
   const loadData = useCallback(async (): Promise<{ accounts: AccountWithBalance[]; total: number }> => {
     const list = await accountRepository.list(USER_ID);
     const balanceById = new Map(
-      (await accountRepository.getBalances()).map(b => [b.account_id, b.balance])
+      (await accountRepository.getBalances()).map(b => [b.account_id, b.balance]),
     );
     const withBalance = list.map((account) => {
       if (isTotalAccount(account)) return { ...account, balance: 0 };
@@ -99,7 +106,7 @@ export default function AccountsScreen() {
         setTotal(total);
       }).catch(() => showErrorAlert());
       return () => { active = false; };
-    }, [loadData])
+    }, [loadData]),
   );
 
   const filteredAccounts = useMemo(() => {
@@ -107,33 +114,72 @@ export default function AccountsScreen() {
     return accounts.filter(a => isTotalAccount(a) || matchesAccountSearch(a, searchText));
   }, [accounts, searchText]);
 
+  // No memo: display names are localized, so the order must refresh with the language.
+  const visibleAccounts = sortAccounts(filteredAccounts, sortBy, sortDirection);
+
+  const visibleIds = useMemo(
+    () => visibleAccounts.filter(a => !isTotalAccount(a)).map(a => a.id),
+    [visibleAccounts],
+  );
+
+  useEffect(() => {
+    reconcileSelection(visibleIds);
+  }, [visibleIds, reconcileSelection]);
+
+  const { handleToggleSort, handleToggleDirection } = useSortPreference({
+    sortBy,
+    sortDirection,
+    defaultDirection: defaultAccountSortDirection,
+    onChange: next => updateConfig({ accountsSortBy: next.by, accountsSortDirection: next.direction }),
+  });
+
+  const deleteAccounts = useCallback(async (ids: number[]) => {
+    await accountRepository.deleteMany(ids);
+
+    const deleted = new Set(ids);
+    const remaining = accounts.filter(a => !deleted.has(a.id));
+    const updates = sanitizeDefaultAccounts(config, remaining);
+    if (Object.keys(updates).length > 0) {
+      await updateConfig(updates);
+    }
+  }, [accounts, config, updateConfig]);
+
+  const afterBulkDelete = useCallback(async () => {
+    const { accounts: updated, total: newTotal } = await loadData();
+    setAccounts(updated);
+    setTotal(newTotal);
+    await refreshAccounts();
+    refresh();
+  }, [loadData, refreshAccounts, refresh]);
+
+  const {
+    deleteModalVisible, busy: bulkDeleting, openDeleteModal, closeDeleteModal, confirmBulkDelete,
+  } = useBulkDelete({
+    selectedIds,
+    visibleIds,
+    exitSelectMode,
+    deleteFn: deleteAccounts,
+    afterDelete: afterBulkDelete,
+    errorPrefix: ERROR_PREFIXES.accountsDelete,
+  });
+
   const handleDeletePress = useCallback(() => {
     if (selectedIds.size >= nonTotalCount) {
       setGuardVisible(true);
       return;
     }
-    setDeleteModalVisible(true);
-  }, [selectedIds.size, nonTotalCount, setDeleteModalVisible]);
+    openDeleteModal();
+  }, [selectedIds.size, nonTotalCount, openDeleteModal]);
 
-  const handleBulkDelete = useCallback(async () => {
-    setDeleteModalVisible(false);
-    await runWithErrorAlert(async () => {
-      await accountRepository.deleteMany([...selectedIds]);
-
-      const remaining = accounts.filter(a => !selectedIds.has(a.id));
-      const updates = sanitizeDefaultAccounts(config, remaining);
-      if (Object.keys(updates).length > 0) {
-        updateConfig(updates);
-      }
-
-      exitSelectMode();
-      const { accounts: updated, total: newTotal } = await loadData();
-      setAccounts(updated);
-      setTotal(newTotal);
-      await refreshAccounts();
-      refresh();
-    }, ERROR_PREFIXES.accountsDelete);
-  }, [selectedIds, config, accounts, exitSelectMode, loadData, refreshAccounts, refresh, updateConfig, setDeleteModalVisible]);
+  const handleBulkDelete = useCallback(() => {
+    const visible = new Set(visibleIds);
+    const ids = [...selectedIds].filter(id => visible.has(id));
+    if (ids.length === 0) {
+      closeDeleteModal();
+      return;
+    }
+    confirmBulkDelete();
+  }, [selectedIds, visibleIds, closeDeleteModal, confirmBulkDelete]);
 
   const renderItem = useCallback(({ item }: { item: AccountWithBalance }) => {
     const isTotal = isTotalAccount(item);
@@ -145,6 +191,7 @@ export default function AccountsScreen() {
           title={getDisplayAccountName(item)}
           titleSize={15}
           subtitle={item.description ? getDisplayAccountDescription(item) : undefined}
+          subtitleLines={3}
           icon={item.icon}
           color={item.color}
           shape={badgeShapeFor(config, 'account')}
@@ -152,28 +199,22 @@ export default function AccountsScreen() {
           badgeIconSize={24}
           badgeRadius={12}
           badgeAlpha={13}
+          accessibilityState={selectMode && selectable ? { selected } : undefined}
+          leading={selectMode && selectable ? <SelectionCheckbox selected={selected} /> : undefined}
           right={
-            selectMode && selectable ? (
-              <Ionicons
-                name={selected ? 'checkbox' : 'square-outline'}
-                size={24}
-                color={selected ? c.primary : c.textSecondary}
-              />
-            ) : (
-              <Text
-                style={[
-                  styles.accountBalance,
-                  {
-                    color: isBalanceHidden ? c.textSecondary : (item.balance >= 0 ? c.green : c.red),
-                    fontSize: fs(15),
-                  },
-                ]}
-              >
-                {isBalanceHidden
-                  ? HIDDEN_BALANCE
-                  : formatSignedCurrency(item.balance, config.currency, config.decimalSeparator)}
-              </Text>
-            )
+            <Text
+              style={[
+                styles.accountBalance,
+                {
+                  color: isBalanceHidden ? c.textSecondary : (item.balance >= 0 ? c.green : c.red),
+                  fontSize: fs(15),
+                },
+              ]}
+            >
+              {isBalanceHidden
+                ? HIDDEN_BALANCE
+                : formatSignedCurrency(item.balance, config.currency, config.decimalSeparator)}
+            </Text>
           }
           style={[
             styles.accountRow,
@@ -206,29 +247,29 @@ export default function AccountsScreen() {
 
   return (
     <ScreenShell>
-      {!selectMode && (
-        <View style={[styles.totalSection, { backgroundColor: c.surface, borderBottomColor: c.border }]}>
-          <Text style={[styles.totalLabel, { color: c.textSecondary, fontSize: fs(14) }]}>
-            {labels.accounts_total}:
+      {/* Stays visible while selecting: the Select-all row is inserted below it,
+          like every other list screen keeps its header block. */}
+      <View style={[styles.totalSection, { backgroundColor: c.surface, borderBottomColor: c.border }]}>
+        <Text style={[styles.totalLabel, { color: c.textSecondary, fontSize: fs(14) }]}>
+          {labels.accounts_total}:
+        </Text>
+        <View style={styles.totalRow}>
+          <Text
+            style={[
+              styles.totalValue,
+              {
+                color: isBalanceHidden ? c.textSecondary : (total >= 0 ? c.green : c.red),
+                fontSize: fs(22),
+              },
+            ]}
+          >
+            {isBalanceHidden
+              ? HIDDEN_BALANCE
+              : formatSignedCurrency(total, config.currency, config.decimalSeparator)}
           </Text>
-          <View style={styles.totalRow}>
-            <Text
-              style={[
-                styles.totalValue,
-                {
-                  color: isBalanceHidden ? c.textSecondary : (total >= 0 ? c.green : c.red),
-                  fontSize: fs(22),
-                },
-              ]}
-            >
-              {isBalanceHidden
-                ? HIDDEN_BALANCE
-                : formatSignedCurrency(total, config.currency, config.decimalSeparator)}
-            </Text>
-            <EyeToggle isHidden={isBalanceHidden} onToggle={toggleReveal} color={c.textSecondary} />
-          </View>
+          <EyeToggle isHidden={isBalanceHidden} onToggle={toggleReveal} color={c.textSecondary} />
         </View>
-      )}
+      </View>
 
       <ScreenSearchBar
         visible={searchActive}
@@ -238,14 +279,36 @@ export default function AccountsScreen() {
         onClose={closeSearch}
       />
 
-      <FlatList
-        data={filteredAccounts}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={renderItem}
-        ListEmptyComponent={renderEmpty}
-        ListFooterComponent={searchingNoResults ? renderSearchFooter : null}
-        contentContainerStyle={filteredAccounts.length === 0 ? styles.emptyList : styles.list}
-      />
+      <SortRow bordered>
+        <SortToggle
+          fields={accountSortFields(labels)}
+          sortBy={sortBy}
+          direction={sortDirection}
+          onToggleSort={handleToggleSort}
+          onToggleDirection={handleToggleDirection}
+        />
+      </SortRow>
+
+      {selectMode && visibleIds.length > 0 && (
+        <SelectAllRow
+          allSelected={select.allSelected(visibleIds)}
+          countLabel={labels.items_count(visibleIds.length)}
+          selectAllLabel={labels.select_all}
+          deselectAllLabel={labels.deselect_all}
+          onToggle={() => select.toggleSelectAll(visibleIds)}
+        />
+      )}
+
+      <ListOrEmpty empty={visibleAccounts.length === 0} emptyState={renderEmpty()}>
+        <FlatList
+          testID={TEST_IDS.accountsList}
+          data={visibleAccounts}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={renderItem}
+          ListFooterComponent={searchingNoResults ? renderSearchFooter : null}
+          contentContainerStyle={styles.list}
+        />
+      </ListOrEmpty>
 
       {selectMode ? (
         <SelectionActionBar
@@ -262,14 +325,13 @@ export default function AccountsScreen() {
         />
       )}
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.accounts_bulk_delete_confirm_title(selectedIds.size)}
         message={labels.accounts_bulk_delete_confirm_message}
-        confirmLabel={labels.delete}
-        cancelLabel={labels.cancel}
         onConfirm={handleBulkDelete}
-        onCancel={() => setDeleteModalVisible(false)}
+        onCancel={closeDeleteModal}
+        busy={bulkDeleting}
       />
 
       <GuardModal
@@ -304,9 +366,6 @@ const styles = StyleSheet.create({
   list: {
     padding: 16,
     ...LIST_BOTTOM_FAB_PADDING,
-  },
-  emptyList: {
-    flex: 1,
   },
   accountRow: {
     borderRadius: CARD_BORDER_RADIUS,

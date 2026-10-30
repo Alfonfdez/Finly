@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { integer, primaryKey, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import type { RecurrenceFrequency, TransactionType } from '../../constants/types';
 
 export const users = sqliteTable('users', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -28,7 +29,7 @@ export const categories = sqliteTable('categories', {
   name: text('name').notNull(),
   icon: text('icon').notNull().default('tag'),
   color: text('color').notNull().default('#A78BFA'),
-  type: text('type').notNull(),
+  type: text('type').$type<TransactionType>().notNull(),
   created_at: text('created_at').notNull().default(sql`(datetime('now', 'localtime'))`),
 });
 
@@ -36,14 +37,48 @@ export const transactions = sqliteTable('transactions', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   account_id: integer('account_id').notNull(),
   category_id: integer('category_id').notNull(),
-  type: text('type').notNull(),
+  type: text('type').$type<TransactionType>().notNull(),
   amount: real('amount').notNull(),
   description: text('description'),
   photo: text('photo'),
   date: text('date').notNull(),
   updated_at: text('updated_at'),
   created_at: text('created_at').notNull().default(sql`(datetime('now', 'localtime'))`),
+  recurring_rule_id: integer('recurring_rule_id'),
+  recurrence_date: text('recurrence_date'),
 });
+
+export const recurringRules = sqliteTable('recurring_rules', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  user_id: integer('user_id').notNull(),
+  name: text('name').notNull(),
+  type: text('type').$type<TransactionType>().notNull(),
+  account_id: integer('account_id').notNull(),
+  category_id: integer('category_id').notNull(),
+  amount: real('amount').notNull(),
+  description: text('description'),
+  frequency: text('frequency').$type<RecurrenceFrequency>().notNull(),
+  interval: integer('interval').notNull().default(1),
+  weekday: integer('weekday'),
+  day_of_month: integer('day_of_month'),
+  month: integer('month'),
+  start_date: text('start_date').notNull(),
+  end_date: text('end_date'),
+  next_due: text('next_due').notNull(),
+  skipped_from: text('skipped_from'),
+  active: integer('active').notNull().default(1),
+  created_at: text('created_at').notNull().default(sql`(datetime('now', 'localtime'))`),
+  updated_at: text('updated_at'),
+});
+
+export const recurringRuleTags = sqliteTable(
+  'recurring_rule_tags',
+  {
+    rule_id: integer('rule_id').notNull(),
+    tag_id: integer('tag_id').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.rule_id, table.tag_id] })],
+);
 
 export const tags = sqliteTable('tags', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -58,7 +93,7 @@ export const transactionTags = sqliteTable(
     transaction_id: integer('transaction_id').notNull(),
     tag_id: integer('tag_id').notNull(),
   },
-  (table) => [primaryKey({ columns: [table.transaction_id, table.tag_id] })]
+  (table) => [primaryKey({ columns: [table.transaction_id, table.tag_id] })],
 );
 
 export const config = sqliteTable('config', {

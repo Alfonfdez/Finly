@@ -11,7 +11,7 @@
 
 - The Drawer includes a "Settings" item with `settings-outline` icon.
 - When tapped, it navigates to the `SettingsScreen` within the Stack.
-- The screen has a native back button to return to Home.
+- The screen has a native back button to return to the previous screen; opening Settings from the drawer closes the drawer first.
 - The main settings screen shows a list of subsection rows. Each row is tappable and navigates to a detail screen.
 
 ### 2. Main Settings Screen
@@ -22,7 +22,7 @@ The main screen displays 4 subsection rows:
 |---|------|-------|------|
 | 1 | `color-palette-outline` | Appearance | Theme, Text size, Account icon shape, Category icon shape |
 | 2 | `globe-outline` | Regional | Language, Currency, Decimal separator, First day of week |
-| 3 | `options-outline` | Personalization | Home screen defaults, Add transaction defaults, Privacy |
+| 3 | `options-outline` | Personalization | Home screen defaults, Add/Modify transaction defaults, New/Edit recurring rule defaults, Privacy |
 | 4 | `server-outline` | Data | Delete all transactions, Delete all data, Reset to factory state |
 
 - Each row shows the subsection icon (24px, primary color), label (fs(15), bold), and a chevron-right (`chevron-forward-outline`, textSecondary).
@@ -152,7 +152,7 @@ Subtitle: "Home screen" (multilingual).
 
 #### 5.2 — Add Transaction Defaults
 
-Subtitle: "Add transaction" (multilingual).
+Subtitle: "Add transaction" (the screen title, multilingual).
 
 **Default account:**
 
@@ -174,47 +174,112 @@ Subtitle: "Add transaction" (multilingual).
 | Comments | Checkbox | On | On/Off |
 | Photo | Checkbox | On | On/Off |
 
-- When a checkbox is unchecked, the corresponding section is hidden in both AddTransactionScreen and ModifyTransactionScreen.
+- These flags apply to **AddTransactionScreen only** (the Modify screen has its own, §5.3).
+- When a checkbox is unchecked, the corresponding section is hidden in AddTransactionScreen.
 - When ALL checkboxes are unchecked, only the core fields remain: Type, Amount, Account, Category, Date.
-- **Acceptance:** unchecking "Comments" → the CommentInput section disappears from AddTransactionScreen and ModifyTransactionScreen.
+- **Acceptance:** unchecking "Comments" → the CommentInput section disappears from AddTransactionScreen but stays in ModifyTransactionScreen.
 
-#### 5.3 — Privacy
+#### 5.3 — Modify Transaction Defaults
 
-Subtitle: "Privacy" (multilingual).
+Subtitle: "Modify transaction" (the screen title, multilingual).
 
-**Hide account balances:**
+- **No Default account:** editing keeps the account stored on the transaction (same for recurring-generated transactions, which are edited on this screen).
+
+**Optional fields:**
 
 | Option | Type | Default | Values |
 |--------|------|---------|--------|
-| Hide account balances | Toggle | Off | On/Off |
+| Labels | Checkbox | On | On/Off |
+| Comments | Checkbox | On | On/Off |
+| Photo | Checkbox | On | On/Off |
 
-- **Off (default):** account balances are visible across the app.
-- **On:** account balances are masked with `•••••` across the app.
+- These flags apply to **ModifyTransactionScreen only**, independently of the Add flags.
+- **Acceptance:** with "Photo" off here and on in §5.2 → ModifyTransactionScreen hides the Photo section while AddTransactionScreen keeps it.
+
+#### 5.4 — New Recurring Rule Defaults
+
+Subtitle: "New recurring rule" (the screen title, multilingual).
+
+**Default account:**
+
+| Option | Type | Default | Values |
+|--------|------|---------|--------|
+| Default account | Picker modal (SettingsPickerRow + OptionPickerModal) | Not selected | Not selected, My Wallet, [other accounts...] |
+
+- Opens a scrollable modal with radio selection via `OptionPickerModal`. Excludes Total, sorted alphabetically.
+- **"Not selected" (default):** the rule form opens with the account active on HomeScreen (if Total, the first non-Total account).
+- **Specific account selected:** always pre-selects that account in CreateRecurringScreen, independently of the Add-transaction default.
+- Editing a rule is unaffected (the rule's own account is used).
+- **Acceptance:** setting "My Wallet" here → open "New recurring rule" → the account is "My Wallet"; changing the Add-transaction default does not affect it.
+
+**Optional fields:**
+
+| Option | Type | Default | Values |
+|--------|------|---------|--------|
+| Labels | Checkbox | On | On/Off |
+| Comments | Checkbox | On | On/Off |
+
+- There is **no Photo option** (a rule has no photo).
+- These flags apply to **CreateRecurringScreen only** (the Edit rule screen has its own, §5.5).
+- **Acceptance:** unchecking "Comments" → the CommentInput section disappears from the new-rule form but stays in the edit-rule form.
+
+#### 5.5 — Edit Recurring Rule Defaults
+
+Subtitle: "Edit recurring rule" (the screen title, multilingual).
+
+- **No Default account:** editing keeps the account stored on the rule.
+
+**Optional fields:**
+
+| Option | Type | Default | Values |
+|--------|------|---------|--------|
+| Labels | Checkbox | On | On/Off |
+| Comments | Checkbox | On | On/Off |
+
+- There is **no Photo option** (a rule has no photo).
+- These flags apply to **ModifyRecurringScreen only**, independently of the new-rule flags.
+- **Acceptance:** with "Comments" off here and on in §5.4 → the edit-rule form hides the Comment section while the new-rule form keeps it.
+
+#### 5.6 — Privacy
+
+Subtitle: "Privacy" (multilingual).
+
+**Hide balances and totals:**
+
+| Option | Type | Default | Values |
+|--------|------|---------|--------|
+| Hide balances and totals | Toggle | Off | On/Off |
+
+- **Off (default):** balances and totals are visible across the app.
+- **On:** every balance and every aggregate total is masked with `•••••` across the app. Individual amounts (transactions, recurring rules) stay visible on purpose - see below.
 
 **Affected screens:**
-- HomeScreen: total balance, income subtotal, and expenses subtotal below account name.
+- HomeScreen: total balance, income subtotal and expenses subtotal below the account name; the donut/bar chart total; each category row total.
 - AccountsScreen: each account balance in the list + total balance in header.
 - AccountModal/AccountSelector: balances in the account list.
+- All transactions: the period total under the account trigger (the net of the filtered transactions, which reads as a balance) plus its own eye icon.
+- Transactions (from Home): the category total for the period in the header plus its own eye icon.
 
-**NOT affected:**
-- TransactionDetailsScreen: amount is shown (it's a specific transaction, not an account balance).
-- AddTransactionScreen / ModifyTransactionScreen: no balance displayed.
+**NOT affected (deliberate):**
+- TransactionDetailsScreen: amount is shown (it's a specific transaction, not a balance or a total).
+- Transaction amounts in the list rows (`TransactionGroup`) and the recurring-rule amounts (`RecurringRow`): these are the individual records the user is browsing, not totals.
+- AddTransactionScreen / ModifyTransactionScreen: no balance displayed, and the amount input must stay readable while typing.
 
-**Hidden balance styling:**
-- Masked balances display `•••••` in `textSecondary` (gray) color, with no `+`/`-` sign.
+**Hidden value styling:**
+- Masked values display `•••••` in `textSecondary` (gray) color, with no `+`/`-` sign.
 - This avoids leaking positive/negative hints about the balance value.
 
 **Eye icon behavior:**
 
-An eye icon appears next to every masked balance. The icon represents the current privacy mode state:
+An eye icon appears next to every masked value. The icon represents the current privacy mode state:
 
-| Setting | Balances | Default icon | Icon meaning |
+| Setting | Values | Default icon | Icon meaning |
 |---|---|---|---|
 | Off | Visible | `eye-off-outline` | "Privacy off, tap to temporarily hide" |
 | On | Hidden (`•••••`) | `eye-outline` | "Privacy on, tap to temporarily reveal" |
 
 **Tap behavior (symmetric for both settings):**
-- Tap the eye icon → toggles visibility of ALL balances on the current screen.
+- Tap the eye icon → toggles visibility of ALL balances and totals on the current screen.
 - Icon changes to the opposite state (eye ↔ eye-off).
 - The reveal/hide is **temporary** — it resets to the setting default when navigating away and coming back.
 - **No timer** — the visibility persists until the user navigates away or taps the eye again.
@@ -225,7 +290,7 @@ An eye icon appears next to every masked balance. The icon represents the curren
 3. Navigate to AccountsScreen → balances hidden again (reset to setting).
 4. Navigate back to HomeScreen → balances hidden again (reset to setting).
 
-**Implementation:** each screen manages local `isRevealed` state via `useState`. State resets on screen focus via `useFocusEffect` (screens) or `useEffect` on `visible` change (modals). The `isBalanceHidden` derived value is `config.hideBalances !== isRevealed`.
+**Implementation:** each screen manages local `isRevealed` state via `useState` (`hooks/useBalanceVisibility.ts`). State resets on screen focus via `useFocusEffect` (screens) or `useEffect` on `visible` change (modals), and also when the setting itself changes, so the new setting applies its own default. The `isBalanceHidden` derived value is `config.hideBalances !== isRevealed`.
 
 ### 6. Data Subsection
 
@@ -234,29 +299,38 @@ An eye icon appears next to every masked balance. The icon represents the curren
 
 #### 6.1 — Delete all transactions
 
-- Row with icon `trash-outline` (red), label "Delete all transactions" (multilingual), and chevron-right.
-- Tapping opens a **confirmation modal**:
+- Row with icon `trash-outline` (red), label "Delete all transactions" (multilingual), description "Removes all transactions. Accounts, categories, tags, and recurring rules are kept." (multilingual), and chevron-right.
+- Tapping opens a **first confirmation modal**:
 
-**Modal — "Delete all transactions?"**
+**Modal 1 — "Delete all transactions?"**
 - Title: "Delete all transactions?" (multilingual).
-- Message: "All transaction history will be permanently deleted. Accounts, categories, and tags are kept." (multilingual).
+- Message: "All transaction history will be permanently deleted. Accounts, categories, tags, and recurring rules are kept." (multilingual).
 - Buttons: "Cancel" (neutral) and "Delete" (red).
 - When tapping "Cancel": modal closes.
+- When tapping "Delete": opens a **second confirmation modal**.
+
+**Modal 2 — "Are you sure?"**
+- Title: "Are you sure?" (multilingual).
+- Message: "Type DELETE to confirm" (multilingual).
+- Text input: placeholder "Type DELETE here" (multilingual). Only the word "DELETE" (case-insensitive) enables the confirm button.
+- Buttons: "Cancel" (neutral) and "Delete" (red, disabled until correct text is typed).
+- When tapping "Cancel": both modals close.
 - When tapping "Delete":
   1. All rows from `transactions` table are deleted.
   2. All rows from `transaction_tags` junction table are deleted (cleanup).
-  3. AppContext state is refreshed via `resetAll()` so all screens reflect changes immediately.
-  4. Modal closes.
-  5. An error alert is shown only if deletion fails.
+  3. **Recurring rules are kept** (`recurring_rules` + `recurring_rule_tags` are not touched) — they are managed separately from the Recurring screen or removed by "Delete all data".
+  4. AppContext state is refreshed via `resetAll()` so all screens reflect changes immediately.
+  5. Both modals close.
+  6. An error alert is shown only if deletion fails.
 
 #### 6.2 — Delete all data
 
-- Row with icon `warning-outline` (red), label "Delete all data" (multilingual), description "Deletes all accounts, categories, tags, and transactions. Your settings are kept." (multilingual), and chevron-right.
+- Row with icon `warning-outline` (red), label "Delete all data" (multilingual), description "Deletes all accounts, categories, tags, transactions, and recurring rules. Your settings are kept." (multilingual), and chevron-right.
 - Tapping opens a **first confirmation modal**:
 
 **Modal 1 — "Delete all data?"**
 - Title: "Delete all data?" (multilingual).
-- Message: "All accounts, categories, tags, and transactions will be permanently deleted. Your settings (language, theme, currency, and defaults) are kept. This cannot be undone." (multilingual).
+- Message: "All accounts, categories, tags, transactions, and recurring rules will be permanently deleted. Your settings (language, theme, currency, and defaults) are kept. This cannot be undone." (multilingual).
 - Buttons: "Cancel" (neutral) and "Delete all" (red).
 - When tapping "Cancel": modal closes.
 - When tapping "Delete all": opens a **second confirmation modal**.
@@ -265,17 +339,16 @@ An eye icon appears next to every masked balance. The icon represents the curren
 - Title: "Are you sure?" (multilingual).
 - Message: "Type DELETE to confirm" (multilingual).
 - Text input: placeholder "Type DELETE here" (multilingual). Only the word "DELETE" (case-insensitive) enables the confirm button.
-- Buttons: "Cancel" (neutral) and "Confirm" (red, disabled until correct text is typed).
+- Buttons: "Cancel" (neutral) and "Delete all" (red, disabled until correct text is typed).
 - When tapping "Cancel": both modals close.
-- When tapping "Confirm":
-  1. All data is cleared (transactions, transaction_tags, accounts, categories, tags).
+- When tapping "Delete all":
+  1. All data is cleared (transactions, transaction_tags, recurring_rules, recurring_rule_tags, accounts, categories, tags).
   2. Default data is re-seeded: My Wallet, Total, 31 categories, 4 tags.
   3. The `config` table is **preserved**: language, theme, currency and all other settings are kept.
   4. `home_default_account_id` / `add_default_account_id` fall back to "null" **only** when the referenced account no longer exists after the wipe (e.g. a custom account). Defaults referencing surviving seed accounts (e.g. "My Wallet") are kept.
   5. AppContext state is fully refreshed via `resetAll()`, re-applying home defaults from config.
   6. Both modals close.
   7. All screens reflect the fresh seed state immediately.
-  8. An alert dialog confirms: "All data deleted. App reset to factory state." (multilingual).
 
 #### 6.3 — Reset to factory state
 
@@ -284,7 +357,7 @@ An eye icon appears next to every masked balance. The icon represents the curren
 
 **Modal 1 — "Reset to factory state?"**
 - Title: "Reset to factory state?" (multilingual).
-- Message: "This will reset the app to factory state. All accounts, categories, tags, transactions, and settings will be deleted and returned to their defaults. This cannot be undone." (multilingual).
+- Message: "This will reset the app to factory state. All accounts, categories, tags, transactions, recurring rules, and settings will be deleted and returned to their defaults. This cannot be undone." (multilingual).
 - Buttons: "Cancel" (neutral) and "Reset" (red).
 - When tapping "Cancel": modal closes.
 - When tapping "Reset": opens a **second confirmation modal**.
@@ -293,10 +366,10 @@ An eye icon appears next to every masked balance. The icon represents the curren
 - Title: "Are you sure?" (multilingual).
 - Message: "Type DELETE to confirm" (multilingual).
 - Text input: placeholder "Type DELETE here" (multilingual). Only the word "DELETE" (case-insensitive) enables the confirm button.
-- Buttons: "Cancel" (neutral) and "Confirm" (red, disabled until correct text is typed).
+- Buttons: "Cancel" (neutral) and "Reset" (red, disabled until correct text is typed).
 - When tapping "Cancel": both modals close.
-- When tapping "Confirm":
-  1. All data is cleared (transactions, transaction_tags, accounts, categories, tags).
+- When tapping "Reset":
+  1. All data is cleared (transactions, transaction_tags, recurring_rules, recurring_rule_tags, accounts, categories, tags).
   2. The `config` table is cleared and re-seeded with default values: language English, dark theme, EUR, comma separator, Monday, and all default account/period settings.
   3. Default data is re-seeded: My Wallet, Total, 31 categories, 4 tags.
   4. AppContext state is fully refreshed via `resetAll()`, re-applying home defaults from config.
@@ -353,25 +426,46 @@ An eye icon appears next to every masked balance. The icon represents the curren
 - [x] Selecting a specific account always pre-selects it in AddTransactionScreen.
 - [x] Deleting the account set as Add Transaction default resets to "Not selected".
 - [x] Optional fields: 3 checkboxes (Labels, Comments, Photo), all checked by default.
-- [x] Unchecking a field hides the corresponding section in AddTransactionScreen and ModifyTransactionScreen.
+- [x] Unchecking a field hides the corresponding section in AddTransactionScreen only.
+
+### Personalization — Modify Transaction
+- [x] No Default account option (the transaction's own account is kept when editing).
+- [x] Optional fields: 3 checkboxes (Labels, Comments, Photo), all checked by default.
+- [x] Unchecking a field hides the corresponding section in ModifyTransactionScreen only, independently of the Add flags.
+
+### Personalization — New Recurring Rule
+- [x] Default account selector excludes Total. Default is "Not selected".
+- [x] "Not selected" opens the rule form with the HomeScreen active account (if Total, the first non-Total).
+- [x] Selecting a specific account pre-selects it in CreateRecurringScreen, independent of the Add-transaction default.
+- [x] Deleting the account set as New Recurring Rule default resets to "Not selected".
+- [x] Optional fields: 2 checkboxes (Labels, Comments), both checked by default; no Photo option.
+- [x] Unchecking a field hides the corresponding section in CreateRecurringScreen only.
+
+### Personalization — Edit Recurring Rule
+- [x] No Default account option (the rule's own account is kept when editing).
+- [x] Optional fields: 2 checkboxes (Labels, Comments), both checked by default; no Photo option.
+- [x] Unchecking a field hides the corresponding section in ModifyRecurringScreen only, independently of the new-rule flags.
 
 ### Personalization — Privacy
-- [x] Hide account balances toggle (default: off).
+- [x] Hide balances and totals toggle (default: off).
 - [x] When on, total balance, income subtotal, and expenses subtotal show `•••••` on HomeScreen.
+- [x] When on, the Home donut/bar chart total and every category row total are masked too.
 - [x] When on, balances show `•••••` on AccountsScreen and AccountModal.
-- [x] Hidden balances use gray (`textSecondary`) color with no `+`/`-` sign.
-- [x] Eye icon appears next to masked balances.
-- [x] Tapping eye temporarily reveals/hides ALL balances on screen.
+- [x] When on, the All transactions period total and the Transactions category total are masked, each with its own eye icon.
+- [x] Individual amounts stay visible when the setting is on: transaction rows, transaction details and recurring-rule amounts.
+- [x] Hidden values use gray (`textSecondary`) color with no `+`/`-` sign.
+- [x] Eye icon appears next to masked balances and totals.
+- [x] Tapping eye temporarily reveals/hides ALL balances and totals on screen.
 - [x] Visibility resets to setting default when navigating away and coming back.
 - [x] No timer — visibility persists until manual toggle or navigation.
 
 ### Data
-- [x] "Delete all transactions" row opens a single confirmation modal.
-- [x] Confirming deletes all transactions and transaction_tags, not accounts/categories/tags.
+- [x] "Delete all transactions" row opens a double confirmation modal (second requires typing "DELETE").
+- [x] Confirming deletes all transactions and transaction_tags, not accounts, categories, tags, or recurring rules.
 - [x] After deletion, all screens (HomeScreen, AccountsScreen, etc.) reflect updated data immediately via `resetAll()`.
 - [x] Each destructive row shows a short description of what it deletes/keeps.
 - [x] "Delete all data" row opens a double confirmation modal (second requires typing "DELETE").
-- [x] Confirming "Delete all data" deletes all data, re-seeds seed data, and keeps settings (language, theme, currency, and other config).
+- [x] Confirming "Delete all data" deletes all data (including recurring rules), re-seeds seed data, and keeps settings (language, theme, currency, and other config).
 - [x] After "Delete all data", default-account settings fall back to Total/"Not selected" only when the referenced account no longer exists; defaults referencing surviving accounts (e.g. "My Wallet") are kept.
 - [x] "Reset to factory state" row opens a double confirmation modal (second requires typing "DELETE").
 - [x] Confirming "Reset to factory state" deletes all data and re-seeds config to defaults (language English, dark theme, etc.).

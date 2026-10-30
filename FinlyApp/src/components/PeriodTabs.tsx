@@ -31,6 +31,8 @@ export default function PeriodTabs({ active, onChange }: Props) {
           key={p.key}
           style={[styles.tab, { backgroundColor: active === p.key ? c.primary : c.surface }]}
           onPress={() => onChange(p.key)}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: active === p.key }}
           accessibilityLabel={`${labels.a11y_period} ${p.label}`}
         >
           <Text style={{ color: active === p.key ? c.background : c.textSecondary, fontWeight: active === p.key ? '700' : '600', fontSize: fs(13) }}>{p.label}</Text>

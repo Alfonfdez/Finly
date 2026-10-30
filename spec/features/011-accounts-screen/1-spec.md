@@ -1,7 +1,7 @@
 # 011 — Accounts page
 
 - **Objective**
-  Screen accessible from the Drawer (hamburger menu) that displays all existing accounts with their balance and allows navigation to modify each account. All texts are multilingual (en/es/ca).
+  Screen accessible from the Drawer (hamburger menu) that displays all existing accounts with their balance and allows navigation to modify each account. All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it).
 
 ---
 
@@ -25,7 +25,7 @@
 - The Total account always appears **first** in the list (sorted by `is_total DESC, name`).
 - Each row contains:
   - **First row** (always visible): account icon with its background color on the left, account name in the center, current balance formatted with the active currency on the right.
-  - **Second row** (only if the account has a note): note text below the name, in `textoSuave` color and reduced size, spanning the available width.
+  - **Second row** (only if the account has a note): note text below the name, in `textoSuave` color and reduced size, spanning the available width; it shows up to **3 lines** and then ellipsizes.
 - The full row is a `TouchableOpacity` that navigates to `ModifyAccountScreen` (012) with `accountId` as a parameter when pressed.
 - If there are no accounts (except the Total account), an empty state is shown with an icon and message. The Total account is always present in the seed data.
 
@@ -49,7 +49,15 @@
 - Closing the search bar restores the full list.
 - When a search yields no results, the empty state shows "No results found" (multilingual) with a search icon.
 
-### 5. Floating "+" button
+### 5. Sort
+
+- A `SortToggle` sits in a `SortRow` below the search controls with two fields: **Name** (`accounts_sort_name`, default, ascending) and **Balance** (`accounts_sort_balance`, descending on the first press).
+- Pressing the active field flips the direction; the arrow next to it flips it too.
+- Sorting applies to the real accounts (including the searched subset); the **Total account always stays first** because it is an aggregate, not a real account.
+- Ties break by display name (`getDisplayAccountName`), then id.
+- The chosen field and direction are **remembered** (`accountsSortBy` / `accountsSortDirection` in the `config` table) and restored on the next visit and after restarting the app.
+
+### 6. Floating "+" button
 
 - Floating button (FAB) centered at the bottom with `Ionicons "add"` icon.
 - When pressed, navigates to `CreateAccountScreen` (013) to create a new account.
@@ -57,21 +65,22 @@
 - Position: `position: absolute`, `bottom: 56`, `alignSelf: 'center'`.
 - It overlays on top of the account list.
 
-### 6. Persistence
+### 7. Persistence
 
 - Accounts are loaded from `accountRepository.list()` with the active user.
 - Balances are obtained with `accountRepository.getCurrentBalance()`.
 - **Refresh after mutations**: after creating or modifying an account (013 and 012), `refreshAccounts()` from `AppContext` must be invoked so the account list in HomeScreen (AccountModal) updates immediately.
 
-### 7. Multi-select bulk delete
+### 8. Multi-select bulk delete
 
 - The header shows a "Select" (`accounts_select`) text button next to the search icon; pressing it toggles selection mode (label switches to "Done", `accounts_select_done`).
 - When there are 0 accounts (excluding Total), the header Select button is hidden.
-- In selection mode each account row shows a leading checkbox (`checkbox-outline` unchecked / `checkbox` checked in primary color); tapping a row toggles its selection instead of navigating to ModifyAccountScreen.
+- In selection mode each account row shows a leading checkbox (`checkbox-outline` unchecked / `checkbox` checked in primary color); tapping a row or its checkbox toggles its selection instead of navigating to ModifyAccountScreen. The balance stays visible on the right.
 - The Total account row cannot be selected (no checkbox shown).
-- The header search and search filtering keep working during selection mode; selection applies to the filtered list.
+- The header search and search filtering keep working during selection mode; selection applies to the filtered list. When a search change hides selected accounts, those IDs are pruned from the selection, and bulk delete only ever deletes currently visible selected accounts.
 - The floating "+" button is hidden in selection mode.
 - A bottom `SelectionActionBar` with "Cancel" and "Delete (N)" (`accounts_bulk_delete(n)`) appears; the delete button is disabled while no accounts are selected.
+- A **Select all** / **Deselect all** row sits above the list in selection mode (`select_all` / `deselect_all`, with the visible count `items_count`); tapping it selects every visible non-Total account in one tap (the Total account is never selected).
 - A guard prevents deleting ALL non-Total accounts: if the selection includes every non-Total account, a modal warns the user and the delete is blocked (at least one non-Total account must remain).
 - Deleting opens a single `ConfirmationModal`: `Delete N accounts?` (`accounts_bulk_delete_confirm_title(n)`) with message "All transactions linked to the selected accounts will also be deleted. This cannot be undone." (`accounts_bulk_delete_confirm_message`) and Cancel / Delete buttons.
 - On confirm: for each selected account, `transactionRepository.deleteByAccountId(id)` deletes linked transactions, then `accountRepository.deleteMany(ids)` deletes the accounts; selection and selection mode reset, and the list reloads.
@@ -84,7 +93,7 @@
 - **Configuration**: use `useConfig().activeColors` for colors.
 - **Text**: use `useFontSize()` for scaling.
 - **Navigation**: add to `HomeStack` in `AppNavigator.tsx` and connect the "Accounts" `DrawerItem` to navigate to it.
-- **Persistence**: data from `accountRepository` (native SQLite / web localStorage).
+- **Persistence**: data from `accountRepository` (native SQLite, sql.js + IndexedDB on web).
 - **Monetary format**: all amounts are displayed with a maximum of 2 decimals using `formatCurrency()`.
 
 ---
@@ -95,11 +104,12 @@
 - [x] The header shows a hamburger menu button and the title "Accounts" in the active language.
 - [x] "Total:" is displayed with the total balance of all accounts, green if >= 0, red if < 0, with a maximum of 2 decimals.
 - [x] Each account shows an icon with background color + name + formatted balance.
-- [x] If the account has a note (description), it is displayed below the name in a soft color and reduced size.
+- [x] If the account has a note (description), it is displayed below the name in a soft color and reduced size, using up to 3 lines before ellipsizing.
 - [x] Pressing an account navigates to "Modify account" (012) with the `accountId`.
 - [x] If there are no accounts, an empty state is shown.
 - [x] The default account "My Wallet" is displayed translated according to the active language (e.g. es "Mi Cartera", ca "La meva cartera") via `getDisplayAccountName`.
 - [x] The Total account appears first in the accounts list with its icon and total balance.
+- [x] A sort toggle sorts the real accounts by Name (default, ascending) or Balance (descending on the first press); the direction flips when the active field or the arrow is pressed, and the Total account stays first in every mode; the choice is remembered across visits and restarts.
 - [x] A search icon is shown in the header; pressing it toggles a SearchBar.
 - [x] The search matches account display name and description, case-insensitive.
 - [x] Multi-term searches require all terms to match (AND).
@@ -110,9 +120,12 @@
 - [x] The floating "+" button navigates to "Create account" (013).
 - [x] When there are no accounts (excluding Total), the header Select button is hidden.
 - [x] "Select" in the header enters selection mode; account rows show checkboxes and tapping toggles selection instead of navigating.
+- [x] In selection mode the checkbox is the leading element, the balance stays visible, and tapping either the row or the checkbox selects the account.
 - [x] The Total account row cannot be selected in selection mode.
 - [x] The action bar shows `Delete (N)` with the selected count; it is disabled when nothing is selected.
 - [x] A guard prevents deleting all non-Total accounts.
 - [x] Bulk delete confirms once for the whole batch, deletes linked transactions and the accounts, and the list reloads.
+- [x] Search changes prune hidden selections; bulk delete only deletes currently visible selected accounts.
+- [x] A Select all / Deselect all row above the list selects every visible non-Total account in one tap.
 - [x] All texts change when switching language.
 - [x] The screen respects the active theme and text size.

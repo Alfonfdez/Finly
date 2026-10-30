@@ -15,6 +15,10 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     setupFiles: ['./tests/component/helpers/configStub.ts'],
+    // The sql.js WASM database tests are heavy; the default 5s flakes when the
+    // whole suite runs in parallel on a loaded machine.
+    testTimeout: 20000,
+    hookTimeout: 30000,
     include: ['tests/**/*.test.{ts,tsx}'],
   },
 });

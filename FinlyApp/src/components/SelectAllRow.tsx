@@ -1,0 +1,60 @@
+import { Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useConfig } from '../context/ConfigContext';
+import { useFontSize } from '../hooks/useFontSize';
+import { DISABLED_CONTROL_OPACITY } from './componentStyles';
+import SelectionCheckbox from './SelectionCheckbox';
+
+interface Props {
+  allSelected: boolean;
+  countLabel: string;
+  selectAllLabel: string;
+  deselectAllLabel: string;
+  disabled?: boolean;
+  onToggle: () => void;
+}
+
+export default function SelectAllRow({
+  allSelected,
+  countLabel,
+  selectAllLabel,
+  deselectAllLabel,
+  disabled = false,
+  onToggle,
+}: Props) {
+  const { activeColors: c } = useConfig();
+  const fs = useFontSize();
+
+  return (
+    <TouchableOpacity
+      style={[styles.row, { borderBottomColor: c.border, opacity: disabled ? DISABLED_CONTROL_OPACITY : 1 }]}
+      onPress={onToggle}
+      disabled={disabled}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: allSelected, disabled }}
+    >
+      <SelectionCheckbox selected={allSelected} />
+      <Text style={[styles.label, { color: c.text, fontSize: fs(15) }]} numberOfLines={1}>
+        {allSelected ? deselectAllLabel : selectAllLabel}
+      </Text>
+      <Text style={[styles.count, { color: c.textSecondary, fontSize: fs(13) }]}>{countLabel}</Text>
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+  },
+  label: {
+    flex: 1,
+    fontWeight: '600',
+  },
+  count: {
+    fontWeight: '500',
+  },
+});

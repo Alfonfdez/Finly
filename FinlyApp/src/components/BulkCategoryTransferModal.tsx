@@ -9,14 +9,12 @@ import type { Category } from '../database/types';
 import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
 import ListItemRow from './ListItemRow';
-import CategoryTransferModal, { type TransferTargetId } from './CategoryTransferModal';
+import ModalEntitySubject from './ModalEntitySubject';
+import { CategoryTransferBody } from './CategoryTransferModal';
 import ModalFooter from './ModalFooter';
+import { CATEGORY_TRANSFER_TARGETS, type IconName, type TransferTargetId } from '../constants/types';
+import type { BulkCategoryItem } from '../hooks/useCategoryBulkDelete';
 import { WHITE } from '../constants/themes';
-
-export interface BulkCategoryItem {
-  category: Category;
-  count: number;
-}
 
 interface Props {
   visible: boolean;
@@ -50,7 +48,7 @@ export default function BulkCategoryTransferModal({
 
   const decisionLabel = (categoryId: number): string => {
     const decision = decisions[categoryId];
-    if (decision === 'delete') return labels.categories_bulk_move_delete_option;
+    if (decision === CATEGORY_TRANSFER_TARGETS.delete) return labels.categories_bulk_move_delete_option;
     if (decision === null || decision === undefined) return labels.categories_bulk_move_choose;
     const target = targetById.get(decision);
     return target ? getDisplayCategoryName(target) : labels.categories_bulk_move_choose;
@@ -60,87 +58,108 @@ export default function BulkCategoryTransferModal({
   const allResolved =
     categories.length > 0 && categories.every(({ category }) => decisions[category.id] != null);
 
-  return (
-    <ModalShell visible={visible} onClose={onCancel}>
-      <ModalHeader title={labels.categories_bulk_move_title} size={16} />
-      <ScrollView style={styles.list}>
-        {categories.map(({ category, count }) => {
-          const decision = decisions[category.id] ?? null;
-          return (
-            <ListItemRow
-              key={category.id}
-              title={getDisplayCategoryName(category)}
-              subtitle={labels.categories_bulk_move_transactions(count)}
-              icon={category.icon}
-              color={category.color}
-              shape={badgeShapeFor(config, 'category')}
-              badgeSize={36}
-              badgeIconSize={20}
-              badgeRadius={8}
-              badgeAlpha={20}
-              badgeGap={12}
-              right={
-                <View style={styles.decision}>
-                  <Text
-                    style={[
-                      styles.decisionText,
-                      {
-                        color: decision == null ? c.textSecondary : c.primary,
-                        fontSize: fs(13),
-                      },
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {decisionLabel(category.id)}
-                  </Text>
-                  <Ionicons name="chevron-forward" size={16} color={c.textSecondary} />
-                </View>
-              }
-              onPress={() => setPickerFor(category.id)}
-              accessibilityLabel={getDisplayCategoryName(category)}
-              accessibilityState={{ expanded: pickerFor === category.id }}
-              divider
-            />
-          );
-        })}
-        <Text style={[styles.note, { color: c.textSecondary, fontSize: fs(13) }]}>
-          {labels.categories_bulk_move_note}
-        </Text>
-      </ScrollView>
-      <ModalFooter
-        cancelLabel={labels.modify_cat_select_cancel}
-        confirmLabel={labels.categories_bulk_move_confirm}
-        onCancel={onCancel}
-        onConfirm={onConfirm}
-        confirmDisabled={!allResolved}
-        minHeight={44}
-        disabledBg={c.textSecondary}
-        disabledTextColor={WHITE}
-      />
+  const pickerDecision = pickerFor !== null ? (decisions[pickerFor] ?? null) : null;
 
-      <CategoryTransferModal
-        visible={pickerFor !== null}
-        title={
-          pickerCategory
-            ? `${labels.categories_bulk_move_title}: ${getDisplayCategoryName(pickerCategory.category)}`
-            : labels.categories_bulk_move_title
-        }
-        categories={targets}
-        selectedId={pickerFor !== null ? (decisions[pickerFor] ?? null) : null}
-        confirmLabel={labels.modify_cat_select_confirm}
-        cancelLabel={labels.modify_cat_select_cancel}
-        deleteOptionLabel={labels.categories_bulk_move_delete_option}
-        onSelect={(id) => {
-          if (pickerFor !== null) onDecide(pickerFor, id);
-        }}
-        onConfirm={() => setPickerFor(null)}
-        onCancel={() => setPickerFor(null)}
-      />
+  return (
+    <ModalShell visible={visible} onClose={pickerFor !== null ? () => setPickerFor(null) : onCancel}>
+      {pickerFor !== null ? (
+        <>
+          <ModalHeader title={labels.categories_bulk_move_title} icon="swap-horizontal-outline" />
+          {pickerCategory ? (
+            <View style={styles.subject}>
+              <ModalEntitySubject
+                name={getDisplayCategoryName(pickerCategory.category)}
+                icon={pickerCategory.category.icon as IconName}
+                color={pickerCategory.category.color}
+                shape={badgeShapeFor(config, 'category')}
+                subtitle={labels.categories_bulk_move_data(pickerCategory.txCount, pickerCategory.ruleCount)}
+              />
+            </View>
+          ) : null}
+          <CategoryTransferBody
+            categories={targets}
+            selectedId={pickerDecision}
+            deleteOptionLabel={labels.categories_bulk_move_delete_option}
+            onSelect={(id) => onDecide(pickerFor, id)}
+          />
+          <ModalFooter
+            cancelLabel={labels.cancel}
+            confirmLabel={labels.modify_cat_select_confirm}
+            onCancel={() => setPickerFor(null)}
+            onConfirm={() => setPickerFor(null)}
+            confirmDisabled={pickerDecision === null}
+            minHeight={44}
+            disabledBg={c.textSecondary}
+            disabledTextColor={WHITE}
+          />
+        </>
+      ) : (
+        <>
+          <ModalHeader title={labels.categories_bulk_move_title} icon="swap-horizontal-outline" />
+          <ScrollView style={styles.list}>
+            {categories.map(({ category, txCount, ruleCount }) => {
+              const decision = decisions[category.id] ?? null;
+              return (
+                <ListItemRow
+                  key={category.id}
+                  title={getDisplayCategoryName(category)}
+                  subtitle={labels.categories_bulk_move_data(txCount, ruleCount)}
+                  icon={category.icon}
+                  color={category.color}
+                  shape={badgeShapeFor(config, 'category')}
+                  badgeSize={36}
+                  badgeIconSize={20}
+                  badgeRadius={8}
+                  badgeAlpha={20}
+                  badgeGap={12}
+                  right={
+                    <View style={styles.decision}>
+                      <Text
+                        style={[
+                          styles.decisionText,
+                          {
+                            color: decision == null ? c.textSecondary : c.primary,
+                            fontSize: fs(13),
+                          },
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {decisionLabel(category.id)}
+                      </Text>
+                      <Ionicons name="chevron-forward" size={16} color={c.textSecondary} />
+                    </View>
+                  }
+                  onPress={() => setPickerFor(category.id)}
+                  accessibilityLabel={getDisplayCategoryName(category)}
+                  accessibilityState={{ expanded: false }}
+                  divider
+                />
+              );
+            })}
+            <Text style={[styles.note, { color: c.textSecondary, fontSize: fs(13) }]}>
+              {labels.categories_bulk_move_note}
+            </Text>
+          </ScrollView>
+          <ModalFooter
+            cancelLabel={labels.cancel}
+            confirmLabel={labels.categories_bulk_move_confirm}
+            onCancel={onCancel}
+            onConfirm={onConfirm}
+            confirmDisabled={!allResolved}
+            minHeight={44}
+            disabledBg={c.textSecondary}
+            disabledTextColor={WHITE}
+          />
+        </>
+      )}
     </ModalShell>
   );
 }
 
 const styles = StyleSheet.create({
+  subject: {
+    marginBottom: 8,
+  },
   list: {
     maxHeight: 300,
     marginBottom: 16,

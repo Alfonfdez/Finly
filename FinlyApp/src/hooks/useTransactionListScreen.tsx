@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { NavigationProp } from '../constants/types';
 import type { Transaction } from '../database/types';
@@ -34,6 +34,7 @@ export function useTransactionListScreen({
   onAfterDelete,
 }: UseTransactionListScreenOptions) {
   const filters = useTransactionFilters({ ...filtersOptions, searchTerm: searchText });
+  const visibleIds = useMemo(() => filters.filtered.map(transaction => transaction.id), [filters.filtered]);
 
   const afterDelete = useCallback(async () => {
     const updated = await loadTransactions();
@@ -42,9 +43,10 @@ export function useTransactionListScreen({
   }, [loadTransactions, setTransactions, onAfterDelete]);
 
   const {
-    deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
+    deleteModalVisible, busy, openDeleteModal, closeDeleteModal, confirmBulkDelete,
   } = useBulkDelete({
     selectedIds,
+    visibleIds,
     exitSelectMode,
     deleteFn,
     afterDelete,
@@ -60,7 +62,8 @@ export function useTransactionListScreen({
 
   return {
     filters,
-    deleteModalVisible, openDeleteModal, closeDeleteModal, confirmBulkDelete,
+    visibleIds,
+    deleteModalVisible, busy, openDeleteModal, closeDeleteModal, confirmBulkDelete,
     handleTransactionPress,
     keyExtractor,
   };

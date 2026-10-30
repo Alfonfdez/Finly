@@ -12,7 +12,6 @@ export function useSelectAndSearch<T extends number | string = number>({
   const [searchText, setSearchText] = useState('');
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<T>>(new Set());
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   const toggleItem = useCallback((id: T) => {
     setSelectedIds((prev) => {
@@ -23,17 +22,39 @@ export function useSelectAndSearch<T extends number | string = number>({
     });
   }, []);
 
+  const allSelected = useCallback(
+    (ids: T[]) => ids.length > 0 && ids.every((id) => selectedIds.has(id)),
+    [selectedIds],
+  );
+
+  const toggleSelectAll = useCallback((ids: T[]) => {
+    setSelectedIds((prev) =>
+      ids.length > 0 && ids.every((id) => prev.has(id)) ? new Set() : new Set(ids),
+    );
+  }, []);
+
+  const reconcileSelection = useCallback((visibleIds: readonly T[]) => {
+    setSelectedIds((prev) => {
+      if (prev.size === 0) return prev;
+      const visible = new Set(visibleIds);
+      const next = new Set<T>();
+      for (const id of prev) {
+        if (visible.has(id)) next.add(id);
+      }
+      return next.size === prev.size ? prev : next;
+    });
+  }, []);
+
   const exitSelectMode = useCallback(() => {
     setSelectedIds(new Set());
     setSelectMode(false);
   }, []);
 
   const toggleSelectMode = useCallback(() => {
-    setSelectMode(prev => {
-      if (prev) setSelectedIds(new Set());
-      return !prev;
-    });
-  }, []);
+    const next = !selectMode;
+    setSelectMode(next);
+    if (!next) setSelectedIds(new Set());
+  }, [selectMode]);
 
   const toggleSearch = useCallback(() => {
     setSearchActive((prev) => !prev);
@@ -53,9 +74,10 @@ export function useSelectAndSearch<T extends number | string = number>({
     setSelectMode,
     selectedIds,
     setSelectedIds,
-    deleteModalVisible,
-    setDeleteModalVisible,
     toggleItem,
+    allSelected,
+    toggleSelectAll,
+    reconcileSelection,
     exitSelectMode,
     toggleSelectMode,
     toggleSearch,

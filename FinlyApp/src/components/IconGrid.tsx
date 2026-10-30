@@ -5,6 +5,7 @@ import { useConfig } from '../context/ConfigContext';
 import { CONFIG_ICON_SHAPES, type ConfigIconShape, type IconName } from '../constants/types';
 import { withAlpha } from '../utils/color';
 import { TRANSPARENT } from '../constants/themes';
+import { TEST_IDS } from '../constants/testIds';
 import { PILL_RADIUS } from './componentStyles';
 
 export const CATEGORY_ICONS: IconName[] = [
@@ -42,7 +43,7 @@ export default function IconGrid({ icons, selectedIcon, selectedColor = null, sh
   };
 
   return (
-    <View style={styles.grid} onLayout={onGridLayout}>
+    <View style={styles.grid} testID={TEST_IDS.iconGrid} onLayout={onGridLayout}>
       {cellSize > 0 && icons.map((icon) => {
         const isSelected = selectedIcon === icon;
         const iconColor = isSelected && selectedColor ? selectedColor : (isSelected ? c.primary : c.textSecondary);
@@ -58,6 +59,7 @@ export default function IconGrid({ icons, selectedIcon, selectedColor = null, sh
               isSelected && { borderWidth: 2, borderColor },
             ]}
             onPress={() => onSelect(icon)}
+            accessibilityRole="button"
             accessibilityLabel={icon}
             accessibilityState={{ selected: isSelected }}
           >

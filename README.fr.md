@@ -9,14 +9,14 @@ Tout fonctionne **sur l'appareil** : vos données vivent dans une base de donné
 | | |
 |---|---|
 | **Plateformes** | iOS, Android et Web |
-| **Version** | 2.1.0 |
+| **Version** | 2.2.0 |
 | **Langues** | Anglais, Espagnol, Catalan, Galicien, Basque, Français, Allemand, Portugais et Italien |
 | **Données** | 100 % locales (SQLite sur natif, sql.js + IndexedDB sur web) |
 | **Thèmes** | Sombre, Clair et Automatique (suit le système) |
 
 ## Fonctionnalités
 
-- **Plusieurs comptes** — créez, modifiez et supprimez des comptes, chacun avec sa propre icône, sa couleur et un solde initial facultatif. Un compte spécial **Total** agrège tout.
+- **Plusieurs comptes** — créez, modifiez et supprimez des comptes, chacun avec sa propre icône, sa couleur et un solde initial facultatif (y compris les soldes négatifs). Un compte spécial **Total** agrège tout.
 - **Suivi des revenus et dépenses** — ajoutez des transactions un jour précis avec montant, compte, catégorie, étiquettes, commentaire et une photo facultative.
 - **Catégories personnalisées** — choisissez dans une bibliothèque d'icônes et de couleurs, et créez vos propres catégories de dépenses et de revenus.
 - **Graphiques** — camembert en anneau avec le total au centre et graphique à barres empilées horizontales, avec une répartition par catégorie affichant les pourcentages.
@@ -24,6 +24,7 @@ Tout fonctionne **sur l'appareil** : vos données vivent dans une base de donné
 - **Toutes les transactions** — filtres combinés : type, catégories (multi-sélection), période, compte, étiquettes et recherche avec tri par date ou montant.
 - **Étiquettes et commentaires** — étiquetez vos transactions puis filtrez par étiquette ; gérez tous les commentaires de l'app et appliquez des modifications ou des suppressions groupées à plusieurs transactions à la fois.
 - **Photos** — joignez une photo à une transaction depuis la galerie sur toutes les plateformes (appareil photo sur iOS et Android).
+- **Règles récurrentes** — transformez une transaction en un programme qui se répète (quotidien, hebdomadaire, mensuel ou annuel, avec un intervalle et une date de fin facultative) ; les échéances sont générées automatiquement et chaque règle peut être mise en pause, reprise ou modifiée en appliquant le changement au futur seulement ou aussi au passé.
 - **Actions groupées** — multi-sélectionnez et supprimez des transactions, étiquettes, commentaires et catégories en une seule fois.
 - **Sauvegarde de données** — exportez toute votre base de données sous forme d'instantané JSON et réimportez-la à tout moment.
 - **Réglages** — thème, taille du texte, devise, séparateur décimal, langue, premier jour de la semaine, formes d'icônes, valeurs par défaut de l'accueil et de l'ajout de transaction, et options de confidentialité pour masquer les soldes.
@@ -31,23 +32,36 @@ Tout fonctionne **sur l'appareil** : vos données vivent dans une base de donné
 
 ## Captures d'écran
 
-![Écran d'accueil](images/screenshots/v2-01-a-home-empty.png)<br>*Écran d'accueil avant la configuration d'un compte.*<br><br>
-![Écran d'accueil](images/screenshots/v2-01-b-home.png)<br>*Écran d'accueil avec comptes, camembert en anneau et répartition par catégorie.*<br><br>
-![Menu hamburger](images/screenshots/v2-02-hamburger.png)<br>*Menu latéral avec Accueil, Comptes, Catégories, Étiquettes, Commentaires, Toutes les transactions et Réglages.*<br><br>
-![Ajouter une transaction](images/screenshots/v2-03-add-transaction.png)<br>*Ajoutez une dépense ou un revenu avec montant, compte, catégorie, jour, étiquettes, commentaire et photo.*<br><br>
-![Sélecteur de date](images/screenshots/v2-04-date-picker.png)<br>*Sélecteur de calendrier pour choisir un jour, une semaine, un mois, une année ou une plage de période personnalisée.*<br><br>
-![Catégories](images/screenshots/v2-05-categories.png)<br>*Catégories organisées par type (dépenses/revenus) dans une grille de 4×N.*<br><br>
-![Étiquettes](images/screenshots/v2-06-tags.png)<br>*Écran des étiquettes avec recherche et sélection groupée.*<br><br>
-![Toutes les transactions, vide](images/screenshots/v2-07-a-all-transactions-empty-state.png)<br>*Toutes les transactions à l'état vide.*<br><br>
-![Toutes les transactions](images/screenshots/v2-07-b-all-transactions.png)<br>*Toutes les transactions avec filtres de type, catégorie, période et étiquettes, plus le tri et la recherche.*<br><br>
-![Comptes](images/screenshots/v2-08-accounts.png)<br>*Écran des comptes avec soldes et le compte Total agrégé.*<br><br>
-![Détails d'un revenu](images/screenshots/v2-09-a-details-income.png)<br>*Détails d'une transaction de revenu avec modification et suppression.*<br><br>
-![Détails d'une dépense](images/screenshots/v2-09-b-details-expense.png)<br>*Détails d'une transaction de dépense avec modification et suppression.*<br><br>
-![Réglages](images/screenshots/v2-10-settings.png)<br>*Réglages : Apparence, Régional, Personnalisation et Données.*<br><br>
-![Réglages régionaux](images/screenshots/v2-11-regional-en.png)<br>*Réglages régionaux : langue, devise, séparateur décimal et premier jour de la semaine.*<br><br>
-![Réglages d'apparence](images/screenshots/v2-12-settings-appearance.png)<br>*Apparence : thème, taille du texte et formes des icônes.*<br><br>
-![Réglages de personnalisation](images/screenshots/v2-13-settings-personalization.png)<br>*Personnalisation : valeurs par défaut de l'accueil et de l'ajout de transaction, plus confidentialité.*<br><br>
-![Réglages des données](images/screenshots/v2-14-settings-data.png)<br>*Données : export/import de la sauvegarde et actions de suppression/réinitialisation.*<br><br>
+![Écran d'accueil](images/screenshots/v3.4-01-a-home-empty.png)<br>*Nouvelle installation sans transactions.*<br><br>
+![Écran d'accueil](images/screenshots/v3.4-01-b-home.png)<br>*Écran d'accueil avec comptes, camembert en anneau et répartition par catégorie.*<br><br>
+![Menu latéral](images/screenshots/v3.4-02-hamburger.png)<br>*Menu latéral avec Accueil, Toutes les transactions, Récurrences, Comptes, Catégories, Étiquettes, Commentaires et Réglages.*<br><br>
+![Ajouter une transaction](images/screenshots/v3.4-03-add-transaction.png)<br>*Ajoutez une dépense ou un revenu avec montant, compte, catégorie, jour, étiquettes, commentaire et photo.*<br><br>
+![Sélecteur de date](images/screenshots/v3.4-04-date-picker.png)<br>*Sélecteur de calendrier pour choisir un jour, une semaine, un mois, une année ou une plage de période personnalisée.*<br><br>
+![Toutes les transactions, vide](images/screenshots/v3.4-05-a-all-transactions-empty-state.png)<br>*Toutes les transactions à l'état vide.*<br><br>
+![Toutes les transactions](images/screenshots/v3.4-05-b-all-transactions.png)<br>*Toutes les transactions avec filtres de type, catégorie, période et étiquettes, plus le tri et la recherche.*<br><br>
+![Filtre de catégories](images/screenshots/v3.4-05-c-category-filter.png)<br>*Filtre de catégories avec les préréglages Toutes les catégories, Toutes les dépenses et Tous les revenus.*<br><br>
+![Détails d'un revenu](images/screenshots/v3.4-05-d-details-income.png)<br>*Détails d'une transaction de revenu avec modification et suppression.*<br><br>
+![Détails d'une dépense](images/screenshots/v3.4-05-e-details-expense.png)<br>*Détails d'une transaction de dépense avec modification et suppression.*<br><br>
+![Modifier la transaction](images/screenshots/v3.4-05-f-modify-transaction.png)<br>*Modifiez le montant, le compte, la catégorie, le jour, les étiquettes, le commentaire et la photo d'une transaction.*<br><br>
+![Récurrences](images/screenshots/v3.4-06-recurring.png)<br>*Règles récurrentes avec prochaines échéances, montants et boutons actif/en pause.*<br><br>
+![Nouvelle règle récurrente](images/screenshots/v3.4-06-a-create-recurring.png)<br>*Configurez une règle récurrente avec son nom, sa fréquence, son intervalle et une date de fin facultative.*<br><br>
+![Modifier la règle récurrente](images/screenshots/v3.4-06-b-modify-recurring.png)<br>*Modifiez la programmation d'une règle récurrente et choisissez si le changement s'applique aux prochaines occurrences seulement ou aussi aux passées.*<br><br>
+![Comptes](images/screenshots/v3.4-07-accounts.png)<br>*Écran des comptes avec soldes et le compte Total agrégé.*<br><br>
+![Créer un compte](images/screenshots/v3.4-07-a-create-account.png)<br>*Créez un compte avec un nom, une icône, une couleur, un solde initial et une note facultative.*<br><br>
+![Modifier le compte](images/screenshots/v3.4-07-b-modify-account.png)<br>*Modifiez les détails, le solde initial et la note d'un compte, ou supprimez-le.*<br><br>
+![Catégories](images/screenshots/v3.4-08-categories.png)<br>*Catégories organisées par type (dépenses/revenus) dans une grille de 4×N.*<br><br>
+![Créer une catégorie](images/screenshots/v3.4-08-a-create-category.png)<br>*Créez une catégorie de dépense ou de revenu avec un nom, une icône et une couleur.*<br><br>
+![Modifier la catégorie](images/screenshots/v3.4-08-b-modify-category.png)<br>*Modifiez le nom, l'icône et la couleur d'une catégorie, ou supprimez-la.*<br><br>
+![Étiquettes](images/screenshots/v3.4-09-tags.png)<br>*Écran des étiquettes avec recherche et sélection groupée.*<br><br>
+![Nouvelle étiquette](images/screenshots/v3.4-09-a-create-tag.png)<br>*Créez une étiquette pour regrouper des transactions.*<br><br>
+![Modifier l'étiquette](images/screenshots/v3.4-09-b-modify-tag.png)<br>*Renommez ou supprimez une étiquette.*<br><br>
+![Commentaires](images/screenshots/v3.4-10-comments.png)<br>*Écran des commentaires avec recherche, nombre d'utilisations et sélection multiple.*<br><br>
+![Modifier le commentaire](images/screenshots/v3.4-10-a-modify-comment.png)<br>*Modifiez un commentaire dans toutes les transactions qui l'utilisent.*<br><br>
+![Réglages](images/screenshots/v3.4-11-settings.png)<br>*Réglages : Apparence, Régional, Personnalisation et Données.*<br><br>
+![Réglages d'apparence](images/screenshots/v3.4-11-a-appearance.png)<br>*Apparence : thème, taille du texte et formes des icônes.*<br><br>
+![Réglages régionaux](images/screenshots/v3.4-11-b-regional-en.png)<br>*Réglages régionaux : langue, devise, séparateur décimal et premier jour de la semaine.*<br><br>
+![Réglages de personnalisation](images/screenshots/v3.4-11-c-personalization.png)<br>*Personnalisation : valeurs par défaut de l'accueil et de l'ajout de transaction, plus confidentialité.*<br><br>
+![Réglages des données](images/screenshots/v3.4-11-d-data.png)<br>*Données : export/import de la sauvegarde et actions de suppression/réinitialisation.*<br><br>
 
 ## Pile technique
 
@@ -105,11 +119,13 @@ Cela démarre Metro Bundler. Ensuite :
 | `npm test` | Exécute la suite Vitest |
 | `npm run test:watch` | Exécute Vitest en mode watch |
 | `npm run test:all` | typecheck + lint + tests (le portail local complet) |
+| `npm run lint:fix` | Corrige automatiquement les problèmes de lint/format (indentation, guillemets, virgules finales, saut de ligne final) |
+| `npm run i18n` | Ajoute, met à jour, supprime ou liste les clés de traduction dans les 9 langues |
 
 ### Tests
 
 - **Unitaires / intégration** — Vitest. La suite couvre les dépôts de base de données sur les deux backends SQLite (natif + sql.js), les allers-retours de sauvegarde et les composants rendus avec `@testing-library/react-native`.
-- **E2E natives** — les flux Maestro dans `FinlyApp/.maestro/` (10 flux + helpers) s'exécutent contre l'APK de débogage sur un émulateur Android ; voir `docs/harnesses.md`.
+- **E2E natives** — les flux Maestro dans `FinlyApp/.maestro/` (15 flux + helpers) s'exécutent contre l'APK de débogage sur un émulateur Android ; voir `docs/harnesses.md`.
 - **Vérification web** — les critères d'acceptation de chaque fonctionnalité sont vérifiés dans un vrai navigateur à 375px avec Playwright.
 - Le pipeline CI (`.github/workflows/ci.yml`) exécute le portail complet `npm run test:all` à chaque push et pull request sur `develop` et `main`.
 
@@ -135,7 +151,7 @@ FinlyApp/
 ### Base de données
 
 - Une seule interface de moteur (`DatabaseHandle`) sur toutes les plateformes : expo-sqlite sur natif, sql.js (WASM) avec persistance IndexedDB sur web.
-- Les migrations sont versionnées avec `PRAGMA user_version` (`001_initial`, `002_seed`, `003_config`) et appliquées une seule fois, dans une transaction.
+- Les migrations sont versionnées avec `PRAGMA user_version` (`001_initial`, `002_seed`, `003_config`, `004_recurring`) et appliquées une seule fois, dans une transaction.
 - Les dépôts sont écrits avec Drizzle ORM sur le handle partagé ; les lignes stockées sont validées avec des schémas Zod.
 - Sur le web, les octets SQLite exportés sont persistés dans IndexedDB, donc les mêmes données survivent aux rechargements.
 

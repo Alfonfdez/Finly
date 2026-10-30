@@ -3,7 +3,7 @@ import { Appearance } from 'react-native';
 import { type ColorPalette, darkColors, lightColors } from '../constants/themes';
 import { configRepository } from '../database';
 import { setLanguage } from '../i18n';
-import { showErrorAlert } from '../utils/errors';
+import { ERROR_PREFIXES, logError, showErrorAlert } from '../utils/errors';
 import { isWeb } from '../utils/platform';
 import { withAlpha } from '../utils/color';
 import { THEMES, type Theme } from '../constants/types';
@@ -12,10 +12,15 @@ import { type Config } from '../database/types';
 
 export type { Config };
 
+export interface UpdateConfigOptions {
+  /** Show the generic save-failure alert. Defaults to true. */
+  notifyOnError?: boolean;
+}
+
 interface ConfigContextType {
   config: Config;
   activeColors: ColorPalette;
-  updateConfig: (partial: Partial<Config>) => void;
+  updateConfig: (partial: Partial<Config>, options?: UpdateConfigOptions) => Promise<boolean>;
   loading: boolean;
 }
 
@@ -40,24 +45,31 @@ function resolveColors(theme: Theme): ColorPalette {
 
 export function ConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<Config>(DEFAULT_CONFIG);
-  const configRef = useRef(config);
-  configRef.current = config;
+  const configRef = useRef<Config>(DEFAULT_CONFIG);
+  const saveQueue = useRef<Promise<void>>(Promise.resolve());
+  const updateSeq = useRef(0);
   const [loading, setLoading] = useState(true);
   const [activeColors, setActiveColors] = useState<ColorPalette>(darkColors);
-  const saveGeneration = useRef(0);
 
   useEffect(() => {
+    let active = true;
     (async () => {
       try {
         const loaded = await configRepository.get();
+        if (!active) return;
+        configRef.current = loaded;
         setConfig(loaded);
         setActiveColors(resolveColors(loaded.theme));
         setLanguage(loaded.language);
-      } catch {
+      } catch (error) {
+        if (!active) return;
+        logError(ERROR_PREFIXES.configLoad, error);
         setActiveColors(resolveColors(DEFAULT_CONFIG.theme));
+      } finally {
+        if (active) setLoading(false);
       }
-      setLoading(false);
     })();
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
@@ -91,28 +103,70 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     return () => { style?.remove(); };
   }, [activeColors]);
 
-  const updateConfig = useCallback(async (partial: Partial<Config>) => {
+  const updateConfig = useCallback(async (partial: Partial<Config>, options: UpdateConfigOptions = {}) => {
+    const notifyOnError = options.notifyOnError ?? true;
+    const seq = ++updateSeq.current;
     const previous = configRef.current;
     const updated = { ...previous, ...partial };
-    const gen = ++saveGeneration.current;
+    configRef.current = updated;
     if (partial.language) setLanguage(partial.language);
     setConfig(updated);
     if (partial.theme) setActiveColors(resolveColors(partial.theme));
+
+    // Serialize saves so a slow earlier write cannot land after a newer one.
+    const save = saveQueue.current.then(() => configRepository.save(partial));
+    saveQueue.current = save.catch(() => {});
+
+    const rollbackFailedFields = () => {
+      // Roll back only fields that still hold this update's optimistic value,
+      // preserving any newer updates.
+      const rolledBack = { ...configRef.current };
+      for (const key of Object.keys(partial) as (keyof Config)[]) {
+        if (rolledBack[key] === updated[key]) {
+          (rolledBack as Record<string, unknown>)[key] = previous[key];
+        }
+      }
+      configRef.current = rolledBack;
+      setConfig(rolledBack);
+      setActiveColors(resolveColors(rolledBack.theme));
+      setLanguage(rolledBack.language);
+    };
+
     try {
-      await configRepository.save(partial);
+      await save;
+      return true;
     } catch (error) {
-      console.error('Failed to save config:', error);
-      if (gen !== saveGeneration.current) return;
-      setConfig(previous);
-      setActiveColors(resolveColors(previous.theme));
-      if (previous.language) setLanguage(previous.language);
-      showErrorAlert();
+      logError(ERROR_PREFIXES.configSave, error);
+      // A failed write may belong to an older update while a newer one is still
+      // queued. Wait for the queue, then trust the DB instead of leaving an
+      // optimistic value that was never persisted.
+      await saveQueue.current.catch(() => {});
+      if (seq !== updateSeq.current) {
+        // A newer update owns the recovery now; reloading here could overwrite
+        // its optimistic value with an older snapshot, but this update's failed
+        // fields still need to be rolled back.
+        rollbackFailedFields();
+        if (notifyOnError) showErrorAlert();
+        return false;
+      }
+      try {
+        const persisted = await configRepository.get();
+        configRef.current = persisted;
+        setConfig(persisted);
+        setActiveColors(resolveColors(persisted.theme));
+        setLanguage(persisted.language);
+      } catch (reloadError) {
+        logError(ERROR_PREFIXES.configLoad, reloadError);
+        rollbackFailedFields();
+      }
+      if (notifyOnError) showErrorAlert();
+      return false;
     }
   }, []);
 
   const value = useMemo(
     () => ({ config, activeColors, updateConfig, loading }),
-    [config, activeColors, updateConfig, loading]
+    [config, activeColors, updateConfig, loading],
   );
 
   return (

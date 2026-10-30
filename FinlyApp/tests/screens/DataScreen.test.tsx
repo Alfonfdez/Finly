@@ -8,6 +8,7 @@ import { resetStub, setConfig } from '../component/helpers/configStub';
 import type { Config } from '../../src/context/ConfigContext';
 import { ShareResult, type ShareResultValue } from '../../src/constants/shareResult';
 import { en as t } from '../../src/i18n/en';
+import { ERROR_PREFIXES } from '../../src/utils/errors';
 
 const deleteAllTransactions = vi.fn(async () => undefined);
 const clearDataKeepSettings = vi.fn(async () => undefined);
@@ -19,17 +20,39 @@ const saveBackupFile = vi.fn<() => Promise<ShareResultValue>>(async () => ShareR
 const saveBackupToDownloads = vi.fn<() => Promise<boolean>>(async () => false);
 const pickBackupFile = vi.fn<() => Promise<string | null>>(async () => null);
 
+const validationMocks = vi.hoisted(() => {
+  class BackupValidationError extends Error {
+    code: string;
+
+    constructor(code: string) {
+      super(code);
+      this.name = 'BackupValidationError';
+      this.code = code;
+    }
+  }
+  return {
+    BackupValidationError,
+    BACKUP_VALIDATION_CODES: {
+      invalidJson: 'invalid_json',
+      invalidFormat: 'invalid_format',
+      newerVersion: 'newer_version',
+      incomplete: 'incomplete',
+    },
+  };
+});
+
 vi.mock('../../src/database', () => ({
   transactionRepository: { deleteAllTransactions: () => deleteAllTransactions() },
   configRepository: { get: () => configGet() },
   exportBackup: () => exportBackup(),
   importBackup: () => importBackup(),
-  BackupValidationError: class BackupValidationError extends Error {},
+  BackupValidationError: validationMocks.BackupValidationError,
+  BACKUP_VALIDATION_CODES: validationMocks.BACKUP_VALIDATION_CODES,
 }));
 
-vi.mock('../../src/database/database', () => ({
-  clearDataKeepSettings: () => clearDataKeepSettings(),
-  resetDatabase: () => resetDatabase(),
+vi.mock('../../src/database/maintenance', () => ({
+  clearDataKeepSettingsWithCleanup: () => clearDataKeepSettings(),
+  resetDatabaseWithCleanup: () => resetDatabase(),
 }));
 
 vi.mock('../../src/utils/backupIO', () => ({
@@ -97,12 +120,18 @@ describe('DataScreen', () => {
     expect(view.getByText('Reset to factory state')).toBeTruthy();
   });
 
-  it('confirms deleting all transactions and refreshes', async () => {
+  it('requires typing DELETE before confirming "delete all transactions"', async () => {
     const view = await render(<DataScreen />);
     const ue = userEvent.setup();
     fireEvent.press(view.getByText('Delete all transactions'));
-    const confirm = await view.findByRole('button', { name: 'Delete' });
-    await ue.press(confirm);
+    const step1 = await view.findByRole('button', { name: 'Delete' });
+    await ue.press(step1);
+    const input = await view.findByPlaceholderText('Type DELETE here');
+    await ue.type(input, 'no');
+    await ue.press(view.getAllByRole('button', { name: 'Delete' }).at(-1)!);
+    expect(deleteAllTransactions).not.toHaveBeenCalled();
+    await fireEvent.changeText(input, 'DELETE');
+    await ue.press(view.getAllByRole('button', { name: 'Delete' }).at(-1)!);
     expect(deleteAllTransactions).toHaveBeenCalledTimes(1);
     expect(getAppStub().resetAll).toHaveBeenCalled();
   });
@@ -115,11 +144,48 @@ describe('DataScreen', () => {
     await ue.press(step1);
     const input = await view.findByPlaceholderText('Type DELETE here');
     await ue.type(input, 'no');
-    await ue.press(view.getByText('Confirm'));
+    await ue.press(view.getAllByRole('button', { name: 'Delete all' }).at(-1)!);
     expect(clearDataKeepSettings).not.toHaveBeenCalled();
     await fireEvent.changeText(input, 'DELETE');
-    await ue.press(view.getByText('Confirm'));
+    await ue.press(view.getAllByRole('button', { name: 'Delete all' }).at(-1)!);
     expect(clearDataKeepSettings).toHaveBeenCalledTimes(1);
+    expect(getAppStub().resetAll).toHaveBeenCalled();
+  });
+
+  it('keeps the factory-reset dialog open and disabled while the reset runs', async () => {
+    let release!: () => void;
+    resetDatabase.mockImplementationOnce(() => new Promise<undefined>((resolve) => {
+      release = () => resolve(undefined);
+    }));
+    const view = await render(<DataScreen />);
+    const ue = userEvent.setup();
+
+    fireEvent.press(view.getByText('Reset to factory state'));
+    await ue.press(await view.findByRole('button', { name: 'Reset' }));
+    const input = await view.findByPlaceholderText('Type DELETE here');
+    await fireEvent.changeText(input, 'DELETE');
+    await ue.press(view.getAllByRole('button', { name: 'Reset' }).at(-1)!);
+
+    // In flight: spinner state, no second confirm, no cancel, read-only input.
+    const confirm = view.getAllByRole('button', { name: 'Reset' }).at(-1)!;
+    expect(confirm).toBeDisabled();
+    expect(confirm.props.accessibilityState?.busy).toBe(true);
+    // The first (still mounted) step also has a Cancel; the busy modal is the last one.
+    const cancels = view.getAllByRole('button', { name: 'Cancel' });
+    expect(cancels[cancels.length - 1]).toBeDisabled();
+    expect(view.getByPlaceholderText('Type DELETE here').props.editable).toBe(false);
+    expect(resetDatabase).toHaveBeenCalledTimes(1);
+
+    await ue.press(confirm);
+    expect(resetDatabase).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      release();
+    });
+    await waitFor(() => {
+      const confirms = view.getAllByRole('button', { name: 'Reset' });
+      expect(confirms.every(btn => btn.props.accessibilityState?.busy !== true)).toBe(true);
+    });
     expect(getAppStub().resetAll).toHaveBeenCalled();
   });
 
@@ -146,7 +212,8 @@ describe('DataScreen', () => {
   });
 
   it('shows an error alert when the export fails', async () => {
-    saveBackupFile.mockRejectedValue(new Error('boom'));
+    const exportError = new Error('boom');
+    saveBackupFile.mockRejectedValue(exportError);
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const alertSpy = vi.spyOn(Alert, 'alert').mockImplementation(() => {});
     const view = await render(<DataScreen />);
@@ -156,6 +223,7 @@ describe('DataScreen', () => {
       t.settings_export_error_title,
       t.settings_export_error_message,
     );
+    expect(consoleErrorSpy).toHaveBeenCalledWith(`${ERROR_PREFIXES.backupExport}:`, exportError);
     consoleErrorSpy.mockRestore();
   });
 
@@ -175,13 +243,77 @@ describe('DataScreen', () => {
     const ue = userEvent.setup();
     fireEvent.press(view.getByText('Import data'));
     await waitFor(() => expect(pickBackupFile).toHaveBeenCalledTimes(1));
-    const confirmButton = await view.findByRole('button', { name: t.settings_delete_confirm });
+    const confirmButton = await view.findByRole('button', { name: t.settings_import_confirm });
     await ue.press(confirmButton);
     await waitFor(() => expect(importBackup).toHaveBeenCalledTimes(1));
     expect(alertSpy).toHaveBeenCalledWith(
       t.settings_import_success_title,
       t.settings_import_success_message,
     );
+    expect(getAppStub().setDataRefreshing).toHaveBeenNthCalledWith(1, true);
+    expect(getAppStub().setDataRefreshing).toHaveBeenNthCalledWith(2, false);
+  });
+
+  it('shows the refresh-failure alert when the import applied but reset failed', async () => {
+    pickBackupFile.mockResolvedValue('{"app":"Finly","kind":"backup","formatVersion":1}');
+    getAppStub().resetAll.mockResolvedValueOnce(false);
+    const alertSpy = vi.spyOn(Alert, 'alert').mockImplementation(() => {});
+    const view = await render(<DataScreen />);
+    const ue = userEvent.setup();
+    fireEvent.press(view.getByText('Import data'));
+    await waitFor(() => expect(pickBackupFile).toHaveBeenCalledTimes(1));
+    const confirmButton = await view.findByRole('button', { name: t.settings_import_confirm });
+    await ue.press(confirmButton);
+
+    await waitFor(() => expect(alertSpy).toHaveBeenCalledWith(
+      t.settings_import_refresh_error_title,
+      t.settings_import_refresh_error_message,
+    ));
+    expect(alertSpy).not.toHaveBeenCalledWith(
+      t.settings_import_success_title,
+      t.settings_import_success_message,
+    );
+    expect(importBackup).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the refresh-failure alert when config reload fails after import', async () => {
+    pickBackupFile.mockResolvedValue('{"app":"Finly","kind":"backup","formatVersion":1}');
+    configGet.mockRejectedValueOnce(new Error('config failed'));
+    const alertSpy = vi.spyOn(Alert, 'alert').mockImplementation(() => {});
+    const view = await render(<DataScreen />);
+    const ue = userEvent.setup();
+    fireEvent.press(view.getByText('Import data'));
+    await waitFor(() => expect(pickBackupFile).toHaveBeenCalledTimes(1));
+    const confirmButton = await view.findByRole('button', { name: t.settings_import_confirm });
+    await ue.press(confirmButton);
+
+    await waitFor(() => expect(alertSpy).toHaveBeenCalledWith(
+      t.settings_import_refresh_error_title,
+      t.settings_import_refresh_error_message,
+    ));
+    expect(getAppStub().resetAll).not.toHaveBeenCalled();
+  });
+
+  it('shows the incomplete-backup alert and leaves the data untouched', async () => {
+    pickBackupFile.mockResolvedValue('{}');
+    const importError = new validationMocks.BackupValidationError('incomplete');
+    importBackup.mockRejectedValueOnce(importError);
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const alertSpy = vi.spyOn(Alert, 'alert').mockImplementation(() => {});
+    const view = await render(<DataScreen />);
+    const ue = userEvent.setup();
+    fireEvent.press(view.getByText('Import data'));
+    await waitFor(() => expect(pickBackupFile).toHaveBeenCalledTimes(1));
+    const confirmButton = await view.findByRole('button', { name: t.settings_import_confirm });
+    await ue.press(confirmButton);
+
+    await waitFor(() => expect(alertSpy).toHaveBeenCalledWith(
+      t.settings_import_incomplete_title,
+      t.settings_import_incomplete_message,
+    ));
+    expect(consoleErrorSpy).toHaveBeenCalledWith(`${ERROR_PREFIXES.backupImport}:`, importError);
+    expect(getAppStub().resetAll).not.toHaveBeenCalled();
+    consoleErrorSpy.mockRestore();
   });
 });
 

@@ -1,14 +1,14 @@
 import { useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { FlatList, StyleSheet } from 'react-native';
 import type { Account } from '../database/types';
 import { formatAmount, HIDDEN_BALANCE } from '../utils/formatters';
 import { useConfig } from '../context/ConfigContext';
-import { useFontSize } from '../hooks/useFontSize';
 import { useResetOnOpen } from '../hooks/useResetOnOpen';
 import { t, getDisplayAccountName } from '../i18n';
 import { badgeShapeFor } from '../utils/badgeShape';
 import EyeToggle from './EyeToggle';
 import ModalShell from './ModalShell';
+import ModalHeader from './ModalHeader';
 import ListItemRow from './ListItemRow';
 import ModalFooter from './ModalFooter';
 import RadioButton from './RadioButton';
@@ -27,7 +27,6 @@ interface Props {
 
 export default function AccountModal({ visible, accounts, selectedId, onSelect, onClose }: Props) {
   const { config, activeColors: c } = useConfig();
-  const fs = useFontSize();
   const labels = t();
   const [tempId, setTempId] = useState(selectedId);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -62,28 +61,33 @@ export default function AccountModal({ visible, accounts, selectedId, onSelect, 
 
   return (
     <ModalShell visible={visible} onClose={onClose}>
-      <View style={styles.titleRow}>
-        <Text style={[styles.title, { color: c.text, fontSize: fs(16) }]}>{labels.account_select}</Text>
-        <EyeToggle isHidden={isBalanceHidden} onToggle={() => setIsRevealed(prev => !prev)} color={c.textSecondary} />
-      </View>
+      <ModalHeader
+        title={labels.account_select}
+        icon="wallet-outline"
+        right={(
+          <EyeToggle
+            isHidden={isBalanceHidden}
+            onToggle={() => setIsRevealed(prev => !prev)}
+            color={c.textSecondary}
+          />
+        )}
+      />
       <FlatList
-            data={accounts}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderItem}
-          />
-          <ModalFooter
-            cancelLabel={labels.transactions_cancel}
-            confirmLabel={labels.transactions_confirm}
-            onCancel={onClose}
-            onConfirm={() => { if (tempId != null) onSelect(tempId); }}
-          />
+        data={accounts}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
+      />
+      <ModalFooter
+        cancelLabel={labels.cancel}
+        confirmLabel={labels.transactions_confirm}
+        onCancel={onClose}
+        onConfirm={() => { if (tempId != null) onSelect(tempId); }}
+      />
     </ModalShell>
   );
 }
 
 const styles = StyleSheet.create({
-  title: { fontWeight: '700', marginBottom: 16, textAlign: 'center' },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
   row: {
     paddingHorizontal: 0,
   },

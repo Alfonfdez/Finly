@@ -7,10 +7,13 @@ interface Props {
   value: string;
   onChangeText: (text: string) => void;
   onClose: () => void;
+  autoFocus?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
-export default function ScreenSearchBar({ visible, placeholder, value, onChangeText, onClose, style }: Props) {
+export default function ScreenSearchBar({
+  visible, placeholder, value, onChangeText, onClose, autoFocus = true, style,
+}: Props) {
   if (!visible) return null;
 
   return (
@@ -20,7 +23,7 @@ export default function ScreenSearchBar({ visible, placeholder, value, onChangeT
         value={value}
         onChangeText={onChangeText}
         onClose={onClose}
-        autoFocus
+        autoFocus={autoFocus}
       />
     </View>
   );

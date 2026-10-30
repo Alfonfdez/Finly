@@ -9,14 +9,14 @@ Alles läuft **auf dem Gerät**: Ihre Daten leben in einer lokalen SQLite-Datenb
 | | |
 |---|---|
 | **Plattformen** | iOS, Android und Web |
-| **Version** | 2.1.0 |
+| **Version** | 2.2.0 |
 | **Sprachen** | Englisch, Spanisch, Katalanisch, Galicisch, Baskisch, Französisch, Deutsch, Portugiesisch und Italienisch |
 | **Daten** | 100 % lokal (SQLite nativ, sql.js + IndexedDB im Web) |
 | **Designs** | Dunkel, Hell und Automatisch (folgt dem System) |
 
 ## Funktionen
 
-- **Mehrere Konten** — Konten erstellen, bearbeiten und löschen, jedes mit eigenem Icon, eigener Farbe und optionalem Startguthaben. Ein spezielles **Gesamt**-Konto summiert alles.
+- **Mehrere Konten** — Konten erstellen, bearbeiten und löschen, jedes mit eigenem Icon, eigener Farbe und optionalem Startguthaben (auch bei negativen Salden). Ein spezielles **Gesamt**-Konto summiert alles.
 - **Einnahmen- und Ausgabenerfassung** — Transaktionen an einem bestimmten Tag mit Betrag, Konto, Kategorie, Tags, Kommentar und optionalem Foto hinzufügen.
 - **Eigene Kategorien** — aus einer Bibliothek von Icons und Farben wählen und eigene Ausgaben- und Einnahmen-Kategorien erstellen.
 - **Diagramme** — Donut-Diagramm mit dem Gesamtbetrag in der Mitte und horizontales gestapeltes Balkendiagramm, mit einer Aufschlüsselung nach Kategorie, die Prozentsätze anzeigt.
@@ -24,6 +24,7 @@ Alles läuft **auf dem Gerät**: Ihre Daten leben in einer lokalen SQLite-Datenb
 - **Alle Transaktionen** — kombinierte Filter: Typ, Kategorien (Mehrfachauswahl), Zeitraum, Konto, Tags und Suche mit Sortierung nach Datum oder Betrag.
 - **Tags und Kommentare** — Transaktionen taggen und nach Tag filtern; alle Kommentare der App verwalten und Massenbearbeitungen oder -löschungen auf mehrere Transaktionen gleichzeitig anwenden.
 - **Fotos** — auf allen Plattformen ein Foto aus der Galerie an eine Transaktion anhängen (Kamera auf iOS und Android).
+- **Wiederkehrende Regeln** — machen Sie eine Transaktion zu einem wiederkehrenden Zeitplan (täglich, wöchentlich, monatlich oder jährlich, mit Intervall und optionalem Enddatum); fällige Vorkommen werden automatisch erzeugt und jede Regel lässt sich pausieren, fortsetzen oder bearbeiten — die Änderung gilt nur für die Zukunft oder auch für die Vergangenheit.
 - **Massenaktionen** — Transaktionen, Tags, Kommentare und Kategorien mehrfach auswählen und auf einmal löschen.
 - **Datensicherung** — die gesamte Datenbank als JSON-Snapshot exportieren und jederzeit wieder importieren.
 - **Einstellungen** — Design, Textgröße, Währung, Dezimaltrennzeichen, Sprache, erster Tag der Woche, Icon-Formen, Start- und Transaktion-hinzufügen-Standardwerte sowie Datenschutzoptionen zum Ausblenden von Guthaben.
@@ -31,23 +32,36 @@ Alles läuft **auf dem Gerät**: Ihre Daten leben in einer lokalen SQLite-Datenb
 
 ## Screenshots
 
-![Startbildschirm](images/screenshots/v2-01-a-home-empty.png)<br>*Startbildschirm, bevor Konten eingerichtet wurden.*<br><br>
-![Startbildschirm](images/screenshots/v2-01-b-home.png)<br>*Startbildschirm mit Konten, Donut-Diagramm und Aufschlüsselung nach Kategorie.*<br><br>
-![Hamburger-Menü](images/screenshots/v2-02-hamburger.png)<br>*Seitliches Menü mit Startseite, Konten, Kategorien, Tags, Kommentare, Alle Transaktionen und Einstellungen.*<br><br>
-![Transaktion hinzufügen](images/screenshots/v2-03-add-transaction.png)<br>*Ausgabe oder Einnahme mit Betrag, Konto, Kategorie, Tag, Tags, Kommentar und Foto hinzufügen.*<br><br>
-![Datumsauswahl](images/screenshots/v2-04-date-picker.png)<br>*Kalenderauswahl, um einen Tag, eine Woche, einen Monat, ein Jahr oder einen freien Zeitraum zu wählen.*<br><br>
-![Kategorien](images/screenshots/v2-05-categories.png)<br>*Kategorien nach Typ (Ausgaben/Einnahmen) in einem 4×N-Raster organisiert.*<br><br>
-![Tags](images/screenshots/v2-06-tags.png)<br>*Tags-Bildschirm mit Suche und Massenauswahl.*<br><br>
-![Alle Transaktionen, leer](images/screenshots/v2-07-a-all-transactions-empty-state.png)<br>*Alle Transaktionen im Leerzustand.*<br><br>
-![Alle Transaktionen](images/screenshots/v2-07-b-all-transactions.png)<br>*Alle Transaktionen mit Typ-, Kategorie-, Zeitraum- und Tag-Filtern sowie Sortierung und Suche.*<br><br>
-![Konten](images/screenshots/v2-08-accounts.png)<br>*Konten-Bildschirm mit Guthaben und aggregiertem Gesamt-Konto.*<br><br>
-![Einnahmen-Details](images/screenshots/v2-09-a-details-income.png)<br>*Details einer Einnahmen-Transaktion mit Bearbeiten und Löschen.*<br><br>
-![Ausgaben-Details](images/screenshots/v2-09-b-details-expense.png)<br>*Details einer Ausgaben-Transaktion mit Bearbeiten und Löschen.*<br><br>
-![Einstellungen](images/screenshots/v2-10-settings.png)<br>*Einstellungen: Darstellung, Regional, Personalisierung und Daten.*<br><br>
-![Regionale Einstellungen](images/screenshots/v2-11-regional-en.png)<br>*Regionale Einstellungen: Sprache, Währung, Dezimaltrennzeichen und erster Tag der Woche.*<br><br>
-![Darstellungs-Einstellungen](images/screenshots/v2-12-settings-appearance.png)<br>*Darstellung: Design, Textgröße und Icon-Formen.*<br><br>
-![Personalisierungs-Einstellungen](images/screenshots/v2-13-settings-personalization.png)<br>*Personalisierung: Start- und Transaktion-hinzufügen-Standardwerte sowie Datenschutz.*<br><br>
-![Daten-Einstellungen](images/screenshots/v2-14-settings-data.png)<br>*Daten: Sicherungs-Export/Import und Lösch-/Reset-Aktionen.*<br><br>
+![Startbildschirm](images/screenshots/v3.4-01-a-home-empty.png)<br>*Neue Installation ohne Transaktionen.*<br><br>
+![Startbildschirm](images/screenshots/v3.4-01-b-home.png)<br>*Startbildschirm mit Konten, Donut-Diagramm und Aufschlüsselung nach Kategorie.*<br><br>
+![Seitenmenü](images/screenshots/v3.4-02-hamburger.png)<br>*Seitenmenü mit Start, Alle Transaktionen, Wiederkehrend, Konten, Kategorien, Tags, Kommentare und Einstellungen.*<br><br>
+![Transaktion hinzufügen](images/screenshots/v3.4-03-add-transaction.png)<br>*Ausgabe oder Einnahme mit Betrag, Konto, Kategorie, Tag, Tags, Kommentar und Foto hinzufügen.*<br><br>
+![Datumsauswahl](images/screenshots/v3.4-04-date-picker.png)<br>*Kalenderauswahl, um einen Tag, eine Woche, einen Monat, ein Jahr oder einen freien Zeitraum zu wählen.*<br><br>
+![Alle Transaktionen, leer](images/screenshots/v3.4-05-a-all-transactions-empty-state.png)<br>*Alle Transaktionen im Leerzustand.*<br><br>
+![Alle Transaktionen](images/screenshots/v3.4-05-b-all-transactions.png)<br>*Alle Transaktionen mit Typ-, Kategorie-, Zeitraum- und Tag-Filtern sowie Sortierung und Suche.*<br><br>
+![Kategorie-Filter](images/screenshots/v3.4-05-c-category-filter.png)<br>*Kategoriefilter mit den Vorgaben Alle Kategorien, Alle Ausgaben und Alle Einnahmen.*<br><br>
+![Einnahmen-Details](images/screenshots/v3.4-05-d-details-income.png)<br>*Details einer Einnahmen-Transaktion mit Bearbeiten und Löschen.*<br><br>
+![Ausgaben-Details](images/screenshots/v3.4-05-e-details-expense.png)<br>*Details einer Ausgaben-Transaktion mit Bearbeiten und Löschen.*<br><br>
+![Transaktion bearbeiten](images/screenshots/v3.4-05-f-modify-transaction.png)<br>*Betrag, Konto, Kategorie, Tag, Tags, Kommentar und Foto einer Transaktion bearbeiten.*<br><br>
+![Wiederkehrend](images/screenshots/v3.4-06-recurring.png)<br>*Wiederkehrende Regeln mit nächsten Fälligkeiten, Beträgen und Aktiv/Pausiert-Schaltern.*<br><br>
+![Neue Wiederholungsregel](images/screenshots/v3.4-06-a-create-recurring.png)<br>*Eine Wiederholungsregel mit Name, Häufigkeit, Intervall und optionalem Enddatum einrichten.*<br><br>
+![Wiederholungsregel bearbeiten](images/screenshots/v3.4-06-b-modify-recurring.png)<br>*Den Zeitplan einer Wiederholungsregel bearbeiten und wählen, ob die Änderung nur für künftige oder auch für vergangene Vorkommen gilt.*<br><br>
+![Konten](images/screenshots/v3.4-07-accounts.png)<br>*Konten-Bildschirm mit Guthaben und aggregiertem Gesamt-Konto.*<br><br>
+![Konto erstellen](images/screenshots/v3.4-07-a-create-account.png)<br>*Ein Konto mit Name, Symbol, Farbe, Anfangssaldo und optionaler Notiz erstellen.*<br><br>
+![Konto bearbeiten](images/screenshots/v3.4-07-b-modify-account.png)<br>*Details, Anfangssaldo und Notiz eines Kontos bearbeiten oder es löschen.*<br><br>
+![Kategorien](images/screenshots/v3.4-08-categories.png)<br>*Kategorien nach Typ (Ausgaben/Einnahmen) in einem 4×N-Raster organisiert.*<br><br>
+![Kategorie erstellen](images/screenshots/v3.4-08-a-create-category.png)<br>*Eine Ausgaben- oder Einnahmenkategorie mit Name, Symbol und Farbe erstellen.*<br><br>
+![Kategorie bearbeiten](images/screenshots/v3.4-08-b-modify-category.png)<br>*Name, Symbol und Farbe einer Kategorie bearbeiten oder sie löschen.*<br><br>
+![Tags](images/screenshots/v3.4-09-tags.png)<br>*Tags-Bildschirm mit Suche und Massenauswahl.*<br><br>
+![Neues Tag](images/screenshots/v3.4-09-a-create-tag.png)<br>*Ein Tag zum Gruppieren von Transaktionen erstellen.*<br><br>
+![Tag bearbeiten](images/screenshots/v3.4-09-b-modify-tag.png)<br>*Ein Tag umbenennen oder löschen.*<br><br>
+![Kommentare](images/screenshots/v3.4-10-comments.png)<br>*Kommentaransicht mit Suche, Nutzungszählern und Mehrfachauswahl.*<br><br>
+![Kommentar bearbeiten](images/screenshots/v3.4-10-a-modify-comment.png)<br>*Einen Kommentar in allen Transaktionen bearbeiten, die ihn verwenden.*<br><br>
+![Einstellungen](images/screenshots/v3.4-11-settings.png)<br>*Einstellungen: Darstellung, Regional, Personalisierung und Daten.*<br><br>
+![Darstellungs-Einstellungen](images/screenshots/v3.4-11-a-appearance.png)<br>*Darstellung: Design, Textgröße und Icon-Formen.*<br><br>
+![Regionale Einstellungen](images/screenshots/v3.4-11-b-regional-en.png)<br>*Regionale Einstellungen: Sprache, Währung, Dezimaltrennzeichen und erster Tag der Woche.*<br><br>
+![Personalisierungs-Einstellungen](images/screenshots/v3.4-11-c-personalization.png)<br>*Personalisierung: Start- und Transaktion-hinzufügen-Standardwerte sowie Datenschutz.*<br><br>
+![Daten-Einstellungen](images/screenshots/v3.4-11-d-data.png)<br>*Daten: Sicherungs-Export/Import und Lösch-/Reset-Aktionen.*<br><br>
 
 ## Technologie-Stack
 
@@ -105,11 +119,13 @@ Das startet den Metro Bundler. Danach:
 | `npm test` | Führt die Vitest-Suite aus |
 | `npm run test:watch` | Führt Vitest im Watch-Modus aus |
 | `npm run test:all` | typecheck + lint + tests (die vollständige lokale Prüfung) |
+| `npm run lint:fix` | Behebt Lint-/Formatprobleme automatisch (Einrückung, Anführungszeichen, abschließende Kommas, Zeilenende) |
+| `npm run i18n` | Übersetzungsschlüssel in den 9 Sprachdateien hinzufügen, ändern, entfernen oder auflisten |
 
 ### Tests
 
 - **Unit-/Integrationstests** — Vitest. Die Suite deckt die Datenbank-Repositories auf beiden SQLite-Backends (nativ + sql.js), die Sicherungs-Roundtrips und mit `@testing-library/react-native` gerenderte Komponenten ab.
-- **Natives E2E** — Maestro-Flows in `FinlyApp/.maestro/` (10 Flows + Helfer) laufen gegen die Debug-APK auf einem Android-Emulator; siehe `docs/harnesses.md`.
+- **Natives E2E** — Maestro-Flows in `FinlyApp/.maestro/` (15 Flows + Helfer) laufen gegen die Debug-APK auf einem Android-Emulator; siehe `docs/harnesses.md`.
 - **Web-Verifizierung** — die Akzeptanzkriterien jeder Funktion werden in einem echten Browser bei 375px mit Playwright verifiziert.
 - Die CI-Pipeline (`.github/workflows/ci.yml`) führt das vollständige Tor `npm run test:all` bei jedem Push und jeder Pull Request auf `develop` und `main` aus.
 
@@ -135,7 +151,7 @@ FinlyApp/
 ### Datenbank
 
 - Eine einzige Engine-Schnittstelle (`DatabaseHandle`) auf allen Plattformen: expo-sqlite nativ, sql.js (WASM) mit IndexedDB-Persistenz im Web.
-- Migrationen werden mit `PRAGMA user_version` versioniert (`001_initial`, `002_seed`, `003_config`) und genau einmal innerhalb einer Transaktion angewendet.
+- Migrationen werden mit `PRAGMA user_version` versioniert (`001_initial`, `002_seed`, `003_config`, `004_recurring`) und genau einmal innerhalb einer Transaktion angewendet.
 - Die Repositories sind mit Drizzle ORM über dem gemeinsamen Handle geschrieben; gespeicherte Zeilen werden mit Zod-Schemas validiert.
 - Im Web werden die exportierten SQLite-Bytes in IndexedDB persistiert, sodass dieselben Daten Neuladungen überleben.
 

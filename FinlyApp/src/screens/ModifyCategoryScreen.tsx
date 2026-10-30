@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, TextInput,
   StyleSheet, Keyboard,
@@ -9,24 +9,28 @@ import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
+import { useBusyGuard } from '../hooks/useBusyGuard';
 import { useColorSelection } from '../hooks/useColorSelection';
+import { useIsDirty } from '../hooks/useIsDirty';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
-import { t, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdByName } from '../i18n';
-import { categoryRepository, transactionRepository } from '../database';
-import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, USER_ID } from '../constants/types';
-import { badgeShapeFor } from '../utils/badgeShape';
+import { t, getDefaultCategoryName, getDisplayCategoryName, getDefaultEnglishName, getDefaultCategoryIdByName } from '../i18n';
+import { categoryRepository, recurringRepository, transactionRepository } from '../database';
+import { type RootStackParamList, type NavigationProp, type IconName, TRANSACTION_TYPES, MAX_CATEGORY_NAME_LENGTH, USER_ID } from '../constants/types';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
+import { badgeShapeFor } from '../utils/badgeShape';
 import { BUTTON_BORDER_RADIUS } from '../components/componentStyles';
 import { CATEGORY_ICONS } from '../components/IconGrid';
 import { QUICK_COLORS } from '../constants/colors';
-import IconBadge from '../components/IconBadge';
 import IconColorSection from '../components/IconColorSection';
-import ConfirmationModal from '../components/ConfirmationModal';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
+import ModalEntitySubject from '../components/ModalEntitySubject';
 import CategoryTransferModal from '../components/CategoryTransferModal';
-import SectionTitle from '../components/form/SectionTitle';
+import FormSectionHeader from '../components/form/FormSectionHeader';
 import PrimaryButton from '../components/form/PrimaryButton';
-import DeleteButton from '../components/form/DeleteButton';
+import FormActions from '../components/form/FormActions';
+import CharCounter from '../components/form/CharCounter';
 import FormScrollView from '../components/form/FormScrollView';
+import { formStyles } from '../components/form/formStyles';
 
 type ModifyCategoryRouteProp = RouteProp<RootStackParamList, 'ModifyCategory'>;
 
@@ -41,16 +45,19 @@ export default function ModifyCategoryScreen() {
 
   const category = useMemo(
     () => categories.find(cat => cat.id === categoryId),
-    [categories, categoryId]
+    [categories, categoryId],
   );
 
   const [name, setName] = useState('');
+  const [nameTouched, setNameTouched] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const userEditedRef = useRef(false);
+  const markEdited = useCallback(() => { userEditedRef.current = true; }, []);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectModalVisible, setSelectModalVisible] = useState(false);
   const [targetCategoryId, setTargetCategoryId] = useState<number | null>(null);
-  const [deleteHasTransactions, setDeleteHasTransactions] = useState(false);
+  const [deleteCounts, setDeleteCounts] = useState<{ tx: number; rules: number } | null>(null);
+  const [deleteCountsUnknown, setDeleteCountsUnknown] = useState(false);
   const { selectedColor, customColor, setSelectedColor, setCustomColor, handleColorSelect } = useColorSelection();
 
   useEffect(() => {
@@ -71,50 +78,94 @@ export default function ModifyCategoryScreen() {
       return defaultId !== null ? getDefaultEnglishName(defaultId) : null;
     },
     duplicateErrorKey: labels.create_cat_error_name_duplicate,
+    checkErrorKey: labels.error_generic,
     excludeId: categoryId,
   });
 
   const deferredRefreshCategories = useDeferredRefresh(refreshCategories);
   const deferredRefresh = useDeferredRefresh(refresh);
+  const { busy, run } = useBusyGuard();
 
   const handleNameChangeLocal = (value: string) => {
-    userEditedRef.current = true;
+    markEdited();
+    setNameTouched(true);
     handleNameChange(value, setName);
   };
 
   const validationError = name.trim().length === 0 ? labels.create_cat_error_name_empty : nameError;
-  const canSave = name.trim().length > 0 && !nameError && !checkingName;
+
+  /** The values the form opened with; a refetch must not move the baseline. */
+  const baseline = useMemo(() => (category ? {
+    name: getDisplayCategoryName(category).trim(),
+    icon: category.icon,
+    color: category.color,
+  } : null), [category]);
+
+  const { isDirty, resetBaseline } = useIsDirty(baseline, {
+    name: name.trim(),
+    icon: selectedIcon,
+    color: selectedColor,
+  });
+
+  useEffect(() => {
+    if (!category || userEditedRef.current) return;
+    resetBaseline(baseline);
+  }, [category, baseline, resetBaseline]);
+
+  const canSave = name.trim().length > 0 && !nameError && !checkingName && isDirty;
 
   const sameTypeCategories = useMemo(() => {
     if (!category) return [];
     return categories.filter(cat => cat.type === category.type && cat.id !== category.id);
   }, [categories, category]);
 
+  /** The last category of its type can't be deleted (an income/expense needs one). */
+  const isLastOfType = sameTypeCategories.length === 0;
+  const deleteHasTransactions = deleteCountsUnknown || (deleteCounts?.tx ?? 0) > 0;
+  const deleteHasRules = deleteCountsUnknown || (deleteCounts?.rules ?? 0) > 0;
+  const deleteRemovesData = deleteHasTransactions || deleteHasRules;
+  const deleteSubjectSubtitle = deleteCounts
+    ? labels.categories_bulk_move_data(deleteCounts.tx, deleteCounts.rules) || undefined
+    : undefined;
+
   const handleSave = async () => {
     Keyboard.dismiss();
     if (!canSave || !category) return;
     if (selectedIcon === null || selectedColor === null) return;
-    const defaultName = getDefaultEnglishName(category.id);
-    const finalName = !userEditedRef.current && defaultName ? defaultName : name.trim();
-    await runWithErrorAlert(async () => {
-      await categoryRepository.update(categoryId, {
-        name: finalName,
-        icon: selectedIcon,
-        color: selectedColor,
-      });
-      navigation.goBack();
-      deferredRefreshCategories();
-    }, ERROR_PREFIXES.categoryUpdate);
+    // Still showing the localized default? Persist the canonical English name so the
+    // category keeps following the app language (same rule as the account screen).
+    const trimmedName = name.trim();
+    const englishDefault = getDefaultEnglishName(category.id);
+    const localizedDefault = getDefaultCategoryName(category.id);
+    const finalName = englishDefault && trimmedName === localizedDefault ? englishDefault : trimmedName;
+    await run(async () => {
+      await runWithErrorAlert(async () => {
+        await categoryRepository.update(categoryId, {
+          name: finalName,
+          icon: selectedIcon,
+          color: selectedColor,
+        });
+        navigation.goBack();
+        deferredRefreshCategories();
+      }, ERROR_PREFIXES.categoryUpdate);
+    });
   };
 
   const handleDeletePress = async () => {
-    if (!category) return;
+    if (!category || isLastOfType) return;
     try {
-      const linkedTransactions = await transactionRepository.list({ category_id: category.id });
-      const canMove = sameTypeCategories.length > 0;
-      setDeleteHasTransactions(linkedTransactions.length > 0 && canMove);
+      const [linkedTransactions, ruleCounts] = await Promise.all([
+        transactionRepository.list({ category_id: category.id }),
+        recurringRepository.countByCategoryIds([category.id]),
+      ]);
+      setDeleteCounts({
+        tx: linkedTransactions.length,
+        rules: ruleCounts[category.id] ?? 0,
+      });
+      setDeleteCountsUnknown(false);
     } catch {
-      setDeleteHasTransactions(true);
+      setDeleteCounts(null);
+      setDeleteCountsUnknown(true);
     }
     setDeleteModalVisible(true);
   };
@@ -128,23 +179,27 @@ export default function ModifyCategoryScreen() {
   const handlePermanentDelete = async () => {
     if (!category) return;
     setDeleteModalVisible(false);
-    await runWithErrorAlert(async () => {
-      await categoryRepository.delete(category.id);
-      navigation.goBack();
-      deferredRefreshCategories();
-      deferredRefresh();
-    }, ERROR_PREFIXES.categoryDelete);
+    await run(async () => {
+      await runWithErrorAlert(async () => {
+        await categoryRepository.delete(category.id);
+        navigation.goBack();
+        deferredRefreshCategories();
+        deferredRefresh();
+      }, ERROR_PREFIXES.categoryDelete);
+    });
   };
 
   const handleSelectTarget = async () => {
     if (targetCategoryId === null || !category) return;
-    await runWithErrorAlert(async () => {
-      await categoryRepository.reassignAndDelete(categoryId, targetCategoryId);
-      setSelectModalVisible(false);
-      navigation.goBack();
-      deferredRefreshCategories();
-      deferredRefresh();
-    }, ERROR_PREFIXES.categoryDelete);
+    await run(async () => {
+      await runWithErrorAlert(async () => {
+        await categoryRepository.reassignAndDelete(categoryId, targetCategoryId);
+        setSelectModalVisible(false);
+        navigation.goBack();
+        deferredRefreshCategories();
+        deferredRefresh();
+      }, ERROR_PREFIXES.categoryDelete);
+    });
   };
 
   if (!category) {
@@ -163,48 +218,33 @@ export default function ModifyCategoryScreen() {
     <ScreenShell>
       <View style={styles.content}>
         <FormScrollView>
-          <View style={styles.nameRow}>
-            <IconBadge
-              icon={selectedIcon || category.icon}
-              color={selectedColor || category.color}
-                        shape={badgeShapeFor(config, 'category')}
-              size={48}
-              iconSize={28}
-              roundedRadius={12}
-              backgroundAlpha={13}
-              style={styles.previewIcon}
-            />
-            <View style={styles.nameInputWrapper}>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: c.surface,
-                    color: c.text,
-                    borderColor: nameError ? c.red : c.border,
-                    fontSize: fs(14),
-                  },
-                ]}
-                placeholder={labels.create_cat_name_placeholder}
-                placeholderTextColor={c.textSecondary}
-                value={name}
-                onChangeText={handleNameChangeLocal}
-                maxLength={MAX_CATEGORY_NAME_LENGTH}
-                autoCapitalize="words"
-                autoCorrect={false}
-              />
-              <Text style={[styles.counter, { color: c.textSecondary, fontSize: fs(11) }]}>
-                {name.length}/{MAX_CATEGORY_NAME_LENGTH}
-              </Text>
-              {validationError && (
-                <Text style={[styles.errorText, { color: c.red, fontSize: fs(12) }]}>
-                  {validationError}
-                </Text>
-              )}
-            </View>
-          </View>
+          <FormSectionHeader
+            title={labels.form_name}
+            icon="id-card-outline"
+            style={formStyles.firstSection}
+            right={<CharCounter value={name.length} maxLength={MAX_CATEGORY_NAME_LENGTH} />}
+          />
+          <TextInput
+            style={[
+              styles.input,
+              {
+                backgroundColor: c.surface,
+                color: c.text,
+                borderColor: nameTouched && validationError ? c.red : c.border,
+                fontSize: fs(14),
+              },
+            ]}
+            placeholder={labels.create_cat_name_placeholder}
+            placeholderTextColor={c.textSecondary}
+            value={name}
+            onChangeText={handleNameChangeLocal}
+            onBlur={() => setNameTouched(true)}
+            maxLength={Math.max(MAX_CATEGORY_NAME_LENGTH, name.length)}
+            autoCapitalize="words"
+            autoCorrect={false}
+          />
 
-          <SectionTitle text={labels.modify_cat_type} />
+          <FormSectionHeader title={labels.modify_cat_type} icon="swap-horizontal-outline" />
           <Text style={[styles.typeText, { color: c.textSecondary, fontSize: fs(14) }]}>
             {category.type === TRANSACTION_TYPES.expense ? labels.tab_expenses : labels.tab_income}
           </Text>
@@ -215,44 +255,60 @@ export default function ModifyCategoryScreen() {
             symbolTitle={labels.create_cat_symbols}
             colorTitle={labels.create_cat_color}
             selectedIcon={selectedIcon}
-            onSelectIcon={setSelectedIcon}
+            onSelectIcon={(icon) => { markEdited(); setSelectedIcon(icon); }}
             selectedColor={selectedColor}
             customColor={customColor}
-            onSelectColor={handleColorSelect}
+            onSelectColor={(color) => { markEdited(); handleColorSelect(color); }}
           />
 
-          <DeleteButton label={labels.modify_cat_delete} onPress={handleDeletePress} style={styles.deleteButton} />
-
-          <PrimaryButton
-            label={labels.modify_cat_save}
-            onPress={handleSave}
-            disabled={!canSave}
-            style={styles.button}
-          />
+          <FormActions
+            deleteLabel={labels.delete}
+            onDeletePress={handleDeletePress}
+            deleteDisabled={isLastOfType || busy}
+            deleteHint={isLastOfType ? labels.modify_cat_delete_last : null}
+            saveHint={validationError}
+          >
+            <PrimaryButton label={labels.modify_cat_save} onPress={handleSave} disabled={!canSave || busy} />
+          </FormActions>
         </FormScrollView>
       </View>
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
-        title={labels.modify_cat_delete_confirm_title(getDisplayCategoryName(category))}
-        message={deleteHasTransactions
-          ? labels.modify_cat_delete_confirm_message
-          : labels.modify_cat_delete_confirm_message_empty}
+        title={labels.categories_bulk_delete_confirm_title(1)}
+        subject={(
+          <ModalEntitySubject
+            name={getDisplayCategoryName(category)}
+            icon={category.icon as IconName}
+            color={category.color}
+            shape={badgeShapeFor(config, 'category')}
+            subtitle={deleteSubjectSubtitle}
+          />
+        )}
+        message={deleteHasTransactions && deleteHasRules
+          ? labels.modify_cat_delete_confirm_message_tx_rules
+          : deleteHasTransactions
+            ? labels.modify_cat_delete_confirm_message
+            : deleteHasRules
+              ? labels.modify_cat_delete_confirm_message_rules
+              : labels.modify_cat_delete_confirm_message_empty}
         confirmLabel={labels.modify_cat_delete_confirm_delete}
-        cancelLabel={labels.modify_cat_delete_confirm_cancel}
         onConfirm={handlePermanentDelete}
         onCancel={() => setDeleteModalVisible(false)}
-        moveLabel={deleteHasTransactions ? labels.modify_cat_delete_confirm_move : undefined}
-        onMove={deleteHasTransactions ? handleMoveTransactions : undefined}
+        moveLabel={deleteRemovesData ? labels.modify_cat_delete_confirm_move : undefined}
+        onMove={deleteRemovesData ? handleMoveTransactions : undefined}
+        busy={busy}
       />
 
       <CategoryTransferModal
         visible={selectModalVisible}
-        title={labels.modify_cat_select_title}
+        title={labels.categories_bulk_move_title}
+        sourceCategory={category}
+        sourceSubtitle={deleteSubjectSubtitle}
         categories={sameTypeCategories}
         selectedId={targetCategoryId}
-        confirmLabel={labels.modify_cat_select_confirm}
-        cancelLabel={labels.modify_cat_select_cancel}
+        confirmLabel={labels.categories_bulk_move_confirm}
+        cancelLabel={labels.cancel}
         onSelect={(id) => {
           if (typeof id === 'number') setTargetCategoryId(id);
         }}
@@ -267,38 +323,12 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  previewIcon: {
-    marginTop: 4,
-    marginRight: 12,
-  },
-  nameInputWrapper: {
-    flex: 1,
-  },
   input: {
     borderWidth: 1,
     borderRadius: BUTTON_BORDER_RADIUS,
     padding: 12,
   },
-  counter: {
-    textAlign: 'right',
-    marginTop: 4,
-    marginBottom: 2,
-  },
-  errorText: {
-    marginTop: 2,
-  },
   typeText: {
     marginLeft: 4,
-  },
-  button: {
-    marginTop: 12,
-  },
-  deleteButton: {
-    marginTop: 16,
   },
 });

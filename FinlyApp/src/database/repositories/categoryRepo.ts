@@ -1,16 +1,45 @@
 import { and, eq, inArray, sql } from 'drizzle-orm';
-import { getDrizzle, withTransaction } from '../drizzle/engine';
-import { categories, transactions } from '../drizzle/schema';
+import { getDrizzle, withTransaction, type DrizzleDb } from '../drizzle/engine';
+import { categories, recurringRules, transactions } from '../drizzle/schema';
 import { runResultOf } from '../drizzle/proxy';
 import type { Category } from '../types';
 import type { TransactionType } from '../../constants/types';
 import { categorySchema } from '../schemas';
 import { parseRowOrNull, parseRows } from '../validate';
-import { collectTransactionPhotos, deletePhotoUris } from '../photoCleanup';
+import { collectTransactionPhotos, deleteUnreferencedPhotoUris } from '../photoCleanup';
+import { serializeWrites } from '../transactionQueue';
 import { dbTimestamp } from '../../utils/formatters';
-import { existsByName } from './repoHelpers';
+import { existsByName, pickDefined } from './repoHelpers';
 
-export const categoryRepo = {
+async function moveCategoryData(
+  db: DrizzleDb,
+  categoryIds: number[],
+  targetId: number,
+): Promise<void> {
+  await db
+    .update(transactions)
+    .set({ category_id: targetId })
+    .where(inArray(transactions.category_id, categoryIds))
+    .run();
+  // Recurring rules are the template for the category's future transactions, so
+  // moving the data must move them too (otherwise the CASCADE deletes them).
+  await db
+    .update(recurringRules)
+    .set({ category_id: targetId })
+    .where(inArray(recurringRules.category_id, categoryIds))
+    .run();
+}
+
+async function deleteCategoryRows(db: DrizzleDb, categoryIds: number[]): Promise<void> {
+  await db.delete(categories).where(inArray(categories.id, categoryIds)).run();
+}
+
+async function deleteCategoryData(db: DrizzleDb, categoryIds: number[]): Promise<void> {
+  await db.delete(transactions).where(inArray(transactions.category_id, categoryIds)).run();
+  await deleteCategoryRows(db, categoryIds);
+}
+
+const categoryRepoBase = {
   async list(userId: number, type?: TransactionType): Promise<Category[]> {
     const db = await getDrizzle();
     const rows = await db
@@ -19,8 +48,8 @@ export const categoryRepo = {
       .where(
         and(
           eq(categories.user_id, userId),
-          type !== undefined ? eq(categories.type, type) : undefined
-        )
+          type !== undefined ? eq(categories.type, type) : undefined,
+        ),
       )
       .orderBy(sql`name COLLATE NOCASE`)
       .all();
@@ -50,11 +79,7 @@ export const categoryRepo = {
 
   async update(id: number, data: Partial<Omit<Category, 'id' | 'created_at'>>): Promise<void> {
     const db = await getDrizzle();
-    const set: Partial<typeof categories.$inferInsert> = {};
-    if (data.name !== undefined) set.name = data.name;
-    if (data.icon !== undefined) set.icon = data.icon;
-    if (data.color !== undefined) set.color = data.color;
-    if (data.type !== undefined) set.type = data.type;
+    const set = pickDefined(data, ['name', 'icon', 'color', 'type']);
     if (Object.keys(set).length === 0) return;
     await db.update(categories).set(set).where(eq(categories.id, id)).run();
   },
@@ -62,20 +87,15 @@ export const categoryRepo = {
   async delete(id: number): Promise<void> {
     const uris = await collectTransactionPhotos('category_id', id);
     await withTransaction(async (db) => {
-      await db.delete(transactions).where(eq(transactions.category_id, id)).run();
-      await db.delete(categories).where(eq(categories.id, id)).run();
+      await deleteCategoryData(db, [id]);
     });
-    await deletePhotoUris(uris);
+    await deleteUnreferencedPhotoUris(uris);
   },
 
   async reassignAndDelete(oldCategoryId: number, newCategoryId: number): Promise<void> {
     await withTransaction(async (db) => {
-      await db
-        .update(transactions)
-        .set({ category_id: newCategoryId })
-        .where(eq(transactions.category_id, oldCategoryId))
-        .run();
-      await db.delete(categories).where(eq(categories.id, oldCategoryId)).run();
+      await moveCategoryData(db, [oldCategoryId], newCategoryId);
+      await deleteCategoryRows(db, [oldCategoryId]);
     });
   },
 
@@ -83,21 +103,16 @@ export const categoryRepo = {
     if (ids.length === 0) return;
     const uris = await collectTransactionPhotos('category_id', ...ids);
     await withTransaction(async (db) => {
-      await db.delete(transactions).where(inArray(transactions.category_id, ids)).run();
-      await db.delete(categories).where(inArray(categories.id, ids)).run();
+      await deleteCategoryData(db, ids);
     });
-    await deletePhotoUris(uris);
+    await deleteUnreferencedPhotoUris(uris);
   },
 
   async reassignManyAndDelete(ids: number[], targetId: number): Promise<void> {
     if (ids.length === 0) return;
     await withTransaction(async (db) => {
-      await db
-        .update(transactions)
-        .set({ category_id: targetId })
-        .where(inArray(transactions.category_id, ids))
-        .run();
-      await db.delete(categories).where(inArray(categories.id, ids)).run();
+      await moveCategoryData(db, ids, targetId);
+      await deleteCategoryRows(db, ids);
     });
   },
 
@@ -111,16 +126,12 @@ export const categoryRepo = {
     await withTransaction(async (db) => {
       for (const item of items) {
         if (item.targetId !== null) {
-          await db
-            .update(transactions)
-            .set({ category_id: item.targetId })
-            .where(eq(transactions.category_id, item.id))
-            .run();
+          await moveCategoryData(db, [item.id], item.targetId);
         }
       }
-      await db.delete(categories).where(inArray(categories.id, items.map((item) => item.id))).run();
+      await deleteCategoryRows(db, items.map((item) => item.id));
     });
-    await deletePhotoUris(uris);
+    await deleteUnreferencedPhotoUris(uris);
   },
 
   async deleteAll(): Promise<void> {
@@ -134,7 +145,9 @@ export const categoryRepo = {
       { name: categories.name, userId: categories.user_id, id: categories.id },
       userId,
       name,
-      excludeId
+      excludeId,
     );
   },
 };
+
+export const categoryRepo = serializeWrites(categoryRepoBase, ['create', 'update', 'deleteAll']);

@@ -1,7 +1,7 @@
 # 013 — Create account page
 
 - **Objective**
-  Screen accessible from the floating "+" button (FAB) in `AccountsScreen` (011) that allows the user to create a new account with name, icon, color, and optional note. All texts are multilingual (en/es/ca).
+  Screen accessible from the floating "+" button (FAB) in `AccountsScreen` (011) that allows the user to create a new account with name, icon, color, and optional note. All texts are multilingual (en/es/ca/gl/eu/fr/de/pt/it).
 
 ---
 
@@ -13,11 +13,11 @@
 - The screen has a back button (left arrow) in the header to return to `AccountsScreen`.
 - The header title is "Create account" (multilingual).
 
-### 2. Account name
+### 2. Name
 
-- Title: "Account name" (multilingual).
+- Title: "Name" (multilingual, `form_name`) with an `id-card-outline` icon and the `0/30` counter in the header's right slot.
 - Text input with placeholder "Account name" (multilingual).
-- Maximum 30 characters with counter "0/30".
+- Maximum 30 characters.
 - **Validation**: empty name is not allowed. If empty, a red error text is shown and the "Create" button remains disabled.
 - **Duplicate validation**: when typing, it verifies that an account with the same name does not already exist (case-insensitive).
   - "Cuenta", "cuenta" and "CUENTA" are considered duplicates.
@@ -27,7 +27,7 @@
 
 ### 3. Symbols (icons)
 
-- Title: "Symbols" (multilingual).
+- Title: "Symbols" (multilingual) with a `shapes-outline` icon.
 - Grid of 4 columns × dynamic rows (vertical ScrollView if they don't all fit).
 - ~20 predefined Ionicons for accounts are shown with a flat gray background (`#334155` in dark theme).
 - When an icon is pressed, it is highlighted with a primary color border and the background changes slightly.
@@ -51,7 +51,7 @@
 
 ### 4. Color
 
-- Title: "Color" (multilingual).
+- Title: "Color" (multilingual) with a `color-palette-outline` icon; the standard 16px section gap separates it from Symbols.
 - Grid of 1 row × 8 columns.
 - The first 6 positions are predefined colors in circular shape.
 - The 7th position is a gray "+" that opens a **modal** with a dynamic color picker.
@@ -83,9 +83,9 @@
 
 ### 5. Note (description)
 
-- Title: "Note" (multilingual).
+- Title: "Note" (multilingual) with a `document-text-outline` icon.
 - Multiline text input for an optional account description.
-- Maximum 200 characters with counter "0/200".
+- Maximum 200 characters with the `0/200` counter in the Note header's right slot.
 - Default value: empty.
 
 ### 6. "Create" button
@@ -102,7 +102,7 @@
   3. "Select an icon" (if icon missing)
   4. "Select a color" (if color missing)
   5. "Select an icon and a color" (if both missing)
-- When "Create" is pressed, the account is created in the database (native SQLite / web localStorage) and navigation goes back to `AccountsScreen` (011).
+- When "Create" is pressed, the account is created in the database (native SQLite, sql.js + IndexedDB on web) and navigation goes back to `AccountsScreen` (011).
 
 ### 7. Create behavior
 
@@ -123,9 +123,9 @@
 - **Configuration**: the screen must use `useConfig().activeColors` for colors (not hardcoded).
 - **Text**: the screen must use `useFontSize()` for text scaling.
 - **Navigation**: the screen is added to the `HomeStack` in `AppNavigator.tsx`.
-- **Persistence**: the account is saved in the `accountRepository` (native SQLite or web localStorage).
+- **Persistence**: the account is saved in the `accountRepository` (native SQLite, sql.js + IndexedDB on web).
 - **Icons**: use `@expo/vector-icons` (Ionicons) as in the rest of the app.
-- **Duplicate validation**: a function `existsByName(userId: number, name: string, excludeId?: number)` must be added to `accountRepo` and `webAccountRepo` that returns `true` if an account with that name already exists (case-insensitive) for the given user. The `excludeId` parameter is used in 012 to exclude the current account from the check.
+- **Duplicate validation**: a function `existsByName(userId: number, name: string, excludeId?: number)` must be added to `accountRepo` that returns `true` if an account with that name already exists (case-insensitive) for the given user. The `excludeId` parameter is used in 012 to exclude the current account from the check.
 
 ---
 
@@ -133,7 +133,7 @@
 
 - [x] The floating "+" button (FAB) in `AccountsScreen` (011) navigates to `CreateAccountScreen`.
 - [x] The header shows a back arrow and title "Create account" in the active language.
-- [x] The name input appears first below the header, with placeholder "Account name".
+- [x] The `Name` section appears first below the header with an `id-card-outline` icon and the counter in the header; the input placeholder is "Account name".
 - [x] The input has a maximum of 30 characters with counter "0/30".
 - [x] The "Create" button is disabled if the name is empty.
 - [x] If the name is empty, "Enter an account name" is shown in red.

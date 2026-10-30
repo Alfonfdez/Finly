@@ -25,8 +25,8 @@ b) Bottom section:
       - When "All" is checked, the range text explains the resolved period, e.g. `All (from 1 Jan to 2 Sep 2026)` (localized).
 
 c) Chart section:
-  - Donut chart (SVG) with expenses/income by category.
-  - Can switch to horizontal bar chart by tapping on it.
+  - Donut chart (SVG) with expenses/income by category; the period total is centered inside the hole (auto-fit).
+  - Can switch to horizontal bar chart by tapping on it; the bar chart shows the same period total centered above the bar, with or without transactions. The selected chart type is saved (`homeChartType`, donut by default).
 
 d) Floating "+" button (FAB) that navigates to the "Add Expense/Income" screen.
 
@@ -58,10 +58,14 @@ Status: completed.
 Restructured Settings screen with 4 subsections:
 - Appearance: Theme, Text size, Account icon shape, Category icon shape.
 - Regional: Language, Currency, Decimal separator, First day of week.
-- Personalization: Home screen defaults (account, period), Add transaction defaults (account, optional fields), Privacy (hide account balances with eye icon).
+- Personalization: Home screen defaults (account, period), Add/Modify transaction defaults (Add: account + optional fields; Modify: optional fields), New/Edit recurring rule defaults (New: account + optional fields; Edit: optional fields), Privacy (hide account balances with eye icon).
 - Data: Delete all transactions, Delete all data (settings kept), Reset to factory state (all double-confirmation flows).
 
-Persistent config in SQLite on both platforms. 7 new config fields.
+Persistent config in SQLite on both platforms. 15 config fields.
+- Fix (2026-10-13): the Data rows' wording now covers recurring rules — "Delete all transactions" states accounts/categories/tags/recurring rules are kept (already the behaviour), while "Delete all data" and "Reset to factory state" state recurring rules are deleted (already implemented via `clearDataKeepSettings`/`resetDatabase`). "Delete all transactions" now also requires the typed DELETE confirmation, matching the other two rows; the spec's non-existent "All data deleted" success alert was removed.
+- Update (2026-10-14): a **Recurring screen** section added its own default account (`recurringDefaultAccountId`, independent of the Add-transaction default) plus Labels/Comments optional fields (`recurringShowLabels`/`recurringShowComments`, no Photo — a rule has none); the rule form (create/edit) honoured those flags, and the account resolution shared by the add and recurring forms moved to `utils/defaultAccount.ts`.
+- Update (2026-10-14): the Personalization section titles reuse the screens' own titles, and the optional fields are now **per screen** — Add, Modify, New rule and Edit rule each have their own flags (`addShow*`, `modifyShow*`, `createRecurringShow*`, `editRecurringShow*`; the create-rule keys were renamed from `recurring*` for symmetry). The mapping lives in `utils/formFieldVisibility.ts` (`FormMode` derived from `transactionId` / `initialRuleNextDue`); Modify and Edit rule have no Default account (they keep the record's own).
+- Fix (2026-10-15): the settings screens were the only screens not wrapped in `ScreenShell`, so with Android edge-to-edge their last section (e.g. Personalization → Privacy) sat under the navigation bar. All five (Settings, Appearance, Regional, Personalization, Data) now render inside `ScreenShell`, applying the bottom safe-area inset.
 
 Spec: spec/features/003-settings-screen/.
 
@@ -78,6 +82,7 @@ Screen for adding expense/income with:
 - Comment input with character counter (4096 max) and autocomplete.
 - Photo section (camera/gallery) — UI ready, functionality pending.
 - "Add" button with validation and help text.
+- Fix (2026-10-14): the shared transaction form (Add/Modify transaction, New/Edit recurring rule) now scrolls its submit button above the keyboard when the **Comment** field is focused — re-run on `onLayout`/`keyboardDidShow` so it lands after the resize has settled — with the scroll content's bottom padding raised to 112 px for a clear gap. Focusing any other field (recurring Name, Amount, Account, Category) does not scroll.
 
 Spec: spec/features/004-add-transaction-screen/.
 
@@ -111,7 +116,8 @@ Status: completed.
 
 Basic calculator modal for the add transaction screen:
 - Numeric keypad with basic operations (+, -, *, /).
-- "=" button to evaluate the expression and show the result.
+- "=" button to evaluate the expression, show the result and commit it for chained operations.
+- Reopening the modal resets the expression to blank.
 - "Accept" and "Cancel" buttons.
 - On accept, pastes the result into the amount field.
 - Reusable component that can be used on other screens.
@@ -162,6 +168,8 @@ Screen accessible from the Drawer that shows all accounts with their balance:
 - Header search toggle + SearchBar: client-side case-insensitive multi-term (AND) search over account display name (current language) and description; Total row always visible; "No results found" empty state.
 - Floating "+" button (FAB) that navigates to create account (013).
 - Tapping an account navigates to modify account (012).
+- Fix (2026-10-14): the FlatList is now unmounted when empty (plain `View` + `EmptyState`), so an emptied list never keeps the old scroll extent — see the "Empty lists" convention in `6-screens.md`.
+- Fix (2026-10-26): the account selection checkbox now follows the shared list convention: leading `checkbox-outline` / `checkbox`, tappable with the row, while the balance stays visible on the right.
 
 Spec: spec/features/011-accounts-screen/.
 
@@ -188,6 +196,7 @@ Screen for creating a new account:
 - Optional "Note" multiline field with 200 character limit.
 - "Create" button with validation (name + icon + color).
 - On creation, `initial_balance` is set to 0.
+- Fix (2026-10-14): tapping the **Note** field no longer hides it (and the Create button) behind the keyboard — `AccountForm`'s `FormScrollView` is now `KeyboardAvoidingView`-wrapped and reveals the bottom button on the Note focus (shared `useKeyboardReveal`); the same applies to Modify account.
 
 Spec: spec/features/013-create-account-screen/.
 
@@ -199,6 +208,7 @@ Filtered transaction list screen by category, account, and period, accessible fr
 - Category section: icon + name + total with color (green/red) and prefix (+/-).
 - Account selector with selection modal (radio + icon + name + balance).
 - Sorting by date or amount with ASC/DESC toggle.
+- Recurring view chip (All / One-time / Recurring) in the controls row, filtering recurring-generated vs one-time transactions; the screen total reflects the view and the row scrolls horizontally when needed.
 - List grouped by day with date header.
 - Centered "+" FAB to navigate to add transaction.
 - Passes categoryId, type, period, startDate, endDate as navigation parameters.
@@ -212,9 +222,10 @@ Status: completed.
 Independent `AllTransactionsScreen` accessible from the hamburger menu (drawer) — "Transactions" — with advanced filtering:
 - **Type tabs** (All | Expenses | Income) — default "All", filters by transaction type.
 - **Category filter** — multi-select category modal (021) with search, "All" chip, type-aware sections.
-- **Period selector** — PeriodTabs + CalendarPicker, shared with HomeScreen via AppContext. Default "Year" (current year). Custom range: Jan 1 → today.
+- **Period selector** — PeriodTabs + CalendarPicker, shared with HomeScreen via AppContext. Default from `config.homeDefaultPeriod` (Month by default). Custom range: Jan 1 → today.
 - Account selector with period total balance (green/red), updated by all active filters.
 - Sorting by date or amount with ASC/DESC toggle.
+- Recurring view chip (All / One-time / Recurring) in the controls row, filtering recurring-generated vs one-time transactions; the screen total reflects the view and the row scrolls horizontally when needed.
 - Tag filter bar with local state.
 - Header search toggle + SearchBar: client-side case-insensitive multi-term (AND) search over comment/description, category display name (current language), tag names and account name; composes with all other filters; "No results found" empty state.
 - List grouped by day with date header.
@@ -223,6 +234,7 @@ Independent `AllTransactionsScreen` accessible from the hamburger menu (drawer) 
 - Category selection resets on type tab switch.
 - Type-aware button labels ("All categories" / "All expense categories" / "All income categories").
 - Apply button disabled when 0 categories selected.
+- Fix (2026-10-27): category filters are normalized against the active tab's universe (full expense/income sets stored as empty on their type tabs), wrong-type IDs are pruned, and backup import publishes the imported config and refreshed categories together so imported filters are not pruned against stale categories.
 
 Spec: spec/features/015-all-transactions-screen/.
 
@@ -231,7 +243,7 @@ Status: completed.
 
 Transaction details screen for an individual transaction, accessible by tapping any transaction in the lists (TransactionsScreen, AllTransactionsScreen):
 - Header with "Transaction details" title and back button.
-- Data card with 5 rows: Amount (with type color), Account (icon + name), Category (icon + name), Date (multilingual long format), Comment (or "No comment").
+- Data card rows — each with a muted type symbol to the left of the label (icons reused from the drawer/pickers): Amount (type color), Account (icon + name), Category (icon + name), Date (multilingual long format), Comment, Tags and Recurring. The rows are always present so the card is uniform; empty Comment/Tags/Recurring show the shared `—` placeholder (`details_none`), and the Recurring row is read-only (rule name, or `—`; no toggle).
 - "Delete" button with confirmation modal ("No" / "Yes") that deletes and refreshes the list.
 - "Edit" button that navigates to ModifyTransaction (017) to edit the transaction.
 - Footer "Created HH:mm dd MMM yyyy" with 24h format and year always visible.
@@ -264,8 +276,10 @@ Tag management with database persistence:
 - Tag repository CRUD (SQLite on both platforms).
 - Tags screen accessible from the Drawer with tag list, header search toggle and FAB.
 - Create tag screen with name validation (empty, duplicate, max 20 chars).
-- Maximum of 50 tags (Create button disabled + inline message when reached; "+" FAB on Tags screen and "+ Add tag" chip in the transaction form hidden at the cap).
+- Maximum of 100 tags (Create button disabled + inline message when reached; "+" FAB on Tags screen and "+ Add tag" chip in the transaction form hidden at the cap).
 - Modify/delete tag screen with name edit and delete confirmation.
+- Update (2026-10-14): each tag row shows "Used in N transactions" (`tags_used_in`) and "Created <date>" (`tags_created_on`), and the list gained a `SortToggle` strip (name / created / usage, session-only) via the shared `SortRow`.
+- Fix (2026-10-14): emptying the list (Select all → Delete from an overflowing list) left the old scroll extent, so the empty state stayed scrollable and off-centre. The list is now **unmounted** when empty and a plain `View` + `EmptyState` is rendered (see the "Empty lists" convention in `6-screens.md`).
 
 Spec: spec/features/018-tag-management/.
 
@@ -338,6 +352,7 @@ Photo attachment for transactions (camera + gallery) on iOS and Android:
 - Hidden on web (native camera + file system; not checkable on web).
 - "Show photo" checkbox hidden in Settings on web.
 - Photo column added directly to 001_initial.ts (no migration — app not in production).
+- Fix (2026-10-15): file cleanup (delete / replace / remove) is **native-only** — on web there are no files to delete (see 024).
 
 Spec: spec/features/023-photo-attachment/.
 
@@ -351,6 +366,7 @@ Photo attachment extended to web, closing the last platform gap from 023:
 - Camera stays native-only: PhotoSection hides "Take photo" on web; web offers gallery only.
 - `deletePhotoFile` no-ops on `data:` URIs (web photos live in the DB row, not the file system).
 - Tests: photoUtils data-URI parse/no-op; PhotoSection camera-option visibility per platform.
+- Fix (2026-10-15): `deletePhotoFile` now no-ops on **all** web URIs (not just `data:`), so deleting a transaction / account / category whose photos are native `file://` URIs (e.g. imported from a native backup) no longer calls `expo-file-system` on web — which warned "not supported on web" and threw `this.validatePath is not a function`.
 
 Spec: spec/features/024-photo-on-web/.
 
@@ -368,6 +384,10 @@ Data export / import (backup) on iOS, Android, and web:
 - Fix (2026-09-18): native export now reports the real share-sheet outcome via a local `finly-share` module (`saved`/`dismissed`) — success alert only when the share completed, none on dismiss, error alert on failure; `ShareResult` constants added; DataScreen tests cover export success/dismissed/error and import cancel/success.
 - Fix (2026-09-18, follow-up): Android share targets return no reliable result (a completed Gmail share reported `RESULT_CANCELED`), so on Android the module reports `saved` whenever the share sheet ran and the success alert always appears after Export; iOS keeps truthful detection (dismissal still shows no alert); web unchanged. `FinlyApp/.gitignore` ignores `modules/**/android/build/`.
 - Fix (2026-09-18, hybrid): Android Export now writes the backup to the **public Downloads folder** (`finly-share.saveToDownloadsAsync`, `MediaStore.Downloads`, Android 10+; older Android falls back to the share flow). The "Backup saved" alert is shown only after the write succeeds and offers optional **Share** / **Done** — sharing is fire-and-forget and its outcome is never reported, so no modal can be false. New i18n keys (9 languages); `isAndroid`/`isAndroidPlatform` in `src/utils/platform.ts`; DataScreen Android-flow tests + platform tests added.
+- Fix (2026-10-13): on web the export/import/delete feedback was invisible (react-native-web's `Alert` is a no-op while DataScreen called `Alert.alert` directly). Added a web-aware `alertInfo` (sharing the `window.alert` fallback with `alertError`) and routed the DataScreen messages through it; the Android-only download/share sheet keeps its raw `Alert`.
+- Fix (2026-10-14): the typed-DELETE confirmation modal stayed centred while the keyboard covered its confirm/cancel footer. `ModalShell` now measures the keyboard (`useKeyboardInset`) and lifts the card above it (and caps its height), so the buttons stay reachable.
+- Fix (2026-10-14): the lifted modal dropped back down as soon as the keyboard hid (tapping Confirm blurs the input), which moved the button mid-tap and forced a second tap. The lift is now held while the modal is open (`useKeyboardLift`) and resets on close, so one tap confirms.
+- Fix (2026-10-14): the typed-DELETE confirm still needed two taps — `DataScreen`'s outer `ScrollView` (an ancestor of the modal) captured the first tap to dismiss the keyboard (RN's default `keyboardShouldPersistTaps`). It now sets `keyboardShouldPersistTaps="handled"`, so the Confirm button receives the first tap.
 
 Spec: spec/features/025-data-backup/.
 
@@ -394,8 +414,50 @@ Bulk comment management for transactions:
 - Autocomplete: `searchComments()` returns distinct trimmed suggestions ranked prefix-first (NOCASE) capped at `MAX_SUGGESTIONS`; `CommentInput` only triggers from `MIN_COMMENT_SUGGESTION_LENGTH = 2` trimmed characters.
 - i18n keys `nav_comments` + `comments_*` (en/es/ca).
 - Tests: 6 new contract tests + 7 `CommentInput` component tests; `npm run test:all` green (typecheck + lint + 247 tests, 29 files).
+- Update (2026-10-14): each row also shows "Last used <date>" (`getDistinctComments()` now returns `lastUsed = MAX(date)`), the usage line moved to the shared `used_in_transactions`, and the list gained a `SortToggle` strip (name / last used / usage, session-only) via the shared `SortRow`.
+- Fix (2026-10-14): emptying the list (Select all → Delete from an overflowing list) left the old scroll extent; the list is now unmounted when empty and a plain `View` + `EmptyState` is rendered (see the "Empty lists" convention in `6-screens.md`).
+- Fix (2026-10-14): the ModifyComment screen uses the keyboard-aware `FormScrollView` so the Save button stays above the keyboard (shared `useKeyboardReveal`).
 
 Spec: spec/features/027-comments-management/.
+
+## 028-recurring-transactions
+Status: completed.
+
+Recurring expenses/income created once and materialized automatically:
+- New `recurring_rules` table (+ `recurring_rule_tags`) storing type, account, category, amount, comment, tags, frequency (daily/weekly/monthly/yearly + "every N"), anchors, start/end date and `next_due`; two nullable columns added to `transactions` (`recurring_rule_id`, `recurrence_date`) with a partial unique occurrence index.
+- Reconciliation on app start, on foreground and via a midnight timer while open: every due occurrence since the last run is created, dated on its scheduled day (missed months/years are back-filled); idempotent via the unique index, transactional, bounded per rule. A closed app catches up on next open (no OS background task in v1).
+- The recurring create/edit form gains a "Repeat" section (always shown, no toggle); the add-transaction form no longer offers it and always saves a single plain transaction. A Drawer "Recurring" screen lists rules (frequency summary, next due, pause/resume, FAB); transaction details show a Recurring chip + "Stop repeating".
+- Recurring rules have a **compulsory, unique name** (trimmed, case-insensitive; the rule's title, editable). The Recurring list shows each rule's name, creation date, generated-transaction count and next due (or Ended).
+- The frequency summary is localized and phrased per frequency: weekly includes the weekday, yearly reads naturally ("Every year on October 6" / "Cada año el 6 de octubre"), and the end date appends "until <date>".
+- The rule's date field is a **Start date** that accepts **any** date (past, present or future): in rule mode the form's day picker passes `maxDate = null` (outside rule mode it stays today/past). This replaces the old "Skip the first occurrence" option.
+- Editing the **Start date** of a rule that has never generated an occurrence (`next_due === start_date`) re-anchors it from the new start, so moving it to today makes it due and generates from there (past occurrences stay skipped/recoverable); a started rule's earlier start keeps the past occurrences untouched and shows a hint.
+- A monthly/yearly rule can anchor on the **last day of the month** (the 31st, clamped to each month's end), starting on the last day of the start month; the summary reads "on the last day" (yearly: "on the last day of <month>").
+- Editing reconciles first then updates in place; scope "Future only" or "Future + past" (bulk update of account/category/amount/comment/tags/type on generated transactions — dates never change). The "past" scope is only offered when a past-affecting field actually changed (a timing-only edit leaves past transactions untouched).
+- Deleting a rule keeps every transaction it generated (FK `ON DELETE SET NULL`).
+- A rule with no occurrence left within its end date shows an off, **disabled** (dimmed) **Ended** toggle that cannot be resumed; the state is derived from the schedule (not persisted), so extending the end date into the future revives the rule and re-enables the toggle. Ended rules are skipped by reconciliation and the resume path refuses to reactivate them.
+- A window a **Future only** edit skips is recorded on the rule (`recurring_rules.skipped_from`, added to migration 004); while it is within the end date the edit screen re-enables **Future + past** to back-fill it (cursor re-anchored, no duplicates, record cleared). "Future only" now asks for confirmation before skipping. Pause/resume skips stay permanent.
+- The Repeat section always shows a **Summary** info block (summary line, first/next transaction date, and how many transactions will be created on save). In the edit form the "Apply changes to" scope sits inside the recurring card above the block, and the block reflects the scope (next transaction + count, skipped occurrences, or "Back-fills N missed occurrences"); the footer keeps only Delete.
+- The Recurring management screen gained **Select + Search** header actions (like the other list screens): search by name/category/comment/frequency, and multi-select **bulk delete** of rules (their generated transactions are kept). The transaction search (All transactions, Transactions) also matches the recurring rule name.
+- The Recurring list can be **filtered by status** (All / Active / Paused / Ended) via a `RecurringStatusChip` in the sort row: multi-select, session-only, with "All" mutually exclusive with the statuses (selecting every status collapses back to All); the chip label shows "All", the single status or the joined statuses ("Active + Ended"). Status is derived (ended wins over the active flag).
+- The Recurring list can also be **filtered by type** (All / Expenses / Income `TabBar` at the top) and **by account** (`AccountTrigger` + account modal above the sort row, with the Total account meaning every account), like the transactions screens; both default to every rule and compose with the status filter, the search and the sort.
+- Additive migration `004_recurring` and `SCHEMA_VERSION 3 → 4`; existing v2.1.0 data untouched. Backup format v1 extended with optional collections so old backups still import.
+- Fix (2026-10-14): the edit form's back-fill Summary counted every occurrence the schedule implies in the window, including ones already generated (e.g. today's, created by a previous "Future only" save), so "Adds 3 missed transactions" could create only 2. The screen now loads the rule's existing occurrence dates (`recurringRepo.listOccurrenceDates`) and the preview subtracts them, matching what the save actually creates.
+- Update (2026-10-14): the transaction-details **Recurring** row is now pressable (with a `create-outline` affordance) and opens the rule's edit screen directly, instead of only via Edit → the edit screen's notice button.
+- Update (2026-10-14): the modify form now **refreshes when a rule edit rewrites its row** while it is open (detected via `updated_at`): an untouched form silently adopts the new values, while a form with unsaved input keeps the draft and shows a "This transaction was updated by its recurring rule…" line with a **Use the rule's values** button that adopts the rule's values.
+- Refactor (2026-10-14): that refresh logic moved out of `ModifyTransactionScreen` into `hooks/useExternalRowRefresh.ts` (a generic "row rewritten underneath an open form" hook: `formKey` remount / `updated` warning / `adopt`), unit-tested with `renderHook`; the shared tag-id comparison became `utils/arrays.ts#areIdListsEqual` (reused by `useTransactionForm` and `useRecurringEditScope`); a non-recurring row now always adopts (it has no notice to show).
+- Fix (2026-10-14): emptying the Recurring list (Select all → Delete from an overflowing list) left the old scroll extent; the list is now unmounted when empty and a plain `View` + `EmptyState` is rendered (see the "Empty lists" convention in `6-screens.md`).
+- Fix (2026-10-26): an ended rule's edit Summary showed a phantom `Next: <date>` one day past the end date because the "today already generated" anchor check treated the post-end cursor as a real occurrence. The anchor now requires an actual occurrence on today, so an ended rule keeps its post-end cursor and the Summary shows "This rule has ended: no future transactions will be created."; extending the end date revives it with the real next occurrence.
+- Fix (2026-10-26): extending a rule whose end date was shortened and saved still offered today as the next date even though its transaction already existed. The anchor now also checks the rule's generated occurrence dates, so the Summary starts at tomorrow and the cursor stays in sync.
+- Fix (2026-10-26): opening a modal from a form (e.g. Tags → Add tag) left the previous input focused, so the modal's keyboard re-triggered `useKeyboardReveal` and scrolled the form behind it. `ModalShell` now dismisses the underlying keyboard when it opens.
+- Fix (2026-10-26): the recurring selection checkbox sat outside the row pressable area, so only the text selected the rule. The checkbox, badge and info now share one left-side pressable area, using the shared `SelectionCheckbox`.
+- Update (2026-10-26): Future + past now starts the Summary with "Back-fill from: <date>" when it creates missed occurrences, and adds "Updates N past transactions" when a past-affecting detail changed.
+- Fix (2026-10-26): shortening a rule's end date no longer moves a future cursor backwards, so extending it later resumes from the correct next occurrence.
+- Update (2026-10-26): Future + past updates only generated transactions inside the new start/end window; transactions outside it stay linked but unchanged, and the Summary's update count uses the same window.
+- Expanded the hint/lifecycle battery with future-start and ended-rule chains, start/end window cases, multiple sequential edits and date-only scope assertions; test:all green (178 files / 1504 tests).
+- Update (2026-10-26): the recurring name placeholder is type-aware: "e.g. Rent" for expenses and "e.g. Salary" for income.
+- Fix (2026-10-27): paused rules no longer recover skips, show the skip confirmation, apply the >5,000 guard or allow scope-only saves; Future + past rewrites existing transactions only when a detail changed. Future + past can no longer rewind an ended rule's cursor, skip counts ignore already-generated dates, and resume is atomic.
+- Docs (2026-10-27): added `docs/recurring-rules.md` with the complete lifecycle, invariants, scenario matrix and worked examples; linked it from the spec and programming concepts.
+- Spec: spec/features/028-recurring-transactions/.
 
 ## 033-bulk-delete-tags-comments
 Status: completed.
@@ -407,6 +469,8 @@ Multi-select bulk delete on the Tags and Comments screens:
 - `tagRepo.deleteMany(ids)` deletes tags in one query (junction rows cascade) + `transactionRepo.deleteComments(values)` clears `description` on every matching transaction; screens reload after delete (`refreshTags()` / `getDistinctComments()`).
 - i18n keys `tags_select*`/`tags_bulk_delete*` + `comments_select*`/`comments_bulk_delete*` (en/es/ca).
 - Tests: 2 new contract tests (tags `deleteMany`, comments `deleteComments`) on both native + sql.js backends.
+- Fix (2026-10-14): deleting a whole overflowing list in one batch (Select all → Delete) left the previous scroll extent, so the empty screen stayed scrollable; both screens now unmount the list when empty (see the "Empty lists" convention in `6-screens.md`).
+- Refactor (2026-10-14): the empty/list decision was extracted to `components/ListOrEmpty.tsx` and adopted by all six list screens (Tags, Comments, Recurring, Accounts, the transactions list and Categories); shared `testID`s moved to `constants/testIds.ts` (`TEST_IDS`).
 
 Spec: spec/features/018-tag-management/ and spec/features/027-comments-management/.
 
@@ -561,7 +625,7 @@ Status: completed.
 
 Self-healing recovery for the expo-sqlite WAL sidecar bug:
 - `initDatabase()` detects stale state (version present but `tags` table missing in `sqlite_master`).
-- On detection, deletes the database file (`.db`, `-wal`, `-shm`), reopens, and reruns all migrations (001-005).
+- On detection, deletes the database file (`.db`, `-wal`, `-shm`), reopens, and reruns all migrations (001-004).
 - Silent recovery during splash screen; healthy databases are never affected.
 - Web platform is unaffected (it never used expo-sqlite WAL files).
 
@@ -596,7 +660,7 @@ Status: completed.
 
 Drizzle ORM data layer over the shared `DatabaseHandle`:
 - `src/database/drizzle/schema.ts` declares the seven tables mirroring `001_initial`; `src/database/drizzle/proxy.ts` adapts `drizzle-orm/sqlite-proxy` onto `DatabaseHandle` (positional rows, `run` → `lastInsertRowId`/`changes`, `get` → `{ rows: null }` when absent); `src/database/drizzle/engine.ts` provides the lazy `getDrizzle()` singleton and `withTransaction(task)` (Drizzle's own `db.transaction()` is unused to keep web's persist-on-commit batching).
-- All five repositories are rewritten with the Drizzle query builder (behavior-preserving); writes use `.run()` (never `.returning()`, which would skip web persistence); collations/functions stay as parameterized `sql` fragments.
+- All six repositories are rewritten with the Drizzle query builder (behavior-preserving); writes use `.run()` (never `.returning()`, which would skip web persistence); collations/functions stay as parameterized `sql` fragments.
 - `buildUpdateQuery`/`buildNameExistsQuery` helpers and their tests removed; `UNTAGGED_ID`/`isTotalAccount` kept.
 - Same migration runner (`PRAGMA user_version`), Zod validation and backup tooling remain; no `drizzle-kit`; only `drizzle-orm@^0.45.2` added.
 - Phase B contract suite passes unchanged plus new `drizzleProxy.test.ts` and `drizzleDrift.test.ts` (34 files / 271 tests).
@@ -625,7 +689,7 @@ First pass of the Tier-5 cleanup audit (duplicated code, dead exports, unused i1
 - `LIMIT_TEXT_STYLE` and `COUNTER_STYLE` hoisted into `componentStyles.ts` where the styles were exactly identical (TagsScreen `limitText` and CategoriesScreen `counter` kept local - they genuinely differ).
 - New `useResetOnOpen(visible, reset)` hook applied to the 5 modals with the open-time reset pattern.
 - Skipped + documented (would break behavior preservation): routing the three active-flag async loads through `useFocusLoad` (HomeScreen refetches on filter-dep changes + conditional early-return; ModifyCommentScreen runs on mount/prop-change + `showErrorAlert`; CommentsScreen needs a reload-after-delete that `useFocusLoad` doesn't expose).
-- Audit results: i18n fully clean (all 409 `en.ts` keys used, es/ca/fr/de/pt/it parity exact, no missing-key usages); second audit pass scoped out (Transactions vs AllTransactions ~200 lines, modal footer ×5, Tags vs Comments, etc.).
+- Audit results: i18n fully clean (all 510 `en.ts` keys used, es/ca/fr/de/pt/it parity exact, no missing-key usages); second audit pass scoped out (Transactions vs AllTransactions ~200 lines, modal footer ×5, Tags vs Comments, etc.).
 
 Spec: see `docs/changelog.md` (2026-09-04, "Tier-5 codebase cleanup audit").
 
@@ -657,4 +721,912 @@ Release preparation for 2.1.0, applied and verified 2026-09-18:
 - Version references updated in the 9 READMEs, tech-stack and screens constitution docs, plus a 2.1.0 changelog entry.
 - Gate: `npm run test:all` green (92 files / 579 tests).
 
-`[ ]` Released: Finly 2.1.0 published as a GitHub Release (tag `v2.1.0`) — to be ticked after going live, mirroring the 2.0.0 entry.
+Superseded: the 2.1.0 GitHub Release was not published; its changes ship in the 2.2.0 release (no separate `v2.1.0` tag).
+
+## Select all in bulk-selection screens
+Status: completed.
+
+A "Select all" / "Deselect all" toggle added to the shared `SelectionActionBar`, available on every screen with multi-select bulk delete (All transactions, Transactions, Recurring, Tags, Comments, Categories, Accounts), applied 2026-10-10:
+- `useSelectAndSearch` gains `allSelected(ids)` and `toggleSelectAll(ids)`; a shared `SelectAllRow` sits above each list (only in selection mode) showing the toggle + visible count (`items_count`) and flipping its label between `select_all` and `deselect_all` (9 languages). The bottom `SelectionActionBar` stays Cancel/Delete.
+- It selects every **currently visible** item — respecting the header search and each screen's filters — so a whole period, type or filtered set can be cleared in one tap. On Accounts the Total account is excluded.
+- Spec: spec/features/014, 015, 018, 027, 008, 011, 028.
+
+## Form validation and bottom-action standard (Create + Edit)
+Status: completed.
+
+One rule set for the validation feedback and bottom action area of every form, applied 2026-10-15:
+- **Bottom hint = why Save is disabled.** It is shown whenever the button is disabled, uses the same wording in Create and Edit (shared i18n keys) and is the only place the message appears — no duplicated text next to the field. The recurring form lists every unmet condition at once.
+- **Red border = a value the user themselves invalidated.** The border is held back until the field has been **changed or blurred**, so a freshly-opened form never greets the user in red (`LabeledTextField` owns the gating). `AmountInput` gains an `error` prop: an amount of **0** is flagged (red border, digits unchanged) while an account's initial balance of **0** stays valid; its red text remains reserved for a non-numeric value.
+- **Bottom action order** everywhere: muted hint explaining a disabled Delete → `Delete` → red hint → `Save`, the hint living in a new shared `FormHintSlot` (2 reserved lines, scaling with the text size) so **the two buttons never move**. The slot is reserved only where a Delete exists; Save-only forms keep the hint directly above Save. Informative notes (comment merge note) stay below Save.
+- **Every form's Delete reads the generic `delete`** (was "Delete tag" / "Delete comment"). Key hygiene: `create_tag_error_empty` added and shared by Create/Edit, `create_account_error_empty|_duplicate` shared by Create/Edit, `modify_account_error_empty|_duplicate`, `modify_tag_delete`, `comments_delete`, `modify_account_delete` and `modify_cat_delete` removed.
+- Comment field aligned to the top like the other multiline fields.
+- Gate: `npm run test:all` green (133 files / 1046 tests); verified on the Android release APK.
+
+Spec: spec/constitution/6-screens.md (Form validation & bottom action area), spec/features/009, 012, 017, 018, 027, 028.
+
+## Character counters: one look, limits from constants
+Status: completed.
+
+Every limited field and list header now shares one counter, applied 2026-10-15:
+- **Shared `components/form/CharCounter`** replaces the five duplicated counter implementations (`LabeledTextField`, `CommentInput`, the inline tag modal, the category name, and the tags/categories/comments list headers). It renders `value/maxLength` (or a localized string passed as a child) muted and right-aligned at `COUNTER_FONT_SIZE` (12, scaled by the text-size setting).
+- **At the limit the whole counter turns red and bold** (`value >= maxLength`) - the only moment the field stops accepting input - and the same rule flags the list headers (`100 of 100 tags`, `30 of 30 categories`). The caller's `style` is layout-only, so the at-limit state can never be overridden.
+- **Limits always come from `constants/types.ts`**, never a literal at the call site.
+- **New counter for the recurring rule name**, whose limit drops from 60 to **30** (`REPEAT_NAME_MAX_LENGTH`, matching account/category names) since the name is rendered on a single line everywhere (transaction row ~41 chars, details ~25). A name already longer than the limit (legacy/imported) is kept intact - `maxLength={Math.max(LIMIT, value.length)}` - and flagged by the counter.
+- Gate: `npm run test:all` green (134 files / 1057 tests); verified on the Android release APK.
+
+Spec: spec/constitution/6-screens.md (Character Counter), spec/features/028.
+
+## Fixed form footer: reserved hint bands everywhere
+Status: completed.
+
+The bottom block of every form is now the shared `components/form/FormActions` (muted band -> Delete -> red band -> Save), applied 2026-10-15:
+- **Both bands are always reserved** (2 lines, 8/8 margins, scaling with the text size), so nothing moves when a message appears or disappears. Previously the reservation existed only where a Delete was passed, so Add/Modify transaction, Create recurring, Create account, Create category and Create tag still shifted their Save button; the account's Delete also moved between the last-account and 2+-accounts states.
+- **The muted band is the standard separator above the destructive button**, which is why every delete form reserves it (blank when there is no explanation) - so Edit recurring, Edit tag, Edit comment and Modify category gained the same, larger distance from the field area above, and Create category gained the same separation between the colour picker and its button.
+- `FormHintSlot` lost its `reserve` prop (always reserved) and gained `tone: 'error' | 'muted'`; `TransactionForm`'s `footer` node was replaced by explicit `deleteLabel`/`onDeletePress`/`deleteDisabled`/`deleteHint` props.
+- Gate: `npm run test:all` green (134 files / 1062 tests); verified on the Android release APK (uiautomator bounds: the Delete->Save distance is identical with and without a hint).
+
+Spec: spec/constitution/6-screens.md (Form validation & bottom action area), spec/features/012.
+
+## String unions as named constants
+Status: completed.
+
+The two vocabularies this feature introduced are now named constants instead of raw literals, applied 2026-10-15:
+- `HINT_TONES` / `HintTone` colocated in `components/form/FormHintSlot.tsx` (the `error`/`muted` band tones) - it followed the `PICKING_PHASE` precedent for a union owned by one component.
+- `RECURRING_NAME_ERRORS` / `RecurringNameError` in `constants/types.ts` next to `REPEAT_NAME_MAX_LENGTH` (the `required`/`taken` rule-name errors produced by `useRecurringDraft` and consumed by the form hint), so the literals no longer appear in `useRecurringDraft`, `RepeatSection` or `TransactionForm`.
+- The convention is documented in `2-tech-stack.md` (Code conventions) and `AGENTS.md` (CODE STYLE): no raw string unions, no TS `enum`; limits and tokens are constants too.
+- Gate: `npm run test:all` green (134 files / 1062 tests).
+
+Spec: spec/constitution/2-tech-stack.md (Code conventions).
+
+## Edit screens: Save only when something changed
+Status: completed.
+
+Every edit screen keeps Save disabled until the draft actually differs from what it loaded, applied 2026-10-15:
+- The comparison is by **value**, not "was ever touched": retyping the same amount, re-picking the original category/day/account or adding-then-removing the same tag counts as "no change" again. The transaction/rule form reuses `useTransactionForm`'s existing `isDirty` (now part of `canSubmit`, gated by an explicit `editing` prop); the account, category and tag screens use the new `hooks/useIsDirty.ts` (baseline captured once, shallow value compare).
+- The rule editor counts a change of the "Apply changes to" scope away from its default as a change, so a skipped/recoverable window is still recoverable via "Future + past" without editing a field. Saving an unchanged rule is intentionally impossible: due occurrences are materialized automatically on app start, on returning to the foreground and across midnight (`AppContext`).
+- "Nothing changed" keeps the hint band **empty** (the grey button is the signal).
+- Secondary fixes in the same change: `ModifyAccountScreen` guards its preload with `userEditedRef` on all five inputs (a re-focus refetch can no longer wipe the user's input) and `ModifyCategoryScreen`'s guard now covers the icon/colour pickers too.
+- Gate: `npm run test:all` green (135 files / 1071 tests); verified on the Android release APK.
+
+Spec: spec/constitution/6-screens.md (Form validation & bottom action area), spec/features/009, 012, 017, 018, 028.
+
+## Transaction edit: baseline follows the stored row
+Status: completed.
+
+The modify-transaction form now measures its draft against **what is stored right now** instead of the row it saw when it opened, applied 2026-10-16:
+- `useTransactionForm` derives its dirty baseline from the row props (tags included) rather than freezing it in a ref at mount, so a "Future + past" rule edit that bulk-updates this row **re-baselines** the comparison: picking the category the rule just wrote leaves nothing to save and Save stays disabled, while keeping a different value enables it. The informative notice and "Use the rule's values" are unchanged.
+- The row's tags now arrive with the row: `ModifyTransactionScreen`'s focus loader returns `{ transaction, tagIds }` (as the rule screen already did) and passes `initialTagIds`, which removed the form's async `getTagsByTransactionId` effect and the two refs — and with them the old "tags arrive after mount" window.
+- Gate: `npm run test:all` green (135 files / 1071 tests); regression test covers the rewrite-then-pick-the-stored-value scenario; verified on the Android release APK.
+
+Spec: spec/constitution/6-screens.md (Form validation & bottom action area), spec/features/017.
+
+## Select-all row: standard gap below the separator
+Status: completed.
+
+The Categories screen's grid no longer touches the select-all row's separator, applied 2026-10-16:
+- The row (`components/SelectAllRow`) ends with a 1px bottom line and the next element is the list. Accounts/Tags/Comments pad their list `16` (card rows), Recurring/Transactions rely on their rows' own `paddingVertical`, and Categories had **no** top gap at all, so the first tile row was flush against the line.
+- New `LIST_TOP_GAP` token in `constants/layout.ts` (next to `LIST_BOTTOM_FAB_PADDING`), applied to the Categories grid's scroll container **in select mode only** (in normal mode the counter sits above the grid, so its existing spacing is untouched). The value is defined once, so a future list picks it up instead of re-inventing it.
+- The grid's `ScrollView` gained the `categories-grid` testID and the screen test now enters select mode (header rendered via the nav mock, like the Accounts test) and asserts `paddingTop === 16` there / `undefined` in normal mode.
+- Gate: `npm run test:all` green (135 files / 1072 tests); verified on the Android release APK.
+
+Spec: spec/constitution/6-screens.md.
+
+## Hint composition extracted to `utils/formHints`
+Status: completed.
+
+The form hints' formatting and the transaction checklist moved out of the components, applied 2026-10-17:
+- `joinHints(parts, { finalPeriod })` in `utils/formHints.ts` drops the empty parts and joins the rest with `. `, adding the final period only when asked (the transaction/rule checklist wants one, the tag reasons don't).
+- `getTransactionFormHintText(values, keys)` is the checklist as a pure function (order: category, amount, account, repeat end date, rule name taken/required; the name only in rule mode) — labels are injected, so it's unit-testable without React or i18n.
+- `TransactionForm`'s 12-line `useMemo` is now one call (and it no longer imports the recurring-name constants); `CreateTagScreen` composes its hint from `getNameHintText` + `joinHints`. The rendered strings are unchanged (the existing component tests still assert them).
+- Gate: `npm run test:all` green (135 files / 1082 tests).
+
+Spec: no behaviour change (refactor only).
+
+## Select-all row keeps the header visible
+Status: completed.
+
+The Select-all row is inserted under every list screen's header block without hiding it, applied 2026-10-16:
+- **Accounts** was the outlier: entering select mode hid the prominent **Total balance** section and the row took its place. It now stays visible (the row sits under it, after the search bar when that is open), matching Tags/Comments (which keep their sort strip), Recurring (account + status/sort controls) and the transaction lists (tag filter), where nothing above the row is hidden.
+- The three one-line counters (Categories/Tags/Comments) still hide in select mode on purpose: the row already shows the item count, so it replaces them in the same slot.
+- The Accounts select-mode test now asserts the Total stays visible while selecting.
+- Gate: `npm run test:all` green (135 files / 1072 tests); verified on the Android release APK.
+
+Spec: spec/constitution/6-screens.md.
+
+## Constants audit: no enums, named values for the remaining literals
+Status: completed.
+
+A sweep for magic strings/numbers plus a review of the constants-vs-enum choice, applied 2026-10-17:
+- **Const objects + `keyof typeof` remain the standard**; a TS `enum` would be a regression here (Expo/Babel cannot inline `const enum`, a runtime enum stops the values being literal types for SQLite/Zod/i18n and costs bytes). No migration to enums.
+- The real gaps were **type-only unions whose members were still written raw**: `FORM_MODES` now backs `FormMode` (used by `TransactionForm`) and `BACKUP_VALIDATION_CODES` backs `BackupValidationCode` (parser, import service and settings screen, re-exported by the database barrel).
+- Stray literals tokenised: `datePart()` replaces five `.slice(0, 10)` date extractions; `DISABLED_CONTROL_OPACITY = 0.5` replaces five inline disabled-control opacities (the calendar's 0.3 stays module-scoped as a different affordance); `PICK_FALLBACK_DELAY_MS` replaces the web backup picker's 400 ms fallback.
+- The Drizzle schema now carries `$type<TransactionType>()` / `$type<RecurrenceFrequency>()` on the union columns — a compile-time annotation only, so the emitted DDL, the migrations and the data are untouched (2.1.0 backups remain compatible).
+- Deliberately left literal: SQL DDL inside the immutable migrations, the national flag colours in `RegionalScreen`, decimal-separator characters, screen route names (typed by the param list) and component-owned design values (project token policy; a wholesale design-token sweep is out of scope).
+- Gate: `npm run test:all` green (135 files / 1087 tests).
+
+Spec: no behaviour change (refactor only).
+
+## Fast period arrows on Home and All transactions
+Status: completed.
+
+Day/Week/Month/Year can be browsed without opening the period picker, applied 2026-10-17:
+- The period text is flanked by `‹` and — while not on the current period — `›`, plus a double-chevron `»` jump-to-current that appears only from two or more periods back (on the penultimate one a single `›` already reaches the current one). Equal fixed-width side slots keep the date centred and stop it shifting as the arrows appear/disappear; the icons are the calendar's own chevrons at the same size. The custom **Period** tab keeps just the picker.
+- New `utils/periodNavigation.ts`: `shiftPeriod` (day/week steps; month/year shift with the day clamped to the target month so 31 Jan → 28/29 Feb), `isSamePeriod`, `canGoForward`, `canJumpToCurrent` — pure and unit-tested. Weeks use the same Monday-based boundary as the existing weekly range.
+- The arrows call the existing `onDateChange` (and `onDateChange(new Date())` for the jump), so both screens and their data refresh with no screen changes. New a11y keys `a11y_previous_period` / `a11y_next_period` / `a11y_go_to_current_period` in all 9 languages.
+- The i18n helper now tolerates a UTF-8 BOM in `--values-file` (common in Windows-authored JSON), with a test.
+- Gate: `npm run test:all` green (137 files / 1105 tests); verified on the Android release APK (current day, previous day, two days back, jump, Week/Month/Year, custom tab with no arrows, and All transactions).
+
+Spec: spec/features/001-home-screen/, 015-all-transactions-screen/.
+
+## Custom period range: full month names, centred
+Status: completed.
+
+The custom range text now reads clearly and wraps gracefully in every language, applied 2026-10-17:
+- The range uses **full month names** - "from 1 January to 17 October 2026" instead of the abbreviated "from 1 Jan to 17 Oct 2026" - in both the Home period box and the "Select period" modal.
+- A new pure `formatDateRange(start, end, { from, to }, months)` in `utils/formatters` composes it once, so `CalendarPicker`'s box and `PeriodPicker`'s range line (plain range and `All (...)` variant) cannot drift; the "start picked, waiting for the end" hint keeps its single-month text.
+- Both texts are now **centred** (`textAlign: 'center'`), so when a verbose language wraps the range to two lines the block reads as one centred paragraph instead of a left-aligned rag.
+- The Week range deliberately keeps its short month names: it is a compact pair, not a sentence.
+- Gate: `npm run test:all` green (137 files / 1109 tests); verified in all 9 languages on the Android release APK (each language asserted the exact full-month range and was screenshotted).
+
+Spec: spec/features/001-home-screen/.
+
+## 2.2.0 audit: category deletion safety, recurring polish and doc truth-up
+Status: completed.
+
+A full pre-release audit of the 2.2.0 code base, applied 2026-10-17. Only the items below changed; the rest of the findings are recorded in the audit report shared with the developer.
+
+**Fixed (data safety and correctness):**
+- **Deleting a category can no longer lose data silently.** The last category of a type cannot be deleted (the button is disabled with an explanation, mirroring accounts); the confirmation names exactly what is lost - its transactions, its recurring rules, or both; and the move option now **reassigns the rules to the target category** along with the transactions (they used to be dropped by the FK cascade). The bulk flow gets the same treatment: rules-only categories appear in the resolution list, each row shows transactions + rules, and moving reassigns both.
+- **A paused rule no longer promises a back-fill it cannot create.** `planEdit` takes the rule's `active` flag: for a paused rule the cursor and the recoverable-skip record stay untouched, nothing is counted as created, and the Summary says the rule must be resumed. "Future + past" still rewrites the transactions it already generated.
+- **A resume that actually skips drops the recoverable-skip record** (a back-fill from it would also fill the pause window, which stays permanent); a resume before the next due date keeps it.
+- **A category whose only edit is its icon or colour keeps its canonical name** (the previous guard persisted the localized string, breaking re-localization on a language change); the save now compares the field with the localized default, like the account screen.
+- **A category created under the other type stays selected** on return to the transaction form (the type switch used to clear it).
+- The default custom period ends at **end of today** instead of "now", so transactions recorded later today are included.
+
+**Fixed (polish and robustness):**
+- Balance visibility keeps the setting as the **default** and the eye icon as a temporary toggle in both directions (`hideBalances !== isRevealed`); the temporary state is dropped when the setting changes or the screen regains focus (see the follow-up entry below - this bullet originally replaced the XOR by mistake).
+- The category filter can be cleared again (an empty selection applies as "all categories"; the button no longer reads "Apply (0)").
+- The account modal highlights the currently selected account instead of the one the form opened with.
+- The All-transactions type tab is local to the screen (no longer clobbered by the Home type switcher) and the tag selection re-syncs when the screen is re-entered with new params.
+- A tags-only "Future + past" rewrite bumps `updated_at`, so an open modify form notices it.
+- Pause/resume failures surface the standard error alert instead of an unhandled rejection.
+- Account deletion states that its recurring rules are deleted too.
+
+The **"Last day" checkbox** is now an ambiguity resolver, offered only on the month-end dates where "the Nth" and "the last day" differ (monthly Feb 28 non-leap / Feb 29 leap / 30 Apr-Jun-Sep-Nov; yearly 28 February of a non-leap year) and cleared when the start date stops qualifying — picking a month-end is otherwise how the pattern is expressed, since a last-day rule moves its first occurrence to the month's end anyway. The form Summary states the resolved day for every month (`31 in Jan, Mar, ... - 30 in Apr, Jun, Sep, Nov - 28 in Feb (29 in leap years)`), so a rule that lands on different days is never a surprise. The full decision table lives in spec 028 §4.
+
+Gate: `npm run test:all` green (137 files / 1139 tests).
+
+Spec: spec/features/001-home-screen/, 008-categories-screen/, 009-modify-delete-category-screen/, 012-modify-delete-account-screen/, 015-all-transactions-screen/, 028-recurring-transactions/.
+
+## Recurring edit: Save follows the whole rule draft
+Status: completed.
+
+The edit form gate only compared the transaction fields, so changing the rule name, frequency, interval, end date or the "Last day" checkbox left Save disabled, applied 2026-10-18:
+- `useTransactionForm` now also compares the recurring draft with the loaded rule (`ruleDraftChanged`): name (trimmed, as it is stored), frequency, interval, end date (date-only) and the last-day anchor. `isDirty` is the union of both, still gated on `editing` plus the documented scope-only exception.
+- The last-day term compares against the *effective* initial intent, so a rule anchored on the 31st - whose checkbox is hidden and whose flag is cleared on load - is not reported as changed.
+- Tests: a hook-level rule gate suite (every field enables Save and reverting disables it, surrounding whitespace in the name is ignored, a hidden last-day rule is untouched, a scope-only save is allowed) plus screen tests for the name, frequency, interval and last-day changes.
+- Gate: `npm run test:all` green (137 files / 1150 tests).
+
+Spec: spec/features/028-recurring-transactions/ (the behaviour was already specified; the implementation now matches it).
+
+## Android: a reinstall no longer restores app data
+Status: completed.
+
+A phone reinstall came back with accounts, a recurring rule and transactions that had been deleted with the in-app Factory Reset, applied 2026-10-19:
+- **Cause:** the app used Android's default `android:allowBackup="true"` with no backup rules, so the OS cloud backup had copied the private SQLite database (`files/SQLite/Finly.db`) and Android **restored it on install**. The restored snapshot predated the reset, which is why deleted data reappeared. Ruled out independently: the APK bundles no `.db`, the seed creates only the default user, `My Wallet`/`Total` and the 31 categories, and the tag/names in question exist nowhere in the app.
+- **Fix:** `expo.android.allowBackup: false` in `app.json`; prebuild emits `android:allowBackup="false"` and the packaged manifest was checked after `assembleRelease`. Cloud backup and restore (and `adb backup`) are off, so a reinstall always starts from the seed; data moves only through the in-app JSON export/import (025). Device-to-device transfer on API 31+ is out of scope (it applies when migrating to a new phone).
+- Gate: `npm run test:all` green (137 files / 1150 tests).
+
+Spec: spec/constitution/7-platform-differences.md, spec/features/025-data-backup/.
+
+## Balance visibility: setting is the default, the eye is temporary
+Status: completed.
+
+The eye icon had stopped working when "Hide account balances" was off, fixed 2026-10-19:
+- The 2.2.0 audit had replaced the documented `hideBalances !== isRevealed` with `hide && !revealed`, which made the eye a no-op with the setting off (spec 003 ?5.6 expects it to toggle both ways: "Privacy off, tap to temporarily hide"). The XOR is restored, so the setting is the default and a tap flips it in either direction - matching the account picker, which never lost the behaviour.
+- The temporary state is dropped when the setting changes (the new setting applies its own default) and when the screen regains focus (`useFocusEffect`, the same pattern as `useFocusLoad`), so leaving Home/Accounts and coming back shows the balances the setting asks for.
+- Tests: `useBalanceVisibility` now covers both directions, the focus reset and the setting-change reset.
+- Gate: `npm run test:all` green (137 files / 1151 tests).
+
+Spec: spec/features/003-settings-screen/ (behaviour unchanged; the implementation matches it again).
+
+## Formatting is enforced by ESLint (@stylistic), step 1: adopt the rules
+Status: completed.
+
+The style rules that used to live only in the docs are now machine-enforced, applied 2026-10-19. This is the first of **two** steps; the second one is the formatting pass described at the end of this entry:
+- `@stylistic/eslint-plugin` (5.10.0) added; `FinlyApp/eslint.config.js` became `eslint.config.mjs` because the plugin is ESM-only (the expo config is imported as `eslint-config-expo/flat/default.js`, since that package has no `exports` map and a bare directory import is rejected in ESM).
+- Rules that reported **nothing** on the current code are errors now, so they gate immediately: `indent` (2 spaces, `case` one level - the rule that would have caught the recent mis-indents), `jsx-quotes`, `jsx-indent-props`, `object-curly-spacing`, `array-bracket-spacing`, `template-curly-spacing`, `space-in-parens`, `space-before-function-paren` (house style: anonymous/async arrow always, named never), `arrow-spacing`, `keyword-spacing`, `space-before-blocks`, `space-infix-ops`, `key-spacing`, `padded-blocks`, `no-trailing-spaces`.
+- Rules with existing violations are **warnings** until the formatting pass: `comma-dangle` (182), `eol-last` (29), `quotes` (12), `unicode-bom` (2), `no-multiple-empty-lines` (3), `semi` (1), `brace-style` (1), `no-multi-spaces` (1). Each carries a `// PR 2: promote to error` marker in the config.
+- **`expo lint` only lints `src`/`app`/`components` when called without arguments**, so `tests/` had never been linted (which is why the test-file indentation slips passed CI). The scripts now pass `.` (`npm run lint`, plus the new `npm run lint:fix`), covering 385 files: `src`, `tests`, `scripts` and the root configs. Node globals are declared for `scripts/**`, and the test-only "probe component" pattern (assigning a module-level variable during render) has `react-hooks/globals` off under `tests/**`.
+- `.editorconfig` at the repo root mirrors the style for editors (no `end_of_line`, deliberately: the committed blobs are LF while Windows checkouts are CRLF).
+- Docs: `AGENTS.md` LINT section and CODE STYLE bullet, and the `npm run lint:fix` row in the commands table of the 9 READMEs.
+- **Follow-up (next PR):** run `npm run lint:fix` (about 100 files, whitespace/trailing commas only) and promote the eight warning rules to `error` in the same commit.
+- Gate: `npm run test:all` green (137 files / 1151 tests) with `npm run lint` at 0 errors; a deliberately mis-indented line fails the gate (verified, then reverted).
+
+Spec: no behaviour change (tooling only).
+
+## Formatting is enforced by ESLint (@stylistic), step 2: apply the fixes
+Status: completed.
+
+The follow-up of the adoption entry, applied 2026-10-19:
+- `npm run lint:fix` normalised the codebase (111 files: 51 under `src`, 57 under `tests`, `App.tsx`, the eslint config and the local `finly-share` module) - trailing commas in multiline literals, final newlines, single quotes (two i18n values), two stray BOMs, double blank lines, plus the fixers of the enabled import/type rules (import order and merging, `Array<T>` to `T[]`). Whitespace, punctuation, quotes, import order and type aliases only: no behaviour change.
+- The eight rules that shipped as warnings (`comma-dangle`, `eol-last`, `quotes`, `unicode-bom`, `no-multiple-empty-lines`, `semi`, `brace-style`, `no-multi-spaces`) are errors now, so the formatting block is fully strict and `npm run lint:fix` is the only way to apply style.
+- `npm run lint` is at 0 errors and the 229 formatting warnings are gone. The remaining warnings are pre-existing and non-formatting: `boundaries/no-unknown-files` (151 - files outside the declared element patterns: tests, scripts, root configs), `@typescript-eslint/no-unused-vars` (13) and `react-hooks/exhaustive-deps` (3). They need code or config decisions, not a formatter, and are tracked separately.
+- Gate: `npm run test:all` green (137 files / 1151 tests).
+
+Spec: no behaviour change (formatting only).
+
+## Privacy: hide balances and totals on every screen that shows an aggregate
+Status: completed.
+
+The "hide balances" setting now covers every aggregate the app displays, applied 2026-10-19:
+- The toggle was renamed to **"Hide balances and totals"** (key `settings_hide_balances`, values only) and the eye labels to "Show amounts"/"Hide amounts" (`a11y_show_balances`/`a11y_hide_balances`), in all 9 languages: the setting no longer hides balances alone.
+- The gaps are closed: the Home donut/bar chart total and every category row total are masked by the setting (the existing header eye covers them), and the All transactions period total and the Transactions category total are masked and gained their own eye icon, reusing `useBalanceVisibility` (so the focus reset applies).
+- Deliberately unchanged: individual amounts stay visible - transaction rows, transaction details and recurring-rule amounts - because the setting covers balances and totals, not the records the user is browsing.
+- Found and fixed on the way: `CategoryList`'s memoised row renderer was missing the new `hidden` dependency, so the rows would not repaint when the eye toggled.
+- Tests: a new `DonutChart` component test, mask + toggle cases for `BarChart` and `CategoryList`, and screen cases for Home, All transactions and Transactions; the Personalization screen test follows the new label.
+- The mask is always gray (`textSecondary`), never the green/red of the value it hides: the color would leak the sign of the total. Home's chart and category-row totals were still drawn in `text`, and the two new list headers colored the mask by the sign; all four now use the same gray as the header and Accounts. Category rows keep the name and the percentage visible.
+- Gate: `npm run test:all` green (138 files / 1160 tests); verified in the browser at 375px (all 9 languages not applicable: text is unchanged except the renamed label, which the parity test covers).
+
+Spec: spec/features/003-settings-screen/ (5.6), 001-home-screen, 014-transactions-screen-from-home, 015-all-transactions-screen.
+
+## Recurring materialization: serialized runs and catch-up hardening
+Status: completed.
+
+Hardening pass on the reconciliation pipeline, applied 2026-10-19:
+- Reconciliation runs are serialized behind a module-level queue, so the app-start/foreground/midnight triggers and the reconciliations a rule edit fires can no longer interleave their cursors; each run is now one DB transaction (matching spec 028).
+- Each rule reads its already-generated occurrence dates once per run instead of querying per occurrence (one query per rule; the unique occurrence index stays as the last line of defence).
+- `nextDueOnOrAfter` fast-forwards daily/weekly schedules in O(1) and jumps to the nearest period for monthly/yearly ones, so a decades-old rule can no longer silently exhaust the 10,000-probe guard and return a past date; ended schedules still stop at their first occurrence past the end date.
+- The pause/resume switch is busy-guarded (disabled while the write is in flight; a ref also rejects a same-tick second tap).
+- The service validates the rule invariants (blank name, non-positive/non-integer interval, end date not after the start) before writing; the name-length limit stays in the form so legacy rules remain editable.
+- Repo hygiene: `updateWithTags` uses an explicit column allowlist, the dead `getTagsByRuleIds` is removed, and `RepeatSection` reuses the shared edit-cursor helper.
+- Tests: validation cases, the fast-forward behaviour (including the ended-schedule stop), two concurrent reconciliation runs, the column allowlist and the toggle guard.
+- Gate: `npm run test:all` green (139 files / 1180 tests).
+
+Spec: spec/features/028-recurring-transactions/.
+
+## Audit coverage: the remaining test gaps closed
+Status: completed.
+
+Tests added after the 2.2.0 audit, applied 2026-10-19:
+- `CreateRecurringScreen` gained its missing suite (rule mode and labels, default account resolution, the custom-period single-day anchor, the existing-name preload and its failure tolerance, and the submit mapping to the service + Home type switch).
+- Category delete messaging covers every path: transactions only, transactions + rules, no data (no move option) and the failed linked-data check.
+- Both category transfer modals: target/delete selection, Confirm gating (nothing selected / not every item resolved) and cancel.
+- `CalendarModal` (titles per period, day pick, confirm/cancel, custom range, reset on reopen) and `OptionPickerModal` (selection, search, no-results, short non-searchable lists).
+- `useTransactionFilters` composes every filter at once (type + category + account + tag + search + period).
+- Reconciliation: overlapping runs are serialized (two concurrent runs, no duplicates) plus the fast-forward and DST date-only matrix.
+- Pure units: `utils/arrays`, `database/validate`, `utils/backupIO` (native + web) and `storage/indexedDb` (via `fake-indexeddb`, a new devDependency); the i18n function keys render in all 9 languages.
+- `docs/harnesses.md` records the Node suite's limit (sql.js behind an `expo-sqlite` mock; the real driver is covered on device by the APK + Maestro) and that the drawer navigation is exercised by `flow-smoke`.
+- Gate: `npm run test:all` green (150 files / 1249 tests).
+
+Spec: docs/harnesses.md.
+
+## Docs: drawer screenshot under a v3 name + roadmap cleanups
+Status: completed.
+
+Screenshot naming and release-notes cleanup, applied 2026-10-19:
+- The refreshed drawer capture (Recurring entry, v2.2.0 footer) is published as `images/screenshots/v3-02-hamburger.png` and the 9 READMEs point at it. The shipped `v2-02-hamburger.png` is left untouched, so GitHub keeps the existing v2 set intact and only the new name renders as a new image.
+- The rest of the screenshot set (every screen, including Recurring) is deferred to a pre-release task: a mock-data build will recapture everything as `v<N>-NN-...` (current version + 1) and update the 9 READMEs once the UI is final, because more UI changes may still land before 2.2.0.
+- The 2.1.0 GitHub release line now reads as superseded by 2.2.0 (no separate `v2.1.0` tag), and the stray Status/Spec fragment after the form-hints entry was collapsed.
+- Gate: docs/assets only; `npm run test:all` re-run green after the phase work.
+
+Spec: none (documentation/assets).
+
+## SQLite transactions: one queue, plus a self-healing seed
+Status: completed.
+
+Fixed after a 2.2.0 release-candidate device test (2026-10-19):
+- **Root cause:** the app has a single SQLite connection, but explicit transactions were not serialized. The reconciliation run holds one transaction for a whole catch-up (up to 500 occurrences per rule), so an imported backlog could overlap "Delete all data", "Reset to factory state", an import or a config save; the loser failed with `cannot start a transaction within a transaction` and its `ROLLBACK` could undo the winner ("cannot rollback - no transaction is active"). The reset itself committed, but the collateral config save surfaced a generic error alert.
+- **Fix:** `runExclusiveDb` (`src/database/transactionQueue.ts`) serializes every explicit transaction; both engines return the handle wrapped by it, so reconciliation, rule edits, config saves, delete-all, factory reset, import and migrations all share one queue and can never nest.
+- **Self-heal:** `initDatabase` now repairs empty seeded tables (`users`/`accounts`/`categories`/`config`) left by a wipe interrupted in an older build, using the idempotent `INSERT OR IGNORE` seeds - existing rows are never modified and a deleted account is not resurrected.
+- **Data screen feedback:** the destructive dialogs now show a spinner, disable Cancel and ignore a second confirm while the wipe/import runs (the reset can wait for a running catch-up).
+- **Tests:** transaction-queue unit suite (ordering, rejection isolation, no overlap), concurrency tests (reset/clear/config save/import during a catch-up) and a self-heal suite (each empty table, half-applied wipe, idempotence).
+- Gate: `npm run test:all` green (153 files / 1264 tests); device re-test of the import + reset flow after the rebuild.
+
+Spec: spec/features/028-recurring-transactions/, spec/features/025-data-backup/.
+
+## Transaction details: Created shows the record timestamp
+Status: completed.
+
+Display fix found while testing 2.2.0 on device, applied 2026-10-19:
+- The footer's "Created" line was built from `transaction.date` (the transaction's own date, stored at `00:00:00` for a backdated pick) instead of `created_at`, so a transaction created today for 15 July read "Created 00:00 - 15 jul 2026". It now uses the record's `created_at`, matching the "Updated" line; the Date row above still shows the transaction date.
+- The label stays "Created" (consistent with the recurring rule, tag and sort labels that also read `created_at`).
+- No data changed: inserts never set `created_at` (the column default applies), so no migration was needed; spec 016 ?7 (which had codified the wrong field) was corrected.
+- Tests: distinct `date`/`created_at`/`updated_at` fixture values in the details suite (both footer lines + the Date row) and a database test proving a backdated insert stores `created_at` as today.
+- Gate: `npm run test:all` green.
+
+Spec: spec/features/016-transaction-details-screen/.
+
+## Transaction details: top-aligned rows and wrapping tag chips
+Status: completed.
+
+Layout fix found while testing 2.2.0 on device, applied 2026-10-19:
+- All data rows now top-align the symbol/label with the first line of the value (single-line rows are visually unchanged). A 4096-character comment or a tall block of tag chips used to leave "Comment"/"Tags" vertically centred.
+- With many tags the chip container demanded its full single-line width, so the basis-0 label collapsed to zero and disappeared (the chips were also clipped by the card). The container now takes the value column (`flex: 2`): chips wrap and right-align inside it, the label keeps its third, every tag is shown and the screen scrolls.
+- `TagChip` is capped to its container and shrinks, so an over-long tag name ellipsizes instead of overflowing.
+- Tests: a `DataRow` suite (top alignment) and a details case with 12 long tags plus a long comment (labels present, all chips rendered, value column `flex: 2`).
+- Gate: `npm run test:all` green; verified in the browser at 375px.
+
+Spec: spec/features/016-transaction-details-screen/.
+
+## Recurring catch-up: raise the run limit and refuse impossible backfills
+Status: completed.
+
+Edge-case fix found while testing 2.2.0 on device, applied 2026-10-19:
+- The per-rule catch-up limit is 5,000 occurrences (daily ~13.7 years, weekly ~96 years) and the same limit guards creation/editing. A rule whose due backlog exceeds it cannot be saved: the Summary and the bottom hint explain it, Save is disabled, and the service throws `tooManyOccurrences` without writing anything. The advice adapts to the draft - "Move the start date later or add an end date" when none is set, "Move the start date later or set an earlier end date" when one already exists.
+- Every accepted rule now catches up completely on save: a daily rule started in 2014 generates all 4,668 occurrences in one run, so its next due date is always in the future instead of a past cursor stuck at 500 rows. Rules already behind finish catching up on the next launch.
+- The Recurring row keeps showing the generated count ("N transactions"), never the pending backlog.
+- Tests: preview truncation and exact counts, the warning line in the Summary (create and Future + past), the form hint/disabled Save, the service rejection, and a 4,481-occurrence single-run backfill.
+- Gate: `npm run test:all` green (155 files / 1277 tests); blocked case verified in the browser.
+
+Spec: spec/features/028-recurring-transactions/.
+
+## Import: reject incomplete backups
+Status: completed.
+
+Edge case found after the self-heal test, applied 2026-10-19:
+- A parsed backup that is valid JSON/schema but incomplete (no user, no account, or no expense + income category) is now rejected **before any write**. A genuine export always contains them; importing an empty file left the app unable to create categories (the missing `users` row failed the FK) until the next-launch self-heal.
+- `assertImportableBackup` (pure, in `backup.ts`) runs inside `importBackup` after the newer-version check and before `applyBackup`, so the current data is untouched and the user sees a dedicated "Incomplete backup" alert (title + message, 9 languages) instead of the corrupt-file "Invalid backup".
+- Tests: the pure check (valid + empty users/accounts/missing category type), an import facade test asserting the data dump is unchanged, and the Data screen branch.
+- Gate: `npm run test:all` green; verified in the browser (empty backup rejected, real backup imports).
+
+Spec: spec/features/025-data-backup/.
+
+## Accounts and Categories: sortable lists
+Status: completed.
+
+Added while polishing the list screens, applied 2026-10-19:
+- **Accounts** gained a `SortToggle` (`SortRow`) below the search controls: **Name** (default, ascending) or **Balance** (descending on the first press). The direction flips from the active field or the arrow. The **Total account stays pinned first** (it is an aggregate, not a real account) and sorting applies to the searched subset; ties break by display name, then id.
+- **Categories** gained the same toggle: **Name** (default, ascending) or **Usage** (lifetime transactions, descending). Each tile shows its lifetime count as a small gray badge over the icon (hidden at 0, appended to the accessibility label); **Others/Other stay pinned last**. Type tabs, search and multi-select work on the sorted subset.
+- New `ACCOUNT_SORT_BY`/`CATEGORY_SORT_BY` constants, pure `utils/accountSort`/`utils/categorySort` helpers, `SortToggle` field builders and four i18n keys in the 9 languages.
+- Both sorts are session-only for now, consistent with the other lists; remembering them is a separate follow-up.
+- Tests: the sort helpers (pinned rows, natural directions, ties, no mutation), the Accounts order and direction flip, the Categories usage order + counts + pinned fallback, and the CategoryGrid count badge.
+- Gate: `npm run test:all` green; verified in the browser at 375px.
+
+Spec: spec/features/011-accounts-screen/, spec/features/008-categories-screen/.
+
+## Persisted list sort preferences
+Status: completed.
+
+Added while closing the sort work, applied 2026-10-19:
+- Every sortable list stores its field and direction in the `config` table and restores them on the next visit and after a restart: Tags, Comments, Recurring, Transactions, All transactions, Accounts and Categories (**14 keys**, snake_case in `DB_KEY_MAP`).
+- **Transactions** and **All transactions** keep **independent** preferences (`transactions*` vs `allTransactions*`); filters and search stay session-only.
+- Defaults mirror the previous in-memory behaviour: Tags `created/asc`, Comments `name/asc`, Recurring `nextDue/asc`, both transaction lists `date/desc`, Accounts `name/asc`, Categories `name/asc`.
+- No migration: `parseConfig` merges `DEFAULT_CONFIG` and fresh databases are seeded from it. Values are validated by Zod enums (an invalid value falls back to the defaults, like the rest of the config).
+- Screens **derive** the sort from `useConfig()` (no local sort state) and persist through `updateConfig`, so the choice survives the drawer remounts; a `sortPreference` helper centralizes the flip/switch rules and `TRANSACTION_SORT_SCOPES` selects the transaction pair. The test config stub now merges partials and re-renders like the real provider.
+- The preferences travel in JSON backups (config rows) and return to defaults after a Factory reset.
+- Tests: the sort helpers, Zod/sanitize cases, a config get/save round-trip on both engines, screen restore + persist assertions and the transaction hook scope tests.
+- Gate: `npm run test:all` green; verified in the browser at 375px (each list keeps its sort after navigating away and a full reload).
+
+Spec: spec/features/008-categories-screen/, 011-accounts-screen/, 014-transactions-screen-from-home/, 015-all-transactions-screen/, 018-tag-management/, 027-comments-management/, 028-recurring-transactions/.
+
+## Two-row transaction controls
+Status: completed.
+
+Added while polishing the transaction lists, applied 2026-10-20:
+- **Transactions** and **All transactions** split their controls into two rows: the recurring-view chip (plus the category pill on All transactions) on the first row, and the Date/Amount `SortToggle` on a second row inside the shared `SortRow`.
+- The split keeps every control visible at a glance on a 375px screen; the first row still scrolls horizontally for long category selections or large text sizes, and the sort row keeps the standard 10px padding used by the other list screens.
+- No behaviour change: the recurring view, category filter, sort and their persisted preferences work exactly as before.
+- Specs 014/015 updated (020 location note included); changelog entry added.
+
+Spec: spec/features/014-transactions-screen-from-home/, spec/features/015-all-transactions-screen/.
+
+## Controls group spacing (16px)
+Status: completed.
+
+Added after the two-row controls, applied 2026-10-20:
+- Standardized the separation between the account/balance header and the filter rows on **Transactions**, **All transactions** and **Recurring** at **16px**: the controls stack keeps its 8px gap and a shared `CONTROLS_GROUP_TOP_GAP` margin adds the other 8px.
+- **Recurring** split its status filter and sort into two rows (status pill, then the sort row), matching the transaction screens; the account selector sits 16px above the status pill.
+- Intra-group spacing stays 8px and the sort row keeps the shared `SortRow` padding, so the filter and sort rows stay visually grouped. No behaviour change.
+- Specs 014/015/028 and the changelog updated.
+
+Spec: spec/features/014-transactions-screen-from-home/, spec/features/015-all-transactions-screen/, spec/features/028-recurring-transactions/.
+
+## Multi-line text in rows
+Status: completed.
+
+Added while auditing ellipsized text, applied 2026-10-20:
+- `ListItemRow` gained `titleLines` / `subtitleLines` (default 1), so callers decide the cap without touching the shared layout.
+- **Accounts**: the note shows up to **3 lines** (matching the 3-line note input), then ellipsizes.
+- **Comments**: the comment text shows up to **2 lines**. **Transactions**: the description shows up to **2 lines**. **Recurring**: the rule name shows up to **2 lines**. The category header on Transactions shows up to **2 lines**.
+- **Transaction details**: the recurring rule name wraps fully (no line cap), like the description.
+- **Recurring status chip**: label width raised from 120 to 160, so "Active + Paused + Ended" is not clipped.
+- Left as-is on purpose: category tiles (a square 22% tile cannot fit a second line without clipping), pills/chips (account trigger, category button, tag chips), modal/picker rows, chart totals, buttons and metadata lines.
+- Tests: `ListItemRow` line props, plus Accounts, Comments, TransactionGroup, RecurringRow and details assertions.
+- Specs 011/014/016/027/028 and the changelog updated.
+
+Spec: spec/features/011-accounts-screen/, 014-transactions-screen-from-home/, 016-transaction-details-screen/, 027-comments-management/, 028-recurring-transactions/.
+
+## Drawer and header labels
+Status: completed.
+
+Added while fixing truncated translations, applied 2026-10-21:
+- **Drawer:** labels render on up to **two lines** (a custom label node, since the library clamps string labels to one), so long menu entries such as Spanish "Todas las transacciones" are fully visible at 375px and with Large text size; short labels stay on one line.
+- **Headers:** every title keeps the same size (`fs(17)`, scaled only by the Settings text size); long titles wrap to **two lines** inside a bounded width, so German "Wiederkehrende Regel bearbeiten" (31 chars), French "Modifier la règle récurrente" or Spanish "Detalles de la transacción" are fully visible without a compact font. The tail ellipsizes only beyond two lines.
+- Browser-checked in French/Spanish/German at 375px and 320px (including Large text); Android clipping to be confirmed with the APK.
+- `spec/constitution/6-screens.md` (Drawer Navigator + Header Title Alignment), changelog updated.
+
+## Category pill labels
+Status: completed.
+
+Added while fixing the truncated filter pill, applied 2026-10-21:
+- **All transactions** category filter now uses shorter type-aware labels in all 9 languages: **All categories** (All tab), **All expenses** (Expenses), **All income** (Income). The longest is French "Toutes les dépenses" (19 chars), down from 33 ("Toutes les catégories de dépenses").
+- The pill text cap went from 120 to 160, so the label is shown in full (no ellipsis) in every language; the filters row scrolls horizontally only for a large text size or a 320px screen, never clipping the text itself.
+- Verified in the browser with the longest languages (fr/es/ca/gl/pt) on the three tabs; spec 015 and the changelog updated.
+
+Spec: spec/features/015-all-transactions-screen/.
+
+## Recurring card error tint
+Status: completed.
+
+Added while improving the over-limit feedback, applied 2026-10-21:
+- The recurring form card turns **red** (border + background, `recurringCardErrorColors` next to the primary `recurringCardColors`) while the draft would create more than **5,000** transactions, and returns to the primary tint as soon as the draft is valid.
+- It uses the same `tooManyOccurrences` flag that blocks Save, so it works in **create and edit** (including the scope-aware Future + past back-fill) and always matches the bottom hint. The paused state creates nothing and therefore stays in the primary tint.
+- Tests cover the primary/red card styles and an edit that would exceed the limit; spec 028, `6-screens` and the changelog updated.
+
+Spec: spec/features/028-recurring-transactions/.
+
+## 2.2.0 data-safety hardening
+Status: completed.
+
+Added in the pre-release audit, applied 2026-10-21:
+- **Config:** `sanitizeConfig` validates every field on its own; one corrupt value (a legacy/manual DB) no longer resets the theme, language or sort preferences.
+- **Accounts:** deleting the pseudo-total account (individually or in bulk) is guarded before the linked rows, so its transactions are never deleted.
+- **Backups:** the snapshot requires the app user (`USER_ID = 1`), reads all 9 tables inside one transaction, and refuses imported recurring rules with an out-of-range interval, a non-date-only field or `start > end`; `applyBackup` re-checks completeness and the service awaits `initDatabase()` before export/import.
+- **Web persistence:** IndexedDB open/read failures fail closed (no empty-DB overwrite); a failed write is retried once and then surfaced with a one-time localized alert; a failed `BEGIN` no longer leaks the transaction counter (which used to disable persistence for the session).
+- **Recurring:** create/edit are atomic (rule + tag links + catch-up occurrences + past patch in one transaction); the service validates the built schedule start (last-day rules), mirrors the form cap with the existing occurrence dates, and rejects `interval > 99`.
+- **Tests/config:** per-field config, total-account deletes, strict imports, atomic recurring failure injection, IndexedDB failures, BEGIN leak, deterministic concurrency; the suite timeouts were raised (the 5s default flaked under parallel load) and the sqlite harness marks its schema as migrated. `npm run test:all` green x3.
+- **Release metadata:** `versionCode` stays **3** (the 2.2.0 bump landed in `e2dcbda`; the 2.1.0 artifact is versionCode 2). The image-picker plugin now declares camera/photos strings and blocks `RECORD_AUDIO` (prebuild-verified).
+
+Specs: 025, 028, 7-platform-differences.
+
+## Category filter presets
+Status: completed.
+
+Added while refining the All transactions filter, applied 2026-10-21:
+- The category filter modal now shows **preset chips** instead of the single "All" chip: **All categories / All expenses / All income** on the All tab, and only the matching preset on the Expenses/Income tabs. Tapping a preset selects its exact set; tapping the active one clears the selection.
+- The Apply label is computed from the **selection**: empty keeps the type-aware no-filter label, an exact full set reads **Apply (All categories / All expenses / All income)**, and any other selection reads **Apply (N)**.
+- The screen pill names the applied selection the same way, so selecting every expense (or income) category on the All tab shows **All expenses / All income** instead of a raw count.
+- A shared `utils/categoryFilterSelection.ts` (`classifyCategorySelection`) drives the modal and the pill; `filter_apply_all` now reads "Apply (All categories)" in the 9 languages.
+- Tests: classifier unit tests, modal presets/manual-set/apply labels, screen pill; spec 021, spec 015, changelog.
+
+Spec: spec/features/021-category-filter-modal/, spec/features/015-all-transactions-screen/.
+
+## 2.2.0 accessibility and cleanup pass
+Status: completed.
+
+Added before the 2.2.0 release, applied 2026-10-21:
+- **Accessibility:** list rows and category tiles expose `button` roles and their selected state; sort fields/tabs/filter chips expose roles and `selected`; the sort arrow announces the direction action (ascending/descending) instead of repeating the field; the FAB, eye/select toggles, day picker, calculator, tag add/close, settings pickers, detail photo thumbnails and the Home chart toggle have roles/labels; `ToggleRow` is a single switch focus stop; DayPicker today/selected suffixes and the stepper +/- are localized (7 new keys in the 9 languages).
+- **Lists:** no empty-state flash while loading (a centered spinner instead), `removeClippedSubviews` removed from the transaction list (iOS blank rows), the date sort compares the fixed timestamp strings instead of parsing dates, and localized sort/search results refresh immediately on a language change.
+- **Errors:** the recurring rule-name load and the comments load are logged and surfaced; the App database failure shows a localized message plus the raw details. All developer logs use the shared `ERROR_PREFIXES` vocabulary through `logError(prefix, error, ...extra)` (screens, contexts, hooks, `ErrorBoundary`, web persistence, photo cleanup), so no call site hardcodes a prefix.
+- **Lint:** `npm run lint` now enforces **0 warnings** (`--max-warnings 0`). `boundaries/no-unknown-files` is off for tests/scripts/modules/root files (they are not app layers), the unused vars/imports and App effect dependencies are fixed, and dead code (`FormError`, two i18n keys) was removed. The drawer inactive icons use the secondary color.
+- **Tests:** role/state assertions (rows, tiles, sort, tabs, toggle), the loading state, and a language-change reorder test; `npm run test:all` green twice (161 files / 1341 tests).
+
+## v3 release screenshots
+Status: completed.
+
+Added before the 2.2.0 release, applied 2026-10-22:
+- The full 20-screen set was recaptured as `v3-*` (the refreshed hamburger is `v3.1-02-hamburger.png`, so GitHub renders it as a new file instead of a modified one) from a committed mock backup (`FinlyApp/scripts/screenshots/fixture.json`): 4 accounts, all 31 categories, 16 October 2026 transactions, 5 tags, 3 recurring rules and the English/dark/EUR configuration. The two empty-state screens are captured from a fresh context before importing it.
+- A reusable one-command workflow (`npm run screenshots`) drives the real web app with Playwright Core and installed Chrome: it starts/stops Expo on 8081, freezes the clock at 2026-10-21, imports the fixture through Settings -> Data -> Import, navigates the manifest, and writes 375x812 PNGs. Options: `--set`, `--only`, `--no-server`, `--url`, `--out`.
+- The 9 READMEs now point at the `v3-*` set, with new Category filter, Comments and Recurring screenshots and translated captions; the old `v2-*` files stay for history.
+- Guards: `tests/tooling/screenshots.test.ts` validates the fixture with `parseBackup` (references/IDs) and asserts the 9 READMEs reference the same existing images; `docs/screenshots.md` documents fixture rules, naming/versioning and how to add a screen.
+- `npm run test:all` green (162 files / 1343 tests); Playwright Core is a dev dependency and the dev server is always cleaned up.
+
+## v3.2 expanded screenshot set
+Status: completed.
+
+Follow-up after the first v3 screenshot PR, applied 2026-10-22:
+- Expanded the set to **30 screens** in drawer order: Home, hamburger, Add transaction/date picker, All transactions (empty/list/filter/details/modify), Recurring (list/new/edit), Accounts (list/create/modify), Categories (list/create/modify), Tags (list/create/modify), Comments (list/edit) and Settings with its four subpages last.
+- Added the missing Modify transaction, New/Edit recurring rule, Create/Modify account, Create/Modify category, Create/Modify tag and Edit comment screenshots; create forms use filled examples and recurring forms capture the schedule section.
+- Every image now uses `v3.2-<index>-<slug>`; the old `v3-*` and `v3.1-*` assets were removed and all 9 READMEs now follow the manifest order exactly.
+- `tests/tooling/screenshots.test.ts` imports `SCREENS`/`SET` and asserts the 9 READMEs reference the exact ordered file list, so the README can no longer drift from the capture order.
+- `npm run test:all` green (162 files / 1343 tests).
+
+## 2.2.0 audit hardening
+Status: completed (iOS simulator build passed; runtime not tested).
+
+Release-hardening pass from the final app audit, applied 2026-10-22:
+- Home headline now uses the active account balance from `accountsWithBalance`, restoring `initial_balance` to the displayed total (spec 026).
+- Photo edits are deferred: removing a photo only changes form state, files are deleted after a successful save/delete, and the details screen relies on the transaction repository's post-commit cleanup.
+- Backup imports cancel the web picker fallback timer, wait for `FileReader`, surface read errors, enforce `USER_ID` scoping/a real non-total account/category-type consistency, and normalize legacy date-only transaction dates to full timestamps for 2.1.0 compatibility.
+- Web IndexedDB absence/open failures fail closed, and writes resolve only after the IndexedDB transaction commits.
+- Added `FinlyShare.podspec`, the `preview-simulator` EAS profile and the missing `MissingCurrentViewControllerException`; the free EAS iOS simulator build **427cb65f** finished successfully, verifying Swift compilation and module linking. Runtime/share-sheet behavior still needs a Mac or device. Native photo backups remain URI-only by design for 2.2.0 (documented in 025).
+- `npm run test:all` green (162 files / 1347 tests). iOS runtime/share testing remains unverified without a Mac or physical device.
+
+## 2.2.0 state and race hardening
+Status: completed.
+
+Batch B1 from the final audit, applied 2026-10-22:
+- AppContext now loads recurring materialization + reference data once (gated by ConfigContext loading), applies Home defaults without reloading, initialises the period from config, guards stale async results and only replaces an invalid/deleted active account.
+- ConfigContext merges updates from the latest config, serializes repository saves, rolls back only the fields of the failed update and returns a Promise; DataScreen applies the new config before resetAll.
+- OptionPicker now tracks option values (not labels) and useResetOnOpen is edge-triggered; duplicate-name checks, comment suggestions, selection mode, bulk deletion and useFocusLoad have race/re-entry guards.
+- `npm run test:all` green (162 files / 1353 tests).
+
+## 2.2.0 UI and period correctness
+Status: completed.
+
+Batch B2a from the final audit, applied 2026-10-22:
+- Week period math, labels, navigation and the week picker now share `firstDayOfWeek`; Sunday-first weeks use Sunday-Saturday consistently.
+- Amount sorting renders a flat list without date headers; each row shows its date.
+- The bulk-category transfer flow uses one modal with two inline steps instead of nesting a second RN Modal (iOS-safe).
+- Home list clears the FAB; ColorGrid wraps on narrow screens; TagSection clears hidden search; MonthGrid only highlights the matching year; disabled destructive buttons use inactive colors; ModifyAccount/TransactionDetails show a loading spinner.
+- The shared account pill can show longer localized names (e.g. Catalan "La meva cartera") without premature ellipsis.
+- `npm run test:all` green (162 files / 1355 tests), plus browser checks for the Catalan account pill, Sunday-first week label and flat amount-sorted list.
+
+## 2.2.0 amount-sort row order
+Status: completed.
+
+Follow-up after device review, applied 2026-10-22:
+- Added a `meta` slot to ListItemRow between the title and subtitle.
+- Amount-sorted transaction rows now show the date (calendar icon + semibold text) before the comment, followed by tags and the recurring name: Type -> Date -> Comment -> Tags -> Recurring.
+- Tests cover the meta order and the date-before-comment layout; `npm run test:all` green (162 files / 1358 tests).
+
+## 2.2.0 contextual date icons
+Status: completed.
+
+Applied 2026-10-22:
+- Added a shared DateIcon: calendar for scheduled/current dates, time for historical metadata.
+- Calendar icons now mark Date-sort section headers and the tappable period button; time icons mark Tags "Created on", Comments "Last used" and Recurring "Created on"; Recurring "Next due" keeps a calendar icon.
+- Transaction details now show a time icon beside "Created" and a refresh icon beside "Updated"; the day/end-date inputs keep their existing calendar icon.
+- Date label top spacing moved from the text to the row, so clock and calendar icons align with their labels.
+- Tests assert the icons in the date header, period button, tags, comments, recurring rows and details footer; `npm run test:all` green (162 files / 1359 tests).
+
+## 2.2.0 custom period range wording
+Status: completed.
+
+Applied 2026-10-22:
+- Custom period ranges always render on two lines: start on top, end below, with the full-width button and no empty arrow slots.
+- Replaced the generic "from ... to ..." wording with localised start/end phrases and standard connectors in all 9 languages, keeping the app's capitalised month names.
+- The start year is shown only when the range crosses a year boundary; the calendar modal header uses the same range wording.
+- Added all-language range tests and verified Home/All transactions at 375px; `npm run test:all` green (163 files / 1371 tests).
+
+## 2.2.0 compact calendar strings
+Status: completed.
+
+Applied 2026-10-23:
+- Day period uses the short month in the compact box (e.g. `22 Oct 2026`); the calendar modal keeps the full date.
+- Week period stays one line with short months; the week modal subtitle now uses full month names and the year, while week rows keep short months.
+- Period button horizontal padding reduced to 12px so short day/week strings remain safe on narrow screens and large text.
+- Renamed the custom "All" shortcut to "This year" and removed the redundant top title line; it selects 1 January to today.
+- Added formatter and calendar tests; browser-verified day, week, modal subtitle and this-year states at 375px; `npm run test:all` green (163 files / 1373 tests).
+
+## 2.2.0 period range presets
+Status: completed.
+
+Applied 2026-10-23:
+- Replaced the custom period square with the standard CheckboxRow checkbox and check mark.
+- Added quick ranges in a centred, equal-column grid: This year / 12 months, then 30 days / 90 days; the checked preset is derived from the current range, so editing the calendar unchecks it and selecting a matching range checks it automatically.
+- Applying a preset keeps the calendar visible with that range selected; pressing the active preset re-applies it.
+- 30/90 days include today (29/89 days back); 12 months shifts the calendar by 12 months.
+- Week modal subtitles now show both years when a week crosses a year boundary, e.g. 29 December 2025 - 4 January 2026.
+- Calendar modals now size to their content up to a 94% height cap with a fixed header, scrollable body and fixed Cancel/OK footer; Month and Year use a 3x4 grid.
+- The custom period picker always shows the start/end indicator and resets to start-date selection after an end date is chosen.
+- The start/end instruction uses the muted left-aligned hint style instead of a button-like surface.
+- Calendar headers now reserve two left-aligned information lines; Week shows both full start/end dates with years, and Period keeps its Desde/hasta range there.
+- Period presets and the indicator now sit below the calendar, while Month and Year reserve an empty Month-row spacer for vertical alignment.
+- Added year-page and week-row accessibility labels, consolidated week formatting around the shared week-lines helper, mapped the preset checkboxes and named the Month-row spacer.
+- The Period header hides the end line while choosing an end date, avoiding a duplicate date; removed the unused DateTimePicker dependency and config plugin.
+- The 94% cap keeps the Period hint visible on short screens; added preset, cross-year/week-line and modal header tests; browser-verified all pickers at 320/375px; `npm run test:all` green (165 files / 1386 tests).
+
+## 2.2.0 multiline inline counters
+Status: completed.
+
+Applied 2026-10-25:
+- Multiline fields now place the counter inside the input at the bottom-right: transaction Comment, Modify comment and Account note.
+- Single-line name fields keep the counter below the input; their five spacing variants were normalized to the shared `formStyles.counter`.
+- Added a reusable `LabeledTextField` `inlineCounter` variant and shared inline tokens in `formStyles`; CommentInput uses the same tokens.
+- Updated the account/comment specs, `6-screens.md`, harness baseline and tests; browser-verified the account note and Modify comment at 375px; `npm run test:all` green (165 files / 1389 tests).
+
+## 2.2.0 post-audit data/state batch
+Status: completed.
+
+Applied 2026-10-25:
+- Config saves now recover the persisted values after a failed queued write, so an older failure cannot silently drop a newer preference.
+- Factory reset, delete-all-data and import collect old native photos first and delete them only after the write commits; import keeps URIs still referenced by the new snapshot.
+- Web holds an exclusive `finly-db` lock; a second tab is blocked with a Try again action instead of overwriting the first tab's IndexedDB snapshot.
+- Refreshing accounts replaces the active account object, and refreshing/deleting tags prunes invisible Home and local tag filters.
+- Recurring delete now reports failures and ignores a second confirm while the first is running.
+- Startup reference-data failure shows a retry screen instead of an infinite Home spinner.
+- WeekPicker, MonthGrid and YearGrid follow the date prop so reopening after a fast-arrow date change shows the correct page.
+- Updated specs, platform notes, harness baseline and changelog; browser-verified the two-tab guard at 375px; `npm run test:all` green (168 files / 1410 tests).
+
+## 2.2.0 calendar edge cases
+Status: completed.
+
+Applied 2026-10-25:
+- Custom-range OK is disabled while the picker is waiting for the end date; tapping the same day twice creates a one-day range.
+- Compact week labels add both years only when the week crosses a year boundary.
+- Added shared `useToday` hook: refreshes at midnight and when the app/tab becomes active, used by the calendar pickers and DaySelector.
+- Added 90-day/12-month preset, minDate forwarding and cross-year week tests; browser-verified the custom-range OK state at 375px; `npm run test:all` green (169 files / 1415 tests).
+
+## 2.2.0 form accessibility
+Status: completed.
+
+Applied 2026-10-25:
+- Account picker now exposes a button role and `Account: <name>` label; its chevron is decorative.
+- `LabeledTextField` uses the visible label as the accessible name, covering the Account Note field.
+- Photo add/remove and source options have button roles; the add tile is labelled "Add photo".
+- Comment suggestions are real pressable/focusable buttons, preserving the blur guard.
+- Section titles expose a heading role; decorative icons and the amount currency symbol are hidden.
+- Added selected/disabled states, disabled-stepper opacity and larger hit areas for small icon actions.
+- Updated form accessibility docs and tests; browser-verified the account/photo/heading labels at 375px; `npm run test:all` green (170 files / 1418 tests).
+
+## 2.2.0 comment suggestions polish
+Status: completed.
+
+Applied 2026-10-25:
+- Moved the suggestions panel inside the Comment section, below its header and above the input, so it no longer touches the Tags area.
+- Added a bulb icon, localized **Suggestions** heading and **Tap to reuse** hint, plus 44px rows.
+- Updated Add/Modify comment specs and accessibility docs; browser-verified the panel at 375px; `npm run test:all` green (170 files / 1418 tests).
+
+## 2.2.0 input robustness
+Status: completed.
+
+Applied 2026-10-26:
+- `LabeledTextField` now keeps legacy values above the configured limit editable (`maxLength = max(limit, value.length)`); the raw Comment and Modify Category inputs do the same.
+- Inline counter padding is derived from the scaled counter height (app text size and OS font scale), so Comment/Note counters do not overlap at Large text.
+- Added over-limit and large-text tests for LabeledTextField, CommentInput, ModifyCategory, CreateAccount Note and Modify Comment; test:all green (170 files / 1425 tests).
+
+## 2.2.0 backup safety
+Status: completed.
+
+Applied 2026-10-26:
+- Backup import now validates `next_due >= start_date`, recurrence anchor ranges, `active` flags, account/category/rule/tag references and generated-transaction recurrence dates before writing.
+- Transactions and rules that reference the Total account are rejected.
+- Native photo cleanup only deletes files under the app documents/photo root; arbitrary `file://` URIs from imported backups are ignored.
+- Added backup and photo allowlist tests; test:all green (170 files / 1427 tests).
+
+## 2.2.0 serialized direct writes
+Status: completed.
+
+Applied 2026-10-26:
+- Reproduced the direct-write/catch-up rollback at the SQL engine level: a tag write issued while a transaction awaited was rolled back with it.
+- Added `runExclusiveWrite`/`serializeWrites` and routed standalone account, category, tag, recurring and comment writes through the same queue as explicit transactions.
+- Transaction internals keep their non-queued repository calls, avoiding nested queue deadlocks.
+- Added a concurrency regression test; test:all green (170 files / 1428 tests).
+
+## 2.2.0 modal keyboard lift
+Status: completed.
+
+Applied 2026-10-26:
+- Fixed hidden modals accumulating keyboard height: `useKeyboardLift` now only grows while the modal is visible and resets while hidden.
+- This prevents the Month/Week/Year picker from opening clipped at the top after a form keyboard was used.
+- Added a regression test and verified the Month modal centered on the Android release APK; test:all green (170 files / 1429 tests).
+- Update (2026-10-26): the lift now releases 250ms after the keyboard hides, so dismissing the currency/search keyboard returns the modal to its normal centred size while still protecting a footer-button tap. Added a release-delay regression test.
+
+## 2.2.0 first photo preview
+Status: completed.
+
+Applied 2026-10-26:
+- Fixed the first photo preview rendering black: `File.copy()` returns a promise in Expo SDK 57, and the URI was added to state before the copy completed.
+- Camera and gallery copies are now awaited before the preview URI is appended.
+- Added a deferred-copy regression test; test:all green (170 files / 1430 tests).
+
+## Calendar picker standard
+Status: completed.
+
+Applied 2026-10-26:
+- Inside Day/Week/Month pickers, arrows only browse; the selected value changes only by tapping (strict A).
+- Added the absolute 01 January 1900 calendar floor; `minDate` omitted or `null` both mean 1900, while `maxDate` keeps its existing semantics.
+- `YearGrid` uses fixed 12-year pages anchored at 1900 (`1900–1911`, `1912–1923`, …); tapping a year no longer recenters the grid.
+- `WeekPicker` keeps six fixed row slots; weeks entirely outside the active month are blank, non-interactive placeholders that preserve height and spacing.
+- Tapping a shared week no longer jumps to the month where the week starts; reopening still opens the week's start month.
+- Added calendar bounds, MonthGrid, YearGrid and WeekPicker regression tests.
+- Improved modal nav rows: 22px icons, compact boxes with 44px+ effective tap targets, equal side slots for a perfectly centred title, separated double-arrow jump to the current year/month/page, and a 12px gap between year/month rows.
+- Added MonthNav/YearNav/YearGrid jump tests; test:all green (176 files / 1465 tests).
+
+## 2.2.0 category filter selection state
+Status: completed.
+
+Applied 2026-10-26:
+- Opening the category filter with an empty screen filter preselects every category for the current tab and activates the matching preset (All categories / All expenses / All income).
+- Tapping the active preset clears every category; Apply becomes disabled and reads Apply (0), with a localized "Select at least one category." hint above it. Deselecting the last tile behaves the same, and selecting a tile re-enables Apply.
+- The screen's empty filter state still means no filter and shows the type-aware All label; the modal now requires at least one category before applying.
+- On the All tab, the All categories preset sits alone on the first row while All expenses and All income share the second row; a type tab keeps its single preset on the first row.
+- The Expenses and Income tabs keep their section title above the category grid, matching the All tab's section headers.
+- Updated specs 021/015, added the localized hint in all 9 languages, covered the three tabs and the clear/re-enable flow in modal tests, and browser-verified the preset rows and type headers at 375px; test:all green (178 files / 1509 tests).
+
+Spec: spec/features/021-category-filter-modal/, spec/features/015-all-transactions-screen/.
+
+## 2.2.0 CI test stability
+Status: completed.
+
+Applied 2026-10-26:
+- Pinned the GitHub Actions job to `ubuntu-24.04` with a 15-minute timeout, avoiding the `ubuntu-latest` migration to Ubuntu 26 while the test runtime is validated on it.
+- Wrapped config-stub notifications (`setConfig`, `setColors`, `resetStub`) in React `act`, removing the FormSectionHeader/SettingsRow/AppProvider update warnings.
+- `npm run test:all` green twice locally, including once with `CI=true` (178 files / 1509 tests).
+
+Spec: none (CI/test tooling).
+
+## 2.2.0 recurring started-rule cursor
+Status: completed.
+
+Applied 2026-10-27:
+- A recurring rule is now treated as fresh only when its cursor still equals its start **and** it has no generated occurrence dates.
+- A started rule moved to a future start (`next_due === start_date`) stays started: moving its start back into the past no longer back-fills occurrences or enables "Future + past".
+- The rule is enforced in the form, the pre-save skip warning and the service layer; genuinely fresh future rules still re-anchor from their new start.
+- Added regression tests for the form, screen and service; browser-verified the future-then-past flow at 375px; `npm run test:all` green (178 files / 1512 tests).
+
+Spec: spec/features/028-recurring-transactions/.
+
+## 2.2.0 persisted filter pills
+Status: completed.
+
+Applied 2026-10-27:
+- Persisted the All/One-time/Recurring pill independently per transaction screen (`allTransactionsRecurringView` / `transactionsRecurringView`).
+- Persisted a separate All-transactions category selection per type tab (`allTransactionsCategoryIds`, `allTransactionsExpenseCategoryIds`, `allTransactionsIncomeCategoryIds`), pruning deleted categories and normalizing a full selection to `[]`; switching tabs restores that tab's selection instead of clearing it.
+- Persisted the Recurring status filter (`recurringStatusFilter`); type/account, period, tag and search filters remain session-only.
+- Config arrays now round-trip as JSON; added schema/default/serialization/screen tests and browser-verified per-tab persistence across tab switches and reloads; `npm run test:all` green (178 files / 1520 tests).
+
+Spec: spec/features/014-transactions-screen-from-home/, spec/features/015-all-transactions-screen/, spec/features/028-recurring-transactions/.
+
+## 2.2.0 persisted filter state refactor
+Status: completed.
+
+Applied 2026-10-27:
+- The All-transactions category selections and Recurring status filter are now derived directly from config, removing duplicated local state and config-sync effects.
+- Centralized the per-tab category config key map/patch and added `normalizeCategorySelection`; deduplicated the config array schemas and parser key sets.
+- Renamed `usesOwnSort` to `usesOwnPreferences` in `useTransactionFilters`.
+- No behavior change; `npm run test:all` green (178 files / 1522 tests) and browser-verified per-tab category selections plus the Recurring status filter.
+
+Spec: none (refactor only).
+
+## 2.2.0 web data integrity and calculator/calendar UX
+Status: completed.
+
+Applied 2026-10-27:
+- Web IndexedDB snapshot failures now reject the originating operation after one retry, while later writes can still persist the full database; corrupt stored values fail closed instead of booting empty.
+- Failed database opens/inits can be retried, and a rejected Web Lock shows a retry screen instead of leaving the app on the splash.
+- Config booleans parse only true/false, config failure recovery no longer overwrites newer optimistic updates, and deleting the active account keeps the selected Home period.
+- Calculator Accept is disabled for zero/negative results; week/month/year calendar cells enforce the resolved min/max bounds.
+- Negative calculator results are valid intermediate values: unary minus is folded into the number, so `5 - 10 = -5`, then `+ 10 = 5` no longer errors.
+- Added database, config, context, calculator and calendar regressions; npm run test:all green (179 files / 1554 tests).
+
+Spec: spec/features/001-home-screen/, spec/features/002-db-design/, spec/features/007-calculator/.
+
+## 2.2.0 comment suggestion focus and keyboard reveal
+Status: completed.
+
+Applied 2026-10-27:
+- Selecting a comment suggestion keeps the input focused and the keyboard open; the suggestion panel clears and a later real blur still commits normally.
+- The keyboard-reveal timer is cancelled on blur and guarded before scrolling, so a quick focus/blur (including a suggestion tap) cannot move the form later.
+- Added CommentInput and useKeyboardReveal regressions; `npm run test:all` green (179 files / 1557 tests).
+
+Spec: spec/features/004-add-transaction-screen/, spec/features/017-modify-transaction-screen/.
+
+## 2.2.0 post-audit refactors
+Status: completed.
+
+Applied 2026-10-28:
+- Extracted `useSortPreference` and adopted it in Accounts, Tags, Comments, Categories and Recurring; behavior unchanged.
+- Centralized config DB keys and codecs in `configMetadata`; `configDefaults` and `configRepo` now derive the key map, array keys and parsing/serialization from it.
+- Extracted the FK-safe wipe sequence into `wipeUserData`, shared by reset, delete-all and backup import.
+- Added sort/config/wipe regressions; `npm run test:all` green (182 files / 1566 tests).
+
+Spec: none (refactor only).
+
+## 2.2.0 upgrade fixture
+Status: completed.
+
+Applied 2026-10-28:
+- Added a pure schema-3 `fixture-2.1.0.json`: 4 accounts, 31 categories, 53 transactions across 10 months, 5 tags, 53 tag links, one data-URI photo and only the 15 config keys that existed in 2.1.0.
+- Added a generator and a tooling test that parses the fixture with the current backup parser, verifies no recurring data, checks the 2.1.0 config key set and validates every FK reference.
+- Documented the EAS 2.1.0 to 2.2.0 in-place upgrade procedure, including exporting the canonical 2.1.0 backup before upgrading.
+
+Spec: none (release testing assets).
+
+## 2.2.0 v3.3 screenshot refresh
+Status: completed.
+
+Applied 2026-10-28:
+- Recaptured all 30 screens as `v3.3-*` from the committed fixture at 375x812, English/dark/EUR, fixed clock.
+- Updated all 9 READMEs and `docs/screenshots.md` to the new set; the old `v3.2-*` images remain for history.
+- Updated the screenshot harness to wait for the current Home total, which now includes account initial balances (`4.923,06` for the fixture).
+- `npm run test:all` green (183 files / 1569 tests).
+
+Spec: none (documentation/assets).
+
+## 2.2.0 category tile and negative balance fixes
+Status: completed.
+
+Applied 2026-10-28:
+- Category tiles reserve a minimum height and the selected border on every tile, so one-line labels are not clipped on web or native, including large text.
+- Account initial balances accept negative values through a localized `+`/`-` sign toggle; `parseAmountInput` preserves a leading minus only when enabled, and transaction amounts remain positive-only.
+- Added category-tile, signed-parsing, sign-toggle and ModifyAccount regressions; recaptured the v3.3 screenshots.
+- The sign toggle is disabled for empty/zero balances and negative zero is normalized to zero.
+- `npm run test:all` green (183 files / 1580 tests).
+
+Spec: spec/features/004-add-transaction-screen/, spec/features/017-modify-transaction-screen/, spec/features/026-account-initial-balance/.
+
+## 2.2.0 pre-release P0 audit fixes
+Status: completed.
+
+Applied 2026-10-28:
+- Bulk selection is reconciled against the visible filtered list; hidden selected IDs are pruned on tab/filter/search changes and are never passed to delete.
+- Imported photo values are validated per parsed entry: broad base64 `data:image/*` values and app-created `photo_<timestamp>_<counter>.jpg` file URIs remain importable, while remote URLs, DB/backup filenames, traversal paths and arbitrary file paths are rejected.
+- Photo deletion now only accepts app-created filenames directly under the document root (legacy 2.1) or under `documents/photos/`; new photos are copied into that directory.
+- `ErrorBoundary` retries by remounting the failed subtree and logs in production instead of only under `__DEV__`.
+- Import is split into apply and refresh phases; `updateConfig`/`resetAll` report failure, and an applied-but-unrefreshed import shows a dedicated alert instead of a false success/failure.
+- Transaction save, create/modify forms, and delete confirmations use ref-backed in-flight guards; rapid double taps execute once.
+- `npm run test:all` green (185 files / 1608 tests).
+
+Spec: spec/features/014-transactions-screen-from-home/, spec/features/015-all-transactions-screen/, spec/features/008-categories-screen/, spec/features/011-accounts-screen/, spec/features/018-tag-management/, spec/features/027-comments-management/, spec/features/025-data-backup/.
+
+## 2.2.0 pre-release P1a audit hardening
+Status: completed.
+
+Applied 2026-10-28:
+- Backup import now enforces file-size, total-row, photo-count/length and config-value limits; validates positive safe IDs, duplicate rows/config keys, `is_total`, transaction time components, recurring schedule cursors and catch-up backlog.
+- Photo lifecycle now deletes only unreferenced files after destructive operations; form-created photos are cleaned on cancel/unmount, existing removals are cleaned by the repository after update, and web/comment-search failures are handled.
+- Web persistence no longer rejects a committed operation when IndexedDB persistence fails; it reports through the existing warning, retries once, coalesces snapshots and exposes `flush()`. WASM init failures and closed/blocked IndexedDB handles can retry.
+- Load failures now expose an error and retry state in `useFocusLoad`; list/form/detail screens show a shared retry state, and `AppContext` surfaces refresh failures.
+- `npm run test:all` green (186 files / 1622 tests).
+
+Spec: spec/features/025-data-backup/, spec/features/014-transactions-screen-from-home/, spec/features/015-all-transactions-screen/.
+
+## 2.2.0 pre-release P1b audit hardening
+Status: completed.
+
+Applied 2026-10-29:
+- Centralized audit literals in `constants/backup`, `constants/photo`, `constants/storage` and `constants/validation`: backup format/mime/file names, validation reasons/errors, photo directory/prefix/quality, database/IndexedDB/lock names and safe-integer messages.
+- Accessibility: modal focus containment, live validation alerts, search/delete/tag input labels, radio labels and chart text alternatives.
+- Header: the Add category search screen uses the narrower title bound, so "Add category" is not clipped under the search button.
+- Categories: creating from the transaction flow locks the type to the transaction and shows it read-only; standalone creation keeps both radios and no longer leaks a pending category into a later transaction.
+- Modals: a keyboard already open in the underlying form no longer lifts the opening modal, preventing the Add photo card from jumping from the top to the centre.
+- Correctness: untouched forms adopt a new dirty baseline after external refresh; duplicate-name check failures now fail closed; app/config timers are cleaned up.
+- Deferred refreshes now survive the initiating screen navigating back, so created/edited/deleted accounts, categories, tags and transactions appear without restarting the app.
+- Web backup download revokes its object URL after the click and the file picker handles cancel/overall timeout; Android share clears pending promises and MediaStore rows on failures.
+- Locale: long dates resolve month names for the requested language, date headers keep language casing, and percentages use the configured decimal separator.
+- `npm run test:all` green (186 files / 1633 tests).
+
+Spec: spec/features/025-data-backup/, spec/features/014-transactions-screen-from-home/, spec/features/015-all-transactions-screen/.
+
+## 2.2.0 pre-release P2 performance and dependency hardening
+Status: completed.
+
+Applied 2026-10-29:
+- Transaction list screens and `TransactionListBody` now reuse the visible IDs computed once by `useTransactionListScreen`, removing duplicate array construction.
+- `useTransactionFilters` precomputes the accounts map, tag-ID map, category-ID set and trimmed search term once per render, so the filter chain no longer rebuilds them for every transaction.
+- Applied safe dependency updates: React Navigation 7 latest patches, `drizzle-orm` 0.45.4, `react-native-web` 0.21.4, `reanimated-color-picker` 5.1.3, `sql.js` 1.15.2, `zod` 4.6.7, `sharp` 0.35.5, `vitest` 4.1.12, `eslint-plugin-boundaries` 7.4.0, `happy-dom` 21.0.4 and `@testing-library/react-native` 14.1.0.
+- Security/tooling gate: `npx expo install --check` up to date, `npx expo-doctor` 21/21, `npm audit` down to 8 issues (5 low, 3 high) from 27; all remaining issues are Expo CLI/tooling transitive dependencies.
+- Drawer: All transactions is a primary destination again (stack reset, hamburger, drawer closes); Settings stays pushed with the native back button and now closes the drawer on selection.
+- Headers: titles ignore the OS font scale (the app text-size setting remains the only scale); the icon and label render as one inline text run so Android measures the full centered title. Add category and Settings use the wide bound, and Add category was verified in English, French, at a 1.3 system font scale and at the Large app text size. On web the title uses a larger line height so descenders stay visible under the two-line clamp. On Android, screens without a right action use a symmetric 56dp spacer so the native header centers titles against the full screen.
+- Add category: the search action is back in the header right, and the body field stays hidden until pressed, focuses on open and closes with its clear button. The header title reserves the action width so the inline centered title stays complete; pushed sub-screens otherwise keep back only.
+- Categories: Create from the Categories screen locks the type to the active tab. Add category gains the type counter, Name/Usage sorting with independent persisted keys (Usage descending by default), and lifetime usage badges.
+- Forms: Create/Modify account, category, tag and comment use the same `FormSectionHeader` icon + title standard as Add transaction, with a 16px/10px section rhythm and a zero top margin for the first section. Name labels use the generic `form_name` key with an `id-card-outline` icon while placeholders stay descriptive; every field counter lives in its section/modal header, and Modify category no longer repeats the selected category icon beside the Name input.
+- Modals: headers use an 18px centered title plus a semantic leading icon across confirmations, option pickers, photo source, recurring status/view, transfers, data actions and settings pickers. Confirmation and option icons are caller-specific with `alert-circle-outline` / `options-outline` fallbacks; Calendar left-aligns its title beside a calendar icon and uses the compact 12px footer gap, Add tag keeps its compact reserved error band, and Photo keeps its full-width Cancel menu.
+- Category delete/move: single delete uses `Delete 1 category?` and a category subject row instead of a wrapping title; single and bulk moves share the `Move transactions` title and source-category row, and the single move confirms with `Move & delete`. The bulk destination picker no longer puts the category name in its title.
+- Compact footers: Calendar and Add tag share `FOOTER_LAYOUTS.compact`, with two equal 128px buttons capped at 47% on narrow screens and a 12px gap; they keep the standard 12px vertical padding and 14px labels, so heights match the full-width footers, and labels stay centered and single-line in every language.
+- Modal titles: the header icon is inline with the title text so it stays on the first line when a long title wraps. Account and tag single deletes use `Delete 1 account?` / `Delete 1 tag?` with a shared `ModalEntitySubject` row, so no user-entered name appears in a modal title. Italian and Catalan plural titles were corrected.
+- Modal buttons: all plain cancels use the generic `cancel` key and simple deletes use `Delete`; the transaction details delete now warns that it is permanent. Special actions keep their labels: `Permanent delete`, `Delete all`, `Reset`, `Import`, `Skip them`, and picker actions keep `Select` / `Apply` / `Add` / `Ok` / `Accept`.
+- Remaining modal headers: the account selector, calculator, color picker and category filter now use centered titles with leading icons. The native calculator keeps its full-screen sheet but anchors the keypad and Cancel/Accept footer to the bottom, with the display flexing above them.
+- Entity subjects: the shared modal subject group is centered horizontally, with the icon centered against the name/subtitle block while the texts stay left-aligned with each other. Modify category shows the category's transaction/rule counts in both delete and move modals; the bulk resolution list stays left-aligned for scanning.
+- Modal primitives: `ModalTitle` now owns the inline icon/title rendering, `DeleteConfirmationModal` owns the standard trash/Cancel/Delete contract, and `ModalFooter` shares one internal `FooterButton`. Removed unused i18n keys, `SECTION_TITLE_STYLE`, `ChartType`, `AccountForm.showNameField` and the unused header size prop.
+- P2b: no further low-risk extraction was found; the transaction screens already share `TransactionListBody`, and deeper screen/context splits were deferred as release risk.
+- `npm run test:all` green (191 files / 1653 tests); Android release APK builds.
+
+## 2.2.0 post-audit refactors and regression closure
+Status: completed.
+
+Applied 2026-10-30:
+- Consolidated Accounts/Categories bulk deletion onto the shared `useBulkDelete` flow, composed `useBusyGuard` into the delete hooks and removed the unused delete-modal state from `useSelectAndSearch`.
+- Added `pickDefined` for repository partial updates and consolidated `categoryRepo` transaction/rule reassignment and deletion mutation paths.
+- Extracted `useCategoryBulkDelete`, reducing `CategoriesScreen` to presentation and selection while preserving in-use counts, guards and transfer decisions.
+- Reused `useSortPreference` in `useTransactionFilters` and shared the sort-preference behavior across both transaction sort scopes.
+- Moved `ConfirmWithTextModal` into `components/settings` and extracted `useTwoStepConfirmation` for the three destructive DataScreen confirmation flows.
+- Shared photo path parsing between file validation and deletion, and reused `isSameDay` in `useToday`.
+- Added hidden-selection deletion regressions across All Transactions, Accounts, Categories, Tags, Comments and Recurring.
+- `npm run test:all` green (195 files / 1698 tests).
+
+Spec: none (refactor/test-only).
+
+## 2.2.0 v3.4 screenshot refresh
+Status: completed.
+
+Applied 2026-10-30:
+- Recaptured all 30 screens as `v3.4-*` from the committed fixture at 375x812, English/dark/EUR and a fixed clock.
+- Updated all 9 READMEs, `docs/screenshots.md`, `docs/harnesses.md` and the screenshot manifest set to `v3.4`.
+- Updated the capture helpers for the current Import button, transaction-details and form-field selectors, and made the fixture test assert full backup importability.
+- `npm run test:all` green (195 files / 1698 tests).
+
+Spec: none (documentation/assets).

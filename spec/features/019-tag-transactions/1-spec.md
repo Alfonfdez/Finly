@@ -19,7 +19,7 @@
 
 ### 2. Inline tag creation (modal)
 
-- Modal with "Add tag" title, name input (max 20 chars, counter), Cancel / Submit buttons.
+- Modal with a centered "Add tag" title, `pricetag-outline` icon and the counter in its header's right slot, name input (max 20 chars), a centered reserved error band with 8px padding so validation never moves the buttons, and Cancel / Submit buttons.
 - Case-insensitive duplicate check before creation.
 - On create: `tagRepo.create()` → `refreshTags()` → auto-select the new tag → close modal.
 - Empty name and duplicate validation same as 018 CreateTagScreen.
@@ -83,10 +83,10 @@ Tags       | [Urgent] [Recurring]
 - When `tagIds` is not provided or empty, all transactions for the category are shown (current behavior).
 - The `tagIds` parameter is passed from HomeScreen when a tag filter is active.
 
-### 8. Web localStorage support
+### 8. Web persistence
 
-- Add `webTransactionRepo.createWithTags()`, `updateWithTags()`, `getTagsByTransactionId()`, `getTagsByTransactionIds()`.
-- Junction operations done in JS (read/write `@Finly/transaction_tags`).
+- No separate web repository exists: `transactionRepo.createWithTags()`, `updateWithTags()`, `getTagsByTransactionId()` and `getTagsByTransactionIds()` run over the same SQLite schema through sql.js, persisted to IndexedDB.
+- Junction rows are written with the transaction in one explicit transaction (serialized by `runExclusiveDb`).
 
 ---
 

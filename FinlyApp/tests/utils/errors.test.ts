@@ -1,15 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { alertError, alertInfo, describeError, logError, showErrorAlert, runWithErrorAlert, ERROR_PREFIXES } from '../../src/utils/errors';
+import { t } from '../../src/i18n';
+
 const mockAlert = vi.fn();
 
 vi.mock('react-native', () => ({
   Alert: {
     alert: (...args: unknown[]) => mockAlert(...args),
   },
+  Platform: { OS: 'ios' },
 }));
-
-import { showErrorAlert, runWithErrorAlert, ERROR_PREFIXES } from '../../src/utils/errors';
-import { t } from '../../src/i18n';
 
 describe('errors helpers', () => {
   beforeEach(() => {
@@ -25,6 +26,49 @@ describe('errors helpers', () => {
     it('shows the alert with the provided labels', () => {
       showErrorAlert({ error_title: 'TITLE', error_generic: 'GENERIC' });
       expect(mockAlert).toHaveBeenCalledWith('TITLE', 'GENERIC');
+    });
+  });
+
+  describe('alertError', () => {
+    it('shows the alert with the given title and message', () => {
+      alertError('TITLE', 'MESSAGE');
+      expect(mockAlert).toHaveBeenCalledWith('TITLE', 'MESSAGE');
+    });
+
+    it('logs the error to the console', () => {
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      alertError('TITLE', 'MESSAGE');
+      expect(spy).toHaveBeenCalledWith('TITLE: MESSAGE');
+      spy.mockRestore();
+    });
+  });
+
+  describe('alertInfo', () => {
+    it('shows the alert with the given title and message', () => {
+      alertInfo('TITLE', 'MESSAGE');
+      expect(mockAlert).toHaveBeenCalledWith('TITLE', 'MESSAGE');
+    });
+
+    it('does not log to the console', () => {
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      alertInfo('TITLE', 'MESSAGE');
+      expect(spy).not.toHaveBeenCalled();
+      spy.mockRestore();
+    });
+  });
+
+  describe('describeError', () => {
+    it('returns the message for a plain Error', () => {
+      expect(describeError(new Error('boom'))).toBe('boom');
+    });
+
+    it('appends the underlying cause message', () => {
+      const err = new Error('Failed query', { cause: new Error('no such column: name') });
+      expect(describeError(err)).toBe('Failed query → no such column: name');
+    });
+
+    it('stringifies a non-Error value', () => {
+      expect(describeError('nope')).toBe('nope');
     });
   });
 
@@ -46,8 +90,17 @@ describe('errors helpers', () => {
     });
   });
 
+  describe('logError', () => {
+    it('logs the shared prefix with the error and any extra context', () => {
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const error = new Error('boom');
+      logError(ERROR_PREFIXES.commentsLoad, error, 'extra');
+      expect(spy).toHaveBeenCalledWith(`${ERROR_PREFIXES.commentsLoad}:`, error, 'extra');
+      spy.mockRestore();
+    });
+  });
   describe('ERROR_PREFIXES', () => {
-    it('defines a prefix for every destructive write action', () => {
+    it('defines the shared prefix vocabulary', () => {
       expect(Object.keys(ERROR_PREFIXES)).toEqual([
         'accountCreate',
         'accountUpdate',
@@ -65,6 +118,37 @@ describe('errors helpers', () => {
         'commentDelete',
         'commentsDelete',
         'transactionsDelete',
+        'recurringDelete',
+        'recurringUpdate',
+        'backupShare',
+        'backupExport',
+        'backupRead',
+        'backupImport',
+        'transactionsDeleteAll',
+        'dataDeleteAll',
+        'factoryReset',
+        'databaseInit',
+        'configLoad',
+        'configSave',
+        'initialDataLoad',
+        'dataRefresh',
+        'recurringMaterialize',
+        'categoriesRefresh',
+        'accountsRefresh',
+        'tagsRefresh',
+        'dataReset',
+        'commentsLoad',
+        'recurringNamesLoad',
+        'tagBreakdownsLoad',
+        'duplicateCheck',
+        'focusLoad',
+        'deferredRefresh',
+        'transactionSubmit',
+        'photoCollect',
+        'photoCopy',
+        'photoDelete',
+        'webPersist',
+        'errorBoundary',
       ]);
     });
   });

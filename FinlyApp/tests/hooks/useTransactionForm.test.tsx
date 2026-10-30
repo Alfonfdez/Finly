@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { renderHook, act } from '@testing-library/react-native';
-import { useTransactionForm, type TransactionDraft } from '../../src/hooks/useTransactionForm';
+import { useTransactionForm, type TransactionDraft, type RecurrenceDraft } from '../../src/hooks/useTransactionForm';
 import { buildAppMock, getAppStub, setAppData, resetAppStub } from '../component/helpers/appStub';
 import type { Account, Category, Tag } from '../../src/database/types';
-import type { TransactionType } from '../../src/constants/types';
+import type { TransactionType, RecurrenceFrequency, RecurrenceScope } from '../../src/constants/types';
 import { setConfig, resetStub } from '../component/helpers/configStub';
+import { setPendingCategory } from '../../src/utils/pendingCategory';
 
 interface UseTransactionFormProps {
   initialType: TransactionType;
@@ -20,14 +21,26 @@ interface UseTransactionFormProps {
   errorTitle: string;
   errorMessage: string;
   onSubmit: (data: TransactionDraft, tagIds: number[]) => Promise<void>;
+  onSubmitRule?: (data: TransactionDraft, tagIds: number[], recurrence: RecurrenceDraft) => Promise<void>;
   resetTagsOnFirstFocus?: boolean;
   onError?: () => void;
+  ruleMode?: boolean;
+  initialTagIds?: number[];
+  initialRuleNextDue?: string | null;
+  initialRuleOccurrenceDates?: string[];
+  initialRepeatFrequency?: RecurrenceFrequency;
+  initialRepeatInterval?: number;
+  initialRepeatEnd?: Date | null;
+  initialRepeatName?: string;
+  initialRepeatLastDay?: boolean;
+  existingRepeatNames?: string[];
+  editing?: boolean;
+  repeatScope?: RecurrenceScope;
 }
 
-const mockGetTagsByTransactionId = vi.fn(async (_id: number) => [] as number[]);
 const mockGetCategoryUsageCounts = vi.fn(
   async (_userId: number, _type: TransactionType, _start: string, _accountId: number) =>
-    [] as { id: number; name: string; icon: string; color: string; count: number }[]
+    [] as { id: number; name: string; icon: string; color: string; count: number }[],
 );
 const mockTagCreate = vi.fn(async (_data: unknown) => ({
   id: 900,
@@ -38,7 +51,6 @@ const mockTagCreate = vi.fn(async (_data: unknown) => ({
 
 vi.mock('../../src/database', () => ({
   transactionRepository: {
-    getTagsByTransactionId: (id: number) => mockGetTagsByTransactionId(id),
     getCategoryUsageCounts: (userId: number, type: TransactionType, start: string, accountId: number) =>
       mockGetCategoryUsageCounts(userId, type, start, accountId),
   },
@@ -119,7 +131,6 @@ async function setup(overrides: Partial<UseTransactionFormProps> = {}) {
 
 describe('useTransactionForm', () => {
   beforeEach(() => {
-    mockGetTagsByTransactionId.mockReset().mockResolvedValue([]);
     mockGetCategoryUsageCounts.mockReset().mockResolvedValue([]);
     mockTagCreate.mockReset().mockResolvedValue({ id: 900, user_id: 1, name: 'NewTag', created_at: '2026-01-01 00:00:00' } as Tag);
     nav.goBack.mockClear();
@@ -210,7 +221,7 @@ describe('useTransactionForm', () => {
   });
 
   it('handleCreateTag creates a tag, refreshes and selects it', async () => {
-    const { result, props } = await setup();
+    const { result } = await setup();
     setAppData({ tags: [] });
     let ok = false;
     await act(async () => {
@@ -266,6 +277,23 @@ describe('useTransactionForm', () => {
     expect(getAppStub().refresh).toHaveBeenCalled();
   });
 
+  it('handleSubmit ignores a second call before the first render settles', async () => {
+    let release!: () => void;
+    const onSubmit = vi.fn(() => new Promise<void>((resolve) => { release = resolve; }));
+    const { result } = await setup({ initialAmount: '9.99', onSubmit });
+
+    let first!: Promise<void>;
+    let second!: Promise<void>;
+    await act(async () => {
+      first = result.current.handleSubmit();
+      second = result.current.handleSubmit();
+      release();
+      await Promise.all([first, second]);
+    });
+
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
   it('handleSubmit is guarded when canSubmit is false', async () => {
     const { result, props } = await setup({ initialAccountId: undefined });
     await act(async () => {
@@ -275,12 +303,147 @@ describe('useTransactionForm', () => {
     expect(nav.goBack).not.toHaveBeenCalled();
   });
 
-  it('loads existing tags when a transaction id is provided', async () => {
-    mockGetTagsByTransactionId.mockResolvedValue([11, 12]);
-    const { result } = await setup({ transactionId: 42 });
-    await act(async () => {});
-    expect(mockGetTagsByTransactionId).toHaveBeenCalledWith(42);
-    expect(result.current.selectedTags).toEqual([11, 12]);
+  it('includes the recurrence draft on submit', async () => {
+    const onSubmitRule = vi.fn(async (_d: TransactionDraft, _t: number[], _r: RecurrenceDraft) => {});
+    const { result } = await setup({ initialAmount: '10', ruleMode: true, onSubmitRule });
+    await act(() => result.current.setRepeatName('Rent'));
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(onSubmitRule).toHaveBeenCalledTimes(1);
+    const [, , recurrence] = (onSubmitRule as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(recurrence).toMatchObject({ name: 'Rent', frequency: 'monthly', interval: 1, endDate: null });
+  });
+
+  it('clears the end date when it is on/before the start date', async () => {
+    const { result } = await setup({ initialAmount: '10', initialDay: new Date(2026, 5, 15), ruleMode: true });
+    await act(() => result.current.setRepeatName('Rent'));
+
+    // An end date on the start day is invalid and auto-cleared.
+    await act(() => result.current.setRepeatEnd(new Date(2026, 5, 15)));
+    expect(result.current.repeatEnd).toBeNull();
+
+    // An end date strictly after the start day is kept.
+    await act(() => result.current.setRepeatEnd(new Date(2026, 5, 16)));
+    expect(result.current.repeatEnd).not.toBeNull();
+    expect(result.current.canSubmit).toBe(true);
+  });
+
+  it('flags a fresh rule whose cursor still equals its start', async () => {
+    const fresh = await setup({ ruleMode: true, initialRuleNextDue: '2026-10-30', initialDay: new Date(2026, 9, 30) });
+    expect(fresh.result.current.ruleUnmaterialized).toBe(true);
+
+    const started = await setup({ ruleMode: true, initialRuleNextDue: '2026-10-14', initialDay: new Date(2026, 9, 13) });
+    expect(started.result.current.ruleUnmaterialized).toBe(false);
+  });
+
+  it('keeps a rule started when a future edit made next_due equal its start', async () => {
+    const started = await setup({
+      ruleMode: true,
+      initialDay: new Date(2099, 9, 30),
+      initialRuleNextDue: '2099-10-30',
+      initialRuleOccurrenceDates: ['2099-10-27'],
+      initialRepeatFrequency: 'daily',
+      initialRepeatInterval: 1,
+    });
+    expect(started.result.current.ruleUnmaterialized).toBe(false);
+
+    await act(() => started.result.current.setDay(new Date(2099, 9, 20)));
+    expect(started.result.current.ruleStartMovedEarlier).toBe(true);
+    expect(started.result.current.recurringPastAffected).toBe(false);
+  });
+
+  it('flags a started rule whose start date is moved earlier', async () => {
+    const { result } = await setup({ ruleMode: true, initialRuleNextDue: '2026-10-14', initialDay: new Date(2026, 9, 13) });
+    expect(result.current.ruleStartMovedEarlier).toBe(false);
+
+    await act(() => result.current.setDay(new Date(2026, 9, 10)));
+    expect(result.current.ruleStartMovedEarlier).toBe(true);
+  });
+
+  it('reports recurringPastAffected only for past-affecting fields (rule mode)', async () => {
+    const { result } = await setup({
+      ruleMode: true,
+      initialAmount: '100',
+      initialCategoryId: 1,
+      initialComment: 'Rent',
+    });
+    expect(result.current.recurringPastAffected).toBe(false);
+
+    // Timing-only change does not affect past occurrences.
+    await act(() => result.current.setRepeatFrequency('yearly'));
+    expect(result.current.recurringPastAffected).toBe(false);
+
+    // Amount change does.
+    await act(() => result.current.setAmountRaw('120'));
+    expect(result.current.recurringPastAffected).toBe(true);
+
+    // Reverting it clears the flag again.
+    await act(() => result.current.setAmountRaw('100'));
+    expect(result.current.recurringPastAffected).toBe(false);
+
+    // Type change does.
+    await act(() => result.current.setType('income'));
+    expect(result.current.recurringPastAffected).toBe(true);
+  });
+
+  it('offers the past scope when the rule has a missed window (rule mode)', async () => {
+    const past = await setup({
+      ruleMode: true,
+      initialAmount: '100',
+      initialCategoryId: 1,
+      initialRuleNextDue: '2000-01-01',
+    });
+    expect(past.result.current.recurringPastAffected).toBe(true);
+
+    const future = await setup({
+      ruleMode: true,
+      initialAmount: '100',
+      initialCategoryId: 1,
+      initialRuleNextDue: '2999-01-01',
+    });
+    expect(future.result.current.recurringPastAffected).toBe(false);
+  });
+
+  it('only offers the past scope when the new schedule has something to back-fill', async () => {
+    const base = {
+      ruleMode: true,
+      initialAmount: '100',
+      initialCategoryId: 1,
+      initialRepeatFrequency: 'daily' as const,
+      initialRepeatInterval: 1,
+      initialDay: new Date(2026, 8, 1),
+      initialRuleNextDue: '2026-10-01',
+    };
+
+    // Finished: the cursor is past the (unchanged) end date → nothing to back-fill.
+    const finished = await setup({ ...base, initialRepeatEnd: new Date(2026, 8, 30) });
+    expect(finished.result.current.recurringPastAffected).toBe(false);
+
+    // Extending the end date opens a window → back-fill.
+    const extended = await setup({ ...base, initialRepeatEnd: new Date(2026, 9, 31) });
+    expect(extended.result.current.recurringPastAffected).toBe(true);
+  });
+
+  it('requires a recurring name when repeat is on', async () => {
+    const { result } = await setup({ initialAmount: '10', ruleMode: true });
+    expect(result.current.repeatNameError).toBe('required');
+    expect(result.current.canSubmit).toBe(false);
+
+    await act(() => result.current.setRepeatName('Rent'));
+    expect(result.current.repeatNameError).toBeNull();
+    expect(result.current.canSubmit).toBe(true);
+  });
+
+  it('rejects a recurring name already used by another rule', async () => {
+    const { result } = await setup({ initialAmount: '10', existingRepeatNames: ['Rent'], ruleMode: true });
+    await act(() => result.current.setRepeatName('  rent '));
+    expect(result.current.repeatNameError).toBe('taken');
+    expect(result.current.canSubmit).toBe(false);
+
+    await act(() => result.current.setRepeatName('Rent 2'));
+    expect(result.current.repeatNameError).toBeNull();
   });
 
   it('loads category usage and orders visible categories by usage then name', async () => {
@@ -294,5 +457,166 @@ describe('useTransactionForm', () => {
     // usage: 9, 4, 2 -> Home, Travel, Food
     expect(result.current.visibleCategories.map((c) => c.id)).toEqual([2, 3, 1]);
     expect(mockGetCategoryUsageCounts).toHaveBeenCalled();
+  });
+
+  describe('isDirty', () => {
+    it('is false until a field actually changes', async () => {
+      const { result } = await setup({ initialComment: 'coffee', initialAmount: '3.5' });
+      expect(result.current.isDirty).toBe(false);
+
+      // Equivalent values: extra whitespace / trailing zeros.
+      await act(async () => { result.current.setComment('coffee  '); });
+      await act(async () => { result.current.setAmountRaw('3.50'); });
+      expect(result.current.isDirty).toBe(false);
+
+      await act(async () => { result.current.setComment('tea'); });
+      expect(result.current.isDirty).toBe(true);
+    });
+
+    it('flags an amount, category or day change', async () => {
+      const { result } = await setup({ initialAmount: '10' });
+
+      await act(async () => { result.current.setAmountRaw('11'); });
+      expect(result.current.isDirty).toBe(true);
+    });
+
+    it('flags a tag change', async () => {
+      const { result } = await setup({ initialTagIds: [1] });
+      expect(result.current.isDirty).toBe(false);
+      await act(async () => { result.current.handleToggleTag(2); });
+      expect(result.current.isDirty).toBe(true);
+    });
+
+    it('does not count the tags the row already has as a change', async () => {
+      const { result } = await setup({ initialTagIds: [11, 12] });
+
+      expect(result.current.selectedTags).toEqual([11, 12]);
+      expect(result.current.isDirty).toBe(false);
+
+      // Adding and removing the same tag returns to the stored set.
+      await act(async () => { result.current.handleToggleTag(3); });
+      expect(result.current.isDirty).toBe(true);
+      await act(async () => { result.current.handleToggleTag(3); });
+      expect(result.current.isDirty).toBe(false);
+    });
+  });
+
+  it('keeps a category created under the other type selected', async () => {
+    // CreateCategoryScreen leaves the new category pending; it belongs to Income
+    // while the form is on Expenses, and the type switch must not clear it.
+    setPendingCategory(4, 'income');
+    const { result } = await setup();
+    await act(async () => {});
+
+    expect(result.current.type).toBe('income');
+    expect(result.current.categoryId).toBe(4);
+  });
+
+  it('drops the last-day anchor when the start date is no longer a month-end', async () => {
+    const { result } = await setup({
+      initialRepeatFrequency: 'monthly',
+      initialRepeatLastDay: true,
+      initialDay: new Date(2027, 1, 28), // Feb 28 of a non-leap year: still offered
+    });
+    await act(async () => {});
+    expect(result.current.repeatLastDay).toBe(true);
+
+    await act(async () => { result.current.handleSelectDate(new Date(2027, 4, 15)); });
+    expect(result.current.repeatLastDay).toBe(false);
+  });
+
+  describe('rule edit save gate', () => {
+    const ruleProps: Partial<UseTransactionFormProps> = {
+      ruleMode: true,
+      editing: true,
+      initialAmount: '10',
+      initialRepeatFrequency: 'monthly',
+      initialRepeatInterval: 2,
+      initialRepeatEnd: new Date(2026, 11, 31),
+      initialRepeatName: 'Rent',
+      initialRepeatLastDay: false,
+      existingRepeatNames: [],
+    };
+
+    it('keeps Save disabled while the rule draft matches the loaded rule', async () => {
+      const { result } = await setup(ruleProps);
+      await act(async () => {});
+
+      expect(result.current.isDirty).toBe(false);
+      expect(result.current.canSubmit).toBe(false);
+    });
+
+    it('enables Save for every rule field and disables it again when reverted', async () => {
+      const { result } = await setup(ruleProps);
+      await act(async () => {});
+
+      await act(async () => { result.current.setRepeatName('Rent 2'); });
+      expect(result.current.canSubmit).toBe(true);
+      await act(async () => { result.current.setRepeatName('Rent'); });
+      expect(result.current.canSubmit).toBe(false);
+
+      await act(async () => { result.current.setRepeatFrequency('weekly'); });
+      expect(result.current.canSubmit).toBe(true);
+      await act(async () => { result.current.setRepeatFrequency('monthly'); });
+      expect(result.current.canSubmit).toBe(false);
+
+      await act(async () => { result.current.setRepeatInterval(3); });
+      expect(result.current.canSubmit).toBe(true);
+      await act(async () => { result.current.setRepeatInterval(2); });
+      expect(result.current.canSubmit).toBe(false);
+
+      await act(async () => { result.current.setRepeatEnd(new Date(2027, 0, 31)); });
+      expect(result.current.canSubmit).toBe(true);
+      await act(async () => { result.current.setRepeatEnd(new Date(2026, 11, 31)); });
+      expect(result.current.canSubmit).toBe(false);
+    });
+
+    it('ignores surrounding whitespace in the rule name', async () => {
+      const { result } = await setup(ruleProps);
+      await act(async () => {});
+
+      await act(async () => { result.current.setRepeatName('  Rent  '); });
+      expect(result.current.isDirty).toBe(false);
+      expect(result.current.canSubmit).toBe(false);
+    });
+
+    it('counts ticking the last-day checkbox on a month-end date', async () => {
+      const { result } = await setup({
+        ...ruleProps,
+        initialDay: new Date(2027, 1, 28),
+        initialRepeatEnd: null,
+      });
+      await act(async () => {});
+
+      await act(async () => { result.current.setRepeatLastDay(true); });
+      expect(result.current.isDirty).toBe(true);
+      expect(result.current.canSubmit).toBe(true);
+
+      await act(async () => { result.current.setRepeatLastDay(false); });
+      expect(result.current.canSubmit).toBe(false);
+    });
+
+    it('does not report a hidden last-day rule as changed on load', async () => {
+      // A 31-based rule is last-day, but the control is hidden on the 31st: the flag
+      // is cleared on load, and the rule must still look untouched.
+      const { result } = await setup({
+        ...ruleProps,
+        initialDay: new Date(2026, 0, 31),
+        initialRepeatLastDay: true,
+      });
+      await act(async () => {});
+
+      expect(result.current.repeatLastDay).toBe(false);
+      expect(result.current.isDirty).toBe(false);
+      expect(result.current.canSubmit).toBe(false);
+    });
+
+    it('allows a scope-only save', async () => {
+      const { result } = await setup({ ...ruleProps, repeatScope: 'futureAndPast' });
+      await act(async () => {});
+
+      expect(result.current.isDirty).toBe(false);
+      expect(result.current.canSubmit).toBe(true);
+    });
   });
 });

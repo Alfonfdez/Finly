@@ -8,49 +8,74 @@ import { useFontSize } from '../hooks/useFontSize';
 import { getDisplayCategoryName } from '../i18n';
 import { BADGE_SHAPES, TRANSACTION_TYPES } from '../constants/types';
 import ListItemRow from './ListItemRow';
+import SelectionCheckbox from './SelectionCheckbox';
+import DateIcon from './DateIcon';
 import TagChip from './TagChip';
 
 interface TransactionRowProps {
   tx: Transaction;
   category?: Category;
   tags?: { tag_id: number; name: string }[];
+  recurringName?: string;
   onPress?: (transactionId: number) => void;
   selectMode?: boolean;
   selected?: boolean;
+  /** Amount sorting renders a flat list, so the row carries its own date. */
+  showDate?: boolean;
 }
 
-export const TransactionRow = memo(function TransactionRow({ tx, category, tags, onPress, selectMode, selected }: TransactionRowProps) {
+export const TransactionRow = memo(function TransactionRow({ tx, category, tags, recurringName, onPress, selectMode, selected, showDate }: TransactionRowProps) {
   const { config, activeColors: c } = useConfig();
   const fs = useFontSize();
 
   const handlePress = useCallback(() => onPress?.(tx.id), [onPress, tx.id]);
 
-  const checkbox = selectMode ? (
-    <Ionicons
-      name={selected ? 'checkbox' : 'checkbox-outline'}
-      size={22}
-      color={selected ? c.primary : c.textSecondary}
-      style={styles.checkbox}
-    />
-  ) : undefined;
+  const checkbox = selectMode ? <SelectionCheckbox selected={!!selected} /> : undefined;
+
+  const hasRecurring = tx.recurring_rule_id != null;
+  const hasTags = !!tags && tags.length > 0;
 
   return (
     <ListItemRow
       title={category ? getDisplayCategoryName(category) : ''}
       subtitle={tx.description ?? undefined}
+      subtitleLines={2}
+      meta={showDate ? (
+        <View style={styles.dateMeta}>
+          <DateIcon kind="calendar" size={12} />
+          <Text style={[styles.rowDate, { color: c.textSecondary, fontSize: fs(11) }]}>
+            {formatDateHeader(tx.date)}
+          </Text>
+        </View>
+      ) : undefined}
       icon={category?.icon}
       color={category?.color}
       shape={BADGE_SHAPES.circle}
       badgeSize={36}
       badgeIconSize={18}
       badgeAlpha={19}
+      accessibilityState={selectMode ? { selected } : undefined}
       leading={checkbox}
-      middle={tags && tags.length > 0 ? (
-        <View style={styles.tagsContainer}>
-          {tags.map((tag) => (
-            <TagChip key={tag.tag_id} label={tag.name} />
-          ))}
-        </View>
+      middle={(hasRecurring || hasTags) ? (
+        <>
+          {hasTags && (
+            <View style={styles.tagsRow}>
+              {tags?.map((tag) => (
+                <TagChip key={tag.tag_id} label={tag.name} />
+              ))}
+            </View>
+          )}
+          {hasRecurring && (
+            <View style={styles.recurringBadge}>
+              <Ionicons name="repeat-outline" size={14} color={c.primary} />
+              {recurringName ? (
+                <Text style={[styles.recurringName, { color: c.textSecondary, fontSize: fs(11) }]} numberOfLines={1}>
+                  {recurringName}
+                </Text>
+              ) : null}
+            </View>
+          )}
+        </>
       ) : undefined}
       right={
         <Text style={[styles.amount, { color: tx.type === TRANSACTION_TYPES.income ? c.green : c.red, fontSize: fs(15) }]}>
@@ -69,16 +94,19 @@ export const TransactionDateHeader = memo(function TransactionDateHeader({ date 
   const fs = useFontSize();
 
   return (
-    <Text style={[styles.dateHeader, { color: c.textSecondary, fontSize: fs(13) }]}>
-      {formatDateHeader(date)}
-    </Text>
+    <View style={styles.dateHeaderRow}>
+      <DateIcon kind="calendar" size={13} />
+      <Text style={[styles.dateHeader, { color: c.textSecondary, fontSize: fs(13) }]}>
+        {formatDateHeader(date)}
+      </Text>
+    </View>
   );
 });
 
 function formatDateHeader(dateStr: string): string {
   const d = parseDbDate(dateStr);
   const day = d.getDate();
-  const month = getMonthName(d.getMonth() + 1).toLowerCase();
+  const month = getMonthName(d.getMonth() + 1);
   const year = d.getFullYear();
   const currentYear = new Date().getFullYear();
   if (year === currentYear) {
@@ -88,19 +116,36 @@ function formatDateHeader(dateStr: string): string {
 }
 
 const styles = StyleSheet.create({
-  dateHeader: {
-    fontWeight: '600',
+  dateHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingVertical: 8,
     paddingHorizontal: 16,
   },
-  tagsContainer: {
+  dateHeader: {
+    fontWeight: '600',
+    flexShrink: 1,
+  },
+  tagsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    alignItems: 'center',
     gap: 4,
     marginTop: 4,
   },
-  checkbox: {
-    marginRight: 10,
+  recurringBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+    maxWidth: '100%',
+  },
+  dateMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  rowDate: { fontWeight: '600' },
+  recurringName: {
+    fontWeight: '500',
+    flexShrink: 1,
   },
   amount: { fontWeight: '700' },
 });

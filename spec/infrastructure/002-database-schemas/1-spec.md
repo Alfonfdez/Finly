@@ -53,12 +53,12 @@ The migration *runner* (`PRAGMA user_version` steps with seeds in `src/database/
 
 ## Acceptance criteria
 
-- [ ] `src/database/types.ts` derives all row types from Zod schemas (`z.infer`) under the same exported names; the app compiles without touching any screen/import.
-- [ ] `src/database/schemas.ts` covers all 7 tables + config, with enums sourced from the existing constant sets.
-- [ ] Native repos validate full-row reads and throw on invalid rows.
-- [ ] Web `getStore` validates entity rows on read.
-- [ ] `configRepo.get` and `webConfigRepo.get` return `DEFAULT_CONFIG` when stored config is invalid (corrupt value or malformed JSON).
-- [ ] `tests/database/schemas.test.ts` covers valid rows, invalid type/amount/id/missing-field cases, and config fallback.
-- [ ] `dbDrift.test.ts` asserts schema keys == migration columns for all entity tables.
-- [ ] `npm run test:all` passes.
-- [ ] `changelog.md` is updated.
+- [x] `src/database/types.ts` derives all row types from Zod schemas (`z.infer`) under the same exported names; the app compiles without touching any screen/import.
+- [x] `src/database/schemas.ts` covers all 7 tables + config, with enums sourced from the existing constant sets.
+- [x] Native repos validate full-row reads and throw on invalid rows.
+- [x] Web `getStore` validates entity rows on read.
+- [x] `configRepo.get` and `webConfigRepo.get` return `DEFAULT_CONFIG` when stored config is invalid (corrupt value or malformed JSON).
+- [x] `tests/database/schemas.test.ts` covers valid rows, invalid type/amount/id/missing-field cases, and config fallback.
+- [x] `dbDrift.test.ts` asserts schema keys == migration columns for all entity tables.
+- [x] `npm run test:all` passes.
+- [x] `changelog.md` is updated.

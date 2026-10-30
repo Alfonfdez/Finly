@@ -17,6 +17,7 @@ All commands run from the `FinlyApp/` directory.
 | Typecheck | `npm run typecheck` |
 | Lint | `npm run lint` |
 | Web E2E (spec criteria) | `npx expo start --web` then run the `verification-loop` skill (Playwright, 375px viewport) |
+| Release screenshots | `npm run screenshots` (starts/stops Expo web; see `docs/screenshots.md`) |
 | Mobile E2E (Maestro flows) | boot the emulator (`emulator -avd finly_test`), `adb reverse tcp:8081 tcp:8081`, `npx expo start`, then `maestro test .maestro/<flow>.yaml` |
 
 ### Windows / PowerShell notes (host is win32, PowerShell 5.1)
@@ -35,9 +36,11 @@ All commands run from the `FinlyApp/` directory.
 
 ### Current suite baseline
 
-Verified 2026-09-06: **92 test files / 571 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
+Verified 2026-10-29: **187 test files / 1639 tests** (`npm run test:all`, vitest). The count only grows as tests are added — a drop in the baseline is a regression signal. Update this line after any session that adds or removes tests.
 
-Native E2E baseline (2026-09-09, SDK 57 + v2.0.0 release package): all 10 Maestro flows PASS on the `finly_test` emulator against `com.finly.app` after `expo prebuild` + `assembleDebug`.
+Dependency baseline (2026-10-29): `npx expo install --check` reports all dependencies up to date, `npx expo-doctor` passes 21/21 checks, and `npm audit` reports 8 remaining issues (5 low, 3 high), all in Expo CLI/tooling transitive dependencies. The direct high/critical issues in `zod`, `sharp`, `vitest`, `eslint-plugin-boundaries` and `happy-dom` were fixed.
+
+Native E2E baseline (2026-09-09, SDK 57 + v2.0.0 release package): the then-current 10 Maestro flows PASS on the `finly_test` emulator against `com.finly.app` after `expo prebuild` + `assembleDebug`. The suite now has 15 flows + 4 helpers; see the current inventory under Mobile mode.
 
 ## Verification loop (what "done" means)
 
@@ -59,16 +62,17 @@ acceptance criteria in a real browser.
 | Pure-logic unit tests | Vitest + happy-dom | ✅ Implemented (Phase A) | Calculator, formatters, amount input, category sorting, tag maps, color utils, DB query builders |
 | Component unit tests | Vitest + vitest-native + RNTL 14 | ✅ Implemented (Phase D) | Presentational components + context/hooks/screens suites with ConfigContext stubbed |
 | Type-checking | `tsc --noEmit` (strict) | ✅ Implemented | Whole codebase types, `verbatimModuleSyntax` enforced |
-| Linting | `npx expo lint` (eslint-config-expo) | ✅ Implemented | Code style, unused imports, React hooks rules |
+| Linting | `expo lint . --max-warnings 0` (eslint-config-expo + `@stylistic` + `eslint-plugin-boundaries`) | ✅ Implemented | Code style, unused imports, React hooks rules, module boundaries; **0 warnings** enforced |
 | Module-boundary linting | `eslint-plugin-boundaries` | ✅ Implemented (Phase E) | `src/` layer DAG — inverted/cyclic imports are lint errors |
 | Schema layer + validation | Zod 4 (`src/database/schemas.ts`) | ✅ Implemented (Phase F) | Row types derived via `z.infer`; read-path validation in native + web backends; schema-vs-migration drift test |
 | Dual-storage contract suite | Vitest + sql.js (real SQLite in Node) | ✅ Implemented (Phase B) | One shared SQLite engine (native parity via expo-sqlite mock + web via sql.js/IndexedDB), repo contract + DB drift vs types |
 | Backup round-trip | Vitest + sql.js (`tests/database/backup.test.ts`) | ✅ Implemented (025) | Snapshot build/parse/apply round-trips (photos + tag links), empty-DB export, invalid / FK / newer-version rejection with rollback, facade round-trip |
 | UI / E2E verification | Playwright MCP + `verification-loop` skill | ✅ Implemented (Phase C) | Spec acceptance criteria in a live Expo web app |
+| Release screenshots | Playwright Core + installed Chrome | ✅ Implemented | 30-screen `v3.4` README set from the committed fixture (375×812, fixed clock, empty + populated states, manifest order enforced) |
 | CI pipeline | GitHub Actions (`.github/workflows/ci.yml`) | ✅ Implemented | `npm run test:all` on every PR to `develop`/`main` and push to those branches |
 | SDD alignment | `spec/` + changelog + test mapping | ✅ In use | Every feature spec maps to tests + changelog entries |
 
-Deferred (not planned yet): Drizzle ORM (its `expo-sqlite` driver cannot drive the web's custom `DatabaseHandle` — see Phase F).
+No harness is currently deferred: Drizzle ORM landed as the repository query layer (`drizzle-orm/sqlite-proxy` over `DatabaseHandle`).
 
 ## Phase A — Pure-logic unit tests (implemented)
 
@@ -81,7 +85,7 @@ Regression seeds come from real bugs previously fixed in this project.
 |-----------|-------------------|
 | `tests/utils/calculator.test.ts` | `src/utils/calculator.ts` — precedence, decimals, comma separator, `MAX_VALUE`, division by zero, invalid operator sequences |
 | `tests/utils/formatters.test.ts` | `src/utils/formatters.ts` — `formatCurrency` (2-decimal rounding / float artifacts), signed currency, DB date conversion, period ranges, font scaling, week/day helpers |
-| `tests/utils/amountInput.test.ts` | `src/utils/amountInput.ts` — 9-integer / 2-decimal rules, separator normalization, display formatting |
+| `tests/utils/amountInput.test.ts` | `src/utils/amountInput.ts` — 9-integer / 2-decimal rules, separator normalization, display formatting, signed parsing |
 | `tests/utils/categoryUtils.test.ts` | `src/utils/categoryUtils.ts` — `Others`/`Other` forced last, alphabetical order, no input mutation |
 | `tests/utils/transactionTags.test.ts` | `src/utils/transactionTags.ts` — tag grouping by transaction |
 | `tests/utils/color.test.ts` | `src/utils/color.ts` — `withAlpha` clamping and rounding |
@@ -93,6 +97,8 @@ Regression seeds come from real bugs previously fixed in this project.
 | `tests/utils/formHints.test.ts` | `src/utils/formHints.ts` — comment/description hint selection |
 | `tests/utils/errors.test.ts` | `src/utils/errors.ts` — `showErrorAlert` + `runWithErrorAlert` |
 | `tests/utils/pendingCategory.test.ts` | `src/utils/pendingCategory.ts` — pending-category consume/clear |
+| `tests/utils/recurrence.test.ts` | `src/utils/recurrence.ts` — recurrence advancement (daily/weekly/monthly/yearly + interval), month-end/Feb-29 clamping, catch-up list, end-date and cap, and edit anchoring (`resolveEditAnchor`/`recurrencePreview`: Future only vs Future + past, today-generated skip, ended-cursor guard, skip window excluding existing occurrences) |
+| `tests/utils/calendarBounds.test.ts` | `src/utils/calendarBounds.ts` — `resolveDateBounds` convention (undefined max → today, null → unbounded, Date → clamp) |
 
 ## Phase B — Unified SQLite engine + contract suite (implemented)
 
@@ -112,9 +118,10 @@ used identically on every platform. The harness guarantees that parity:
   boot with the expected seed counts.
 - **Native parity**: the same engine backs the `expo-sqlite` mock (`sqliteMock.ts`), so the
   native repos run against real SQLite semantics in Node (WASM) without a device.
+- **Limits of the Node suite**: it runs the shared sql.js engine behind an `expo-sqlite` mock, so it proves the SQL/zod/repository contract, not the native driver itself. The real native engine is exercised on a device by the release APK + the Maestro flows (see Phase C); the drawer navigation is likewise covered by `flow-smoke` (there is no AppNavigator unit test).
 - **DB drift test**: after running migrations on sql.js, `PRAGMA table_info` must match
   `src/database/types.ts`; seed row counts must match the seed data, `user_version` must be
-  3, config rows must equal `DB_KEY_MAP`, and re-init must be idempotent. This catches a
+  4, config rows must equal `DB_KEY_MAP`, and re-init must be idempotent. This catches a
   column added to a migration that the types forgot.
 
 Test files (under `FinlyApp/tests/database/`):
@@ -124,8 +131,15 @@ Test files (under `FinlyApp/tests/database/`):
 | `contractSuite.ts` + `contractTypes.ts` | The shared scenario suite run against a `ContractBackend` (repos over the shared engine) |
 | `sqliteContract.test.ts` | The repos (`account/category/tag/transaction/config`) over the sql.js engine pass the suite |
 | `sqliteMock.ts` | `expo-sqlite` → shared sql.js engine adapter (`openDatabaseSync` backed by `SqlJsDatabase`) |
-| `sqliteWebEngine.test.ts` | Engine semantics: results, persistence, transactions, schema boot + seed counts |
-| `dbDrift.test.ts` | Schema drift: 7 tables' `PRAGMA table_info` vs declared columns, every `types.ts` field covered by a migration column, `user_version` 3, seed counts (1 user / 2 accounts / 31 categories / 0 transactions), config rows == `DB_KEY_MAP`, init idempotence |
+| `sqliteWebEngine.test.ts` | Engine semantics: results, persistence, transactions, schema boot + seed counts, persist-failure rejection and queue recovery |
+| `indexedDbStorage.test.ts` | IndexedDB storage round-trip, fail-closed reads and corrupt-value rejection |
+| `initRetry.test.ts` | Failed database open/init is retried instead of cached |
+| `configMetadata.test.ts` | Every config key has metadata, DB keys are unique/valid, and array keys derive from the codec |
+| `wipe.test.ts` | Shared FK-safe wipe order and keep-config/keep-users flags |
+| `dbDrift.test.ts` | Schema drift: 9 tables' `PRAGMA table_info` vs declared columns, every `types.ts` field covered by a migration column, `user_version` 4, seed counts (1 user / 2 accounts / 31 categories / 0 transactions / 0 recurring rules), config rows == `DB_KEY_MAP`, init idempotence |
+| `recurringRepo.test.ts` | `recurringRepo` over sql.js: rule CRUD + tags, `listDue`, occurrence insert + unique-index idempotency, bulk past update, delete keeps generated transactions |
+| `recurringService.test.ts` | `materializeDueRecurring` + `saveRecurringRuleEdit` + `resumeRecurringRule`: back-fill/idempotency/paused/end-date, edit scenarios (fresh-rule re-anchor, denser schedule taking effect today, skip recording/recovery), and atomic resume rollback |
+| `recurringService.preview.test.ts` | Summary ↔ save invariant: for create/edit scenarios the transactions the save creates equal the `recurrencePreview` the form shows |
 
 Run the suite alone with `npx vitest run tests/database/` (or all harnesses with `npm run
 test:all`).
@@ -176,15 +190,19 @@ per-criterion evidence is in the changelog entry.
 
 ### Mobile mode — Maestro on Android emulator (2026-08-05)
 
+- Keep the emulator at the normal system font scale (`adb shell settings put system font_scale 1.0`) for standard verification. Large-font checks are explicit one-off tests; reset the scale and relaunch the app afterwards.
+
 Native-only criteria (camera capture, native pickers) cannot be checked
 on web, so Finly added a **Maestro** harness for the Android emulator:
 
 - Flows live in `FinlyApp/.maestro/` (`flow-smoke`, `flow-004-add-transaction`,
   `flow-007-amount-calculator`, `flow-008-categories`, `flow-015-all-transactions`,
   `flow-016-transaction-details`, `flow-017-modify-transaction`,
-  `flow-021-category-filter`, `flow-022-total-account`, `flow-023-photo-attachment`)
+  `flow-021-category-filter`, `flow-022-total-account`, `flow-023-photo-attachment`,
+  `flow-028-recurring`, `flow-028-recurring-dirty-form`, `flow-028-recurring-hints`,
+  `flow-forms-standard`, `flow-debug`)
   plus `helpers/`
-  (`state-reset.yaml`, `open-drawer.yaml`, `dismiss-dev-menu.yaml`).
+  (`state-reset.yaml`, `open-drawer.yaml`, `dismiss-dev-menu.yaml`, `create-daily-rule.yaml`).
 - The app is verified on the **dev-client debug build** (`com.finly.app`, built
   with `npx expo run:android`), not Expo Go — the dev-client does not register the
   `exp://` scheme, so every flow starts with `helpers/state-reset.yaml`
@@ -194,7 +212,7 @@ on web, so Finly added a **Maestro** harness for the Android emulator:
   gallery), and the Settings → Personalization "Photo" toggle at the modal/UI level.
   Camera capture and gallery picking open system UIs Maestro cannot drive reliably on an
   emulator, so the full capture path is reported "not automatable on emulator".
-- All ten flows PASS on the emulator (2026-08-05 for smoke/022/008/023,
+- The original ten flows PASS on the emulator (2026-08-05 for smoke/022/008/023,
   2026-08-06 for flow-015-all-transactions and flow-021-category-filter,
   2026-08-07 for flow-004-add-transaction, flow-007-amount-calculator,
   flow-016-transaction-details and flow-017-modify-transaction).
@@ -254,15 +272,15 @@ Android / Maestro notes found and fixed while writing them:
 
 ### Phase D+ — Native E2E re-run on Expo SDK 57 (2026-09-09)
 
-After the upgrade to Expo SDK 57 / RN 0.86.3 (merged via PR #163) the native build and all
-ten Maestro flows were re-validated from scratch. Current SDK patch: `expo ~57.0.24`
-(applied 2026-09-18; JS-level patches within SDK 57 — no native regeneration needed;
-`npx expo install --check` reports no other packages out of date).
+After the upgrade to Expo SDK 57 / RN 0.86.3 (merged via PR #163) the native build and the
+then-current ten Maestro flows were re-validated from scratch. Current SDK patch: `expo ~57.0.28`
+(applied 2026-10-12; JS-level patches within SDK 57 — no native regeneration needed;
+`npx expo install --check` reports "Dependencies are up to date" and `expo-doctor` 21/21).
 
 Re-run on the release package (2026-09-09, required by the Task-3 release pass): the
 application id changed to `com.finly.app` (v2.0.0), so `android/` was regenerated with
-`expo prebuild`, the debug APK was rebuilt (`versionName 2.0.0`), all 14 `appId` entries
-in `.maestro/` were updated, and **all 10 flows re-run PASS on `com.finly.app`**.
+`expo prebuild`, the debug APK was rebuilt (`versionName 2.0.0`), every `appId` entry
+in `.maestro/` was updated, and **all ten then-current flows re-ran PASS on `com.finly.app`**.
 
 - `npx expo prebuild --platform android` regenerated the CNG `android/` folder on SDK 57
   (package stays `com.finly.app`, matching the flows' `appId`); the folder remains
@@ -270,9 +288,9 @@ in `.maestro/` were updated, and **all 10 flows re-run PASS on `com.finly.app`**
 - `gradlew app:assembleDebug` (5m52s first build — compiles reanimated/screens/
   gesture-handler/expo-modules-core C++ for all 4 ABIs) → `adb install -r` → launched on
   the `finly_test` emulator with Metro over `adb reverse tcp:8081 tcp:8081`.
-- **All 10 flows PASS** on the SDK 57 build: flow-smoke, flow-004, flow-007, flow-008,
-  flow-015, flow-016, flow-017, flow-021, flow-022, flow-023 (plus the 3 helpers
-  state-reset / open-drawer / dismiss-dev-menu).
+- **All ten then-current flows PASS** on the SDK 57 build: flow-smoke, flow-004, flow-007,
+  flow-008, flow-015, flow-016, flow-017, flow-021, flow-022, flow-023 (plus the 3 helpers
+  that existed at the time: state-reset / open-drawer / dismiss-dev-menu).
 - **Flow fixes aligned to the current UI (spec 015 is drawer-only):**
   - `flow-015`: removed the stale stats-icon (`c1b` "View transactions") entry that the 015
     spec removed; the header assertion changed from the removed back arrow to the "Open
@@ -323,16 +341,25 @@ and each suite calls `resetStub()` in `beforeEach`. i18n is NOT stubbed — the 
 | `tests/component/TabBar.test.tsx` | `TabBar<T>` — tabs, active styling, font scaling, onChange |
 | `tests/component/PeriodTabs.test.tsx` | `PeriodTabs` — period options, active highlight |
 | `tests/component/SortToggle.test.tsx` | `SortToggle` — date/amount, ASC/DESC arrow, direction toggle |
-| `tests/component/AmountInput.test.tsx` | `AmountInput` — decimal separator, formatting, error, calculator hook |
+| `tests/component/AmountInput.test.tsx` | `AmountInput` — decimal separator, formatting, error, calculator hook, negative sign toggle |
 | `tests/component/CategoryGrid.test.tsx` | `CategoryGrid` — selection, dashed add-more tile, onSelect/onAddMore |
 | `tests/component/TransactionGroup.test.tsx` | `TransactionRow` + `TransactionDateHeader` — formats, tag chips, divider, press |
 | `tests/component/RadioButton.test.tsx` | `RadioButton` — selection dot, custom color |
 | `tests/component/EyeToggle.test.tsx` | `EyeToggle` — eye/eye-off toggle, hitSlop |
 | `tests/component/EmptyState.test.tsx` | `EmptyState` — icon, title, message |
 | `tests/component/Fab.test.tsx` | `Fab` — icon, onPress, a11y label |
-| `tests/component/CalculatorModal.test.tsx` | `CalculatorModal` — keypad input, expression evaluation, clear/backspace, trailing-operator rejection, accept/cancel |
+| `tests/component/CalculatorModal.test.tsx` | `CalculatorModal` — keypad input, expression evaluation, clear/backspace, trailing-operator rejection, zero/negative Accept guard, accept/cancel |
+| `tests/component/CommentInput.test.tsx` | `CommentInput` - debounced suggestions, focus/blur, suggestion selection keeps focus and clears the panel, legacy length and counter |
+| `tests/hooks/useKeyboardReveal.test.tsx` | `useKeyboardReveal` - reveal on focus, re-reveal on layout/keyboard, cancel a pending reveal on blur |
+| `tests/hooks/useSortPreference.test.tsx` | `useSortPreference` - switch field with its default direction, flip the active field, toggle direction |
+| `tests/component/ModalShell.test.tsx` | `ModalShell` - dismisses the underlying keyboard when opened |
 | `tests/component/CategoryFilterModal.test.tsx` | `CategoryFilterModal` — type tabs, search, All/category multi-select, `Apply (N)`/`Apply (All)` labels, disabled Apply at 0 selected, close |
 | `tests/component/TransactionForm.test.tsx` | `TransactionForm` — type tabs, amount input, account picker, category grid + create tile, day selector, form submit/cancel |
+| `tests/component/RepeatSection.test.tsx` | `RepeatSection` — always-rendered options (no toggle), frequency chips, interval stepper, end date, rule-mode re-anchor (denser schedule from today, today not re-counted), start-moved-earlier hint, last-day |
+| `tests/component/recurringSummary.test.tsx` | Summary block wording: create (past/future start), edit Future only (today anchor + skipped window), Future + past (back-filled count), start-moved-earlier hint |
+| `tests/component/YearNav.test.tsx` | `YearNav` — forward arrow disabled at the current-year default, unbounded when `maxYear` is null, back arrow disabled at `minYear` |
+| `tests/component/DayPicker.test.tsx` | `DayPicker` — default no-future (forward year arrow disabled, future days unselectable); `maxDate={null}` enables future years/days; follows the `date` prop on reopen (view-sync) |
+| `tests/component/ToggleRow.test.tsx` | `ToggleRow` — renders a `Switch` reflecting `checked`, toggles from the switch and from the label |
 
 Context, hooks, and screens are covered by additional RNTL suites (same mock stack — configStub, `@expo/vector-icons` alias, `@react-navigation/native` mocked per file). Coverage added in the Phase C test-expansion pass:
 
@@ -344,6 +371,7 @@ Context, hooks, and screens are covered by additional RNTL suites (same mock sta
 | `tests/screens/CategoriesScreen.test.tsx` | `CategoriesScreen` — expense/income tabs, category list + counter, add tile |
 | `tests/screens/AddCategoryScreen.test.tsx` | `AddCategoryScreen` — name search, duplicate check, icon/color pick, create flow |
 | `tests/screens/ModifyCommentScreen.test.tsx` | `ModifyCommentScreen` — preload, edit, Save, Delete with confirmation |
+| `tests/screens/RecurringScreen.test.tsx` | `RecurringScreen` — rule row summary + Active label, info press navigates to ModifyRecurring, switch toggles active without navigating |
 
 ## Phase E — Module-boundary linting (implemented)
 
@@ -407,10 +435,10 @@ data is validated at the storage boundary of both backends (spec
   match the migration columns for all entity tables — a column added to a migration without
   the schema (or vice versa) fails the suite. `tests/database/schemas.test.ts` covers the
   accept/reject matrix and config fallback.
-- **Drizzle is deferred:** web storage now runs real SQLite (sql.js) but through a custom
-  `DatabaseHandle` that is not an `expo-sqlite` driver, so Drizzle's `expo-sqlite` driver
-  still cannot cover it. It stays deferred until the web engine is exposed through an
-  ORM-compatible driver.
+- **Drizzle is implemented:** repositories query through `drizzle-orm/sqlite-proxy` over the
+  shared `DatabaseHandle` (`drizzle/schema.ts`, `drizzle/proxy.ts`, `drizzle/engine.ts`), so
+  native and web share one query layer; migrations remain on `PRAGMA user_version` and there
+  is no `drizzle-kit` step.
 
 ## Adding a test
 

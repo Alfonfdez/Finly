@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { UNTAGGED_ID } from '../../src/database/helpers';
-import { UNTAGGED_LABEL, MAX_SUGGESTIONS, THEMES, TRANSACTION_TYPES } from '../../src/constants/types';
+import { UNTAGGED_LABEL, MAX_SUGGESTIONS, THEMES, TRANSACTION_TYPES, TAG_SORT_BY, SORT_DIRECTIONS, RECURRING_VIEWS, RECURRING_STATUSES } from '../../src/constants/types';
 import { DEFAULT_CONFIG } from '../../src/database/configDefaults';
 import type { ContractBackend, NewAccount, NewCategory, NewTransaction } from './contractTypes';
 import type { Transaction } from '../../src/database/types';
@@ -46,7 +46,7 @@ function tx(overrides: Partial<NewTransaction>): NewTransaction {
 
 export function runContractSuite(
   name: string,
-  createBackend: () => Promise<ContractBackend>
+  createBackend: () => Promise<ContractBackend>,
 ): void {
   describe(`contract: ${name}`, () => {
     let backend: ContractBackend;
@@ -141,7 +141,7 @@ export function runContractSuite(
         const grocery = (await backend.category.list(USER, 'expense')).find(c => c.name === 'Groceries')!;
         const transaction = await backend.transaction.createWithTags(
           tx({ account_id: acc.id, category_id: grocery.id, amount: 10, date: '2026-02-01' }),
-          [tag.id]
+          [tag.id],
         );
         expect(await backend.transaction.getTagsByTransactionId(transaction.id)).toEqual([tag.id]);
 
@@ -151,10 +151,32 @@ export function runContractSuite(
         expect(await backend.transaction.getTagsByTransactionId(transaction.id)).toEqual([]);
       });
 
-      it('cannot delete the total pseudo-account', async () => {
+      it('cannot delete the total pseudo-account (nor its transactions)', async () => {
         const total = (await backend.account.list(USER)).find(a => (a.is_total ?? 0) === 1)!;
+        const grocery = (await backend.category.list(USER, 'expense')).find(c => c.name === 'Groceries')!;
+        const transaction = await backend.transaction.createWithTags(
+          tx({ account_id: total.id, category_id: grocery.id, amount: 5, date: '2026-02-01' }),
+          [],
+        );
+
         await backend.account.delete(total.id);
         expect(await backend.account.getById(total.id)).not.toBeNull();
+        expect(await backend.transaction.getById(transaction.id)).not.toBeNull();
+      });
+
+      it('bulk delete skips the total account and keeps its transactions', async () => {
+        const total = (await backend.account.list(USER)).find(a => (a.is_total ?? 0) === 1)!;
+        const temp = await backend.account.create(account('Temp bulk'));
+        const grocery = (await backend.category.list(USER, 'expense')).find(c => c.name === 'Groceries')!;
+        const transaction = await backend.transaction.createWithTags(
+          tx({ account_id: total.id, category_id: grocery.id, amount: 5, date: '2026-02-01' }),
+          [],
+        );
+
+        await backend.account.deleteMany([total.id, temp.id]);
+        expect(await backend.account.getById(temp.id)).toBeNull();
+        expect(await backend.account.getById(total.id)).not.toBeNull();
+        expect(await backend.transaction.getById(transaction.id)).not.toBeNull();
       });
 
       it('sorts names case-insensitively after the total account', async () => {
@@ -330,11 +352,11 @@ export function runContractSuite(
         const salary = (await backend.category.list(USER, 'income')).find(c => c.name === 'Salary')!;
         const t1 = await backend.transaction.createWithTags(
           tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 10, date: '2026-04-02' }),
-          [tagA.id, tagB.id]
+          [tagA.id, tagB.id],
         );
         const t2 = await backend.transaction.createWithTags(
           tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 10, date: '2026-04-03' }),
-          [tagC.id]
+          [tagC.id],
         );
 
         await backend.tag.deleteMany([tagA.id, tagB.id]);
@@ -349,7 +371,7 @@ export function runContractSuite(
         const acc = await backend.account.create(account('A'));
         const salary = (await backend.category.list(USER, 'income')).find(c => c.name === 'Salary')!;
         const created = await backend.transaction.create(
-          tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1000, description: 'salary', date: '2026-01-15' })
+          tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1000, description: 'salary', date: '2026-01-15' }),
         );
         expect(created.updated_at).toBeNull();
 
@@ -464,7 +486,7 @@ export function runContractSuite(
         const tagB = await backend.tag.create({ user_id: USER, name: 'beta' });
         const created = await backend.transaction.createWithTags(
           tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 10, date: '2026-08-01' }),
-          [tagA.id, tagB.id]
+          [tagA.id, tagB.id],
         );
         const links = await backend.transaction.getTagsByTransactionIds([created.id]);
         expect(links.map(l => l.name).sort()).toEqual(['alpha', 'beta']);
@@ -478,7 +500,7 @@ export function runContractSuite(
         const tagB = await backend.tag.create({ user_id: USER, name: 'b' });
         const created = await backend.transaction.createWithTags(
           tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 10, date: '2026-08-02' }),
-          [tagA.id]
+          [tagA.id],
         );
 
         await backend.transaction.updateWithTags(created.id, { amount: 20 }, [tagB.id]);
@@ -492,7 +514,7 @@ export function runContractSuite(
         const tag = await backend.tag.create({ user_id: USER, name: 'x' });
         const created = await backend.transaction.createWithTags(
           tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 10, date: '2026-08-03' }),
-          [tag.id]
+          [tag.id],
         );
 
         await backend.transaction.deleteAllTransactions();
@@ -552,6 +574,11 @@ export function runContractSuite(
           { description: 'coffee', count: 2 },
           { description: 'lunch', count: 1 },
         ]);
+        // lastUsed is the most recent transaction date per comment.
+        expect(comments.map(c => ({ description: c.description.toLowerCase(), lastUsed: c.lastUsed }))).toEqual([
+          { description: 'coffee', lastUsed: '2026-09-07' },
+          { description: 'lunch', lastUsed: '2026-09-08' },
+        ]);
       });
 
       it('countByDescription counts matching trimmed comments', async () => {
@@ -564,6 +591,20 @@ export function runContractSuite(
         expect(await backend.transaction.countByDescription('coffee')).toBe(2);
         expect(await backend.transaction.countByDescription(' tea ')).toBe(1);
         expect(await backend.transaction.countByDescription('zzz')).toBe(0);
+      });
+
+      it('countByTagIdsMap counts transactions per tag', async () => {
+        const acc = await backend.account.create(account('A'));
+        const salary = (await backend.category.list(USER, 'income')).find(c => c.name === 'Salary')!;
+        const tagA = await backend.tag.create({ user_id: USER, name: 'alpha' });
+        const tagB = await backend.tag.create({ user_id: USER, name: 'beta' });
+        await backend.transaction.createWithTags(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-27', description: null }), [tagA.id, tagB.id]);
+        await backend.transaction.createWithTags(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-28', description: null }), [tagA.id]);
+        await backend.transaction.createWithTags(tx({ account_id: acc.id, category_id: salary.id, type: 'income', amount: 1, date: '2026-09-29', description: null }), []);
+
+        expect(await backend.transaction.countByTagIdsMap([tagA.id, tagB.id])).toEqual({ [tagA.id]: 2, [tagB.id]: 1 });
+        expect(await backend.transaction.countByTagIdsMap([])).toEqual({});
+        expect(await backend.transaction.countByTagIdsMap([9999])).toEqual({});
       });
 
       it('updateComment renames a comment across matching transactions and reports changed rows', async () => {
@@ -611,7 +652,7 @@ export function runContractSuite(
         expect((await backend.transaction.getById(t1.id))?.description).toBeNull();
         expect((await backend.transaction.getById(t2.id))?.description).toBeNull();
         expect((await backend.transaction.getById(t3.id))?.description).toBe('tea');
-        expect(await backend.transaction.getDistinctComments()).toEqual([{ description: 'tea', count: 1 }]);
+        expect(await backend.transaction.getDistinctComments()).toEqual([{ description: 'tea', count: 1, lastUsed: '2026-09-22' }]);
       });
 
       it('deleteComments removes several comments at once and reports the total', async () => {
@@ -628,7 +669,7 @@ export function runContractSuite(
         expect((await backend.transaction.getById(t2.id))?.description).toBeNull();
         expect((await backend.transaction.getById(t4.id))?.description).toBeNull();
         expect((await backend.transaction.getById(t3.id))?.description).toBe('juice');
-        expect(await backend.transaction.getDistinctComments()).toEqual([{ description: 'juice', count: 1 }]);
+        expect(await backend.transaction.getDistinctComments()).toEqual([{ description: 'juice', count: 1, lastUsed: '2026-09-25' }]);
       });
 
       it('breakdownByCategoriesAndTags splits tagged and untagged sums per category', async () => {
@@ -693,11 +734,27 @@ export function runContractSuite(
           theme: THEMES.light,
           hideBalances: true,
           homeDefaultAccountId: 3,
+          tagsSortBy: TAG_SORT_BY.usage,
+          tagsSortDirection: SORT_DIRECTIONS.desc,
+          allTransactionsRecurringView: RECURRING_VIEWS.recurring,
+          transactionsRecurringView: RECURRING_VIEWS.oneTime,
+          allTransactionsCategoryIds: [1, 2],
+          allTransactionsExpenseCategoryIds: [1],
+          allTransactionsIncomeCategoryIds: [2],
+          recurringStatusFilter: [RECURRING_STATUSES.paused, RECURRING_STATUSES.ended],
         });
         const after = await backend.config.get();
         expect(after.theme).toBe(THEMES.light);
         expect(after.hideBalances).toBe(true);
         expect(after.homeDefaultAccountId).toBe(3);
+        expect(after.tagsSortBy).toBe(TAG_SORT_BY.usage);
+        expect(after.tagsSortDirection).toBe(SORT_DIRECTIONS.desc);
+        expect(after.allTransactionsRecurringView).toBe(RECURRING_VIEWS.recurring);
+        expect(after.transactionsRecurringView).toBe(RECURRING_VIEWS.oneTime);
+        expect(after.allTransactionsCategoryIds).toEqual([1, 2]);
+        expect(after.allTransactionsExpenseCategoryIds).toEqual([1]);
+        expect(after.allTransactionsIncomeCategoryIds).toEqual([2]);
+        expect(after.recurringStatusFilter).toEqual([RECURRING_STATUSES.paused, RECURRING_STATUSES.ended]);
         expect(after.currency).toBe(DEFAULT_CONFIG.currency);
         expect(after.language).toBe(DEFAULT_CONFIG.language);
         expect(after.firstDayOfWeek).toBe(DEFAULT_CONFIG.firstDayOfWeek);

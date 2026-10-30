@@ -1,13 +1,15 @@
-import { createContext, useContext, useState, useMemo, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useMemo, useEffect, useCallback, useRef, type ReactNode } from 'react';
+import { AppState as RNAppState } from 'react-native';
 import type { Account, Category, Transaction, Tag } from '../database/types';
-import { PERIODS, TRANSACTION_TYPES, type Period, type TransactionType, type CategoryWithTotal, DATE_MIN, DATE_MAX, USER_ID } from '../constants/types';
+import { TRANSACTION_TYPES, UNTAGGED_ID, type FirstDay, type Period, type TransactionType, type CategoryWithTotal, DATE_MIN, DATE_MAX, USER_ID } from '../constants/types';
 import { accountRepository as accountRepo, categoryRepository as categoryRepo, transactionRepository as transactionRepo, tagRepository as tagRepo } from '../database';
-import { isTotalAccount, UNTAGGED_ID } from '../database/helpers';
-import { toggleTagInArray } from '../utils/tagFilter';
+import { materializeDueRecurring } from '../database/recurringService';
+import { isTotalAccount } from '../database/helpers';
+import { matchesTagFilter, toggleTagInArray } from '../utils/tagFilter';
 import { categoriesOfType } from '../utils/categoryUtils';
-import { useConfig } from './ConfigContext';
-import { formatDateForDB, resolvePeriodRange } from '../utils/formatters';
-import { showErrorAlert } from '../utils/errors';
+import { useConfig, type Config } from './ConfigContext';
+import { formatDateForDB, resolvePeriodRange, endOfDay } from '../utils/formatters';
+import { ERROR_PREFIXES, logError, showErrorAlert } from '../utils/errors';
 
 interface AppState {
   activeAccount: Account | null;
@@ -20,7 +22,13 @@ interface AppState {
   transactions: Transaction[];
   tags: Tag[];
   loading: boolean;
+  loadError: boolean;
   categoriesById: Map<number, Category>;
+}
+
+export interface ResetAllOptions {
+  /** Show the generic reset-failure alert. Defaults to true. */
+  notifyOnError?: boolean;
 }
 
 interface AppContextType extends AppState {
@@ -37,10 +45,13 @@ interface AppContextType extends AppState {
   totalIncomeAll: number;
   totalExpensesAll: number;
   refresh: () => void;
+  retryInitialLoad: () => Promise<void>;
   refreshAccounts: () => Promise<void>;
   refreshCategories: () => Promise<void>;
   refreshTags: () => Promise<void>;
-  resetAll: () => Promise<void>;
+  resetAll: (options?: ResetAllOptions) => Promise<boolean>;
+  dataRefreshing: boolean;
+  setDataRefreshing: (refreshing: boolean) => void;
   activeTagIds: number[];
   toggleTagId: (id: number) => void;
   clearTagFilter: () => void;
@@ -51,7 +62,9 @@ const AppContext = createContext<AppContextType | null>(null);
 
 function defaultCustomDate(): { start: Date; end: Date } {
   const now = new Date();
-  return { start: new Date(now.getFullYear(), 0, 1), end: now };
+  // The whole of today belongs to the range: an end at "now" would hide transactions
+  // recorded later today (the built-in periods already use end-of-day).
+  return { start: new Date(now.getFullYear(), 0, 1), end: endOfDay(now) };
 }
 
 async function fetchTransactionsAndTags(
@@ -59,8 +72,9 @@ async function fetchTransactionsAndTags(
   period: Period,
   date: Date,
   customDateRange: { start: Date; end: Date },
+  firstDay: FirstDay,
 ): Promise<{ data: Transaction[]; tagMap: Map<number, number[]> }> {
-  const dates = resolvePeriodRange(period, date, customDateRange);
+  const dates = resolvePeriodRange(period, date, customDateRange, firstDay);
   const isTotal = isTotalAccount(account);
   const data = await transactionRepo.list({
     account_id: isTotal ? undefined : account.id,
@@ -83,10 +97,10 @@ async function fetchTransactionsAndTags(
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { config: appConfig } = useConfig();
+  const { config: appConfig, loading: configLoading } = useConfig();
   const [activeAccount, setActiveAccount] = useState<Account | null>(null);
   const [activeType, setActiveType] = useState<TransactionType>(TRANSACTION_TYPES.expense);
-  const [activePeriod, setActivePeriod] = useState<Period>(PERIODS.day);
+  const [activePeriod, setActivePeriod] = useState<Period>(appConfig.homeDefaultPeriod);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [customDate, setCustomDateState] = useState<{ start: Date; end: Date }>(defaultCustomDate);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -94,51 +108,105 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [activeTagIds, setActiveTagIds] = useState<number[]>([]);
   const [tagsByTransaction, setTagsByTransaction] = useState<Map<number, number[]>>(new Map());
   const [transactionsVersion, setTransactionsVersion] = useState(0);
+  const [dataRefreshing, setDataRefreshing] = useState(false);
 
   const categoriesById = useMemo(
     () => new Map(categories.map(cat => [cat.id, cat])),
-    [categories]
+    [categories],
   );
 
-  const applyHomeDefaults = useCallback((accountsData: Account[]) => {
-    if (accountsData.length > 0) {
-      if (appConfig.homeDefaultAccountId !== null) {
-        const found = accountsData.find(a => a.id === appConfig.homeDefaultAccountId);
-        if (found) setActiveAccount(found);
-        else setActiveAccount(accountsData[0]);
-      } else {
-        setActiveAccount(accountsData[0]);
-      }
-      if (appConfig.homeDefaultPeriod) {
-        setActivePeriod(appConfig.homeDefaultPeriod);
-      }
+  const configRef = useRef(appConfig);
+  configRef.current = appConfig;
+  const accountsRef = useRef(accounts);
+  accountsRef.current = accounts;
+  const activeAccountRef = useRef(activeAccount);
+  activeAccountRef.current = activeAccount;
+  const defaultsRef = useRef({
+    id: appConfig.homeDefaultAccountId,
+    period: appConfig.homeDefaultPeriod,
+  });
+  const bootstrapDone = useRef(false);
+  const loadRequestId = useRef(0);
+
+  const applyHomeDefaults = useCallback((
+    accountsData: Account[],
+    cfg: Config = configRef.current,
+    { preservePeriod = false }: { preservePeriod?: boolean } = {},
+  ) => {
+    if (accountsData.length === 0) return;
+    if (cfg.homeDefaultAccountId !== null) {
+      const found = accountsData.find(a => a.id === cfg.homeDefaultAccountId);
+      setActiveAccount(found ?? accountsData[0]);
+    } else {
+      setActiveAccount(accountsData[0]);
     }
-  }, [appConfig.homeDefaultAccountId, appConfig.homeDefaultPeriod]);
+    if (!preservePeriod) setActivePeriod(cfg.homeDefaultPeriod);
+  }, []);
+
+  // One startup pass: materialize recurring rules and load the reference data.
+  // Home-default changes must not repeat this work (and must not re-materialize).
+  const loadInitialData = useCallback(async () => {
+    const requestId = ++loadRequestId.current;
+    setLoading(true);
+    setLoadError(false);
+    try {
+      try {
+        await materializeDueRecurring();
+      } catch (error) {
+        logError(ERROR_PREFIXES.recurringMaterialize, error);
+      }
+      const [accountsData, categoriesData, tagsData] = await Promise.all([
+        accountRepo.list(USER_ID),
+        categoryRepo.list(USER_ID),
+        tagRepo.list(USER_ID),
+      ]);
+      if (requestId !== loadRequestId.current) return;
+      const cfg = configRef.current;
+      setAccounts(accountsData);
+      setCategories(categoriesData);
+      setTags(tagsData);
+      applyHomeDefaults(accountsData, cfg);
+      defaultsRef.current = { id: cfg.homeDefaultAccountId, period: cfg.homeDefaultPeriod };
+      bootstrapDone.current = true;
+    } catch (error) {
+      if (requestId !== loadRequestId.current) return;
+      logError(ERROR_PREFIXES.initialDataLoad, error);
+      setLoadError(true);
+      showErrorAlert();
+    } finally {
+      if (requestId === loadRequestId.current) setLoading(false);
+    }
+  }, [applyHomeDefaults]);
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [accountsData, categoriesData, tagsData] = await Promise.all([
-          accountRepo.list(USER_ID),
-          categoryRepo.list(USER_ID),
-          tagRepo.list(USER_ID),
-        ]);
-        setAccounts(accountsData);
-        setCategories(categoriesData);
-        setTags(tagsData);
-        applyHomeDefaults(accountsData);
-      } catch (error) {
-        console.error('Failed to load initial data:', error);
-        showErrorAlert();
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, [appConfig.homeDefaultAccountId, appConfig.homeDefaultPeriod, applyHomeDefaults]);
+    if (configLoading) return;
+    loadInitialData();
+    return () => { loadRequestId.current += 1; };
+  }, [configLoading, loadInitialData]);
+
+  // Apply a later Home-default change without reloading reference data.
+  useEffect(() => {
+    if (configLoading || !bootstrapDone.current) return;
+    const previous = defaultsRef.current;
+    if (
+      previous.id === appConfig.homeDefaultAccountId
+      && previous.period === appConfig.homeDefaultPeriod
+    ) return;
+    defaultsRef.current = { id: appConfig.homeDefaultAccountId, period: appConfig.homeDefaultPeriod };
+    applyHomeDefaults(accountsRef.current, configRef.current);
+  }, [appConfig.homeDefaultAccountId, appConfig.homeDefaultPeriod, configLoading, applyHomeDefaults]);
+
+  // Keep the active account valid after an account is deleted or data is reloaded.
+  useEffect(() => {
+    const current = activeAccountRef.current;
+    if (!current) return;
+    if (accounts.some(account => account.id === current.id)) return;
+    applyHomeDefaults(accounts, configRef.current, { preservePeriod: true });
+  }, [accounts, applyHomeDefaults]);
 
   useEffect(() => {
     if (!activeAccount) return;
@@ -151,7 +219,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const nonTotal = accounts.filter(a => !isTotalAccount(a));
 
         const [{ data, tagMap }, [income, expenses], balancesResult] = await Promise.all([
-          fetchTransactionsAndTags(account, activePeriod, selectedDate, customDate),
+          fetchTransactionsAndTags(account, activePeriod, selectedDate, customDate, appConfig.firstDayOfWeek),
           Promise.all([
             transactionRepo.totalByPeriod(accountId, TRANSACTION_TYPES.income, DATE_MIN, DATE_MAX),
             transactionRepo.totalByPeriod(accountId, TRANSACTION_TYPES.expense, DATE_MIN, DATE_MAX),
@@ -171,16 +239,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
           accounts.map((a) =>
             isTotalAccount(a)
               ? { ...a, balance: totalBalance }
-              : { ...a, balance: balanceById.get(a.id) ?? 0 }
-          )
+              : { ...a, balance: balanceById.get(a.id) ?? 0 },
+          ),
         );
       } catch (error) {
-        console.error('Failed to refresh data:', error);
+        logError(ERROR_PREFIXES.dataRefresh, error);
+        if (active) showErrorAlert();
       }
     }
     refreshAll();
     return () => { active = false; };
-  }, [activeAccount, activePeriod, selectedDate, customDate, accounts, transactionsVersion]);
+  }, [activeAccount, activePeriod, selectedDate, customDate, accounts, transactionsVersion, appConfig.firstDayOfWeek]);
   const filteredTransactions = useMemo(
     () => {
       let result = transactions.filter(t => {
@@ -188,14 +257,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return true;
       });
       if (activeTagIds.length > 0) {
-        const hasUntagged = activeTagIds.includes(UNTAGGED_ID);
-        const regularIds = activeTagIds.filter(id => id !== UNTAGGED_ID);
-        result = result.filter(t => {
-          const txnTagIds = tagsByTransaction.get(t.id) ?? [];
-          if (hasUntagged && txnTagIds.length === 0) return true;
-          if (regularIds.length > 0 && regularIds.some(id => txnTagIds.includes(id))) return true;
-          return false;
-        });
+        result = result.filter(t => matchesTagFilter(activeTagIds, tagsByTransaction.get(t.id) ?? []));
       }
       return result;
     },
@@ -245,12 +307,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTransactionsVersion(v => v + 1);
   }, []);
 
+  // Materialize recurring occurrences when the app returns to the foreground.
+  useEffect(() => {
+    const subscription = RNAppState.addEventListener('change', state => {
+      if (state !== 'active') return;
+      materializeDueRecurring()
+        .then(() => setTransactionsVersion(v => v + 1))
+        .catch(error => logError(ERROR_PREFIXES.recurringMaterialize, error));
+    });
+    return () => subscription.remove();
+  }, []);
+
+  // Materialize recurring occurrences when the app stays open across midnight.
+  useEffect(() => {
+    let active = true;
+    let timer: ReturnType<typeof setTimeout>;
+    const schedule = () => {
+      if (!active) return;
+      const now = new Date();
+      const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1, 0);
+      timer = setTimeout(() => {
+        materializeDueRecurring()
+          .then(() => setTransactionsVersion(v => v + 1))
+          .catch(error => logError(ERROR_PREFIXES.recurringMaterialize, error))
+          .finally(() => { if (active) schedule(); });
+      }, nextMidnight.getTime() - now.getTime());
+    };
+    schedule();
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, []);
+
   const refreshCategories = useCallback(async () => {
     try {
       const categoriesData = await categoryRepo.list(USER_ID);
       setCategories(categoriesData);
     } catch (error) {
-      console.error('Failed to refresh categories:', error);
+      logError(ERROR_PREFIXES.categoriesRefresh, error);
       showErrorAlert();
     }
   }, []);
@@ -260,7 +355,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const accountsData = await accountRepo.list(USER_ID);
       setAccounts(accountsData);
       setActiveAccount(prev => {
-        if (prev && accountsData.some(a => a.id === prev.id)) return prev;
+        if (prev) {
+          const fresh = accountsData.find(a => a.id === prev.id);
+          if (fresh) return fresh;
+        }
         if (accountsData.length === 0) return null;
         if (appConfig.homeDefaultAccountId !== null) {
           const found = accountsData.find(a => a.id === appConfig.homeDefaultAccountId);
@@ -270,7 +368,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       });
       setTransactionsVersion(v => v + 1);
     } catch (error) {
-      console.error('Failed to refresh accounts:', error);
+      logError(ERROR_PREFIXES.accountsRefresh, error);
       showErrorAlert();
     }
   }, [appConfig.homeDefaultAccountId]);
@@ -279,13 +377,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const tagsData = await tagRepo.list(USER_ID);
       setTags(tagsData);
+      setActiveTagIds(prev => {
+        const next = prev.filter(id => id === UNTAGGED_ID || tagsData.some(tag => tag.id === id));
+        return next.length === prev.length ? prev : next;
+      });
     } catch (error) {
-      console.error('Failed to refresh tags:', error);
+      logError(ERROR_PREFIXES.tagsRefresh, error);
       showErrorAlert();
     }
   }, []);
 
-  const resetAll = useCallback(async () => {
+  const resetAll = useCallback(async (options: ResetAllOptions = {}) => {
+    const notifyOnError = options.notifyOnError ?? true;
     try {
       const [accountsData, categoriesData, tagsData] = await Promise.all([
         accountRepo.list(USER_ID),
@@ -301,9 +404,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setSelectedDate(new Date());
       setCustomDateState(defaultCustomDate());
       setTransactionsVersion(v => v + 1);
+      return true;
     } catch (error) {
-      console.error('Failed to reset all data:', error);
-      showErrorAlert();
+      logError(ERROR_PREFIXES.dataReset, error);
+      if (notifyOnError) showErrorAlert();
+      return false;
     }
   }, [applyHomeDefaults]);
 
@@ -326,6 +431,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     transactions,
     tags,
     loading,
+    loadError,
     selectAccount: setActiveAccount,
     changeType: setActiveType,
     changePeriod: setActivePeriod,
@@ -339,10 +445,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     totalIncomeAll,
     totalExpensesAll,
     refresh,
+    retryInitialLoad: loadInitialData,
     refreshAccounts,
     refreshCategories,
     refreshTags,
     resetAll,
+    dataRefreshing,
+    setDataRefreshing,
     activeTagIds,
     toggleTagId,
     clearTagFilter,
@@ -350,10 +459,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     categoriesById,
   }), [
     activeAccount, activeType, activePeriod, selectedDate, customDate,
-    accounts, categories, transactions, tags, loading, categoriesById,
+    accounts, categories, transactions, tags, loading, dataRefreshing, categoriesById,
+    loadError,
     filteredTransactions, activeCategories, accountsWithBalance,
     totalIncome, totalExpenses, totalIncomeAll, totalExpensesAll,
-    refresh, refreshAccounts, refreshCategories, refreshTags, resetAll,
+    refresh, loadInitialData, refreshAccounts, refreshCategories, refreshTags, resetAll,
     activeTagIds, toggleTagId, clearTagFilter, tagsByTransaction,
   ]);
 

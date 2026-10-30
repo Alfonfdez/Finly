@@ -1,0 +1,267 @@
+import { describe, it, expect, beforeAll, vi } from 'vitest';
+import { initSqliteHarness, bootSqliteDb as boot } from './helpers/sqliteHarness';
+
+vi.mock('../../src/database/photoCleanup', () => ({
+  collectTransactionPhotos: vi.fn(async () => []),
+  collectAllTransactionPhotos: vi.fn(async () => []),
+  deletePhotoUris: vi.fn(async () => {}),
+  deleteUnreferencedPhotoUris: vi.fn(async () => {}),
+}));
+
+vi.mock('expo-sqlite', async () => {
+  const mod = await import('./sqliteMock');
+  return { openDatabaseSync: mod.openDatabaseSync };
+});
+
+await import('expo-sqlite');
+
+beforeAll(initSqliteHarness);
+
+const baseRule = {
+  user_id: 1,
+  name: 'Rent',
+  type: 'expense' as const,
+  account_id: 1,
+  category_id: 3,
+  amount: 100,
+  description: 'Rent',
+  frequency: 'monthly' as const,
+  interval: 1,
+  weekday: null,
+  day_of_month: 2,
+  month: null,
+  start_date: '2026-01-02',
+  end_date: null,
+  next_due: '2026-01-02',
+  active: 1,
+};
+
+describe('recurringRepo', () => {
+  it('moves recurring rules when their category is reassigned', async () => {
+    const { categoryRepo, recurringRepo } = await boot();
+    const oldCategory = await categoryRepo.create({
+      user_id: 1,
+      name: 'Old category',
+      icon: 'cart',
+      color: '#22D3EE',
+      type: 'expense',
+    });
+    const targetCategory = await categoryRepo.create({
+      user_id: 1,
+      name: 'Target category',
+      icon: 'cart',
+      color: '#22D3EE',
+      type: 'expense',
+    });
+    const rule = await recurringRepo.createWithTags(
+      { ...baseRule, category_id: oldCategory.id },
+      [],
+    );
+
+    await categoryRepo.reassignAndDelete(oldCategory.id, targetCategory.id);
+
+    expect((await recurringRepo.getById(rule.id))?.category_id).toBe(targetCategory.id);
+  });
+
+  it('creates a rule with tags and reads it back', async () => {
+    const { recurringRepo, tagRepo } = await boot();
+    const tag = await tagRepo.create({ user_id: 1, name: 'Home' });
+
+    const rule = await recurringRepo.createWithTags(baseRule, [tag.id]);
+
+    expect(rule.id).toBeGreaterThan(0);
+    const list = await recurringRepo.list(1);
+    expect(list).toHaveLength(1);
+    expect(list[0].frequency).toBe('monthly');
+    expect(list[0].day_of_month).toBe(2);
+
+    const fetched = await recurringRepo.getById(rule.id);
+    expect(fetched?.amount).toBe(100);
+    expect(await recurringRepo.getTagIds(rule.id)).toEqual([tag.id]);
+  });
+
+  it('persists the name and counts generated transactions per rule', async () => {
+    const { recurringRepo } = await boot();
+    const rule = await recurringRepo.createWithTags({ ...baseRule, name: 'Groceries' }, []);
+    expect((await recurringRepo.getById(rule.id))?.name).toBe('Groceries');
+    expect((await recurringRepo.countOccurrencesByRuleIds([rule.id])).get(rule.id)).toBeUndefined();
+
+    await recurringRepo.insertOccurrence(rule, '2026-01-02', []);
+    await recurringRepo.insertOccurrence(rule, '2026-02-02', []);
+    expect((await recurringRepo.countOccurrencesByRuleIds([rule.id])).get(rule.id)).toBe(2);
+  });
+
+  it('listDue returns only active rules due on/before today', async () => {
+    const { recurringRepo } = await boot();
+    const due = await recurringRepo.createWithTags({ ...baseRule, next_due: '2026-01-02' }, []);
+    await recurringRepo.createWithTags({ ...baseRule, next_due: '2099-01-01' }, []);
+    const paused = await recurringRepo.createWithTags({ ...baseRule, next_due: '2026-01-02' }, []);
+    await recurringRepo.setActive(paused.id, false);
+
+    const result = await recurringRepo.listDue('2026-06-01');
+    expect(result.map(r => r.id)).toEqual([due.id]);
+  });
+
+  it('listDue excludes ended rules (cursor past the end date)', async () => {
+    const { recurringRepo } = await boot();
+    const ended = await recurringRepo.createWithTags({ ...baseRule, end_date: '2026-01-02', next_due: '2026-02-02' }, []);
+    const running = await recurringRepo.createWithTags({ ...baseRule, end_date: '2026-12-02', next_due: '2026-02-02' }, []);
+
+    const result = await recurringRepo.listDue('2026-06-01');
+    expect(result.map(r => r.id)).toEqual([running.id]);
+    expect(result.some(r => r.id === ended.id)).toBe(false);
+  });
+
+  it('updates next_due and active state', async () => {
+    const { recurringRepo } = await boot();
+    const rule = await recurringRepo.createWithTags(baseRule, []);
+    await recurringRepo.updateNextDue(rule.id, '2026-03-02');
+    await recurringRepo.setActive(rule.id, false);
+    const fetched = await recurringRepo.getById(rule.id);
+    expect(fetched?.next_due).toBe('2026-03-02');
+    expect(fetched?.active).toBe(0);
+  });
+
+  it('persists skipped_from and clears it', async () => {
+    const { recurringRepo } = await boot();
+    const rule = await recurringRepo.createWithTags({ ...baseRule, skipped_from: '2026-10-01' }, []);
+    expect((await recurringRepo.getById(rule.id))?.skipped_from).toBe('2026-10-01');
+
+    await recurringRepo.updateWithTags(rule.id, { skipped_from: null }, []);
+    expect((await recurringRepo.getById(rule.id))?.skipped_from).toBeNull();
+  });
+
+  it('inserts an occurrence transaction with its link and tags', async () => {
+    const { recurringRepo, transactionRepo, tagRepo } = await boot();
+    const tag = await tagRepo.create({ user_id: 1, name: 'Home' });
+    const rule = await recurringRepo.createWithTags(baseRule, [tag.id]);
+
+    await recurringRepo.insertOccurrence(rule, '2026-01-02', [tag.id]);
+
+    expect(await recurringRepo.hasOccurrence(rule.id, '2026-01-02')).toBe(true);
+    const txs = await transactionRepo.list();
+    expect(txs).toHaveLength(1);
+    expect(txs[0].recurring_rule_id).toBe(rule.id);
+    expect(txs[0].recurrence_date).toBe('2026-01-02');
+    expect(txs[0].date).toBe('2026-01-02 00:00:00');
+    expect(await transactionRepo.getTagsByTransactionId(txs[0].id)).toEqual([tag.id]);
+  });
+
+  it('the unique occurrence index blocks a duplicate transaction', async () => {
+    const { db, recurringRepo } = await boot();
+    const rule = await recurringRepo.createWithTags(baseRule, []);
+    await recurringRepo.insertOccurrence(rule, '2026-01-02', []);
+
+    await expect(
+      db.runAsync(
+        'INSERT INTO transactions (account_id, category_id, type, amount, date, recurring_rule_id, recurrence_date) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        1, 3, 'expense', 1, '2026-01-02 00:00:00', rule.id, '2026-01-02',
+      ),
+    ).rejects.toThrow();
+  });
+
+  it('bulk-updates past generated transactions', async () => {
+    const { recurringRepo, transactionRepo, tagRepo } = await boot();
+    const tag = await tagRepo.create({ user_id: 1, name: 'New' });
+    const rule = await recurringRepo.createWithTags(baseRule, []);
+    await recurringRepo.insertOccurrence(rule, '2026-01-02', []);
+    await recurringRepo.insertOccurrence(rule, '2026-02-02', []);
+
+    await recurringRepo.updateGeneratedTransactions(rule.id, { amount: 120, description: 'Rent v2', tagIds: [tag.id] });
+
+    const txs = await transactionRepo.list();
+    expect(txs).toHaveLength(2);
+    expect(txs.every(t => t.amount === 120 && t.description === 'Rent v2')).toBe(true);
+    for (const tx of txs) {
+      expect(await transactionRepo.getTagsByTransactionId(tx.id)).toEqual([tag.id]);
+    }
+  });
+
+  it('bulk-updates only generated transactions inside a schedule window', async () => {
+    const { recurringRepo, transactionRepo, tagRepo } = await boot();
+    const tag = await tagRepo.create({ user_id: 1, name: 'Window' });
+    const rule = await recurringRepo.createWithTags(baseRule, []);
+    await recurringRepo.insertOccurrence(rule, '2026-01-02', []);
+    await recurringRepo.insertOccurrence(rule, '2026-02-02', []);
+    await recurringRepo.insertOccurrence(rule, '2026-03-02', []);
+
+    await recurringRepo.updateGeneratedTransactions(
+      rule.id,
+      { amount: 120, tagIds: [tag.id] },
+      undefined,
+      { startDate: '2026-02-01', endDate: '2026-02-28' },
+    );
+
+    const txs = await transactionRepo.list();
+    const byDate = new Map(txs.map(tx => [tx.recurrence_date, tx]));
+    expect(byDate.get('2026-01-02')?.amount).toBe(100);
+    expect(byDate.get('2026-02-02')?.amount).toBe(120);
+    expect(byDate.get('2026-03-02')?.amount).toBe(100);
+    expect(await transactionRepo.getTagsByTransactionId(byDate.get('2026-01-02')!.id)).toEqual([]);
+    expect(await transactionRepo.getTagsByTransactionId(byDate.get('2026-02-02')!.id)).toEqual([tag.id]);
+    expect(await transactionRepo.getTagsByTransactionId(byDate.get('2026-03-02')!.id)).toEqual([]);
+  });
+
+  it('deleting a rule keeps its generated transactions but clears the link', async () => {
+    const { recurringRepo, transactionRepo } = await boot();
+    const rule = await recurringRepo.createWithTags(baseRule, []);
+    await recurringRepo.insertOccurrence(rule, '2026-01-02', []);
+
+    await recurringRepo.remove(rule.id);
+
+    const txs = await transactionRepo.list();
+    expect(txs).toHaveLength(1);
+    expect(txs[0].recurring_rule_id ?? null).toBeNull();
+  });
+
+  it('deleteMany removes rules but keeps their generated transactions', async () => {
+    const { recurringRepo, transactionRepo } = await boot();
+    const a = await recurringRepo.createWithTags({ ...baseRule, name: 'A' }, []);
+    const b = await recurringRepo.createWithTags({ ...baseRule, name: 'B' }, []);
+    await recurringRepo.insertOccurrence(a, '2026-01-02', []);
+    await recurringRepo.insertOccurrence(b, '2026-01-02', []);
+
+    await recurringRepo.deleteMany([a.id, b.id]);
+
+    expect(await recurringRepo.list(1)).toHaveLength(0);
+    const txs = await transactionRepo.list();
+    expect(txs).toHaveLength(2);
+    expect(txs.every(t => (t.recurring_rule_id ?? null) === null)).toBe(true);
+  });
+
+  it('listOccurrenceDates returns the dates the rule already generated', async () => {
+    const { recurringRepo, createRecurringRule } = await boot();
+    await createRecurringRule({
+      name: 'Daily',
+      type: 'expense',
+      account_id: 1,
+      category_id: 3,
+      amount: 1,
+      description: null,
+      date: '2026-01-01',
+      frequency: 'daily',
+      interval: 1,
+      endDate: null,
+      tagIds: [],
+      now: new Date(2026, 0, 3),
+    });
+    const [rule] = await recurringRepo.list(1);
+
+    const dates = [...(await recurringRepo.listOccurrenceDates(rule.id))].sort();
+    expect(dates).toEqual(['2026-01-01', '2026-01-02', '2026-01-03']);
+    expect(await recurringRepo.listOccurrenceDates(9999)).toEqual([]);
+  });
+
+  it('updateWithTags only writes the allowlisted columns', async () => {
+    const { recurringRepo } = await boot();
+    const rule = await recurringRepo.createWithTags(baseRule, []);
+
+    await recurringRepo.updateWithTags(rule.id, { name: 'Rent 2', user_id: 99, interval: 2 }, []);
+
+    const stored = await recurringRepo.getById(rule.id);
+    expect(stored?.name).toBe('Rent 2');
+    expect(stored?.interval).toBe(2);
+    // `user_id` is not writable: the rule keeps its owner.
+    expect(stored?.user_id).toBe(1);
+  });
+});

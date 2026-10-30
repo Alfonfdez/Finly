@@ -24,9 +24,12 @@ interface Props {
   badgeRadius?: number;
   badgeAlpha?: number;
   titleSize?: number;
+  titleLines?: number;
   subtitle?: string;
   subtitleSize?: number;
+  subtitleLines?: number;
   leading?: ReactNode;
+  meta?: ReactNode;
   middle?: ReactNode;
   right?: ReactNode;
   onPress?: () => void;
@@ -49,8 +52,11 @@ function ListItemRow({
   badgeRadius,
   badgeAlpha,
   titleSize = 14,
+  titleLines = 1,
+  meta,
   subtitle,
   subtitleSize = 12,
+  subtitleLines = 1,
   leading,
   middle,
   right,
@@ -82,11 +88,12 @@ function ListItemRow({
         />
       )}
       <View style={styles.info}>
-        <Text style={[styles.title, { color: c.text, fontSize: fs(titleSize) }]} numberOfLines={1}>
+        <Text style={[styles.title, { color: c.text, fontSize: fs(titleSize) }]} numberOfLines={titleLines}>
           {title}
         </Text>
+        {meta}
         {subtitle ? (
-          <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(subtitleSize) }]} numberOfLines={1}>
+          <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(subtitleSize) }]} numberOfLines={subtitleLines}>
             {subtitle}
           </Text>
         ) : null}
@@ -106,6 +113,7 @@ function ListItemRow({
     <TouchableOpacity
       style={rowStyle}
       onPress={onPress}
+      accessibilityRole="button"
       activeOpacity={activeOpacity}
       hitSlop={hitSlop}
       accessibilityLabel={accessibilityLabel}

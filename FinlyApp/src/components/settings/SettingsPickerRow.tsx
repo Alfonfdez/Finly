@@ -7,6 +7,7 @@ import OptionPickerModal from '../OptionPickerModal';
 import type { Option } from '../SelectorInline';
 import { settingsStyles } from './settingsStyles';
 import { CONTROL_BORDER_RADIUS } from '../componentStyles';
+import type { IconName } from '../../constants/types';
 
 interface SettingsPickerRowProps<T extends string> {
   label: string;
@@ -14,6 +15,7 @@ interface SettingsPickerRowProps<T extends string> {
   selected: T;
   onSelect: (value: T) => void;
   title: string;
+  icon?: IconName;
   searchable?: boolean;
 }
 
@@ -23,6 +25,7 @@ export default function SettingsPickerRow<T extends string>({
   selected,
   onSelect,
   title,
+  icon,
   searchable,
 }: SettingsPickerRowProps<T>) {
   const { activeColors: c } = useConfig();
@@ -38,6 +41,8 @@ export default function SettingsPickerRow<T extends string>({
         <TouchableOpacity
           style={[styles.trigger, { borderColor: c.border }]}
           onPress={() => setVisible(true)}
+          accessibilityRole="button"
+          accessibilityLabel={`${label}: ${selectedOption?.label ?? selected}`}
           activeOpacity={0.7}
         >
           <Text style={[styles.triggerText, { color: c.text, fontSize: fs(14) }]}>
@@ -49,6 +54,7 @@ export default function SettingsPickerRow<T extends string>({
       <OptionPickerModal
         visible={visible}
         title={title}
+        icon={icon}
         options={options}
         selected={selected}
         onSelect={onSelect}

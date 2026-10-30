@@ -77,11 +77,11 @@ This is a one-time operation. After recovery, subsequent startups follow the nor
 
 ## Acceptance criteria
 
-- [ ] `initDatabase()` detects stale database (version >= 4 but `tags` table missing).
-- [ ] On detection, the database file is fully deleted (`.db`, `-wal`, `-shm`).
-- [ ] Database is reopened and all migrations (001-004) run from scratch.
-- [ ] After recovery, the app loads with the correct seed data ("My Wallet") and all tables intact.
-- [ ] On a healthy database (all tables present), the check passes with no side effects.
-- [ ] On a fresh install, all migrations run normally without triggering recovery.
-- [ ] Web platform is not affected by this change.
-- [ ] `changelog.md` is updated.
+- [x] `initDatabase()` detects stale database (version >= 4 but `tags` table missing).
+- [x] On detection, the database file is fully deleted (`.db`, `-wal`, `-shm`).
+- [x] Database is reopened and all migrations (001-004) run from scratch.
+- [x] After recovery, the app loads with the correct seed data ("My Wallet") and all tables intact.
+- [x] On a healthy database (all tables present), the check passes with no side effects.
+- [x] On a fresh install, all migrations run normally without triggering recovery.
+- [x] Web platform is not affected by this change.
+- [x] `changelog.md` is updated.

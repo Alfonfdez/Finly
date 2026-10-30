@@ -1,11 +1,14 @@
 import { useState, useRef, useCallback } from 'react';
 import { useDebouncedCallback } from './useDebouncedCallback';
 import { DEBOUNCE_MS } from '../constants/types';
+import { ERROR_PREFIXES, logError } from '../utils/errors';
 
 interface UseNameDuplicateCheckOptions {
   existsByName: (name: string, excludeId?: number) => Promise<boolean>;
   resolveDefaultEnglishName: (value: string) => string | null;
   duplicateErrorKey: string;
+  /** Message shown when the check itself fails; defaults to the duplicate message. */
+  checkErrorKey?: string;
   excludeId?: number;
 }
 
@@ -15,9 +18,13 @@ export function useNameDuplicateCheck(options: UseNameDuplicateCheckOptions) {
 
   const [nameError, setNameError] = useState<string | null>(null);
   const [checkingName, setCheckingName] = useState(false);
+  const checkId = useRef(0);
 
   const checkNameDuplicate = useCallback(async (value: string) => {
-    const { existsByName, resolveDefaultEnglishName, duplicateErrorKey, excludeId } = optionsRef.current;
+    const {
+      existsByName, resolveDefaultEnglishName, duplicateErrorKey, checkErrorKey, excludeId,
+    } = optionsRef.current;
+    const id = ++checkId.current;
     if (!value.trim()) {
       setNameError(null);
       setCheckingName(false);
@@ -28,18 +35,21 @@ export function useNameDuplicateCheck(options: UseNameDuplicateCheckOptions) {
       const englishName = resolveDefaultEnglishName(value.trim());
       if (englishName) {
         const defaultExists = await existsByName(englishName, excludeId);
+        if (id !== checkId.current) return;
         if (defaultExists) {
           setNameError(duplicateErrorKey);
           return;
         }
       }
       const exists = await existsByName(value.trim(), excludeId);
+      if (id !== checkId.current) return;
       setNameError(exists ? duplicateErrorKey : null);
     } catch (error) {
-      console.error('Failed to check name duplicate:', error);
-      setNameError(null);
+      if (id !== checkId.current) return;
+      logError(ERROR_PREFIXES.duplicateCheck, error);
+      setNameError(checkErrorKey ?? duplicateErrorKey);
     } finally {
-      setCheckingName(false);
+      if (id === checkId.current) setCheckingName(false);
     }
   }, []);
 

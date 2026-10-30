@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import { formatPeriodText } from '../utils/formatters';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { formatDateRangeLines, formatPeriodText, formatWeekRangeLines } from '../utils/formatters';
 import type { Period } from './calendars/types';
-import { PERIODS } from '../constants/types';
+import { FOOTER_LAYOUTS, PERIODS } from '../constants/types';
 import { useConfig } from '../context/ConfigContext';
 import { useFontSize } from '../hooks/useFontSize';
 import { useResetOnOpen } from '../hooks/useResetOnOpen';
@@ -11,12 +11,13 @@ import type { Language } from '../i18n/en';
 import type { StringKeyOf } from '../constants/types';
 import DayPicker from './calendars/DayPicker';
 import WeekPicker from './calendars/WeekPicker';
-import { CONTROL_BORDER_RADIUS } from './componentStyles';
 import MonthGrid from './calendars/MonthGrid';
 import YearGrid from './calendars/YearGrid';
 import PeriodPicker from './calendars/PeriodPicker';
 import { MIN_DATE } from './calendars/calendarStyles';
 import ModalShell from './ModalShell';
+import ModalFooter from './ModalFooter';
+import ModalTitle from './ModalTitle';
 
 interface Props {
   visible: boolean;
@@ -24,6 +25,8 @@ interface Props {
   date: Date;
   rangeStart?: Date;
   rangeEnd?: Date;
+  minDate?: Date | null;
+  maxDate?: Date | null;
   onSelectDate: (date: Date) => void;
   onSelectRange?: (start: Date, end: Date) => void;
   onClose: () => void;
@@ -44,19 +47,45 @@ const PICKER_KEY = {
 
 export default function CalendarModal({
   visible, period, date, rangeStart, rangeEnd,
+  minDate, maxDate,
   onSelectDate, onSelectRange, onClose,
 }: Props) {
   const [tempDate, setTempDate] = useState(date);
   const [tempRangeStart, setTempRangeStart] = useState(rangeStart ?? MIN_DATE);
   const [tempRangeEnd, setTempRangeEnd] = useState(rangeEnd ?? new Date());
-  const { activeColors: c } = useConfig();
+  const [customSelectingEnd, setCustomSelectingEnd] = useState(false);
+  const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
+
+  const infoLines: [string, string] = (() => {
+    switch (period) {
+      case PERIODS.week: {
+        const lines = formatWeekRangeLines(tempDate, labels.months, config.firstDayOfWeek);
+        return [lines.start, lines.end];
+      }
+      case PERIODS.custom: {
+        const lines = formatDateRangeLines(
+          tempRangeStart,
+          tempRangeEnd,
+          labels.months,
+          labels.cal_range_start,
+          labels.cal_range_end,
+        );
+        return [lines.start, customSelectingEnd ? '' : lines.end];
+      }
+      case PERIODS.day:
+      case PERIODS.month:
+      case PERIODS.year:
+        return [formatPeriodText(period, tempDate, labels.months, config.firstDayOfWeek), ''];
+    }
+  })();
 
   const resetOnOpen = useCallback(() => {
     setTempDate(date);
     setTempRangeStart(rangeStart ?? MIN_DATE);
     setTempRangeEnd(rangeEnd ?? new Date());
+    setCustomSelectingEnd(false);
   }, [date, rangeStart, rangeEnd]);
   useResetOnOpen(visible, resetOnOpen);
 
@@ -69,19 +98,24 @@ export default function CalendarModal({
     setTempRangeEnd(end);
   }, []);
 
+  const okDisabled = period === PERIODS.custom && customSelectingEnd;
+
   const handleOk = useCallback(() => {
+    if (okDisabled) return;
     if (period === PERIODS.custom) {
       onSelectRange?.(tempRangeStart, tempRangeEnd);
     } else {
       onSelectDate(tempDate);
     }
+    setCustomSelectingEnd(false);
     onClose();
-  }, [period, tempDate, tempRangeStart, tempRangeEnd, onSelectDate, onSelectRange, onClose]);
+  }, [okDisabled, period, tempDate, tempRangeStart, tempRangeEnd, onSelectDate, onSelectRange, onClose]);
 
   const handleCancel = useCallback(() => {
     setTempDate(date);
     setTempRangeStart(rangeStart ?? MIN_DATE);
     setTempRangeEnd(rangeEnd ?? new Date());
+    setCustomSelectingEnd(false);
     onClose();
   }, [date, rangeStart, rangeEnd, onClose]);
 
@@ -91,26 +125,35 @@ export default function CalendarModal({
       onClose={handleCancel}
       maxWidth={380}
       padding={16}
-      overlayPadding={24}
-      maxHeight={'85%'}
+      overlayPadding={12}
+      maxHeight={'94%'}
       backgroundColor={c.background}
       shadow
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={[styles.title, { color: c.text, fontSize: fs(18) }]}>{labels[TITLE_KEYS[period]]}</Text>
-        {period !== PERIODS.custom && <Text style={[styles.subtitle, { color: c.textSecondary, fontSize: fs(13) }]}>{formatPeriodText(period, tempDate, labels.months, labels.months_short)}</Text>}
+      <View style={styles.header}>
+        <ModalTitle title={labels[TITLE_KEYS[period]]} icon="calendar-outline" align="left" style={styles.title} />
+        <View style={styles.info}>
+          <Text style={[styles.infoLine, { color: c.textSecondary, fontSize: fs(13) }]} numberOfLines={1}>
+            {infoLines[0]}
+          </Text>
+          <Text style={[styles.infoLine, { color: c.textSecondary, fontSize: fs(13) }]} numberOfLines={1}>
+            {infoLines[1] || ' '}
+          </Text>
+        </View>
+      </View>
 
+      <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
         {period === PERIODS.day && (
-          <DayPicker date={tempDate} onSelect={handleSelect} />
+          <DayPicker key={visible ? PICKER_KEY.open : PICKER_KEY.closed} date={tempDate} onSelect={handleSelect} minDate={minDate} maxDate={maxDate} />
         )}
         {period === PERIODS.week && (
-          <WeekPicker date={tempDate} onSelect={handleSelect} />
+          <WeekPicker key={visible ? PICKER_KEY.open : PICKER_KEY.closed} date={tempDate} onSelect={handleSelect} minDate={minDate} maxDate={maxDate} />
         )}
         {period === PERIODS.month && (
-          <MonthGrid date={tempDate} onSelect={handleSelect} />
+          <MonthGrid key={visible ? PICKER_KEY.open : PICKER_KEY.closed} date={tempDate} onSelect={handleSelect} minDate={minDate} maxDate={maxDate} />
         )}
         {period === PERIODS.year && (
-          <YearGrid date={tempDate} onSelect={handleSelect} />
+          <YearGrid key={visible ? PICKER_KEY.open : PICKER_KEY.closed} date={tempDate} onSelect={handleSelect} minDate={minDate} maxDate={maxDate} />
         )}
         {period === PERIODS.custom && (
           <PeriodPicker
@@ -118,36 +161,36 @@ export default function CalendarModal({
             tempStart={tempRangeStart}
             tempEnd={tempRangeEnd}
             onTempRangeChange={handleRangeChange}
+            onSelectingEndChange={setCustomSelectingEnd}
           />
         )}
       </ScrollView>
 
-      <View style={[styles.buttons, { borderTopColor: c.border }]}>
-        <TouchableOpacity style={[styles.cancelButton, { backgroundColor: c.background, borderColor: c.border }]} onPress={handleCancel} accessibilityRole="button" accessibilityLabel={labels.cal_cancel}>
-          <Text style={[styles.cancelButtonText, { color: c.text, fontSize: fs(14) }]}>{labels.cal_cancel}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.okButton, { backgroundColor: c.primary }]} onPress={handleOk}>
-          <Text style={[styles.okButtonText, { color: c.background, fontSize: fs(14) }]}>{labels.cal_ok}</Text>
-        </TouchableOpacity>
-      </View>
+      <ModalFooter
+        layout={FOOTER_LAYOUTS.compact}
+        cancelLabel={labels.cancel}
+        confirmLabel={labels.cal_ok}
+        onCancel={handleCancel}
+        onConfirm={handleOk}
+        confirmDisabled={okDisabled}
+        borderTop
+        verticalPadding={12}
+        textSize={14}
+        containerStyle={styles.buttons}
+      />
     </ModalShell>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollContent: { flexGrow: 1 },
-  title: { fontWeight: '700', marginBottom: 2 },
-  subtitle: { marginBottom: 12 },
+  header: { marginBottom: 8, alignItems: 'flex-start' },
+  info: { width: '100%' },
+  body: { flexShrink: 1 },
+  bodyContent: { flexGrow: 1 },
+  title: { marginBottom: 2 },
+  infoLine: { textAlign: 'left' },
   buttons: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 10,
     marginTop: 12,
     paddingTop: 12,
-    borderTopWidth: 1,
   },
-  cancelButton: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: CONTROL_BORDER_RADIUS, borderWidth: 1 },
-  cancelButtonText: { fontWeight: '600' },
-  okButton: { paddingHorizontal: 28, paddingVertical: 10, borderRadius: CONTROL_BORDER_RADIUS },
-  okButtonText: { fontWeight: '700' },
 });

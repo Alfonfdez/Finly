@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { StyleSheet } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import CreateAccountScreen from '../../src/screens/CreateAccountScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
+import { TEST_IDS } from '../../src/constants/testIds';
 import type { Account } from '../../src/database/types';
 
 const nav = { setOptions: vi.fn(), navigate: vi.fn(), goBack: vi.fn() };
@@ -54,10 +56,29 @@ describe('CreateAccountScreen', () => {
     resetAppStub();
   });
 
-  it('renders the account name field and keeps Create disabled', async () => {
+  it('renders the Name section and keeps Create disabled', async () => {
     const view = await render(<CreateAccountScreen />);
-    expect(view.getByText('Account name')).toBeTruthy();
+    expect(view.getByText('Name')).toBeTruthy();
+    expect(view.getByPlaceholderText('Account name')).toBeTruthy();
+    expect(view.getByText('Symbols')).toBeTruthy();
+    expect(view.getByText('Color')).toBeTruthy();
+    expect(view.getByText('Initial balance')).toBeTruthy();
+    expect(view.getByText('Note')).toBeTruthy();
     expect(view.getByText('Create')).toBeDisabled();
+  });
+
+  it('reserves the hint band so Create never moves', async () => {
+    const view = await render(<CreateAccountScreen />);
+
+    const slot = view.getByTestId(TEST_IDS.formHintSlot);
+    expect(StyleSheet.flatten(slot.props.style).minHeight).toBeGreaterThan(0);
+    expect(view.queryByTestId(TEST_IDS.formMutedSlot)).toBeNull();
+  });
+
+  it('shows the Note counter in its section header', async () => {
+    const view = await render(<CreateAccountScreen />);
+    const counter = view.getByText('0/200');
+    expect(StyleSheet.flatten(counter.props.style).position).toBeUndefined();
   });
 
   it('shows the icon+color hint once a name is typed and keeps Create disabled', async () => {

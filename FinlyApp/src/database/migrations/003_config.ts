@@ -12,7 +12,7 @@ export async function seedConfigInner(db: DatabaseHandle): Promise<void> {
     await db.runAsync(
       'INSERT OR IGNORE INTO config (key, value) VALUES (?, ?)',
       row.key,
-      row.value
+      row.value,
     );
   }
 }

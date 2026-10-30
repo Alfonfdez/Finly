@@ -1,5 +1,13 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
+import {
+  collectTransactionPhotos,
+  collectAllTransactionPhotos,
+  collectAllTransactionPhotosStrict,
+  deletePhotoUris,
+  deleteUnreferencedPhotoUris,
+} from '../../src/database/photoCleanup';
+
 const mocks = vi.hoisted(() => {
   const chain = (rows: { photo: string | null }[]) => ({
     from: () => ({
@@ -23,16 +31,13 @@ vi.mock('../../src/database/drizzle/engine', () => ({
   getDrizzle: mocks.getDrizzle,
 }));
 
-vi.mock('../../src/utils/photoUtils', () => ({
+vi.mock('../../src/utils/photoData', () => ({
   parsePhotos: mocks.parsePhotos,
-  deletePhotoFile: mocks.deletePhotoFile,
 }));
 
-import {
-  collectTransactionPhotos,
-  collectAllTransactionPhotos,
-  deletePhotoUris,
-} from '../../src/database/photoCleanup';
+vi.mock('../../src/utils/photoUtils', () => ({
+  deletePhotoFile: mocks.deletePhotoFile,
+}));
 
 type SelectChain = ReturnType<typeof mocks.fakeDb.select>;
 
@@ -53,7 +58,7 @@ describe('photoCleanup', () => {
 
   it('collects parsed photo uris from all matching rows without throwing for null photos', async () => {
     mocks.fakeDb.select.mockImplementation(() =>
-      rowsFor([{ photo: 'a' }, { photo: null }, { photo: 'c,d' }])
+      rowsFor([{ photo: 'a' }, { photo: null }, { photo: 'c,d' }]),
     );
     mocks.parsePhotos.mockImplementation((photo) => (photo ? photo.split(',') : []));
     await expect(collectTransactionPhotos('id', 1, 2)).resolves.toEqual(['a', 'c', 'd']);
@@ -82,5 +87,32 @@ describe('photoCleanup', () => {
     });
     await expect(deletePhotoUris(['a', 'b', 'c'])).resolves.toBeUndefined();
     expect(mocks.deletePhotoFile).toHaveBeenCalledTimes(3);
+  });
+
+  it('deletePhotoUris ignores non-string values from malformed photo fields', async () => {
+    await expect(deletePhotoUris(['a', 1 as unknown as string, 'b'])).resolves.toBeUndefined();
+    expect(mocks.deletePhotoFile).toHaveBeenCalledTimes(2);
+  });
+
+  it('collectAllTransactionPhotosStrict propagates read failures', async () => {
+    mocks.fakeDb.select.mockImplementation(() => {
+      throw new Error('db down');
+    });
+    await expect(collectAllTransactionPhotosStrict()).rejects.toThrow('db down');
+  });
+
+  it('deleteUnreferencedPhotoUris keeps files still referenced by another row', async () => {
+    mocks.fakeDb.select.mockImplementation(() => rowsFor([{ photo: 'shared.jpg' }]));
+    await deleteUnreferencedPhotoUris(['shared.jpg', 'orphan.jpg']);
+    expect(mocks.deletePhotoFile).toHaveBeenCalledTimes(1);
+    expect(mocks.deletePhotoFile).toHaveBeenCalledWith('orphan.jpg');
+  });
+
+  it('deleteUnreferencedPhotoUris does not delete when the reference read fails', async () => {
+    mocks.fakeDb.select.mockImplementation(() => {
+      throw new Error('db down');
+    });
+    await deleteUnreferencedPhotoUris(['a.jpg']);
+    expect(mocks.deletePhotoFile).not.toHaveBeenCalled();
   });
 });

@@ -6,16 +6,19 @@ interface TransactionSearchContext {
   category?: Category;
   tags?: { name: string }[];
   accountName?: string;
+  /** Name of the recurring rule that generated the transaction. */
+  recurringName?: string;
 }
 
 export function matchesTransactionSearch(
   tx: Transaction,
   ctx: TransactionSearchContext,
-  query: string
+  query: string,
 ): boolean {
   const description = (tx.description ?? '').toLowerCase();
   const categoryName = ctx.category ? getDisplayCategoryName(ctx.category).toLowerCase() : '';
   const tagNames = (ctx.tags ?? []).map(tag => tag.name.toLowerCase());
   const accountName = (ctx.accountName ?? '').toLowerCase();
-  return matchesAllTerms(query, description, categoryName, accountName, ...tagNames);
+  const recurringName = (ctx.recurringName ?? '').toLowerCase();
+  return matchesAllTerms(query, description, categoryName, accountName, recurringName, ...tagNames);
 }

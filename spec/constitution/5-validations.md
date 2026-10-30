@@ -129,7 +129,7 @@ setNameError(exists ? labels.create_cat_error_name_duplicate : null);
 - Color: `c.red`
 - Weight: `'500'`
 - Placement: directly below the input field, with small margin.
-- Maximum 1 error message visible at a time.
+- The hint band can list several unmet conditions at once (one sentence each); no single error is shown twice.
 
 ### Text Rules
 - Lowercase start (no capitalization).
@@ -165,3 +165,7 @@ useEffect(() => {
 - Input fields: `autoCapitalize="words"`, `autoCorrect={false}` for names.
 - Buttons: `disabled` prop prevents interaction and changes visual state.
 - Error text: linked to input via position (no `aria-describedby` needed in React Native).
+- Pressable list rows, category tiles and photo thumbnails expose `accessibilityRole="button"`; tabs use `accessibilityRole="tab"`; the settings toggle row is a single `switch` focus stop.
+- Toggle-style controls expose their state via `accessibilityState` (`selected` for rows, tiles, chips, tabs and sort fields; `checked` for checkboxes). The active state is never conveyed by color alone.
+- Icon-only or ambiguous controls get a localized `accessibilityLabel` (`a11y_*` keys): sort direction ("Sort ascending/descending"), chart toggle ("Switch chart"), stepper decrease/increase, and DayPicker "today"/"selected" suffixes.
+- The whole row is the touch target for interactive rows (including the toggle row); visual-only switches are hidden from the accessibility tree (`accessibilityElementsHidden` / `importantForAccessibility="no-hide-descendants"`) and ignore touches (`pointerEvents="none"`), so they are not announced or toggled twice.

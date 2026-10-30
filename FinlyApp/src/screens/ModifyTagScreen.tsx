@@ -3,27 +3,28 @@ import { View, StyleSheet, Keyboard } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useConfig } from '../context/ConfigContext';
-import { useFontSize } from '../hooks/useFontSize';
 import { useNameDuplicateCheck } from '../hooks/useNameDuplicateCheck';
 import { useDeferredRefresh } from '../hooks/useDeferredRefresh';
+import { useBusyGuard } from '../hooks/useBusyGuard';
 import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
+import { useIsDirty } from '../hooks/useIsDirty';
 import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, USER_ID, MAX_TAG_NAME_LENGTH } from '../constants/types';
-import ConfirmationModal from '../components/ConfirmationModal';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
+import ModalEntitySubject from '../components/ModalEntitySubject';
 import LabeledTextField from '../components/form/LabeledTextField';
+import { formStyles } from '../components/form/formStyles';
 import PrimaryButton from '../components/form/PrimaryButton';
-import FormError from '../components/form/FormError';
+import FormActions from '../components/form/FormActions';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
-import DeleteButton from '../components/form/DeleteButton';
 import { CARD_BORDER_RADIUS } from '../components/componentStyles';
 
 type ModifyTagRouteProp = RouteProp<RootStackParamList, 'ModifyTag'>;
 
 export default function ModifyTagScreen() {
   const { activeColors: c } = useConfig();
-  const fs = useFontSize();
   const labels = t();
   const navigation = useNavigation<NavigationProp<'ModifyTag'>>();
   const route = useRoute<ModifyTagRouteProp>();
@@ -31,10 +32,11 @@ export default function ModifyTagScreen() {
   const { tagId } = route.params;
 
   const deferredRefreshTags = useDeferredRefresh(refreshTags);
+  const { busy, run } = useBusyGuard();
 
   const tag = useMemo(
     () => tags.find(t => t.id === tagId),
-    [tags, tagId]
+    [tags, tagId],
   );
 
   const [name, setName] = useState('');
@@ -44,6 +46,7 @@ export default function ModifyTagScreen() {
     existsByName: (value, excludeId) => tagRepository.existsByName(USER_ID, value, excludeId),
     resolveDefaultEnglishName: () => null,
     duplicateErrorKey: labels.create_tag_error_duplicate,
+    checkErrorKey: labels.error_generic,
     excludeId: tagId,
   });
 
@@ -64,14 +67,19 @@ export default function ModifyTagScreen() {
     const trimmed = name.trim();
     if (!trimmed || nameError || checkingName) return;
 
-    await runWithErrorAlert(async () => {
-      await tagRepository.update(tagId, { name: trimmed });
-      navigation.goBack();
-      deferredRefreshTags();
-    }, ERROR_PREFIXES.tagUpdate);
+    await run(async () => {
+      await runWithErrorAlert(async () => {
+        await tagRepository.update(tagId, { name: trimmed });
+        navigation.goBack();
+        deferredRefreshTags();
+      }, ERROR_PREFIXES.tagUpdate);
+    });
   };
 
-  const { visible: deleteModalVisible, open: openDeleteModal, close: closeDeleteModal, confirm: confirmDelete } = useDeleteConfirmation({
+  const {
+    visible: deleteModalVisible, busy: deleting, open: openDeleteModal,
+    close: closeDeleteModal, confirm: confirmDelete,
+  } = useDeleteConfirmation({
     deleteFn: () => tagRepository.delete(tagId),
     onSuccess: async () => {
       navigation.goBack();
@@ -81,51 +89,63 @@ export default function ModifyTagScreen() {
   });
 
   const isEmpty = !name.trim();
-  const isDisabled = isEmpty || !!nameError || checkingName;
+
+  /** The name the form opened with — Save only applies an actual change. */
+  const baseline = useMemo(() => (tag ? { name: tag.name.trim() } : null), [tag]);
+  const { isDirty, resetBaseline } = useIsDirty(baseline, { name: name.trim() });
+
+  useEffect(() => {
+    if (!tag || userEditedRef.current) return;
+    resetBaseline(baseline);
+  }, [tag, baseline, resetBaseline]);
+
+  const isDisabled = isEmpty || !!nameError || checkingName || !isDirty;
+
+  const hintText = isEmpty ? labels.create_tag_error_empty : nameError;
 
   return (
     <ScreenShell>
       <View style={styles.content}>
         <LabeledTextField
+          label={labels.form_name}
+          labelIcon="id-card-outline"
+          labelStyle={formStyles.firstSection}
           placeholder={labels.create_tag_name_placeholder}
+          accessibilityLabel={labels.create_tag_name_placeholder}
           value={name}
           onChangeText={handleNameChangeLocal}
           maxLength={MAX_TAG_NAME_LENGTH}
           returnKeyType="done"
-          error={nameError}
+          error={hintText}
           showCounter
-          counterFontSize={fs(12)}
-          counterStyle={styles.counter}
+          counterInHeader
           inputStyle={styles.input}
         />
 
-        <FormError message={nameError} style={styles.error} />
-
-        <DeleteButton
-          label={labels.modify_tag_delete}
-          onPress={openDeleteModal}
-          style={styles.deleteButton}
-        />
-
-        <PrimaryButton
-          label={labels.modify_tag_save}
-          onPress={handleSave}
-          disabled={isDisabled}
-          enabledTextColor={c.background}
-          disabledBg={c.surface}
-          disabledTextColor={c.textSecondary}
-          style={styles.button}
-        />
+        <FormActions
+          deleteLabel={labels.delete}
+          onDeletePress={openDeleteModal}
+          saveHint={hintText}
+        >
+          <PrimaryButton
+            label={labels.modify_tag_save}
+            onPress={handleSave}
+            disabled={isDisabled || busy || deleting}
+            enabledTextColor={c.background}
+            disabledBg={c.surface}
+            disabledTextColor={c.textSecondary}
+          />
+        </FormActions>
       </View>
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
-        title={labels.modify_tag_delete_confirm_title(tag?.name ?? '')}
+        title={labels.tags_bulk_delete_confirm_title(1)}
+        subject={tag ? <ModalEntitySubject name={tag.name} icon="pricetag-outline" /> : undefined}
         message={labels.modify_tag_delete_confirm_message}
-        confirmLabel={labels.modify_tag_delete_confirm_delete}
-        cancelLabel={labels.modify_tag_delete_confirm_cancel}
         onConfirm={confirmDelete}
         onCancel={closeDeleteModal}
+        busy={deleting}
       />
     </ScreenShell>
   );
@@ -142,19 +162,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 14,
     fontWeight: '500',
-  },
-  counter: {
-    marginTop: 6,
-    marginBottom: 12,
-  },
-  error: {
-    marginBottom: 12,
-    fontWeight: '500',
-  },
-  deleteButton: {
-    marginBottom: 12,
-  },
-  button: {
-    borderRadius: CARD_BORDER_RADIUS,
   },
 });

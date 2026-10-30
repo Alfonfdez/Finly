@@ -1,6 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, act, waitFor } from '@testing-library/react-native';
-import type { ReactNode } from 'react';
+
+import { ConfigProvider, useConfig } from '../../src/context/ConfigContext';
+import { DEFAULT_CONFIG } from '../../src/database/configDefaults';
+import { THEMES } from '../../src/constants/types';
+import { darkColors, lightColors } from '../../src/constants/themes';
+import type { Config } from '../../src/database/types';
 
 const mockConfigGet = vi.fn();
 const mockConfigSave = vi.fn();
@@ -29,13 +34,12 @@ vi.mock('react-native', async () => {
   };
 });
 
-import { ConfigProvider, useConfig } from '../../src/context/ConfigContext';
-import { DEFAULT_CONFIG } from '../../src/database/configDefaults';
-import { THEMES } from '../../src/constants/types';
-import { darkColors, lightColors } from '../../src/constants/themes';
-import type { Config } from '../../src/database/types';
-
-let captured: { config: Config; activeColors: typeof darkColors; loading: boolean; updateConfig: (partial: Partial<Config>) => void } | null = null;
+let captured: {
+  config: Config;
+  activeColors: typeof darkColors;
+  loading: boolean;
+  updateConfig: (partial: Partial<Config>, options?: { notifyOnError?: boolean }) => Promise<boolean>;
+} | null = null;
 
 function Probe() {
   const ctx = useConfig();
@@ -79,9 +83,48 @@ describe('ConfigProvider', () => {
     await renderProvider();
     await waitFor(() => expect(captured?.loading).toBe(false));
 
-    await act(async () => { await captured!.updateConfig({ firstDayOfWeek: 0 }); });
+    let saved = false;
+    await act(async () => { saved = await captured!.updateConfig({ firstDayOfWeek: 0 }); });
+    expect(saved).toBe(true);
     expect(mockConfigSave).toHaveBeenCalledWith({ firstDayOfWeek: 0 });
     expect(captured!.config.firstDayOfWeek).toBe(0);
+  });
+
+  it('merges back-to-back updates from the latest config', async () => {
+    mockConfigGet.mockResolvedValue(DEFAULT_CONFIG);
+    await renderProvider();
+    await waitFor(() => expect(captured?.loading).toBe(false));
+
+    await act(async () => {
+      const first = captured!.updateConfig({ firstDayOfWeek: 0 });
+      const second = captured!.updateConfig({ homeDefaultPeriod: 'week' });
+      await Promise.all([first, second]);
+    });
+
+    expect(captured!.config.firstDayOfWeek).toBe(0);
+    expect(captured!.config.homeDefaultPeriod).toBe('week');
+  });
+
+  it('rolls back only the failed field when an older save fails behind a newer update', async () => {
+    mockConfigGet
+      .mockResolvedValueOnce(DEFAULT_CONFIG)
+      .mockResolvedValueOnce({ ...DEFAULT_CONFIG, homeDefaultPeriod: 'week' });
+    mockConfigSave
+      .mockRejectedValueOnce(new Error('first save failed'))
+      .mockResolvedValueOnce(undefined);
+    await renderProvider();
+    await waitFor(() => expect(captured?.loading).toBe(false));
+
+    await act(async () => {
+      const first = captured!.updateConfig({ firstDayOfWeek: 0 });
+      const second = captured!.updateConfig({ homeDefaultPeriod: 'week' });
+      await Promise.all([first, second]);
+    });
+
+    expect(captured!.config.firstDayOfWeek).toBe(DEFAULT_CONFIG.firstDayOfWeek);
+    expect(captured!.config.homeDefaultPeriod).toBe('week');
+    // The older failure rolls back its own field instead of reloading an older snapshot.
+    expect(mockConfigGet).toHaveBeenCalledTimes(1);
   });
 
   it('updateConfig changes colors immediately when the theme changes', async () => {
@@ -99,7 +142,9 @@ describe('ConfigProvider', () => {
     await renderProvider();
     await waitFor(() => expect(captured?.loading).toBe(false));
 
-    await act(async () => { await captured!.updateConfig({ theme: THEMES.light }); });
+    let saved = true;
+    await act(async () => { saved = await captured!.updateConfig({ theme: THEMES.light }, { notifyOnError: false }); });
+    expect(saved).toBe(false);
     expect(captured!.config.theme).toBe(THEMES.dark);
     expect(captured!.activeColors).toEqual(darkColors);
   });

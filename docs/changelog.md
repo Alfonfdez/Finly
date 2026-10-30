@@ -2256,7 +2256,7 @@
 - npm run test:all (typecheck + lint + 229 tests, 23 files) green; eslint clean.
 
 [2026-08-08] ~ | FinlyApp/src/database/ (sqliteWeb.ts, database.ts, engine.ts, engine.web.ts, migrations/001_initial.ts, migrations/002_seed.ts, migrations/003_config.ts), FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/tests/database/ (sqliteMock.ts, sqliteContract.test.ts, dbDrift.test.ts), docs/ (AGENTS.md, PROMPT.md, harnesses.md), .agents/skills/verification-loop/SKILL.md
-- Web storage unification: the localStorage web backend (webStorage.ts) is removed; web now runs the exact same SQLite schema as native through a shared sql.js (WASM) engine (SqlJsDatabase in sqliteWeb.ts) persisted to IndexedDB (storage/indexedDb.ts). One DatabaseHandle interface, same migrations and repositories on both platforms � no more platform-forked repos.
+- Web storage unification: the localStorage web backend (webStorage.ts) is removed; web now runs the exact same SQLite schema as native through a shared sql.js (WASM) engine (SqlJsDatabase in sqliteWeb.ts) persisted to IndexedDB (storage/indexedDb.ts). One DatabaseHandle interface, same migrations and repositories on both platforms — no more platform-forked repos.
 - engine.web.ts opens the engine with the IndexedDB-stored DB bytes; database.ts runs the same createSchema -> seed -> user_version migrations on either handle; repositories are now platform-agnostic.
 - DataScreen "delete all data" now always calls resetDatabase() (resets + re-seeds the engine) instead of clearing localStorage, so web and native reset identically.
 - Tests: sqliteMock.ts now reuses the shared SqlJsDatabase engine instead of a separate copy of the expo-sqlite API; deleted tests/database/webContract.test.ts (the web runner duplicated the shared engine); new tests/database/sqliteWebEngine.test.ts covers engine results (lastInsertRowId/changes), persist-on-commit + reload restore, one persist per committed transaction, no uncommitted state persisted, and full schema boot with seed counts; dbDrift.test.ts dropped the localStorage parity case (now covered by the engine itself) and now types handles as DatabaseHandle.
@@ -2270,7 +2270,7 @@
 - Web verification loop (T3 + T17) PASS, run with Playwright against a live Expo web build on 8081:
   - [x] Metro serves sql-wasm-browser.wasm (200 OK at /assets/?unstable_path=.../sql-wasm-browser.wasm); the app fully boots with 0 console errors, so initSqlJs({ locateFile }) loads in a real browser.
   - [x] Fresh IndexedDB seeds the app: Home boots with the Total account, +0,00 EUR, expense/income tabs and seeded categories (My Wallet visible on AddTransaction).
-  - [x] CRUD persists across a reload: added a 12,50 EUR Groceries expense, navigated Home, then did a full page reload � Home still shows -12,50 EUR and the Groceries 100% breakdown.
+  - [x] CRUD persists across a reload: added a 12,50 EUR Groceries expense, navigated Home, then did a full page reload — Home still shows -12,50 EUR and the Groceries 100% breakdown.
   - [x] "Delete all data" reseeds: Settings > Data > Delete all data > Confirm > typed DELETE > Confirm; after reload Home is back to factory seed (+0,00 EUR, no transactions).
 - All 9 acceptance criteria of the 003 spec marked done; T1-T20 all checked in 3-tasks.md; npm run test:all green (typecheck + lint + 202 tests, 23 files).
 - Also updated spec/constitution/7-platform-differences.md (storage matrix now SQLite on both platforms with the platform-resolved openEngine; IndexedDB limits section replaces the localStorage one; photo-on-web rationale reworded) and spec/constitution/3-roadmap.md (003-web-sqlite-engine completed).
@@ -2311,7 +2311,7 @@
 
 [2026-08-08] + | FinlyApp/src/database/ (backup.ts, backupService.ts), FinlyApp/src/utils/ (backupIO.ts, backupIO.web.ts), FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/src/i18n/ (en.ts, es.ts, ca.ts), FinlyApp/tests/database/backup.test.ts, FinlyApp/package.json, spec/features/025-data-backup/, spec/constitution/ (3-roadmap.md, 7-platform-differences.md), docs/harnesses.md
 - Feature 025 Data Export/Import (backup): export the whole database (users, accounts, categories, transactions incl. photos, tags, tag links, config) as a versioned JSON snapshot and restore it on any platform.
-- src/database/backup.ts: pure DB layer (buildBackup / parseBackup / applyBackup) over the shared DatabaseHandle � snapshot schema with formatVersion 1 + schema guard, import reuses the row Zod schemas, transactional apply (FK-safe delete order, dependency-order inserts, full rollback on any violation).
+- src/database/backup.ts: pure DB layer (buildBackup / parseBackup / applyBackup) over the shared DatabaseHandle — snapshot schema with formatVersion 1 + schema guard, import reuses the row Zod schemas, transactional apply (FK-safe delete order, dependency-order inserts, full rollback on any violation).
 - src/database/backupService.ts: exportBackup() / importBackup() facades (newer-version guard); re-exported from src/database/index.ts (split out so tests never pull the repository layer's expo-file-system import).
 - src/utils/backupIO.ts (native) + backupIO.web.ts (web): native writes to documentDirectory via expo-file-system and shares via expo-sharing, imports via expo-document-picker; web downloads via Blob + <a download> and imports via a programmatic <input type="file"> + FileReader. Added expo-sharing + expo-document-picker (SDK 54) deps.
 - DataScreen: "Export data" / "Import data" SettingsRows above the delete rows; import gated by a ConfirmationModal, then resetAll() + updateConfig(configRepository.get()).
@@ -2388,7 +2388,7 @@
 
 
 [2026-08-12] ~ | FinlyApp/src/utils/accountSearch.ts, FinlyApp/tests/utils/accountSearch.test.ts, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts
-- Change: added free-text search to the Accounts screen (spec 011). The header now has a search icon toggle that reveals a SearchBar below the total balance section, matching the Tags/Categories/All Transactions pattern. New pure helper matchesAccountSearch() in src/utils/accountSearch.ts defines the exact match rule: case-insensitive substring, multi-term AND (space-split). A term matches an account if it appears in its display name (current language, via getDisplayAccountName � defaults like 'My Wallet' are translated) or its description/note (getDisplayAccountDescription). The Total account row stays always visible at the top; search filters only the real accounts below it. Closing the search bar restores the full list; an active search with no matches shows 'No results found'. New i18n key accounts_search added in en/es/ca. No schema or data changes.
+- Change: added free-text search to the Accounts screen (spec 011). The header now has a search icon toggle that reveals a SearchBar below the total balance section, matching the Tags/Categories/All Transactions pattern. New pure helper matchesAccountSearch() in src/utils/accountSearch.ts defines the exact match rule: case-insensitive substring, multi-term AND (space-split). A term matches an account if it appears in its display name (current language, via getDisplayAccountName — defaults like 'My Wallet' are translated) or its description/note (getDisplayAccountDescription). The Total account row stays always visible at the top; search filters only the real accounts below it. Closing the search bar restores the full list; an active search with no matches shows 'No results found'. New i18n key accounts_search added in en/es/ca. No schema or data changes.
 - Tests: 8 new matchesAccountSearch tests (empty query, display-name matching, custom renamed account, description, name+description combined, multi-term AND, no match, substring). test:all green (typecheck + lint + 265 tests, 31 files).
 - Docs: updated spec 011 (new 'Search' section, acceptance criteria) + roadmap bullet.
 
@@ -2878,7 +2878,7 @@
 - New leaf-hook suites: `useFontSize` (size factors 0.85/1.0/1.15 via configStub), `useDebouncedCallback` (fake-timer debounce + clear-on-unmount), `useBalanceVisibility` (toggle), `useSearchFilter` (blank passthrough, multi-term, keep predicate, recompute on change), `useColorSelection` (quick vs custom + setters), `useDeferredRefresh` (rAF resolution, error-log path, latest-fn-ref).
 - New navigation/hook suites: `usePeriodNavigation` (appStub changePeriod / custom opens calendar / range clamped to day boundaries), `useFocusLoad` (loader success, areEqual replace-vs-keep, error-log path, setData), `usePhotos` (image-picker + file-system mocked; permission/cancel/copy/error/remove paths).
 - New screen smoke tests `tests/screens/TransactionsScreen` and `AllTransactionsScreen` (mock `@react-navigation/native` + `../database` + appStub; assert account trigger, empty state, row rendering, repository list load). `useTransactionForm` deferred (heaviest, per plan).
-- Verification: `test:all` green � typecheck + lint + 52 files / 389 tests (was 41 / 340). No source code or spec criteria changed (tests only).
+- Verification: `test:all` green — typecheck + lint + 52 files / 389 tests (was 41 / 340). No source code or spec criteria changed (tests only).
 [2026-09-03] Tests | Tier-3 completion: useTransactionForm hook suite
 - New `tests/hooks/useTransactionForm.test.tsx` (14 tests): closes the last in-scope Tier-3 coverage gap. Mocks `../../src/database` (`getTagsByTransactionId`, `getCategoryUsageCounts`, `tagRepository.create`), `@react-navigation/native` (async factory with `React.useEffect` for `useFocusEffect`), appStub, `expo-image-picker` and `expo-file-system` (the latter two required because the hook pulls in `usePhotos`). Builds a typed `UseTransactionFormProps` locally (the hook does not export its props type).
 - Covers: canSubmit gating (amount + account), initial amount parse, type/account/date/category setters, tag toggle, `handleCreateTag` success/duplicate/error paths (with refreshTags), `handleSubmit` draft shape + goBack + refresh, guarded submit on invalid state, tag preload via `transactionId`, and category-usage ordering of `visibleCategories`.
@@ -2993,7 +2993,7 @@
 
 
 [2026-09-06] Fix | All/Transactions header Search/Select shown when no transactions are visible
-- Root cause: both transaction list screens gated the header Search/Select actions on the raw repository list (allTransactions.length > 0) instead of the filtered visible list. When the DB has transactions but none survive the active filters (e.g. the seeded rows fall outside the default Month period, or a different account is selected), the list shows the empty state while the Search/Select icons stayed in the header. Violated 015 �11 + acceptance c166 and 014 �7 + c150 ('When there are no transactions, the header Select and Search actions are hidden').
+- Root cause: both transaction list screens gated the header Search/Select actions on the raw repository list (allTransactions.length > 0) instead of the filtered visible list. When the DB has transactions but none survive the active filters (e.g. the seeded rows fall outside the default Month period, or a different account is selected), the list shows the empty state while the Search/Select icons stayed in the header. Violated 015 §11 + acceptance c166 and 014 §7 + c150 ('When there are no transactions, the header Select and Search actions are hidden').
 - Refactor: split src/hooks/useSelectableScreen.tsx into header-wiring only (new signature { navigation, showHeader, selectMode, headerRight }; the old internal state now comes from the existing useSelectAndSearch hook, which callers invoke directly). useLayoutEffect deps [navigation, showHeader, selectMode] preserve the Select<->Done header re-registration on selection-mode toggle.
 - AllTransactionsScreen + TransactionsScreen now call useSelectAndSearch first (state), then useTransactionListScreen (which computes filters), then useSelectableScreen with showHeader: !loading && filters.sections.length > 0 - so the actions hide whenever the visible list is empty, not just when the DB is empty.
 - Other 5 consumers (CommentsScreen, TagsScreen, AccountsScreen, CategoriesScreen, AddCategoryScreen) mechanically moved onto the same split API; their showHeader conditions are unchanged (raw-count based, no downstream filter).
@@ -3165,3 +3165,1657 @@
 - .easignore fix: the unanchored `android/` and `ios/` patterns matched at any depth (gitignore semantics), so EAS archives silently dropped `FinlyApp/modules/finly-share/android` and `.../ios`. Anchored to `/FinlyApp/android/` and `/FinlyApp/ios/` so the local finly-share native module is included in EAS builds.
 - All 9 README version rows bumped to 2.1.0 (en/de/fr/it + es, ca, gl, eu, pt) and the current-version references updated in `spec/constitution/2-tech-stack.md` (app.json comment) and `spec/constitution/6-screens.md` (drawer footer diagram/format example). Added a "2.1 release-readiness" entry to `spec/constitution/3-roadmap.md` and moved the "Release and Distribution" worked examples in `docs/programming-concepts.md` (git tag, GitHub Release asset name, release-notes skeleton, semver mapping) from 2.0.0/versionCode 1 to 2.1.0/versionCode 2.
 - What's new since 2.0.0: Android export saves the backup straight to the Downloads folder with an optional Share action (finly-share, hybrid flow, truthful feedback); new Galician (galego) and Basque (euskera) languages; settings UI polish (flexible SelectorInline options, Basque ikurrina flag fix, Title-case language labels); new export/import data icons; regenerated transparent icons and splash; Expo SDK 57 patch sets (~57.0.24); docs for galego/euskara and MIT license.
+
+[2026-10-05] + | scripts/append-changelog.mjs, .agents/skills/changelog/SKILL.md, AGENTS.md, FinlyApp/scripts/gen-finly-assets.mjs, FinlyApp/tests/i18n/parity.test.ts, opencode.example.jsonc, docs/assets.md
+- Added `scripts/append-changelog.mjs`, a deterministic changelog appender (one blank line between entries, strips only trailing newlines, refuses to write if the tail looks truncated, CRLF output) ported from the Listly project; supports `--dry-run`, `--stdin` and `--bullets-file` for PowerShell-safe input.
+- `.agents/skills/changelog/SKILL.md` and `AGENTS.md` now mandate using the script instead of hand-editing `docs/changelog.md`; added a `## CHANGELOG` section to `AGENTS.md`.
+- Added `FinlyApp/scripts/gen-finly-assets.mjs` (consolidating `regenerate-icons.mjs` + `optimize-icons.mjs`): derives `favicon.png`, `splash-icon.png`, `android-icon-foreground.png` and `android-icon-monochrome.png` from the canonical `assets/icon.png` (chroma-key glyph), validating 1024x1024 and < 1 MB, with an `--out` preview flag; `icon.png` and `android-icon-background.png` stay authored sources.
+- Added `FinlyApp/tests/i18n/parity.test.ts`: every language registers in `LANGUAGES`, has the same keys as `en`, matching function arity and no empty strings.
+- Added committed `opencode.example.jsonc` (the real `opencode.jsonc` is gitignored).
+- Updated `docs/assets.md` (corrected the stale `app.json` snippet: `backgroundColor` `#E6F4FE`, `backgroundImage`, `expo-sharing`; documented the new generator) and added the `## ANDROID BUILD & RELEASE (EAS)` section to `AGENTS.md`.
+- `npm run test:all` green (93 files / 606 tests).
+
+[2026-10-05] - | FinlyApp/scripts/regenerate-icons.mjs, FinlyApp/scripts/optimize-icons.mjs, FinlyApp/gen-listly-assets.mjs
+- Removed `FinlyApp/scripts/regenerate-icons.mjs` and `FinlyApp/scripts/optimize-icons.mjs`, superseded by `FinlyApp/scripts/gen-finly-assets.mjs`.
+- Removed the stray `FinlyApp/gen-listly-assets.mjs` (an obsolete Listly icon generator with a hardcoded Listly output path, unrelated to Finly).
+
+[2026-10-05] ~ | docs/harnesses.md
+- Updated the test-suite baseline to 2026-10-05: 93 test files / 606 tests (was 92 / 571).
+
+[2026-10-05] ~ | FinlyApp/scripts/gen-finly-assets.mjs
+- Fixed the generator to write the optimized PNG buffer directly (was re-encoding through sharp.toFile, dropping the compression/palette options). Verified against the current assets: splash-icon.png is byte-identical, favicon/foreground/monochrome are visually equivalent (visible-pixel MAD < 1/255).
+
+[2026-10-05] ~ | FinlyApp/scripts/gen-finly-assets.mjs, docs/assets.md, FinlyApp/.gitignore
+- Refactored the generator to use the transparent `assets/splash-icon.png` as the mark source and emit the full six-asset set: it now also writes `icon.png` (glyph on the flat `#E6F4FE` background), `favicon.png` (a copy of `icon.png`) and `android-icon-background.png` (flat `#E6F4FE`), alongside `splash-icon.png`, `android-icon-foreground.png` and `android-icon-monochrome.png`; the glyph is trimmed to its alpha bounds so re-running is idempotent.
+- Added the `--out <dir>` option so the assets can be written to a temporary folder for review before replacing `assets/`, and updated `docs/assets.md` to document the splash-based generation and the flat background.
+
+[2026-10-05] ~ | FinlyApp/assets/icon.png, FinlyApp/assets/favicon.png, FinlyApp/assets/splash-icon.png, FinlyApp/assets/android-icon-background.png, FinlyApp/assets/android-icon-foreground.png, FinlyApp/assets/android-icon-monochrome.png
+- Regenerated all six app assets with `FinlyApp/scripts/gen-finly-assets.mjs` (source of truth: the transparent `splash-icon.png`): `icon.png`/`favicon.png` now carry a flat `#E6F4FE` background and `android-icon-background.png` is flat `#E6F4FE` (was a subtle near-white gradient); `splash-icon.png`, `android-icon-foreground.png` and `android-icon-monochrome.png` are visually unchanged (splash effectively identical, the transparent pair equivalent on visible pixels).
+- Ran `npx expo prebuild --platform android` to bake the new icons/splash into native resources; `npm run test:all` green (93 files / 606 tests).
+
+[2026-10-05] ~ | FinlyApp/scripts/gen-finly-assets.mjs, FinlyApp/app.json, FinlyApp/assets/*.png, docs/assets.md
+- Split the generated background colors: `android-icon-background.png` (and `android.adaptiveIcon.backgroundColor`) is now plain `#FFFFFF` so the Android launcher icon reads better on device, while `icon.png`/`favicon.png` keep the `#E6F4FE` background; the transparent `splash-icon.png`, `android-icon-foreground.png` and `android-icon-monochrome.png` are unchanged.
+- Regenerated the assets and ran `npx expo prebuild --platform android`; `npm run test:all` green (93 files / 606 tests).
+
+[2026-10-05] ~ | FinlyApp/scripts/gen-finly-assets.mjs, FinlyApp/app.json, FinlyApp/assets/*.png, docs/assets.md
+- Switched every generated background to plain `#FFFFFF` (matching Listly): `icon.png`, `favicon.png` and `android-icon-background.png` — plus `android.adaptiveIcon.backgroundColor` — are now flat white, replacing the `#E6F4FE` icon/favicon background; the transparent `splash-icon.png`, `android-icon-foreground.png` and `android-icon-monochrome.png` are unchanged.
+- Regenerated the assets and ran `npx expo prebuild --platform android`; `npm run test:all` green (93 files / 606 tests).
+
+[2026-10-05] ~ | FinlyApp/package.json, FinlyApp/package-lock.json, docs/harnesses.md
+- Bumped the Expo SDK 57 patch set to the versions expected by the compat checker via `npx expo install --fix`: expo `~57.0.24` -> `~57.0.26`, expo-document-picker -> `~57.0.3`, expo-image-picker -> `~57.0.20`, expo-sharing -> `~57.0.22` (expo-constants installed to 57.0.20 without a range change — the existing `~57.0.17` already allows it). Non-SDK packages left alone.
+- Verified: `expo-doctor` 21/21 checks passed, `npx expo install --check` reports "Dependencies are up to date", `npm run test:all` green (93 files / 606 tests); `docs/harnesses.md` SDK-patch line updated to `expo ~57.0.26`.
+
+[2026-10-05] - | FinlyApp/.gitignore, docs/assets.md
+- Removed the temporary icon-preview folder used to compare the generated PNGs against the committed assets, and dropped its `.gitignore` entry.
+- Updated `docs/assets.md` to describe the review flow generically with `--out <dir>` instead of a named folder.
+
+[2026-10-05] docs | spec/features/028-recurring-transactions/1-spec.md, spec/features/028-recurring-transactions/2-plan.md, spec/features/028-recurring-transactions/3-tasks.md, spec/constitution/3-roadmap.md, spec/constitution/2-tech-stack.md, docs/programming-concepts.md
+- Added the SDD spec for feature `028-recurring-transactions` (`1-spec.md`, `2-plan.md`, `3-tasks.md`): recurring rules materialized by reconciliation on app start/foreground plus a midnight timer while open, daily/weekly/monthly/yearly with an "every N" interval, in-place edit with "from now on" or "from now on + past generated" scope, a Drawer management screen, and delete keeping the generated transactions.
+- Documented the DB migration/versioning plan: additive `004_recurring`, `SCHEMA_VERSION 3 -> 4`, backward-compatible backup format (`v1` + optional collections), and the additive-migration policy in `spec/constitution/2-tech-stack.md`.
+- Added the `028-recurring-transactions` roadmap entry and new `docs/programming-concepts.md` entries (additive schema migration, backward-compatible snapshot format, recurrence rule, reconciliation/catch-up, idempotent materialization); refreshed the stale `PRAGMA user_version` explanation.
+
+[2026-10-05] docs | spec/constitution/7-platform-differences.md, spec/features/028-recurring-transactions/2-plan.md, spec/features/028-recurring-transactions/3-tasks.md
+- Documented the recurring-transactions platform behavior in `spec/constitution/7-platform-differences.md`: two feature-matrix rows plus a "Recurring transactions (feature 028)" section (materialization on app start/foreground/timer on all platforms; closed-app catch-up out of scope for v1; partial-unique-index idempotency; web `AppState` visibility nuance; native-only verification).
+- Referenced the file in the feature's `spec/features/028-recurring-transactions/2-plan.md` docs list and `3-tasks.md` Phase 0.
+
+[2026-10-05] feat | FinlyApp/src/database/migrations/004_recurring.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/database/recurringService.ts, FinlyApp/src/utils/recurrence.ts, FinlyApp/src/utils/recurrenceSummary.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/screens/CreateRecurringScreen.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/src/database/backup.ts, FinlyApp/tests/**, AGENTS.md, spec/constitution/*, docs/harnesses.md
+- Added recurring transactions (feature 028): new `recurring_rules` and `recurring_rule_tags` tables plus nullable `transactions.recurring_rule_id` / `recurrence_date` and a partial unique occurrence index, via the additive migration `004_recurring` (`SCHEMA_VERSION 3 -> 4`); existing data is untouched.
+- New `src/utils/recurrence.ts` (daily/weekly/monthly/yearly + interval, month-end and Feb-29 clamping, bounded catch-up, `nextDueOnOrAfter`) and `src/utils/recurrenceSummary.ts`, with unit tests.
+- New `recurringRepo` and `recurringService.materializeDueRecurring()`: transactional, idempotent reconciliation that back-fills every missed occurrence; runs on app start, on `AppState` foreground and on a midnight timer while the app is open (`AppContext`).
+- UI: a "Repeat" section in the add form (`RepeatSection`) that creates a rule and materializes due occurrences; a Drawer "Recurring" list with pause/resume plus Create/Modify screens; edit scope "from now on" / "from now on + past generated" (bulk update); delete keeps generated transactions; a Recurring chip + "Stop repeating" on transaction details; a recurring marker on transaction list rows.
+- Backup format v1 extended with optional `recurring_rules` / `recurring_rule_tags` collections and the two recurrence columns, so pre-028 (schema 3) backups still import; `resetDatabase` / `clearDataKeepSettings` include the new tables.
+- i18n keys added to all 9 languages; docs updated (`AGENTS.md`, `spec/constitution/2-tech-stack.md`, `spec/constitution/6-screens.md`, `docs/harnesses.md`).
+- Gate: `npm run test:all` green (97 files / 637 tests).
+
+[2026-10-05] fix | FinlyApp/src/screens/ModifyRecurringScreen.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/features/028-recurring-transactions/3-tasks.md, spec/constitution/3-roadmap.md
+- Fix: deleting a recurring rule now navigates back to the Recurring list instead of leaving the user on the edit screen of the deleted rule.
+- Verified feature 028 end-to-end on web (375px): created a monthly 100 € rule from the dedicated screen which immediately materialized the due occurrence; the generated row shows the recurring marker; transaction details show the Recurring chip + "Stop repeating" (pauses the rule); deleting the rule kept the generated transaction; state persists across reloads via IndexedDB. 028 acceptance criteria flipped `[x]`; `npm run test:all` green (97 files / 637 tests).
+
+[2026-10-05] fix | FinlyApp/src/components/componentStyles.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/screens/ModifyTransactionScreen.tsx, FinlyApp/src/navigation/AppNavigator.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/tests/component/RepeatSection.test.tsx, FinlyApp/tests/screens/RecurringScreen.test.tsx, docs/harnesses.md
+- The Repeat/Recurring form section is now a standard section like the others: plain (no card), always-titled "Recurring", with the shared `SECTION_GAP` (16px) bottom gap — fixes the missing gap before Tags and the inconsistent title style in Add transaction / New recurring / Edit recurring.
+- ModifyTransactionScreen shows a recurring notice ("Part of a recurring series…") with an "Edit recurring rule" link when the transaction was generated by a rule.
+- Transaction details "Stop repeating" now flips to a non-interactive "Repeating stopped" state (initialized from the rule's active flag), so the action gives visible feedback and survives navigation.
+- RecurringScreen: the Active/Paused switch is now a sibling of the row's press area (pressing it no longer opens Edit recurring) and shows an Active/Paused label; the row info still navigates to edit.
+- Drawer: moved the Recurring item directly under All transactions.
+- i18n: added `recurring_paused`, `recurring_stopped`, `recurring_edit_notice`, `recurring_edit_rule` in all 9 languages.
+- Tests: updated `RepeatSection` and added `RecurringScreen` regression tests; `npm run test:all` green (98 files / 640 tests); verified on web (375px).
+
+[2026-10-05] feat | FinlyApp/src/utils/formatters.ts, FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/calendars/DayPicker.tsx, FinlyApp/src/components/calendars/MonthNav.tsx, FinlyApp/src/components/calendars/NavArrows.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/tests/utils/formatters.test.ts, spec/constitution/6-screens.md, spec/features/028-recurring-transactions/1-spec.md, docs/programming-concepts.md, docs/harnesses.md
+- Calendar date bounds: `CalendarModal`/`DayPicker`/`MonthNav` accept optional `minDate`/`maxDate` (`undefined` = historical no-future default, `null` = unbounded, `Date` = inclusive clamp); added `isDateWithinBounds()` to `utils/formatters.ts` and a `prevDisabled` prop to `NavArrows`.
+- The recurring **End date** picker is now future-only (`minDate = tomorrow`, `maxDate = null`, forward navigation enabled); the transaction/period date pickers are unchanged (today or past only).
+- Documented the calendar behavior in `spec/constitution/6-screens.md` (new "Calendar (date pickers)" section), `docs/programming-concepts.md` (new "Calendar date bounds" concept) and the 028 spec; tests: `isDateWithinBounds` unit tests; `npm run test:all` green (98 files / 643 tests). Verified on web (end date: future days selectable, today/past disabled; transaction date: future still disabled).
+
+[2026-10-05] fix | FinlyApp/src/database/recurringService.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/tests/database/recurringService.test.ts, FinlyApp/tests/screens/RecurringScreen.test.tsx, docs/harnesses.md
+- Fixed recurring pause/resume: resuming a paused rule now skips the occurrences missed during the pause (`resumeRecurringRule` advances `next_due` to the first occurrence on/after today) and materializes the current occurrence immediately, instead of back-filling the whole paused window. Added `recurringRepo.reactivate(id, nextDue)` and `resumeRecurringRule()`; the Recurring toggle now pauses via `setActive` and resumes via the skip-pause path, then reloads and refreshes.
+- Recurring row now shows the next due date (`recurring_next_due`), matching spec §6.
+- Tests: resume-skip + resume-on-due-day cases in `recurringService.test.ts` and pause/resume toggle tests in `RecurringScreen.test.tsx`; `npm run test:all` green (98 files / 646 tests). Verified on web.
+
+[2026-10-05] feat | FinlyApp/src/components/calendars/YearNav.tsx, FinlyApp/src/components/calendars/DayPicker.tsx, FinlyApp/tests/component/YearNav.test.tsx, spec/constitution/6-screens.md, docs/harnesses.md
+- Day picker now shows a year selector above the month selector (same two-arrow layout as the week picker), so a far-future year (e.g. a recurring end date 10 years ahead) can be reached quickly. `YearNav` gained bounds-aware `minYear`/`maxYear` (`undefined` = historical current-year default, `null` = unbounded) with `prevDisabled`, and `DayPicker` derives the year bounds from its existing `minDate`/`maxDate` and clamps the month when landing on a bound year. `WeekPicker`/`MonthGrid`/`YearGrid` are unchanged.
+- Docs: updated the `spec/constitution/6-screens.md` Calendar section; added a `YearNav` component test; `npm run test:all` green (99 files / 649 tests). Verified on web: the recurring end-date calendar reaches 2036 via the year arrows with all days selectable, and the past-only transaction calendar keeps the forward arrow disabled.
+
+[2026-10-05] docs | docs/programming-concepts.md, spec/constitution/2-tech-stack.md, FinlyApp/tests/component/DayPicker.test.tsx, docs/harnesses.md
+- Docs: updated `docs/programming-concepts.md` ("Calendar date bounds") and the `spec/constitution/2-tech-stack.md` file tree to note the day picker's year + month navigation and that both arrows are bounds-aware.
+- Tests: added `tests/component/DayPicker.test.tsx` (default no-future with the forward year arrow disabled; `maxDate={null}` enabling future years/days); `npm run test:all` green (100 files / 651 tests).
+
+[2026-10-05] refactor | FinlyApp/src/utils/calendarBounds.ts, FinlyApp/src/utils/formatters.ts, FinlyApp/src/components/calendars/NavArrows.tsx, FinlyApp/src/components/calendars/MonthNav.tsx, FinlyApp/src/components/calendars/YearNav.tsx, FinlyApp/src/components/calendars/DayPicker.tsx, FinlyApp/src/components/calendars/calendarStyles.ts, FinlyApp/src/components/calendars/MonthGrid.tsx, FinlyApp/src/components/calendars/YearGrid.tsx, FinlyApp/src/components/calendars/WeekPicker.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/tests/utils/calendarBounds.test.ts, FinlyApp/tests/utils/formatters.test.ts, FinlyApp/tests/component/YearNav.test.tsx, FinlyApp/tests/component/DayPicker.test.tsx, spec/constitution/6-screens.md, spec/constitution/2-tech-stack.md, docs/programming-concepts.md, docs/harnesses.md
+- Calendar Tier-1 refactor: new `utils/calendarBounds.ts` with `resolveDateBounds(minDate, maxDate, today)` as the single source of the date-bound convention, used by `MonthNav`, `YearNav` and `DayPicker` (removing the duplicated inline logic and the `maxYear`/`minYear` conversion).
+- `NavArrows` gained `prevLabel`/`nextLabel`; the year arrows now announce year-specific labels (`a11y_previous_year`/`a11y_next_year`, added to all 9 languages) instead of the month labels. `YearNav` switched to the Date-based `minDate`/`maxDate` API.
+- Renamed `FUTURE_OPACITY` to `DISABLED_OPACITY` (it dims any bound-disabled day/month/year); removed the unused `isFutureDate` helper and its test.
+- Tests: new `tests/utils/calendarBounds.test.ts`; updated `YearNav`/`DayPicker` tests to the new API/labels; `npm run test:all` green (101 files / 654 tests). Docs updated (`6-screens.md`, `programming-concepts.md`, `2-tech-stack.md`, harnesses). Verified on web: year arrows announce years, day/future behavior unchanged.
+
+[2026-10-05] fix | FinlyApp/src/utils/calendarBounds.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/calendars/DayPicker.tsx, FinlyApp/tests/utils/calendarBounds.test.ts, FinlyApp/tests/database/recurringService.test.ts, FinlyApp/tests/component/DayPicker.test.tsx, spec/constitution/6-screens.md, spec/features/028-recurring-transactions/1-spec.md, docs/programming-concepts.md, docs/harnesses.md
+- Recurring **End date** minimum is now derived from the selected transaction day (`start + 1`) instead of today, so a rule starting in the past can end in the past (e.g. start 01/09, daily, end 30/09 → 30 entries); `maxDate` stays unbounded and the end-date calendar opens at the first selectable day. Added `dayAfter`/`isEndAfterStart` to `utils/calendarBounds.ts`; `useTransactionForm` clears a stale end date when the start day moves past it (and disables submit while invalid).
+- Fixed a stale-month bug: `DayPicker` now re-syncs its view when the `date` prop changes (the modal resets `tempDate` after mount), and `CalendarModal` remounts the period picker on open (same pattern as `PeriodPicker`).
+- Tests: `calendarBounds` (`dayAfter`/`isEndAfterStart`), `recurringService` (past daily range Sep 1–30 → 30 occurrences), `DayPicker` view-sync; `npm run test:all` green (101 files / 658 tests). Docs updated (`6-screens.md`, `programming-concepts.md`, 028 spec). Verified on web: past start → Sep 1 disabled, Sep 2–30 selectable, summary shows the chosen end date.
+
+[2026-10-05] fix | FinlyApp/src/database/recurringService.ts, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/tests/database/recurringService.test.ts, spec/features/028-recurring-transactions/1-spec.md, docs/harnesses.md
+- Fixed recurring-rule editing: the edit now reconciles the old schedule, rewrites the rule, and reconciles again so the change applies immediately (previously it reset `next_due` to the first occurrence on/after today and never reconciled, so extending the end date produced no new entries until reopen).
+- Scope now also controls the cursor: "From now on" skips occurrences missed since the rule's cursor; "From now on + past ones" sets the cursor to the first occurrence on/after the rule's cursor, back-filling the missed window (and still bulk-updating already-generated transactions). Extracted the logic into `saveRecurringRuleEdit()` in `recurringService.ts`.
+- Tests: `recurringService` — extending the end date 30/09 → 31/10 at 05/10 with `futureAndPast` back-fills 5 entries (01–05/10, next_due 06/10); with `future` only 05/10 is created; `npm run test:all` green (101 files / 660 tests). Docs: 028 spec §7 + criterion clarified; harness baseline updated. Verified on web: created a daily Sep 1–30 rule (next 01/10), edited end to 31/10 with "+ past ones" → next due 06/10 (Oct 1–5 back-filled), 0 console errors.
+
+[2026-10-05] docs | spec/constitution/6-screens.md, docs/harnesses.md
+- Corrected the calendar docs: 'YearNav' is now bounds-aware (only 'MonthGrid'/'YearGrid' remain past-only), and noted the 'DayPicker' view-sync test in the harness baseline.
+
+[2026-10-06] style | FinlyApp/src/constants/themes.ts, FinlyApp/src/components/componentStyles.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/components/settings/ToggleRow.tsx, FinlyApp/tests/component/helpers/configStub.ts, FinlyApp/tests/component/ToggleRow.test.tsx, FinlyApp/tests/screens/PersonalizationScreen.test.tsx, spec/constitution/4-design-system.md, docs/harnesses.md
+- Toggle colors: added `switchTrackOff`/`switchThumb` tokens to `ColorPalette` (dark `#475569`/`#F8FAFC`, light `#94A3B8`/`#FFFFFF`) and a shared `switchColors(c)` helper (`componentStyles.ts`, incl. react-native-web's `activeTrackColor`/`activeThumbColor`). Applied to the Repeat switch (Add transaction) and the Recurring Active switch — fixing the low-contrast thumb (it used to be `c.background`, i.e. the page color).
+- Settings → Personalization → Privacy: `ToggleRow` now renders a real React Native `Switch` (was an Ionicons toggle glyph with no thumb animation), so it animates and matches the other toggles.
+- Tests: new `ToggleRow` test; updated `PersonalizationScreen` test to the switch role; `npm run test:all` green (102 files / 663 tests). Docs: `4-design-system.md` switch tokens + usage rule; harness baseline updated. Verified on web (dark: off `#475569`/on `#22D3EE`, thumb `#F8FAFC`; light: off `#94A3B8`/on `#0891B2`, thumb `#FFFFFF`; Privacy renders a switch).
+
+[2026-10-06] style | FinlyApp/src/components/RepeatSection.tsx, FinlyApp/tests/component/RepeatSection.test.tsx, docs/harnesses.md
+- Highlight the enabled recurring options in the add-transaction form: the options block (frequency/interval/end date/summary) is now a cyan-tinted rounded card (withAlpha(primary, 10) background, withAlpha(primary, 30) border, radius 12) with a repeat-outline icon next to the section title when the switch is on; the disabled state stays plain.
+- Test: RepeatSection asserts the 'repeat-options' block renders only when enabled; 'npm run test:all' green (102 files / 664 tests). Verified on web at 375px in dark and light.
+
+[2026-10-06] style | FinlyApp/src/components/RepeatSection.tsx, FinlyApp/tests/component/RepeatSection.test.tsx, docs/harnesses.md
+- Turn the recurring End date into a tappable field: surface background, border, radius 10, the date text on the left (placeholder color when empty) and a calendar-outline icon on the right; tapping the text or the icon opens the day picker. The clear (x) button stays as a sibling when a date is set.
+- Test: RepeatSection asserts the 'repeat-end-date' field renders the calendar icon and opens the picker on press; 'npm run test:all' green (102 files / 665 tests). Verified on web at 375px in dark and light, and the field opens the picker.
+
+[2026-10-06] fix | FinlyApp/src/utils/recurrenceSummary.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/src/screens/settings/RegionalScreen.tsx, FinlyApp/tests/utils/recurrenceSummary.test.ts, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Rework the recurring summary so each frequency is phrased naturally and localized: weekly now includes the weekday ('Every week on Monday' / 'Cada semana el lunes'), yearly reads 'Every year on October 6' / 'Cada año el 6 de octubre' (month no longer mid-sentence or inconsistently capitalized), and the end date appends 'until <date>'. Added per-language repeat_on_weekday / repeat_on_month_day builders and a full weekdays array (Sunday-first); removed the duplicate day_monday/day_sunday keys and pointed the 'First day of week' setting at weekdays.
+- Test: new recurrenceSummary.test.ts (en/es/de/fr/ca, all frequencies, end date, weekday fallback from start_date); 'npm run test:all' green (103 files / 670 tests). Verified on web at 375px in Spanish: 'Cada año el 6 de octubre hasta 30 de octubre de 2026' and 'Cada semana el martes'.
+
+[2026-10-06] refactor | FinlyApp/src/components/ClearButton.tsx, FinlyApp/src/components/HeaderCloseButton.tsx, FinlyApp/src/components/componentStyles.ts, FinlyApp/src/components/SearchBar.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/CategoryFilterModal.tsx, FinlyApp/tests/component/ClearButton.test.tsx, FinlyApp/tests/component/RepeatSection.test.tsx, spec/constitution/4-design-system.md, docs/harnesses.md
+- Fix the recurring End date field changing width when a date is set: the clear (x) now uses a shared ClearButton that always reserves its 20x20 slot (invisible + inert when empty), so the field width is identical with or without a date.
+- Standardize the app's close/clear affordances (no rule existed before): shared ClearButton (close-circle 20, textSecondary) for inline value clears — SearchBar, TagSection search, RepeatSection end date — and shared HeaderCloseButton (line close 24, text) for modal headers (CategoryFilterModal). Documented the taxonomy + variants (dark viewer, remove badge, select toggle) in the design system.
+- Tests: new ClearButton.test.tsx; RepeatSection asserts the clear slot is always present and clears the end date. 'npm run test:all' green (104 files / 675 tests). Verified on web at 375px: end-date field width 281px both with and without a date (dark + light); header close is a line x, inline clear is a filled circle-x.
+
+[2026-10-06] style | FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/componentStyles.ts
+- Add more breathing room between the Day section and the Recurring section in the add-transaction form: RepeatSection now has a top margin (SECTION_GAP_SM = 8) so the gap below the third day button grows from 16px to 24px; the Day-to-Tags gap when Repeat is off is unchanged.
+- Spacing-only change; 'npm run test:all' green (104 files / 675 tests). Verified on web at 375px: Day-to-Recurring gap = 24px.
+
+[2026-10-06] feat | FinlyApp/src/utils/recurrence.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/screens/AddTransactionScreen.tsx, FinlyApp/src/screens/CreateRecurringScreen.tsx, FinlyApp/src/database/recurringService.ts, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/database/recurringService.test.ts, FinlyApp/tests/component/RepeatSection.test.tsx, FinlyApp/tests/component/TransactionForm.test.tsx, FinlyApp/tests/hooks/useTransactionForm.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Add a 'Skip the first occurrence' option when creating a recurring rule: the first generated transaction is deferred by one interval (monthly 6 Oct -> 6 Nov) and nothing is generated on the selected day; the anchor stays on the selected day. Shown in add-transaction and Create recurring, hidden when editing. The end-date picker minimum becomes the deferred first occurrence and submit is blocked with a hint if the end date precedes it.
+- Consolidate anchor building into buildRecurrenceSchedule (used by both create screens and the form); floor the edit 'future' cursor by the rule's next_due so editing a skip-first rule on its start day does not resurrect the skipped occurrence.
+- Tests: recurrence buildRecurrenceSchedule + skip advance; recurringService skip materialization + no-resurrect on edit; RepeatSection checkbox; useTransactionForm skipFirst draft + end-conflict validation. 'npm run test:all' green (104 files / 683 tests). Verified on web at 375px in Spanish: monthly skip -> next due 6 Nov 2026, weekly x2 skip -> 20 Oct 2026, conflict hint shown, checkbox hidden when editing.
+
+[2026-10-06] feat | FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/RepeatSection.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Show the resulting date under the 'Skip the first occurrence' checkbox: while checked, the recurring options display 'First transaction: <date>' (e.g. monthly from 6 Oct -> 6 Nov), so the user knows exactly when the first occurrence will land. Hidden when the box is unchecked.
+- Test: RepeatSection asserts the first-transaction line shows the right date when skipping and is absent otherwise. 'npm run test:all' green (104 files / 684 tests). Verified on web at 375px in Spanish (dark + light): 'Primera transacción: 6 de noviembre de 2026' (monthly) and '20 de octubre de 2026' (weekly x2).
+
+[2026-10-06] style | FinlyApp/src/screens/ModifyTransactionScreen.tsx
+- Polish the recurring notice on the Modify transaction screen: it now sits with a 16px gap below the header (SECTION_GAP) and is centered as a column (repeat icon on top, message centered, 'Edit recurring rule' link centered below) instead of a left-aligned icon+text row.
+- Style-only change; 'npm run test:all' green (104 files / 684 tests). Verified on web at 375px in Spanish, dark and light.
+
+[2026-10-06] fix | FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/database/recurringService.ts, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, FinlyApp/tests/database/recurringService.test.ts, FinlyApp/tests/hooks/useTransactionForm.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Edit recurring: the 'From now on + past ones' scope is now only enabled when a past-affecting field changed (account/category/amount/comment/tags/type); otherwise it is disabled with a hint, so a timing-only change (e.g. daily -> yearly) can't imply it rewrites history. Past transactions are never deleted or re-dated.
+- Include the transaction type in the past patch, so switching expense<->income with 'past ones' converts generated transactions' type too (previously left them with the old type + new category). Adds type to GeneratedTransactionPatch/updateGeneratedTransactions and RecurringEditPastPatch.
+- Tests: recurringService (type propagation; timing-only edit leaves past untouched), useTransactionForm (recurringPastAffected), new ModifyRecurringScreen test (disabled pill + hint). 'npm run test:all' green (105 files / 688 tests). Verified on web at 375px in Spanish, dark + light: pill disabled with hint until a field changes; switching a daily series to income with 'past ones' converted its generated transactions to +100,00 €.
+
+[2026-10-06] style | FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Redesign the 'Apply changes to' scope on Edit recurring: it is now a surface card (radius 12) containing a 2-segment control (matching the app's PeriodTabs/TabBar pattern) instead of pill chips, with the active segment filled primary and the disabled one dimmed. Uses radius tokens instead of hardcoded values.
+- Shorten the scope labels to fit half-width (en 'Future only' / 'Future + past', es 'Solo futuras' / 'Futuras + pasadas', etc. in all 9 languages) and update the spec/roadmap references.
+- Style-only; 'npm run test:all' green (105 files / 688 tests). Verified on web at 375px in Spanish, dark + light.
+
+[2026-10-06] style | FinlyApp/src/screens/ModifyRecurringScreen.tsx
+- Edit recurring: give the 'Apply changes to' scope card a primary-tinted background (withAlpha(primary, 10) + border withAlpha(primary, 30), like the Recurring options card) instead of the neutral surface fill, so it no longer looks like the Comment/input fields and clearly reads as part of the recurring family.
+- Style-only; 'npm run test:all' green (105 files / 688 tests). Verified on web at 375px in Spanish, dark + light.
+
+[2026-10-06] style | FinlyApp/src/components/componentStyles.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/screens/ModifyTransactionScreen.tsx
+- Extract a shared recurringCardColors(c) helper in componentStyles (primary-tinted bg withAlpha(primary,10) + border withAlpha(primary,30)) and use it for all three recurring cards: the repeat-options card, the 'Apply changes to' scope card and the 'Part of a recurring series' notice on Modify transaction — so they stay visually in sync.
+- Style-only; 'npm run test:all' green (105 files / 688 tests). Verified on web at 375px in Spanish, dark + light: the Modify transaction notice now matches the Edit recurring scope card.
+
+[2026-10-06] style | FinlyApp/src/components/form/DeleteButton.tsx, FinlyApp/src/components/form/formStyles.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/screens/CreateTagScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/components/SelectionActionBar.tsx, FinlyApp/src/components/AccountForm.tsx, spec/constitution/4-design-system.md
+- Standardize full-width action buttons (Save/Delete/Edit) to one spec: paddingVertical 14, radius BUTTON_BORDER_RADIUS (10), fontWeight 600, fontSize fs(15). DeleteButton radius 12 -> 10; TransactionForm submit 16/12/fs16 -> 14/10/fs15; filled buttons get a transparent 1px border so they match outlined ones pixel-for-pixel.
+- Remove per-screen radius/padding overrides that broke the standard (CreateTag, ModifyTag, ModifyComment button radius; AccountForm delete override) and use the shared DeleteButton in Edit recurring instead of a one-off inline button; align TransactionDetails and SelectionActionBar action buttons to radius 10. Document the rule in the design system.
+- Style-only; 'npm run test:all' green (105 files / 688 tests). Verified on web at 375px (dark + light): Edit recurring Delete and Save are both 50px tall with radius 10; ModifyAccount Save/Delete match too.
+
+[2026-10-06] feat | FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, docs/harnesses.md
+- Transaction details: replace the one-way 'Stop repeating' link with a pause/resume Switch (Active/Paused status + switchColors), matching the Recurring screen. Toggling on resumes the rule via resumeRecurringRule (skips the pause window); toggling off deactivates it. The row stays, so pausing is now reversible from the details screen.
+- Remove the now-unused recurring_stop / recurring_stopped i18n keys from all 9 languages. Update spec 028 §8 + acceptance criterion.
+- Tests: TransactionDetailsScreen toggle (off -> setActive, on -> resumeRecurringRule). 'npm run test:all' green (105 files / 689 tests). Verified on web at 375px in Spanish, dark + light: Active <-> Paused and resume restores.
+
+[2026-10-06] fix | FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/hooks/useTransactionForm.test.tsx, FinlyApp/tests/database/recurringService.test.ts, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, FinlyApp/tests/screens/RecurringScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, docs/harnesses.md
+- Edit recurring: 'Future + past' is now offered when the edit can affect the past in either sense — a detail field changed OR the rule has a missed window to catch up (its cursor is behind today). So extending an end date (or reopening a stopped series) can back-fill the gap, while a pure shortening stays on 'Future only'.
+- Generated transactions are never deleted on edit (shortening the end date only stops future generation). The scope hint is now a permanent description of the pill plus the no-delete guarantee.
+- Recurring list shows 'Ended' for a finished rule (end date passed) instead of a stale past next-due.
+- Tests: hook missed-window gate, service no-delete on shorten, RecurringScreen 'Ended'. 'npm run test:all' green (105 files / 692 tests). Verified on web at 375px in Spanish, dark + light: finished rule -> Ended; extend + Future+past back-fills; permanent hint.
+
+[2026-10-06] fix | FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/tests/hooks/useTransactionForm.test.tsx, docs/harnesses.md
+- Edit recurring: fix a false positive where 'Future + past' was enabled for a rule that was already finished (end date in the past). The missed-window gate now checks whether the NEW schedule actually has an occurrence due in [cursor, today] (via nextDueOnOrAfter, respecting the end date) instead of just next_due <= today. So a finished rule keeps the pill disabled, and it only lights up when extending the end date opens a real back-fill window.
+- Tests: hook asserts finished (next_due past the end date) -> false and extended end date -> true. 'npm run test:all' green (105 files / 693 tests). Verified on web at 375px in Spanish: finished rule -> pill disabled; extend end date -> enabled.
+
+[2026-10-06] test | FinlyApp/tests/hooks/recurringEditGate.test.tsx, FinlyApp/tests/database/recurringService.test.ts, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, docs/harnesses.md
+- Add a battery of editing scenarios for recurring rules: a new dedicated gate test (24 cases) covering the 'Future + past' enabling logic across rule states (active future, no end, finished, overdue, skip-first, paused) and edits (extend/shorten end, amount/category/type/comment/tags/account, frequency/interval/day), with a pinned clock.
+- Extend the service tests (real saveRecurringRuleEdit over SQLite): future vs futureAndPast detail patches, tag rewrites, frequency change keeps past dates, idempotency, and a paused rule that is not back-filled but whose past details are still patched. Add screen tests asserting Save passes the right scope + fields.
+- Gate fix: pass initialRuleActive so a paused rule no longer offers 'Future + past' for a missed window (materialize skips inactive rules). 'npm run test:all' green (106 files / 724 tests).
+
+[2026-10-06] feat | FinlyApp/src/database/migrations/004_recurring.ts, FinlyApp/src/database/drizzle/schema.ts, FinlyApp/src/database/schemas.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/database/backup.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/screens/AddTransactionScreen.tsx, FinlyApp/src/screens/CreateRecurringScreen.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Recurring rules now have a compulsory, unique name. Added a 'name' column to recurring_rules (migration 004 edited in place — recurring is unreleased; SCHEMA_VERSION stays 4), wired through the drizzle/zod schemas, repo (create/update/list + countOccurrencesByRuleIds) and backup restore.
+- The Repeat section shows a Name field at the top (required; trimmed + case-insensitive uniqueness checked against the user's other rules). Add/Create fetch existing names; Edit prefills the rule's name and lets you change it.
+- Recurring list row now shows the rule name as the title, 'category · schedule', next due (or Ended), and 'Created <date> · N transactions' (amount + pause/resume toggle on the right).
+- i18n x9: repeat_name/placeholder/required/taken + recurring_created_on/recurring_transactions_count. 'npm run test:all' green (106 files / 729 tests). Verified on web at 375px (dark + light): name required + duplicate flagged; list row; edit prefill.
+
+[2026-10-06] fix | FinlyApp/src/utils/errors.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/tests/utils/errors.test.ts, FinlyApp/tests/utils/errors.web.test.ts, docs/harnesses.md
+- Stop swallowing form-save errors: handleSubmit now logs the real error (console.error) and shows a visible message. Added alertError(title, message) which uses Alert on native and window.alert on web (react-native-web's Alert is a no-op, which is why a failed save previously looked like 'nothing happened').
+- Tests: errors helpers (console logging) + a web variant asserting window.alert. 'npm run test:all' green (107 files / 732 tests).
+
+[2026-10-06] fix | FinlyApp/src/utils/errors.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/tests/utils/errors.test.ts, docs/harnesses.md
+- Log the real database error: added describeError(err) which folds in err.cause (drizzle wraps the underlying SQLite error in cause). handleSubmit's catch now logs 'Transaction form submit failed: <message> → <cause>' so DB failures are diagnosable, while the user-facing alert stays generic.
+- Tests: describeError (plain Error, Error with cause, non-Error). 'npm run test:all' green (107 files / 735 tests).
+
+[2026-10-06] style | FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/tests/screens/RecurringScreen.test.tsx
+- Redesign the Recurring row order: Name → frequency summary → Next/Ended → 'Category · Created · N transactions'. The 'Next' line uses the primary (cyan) color while 'Ended' stays textSecondary; the metadata line keeps the middle-dot separators. Created date is now compact ('6 Oct 2026') so the meta line fits without truncating.
+- Style-only; 'npm run test:all' green (107 files / 735 tests). Verified on web at 375px in dark + light.
+
+[2026-10-06] style | FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx
+- Transaction details: add a separator line between the Tags and Recurring rows (only the last row is borderless now) and replace the recurring pause/resume switch with the rule's name (read-only, not tappable). Removed the now-unused Switch/switchColors/handleToggleActive and ruleActive state.
+- Style/UX-only; 'npm run test:all' green (107 files / 735 tests). Verified on web at 375px in dark + light.
+
+[2026-10-06] feat | FinlyApp/src/hooks/useRecurringRuleNames.ts, FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/tests/component/TransactionGroup.test.tsx, FinlyApp/tests/screens/TransactionsScreen.test.tsx, FinlyApp/tests/screens/AllTransactionsScreen.test.tsx, docs/harnesses.md
+- Show the recurring rule name next to the recurring icon in transaction rows (Transactions + All transactions): added a useRecurringRuleNames hook (rule id -> name) and a recurringName prop on TransactionRow, rendered as subtle textSecondary next to the repeat-outline icon. So identical recurring series can be told apart.
+- Tests: TransactionGroup asserts the name renders (and is absent when not provided); screen test mocks include recurringRepository.list. 'npm run test:all' green (107 files / 737 tests). Verified on web at 375px in dark + light with two identical rules (RentA / RentB).
+
+[2026-10-07] chore | FinlyApp/package.json, FinlyApp/package-lock.json
+- Bumped Expo SDK 57 patch deps via 'npx expo install --fix': expo 57.0.26 -> ~57.0.27, expo-constants -> ~57.0.21, expo-sqlite -> ~57.0.4. 'expo install --check' reports dependencies up to date.
+- Verified: 'npm run test:all' green (107 files / 737 tests, typecheck + lint); web dev boot smoke OK at localhost:8081 (0 console errors, only the pre-existing react-native-web pointerEvents deprecation warning).
+
+[2026-10-07] feat | FinlyApp/src/utils/recurrence.ts, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/database/recurringService.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/screens/RecurringScreen.test.tsx, FinlyApp/tests/database/recurringService.test.ts, FinlyApp/tests/database/recurringRepo.test.ts, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Added a third recurring state: a rule with no occurrence left within its end date now shows an off, disabled (dimmed) 'Ended' toggle that cannot be resumed. Derived via new isRecurrenceEnded/nextEffectiveOccurrence helpers; resumeRecurringRule refuses to reactivate an ended rule and reconciliation (listDue) skips them.
+- Editing the end date into the future revives the rule and re-enables the toggle (no DB flag is persisted). Accessibility label/state now reflect Active/Paused/Ended.
+- Tests (+9): recurrence util ended cases, RecurringScreen disabled toggle + inert toggling, service resume guard + edit-revival, repo listDue exclusion. 'npm run test:all' green (107 files / 746 tests). Verified on web at 375px in dark + light (ended off/dimmed/disabled; extending the end date -> Active again).
+
+[2026-10-07] docs | docs/harnesses.md, spec/constitution/2-tech-stack.md, docs/programming-concepts.md
+- Synced the harness SDK-patch line to the current expo ~57.0.27 (was ~57.0.26; applied 2026-10-07); re-confirmed 'expo install --check' up to date and expo-doctor 21/21.
+- Fixed pre-existing stale version references (unrelated to the bump): tech-stack file-tree comment SCHEMA_VERSION 3 -> 4 and added gl/eu to the i18n tree (now lists 9); programming-concepts PRAGMA user_version explanation updated from SCHEMA_VERSION 3 / future-tense feature 028 to 4 / past tense.
+
+[2026-10-07] feat | FinlyApp/src/database/migrations/004_recurring.ts, FinlyApp/src/database/drizzle/schema.ts, FinlyApp/src/database/schemas.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/database/backup.ts, FinlyApp/src/database/recurringService.ts, FinlyApp/src/utils/recurrence.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/screens/CreateRecurringScreen.tsx, FinlyApp/src/screens/AddTransactionScreen.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/tests/*, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Recover a window skipped by a 'Future only' recurring edit: new nullable recurring_rules.skipped_from (migration 004 edited in place; SCHEMA_VERSION stays 4) records the earliest skipped occurrence. The edit screen re-enables 'Future + past' while it is within the end date; choosing it re-anchors the cursor at skipped_from to back-fill the missed occurrences (dedup via the unique index) and clears the record. Shortening the end date past it clears it.
+- 'Future only' now shows a confirmation modal before skipping (count + start date), via a new onBeforeSubmitRule guard on the shared transaction form. Pause/resume and skip-first skips stay permanent.
+- Tests (+11): recurrenceSkipWindow helper, service skip record/recover + end-date clearing, repo round-trip, edit-gate scenarios, ModifyRecurringScreen warning, drift + backup. 'npm run test:all' green (107 files / 757 tests).
+
+[2026-10-07] fix | FinlyApp/src/components/ConfirmationModal.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx
+- Fixed a react-native-web 'Unexpected text node' console error: ConfirmationModal rendered '{message && <Text>}' which left an empty-string text node inside a View when the message was empty. Now '{message ? <Text> : null}', and the recurring skip-warning modal passes undefined (not '') when idle.
+- Verified on web: the full recurring skip/recover scenario (30 -> Future-only skips Oct 1-6 with a warning -> 31 -> Future+past fills Oct 1-6 -> 37) runs with 0 console errors; npm run test:all green (107 files / 757 tests).
+
+[2026-10-07] refactor | FinlyApp/src/database/recurringService.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/utils/recurrence.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/screens/CreateRecurringScreen.tsx, FinlyApp/src/screens/AddTransactionScreen.tsx, FinlyApp/tests/*, docs/harnesses.md
+- Recurring cleanup (behavior-preserving): extracted createRecurringRule() into recurringService (both CreateRecurringScreen and AddTransactionScreen now call it instead of duplicating the schedule/next-due/create/materialize logic); added setRecurringRuleActive() (pause/resume) used by RecurringScreen; added isSkippedWindowRecoverable() shared by the edit gate and saveRecurringRuleEdit.
+- recurringRepo.updateWithTags now copies every provided writable column in a loop (no 16-line if-chain; user_id excluded), and RecurringRuleInput.skipped_from is optional (createWithTags normalizes it to null), removing the null from create callers and fixtures.
+- Tests (+6): createRecurringRule (create + skip-first), isSkippedWindowRecoverable; screen/service mocks updated. 'npm run test:all' green (107 files / 763 tests). Web smoke: create/pause/resume/edit with 0 console errors.
+
+[2026-10-07] refactor | FinlyApp/src/components/RecurringRow.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/hooks/useRecurringDraft.ts, FinlyApp/src/hooks/useRecurringEditScope.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/hooks/useRecurringRuleNames.ts, FinlyApp/src/constants/types.ts, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/tests/*, docs/harnesses.md
+- Recurring batch 2 (behavior-preserving): extracted the Recurring screen row into a memoized RecurringRow component; RepeatSection now reuses buildRecurrenceSchedule for its summary and reads REPEAT_MIN/MAX_INTERVAL + REPEAT_NAME_MAX_LENGTH from constants.
+- Split the recurring parts out of useTransactionForm (407 lines): new useRecurringDraft (repeat state, end-date bounds, name validation, buildRecurrence) and useRecurringEditScope (recurringPastAffected + recurringSkipWindow); TransactionDraft/RecurrenceDraft moved to constants/types; useRecurringRuleNames skips setData when the names are unchanged.
+- Tests (+9): RecurringRow component, useRecurringDraft, useRecurringEditScope. 'npm run test:all' green (110 files / 776 tests). Web smoke: recurring row, pause/resume, edit scope (Future + past enable) and RepeatSection summary, 0 console errors.
+
+[2026-10-08] refactor | FinlyApp/src/components/TransactionListBody.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/hooks/useTransactionListScreen.tsx, FinlyApp/tests/*, docs/harnesses.md
+- Deduplicated the two transaction list screens: new TransactionListBody renders the shared chrome (search bar, controls/period slots, tag filter, sectioned list/empty state, account modal, selection bar/FAB, bulk-delete modal) and builds the transaction row/section header. AllTransactionsScreen and TransactionsScreen now pass only their differing header/controls/period/extra-modals/FAB; ~80 duplicated lines removed per screen.
+- The list controller stays in useTransactionListScreen (hooks may not import components, per boundaries), so renderItem/renderSectionHeader are built in the body component.
+- Tests: added TransactionListBody component test; existing screen + hook tests unchanged. 'npm run test:all' green (111 files / 779 tests). Web smoke: both list screens (rows, select mode + bulk delete, period/calendar, category header) with 0 console errors.
+
+[2026-10-08] refactor | FinlyApp/src/database/recurringService.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/tests/database/recurringService.test.ts, docs/harnesses.md
+- Recurring micro-cleanup: extracted materializeRule(rule, today) from materializeDueRecurring and scoped resumeRecurringRule to the resumed rule (other overdue rules are caught up by the app-start/foreground/midnight runs, not as a resume side effect).
+- recurringRepo.setActive/reactivate/updateNextDue now delegate to a private writeRuleFields(id, patch) helper (public API unchanged); RepeatSection memoizes its frequencyLabels map per language.
+- Tests: added a scoped-resume case (resuming one rule leaves other overdue rules untouched). 'npm run test:all' green (111 files / 780 tests). Web smoke: recurring pause/resume, 0 console errors.
+
+[2026-10-08] style | FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/tests/component/TransactionGroup.test.tsx, docs/harnesses.md
+- Transaction rows (Transactions + All transactions): the recurring marker now renders after the tag chips (Category / Comment / Tags / Recurring), and its repeat-outline icon uses the app's primary token instead of textSecondary (icon only; the rule name stays subtle). Applies only to TransactionRow, which those two screens share.
+- Tests (+2): recurring icon color is primary (#22D3EE); tag chips render before the recurring rule name. 'npm run test:all' green (111 files / 782 tests). Web-verified dark (#22D3EE) + light (#0891B2), 0 console errors.
+
+[2026-10-08] style | FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/tests/component/TransactionGroup.test.tsx, docs/harnesses.md
+- Transaction rows: tags and the recurring marker now occupy separate lines. A transaction with a comment, tags and a recurring rule shows up to four stacked rows (Category / Comment / Tags / Recurring), with the recurring marker last; the tag chips wrap on their own row and the recurring marker (blue icon + subtle name) sits below.
+- Tests (+1): tags and recurring render on separate rows. 'npm run test:all' green (111 files / 783 tests). Web-verified the 4-row layout (Groceries / Hello / [misc] / Tagged), 0 console errors.
+
+[2026-10-08] style | FinlyApp/src/utils/tagFilter.ts, FinlyApp/src/components/CategoryList.tsx, FinlyApp/src/components/TagFilterBar.tsx, FinlyApp/src/screens/HomeScreen.tsx, FinlyApp/tests/utils/tagFilter.test.ts, FinlyApp/tests/component/CategoryList.test.tsx, FinlyApp/tests/component/TagFilterBar.test.tsx, docs/harnesses.md
+- Tag colors are now consistent: normal tags render in the app's primary (blue) everywhere. Home's category tag chips use variant='primary' (blue) while the 'Untagged' chip stays neutral (grey); the tag filter bar (Home + both list screens) shows normal tags with primary text (All/Untagged stay secondary/grey).
+- Added isUntaggedTag(tagId) to utils/tagFilter (used by CategoryList, HomeScreen and toggleTagInArray) so the 'Untagged' sentinel check is centralized (utils home so it is importable from all layers, incl. tagFilter itself).
+- Tests (+4): isUntaggedTag; CategoryList (normal tag = primary, Untagged = secondary); TagFilterBar (normal = primary, Untagged = secondary). 'npm run test:all' green (113 files / 787 tests). Web-verified Home + filter bar in dark + light, 0 console errors.
+
+[2026-10-08] style | FinlyApp/src/components/DataRow.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, spec/features/016-transaction-details-screen/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Transaction details redesign: every data row now shows a muted (textSecondary) type symbol to the left of its label (icons reused from the drawer/pickers: cash/wallet/grid/calendar/chatbubble/pricetag/repeat/image), the Recurring row is always present (rule name, read-only, or '—'), and empty Comment/Tags/Recurring show a single shared '—' placeholder.
+- i18n: replaced details_no_comment + details_no_tags with a single details_none ('—') across all 9 languages (net -1 key).
+- Tests (+2): Recurring row always present with the '—' placeholder for empty fields, and a symbol per row. 'npm run test:all' green (113 files / 789 tests). Web-verified details (recurring + plain) in dark + light, 0 console errors. Specs 016 + 028 + roadmap updated.
+
+[2026-10-08] style | FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, spec/features/016-transaction-details-screen/1-spec.md
+- Transaction details: the Photo row is now always shown as the last row (thumbnails when a photo exists, the shared '—' placeholder when there is none), so the card is uniform for every transaction.
+- Row separators are now consistent: every row has a bottom divider (Amount→...→Recurring→Photo), with the last row (Photo) borderless — including the Recurring↔Photo divider when a photo exists.
+- Tests updated (photo placeholder count). 'npm run test:all' green (113 files / 789 tests). Web-verified details (no photo -> Photo '—', dividers between all rows), 0 console errors. Spec 016 updated.
+
+[2026-10-08] style | FinlyApp/src/components/DataRow.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, spec/features/016-transaction-details-screen/1-spec.md
+- Transaction details: the row type symbols now use the primary color (c.primary) instead of textSecondary, for a clearer blue marker + muted label hierarchy across all rows.
+- Test: the row-symbol test now also asserts the primary color (#22D3EE) and includes the always-present Photo icon (image-outline). 'npm run test:all' green (113 files / 789 tests). Web-verified dark (cyan) + light (teal), 0 console errors. Spec 016 updated.
+
+[2026-10-08] style | FinlyApp/src/i18n/*.ts, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, spec/features/016-transaction-details-screen/1-spec.md
+- Transaction details: the 'Photo' row label is now plural ('Photos') in 8 languages (en/fr Photos, es/ca/gl/pt/de Fotos, eu Argazkiak; Italian keeps the invariable 'Foto'), consistent with the plural 'Tags' row. The internal key details_photo is unchanged, and the form's add_photo stays singular.
+- Test updated to expect 'Photos'. 'npm run test:all' green (113 files / 789 tests). Web-verified the details row label, 0 console errors. Spec 016 updated.
+
+[2026-10-08] feat | FinlyApp/src/utils/recurrence.ts, FinlyApp/src/database/recurringService.ts, FinlyApp/src/components/RecurrenceInfo.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/component/RepeatSection.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Recurring forms now show an always-present 'Summary' info block in the recurring card: the frequency/end summary, the first/next transaction date (shifts with skip-first), and how many transactions will be created on save (or 'No transactions will be created now').
+- In the edit form, the 'Apply changes to' scope moved out of the footer into the recurring card, directly above the Summary block, so the block reflects the scope: Future only shows next transaction + created/skipped counts; Future + past shows 'Back-fills N missed occurrences'. The footer keeps only Delete.
+- Added recurrencePreview() + resolveEditAnchor() to utils/recurrence (shared with saveRecurringRuleEdit); 5 new i18n keys across all 9 languages. Tests (+8): recurrencePreview (create/edit), RepeatSection info block. 'npm run test:all' green (113 files / 797 tests). Web-verified create + edit in dark/light.
+
+[2026-10-08] feat | FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/components/RecurringRow.tsx, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/utils/errors.ts, FinlyApp/src/utils/transactionSearch.ts, FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/tests/*, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Recurring screen: added the top-right Select + Search header actions (shared useSelectAndSearch/useSelectableScreen/SelectSearchHeader). Search filters rules by name, category, comment and frequency; Select enters multi-select (rows show a checkbox, the active toggle is hidden) and bulk-deletes the selected rules via recurringRepo.deleteMany (generated transactions are kept). Added ERROR_PREFIXES.recurringDelete and 4 i18n keys x9 languages.
+- Transaction search (All transactions + Transactions) now also matches the recurring rule name: matchesTransactionSearch takes a recurringName haystack, and useTransactionFilters receives recurringNames (passed from the screens).
+- Tests (+4): recurringRepo.deleteMany, RecurringScreen select/bulk-delete + search (header rendered in-tree via a HeaderHost), transactionSearch recurring name. 'npm run test:all' green (113 files / 801 tests). Web-verified select/bulk-delete + search on Recurring and search-by-recurring-name on All transactions, 0 console errors.
+
+[2026-10-08] style | FinlyApp/src/screens/ModifyTransactionScreen.tsx, FinlyApp/tests/screens/ModifyTransactionScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, docs/harnesses.md
+- Modify transaction recurring notice: added a left-aligned title row (repeat-outline + the recurring_chip 'Recurring' label) above the notice text, and replaced the plain 'Edit recurring rule' text link with a full-width outlined primary button (create-outline icon + label, BUTTON_BORDER_RADIUS) matching the Details screen's Edit affordance — far more discoverable. Left-aligned the card; reused existing i18n keys.
+- Tests (+2): a recurring transaction shows the notice title/text and the button navigates to ModifyRecurring with the rule id; a plain transaction hides the notice. 'npm run test:all' green (113 files / 803 tests). Web-verified at 1280px and 375px (dark), button opens the rule editor, 0 console errors.
+
+[2026-10-08] style | FinlyApp/src/i18n/*.ts, FinlyApp/tests/screens/ModifyTransactionScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md
+- Reworded the Modify-transaction recurring notice (recurring_edit_notice) in all 9 languages: 'This transaction is part of a recurring series. Saving changes only affects this transaction, not the series.' — the old 'Changes here affect only this occurrence' used 'here' directly above the Edit recurring rule button (easy to misread as pointing at the button) and English said 'occurrence' while every other language already said 'transaction'. Updated the screen test assertion and the spec 028 §7 quote. 'npm run test:all' green (113 files / 803 tests).
+
+[2026-10-09] feat | FinlyApp/src/constants/types.ts, FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/src/components/TabBar.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/tests/hooks/useTransactionFilters.test.tsx, FinlyApp/tests/screens/AllTransactionsScreen.test.tsx, FinlyApp/tests/screens/TransactionsScreen.test.tsx, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- All transactions + Transactions screens: added a recurring view control below the sort row — All (default) / One-time / Recurring — that filters the list by whether a transaction was generated by a recurring rule (recurring_rule_id). Reused the generic TabBar (new style prop + recurringViewTabs helper); shown only when at least one loaded transaction is recurring; the account balance / category total reflects the view.
+- Added RECURRING_VIEWS/RecurringView to constants/types and recurringView state to useTransactionFilters (applied in the filtered memo). New i18n keys transactions_view_all/_one_time/_recurring x9 languages.
+- Tests (+7): useTransactionFilters (all/oneTime/recurring), both screens (toggle shown + filters + hidden when no recurring). 'npm run test:all' green (113 files / 810 tests). Web-verified at 375px on both screens (dark), 0 console errors.
+
+[2026-10-09] style | FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/components/TabBar.tsx, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md
+- Repositioned the recurring view control: on All transactions it now sits directly under the type tabs (header slot), and on Transactions it sits at the top above the category header. Removed the now-unused TabBar style prop. 'npm run test:all' green (113 files / 810 tests); re-verified on web at 375px, 0 console errors.
+
+[2026-10-09] fix | FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/tests/screens/TransactionsScreen.test.tsx, FinlyApp/tests/screens/AllTransactionsScreen.test.tsx, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md
+- Recurring view control is now always shown on both transaction lists (like the type tabs), instead of only when the loaded transactions contained a recurring one. Previously the gate used the scoped transactions, so on the Transactions screen it appeared/disappeared per category. Removed the hasRecurring gate; selecting Recurring on a category with none now shows the normal empty state. Updated the screen tests (assert always shown) and specs 014/015. 'npm run test:all' green (113 files / 810 tests); web-verified on a non-recurring category (Clothing) at 375px.
+
+[2026-10-10] feat | FinlyApp/src/hooks/useSelectAndSearch.tsx, FinlyApp/src/components/SelectionActionBar.tsx, FinlyApp/src/components/TransactionListBody.tsx, FinlyApp/src/screens/{RecurringScreen,TagsScreen,CommentsScreen,CategoriesScreen,AccountsScreen}.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/tests/*, spec/features/*, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Added a Select all / Deselect all toggle to the shared SelectionActionBar, on every multi-select screen (All transactions, Transactions, Recurring, Tags, Comments, Categories, Accounts). useSelectAndSearch gains allSelected(ids) + toggleSelectAll(ids); each screen passes its currently visible + selectable ids (respecting search and its filters; Accounts excludes the Total account). The action bar became two rows (toggle on top, Cancel/Delete below) so long translations fit; the toggle is disabled when nothing is visible.
+- New i18n keys select_all / deselect_all (9 languages).
+- Tests (+12): useSelectAndSearch (toggleSelectAll/allSelected, original tests restored), SelectionActionBar component, TransactionListBody (select-all over the filtered list), RecurringScreen and AccountsScreen (Total excluded). 'npm run test:all' green (114 files / 822 tests). Web-verified on All transactions at 375px (dark): Select all -> Delete (14) + Deselect all, Deselect all -> Delete (0), Cancel exits; 0 console errors.
+
+[2026-10-10] style | FinlyApp/src/components/SelectAllRow.tsx, FinlyApp/src/components/SelectionActionBar.tsx, FinlyApp/src/components/TransactionListBody.tsx, FinlyApp/src/screens/{RecurringScreen,TagsScreen,CommentsScreen,CategoriesScreen,AccountsScreen}.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/tests/component/{SelectAllRow,TransactionListBody}.test.tsx, FinlyApp/tests/screens/{RecurringScreen,AccountsScreen}.test.tsx, spec/features/*, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Moved the Select all / Deselect all control out of the action bar into a new shared SelectAllRow rendered above the list (only in selection mode): a checkbox + label + visible count, styled like the row checkboxes (reads as a list action, not a hyperlink). Reverted SelectionActionBar to its single-row Cancel/Delete form and added the items_count(n) i18n key (9 languages).
+- Tests: replaced the SelectionActionBar select-all tests with a SelectAllRow component test; kept the TransactionListBody/Recurring/Accounts select-all tests. 'npm run test:all' green (114 files / 821 tests). Web-verified at 375px (dark) on All transactions and Recurring; 0 console errors.
+
+[2026-10-11] chore | FinlyApp/app.json, spec/features/010-app-logo/1-spec.md
+- App display name: expo.name changed from 'FinlyApp' to 'Finly' — the launcher label on iOS/Android (and the initial web document title) — matching the Listly convention (expo.name = 'Listly'). expo.slug stays 'FinlyApp' (internal Expo project identifier, not user-visible). The in-app name was already 'Finly' (drawer title, splash, backup dialogs, Finly.db).
+- Ran 'npx expo prebuild --platform android' (gitignored native project) so app_name and rootProject.name read 'Finly'; EAS builds derive it from app.json. Device label needs an EAS rebuild to show.
+
+[2026-10-11] refactor | FinlyApp/src/components/RecurringViewChip.tsx, FinlyApp/src/components/TabBar.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/tests/component/RecurringViewChip.test.tsx, FinlyApp/tests/screens/{AllTransactionsScreen,TransactionsScreen}.test.tsx, spec/features/{014-transactions-screen-from-home,015-all-transactions-screen}/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- All transactions + Transactions: moved the recurring view out of the full-width segmented bar into a compact chip in the controls row — new RecurringViewChip (repeat icon + current value All/One-time/Recurring + chevron, opens OptionPickerModal titled with recurring_chip). The controls row is now a horizontal ScrollView that scrolls when it does not fit; the category pill gained a chevron-down. Removed the now-unused recurringViewTabs helper from TabBar.
+- Tests: new RecurringViewChip test; rewrote the recurring-view cases in both screen tests (chip -> picker -> filter). 'npm run test:all' green (115 files / 823 tests). Web-verified on All transactions at 375px (dark): header shows only the type tabs, the chip filters the list (One-time hides the recurring rows, balance updates), 0 console errors.
+
+[2026-10-11] fix | FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md
+- Controls-row chips ScrollView on All transactions + Transactions now shows the horizontal scrollbar on web (showsHorizontalScrollIndicator={isWeb} + web content padding-bottom), mirroring TagFilterBar. Previously showsHorizontalScrollIndicator={false} hid the scrollbar on react-native-web, so a narrow window (e.g. German) had no way to reach the trailing chips with a mouse; native (touch) was unaffected. Verified on web at 375px: the row scrolls (scrollWidth 378 > clientWidth 343, scrollbar-width thin, scrollLeft moves).
+
+[2026-10-11] docs | spec/constitution/7-platform-differences.md, spec/constitution/4-design-system.md
+- Documented the horizontal-scroll convention in the constitution. 7-platform-differences: new 'Horizontal scroll rows (web scrollbar)' section + Rule 6 — use showsHorizontalScrollIndicator={isWeb} plus a web-only content paddingBottom, because react-native-web hides the scrollbar when the indicator is false (so overflow is unreachable with a mouse on web); reference TagFilterBar and the transaction controls rows. Its platform-guard Pattern and Rules now use the centralized isWeb/isAndroid helpers (src/utils/platform.ts) instead of Platform.OS. 4-design-system: Layout & Spacing points to the convention.
+
+[2026-10-11] docs | spec/constitution/7-platform-differences.md, docs/programming-concepts.md
+- Generalized the scroll documentation. 7-platform-differences: the 'Horizontal scroll rows' subsection became 'Scrolling (native vs web)' with a general ruling table (how you scroll, scrollbar persistence, and whether vertical/horizontal overflow is reachable without a scrollbar on each platform) plus 4 rules — never hide a scroll indicator on web (suppress only on native via isWeb), horizontal scrollers must show the scrollbar on web (the wheel cannot scroll them), horizontal rows add web-only content paddingBottom, and the reference implementations. Rule 6 generalized to 'Overflow on web'. programming-concepts: new 'ScrollView / overflow' UI-components entry (native transient indicator vs web themed scrollbar + the vertical/horizontal nuance).
+
+[2026-10-11] docs | spec/features/028-recurring-transactions/1-spec.md, FinlyApp/src/i18n/en.ts, FinlyApp/tests/{component/RepeatSection.test.tsx,screens/ModifyRecurringScreen.test.tsx,screens/ModifyTransactionScreen.test.tsx,screens/RecurringScreen.test.tsx}
+- Documented the recurring lexicon: new '## Terminology' section in spec 028 defining recurring rule (entity), occurrence (a scheduled date/slot), transaction (a record), create/materialize, next due, skipped, missed, and paused/active/ended — with the rule of thumb 'dates are occurrences, records are transactions' and 'Recurring' as the feature name vs 'recurring rule' as the entity.
+- Applied it to the English copy (Option A, English-first): the entity is now 'recurring rule' (New/Edit/Add/Delete/Search/empty + name errors), the edit notice says 'created by a recurring rule … not the rule' (was 'series'), the back-fill line reads 'Adds N missed transactions' (was 'Back-fills … occurrences'), the past-scope hint 'adds the missed ones' (was 'creates missed occurrences'), and the Summary 'Next:' line matches the rule row. Other 8 languages follow once the wording is final. Tests asserting the old strings updated; test:all green (115 files / 823 tests).
+
+[2026-10-11] refactor | FinlyApp/src/i18n/{en,es,ca,gl,eu,fr,de,pt,it}.ts, FinlyApp/src/components/RepeatSection.tsx, spec/features/028-recurring-transactions/1-spec.md
+- Recurring terminology, applied to all 9 languages: the entity is now 'recurring rule' (create/edit/add/delete/empty/search + the name errors), the edit notice says 'created by a recurring rule … not the rule' (was 'series'), the back-fill line reads 'Adds N missed transactions' (was 'Back-fills … occurrences'), the past-scope hint 'adds the missed ones' (was 'creates missed occurrences'), and the Summary 'Next:' line matches the rule row. Languages where the rule noun was the 'recurrence' word (ca/fr/de) were aligned to the 'rule' noun used in the bulk delete.
+- Cleanup: removed the dead repeat_toggle key (defined in all 9 files, used nowhere) and renamed repeat_first_occurrence -> repeat_first_transaction (its value was already 'First transaction'; RepeatSection updated).
+- Spec 028 §7: fixed two stale UI quotes (the back-fill line and the notice). i18n parity + test:all green (115 files / 823 tests).
+
+[2026-10-11] refactor | FinlyApp/src/i18n/{en,es,ca,gl,eu,fr,de,pt,it}.ts
+- Reworded the 'Future only' skip-confirmation modal (recurring_skip_warning_message) in all 9 languages: the skip clause now says 'No transactions will be created for them now. You can add them later with Future + past.' (replacing the old em-dash clause). This uses the lexicon correctly (occurrences are skipped, transactions are created) and swaps the em dash (the only one in the UI copy) for a plain period. The modal itself is kept (active confirmation plus the skip start date); title and confirm are unchanged. i18n parity and test:all green (115 files / 823 tests).
+
+[2026-10-11] style | FinlyApp/src/components/RecurringRow.tsx
+- Recurring screen rows now use the same color hierarchy as the Summary block (RecurrenceInfo): the frequency summary line is primary (weight 500) instead of textSecondary, and the next-due line is normal text (text) instead of primary (Ended stays dimmed textSecondary). So each row reads name (text) > frequency (primary) > Next (text) > meta (textSecondary), mirroring the edit screen. No test/spec change; test:all green (115 files / 823 tests); web-verified (freq #22D3EE, Next #E2E8F0, meta #94A3B8).
+
+[2026-10-11] style | FinlyApp/src/components/RecurringRow.tsx
+- Recurring screen rows: the rule name is now fontWeight 600 (was 500), matching the design-system 'names' weight and the AccountScreen list-name convention (fs15 / 600 / text), so the title reads as the clear headline over the primary-colored frequency line. test:all green (115 files / 823 tests).
+
+[2026-10-12] chore | FinlyApp/package.json, FinlyApp/package-lock.json, docs/harnesses.md
+- Bumped the Expo SDK 57 patch deps via 'npx expo install --fix': expo ~57.0.27 to ~57.0.28, expo-sharing ~57.0.22 to ~57.0.23, expo-splash-screen ~57.0.9 to ~57.0.10 (JS-level patches within SDK 57, no native regeneration needed). 'npx expo install --check' now reports dependencies up to date and expo-doctor 21/21.
+- Synced the harness SDK-patch line to expo ~57.0.28 (was ~57.0.27; applied 2026-10-12). Checked for other version references: the READMEs, AGENTS.md, 2-tech-stack.md, 3-roadmap.md and programming-concepts.md mention only 'SDK 57' (no patch), so they stay. test:all green (115 files / 823 tests); web boot check OK, 0 console errors.
+
+[2026-10-12] feat | FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/components/SortToggle.tsx, FinlyApp/src/screens/{AllTransactionsScreen,TransactionsScreen}.tsx, FinlyApp/src/constants/types.ts, FinlyApp/src/utils/recurringSort.ts, FinlyApp/src/i18n/*.ts, FinlyApp/tests/*, spec/features/028-recurring-transactions/1-spec.md, docs/harnesses.md
+- Recurring screen: added sorting via a horizontally scrollable SortToggle row below the search bar - Next due (default, ascending), Name, Amount, Created. Each field has a natural default direction (next due/name ascending, amount/created descending) and tapping the active field flips it; sorting is session-only. New utils/recurringSort.ts (sortRecurringRules + defaultRecurringSortDirection) and RECURRING_SORT_BY in constants/types; 4 new i18n keys x9 languages.
+- Generalized SortToggle to a generic fields list (SortField<T>) plus transactionSortFields/recurringSortFields helpers; the transaction screens pass their date/amount fields (behavior unchanged).
+- Tests (+7): recurringSort helper, SortToggle (updated for fields), RecurringScreen reorder. test:all green (116 files / 830 tests). Web-verified: the 4 fields render, the active field is primary, pressing a field reorders (Amount desc/asc flips the order), 0 console errors.
+
+[2026-10-12] style | FinlyApp/src/screens/RecurringScreen.tsx
+- Recurring sort row: centered horizontally (sortRowContent gains flexGrow 1 + justifyContent center, so it centers when it fits and still scrolls when it does not) and given a SECTION_GAP (16) top gap below the header/search bar - reusing the documented section spacing constant. test:all green (116 files / 830 tests); web-verified (centered, 16px gap), 0 console errors.
+
+[2026-10-12] feat | FinlyApp/src/utils/recurrence.ts, FinlyApp/src/utils/recurrenceSummary.ts, FinlyApp/src/constants/types.ts, FinlyApp/src/hooks/useRecurringDraft.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/database/recurringService.ts, FinlyApp/src/screens/{CreateRecurringScreen,ModifyRecurringScreen,AddTransactionScreen}.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/tests/*, spec/features/028-recurring-transactions/1-spec.md, docs/harnesses.md
+- Recurring rules (monthly/yearly) gained a Last day of the month option: buildRecurrenceSchedule(..., lastDay) anchors the rule on the 31st (which clamps to each month's last day) and moves the start to the last day of the start month, so the first occurrence is that last day. A checkbox in RepeatSection (shown only for monthly/yearly) drives it; the edit form derives it from day_of_month === 31. No schema change (a 31 anchor is the same schedule).
+- The summary reads Every month on the last day / Every year on the last day of <month> (3 new i18n keys x9 languages). lastDay is threaded through RecurrenceDraft, createRecurringRule and saveRecurringRuleEdit; the end-date minimum accounts for the last-day first occurrence.
+- Tests (+8): buildRecurrenceSchedule last-day + clamp, recurrenceSummary last-day wording, RepeatSection checkbox, useRecurringDraft last-day bounds, recurringService last-day create. test:all green (116 files / 838 tests). Web-verified: the checkbox + summary (Every month on the last day, First transaction: October 31, 2026), 0 console errors.
+
+[2026-10-12] refactor | FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/hooks/useRecurringDraft.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/screens/AddTransactionScreen.tsx, FinlyApp/src/screens/CreateRecurringScreen.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/tests/component/RepeatSection.test.tsx, FinlyApp/tests/component/TransactionForm.test.tsx, FinlyApp/tests/hooks/useTransactionForm.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Decouple recurring rules from the add-transaction form: Add transaction now always saves a single plain transaction, and rules are created only from the Recurring screen's create flow.
+- `RepeatSection` drops the enable toggle (always rendered in rule mode); `useRecurringDraft` and `useTransactionForm` drop `repeatEnabled`/`setRepeatEnabled` and make `onSubmit` optional; Create/Modify recurring screens drop the no-op `onSubmit`.
+- Update spec 028 (the Repeat section belongs to the recurring create/edit form, not the add-transaction form) and the roadmap entry.
+
+[2026-10-12] docs | spec/features/028-recurring-transactions/1-spec.md
+- Normalize the placeholder markup in spec 028: the three HTML-escaped angle brackets (`&lt;date&gt;`, `&lt;month&gt;`) are now backticked literals (`<date>`, `<month>`), matching the repo convention (`<id>`, `<Modal>`, `<start>`) and still rendering correctly in Markdown.
+
+[2026-10-13] feat | FinlyApp/src/components/{TransactionForm,DaySelector,RepeatSection}.tsx, FinlyApp/src/hooks/{useRecurringDraft,useTransactionForm}.ts, FinlyApp/src/constants/types.ts, FinlyApp/src/database/recurringService.ts, FinlyApp/src/utils/recurrence.ts, FinlyApp/src/screens/CreateRecurringScreen.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/tests/{utils/recurrence.test.ts,database/recurringService.test.ts,hooks/useRecurringDraft.test.tsx,hooks/useTransactionForm.test.tsx,component/RepeatSection.test.tsx,component/TransactionForm.test.tsx}, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, spec/constitution/6-screens.md
+- The recurring form's date field is now a **Start date** that accepts any date (past, present or future): in rule mode the day picker passes `maxDate = null`, while the plain add/modify transaction date picker stays "today or past". `DaySelector` gained an optional `title` prop (default "Day"); new `repeat_start_date` key x9 languages.
+- Removed the "Skip the first occurrence" option (superseded by choosing the start date directly): dropped `repeatSkipFirst` from `useRecurringDraft`/`useTransactionForm`, `skipFirst` from `RecurrenceDraft`, `createRecurringRule` and `recurrencePreview`, the checkbox and `skipFirstRow` style from `RepeatSection`, and the `repeat_skip_first` key x9.
+- Updated the affected tests and specs (028 §5 + acceptance + terminology, 6-screens date bounds, roadmap).
+
+[2026-10-13] fix | FinlyApp/src/database/recurringService.ts, FinlyApp/src/hooks/{useTransactionForm,useRecurringEditScope}.ts, FinlyApp/src/components/{RepeatSection,TransactionForm}.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/tests/{database/recurringService.test.ts,component/RepeatSection.test.tsx,component/TransactionForm.test.tsx,hooks/useTransactionForm.test.tsx}, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Fix editing the start date of a recurring rule that was created with a future date: such a rule has never generated or skipped an occurrence (its cursor still equals its start), so it now re-anchors from the new schedule's start. Moving the start to today makes it due and generates today's occurrence; previously the stale future cursor floored the new schedule, so the edit was a no-op (the Summary "Next:" stayed at the old date and nothing was generated).
+- Applied the same "fresh rule" cursor in `saveRecurringRuleEdit`, the Repeat section preview, `useRecurringEditScope` (missed window) and the Modify screen's skip warning. A rule that already generated transactions keeps the cursor floor; moving its start date earlier now shows a hint (`repeat_start_earlier_hint`, x9) that past occurrences are not recreated.
+- Tests (+6): recurringService fresh-rule re-anchor (to today and to a past date), RepeatSection re-anchor + hint, useTransactionForm `ruleUnmaterialized`/`ruleStartMovedEarlier`; spec 028 and roadmap updated.
+
+[2026-10-13] fix | FinlyApp/src/utils/recurrence.ts, FinlyApp/src/database/recurringService.ts, FinlyApp/src/components/{RepeatSection,TransactionForm}.tsx, FinlyApp/src/hooks/{useTransactionForm,useRecurringEditScope}.ts, FinlyApp/src/i18n/*.ts, FinlyApp/tests/{utils/recurrence.test.ts,database/recurringService.test.ts,database/recurringService.preview.test.ts,component/recurringSummary.test.tsx,component/RepeatSection.test.tsx,component/TransactionForm.test.tsx,hooks/recurringEditGate.test.tsx,hooks/useRecurringEditScope.test.tsx,screens/ModifyRecurringScreen.test.tsx}, spec/features/028-recurring-transactions/1-spec.md, docs/programming-concepts.md, docs/harnesses.md
+- Fix "Future only" edit anchoring: it now anchors the new schedule at the first occurrence **on/after today** instead of the rule's stale cursor (`next_due`). So a timing change (e.g. monthly -> daily) takes effect from today, not at the old next occurrence. Today's occurrence is not re-counted when it already exists: `resolveEditAnchor`/`recurrencePreview` accept the rule's `previousSchedule`, and the form passes it (RepeatSection/TransactionForm).
+- Consistency fixes: `useRecurringEditScope` now receives `lastDay` (correct "Future + past" gate and missed window for last-day rules); the unused `recurringSkipWindow` return was removed (the skip-warning stays in `ModifyRecurringScreen`, which already builds the schedule with `lastDay`).
+- Clearer copy (x9): the scope hint now says it also updates already-created transactions and fills missed occurrences without changing/deleting dates; the rule hint now reads "Changing the start date doesn't add earlier transactions.".
+- Docs: spec 028 §7 rewritten (cursor & edit semantics + an edit-scenario matrix), §5 future-start bullet, terminology (Cursor row) and acceptance; programming-concepts gained Occurrence vs transaction, Cursor (`next_due`), Future start date, Edit scope, Fresh rule and Recoverable skip window; harnesses test table updated.
+- Tests (+26): pure `resolveEditAnchor`/`recurrencePreview` matrix, `recurringService` edit-scenario matrix (denser schedule from today, no re-count), new `recurringService.preview.test.ts` (Summary <-> save invariant), new `recurringSummary.test.tsx` (Summary wording), gate fresh-rule rows, and `ModifyRecurringScreen` fresh-rule + hint coverage.
+
+[2026-10-13] fix | FinlyApp/src/components/BarChart.tsx, FinlyApp/tests/component/BarChart.test.tsx, spec/features/001-home-screen/1-spec.md, spec/constitution/3-roadmap.md, spec/constitution/4-design-system.md
+- The Home bar chart now always shows the period total, centered above the bar with the same style as the donut centre (`c.text`, weight 700, `fs(18)` base auto-fit to the chart width measured via `onLayout`). Previously the total was rendered only when there were no transactions (small `textSecondary` text below the bar), so a period with data showed only the legend percentages and no amount.
+- Added `tests/component/BarChart.test.tsx` (total with data, total with no data, legend rows with percentages).
+- Updated the 001-home-screen spec (item 6 + acceptance) and the roadmap 001 entry; added "BarChart total" to the design-system `fs(18)` chart-centre-text row.
+
+[2026-10-13] refactor | FinlyApp/src/utils/{recurrence,recurrenceSummary}.ts, FinlyApp/src/constants/types.ts, FinlyApp/src/database/recurringService.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/hooks/{useRecurringDraft,useTransactionForm}.ts, FinlyApp/src/screens/{RecurringScreen,ModifyRecurringScreen}.tsx, FinlyApp/tests/utils/recurrence.test.ts
+- Consolidated the recurring edit logic: new pure helpers in `utils/recurrence.ts` - `isRuleUnmaterialized` (the single definition of a "fresh"/not-yet-started rule), `ruleEditCursor` (fresh rules anchor on the new schedule's start) and `planEdit` (one function returning `nextDue` + `skippedFrom` + `skipWindow` + the Summary preview). Both `saveRecurringRuleEdit` and the form now call `planEdit`, removing the 3-way duplication and the risk of the UI preview drifting from the write.
+- `buildRecurrenceSchedule` now accepts a `Date | string | null` end date (normalized internally), so callers drop the `endDate ? toDateOnly(endDate) : null` boilerplate.
+- Shared `recurrenceFrequencyLabels(labels)` helper (used by the frequency chips and the rules list); added `RecurrenceSpec` type shared by `RecurrenceDraft` and `RecurringEditRecurrence`; fixed a stale "skip-first" comment.
+- Tests (+7): `planEdit` and `ruleEditCursor` unit tests; renamed a stale test. No behavior change - the existing recurring suites stay green (119 files / 878 tests).
+
+[2026-10-13] fix | FinlyApp/src/utils/errors.ts, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/tests/utils/{errors,errors.web}.test.ts
+- Data (settings) feedback was invisible on web: `react-native-web`'s `Alert` is a no-op and `DataScreen` called `Alert.alert` directly, so export/import/delete success and error messages were silently swallowed. Added a web-aware `alertInfo` (sharing the `window.alert` fallback with `alertError`) and routed those messages through it; the Android-only download/share sheet keeps its raw `Alert`.
+- Tests: `alertInfo` cases in errors.test.ts plus a new errors.web.test.ts covering the web fallback.
+
+[2026-10-13] refactor | FinlyApp/src/utils/tagFilter.ts, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/src/components/{TransactionListBody,ConfirmationModal}.tsx, FinlyApp/src/components/BulkDeleteConfirmationModal.tsx (removed), FinlyApp/src/screens/{CommentsScreen,RecurringScreen,TagsScreen}.tsx, FinlyApp/tests/database/helpers/sqliteHarness.ts, FinlyApp/tests/utils/tagFilter.test.ts
+- Added `matchesTagFilter(activeTagIds, transactionTagIds)` to utils/tagFilter.ts (untagged sentinel + regular-id OR, empty = match all). AppContext and useTransactionFilters now share it instead of keeping two copies of the same rule that could drift.
+- Removed the redundant `BulkDeleteConfirmationModal` (a pure pass-through to `ConfirmationModal` with identical props); its 4 call sites (TransactionListBody, Comments, Recurring, Tags) use `ConfirmationModal` directly.
+- Extracted `tests/database/helpers/sqliteHarness.ts` (`initSqliteHarness` + `bootSqliteDb`): the schema/seed/repo boot shared by recurringRepo, recurringService and recurringService.preview tests. The per-file `vi.mock` blocks stay (hoisting).
+- Tests: `matchesTagFilter` cases.
+
+[2026-10-13] refactor | FinlyApp/src/utils/recurrenceInfo.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/tests/utils/recurrenceInfo.test.ts
+- Extracted the recurring Summary-block wording into a new pure, testable `recurrenceInfoLines(schedule, options, language)` (`utils/recurrenceInfo.ts`): the frequency summary line, the first/next transaction line and the create/skipped/back-fill details. It goes through `planEdit` exactly like `saveRecurringRuleEdit`, so the form's preview can't drift from the write.
+- `RepeatSection` now only builds the schedule + cursor and renders `<RecurrenceInfo {...info} />`, dropping the inline `planEdit`/`recurrencePreview`/`formatDateLong` orchestration (~25 fewer lines, fewer imports).
+- Tests (+6): `recurrenceInfoLines` create (past/future start), edit Future only (skipped window), Future + past (back-fill), denser schedule from today, and a localized case. No behavior change.
+
+[2026-10-13] fix | FinlyApp/src/i18n/*.ts, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/tests/screens/DataScreen.test.tsx, spec/features/003-settings-screen/1-spec.md, spec/constitution/3-roadmap.md
+- The Settings > Data delete rows now account for recurring rules: "Delete all transactions" says accounts/categories/tags/recurring rules are kept (the implementation already kept them — only transactions are deleted), while "Delete all data" and "Reset to factory state" say recurring rules are deleted (already implemented in `clearDataKeepSettings`/`resetDatabase`, which delete `recurring_rules` + `recurring_rule_tags`).
+- "Delete all transactions" now also requires the typed DELETE confirmation (2-step, like "Delete all data" and "Reset to factory state"), so an accidental tap cannot wipe all history.
+- Updated the 5 affected messages in all 9 languages; spec 003 (§6.1 double confirmation + recurring wording, §6.2/§6.3 wording, acceptance) and the roadmap entry; removed the spec's non-existent "All data deleted" success alert. DataScreen test updated for the new typed step.
+
+[2026-10-13] feat | FinlyApp/src/components/RecurringStatusChip.tsx FinlyApp/src/screens/RecurringScreen.tsx FinlyApp/src/components/RecurringRow.tsx FinlyApp/src/utils/recurrence.ts FinlyApp/src/constants/types.ts FinlyApp/src/i18n/en.ts FinlyApp/src/i18n/es.ts FinlyApp/src/i18n/ca.ts FinlyApp/src/i18n/gl.ts FinlyApp/src/i18n/eu.ts FinlyApp/src/i18n/fr.ts FinlyApp/src/i18n/de.ts FinlyApp/src/i18n/pt.ts FinlyApp/src/i18n/it.ts FinlyApp/tests/utils/recurrence.test.ts FinlyApp/tests/component/RecurringStatusChip.test.tsx FinlyApp/tests/screens/RecurringScreen.test.tsx spec/features/028-recurring-transactions/1-spec.md spec/constitution/3-roadmap.md
+- Add a `RecurringStatusChip` status filter (All / Active / Paused / Ended, multi-select, session-only) to the Recurring list.
+- Add `recurringStatus(rule, today)` in `utils/recurrence.ts` (ended wins over the active flag) and use it in `RecurringRow`.
+- Add a session-only `statusFilter` to `RecurringScreen`, composed with search and sort; the chip renders in the sort row.
+- Add the `recurring_status_title` string to the 9 languages.
+- Add tests for `recurringStatus`, `RecurringStatusChip` and the screen status filter.
+
+[2026-10-13] style | FinlyApp/src/screens/RecurringScreen.tsx
+- Add an 8px gap in the Recurring sort row so the status chip matches the spacing of the transaction screens.
+
+[2026-10-13] feat | FinlyApp/src/utils/recurringFilter.ts FinlyApp/src/screens/RecurringScreen.tsx FinlyApp/tests/utils/recurringFilter.test.ts FinlyApp/tests/screens/RecurringScreen.test.tsx spec/features/028-recurring-transactions/1-spec.md spec/constitution/3-roadmap.md
+- Add an All / Expenses / Income `TabBar` and an account selector (`AccountTrigger` + account modal, Total = all accounts) to the Recurring screen, filtering the rules by type and account.
+- Add `utils/recurringFilter.ts` (`filterRecurringRules`) as the shared filter; the Recurring screen composes it with the status filter, search and sort.
+- Add tests for `filterRecurringRules` and the Recurring screen type/account filters; update spec 028 §6 + acceptance and the roadmap entry.
+
+[2026-10-13] style | FinlyApp/src/screens/RecurringScreen.tsx
+- Move the Recurring separator line below the sort row so the account selector and sort controls read as one group, matching the controls separator of the transaction screens; the Select all row now sits below the line.
+
+[2026-10-14] feat | FinlyApp/src/database/schemas.ts FinlyApp/src/database/configDefaults.ts FinlyApp/src/database/repositories/configRepo.ts FinlyApp/src/screens/settings/PersonalizationScreen.tsx FinlyApp/src/components/TransactionForm.tsx FinlyApp/src/utils/defaultAccount.ts FinlyApp/src/screens/AddTransactionScreen.tsx FinlyApp/src/screens/CreateRecurringScreen.tsx FinlyApp/src/i18n/en.ts FinlyApp/src/i18n/es.ts FinlyApp/src/i18n/ca.ts FinlyApp/src/i18n/gl.ts FinlyApp/src/i18n/eu.ts FinlyApp/src/i18n/fr.ts FinlyApp/src/i18n/de.ts FinlyApp/src/i18n/pt.ts FinlyApp/src/i18n/it.ts FinlyApp/tests/component/helpers/configStub.ts FinlyApp/tests/component/TransactionForm.test.tsx FinlyApp/tests/screens/PersonalizationScreen.test.tsx FinlyApp/tests/database/configDefaults.test.ts FinlyApp/tests/utils/defaultAccount.test.ts spec/features/003-settings-screen/1-spec.md spec/constitution/3-roadmap.md
+- Add a "Recurring screen" section to Personalization: a default account (`recurringDefaultAccountId`, independent of the Add-transaction default) plus Labels/Comments optional fields (`recurringShowLabels`/`recurringShowComments`; no Photo, a rule has none).
+- Make the recurring rule form (create/edit) honour the recurring flags, leaving the plain transaction form on the Add-transaction flags.
+- Add `utils/defaultAccount.ts` (`resolveDefaultAccountId`), shared by the add and recurring forms.
+- Name the Personalization sections after their screens ("Add transaction screen", "Recurring screen").
+- Add tests for the new config keys, the rule-mode flags, the Personalization section and the account resolver; update spec 003 + roadmap.
+
+[2026-10-14] refactor | FinlyApp/src/constants/types.ts FinlyApp/src/database/helpers.ts FinlyApp/src/utils/defaultAccount.ts
+- Move the isTotalAccount predicate to constants/types.ts (still re-exported from database/helpers) so the new utils/defaultAccount.ts can use it without crossing the utils -> database value-import boundary.
+
+[2026-10-14] feat | FinlyApp/src/database/schemas.ts FinlyApp/src/database/configDefaults.ts FinlyApp/src/database/repositories/configRepo.ts FinlyApp/src/screens/settings/PersonalizationScreen.tsx FinlyApp/src/components/TransactionForm.tsx FinlyApp/src/screens/CreateRecurringScreen.tsx FinlyApp/src/utils/formFieldVisibility.ts FinlyApp/src/i18n/en.ts FinlyApp/src/i18n/es.ts FinlyApp/src/i18n/ca.ts FinlyApp/src/i18n/gl.ts FinlyApp/src/i18n/eu.ts FinlyApp/src/i18n/fr.ts FinlyApp/src/i18n/de.ts FinlyApp/src/i18n/pt.ts FinlyApp/src/i18n/it.ts FinlyApp/tests/component/helpers/configStub.ts FinlyApp/tests/component/TransactionForm.test.tsx FinlyApp/tests/screens/PersonalizationScreen.test.tsx FinlyApp/tests/database/configDefaults.test.ts FinlyApp/tests/utils/formFieldVisibility.test.ts spec/features/003-settings-screen/1-spec.md spec/constitution/3-roadmap.md
+- Make the form optional-field flags per screen: Add, Modify, New recurring rule and Edit recurring rule each have their own (`modifyShow*`, `editRecurringShow*` added; the create-rule keys renamed from `recurring*` to `createRecurring*`).
+- Add `utils/formFieldVisibility.ts` (`formFieldVisibility` + `FormMode`), used by `TransactionForm` to resolve the flags from the mode derived from `transactionId` / `initialRuleNextDue`.
+- Add "Modify transaction" and "Edit recurring rule" sections to Personalization (optional fields only, no Default account) and reuse the screens' own titles for the section headers; remove the now-unused `settings_add_transaction`/`settings_recurring` strings from the 9 languages.
+- Add tests for the visibility mapping, the per-screen flags, the section toggles and the config sanitizer; update spec 003 + roadmap.
+
+[2026-10-14] test | FinlyApp/tests/database/upgrade.test.ts
+- Add an upgrade battery for a v2.1.0 (schema 3) database: it builds the frozen 001-003 shape with data and non-default config, runs the real initDatabase, and asserts the migration to schema 4, byte-identical legacy rows, preserved config plus defaulted new keys, repository reads, a no-op reconciliation, the backup round-trip, idempotency and post-upgrade rule creation.
+
+[2026-10-14] chore | FinlyApp/app.json
+- Bump the release to 2.2.0 (version and iOS buildNumber) and android.versionCode to 3, so the update installs over 2.1.0.
+
+[2026-10-14] chore | FinlyApp/package.json
+- Align package.json's version with the release (2.1.0 to 2.2.0); EAS reads app.json, so this is metadata only.
+
+[2026-10-14] chore | FinlyApp/package-lock.json
+- Sync the lockfile's root version to 2.2.0 (metadata only; no dependency changes).
+
+[2026-10-14] style | FinlyApp/src/components/RecurringRow.tsx FinlyApp/tests/component/RecurringRow.test.tsx FinlyApp/tests/screens/RecurringScreen.test.tsx
+- Split the Recurring rule row's meta line into two - 'Category - N transactions' then 'Created <date>' (no time) - so the creation info is no longer clipped.
+
+[2026-10-14] feat | FinlyApp/src/components/SortRow.tsx FinlyApp/src/components/SortToggle.tsx FinlyApp/src/constants/types.ts FinlyApp/src/utils/tagSort.ts FinlyApp/src/utils/commentSort.ts FinlyApp/src/database/repositories/transactionRepo.reads.ts FinlyApp/src/screens/TagsScreen.tsx FinlyApp/src/screens/CommentsScreen.tsx FinlyApp/src/screens/RecurringScreen.tsx FinlyApp/src/i18n/en.ts FinlyApp/src/i18n/es.ts FinlyApp/src/i18n/ca.ts FinlyApp/src/i18n/gl.ts FinlyApp/src/i18n/eu.ts FinlyApp/src/i18n/fr.ts FinlyApp/src/i18n/de.ts FinlyApp/src/i18n/pt.ts FinlyApp/src/i18n/it.ts FinlyApp/tests/database/contractSuite.ts FinlyApp/tests/database/contractTypes.ts FinlyApp/tests/screens/TagsScreen.test.tsx FinlyApp/tests/screens/CommentsScreen.test.tsx FinlyApp/tests/utils/tagSort.test.ts FinlyApp/tests/utils/commentSort.test.ts spec/features/018-tag-management/1-spec.md spec/features/027-comments-management/1-spec.md spec/constitution/3-roadmap.md
+- Add a session-only sort strip (`SortToggle` inside a shared `SortRow`) to the Tags and Comments screens.
+- Tags: sort by name / created / usage, and each row now shows "Used in N transactions" (new `countByTagIdsMap` query).
+- Comments: sort by name / last used / usage, and each row now shows "Last used <date>" (`getDistinctComments` returns `lastUsed = MAX(date)`).
+- Extract `components/SortRow.tsx` (also used by Recurring) and rename `comments_used_in` to the shared `used_in_transactions` across the 9 languages.
+- Add sort utils (`tagSort`, `commentSort`) with tests, screen sort tests and contract coverage (lastUsed + countByTagIdsMap); update spec 018/027 + roadmap.
+
+[2026-10-14] style | FinlyApp/src/components/SortRow.tsx
+- Move the sort strip's separator and padding onto a wrapper view and give the content more vertical padding, so the strip reads as one balanced, centred block on the Tags and Comments screens.
+
+[2026-10-14] feat | FinlyApp/src/constants/types.ts FinlyApp/tests/screens/TagsScreen.test.tsx spec/features/018-tag-management/1-spec.md spec/constitution/3-roadmap.md
+- Raise the tag cap from 50 to 100 (MAX_TAGS); every string is parameterized so only the constant, the spec, the roadmap and one test assertion change.
+
+[2026-10-14] docs | spec/features/027-comments-management/1-spec.md
+- Record that comments have no count cap (unlike tags) - they are derived from transaction descriptions, so only the per-comment length limit applies.
+
+[2026-10-14] feat | FinlyApp/src/screens/TagsScreen.tsx FinlyApp/src/screens/CommentsScreen.tsx FinlyApp/src/i18n/en.ts FinlyApp/src/i18n/es.ts FinlyApp/src/i18n/ca.ts FinlyApp/src/i18n/gl.ts FinlyApp/src/i18n/eu.ts FinlyApp/src/i18n/fr.ts FinlyApp/src/i18n/de.ts FinlyApp/src/i18n/pt.ts FinlyApp/src/i18n/it.ts FinlyApp/tests/screens/TagsScreen.test.tsx spec/features/018-tag-management/1-spec.md spec/features/027-comments-management/1-spec.md spec/constitution/3-roadmap.md
+- Add a Created <date> line to each Tags row (tags_created_on) so the Created sort is visible.
+- Scope the usage line per screen: tags_used_in (feminine participle, correct for etiqueta) and comments_used_in (masculine), replacing the shared used_in_transactions.
+
+[2026-10-14] fix | FinlyApp/src/database/repositories/recurringRepo.ts FinlyApp/src/utils/recurrence.ts FinlyApp/src/utils/recurrenceInfo.ts FinlyApp/src/components/RepeatSection.tsx FinlyApp/src/components/TransactionForm.tsx FinlyApp/src/screens/ModifyRecurringScreen.tsx FinlyApp/tests/utils/recurrenceInfo.test.ts FinlyApp/tests/database/recurringRepo.test.ts FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx spec/features/028-recurring-transactions/1-spec.md spec/constitution/3-roadmap.md
+- The edit form's back-fill Summary counted every occurrence in the window, including ones already generated, so 'Adds 3 missed transactions' could create only 2.
+- ModifyRecurringScreen now loads the rule's existing occurrence dates (recurringRepo.listOccurrenceDates) and the preview subtracts them, so the Summary matches the save.
+
+[2026-10-14] style | FinlyApp/src/screens/ModifyRecurringScreen.tsx
+- Remove the doubled footer margin on the Edit recurring rule screen (24 + 24 on top of the comment section's 16), so the gap above Delete matches the other sections instead of ~84px.
+
+[2026-10-14] style | FinlyApp/src/navigation/AppNavigator.tsx
+- Use the edit glyph (create-outline) for every Modify* screen title - ModifyTag, ModifyAccount, ModifyCategory, ModifyComment and ModifyRecurring joined ModifyTransaction - so the header matches the edit buttons that open them (the recurring-notice and details Edit buttons already used create-outline).
+
+[2026-10-14] style | FinlyApp/src/components/SortRow.tsx FinlyApp/src/screens/CommentsScreen.tsx FinlyApp/tests/screens/CommentsScreen.test.tsx spec/features/027-comments-management/1-spec.md
+- Make the bordered SortRow band symmetric (paddingTop 12 + paddingBottom 12) so the sort labels sit perfectly centred between the counter and the separator, matching the Recurring controls band.
+- Keep the Comments counter visible when the list is empty ("0 comments"), so the Comments sort section has the same layout as the Tags screen in every state.
+
+[2026-10-14] feat | FinlyApp/src/components/DataRow.tsx FinlyApp/src/screens/TransactionDetailsScreen.tsx FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx spec/features/028-recurring-transactions/1-spec.md spec/constitution/3-roadmap.md
+- DataRow gained an optional onPress (rendering the row as a button), and the transaction-details Recurring row now opens the rule's edit screen directly with a create-outline affordance when the transaction belongs to a rule.
+
+[2026-10-14] feat | FinlyApp/src/screens/ModifyTransactionScreen.tsx, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/i18n/{en,es,ca,gl,eu,fr,de,pt,it}.ts, FinlyApp/tests/hooks/useTransactionForm.test.tsx, FinlyApp/tests/screens/ModifyTransactionScreen.test.tsx
+- The modify transaction form now refreshes when a rule edit rewrites its row while the form is open (detected via `updated_at`): an untouched form silently adopts the new values, while a dirty form keeps the user's draft and shows a notice with a "Use the rule's values" button that adopts the rule's values.
+- `useTransactionForm` exposes `isDirty` (diffed against the values the form opened with) and `TransactionForm` forwards it through `onDirtyChange`; `ModifyTransactionScreen` remounts the form (key bump) to adopt, or shows the notice otherwise.
+- Added `recurring_updated_notice` and `recurring_use_rule_values` to all 9 languages.
+
+[2026-10-14] refactor | FinlyApp/src/hooks/useExternalRowRefresh.ts, FinlyApp/src/utils/arrays.ts, FinlyApp/src/screens/ModifyTransactionScreen.tsx, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/hooks/useRecurringEditScope.ts, FinlyApp/tests/hooks/useExternalRowRefresh.test.tsx
+- Extracted the modify form's "row rewritten underneath an open form" logic from `ModifyTransactionScreen` into `hooks/useExternalRowRefresh.ts` (`formKey` remount / `updated` warning / `adopt`), now unit-tested with `renderHook`.
+- Added `utils/arrays.ts#areIdListsEqual` and reused it for the tag-id comparison in `useTransactionForm` and `useRecurringEditScope` (previously duplicated).
+- A non-recurring transaction (which has no notice to show) now always adopts the refreshed row instead of silently keeping stale values.
+
+[2026-10-14] fix | FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/components/CommentInput.tsx
+- The shared transaction form (Add/Modify transaction, New/Edit recurring rule) now scrolls its submit button above the keyboard when the **Comment** field (the bottom-most input) is focused; the reveal is re-run on `onLayout`/`keyboardDidShow` so it lands after the keyboard resize settles, and the content bottom padding grew 48 → 112 px for a clear gap.
+- Focusing any other field (recurring Name, Amount, Account, Category) does not scroll, and the keyboard listener is cleaned up on unmount.
+
+[2026-10-14] fix | FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/tests/screens/TagsScreen.test.tsx
+- The Tags, Comments, Recurring and Accounts lists now **unmount the list** when empty and render a `View` + `EmptyState`, instead of a `ListEmptyComponent` with a conditional `contentContainerStyle`.
+- Fixes the bug where deleting a whole overflowing list at once (Select all → Delete) left the previous scroll extent, so the empty screen stayed vertically scrollable and the empty state was not centred (Android keeps the stale native content size while the FlatList stays mounted).
+- Added the "Empty lists" convention to `spec/constitution/6-screens.md` and a `tags-list`/`comments-list`/`recurring-list`/`accounts-list` testID with a "list unmounted when empty" assertion for Tags.
+
+[2026-10-14] refactor | FinlyApp/src/components/ListOrEmpty.tsx, FinlyApp/src/constants/testIds.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionListBody.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/tests
+- Extracted `components/ListOrEmpty.tsx` (unmounts the list when empty, showing an `EmptyState` instead) and adopted it in all six list screens: Tags, Comments, Recurring, Accounts, the transactions list (`TransactionListBody`) and Categories — replacing the six inline `View` + `EmptyState` swaps and dropping each screen's `emptyList`/`emptyContent` style.
+- Moved the shared `testID`s to `constants/testIds.ts` (`TEST_IDS`) and used them in `RepeatSection`, the four list screens and their tests.
+- Added "list present when non-empty / unmounted when empty" assertions to the Tags, Comments, Recurring and Accounts screen tests, and documented the convention in `spec/constitution/6-screens.md`.
+
+[2026-10-14] fix | FinlyApp/src/hooks/useKeyboardReveal.ts, FinlyApp/src/hooks/useKeyboardInset.ts, FinlyApp/src/components/form/FormScrollView.tsx, FinlyApp/src/components/form/formStyles.ts, FinlyApp/src/components/AccountForm.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/components/ModalShell.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx, FinlyApp/tests/hooks/useKeyboardReveal.test.tsx
+- Extracted the transaction form's keyboard reveal into a shared `hooks/useKeyboardReveal.ts` (scroll-to-end on bottom-field focus, re-run on `keyboardDidShow`/`onLayout`) and reused it across the forms.
+- `FormScrollView` (`AccountForm`, Create/Modify Category, Modify Comment) is now `KeyboardAvoidingView`-wrapped, exposes `scrollRef`/`onLayout`, and keeps `paddingBottom: 112`; `AccountForm` (Create/Modify Account) and `ModifyCommentScreen` reveal the bottom action when the Note/multiline field is focused, so the Create/Save button is no longer hidden by the keyboard.
+- `ModalShell` now measures the keyboard (`hooks/useKeyboardInset.ts`) and lifts the card above it (capping its height), so the `ConfirmationModal` footer stays reachable — e.g. the typed-DELETE confirmation in the Data screen.
+- `TransactionForm` was refactored onto the shared hook (behaviour unchanged); added a `useKeyboardReveal` unit test.
+
+[2026-10-15] fix | FinlyApp/src/hooks/useKeyboardInset.ts, FinlyApp/src/components/ModalShell.tsx, FinlyApp/src/components/ConfirmationModal.tsx, FinlyApp/tests/hooks/useKeyboardLift.test.tsx
+- `ModalShell` now holds its keyboard lift while the modal is open (`hooks/useKeyboardInset.ts#useKeyboardLift`, resetting on close) instead of dropping it when the keyboard hides.
+- Fixes the typed-DELETE confirmation needing two taps: tapping Confirm blurred the input, the keyboard hid and the card dropped, so the button moved out from under the finger and the first tap was swallowed. `ConfirmationModal`'s scroll area also uses `keyboardShouldPersistTaps="handled"`.
+
+[2026-10-15] fix | FinlyApp/src/screens/settings/DataScreen.tsx
+- `DataScreen`'s outer `ScrollView` now sets `keyboardShouldPersistTaps="handled"`.
+- Fixes the typed-DELETE confirmation needing two taps: the ScrollView (a React-tree ancestor of the modal) captured the first tap to dismiss the keyboard (`ScrollView._handleStartShouldSetResponderCapture`, default `keyboardShouldPersistTaps`), so Confirm only received the second tap. Documented the ancestor-ScrollView rule in `spec/constitution/6-screens.md`.
+
+[2026-10-15] fix | FinlyApp/src/utils/photoUtils.ts, FinlyApp/tests/utils/photoUtils.test.ts
+- `deletePhotoFile` now no-ops on web for **any** URI (not only `data:`): photo files are a native-only concern, and calling `expo-file-system` on web warned "expo-file-system is not supported on web" and threw `this.validatePath is not a function`.
+- Fixes the console noise when deleting a transaction / account / category whose photos are native `file://` URIs (e.g. imported from a native backup) on web; added a `photoUtils` web-case test.
+
+[2026-10-15] fix | FinlyApp/src/screens/settings/SettingsScreen.tsx, FinlyApp/src/screens/settings/AppearanceScreen.tsx, FinlyApp/src/screens/settings/RegionalScreen.tsx, FinlyApp/src/screens/settings/PersonalizationScreen.tsx, FinlyApp/src/screens/settings/DataScreen.tsx
+- The five settings screens (Settings, Appearance, Regional, Personalization, Data) now render inside `ScreenShell`, which applies the bottom safe-area inset.
+- Fixes the last section (e.g. Personalization's Privacy card) sitting on/over the Android navigation bar: settings screens were the only ones not using `ScreenShell`, so with edge-to-edge their `ScrollView` content reached the screen bottom.
+
+[2026-10-15] chore | FinlyApp/package.json, FinlyApp/package-lock.json
+- Updated `expo` 57.0.28 → 57.0.29 and `expo-constants` 57.0.21 → 57.0.22 (`npx expo install --fix`) for SDK 57 compatibility.
+
+[2026-10-15] refactor | FinlyApp/src/constants/types.ts, FinlyApp/src/utils/recurrence.ts, FinlyApp/src/utils/recurrenceSummary.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/database/recurringService.ts, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/hooks/useRecurringDraft.ts, FinlyApp/tests/utils/recurrence.test.ts
+- Named the recurring "magic values" as shared constants/helpers: `LAST_DAY_OF_MONTH` + `isLastDayAnchor()` (was `31` / `day_of_month === 31` in `recurrence`, `recurrenceSummary` and `ModifyRecurringScreen`), `RULE_ACTIVE`/`RULE_INACTIVE` (was `1`/`0` in `recurrence`, `recurringRepo`, `recurringService`, `RecurringScreen`, `ModifyRecurringScreen`) and `MAX_SCHEDULE_PROBES` (the `10000` guard in `nextDueOnOrAfter`).
+- `advanceOccurrence` now switches on `RECURRENCE_FREQUENCIES.*` and `useRecurringDraft`'s default frequency uses `RECURRENCE_FREQUENCIES.monthly`; added an `isLastDayAnchor` unit test.
+
+[2026-10-15] test | FinlyApp/tests/database/recurringService.test.ts, FinlyApp/tests/utils/recurrence.test.ts
+- Added service-level tests that a "Future + past" rule edit bumps `updated_at` on every generated transaction (the change an open modify form detects via `useExternalRowRefresh`) while "Future only" leaves it untouched.
+- Added a `recurrenceSkipWindow` test covering a multi-unit interval in the skipped-window count.
+
+[2026-10-15] test | FinlyApp/.maestro/flow-028-recurring.yaml, FinlyApp/.maestro/flow-028-recurring-dirty-form.yaml, FinlyApp/.maestro/helpers/create-daily-rule.yaml, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/constants/testIds.ts
+- Added two Maestro flows for the recurring feature on the release APK: `flow-028-recurring` (create a daily rule -> generated transaction -> details -> "Future + past" rewrites the past -> pause/resume -> delete keeps the transactions) and `flow-028-recurring-dirty-form` (dirty modify form + rule edit -> keeps the draft and shows the notice -> "Use the rule's values" adopts the rule's value), sharing a `helpers/create-daily-rule.yaml` subflow.
+- Gave the recurring Name input a `testID` (`repeat-name`, in `TEST_IDS`) and an `accessibilityLabel` ("Name") so Maestro and screen readers can address it.
+
+[2026-10-15] fix | FinlyApp/src/hooks/useRecurringDraft.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/tests/hooks/useRecurringDraft.test.tsx, FinlyApp/tests/component/RepeatSection.test.tsx
+- The recurring-rule form no longer shows the name as required (red) when it opens: the "required" message is held back until the field is blurred (`useRecurringDraft` now exposes `repeatNameErrorDisplay` + `markNameTouched`, while the raw `repeatNameError` still gates submit).
+- Focusing the recurring Name field now scrolls the form so the "Recurring" section sits at the top (native only), keeping the input visible above the keyboard.
+
+[2026-10-15] fix | FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/hooks/useKeyboardReveal.ts, FinlyApp/src/i18n/{en,es,ca,gl,eu,fr,de,pt,it}.ts, FinlyApp/tests/component/TransactionForm.test.tsx
+- The rule form's bottom hint now covers the recurring name: when the name is the only thing blocking the save it shows `recurring_hint_name` (or `recurring_hint_name_taken`), added to all 9 languages.
+- `useKeyboardReveal` now takes a reveal action (default scroll-to-end): the recurring Name reuses it with a scroll-to-section action, so focusing the name brings the "Recurring" section to the top after the keyboard settles (re-run on `keyboardDidShow`/`onLayout`) instead of losing the scroll to the OS reveal.
+
+[2026-10-15] fix | FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/TransactionForm.test.tsx, FinlyApp/tests/component/RepeatSection.test.tsx, FinlyApp/tests/screens/AddTransactionScreen.test.tsx
+- TransactionForm: the bottom hint is now a checklist that lists every unmet condition at once (category, amount, account, end date, rule name) instead of a single priority message; added `add_hint_account` (x9) and dropped the now-unused `add_hint_category_amount` (x9).
+- RepeatSection: the recurring name error is shown only as a red input border (removed the duplicated inline message).
+- Tests: TransactionForm covers the combined checklist and name-only blocker; RepeatSection covers the red border.
+
+[2026-10-15] chore | FinlyApp/scripts/i18n.mjs, FinlyApp/tests/tooling/i18n.test.ts, FinlyApp/package.json, AGENTS.md
+- Added `FinlyApp/scripts/i18n.mjs`: a surgical i18n key helper (`list` / `add` / `set` / `remove`) that keeps the 9 language files in parity, preserves CRLF/comments/section grouping, handles multi-line and function values (via a `--values-file` with `{ "raw": … }`), and validates every file before writing (all-or-nothing).
+- Added the `npm run i18n -- …` alias and `tests/tooling/i18n.test.ts` (37 tests: escaping, anchors, multi-line extents, CRLF, parity check, CLI write/refuse paths, real-files round-trip).
+- Documented the tool in a new `I18N KEYS` section of `AGENTS.md`.
+
+[2026-10-15] refactor | FinlyApp/src/components/form/FormHintSlot.tsx, FinlyApp/src/components/form/LabeledTextField.tsx, FinlyApp/src/components/AccountForm.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx
+- Added `components/form/FormHintSlot.tsx`: the red "why you can't save" hint now lives in a reserved 2-line slot (scaling with the text size) between Delete and Save, so the two buttons never move when a hint appears or disappears.
+- `LabeledTextField` owns the red-border gating (a field reddens only once it has been changed or blurred, so a freshly-opened form is never red), and `AccountForm`, `TransactionForm` and the category/tag/comment screens now share one bottom-action order: muted hint -> Delete -> hint slot -> Save.
+- The reserved slot is only used where a Delete exists; Save-only forms keep the hint directly above Save. Informative notes (the comment merge note) stay below Save.
+
+[2026-10-15] fix | FinlyApp/src/components/AmountInput.tsx, FinlyApp/src/components/form/DeleteButton.tsx, FinlyApp/src/constants/testIds.ts, FinlyApp/src/screens/CreateTagScreen.tsx, FinlyApp/src/screens/CreateCategoryScreen.tsx, FinlyApp/src/screens/CreateAccountScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts
+- Amount: a value of 0 now gets a red border on the amount input (the digits keep their normal color) while an account's initial balance of 0 stays valid; `AmountInput` gained an optional `error` prop.
+- Every form's Delete button now reads the generic `Delete` (was "Delete tag" / "Delete comment"), and the comment field is aligned to the top like the other multiline fields.
+- i18n: added `create_tag_error_empty` and shared `create_account_error_empty|_duplicate` between Create and Edit; removed the now-unused `modify_account_error_empty|_duplicate`, `modify_tag_delete`, `comments_delete`, `modify_account_delete` and `modify_cat_delete` from all 9 languages.
+
+[2026-10-15] test | FinlyApp/tests/component/FormHintSlot.test.tsx, FinlyApp/tests/component/LabeledTextField.test.tsx, FinlyApp/tests/component/AmountInput.test.tsx, FinlyApp/tests/component/TransactionForm.test.tsx, FinlyApp/tests/screens/ModifyAccountScreen.test.tsx, FinlyApp/tests/screens/ModifyCategoryScreen.test.tsx, FinlyApp/tests/screens/ModifyTagScreen.test.tsx, FinlyApp/tests/screens/CreateTagScreen.test.tsx, FinlyApp/tests/screens/ModifyCommentScreen.test.tsx
+- Component tests for `FormHintSlot` (message + reserved height), `LabeledTextField` (touched gating) and `AmountInput` (error border, digits unchanged), plus screen tests for the bottom-action order, the reserved slot and the "no red on a freshly-opened form" rule.
+- Replaced the tag/comment delete-button label selectors with `TEST_IDS.formDelete` (the shared `DeleteButton` now carries it), removing the ambiguity with the confirmation modal's own Delete.
+
+[2026-10-15] docs | spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, spec/features/009-modify-delete-category-screen/1-spec.md, spec/features/012-modify-delete-account-screen/1-spec.md, spec/features/017-modify-transaction-screen/1-spec.md, spec/features/018-tag-management/1-spec.md, spec/features/027-comments-management/1-spec.md, spec/features/028-recurring-transactions/1-spec.md
+- Documented the form-validation and bottom-action standard (hint placement, red-border gating, button order, generic Delete label) in `spec/constitution/6-screens.md`, with a roadmap entry and updates to specs 009, 012, 017, 018, 027 and 028.
+
+[2026-10-15] test | FinlyApp/.maestro/flow-forms-standard.yaml
+- Added the Maestro flow `.maestro/flow-forms-standard.yaml`, verifying on an Android release APK that an amount of 0 gets a red border, the muted Delete note sits above the button, the red hint sits between Delete and Save, and a fresh field is never red.
+
+[2026-10-15] feat | FinlyApp/src/components/form/CharCounter.tsx, FinlyApp/src/constants/types.ts, FinlyApp/src/components/RepeatSection.tsx
+- Added `components/form/CharCounter`: one shared counter (`value/maxLength`) that turns the whole counter red and bold at the limit, used by every limited input and by the tags/categories list headers. Its `style` prop is layout-only, so the at-limit state can never be overridden.
+- The recurring rule name now has a counter and its limit drops from 60 to 30 characters (`REPEAT_NAME_MAX_LENGTH`, matching account/category names); a name already longer than the limit is kept intact (`maxLength={Math.max(LIMIT, name.length)}`) and flagged by the counter.
+
+[2026-10-15] refactor | FinlyApp/src/components/form/LabeledTextField.tsx, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/screens/CreateTagScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx
+- Replaced the five duplicated counter implementations (`LabeledTextField`, `CommentInput`, the inline tag modal, `ModifyCategoryScreen`, the tags/categories/comments headers) with `CharCounter`, standardising on the 12px `COUNTER_FONT_SIZE` (account/category counters were 11) and dropping the double-scaled `counterFontSize` prop.
+- Every limit stays sourced from `constants/types.ts`; no literal limits remain at the call sites.
+
+[2026-10-15] test | FinlyApp/tests/component/CharCounter.test.tsx, FinlyApp/tests/component/RepeatSection.test.tsx, FinlyApp/tests/screens/TagsScreen.test.tsx, FinlyApp/tests/screens/CategoriesScreen.test.tsx, FinlyApp/tests/component/TransactionForm.test.tsx
+- Added `CharCounter` unit tests (below/at/over the limit, children mode, no-max mode, style precedence) and `RepeatSection` counter tests (0/30, red+bold at 30, legacy over-limit name kept intact), plus at-limit assertions for `TagsScreen` (100 of 100 tags) and `CategoriesScreen` (30 of 30 categories).
+- The `TransactionForm` test mock now provides `repeatName`, matching the hook's contract.
+
+[2026-10-15] docs | spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, spec/features/028-recurring-transactions/1-spec.md
+- Documented the counter standard (one look, limits from constants, red + bold at the limit, the 30-character rule name) in `spec/constitution/6-screens.md`, `spec/features/028` and the roadmap.
+
+[2026-10-15] refactor | FinlyApp/src/components/form/FormActions.tsx, FinlyApp/src/components/form/FormHintSlot.tsx, FinlyApp/src/components/AccountForm.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/screens/CreateCategoryScreen.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/screens/CreateTagScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx, FinlyApp/src/constants/testIds.ts
+- Added `components/form/FormActions`, the shared bottom block (muted band -> Delete -> red band -> Save) adopted by AccountForm, TransactionForm, Create/Modify category, Create/Modify tag and Modify comment, so the footer layout can no longer drift.
+- Both hint bands are now always reserved, so Save never moves when a message appears or disappears (Add/Modify transaction, Create recurring, Create account, Create category and Create tag were still shifting).
+- The muted band doubles as the standard separator above the Delete button: every delete form reserves it (blank when there is no explanation), giving Edit recurring/tag/comment and Modify category the same, larger gap from the field area, and Create category the same separation between the colour picker and its button.
+- `FormHintSlot` lost its `reserve` prop (always reserved) and gained `tone: 'error' | 'muted'` (new `TEST_IDS.formMutedSlot`); `TransactionForm`'s `footer` node became explicit `deleteLabel`/`onDeletePress`/`deleteDisabled`/`deleteHint` props.
+
+[2026-10-15] test | FinlyApp/tests/component/FormHintSlot.test.tsx, FinlyApp/tests/component/TransactionForm.test.tsx, FinlyApp/tests/screens/CreateTagScreen.test.tsx, FinlyApp/tests/screens/CreateAccountScreen.test.tsx, FinlyApp/tests/screens/CreateCategoryScreen.test.tsx, FinlyApp/tests/screens/ModifyAccountScreen.test.tsx
+- Updated the `FormHintSlot` tests (always reserved, muted tone) and `TransactionForm` (delete props instead of a footer node, always-reserved band); added reserved-band assertions for Create tag/account/category and a 2+-accounts case proving the account Delete does not move.
+
+[2026-10-15] docs | spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, spec/features/012-modify-delete-account-screen/1-spec.md
+- Documented the two reserved bands and the standard footer gaps in `spec/constitution/6-screens.md`, updated spec 012 (the account note lives in the reserved band) and added a roadmap entry.
+
+[2026-10-15] refactor | FinlyApp/src/components/form/FormHintSlot.tsx, FinlyApp/src/components/form/FormActions.tsx, FinlyApp/src/constants/types.ts, FinlyApp/src/hooks/useRecurringDraft.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionForm.tsx, spec/constitution/2-tech-stack.md, spec/constitution/3-roadmap.md, AGENTS.md
+- Added `HINT_TONES`/`HintTone` (colocated in `components/form/FormHintSlot.tsx`) and `RECURRING_NAME_ERRORS`/`RecurringNameError` (in `constants/types.ts`, next to `REPEAT_NAME_MAX_LENGTH`), replacing the raw `'error' | 'muted'` and `'required' | 'taken'` literals in `FormHintSlot`, `FormActions`, `useRecurringDraft`, `RepeatSection` and `TransactionForm`.
+- Documented the convention ("no raw string unions, no TS enum") in `spec/constitution/2-tech-stack.md` and a new `AGENTS.md` CODE STYLE section, together with the limits-are-constants and design-tokens rules.
+
+[2026-10-16] feat | FinlyApp/src/hooks/useIsDirty.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/ModifyTransactionScreen.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx
+- Added `hooks/useIsDirty.ts` (baseline captured once, shallow value compare) and put the transaction/rule form's existing `isDirty` into `canSubmit` behind an explicit `editing` prop: every edit screen now keeps Save disabled until the draft actually differs from what it loaded.
+- The comparison is by value, so returning a field to its original value (original category, same amount, tag added then removed) disables Save again; "nothing changed" keeps the empty hint band.
+- The rule editor counts a change of the "Apply changes to" scope away from its default as a change, so a skipped/recoverable window can still be recovered without editing a field.
+- `ModifyAccountScreen` now guards its preload with `userEditedRef` (all five inputs) so a re-focus refetch cannot wipe what the user typed; `ModifyCategoryScreen`'s guard was extended to the icon/colour pickers.
+
+[2026-10-16] test | FinlyApp/tests/hooks/useIsDirty.test.tsx, FinlyApp/tests/screens/ModifyAccountScreen.test.tsx, FinlyApp/tests/screens/ModifyCategoryScreen.test.tsx, FinlyApp/tests/screens/ModifyTagScreen.test.tsx, FinlyApp/tests/screens/ModifyTransactionScreen.test.tsx, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx
+- Added `useIsDirty` unit tests (baseline captured once, value comparison) plus per-screen tests: Save disabled on open, enabled after a change and disabled again when the value returns, the rule editor's scope-only change, and refetch guards for the account and category screens.
+- Existing screen tests updated for the new behaviour (the four "Save enabled on load" expectations and the three rule-editor saves that previously needed no change).
+
+[2026-10-16] docs | spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, spec/features/009-modify-delete-category-screen/1-spec.md, spec/features/012-modify-delete-account-screen/1-spec.md, spec/features/017-modify-transaction-screen/1-spec.md, spec/features/018-tag-management/1-spec.md, spec/features/028-recurring-transactions/1-spec.md
+- Documented the "Save only when something changed" rule (with the rule-editor scope exception) in `spec/constitution/6-screens.md`, touched specs 009, 012, 017, 018 and 028, and added a roadmap entry.
+
+[2026-10-16] fix | FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/screens/ModifyTransactionScreen.tsx
+- The modify-transaction form now measures its draft against what is stored right now: `useTransactionForm` derives the dirty baseline from the row props (tags included) instead of freezing it in a ref at mount, so a "Future + past" rule edit that rewrites this row re-baselines the comparison and picking the value the rule just wrote leaves nothing to save.
+- `ModifyTransactionScreen`'s focus loader returns `{ transaction, tagIds }` and passes `initialTagIds` (as the rule screen already did), which removed the form's async `getTagsByTransactionId` effect plus the `initialSnapshot`/`initialTags` refs and the "tags arrive after mount" window.
+
+[2026-10-16] test | FinlyApp/tests/hooks/useTransactionForm.test.tsx, FinlyApp/tests/screens/ModifyTransactionScreen.test.tsx
+- Added a regression test for the scenario: change the category, have the rule rewrite the row, then pick the stored category (Save disabled) or keep a different one (Save enabled). The hook test now covers tags passed by props (not a change, and add-remove returns to clean); its getTagsByTransactionId mock is gone.
+
+[2026-10-16] docs | spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, spec/features/017-modify-transaction-screen/1-spec.md
+- Documented the "baseline is the stored row" rule in `spec/constitution/6-screens.md` and spec 017, with a roadmap entry.
+
+[2026-10-16] fix | FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/constants/layout.ts, FinlyApp/src/constants/testIds.ts
+- Fixed the Categories screen's grid: the first tile row no longer touches the select-all row's separator line. The other lists already showed that gap (card lists pad their top 16, Recurring/Transactions rely on their rows' own padding) while the grid had none.
+- Added the `LIST_TOP_GAP` token in `constants/layout.ts` (next to `LIST_BOTTOM_FAB_PADDING`) so the gap is defined once, and applied it to the grid's scroll container in select mode only (normal mode's counter spacing is untouched). The grid's ScrollView gained the `categories-grid` testID.
+
+[2026-10-16] test | FinlyApp/tests/screens/CategoriesScreen.test.tsx
+- The Categories screen test now enters select mode (rendering the header captured from the nav mock, like the Accounts test) and asserts the grid container's `paddingTop` is 16 there and unset in normal mode.
+
+[2026-10-16] docs | spec/constitution/3-roadmap.md
+- Recorded the select-all list gap standard in the roadmap (`LIST_TOP_GAP` is documented in the constant itself).
+
+[2026-10-17] fix | FinlyApp/src/screens/AccountsScreen.tsx
+- The Accounts screen no longer hides the Total balance section when select mode starts: the Select-all row is inserted under it (after the search bar when open), matching Tags/Comments (sort strip), Recurring (controls) and the transaction lists (tag filter), where nothing above the row is hidden.
+- The three one-line counters (Categories/Tags/Comments) keep hiding in select mode on purpose — the row already shows the item count and takes their slot.
+
+[2026-10-17] test | FinlyApp/tests/screens/AccountsScreen.test.tsx
+- The Accounts select-mode test now also asserts that the Total balance label stays visible while selecting.
+
+[2026-10-17] docs | spec/constitution/3-roadmap.md
+- Recorded the Select-all placement rule in the roadmap (the row is inserted under the header block; the header stays visible).
+
+[2026-10-17] refactor | FinlyApp/src/utils/formHints.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/screens/CreateTagScreen.tsx
+- Moved the hint composition out of `TransactionForm` into `utils/formHints.ts`: `joinHints` (drops empty parts, joins with `. `, optional final period) and `getTransactionFormHintText` (the transaction/rule checklist as a pure function that takes the values plus the label strings).
+- `CreateTagScreen` now composes its hint from `getNameHintText` + `joinHints` instead of a hand-rolled blockers list. The rendered hint strings are unchanged (the component tests still assert them).
+- `TransactionForm` no longer imports the recurring-name constants for the hint; its 12-line `useMemo` is a single call.
+
+[2026-10-17] test | FinlyApp/tests/utils/formHints.test.ts
+- Added `joinHints` and `getTransactionFormHintText` unit tests: empty/single/several parts, nulls and blank strings filtered, the final-period option, the checklist order, an amount of zero, the end-date conflict, and the rule-mode name gating (required/taken).
+
+[2026-10-17] docs | spec/constitution/3-roadmap.md
+- Recorded the hint-composition split (policy vs formatting) in the roadmap.
+
+[2026-10-17] refactor | FinlyApp/src/utils/formFieldVisibility.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/database/backup.ts, FinlyApp/src/database/backupService.ts, FinlyApp/src/database/index.ts, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/src/utils/formatters.ts, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/database/recurringService.ts, FinlyApp/src/components/componentStyles.ts, FinlyApp/src/components/form/DeleteButton.tsx, FinlyApp/src/components/SelectAllRow.tsx, FinlyApp/src/components/SelectionActionBar.tsx, FinlyApp/src/components/RecurringRow.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/utils/backupIO.web.ts, FinlyApp/src/database/drizzle/schema.ts
+- No raw vocabulary values where a named constant already exists: `FORM_MODES` (`utils/formFieldVisibility`) is now used by `TransactionForm`, and `BACKUP_VALIDATION_CODES` (`database/backup`) by the parser, the import service and the settings screen (re-exported through the database barrel).
+- New tokens replace stray literals: `datePart()` in `utils/formatters` for the five `.slice(0, 10)` date extractions, `DISABLED_CONTROL_OPACITY = 0.5` in `componentStyles` for the five inline disabled-control opacities (the calendar's 0.3 stays its own module-scoped value), and `PICK_FALLBACK_DELAY_MS` for the web backup picker's 400 ms fallback.
+- The Drizzle schema types the union columns (`categories.type`, `transactions.type`, `recurring_rules.type` as `TransactionType`, `recurring_rules.frequency` as `RecurrenceFrequency`). This is a compile-time annotation only: the emitted DDL, the migrations and the data are untouched.
+
+[2026-10-17] test | FinlyApp/tests/utils/formatters.test.ts, FinlyApp/tests/utils/formFieldVisibility.test.ts, FinlyApp/tests/database/backup.test.ts
+- Added `datePart` tests (DB timestamp, ISO string, date-only input) plus assertions pinning the `FORM_MODES` and `BACKUP_VALIDATION_CODES` vocabularies.
+
+[2026-10-17] docs | spec/constitution/3-roadmap.md
+- Recorded the constants audit in the roadmap: no enum migration (const objects + `keyof typeof` remain the standard), the two type-only unions now carry their value maps, and the remaining literals are documented as intentional (SQL DDL in migrations, flag colours, separator characters, component-owned design values).
+
+[2026-10-17] feat | FinlyApp/src/components/CalendarPicker.tsx, FinlyApp/src/utils/periodNavigation.ts, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/scripts/i18n.mjs
+- Home and All transactions: the period text is now flanked by fast arrows (Day/Week/Month/Year only) — `‹` steps back, `›` steps forward while the next period is not in the future, and a double-chevron `»` jumps to the current period from two or more periods back (not on the penultimate one, where one `›` suffices). The custom `Period` tab keeps just the picker.
+- Equal fixed-width side slots keep the date centred and stable as the arrows appear/disappear; the arrows reuse the calendar's chevrons at the same size.
+- New `utils/periodNavigation.ts` (`shiftPeriod`, `isSamePeriod`, `canGoForward`, `canJumpToCurrent`) with month/year day-clamping; the arrows drive the existing `onDateChange`, so no screen changes were needed.
+- i18n: added `a11y_previous_period`, `a11y_next_period` and `a11y_go_to_current_period` in all 9 languages.
+- The i18n helper now strips a UTF-8 BOM from `--values-file` (Windows-authored JSON), fixing a `JSON.parse` failure.
+
+[2026-10-17] test | FinlyApp/tests/utils/periodNavigation.test.ts, FinlyApp/tests/component/CalendarPicker.test.tsx, FinlyApp/tests/tooling/i18n.test.ts
+- Added `periodNavigation` tests (day/week/month/year stepping with day clamping, same-period comparisons, next/jump visibility per period) and a `CalendarPicker` component test (arrow visibility in the three day states, stepping calls, custom period with no arrows, the box still opening the calendar).
+- Added an i18n tooling test for a BOM-prefixed values file.
+
+[2026-10-17] docs | spec/features/001-home-screen/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Documented the fast arrows in spec 001 (Home) and spec 015 (All transactions) and recorded the feature in the roadmap.
+
+[2026-10-17] style | FinlyApp/src/components/CalendarPicker.tsx
+- The period arrows' right group now leaves more room between the double-chevron jump and the single next arrow (12px gap) so the two read as separate buttons; the date stays centred and the next arrow stays at the edge.
+
+[2026-10-17] style | FinlyApp/src/utils/formatters.ts, FinlyApp/src/components/CalendarPicker.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx
+- The custom period range now reads with **full month names** in both the Home period box and the "Select period" modal: "from 1 January to 17 October 2026" instead of "from 1 Jan to 17 Oct 2026".
+- New pure `formatDateRange(start, end, { from, to }, months)` in `utils/formatters` composes the range for `CalendarPicker`'s box and `PeriodPicker`'s range line (plain range and `All (...)` variant), so the two cannot drift; the "start picked, waiting for the end" hint keeps its single-month text.
+- Both texts are centred (`textAlign: 'center'`), so a long range wraps as a centred two-line block instead of a left-aligned rag in verbose languages.
+- The Week range keeps its short month names on purpose: it is a compact pair, not a sentence.
+
+[2026-10-17] test | FinlyApp/tests/utils/formatters.test.ts, FinlyApp/tests/component/CalendarPicker.test.tsx
+- Added `formatDateRange` tests (full month names, same-month range, year-boundary range that keeps the end year).
+- The `CalendarPicker` test now asserts the custom range text and that the box text is centred.
+
+[2026-10-17] docs | spec/features/001-home-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Spec 001 now shows the full-month range examples and states that the range text is centred; the roadmap records the change.
+
+[2026-10-18] fix | FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/components/BulkCategoryTransferModal.tsx, FinlyApp/src/database/repositories/categoryRepo.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts
+- The last category of a type can no longer be deleted: the button is disabled with the standard muted explanation ("You need at least one category of each type, so this one cannot be deleted.", `modify_cat_delete_last`), mirroring the accounts rule.
+- The category delete confirmation now names what is really lost, per case: its recurring rules, its transactions, or both (`modify_cat_delete_confirm_message_rules` / `..._tx_rules`), instead of reassuring the user while the FK cascade dropped everything.
+- Moving a category's data to another category now reassigns its **recurring rules** too (`recurringRules.category_id`), inside the same transaction as the transactions, so the rules keep generating into the target instead of being deleted (single + bulk flows).
+- The bulk category delete treats a rules-only category as "in use": it appears in the resolution modal, each row shows transactions + rules (`categories_bulk_move_data`), the confirmation counts categories with data (`categories_bulk_delete_confirm_message_data`) and moving reassigns both.
+- New `recurringRepo.countByCategoryIds` feeds the confirmation counts.
+
+[2026-10-18] fix | FinlyApp/src/utils/recurrence.ts, FinlyApp/src/utils/recurrenceInfo.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/database/recurringService.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/src/i18n/index.ts
+- `planEdit` now takes the rule's `active` flag: for a **paused** rule it keeps the cursor and the recoverable-skip record untouched and reports 0 created, so the Summary can no longer promise a back-fill that reconciliation would never create. The form shows a paused note (`recurring_info_paused`) and still offers "Future + past" for rewriting the transactions already generated.
+- A resume that actually moves the cursor now drops the recorded `skipped_from` (a back-fill from it would also fill the pause window, which stays skipped forever); a resume before the next due date keeps the record.
+- A tags-only "Future + past" rewrite now bumps `updated_at` on the rule's transactions, so an open modify form detects the change.
+
+[2026-10-18] feat | FinlyApp/src/utils/recurrence.ts, FinlyApp/src/utils/recurrenceInfo.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts
+- The "Last day" checkbox is now rendered only when it can change the schedule (`lastDayAnchorUseful`): it is hidden for a monthly 31 and for a yearly month-end anchor (Feb 29, Apr/Jun/Sep/Nov 30, any 31-day month), where "the N-th" and "the last day" resolve to the same days. A rule already using the last-day anchor still shows it checked so it can be unchecked when meaningful.
+- The form Summary adds a localized month-by-month line when the occurrence day varies (`recurrenceDayPattern`), e.g. `31 in Jan, Mar, May, Jul, Aug, Oct, Dec · 30 in Apr, Jun, Sep, Nov · 28 in Feb (29 in leap years)`, built only from the schedule (never from today or the end date); the list rows keep the single summary line.
+- New `repeat_pattern_group(day, months)` and `repeat_pattern_leap(day)` keys in all 9 languages.
+
+[2026-10-18] fix | FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/components/CategoryFilterModal.tsx, FinlyApp/src/hooks/useBalanceVisibility.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/utils/errors.ts
+- A category whose only change is its icon or colour keeps its canonical name: the save now compares the field with the localized default (like the account screen) instead of trusting a "user edited" flag that icon/colour taps also set, which used to persist the localized string and break re-localization on a language change.
+- A category created under the other type (`CreateCategoryScreen`) now stays selected when the transaction form returns: the type switch no longer clears it.
+- The default custom period ends at end-of-day instead of "now", so transactions recorded later today are included.
+- The category filter can be cleared again: an empty selection applies as "all categories" (Apply stays enabled and the label never reads "Apply (0)").
+- Balance visibility no longer inverts when the "hide balances" setting changes (the XOR is gone and the reveal state resets with the setting).
+- The account modal highlights the account currently selected in the form instead of the one the form opened with.
+- The All transactions type tab is local to the screen (a Home type change no longer overrides it) and the tag selection re-syncs when the screen is re-entered with new route params.
+- Pause/resume failures on the Recurring screen now surface the standard error alert (new `ERROR_PREFIXES.recurringUpdate`) instead of an unhandled rejection.
+- The account delete confirmation states that the account's recurring rules are deleted too (single + bulk).
+
+[2026-10-18] test | FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/utils/recurrenceInfo.test.ts, FinlyApp/tests/database/recurringService.test.ts, FinlyApp/tests/component/RepeatSection.test.tsx, FinlyApp/tests/component/CategoryFilterModal.test.tsx, FinlyApp/tests/screens/ModifyCategoryScreen.test.tsx, FinlyApp/tests/hooks/useBalanceVisibility.test.tsx, FinlyApp/tests/hooks/useTransactionFilters.test.tsx, FinlyApp/tests/hooks/useTransactionForm.test.tsx, FinlyApp/tests/context/AppContext.test.tsx, FinlyApp/tests/utils/errors.test.ts
+- Added tests for the last-day decision logic (`lastDayAnchorUseful`, `recurrenceDayPattern`), the paused `planEdit` branch and the landing-days Summary line (create, yearly February, non-varying, paused/active).
+- Added the category-rules behaviour to the recurring service suite: rules are reassigned on move, deleted on permanent delete, and counted per category; the paused save keeps the cursor and a resume drops the skipped record only when the cursor moves.
+- Added component coverage for the hidden/visible last-day checkbox, the paused Summary note and the category delete guard/messages (including the icon-only rename regression).
+- Updated the category filter, balance visibility, custom period, pending-category and tag-param tests to the corrected behaviour.
+
+[2026-10-18] docs | spec/features/001-home-screen/1-spec.md, spec/features/008-categories-screen/1-spec.md, spec/features/009-modify-delete-category-screen/1-spec.md, spec/features/012-modify-delete-account-screen/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, README.md, README.es.md, README.ca.md, README.gl.md, README.eu.md, README.fr.md, README.de.md, README.pt.md, README.it.md
+- Spec 028 gains the "Last day" decision table and the checkbox-visibility rule, the landing-days Summary line, the paused-rule scope, the resume-drops-skipped-record rule and the effects of deleting a category or an account (with new acceptance criteria).
+- Specs 008/009 document the last-category guard, the per-case delete messages and that moving a category reassigns its recurring rules; spec 012 states that deleting an account deletes its rules; spec 001 records the end-of-day default custom range; spec 015 records the screen-local type tab and the clearable category filter.
+- Roadmap: new "2.2.0 audit" section with the full change list, a heading restored for the select-all entry, and stale figures corrected (migrations 001-004, six repositories, 510 i18n keys).
+- READMEs (9 languages): version 2.2.0, the Recurring feature bullet, Recurring in the drawer list, `004_recurring` in the migrations line, 15 Maestro flows and the `npm run i18n` command row.
+
+[2026-10-18] style | FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/screens/settings/PersonalizationScreen.tsx, FinlyApp/src/screens/HomeScreen.tsx, FinlyApp/src/components/AccountModal.tsx, FinlyApp/src/components/ModalFooter.tsx, FinlyApp/src/components/CategoryTile.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/components/CategoryFilterModal.tsx, FinlyApp/src/components/PhotoSection.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/tests/utils/errors.test.ts, FinlyApp/tests/hooks/useBalanceVisibility.test.tsx
+- Fixed the indentation of the Repeat section props (`ruleNextDue` / `ruleActive` / `ruleSkippedFrom`) in `TransactionForm` and of the `ERROR_PREFIXES` key list in its test.
+- Repaired pre-existing indentation slips found by an app-wide sweep (ESLint's `indent` rule): the `ScrollView` children in `TransactionForm`, the settings rows in `PersonalizationScreen`, the Home body after the header, the account modal list/footer, `ModalFooter`'s outer `View`, the `CategoryTile` style ternary, the skip-warning message arguments, the category filter `useMemo` body, a photo-section closing tag, the category badge `shape` prop, and the balance-visibility hook test (whose first `it` had been merged onto its `describe` line).
+- Whitespace only: no behaviour change (verified with `git diff --ignore-all-space` for the files touched solely by the sweep).
+
+[2026-10-18] fix | FinlyApp/src/utils/recurrence.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/component/RepeatSection.test.tsx, FinlyApp/tests/hooks/useTransactionForm.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- The "Last day" checkbox is now an ambiguity resolver: it appears only on the month-end dates where "the Nth" and "the last day" differ — monthly Feb 28 (non-leap), Feb 29 (leap) and 30 Apr/Jun/Sep/Nov, yearly 28 February of a non-leap year — instead of on every monthly date up to the 30th. Picking a month-end is how the last-day pattern is expressed (the rule moves its first occurrence to the month's end anyway), so an ordinary date no longer offers a control that would silently move the anchor.
+- The last-day flag is cleared whenever the chosen start date stops qualifying, so "checkbox visible" always matches "the rule is anchored on the last day" and the schedule can never disagree with the date shown.
+- The decision table and acceptance criteria in spec 028 §4 and the roadmap paragraph were rewritten to this rule.
+
+[2026-10-19] fix | FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/tests/hooks/useTransactionForm.test.tsx, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, spec/constitution/3-roadmap.md
+- The recurring editor's Save gate now compares the whole rule draft, not just the transaction fields: changing the name, frequency, interval, end date or the "Last day" checkbox enables Save (and reverting the value disables it again), matching the specified "Save only applies a real change" behaviour.
+- The name is compared trimmed (as it is stored, so surrounding whitespace is not a change) and the last-day term uses the effective initial intent, so a rule anchored on the 31st - whose checkbox is hidden and whose flag is cleared on load - is not reported as edited.
+- Tests: a hook-level rule gate suite (one case per field, revert-to-original, trimmed name, hidden last-day rule, scope-only save) and screen tests for the name, frequency, interval and last-day changes.
+
+[2026-10-19] fix | FinlyApp/app.json, spec/constitution/7-platform-differences.md, spec/features/025-data-backup/1-spec.md, spec/constitution/3-roadmap.md, AGENTS.md
+- Android: `expo.android.allowBackup: false` in `app.json` (prebuild emits `android:allowBackup="false"` in the packaged manifest). With Android's default `true` the OS cloud backup copied the app's private SQLite database and **restored it on reinstall**, resurrecting a snapshot taken before an in-app Factory Reset (accounts, recurring rules, tags and transactions that no longer existed locally).
+- Ruled out other causes while diagnosing: the APK bundles no `.db` file, the seed only creates the default user, `My Wallet`/`Total` and the 31 categories, and nothing in the code creates the data that reappeared.
+- With backups off, a reinstall always starts from the seed and data moves only through the in-app JSON export/import (025); documented in the platform-differences doc, spec 025, the roadmap and `AGENTS.md`.
+
+[2026-10-19] fix | FinlyApp/src/hooks/useBalanceVisibility.ts, FinlyApp/tests/hooks/useBalanceVisibility.test.tsx, spec/features/003-settings-screen/1-spec.md, spec/constitution/3-roadmap.md
+- The balance eye icon works again with "Hide account balances" off: the audit batch had replaced the documented `hideBalances !== isRevealed` with `hide && !revealed`, which made the icon a no-op when the setting was off (it must be "Privacy off, tap to temporarily hide", spec 003 §5.6). The XOR is restored, so the setting is the default and a tap flips it both ways, matching the account picker.
+- The temporary state now also resets when the screen regains focus (`useFocusEffect`, as `useFocusLoad` does), so leaving Home/Accounts and coming back shows the balances the setting asks for; changing the setting likewise applies the new default.
+- Tests: `useBalanceVisibility` covers both directions, the focus reset and the setting-change reset.
+
+[2026-10-19] chore | FinlyApp/package.json, FinlyApp/package-lock.json
+- Bumped the Expo SDK 57 patch dependency with `npx expo install`: `expo` `~57.0.29` to `~57.0.30` (the only package `expo install --check` reported; the app's other dependencies were already up to date).
+- Gate: `npm run test:all` green (137 files / 1151 tests). The native project is generated by prebuild, so `npx expo prebuild --platform android` runs before the next local APK build (EAS does it automatically).
+
+[2026-10-19] chore | FinlyApp/eslint.config.mjs, FinlyApp/eslint.config.js, FinlyApp/package.json, FinlyApp/package-lock.json, .editorconfig, AGENTS.md, README.md, README.es.md, README.ca.md, README.gl.md, README.eu.md, README.fr.md, README.de.md, README.pt.md, README.it.md, spec/constitution/3-roadmap.md
+- Adopted `@stylistic/eslint-plugin` (5.10.0) and moved the config to `eslint.config.mjs` (the plugin is ESM-only; the expo config is imported from `eslint-config-expo/flat/default.js` because that package has no `exports` map).
+- The rules that reported nothing on the current code are now errors and gate immediately: 2-space `indent` with `case` one level (the class of slip behind the recent mis-indents), JSX quote/indent, the spacing family, `key-spacing`, `padded-blocks` and `no-trailing-spaces`.
+- `comma-dangle` (182), `eol-last` (29), `quotes` (12), `unicode-bom` (2), `no-multiple-empty-lines` (3), `semi`, `brace-style` and `no-multi-spaces` start as warnings, each marked for promotion in the follow-up formatting change.
+- `expo lint` without arguments only linted `src`/`app`/`components`, so `tests/` had never been linted; the scripts now pass `.` and add `lint:fix`, covering `src`, `tests`, `scripts` and the root configs (385 files). Node globals are set for `scripts/**` and the test-only probe-component pattern has `react-hooks/globals` off.
+- `.editorconfig` added at the repo root; `AGENTS.md` LINT/CODE STYLE updated and the 9 READMEs gained the `npm run lint:fix` row.
+- Follow-up PR: `npm run lint:fix` (whitespace/trailing commas only) and the eight warning rules promoted to errors.
+
+[2026-10-19] docs | AGENTS.md
+- `AGENTS.md` ENVIRONMENT now states the encoding rule: non-ASCII text must be written with the Write/Edit tools (or a JSON values file the script reads), never through a PowerShell here-string piped to a program, which re-encodes it with the console codepage and turns accented characters into `?`.
+- Noted there that `scripts/i18n.mjs` only covers `FinlyApp/src/i18n/*.ts`, so the READMEs and other translated files need that safe path (the six mangled `npm run lint:fix` rows inserted in the previous commit were corrected this way).
+
+[2026-10-19] style | FinlyApp/src/** (51 files), FinlyApp/tests/** (57 files), FinlyApp/App.tsx, FinlyApp/eslint.config.mjs, FinlyApp/modules/finly-share/src/index.ts, spec/constitution/3-roadmap.md
+- Ran `npm run lint:fix` over the codebase (111 files): trailing commas in multiline literals, final newlines, single quotes in two i18n values, two stray BOMs, double blank lines, plus the enabled import/type fixers (import order and merging, `Array<T>` to `T[]`). Whitespace, punctuation, quotes, import order and type aliases only - no behaviour change.
+- Promoted the eight formatting rules from `warn` to `error` in `eslint.config.mjs`, so the whole formatting block is strict: `comma-dangle`, `eol-last`, `quotes`, `unicode-bom`, `no-multiple-empty-lines`, `semi`, `brace-style`, `no-multi-spaces`.
+- `npm run lint` is now 0 errors and the 229 formatting warnings are gone. The remaining warnings are pre-existing and non-formatting (`boundaries/no-unknown-files` 151, `@typescript-eslint/no-unused-vars` 13, `react-hooks/exhaustive-deps` 3); they need code or config decisions and are tracked separately.
+- Gate: `npm run test:all` green (137 files / 1151 tests).
+
+[2026-10-19] feat | FinlyApp/src/components/DonutChart.tsx, FinlyApp/src/components/BarChart.tsx, FinlyApp/src/components/CategoryList.tsx, FinlyApp/src/screens/HomeScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/i18n (9 files), FinlyApp/tests/component/DonutChart.test.tsx, FinlyApp/tests/component/BarChart.test.tsx, FinlyApp/tests/component/CategoryList.test.tsx, FinlyApp/tests/screens/HomeScreen.test.tsx, FinlyApp/tests/screens/AllTransactionsScreen.test.tsx, FinlyApp/tests/screens/TransactionsScreen.test.tsx, FinlyApp/tests/screens/PersonalizationScreen.test.tsx, spec/features/003-settings-screen/1-spec.md, spec/features/001-home-screen/1-spec.md, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/constitution/3-roadmap.md
+- The privacy toggle is now **"Hide balances and totals"** (key `settings_hide_balances`, value only) and the eye labels became "Show amounts"/"Hide amounts" (`a11y_show_balances`/`a11y_hide_balances`), updated in all 9 languages through the i18n script; the setting no longer hides balances alone.
+- Closed the gaps: the Home donut/bar chart total and every category row total are masked with the setting (the header eye covers them), and the All transactions period total and the Transactions category total are masked and gained their own eye icon (reusing `useBalanceVisibility`, so the focus reset applies).
+- Individual amounts stay visible on purpose: transaction rows, transaction details and recurring-rule amounts are records, not balances or totals.
+- Fixed on the way: `CategoryList`'s memoised row renderer was missing the new `hidden` dependency, so the rows would not repaint when the eye toggled.
+- Tests: new `DonutChart` component test, mask + toggle cases for `BarChart` and `CategoryList`, screen cases for Home, All transactions and Transactions, and the Personalization screen test follows the new label.
+- Gate: `npm run test:all` green (138 files / 1159 tests).
+
+[2026-10-19] fix | FinlyApp/src/components/DonutChart.tsx, FinlyApp/src/components/BarChart.tsx, FinlyApp/src/components/CategoryList.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/tests/component/DonutChart.test.tsx, FinlyApp/tests/component/BarChart.test.tsx, FinlyApp/tests/component/CategoryList.test.tsx, FinlyApp/tests/screens/AllTransactionsScreen.test.tsx, FinlyApp/tests/screens/TransactionsScreen.test.tsx, spec/constitution/3-roadmap.md
+- Hidden balances and totals are now always gray (`textSecondary`) instead of keeping the value's color: the two new list headers colored the mask green/red, which leaked the sign of the value being hidden.
+- Home's chart totals and category-row totals were still drawn in `text`; they now use the same gray mask as the header and Accounts.
+- Category rows keep the name and the percentage visible; only the money is masked.
+- Tests assert the mask color (and that revealing restores the green/red total) in the DonutChart/BarChart/CategoryList cases and on both list screens.
+- Gate: `npm run test:all` green (138 files / 1160 tests).
+
+[2026-10-19] fix | FinlyApp/src/database/recurringService.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/utils/recurrence.ts, FinlyApp/src/utils/recurringRuleValidation.ts, FinlyApp/src/constants/types.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/RecurringRow.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/utils/recurringRuleValidation.test.ts, FinlyApp/tests/database/recurringService.test.ts, FinlyApp/tests/database/recurringRepo.test.ts, FinlyApp/tests/screens/RecurringScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Reconciliation runs are serialized behind a module-level queue, so the app-start/foreground/midnight triggers and the reconciliations a rule edit fires can no longer interleave their cursors; each run is now one DB transaction, as spec 028 always claimed.
+- Each rule reads its already-generated occurrence dates once per run instead of querying per occurrence: a long catch-up costs one query per rule, and the unique occurrence index stays as the last line of defence.
+- `nextDueOnOrAfter` fast-forwards daily/weekly schedules in O(1) and jumps to the nearest period for monthly/yearly ones, so a decades-old rule can no longer silently exhaust the 10,000-probe guard and return a past date; ended schedules still stop at their first occurrence past the end date.
+- The pause/resume switch is busy-guarded: it is disabled while the write is in flight, and a ref rejects a same-tick second tap so the optimistic pause cannot interleave with the reloaded list.
+- The service now validates the rule invariants before writing (blank name, non-positive/non-integer interval, end date not after the start). The name-length limit stays in the form so a legacy rule longer than it remains editable.
+- Repo hygiene: `updateWithTags` writes an explicit column allowlist (no more "everything except user_id"), the dead `getTagsByRuleIds` is removed, and `RepeatSection` reuses the shared edit-cursor helper.
+- Tests: the validation cases, the fast-forward behaviour (including the ended-schedule stop), two concurrent reconciliation runs, the column allowlist and the toggle guard.
+- Gate: `npm run test:all` green (139 files / 1180 tests).
+
+[2026-10-19] test | FinlyApp/tests (11 new suites), FinlyApp/tests/component/CalendarModal.test.tsx, FinlyApp/tests/component/OptionPickerModal.test.tsx, FinlyApp/tests/component/CategoryTransferModal.test.tsx, FinlyApp/tests/component/BulkCategoryTransferModal.test.tsx, FinlyApp/tests/database/indexedDbStorage.test.ts, FinlyApp/tests/i18n/render.test.ts, FinlyApp/tests/screens/CreateRecurringScreen.test.tsx, FinlyApp/tests/utils (arrays, validate, backupIO), FinlyApp/package.json, docs/harnesses.md, spec/constitution/3-roadmap.md
+- `CreateRecurringScreen` gained its missing suite: rule mode and labels, default account (configured, active, first non-Total), the custom-period single-day anchor, the existing-name preload (and its failure tolerance), and the submit mapping to the service plus the Home type switch.
+- Category delete messaging is covered for every path: transactions only, transactions + rules, no data (no move option) and the failed linked-data check (assumes data).
+- Both category transfer modals are tested: target and delete selection, Confirm gating while nothing is selected or not every item is resolved, and cancel.
+- `CalendarModal` (title/subtitle per period, day pick, confirm/cancel, custom range, reset on reopen) and `OptionPickerModal` (current selection, search filtering, no-results, short non-searchable lists) now have suites.
+- `useTransactionFilters` composes type + category + account + tag + search + period in one case.
+- Reconciliation tests: two overlapping runs are serialized without duplicates, plus the fast-forward and DST date-only matrix.
+- Pure units: `utils/arrays`, `database/validate`, `utils/backupIO` (native + web, with the platform/picker/share mocks) and `storage/indexedDb` (via `fake-indexeddb`, a new devDependency); the i18n function keys are rendered in all 9 languages to catch placeholder/`undefined` regressions.
+- `docs/harnesses.md` records the Node suite's limit (sql.js behind an `expo-sqlite` mock; the real driver is covered on device by the APK + Maestro) and that the drawer navigation is exercised by `flow-smoke`.
+- Gate: `npm run test:all` green (150 files / 1249 tests).
+
+[2026-10-19] docs | images/screenshots/v3-02-hamburger.png, README.md, README.es.md, README.ca.md, README.gl.md, README.eu.md, README.fr.md, README.de.md, README.pt.md, README.it.md, spec/constitution/3-roadmap.md
+- Added the refreshed drawer capture as `images/screenshots/v3-02-hamburger.png` (Recurring entry, v2.2.0 footer) and pointed the Screenshots section of the 9 READMEs at it; the shipped `v2-02-hamburger.png` is left untouched so GitHub keeps the existing v2 set intact.
+- The rest of the screenshot set is deferred to a pre-release task (mock-data build, every screen, `v3-NN-...` names) because the UI may still change before 2.2.0.
+- The 2.1.0 GitHub release line in the roadmap now reads as superseded by 2.2.0, and the stray Status/Spec fragment after the form-hints entry was collapsed.
+
+[2026-10-19] fix | FinlyApp/src/database/transactionQueue.ts, FinlyApp/src/database/engine.ts, FinlyApp/src/database/engine.web.ts, FinlyApp/src/database/database.ts, FinlyApp/tests/database/transactionQueue.test.ts, FinlyApp/tests/database/transactionConcurrency.test.ts, FinlyApp/tests/database/selfHeal.test.ts, spec/features/028-recurring-transactions/1-spec.md, spec/features/025-data-backup/1-spec.md, AGENTS.md, spec/constitution/3-roadmap.md
+- Every explicit SQLite transaction now goes through one module-level queue (`src/database/transactionQueue.ts`, wired into the native and web engines): a long reconciliation run can no longer overlap a factory reset, a delete-all, a config save or an import.
+- Fixed the release-blocking device report: "Delete all data" and "Reset to factory state" failed with `cannot start a transaction within a transaction` / `cannot rollback - no transaction is active` while the imported backlog was being materialized (the reset itself committed, but a concurrent config save surfaced a generic error).
+- `initDatabase` gained a self-heal: empty `users`/`accounts`/`categories`/`config` tables (an interrupted wipe in an older build) are re-seeded with the idempotent `INSERT OR IGNORE` seeds, leaving existing rows untouched.
+- Tests: a transaction-queue unit suite (ordering, rejection isolation, no overlap), concurrency tests (reset/clear/config save/import while a catch-up is running) and a self-heal suite (each empty table, half-applied wipe, idempotence).
+- Gate: `npm run test:all` green (153 files / 1264 tests).
+
+[2026-10-19] feat | FinlyApp/src/components/ModalFooter.tsx, FinlyApp/src/components/ConfirmationModal.tsx, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/tests/screens/DataScreen.test.tsx
+- The wipe and import dialogs now stay open with a small spinner in the confirm button, a disabled Cancel and a read-only input while the operation runs, so a double tap or a mid-flight cancel can no longer race the write.
+- `ModalFooter` gained `confirmLoading` and `cancelDisabled` (forwarded by `ConfirmationModal` as `busy`), used by the Data screen for delete-all-transactions, delete-all-data, factory reset and import.
+- Test: the factory-reset dialog stays open and disabled until the reset promise settles, and a second confirm press is ignored.
+
+[2026-10-19] fix | FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, FinlyApp/tests/database/transactionCreatedAt.test.ts, spec/features/016-transaction-details-screen/1-spec.md, spec/constitution/3-roadmap.md
+- The transaction-details footer labelled "Created" was showing the transaction's own date (stored at `00:00:00` for a backdated pick) instead of the record's `created_at`, so a transaction created today for 15 July read "Created 00:00 - 15 jul 2026"; it now shows the real creation timestamp (e.g. "Created 18:20 - 19 oct 2026"), while the Date row keeps the transaction date.
+- No stored data changed: inserts never set `created_at` (the column default `datetime('now','localtime')` already applied), so this is a display fix with no migration; spec 016 §7 was corrected (it had codified the wrong field).
+- Tests: the details fixture now uses distinct `date`/`created_at`/`updated_at` values and asserts both footer lines plus the Date row; a database test proves a backdated insert stores `created_at` as today.
+- Gate: `npm run test:all` green.
+
+[2026-10-19] fix | FinlyApp/src/components/DataRow.tsx, FinlyApp/src/components/TagChip.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/constants/testIds.ts, FinlyApp/tests/component/DataRow.test.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, spec/features/016-transaction-details-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Transaction-details rows now top-align the label with the first line of the value: a long comment (up to 4096 characters) or a block of tag chips no longer leaves "Comment"/"Tags" floating in the middle of the block.
+- The tag chips container takes the value column (`flex: 2`), so with many tags the chips wrap and right-align inside it instead of demanding the full row width and collapsing the label to zero size; every tag is shown and the card grows (the screen scrolls).
+- `TagChip` is capped to its container and can shrink, so an over-long tag name ellipsizes instead of being clipped by the card edge.
+- Tests: a `DataRow` suite (top alignment) and a details case with 12 long tags plus a long comment (both labels present, all chips rendered, value column `flex: 2`).
+- Gate: `npm run test:all` green.
+
+[2026-10-19] fix | FinlyApp/src/utils/recurrence.ts, FinlyApp/src/utils/recurrenceInfo.ts, FinlyApp/src/utils/formHints.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/database/recurringService.ts, FinlyApp/src/constants/types.ts, FinlyApp/src/i18n (9 files), FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/utils/recurrenceInfo.test.ts, FinlyApp/tests/utils/formHints.test.ts, FinlyApp/tests/component/TransactionForm.test.tsx, FinlyApp/tests/database/recurringService.test.ts, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- The per-rule catch-up limit is now 5,000 occurrences (daily ~13.7 years, weekly ~96 years) and the same limit guards creation and editing: a rule whose due backlog exceeds it cannot be saved. A daily rule started in 2014 now generates all 4,668 due transactions in one run, so "Next transaction" is always in the future instead of a past cursor stuck at 500 rows.
+- A refused rule is blocked by the form (Summary and bottom hint, Save disabled) and rejected by the service (`tooManyOccurrences`) without writing anything. The advice adapts to the draft: "Move the start date later or add an end date" when none is set, "Move the start date later or set an earlier end date" when one already exists (keys `recurring_too_many_occurrences` / `recurring_too_many_occurrences_end` in the 9 languages).
+- Recurrence previews expose whether the backlog was truncated, and the Summary shows the warning instead of a capped count; existing rules that were behind finish catching up on the next launch.
+- Tests: preview truncation and exact counts, the warning line (create and Future + past), the form hint/disabled Save, the service rejection, and a 4,481-occurrence single-run backfill.
+- Gate: `npm run test:all` green (155 files / 1277 tests).
+
+[2026-10-19] fix | FinlyApp/src/database/backup.ts, FinlyApp/src/database/backupService.ts, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/src/i18n (9 files), FinlyApp/tests/database/backup.test.ts, FinlyApp/tests/screens/DataScreen.test.tsx, spec/features/025-data-backup/1-spec.md, spec/constitution/3-roadmap.md
+- Importing a valid-JSON backup that is missing the data the app needs (no user, no account, or no expense/income category) is now rejected **before any write** with a dedicated "Incomplete backup" alert; previously such a file imported and left the app unable to create categories (the missing `users` row made the insert fail with an FK error) until the next launch self-healed it.
+- The check (`assertImportableBackup`) runs in `importBackup` after the version check and before `applyBackup`, so the current data is untouched; a genuine export always satisfies it (one user, one account, one category per type).
+- New i18n keys `settings_import_incomplete_title` / `settings_import_incomplete_message` in the 9 languages; the corrupt-file case keeps the existing "Invalid backup" message.
+- Tests: the pure completeness check (valid + each missing row), an import test asserting the data dump is unchanged, and the Data screen alert branch.
+
+[2026-10-19] feat | FinlyApp/src/constants/types.ts, FinlyApp/src/utils/accountSort.ts, FinlyApp/src/utils/categorySort.ts, FinlyApp/src/components/SortToggle.tsx, FinlyApp/src/components/CategoryGrid.tsx, FinlyApp/src/components/CategoryTile.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/i18n (9 files), FinlyApp/tests/utils/accountSort.test.ts, FinlyApp/tests/utils/categorySort.test.ts, FinlyApp/tests/component/CategoryGrid.test.tsx, FinlyApp/tests/screens/AccountsScreen.test.tsx, FinlyApp/tests/screens/CategoriesScreen.test.tsx, spec/features/011-accounts-screen/1-spec.md, spec/features/008-categories-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Accounts now has a sort toggle: **Name** (default, ascending) or **Balance** (descending on the first press), with the direction flipping from the active field or the arrow. The Total account always stays first (it is an aggregate), and sorting applies to the searched subset; ties break by display name, then id.
+- Categories now has a sort toggle: **Name** (default, ascending) or **Usage** (lifetime transactions, descending). Each tile shows its lifetime count as a small gray badge over the icon (hidden when the count is 0, and appended to the tile accessibility label); Others/Other stay pinned last in both modes.
+- New constants (`ACCOUNT_SORT_BY`, `CATEGORY_SORT_BY`), pure helpers (`utils/accountSort`, `utils/categorySort`) and `SortToggle` field builders; four i18n keys (name/balance/usage) in the 9 languages.
+- Both sorts are session-only, consistent with the other lists until the persistence follow-up.
+- Tests: the two sort helpers (pinned rows, natural directions, ties, no mutation), the Accounts screen order + direction flip, the Categories screen usage order + counts + pinned fallback, and the CategoryGrid count badge.
+
+[2026-10-19] style | FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/tests/screens/CategoriesScreen.test.tsx, spec/features/008-categories-screen/1-spec.md
+- Categories: the sort separator now spans the full width and the grid starts 16 px below it in normal and selection mode, matching Tags/Comments/Accounts.
+- Categories: the counter above the strip uses the shared COUNTER_STYLE, so the spacing rhythm is identical to the other list screens.
+- Updated the Categories screen test to expect the permanent 16 px gap below the separator.
+
+[2026-10-20] feat | FinlyApp/src/constants/types.ts, FinlyApp/src/utils/sortPreference.ts, FinlyApp/src/database/schemas.ts, FinlyApp/src/database/configDefaults.ts, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/tests/component/helpers/configStub.ts, FinlyApp/tests/utils/sortPreference.test.ts, FinlyApp/tests/database/schemas.test.ts, FinlyApp/tests/database/contractSuite.ts, FinlyApp/tests/hooks/useTransactionFilters.test.tsx, FinlyApp/tests/hooks/useTransactionListScreen.test.tsx, FinlyApp/tests/screens/{Tags,Comments,Recurring,Accounts,Categories}Screen.test.tsx, spec/features/008-categories-screen/1-spec.md, spec/features/011-accounts-screen/1-spec.md, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/features/018-tag-management/1-spec.md, spec/features/027-comments-management/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, AGENTS.md
+- Config: 14 sort keys (field + direction for Tags, Comments, Recurring, Transactions, All transactions, Accounts and Categories) with Zod enums, defaults and DB key mappings; no migration needed.
+- Screens now derive the sort from the config context and persist it through updateConfig; Transactions and All transactions keep independent preferences and filters/search stay session-only.
+- Shared sortPreference helpers (toggleSortDirection, nextSortPreference) and a TRANSACTION_SORT_SCOPES constant replace the duplicated toggle logic.
+- The test config stub now merges partials and re-renders like the real provider, so sort changes are exercised end to end.
+- Tests: sort helpers, Zod/sanitize cases, config get/save round-trip, screen restore + persist assertions and transaction hook scope tests; specs, roadmap and AGENTS updated.
+
+[2026-10-20] style | FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/features/020-tag-home-filter/1-spec.md, spec/constitution/3-roadmap.md
+- Transactions and All transactions: the recurring view chip (plus the category pill on All transactions) and the Date/Amount sort now sit on two separate rows, so every control is visible at a glance at 375px.
+- The first row keeps the horizontal scroll for long category selections; the sort row reuses the shared SortRow and its standard spacing. No behaviour change.
+- Specs 014/015/020 updated, roadmap and changelog entries added.
+
+[2026-10-20] style | FinlyApp/src/components/componentStyles.ts, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Controls: the account/balance header is separated from the filter rows by the standard 16px on Transactions, All transactions and Recurring (8px stack gap + the new CONTROLS_GROUP_TOP_GAP margin).
+- Recurring: the status filter and the sort now sit on separate rows (status pill first, sort below), matching the transaction screens.
+- Intra-group spacing stays 8px and the sort rows keep the shared SortRow padding; no behaviour change. Specs 014/015/028, roadmap and changelog updated.
+
+[2026-10-20] style | FinlyApp/src/components/ListItemRow.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/src/components/RecurringRow.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/components/RecurringStatusChip.tsx, FinlyApp/tests/component/ListItemRow.test.tsx, FinlyApp/tests/component/TransactionGroup.test.tsx, FinlyApp/tests/component/RecurringRow.test.tsx, FinlyApp/tests/screens/AccountsScreen.test.tsx, FinlyApp/tests/screens/CommentsScreen.test.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, spec/features/011-accounts-screen/1-spec.md, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/016-transaction-details-screen/1-spec.md, spec/features/027-comments-management/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- ListItemRow: new titleLines/subtitleLines props (default 1) let each list choose its cap.
+- Accounts notes use 3 lines, comments and transaction descriptions 2 lines, recurring rule names 2 lines, and the Transactions category header 2 lines; transaction details let the rule name wrap.
+- Recurring status chip label widened to 160 so multi-status labels are not clipped.
+- Category tiles, pills, modal rows and metadata keep one line by design. Tests, specs 011/014/016/027/028, roadmap and changelog updated.
+
+[2026-10-21] style | FinlyApp/src/navigation/AppNavigator.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Drawer: long menu labels now render on up to two lines (DrawerItem clamps string labels to one), so translations like Spanish 'Todas las transacciones' are not clipped; short labels stay single-line.
+- Headers: long titles use the compact size (14) and a bounded width, preventing the title from overlapping the header buttons; they ellipsize on very narrow screens while the drawer shows the full label.
+- 6-screens conventions, roadmap and changelog updated.
+
+[2026-10-21] style | FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/i18n (9 files), spec/features/015-all-transactions-screen/1-spec.md, spec/constitution/3-roadmap.md
+- All transactions: the category pill shows shorter type-aware labels (All expenses / All income) and its text cap grows from 120 to 160, so the label is never ellipsized in any of the 9 languages.
+- Translations updated in all 9 files; the neutral All categories label is unchanged.
+- Spec 015, roadmap and changelog updated.
+
+[2026-10-21] fix | FinlyApp/src/navigation/AppNavigator.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Header titles: one uniform size (17) for every screen and language, scaled only by the Settings text size; long titles now wrap to two lines instead of shrinking the font.
+- Removed the compact-size rule for labels over 18 characters; the bounded title never overlaps the header buttons and ellipsizes only beyond two lines.
+- Conventions (6-screens), roadmap and changelog updated.
+
+[2026-10-21] feat | FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/components/componentStyles.ts, FinlyApp/tests/component/RepeatSection.test.tsx, FinlyApp/tests/component/TransactionForm.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Recurring card: when the draft would create more than 5000 transactions, the card switches from the primary tint to the red error tint (border and background) until the rule is valid again.
+- Applies to both create and edit (including Future + past), matching the existing Save block; the helper is shared with the primary card colors.
+- Tests cover the primary/red tints and an edit that would exceed the limit; spec 028 and 6-screens updated.
+
+[2026-10-21] fix | FinlyApp/src/database/configDefaults.ts, FinlyApp/src/database/repositories/accountRepo.ts, FinlyApp/src/database/backup.ts, FinlyApp/src/database/backupService.ts, FinlyApp/src/database/storage/indexedDb.ts, FinlyApp/src/database/sqliteWeb.ts, FinlyApp/src/database/engine.web.ts, FinlyApp/src/database/engine.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/database/recurringService.ts, FinlyApp/src/utils/recurringRuleValidation.ts, FinlyApp/src/utils/errors.ts, FinlyApp/src/i18n (9 files), FinlyApp/app.json, FinlyApp/vitest.config.mts, FinlyApp/tests/database/{schemas,backup,contractSuite,contractTypes,indexedDbStorage,sqliteWebEngine,recurringService,transactionCreatedAt,helpers/sqliteHarness}, spec/features/025-data-backup/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/7-platform-differences.md, spec/constitution/3-roadmap.md
+- Config: per-field sanitize keeps the valid preferences when one value is corrupt.
+- Backups: require the app user (id 1), read the 9 tables in one transaction, validate imported recurring rules, re-check completeness in applyBackup and init the DB before export/import.
+- Accounts: deleting the total account no longer deletes its transactions.
+- Web: IndexedDB read/open failures fail closed, failed writes retry once then show a one-time alert, and a failed BEGIN no longer disables persistence.
+- Recurring: atomic create/edit, built-schedule last-day validation, cap parity with the form and an interval cap; failure-injection tests.
+- Tests: deterministic concurrency/created-at, harness user_version, raised Vitest timeouts; permissions block RECORD_AUDIO. Version stays 2.2.0/versionCode 3.
+
+[2026-10-21] feat | FinlyApp/src/components/CategoryFilterModal.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/utils/categoryFilterSelection.ts, FinlyApp/src/constants/testIds.ts, FinlyApp/src/i18n (9 files), FinlyApp/tests/utils/categoryFilterSelection.test.ts, FinlyApp/tests/component/CategoryFilterModal.test.tsx, FinlyApp/tests/screens/AllTransactionsScreen.test.tsx, spec/features/021-category-filter-modal/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/constitution/3-roadmap.md
+- All transactions category modal: preset chips All categories / All expenses / All income on the All tab (only the matching one on type tabs); tapping the active preset clears the selection.
+- Apply and the screen pill are selection-based: full sets read All categories / All expenses / All income, other selections keep the count; empty keeps the type-aware label.
+- Shared classifyCategorySelection helper, new testIDs, filter_apply_all now 'Apply (All categories)' in the 9 languages. Tests and specs 021/015 updated.
+
+[2026-10-21] refactor | FinlyApp/src/components (a11y roles/states), FinlyApp/src/screens (a11y + errors), FinlyApp/src/hooks/useSearchFilter.ts, FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/App.tsx, FinlyApp/src/navigation/AppNavigator.tsx, FinlyApp/src/i18n (9 files), FinlyApp/eslint.config.mjs, FinlyApp/package.json, FinlyApp/tests/component/{CategoryTile,ListItemRow,SortToggle,TabBar,PeriodTabs,ToggleRow,TransactionListBody}, FinlyApp/tests/screens/{CategoriesScreen,ModifyRecurringScreen,PersonalizationScreen}, FinlyApp/tests/component/RepeatSection.test.tsx, spec/constitution/3-roadmap.md
+- Accessibility: button/tab/switch roles and selected/checked states on rows, tiles, sort fields, tabs, filter chips and icon-only controls; localized sort direction, DayPicker today/selected and stepper labels (7 keys).
+- Lists: loading spinner instead of the empty-state flash, removed removeClippedSubviews, lexicographic date sort, and language-change refresh for localized sorts/search.
+- Errors: recurring name and comments loads are logged/surfaced; the App DB error is localized with details.
+- Lint: 0 warnings enforced (--max-warnings 0), boundaries noise off for non-app files, unused vars/imports and effect deps fixed, dead FormError/i18n keys removed, drawer inactive tint fixed.
+
+[2026-10-21] refactor | FinlyApp/src/utils/errors.ts, FinlyApp/App.tsx, FinlyApp/src/database/engine.web.ts, FinlyApp/src/database/photoCleanup.ts, FinlyApp/src/components/ErrorBoundary.tsx, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/context/ConfigContext.tsx, FinlyApp/src/hooks/useDeferredRefresh.ts, FinlyApp/src/hooks/useFocusLoad.ts, FinlyApp/src/hooks/useNameDuplicateCheck.ts, FinlyApp/src/hooks/usePhotos.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/screens/HomeScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/screens/CreateRecurringScreen.tsx, FinlyApp/tests/utils/errors.test.ts
+- Added logError(prefix, error, ...extra) and extended ERROR_PREFIXES with the load/refresh/internal log prefixes, so no call site hardcodes a developer error string.
+- Replaced every inline console.error('...') prefix across screens, contexts, hooks, ErrorBoundary, the web engine and photo cleanup; runWithErrorAlert now uses the same helper.
+- Added the missing config-load log (was silent) and unified the two photo-delete messages. Tests cover logError and the full prefix list.
+
+[2026-10-21] docs | docs/harnesses.md, spec/constitution/2-tech-stack.md, spec/constitution/3-roadmap.md, spec/constitution/5-validations.md, spec/constitution/6-screens.md, spec/features/002-db-design/1-spec.md, spec/features/004-add-transaction-screen/1-spec.md, spec/features/005-add-category-screen/1-spec.md, spec/features/006-create-category-screen/1-spec.md, spec/features/008-categories-screen/1-spec.md, spec/features/009-modify-delete-category-screen/1-spec.md, spec/features/011-accounts-screen/1-spec.md, spec/features/012-modify-delete-account-screen/1-spec.md, spec/features/013-create-account-screen/1-spec.md, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/017-modify-transaction-screen/1-spec.md, spec/features/018-tag-management/1-spec.md, spec/features/019-tag-transactions/1-spec.md, spec/features/020-tag-home-filter/1-spec.md, spec/features/022-total-account/1-spec.md, spec/features/023-photo-attachment/1-spec.md, spec/features/024-photo-on-web/1-spec.md, spec/features/025-data-backup/1-spec.md, spec/features/026-account-initial-balance/1-spec.md, spec/features/027-comments-management/1-spec.md
+- 002 now documents the real engine: sql.js + IndexedDB on web, versioned migrations (SCHEMA_VERSION 4), seed self-heal, the single runExclusiveDb queue, per-field config sanitize, the Total-account delete guard, recurring tables and the full config key set.
+- Removed stale web localStorage/web*Repo references from specs 004-022, fixed the tags persistence note in 017, and updated every language list to the 9 supported languages (018, 023-027).
+- 023 reconciled with 024: photos are available on web through the gallery/file picker with base64 data URIs, camera stays native-only, and cleanup removes native files while web only drops the array entry.
+- Constitution: tech-stack tree now labels Zod schemas correctly, adds Drizzle, transactionQueue and photoCleanup, and seeds 2 accounts; 5-validations gained the accessibility role/state conventions; 6-screens gained the list-body spinner and the current screen map; roadmap counts/logging updated.
+- Harness docs: baseline 161 files / 1341 tests, lint enforces 0 warnings, and Drizzle is documented as implemented (sqlite-proxy).
+- Docs-only change; npm run test:all remains green.
+
+[2026-10-21] docs | AGENTS.md
+- Lint documentation now states that npm run lint enforces 0 errors and 0 warnings (--max-warnings 0).
+
+[2026-10-21] refactor | FinlyApp/src/utils/errors.ts, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/tests/utils/errors.test.ts, FinlyApp/tests/screens/DataScreen.test.tsx
+- Added the seven data-screen prefixes to ERROR_PREFIXES: backupShare, backupExport, backupRead, backupImport, transactionsDeleteAll, dataDeleteAll and factoryReset.
+- DataScreen now logs every failure through logError; no inline console.error prefixes remain in the app.
+- Updated the prefix vocabulary test and asserted the shared prefix in the export-failure and incomplete-import tests; test:all green (161 files / 1341 tests).
+
+[2026-10-22] docs | images/screenshots/ (v3 set), README.md, README.es.md, README.ca.md, README.gl.md, README.eu.md, README.fr.md, README.de.md, README.pt.md, README.it.md, docs/screenshots.md, docs/harnesses.md, spec/constitution/3-roadmap.md, FinlyApp/package.json, FinlyApp/package-lock.json, FinlyApp/scripts/screenshots/fixture.json, FinlyApp/scripts/screenshots/manifest.mjs, FinlyApp/scripts/screenshots/capture.mjs, FinlyApp/tests/tooling/screenshots.test.ts
+- Added the reusable `npm run screenshots` workflow (Playwright Core + installed Chrome): it starts/stops Expo web, freezes the clock at 2026-10-21, imports the committed fixture and captures the manifest at 375x812.
+- Added the 20-screen v3 set from the mock backup, with two fresh empty states captured before import, plus the new Category filter, Comments and Recurring screens.
+- Updated all 9 READMEs to the v3 links and translated captions; the v2 files stay for history.
+- Added the fixture/README tooling test and docs/screenshots.md; harness baseline is now 162 files / 1343 tests.
+
+[2026-10-22] chore | .gitignore
+- Ignore the root node_modules cache directory created by Vitest runs; app dependencies remain in FinlyApp/node_modules.
+
+[2026-10-22] docs | images/screenshots/v3.1-02-hamburger.png, images/screenshots/v3-02-hamburger.png, README.md, README.es.md, README.ca.md, README.gl.md, README.eu.md, README.fr.md, README.de.md, README.pt.md, README.it.md, FinlyApp/scripts/screenshots/manifest.mjs, FinlyApp/scripts/screenshots/capture.mjs, FinlyApp/tests/tooling/screenshots.test.ts, docs/screenshots.md, spec/constitution/3-roadmap.md
+- Renamed the refreshed hamburger capture to v3.1-02-hamburger.png (previously tracked as v3-02-hamburger.png) so GitHub shows it as a new image instead of a modified binary.
+- Updated the 9 READMEs, the screenshot manifest/capture helper (per-screen name override), the tooling test and docs/screenshots.md.
+
+[2026-10-22] docs | images/screenshots/ (v3.2 set), README.md, README.es.md, README.ca.md, README.gl.md, README.eu.md, README.fr.md, README.de.md, README.pt.md, README.it.md, FinlyApp/scripts/screenshots/manifest.mjs, FinlyApp/scripts/screenshots/capture.mjs, FinlyApp/tests/tooling/screenshots.test.ts, docs/screenshots.md, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Rebuilt the README screenshots as the 30-screen v3.2 set in drawer order: Home, hamburger, Add transaction/date picker, All transactions, Recurring, Accounts, Categories, Tags, Comments, and Settings with its subpages last.
+- Added Modify transaction, New/Edit recurring rule, Create/Modify account, Create/Modify category, Create/Modify tag and Edit comment screenshots; create forms use filled examples and recurring forms capture the schedule section.
+- Replaced the old v3/v3.1 images with v3.2-<index>-<slug> files and updated all 9 READMEs with the exact manifest order and translated captions.
+- The tooling test now imports SCREENS/SET and enforces the README order; docs/screenshots, harness and roadmap updated. npm run test:all green (162 files / 1343 tests).
+
+[2026-10-22] fix | FinlyApp/src/screens/HomeScreen.tsx, FinlyApp/tests/screens/HomeScreen.test.tsx, FinlyApp/tests/component/helpers/appStub.ts, FinlyApp/src/hooks/usePhotos.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/utils/photoUtils.ts, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/database/backup.ts, FinlyApp/src/utils/backupIO.web.ts, FinlyApp/src/database/storage/indexedDb.ts, FinlyApp/modules/finly-share/ios/FinlyShare.podspec, FinlyApp/eas.json, .easignore, FinlyApp/tests/hooks/usePhotos.test.tsx, FinlyApp/tests/utils/photoUtils.test.ts, FinlyApp/tests/utils/backupIO.web.test.ts, FinlyApp/tests/database/backup.test.ts, FinlyApp/tests/database/indexedDbStorage.test.ts, spec/features/025-data-backup/1-spec.md
+- Home headline now uses the active account balance, so account initial balances are included again.
+- Photo removal no longer deletes files immediately; files are deleted only after a successful save/delete, and the details screen relies on the repository cleanup.
+- Web backup import cancels the focus fallback timer, waits for FileReader and surfaces read errors.
+- Backup imports now enforce USER_ID scoping, a real non-total account and category/type consistency, and normalize legacy date-only transaction dates.
+- Web IndexedDB failures now fail closed, and writes resolve only after the transaction commits.
+- Added the missing FinlyShare iOS podspec, a preview-simulator EAS profile and EAS ignore rules for native module build outputs.
+- Documented that native photo backups are URI-only and not portable across reinstalls/devices; test:all green (162 files / 1347 tests).
+
+[2026-10-22] fix | FinlyApp/modules/finly-share/ios/FinlyShareModule.swift
+- Defined the missing MissingCurrentViewControllerException used by the iOS share module; the first free EAS simulator build exposed the Swift compile error.
+
+[2026-10-22] fix | FinlyApp/src/context/AppContext.tsx, FinlyApp/src/context/ConfigContext.tsx, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/src/components/OptionPickerModal.tsx, FinlyApp/src/hooks/useResetOnOpen.ts, FinlyApp/src/hooks/useNameDuplicateCheck.ts, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/hooks/useDebouncedCallback.ts, FinlyApp/src/hooks/useSelectAndSearch.tsx, FinlyApp/src/hooks/useBulkDelete.ts, FinlyApp/src/hooks/useTransactionListScreen.tsx, FinlyApp/src/components/TransactionListBody.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/hooks/useFocusLoad.ts, FinlyApp/tests/context/AppContext.test.tsx, FinlyApp/tests/context/ConfigContext.test.tsx, FinlyApp/tests/screens/DataScreen.test.tsx, FinlyApp/tests/component/OptionPickerModal.test.tsx, FinlyApp/tests/component/CommentInput.test.tsx, FinlyApp/tests/hooks/useResetOnOpen.test.tsx, FinlyApp/tests/hooks/useNameDuplicateCheck.test.tsx, FinlyApp/tests/hooks/useBulkDelete.test.tsx, docs/harnesses.md, spec/constitution/3-roadmap.md
+- AppContext loads recurring/reference data once after config loading, applies Home defaults without reloading, initialises the period from config and guards stale/account-invalid state.
+- ConfigContext merges from the latest config, serializes saves, rolls back only the failed fields and returns a Promise; DataScreen applies the imported/reset config before resetAll.
+- OptionPicker tracks option values and useResetOnOpen only resets on open; duplicate-name checks, comment suggestions, select mode, bulk deletes and useFocusLoad now guard stale results and re-entry.
+- Added/updated context, picker, comment, bulk-delete and reset-on-open tests; test:all green (162 files / 1353 tests).
+
+[2026-10-22] fix | FinlyApp/src/utils/formatters.ts, FinlyApp/src/utils/periodNavigation.ts, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/screens/HomeScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/components/AccountTrigger.tsx, FinlyApp/src/components/CategoryList.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/components/calendars/MonthGrid.tsx, FinlyApp/src/components/ColorGrid.tsx, FinlyApp/src/components/ModalFooter.tsx, FinlyApp/src/components/CalendarPicker.tsx, FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/src/components/TransactionListBody.tsx, FinlyApp/src/components/BulkCategoryTransferModal.tsx, FinlyApp/src/components/CategoryTransferModal.tsx, FinlyApp/tests/utils/formatters.test.ts, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Week math and labels now share firstDayOfWeek, so Sunday-first weeks use Sunday-Saturday consistently.
+- Amount sorting uses a flat list without date headers; rows carry their own date.
+- Bulk category transfer uses one modal with inline steps instead of nesting a second RN Modal.
+- Applied UI fixes: Home list FAB padding, ColorGrid wrapping, TagSection search reset, MonthGrid year check, inactive destructive buttons, loading spinners, and a wider account pill for localized names.
+- Browser-verified the Catalan account pill, Sunday-first week label and flat amount-sorted list; test:all green (162 files / 1355 tests).
+
+[2026-10-22] fix | FinlyApp/src/components/ListItemRow.tsx, FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/tests/component/ListItemRow.test.tsx, FinlyApp/tests/component/TransactionGroup.test.tsx, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Added a meta slot to ListItemRow between the title and subtitle.
+- Amount-sorted rows now show the date with a calendar icon and semibold weight before the comment, followed by tags and the recurring name.
+- Added tests for the meta order and date-before-comment layout; test:all green (162 files / 1358 tests).
+
+[2026-10-22] fix | FinlyApp/src/components/DateIcon.tsx, FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/src/components/CalendarPicker.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/components/RecurringRow.tsx, FinlyApp/tests/component/TransactionGroup.test.tsx, FinlyApp/tests/component/CalendarPicker.test.tsx, FinlyApp/tests/component/RecurringRow.test.tsx, FinlyApp/tests/screens/TagsScreen.test.tsx, FinlyApp/tests/screens/CommentsScreen.test.tsx, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Added a shared DateIcon for calendar (scheduled dates) and time (history metadata).
+- Date-sort headers and the period button now show calendar icons; Tags/Comments/Recurring created-on use time icons, and Recurring next due uses a calendar icon.
+- Added icon assertions to the date header, period, tags, comments and recurring tests; test:all green (162 files / 1359 tests).
+
+[2026-10-22] fix | FinlyApp/src/components/DateIcon.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/components/RecurringRow.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Added a time icon beside the Created footer in Transaction details and a refresh icon beside Updated (the label differentiates history from edit).
+- Moved the date-label top margin from the text to the row, so the clock and calendar icons center with their labels in Tags, Comments and Recurring.
+- Extended the details footer test for both icons; test:all green (162 files / 1359 tests).
+
+[2026-10-22] feat | FinlyApp/src/components/CalendarPicker.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/utils/formatters.ts, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/CalendarPicker.test.tsx, FinlyApp/tests/utils/formatters.test.ts, FinlyApp/tests/i18n/range.test.ts, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Reworked custom period ranges into two lines: the start date on top and the end date below.
+- Replaced the generic from/to wording with localised, capitalised start/end phrases in all 9 languages; the start year appears only when the range crosses a year boundary.
+- Custom mode now uses the full width without empty arrow slots, and the calendar modal header shares the same wording.
+- Added all-language range tests and browser-checked Home and All transactions at 375px; test:all green (163 files / 1371 tests).
+
+[2026-10-23] feat | FinlyApp/src/components/CalendarPicker.tsx, FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/utils/formatters.ts, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/utils/formatters.test.ts, FinlyApp/tests/component/CalendarPicker.test.tsx, FinlyApp/tests/component/CalendarModal.test.tsx, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Day period now shows a short month in the compact box (22 Oct 2026); the modal keeps the full date.
+- Week period stays one line with short months, while the week modal subtitle shows full month names and the year and the week rows stay compact.
+- Reduced period-button horizontal padding to 12px so the short day/week strings stay safe on narrow screens and large text.
+- Renamed the custom "All" shortcut to "This year" and removed the redundant top title line; it covers 1 January to today.
+- Added formatter and calendar tests and browser-checked day, week and this-year states at 375px; test:all green (163 files / 1373 tests).
+
+[2026-10-23] fix | FinlyApp/src/i18n/ca.ts, FinlyApp/tests/i18n/encoding.test.ts, docs/harnesses.md
+- Corrected the Catalan Categories sort label from "?s" to "Ús".
+- Added an i18n source encoding test for replacement characters, mojibake and misplaced question marks, plus question-mark consistency with English; test:all green (164 files / 1375 tests).
+
+[2026-10-23] feat | FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/components/settings/CheckboxRow.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/PeriodPicker.test.tsx, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Replaced the custom period checkbox with the standard CheckboxRow checkbox and check mark.
+- Added quick ranges in a 2x2 grid: This year, 30 days, 90 days and 12 months, with one preset active at a time.
+- 30 and 90 days include today; 12 months uses a 12-month calendar shift. Pressing the active preset returns to the manual day picker.
+- Added PeriodPicker preset tests and browser-checked the checked state and ranges at 375px; test:all green (165 files / 1380 tests).
+
+[2026-10-23] fix | FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/utils/formatters.ts, FinlyApp/tests/utils/formatters.test.ts, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Reordered the quick-range presets into two centred rows: This year / 12 months, then 30 days / 90 days.
+- Fixed week modal subtitles to show both years when a week crosses a year boundary, e.g. 29 December 2025 - 4 January 2026.
+- Added cross-year week coverage; test:all green (165 files / 1381 tests).
+
+[2026-10-23] fix | FinlyApp/src/components/calendars/PeriodPicker.tsx, spec/constitution/3-roadmap.md
+- Switched the period presets from independently centred rows to equal-width columns, so both checkbox squares align horizontally while the grid stays centred.
+- Browser-verified the aligned 2x2 grid at 375px; test:all green (165 files / 1381 tests).
+
+[2026-10-23] fix | FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/tests/component/PeriodPicker.test.tsx, spec/constitution/3-roadmap.md
+- Period presets now derive their checked state from the current range, so the calendar stays visible when a preset is applied.
+- Changing dates in the calendar unchecks the matching preset, while selecting a preset's exact range checks it automatically.
+- Added tests for automatic checking, visible calendar, unchecking after edits and reapplying an active preset; test:all green (165 files / 1381 tests).
+
+[2026-10-23] feat | FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/ModalShell.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/components/calendars/calendarStyles.ts, FinlyApp/tests/component/PeriodPicker.test.tsx, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Calendar modals now use a fixed 82% height with a fixed header, scrollable body and fixed Cancel/OK footer, so all picker modes share the same window height.
+- Month and Year pickers now use a 3x4 grid, filling more of the standard-height body.
+- The custom period indicator is always visible, and selecting an end date resets the next tap to choosing a new start date.
+- Added reset-phase coverage and browser-verified the custom and month modals at 375px and a shorter viewport; test:all green (165 files / 1382 tests).
+
+[2026-10-23] feat | FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/components/calendars/MonthGrid.tsx, FinlyApp/src/components/calendars/YearGrid.tsx, FinlyApp/src/components/calendars/calendarStyles.ts, FinlyApp/src/utils/formatters.ts, FinlyApp/tests/component/CalendarModal.test.tsx, FinlyApp/tests/utils/formatters.test.ts, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Calendar headers now always reserve two left-aligned information lines: Day/Month/Year keep one line plus a blank line, Week shows full start/end dates with both years, and Period shows its Desde/hasta range.
+- Period presets and the start/end indicator now sit below the calendar, while Month and Year reserve an empty Month-row spacer so all picker top areas align.
+- Added week-line and calendar-header tests and browser-checked Day, Week, Month and Period modals at 375px; test:all green (165 files / 1384 tests).
+
+[2026-10-23] fix | FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx, spec/constitution/3-roadmap.md
+- Reduced the standard calendar modal height from 82% to 73%, so the Period presets and instruction fill the lower area and other pickers keep a smaller residual gap.
+- Restyled the Period start/end instruction as muted, left-aligned 12px hint text with no surface or button-like padding.
+- Browser-checked the Period and Day modals at 375px; test:all green (165 files / 1384 tests).
+
+[2026-10-23] fix | FinlyApp/src/components/CalendarModal.tsx, spec/constitution/3-roadmap.md
+- Calendar modals now size to their content up to the 85% cap instead of using a fixed 73% height.
+- Day, Week, Month and Year are compact, while Period remains taller for its presets and start/end hint; the forced bottom gap is gone.
+- Browser-checked the content-fit Period and Day modals at 375px; test:all green (165 files / 1384 tests).
+
+[2026-10-23] refactor | FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/CalendarPicker.tsx, FinlyApp/src/components/calendars/WeekPicker.tsx, FinlyApp/src/components/calendars/YearGrid.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/components/calendars/calendarStyles.ts, FinlyApp/src/utils/formatters.ts, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/CalendarModal.test.tsx, FinlyApp/tests/utils/formatters.test.ts, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Added correct Previous years/Next years accessibility labels to the Year picker arrows.
+- Consolidated week formatting around the shared week-lines helper, mapped the preset checkboxes and named the Month-row spacer height.
+- Changed the calendar modal cap to 94% with 12px overlay padding so the Period hint stays visible at 375x667.
+- Added year-page label coverage; test:all green (165 files / 1385 tests).
+
+[2026-10-23] docs | spec/features/001-home-screen/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, docs/programming-concepts.md
+- Updated Home spec 001 for the custom calendar modal, two-line headers, quick presets and derived checked state.
+- Documented the current calendar layout, Period presets/hint and Month/Year 3x4 alignment in 6-screens, and noted the shared presets in spec 015.
+- Corrected the All Transactions default period and refreshed the WeekPicker example in programming-concepts.
+
+[2026-10-23] fix | FinlyApp/src/components/RecurringRow.tsx, FinlyApp/tests/component/RecurringRow.test.tsx, FinlyApp/tests/screens/ModifyCategoryScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, docs/harnesses.md
+- Recurring rule rows now allow up to two frequency-summary lines and ellipsize after the second.
+- Added long-summary coverage and flushed pending deferred refreshes in ModifyCategoryScreen tests to prevent Vitest worker teardown errors.
+- test:all green (165 files / 1386 tests).
+
+[2026-10-23] refactor | FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/components/calendars/WeekPicker.tsx, FinlyApp/tests/component/CalendarModal.test.tsx, FinlyApp/app.json, FinlyApp/package.json, FinlyApp/package-lock.json, spec/constitution/2-tech-stack.md, spec/constitution/3-roadmap.md
+- Kept the Period header's second line blank while choosing an end date, avoiding a duplicated start date.
+- Added accessibility labels, selected state and button roles to WeekPicker rows.
+- Removed the unused DateTimePicker dependency and Expo config plugin and updated the tech-stack doc.
+- Browser-checked the Period modal at 320px and the pending-end header; test:all green (165 files / 1386 tests).
+
+[2026-10-23] feat | FinlyApp/src/database/schemas.ts, FinlyApp/src/database/configDefaults.ts, FinlyApp/src/screens/HomeScreen.tsx, FinlyApp/tests/component/helpers/configStub.ts, FinlyApp/tests/database/schemas.test.ts, FinlyApp/tests/screens/HomeScreen.test.tsx, spec/features/001-home-screen/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Saved the Home chart type as the `homeChartType` config preference, defaulting to the donut chart.
+- Home now reads the saved chart type and persists toggles through ConfigContext; the existing chart toggle updates the preference.
+- Added schema sanitization and Home toggle coverage; browser-verified bar chart persistence across reload; test:all green (165 files / 1387 tests).
+
+[2026-10-23] feat | FinlyApp/src/components/form/FormSectionHeader.tsx, FinlyApp/src/components/AmountInput.tsx, FinlyApp/src/components/CategoryGrid.tsx, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/components/DaySelector.tsx, FinlyApp/src/components/PhotoSection.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/TransactionForm.test.tsx, FinlyApp/tests/screens/AddTransactionScreen.test.tsx, FinlyApp/tests/screens/ModifyTransactionScreen.test.tsx, spec/features/004-add-transaction-screen/1-spec.md, spec/features/017-modify-transaction-screen/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/6-screens.md
+- Added a shared FormSectionHeader with a decorative text-colored icon and optional right-side action.
+- Added the missing Amount and Account headers, removed the duplicate label inside the account card and added a chevron-down affordance.
+- Added section icons to Categories, Date, Tags, Comment and Photo; changed the Recurring icon from primary to the title text color.
+- Updated form specs and screen documentation; test:all green (165 files / 1387 tests).
+
+[2026-10-23] fix | FinlyApp/src/components/form/FormSectionHeader.tsx, FinlyApp/src/components/AmountInput.tsx, FinlyApp/src/components/CategoryGrid.tsx, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/components/DaySelector.tsx, FinlyApp/src/components/PhotoSection.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/components/TransactionForm.tsx, spec/constitution/6-screens.md
+- Standardized the top gap of every form section header to 16px and removed the extra bottom margins that made Account and Photo spacing inconsistent.
+- Amount keeps an 8px top offset to combine with the TabBar's 8px margin, yielding the same 16px visual gap.
+- test:all green (165 files / 1387 tests).
+
+[2026-10-23] fix | FinlyApp/src/components/CommentInput.tsx, spec/constitution/6-screens.md
+- Moved the Comment counter inside the multiline comment box at the bottom-right, reserving bottom padding so it does not add a separate line.
+- This keeps the Photo section at the standard 16px header gap while preserving the counter below the comment text.
+- Browser-checked the Add transaction form; test:all green (165 files / 1387 tests).
+
+[2026-10-24] fix | FinlyApp/src/components/DaySelector.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/components/PhotoSection.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/navigation/AppNavigator.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/TransactionForm.test.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, spec/features/004-add-transaction-screen/1-spec.md, spec/features/017-modify-transaction-screen/1-spec.md, spec/constitution/6-screens.md
+- Aligned section icons everywhere: Date calendar-outline, Tags pricetag-outline, Comment chatbubble-ellipses-outline and Photos image-outline.
+- Renamed the form Photo section to Photos (add_photos) while keeping the add-photo action text singular.
+- Updated Transaction details, drawer/screen headers and Comments empty state; browser-verified the form and details at 375px.
+- Corrected the Add/Modify specs: the web photo section is visible with gallery-only picking.
+- test:all green (165 files / 1387 tests).
+
+[2026-10-24] docs | spec/features/023-photo-attachment/1-spec.md
+- Documented the Photos section title and image-outline icon in the photo-attachment spec.
+
+[2026-10-24] fix | FinlyApp/src/components/TransactionForm.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/6-screens.md
+- Aligned the recurring Name focus scroll with the Recurring header top, removing the strip of the previous Day section above it.
+- Updated the recurring and keyboard-handling specs to document the header-aligned reveal.
+- Verified on the finly_test Android emulator; test:all green (165 files / 1387 tests).
+
+[2026-10-25] refactor | FinlyApp/src/components/form/formStyles.ts, FinlyApp/src/components/form/LabeledTextField.tsx, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/components/AccountForm.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx, FinlyApp/src/screens/CreateTagScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/tests/component/LabeledTextField.test.tsx, spec/features/012-modify-delete-account-screen/1-spec.md, spec/features/013-create-account-screen/1-spec.md, spec/features/027-comments-management/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Added a shared multiline inline counter placement; transaction Comment, Modify comment and Account note now render it inside the input at the bottom-right.
+- Kept single-line name counters below their inputs and normalized the five spacing variants to the shared formStyles.counter.
+- Reused the inline tokens in CommentInput and added LabeledTextField coverage for both placements.
+- Updated account/comment specs, design docs, roadmap and harness baseline; browser-verified at 375px; test:all green (165 files / 1389 tests).
+
+[2026-10-25] fix | FinlyApp/App.tsx, FinlyApp/src/components/WebTabBlocked.tsx, FinlyApp/src/hooks/useWebTabLock.ts, FinlyApp/src/context/ConfigContext.tsx, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/database/maintenance.ts, FinlyApp/src/database/backupService.ts, FinlyApp/src/database/photoCleanup.ts, FinlyApp/src/utils/photoData.ts, FinlyApp/src/utils/photoUtils.ts, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/src/screens/HomeScreen.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/components/calendars/WeekPicker.tsx, FinlyApp/src/components/calendars/MonthGrid.tsx, FinlyApp/src/components/calendars/YearGrid.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/CalendarModal.test.tsx, FinlyApp/tests/component/helpers/appStub.ts, FinlyApp/tests/context/AppContext.test.tsx, FinlyApp/tests/context/ConfigContext.test.tsx, FinlyApp/tests/database/backupCleanup.test.ts, FinlyApp/tests/database/maintenance.test.ts, FinlyApp/tests/database/photoCleanup.test.ts, FinlyApp/tests/hooks/useTransactionFilters.test.tsx, FinlyApp/tests/hooks/useWebTabLock.test.tsx, FinlyApp/tests/screens/HomeScreen.test.tsx, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, spec/features/001-home-screen/1-spec.md, spec/features/025-data-backup/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, spec/constitution/6-screens.md, spec/constitution/7-platform-differences.md, docs/harnesses.md
+- Config saves recover the persisted values after a failed queued write, so an older failure cannot silently drop a newer preference.
+- Factory reset, delete-all-data and import clean old native photos after commit; import keeps files still referenced by the snapshot.
+- Web now holds an exclusive finly-db lock and blocks a second tab with a Try again screen instead of overwriting the first tab's data.
+- Refreshing accounts replaces the active account object; refreshing tags prunes invisible Home and local tag filters.
+- Recurring delete reports failures and ignores a second confirm; startup load failures show a retry screen instead of an infinite spinner.
+- WeekPicker, MonthGrid and YearGrid follow the date prop when reopened after a fast-arrow date change.
+- Added tests and updated specs/platform notes; browser-verified the two-tab guard at 375px; test:all green (168 files / 1409 tests).
+
+[2026-10-25] test | FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/tests/hooks/useTransactionFilters.test.tsx
+- Guarded local tag-filter pruning until the tag list finishes loading, so route tag filters are not cleared on first render.
+- test:all green (168 files / 1410 tests).
+
+[2026-10-25] fix | FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/CalendarPicker.tsx, FinlyApp/src/components/DaySelector.tsx, FinlyApp/src/components/calendars/DayPicker.tsx, FinlyApp/src/components/calendars/WeekPicker.tsx, FinlyApp/src/components/calendars/MonthGrid.tsx, FinlyApp/src/components/calendars/YearGrid.tsx, FinlyApp/src/components/calendars/PeriodPicker.tsx, FinlyApp/src/components/calendars/MonthNav.tsx, FinlyApp/src/components/calendars/YearNav.tsx, FinlyApp/src/hooks/useToday.ts, FinlyApp/src/utils/formatters.ts, FinlyApp/tests/component/CalendarModal.test.tsx, FinlyApp/tests/component/CalendarPicker.test.tsx, FinlyApp/tests/component/PeriodPicker.test.tsx, FinlyApp/tests/hooks/useToday.test.tsx, FinlyApp/tests/utils/formatters.test.ts, spec/constitution/3-roadmap.md, spec/constitution/6-screens.md, docs/harnesses.md
+- Disabled custom-range OK until the end date is selected; tapping the same day twice still creates a one-day range.
+- Added both years to compact week labels when the week crosses a year boundary.
+- Added a shared useToday hook that refreshes at midnight and on app/tab activation for the calendar pickers and DaySelector.
+- Added 90-day/12-month preset, minDate forwarding and cross-year tests; browser-verified the custom-range OK state at 375px; test:all green (169 files / 1415 tests).
+
+[2026-10-25] fix | FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/components/form/LabeledTextField.tsx, FinlyApp/src/components/PhotoSection.tsx, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/components/form/FormSectionHeader.tsx, FinlyApp/src/components/AmountInput.tsx, FinlyApp/src/components/DataRow.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/components/DaySelector.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/form/PrimaryButton.tsx, FinlyApp/src/navigation/AppNavigator.tsx, FinlyApp/tests/component/TransactionForm.test.tsx, FinlyApp/tests/component/LabeledTextField.test.tsx, FinlyApp/tests/component/PhotoSection.test.tsx, FinlyApp/tests/component/CommentInput.test.tsx, FinlyApp/tests/component/FormSectionHeader.test.tsx, FinlyApp/tests/component/DataRow.test.tsx, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, spec/constitution/3-roadmap.md, spec/constitution/6-screens.md, docs/harnesses.md
+- Account picker now has a button role and Account: <name> label; its chevron is hidden.
+- LabeledTextField uses the visible label as the accessible name, covering the Account Note field.
+- Photo add/remove and source options expose button roles; the add tile is labelled Add photo.
+- Comment suggestions are pressable/focusable buttons while keeping the blur guard.
+- Section titles are headings; decorative icons/currency symbols are hidden; chips/options expose selected state and disabled steppers dim.
+- Added hit areas, tests and accessibility docs; browser-verified account/photo/heading labels at 375px; test:all green (170 files / 1418 tests).
+
+[2026-10-25] fix | FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/CommentInput.test.tsx, spec/features/004-add-transaction-screen/1-spec.md, spec/features/017-modify-transaction-screen/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Moved the comment suggestions panel inside the Comment section, below its header and above the input, so it no longer touches the Tags area.
+- Added a bulb icon, localized Suggestions heading and Tap to reuse hint; suggestion rows are 44px and expose an accessibility hint.
+- Updated tests and comment/accessibility specs; browser-verified the panel at 375px; test:all green (170 files / 1418 tests).
+
+[2026-10-26] chore | FinlyApp/package.json, FinlyApp/package-lock.json
+- Bumped Expo to ~57.0.31 and expo-sharing to ~57.0.24.
+- expo install --check and expo-doctor (21/21) pass; test:all green (170 files / 1418 tests).
+- Prebuilt Android and rebuilt the release APK; browser smoke-tested Home and Add transaction.
+
+[2026-10-26] fix | FinlyApp/src/components/form/CharCounter.tsx, FinlyApp/src/components/form/LabeledTextField.tsx, FinlyApp/src/components/form/formStyles.ts, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/tests/component/LabeledTextField.test.tsx, FinlyApp/tests/component/CommentInput.test.tsx, FinlyApp/tests/screens/ModifyCategoryScreen.test.tsx, FinlyApp/tests/screens/CreateAccountScreen.test.tsx, FinlyApp/tests/screens/ModifyCommentScreen.test.tsx, spec/constitution/3-roadmap.md, spec/constitution/6-screens.md, docs/harnesses.md
+- LabeledTextField now keeps legacy values above the configured limit editable; raw Comment and Modify Category inputs follow the same max(limit, value.length) rule.
+- Inline counter reserve is derived from the scaled counter height and OS font scale, preventing overlap at Large text.
+- Added over-limit and large-text coverage for LabeledTextField, CommentInput, ModifyCategory, CreateAccount Note and Modify Comment; test:all green (170 files / 1425 tests).
+
+[2026-10-26] test | FinlyApp/tests/screens/DataScreen.test.tsx, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx
+- Mocked the maintenance cleanup wrappers in DataScreen tests, removing the accidental getDatabase warning.
+- Silenced the expected recurring-delete console error while still asserting the failure path.
+- Reran the suite twice with no act, getDatabase or recurring-delete warnings; test:all green (170 files / 1425 tests).
+
+[2026-10-26] fix | FinlyApp/src/database/backup.ts, FinlyApp/src/utils/photoUtils.ts, FinlyApp/tests/database/backup.test.ts, FinlyApp/tests/utils/photoUtils.test.ts, spec/features/025-data-backup/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Backup import now rejects bad recurring next-due/anchor/active values, missing account/category/rule/tag references and Total-account rows before writing.
+- Generated transactions must reference a rule and carry a valid date-only recurrence date.
+- Native photo deletion is restricted to the app documents/photo root, ignoring arbitrary file URIs from imported backups.
+- Added validation/allowlist tests; test:all green (170 files / 1427 tests).
+
+[2026-10-26] fix | FinlyApp/src/database/transactionQueue.ts, FinlyApp/src/database/repositories/accountRepo.ts, FinlyApp/src/database/repositories/categoryRepo.ts, FinlyApp/src/database/repositories/tagRepo.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/database/repositories/transactionRepo.writes.ts, FinlyApp/tests/database/transactionConcurrency.test.ts, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Reproduced a direct write joining an open catch-up transaction and being rolled back with it.
+- Added runExclusiveWrite/serializeWrites and routed standalone account, category, tag, recurring and comment writes through the shared transaction queue.
+- Added a concurrency regression test; test:all green (170 files / 1428 tests).
+
+[2026-10-26] fix | FinlyApp/src/hooks/useKeyboardInset.ts, FinlyApp/tests/hooks/useKeyboardLift.test.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Hidden modals no longer accumulate keyboard height; useKeyboardLift only grows while visible and resets while hidden.
+- This fixes the Month/Week/Year picker opening clipped at the top after using a form keyboard.
+- Added a regression test and verified the Month modal centered on the Android release APK; test:all green (170 files / 1429 tests).
+
+[2026-10-26] fix | FinlyApp/src/hooks/usePhotos.ts, FinlyApp/tests/hooks/usePhotos.test.tsx, spec/features/023-photo-attachment/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Awaited the asynchronous File.copy before appending a new photo URI to preview state.
+- This fixes the first camera/gallery photo rendering as a black square while later photos appeared normally.
+- Added a deferred-copy regression test; test:all green (170 files / 1430 tests).
+
+[2026-10-26] fix | FinlyApp/src/components/CalculatorModal.tsx, FinlyApp/tests/component/CalculatorModal.test.tsx, spec/features/007-calculator/1-spec.md, spec/constitution/3-roadmap.md
+- Calculator: '=' now commits the rounded result, a following operator chains from it, a digit starts fresh, and reopening resets the modal
+- Calculator: added commit-on-equals and reset-on-open regression tests.
+
+[2026-10-26] fix | FinlyApp/src/utils/recurrence.ts, FinlyApp/src/utils/recurrenceInfo.ts, FinlyApp/src/i18n/*.ts, FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/utils/recurrenceInfo.test.ts, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Recurring: an ended rule no longer shows a phantom Next date one day past its end date; the Summary says it has ended and the anchor keeps the post-end cursor
+- Recurring: added the ended-Summary message in the 9 languages and regression tests for the anchor, plan, Summary and edit screen.
+
+[2026-10-26] fix | FinlyApp/src/utils/recurrence.ts, FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/utils/recurrenceInfo.test.ts, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Recurring: extending a shortened end date now checks the rule's generated occurrence dates, so an already-created today is skipped and the Summary starts at tomorrow
+- Recurring: added regression tests for the anchor, plan, Summary and edit screen.
+
+[2026-10-26] fix | FinlyApp/src/components/ModalShell.tsx, FinlyApp/tests/component/ModalShell.test.tsx, spec/constitution/6-screens.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- ModalShell now dismisses the focused form input when it opens, so a modal's keyboard cannot re-trigger the form reveal scroll behind it (e.g. Recurring name then Add tag)
+- Added a ModalShell regression test; test:all green (171 files / 1445 tests).
+
+[2026-10-26] fix | FinlyApp/src/components/SelectionCheckbox.tsx, FinlyApp/src/components/RecurringRow.tsx, FinlyApp/src/components/SelectAllRow.tsx, FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/tests/component/SelectionCheckbox.test.tsx, FinlyApp/tests/component/RecurringRow.test.tsx, FinlyApp/tests/screens/AccountsScreen.test.tsx, FinlyApp/tests/screens/RecurringScreen.test.tsx, spec/constitution/6-screens.md, spec/features/011-accounts-screen/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Selection: added a shared leading SelectionCheckbox and standardized Accounts, Recurring, Tags, Comments, Transactions and Select all on it
+- Accounts keeps the balance visible in select mode; the Recurring checkbox, badge and text now share one tappable left area
+- Added selection regression tests; test:all green (172 files / 1449 tests).
+
+[2026-10-26] fix | FinlyApp/src/constants/calendar.ts, FinlyApp/src/utils/calendarBounds.ts, FinlyApp/src/components/calendars/YearGrid.tsx, FinlyApp/src/components/calendars/MonthGrid.tsx, FinlyApp/src/components/calendars/WeekPicker.tsx, FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/constants/testIds.ts, FinlyApp/tests/utils/calendarBounds.test.ts, FinlyApp/tests/component/CalendarModal.test.tsx, FinlyApp/tests/component/DayPicker.test.tsx, FinlyApp/tests/component/MonthGrid.test.tsx, FinlyApp/tests/component/YearGrid.test.tsx, FinlyApp/tests/component/WeekPicker.test.tsx, spec/constitution/6-screens.md, spec/features/001-home-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Calendar: added the absolute 1900-01-01 floor and made every picker use the shared bounds
+- Calendar: YearGrid now uses fixed 1900-anchored 12-year pages and no longer recenters when a year is selected
+- Calendar: WeekPicker keeps six fixed slots with blank placeholders and no longer jumps months when a shared week is tapped
+- Added calendar bounds, MonthGrid, YearGrid and WeekPicker regression tests; test:all green (175 files / 1460 tests).
+
+[2026-10-26] fix | FinlyApp/src/components/calendars/CalendarNavRow.tsx, FinlyApp/src/components/calendars/MonthNav.tsx, FinlyApp/src/components/calendars/YearNav.tsx, FinlyApp/src/components/calendars/YearGrid.tsx, FinlyApp/src/components/calendars/NavArrows.tsx, FinlyApp/tests/component/MonthNav.test.tsx, FinlyApp/tests/component/YearNav.test.tsx, FinlyApp/tests/component/YearGrid.test.tsx, spec/constitution/6-screens.md, spec/features/001-home-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Calendar nav: replaced the cramped arrows with a shared row using 22px icons, compact boxes with 44px+ effective tap targets, equal side slots and a perfectly centred title
+- Calendar nav: added a separated double-arrow jump to the current year/month/page when it is at least two steps away
+- Calendar nav: increased the gap between year and month rows; added MonthNav/YearNav/YearGrid jump tests; test:all green (176 files / 1465 tests).
+
+[2026-10-26] fix | FinlyApp/src/hooks/useKeyboardInset.ts, FinlyApp/src/components/ModalShell.tsx, FinlyApp/tests/hooks/useKeyboardLift.test.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Modal keyboard lift now releases 250ms after the keyboard hides, so blurring the currency/search field returns the modal to its normal centred size
+- The short hold still lets a footer-button tap finish before the modal moves; added a release-delay regression test
+- test:all green (176 files / 1466 tests).
+
+[2026-10-26] fix | FinlyApp/src/utils/recurrence.ts, FinlyApp/src/utils/recurrenceInfo.ts, FinlyApp/src/hooks/useRecurringEditScope.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/tests/utils/recurrenceInfo.matrix.test.ts, FinlyApp/tests/database/recurringService.lifecycle.test.ts, FinlyApp/tests/utils/recurrenceInfo.test.ts, FinlyApp/tests/utils/recurrence.test.ts, FinlyApp/tests/hooks/useRecurringEditScope.test.tsx, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, FinlyApp/tests/component/recurringSummary.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Recurring: Future + past now shows 'Back-fill from: <date>' when it creates missed occurrences and 'Updates N past transactions' when a past-affecting detail changed
+- Recurring: fixed shortening an end date moving a future cursor backwards; extending it later resumes from the correct occurrence
+- Added a broad hint/lifecycle battery across multiple rules, sequential type/date edits and both scopes; test:all green (178 files / 1490 tests).
+
+[2026-10-26] fix | FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/database/recurringService.ts, FinlyApp/src/utils/recurrenceInfo.ts, FinlyApp/tests/database/recurringRepo.test.ts, FinlyApp/tests/database/recurringService.lifecycle.test.ts, FinlyApp/tests/utils/recurrenceInfo.matrix.test.ts, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Recurring: Future + past now updates only generated transactions inside the new start/end window; transactions outside stay linked but unchanged
+- Recurring: the Summary's update count uses the same window, so moving the start to 19 Oct reports 8 updates from 1-26 Oct instead of 26
+- Added repository, hint-matrix, lifecycle and screen tests for the start/end window; test:all green (178 files / 1496 tests).
+
+[2026-10-26] test | FinlyApp/tests/utils/recurrenceInfo.matrix.test.ts, FinlyApp/tests/database/recurringService.lifecycle.test.ts, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, spec/constitution/3-roadmap.md
+- Expanded the recurring hint/lifecycle battery with future-start and ended-rule chains, start/end window cases, sequential edits and date-only scope assertions
+- test:all green (178 files / 1504 tests).
+
+[2026-10-26] feat | FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/i18n/*.ts, FinlyApp/tests/component/TransactionForm.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Recurring: the name placeholder now follows the selected type: 'e.g. Rent' for expenses and 'e.g. Salary' for income
+- Added the income placeholder in the 9 languages and a type-aware form test; test:all green (178 files / 1504 tests).
+
+[2026-10-26] refactor | FinlyApp/src/i18n/*.ts, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/components/TransactionForm.tsx
+- i18n: renamed the expense recurring-name placeholder key to repeat_name_placeholder_expense for symmetry with repeat_name_placeholder_income
+- test:all green (178 files / 1504 tests).
+
+[2026-10-26] fix | FinlyApp/src/components/CategoryFilterModal.tsx, FinlyApp/tests/component/CategoryFilterModal.test.tsx, spec/features/021-category-filter-modal/1-spec.md, spec/constitution/3-roadmap.md
+- Category filter modal now renders every visible tile and the type-matching preset as selected when the filter is empty, matching the Apply label and screen pill.
+- Tapping a category from the all-selected state removes it from the full type set; empty=no-filter semantics and preset toggling are unchanged.
+- Updated spec 021 and added modal tests for All/Expenses/Income, partial selections, search and deselect/reselect; test:all green (178 files / 1508 tests).
+
+[2026-10-26] fix | FinlyApp/src/components/CategoryFilterModal.tsx, FinlyApp/tests/component/CategoryFilterModal.test.tsx, FinlyApp/src/i18n/*.ts, spec/features/021-category-filter-modal/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Category filter modal now requires at least one category: opening with no filter preselects every category for the tab, tapping the active preset clears all, Apply is disabled and reads Apply (0), and a hint asks for at least one category.
+- Deselecting the last tile behaves the same, and selecting a tile re-enables Apply; the screen's empty filter state still means no filter.
+- Added filter_select_at_least_one in all 9 languages, updated specs 021/015 and modal tests; test:all green (178 files / 1509 tests).
+
+[2026-10-26] style | FinlyApp/src/components/CategoryFilterModal.tsx, spec/features/021-category-filter-modal/1-spec.md, spec/constitution/3-roadmap.md
+- On the All tab, the All categories preset now occupies its own first row, with All expenses and All income sharing the second row; type tabs keep one preset row.
+- Updated spec 021 and roadmap; test:all green (178 files / 1509 tests).
+
+[2026-10-26] fix | FinlyApp/src/components/CategoryFilterModal.tsx, FinlyApp/tests/component/CategoryFilterModal.test.tsx, spec/features/021-category-filter-modal/1-spec.md, spec/constitution/3-roadmap.md
+- The Expenses and Income tabs now keep their section title above the category grid, matching the All tab.
+- Updated spec 021 and modal tests; test:all green (178 files / 1509 tests).
+
+[2026-10-26] fix | .github/workflows/ci.yml, FinlyApp/tests/component/helpers/configStub.ts, spec/constitution/3-roadmap.md
+- CI now runs on pinned ubuntu-24.04 with a 15-minute timeout, avoiding the ubuntu-latest migration to Ubuntu 26.
+- Config-stub notifications now run inside React act, removing the FormSectionHeader/SettingsRow/AppProvider update warnings.
+- test:all green twice locally, including once with CI=true (178 files / 1509 tests).
+
+[2026-10-27] fix | FinlyApp/src/components/TransactionForm.tsx, FinlyApp/src/database/recurringService.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/utils/recurrence.ts, FinlyApp/tests/database/recurringService.test.ts, FinlyApp/tests/hooks/useTransactionForm.test.tsx, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Recurring rules now stay started after a Future-only edit moves their start to the future; moving the start back to the past no longer back-fills occurrences or enables Future + past.
+- The form, pre-save skip warning and service layer now use generated occurrence history to distinguish fresh rules from started ones; genuinely fresh future rules still re-anchor.
+- Added form, screen and service regressions; browser-verified the future-then-past flow at 375px; test:all green (178 files / 1512 tests).
+
+[2026-10-27] feat | FinlyApp/src/database/configDefaults.ts, FinlyApp/src/database/repositories/configRepo.ts, FinlyApp/src/database/schemas.ts, FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/tests/component/helpers/configStub.ts, FinlyApp/tests/database/configDefaults.test.ts, FinlyApp/tests/database/contractSuite.ts, FinlyApp/tests/database/schemas.test.ts, FinlyApp/tests/hooks/useTransactionFilters.test.tsx, FinlyApp/tests/screens/AllTransactionsScreen.test.tsx, FinlyApp/tests/screens/RecurringScreen.test.tsx, FinlyApp/tests/screens/TransactionsScreen.test.tsx, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Persisted the recurring view pill independently per transaction screen, the All-transactions category filter (with deletion pruning, full-selection normalization and type-tab reset), and the Recurring status filter; type/account, period, tag and search filters remain session-only.
+- Config array values now serialize as JSON; added schema/default/serialization and screen regressions, including config-stub resets between screen tests.
+- Browser-verified persistence across reloads at 375px; test:all green (178 files / 1519 tests).
+
+[2026-10-27] feat | FinlyApp/src/database/configDefaults.ts, FinlyApp/src/database/schemas.ts, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/tests/component/helpers/configStub.ts, FinlyApp/tests/database/configDefaults.test.ts, FinlyApp/tests/database/contractSuite.ts, FinlyApp/tests/database/schemas.test.ts, FinlyApp/tests/screens/AllTransactionsScreen.test.tsx, spec/features/015-all-transactions-screen/1-spec.md, spec/constitution/3-roadmap.md
+- All-transactions category filter is now remembered per type tab (All/Expenses/Income); switching tabs restores that tab's selection instead of clearing it.
+- Added expense/income category config keys, per-tab pruning and full-selection normalization, and tests for independent selections and persistence.
+- Browser-verified per-tab selections survive tab switches and reloads; test:all green (178 files / 1520 tests).
+
+[2026-10-27] refactor | FinlyApp/src/utils/categoryFilterSelection.ts, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/src/database/schemas.ts, FinlyApp/src/database/repositories/configRepo.ts, FinlyApp/tests/utils/categoryFilterSelection.test.ts, spec/constitution/3-roadmap.md
+- Derived the All-transactions category selections and Recurring status filter directly from config, removing duplicated local state and sync effects.
+- Centralized the per-tab category config keys/patch, added normalizeCategorySelection, deduplicated config array schemas and renamed usesOwnPreferences.
+- No behavior change; test:all green (178 files / 1522 tests) and browser-verified persisted per-tab selections plus the Recurring status filter.
+
+[2026-10-27] ~ | FinlyApp/src/utils/categoryFilterSelection.ts, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/src/utils/recurrence.ts, FinlyApp/src/database/recurringService.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/src/hooks/useRecurringEditScope.ts, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/components/TransactionForm.tsx, docs/recurring-rules.md, docs/programming-concepts.md, docs/harnesses.md, spec/features/015-all-transactions-screen/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, spec/constitution/3-roadmap.md
+- Normalize category filters against the active tab and prune wrong-type ids
+- Suspend category-filter pruning while an import publishes config and categories
+- Stop paused rules from recovering skips, showing the skip dialog, applying the catch-up guard or saving scope-only changes
+- Keep ended cursors from rewinding under Future + past and ignore existing dates in skip counts
+- Make resume atomic by reactivating and materializing in one transaction
+- Add the recurring rules behavior guide with scenarios and worked examples.
+
+[2026-10-27] fix | FinlyApp/App.tsx, FinlyApp/src/database/sqliteWeb.ts, FinlyApp/src/database/storage/indexedDb.ts, FinlyApp/src/database/database.ts, FinlyApp/src/hooks/useWebTabLock.ts, FinlyApp/src/database/configDefaults.ts, FinlyApp/src/database/repositories/configRepo.ts, FinlyApp/src/context/ConfigContext.tsx, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/components/CalculatorModal.tsx, FinlyApp/src/components/calendars/WeekPicker.tsx, FinlyApp/src/components/calendars/MonthGrid.tsx, FinlyApp/src/components/calendars/YearGrid.tsx, spec/features/001-home-screen/1-spec.md, spec/features/002-db-design/1-spec.md, spec/features/007-calculator/1-spec.md, spec/constitution/3-roadmap.md
+- Reject failed web IndexedDB snapshots and keep the persist queue usable.
+- Fail closed on corrupt IndexedDB values and allow database init retries.
+- Recover from rejected Web Locks and show a retry screen.
+- Harden config boolean parsing and failed-save recovery.
+- Preserve the Home period when the active account is deleted.
+- Disable calculator Accept for zero or negative results.
+- Enforce min/max bounds on week, month and year calendar cells.
+
+[2026-10-27] test | FinlyApp/tests/database/sqliteWebEngine.test.ts, FinlyApp/tests/database/indexedDbStorage.test.ts, FinlyApp/tests/database/initRetry.test.ts, FinlyApp/tests/database/configDefaults.test.ts, FinlyApp/tests/hooks/useWebTabLock.test.tsx, FinlyApp/tests/context/ConfigContext.test.tsx, FinlyApp/tests/context/AppContext.test.tsx, FinlyApp/tests/component/CalculatorModal.test.tsx, FinlyApp/tests/component/WeekPicker.test.tsx, FinlyApp/tests/component/MonthGrid.test.tsx, FinlyApp/tests/component/YearGrid.test.tsx
+- Cover web persist rejection and queue recovery.
+- Cover corrupt IndexedDB values, init retry and Web Lock failure.
+- Cover config parsing/recovery, Home period preservation, calculator limits and calendar bounds.
+
+[2026-10-27] fix | FinlyApp/src/utils/calculator.ts, FinlyApp/tests/utils/calculator.test.ts, FinlyApp/tests/component/CalculatorModal.test.tsx, spec/features/007-calculator/1-spec.md
+- Treat a leading minus, or a minus after an operator, as a unary sign so negative intermediate results can be reused.
+- Add calculator regressions for negative chaining and the 5 - 10 = -5, + 10 = 5 flow.
+
+[2026-10-27] fix | FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/hooks/useKeyboardReveal.ts, FinlyApp/tests/component/CommentInput.test.tsx, FinlyApp/tests/hooks/useKeyboardReveal.test.tsx, spec/features/004-add-transaction-screen/1-spec.md, spec/features/017-modify-transaction-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Keep the comment input focused and the keyboard open after selecting a suggestion.
+- Cancel and guard the delayed keyboard-reveal scroll when the field blurs before it fires.
+- Add CommentInput and useKeyboardReveal regressions for the suggestion and blur paths.
+
+[2026-10-28] refactor | FinlyApp/src/hooks/useSortPreference.ts, FinlyApp/tests/hooks/useSortPreference.test.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/database/configMetadata.ts, FinlyApp/src/database/configDefaults.ts, FinlyApp/src/database/repositories/configRepo.ts, FinlyApp/tests/database/configMetadata.test.ts, FinlyApp/src/database/wipe.ts, FinlyApp/src/database/database.ts, FinlyApp/src/database/backup.ts, FinlyApp/tests/database/wipe.test.ts, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Extract useSortPreference and adopt it across the five sortable list screens.
+- Centralize config DB keys and codecs in configMetadata and derive parsing/serialization from it.
+- Share the FK-safe wipe sequence across reset, delete-all and backup import.
+- No behavior change; add sort, config-metadata and wipe regressions.
+
+[2026-10-28] test | FinlyApp/scripts/upgrade/build-fixture-2.1.0.mjs, FinlyApp/scripts/upgrade/fixture-2.1.0.json, FinlyApp/tests/tooling/upgradeFixture.test.ts, docs/upgrade-testing.md, spec/constitution/3-roadmap.md
+- Add a pure schema-3 2.1.0 fixture with realistic multi-month data, tags, comments, photo and 2.1.0-only config.
+- Add a tooling test validating the fixture with the current backup parser and import invariants.
+- Document the EAS 2.1.0 to 2.2.0 in-place upgrade procedure.
+
+[2026-10-28] docs | FinlyApp/scripts/screenshots/manifest.mjs, FinlyApp/scripts/screenshots/capture.mjs, README.md, README.ca.md, README.de.md, README.es.md, README.eu.md, README.fr.md, README.gl.md, README.it.md, README.pt.md, docs/screenshots.md, images/screenshots/v3.3-*
+- Recapture the 30-screen set as v3.3 from the committed fixture.
+- Update all 9 READMEs and the screenshot docs to the new set, keeping v3.2 for history.
+- Update the screenshot harness to wait for the current Home total including initial balances.
+
+[2026-10-28] fix | FinlyApp/src/components/CategoryTile.tsx, FinlyApp/src/components/AmountInput.tsx, FinlyApp/src/utils/amountInput.ts, FinlyApp/src/components/AccountForm.tsx, FinlyApp/src/screens/CreateAccountScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/CategoryTile.test.tsx, FinlyApp/tests/component/AmountInput.test.tsx, FinlyApp/tests/utils/amountInput.test.ts, FinlyApp/tests/screens/ModifyAccountScreen.test.tsx, spec/features/004-add-transaction-screen/1-spec.md, spec/features/017-modify-transaction-screen/1-spec.md, spec/features/026-account-initial-balance/1-spec.md, images/screenshots/v3.3-*
+- Reserve category tile height and border so labels are not clipped on web or native.
+- Allow negative account initial balances through a sign toggle and signed amount parsing; transaction amounts remain positive-only.
+- Add regressions and recapture the v3.3 screenshots.
+
+[2026-10-28] fix | FinlyApp/src/components/AmountInput.tsx, FinlyApp/tests/component/AmountInput.test.tsx, spec/features/026-account-initial-balance/1-spec.md, spec/constitution/3-roadmap.md
+- Disable the initial-balance sign toggle for empty and zero values and normalize negative zero to zero.
+- Add sign-toggle state and negative-zero regressions.
+
+[2026-10-28] docs | README.md, README.es.md, README.ca.md, README.gl.md, README.eu.md, README.fr.md, README.de.md, README.pt.md, README.it.md, docs/harnesses.md, docs/programming-concepts.md, docs/changelog.md
+- Refresh the harness baseline to 183 files / 1580 tests, the v3.3 screenshot set and the 15-flow Maestro inventory.
+- Update the release examples to 2.2.0 / versionCode 3 and document negative starting balances in all 9 READMEs.
+- Repair 7 corrupted replacement characters in historical changelog entries.
+
+[2026-10-28] fix | FinlyApp/src/hooks/useSelectAndSearch.tsx, FinlyApp/src/hooks/useBulkDelete.ts, FinlyApp/src/hooks/useTransactionListScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/utils/photoUri.ts, FinlyApp/src/utils/photoUtils.ts, FinlyApp/src/utils/photoData.ts, FinlyApp/src/hooks/usePhotos.ts, FinlyApp/src/database/backup.ts, FinlyApp/src/database/photoCleanup.ts, FinlyApp/src/components/ErrorBoundary.tsx, FinlyApp/src/context/ConfigContext.tsx, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/src/hooks/useBusyGuard.ts, FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/src/hooks/useDeleteConfirmation.ts, FinlyApp/src/screens/CreateAccountScreen.tsx, FinlyApp/src/screens/CreateTagScreen.tsx, FinlyApp/src/screens/CreateCategoryScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/i18n/, FinlyApp/tests/, docs/harnesses.md, spec/constitution/3-roadmap.md, spec/features/008-categories-screen/1-spec.md, spec/features/011-accounts-screen/1-spec.md, spec/features/014-transactions-screen-from-home/1-spec.md, spec/features/015-all-transactions-screen/1-spec.md, spec/features/018-tag-management/1-spec.md, spec/features/025-data-backup/1-spec.md, spec/features/027-comments-management/1-spec.md
+- Reconcile bulk selection with visible rows and filter delete targets.
+- Validate imported photos, keep 2.1 file/data URIs, and restrict file deletion to app-created photos.
+- Make ErrorBoundary recoverable, split import apply/refresh, and add ref-backed busy guards.
+- Add P0 regressions; test:all green (185 files / 1608 tests).
+
+[2026-10-28] test | FinlyApp/tests/utils/recurrence.test.ts
+- Repair a corrupted em dash in a recurrence test comment.
+
+[2026-10-28] fix | FinlyApp/src/constants/types.ts, FinlyApp/src/database/schemas.ts, FinlyApp/src/database/backup.ts, FinlyApp/src/utils/backupValidation.ts, FinlyApp/src/utils/backupIO.ts, FinlyApp/src/utils/backupIO.web.ts, FinlyApp/src/utils/photoUri.ts, FinlyApp/src/database/photoCleanup.ts, FinlyApp/src/database/repositories/transactionRepo.writes.ts, FinlyApp/src/database/repositories/categoryRepo.ts, FinlyApp/src/database/repositories/accountRepo.ts, FinlyApp/src/database/backupService.ts, FinlyApp/src/hooks/usePhotos.ts, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/database/sqliteWeb.ts, FinlyApp/src/database/storage/indexedDb.ts, FinlyApp/src/hooks/useWebTabLock.ts, FinlyApp/src/hooks/useFocusLoad.ts, FinlyApp/src/components/LoadErrorState.tsx, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/screens/ModifyTransactionScreen.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/tests/, docs/harnesses.md, spec/constitution/3-roadmap.md, spec/constitution/7-platform-differences.md, spec/features/025-data-backup/1-spec.md
+- Add backup size/row/photo/config limits, duplicate-ID/config checks and recurring schedule/backlog validation.
+- Delete photo files only when unreferenced; clean form-created photos on cancel and repository removals after update.
+- Keep committed web writes successful when IndexedDB persistence fails; coalesce snapshots, flush and recover closed/WASM handles.
+- Surface load failures with retry states and alerts.
+- Add P1a regressions; test:all green (186 files / 1622 tests).
+
+[2026-10-29] refactor | FinlyApp/src/constants/backup.ts, FinlyApp/src/constants/photo.ts, FinlyApp/src/constants/storage.ts, FinlyApp/src/constants/validation.ts, FinlyApp/src/database/backup.ts, FinlyApp/src/database/backupService.ts, FinlyApp/src/database/schemas.ts, FinlyApp/src/database/database.ts, FinlyApp/src/database/sqliteWeb.ts, FinlyApp/src/database/storage/indexedDb.ts, FinlyApp/src/utils/backupIO.ts, FinlyApp/src/utils/backupIO.web.ts, FinlyApp/src/utils/backupValidation.ts, FinlyApp/src/utils/photoUri.ts, FinlyApp/src/utils/formatters.ts, FinlyApp/src/hooks/usePhotos.ts, FinlyApp/src/hooks/useWebTabLock.ts, FinlyApp/src/hooks/useIsDirty.ts, FinlyApp/src/hooks/useNameDuplicateCheck.ts, FinlyApp/src/hooks/useDeferredRefresh.ts, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/components/ModalShell.tsx, FinlyApp/src/components/form/FormHintSlot.tsx, FinlyApp/src/components/SearchBar.tsx, FinlyApp/src/components/RadioButton.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/components/DonutChart.tsx, FinlyApp/src/components/BarChart.tsx, FinlyApp/src/components/CategoryList.tsx, FinlyApp/src/components/TransactionGroup.tsx, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/context/AppContext.tsx, FinlyApp/src/context/ConfigContext.tsx, FinlyApp/src/i18n/index.ts, FinlyApp/App.tsx, FinlyApp/modules/finly-share/android/src/main/java/expo/modules/finlyshare/FinlyShareModule.kt, FinlyApp/tests/, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Centralize backup/photo/storage/validation literals and remove audit magic strings.
+- Improve accessibility labels, modal focus, live hints and chart alternatives.
+- Fix dirty baselines, duplicate-check fail-closed, timer cleanup, locale formatting and backup/share I/O edge cases.
+- Add P1b regressions; test:all green (186 files / 1626 tests).
+
+[2026-10-29] fix | FinlyApp/src/hooks/useDeferredRefresh.ts, FinlyApp/tests/hooks/useDeferredRefresh.test.tsx, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Let deferred refreshes run after the initiating screen navigates back, so created and edited records appear without restarting the app.
+- Add a regression test for a refresh scheduled before unmount; test:all green (186 files / 1627 tests).
+
+[2026-10-29] fix | FinlyApp/src/navigation/AppNavigator.tsx, spec/constitution/3-roadmap.md
+- Use the narrower header-title bound on the Add category search screen so the full title is not clipped under the search button.
+
+[2026-10-29] fix | FinlyApp/src/hooks/useKeyboardInset.ts, FinlyApp/tests/hooks/useKeyboardLift.test.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Ignore the keyboard that was already open when a modal appears, so the Add photo card no longer jumps from the top to the centre.
+- Add a regression test for the modal-open transition; test:all green (186 files / 1628 tests).
+
+[2026-10-29] docs | docs/harnesses.md
+- Refresh the harness baseline to 186 files / 1628 tests.
+
+[2026-10-29] fix | FinlyApp/src/constants/types.ts, FinlyApp/src/screens/CreateCategoryScreen.tsx, FinlyApp/src/screens/AddCategoryScreen.tsx, FinlyApp/src/components/TransactionForm.tsx, FinlyApp/tests/screens/CreateCategoryScreen.test.tsx, FinlyApp/tests/screens/AddCategoryScreen.test.tsx, FinlyApp/tests/component/TransactionForm.test.tsx, spec/features/004-add-transaction-screen/1-spec.md, spec/features/005-add-category-screen/1-spec.md, spec/features/006-create-category-screen/1-spec.md, spec/features/008-categories-screen/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Lock the category type to the active transaction type when creating from the transaction flow and show it read-only.
+- Keep both type radios for standalone Categories creation and stop setting a pending category there.
+- Add regressions for both flows; test:all green (186 files / 1633 tests).
+
+[2026-10-29] refactor | FinlyApp/package.json, FinlyApp/package-lock.json, FinlyApp/src/hooks/useTransactionListScreen.tsx, FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/src/components/TransactionListBody.tsx, FinlyApp/src/screens/TransactionsScreen.tsx, FinlyApp/src/screens/AllTransactionsScreen.tsx, FinlyApp/tests/component/TransactionListBody.test.tsx, docs/harnesses.md, spec/constitution/3-roadmap.md
+- Reuse one visible-ID list across the transaction list screens and precompute filter maps/sets once per render.
+- Apply safe React Navigation, Drizzle, React Native Web, SQL.js, Zod, Sharp, Vitest, ESLint and test-tooling updates.
+- Expo dependency check and doctor pass; audit reduced from 27 to 8 remaining Expo CLI/tooling transitive issues.
+- test:all green (186 files / 1633 tests); Android release APK builds.
+
+[2026-10-29] fix | FinlyApp/src/navigation/AppNavigator.tsx, FinlyApp/src/navigation/drawerNavigation.ts, FinlyApp/tests/navigation/drawerNavigation.test.ts, spec/features/003-settings-screen/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Close the drawer for every drawer item; All transactions is a primary destination again and resets the stack.
+- Keep Settings as a pushed screen with the native back button; selecting it now closes the drawer.
+- Add drawer navigation regressions; test:all green (187 files / 1636 tests).
+
+[2026-10-29] docs | docs/harnesses.md
+- Record that the Android emulator must use the normal font scale for standard verification.
+
+[2026-10-29] fix | FinlyApp/src/navigation/AppNavigator.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Make header titles ignore the OS font scale so the app text-size setting is the only scale; restore the wide bound for Add category and Settings.
+- Add category now shows its full title on narrow phones; test:all green (187 files / 1636 tests).
+
+[2026-10-29] fix | FinlyApp/src/screens/AddCategoryScreen.tsx, FinlyApp/src/components/ScreenSearchBar.tsx, FinlyApp/tests/screens/AddCategoryScreen.test.tsx, spec/features/005-add-category-screen/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Move the Add category search into an always-visible body field, removing the header action that triggered the Android centered-title truncation.
+- Pushed sub-screens now consistently use back only; the search field does not autofocus and its clear button restores the full grid.
+- Add search regression coverage; test:all green (187 files / 1637 tests).
+
+[2026-10-29] fix | FinlyApp/src/navigation/AppNavigator.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Render the header icon and label as one inline text run so Android measures the full centered title.
+- Verify Add category in English, French and at a 1.3 system font scale; the title stays complete and centered on first open and reopen.
+- test:all green (187 files / 1637 tests); Android release APK rebuilt (SHA-256 4BE566B02EBFC04F50BB7E2F4368AD626ADF3D901235666B5E227F02F708B892).
+
+[2026-10-29] test | FinlyApp/src/navigation/AppNavigator.tsx, spec/constitution/3-roadmap.md
+- Verify the Add category header at the Large app text size; the title stays complete and centered.
+
+[2026-10-29] feat | FinlyApp/src/screens/AddCategoryScreen.tsx, FinlyApp/src/components/HeaderSearchButton.tsx, FinlyApp/src/navigation/AppNavigator.tsx, FinlyApp/tests/screens/AddCategoryScreen.test.tsx, spec/features/005-add-category-screen/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Restore the Add category search action in the native header; the body field stays hidden until pressed, focuses on open and closes with its clear button.
+- Reserve the header action width in HeaderTitle so the inline centered title remains complete with the search icon present.
+- Cover header visibility, open/filter/close and header-toggle close; test:all green (187 files / 1639 tests).
+- Verified on Android in English and German at Large text, including the two-line German Modify recurring header; APK rebuilt (SHA-256 E9109890FC03859EEF15485913E18FF06792F157B51100FB64284D5D2C81673A).
+
+[2026-10-29] fix | FinlyApp/src/navigation/AppNavigator.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Use a larger web-only header title line height so descenders such as g, p, y, q and j are not clipped by the two-line clamp.
+- Verify Categories at desktop and 375px, French Add category at 375px with Large text, and French Modify recurring as two lines at 320px; test:all green (187 files / 1639 tests).
+- Native line height is unchanged, so the verified Android header behavior is unaffected.
+
+[2026-10-29] fix | FinlyApp/src/constants/layout.ts, FinlyApp/src/components/HeaderSpacer.tsx, FinlyApp/src/navigation/AppNavigator.tsx, FinlyApp/src/hooks/useSelectableScreen.tsx, FinlyApp/src/screens/AddCategoryScreen.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Add an Android-only symmetric right spacer to headers without a right action, so native-stack centers titles against the full screen instead of the space after the back button.
+- Keep the spacer in the dynamic select/search hook when a list is empty, and use it in Add category when the search icon is hidden.
+- Verify Home, Settings, Add transaction, Add category with search and the two-line German Modify recurring header; the title center now matches the screen center. test:all green (187 files / 1639 tests).
+- Android release APK rebuilt (SHA-256 D3B774A5046A749A9E23DBBD1B7B2B5C8793F57F6ACD0F381725368E7C0481EB).
+
+[2026-10-29] feat | FinlyApp/src/constants/types.ts, FinlyApp/src/screens/CreateCategoryScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/screens/AddCategoryScreen.tsx, FinlyApp/src/hooks/useCategoryUsage.ts, FinlyApp/src/database/schemas.ts, FinlyApp/src/database/configDefaults.ts, FinlyApp/src/database/configMetadata.ts, FinlyApp/tests/component/helpers/configStub.ts, FinlyApp/tests/screens/AddCategoryScreen.test.tsx, FinlyApp/tests/screens/CreateCategoryScreen.test.tsx, spec/features/005-add-category-screen/1-spec.md, spec/features/006-create-category-screen/1-spec.md, spec/features/008-categories-screen/1-spec.md, spec/constitution/3-roadmap.md, docs/harnesses.md
+- Lock Create category to the active Categories tab and remove the type radios; the transaction flow keeps its pending-category behavior.
+- Add the Add category type counter, Name/Usage sorting with independent persisted keys (Usage descending by default), and lifetime usage badges through a shared category-usage hook.
+- Cover the type lock, counter, usage order and persisted sort; test:all green (187 files / 1641 tests).
+- Android release APK rebuilt (SHA-256 174AEC9CCA9851A9B8F36CA375062A66D5EE019F99B043B1D5303A0F360362D2).
+
+[2026-10-29] feat | FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/src/components/form/formStyles.ts, FinlyApp/src/components/form/LabeledTextField.tsx, FinlyApp/src/components/form/SectionTitle.tsx, FinlyApp/src/components/IconColorSection.tsx, FinlyApp/src/components/AccountForm.tsx, FinlyApp/src/screens/CreateAccountScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/screens/CreateCategoryScreen.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/screens/CreateTagScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx, FinlyApp/tests/screens/CreateAccountScreen.test.tsx, FinlyApp/tests/screens/CreateCategoryScreen.test.tsx, FinlyApp/tests/screens/CreateTagScreen.test.tsx, FinlyApp/tests/screens/ModifyCategoryScreen.test.tsx, FinlyApp/tests/screens/ModifyTagScreen.test.tsx, FinlyApp/tests/screens/ModifyCommentScreen.test.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, spec/features/006-create-category-screen/1-spec.md, spec/features/009-modify-delete-category-screen/1-spec.md, spec/features/012-modify-delete-account-screen/1-spec.md, spec/features/013-create-account-screen/1-spec.md, spec/features/018-tag-management/1-spec.md, spec/features/026-account-initial-balance/1-spec.md, spec/features/027-comments-management/1-spec.md
+- Use FormSectionHeader for every Create/Modify account, category, tag and comment field group, with the Add transaction icon/title style and standard 16px/10px section rhythm.
+- Rename the account, category and tag labels to Name while keeping descriptive placeholders; add the standard icons for Name, Type, Symbols, Color, Initial balance, Note and Comment.
+- Remove the old SectionTitle style, give Initial balance the standard header typography, and fix the Color section gap after Symbols.
+- Cover the new labels and headers; test:all green (187 files / 1641 tests). Android release APK rebuilt (SHA-256 94C99C8EB74D73FC17680099838D188CF3E717C045C2B79293A07A8FF34C9E1E).
+
+[2026-10-29] fix | FinlyApp/src/components/form/LabeledTextField.tsx, FinlyApp/src/components/AccountForm.tsx, FinlyApp/src/components/RepeatSection.tsx, FinlyApp/src/screens/CreateAccountScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/screens/CreateCategoryScreen.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/screens/CreateTagScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/tests/screens/CreateAccountScreen.test.tsx, FinlyApp/tests/screens/CreateCategoryScreen.test.tsx, FinlyApp/tests/screens/CreateTagScreen.test.tsx, FinlyApp/tests/screens/ModifyCategoryScreen.test.tsx, FinlyApp/tests/screens/ModifyTagScreen.test.tsx, FinlyApp/tests/screens/ModifyCommentScreen.test.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, spec/features/006-create-category-screen/1-spec.md, spec/features/009-modify-delete-category-screen/1-spec.md, spec/features/012-modify-delete-account-screen/1-spec.md, spec/features/013-create-account-screen/1-spec.md, spec/features/018-tag-management/1-spec.md
+- Use id-card-outline for every Name section and remove the duplicate category preview icon from Modify category; the Symbols grid is now the only icon/color preview.
+- Move single-line Name counters into the section header (Account, Category, Tag and Recurring rule), keeping multiline Note/Comment counters inline and the compact Add tag modal counter below.
+- Update the Name section specs and tests; test:all green (187 files / 1641 tests). Android release APK rebuilt (SHA-256 58696974E6EF6C2B8FD1FAF2089C8B77255AC861012B9B695C4411409EF4D140).
+
+[2026-10-29] fix | FinlyApp/src/components/form/LabeledTextField.tsx, FinlyApp/src/components/form/CharCounter.tsx, FinlyApp/src/components/form/formStyles.ts, FinlyApp/src/components/CommentInput.tsx, FinlyApp/src/components/AccountForm.tsx, FinlyApp/src/components/ModalHeader.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx, FinlyApp/tests/component/LabeledTextField.test.tsx, FinlyApp/tests/component/CommentInput.test.tsx, FinlyApp/tests/screens/CreateAccountScreen.test.tsx, FinlyApp/tests/screens/ModifyCommentScreen.test.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md, spec/features/004-add-transaction-screen/1-spec.md, spec/features/012-modify-delete-account-screen/1-spec.md, spec/features/013-create-account-screen/1-spec.md, spec/features/019-tag-transactions/1-spec.md, spec/features/027-comments-management/1-spec.md, spec/features/028-recurring-transactions/1-spec.md, docs/harnesses.md
+- Move Account Note and Comment counters into their section headers, and the compact Add tag counter into the modal header right slot.
+- Remove the inline counter machinery and input bottom padding; counters are no longer absolutely positioned inside fields.
+- Update tests and specs; test:all green (187 files / 1639 tests). Android release APK rebuilt (SHA-256 18FA916D4F5860F92F061C22218ADC42BBD3DFEFBF4868637CEBDD8BDF2C41C6).
+
+[2026-10-29] fix | FinlyApp/src/components/TagSection.tsx, spec/constitution/6-screens.md
+- Give the compact Add tag modal the standard modal action rhythm: 16px above the buttons and 12px between them.
+- Remove the input bottom margin and add a 4px gap before the error message so no-error and error states both remain balanced.
+- test:all green (187 files / 1639 tests). Android release APK rebuilt (SHA-256 7547A18C97F1006C751361052610BD019823A455408061A930ECA87C13C07748).
+
+[2026-10-29] fix | FinlyApp/src/components/TagSection.tsx, spec/constitution/6-screens.md, spec/features/004-add-transaction-screen/1-spec.md, spec/features/019-tag-transactions/1-spec.md
+- Reserve a fixed one-line error band in the compact Add tag modal so duplicate-name errors do not move Cancel/Add.
+- Keep the 12px button gap and standard modal spacing; the no-error and error states have the same modal height.
+- test:all green (187 files / 1639 tests). Android release APK rebuilt (SHA-256 00F0B7AFF797B598D2E45BAA20F5BD81E2D9352E6716B91CEE8E8C0F5C469690).
+
+[2026-10-29] fix | FinlyApp/src/components/ModalHeader.tsx, FinlyApp/src/components/TagSection.tsx, spec/constitution/6-screens.md, spec/features/004-add-transaction-screen/1-spec.md, spec/features/019-tag-transactions/1-spec.md
+- Add an optional left icon to ModalHeader; center the icon and title as one group while keeping the right counter slot.
+- Use a pricetag icon for Add tag and center the duplicate error inside a one-line reserved band with 8px vertical padding, so the buttons stay fixed while the error breathes.
+- test:all green (187 files / 1639 tests). Android release APK rebuilt (SHA-256 7B518A7B81FABEF9F39518C90159D6980FC66CE1A2AD927EE06DB15A5EF90FEE).
+
+[2026-10-29] fix | FinlyApp/src/components/BulkCategoryTransferModal.tsx, FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/CategoryTransferModal.tsx, FinlyApp/src/components/ConfirmationModal.tsx, FinlyApp/src/components/OptionPickerModal.tsx, FinlyApp/src/components/PhotoSection.tsx, FinlyApp/src/components/RecurringStatusChip.tsx, FinlyApp/src/components/RecurringViewChip.tsx, FinlyApp/src/components/TransactionListBody.tsx, FinlyApp/src/components/settings/SettingsPickerRow.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/src/screens/settings/PersonalizationScreen.tsx, FinlyApp/src/screens/settings/RegionalScreen.tsx, spec/constitution/6-screens.md
+- Standardize modal headers with semantic leading icons across confirmation, picker, settings, photo, recurring, transfer and calendar surfaces.
+- Use an 18px centered title, caller-specific confirmation and option icons with alert/options fallbacks, and a 12px compact footer gap for Calendar and Add tag.
+- Keep the Photo source full-width Cancel menu and Calendar left-aligned title as documented compact exceptions; test:all green (187 files / 1639 tests); APK rebuilt (SHA-256 99A076EBED2F402E2576696F60DE100ED4C4EC5167BF7169C0EB57FBDC411EEC).
+
+[2026-10-29] fix | FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/de.ts, FinlyApp/tests/i18n/render.test.ts
+- Correct Spanish and Catalan transaction plurals in bulk-delete titles, comment/tag usage and the comment delete message (transacciones / transaccions).
+- Use matching German quotation marks in category, account and tag delete titles.
+- Add regression coverage; test:all green (187 files / 1642 tests); Android release APK rebuilt (SHA-256 BAD22EC539F811D58976D390361454321EB1FE4F30F71FD94F40C91D3D9015B3).
+
+[2026-10-29] fix | FinlyApp/src/components/CategoryModalSubject.tsx, FinlyApp/src/components/ConfirmationModal.tsx, FinlyApp/src/components/CategoryTransferModal.tsx, FinlyApp/src/components/BulkCategoryTransferModal.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/constants/testIds.ts, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/BulkCategoryTransferModal.test.tsx, FinlyApp/tests/component/CategoryTransferModal.test.tsx, FinlyApp/tests/screens/CategoriesScreen.test.tsx, FinlyApp/tests/screens/ModifyCategoryScreen.test.tsx, FinlyApp/tests/i18n/render.test.ts, spec/features/008-categories-screen/1-spec.md, spec/features/009-modify-delete-category-screen/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Use a short one-line Delete 1 category? title plus a category subject row for single-category deletion, keeping long names out of the header.
+- Use Move transactions with the source-category row in both single and bulk move modals; single move confirms with Move & delete while the bulk destination picker keeps Select.
+- Remove the unused single-flow category title keys and cover the unified flows; test:all green (187 files / 1644 tests); Android APK rebuilt (SHA-256 686C68B4DB2354AA5891D1E9E163905B32F917C1112CB52E784B2B7922F663D2).
+
+[2026-10-29] fix | FinlyApp/src/components/ModalFooter.tsx, FinlyApp/src/components/componentStyles.ts, FinlyApp/src/constants/types.ts, FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/tests/component/ModalFooter.test.tsx, spec/constitution/6-screens.md
+- Add a compact ModalFooter layout with equal 128px buttons, capped at 47% on narrow screens and right-aligned with a 12px gap.
+- Use it for the Calendar and Add tag modals; buttons stay equal, centered and single-line, with German Hinzufügen and Abbrechen fitting at Large text.
+- Add compact-footer coverage; test:all green (188 files / 1645 tests); Android APK rebuilt (SHA-256 A033EE365E50B0BCE539FEFDF25673FB1D9FD3E64355D6AED60428B1848A19A6).
+
+[2026-10-29] fix | FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/tests/component/ModalFooter.test.tsx, spec/constitution/6-screens.md
+- Match compact footer heights to the standard modal footers with 12px vertical padding and 14px labels.
+- Cover the compact padding in tests; test:all green (188 files / 1645 tests); Android APK rebuilt (SHA-256 8959792698B3888394145CCDD113884F9E403D444F506DA667A4C1BD1FB460B7).
+
+[2026-10-29] fix | FinlyApp/src/i18n/it.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/components/ModalHeader.tsx, FinlyApp/src/components/ModalEntitySubject.tsx, FinlyApp/src/components/CategoryTransferModal.tsx, FinlyApp/src/components/BulkCategoryTransferModal.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/constants/testIds.ts, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/tests/i18n/render.test.ts, FinlyApp/tests/screens/ModifyAccountScreen.test.tsx, FinlyApp/tests/screens/ModifyTagScreen.test.tsx, FinlyApp/tests/screens/ModifyCategoryScreen.test.tsx, FinlyApp/tests/screens/ModifyRecurringScreen.test.tsx, FinlyApp/tests/component/BulkCategoryTransferModal.test.tsx, FinlyApp/tests/component/CategoryTransferModal.test.tsx, FinlyApp/tests/component/OptionPickerModal.test.tsx, FinlyApp/tests/component/PhotoSection.test.tsx, FinlyApp/tests/screens/CategoriesScreen.test.tsx, spec/features/012-modify-delete-account-screen/1-spec.md, spec/features/018-tag-management/1-spec.md, spec/features/009-modify-delete-category-screen/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Correct Italian transaction, tag and recurring plurals and Catalan category and recurring plurals.
+- Render modal header icons inline so they stay on the first line when a long title wraps.
+- Use Delete 1 account? and Delete 1 tag? with shared ModalEntitySubject rows; user-entered names no longer appear in modal titles.
+- Verified German factory-reset wrapping on Android; test:all green (188 files / 1647 tests); Android APK rebuilt (SHA-256 1D5FDAF5CBB14FCB3B57585BCACBE5F4C5FAB7AE628FE86A65480F2756F811F6).
+
+[2026-10-30] fix | FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/src/components/BulkCategoryTransferModal.tsx, FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/TagSection.tsx, FinlyApp/src/components/PhotoSection.tsx, FinlyApp/src/components/AccountModal.tsx, FinlyApp/src/components/OptionPickerModal.tsx, FinlyApp/src/components/ColorPickerModal.tsx, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/screens/TransactionDetailsScreen.test.tsx, FinlyApp/tests/screens/DataScreen.test.tsx, FinlyApp/tests/component/CalendarModal.test.tsx, FinlyApp/tests/component/BulkCategoryTransferModal.test.tsx, FinlyApp/tests/component/OptionPickerModal.test.tsx, spec/features/003-settings-screen/1-spec.md, spec/features/016-transaction-details-screen/1-spec.md, spec/features/025-data-backup/1-spec.md, spec/constitution/6-screens.md
+- Add the permanent-delete warning to the transaction details delete modal and use Cancel/Delete.
+- Normalize every plain cancel label to the generic cancel key and every simple delete to Delete; keep Permanent delete, Delete all, Reset, Import, Skip them and picker actions semantic.
+- Import now confirms with Import and typed confirmations use Delete/Delete all/Reset; remove the obsolete labels across the 9 locales.
+- test:all green (188 files / 1647 tests); Android APK rebuilt (SHA-256 BC0FF79812D59834BC1F52D093A68D2712355631958EE59336B4149C721F4AF8).
+
+[2026-10-30] feat | FinlyApp/src/components/FullScreenModalHeader.tsx, FinlyApp/src/components/AccountModal.tsx, FinlyApp/src/components/CalculatorModal.tsx, FinlyApp/src/components/ColorPickerModal.tsx, FinlyApp/src/components/CategoryFilterModal.tsx, FinlyApp/tests/component/AccountModal.test.tsx, FinlyApp/tests/component/CalculatorModal.test.tsx, FinlyApp/tests/component/CategoryFilterModal.test.tsx, spec/features/004-add-transaction-screen/1-spec.md, spec/features/021-category-filter-modal/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Add FullScreenModalHeader with a centered inline icon title and optional right action.
+- Use standard centered headers for the shared account selector, color picker, category filter and calculator.
+- Keep the native calculator full screen but anchor the keypad and Cancel/Accept footer to the bottom, with the display flexing above them.
+- test:all green (189 files / 1649 tests); Android APK rebuilt (SHA-256 334A430DC122E081082ACF1571481F892F44EF869F36A9CC2AB6016BF554709B).
+
+[2026-10-30] fix | FinlyApp/src/components/ModalEntitySubject.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/tests/component/ModalEntitySubject.test.tsx, FinlyApp/tests/screens/ModifyCategoryScreen.test.tsx, spec/features/009-modify-delete-category-screen/1-spec.md, spec/features/012-modify-delete-account-screen/1-spec.md, spec/features/018-tag-management/1-spec.md, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Center modal entity subject rows horizontally, with the icon centered against the name and subtitle/counts.
+- Show transaction and recurring-rule counts in the Modify category delete and move subject rows, omitting them when counts are unknown or zero.
+- Keep the top-level bulk category resolution list left-aligned for scanning and its right-side action.
+- test:all green (190 files / 1651 tests); Android APK rebuilt (SHA-256 D597E3133591951318A00284ACFBFCA8F0FD68FE16844D411BE8ABFC307E4DC6).
+
+[2026-10-30] fix | FinlyApp/src/components/ModalEntitySubject.tsx, FinlyApp/tests/component/ModalEntitySubject.test.tsx, spec/constitution/6-screens.md, spec/constitution/3-roadmap.md
+- Keep the modal entity subject group centered while left-aligning the name and subtitle/counts with each other.
+- test:all green (190 files / 1651 tests); Android APK rebuilt (SHA-256 55234CA5CC024720ABF609DBFE2EBDB18F89CD3C86208AD8726CD2D7676F4D8F).
+
+[2026-10-30] refactor | FinlyApp/src/components/ModalTitle.tsx, FinlyApp/src/components/DeleteConfirmationModal.tsx, FinlyApp/src/components/ModalHeader.tsx, FinlyApp/src/components/FullScreenModalHeader.tsx, FinlyApp/src/components/ModalFooter.tsx, FinlyApp/src/components/CalendarModal.tsx, FinlyApp/src/components/AccountForm.tsx, FinlyApp/src/components/AccountModal.tsx, FinlyApp/src/components/PhotoSection.tsx, FinlyApp/src/components/TransactionListBody.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/screens/CommentsScreen.tsx, FinlyApp/src/screens/ModifyAccountScreen.tsx, FinlyApp/src/screens/ModifyCategoryScreen.tsx, FinlyApp/src/screens/ModifyCommentScreen.tsx, FinlyApp/src/screens/ModifyRecurringScreen.tsx, FinlyApp/src/screens/ModifyTagScreen.tsx, FinlyApp/src/screens/RecurringScreen.tsx, FinlyApp/src/screens/TagsScreen.tsx, FinlyApp/src/screens/TransactionDetailsScreen.tsx, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/src/screens/CreateAccountScreen.tsx, FinlyApp/src/components/componentStyles.ts, FinlyApp/src/constants/types.ts, FinlyApp/src/i18n/en.ts, FinlyApp/src/i18n/es.ts, FinlyApp/src/i18n/ca.ts, FinlyApp/src/i18n/gl.ts, FinlyApp/src/i18n/eu.ts, FinlyApp/src/i18n/fr.ts, FinlyApp/src/i18n/de.ts, FinlyApp/src/i18n/pt.ts, FinlyApp/src/i18n/it.ts, FinlyApp/tests/component/DeleteConfirmationModal.test.tsx, FinlyApp/tests/component/CalendarModal.test.tsx, spec/constitution/3-roadmap.md
+- Extract ModalTitle so modal headers share the inline icon/title rendering and header semantics.
+- Add DeleteConfirmationModal and migrate the repeated trash/Cancel/Delete confirmation wiring across entity and bulk deletes.
+- Share one internal FooterButton across row, single, stacked and compact ModalFooter layouts.
+- Remove unused modal/form code and the obsolete i18n keys cal_period_to_hint, add_day, add_photo and create_cat_name.
+- test:all green (191 files / 1653 tests); Android APK rebuilt (SHA-256 5719E4E0245DF0F797D713C42379FE8FB0087FDB9FE9496273209889BBA12D40).
+
+[2026-10-30] refactor | FinlyApp/src/hooks/useBulkDelete.ts, FinlyApp/src/hooks/useDeleteConfirmation.ts, FinlyApp/src/hooks/useSelectAndSearch.tsx, FinlyApp/src/screens/AccountsScreen.tsx, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/tests/hooks/useBulkDelete.test.tsx, FinlyApp/tests/hooks/useSelectAndSearch.test.tsx, FinlyApp/tests/screens/AccountsScreen.test.tsx, FinlyApp/tests/screens/CategoriesScreen.test.tsx
+- Compose useBusyGuard into useBulkDelete and useDeleteConfirmation, removing the duplicated busy refs and state.
+- Move Accounts and Categories bulk deletion onto useBulkDelete, preserving default-account sanitization, category failure semantics and the transfer flow.
+- Remove the unused delete-modal state from useSelectAndSearch and extend the hook and screen coverage.
+- test:all green (191 files / 1659 tests); Android APK rebuilt (SHA-256 75515923E835285148B9B29BB48913F9DE5E5B9300479FE886440533AE008D48).
+
+[2026-10-30] refactor | FinlyApp/src/database/repositories/repoHelpers.ts, FinlyApp/src/database/repositories/accountRepo.ts, FinlyApp/src/database/repositories/categoryRepo.ts, FinlyApp/src/database/repositories/tagRepo.ts, FinlyApp/src/database/repositories/transactionRepo.writes.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/tests/database/repoHelpers.test.ts
+- Add pickDefined and share partial update field selection across the account, category, tag, transaction and recurring repositories.
+- Cover defined, falsy, allowlist and immutability behavior; test:all green (192 files / 1664 tests).
+
+[2026-10-30] refactor | FinlyApp/src/database/repositories/categoryRepo.ts, FinlyApp/tests/database/categoryWrites.test.ts, FinlyApp/tests/database/helpers/sqliteHarness.ts, FinlyApp/tests/database/recurringRepo.test.ts
+- Extract moveCategoryData, deleteCategoryRows and deleteCategoryData so category delete and reassign methods share one mutation path.
+- Add mutation-order and photo-cleanup coverage plus a recurring-rule reassignment regression; test:all green (193 files / 1673 tests).
+
+[2026-10-30] refactor | FinlyApp/src/hooks/useCategoryBulkDelete.ts, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/constants/types.ts, FinlyApp/src/components/CategoryTransferModal.tsx, FinlyApp/src/components/BulkCategoryTransferModal.tsx, FinlyApp/tests/hooks/useCategoryBulkDelete.test.tsx, FinlyApp/tests/component/BulkCategoryTransferModal.test.tsx
+- Extract useCategoryBulkDelete to own in-use counts, guard state, permanent deletion and transfer decisions, reducing CategoriesScreen to presentation and selection.
+- Move TransferTargetId and BulkCategoryItem to shared modules and replace the raw delete target literal with CATEGORY_TRANSFER_TARGETS.
+- test:all green (194 files / 1681 tests).
+
+[2026-10-30] refactor | FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/tests/hooks/useTransactionFilters.test.tsx
+- Reuse useSortPreference in useTransactionFilters instead of duplicating field and direction toggle logic.
+- Cover persistence for both transactions sort scopes; test:all green (194 files / 1682 tests).
+
+[2026-10-30] refactor | FinlyApp/src/components/settings/ConfirmWithTextModal.tsx, FinlyApp/src/screens/settings/DataScreen.tsx
+- Move the typed DELETE confirmation modal out of DataScreen into components/settings without changing its behavior.
+- test:all green (194 files / 1682 tests).
+
+[2026-10-30] refactor | FinlyApp/src/hooks/useTwoStepConfirmation.ts, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/tests/hooks/useTwoStepConfirmation.test.tsx
+- Extract useTwoStepConfirmation and replace the three duplicated typed-confirmation state groups in DataScreen.
+- Preserve stacked modals, busy close blocking and unconditional reset after actions; test:all green (195 files / 1689 tests).
+
+[2026-10-30] refactor | FinlyApp/src/utils/photoUri.ts, FinlyApp/src/utils/photoUtils.ts, FinlyApp/tests/utils/photoUri.test.ts
+- Extract parsePhotoFilePath so isFilePhotoUri and isAppPhotoUri share the same file URI, traversal and photo-name validation.
+- Add direct parser coverage; test:all green (195 files / 1691 tests).
+
+[2026-10-30] refactor | FinlyApp/src/hooks/useToday.ts
+- Reuse isSameDay from formatters in useToday instead of keeping a duplicate day comparison.
+- test:all green (195 files / 1691 tests).
+
+[2026-10-30] test | FinlyApp/tests/screens/AllTransactionsScreen.test.tsx, FinlyApp/tests/screens/AccountsScreen.test.tsx, FinlyApp/tests/screens/CategoriesScreen.test.tsx, FinlyApp/tests/screens/TagsScreen.test.tsx, FinlyApp/tests/screens/CommentsScreen.test.tsx, FinlyApp/tests/screens/RecurringScreen.test.tsx
+- Add hidden-selection regressions proving tab, filter and search changes cannot bulk-delete invisible rows.
+- test:all green (195 files / 1698 tests).
+
+[2026-10-30] docs | FinlyApp/scripts/screenshots/manifest.mjs, FinlyApp/scripts/screenshots/capture.mjs, FinlyApp/tests/tooling/screenshots.test.ts, README.md, README.es.md, README.ca.md, README.gl.md, README.eu.md, README.fr.md, README.de.md, README.pt.md, README.it.md, docs/screenshots.md, docs/harnesses.md, spec/constitution/3-roadmap.md, images/screenshots/v3.4-*
+- Recapture the 30-screen v3.4 set from the committed fixture against the current UI.
+- Point all 9 READMEs and the screenshot/harness docs at v3.4; update capture selectors and assert the fixture is fully importable.
+- Record the post-audit refactors, regression closure and v3.4 refresh in the roadmap; test:all green (195 files / 1698 tests).

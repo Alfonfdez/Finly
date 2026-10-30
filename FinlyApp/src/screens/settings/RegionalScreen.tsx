@@ -1,6 +1,7 @@
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import type { ReactNode } from 'react';
 import Svg, { Rect, Line } from 'react-native-svg';
+import ScreenShell from '../../components/ScreenShell';
 import { useConfig, type Config } from '../../context/ConfigContext';
 import { useFontSize } from '../../hooks/useFontSize';
 import { t } from '../../i18n';
@@ -201,48 +202,52 @@ export default function RegionalScreen() {
   ];
 
   const FIRST_DAY_OPTIONS: Option[] = [
-    { label: labels.day_monday, value: String(FIRST_DAYS.monday), icon: <DayCircleIcon letter={labels.day_mon_letter} size={16} colors={c} /> },
-    { label: labels.day_sunday, value: String(FIRST_DAYS.sunday), icon: <DayCircleIcon letter={labels.day_sun_letter} size={16} colors={c} /> },
+    { label: labels.weekdays[FIRST_DAYS.monday], value: String(FIRST_DAYS.monday), icon: <DayCircleIcon letter={labels.day_mon_letter} size={16} colors={c} /> },
+    { label: labels.weekdays[FIRST_DAYS.sunday], value: String(FIRST_DAYS.sunday), icon: <DayCircleIcon letter={labels.day_sun_letter} size={16} colors={c} /> },
   ];
 
   return (
-    <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
-      <SettingsSection title={labels.settings_language} card={false}>
-        <SettingsPickerRow
-          label={labels.settings_language}
-          options={LANGUAGE_OPTIONS}
-          selected={config.language}
-          onSelect={(v) => updateConfig({ language: v })}
-          title={labels.settings_language}
-        />
-      </SettingsSection>
+    <ScreenShell>
+      <ScrollView style={[settingsStyles.container, { backgroundColor: c.background }]} contentContainerStyle={settingsStyles.content}>
+        <SettingsSection title={labels.settings_language} card={false}>
+          <SettingsPickerRow
+            label={labels.settings_language}
+            options={LANGUAGE_OPTIONS}
+            selected={config.language}
+            onSelect={(v) => updateConfig({ language: v })}
+            title={labels.settings_language}
+            icon="language-outline"
+          />
+        </SettingsSection>
 
-      <SettingsSection title={labels.settings_money} card={false}>
-        <SettingsPickerRow
-          label={labels.settings_currency}
-          options={CURRENCIES}
-          selected={config.currency}
-          onSelect={(v) => updateConfig({ currency: v })}
-          title={labels.settings_currency}
-          searchable
-        />
-        <SettingsSelectRow
-          label={labels.settings_decimal_sep}
-          options={SEPARATORS}
-          selected={config.decimalSeparator}
-          onSelect={(v) => updateConfig({ decimalSeparator: v })}
-        />
-      </SettingsSection>
+        <SettingsSection title={labels.settings_money} card={false}>
+          <SettingsPickerRow
+            label={labels.settings_currency}
+            options={CURRENCIES}
+            selected={config.currency}
+            onSelect={(v) => updateConfig({ currency: v })}
+            title={labels.settings_currency}
+            icon="cash-outline"
+            searchable
+          />
+          <SettingsSelectRow
+            label={labels.settings_decimal_sep}
+            options={SEPARATORS}
+            selected={config.decimalSeparator}
+            onSelect={(v) => updateConfig({ decimalSeparator: v })}
+          />
+        </SettingsSection>
 
-      <SettingsSection title={labels.settings_calendar} card={false}>
-        <SettingsSelectRow
-          label={labels.settings_first_day}
-          options={FIRST_DAY_OPTIONS}
-          selected={String(config.firstDayOfWeek)}
-          onSelect={(v) => updateConfig({ firstDayOfWeek: Number(v) as FirstDay })}
-        />
-      </SettingsSection>
-    </ScrollView>
+        <SettingsSection title={labels.settings_calendar} card={false}>
+          <SettingsSelectRow
+            label={labels.settings_first_day}
+            options={FIRST_DAY_OPTIONS}
+            selected={String(config.firstDayOfWeek)}
+            onSelect={(v) => updateConfig({ firstDayOfWeek: Number(v) as FirstDay })}
+          />
+        </SettingsSection>
+      </ScrollView>
+    </ScreenShell>
   );
 }
 

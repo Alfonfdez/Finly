@@ -35,6 +35,17 @@ describe('CategoryGrid', () => {
     expect(view.getByText('Salary')).toBeTruthy();
   });
 
+  it('shows the usage count badge only when it is above zero', async () => {
+    const counts = new Map([[101, 7], [102, 0]]);
+    const view = await render(
+      <CategoryGrid categories={categories} counts={counts} selectedCategory={null} onSelect={() => {}} onAddMore={() => {}} />,
+    );
+
+    expect(view.getByText('7')).toBeTruthy();
+    expect(view.queryByText('0')).toBeNull();
+    expect(view.getByLabelText('Category Groceries, 7')).toBeTruthy();
+    expect(view.getByLabelText('Category Salary')).toBeTruthy();
+  });
   it('can hide the title', async () => {
     const view = await render(<CategoryGrid categories={categories} selectedCategory={null} onSelect={() => {}} onAddMore={() => {}} hideTitle />);
 
