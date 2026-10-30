@@ -1604,3 +1604,29 @@ Applied 2026-10-29:
 - Modal primitives: `ModalTitle` now owns the inline icon/title rendering, `DeleteConfirmationModal` owns the standard trash/Cancel/Delete contract, and `ModalFooter` shares one internal `FooterButton`. Removed unused i18n keys, `SECTION_TITLE_STYLE`, `ChartType`, `AccountForm.showNameField` and the unused header size prop.
 - P2b: no further low-risk extraction was found; the transaction screens already share `TransactionListBody`, and deeper screen/context splits were deferred as release risk.
 - `npm run test:all` green (191 files / 1653 tests); Android release APK builds.
+
+## 2.2.0 post-audit refactors and regression closure
+Status: completed.
+
+Applied 2026-10-30:
+- Consolidated Accounts/Categories bulk deletion onto the shared `useBulkDelete` flow, composed `useBusyGuard` into the delete hooks and removed the unused delete-modal state from `useSelectAndSearch`.
+- Added `pickDefined` for repository partial updates and consolidated `categoryRepo` transaction/rule reassignment and deletion mutation paths.
+- Extracted `useCategoryBulkDelete`, reducing `CategoriesScreen` to presentation and selection while preserving in-use counts, guards and transfer decisions.
+- Reused `useSortPreference` in `useTransactionFilters` and shared the sort-preference behavior across both transaction sort scopes.
+- Moved `ConfirmWithTextModal` into `components/settings` and extracted `useTwoStepConfirmation` for the three destructive DataScreen confirmation flows.
+- Shared photo path parsing between file validation and deletion, and reused `isSameDay` in `useToday`.
+- Added hidden-selection deletion regressions across All Transactions, Accounts, Categories, Tags, Comments and Recurring.
+- `npm run test:all` green (195 files / 1698 tests).
+
+Spec: none (refactor/test-only).
+
+## 2.2.0 v3.4 screenshot refresh
+Status: completed.
+
+Applied 2026-10-30:
+- Recaptured all 30 screens as `v3.4-*` from the committed fixture at 375x812, English/dark/EUR and a fixed clock.
+- Updated all 9 READMEs, `docs/screenshots.md`, `docs/harnesses.md` and the screenshot manifest set to `v3.4`.
+- Updated the capture helpers for the current Import button, transaction-details and form-field selectors, and made the fixture test assert full backup importability.
+- `npm run test:all` green (195 files / 1698 tests).
+
+Spec: none (documentation/assets).

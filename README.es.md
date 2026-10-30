@@ -32,36 +32,36 @@ Todo funciona **en el dispositivo**: tus datos viven en una base de datos SQLite
 
 ## Capturas de pantalla
 
-![Pantalla de inicio](images/screenshots/v3.3-01-a-home-empty.png)<br>*Instalación nueva sin transacciones.*<br><br>
-![Pantalla de inicio](images/screenshots/v3.3-01-b-home.png)<br>*Pantalla de inicio con cuentas, gráfico de donut y desglose por categorías.*<br><br>
-![Menú hamburguesa](images/screenshots/v3.3-02-hamburger.png)<br>*Menú lateral con Inicio, Todas las transacciones, Recurrentes, Cuentas, Categorías, Etiquetas, Comentarios y Ajustes.*<br><br>
-![Añadir transacción](images/screenshots/v3.3-03-add-transaction.png)<br>*Añade un gasto o ingreso con importe, cuenta, categoría, día, etiquetas, comentario y foto.*<br><br>
-![Selector de fecha](images/screenshots/v3.3-04-date-picker.png)<br>*Selector de calendario para elegir un día, semana, mes, año o rango de período personalizado.*<br><br>
-![Todas las transacciones, vacío](images/screenshots/v3.3-05-a-all-transactions-empty-state.png)<br>*Todas las transacciones en estado vacío.*<br><br>
-![Todas las transacciones](images/screenshots/v3.3-05-b-all-transactions.png)<br>*Todas las transacciones con filtros de tipo, categoría, período y etiquetas, además de ordenación y búsqueda.*<br><br>
-![Filtro de categorías](images/screenshots/v3.3-05-c-category-filter.png)<br>*Filtro de categorías con los preajustes Todas las categorías, Todos los gastos y Todos los ingresos.*<br><br>
-![Detalles de ingreso](images/screenshots/v3.3-05-d-details-income.png)<br>*Detalles de una transacción de ingreso con edición y eliminación.*<br><br>
-![Detalles de gasto](images/screenshots/v3.3-05-e-details-expense.png)<br>*Detalles de una transacción de gasto con edición y eliminación.*<br><br>
-![Modificar transacción](images/screenshots/v3.3-05-f-modify-transaction.png)<br>*Edita el importe, la cuenta, la categoría, el día, las etiquetas, el comentario y la foto de una transacción.*<br><br>
-![Recurrentes](images/screenshots/v3.3-06-recurring.png)<br>*Reglas recurrentes con próximas fechas, importes e interruptores de activa/pausada.*<br><br>
-![Nueva regla recurrente](images/screenshots/v3.3-06-a-create-recurring.png)<br>*Configura una regla recurrente con su nombre, frecuencia, intervalo y fecha de fin opcional.*<br><br>
-![Editar regla recurrente](images/screenshots/v3.3-06-b-modify-recurring.png)<br>*Edita la programación de una regla recurrente y elige si el cambio se aplica solo a las próximas repeticiones o también a las pasadas.*<br><br>
-![Cuentas](images/screenshots/v3.3-07-accounts.png)<br>*Pantalla de cuentas con saldos y la cuenta Total agregada.*<br><br>
-![Crear cuenta](images/screenshots/v3.3-07-a-create-account.png)<br>*Crea una cuenta con nombre, icono, color, saldo inicial y nota opcional.*<br><br>
-![Modificar cuenta](images/screenshots/v3.3-07-b-modify-account.png)<br>*Edita los datos, el saldo inicial y la nota de una cuenta, o elimínala.*<br><br>
-![Categorías](images/screenshots/v3.3-08-categories.png)<br>*Categorías organizadas por tipo (gastos/ingresos) en una cuadrícula de 4×N.*<br><br>
-![Crear categoría](images/screenshots/v3.3-08-a-create-category.png)<br>*Crea una categoría de gasto o ingreso con nombre, icono y color.*<br><br>
-![Modificar categoría](images/screenshots/v3.3-08-b-modify-category.png)<br>*Edita el nombre, el icono y el color de una categoría, o elimínala.*<br><br>
-![Etiquetas](images/screenshots/v3.3-09-tags.png)<br>*Pantalla de etiquetas con búsqueda y selección masiva.*<br><br>
-![Nueva etiqueta](images/screenshots/v3.3-09-a-create-tag.png)<br>*Crea una etiqueta para agrupar transacciones.*<br><br>
-![Editar etiqueta](images/screenshots/v3.3-09-b-modify-tag.png)<br>*Cambia el nombre o elimina una etiqueta.*<br><br>
-![Comentarios](images/screenshots/v3.3-10-comments.png)<br>*Pantalla de comentarios con búsqueda, recuento de uso y selección múltiple.*<br><br>
-![Editar comentario](images/screenshots/v3.3-10-a-modify-comment.png)<br>*Edita un comentario en todas las transacciones que lo usan.*<br><br>
-![Ajustes](images/screenshots/v3.3-11-settings.png)<br>*Ajustes: Apariencia, Regional, Personalización y Datos.*<br><br>
-![Ajustes de apariencia](images/screenshots/v3.3-11-a-appearance.png)<br>*Apariencia: tema, tamaño de texto y formas de iconos.*<br><br>
-![Ajustes regionales](images/screenshots/v3.3-11-b-regional-en.png)<br>*Ajustes regionales: idioma, moneda, separador decimal y primer día de la semana.*<br><br>
-![Ajustes de personalización](images/screenshots/v3.3-11-c-personalization.png)<br>*Personalización: valores predeterminados de inicio y de añadir transacción, y privacidad.*<br><br>
-![Ajustes de datos](images/screenshots/v3.3-11-d-data.png)<br>*Datos: exportación/importación de copia de seguridad y acciones de borrado/reinicio.*<br><br>
+![Pantalla de inicio](images/screenshots/v3.4-01-a-home-empty.png)<br>*Instalación nueva sin transacciones.*<br><br>
+![Pantalla de inicio](images/screenshots/v3.4-01-b-home.png)<br>*Pantalla de inicio con cuentas, gráfico de donut y desglose por categorías.*<br><br>
+![Menú hamburguesa](images/screenshots/v3.4-02-hamburger.png)<br>*Menú lateral con Inicio, Todas las transacciones, Recurrentes, Cuentas, Categorías, Etiquetas, Comentarios y Ajustes.*<br><br>
+![Añadir transacción](images/screenshots/v3.4-03-add-transaction.png)<br>*Añade un gasto o ingreso con importe, cuenta, categoría, día, etiquetas, comentario y foto.*<br><br>
+![Selector de fecha](images/screenshots/v3.4-04-date-picker.png)<br>*Selector de calendario para elegir un día, semana, mes, año o rango de período personalizado.*<br><br>
+![Todas las transacciones, vacío](images/screenshots/v3.4-05-a-all-transactions-empty-state.png)<br>*Todas las transacciones en estado vacío.*<br><br>
+![Todas las transacciones](images/screenshots/v3.4-05-b-all-transactions.png)<br>*Todas las transacciones con filtros de tipo, categoría, período y etiquetas, además de ordenación y búsqueda.*<br><br>
+![Filtro de categorías](images/screenshots/v3.4-05-c-category-filter.png)<br>*Filtro de categorías con los preajustes Todas las categorías, Todos los gastos y Todos los ingresos.*<br><br>
+![Detalles de ingreso](images/screenshots/v3.4-05-d-details-income.png)<br>*Detalles de una transacción de ingreso con edición y eliminación.*<br><br>
+![Detalles de gasto](images/screenshots/v3.4-05-e-details-expense.png)<br>*Detalles de una transacción de gasto con edición y eliminación.*<br><br>
+![Modificar transacción](images/screenshots/v3.4-05-f-modify-transaction.png)<br>*Edita el importe, la cuenta, la categoría, el día, las etiquetas, el comentario y la foto de una transacción.*<br><br>
+![Recurrentes](images/screenshots/v3.4-06-recurring.png)<br>*Reglas recurrentes con próximas fechas, importes e interruptores de activa/pausada.*<br><br>
+![Nueva regla recurrente](images/screenshots/v3.4-06-a-create-recurring.png)<br>*Configura una regla recurrente con su nombre, frecuencia, intervalo y fecha de fin opcional.*<br><br>
+![Editar regla recurrente](images/screenshots/v3.4-06-b-modify-recurring.png)<br>*Edita la programación de una regla recurrente y elige si el cambio se aplica solo a las próximas repeticiones o también a las pasadas.*<br><br>
+![Cuentas](images/screenshots/v3.4-07-accounts.png)<br>*Pantalla de cuentas con saldos y la cuenta Total agregada.*<br><br>
+![Crear cuenta](images/screenshots/v3.4-07-a-create-account.png)<br>*Crea una cuenta con nombre, icono, color, saldo inicial y nota opcional.*<br><br>
+![Modificar cuenta](images/screenshots/v3.4-07-b-modify-account.png)<br>*Edita los datos, el saldo inicial y la nota de una cuenta, o elimínala.*<br><br>
+![Categorías](images/screenshots/v3.4-08-categories.png)<br>*Categorías organizadas por tipo (gastos/ingresos) en una cuadrícula de 4×N.*<br><br>
+![Crear categoría](images/screenshots/v3.4-08-a-create-category.png)<br>*Crea una categoría de gasto o ingreso con nombre, icono y color.*<br><br>
+![Modificar categoría](images/screenshots/v3.4-08-b-modify-category.png)<br>*Edita el nombre, el icono y el color de una categoría, o elimínala.*<br><br>
+![Etiquetas](images/screenshots/v3.4-09-tags.png)<br>*Pantalla de etiquetas con búsqueda y selección masiva.*<br><br>
+![Nueva etiqueta](images/screenshots/v3.4-09-a-create-tag.png)<br>*Crea una etiqueta para agrupar transacciones.*<br><br>
+![Editar etiqueta](images/screenshots/v3.4-09-b-modify-tag.png)<br>*Cambia el nombre o elimina una etiqueta.*<br><br>
+![Comentarios](images/screenshots/v3.4-10-comments.png)<br>*Pantalla de comentarios con búsqueda, recuento de uso y selección múltiple.*<br><br>
+![Editar comentario](images/screenshots/v3.4-10-a-modify-comment.png)<br>*Edita un comentario en todas las transacciones que lo usan.*<br><br>
+![Ajustes](images/screenshots/v3.4-11-settings.png)<br>*Ajustes: Apariencia, Regional, Personalización y Datos.*<br><br>
+![Ajustes de apariencia](images/screenshots/v3.4-11-a-appearance.png)<br>*Apariencia: tema, tamaño de texto y formas de iconos.*<br><br>
+![Ajustes regionales](images/screenshots/v3.4-11-b-regional-en.png)<br>*Ajustes regionales: idioma, moneda, separador decimal y primer día de la semana.*<br><br>
+![Ajustes de personalización](images/screenshots/v3.4-11-c-personalization.png)<br>*Personalización: valores predeterminados de inicio y de añadir transacción, y privacidad.*<br><br>
+![Ajustes de datos](images/screenshots/v3.4-11-d-data.png)<br>*Datos: exportación/importación de copia de seguridad y acciones de borrado/reinicio.*<br><br>
 
 ## Stack tecnológico
 

@@ -32,36 +32,36 @@ Tout fonctionne **sur l'appareil** : vos données vivent dans une base de donné
 
 ## Captures d'écran
 
-![Écran d'accueil](images/screenshots/v3.3-01-a-home-empty.png)<br>*Nouvelle installation sans transactions.*<br><br>
-![Écran d'accueil](images/screenshots/v3.3-01-b-home.png)<br>*Écran d'accueil avec comptes, camembert en anneau et répartition par catégorie.*<br><br>
-![Menu latéral](images/screenshots/v3.3-02-hamburger.png)<br>*Menu latéral avec Accueil, Toutes les transactions, Récurrences, Comptes, Catégories, Étiquettes, Commentaires et Réglages.*<br><br>
-![Ajouter une transaction](images/screenshots/v3.3-03-add-transaction.png)<br>*Ajoutez une dépense ou un revenu avec montant, compte, catégorie, jour, étiquettes, commentaire et photo.*<br><br>
-![Sélecteur de date](images/screenshots/v3.3-04-date-picker.png)<br>*Sélecteur de calendrier pour choisir un jour, une semaine, un mois, une année ou une plage de période personnalisée.*<br><br>
-![Toutes les transactions, vide](images/screenshots/v3.3-05-a-all-transactions-empty-state.png)<br>*Toutes les transactions à l'état vide.*<br><br>
-![Toutes les transactions](images/screenshots/v3.3-05-b-all-transactions.png)<br>*Toutes les transactions avec filtres de type, catégorie, période et étiquettes, plus le tri et la recherche.*<br><br>
-![Filtre de catégories](images/screenshots/v3.3-05-c-category-filter.png)<br>*Filtre de catégories avec les préréglages Toutes les catégories, Toutes les dépenses et Tous les revenus.*<br><br>
-![Détails d'un revenu](images/screenshots/v3.3-05-d-details-income.png)<br>*Détails d'une transaction de revenu avec modification et suppression.*<br><br>
-![Détails d'une dépense](images/screenshots/v3.3-05-e-details-expense.png)<br>*Détails d'une transaction de dépense avec modification et suppression.*<br><br>
-![Modifier la transaction](images/screenshots/v3.3-05-f-modify-transaction.png)<br>*Modifiez le montant, le compte, la catégorie, le jour, les étiquettes, le commentaire et la photo d'une transaction.*<br><br>
-![Récurrences](images/screenshots/v3.3-06-recurring.png)<br>*Règles récurrentes avec prochaines échéances, montants et boutons actif/en pause.*<br><br>
-![Nouvelle règle récurrente](images/screenshots/v3.3-06-a-create-recurring.png)<br>*Configurez une règle récurrente avec son nom, sa fréquence, son intervalle et une date de fin facultative.*<br><br>
-![Modifier la règle récurrente](images/screenshots/v3.3-06-b-modify-recurring.png)<br>*Modifiez la programmation d'une règle récurrente et choisissez si le changement s'applique aux prochaines occurrences seulement ou aussi aux passées.*<br><br>
-![Comptes](images/screenshots/v3.3-07-accounts.png)<br>*Écran des comptes avec soldes et le compte Total agrégé.*<br><br>
-![Créer un compte](images/screenshots/v3.3-07-a-create-account.png)<br>*Créez un compte avec un nom, une icône, une couleur, un solde initial et une note facultative.*<br><br>
-![Modifier le compte](images/screenshots/v3.3-07-b-modify-account.png)<br>*Modifiez les détails, le solde initial et la note d'un compte, ou supprimez-le.*<br><br>
-![Catégories](images/screenshots/v3.3-08-categories.png)<br>*Catégories organisées par type (dépenses/revenus) dans une grille de 4×N.*<br><br>
-![Créer une catégorie](images/screenshots/v3.3-08-a-create-category.png)<br>*Créez une catégorie de dépense ou de revenu avec un nom, une icône et une couleur.*<br><br>
-![Modifier la catégorie](images/screenshots/v3.3-08-b-modify-category.png)<br>*Modifiez le nom, l'icône et la couleur d'une catégorie, ou supprimez-la.*<br><br>
-![Étiquettes](images/screenshots/v3.3-09-tags.png)<br>*Écran des étiquettes avec recherche et sélection groupée.*<br><br>
-![Nouvelle étiquette](images/screenshots/v3.3-09-a-create-tag.png)<br>*Créez une étiquette pour regrouper des transactions.*<br><br>
-![Modifier l'étiquette](images/screenshots/v3.3-09-b-modify-tag.png)<br>*Renommez ou supprimez une étiquette.*<br><br>
-![Commentaires](images/screenshots/v3.3-10-comments.png)<br>*Écran des commentaires avec recherche, nombre d'utilisations et sélection multiple.*<br><br>
-![Modifier le commentaire](images/screenshots/v3.3-10-a-modify-comment.png)<br>*Modifiez un commentaire dans toutes les transactions qui l'utilisent.*<br><br>
-![Réglages](images/screenshots/v3.3-11-settings.png)<br>*Réglages : Apparence, Régional, Personnalisation et Données.*<br><br>
-![Réglages d'apparence](images/screenshots/v3.3-11-a-appearance.png)<br>*Apparence : thème, taille du texte et formes des icônes.*<br><br>
-![Réglages régionaux](images/screenshots/v3.3-11-b-regional-en.png)<br>*Réglages régionaux : langue, devise, séparateur décimal et premier jour de la semaine.*<br><br>
-![Réglages de personnalisation](images/screenshots/v3.3-11-c-personalization.png)<br>*Personnalisation : valeurs par défaut de l'accueil et de l'ajout de transaction, plus confidentialité.*<br><br>
-![Réglages des données](images/screenshots/v3.3-11-d-data.png)<br>*Données : export/import de la sauvegarde et actions de suppression/réinitialisation.*<br><br>
+![Écran d'accueil](images/screenshots/v3.4-01-a-home-empty.png)<br>*Nouvelle installation sans transactions.*<br><br>
+![Écran d'accueil](images/screenshots/v3.4-01-b-home.png)<br>*Écran d'accueil avec comptes, camembert en anneau et répartition par catégorie.*<br><br>
+![Menu latéral](images/screenshots/v3.4-02-hamburger.png)<br>*Menu latéral avec Accueil, Toutes les transactions, Récurrences, Comptes, Catégories, Étiquettes, Commentaires et Réglages.*<br><br>
+![Ajouter une transaction](images/screenshots/v3.4-03-add-transaction.png)<br>*Ajoutez une dépense ou un revenu avec montant, compte, catégorie, jour, étiquettes, commentaire et photo.*<br><br>
+![Sélecteur de date](images/screenshots/v3.4-04-date-picker.png)<br>*Sélecteur de calendrier pour choisir un jour, une semaine, un mois, une année ou une plage de période personnalisée.*<br><br>
+![Toutes les transactions, vide](images/screenshots/v3.4-05-a-all-transactions-empty-state.png)<br>*Toutes les transactions à l'état vide.*<br><br>
+![Toutes les transactions](images/screenshots/v3.4-05-b-all-transactions.png)<br>*Toutes les transactions avec filtres de type, catégorie, période et étiquettes, plus le tri et la recherche.*<br><br>
+![Filtre de catégories](images/screenshots/v3.4-05-c-category-filter.png)<br>*Filtre de catégories avec les préréglages Toutes les catégories, Toutes les dépenses et Tous les revenus.*<br><br>
+![Détails d'un revenu](images/screenshots/v3.4-05-d-details-income.png)<br>*Détails d'une transaction de revenu avec modification et suppression.*<br><br>
+![Détails d'une dépense](images/screenshots/v3.4-05-e-details-expense.png)<br>*Détails d'une transaction de dépense avec modification et suppression.*<br><br>
+![Modifier la transaction](images/screenshots/v3.4-05-f-modify-transaction.png)<br>*Modifiez le montant, le compte, la catégorie, le jour, les étiquettes, le commentaire et la photo d'une transaction.*<br><br>
+![Récurrences](images/screenshots/v3.4-06-recurring.png)<br>*Règles récurrentes avec prochaines échéances, montants et boutons actif/en pause.*<br><br>
+![Nouvelle règle récurrente](images/screenshots/v3.4-06-a-create-recurring.png)<br>*Configurez une règle récurrente avec son nom, sa fréquence, son intervalle et une date de fin facultative.*<br><br>
+![Modifier la règle récurrente](images/screenshots/v3.4-06-b-modify-recurring.png)<br>*Modifiez la programmation d'une règle récurrente et choisissez si le changement s'applique aux prochaines occurrences seulement ou aussi aux passées.*<br><br>
+![Comptes](images/screenshots/v3.4-07-accounts.png)<br>*Écran des comptes avec soldes et le compte Total agrégé.*<br><br>
+![Créer un compte](images/screenshots/v3.4-07-a-create-account.png)<br>*Créez un compte avec un nom, une icône, une couleur, un solde initial et une note facultative.*<br><br>
+![Modifier le compte](images/screenshots/v3.4-07-b-modify-account.png)<br>*Modifiez les détails, le solde initial et la note d'un compte, ou supprimez-le.*<br><br>
+![Catégories](images/screenshots/v3.4-08-categories.png)<br>*Catégories organisées par type (dépenses/revenus) dans une grille de 4×N.*<br><br>
+![Créer une catégorie](images/screenshots/v3.4-08-a-create-category.png)<br>*Créez une catégorie de dépense ou de revenu avec un nom, une icône et une couleur.*<br><br>
+![Modifier la catégorie](images/screenshots/v3.4-08-b-modify-category.png)<br>*Modifiez le nom, l'icône et la couleur d'une catégorie, ou supprimez-la.*<br><br>
+![Étiquettes](images/screenshots/v3.4-09-tags.png)<br>*Écran des étiquettes avec recherche et sélection groupée.*<br><br>
+![Nouvelle étiquette](images/screenshots/v3.4-09-a-create-tag.png)<br>*Créez une étiquette pour regrouper des transactions.*<br><br>
+![Modifier l'étiquette](images/screenshots/v3.4-09-b-modify-tag.png)<br>*Renommez ou supprimez une étiquette.*<br><br>
+![Commentaires](images/screenshots/v3.4-10-comments.png)<br>*Écran des commentaires avec recherche, nombre d'utilisations et sélection multiple.*<br><br>
+![Modifier le commentaire](images/screenshots/v3.4-10-a-modify-comment.png)<br>*Modifiez un commentaire dans toutes les transactions qui l'utilisent.*<br><br>
+![Réglages](images/screenshots/v3.4-11-settings.png)<br>*Réglages : Apparence, Régional, Personnalisation et Données.*<br><br>
+![Réglages d'apparence](images/screenshots/v3.4-11-a-appearance.png)<br>*Apparence : thème, taille du texte et formes des icônes.*<br><br>
+![Réglages régionaux](images/screenshots/v3.4-11-b-regional-en.png)<br>*Réglages régionaux : langue, devise, séparateur décimal et premier jour de la semaine.*<br><br>
+![Réglages de personnalisation](images/screenshots/v3.4-11-c-personalization.png)<br>*Personnalisation : valeurs par défaut de l'accueil et de l'ajout de transaction, plus confidentialité.*<br><br>
+![Réglages des données](images/screenshots/v3.4-11-d-data.png)<br>*Données : export/import de la sauvegarde et actions de suppression/réinitialisation.*<br><br>
 
 ## Pile technique
 
