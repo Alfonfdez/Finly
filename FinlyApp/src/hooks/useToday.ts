@@ -1,16 +1,11 @@
 import { useEffect, useState } from 'react';
 import { AppState } from 'react-native';
+import { isSameDay } from '../utils/formatters';
 
 function msUntilNextMidnight(now: Date): number {
   const next = new Date(now);
   next.setHours(24, 0, 0, 0);
   return Math.max(1, next.getTime() - now.getTime());
-}
-
-function sameDay(a: Date, b: Date): boolean {
-  return a.getFullYear() === b.getFullYear()
-    && a.getMonth() === b.getMonth()
-    && a.getDate() === b.getDate();
 }
 
 /**
@@ -26,7 +21,7 @@ export function useToday(): Date {
 
     const refresh = () => {
       const now = new Date();
-      setToday(prev => (sameDay(prev, now) ? prev : now));
+      setToday(prev => (isSameDay(prev, now) ? prev : now));
     };
 
     const schedule = () => {
