@@ -8,6 +8,7 @@ import { parseRowOrNull, parseRows } from '../validate';
 import { dbTimestamp } from '../../utils/formatters';
 import { RULE_ACTIVE, RULE_INACTIVE } from '../../constants/types';
 import { serializeWrites } from '../transactionQueue';
+import { pickDefined } from './repoHelpers';
 
 /** Fields needed to create a rule. `skipped_from` is derived, so it is optional. */
 export type RecurringRuleInput = Omit<RecurringRule, 'id' | 'created_at' | 'updated_at' | 'skipped_from'> & {
@@ -159,13 +160,7 @@ const recurringRepoBase = {
     const run = async (db: DrizzleDb) => {
       // Only the columns the edit form owns: an allowlist keeps a stray field (e.g.
       // `user_id`) from being written through the spread of a partial input.
-      const set: Partial<typeof recurringRules.$inferInsert> = {};
-      for (const key of WRITABLE_RULE_COLUMNS) {
-        const value = data[key];
-        if (value !== undefined) {
-          (set as Record<string, unknown>)[key] = value;
-        }
-      }
+      const set = pickDefined(data, WRITABLE_RULE_COLUMNS);
       if (Object.keys(set).length > 0) {
         await db
           .update(recurringRules)
@@ -268,12 +263,13 @@ const recurringRepoBase = {
 
   async updateGeneratedTransactions(ruleId: number, patch: GeneratedTransactionPatch, tx?: DrizzleDb, scope?: GeneratedTransactionScope): Promise<number> {
     const run = async (db: DrizzleDb): Promise<number> => {
-      const set: Partial<typeof transactions.$inferInsert> = {};
-      if (patch.account_id !== undefined) set.account_id = patch.account_id;
-      if (patch.category_id !== undefined) set.category_id = patch.category_id;
-      if (patch.amount !== undefined) set.amount = patch.amount;
-      if (patch.description !== undefined) set.description = patch.description;
-      if (patch.type !== undefined) set.type = patch.type;
+      const set = pickDefined(patch, [
+        'account_id',
+        'category_id',
+        'amount',
+        'description',
+        'type',
+      ]);
 
       const where = scope
         ? and(

@@ -4777,3 +4777,7 @@
 - Move Accounts and Categories bulk deletion onto useBulkDelete, preserving default-account sanitization, category failure semantics and the transfer flow.
 - Remove the unused delete-modal state from useSelectAndSearch and extend the hook and screen coverage.
 - test:all green (191 files / 1659 tests); Android APK rebuilt (SHA-256 75515923E835285148B9B29BB48913F9DE5E5B9300479FE886440533AE008D48).
+
+[2026-10-30] refactor | FinlyApp/src/database/repositories/repoHelpers.ts, FinlyApp/src/database/repositories/accountRepo.ts, FinlyApp/src/database/repositories/categoryRepo.ts, FinlyApp/src/database/repositories/tagRepo.ts, FinlyApp/src/database/repositories/transactionRepo.writes.ts, FinlyApp/src/database/repositories/recurringRepo.ts, FinlyApp/tests/database/repoHelpers.test.ts
+- Add pickDefined and share partial update field selection across the account, category, tag, transaction and recurring repositories.
+- Cover defined, falsy, allowlist and immutability behavior; test:all green (192 files / 1664 tests).
