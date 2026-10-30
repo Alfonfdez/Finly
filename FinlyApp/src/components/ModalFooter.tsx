@@ -36,6 +36,50 @@ interface Props {
   onMove?: () => void;
 }
 
+interface FooterButtonProps {
+  label: string;
+  onPress?: () => void;
+  disabled?: boolean;
+  loading?: boolean;
+  backgroundColor: string;
+  textColor: string;
+  fontSize: number;
+  style?: StyleProp<ViewStyle>;
+  borderColor?: string;
+  numberOfLines?: number;
+}
+
+function FooterButton({
+  label,
+  onPress,
+  disabled = false,
+  loading = false,
+  backgroundColor,
+  textColor,
+  fontSize,
+  style,
+  borderColor,
+  numberOfLines,
+}: FooterButtonProps) {
+  return (
+    <TouchableOpacity
+      style={[style, { backgroundColor }, borderColor != null && { borderColor }]}
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled, busy: loading }}
+    >
+      <View style={styles.confirmContent}>
+        {loading ? <ActivityIndicator size="small" color={textColor} /> : null}
+        <Text numberOfLines={numberOfLines} style={[styles.buttonText, { color: textColor, fontSize }]}>
+          {label}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 export default function ModalFooter({
   cancelLabel,
   confirmLabel,
@@ -72,28 +116,24 @@ export default function ModalFooter({
     : destructive
       ? WHITE
       : c.background;
-  const buttonTextStyle = { fontSize: fs(textSize) };
 
   if (layout === FOOTER_LAYOUTS.single) {
     return (
       <View style={[styles.column, { paddingHorizontal: horizontalInset, paddingBottom: containerPaddingBottom }]}>
-        <TouchableOpacity
+        <FooterButton
+          label={confirmLabel}
+          onPress={onConfirm}
+          disabled={confirmInactive}
+          loading={confirmLoading}
+          backgroundColor={confirmBg}
+          textColor={confirmFg}
+          fontSize={fs(textSize)}
           style={[
             styles.button,
             styles.stretchButton,
-            { backgroundColor: confirmBg, paddingVertical: verticalPadding, minHeight },
+            { paddingVertical: verticalPadding, minHeight },
           ]}
-          onPress={onConfirm}
-          disabled={confirmInactive}
-          accessibilityRole="button"
-          accessibilityLabel={confirmLabel}
-          accessibilityState={{ disabled: confirmInactive, busy: confirmLoading }}
-        >
-          <View style={styles.confirmContent}>
-            {confirmLoading ? <ActivityIndicator size="small" color={confirmFg} /> : null}
-            <Text style={[styles.buttonText, { color: confirmFg }, buttonTextStyle]}>{confirmLabel}</Text>
-          </View>
-        </TouchableOpacity>
+        />
       </View>
     );
   }
@@ -102,49 +142,39 @@ export default function ModalFooter({
     return (
       <View style={[styles.column, { paddingHorizontal: horizontalInset, paddingBottom: containerPaddingBottom }]}>
         <View style={styles.actionRow}>
-          <TouchableOpacity
-            style={[styles.stackedButton, { backgroundColor: c.primary }]}
+          <FooterButton
+            label={moveLabel ?? ''}
             onPress={onMove}
-            accessibilityRole="button"
-            accessibilityLabel={moveLabel}
-          >
-            <Text numberOfLines={2} style={[styles.buttonText, { color: c.background }, buttonTextStyle]}>
-              {moveLabel}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.stackedButton, { backgroundColor: confirmBg }]}
+            backgroundColor={c.primary}
+            textColor={c.background}
+            fontSize={fs(textSize)}
+            style={styles.stackedButton}
+            numberOfLines={2}
+          />
+          <FooterButton
+            label={confirmLabel}
             onPress={onConfirm}
             disabled={confirmInactive}
-            accessibilityRole="button"
-            accessibilityLabel={confirmLabel}
-            accessibilityState={{ disabled: confirmInactive, busy: confirmLoading }}
-          >
-            <View style={styles.confirmContent}>
-              {confirmLoading ? <ActivityIndicator size="small" color={confirmFg} /> : null}
-              <Text numberOfLines={2} style={[styles.buttonText, { color: confirmFg }, buttonTextStyle]}>
-                {confirmLabel}
-              </Text>
-            </View>
-          </TouchableOpacity>
+            loading={confirmLoading}
+            backgroundColor={confirmBg}
+            textColor={confirmFg}
+            fontSize={fs(textSize)}
+            style={styles.stackedButton}
+            numberOfLines={2}
+          />
         </View>
         {cancelLabel && onCancel ? (
-          <TouchableOpacity
-            style={[
-              styles.stackedButton,
-              styles.stackedCancel,
-              { backgroundColor: c.background, borderColor: c.border },
-            ]}
+          <FooterButton
+            label={cancelLabel}
             onPress={onCancel}
             disabled={cancelDisabled}
-            accessibilityRole="button"
-            accessibilityLabel={cancelLabel}
-            accessibilityState={{ disabled: cancelDisabled }}
-          >
-            <Text style={[styles.buttonText, { color: c.text }, buttonTextStyle]} numberOfLines={2}>
-              {cancelLabel}
-            </Text>
-          </TouchableOpacity>
+            backgroundColor={c.background}
+            textColor={c.text}
+            fontSize={fs(textSize)}
+            style={[styles.stackedButton, styles.stackedCancel]}
+            borderColor={c.border}
+            numberOfLines={2}
+          />
         ) : null}
       </View>
     );
@@ -162,42 +192,37 @@ export default function ModalFooter({
         ]}
       >
         {cancelLabel && onCancel ? (
-          <TouchableOpacity
+          <FooterButton
+            label={cancelLabel}
+            onPress={onCancel}
+            disabled={cancelDisabled}
+            backgroundColor={c.background}
+            textColor={c.text}
+            fontSize={fs(textSize)}
             style={[
               styles.button,
               styles.compactButton,
-              { backgroundColor: c.background, borderColor: c.border, paddingVertical: verticalPadding, minHeight },
+              { paddingVertical: verticalPadding, minHeight },
             ]}
-            onPress={onCancel}
-            disabled={cancelDisabled}
-            accessibilityRole="button"
-            accessibilityLabel={cancelLabel}
-            accessibilityState={{ disabled: cancelDisabled }}
-          >
-            <Text numberOfLines={1} style={[styles.buttonText, { color: c.text, fontSize: fs(textSize) }]}>
-              {cancelLabel}
-            </Text>
-          </TouchableOpacity>
+            borderColor={c.border}
+            numberOfLines={1}
+          />
         ) : null}
-        <TouchableOpacity
+        <FooterButton
+          label={confirmLabel}
+          onPress={onConfirm}
+          disabled={confirmInactive}
+          loading={confirmLoading}
+          backgroundColor={confirmBg}
+          textColor={confirmFg}
+          fontSize={fs(textSize)}
           style={[
             styles.button,
             styles.compactButton,
-            { backgroundColor: confirmBg, paddingVertical: verticalPadding, minHeight },
+            { paddingVertical: verticalPadding, minHeight },
           ]}
-          onPress={onConfirm}
-          disabled={confirmInactive}
-          accessibilityRole="button"
-          accessibilityLabel={confirmLabel}
-          accessibilityState={{ disabled: confirmInactive, busy: confirmLoading }}
-        >
-          <View style={styles.confirmContent}>
-            {confirmLoading ? <ActivityIndicator size="small" color={confirmFg} /> : null}
-            <Text numberOfLines={1} style={[styles.buttonText, { color: confirmFg, fontSize: fs(textSize) }]}>
-              {confirmLabel}
-            </Text>
-          </View>
-        </TouchableOpacity>
+          numberOfLines={1}
+        />
       </View>
     );
   }
@@ -212,41 +237,35 @@ export default function ModalFooter({
       ]}
     >
       {cancelLabel && onCancel ? (
-        <TouchableOpacity
-          style={[styles.button, styles.stretchButton, { backgroundColor: c.background, borderColor: c.border, paddingVertical: verticalPadding, minHeight }]}
+        <FooterButton
+          label={cancelLabel}
           onPress={onCancel}
           disabled={cancelDisabled}
-          accessibilityRole="button"
-          accessibilityLabel={cancelLabel}
-          accessibilityState={{ disabled: cancelDisabled }}
-        >
-          <Text style={[styles.buttonText, { color: c.text, fontSize: fs(textSize) }]}>{cancelLabel}</Text>
-        </TouchableOpacity>
+          backgroundColor={c.background}
+          textColor={c.text}
+          fontSize={fs(textSize)}
+          style={[
+            styles.button,
+            styles.stretchButton,
+            { paddingVertical: verticalPadding, minHeight },
+          ]}
+          borderColor={c.border}
+        />
       ) : null}
-      <TouchableOpacity
+      <FooterButton
+        label={confirmLabel}
+        onPress={onConfirm}
+        disabled={confirmInactive}
+        loading={confirmLoading}
+        backgroundColor={confirmBg}
+        textColor={confirmFg}
+        fontSize={fs(textSize)}
         style={[
           styles.button,
           styles.stretchButton,
-          { backgroundColor: confirmBg, paddingVertical: verticalPadding, minHeight },
+          { paddingVertical: verticalPadding, minHeight },
         ]}
-        onPress={onConfirm}
-        disabled={confirmInactive}
-        accessibilityRole="button"
-        accessibilityLabel={confirmLabel}
-        accessibilityState={{ disabled: confirmInactive, busy: confirmLoading }}
-      >
-        <View style={styles.confirmContent}>
-          {confirmLoading ? <ActivityIndicator size="small" color={confirmFg} /> : null}
-          <Text
-            style={[
-              styles.buttonText,
-              { color: confirmFg, fontSize: fs(textSize) },
-            ]}
-          >
-            {confirmLabel}
-          </Text>
-        </View>
-      </TouchableOpacity>
+      />
     </View>
   );
 }

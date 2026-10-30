@@ -20,7 +20,7 @@ import type { RootStackParamList, NavigationProp, IconName } from '../constants/
 import { USER_ID } from '../constants/types';
 import { ACCOUNT_ICONS } from '../constants/accountIcons';
 import { QUICK_COLORS } from '../constants/colors';
-import ConfirmationModal from '../components/ConfirmationModal';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import EmptyState from '../components/EmptyState';
 import LoadErrorState from '../components/LoadErrorState';
 import AccountForm from '../components/AccountForm';
@@ -197,7 +197,6 @@ export default function ModifyAccountScreen() {
           <AccountForm
             nameLabel={labels.form_name}
             namePlaceholder={labels.modify_account_name}
-            showNameField
             nameDisabled={isTotal}
             name={name}
             onNameChange={(v) => { markEdited(); handleNameChange(v, setName); }}
@@ -232,10 +231,9 @@ export default function ModifyAccountScreen() {
         </View>
       </ScreenShell>
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.accounts_bulk_delete_confirm_title(1)}
-        icon="trash-outline"
         subject={(
           <ModalEntitySubject
             name={getDisplayAccountName(account)}
@@ -245,8 +243,6 @@ export default function ModifyAccountScreen() {
           />
         )}
         message={labels.modify_account_delete_confirm_message}
-        confirmLabel={labels.delete}
-        cancelLabel={labels.cancel}
         onConfirm={confirmDelete}
         onCancel={closeDeleteModal}
         busy={deleting}

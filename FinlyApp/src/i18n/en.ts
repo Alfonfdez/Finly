@@ -141,7 +141,6 @@ export const en = {
   cal_range_end: (day: number, month: string, year: number) => `to ${day} ${month} ${year}`,
 
   // Calendar picker display
-  cal_period_to_hint: 'select end',
 
   // Day abbreviations (Sunday-first)
   days_short_sun: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
@@ -168,7 +167,6 @@ export const en = {
   add_account: 'Account',
   add_categories: 'Categories',
   add_more: 'More',
-  add_day: 'Day',
   add_date: 'Date',
   add_today: 'Today',
   add_yesterday: 'Yesterday',
@@ -182,7 +180,6 @@ export const en = {
   add_comment: 'Comment',
   add_comment_suggestions: 'Suggestions',
   add_comment_suggestions_hint: 'Tap to reuse',
-  add_photo: 'Photo',
   add_photos: 'Photos',
   add_photo_title: 'Add photo',
   add_photo_camera: 'Take photo',
@@ -230,7 +227,6 @@ export const en = {
 
   // Create category
   create_cat_title: 'Create category',
-  create_cat_name: 'Category name',
   create_cat_name_placeholder: 'Category name',
   create_cat_type: 'Type',
   create_cat_expense: 'Expense',

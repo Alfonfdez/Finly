@@ -8,7 +8,7 @@ import ModalHeader from './ModalHeader';
 import ModalFooter from './ModalFooter';
 import { FOOTER_LAYOUTS, type IconName } from '../constants/types';
 
-interface Props {
+export interface ConfirmationModalProps {
   visible: boolean;
   title: string;
   message?: string;
@@ -31,7 +31,7 @@ export default function ConfirmationModal({
   visible, title, message, subject, icon = 'alert-circle-outline', confirmLabel, cancelLabel,
   onConfirm, onCancel, confirmDisabled = false, busy = false, destructive = true, children,
   moveLabel, onMove,
-}: Props) {
+}: ConfirmationModalProps) {
   const { activeColors: c } = useConfig();
   const fs = useFontSize();
   const { height: windowHeight } = useWindowDimensions();

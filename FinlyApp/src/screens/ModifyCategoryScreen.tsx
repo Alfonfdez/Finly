@@ -22,7 +22,7 @@ import { BUTTON_BORDER_RADIUS } from '../components/componentStyles';
 import { CATEGORY_ICONS } from '../components/IconGrid';
 import { QUICK_COLORS } from '../constants/colors';
 import IconColorSection from '../components/IconColorSection';
-import ConfirmationModal from '../components/ConfirmationModal';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import ModalEntitySubject from '../components/ModalEntitySubject';
 import CategoryTransferModal from '../components/CategoryTransferModal';
 import FormSectionHeader from '../components/form/FormSectionHeader';
@@ -273,10 +273,9 @@ export default function ModifyCategoryScreen() {
         </FormScrollView>
       </View>
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.categories_bulk_delete_confirm_title(1)}
-        icon="trash-outline"
         subject={(
           <ModalEntitySubject
             name={getDisplayCategoryName(category)}
@@ -294,7 +293,6 @@ export default function ModifyCategoryScreen() {
               ? labels.modify_cat_delete_confirm_message_rules
               : labels.modify_cat_delete_confirm_message_empty}
         confirmLabel={labels.modify_cat_delete_confirm_delete}
-        cancelLabel={labels.cancel}
         onConfirm={handlePermanentDelete}
         onCancel={() => setDeleteModalVisible(false)}
         moveLabel={deleteRemovesData ? labels.modify_cat_delete_confirm_move : undefined}

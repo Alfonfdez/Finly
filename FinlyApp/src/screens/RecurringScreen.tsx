@@ -16,7 +16,7 @@ import SelectAllRow from '../components/SelectAllRow';
 import SortToggle, { recurringSortFields } from '../components/SortToggle';
 import RecurringStatusChip from '../components/RecurringStatusChip';
 import SortRow from '../components/SortRow';
-import ConfirmationModal from '../components/ConfirmationModal';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import ScreenSearchBar from '../components/ScreenSearchBar';
 import LoadErrorState from '../components/LoadErrorState';
@@ -318,13 +318,10 @@ export default function RecurringScreen() {
         onClose={closeAccountModal}
       />
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.recurring_bulk_delete_confirm_title(selectedIds.size)}
-        icon="trash-outline"
         message={labels.recurring_bulk_delete_confirm_message}
-        confirmLabel={labels.delete}
-        cancelLabel={labels.cancel}
         onConfirm={confirmBulkDelete}
         onCancel={closeDeleteModal}
         busy={busy}

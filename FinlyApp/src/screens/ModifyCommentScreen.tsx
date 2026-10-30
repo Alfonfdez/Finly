@@ -10,7 +10,7 @@ import { useKeyboardReveal } from '../hooks/useKeyboardReveal';
 import { t } from '../i18n';
 import { transactionRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, MAX_COMMENT_LENGTH } from '../constants/types';
-import ConfirmationModal from '../components/ConfirmationModal';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import LabeledTextField from '../components/form/LabeledTextField';
 import { formStyles } from '../components/form/formStyles';
 import PrimaryButton from '../components/form/PrimaryButton';
@@ -114,13 +114,10 @@ export default function ModifyCommentScreen() {
         </Text>
       </FormScrollView>
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.comments_delete_confirm_title}
-        icon="trash-outline"
         message={labels.comments_delete_confirm_message(count)}
-        confirmLabel={labels.delete}
-        cancelLabel={labels.cancel}
         onConfirm={confirmDelete}
         onCancel={closeDeleteModal}
         busy={deleting}

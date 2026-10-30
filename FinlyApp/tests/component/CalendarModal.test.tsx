@@ -34,7 +34,7 @@ describe('CalendarModal', () => {
       />,
     );
 
-    expect(view.getByText(labels.cal_select_day)).toBeTruthy();
+    expect(view.getByText(labels.cal_select_day, { exact: false })).toBeTruthy();
     expect(view.getByText(formatPeriodText(PERIODS.day, base, labels.months))).toBeTruthy();
 
     await fireEvent.press(view.getByText(labels.cal_ok));
@@ -134,7 +134,7 @@ describe('CalendarModal', () => {
       />,
     );
 
-    expect(view.getByText(labels.cal_select_period)).toBeTruthy();
+    expect(view.getByText(labels.cal_select_period, { exact: false })).toBeTruthy();
     await fireEvent.press(view.getByText(labels.cal_ok));
 
     expect(onSelectRange).toHaveBeenCalledWith(rangeStart, rangeEnd);

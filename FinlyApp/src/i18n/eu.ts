@@ -143,7 +143,6 @@ export const eu: Language = {
   cal_range_end: (day: number, month: string, year: number) => `${year}ko ${month.slice(0, -1)}aren ${day}era`,
 
   // Calendar picker display
-  cal_period_to_hint: 'hautatu amaiera',
 
   // Day abbreviations (Sunday-first)
   days_short_sun: ['ig', 'al', 'as', 'az', 'og', 'or', 'la'],
@@ -170,7 +169,6 @@ export const eu: Language = {
   add_account: 'Kontua',
   add_categories: 'Kategoriak',
   add_more: 'Gehiago',
-  add_day: 'Eguna',
   add_date: 'Data',
   add_today: 'Gaur',
   add_yesterday: 'Atzo',
@@ -184,7 +182,6 @@ export const eu: Language = {
   add_comment: 'Iruzkina',
   add_comment_suggestions: 'Iradokizunak',
   add_comment_suggestions_hint: 'Sakatu berrerabiltzeko',
-  add_photo: 'Argazkia',
   add_photos: 'Argazkiak',
   add_photo_title: 'Argazkia gehitu',
   add_photo_camera: 'Argazkia atera',
@@ -232,7 +229,6 @@ export const eu: Language = {
 
   // Create category
   create_cat_title: 'Kategoria sortu',
-  create_cat_name: 'Kategoria-izena',
   create_cat_name_placeholder: 'Kategoria-izena',
   create_cat_type: 'Mota',
   create_cat_expense: 'Gastua',

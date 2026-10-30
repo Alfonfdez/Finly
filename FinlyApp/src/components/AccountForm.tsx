@@ -19,7 +19,6 @@ interface AccountFormProps {
   nameError: string | null;
   /** Shown when the name is blank; the red border waits for the field to be touched. */
   nameEmptyError: string;
-  showNameField: boolean;
   nameDisabled?: boolean;
   icons: readonly IconName[];
   iconShape: ConfigIconShape;
@@ -56,7 +55,6 @@ export default function AccountForm({
   onNameChange,
   nameError,
   nameEmptyError,
-  showNameField,
   nameDisabled = false,
   icons,
   iconShape,
@@ -93,24 +91,22 @@ export default function AccountForm({
 
   return (
     <FormScrollView scrollRef={scrollRef} onLayout={onScrollLayout}>
-      {showNameField && (
-        <LabeledTextField
-          label={nameLabel}
-          labelIcon="id-card-outline"
-          labelStyle={formStyles.firstSection}
-          placeholder={namePlaceholder ?? nameLabel}
-          value={name}
-          onChangeText={onNameChange}
-          maxLength={MAX_ACCOUNT_NAME_LENGTH}
-          autoCapitalize="words"
-          autoCorrect={false}
-          error={nameValidationError}
-          showCounter
-          counterInHeader
-          editable={!nameDisabled}
-          inputStyle={nameDisabled ? { color: c.textSecondary } : undefined}
-        />
-      )}
+      <LabeledTextField
+        label={nameLabel}
+        labelIcon="id-card-outline"
+        labelStyle={formStyles.firstSection}
+        placeholder={namePlaceholder ?? nameLabel}
+        value={name}
+        onChangeText={onNameChange}
+        maxLength={MAX_ACCOUNT_NAME_LENGTH}
+        autoCapitalize="words"
+        autoCorrect={false}
+        error={nameValidationError}
+        showCounter
+        counterInHeader
+        editable={!nameDisabled}
+        inputStyle={nameDisabled ? { color: c.textSecondary } : undefined}
+      />
 
       <IconColorSection
         icons={icons}

@@ -5,6 +5,7 @@ import ScreenShell from '../components/ScreenShell';
 import EmptyState from '../components/EmptyState';
 import LoadErrorState from '../components/LoadErrorState';
 import ConfirmationModal from '../components/ConfirmationModal';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import TransactionForm from '../components/TransactionForm';
 import { useConfig } from '../context/ConfigContext';
 import { useApp } from '../context/AppContext';
@@ -218,13 +219,10 @@ export default function ModifyRecurringScreen() {
         repeatScopeDisabled={!pastAffected}
       />
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteVisible}
         title={labels.recurring_delete_confirm_title}
-        icon="trash-outline"
         message={labels.recurring_delete_confirm_message}
-        confirmLabel={labels.delete}
-        cancelLabel={labels.cancel}
         onConfirm={handleDelete}
         onCancel={() => setDeleteVisible(false)}
         busy={deleting}

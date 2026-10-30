@@ -17,7 +17,7 @@ import { transactionRepository, recurringRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, TRANSACTION_TYPES } from '../constants/types';
 import { TEST_IDS } from '../constants/testIds';
 import { badgeShapeFor } from '../utils/badgeShape';
-import ConfirmationModal from '../components/ConfirmationModal';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import EmptyState from '../components/EmptyState';
 import LoadErrorState from '../components/LoadErrorState';
 import IconBadge from '../components/IconBadge';
@@ -289,13 +289,10 @@ export default function TransactionDetailsScreen() {
         </View>
       </ScrollView>
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.details_delete_title}
-        icon="trash-outline"
         message={labels.details_delete_message}
-        confirmLabel={labels.delete}
-        cancelLabel={labels.cancel}
         onConfirm={confirmDelete}
         onCancel={closeDeleteModal}
       />

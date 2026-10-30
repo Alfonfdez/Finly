@@ -12,7 +12,7 @@ import { t } from '../i18n';
 import { useApp } from '../context/AppContext';
 import { tagRepository } from '../database';
 import { type RootStackParamList, type NavigationProp, USER_ID, MAX_TAG_NAME_LENGTH } from '../constants/types';
-import ConfirmationModal from '../components/ConfirmationModal';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import ModalEntitySubject from '../components/ModalEntitySubject';
 import LabeledTextField from '../components/form/LabeledTextField';
 import { formStyles } from '../components/form/formStyles';
@@ -138,14 +138,11 @@ export default function ModifyTagScreen() {
         </FormActions>
       </View>
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         visible={deleteModalVisible}
         title={labels.tags_bulk_delete_confirm_title(1)}
-        icon="trash-outline"
         subject={tag ? <ModalEntitySubject name={tag.name} icon="pricetag-outline" /> : undefined}
         message={labels.modify_tag_delete_confirm_message}
-        confirmLabel={labels.delete}
-        cancelLabel={labels.cancel}
         onConfirm={confirmDelete}
         onCancel={closeDeleteModal}
         busy={deleting}
