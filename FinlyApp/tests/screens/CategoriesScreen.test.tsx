@@ -243,6 +243,26 @@ describe('CategoriesScreen', () => {
     expect(mockDeleteMany).not.toHaveBeenCalled();
   });
 
+  it('deletes only selected categories still visible after searching', async () => {
+    setAppData({ categories: [expenseCategory(1, 'Food'), expenseCategory(2, 'Transport')] });
+    const view = await renderWithHeader();
+    await view.findByText('Food');
+
+    await fireEvent.press(view.getByLabelText('Enter select mode'));
+    await fireEvent.press(view.getByText('Food'));
+    await fireEvent.press(view.getByText('Transport'));
+    await waitFor(() => expect(view.getByText('Delete (2)')).toBeTruthy());
+
+    await fireEvent.press(view.getByLabelText('Search'));
+    await fireEvent.changeText(await view.findByPlaceholderText('Search category'), 'Transport');
+    await waitFor(() => expect(view.getByText('Delete (1)')).toBeTruthy());
+    await fireEvent.press(view.getByText('Delete (1)'));
+    await waitFor(() => expect(view.getByText('Delete 1 category?', { exact: false })).toBeTruthy());
+    await fireEvent.press(view.getByText('Permanent delete'));
+
+    await waitFor(() => expect(mockDeleteMany).toHaveBeenCalledWith([2]));
+  });
+
   it('switches the grid when the Income tab is selected', async () => {
     setAppData({ categories: [expenseCategory(1, 'Food'), incomeCategory(3, 'Salary')] });
     const view = await render(<CategoriesScreen />);

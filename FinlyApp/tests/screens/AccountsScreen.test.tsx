@@ -263,4 +263,30 @@ describe('AccountsScreen', () => {
     )).toBeTruthy());
     expect(deleteMany).not.toHaveBeenCalled();
   });
+
+  it('deletes only selected accounts still visible after searching', async () => {
+    list.mockResolvedValue([totalAccount, account(1, 'Cash'), account(2, 'Savings')]);
+    getBalances.mockResolvedValue([
+      { account_id: 1, balance: 100 },
+      { account_id: 2, balance: 50 },
+    ]);
+    const view = await renderWithHeader();
+    await waitFor(() => expect(view.getByText('Cash')).toBeTruthy());
+
+    const ue = userEvent.setup();
+    await ue.press(view.getByLabelText('Enter select mode'));
+    const boxes = view.getAllByText('checkbox-outline');
+    await ue.press(boxes[1]);
+    await waitFor(() => expect(view.getByText('Delete (1)')).toBeTruthy());
+    await ue.press(boxes[2]);
+    await waitFor(() => expect(view.getByText('Delete (2)')).toBeTruthy());
+
+    await ue.press(view.getByLabelText('Search'));
+    await ue.type(await view.findByPlaceholderText('Search accounts'), 'Savings');
+    await waitFor(() => expect(view.getByText('Delete (1)')).toBeTruthy());
+    await ue.press(view.getByText('Delete (1)'));
+    await ue.press(await view.findByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => expect(deleteMany).toHaveBeenCalledWith([2]));
+  });
 });

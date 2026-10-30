@@ -4810,3 +4810,7 @@
 [2026-10-30] refactor | FinlyApp/src/hooks/useToday.ts
 - Reuse isSameDay from formatters in useToday instead of keeping a duplicate day comparison.
 - test:all green (195 files / 1691 tests).
+
+[2026-10-30] test | FinlyApp/tests/screens/AllTransactionsScreen.test.tsx, FinlyApp/tests/screens/AccountsScreen.test.tsx, FinlyApp/tests/screens/CategoriesScreen.test.tsx, FinlyApp/tests/screens/TagsScreen.test.tsx, FinlyApp/tests/screens/CommentsScreen.test.tsx, FinlyApp/tests/screens/RecurringScreen.test.tsx
+- Add hidden-selection regressions proving tab, filter and search changes cannot bulk-delete invisible rows.
+- test:all green (195 files / 1698 tests).
