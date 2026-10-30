@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import { parseBackup } from '../../src/database/backup';
+import { assertImportableBackup, parseBackup } from '../../src/database/backup';
 import { SCREENS, SET } from '../../scripts/screenshots/manifest.mjs';
 
 const APP_ROOT = process.env.FINLY_APP_ROOT ?? process.cwd();
@@ -20,6 +20,7 @@ function screenshotRefs(name: string): string[] {
 describe('screenshot workflow', () => {
   it('defines a valid, self-consistent backup fixture', () => {
     const backup = parseBackup(readFileSync(FIXTURE_PATH, 'utf8'));
+    assertImportableBackup(backup);
     const {
       users,
       accounts,

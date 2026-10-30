@@ -4814,3 +4814,8 @@
 [2026-10-30] test | FinlyApp/tests/screens/AllTransactionsScreen.test.tsx, FinlyApp/tests/screens/AccountsScreen.test.tsx, FinlyApp/tests/screens/CategoriesScreen.test.tsx, FinlyApp/tests/screens/TagsScreen.test.tsx, FinlyApp/tests/screens/CommentsScreen.test.tsx, FinlyApp/tests/screens/RecurringScreen.test.tsx
 - Add hidden-selection regressions proving tab, filter and search changes cannot bulk-delete invisible rows.
 - test:all green (195 files / 1698 tests).
+
+[2026-10-30] docs | FinlyApp/scripts/screenshots/manifest.mjs, FinlyApp/scripts/screenshots/capture.mjs, FinlyApp/tests/tooling/screenshots.test.ts, README.md, README.es.md, README.ca.md, README.gl.md, README.eu.md, README.fr.md, README.de.md, README.pt.md, README.it.md, docs/screenshots.md, docs/harnesses.md, spec/constitution/3-roadmap.md, images/screenshots/v3.4-*
+- Recapture the 30-screen v3.4 set from the committed fixture against the current UI.
+- Point all 9 READMEs and the screenshot/harness docs at v3.4; update capture selectors and assert the fixture is fully importable.
+- Record the post-audit refactors, regression closure and v3.4 refresh in the roadmap; test:all green (195 files / 1698 tests).

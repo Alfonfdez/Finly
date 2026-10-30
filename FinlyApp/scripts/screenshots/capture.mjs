@@ -88,8 +88,7 @@ async function importFixture(helpers, opts) {
   await importRow.click();
   const chooser = await chooserPromise;
   await chooser.setFiles(FIXTURE_PATH);
-  await page.getByText('Import data?', { exact: true }).waitFor({ timeout: 15000 });
-  const confirm = page.getByRole('button', { name: 'Confirm' });
+  const confirm = page.getByRole('button', { name: 'Import', exact: true });
   await confirm.waitFor({ timeout: 15000 });
   await confirm.click();
   await page.waitForTimeout(2500);
@@ -206,7 +205,7 @@ async function main() {
     },
     async openEditTransaction() {
       await page.getByText('Edit', { exact: true }).filter({ visible: true }).last().click();
-      await page.getByText('Modify transaction', { exact: true }).waitFor();
+      await page.getByLabel('Amount input').waitFor({ timeout: 30000 });
       await helpers.scrollToTop();
     },
     async openCreateRecurring() {
@@ -223,7 +222,7 @@ async function main() {
     },
     async openModifyRecurring() {
       await page.getByText('Rent', { exact: true }).filter({ visible: true }).first().click();
-      await page.getByText('Edit recurring rule', { exact: true }).waitFor();
+      await page.getByTestId('repeat-name').waitFor({ timeout: 30000 });
       await helpers.scrollToTestId('repeat-options');
     },
     async openCreateAccount() {
@@ -242,7 +241,7 @@ async function main() {
     },
     async openModifyAccount(name) {
       await page.getByText(name, { exact: true }).filter({ visible: true }).first().click();
-      await page.getByText('Modify account', { exact: true }).waitFor();
+      await page.getByPlaceholder('Account name').waitFor();
       await helpers.scrollToTop();
     },
     async openCreateCategory() {
@@ -259,7 +258,7 @@ async function main() {
     },
     async openModifyCategory(name) {
       await page.getByText(name, { exact: true }).filter({ visible: true }).first().click();
-      await page.getByText('Modify category', { exact: true }).waitFor();
+      await page.getByPlaceholder('Category name').waitFor();
       await helpers.scrollToTop();
     },
     async openCreateTag() {
@@ -272,12 +271,12 @@ async function main() {
     },
     async openModifyTag(name) {
       await page.getByText(name, { exact: true }).filter({ visible: true }).first().click();
-      await page.getByText('Edit tag', { exact: true }).waitFor();
+      await page.getByLabel('Tag name').waitFor();
       await helpers.scrollToTop();
     },
     async openModifyComment(text) {
       await page.getByText(text, { exact: true }).filter({ visible: true }).first().click();
-      await page.getByText('Edit comment', { exact: true }).waitFor();
+      await page.getByRole('textbox', { name: 'Comment' }).waitFor();
       await helpers.scrollToTop();
     },
     async addForm() {
@@ -316,7 +315,7 @@ async function main() {
       const row = page.getByText(text, { exact: true }).filter({ visible: true }).first();
       await row.waitFor();
       await row.click();
-      await page.getByText('Transaction details', { exact: true }).waitFor();
+      await page.getByText('Photos', { exact: true }).filter({ visible: true }).first().waitFor();
       await page.waitForTimeout(400);
     },
     async settings(sub) {

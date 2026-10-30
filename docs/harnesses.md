@@ -68,7 +68,7 @@ acceptance criteria in a real browser.
 | Dual-storage contract suite | Vitest + sql.js (real SQLite in Node) | ✅ Implemented (Phase B) | One shared SQLite engine (native parity via expo-sqlite mock + web via sql.js/IndexedDB), repo contract + DB drift vs types |
 | Backup round-trip | Vitest + sql.js (`tests/database/backup.test.ts`) | ✅ Implemented (025) | Snapshot build/parse/apply round-trips (photos + tag links), empty-DB export, invalid / FK / newer-version rejection with rollback, facade round-trip |
 | UI / E2E verification | Playwright MCP + `verification-loop` skill | ✅ Implemented (Phase C) | Spec acceptance criteria in a live Expo web app |
-| Release screenshots | Playwright Core + installed Chrome | ✅ Implemented | 30-screen `v3.3` README set from the committed fixture (375×812, fixed clock, empty + populated states, manifest order enforced) |
+| Release screenshots | Playwright Core + installed Chrome | ✅ Implemented | 30-screen `v3.4` README set from the committed fixture (375×812, fixed clock, empty + populated states, manifest order enforced) |
 | CI pipeline | GitHub Actions (`.github/workflows/ci.yml`) | ✅ Implemented | `npm run test:all` on every PR to `develop`/`main` and push to those branches |
 | SDD alignment | `spec/` + changelog + test mapping | ✅ In use | Every feature spec maps to tests + changelog entries |
 
