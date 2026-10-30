@@ -45,3 +45,24 @@ npx vitest run tests/tooling/upgradeFixture.test.ts
 
 Sort preferences cannot be part of the 2.1.0 fixture because 2.1.0 did not
 persist them; they are verified after the upgrade.
+
+## 2.2.0 verification result
+
+Verified 2026-10-30 against the published EAS builds:
+
+- EAS 2.1.0 (`versionCode 2`) was upgraded in place to EAS 2.2.0
+  (`versionCode 3`) without uninstalling. The same EAS signing key was used.
+- The 2.1.0 fixture data survived the upgrade.
+- Own data imported into 2.2.0 remained usable.
+- Android preview build: `d5e1ebad-f1a9-46aa-bc2c-d5450310345b`.
+- iOS simulator build: `fce5f3f2-9ff4-45da-a1bb-e30bf5cd07ac`.
+- The iOS simulator build compiled successfully; device testing, device
+  signing and App Store readiness were not tested.
+- GitHub release: https://github.com/Alfonfdez/Finly/releases/tag/v2.2.0
+
+Not separately re-verified in this pass:
+
+- canonical 2.1.0 export re-import;
+- new 2.2.0 config defaults;
+- creating a new recurring rule;
+- sort-preference persistence after reload.

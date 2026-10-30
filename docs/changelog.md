@@ -4819,3 +4819,7 @@
 - Recapture the 30-screen v3.4 set from the committed fixture against the current UI.
 - Point all 9 READMEs and the screenshot/harness docs at v3.4; update capture selectors and assert the fixture is fully importable.
 - Record the post-audit refactors, regression closure and v3.4 refresh in the roadmap; test:all green (195 files / 1698 tests).
+
+[2026-10-31] docs | docs/upgrade-testing.md, spec/constitution/3-roadmap.md
+- Record the published GitHub release v2.2.0, the successful Android 2.1.0 to 2.2.0 in-place upgrade and the iOS simulator compile.
+- Explicitly mark the canonical backup re-import, new config defaults, recurring creation and sort persistence as not separately re-verified.
