@@ -1,20 +1,36 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent, userEvent, waitFor } from '@testing-library/react-native';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import CommentsScreen from '../../src/screens/CommentsScreen';
 import { buildAppMock, resetAppStub } from '../component/helpers/appStub';
 import { getConfigStub, resetStub } from '../component/helpers/configStub';
 import { TEST_IDS } from '../../src/constants/testIds';
 
 const getDistinctComments = vi.fn(async () => [] as { description: string; count: number; lastUsed: string }[]);
+const deleteComments = vi.fn(async (_comments: string[]) => 0);
 
 vi.mock('../../src/database', () => ({
   transactionRepository: {
     getDistinctComments: () => getDistinctComments(),
+    deleteComments: (comments: string[]) => deleteComments(comments),
   },
 }));
 
-const nav = { setOptions: vi.fn(), navigate: vi.fn() };
+let setHeaderNode: ((node: ReactNode) => void) | null = null;
+const nav = {
+  setOptions: vi.fn((opts: { headerRight?: (() => ReactNode) | null }) => {
+    setHeaderNode?.(opts.headerRight ? opts.headerRight() : null);
+  }),
+  navigate: vi.fn(),
+};
+
+function HeaderHost() {
+  const [node, setNode] = useState<ReactNode>(null);
+  setHeaderNode = setNode;
+  return <>{node}</>;
+}
+
+const renderWithHeader = () => render(<><HeaderHost /><CommentsScreen /></>);
 
 vi.mock('@react-navigation/native', async () => {
   const React = await import('react');
@@ -34,12 +50,14 @@ vi.mock('../../src/context/AppContext', () => ({
 describe('CommentsScreen', () => {
   beforeEach(() => {
     getDistinctComments.mockReset().mockResolvedValue([]);
+    deleteComments.mockReset().mockResolvedValue(0);
     nav.setOptions.mockClear();
     nav.navigate.mockClear();
     resetStub();
   });
 
   afterEach(() => {
+    setHeaderNode = null;
     resetAppStub();
   });
 
@@ -93,5 +111,28 @@ describe('CommentsScreen', () => {
     await view.findByText('Coffee');
     fireEvent.press(view.getByText('Coffee'));
     expect(nav.navigate).toHaveBeenCalledWith('ModifyComment', { comment: 'Coffee' });
+  });
+
+  it('deletes only selected comments still visible after searching', async () => {
+    getDistinctComments.mockResolvedValue([
+      { description: 'Alpha', count: 1, lastUsed: '2026-09-01' },
+      { description: 'Beta', count: 5, lastUsed: '2026-09-02' },
+    ]);
+    const view = await renderWithHeader();
+    await view.findByText('Alpha');
+
+    const ue = userEvent.setup();
+    await ue.press(view.getByLabelText('Enter select mode'));
+    await ue.press(view.getByText('Alpha'));
+    await ue.press(view.getByText('Beta'));
+    await waitFor(() => expect(view.getByText('Delete (2)')).toBeTruthy());
+
+    await ue.press(view.getByLabelText('Search'));
+    await ue.type(await view.findByPlaceholderText('Search comments'), 'Beta');
+    await waitFor(() => expect(view.getByText('Delete (1)')).toBeTruthy());
+    await ue.press(view.getByText('Delete (1)'));
+    await ue.press(await view.findByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => expect(deleteComments).toHaveBeenCalledWith(['Beta']));
   });
 });

@@ -238,6 +238,36 @@ describe('RecurringScreen', () => {
     expect(mockDeleteMany).not.toHaveBeenCalled();
   });
 
+  it('drops hidden selections when the status filter changes', async () => {
+    mockList.mockResolvedValue([
+      { ...rule, id: 1, name: 'ActiveRule' },
+      { ...rule, id: 2, name: 'PausedRule', active: 0 },
+    ]);
+    const view = await renderWithHeader();
+    await waitFor(() => expect(view.getByText('ActiveRule')).toBeTruthy());
+
+    const ue = userEvent.setup();
+    await ue.press(view.getByLabelText('Enter select mode'));
+    await ue.press(view.getByLabelText('ActiveRule'));
+    await waitFor(() => expect(view.getByText('Delete (1)')).toBeTruthy());
+
+    await ue.press(view.getByLabelText('All'));
+    const boxes = view.getAllByRole('checkbox');
+    await ue.press(boxes[2]);
+    await ue.press(view.getByText('Apply (1)'));
+
+    await waitFor(() => expect(view.queryByText('ActiveRule')).toBeNull());
+    expect(view.getByText('Delete (0)')).toBeTruthy();
+    expect(mockDeleteMany).not.toHaveBeenCalled();
+
+    await ue.press(view.getByLabelText('PausedRule'));
+    await waitFor(() => expect(view.getByText('Delete (1)')).toBeTruthy());
+    await ue.press(view.getByText('Delete (1)'));
+    await ue.press(await view.findByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => expect(mockDeleteMany).toHaveBeenCalledWith([2]));
+  });
+
   it('selects a rule when its checkbox is pressed', async () => {
     const view = await renderWithHeader();
     await waitFor(() => expect(view.getByText('Rent')).toBeTruthy());

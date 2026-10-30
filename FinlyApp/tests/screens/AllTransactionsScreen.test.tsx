@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { fireEvent, render, waitFor, userEvent, within } from '@testing-library/react-native';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import AllTransactionsScreen from '../../src/screens/AllTransactionsScreen';
 import { buildAppMock, setAppData, resetAppStub } from '../component/helpers/appStub';
 import { setConfig, getConfigStub, resetStub } from '../component/helpers/configStub';
@@ -37,7 +37,21 @@ vi.mock('../../src/database', () => ({
 }));
 
 const routeParams: Record<string, unknown> = {};
-const nav = { setOptions: vi.fn(), navigate: vi.fn() };
+let setHeaderNode: ((node: ReactNode) => void) | null = null;
+const nav = {
+  setOptions: vi.fn((opts: { headerRight?: (() => ReactNode) | null }) => {
+    setHeaderNode?.(opts.headerRight ? opts.headerRight() : null);
+  }),
+  navigate: vi.fn(),
+};
+
+function HeaderHost() {
+  const [node, setNode] = useState<ReactNode>(null);
+  setHeaderNode = setNode;
+  return <>{node}</>;
+}
+
+const renderWithHeader = () => render(<><HeaderHost /><AllTransactionsScreen /></>);
 
 vi.mock('@react-navigation/native', async () => {
   const React = await import('react');
@@ -92,6 +106,7 @@ describe('AllTransactionsScreen', () => {
   });
 
   afterEach(() => {
+    setHeaderNode = null;
     resetAppStub();
   });
 
@@ -356,5 +371,60 @@ describe('AllTransactionsScreen', () => {
     });
     const view = await render(<AllTransactionsScreen />);
     expect(view.getByLabelText('All')).toBeTruthy();
+  });
+
+  it('deletes only selections still visible after changing type tab', async () => {
+    list.mockResolvedValue([
+      tx(1, { description: 'Rent', type: 'expense' }),
+      tx(2, { description: 'Salary', type: 'income' }),
+    ]);
+    setAppData({
+      categoriesById: new Map([[1, category]]),
+      activePeriod: PERIODS.custom,
+      customDate: { start: new Date(2026, 0, 1), end: new Date(2026, 0, 31) },
+    });
+    const view = await renderWithHeader();
+    await waitFor(() => expect(view.getByText('Rent')).toBeTruthy());
+
+    const ue = userEvent.setup();
+    await ue.press(view.getByLabelText('Enter select mode'));
+    await ue.press(view.getByText('Rent'));
+    await ue.press(view.getByText('Salary'));
+    await waitFor(() => expect(view.getByText('Delete (2)')).toBeTruthy());
+
+    await ue.press(view.getByRole('tab', { name: 'Show income' }));
+    await waitFor(() => expect(view.getByText('Delete (1)')).toBeTruthy());
+    await ue.press(view.getByText('Delete (1)'));
+    await ue.press(await view.findByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => expect(deleteMany).toHaveBeenCalledWith([2]));
+  });
+
+  it('deletes only selections still visible after searching', async () => {
+    list.mockResolvedValue([
+      tx(1, { description: 'Rent' }),
+      tx(2, { description: 'Coffee' }),
+    ]);
+    setAppData({
+      categoriesById: new Map([[1, category]]),
+      activePeriod: PERIODS.custom,
+      customDate: { start: new Date(2026, 0, 1), end: new Date(2026, 0, 31) },
+    });
+    const view = await renderWithHeader();
+    await waitFor(() => expect(view.getByText('Rent')).toBeTruthy());
+
+    const ue = userEvent.setup();
+    await ue.press(view.getByLabelText('Enter select mode'));
+    await ue.press(view.getByText('Rent'));
+    await ue.press(view.getByText('Coffee'));
+    await waitFor(() => expect(view.getByText('Delete (2)')).toBeTruthy());
+
+    await ue.press(view.getByLabelText('Search'));
+    await ue.type(await view.findByPlaceholderText('Search transactions'), 'Coffee');
+    await waitFor(() => expect(view.getByText('Delete (1)')).toBeTruthy());
+    await ue.press(view.getByText('Delete (1)'));
+    await ue.press(await view.findByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => expect(deleteMany).toHaveBeenCalledWith([2]));
   });
 });
