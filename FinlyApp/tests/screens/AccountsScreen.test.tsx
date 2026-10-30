@@ -9,16 +9,20 @@ import type { Account } from '../../src/database/types';
 
 const list = vi.fn(async (_u: number) => [] as Account[]);
 const getBalances = vi.fn(async () => [] as { account_id: number; balance: number }[]);
+const deleteMany = vi.fn(async (_ids: number[]) => {});
+const sanitizeDefaultAccounts = vi.fn((_config: unknown, _remaining: Account[]) => ({}));
 
 vi.mock('../../src/database', () => ({
   accountRepository: {
     list: (u: number) => list(u),
     getBalances: () => getBalances(),
+    deleteMany: (ids: number[]) => deleteMany(ids),
   },
 }));
 
 vi.mock('../../src/database/configDefaults', () => ({
-  sanitizeDefaultAccounts: () => ({}),
+  sanitizeDefaultAccounts: (config: unknown, remaining: Account[]) =>
+    sanitizeDefaultAccounts(config, remaining),
 }));
 
 let setHeaderNode: ((node: ReactNode) => void) | null = null;
@@ -70,6 +74,8 @@ describe('AccountsScreen', () => {
     resetStub();
     list.mockReset().mockResolvedValue([]);
     getBalances.mockReset().mockResolvedValue([]);
+    deleteMany.mockReset().mockResolvedValue(undefined);
+    sanitizeDefaultAccounts.mockReset().mockReturnValue({});
     nav.setOptions.mockClear();
     nav.navigate.mockClear();
   });
@@ -200,5 +206,61 @@ describe('AccountsScreen', () => {
     // The Total account is excluded, so only the two non-total accounts get selected.
     await waitFor(() => expect(view.getByText('Delete (2)')).toBeTruthy());
     expect(view.getByText('Deselect all')).toBeTruthy();
+  });
+
+  it('deletes the visible selected accounts and updates default accounts', async () => {
+    list.mockResolvedValue([
+      totalAccount,
+      account(1, 'Cash'),
+      account(2, 'Savings'),
+      account(3, 'Wallet'),
+    ]);
+    getBalances.mockResolvedValue([
+      { account_id: 1, balance: 100 },
+      { account_id: 2, balance: 50 },
+      { account_id: 3, balance: 25 },
+    ]);
+    sanitizeDefaultAccounts.mockReturnValue({ homeDefaultAccountId: null });
+    const view = await renderWithHeader();
+    await waitFor(() => expect(view.getByText('Cash')).toBeTruthy());
+
+    const ue = userEvent.setup();
+    await ue.press(view.getByLabelText('Enter select mode'));
+    await waitFor(() => expect(view.getByText('Delete (0)')).toBeTruthy());
+
+    const boxes = view.getAllByText('checkbox-outline');
+    await ue.press(boxes[1]);
+    await waitFor(() => expect(view.getByText('Delete (1)')).toBeTruthy());
+    await ue.press(boxes[2]);
+    await waitFor(() => expect(view.getByText('Delete (2)')).toBeTruthy());
+
+    await ue.press(view.getByText('Delete (2)'));
+    await waitFor(() => expect(view.getByText('Delete 2 accounts?', { exact: false })).toBeTruthy());
+    await ue.press(view.getByText('Delete', { exact: true }));
+
+    await waitFor(() => expect(deleteMany).toHaveBeenCalledWith([1, 2]));
+    expect(sanitizeDefaultAccounts).toHaveBeenCalledTimes(1);
+    expect(getConfigStub().updateConfig).toHaveBeenCalledWith({ homeDefaultAccountId: null });
+  });
+
+  it('blocks deleting every non-total account with the guard modal', async () => {
+    list.mockResolvedValue([totalAccount, account(1, 'Cash'), account(2, 'Savings')]);
+    getBalances.mockResolvedValue([
+      { account_id: 1, balance: 100 },
+      { account_id: 2, balance: 50 },
+    ]);
+    const view = await renderWithHeader();
+    await waitFor(() => expect(view.getByText('Cash')).toBeTruthy());
+
+    const ue = userEvent.setup();
+    await ue.press(view.getByLabelText('Enter select mode'));
+    await ue.press(view.getByText('Select all'));
+    await waitFor(() => expect(view.getByText('Delete (2)')).toBeTruthy());
+    await ue.press(view.getByText('Delete (2)'));
+
+    await waitFor(() => expect(view.getByText(
+      'You need at least one account. Cannot delete all accounts.',
+    )).toBeTruthy());
+    expect(deleteMany).not.toHaveBeenCalled();
   });
 });

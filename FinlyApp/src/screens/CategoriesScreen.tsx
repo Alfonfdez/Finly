@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import ScreenShell from '../components/ScreenShell';
 import { COUNTER_STYLE, LIMIT_TEXT_STYLE } from '../components/componentStyles';
@@ -34,6 +34,7 @@ import { defaultCategorySortDirection, sortCategories } from '../utils/categoryS
 import { countAtLimit } from '../utils/limits';
 import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
 import { useBusyGuard } from '../hooks/useBusyGuard';
+import { useBulkDelete } from '../hooks/useBulkDelete';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import GuardModal from '../components/GuardModal';
 
@@ -50,7 +51,7 @@ export default function CategoriesScreen() {
   const [inUseCategories, setInUseCategories] = useState<BulkCategoryItem[]>([]);
   const [deleteHasData, setDeleteHasData] = useState(false);
   const [decisions, setDecisions] = useState<Record<number, TransferTargetId | null>>({});
-  const { busy, run } = useBusyGuard();
+  const { run } = useBusyGuard();
 
   const sortBy = config.categoriesSortBy;
   const sortDirection = config.categoriesSortDirection;
@@ -72,7 +73,7 @@ export default function CategoriesScreen() {
   const {
     searchActive, searchText, setSearchText,
     selectMode, selectedIds,
-    deleteModalVisible, setDeleteModalVisible, toggleItem, reconcileSelection, exitSelectMode,
+    toggleItem, reconcileSelection, exitSelectMode,
     toggleSelectMode, toggleSearch, closeSearch,
   } = select;
 
@@ -105,6 +106,28 @@ export default function CategoriesScreen() {
   const typeCount = countCategoriesOfType(categories, activeType);
   const atCategoryLimit = countAtLimit(typeCount, MAX_CATEGORIES_PER_TYPE);
 
+  const deleteCategories = useCallback(
+    (ids: number[]) => categoryRepository.deleteMany(ids),
+    [],
+  );
+
+  const afterCategoryDelete = useCallback(async () => {
+    await refreshCategories();
+    await refresh();
+  }, [refreshCategories, refresh]);
+
+  const {
+    deleteModalVisible, busy: deleteBusy, openDeleteModal, closeDeleteModal, confirmBulkDelete,
+  } = useBulkDelete({
+    selectedIds,
+    visibleIds,
+    exitSelectMode,
+    exitSelectOnError: true,
+    deleteFn: deleteCategories,
+    afterDelete: afterCategoryDelete,
+    errorPrefix: ERROR_PREFIXES.categoriesDelete,
+  });
+
   const handleDeletePress = async () => {
     const visible = new Set(visibleIds);
     const ids = [...selectedIds].filter(id => visible.has(id));
@@ -131,29 +154,22 @@ export default function CategoriesScreen() {
       setInUseCategories(categoriesByType.filter((cat) => selected.has(cat.id)).map((cat) => ({ category: cat, txCount: 0, ruleCount: 0 })));
       setDeleteHasData(true);
     }
-    setDeleteModalVisible(true);
+    openDeleteModal();
   };
 
-  const handlePermanentDelete = async () => {
-    setDeleteModalVisible(false);
+  const handlePermanentDelete = useCallback(() => {
     const visible = new Set(visibleIds);
     const ids = [...selectedIds].filter(id => visible.has(id));
     if (ids.length === 0) {
+      closeDeleteModal();
       exitSelectMode();
       return;
     }
-    await run(async () => {
-      await runWithErrorAlert(async () => {
-        await categoryRepository.deleteMany(ids);
-        await refreshCategories();
-        await refresh();
-      }, ERROR_PREFIXES.categoriesDelete);
-    });
-    exitSelectMode();
-  };
+    confirmBulkDelete();
+  }, [selectedIds, visibleIds, closeDeleteModal, exitSelectMode, confirmBulkDelete]);
 
   const handleMoveTransactions = () => {
-    setDeleteModalVisible(false);
+    closeDeleteModal();
     setDecisions({});
     setResolutionVisible(true);
   };
@@ -287,10 +303,10 @@ export default function CategoriesScreen() {
           : labels.categories_bulk_delete_confirm_message_empty}
         confirmLabel={labels.categories_bulk_delete_confirm_delete}
         onConfirm={handlePermanentDelete}
-        onCancel={() => setDeleteModalVisible(false)}
+        onCancel={closeDeleteModal}
         moveLabel={deleteHasData ? labels.categories_bulk_delete_confirm_move : undefined}
         onMove={deleteHasData ? handleMoveTransactions : undefined}
-        busy={busy}
+        busy={deleteBusy}
       />
 
       <GuardModal

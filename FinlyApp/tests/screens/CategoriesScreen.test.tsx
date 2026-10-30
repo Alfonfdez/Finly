@@ -41,11 +41,13 @@ function gridPaddingTop(view: unknown): number | undefined {
 
 const mockCountByCategoryIdsMap = vi.fn();
 const mockCountByCategoryIds = vi.fn();
+const mockDeleteMany = vi.fn();
+const mockBulkDeleteWithTargets = vi.fn();
 
 vi.mock('../../src/database', () => ({
   categoryRepository: {
-    deleteMany: async () => {},
-    bulkDeleteWithTargets: async () => {},
+    deleteMany: (ids: number[]) => mockDeleteMany(ids),
+    bulkDeleteWithTargets: (items: unknown[]) => mockBulkDeleteWithTargets(items),
   },
   transactionRepository: {
     countByCategoryIdsMap: (ids: number[]) => mockCountByCategoryIdsMap(ids),
@@ -95,6 +97,8 @@ describe('CategoriesScreen', () => {
     nav.navigate.mockClear();
     mockCountByCategoryIdsMap.mockReset().mockResolvedValue({});
     mockCountByCategoryIds.mockReset().mockResolvedValue({});
+    mockDeleteMany.mockReset().mockResolvedValue(undefined);
+    mockBulkDeleteWithTargets.mockReset().mockResolvedValue(undefined);
     setAppData({ categories: [] });
   });
 
@@ -187,6 +191,56 @@ describe('CategoriesScreen', () => {
     await fireEvent.press(view.getByText('Delete (1)'));
 
     await waitFor(() => expect(view.getByText('Delete 1 category?', { exact: false })).toBeTruthy());
+  });
+
+  it('permanently deletes the selected categories', async () => {
+    setAppData({ categories: [expenseCategory(1, 'Food'), expenseCategory(2, 'Transport')] });
+    const view = await renderWithHeader();
+    await view.findByText('Food');
+
+    await fireEvent.press(view.getByLabelText('Enter select mode'));
+    await fireEvent.press(view.getByText('Food'));
+    await fireEvent.press(view.getByText('Delete (1)'));
+    await waitFor(() => expect(view.getByText('Delete 1 category?', { exact: false })).toBeTruthy());
+
+    await fireEvent.press(view.getByText('Permanent delete'));
+
+    await waitFor(() => expect(mockDeleteMany).toHaveBeenCalledWith([1]));
+  });
+
+  it('leaves select mode after a failed permanent delete', async () => {
+    setAppData({ categories: [expenseCategory(1, 'Food'), expenseCategory(2, 'Transport')] });
+    mockDeleteMany.mockRejectedValue(new Error('boom'));
+    const view = await renderWithHeader();
+    await view.findByText('Food');
+
+    await fireEvent.press(view.getByLabelText('Enter select mode'));
+    await fireEvent.press(view.getByText('Food'));
+    await fireEvent.press(view.getByText('Delete (1)'));
+    await waitFor(() => expect(view.getByText('Delete 1 category?', { exact: false })).toBeTruthy());
+
+    await fireEvent.press(view.getByText('Permanent delete'));
+
+    await waitFor(() => expect(view.queryByText('Delete (1)')).toBeNull());
+  });
+
+  it('opens the transfer flow instead of deleting in-use categories', async () => {
+    setAppData({ categories: [expenseCategory(1, 'Food'), expenseCategory(2, 'Transport')] });
+    mockCountByCategoryIdsMap.mockResolvedValue({ 1: 2 });
+    const view = await renderWithHeader();
+    await view.findByText('Food');
+
+    await fireEvent.press(view.getByLabelText('Enter select mode'));
+    await fireEvent.press(view.getByText('Food'));
+    await fireEvent.press(view.getByText('Delete (1)'));
+    await waitFor(() => expect(view.getByText('Move them to another category')).toBeTruthy());
+
+    await fireEvent.press(view.getByText('Move them to another category'));
+
+    await waitFor(() => expect(
+      view.getByText('Categories without transactions will be deleted.'),
+    ).toBeTruthy());
+    expect(mockDeleteMany).not.toHaveBeenCalled();
   });
 
   it('switches the grid when the Income tab is selected', async () => {

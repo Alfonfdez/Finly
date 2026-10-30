@@ -83,6 +83,22 @@ describe('useBulkDelete', () => {
     expect(afterDelete).not.toHaveBeenCalled();
   });
 
+  it('exits select mode on failure when exitSelectOnError is true', async () => {
+    const { result, exitSelectMode, afterDelete } = await setup({
+      exitSelectOnError: true,
+      deleteFn: vi.fn(async () => {
+        throw new Error('boom');
+      }),
+    });
+
+    await act(async () => {
+      await result.current.confirmBulkDelete();
+    });
+
+    expect(exitSelectMode).toHaveBeenCalledTimes(1);
+    expect(afterDelete).not.toHaveBeenCalled();
+  });
+
   it('skips afterDelete when not provided', async () => {
     const { result, afterDelete } = await setup({ afterDelete: undefined });
 

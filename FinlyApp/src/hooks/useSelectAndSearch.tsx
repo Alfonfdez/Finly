@@ -12,7 +12,6 @@ export function useSelectAndSearch<T extends number | string = number>({
   const [searchText, setSearchText] = useState('');
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<T>>(new Set());
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   const toggleItem = useCallback((id: T) => {
     setSelectedIds((prev) => {
@@ -75,8 +74,6 @@ export function useSelectAndSearch<T extends number | string = number>({
     setSelectMode,
     selectedIds,
     setSelectedIds,
-    deleteModalVisible,
-    setDeleteModalVisible,
     toggleItem,
     allSelected,
     toggleSelectAll,
