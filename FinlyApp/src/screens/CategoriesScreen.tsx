@@ -13,7 +13,6 @@ import { useCategoryUsage } from '../hooks/useCategoryUsage';
 import { useSortPreference } from '../hooks/useSortPreference';
 import { useApp } from '../context/AppContext';
 import { t, getDisplayCategoryName } from '../i18n';
-import { categoryRepository, recurringRepository, transactionRepository } from '../database';
 import TabBar, { typeTabs } from '../components/TabBar';
 import CategoryGrid from '../components/CategoryGrid';
 import ScreenSearchBar from '../components/ScreenSearchBar';
@@ -24,17 +23,14 @@ import SelectAllRow from '../components/SelectAllRow';
 import SortRow from '../components/SortRow';
 import SortToggle, { categorySortFields } from '../components/SortToggle';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
-import BulkCategoryTransferModal, { type BulkCategoryItem } from '../components/BulkCategoryTransferModal';
-import type { TransferTargetId } from '../components/CategoryTransferModal';
+import BulkCategoryTransferModal from '../components/BulkCategoryTransferModal';
 import { TRANSACTION_TYPES, MAX_CATEGORIES_PER_TYPE, type TransactionType, type NavigationProp } from '../constants/types';
 import { LIST_BOTTOM_FAB_PADDING, LIST_TOP_GAP } from '../constants/layout';
 import { TEST_IDS } from '../constants/testIds';
 import { categoriesOfType, countCategoriesOfType } from '../utils/categoryUtils';
 import { defaultCategorySortDirection, sortCategories } from '../utils/categorySort';
 import { countAtLimit } from '../utils/limits';
-import { ERROR_PREFIXES, runWithErrorAlert } from '../utils/errors';
-import { useBusyGuard } from '../hooks/useBusyGuard';
-import { useBulkDelete } from '../hooks/useBulkDelete';
+import { useCategoryBulkDelete } from '../hooks/useCategoryBulkDelete';
 import SelectSearchHeader from '../components/SelectSearchHeader';
 import GuardModal from '../components/GuardModal';
 
@@ -46,12 +42,6 @@ export default function CategoriesScreen() {
   const navigation = useNavigation<NavigationProp<'Categories'>>();
 
   const [activeType, setActiveType] = useState<TransactionType>(TRANSACTION_TYPES.expense);
-  const [resolutionVisible, setResolutionVisible] = useState(false);
-  const [guardVisible, setGuardVisible] = useState(false);
-  const [inUseCategories, setInUseCategories] = useState<BulkCategoryItem[]>([]);
-  const [deleteHasData, setDeleteHasData] = useState(false);
-  const [decisions, setDecisions] = useState<Record<number, TransferTargetId | null>>({});
-  const { run } = useBusyGuard();
 
   const sortBy = config.categoriesSortBy;
   const sortDirection = config.categoriesSortDirection;
@@ -98,111 +88,39 @@ export default function CategoriesScreen() {
     reconcileSelection(visibleIds);
   }, [visibleIds, reconcileSelection]);
 
-  const transferTargets = useMemo(
-    () => categoriesByType.filter((cat) => !selectedIds.has(cat.id)),
-    [categoriesByType, selectedIds],
-  );
-
   const typeCount = countCategoriesOfType(categories, activeType);
   const atCategoryLimit = countAtLimit(typeCount, MAX_CATEGORIES_PER_TYPE);
 
-  const deleteCategories = useCallback(
-    (ids: number[]) => categoryRepository.deleteMany(ids),
-    [],
-  );
-
-  const afterCategoryDelete = useCallback(async () => {
+  const afterCategoriesChanged = useCallback(async () => {
     await refreshCategories();
     await refresh();
   }, [refreshCategories, refresh]);
 
   const {
-    deleteModalVisible, busy: deleteBusy, openDeleteModal, closeDeleteModal, confirmBulkDelete,
-  } = useBulkDelete({
-    selectedIds,
+    deleteModalVisible,
+    deleteBusy,
+    guardVisible,
+    inUseCategories,
+    deleteHasData,
+    resolutionVisible,
+    decisions,
+    transferTargets,
+    handleDeletePress,
+    handlePermanentDelete,
+    handleMoveTransactions,
+    handleDecide,
+    handleConfirmResolution,
+    closeDeleteModal,
+    closeGuard,
+    closeResolution,
+  } = useCategoryBulkDelete({
+    categoriesByType,
     visibleIds,
+    selectedIds,
+    typeCount,
     exitSelectMode,
-    exitSelectOnError: true,
-    deleteFn: deleteCategories,
-    afterDelete: afterCategoryDelete,
-    errorPrefix: ERROR_PREFIXES.categoriesDelete,
+    onChanged: afterCategoriesChanged,
   });
-
-  const handleDeletePress = async () => {
-    const visible = new Set(visibleIds);
-    const ids = [...selectedIds].filter(id => visible.has(id));
-    if (ids.length === 0) return;
-    if (ids.length >= typeCount) {
-      setGuardVisible(true);
-      return;
-    }
-    try {
-      const selected = new Set(ids);
-      const [txCounts, ruleCounts] = await Promise.all([
-        transactionRepository.countByCategoryIdsMap(ids),
-        recurringRepository.countByCategoryIds(ids),
-      ]);
-      // A category is "in use" when it has transactions or recurring rules: either way
-      // the user must choose a target for it (or accept deleting its data).
-      const inUse = categoriesByType
-        .filter((cat) => selected.has(cat.id) && ((txCounts[cat.id] ?? 0) > 0 || (ruleCounts[cat.id] ?? 0) > 0))
-        .map((cat) => ({ category: cat, txCount: txCounts[cat.id] ?? 0, ruleCount: ruleCounts[cat.id] ?? 0 }));
-      setInUseCategories(inUse);
-      setDeleteHasData(inUse.length > 0);
-    } catch {
-      const selected = new Set(ids);
-      setInUseCategories(categoriesByType.filter((cat) => selected.has(cat.id)).map((cat) => ({ category: cat, txCount: 0, ruleCount: 0 })));
-      setDeleteHasData(true);
-    }
-    openDeleteModal();
-  };
-
-  const handlePermanentDelete = useCallback(() => {
-    const visible = new Set(visibleIds);
-    const ids = [...selectedIds].filter(id => visible.has(id));
-    if (ids.length === 0) {
-      closeDeleteModal();
-      exitSelectMode();
-      return;
-    }
-    confirmBulkDelete();
-  }, [selectedIds, visibleIds, closeDeleteModal, exitSelectMode, confirmBulkDelete]);
-
-  const handleMoveTransactions = () => {
-    closeDeleteModal();
-    setDecisions({});
-    setResolutionVisible(true);
-  };
-
-  const handleDecide = (categoryId: number, decision: TransferTargetId | null) => {
-    setDecisions((prev) => ({ ...prev, [categoryId]: decision }));
-  };
-
-  const handleConfirmResolution = async () => {
-    if (inUseCategories.length === 0) return;
-    setResolutionVisible(false);
-    const visible = new Set(visibleIds);
-    const items = [...selectedIds]
-      .filter(id => visible.has(id))
-      .map((id) => {
-        const decision = decisions[id];
-        const targetId =
-          decision === undefined || decision === null || decision === 'delete' ? null : decision;
-        return { id, targetId };
-      });
-    if (items.length === 0) {
-      exitSelectMode();
-      return;
-    }
-    await run(async () => {
-      await runWithErrorAlert(async () => {
-        await categoryRepository.bulkDeleteWithTargets(items);
-        await refreshCategories();
-        await refresh();
-      }, ERROR_PREFIXES.categoriesDelete);
-    });
-    exitSelectMode();
-  };
 
   return (
     <ScreenShell>
@@ -313,7 +231,7 @@ export default function CategoriesScreen() {
         visible={guardVisible}
         title={labels.categories_bulk_delete_confirm_title(selectedIds.size)}
         message={labels.categories_bulk_delete_min_one}
-        onClose={() => setGuardVisible(false)}
+        onClose={closeGuard}
       />
 
       <BulkCategoryTransferModal
@@ -323,7 +241,7 @@ export default function CategoriesScreen() {
         decisions={decisions}
         onDecide={handleDecide}
         onConfirm={handleConfirmResolution}
-        onCancel={() => setResolutionVisible(false)}
+        onCancel={closeResolution}
       />
     </ScreenShell>
   );

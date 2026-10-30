@@ -12,10 +12,8 @@ import ListItemRow from './ListItemRow';
 import ModalFooter from './ModalFooter';
 import ModalEntitySubject from './ModalEntitySubject';
 import { WHITE, TRANSPARENT } from '../constants/themes';
-import type { IconName } from '../constants/types';
+import { CATEGORY_TRANSFER_TARGETS, type IconName, type TransferTargetId } from '../constants/types';
 import { CONTROL_BORDER_RADIUS } from './componentStyles';
-
-export type TransferTargetId = number | 'delete';
 
 interface BodyProps {
   categories: Category[];
@@ -34,7 +32,7 @@ export function CategoryTransferBody({
   const { activeColors: c, config } = useConfig();
   const fs = useFontSize();
   const labels = t();
-  const isDeleteSelected = selectedId === 'delete';
+  const isDeleteSelected = selectedId === CATEGORY_TRANSFER_TARGETS.delete;
 
   return (
     <ScrollView style={styles.list}>
@@ -73,7 +71,7 @@ export function CategoryTransferBody({
       {deleteOptionLabel ? (
         <TouchableOpacity
           style={[styles.item, styles.deleteItem, { backgroundColor: isDeleteSelected ? c.background : TRANSPARENT }]}
-          onPress={() => onSelect('delete')}
+          onPress={() => onSelect(CATEGORY_TRANSFER_TARGETS.delete)}
           accessibilityLabel={deleteOptionLabel}
           accessibilityState={{ selected: isDeleteSelected }}
         >

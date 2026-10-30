@@ -308,6 +308,12 @@ export interface CategoryWithTotal {
   percentage: number;
 }
 
+export const CATEGORY_TRANSFER_TARGETS = {
+  delete: 'delete',
+} as const;
+
+export type TransferTargetId = number | (typeof CATEGORY_TRANSFER_TARGETS)[keyof typeof CATEGORY_TRANSFER_TARGETS];
+
 export type RootStackParamList = {
   Home: undefined;
   AddTransaction: { categoryId?: number; type?: TransactionType } | undefined;

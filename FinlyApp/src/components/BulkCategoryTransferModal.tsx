@@ -10,18 +10,11 @@ import ModalShell from './ModalShell';
 import ModalHeader from './ModalHeader';
 import ListItemRow from './ListItemRow';
 import ModalEntitySubject from './ModalEntitySubject';
-import { CategoryTransferBody, type TransferTargetId } from './CategoryTransferModal';
+import { CategoryTransferBody } from './CategoryTransferModal';
 import ModalFooter from './ModalFooter';
-import type { IconName } from '../constants/types';
+import { CATEGORY_TRANSFER_TARGETS, type IconName, type TransferTargetId } from '../constants/types';
+import type { BulkCategoryItem } from '../hooks/useCategoryBulkDelete';
 import { WHITE } from '../constants/themes';
-
-export interface BulkCategoryItem {
-  category: Category;
-  /** Generated transactions the category holds. */
-  txCount: number;
-  /** Recurring rules pointing at the category. */
-  ruleCount: number;
-}
 
 interface Props {
   visible: boolean;
@@ -55,7 +48,7 @@ export default function BulkCategoryTransferModal({
 
   const decisionLabel = (categoryId: number): string => {
     const decision = decisions[categoryId];
-    if (decision === 'delete') return labels.categories_bulk_move_delete_option;
+    if (decision === CATEGORY_TRANSFER_TARGETS.delete) return labels.categories_bulk_move_delete_option;
     if (decision === null || decision === undefined) return labels.categories_bulk_move_choose;
     const target = targetById.get(decision);
     return target ? getDisplayCategoryName(target) : labels.categories_bulk_move_choose;
