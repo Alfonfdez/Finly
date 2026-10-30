@@ -4798,3 +4798,7 @@
 [2026-10-30] refactor | FinlyApp/src/components/settings/ConfirmWithTextModal.tsx, FinlyApp/src/screens/settings/DataScreen.tsx
 - Move the typed DELETE confirmation modal out of DataScreen into components/settings without changing its behavior.
 - test:all green (194 files / 1682 tests).
+
+[2026-10-30] refactor | FinlyApp/src/hooks/useTwoStepConfirmation.ts, FinlyApp/src/screens/settings/DataScreen.tsx, FinlyApp/tests/hooks/useTwoStepConfirmation.test.tsx
+- Extract useTwoStepConfirmation and replace the three duplicated typed-confirmation state groups in DataScreen.
+- Preserve stacked modals, busy close blocking and unconditional reset after actions; test:all green (195 files / 1689 tests).

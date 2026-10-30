@@ -23,6 +23,7 @@ import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 import SettingsRow from '../../components/settings/SettingsRow';
 import ConfirmWithTextModal from '../../components/settings/ConfirmWithTextModal';
 import { settingsStyles } from '../../components/settings/settingsStyles';
+import { useTwoStepConfirmation } from '../../hooks/useTwoStepConfirmation';
 
 const PENDING_DATA_ACTIONS = {
   transactions: 'transactions',
@@ -38,18 +39,12 @@ export default function DataScreen() {
   const { resetAll, setDataRefreshing } = useApp();
   const labels = t();
 
-  const [deleteTransactionsModal1, setDeleteTransactionsModal1] = useState(false);
-  const [deleteTransactionsModal2, setDeleteTransactionsModal2] = useState(false);
-  const [deleteTransactionsText, setDeleteTransactionsText] = useState('');
-  const [deleteAllModal1, setDeleteAllModal1] = useState(false);
-  const [deleteAllModal2, setDeleteAllModal2] = useState(false);
-  const [deleteAllText, setDeleteAllText] = useState('');
-  const [factoryResetModal1, setFactoryResetModal1] = useState(false);
-  const [factoryResetModal2, setFactoryResetModal2] = useState(false);
-  const [factoryResetText, setFactoryResetText] = useState('');
   const [importModalVisible, setImportModalVisible] = useState(false);
   const [pendingImport, setPendingImport] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingDataAction>(null);
+  const deleteTransactionsConfirm = useTwoStepConfirmation({ canClose: pendingAction === null });
+  const deleteAllConfirm = useTwoStepConfirmation({ canClose: pendingAction === null });
+  const factoryResetConfirm = useTwoStepConfirmation({ canClose: pendingAction === null });
 
   const handleExport = async () => {
     try {
@@ -149,40 +144,6 @@ export default function DataScreen() {
     setPendingImport(null);
   };
 
-  const hideDeleteTransactions = () => {
-    setDeleteTransactionsModal1(false);
-    setDeleteTransactionsModal2(false);
-    setDeleteTransactionsText('');
-  };
-
-  const hideDeleteAll = () => {
-    setDeleteAllModal1(false);
-    setDeleteAllModal2(false);
-    setDeleteAllText('');
-  };
-
-  const hideFactoryReset = () => {
-    setFactoryResetModal1(false);
-    setFactoryResetModal2(false);
-    setFactoryResetText('');
-  };
-
-  // User-initiated closes are blocked while a wipe/import is in flight.
-  const closeDeleteTransactions = () => {
-    if (pendingAction !== null) return;
-    hideDeleteTransactions();
-  };
-
-  const closeDeleteAll = () => {
-    if (pendingAction !== null) return;
-    hideDeleteAll();
-  };
-
-  const closeFactoryReset = () => {
-    if (pendingAction !== null) return;
-    hideFactoryReset();
-  };
-
   const handleDeleteTransactions = async () => {
     if (pendingAction !== null) return;
     setPendingAction(PENDING_DATA_ACTIONS.transactions);
@@ -195,7 +156,7 @@ export default function DataScreen() {
     } finally {
       setPendingAction(null);
     }
-    hideDeleteTransactions();
+    deleteTransactionsConfirm.reset();
   };
 
   const handleDeleteAll = async () => {
@@ -213,7 +174,7 @@ export default function DataScreen() {
       setPendingAction(null);
       setDataRefreshing(false);
     }
-    hideDeleteAll();
+    deleteAllConfirm.reset();
   };
 
   const handleFactoryReset = async () => {
@@ -231,7 +192,7 @@ export default function DataScreen() {
       setPendingAction(null);
       setDataRefreshing(false);
     }
-    hideFactoryReset();
+    factoryResetConfirm.reset();
   };
 
   return (
@@ -261,7 +222,7 @@ export default function DataScreen() {
           label={labels.settings_delete_all_transactions}
           description={labels.settings_delete_all_transactions_description}
           labelColor={c.red}
-          onPress={() => setDeleteTransactionsModal1(true)}
+          onPress={deleteTransactionsConfirm.open}
         />
 
         <SettingsRow
@@ -270,7 +231,7 @@ export default function DataScreen() {
           label={labels.settings_delete_all_data}
           description={labels.settings_delete_all_data_description}
           labelColor={c.red}
-          onPress={() => setDeleteAllModal1(true)}
+          onPress={deleteAllConfirm.open}
         />
 
         <SettingsRow
@@ -279,28 +240,28 @@ export default function DataScreen() {
           label={labels.settings_factory_reset}
           description={labels.settings_factory_reset_description}
           labelColor={c.red}
-          onPress={() => setFactoryResetModal1(true)}
+          onPress={factoryResetConfirm.open}
         />
 
         <DeleteConfirmationModal
-          visible={deleteTransactionsModal1}
+          visible={deleteTransactionsConfirm.firstVisible}
           title={labels.settings_delete_transactions_confirm_title}
           message={labels.settings_delete_transactions_confirm_message}
-          onConfirm={() => setDeleteTransactionsModal2(true)}
-          onCancel={() => setDeleteTransactionsModal1(false)}
+          onConfirm={deleteTransactionsConfirm.advance}
+          onCancel={deleteTransactionsConfirm.cancelFirst}
         />
 
         <ConfirmWithTextModal
-          visible={deleteTransactionsModal2}
+          visible={deleteTransactionsConfirm.secondVisible}
           title={labels.settings_delete_data_confirm_title2}
           icon="trash-outline"
           message={labels.settings_delete_data_confirm_message2}
           confirmLabel={labels.delete}
           cancelLabel={labels.cancel}
-          text={deleteTransactionsText}
-          onTextChange={setDeleteTransactionsText}
+          text={deleteTransactionsConfirm.text}
+          onTextChange={deleteTransactionsConfirm.setText}
           onConfirm={handleDeleteTransactions}
-          onCancel={closeDeleteTransactions}
+          onCancel={deleteTransactionsConfirm.cancelSecond}
           busy={pendingAction === PENDING_DATA_ACTIONS.transactions}
         />
 
@@ -321,50 +282,50 @@ export default function DataScreen() {
         />
 
         <ConfirmationModal
-          visible={deleteAllModal1}
+          visible={deleteAllConfirm.firstVisible}
           title={labels.settings_delete_data_confirm_title}
           icon="warning-outline"
           message={labels.settings_delete_data_confirm_message}
           confirmLabel={labels.settings_delete_all_data_confirm}
           cancelLabel={labels.cancel}
-          onConfirm={() => setDeleteAllModal2(true)}
-          onCancel={() => setDeleteAllModal1(false)}
+          onConfirm={deleteAllConfirm.advance}
+          onCancel={deleteAllConfirm.cancelFirst}
         />
 
         <ConfirmWithTextModal
-          visible={deleteAllModal2}
+          visible={deleteAllConfirm.secondVisible}
           title={labels.settings_delete_data_confirm_title2}
           message={labels.settings_delete_data_confirm_message2}
           confirmLabel={labels.settings_delete_all_data_confirm}
           cancelLabel={labels.cancel}
-          text={deleteAllText}
-          onTextChange={setDeleteAllText}
+          text={deleteAllConfirm.text}
+          onTextChange={deleteAllConfirm.setText}
           onConfirm={handleDeleteAll}
-          onCancel={closeDeleteAll}
+          onCancel={deleteAllConfirm.cancelSecond}
           busy={pendingAction === PENDING_DATA_ACTIONS.all}
         />
 
         <ConfirmationModal
-          visible={factoryResetModal1}
+          visible={factoryResetConfirm.firstVisible}
           title={labels.settings_factory_reset_confirm_title}
           icon="warning-outline"
           message={labels.settings_factory_reset_confirm_message}
           confirmLabel={labels.settings_factory_reset_confirm}
           cancelLabel={labels.cancel}
-          onConfirm={() => setFactoryResetModal2(true)}
-          onCancel={() => setFactoryResetModal1(false)}
+          onConfirm={factoryResetConfirm.advance}
+          onCancel={factoryResetConfirm.cancelFirst}
         />
 
         <ConfirmWithTextModal
-          visible={factoryResetModal2}
+          visible={factoryResetConfirm.secondVisible}
           title={labels.settings_delete_data_confirm_title2}
           message={labels.settings_delete_data_confirm_message2}
           confirmLabel={labels.settings_factory_reset_confirm}
           cancelLabel={labels.cancel}
-          text={factoryResetText}
-          onTextChange={setFactoryResetText}
+          text={factoryResetConfirm.text}
+          onTextChange={factoryResetConfirm.setText}
           onConfirm={handleFactoryReset}
-          onCancel={closeFactoryReset}
+          onCancel={factoryResetConfirm.cancelSecond}
           busy={pendingAction === PENDING_DATA_ACTIONS.factory}
         />
       </ScrollView>
