@@ -1630,3 +1630,14 @@ Applied 2026-10-30:
 - `npm run test:all` green (195 files / 1698 tests).
 
 Spec: none (documentation/assets).
+
+## 2.2.0 release verification and GitHub release
+Status: completed.
+
+Applied 2026-10-30:
+- Published GitHub release `v2.2.0` from `main` (`e8f5710`) with the Android preview APK and the iOS simulator archive.
+- Android EAS 2.1.0 (`versionCode 2`) upgraded in place to EAS 2.2.0 (`versionCode 3`) without uninstalling; the 2.1.0 fixture data survived and own data imported into 2.2.0 remained usable.
+- iOS simulator build completed; device testing, device signing and App Store readiness were not tested.
+- `npm run test:all` green (195 files / 1698 tests).
+
+Spec: spec/features/025-data-backup/.
