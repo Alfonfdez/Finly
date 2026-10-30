@@ -4785,3 +4785,8 @@
 [2026-10-30] refactor | FinlyApp/src/database/repositories/categoryRepo.ts, FinlyApp/tests/database/categoryWrites.test.ts, FinlyApp/tests/database/helpers/sqliteHarness.ts, FinlyApp/tests/database/recurringRepo.test.ts
 - Extract moveCategoryData, deleteCategoryRows and deleteCategoryData so category delete and reassign methods share one mutation path.
 - Add mutation-order and photo-cleanup coverage plus a recurring-rule reassignment regression; test:all green (193 files / 1673 tests).
+
+[2026-10-30] refactor | FinlyApp/src/hooks/useCategoryBulkDelete.ts, FinlyApp/src/screens/CategoriesScreen.tsx, FinlyApp/src/constants/types.ts, FinlyApp/src/components/CategoryTransferModal.tsx, FinlyApp/src/components/BulkCategoryTransferModal.tsx, FinlyApp/tests/hooks/useCategoryBulkDelete.test.tsx, FinlyApp/tests/component/BulkCategoryTransferModal.test.tsx
+- Extract useCategoryBulkDelete to own in-use counts, guard state, permanent deletion and transfer decisions, reducing CategoriesScreen to presentation and selection.
+- Move TransferTargetId and BulkCategoryItem to shared modules and replace the raw delete target literal with CATEGORY_TRANSFER_TARGETS.
+- test:all green (194 files / 1681 tests).

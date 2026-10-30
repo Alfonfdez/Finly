@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react-native';
 import { resetStub, setConfig } from './helpers/configStub';
-import BulkCategoryTransferModal, { type BulkCategoryItem } from '../../src/components/BulkCategoryTransferModal';
+import BulkCategoryTransferModal from '../../src/components/BulkCategoryTransferModal';
+import type { BulkCategoryItem } from '../../src/hooks/useCategoryBulkDelete';
 import { t } from '../../src/i18n';
 import type { Category } from '../../src/database/types';
 
