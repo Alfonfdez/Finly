@@ -4794,3 +4794,7 @@
 [2026-10-30] refactor | FinlyApp/src/hooks/useTransactionFilters.ts, FinlyApp/tests/hooks/useTransactionFilters.test.tsx
 - Reuse useSortPreference in useTransactionFilters instead of duplicating field and direction toggle logic.
 - Cover persistence for both transactions sort scopes; test:all green (194 files / 1682 tests).
+
+[2026-10-30] refactor | FinlyApp/src/components/settings/ConfirmWithTextModal.tsx, FinlyApp/src/screens/settings/DataScreen.tsx
+- Move the typed DELETE confirmation modal out of DataScreen into components/settings without changing its behavior.
+- test:all green (194 files / 1682 tests).
