@@ -66,3 +66,26 @@ Not separately re-verified in this pass:
 - new 2.2.0 config defaults;
 - creating a new recurring rule;
 - sort-preference persistence after reload.
+
+## 2.2.1 verification result
+
+Verified 2026-11-26 against the published EAS builds:
+
+- EAS 2.2.0 (`versionCode 3`) was upgraded in place to EAS 2.2.1
+  (`versionCode 4`) without uninstalling. The same EAS signing key was used.
+- The existing data (transactions, accounts, categories, config) survived the
+  upgrade and the drawer footer shows `v2.2.1`.
+- Add transaction: `Family` and `Games` were outside the 90-day per-account
+  usage top 7 (so they only appeared behind "More"); after picking each one in
+  "Add category" it returned selected in the first grid position, and the saved
+  transaction stored the correct category.
+- Android preview build: `15cf9553-19e4-4d48-beeb-492bce18f571`.
+- iOS simulator build: `814e8a59-c567-4a6c-86b3-ceb50a39a281`.
+- The iOS simulator build compiled successfully; device testing, device
+  signing and App Store readiness were not tested.
+- GitHub release: https://github.com/Alfonfdez/Finly/releases/tag/v2.2.1
+
+Not separately re-verified in this pass:
+
+- full backup export and re-import;
+- sort-preference persistence after reload.
