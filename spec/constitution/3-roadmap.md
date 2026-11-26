@@ -1652,3 +1652,14 @@ Applied 2026-11-26:
 - `npm run test:all` green (195 files / 1700 tests).
 
 Spec: spec/features/004-add-transaction-screen/, spec/features/005-add-category-screen/.
+
+## 2.2.1 release-readiness
+Status: completed.
+
+Release preparation for 2.2.1, applied 2026-11-26:
+- Version 2.2.1 in `app.json`, `package.json` and `package-lock.json`; `android.versionCode` 4 (was 3) and `ios.buildNumber` 2.2.1, so the build installs in place over 2.2.0. The Drawer footer (`Constants.expoConfig?.version`) picks it up automatically.
+- Version references updated in the 9 READMEs, `2-tech-stack.md`, `6-screens.md` and the release examples in `docs/programming-concepts.md`.
+- Patch contents: the Add transaction category-pin fix (PR #367) plus the 2.2.0 release-verification docs.
+- Gate: `npm run test:all` green (195 files / 1700 tests).
+
+Spec: spec/features/004-add-transaction-screen/, spec/features/005-add-category-screen/.
