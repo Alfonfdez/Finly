@@ -1663,3 +1663,14 @@ Release preparation for 2.2.1, applied 2026-11-26:
 - Gate: `npm run test:all` green (195 files / 1700 tests).
 
 Spec: spec/features/004-add-transaction-screen/, spec/features/005-add-category-screen/.
+
+## 2.2.1 release verification and GitHub release
+Status: completed.
+
+Applied 2026-11-26:
+- Published GitHub release `v2.2.1` from `main` (`b7213fe`) with the Android preview APK and the iOS simulator archive.
+- Android EAS 2.2.0 (`versionCode 3`) upgraded in place to EAS 2.2.1 (`versionCode 4`) without uninstalling; the existing data survived, the drawer footer shows `v2.2.1`, and the category picked in "Add category" returned selected in the first grid position (Family and Games, both outside the usage top 7).
+- iOS simulator build completed; device testing, device signing and App Store readiness were not tested.
+- `npm run test:all` green (195 files / 1700 tests).
+
+Spec: spec/features/004-add-transaction-screen/, spec/features/005-add-category-screen/.

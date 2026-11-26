@@ -4832,3 +4832,7 @@
 - Version bump 2.2.0 -> 2.2.1: app.json `version` 2.2.1, `android.versionCode` 4 (was 3) and `ios.buildNumber` 2.2.1; `package.json`/`package-lock.json` root versions to 2.2.1. The Drawer footer version (`Constants.expoConfig?.version`) picks up 2.2.1 automatically with no code change.
 - All 9 README version rows bumped to 2.2.1 and the current-version references updated in `spec/constitution/2-tech-stack.md` (app.json comment) and `spec/constitution/6-screens.md` (drawer footer diagram/format example). Added a 2.2.1 release-readiness entry to `spec/constitution/3-roadmap.md` and moved the Release and Distribution worked examples in `docs/programming-concepts.md` from 2.2.0/versionCode 3 to 2.2.1/versionCode 4.
 - First patch release since 2.2.0: the Add transaction category-pin fix (the category picked in Add category now always lands in the first grid position) plus the 2.2.0 release-verification docs.
+
+[2026-11-26] docs | docs/upgrade-testing.md, spec/constitution/3-roadmap.md
+- Record the 2.2.1 verification: EAS 2.2.0 (versionCode 3) upgraded in place to 2.2.1 (versionCode 4) with the data preserved and the drawer showing v2.2.1, plus the confirmed category-pin behavior for Family and Games (outside the usage top 7).
+- List the 2.2.1 EAS build IDs (Android 15cf9553, iOS simulator 814e8a59) and the published v2.2.1 GitHub release, and note that the full backup round-trip and sort-preference persistence were not re-verified.
