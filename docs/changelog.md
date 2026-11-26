@@ -4823,3 +4823,7 @@
 [2026-10-31] docs | docs/upgrade-testing.md, spec/constitution/3-roadmap.md
 - Record the published GitHub release v2.2.0, the successful Android 2.1.0 to 2.2.0 in-place upgrade and the iOS simulator compile.
 - Explicitly mark the canonical backup re-import, new config defaults, recurring creation and sort persistence as not separately re-verified.
+
+[2026-11-26] fix | FinlyApp/src/hooks/useTransactionForm.ts, FinlyApp/tests/hooks/useTransactionForm.test.tsx, spec/features/004-add-transaction-screen/1-spec.md, spec/features/005-add-category-screen/1-spec.md, spec/constitution/3-roadmap.md
+- Always pin the category picked in Add category to the first grid position; the visibility check used the alphabetical AppContext order instead of the 90-day per-account usage ranking the grid renders.
+- Add regression tests for a pending category outside and inside the usage top 7.
