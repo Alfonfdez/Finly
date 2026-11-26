@@ -1630,3 +1630,36 @@ Applied 2026-10-30:
 - `npm run test:all` green (195 files / 1698 tests).
 
 Spec: none (documentation/assets).
+
+## 2.2.0 release verification and GitHub release
+Status: completed.
+
+Applied 2026-10-30:
+- Published GitHub release `v2.2.0` from `main` (`e8f5710`) with the Android preview APK and the iOS simulator archive.
+- Android EAS 2.1.0 (`versionCode 2`) upgraded in place to EAS 2.2.0 (`versionCode 3`) without uninstalling; the 2.1.0 fixture data survived and own data imported into 2.2.0 remained usable.
+- iOS simulator build completed; device testing, device signing and App Store readiness were not tested.
+- `npm run test:all` green (195 files / 1698 tests).
+
+Spec: spec/features/025-data-backup/.
+
+## Add transaction: category picked in "More" pinned first
+Status: completed.
+
+Applied 2026-11-26:
+- Fixed the picked category sometimes not appearing selected in the 4x2 grid (e.g. Family, Games) while others did (Rent, Pets): the pending-category check compared it against the alphabetical `AppContext` order instead of the 90-day per-account usage ranking the grid renders, so a category ranked out of the visible 7 was treated as already visible and never pinned.
+- The category chosen in "Add category" is now always pinned to the first grid position, as spec 005 §4 requires.
+- Regression tests cover a pending category outside the usage top 7 and one already inside it; verified on web at 375px with Family hidden behind "More", then returned selected in the first position and saved.
+- `npm run test:all` green (195 files / 1700 tests).
+
+Spec: spec/features/004-add-transaction-screen/, spec/features/005-add-category-screen/.
+
+## 2.2.1 release-readiness
+Status: completed.
+
+Release preparation for 2.2.1, applied 2026-11-26:
+- Version 2.2.1 in `app.json`, `package.json` and `package-lock.json`; `android.versionCode` 4 (was 3) and `ios.buildNumber` 2.2.1, so the build installs in place over 2.2.0. The Drawer footer (`Constants.expoConfig?.version`) picks it up automatically.
+- Version references updated in the 9 READMEs, `2-tech-stack.md`, `6-screens.md` and the release examples in `docs/programming-concepts.md`.
+- Patch contents: the Add transaction category-pin fix (PR #367) plus the 2.2.0 release-verification docs.
+- Gate: `npm run test:all` green (195 files / 1700 tests).
+
+Spec: spec/features/004-add-transaction-screen/, spec/features/005-add-category-screen/.

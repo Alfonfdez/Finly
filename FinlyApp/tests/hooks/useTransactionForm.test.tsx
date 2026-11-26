@@ -459,6 +459,45 @@ describe('useTransactionForm', () => {
     expect(mockGetCategoryUsageCounts).toHaveBeenCalled();
   });
 
+  it('pins the category picked in "More" even when it is outside the usage top 7', async () => {
+    // AppContext hands categories over alphabetically (categoryRepo.list ORDER BY name),
+    // while the grid ranks them by 90-day per-account usage. Family is early
+    // alphabetically but unused here, so it must still end up in the first position.
+    const names = ['Education', 'Family', 'Food', 'Groceries', 'Health', 'Home', 'Pets', 'Travel'];
+    const alphabetical = names.map((name, index) =>
+      ({ id: 20 + index, user_id: 1, name, type: 'expense' }) as Category,
+    );
+    const family = alphabetical[1];
+    setAppData({ accounts: [account], categories: alphabetical, tags: [] });
+    mockGetCategoryUsageCounts.mockResolvedValue(
+      alphabetical
+        .filter((c) => c.id !== family.id)
+        .map((c, index) => ({ id: c.id, name: c.name, icon: 'home', color: '#fff', count: 10 - index })),
+    );
+    setPendingCategory(family.id, 'expense');
+
+    const { result } = await setup({ initialCategoryId: null });
+    await act(async () => {});
+
+    expect(result.current.categoryId).toBe(family.id);
+    expect(result.current.visibleCategories).toHaveLength(7);
+    expect(result.current.visibleCategories[0].id).toBe(family.id);
+  });
+
+  it('pins a pending category that already ranks in the usage top 7', async () => {
+    mockGetCategoryUsageCounts.mockResolvedValue([
+      { id: 2, name: 'Home', icon: 'home', color: '#fff', count: 9 },
+      { id: 3, name: 'Travel', icon: 'plane', color: '#fff', count: 4 },
+      { id: 1, name: 'Food', icon: 'fast', color: '#fff', count: 2 },
+    ]);
+    setPendingCategory(3, 'expense');
+
+    const { result } = await setup({ initialCategoryId: null });
+    await act(async () => {});
+
+    expect(result.current.visibleCategories.map((c) => c.id)).toEqual([3, 2, 1]);
+  });
+
   describe('isDirty', () => {
     it('is false until a field actually changes', async () => {
       const { result } = await setup({ initialComment: 'coffee', initialAmount: '3.5' });
