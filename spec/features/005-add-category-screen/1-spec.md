@@ -39,6 +39,7 @@ Screen accessible from the "More" button in the categories section of `AddTransa
 - Each category is displayed as: icon with category color background + name below.
 - The grid is vertically scrollable if there are many categories.
 - When pressing a category, navigation returns to `AddTransactionScreen` with the selected category as the first category in the categories grid.
+- The selected category is always pinned to the first grid position, even when it ranks outside the 7 most-used categories for the current account (the grid ranks by 90-day per-account usage, so a category picked here can be one the grid would otherwise hide behind "More").
 
 ### 5. Counter, Sort and Usage
 
@@ -84,6 +85,7 @@ Screen accessible from the "More" button in the categories section of `AddTransa
 - [x] The "Create" button is in the last position of the grid.
 - [x] When the type has 30 categories, the "Create" button is hidden and "Maximum of 30 categories per type reached" is shown below the grid.
 - [x] When pressing a category, navigation returns to `AddTransactionScreen` with that category selected.
+- [x] The selected category always appears selected in the first grid position, including categories outside the 7 most-used ones.
 - [x] All texts change when switching language in settings.
 - [x] The screen respects the active theme (dark/light).
 - [x] The screen respects the configured text size.

@@ -1641,3 +1641,14 @@ Applied 2026-10-30:
 - `npm run test:all` green (195 files / 1698 tests).
 
 Spec: spec/features/025-data-backup/.
+
+## Add transaction: category picked in "More" pinned first
+Status: completed.
+
+Applied 2026-11-26:
+- Fixed the picked category sometimes not appearing selected in the 4x2 grid (e.g. Family, Games) while others did (Rent, Pets): the pending-category check compared it against the alphabetical `AppContext` order instead of the 90-day per-account usage ranking the grid renders, so a category ranked out of the visible 7 was treated as already visible and never pinned.
+- The category chosen in "Add category" is now always pinned to the first grid position, as spec 005 §4 requires.
+- Regression tests cover a pending category outside the usage top 7 and one already inside it; verified on web at 375px with Family hidden behind "More", then returned selected in the first position and saved.
+- `npm run test:all` green (195 files / 1700 tests).
+
+Spec: spec/features/004-add-transaction-screen/, spec/features/005-add-category-screen/.

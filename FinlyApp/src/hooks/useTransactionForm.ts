@@ -189,9 +189,11 @@ export function useTransactionForm({
         setType(pending.type);
       }
       setCategoryId(pending.categoryId);
-      const allByType = categoriesOfType(categories, pending.type);
-      const isVisible = allByType.slice(0, MAX_VISIBLE_CATEGORIES).some(c => c.id === pending.categoryId);
-      setReorderedCategory(isVisible ? null : pending.categoryId);
+      // Spec 005 §4: the category picked in "Add category" always goes to the first
+      // grid position. It cannot be derived from the alphabetical AppContext order:
+      // the grid ranks by 90-day per-account usage, so a category can be ranked out
+      // of the visible 7 while still sitting early in the alphabetical list.
+      setReorderedCategory(pending.categoryId);
       setTimeout(() => {
         scrollRef.current?.scrollTo({ y: 0, animated: false });
       }, 100);
@@ -205,7 +207,7 @@ export function useTransactionForm({
     };
     loadUsage().catch(onError ?? (() => {}));
     return () => { active = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- categories intentionally excluded to avoid redundant loadUsage queries
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onError is optional and stable; re-running would repeat the usage query
   }, [type, accountId, resetTagsOnFirstFocus]));
 
   useEffect(() => {

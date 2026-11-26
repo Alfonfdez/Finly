@@ -63,6 +63,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
   - Primary sort: transaction count descending (categories used more often appear first).
   - Secondary sort (ties or 0 usage): alphabetical by name.
   - No special treatment for "Other" or "Others" — they follow the same usage-based ranking.
+- A category picked through "More" (Add category, 005) is pinned to the first position on return, even when its usage rank would leave it outside the visible 7.
 - When tapping "More":
   - If the active type has **more than 7 categories**: the "Add category" screen opens to select from existing ones.
   - If the active type has **7 or fewer categories**: the "Create category" screen opens directly to create a new one.
@@ -171,6 +172,7 @@ Screen accessible from the Home "+" button that allows the user to record a new 
 - [x] Categories with 0 transactions for the selected account appear after used ones, alphabetically sorted.
 - [x] "Other" and "Others" follow the same usage-based ranking (no special position).
 - [x] The "More" button is always visible: with >7 categories navigates to Add category, with ≤7 navigates directly to Create category.
+- [x] A category picked through "More" returns selected in the first grid position, even when it is outside the 7 most-used categories.
 - [x] The 3 days show the correct dates according to the described rule.
 - [x] The calendar button opens the day selection modal.
 - [x] The tags section allows searching, creating and selecting tags.
